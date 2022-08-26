@@ -1,0 +1,43 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: CAT9400_HA_IOX(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: CAT9400_HA_IOX(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show install summary:
+      response:
+      - "[ R0 R1 ] Installed Package(s) Information:\r\nState (St): I - Inactive,\
+        \ U - Activated & Uncommitted,\r\n            C - Activated & Committed, D\
+        \ - Deactivated & Uncommitted\r\n--------------------------------------------------------------------------------\r\
+        \nType  St   Filename/Version\r\n--------------------------------------------------------------------------------\r\
+        \nIMG   C    17.10.01.0.161496\r\n\r\n--------------------------------------------------------------------------------\r\
+        \nAuto abort timer: inactive\r\n--------------------------------------------------------------------------------"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: CAT9400_HA_IOX#

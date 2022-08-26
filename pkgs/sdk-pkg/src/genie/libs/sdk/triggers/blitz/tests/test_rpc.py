@@ -76,6 +76,30 @@ message-id="urn:uuid:d46bac3e-596e-44d9-a568-d332eb5547bf">
   </rpc-error>
 </rpc-reply>"""
 
+ocresp = """<rpc-reply message-id="urn:uuid:86affd6b-4eeb-42a4-8b9c-e47a170537fa" \
+xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" \
+xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0">
+  <data>
+    <network-instances xmlns="http://openconfig.net/yang/network-instance">
+      <network-instance>
+        <name>default</name>
+        <protocols>
+          <protocol>
+            <identifier xmlns:idx="http://openconfig.net/yang/policy-types">idx:BGP</identifier>
+            <name>default</name>
+            <bgp>
+              <global>
+                <config>
+                  <as>100</as>
+                </config>
+              </global>
+            </bgp>
+          </protocol>
+        </protocols>
+      </network-instance>
+    </network-instances>
+  </data>
+</rpc-reply>"""
 
 class TestGnmi(Gnmi):
     def __init__(self, *args, **kwargs):
@@ -275,6 +299,34 @@ basic-mode=explicit&also-supported=report-all-tagged']
         self.assertTrue(result)
 
         resp = self.rpcv.process_rpc_reply(operstate)
+        result = self.rpcv.process_operational_state(resp, opfields)
+        self.assertTrue(result)
+
+    def test_operational_state_namespace(self):
+        """Process rpc-reply with different namespaces."""
+        opfields = [
+            {'selected': 'true',
+             'name': 'name',
+             'xpath': '/network-instances/network-instance/name',
+             'value': 'default',
+             'op': '=='},
+            {'selected': 'true',
+             'name': 'identifier',
+             'xpath': '/network-instances/network-instance/protocols/protocol/identifier',
+             'value': 'oc-pol-types:BGP',
+             'op': '=='},
+            {'selected': 'true',
+             'name': 'name',
+             'xpath': '/network-instances/network-instance/protocols/protocol/name',
+             'value': 'default',
+             'op': '=='},
+            {'selected': 'true',
+             'name': 'as',
+             'xpath': '/network-instances/network-instance/protocols/protocol/bgp/global/config/as',
+             'value': '100',
+             'op': '=='}]
+
+        resp = self.rpcv.process_rpc_reply(ocresp)
         result = self.rpcv.process_operational_state(resp, opfields)
         self.assertTrue(result)
 

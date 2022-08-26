@@ -89,10 +89,12 @@ class FileUtils(FileUtilsCommonDeviceBase):
         """
 
         with self.file_transfer_config(used_server, interface=interface, **kwargs):
-            return self.send_cli_to_device(cli=cmd,
-                                    timeout_seconds=timeout_seconds,
-                                    used_server=used_server,
-                                    **kwargs)
+            return self.send_cli_to_device(
+                cli=cmd,
+                timeout_seconds=timeout_seconds,
+                used_server=used_server,
+                destination=destination,
+                **kwargs)
 
 
 

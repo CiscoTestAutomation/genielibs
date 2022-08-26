@@ -86,3 +86,31 @@ def clear_ip_bgp(device):
         raise SubCommandFailure(
             "Could not clear ip bgp on {device}. Error:\n{error}".format(device=device, error=e)
         )
+
+
+def clear_ip_bgp_af_as(device, address_family, as_numbers):
+    """ BGP soft clear using address family and AS number
+        i.e 'clear ip bgp {address_family} {as_number}'
+        Args:
+            device ('obj'): device object
+            address_family ('str'): address family
+            as_numbers ('list'/'int'): BGP AS number
+        Returns:
+            N/A
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    cmd = []
+    if isinstance(as_numbers,list):
+        for as_number in as_numbers:
+            cmd.append(f"clear ip bgp {address_family} {as_number}")
+    else:
+        cmd = f'clear ip bgp {address_family} {as_numbers}'
+
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not clear ip bgp {address_family} as {as_numbers} on device"
+            f" {device}.Error:\n{e}"
+        )

@@ -179,7 +179,7 @@ class GenieRobot(object):
         # Find the feature for this device
         # 1) Directory must exists in genie.libs.ops.<feature>
         # 2) Then abstraction will kick in to find the right one.
-        # 3) The directory syntax is <feature>.<feature.<Feature> 
+        # 3) The directory syntax is <feature>.<feature.<Feature>
         #    Where the class is capitalized but the directory/files arent.
 
         # First import genie.libs for abstraction
@@ -202,11 +202,11 @@ class GenieRobot(object):
         if hasattr(device_handle, 'custom') and\
            'abstraction' in device_handle.custom and\
            'order' in device_handle.custom['abstraction']:
-               # Add context to it
-               backup_abstraction = deepcopy(device_handle.custom['abstraction'])
-               device_handle.custom['abstraction']['order'].append('context')
-               device_handle.custom['abstraction']['context'] = context
-               added_context = True
+            # Add context to it
+            backup_abstraction = deepcopy(device_handle.custom['abstraction'])
+            device_handle.custom['abstraction']['order'].append('context')
+            device_handle.custom['abstraction']['context'] = context
+            added_context = True
 
 
 
@@ -585,8 +585,11 @@ class GenieRobot(object):
 
 
 
-        exclude_list = ['device', 'maker', 'diff_ignore', 'callables',
-                        '(Current configuration.*)', 'ops_schema']
+        exclude_list = [
+            'device', 'maker', 'diff_ignore', 'callables',
+            '(Current configuration.*)', 'ops_schema',
+            r'((Sun|Mon|Tue|Wed|Thu|Fri|Sat) +(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) +\d{1,2} +\d{1,2}:\d{1,2}:\d{1,2}\.\d{3} +\S{3})'
+        ]
 
         try:
             if 'exclude' in self.pts_datafile:

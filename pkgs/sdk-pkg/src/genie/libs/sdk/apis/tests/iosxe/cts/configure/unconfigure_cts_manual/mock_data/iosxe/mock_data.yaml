@@ -1,3 +1,5 @@
+
+   
 configure:
   commands:
     end:
@@ -19,9 +21,7 @@ connect:
     ? ''
     : new_state: execute
   preface: 'Trying mock_device ...
-
     Connected to mock_device.
-
     Escape character is ''^]''.'
   prompt: ''
 execute:

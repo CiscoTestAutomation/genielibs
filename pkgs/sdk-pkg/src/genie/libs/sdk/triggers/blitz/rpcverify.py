@@ -110,6 +110,13 @@ class EvalDatatype:
             if self.value:
                 self.fval = self.value
         if self.op == '==':
+            if self.value != self.fval:
+                # Check if values have prefix
+                if self.value.count(':') == 1 and \
+                        self.fval.count(':') == 1:
+                    # Strip the prefix from values
+                    self.value = self.value.split(':')[1]
+                    self.fval = self.fval.split(':')[1]
             return self.value == self.fval
         elif self.op == '!=':
             return self.value != self.fval
@@ -512,6 +519,19 @@ class RpcVerify():
                         log_msg = 'OPERATION VALUE {0}: {1} SUCCESS'.format(
                                 field['xpath'], eval_text
                             )
+                    #check if values have prefixes
+                    elif value.count(':') == 1 and fval.count(':') == 1:
+                        value = value.split(':')[1]
+                        fval = fval.split(':')[1]
+                        eval_text = f'"{value}" {field["op"]} "{fval}"'
+                        if eval(eval_text):
+                            log_msg = 'OPERATION VALUE {0}: {1} SUCCESS'.format(
+                                field['xpath'], eval_text
+                            )
+                        else:
+                            log_msg = 'OPERATION VALUE {0}: {1} FAILED'.format(
+                                field['xpath'], eval_text
+                            )
                     else:
                         log_msg = 'OPERATION VALUE {0}: {1} FAILED'.format(
                                 field['xpath'], eval_text
@@ -561,44 +581,50 @@ class RpcVerify():
         Returns:
           bool: True if successful.
         """
-        log_msg = 'ERROR: "{0}" Not found.'.format(field['xpath'])
+        log_msg = 'ERROR: "{0} value: {1}" Not found.'.format(field['xpath'], str(field.get('value')))
         datatype = ''
         result = False
 
         for resp in response:
-            for reply, reply_xpath in resp:
-                if self.et.iselement(reply):
-                    # NETCONF response
-                    value_state = self._process_values(reply, '')
-                    value = value_state.get('reply_val', 'empty')
-                    name = self.et.QName(reply).localname
-                else:
-                    # GNMI response
-                    if reply is False:
-                        value = reply
+            datatype = field.get('datatype')
+            if datatype == 'ascii':
+                if field['op'] != "==":
+                    log.error(f"ASCII datatype can be used only with '==' operator not with {field['op']}")
+                    break
+                return resp.get("value") == field['value']
+            else:
+                for reply, reply_xpath in resp:
+                    if self.et.iselement(reply):
+                        # NETCONF response
+                        value_state = self._process_values(reply, '')
+                        value = value_state.get('reply_val', 'empty')
+                        name = self.et.QName(reply).localname
                     else:
-                        if reply == '':
-                            value = 'empty'
-                        else:
+                        # GNMI response
+                        if reply is False:
                             value = reply
-                    name = reply_xpath[reply_xpath.rfind('/') + 1:]
-                if 'xpath' in field and field['xpath'] == reply_xpath and \
-                        name == field['name']:
+                        else:
+                            if reply == '':
+                                value = 'empty'
+                            else:
+                                value = reply
+                        name = reply_xpath[reply_xpath.rfind('/') + 1:]
+                    if 'xpath' in field and field['xpath'] == reply_xpath and \
+                            name == field['name']:
+                
+                        if datatype == 'empty':
+                            field['value'] = 'empty'
 
-                    datatype = field.get('datatype')
-                    if datatype == 'empty':
-                        field['value'] = 'empty'
-
-                    result, log_msg = self.check_opfield(value, field)
-                    if result:
-                        if not datatype:
-                            log.warning(
-                                "{0} has no datatype; default to string".format(
-                                    field['xpath']
+                        result, log_msg = self.check_opfield(value, field)
+                        if result:
+                            if not datatype:
+                                log.warning(
+                                    "{0} has no datatype; default to string".format(
+                                        field['xpath']
+                                    )
                                 )
-                            )
-                        log.info(log_msg)
-                        return True
+                            log.info(log_msg)
+                            return True
 
         if key:
             log.info('Parent list key "{0} == {1}" not required.'.format(

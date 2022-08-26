@@ -3,6 +3,7 @@ import re
 import time
 import shutil
 import os.path
+import fnmatch
 import logging
 import ipaddress
 from typing import List
@@ -378,7 +379,7 @@ copy_to_linux:
             'directory': str,
             Optional('hostname'): str
         },
-        'protocol': str,
+        Optional('protocol'): str,
         Optional('timeout'): int,
         Optional('check_image_length'): bool,
         Optional('overwrite'): bool,
@@ -1458,33 +1459,13 @@ reload:
             except Exception:
                 log.warning("Failed to destroy the device connection but "
                             "attempting to continue", exc_info=True)
-            device.instantiate()
-            rommon_to_disable = None
-            try:
-                if device.is_ha and hasattr(device, 'subconnections'):
-                    if hasattr(device.subconnections,'__getitem__'):
-                        rommon_to_disable = device.subconnections[0].state_machine.get_path('rommon', 'disable')
-                else:
-                    rommon_to_disable = device.state_machine.get_path('rommon', 'disable')
-            except ValueError:
-                log.warning('There is no path between rommon and disable states.')
-            except IndexError:
-                log.warning('There is no connection in device.subconnections')
-            if rommon_to_disable and hasattr(rommon_to_disable, 'command'):
-                original_command = rommon_to_disable.command
-                if device.is_ha:
-                    index = device.subconnections[0].state_machine.paths.index(rommon_to_disable)
-                    for subcon in device.subconnections:
-                        subcon.state_machine.paths[index].command = lambda state,spawn,context: raise_(Exception(f'Device {device.name} is still '
-                                                                    f'in rommon state after reload.'))
-                else:
-                    index = device.state_machine.paths.index(rommon_to_disable)
-                    device.state_machine.paths[index].command = lambda state,spawn,context: raise_(Exception(f'Device {device.name} is still '
-                                                                    f'in rommon state after reload.'))
             connect_kwargs = {
                         'learn_hostname': True,
                         'prompt_recovery': reload_service_args['prompt_recovery']
                     }
+
+            if reconnect_via:
+                connect_kwargs.update({'via': reconnect_via})
 
             device.instantiate(**connect_kwargs)
             rommon_to_disable = None
@@ -1510,22 +1491,10 @@ reload:
                     device.state_machine.paths[index].command = lambda state,spawn,context: raise_(Exception(f'Device {device.name} is still '
                                                                     f'in rommon state after reload.'))
 
-            if reconnect_via:
-                connect_kwargs.update({'via': reconnect_via})
-
             try:
                 device.connect()
             except Exception as e:
                 step.failed("Failed to reconnect", from_exception=e)
-            if rommon_to_disable and hasattr(rommon_to_disable, 'command'):
-                if device.is_ha:
-                    index = device.subconnections[0].state_machine.paths.index(rommon_to_disable)
-                    for subcon in device.subconnections:
-                        subcon.state_machine.paths[index].command = original_command
-                else:
-                    index = device.state_machine.paths.index(rommon_to_disable)
-                    device.state_machine.paths[index].command = original_command
-
             if rommon_to_disable and hasattr(rommon_to_disable, 'command'):
                 if device.is_ha:
                     index = device.subconnections[0].state_machine.paths.index(rommon_to_disable)
@@ -2192,6 +2161,76 @@ delete_files_from_server:
                             fu_session=fu)
                     except Exception as e:
                         substep.passx(f"Failed to delete '{file}'", from_exception=e)
+
+
+class DeleteFiles(BaseStage):
+    """Delete files from the device.
+
+Uses the `delete_files` device API.
+
+Stage Schema
+------------
+delete_files:
+
+    files (list): List of files including location.
+
+    regex (bool, optional): If regex is used in the file names, set to True. Default False.
+
+Example
+-------
+delete_files:
+    - flash:core/*.gz
+    - crashinfo/*.tar.gz
+"""
+
+    # =================
+    # Argument Defaults
+    # =================
+    REGEX = False
+
+    # ============
+    # Stage Schema
+    # ============
+    schema = {
+        'files': list,
+        Optional('regex'): bool,
+    }
+
+    # ==============================
+    # Execution order of Stage steps
+    # ==============================
+    exec_order = [
+        'delete_files',
+    ]
+
+    def delete_files(self, steps, device, files, regex=REGEX):
+
+        for fn in files:
+            with steps.start(f"Delete '{fn}' from the device") as step:
+
+                # if the filename as a location specified as bootflash:filename, use location1 as "bootflash:"
+                location1 = fn.split(':')[0] + ':' if ':' in fn else ''
+                # if the filename has a slash specified, e.g. flash:/directory/filename, use location2 as "flash:/directory"
+                location2 = '/'.join(fn.split('/')[:-1]) if len(fn.split('/')) > 1 else ''
+                location = location2 or location1
+
+                # Get the filename portion of the expression
+                # if only ':' in the filename, use filenames1
+                filenames1 = fn.split(':')[-1] if ':' in fn else fn
+                # if '/' in filename, get the part after the /
+                filenames = fn.split('/')[-1] if len(fn.split('/')) > 1 else filenames1
+
+                # If user did not specify regex to be used, assume unix filename matching
+                # Translate the expresion to a regex one to pass to the API
+                if not regex:
+                    filenames = fnmatch.translate(filenames)
+
+                log.debug(f'Delete files - Location: {location} filenames: {filenames}')
+
+                try:
+                    device.api.delete_files(locations=[location], filenames=[filenames])
+                except Exception as e:
+                    step.failed("Failed to delete the file.", from_exception=e)
 
 
 class RevertVmSnapshot(BaseStage):

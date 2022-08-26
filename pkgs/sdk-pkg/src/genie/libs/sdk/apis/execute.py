@@ -394,8 +394,15 @@ def execute_copy_run_to_start(device, command_timeout=300, max_time=120,
         action='sendline()',
         loop_continue=True,
         continue_timer=False)
+
     proceed = Statement(
-        pattern=r'.*proceed anyway?.*',
+        pattern=r'.*proceed anyway\?.*$',
+        action='sendline(y)',
+        loop_continue=True,
+        continue_timer=False)
+
+    continue_cmd = Statement(
+        pattern=r'Continue\? \[no\]:\s*$',
         action='sendline(y)',
         loop_continue=True,
         continue_timer=False)
@@ -412,7 +419,7 @@ def execute_copy_run_to_start(device, command_timeout=300, max_time=120,
     while timeout.iterate():
         try:
             output = device.execute(cmd, timeout=command_timeout,
-                                    reply=Dialog([startup, proceed, yes_cmd]))
+                                    reply=Dialog([startup, proceed, yes_cmd, continue_cmd]))
         except Exception as e:
             raise Exception("Cannot save running-config to startup-config {}".\
                             format(str(e)))

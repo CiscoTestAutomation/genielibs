@@ -14,7 +14,8 @@ class TestVerifyFileExists(unittest.TestCase):
                     'files': {
                         'packages.conf': {'index': '1'}
                     }
-                }
+                },
+                'dir': 'bootflash:/'
             }
         },
         'dir bootflash:/empty_folder/': {
@@ -62,6 +63,14 @@ class TestVerifyFileExists(unittest.TestCase):
         exist = verify_file_exists(
             self.device,
             'bootflash:/not_existing_folder/not_existing_file.zip')
+        self.assertEqual(exist, False)
+
+    def test_verify_not_existing_folder2(self):
+        self.device.parse = Mock(
+            side_effect=SchemaEmptyParserError('error'))
+        exist = verify_file_exists(
+            self.device,
+            'flash:/some_file.zip')
         self.assertEqual(exist, False)
 
 

@@ -1,0 +1,59 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: 1783-CMS20DN(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: 1783-CMS20DN(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show cdp neighbors:
+      response:
+      - "Capability Codes: R - Router, T - Trans Bridge, B - Source Route Bridge\r\
+        \n                  S - Switch, H - Host, I - IGMP, r - Repeater, P - Phone,\
+        \ \r\n                  D - Remote, C - CVTA, M - Two-port Mac Relay \r\n\r\
+        \nDevice ID        Local Intrfce     Holdtme    Capability  Platform  Port\
+        \ ID\r\ndevice           Gig 1/5           153             R S I  IE-3300-8\
+        \ Gig 2/1\r\ndevice           Gig 1/1           176             R S I  IE-3300-8\
+        \ Ten 1/1\r\ndevice           Gig 1/17          129             R S I  IE-3300-8\
+        \ Gig 2/5\r\ndevice           Gig 1/19          162             R S I  IE-3300-8\
+        \ Gig 2/8\r\ndevice           Gig 1/18          156             R S I  IE-3300-8\
+        \ Gig 2/7\r\ndevice           Gig 1/14          179             R S I  IE-3300-8\
+        \ Gig 1/7\r\ndevice           Gig 1/13          158             R S I  IE-3300-8\
+        \ Gig 1/6\r\ndevice           Gig 1/4           160             R S I  IE-3300-8\
+        \ Ten 1/2\r\ndevice           Gig 1/16          141             R S I  IE-3300-8\
+        \ Gig 2/6\r\ndevice           Gig 1/15          144             R S I  IE-3300-8\
+        \ Gig 1/9\r\ndevice           Gig 1/12          172             R S I  IE-3300-8\
+        \ Gig 1/8\r\ndevice           Gig 1/7           135             R S I  IE-3300-8\
+        \ Gig 1/5\r\ndevice           Gig 1/8           161             R S I  IE-3300-8\
+        \ Gig 1/4\r\ndevice           Gig 1/6           131             R S I  IE-3300-8\
+        \ Gig 1/3\r\n1783-CMS10B      Gig 1/3           132             R S I  1783-CMS1\
+        \ Gig 1/1\r\n1783-CMS20DN     Gig 1/2           121             R S I  1783-CMS2\
+        \ Gig 1/11\r\n1783-CMS20DN     Gig 1/11          132             R S I  1783-CMS2\
+        \ Gig 1/2\r\n\r\nTotal cdp entries displayed : 17"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: 1783-CMS20DN#

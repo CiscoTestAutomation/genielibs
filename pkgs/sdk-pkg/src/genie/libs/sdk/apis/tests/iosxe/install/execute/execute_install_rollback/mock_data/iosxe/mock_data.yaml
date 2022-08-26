@@ -1,0 +1,50 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: PI-9300-Stack-103(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: PI-9300-Stack-103(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    install rollback to base:
+      response:
+      - "install_rollback: START Sun Aug 07 12:35:04 UTC 2022\r\ninstall_rollback:\
+        \ Rolling back to base\r\n--- Starting Rollback ---\r\nPerforming Rollback\
+        \ on all members\r\n [1] SMU_ROLLBACK package(s) on Switch 1\r\n [3] SMU_ROLLBACK\
+        \ package(s) on Switch 3\r\n [2] SMU_ROLLBACK package(s) on Switch 2\r\n [2]\
+        \ Finished SMU_ROLLBACK package(s) on Switch 2\r\n [3] Finished SMU_ROLLBACK\
+        \ package(s) on Switch 3\r\n [1] Finished SMU_ROLLBACK package(s) on Switch\
+        \ 1\r\nChecking status of Rollback on [1 2 3]\r\nRollback: Passed on [1 2\
+        \ 3]\r\nFinished Rollback operation\r\n\r\nSUCCESS: install_rollback Sun Aug\
+        \ 07 12:35:10 UTC 2022"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    wr mem:
+      response:
+      - "Building configuration...\r\n[OK]"
+      response_type: circular
+  prompt: PI-9300-Stack-103#

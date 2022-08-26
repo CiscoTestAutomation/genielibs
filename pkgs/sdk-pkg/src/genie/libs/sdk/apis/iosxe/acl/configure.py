@@ -553,7 +553,8 @@ def unconfig_extended_acl_with_evaluate(device, acl_name, reflect_name,sequence_
 def config_extended_acl_with_reflect(
     device,
     acl_name,
-    reflect_acl_name,
+    reflect="",
+    reflect_acl_name="",
     protocol=None,
     permission="permit",
     src_ip=None,
@@ -603,42 +604,46 @@ def config_extended_acl_with_reflect(
     """
     configs = []
     configs.append("ip access-list extended {}".format(acl_name))
-    if permission == 'permit' and reflect_acl_name is not None:
+    if permission == 'permit':
         # Build config string
         if acl_type == 'host' and protocol is not None and port_type is None:
             if src_ip is not None and dst_ip is not None and echo is None:
                 configs.append(
-                    "{sequence} {permission} {protocol} host {src_ip} host {dst_ip} reflect {reflect_acl_name} {timeout} {timeout_value}".format(sequence=sequence_num,
+                    "{sequence} {permission} {protocol} host {src_ip} host {dst_ip} {reflect} {reflect_acl_name} {timeout} {timeout_value}".format(sequence=sequence_num,
                     permission=permission, 
                     protocol=protocol, 
                     src_ip=src_ip, 
                     dst_ip=dst_ip,
+                    reflect=reflect,
                     reflect_acl_name=reflect_acl_name, 
                     timeout=timeout,
                     timeout_value=timeout_value)) 
             elif (src_ip is not None and  src_ip != 'any') and  (dst_ip is None or dst_ip == 'any') and echo is None:
                 configs.append(
-                    "{sequence} {permission} {protocol} host {src_ip} any reflect {reflect_acl_name} {timeout} {timeout_value}".format(sequence=sequence_num, 
+                    "{sequence} {permission} {protocol} host {src_ip} any {reflect} {reflect_acl_name} {timeout} {timeout_value}".format(sequence=sequence_num, 
                     permission=permission, 
                     protocol=protocol,
                     src_ip=src_ip, 
+                    reflect=reflect,
                     reflect_acl_name=reflect_acl_name, 
                     timeout=timeout,
                     timeout_value=timeout_value))  
             elif (src_ip is None or src_ip == 'any') and (dst_ip is not None and dst_ip != 'any') and echo is None:
                 configs.append(
-                    "{sequence} {permission} {protocol} any host {dst_ip} reflect {reflect_acl_name} {timeout} {timeout_value}".format(sequence=sequence_num, 
+                    "{sequence} {permission} {protocol} any host {dst_ip} {reflect} {reflect_acl_name} {timeout} {timeout_value}".format(sequence=sequence_num, 
                     permission=permission, 
                     protocol=protocol,
+                    reflect=reflect,
                     dst_ip=dst_ip, 
                     reflect_acl_name=reflect_acl_name, 
                     timeout=timeout,
                     timeout_value=timeout_value)) 
             elif src_ip is not None and dst_ip is not None and echo=="echo" and protocol=="icmp":
                 configs.append(
-                    "{sequence} {permission} {protocol} host {src_ip} host {dst_ip} echo reflect {reflect_acl_name} {timeout} {timeout_value}".format(sequence=sequence_num, 
+                    "{sequence} {permission} {protocol} host {src_ip} host {dst_ip} echo {reflect} {reflect_acl_name} {timeout} {timeout_value}".format(sequence=sequence_num, 
                     src_ip=src_ip,
                     permission=permission, 
+                    reflect=reflect,
                     protocol=protocol,
                     dst_ip=dst_ip, 
                     reflect_acl_name=reflect_acl_name, 
@@ -648,9 +653,10 @@ def config_extended_acl_with_reflect(
         elif acl_type == 'host' and (protocol in ["tcp", "udp"]) and (port_type in ['eq', 'gt', 'lt', 'neq']):
             if src_port is not None and dst_port is not None and src_ip is not None and dst_ip is not None:
                 configs.append(
-                    "{sequence} {permission} {protocol} host {src_ip} {port_type} {src_port} host {dst_ip} {port_type} {dst_port} reflect {reflect_acl_name} {timeout} {timeout_value}".format(permission=permission, 
+                    "{sequence} {permission} {protocol} host {src_ip} {port_type} {src_port} host {dst_ip} {port_type} {dst_port} {reflect} {reflect_acl_name} {timeout} {timeout_value}".format(permission=permission, 
                     protocol=protocol, 
                     src_ip=src_ip, 
+                    reflect=reflect,
                     dst_ip=dst_ip,
                     reflect_acl_name=reflect_acl_name, 
                     timeout=timeout, 
@@ -661,9 +667,10 @@ def config_extended_acl_with_reflect(
                     sequence=sequence_num)) 
             elif (src_ip is not None and  src_ip != 'any') and  (dst_ip is None or dst_ip == 'any') and src_port is not None and dst_port is None:
                 configs.append(
-                    "{sequence} {permission} {protocol} host {src_ip} {port_type} {src_port} any reflect {reflect_acl_name} {timeout} {timeout_value}".format(permission=permission, 
+                    "{sequence} {permission} {protocol} host {src_ip} {port_type} {src_port} any {reflect} {reflect_acl_name} {timeout} {timeout_value}".format(permission=permission, 
                     protocol=protocol,
                     src_ip=src_ip, 
+                    reflect=reflect,
                     reflect_acl_name=reflect_acl_name, 
                     timeout=timeout,
                     timeout_value=timeout_value, 
@@ -672,10 +679,11 @@ def config_extended_acl_with_reflect(
                     sequence=sequence_num))  
             elif (src_ip is None or src_ip == 'any') and (dst_ip !=None and dst_ip != 'any') and src_port is None and dst_port is not None:
                 configs.append(
-                    "{sequence} {permission} {protocol} any host {dst_ip} {port_type} {dst_port} reflect {reflect_acl_name} {timeout} {timeout_value}".format(permission=permission, 
+                    "{sequence} {permission} {protocol} any host {dst_ip} {port_type} {dst_port} {reflect} {reflect_acl_name} {timeout} {timeout_value}".format(permission=permission, 
                     protocol=protocol,
                     dst_ip=dst_ip, 
                     reflect_acl_name=reflect_acl_name, 
+                    reflect=reflect,
                     timeout=timeout,
                     timeout_value=timeout_value, 
                     dst_port=dst_port, 
@@ -686,25 +694,28 @@ def config_extended_acl_with_reflect(
         elif acl_type is None and protocol is not None and src_ip is None and dst_ip is None:  
             if (protocol in ["tcp", "udp"]) and (port_type in ['eq', 'gt', 'lt', 'neq']):
                 configs.append(
-                    "{sequence} {permission} {protocol} any any {port_type} {dst_port} reflect {reflect_acl_name} {timeout} {timeout_value}".format(permission=permission, 
+                    "{sequence} {permission} {protocol} any any {port_type} {dst_port} {reflect} {reflect_acl_name} {timeout} {timeout_value}".format(permission=permission, 
                     protocol=protocol,
                     reflect_acl_name=reflect_acl_name, 
                     timeout=timeout, 
+                    reflect=reflect,
                     dst_port=dst_port,
                     timeout_value=timeout_value, 
                     port_type=port_type, 
                     sequence=sequence_num))  
             elif protocol=="igmp" and host_query is not None:
                 configs.append(
-                    "{sequence} {permission} {protocol} any any host-query reflect {reflect_acl_name} {timeout} {timeout_value}".format(sequence=sequence_num, permission=permission, 
+                    "{sequence} {permission} {protocol} any any host-query {reflect} {reflect_acl_name} {timeout} {timeout_value}".format(sequence=sequence_num, permission=permission, 
                     protocol=protocol,
                     reflect_acl_name=reflect_acl_name, 
+                    reflect=reflect,
                     timeout=timeout,
                     timeout_value=timeout_value))                       
             else:
                 configs.append(
-                    "{sequence} {permission} {protocol} any any reflect {reflect_acl_name} {timeout} {timeout_value}".format(sequence=sequence_num, permission=permission, 
+                    "{sequence} {permission} {protocol} any any {reflect} {reflect_acl_name} {timeout} {timeout_value}".format(sequence=sequence_num, permission=permission, 
                     protocol=protocol,
+                    reflect=reflect,
                     reflect_acl_name=reflect_acl_name, 
                     timeout=timeout,
                     timeout_value=timeout_value))
@@ -725,9 +736,10 @@ def config_extended_acl_with_reflect(
                                 src_ip_inc = src_ip + i
                                 dst_ip_inc = dst_ip + i
                                 configs.append(
-                                    "{sequence} {permission} {protocol} {src_ip} {src_wildcard} {dst_ip} {dst_wildcard} reflect {reflect_acl_name} {timeout} {timeout_value}".format(
+                                    "{sequence} {permission} {protocol} {src_ip} {src_wildcard} {dst_ip} {dst_wildcard} {reflect} {reflect_acl_name} {timeout} {timeout_value}".format(
                                         sequence=i + 1,
                                         permission=permission,
+                                        reflect=reflect,
                                         protocol=protocol,
                                         src_ip=src_ip_inc,
                                         src_wildcard=src_wildcard,
@@ -740,9 +752,10 @@ def config_extended_acl_with_reflect(
                                 dst_step = IPv4Address(dst_step)
                                 dst_ip_inc = dst_ip + i
                                 configs.append(
-                                    "{sequence} {permission} {protocol} any {dst_ip} {dst_wildcard} reflect {reflect_acl_name} {timeout} {timeout_value}".format(
+                                    "{sequence} {permission} {protocol} any {dst_ip} {dst_wildcard} {reflect} {reflect_acl_name} {timeout} {timeout_value}".format(
                                         sequence=i + 1,
                                         permission=permission,
+                                        reflect=reflect,
                                         protocol=protocol,
                                         dst_ip=dst_ip_inc,
                                         dst_wildcard=dst_wildcard,
@@ -753,9 +766,10 @@ def config_extended_acl_with_reflect(
                                 src_step = IPv4Address(src_step)
                                 src_ip_inc = src_ip + i
                                 configs.append(
-                                    "{sequence} {permission} {protocol} {src_ip} {src_wildcard} any reflect {reflect_acl_name} {timeout} {timeout_value}".format(
+                                    "{sequence} {permission} {protocol} {src_ip} {src_wildcard} any {reflect} {reflect_acl_name} {timeout} {timeout_value}".format(
                                         sequence=i + 1,
                                         permission=permission,
+                                        reflect=reflect,
                                         protocol=protocol,
                                         src_ip=src_ip_inc,
                                         src_wildcard=src_wildcard,
@@ -764,19 +778,21 @@ def config_extended_acl_with_reflect(
                     elif entries == 1:
                         if src_ip is not None and dst_ip is not None and port_type is None:
                             configs.append(
-                                "{sequence} {permission} {protocol} {src_ip} {src_wildcard} {dst_ip} {dst_wildcard} reflect {reflect_acl_name} {timeout} {timeout_value}".format(
+                                "{sequence} {permission} {protocol} {src_ip} {src_wildcard} {dst_ip} {dst_wildcard} {reflect} {reflect_acl_name} {timeout} {timeout_value}".format(
                                     sequence=sequence_num,
                                     permission=permission,
                                     protocol=protocol,
                                     src_ip=src_ip,
                                     src_wildcard=src_wildcard,
                                     dst_ip=dst_ip,
+                                    reflect=reflect,
                                     dst_wildcard=dst_wildcard,
                                     reflect_acl_name=reflect_acl_name,timeout=timeout,timeout_value=timeout_value))
                         elif src_ip is None and dst_ip is not None and protocol is not None:
                             configs.append(
-                                "{sequence} {permission} {protocol} any {dst_ip} {dst_wildcard} reflect {reflect_acl_name} {timeout} {timeout_value}".format(
+                                "{sequence} {permission} {protocol} any {dst_ip} {dst_wildcard} {reflect} {reflect_acl_name} {timeout} {timeout_value}".format(
                                     sequence=sequence_num,
+                                    reflect=reflect,
                                     permission=permission,
                                     protocol=protocol,                                
                                     dst_ip=dst_ip,
@@ -784,9 +800,10 @@ def config_extended_acl_with_reflect(
                                     reflect_acl_name=reflect_acl_name,timeout=timeout,timeout_value=timeout_value))   
                         elif src_ip is not None and dst_ip is None and protocol is not None:
                             configs.append(
-                                "{sequence} {permission} {protocol} {src_ip} {src_wildcard} any reflect {reflect_acl_name} {timeout} {timeout_value}".format(
+                                "{sequence} {permission} {protocol} {src_ip} {src_wildcard} any {reflect} {reflect_acl_name} {timeout} {timeout_value}".format(
                                     sequence=sequence_num,
                                     permission=permission,
+                                    reflect=reflect,
                                     protocol=protocol,
                                     src_ip=src_ip,
                                     src_wildcard=src_wildcard,
@@ -806,10 +823,11 @@ def config_extended_acl_with_reflect(
                                 src_ip_inc = src_ip + i
                                 dst_ip_inc = dst_ip + i
                                 configs.append(
-                                    "{sequence} {permission} {protocol} {src_ip} {src_wildcard} {port_type} {src_port} {dst_ip} {dst_wildcard} {port_type} {dst_port} reflect {reflect_acl_name} {timeout} {timeout_value}".format(sequence=i + 1,
+                                    "{sequence} {permission} {protocol} {src_ip} {src_wildcard} {port_type} {src_port} {dst_ip} {dst_wildcard} {port_type} {dst_port} {reflect} {reflect_acl_name} {timeout} {timeout_value}".format(sequence=i + 1,
                                     permission=permission,
                                     protocol=protocol,
                                     src_ip=src_ip_inc,
+                                    reflect=reflect,
                                     src_wildcard=src_wildcard,
                                     dst_ip=dst_ip_inc,
                                     dst_wildcard=dst_wildcard,
@@ -825,9 +843,10 @@ def config_extended_acl_with_reflect(
                                     dst_step = IPv4Address(dst_step)
                                     dst_ip_inc = dst_ip + i
                                     configs.append(
-                                        "{sequence} {permission} {protocol} any {dst_ip} {dst_wildcard} {port_type} {dst_port} reflect {reflect_acl_name} {timeout} {timeout_value}".format(
+                                        "{sequence} {permission} {protocol} any {dst_ip} {dst_wildcard} {port_type} {dst_port} {reflect} {reflect_acl_name} {timeout} {timeout_value}".format(
                                             sequence=i + 1,
                                             permission=permission,
+                                            reflect=reflect,
                                             protocol=protocol,
                                             dst_ip=dst_ip_inc,
                                             dst_wildcard=dst_wildcard,
@@ -840,10 +859,11 @@ def config_extended_acl_with_reflect(
                                 src_step = IPv4Address(src_step)
                                 src_ip_inc = src_ip + i
                                 configs.append(
-                                    "{sequence} {permission} {protocol} {src_ip} {src_wildcard} {port_type} {src_port} any reflect {reflect_acl_name} {timeout} {timeout_value}".format(
+                                    "{sequence} {permission} {protocol} {src_ip} {src_wildcard} {port_type} {src_port} any {reflect} {reflect_acl_name} {timeout} {timeout_value}".format(
                                         sequence=i + 1,
                                         permission=permission,
                                         protocol=protocol,
+                                        reflect=reflect,
                                         src_ip=src_ip_inc,
                                         src_wildcard=src_wildcard,
                                         reflect_acl_name=reflect_acl_name,timeout=timeout, 
@@ -853,9 +873,10 @@ def config_extended_acl_with_reflect(
                     elif entries == 1:
                         if src_ip is not None and dst_ip is not None and src_port is not None and dst_port is not None:
                             configs.append(
-                                "{sequence} {permission} {protocol} {src_ip} {src_wildcard} {port_type} {src_port} {dst_ip} {dst_wildcard} {port_type} {dst_port} reflect {reflect_acl_name} {timeout} {timeout_value}".format(
+                                "{sequence} {permission} {protocol} {src_ip} {src_wildcard} {port_type} {src_port} {dst_ip} {dst_wildcard} {port_type} {dst_port} {reflect} {reflect_acl_name} {timeout} {timeout_value}".format(
                                     sequence=sequence_num,
                                     permission=permission,
+                                    reflect=reflect,
                                     protocol=protocol,
                                     src_ip=src_ip, 
                                     src_port=src_port,
@@ -869,9 +890,10 @@ def config_extended_acl_with_reflect(
                                     timeout_value=timeout_value))
                         elif src_ip is None and dst_ip is not None and dst_port is not None and src_port is None:
                             configs.append(
-                                "{sequence} {permission} {protocol} any {dst_ip} {dst_wildcard} {port_type} {dst_port} reflect {reflect_acl_name} {timeout} {timeout_value}".format(
+                                "{sequence} {permission} {protocol} any {dst_ip} {dst_wildcard} {port_type} {dst_port} {reflect} {reflect_acl_name} {timeout} {timeout_value}".format(
                                     sequence=sequence_num,
                                     permission=permission,
+                                    reflect=reflect,
                                     protocol=protocol,port_type=port_type,                               
                                     dst_ip=dst_ip, 
                                     dst_port=dst_port,
@@ -881,9 +903,10 @@ def config_extended_acl_with_reflect(
                                     timeout_value=timeout_value))   
                         elif src_ip is not None and src_port is not None and dst_port is None and dst_ip is None:
                             configs.append(
-                                "{sequence} {permission} {protocol} {src_ip} {src_wildcard} {port_type} {src_port} any reflect {reflect_acl_name} {timeout} {timeout_value}".format(
+                                "{sequence} {permission} {protocol} {src_ip} {src_wildcard} {port_type} {src_port} any {reflect} {reflect_acl_name} {timeout} {timeout_value}".format(
                                     sequence=sequence_num,
                                     permission=permission,
+                                    reflect=reflect,
                                     protocol=protocol,
                                     src_ip=src_ip, 
                                     port_type=port_type,
@@ -1225,4 +1248,124 @@ def unconfig_extended_acl_with_reflect(
                 dev=device.name,
                 error=e,
             )
-        )        
+        )  
+def config_refacl_global_timeout(device, timeout):
+    """ Configures timeout for reflexive acl globally 
+
+        Args:
+            device ('obj'): device to use
+            timeout ('str'): time out value to apply, range:30-2147483
+    """
+    try:
+        device.configure(
+            "ip reflexive-list timeout {timeout}".format(
+                timeout=timeout
+            )
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure Timeout on the device {dev}. Error:\n{error}".format(
+                dev=device.name,
+                error=e,
+            )
+        )
+
+def unconfig_refacl_global_timeout(device, timeout):
+    """ Unconfigures timeout for reflexive acl globally 
+
+        Args:
+            device ('obj'): device to use
+            timeout ('str'): time out value to apply, range:30-2147483
+    """
+    try:
+        device.configure(
+            "no ip reflexive-list timeout {timeout}".format(
+                timeout=timeout
+            )
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfigure ACL on the device {dev}. Error:\n{error}".format(
+                dev=device.name,
+                error=e,
+            )
+        )
+def config_ip_tcp_mss(device, seg_size, global_config_key, interface=None):
+    """ Configures tcp Maximum Segment Size 
+
+        Args:
+            device ('obj'): device to use
+            global_config_key ('str'): set global_config_key to 1 for global else set it to 0 for interface level config
+            seg_size ('str'): segment size value to apply, range:0-10000
+            interface('str'): interface on which mss needs to be configured
+    """
+    if global_config_key == '1':
+        try:
+            device.configure(
+                "ip tcp mss {seg_size}".format(
+                    seg_size=seg_size
+            )
+        )
+        except SubCommandFailure as e:
+            raise SubCommandFailure(
+                "Failed to configure tcp mss on the device {dev}. Error:\n{error}".format(
+                    dev=device.name,
+                    error=e,
+                )
+            )
+    else:
+        try:
+            device.configure(
+                ["interface {interface}".format(interface=interface), "ip tcp adjust-mss {seg_size}".format(
+                    seg_size=seg_size
+            )]
+        )
+        except SubCommandFailure as e:
+            raise SubCommandFailure(
+                "Failed to configure tcp mss on the device {dev}. Error:\n{error}".format(
+                    dev=device.name,
+                    error=e,
+
+            )
+        )
+
+def unconfig_ip_tcp_mss(device, seg_size, global_config_key, interface=None):
+    """ Unconfigures tcp Maximum Segment Size
+
+        Args:
+            device ('obj'): device to use
+            global_config_key ('str'): set global_config_key to 1 for global else set it to 0 for interface level config
+            seg_size ('str'): segment size value to apply, range:0-10000
+            interface ('str'): interface on which mss needs to be unconfigured.
+    """
+    if global_config_key == '1':
+        try:
+            device.configure(
+                "no ip tcp mss {seg_size}".format(
+                    seg_size=seg_size
+            )
+        )
+        except SubCommandFailure as e:
+            raise SubCommandFailure(
+                "Failed to unconfigure tcp mss on the device {dev}. Error:\n{error}".format(
+                    dev=device.name,
+                    error=e,
+                )
+            )
+                
+    else:
+        try:
+            device.configure(
+                ["interface {interface}".format(interface=interface), "no ip tcp adjust-mss {seg_size}".format(
+                    seg_size=seg_size
+                    
+            )]
+        )
+        except SubCommandFailure as e:
+            raise SubCommandFailure(
+                "Failed to unconfigure tcp mss on the device {dev}. Error:\n{error}".format(
+                    dev=device.name,
+                    error=e,
+
+            )
+        )

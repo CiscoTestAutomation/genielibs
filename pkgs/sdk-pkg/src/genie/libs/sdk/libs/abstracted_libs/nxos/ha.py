@@ -332,10 +332,11 @@ class HA(HA_main):
                     basename(upgrade_image)))
 
     def _perform_issu(self, steps, upgrade_image, timeout=300):
-        """Perform the ND-ISSU on NXOS device:
+        """Perform the ND-ISSU  and Disruptive ISSU on NXOS device:
 
             NXOS:
             1. execute install all <> non-disruptive
+            2. execute install all <>
 
         Raises:
             Unicon errors
@@ -355,9 +356,9 @@ class HA(HA_main):
             [Statement(pattern=r'.*Do you want to overwrite\s*\(yes/no\)\?\s* \[no\]',
                        action='sendline(yes)', loop_continue=True, continue_timer=False)]
         dialog = Dialog(statement_list)
-
         ctrlplane_downtime = self.parameters.get('ctrlplane_downtime')
         user_boot_mode = self.parameters.get('mode')
+        disrupt_flag = self.parameters.get('disrupt_flag',False)
         issu_timeout = self.parameters.get('issu_timeout')
         cfg_transfer = self.parameters.get('cfg_transfer')
         cfg_timeout = self.parameters.get('cfg_timeout')
@@ -410,9 +411,16 @@ class HA(HA_main):
                 pre_trig_config = self.device.api.get_running_config_dict()
         with steps.start("Perform copy run start on {}".format(self.device.hostname)):
             execute_copy_run_to_start(self.device)
-        with steps.start("Performing non disruptive issu on the device {}".format(self.device.hostname)):
-            image_name = basename(upgrade_image)
-            self.device.execute(
+        if disrupt_flag:
+            with steps.start("Performing issu on the device {}".format(self.device.hostname)):
+                image_name = basename(upgrade_image)
+                self.device.execute(
+                   'install all nxos bootflash:{}'.format(image_name), timeout=issu_timeout,
+                   reply=dialog)
+        else:
+            with steps.start("Performing non disruptive issu on the device {}".format(self.device.hostname)):
+                image_name = basename(upgrade_image)
+                self.device.execute(
                 'install all nxos bootflash:{} non-disruptive'.format(image_name), timeout=issu_timeout, reply=dialog)
 
         with steps.start("Reconnect back to device {} after ISSU".format(self.device.hostname)):
@@ -446,39 +454,39 @@ class HA(HA_main):
                     log.info("{}".format(parsed.q.get_values('logs', -1)))
                     break
                 config_timeout.sleep()
-
-        with steps.start("Check CP downtime after on {} after ISSU".format(self.device.hostname)) as step:
-            if user_boot_mode.lower() == 'lxc':
-                step.passed(
-                    "show install all time-stats detail unsupported on lxc mode and cp downtime is minimal")
-            else:
-                out = self.device.execute('show install all time-stats detail')
-                output_error = False
-                cp_downtime = None
-                for line in out.splitlines():
-                    line = line.rstrip()
-                    p1 = re.compile(r'^ERROR:.*$')
-                    m = p1.match(line)
-                    if m:
-                        output_error = True
-                        break
-                    p2 = re.compile(
-                        r'^Total\s+.*?:\s(?P<cp_downtime>\d+)\s+seconds$')
-                    m = p2.match(line)
-                    if m:
-                        cp_downtime = m.groupdict()['cp_downtime']
-                        continue
-                if output_error:
-                    step.failed(
-                        "The output shows reset-reason as disruptive. ND ISSU was not performed properly.")
-                elif cp_downtime is None:
-                    step.failed(
-                        "garbled output for show install all time-stats detail so cp_downtime was not calculated properly.")
-                elif int(cp_downtime) > int(ctrlplane_downtime):
-                    step.failed(
-                        "Control plane was down for {} seconds which is longer than user expected at {} seconds".format(cp_downtime,    ctrlplane_downtime))
-                else:
+        if not disrupt_flag:
+            with steps.start("Check CP downtime after on {} after ISSU".format(self.device.hostname)) as step:
+                if user_boot_mode.lower() == 'lxc':
                     step.passed(
+                      "show install all time-stats detail unsupported on lxc mode and cp downtime is minimal")
+                else:
+                    out = self.device.execute('show install all time-stats detail')
+                    output_error = False
+                    cp_downtime = None
+                    for line in out.splitlines():
+                       line = line.rstrip()
+                       p1 = re.compile(r'^ERROR:.*$')
+                       m = p1.match(line)
+                       if m:
+                           output_error = True
+                           break
+                       p2 = re.compile(
+                          r'^Total\s+.*?:\s(?P<cp_downtime>\d+)\s+seconds$')
+                       m = p2.match(line)
+                       if m:
+                          cp_downtime = m.groupdict()['cp_downtime']
+                          continue
+                    if output_error:
+                        step.failed(
+                        "The output shows reset-reason as disruptive. ND ISSU was not performed properly.")
+                    elif cp_downtime is None:
+                        step.failed(
+                         "garbled output for show install all time-stats detail so cp_downtime was not calculated properly.")
+                    elif int(cp_downtime) > int(ctrlplane_downtime):
+                        step.failed(
+                        "Control plane was down for {} seconds which is longer than user expected at {} seconds".format(cp_downtime,    ctrlplane_downtime))
+                    else:
+                        step.passed(
                         "Control plane was down for {} seconds which is within an user acceptable range of {} seconds".format(cp_downtime,    ctrlplane_downtime))
 
         with steps.start("Compare post-trigger config with pre trigger config snapshot on {}".format(self.device.hostname)) as step:

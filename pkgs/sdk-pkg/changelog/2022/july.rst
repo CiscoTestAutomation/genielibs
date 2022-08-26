@@ -83,7 +83,18 @@
         * API to configure nat static network rule.
     * Added unconfigure_static_nat_network_rule API
         * API to unconfigure static nat network rule.
+    * Added 'Reflexive ACL global timeout' API
+    * Added 'tcp mss global and interface config' API
+    * Added 'platform_software_fed_fnf_sw_stats_clear' API
+    * Added configure_sks_client API:
+      * Configure sks-client.
+    * Added unconfigure_sks_client API:
+      * Unconfigure sks-client with the given config block name.
 
+* API utils
+    * Modified api_unittest_generator
+        * Added __init__.py file generation to support pytest
+        * Added dynamic mock_data path to allow test runs from other folders
 
 --------------------------------------------------------------------------------
                                       Fix                                       

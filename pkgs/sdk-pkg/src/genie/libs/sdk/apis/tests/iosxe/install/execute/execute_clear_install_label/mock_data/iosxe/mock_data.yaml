@@ -1,0 +1,49 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: PI-9300-Stack-103(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: PI-9300-Stack-103(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    clear install label  label-name base_label:
+      response:
+      - "clear_install_label: START Sun Aug  7 12:38:39 UTC 2022\r\n--- Starting clear_install_label\
+        \ ---\r\nPerforming clear_install_label on all members\r\n  [1] clear_install_label\
+        \ package(s) on switch 1\r\n  [1] Finished clear_install_label on switch 1\r\
+        \n  [2] clear_install_label package(s) on switch 2\r\n  [2] Finished clear_install_label\
+        \ on switch 2\r\n  [3] clear_install_label package(s) on switch 3\r\n  [3]\
+        \ Finished clear_install_label on switch 3\r\nChecking status of clear_install_label\
+        \ on [1 2 3]\r\nclear_install_label: Passed on [1 2 3]\r\nFinished clear_install_label\r\
+        \n\r\nSUCCESS: clear_install_label"
+      response_type: circular
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    wr mem:
+      response:
+      - "Building configuration...\r\n[OK]"
+      response_type: circular
+  prompt: PI-9300-Stack-103#

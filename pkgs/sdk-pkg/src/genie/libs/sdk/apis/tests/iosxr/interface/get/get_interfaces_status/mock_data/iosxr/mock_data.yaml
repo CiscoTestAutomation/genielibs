@@ -1,0 +1,27 @@
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    show controller dpc rm dpa: ''
+    show ip interface brief:
+      response:
+      - "\rTue Jul 19 16:00:53.541 UTC\r\r\n\r\r\nInterface                      IP-Address\
+        \      Status          Protocol Vrf-Name\r\r\nBundle-Ether12             \
+        \    unassigned      Down            Down     default \r\r\nBundle-Ether23\
+        \                 unassigned      Down            Down     default \r\r\n\
+        Loopback0                      2.2.2.2         Up              Up       default\
+        \ \r\r\nLoopback300                    2.2.2.2         Up              Up\
+        \       VRF1    \r\r\nMgmtEth0/RP0/CPU0/0            unassigned      Shutdown\
+        \        Down     management"
+      response_type: circular
+  prompt: RP/0/0/CPU0:R2_xr#

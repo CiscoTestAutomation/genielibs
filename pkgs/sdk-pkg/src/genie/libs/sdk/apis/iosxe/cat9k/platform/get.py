@@ -54,4 +54,187 @@ def get_boot_variables(device, boot_var, output=None):
     return boot_images
 
 
+def get_fabric_ap_state(device, ap_name):
+    """Get fabric ap state
+    Args:
+        device (obj): Device object
+        ap_name (str): accesspoint name
+    Returns:
+        ap state (str) if success else empty string
+    Raises:
+        N/A        
+    """
+    ap_state = ""
+    try:
+        fabric_ap_summary = device.parse('show fabric ap summary')
+        if fabric_ap_summary.get('ap_name').get(ap_name):
+            ap_state = fabric_ap_summary.get('ap_name').get(ap_name).get('state')
 
+    except (SchemaEmptyParserError) as e:
+        log.error("Failed to get ap state from 'show fabric ap summary': Error: {e}".format(e=str(e)))
+        return ""
+    return ap_state
+
+
+def get_lisp_session_state(device,peer_ip):
+    """Get lisp session state
+    Args:
+        device (obj): Device object
+        peer_ip(str): Peer IP
+    Returns:
+        Peer state (str) if success else empty string
+    Raises:
+        N/A
+    """
+    lisp_session_state = []
+    ip_lst = []
+    try:
+        show_lisp_session = device.parse('show lisp session established')
+        if show_lisp_session.get('vrf').get('default'):
+            lisp_peer = show_lisp_session.get('vrf').get('default').get('peers')
+    except (SchemaEmptyParserError) as e:
+        log.error("Failed to get lisp session peers from 'show lisp session established': Error: {e}".format(e=str(e)))
+        return ""
+
+    keys = lisp_peer.keys()
+
+    for i in keys:
+        if peer_ip in i:
+            ip_lst.append(i)
+    if peer_ip in ip_lst:
+        for j in range(len(lisp_peer[peer_ip])):
+            state = lisp_peer[peer_ip][j]['state']
+            lisp_session_state.append(state)
+
+        return lisp_session_state
+
+def get_ap_ip(device,ap_name):
+    """Get Access Point IP
+    Args:
+        device (obj): Device object
+        ap_name(str): AP Name       
+    Returns:
+        ap ip (str) if success else empty string
+    Raises:
+        N/A        
+    """
+    ap_ip = ""
+    try:
+        show_tunnel = device.parse('show access-tunnel summary')
+        if show_tunnel.get('name').get(ap_name):
+            ap_ip = show_tunnel.get('name').get(ap_name).get('ap_ip')
+    except (SchemaEmptyParserError) as e:
+        log.error("Failed to get assess point IP from 'show access-tunnel summary': Error: {e}".format(e=str(e)))
+        return ""
+    return ap_ip
+
+
+def get_rloc_ip(device,ap_name):
+    """Get rloc IP
+    Args:
+        device (obj): Device object
+        ap_name(str): AP Name
+    Returns:
+        aloc ip (str) if success else empty string
+    Raises:
+        N/A        
+    """
+    rloc_ip = ""
+    try:
+        show_tunnel = device.parse('show access-tunnel summary')
+        if show_tunnel.get('name').get(ap_name):
+            rloc_ip = show_tunnel.get('name').get(ap_name).get('rloc_ip')
+    except (SchemaEmptyParserError) as e:
+        log.error("Failed to get rloc ip from 'show access-tunnel summary': Error: {e}".format(e=str(e)))
+        return ""
+    return rloc_ip
+
+
+def get_matching_line_processes_platform(device,process):
+    """Get matching lines from show processes platform
+    Args:
+        device (obj): Device object
+        process(str): Name of process
+        
+    Returns:
+        matching lines (str) if success else empty string
+    Raises:
+        N/A        
+    """
+    matching_line = ""
+    try:
+        no_of_matching_line = device.parse('show processes platform | count {}'.format(process))
+        if no_of_matching_line:
+            matching_line = no_of_matching_line.get('number_of_matching_lines')
+
+    except (SchemaEmptyParserError) as e:
+        log.error("Failed to get matching lines from 'show processes platform': Error: {e}".format(e=str(e)))
+        return ""
+    return matching_line
+
+
+def get_matching_line_platform_software(device,process):
+    """Get matching lines from show platform software process
+    Args:
+        device (obj): Device object
+        process(str): Name of process
+        
+    Returns:
+        matching lines (str) if success else empty string
+    Raises:
+        N/A        
+    """
+    matching_line = ""
+    try:
+        no_of_matching_line = device.parse('show platform software process slot sw standby r0 monitor | count {}'.format(process))
+        if no_of_matching_line:
+            matching_line = no_of_matching_line.get('number_of_matching_lines')
+
+    except (SchemaEmptyParserError) as e:
+        log.error("Failed to get matching lines from 'show platform software process slot sw standby r0 monitor': Error: {e}".format(e=str(e)))
+        return ""
+    return matching_line
+
+
+def get_processes_platform_dict(device,process):
+    """Get processes platform dict
+    Args:
+        device (obj): Device object
+        process(str): Name of process
+
+    Returns:
+        processes_platform_dict(str) if success else empty string
+    Raises:
+        N/A        
+    """
+    processes_platform_dict = ""
+    try:
+        processes_platform_dict = device.parse('show processes platform | include {}'.format(process))
+        if processes_platform_dict:
+            return processes_platform_dict 
+
+    except (SchemaEmptyParserError) as e:
+        log.error("Failed to parse from 'show processes platform': Error: {e}".format(e=str(e)))
+        return ""
+
+
+def get_platform_software_dict(device,process):
+    """Get platform software dict
+    Args:
+        device (obj): Device object
+        process(str): Name of process
+
+    Returns:
+        platform_software_dict(str) if success else empty string
+    Raises:
+        N/A        
+    """
+    platform_software_dict = ""
+    try:
+        platform_software_dict = device.parse('show platform software process slot sw standby r0 monitor | include {}'.format(process))
+        if platform_software_dict:
+            return platform_software_dict
+
+    except (SchemaEmptyParserError) as e:
+        log.error("Failed to get matching lines from 'show platform software process slot sw standby r0 monitor': Error: {e}".format(e=str(e)))
+        return ""

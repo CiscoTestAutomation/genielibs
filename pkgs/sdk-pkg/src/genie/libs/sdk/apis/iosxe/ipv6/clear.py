@@ -51,3 +51,23 @@ def clear_ipv6_mld_group(device):
             "Could not clear ipv6 mld group on {device}. Error:\n{error}"
                 .format(device=device, error=e)
         )
+
+
+def clear_ipv6_pim_topology(device):
+    """ clear ipv6 mld group
+        Args:
+            device (`obj`): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    log.debug(f"Clear ipv6 pim topology on {device}")
+
+    try:
+        device.execute('clear ipv6 pim topology')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not clear ipv6 pim topology on {device}. Error:\n{e}"
+        )

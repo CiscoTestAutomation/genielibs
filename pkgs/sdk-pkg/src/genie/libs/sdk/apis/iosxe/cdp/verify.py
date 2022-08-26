@@ -56,3 +56,31 @@ def verify_cdp_peer_interface(device, interfaces, max_time=60,
         except Exception:
             timeout.sleep()
     return False
+
+def verify_total_cdp_entries_displayed_interfaces(device, 
+    expected_total_cdp_entries_displayed, 
+    max_time=60, 
+    check_interval=10):
+    ''' Check Total cdp entries displayed value
+        Args:
+            device ('obj'): Device object
+            Total cdp entries displayed ('int'): integer value of Total cdp entries displayed 
+            max_time (`int`): max time
+            check_interval (`int`): check interval
+        Returns:
+            result(`bool`): True if expected cdp entries displayed on device
+                            or else return Flase
+    '''
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        output=device.parse('show cdp neighbors detail')
+        value=output.q.get_values('total_entries_displayed', 0)
+        if int(expected_total_cdp_entries_displayed) == (value):
+            log.info(" total cdp entries has been correctly displayed i.e '{}'".\
+                     format(expected_total_cdp_entries_displayed))
+            return True
+        else:
+            log.error("total cdp entries value '{}' is incorrect".\
+                      format(value))
+            timeout.sleep()
+    return False

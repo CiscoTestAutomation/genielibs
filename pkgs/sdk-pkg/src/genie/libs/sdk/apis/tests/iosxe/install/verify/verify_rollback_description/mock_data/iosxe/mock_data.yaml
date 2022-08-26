@@ -1,0 +1,44 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: PI-9300-Stack-103(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: PI-9300-Stack-103(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show install rollback id 1:
+      response:
+      - "Rollback id - 1 (Created on 2022-08-03 03:48:36.000000000 +0000)\r\nLabel:\
+        \ base_label\r\nDescription: base_label_description\r\nReload required: NO\r\
+        \nState (St): I - Inactive, U - Activated & Uncommitted,\r\n            C\
+        \ - Activated & Committed, D - Deactivated & Uncommitted\r\n--------------------------------------------------------------------------------\r\
+        \nType  St   Filename/Version    \r\n--------------------------------------------------------------------------------\r\
+        \nIMG   C    17.10.01.0.160408                                           \
+        \        \r\nSMU   C    /mnt/sd3/user/cat9k_iosxe.2022-06-06_12.21_mcpre.24042.CSCvq24042.SSA.smu.bin"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: PI-9300-Stack-103#

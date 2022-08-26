@@ -2395,7 +2395,7 @@ def verify_bgp_l2vpn_evpn_rt2_ipprefix(
     device, expected_ipprefix, expected_rd=None, max_time=30, check_interval=10
 ):
     """ Verify bgp l2vpn evpn rt2 ip prefix related to particular rd  in 
-        'show ip/ipv6 bgp l2vpn evpn all'
+        'show ip bgp l2vpn evpn all'
 
         Args:
             device ('obj'): device to use
@@ -2416,58 +2416,55 @@ def verify_bgp_l2vpn_evpn_rt2_ipprefix(
             out = device.parse("show ip bgp l2vpn evpn all")
         except SchemaEmptyParserError:
             timeout.sleep()
-            continue        
-        # collecting all the routes 
-        routes = out.q.get_values("routes")
-        route_type_2_prefixes = dict()
-        for route in routes:
-            # [2][1.1.1.1:1][0][48][DEC856540245][128][2000::DCC8:56FF:FE54:245]/36
-            # [2][1.1.1.1:1][0][48][A03D6EC594E4][0][*]/20
-            data_found = re.search("\[2\]\[(.*)\].*\[(.*)\]",route)
-            if data_found:
-                # 1.1.1.1:1][0][48]
-                rd_list=data_found.groups()[0].split("][")
-                # 1.1.1.1
-                if ':' in rd_list[0]:
-                    rd_ip = rd_list[0].split(":")
-                    rd = rd_ip[0]
-                else:
+            continue
+        if out:    
+            # collecting all the routes 
+            routes = out.q.get_values("routes")
+            route_type_2_prefixes = dict()
+            for route in routes:
+                # [2][1.1.1.1:1][0][48][DEC856540245][128][2000::DCC8:56FF:FE54:245]/36
+                # [2][1.1.1.1:1][0][48][A03D6EC594E4][0][*]/20
+                data_found = re.search("\[2\]\[(.*)\].*\[(.*)\]",route)
+                if data_found:
+                    # 1.1.1.1:1][0][48]
+                    rd_list=data_found.groups()[0].split("][")
+                    # 1.1.1.1:1                    
                     rd = rd_list[0]
-                # 2000::DCC8:56FF:FE54:245
-                prfx=data_found.groups()[1]
-                # Adding to a dictionary
-                if rd not in route_type_2_prefixes.keys():
-                    route_type_2_prefixes[rd]=[]
-                # Appending prefixes to correspondin
-                route_type_2_prefixes[rd].append(prfx)  
-        # checking for matching list of routetype 2 prefixes related to RD        
-        if expected_rd and (expected_rd in route_type_2_prefixes.keys()): 
-            not_exists_ipprfx_list = [prfx for prfx in expected_ipprefix if \
-                prfx not in route_type_2_prefixes[expected_rd]]            
-            if len(not_exists_ipprfx_list) == 0:         
-                return True  
-        # checking for matching list of routetype 5 prefixes incase of no RD given
-        if (not expected_rd):
-            all_prfx = []
-            for each_record in route_type_2_prefixes.values():
-                if isinstance(each_record,list):
-                    for prefix in each_record:
-                        all_prfx.append(prefix)
-                else:
-                    all_prfx.append(each_record)
-            not_exists_ipprfx_list = [prfx for prfx in expected_ipprefix if prfx not in all_prfx]
-            if len(not_exists_ipprfx_list) == 0:         
-                return True
+                    # 2000::DCC8:56FF:FE54:245
+                    prfx=data_found.groups()[1]
+                    # Adding to a dictionary
+                    if rd not in route_type_2_prefixes.keys():
+                        route_type_2_prefixes[rd]=[]
+                    # Appending prefixes to correspondin
+                    route_type_2_prefixes[rd].append(prfx)  
+            # checking for matching list of routetype 2 prefixes related to RD        
+            if expected_rd and (expected_rd in route_type_2_prefixes.keys()): 
+                not_exists_ipprfx_list = [prfx for prfx in expected_ipprefix if \
+                    prfx not in route_type_2_prefixes[expected_rd]]            
+                if len(not_exists_ipprfx_list) == 0:         
+                    return True  
+            # checking for matching list of routetype 5 prefixes incase of no RD given
+            if (not expected_rd):
+                all_prfx = []
+                for each_record in route_type_2_prefixes.values():
+                    if isinstance(each_record,list):
+                        for prefix in each_record:
+                            all_prfx.append(prefix)
+                    else:
+                        all_prfx.append(each_record)
+                not_exists_ipprfx_list = [prfx for prfx in expected_ipprefix if prfx not in all_prfx]
+                if len(not_exists_ipprfx_list) == 0:         
+                    return True
         
         timeout.sleep()
 
     if out and expected_rd:
         log.error("Unable to find route-type 2 expected ipprefix i.e {} for "\
-        " rd {} in actual list {}".format(not_exists_ipprfx_list,\
+        " rd {} in actual list {}".format(expected_ipprefix,\
             expected_rd,route_type_2_prefixes))
     elif out and (not expected_rd):
         log.error("Unable to find route-type 2 expected ipprefix i.e {} in "\
-        "actual list {}".format(not_exists_ipprfx_list,route_type_2_prefixes))
+        "actual list {}".format(expected_ipprefix,route_type_2_prefixes))
     else:
         log.error("Unable to get the parsed output")
 
@@ -2477,8 +2474,8 @@ def verify_bgp_l2vpn_evpn_rt2_ipprefix(
 def verify_bgp_l2vpn_evpn_rt5_ipprefix(
     device, expected_ipprefix, expected_rd=None,max_time=30, check_interval=10
 ):
-    """ Verify bgp l2vpn evpn rt2 ip prefix related to particular rd  in 
-        'show ip/ipv6 bgp l2vpn evpn all'
+    """ Verify bgp l2vpn evpn rt5 ip prefix related to particular rd  in 
+        'show ip bgp l2vpn evpn all'
 
         Args:
             device ('obj'): device to use
@@ -2505,61 +2502,57 @@ def verify_bgp_l2vpn_evpn_rt5_ipprefix(
             out = device.parse("show ip bgp l2vpn evpn all")
         except SchemaEmptyParserError:
             timeout.sleep()
-            continue        
-        # collecting all the routes 
-        routes = out.q.get_values("routes")
-        route_type_5_prefixes = dict()
-        for route in routes:
-            # [5][1002:1][0][24][6.6.6.0]/17
-            # [5][1002:1][0][64][2060::]/29
-            data_found = re.search("\[5\]\[(.*)\].*\[(.*)\]",route)
-            if data_found:
-                # 1002:1][0][64]
-                rd_list=data_found.groups()[0].split("][")
-                # 1002:1
-                if ':' in rd_list[0]:
-                    rd_ip = rd_list[0].split(":")
-                    rd = rd_ip[0]
-                else:
+            continue   
+        if out:     
+            # collecting all the routes 
+            routes = out.q.get_values("routes")
+            route_type_5_prefixes = dict()
+            for route in routes:
+                # [5][1002:1][0][24][6.6.6.0]/17
+                # [5][1002:1][0][64][2060::]/29
+                data_found = re.search("\[5\]\[(.*)\].*\[(.*)\]",route)
+                if data_found:
+                    # 1002:1][0][64]
+                    rd_list=data_found.groups()[0].split("][")
+                    # 1002:1                    
                     rd=rd_list[0]
-                # 6.6.6.0
-                prfx=data_found.groups()[1]
-                if rd not in route_type_5_prefixes.keys():
-                    route_type_5_prefixes[rd]=[]
-                # appending prefixes to corresponding rd
-                route_type_5_prefixes[rd].append(prfx)
-                
-        
-        # checking for matching list of routetype 5 prefixes related to RD 
-        if expected_rd and (expected_rd in route_type_5_prefixes.keys()): 
-            not_exists_ipprfx_list = []           
-            not_exists_ipprfx_list = [prfx for prfx in expected_ipprefix if \
-                prfx not in route_type_5_prefixes[expected_rd]]
-            if len(not_exists_ipprfx_list) == 0:         
-                return True  
-        # checking for matching list of routetype 5 prefixes incase of no RD given
-        if (not expected_rd):
-            all_prfx = []
-            not_exists_ipprfx_list = []
-            for each_record in route_type_5_prefixes.values():
-                if isinstance(each_record,list):
-                    for prefix in each_record:
-                        all_prfx.append(prefix)
-                else:
-                    all_prfx.append(each_record)
-            not_exists_ipprfx_list = [prfx for prfx in expected_ipprefix if prfx not in all_prfx]
-            if len(not_exists_ipprfx_list) == 0:         
-                return True        
+                    # 6.6.6.0
+                    prfx=data_found.groups()[1]
+                    if rd not in route_type_5_prefixes.keys():
+                        route_type_5_prefixes[rd]=[]
+                    # appending prefixes to corresponding rd
+                    route_type_5_prefixes[rd].append(prfx)                  
+            
+            # checking for matching list of routetype 5 prefixes related to RD 
+            if expected_rd and (expected_rd in route_type_5_prefixes.keys()): 
+                not_exists_ipprfx_list = []           
+                not_exists_ipprfx_list = [prfx for prfx in expected_ipprefix if \
+                    prfx not in route_type_5_prefixes[expected_rd]]
+                if len(not_exists_ipprfx_list) == 0:         
+                    return True  
+            # checking for matching list of routetype 5 prefixes incase of no RD given
+            if (not expected_rd):
+                all_prfx = []
+                not_exists_ipprfx_list = []
+                for each_record in route_type_5_prefixes.values():
+                    if isinstance(each_record,list):
+                        for prefix in each_record:
+                            all_prfx.append(prefix)
+                    else:
+                        all_prfx.append(each_record)
+                not_exists_ipprfx_list = [prfx for prfx in expected_ipprefix if prfx not in all_prfx]
+                if len(not_exists_ipprfx_list) == 0:
+                    return True
                 
         timeout.sleep()
 
     if out and expected_rd:
         log.error("Unable to find route-type 5 expected ipprefix i.e {} for "\
-        " rd {} in actual list {}".format(not_exists_ipprfx_list,\
+        " rd {} in actual list {}".format(expected_ipprefix,\
             expected_rd,route_type_5_prefixes))
     elif out and (not expected_rd):
         log.error("Unable to find route-type 5 expected ipprefix i.e {} in "\
-        "actual list {}".format(not_exists_ipprfx_list,route_type_5_prefixes))
+        "actual list {}".format(expected_ipprefix,route_type_5_prefixes))
     else:
         log.error("Unable to get the parsed output")
 
@@ -2589,7 +2582,7 @@ def verify_bgp_rt5_mvpn_all_ip_mgroup(
         Raises:
             None
     """
-    if ip_family != ('ipv4' or 'ipv6'):
+    if ip_family not in ['ipv4','ipv6']:
         log.error("Please provide ip_family either as ipv4 or ipv6,provided value is {}".format(ip_family))
         return False
     timeout = Timeout(max_time, check_interval)
@@ -2616,14 +2609,12 @@ def verify_bgp_rt5_mvpn_all_ip_mgroup(
                     # Adding rd, ip, mgroup ip
                     data=[whole_data[0],whole_data[entry_len-2],whole_data[entry_len-1]]
                     for values in data:
-                        # looking for any ip having subnet and removing mask
+                        # 20.20.20.22/32
                         if "/" in values:
                             local_lis.append((values.split("/"))[0])
-                        elif ":" in values:
-                            local_lis.append((values.split(":"))[0])
                         else:
                             local_lis.append(values)
-                    if expected_rd :                        
+                    if expected_rd:                      
                         if (local_lis[0] == expected_rd) and (local_lis[1] == expected_ip)\
                              and (local_lis[2] == expected_mgroup):
                             return True
@@ -2658,7 +2649,7 @@ def verify_bgp_rt7_mvpn_all_ip_mgroup(
         Raises:
             None
     """
-    if ip_family != ('ipv4' or 'ipv6'):
+    if ip_family not in  ['ipv4','ipv6']:
         log.error("Please provide ip_family either as ipv4 or ipv6")
         return False
     timeout = Timeout(max_time, check_interval)
@@ -2685,21 +2676,140 @@ def verify_bgp_rt7_mvpn_all_ip_mgroup(
                     # Adding rd, ip, mgroup ip
                     data=[whole_data[0],whole_data[entry_len-2],whole_data[entry_len-1]]
                     for values in data:
-                        # looking for any ip having subnet and removing mask
+                        # 20.20.20.22/32
                         if "/" in values:
                             local_lis.append((values.split("/"))[0])
-                        elif ":" in values:
-                            local_lis.append((values.split(":"))[0])
                         else:
                             local_lis.append(values)
-                    if expected_rd :                        
+                    if expected_rd:             
                         if (local_lis[0] == expected_rd) and (local_lis[1] == expected_ip)\
                              and (local_lis[2] == expected_mgroup):
                             return True
-                    if (not expected_rd):
+                    if (not expected_rd): 
                         if (local_lis[1] == expected_ip) and \
                             (local_lis[2] == expected_mgroup):
                             return True
         timeout.sleep()
     return False
 
+
+def verify_bgp_l2vpn_evpn_rt2_nxthop(
+    device, expected_rd, expected_nexthop, expected_prefix=None, max_time=30, check_interval=10
+):
+    """ Verify bgp l2vpn evpn rt2 ip nexthop related to particular rd  and 
+        related to particular source ip (if given)in 'show ip bgp l2vpn evpn all'
+
+        Args:
+            device ('obj'): device to use            
+            expected_rd ('str'): expected rd 
+            expected_nexthop ('str'): expected next hop
+            expected_prefix ('str'): expected source ip
+            max_time ('int', optional): maximum time to wait in seconds,
+                default is 30
+            check_interval ('int', optional): how often to check in seconds,
+                default is 10
+        Returns:
+            result ('bool'): verified result
+        Raises:
+            None
+        Example:
+            *>   [2][3.3.3.3:1][0][48][A03D6EC594E4][128][FE80::A23D:6EFF:FEC5:94E4]/36
+                      3.3.3.3                                0 1000 1003 ?
+            where rd - 3.3.3.3:1, prefix- FE80::A23D:6EFF:FEC5:94E4, nexthop - 3.3.3.3
+
+    """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            out = device.parse("show ip bgp l2vpn evpn all")
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+        if out:        
+            # collecting all the routes 
+            routes = out.q.get_values("routes")
+            for route in routes:
+                # [2][1.1.1.1:1][0][48][DEC856540245][128][2000::DCC8:56FF:FE54:245]/36
+                # [2][1.1.1.1:1][0][48][A03D6EC594E4][0][*]/20
+                data_found = re.search("\[2\]\[(.*)\].*\[(.*)\]",route)
+                if data_found:
+                    # 1.1.1.1:1][0][48]
+                    rd_list=data_found.groups()[0].split("][")
+                    # 1.1.1.1:1
+                    rd = rd_list[0]
+                    # 2000::DCC8:56FF:FE54:245
+                    prfx=data_found.groups()[1]
+                    if expected_prefix:
+                        if expected_rd == rd and expected_prefix == prfx:
+                            # Getting next hop ip address
+                            actual_nxthop = out.q.contains("routes").contains(route).get_values('next_hop')
+                            if expected_nexthop in actual_nxthop:
+                                return True
+                    else:
+                        if expected_rd == rd :
+                            actual_nxthop = out.q.contains("routes").contains(route).get_values('next_hop')
+                            if expected_nexthop in actual_nxthop:
+                                return True
+
+        timeout.sleep()
+    return False
+
+
+def verify_bgp_l2vpn_evpn_rt5_nxthop(
+    device, expected_rd, expected_nexthop, expected_prefix=None, max_time=30, check_interval=10
+):
+    """ Verify bgp l2vpn evpn rt5 ip nexthop related to particular rd  and 
+        related to particular source ip(if given) in 'show ip bgp l2vpn evpn all'
+
+        Args:
+            device ('obj'): device to use            
+            expected_rd ('str'): expected rd 
+            expected_nexthop ('str'): expected next hop
+            expected_prefix ('str'): expected source ip
+            max_time ('int', optional): maximum time to wait in seconds,
+                default is 30
+            check_interval ('int', optional): how often to check in seconds,
+                default is 10
+        Returns:
+            result ('bool'): verified result
+        Raises:
+            None
+        Example:
+             *>   [5][1003:1][0][64][2069::]/29
+                      3.3.3.3                                0 1000 1003 ?
+             where rd - 1003:1, prefix - 2069::, nexthop - 3.3.3.3
+
+    """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            out = device.parse("show ip bgp l2vpn evpn all")
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+        if out:        
+            # collecting all the routes 
+            routes = out.q.get_values("routes")
+            for route in routes:
+                # [5][1002:1][0][24][6.6.6.0]/17
+                # [5][1002:1][0][64][2060::]/29
+                data_found = re.search("\[5\]\[(.*)\].*\[(.*)\]",route)
+                if data_found:
+                    # 1002:1][0][64]
+                    rd_list=data_found.groups()[0].split("][")
+                    # 1002:1
+                    rd=rd_list[0]
+                    # 6.6.6.0
+                    prfx=data_found.groups()[1]
+                    if expected_prefix:
+                        if expected_rd == rd and expected_prefix == prfx:
+                            actual_nxthop = out.q.contains("routes").contains(route).get_values('next_hop')
+                            if expected_nexthop in actual_nxthop:
+                                return True
+                    else:
+                        if expected_rd == rd :
+                            actual_nxthop = out.q.contains("routes").contains(route).get_values('next_hop')
+                            if expected_nexthop in actual_nxthop:
+                                return True
+        timeout.sleep()
+    return False

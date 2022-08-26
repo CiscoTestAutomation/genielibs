@@ -1,0 +1,162 @@
+{
+  "acl": {
+    "conf": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/conf-pkg/src/genie/libs//conf/acl",
+    "file": "_models/acl.pdf",
+    "ops": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs//ops/acl"
+  },
+  "arp": {
+    "conf": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/conf-pkg/src/genie/libs//conf/arp",
+    "file": "_models/arp.pdf",
+    "ops": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs//ops/arp"
+  },
+  "bgp": {
+    "conf": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/conf-pkg/src/genie/libs//conf/bgp",
+    "file": "_models/bgp.pdf",
+    "ops": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs//ops/bgp"
+  },
+  "dot1x": {
+    "conf": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/conf-pkg/src/genie/libs//conf/dot1x",
+    "file": "_models/dot1x.pdf",
+    "ops": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs//ops/dot1x"
+  },
+  "eigrp": {
+    "conf": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/conf-pkg/src/genie/libs//conf/eigrp",
+    "file": "_models/eigrp.pdf",
+    "ops": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs//ops/eigrp"
+  },
+  "fdb": {
+    "conf": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/conf-pkg/src/genie/libs//conf/fdb",
+    "file": "_models/fdb.pdf",
+    "ops": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs//ops/fdb"
+  },
+  "hsrp": {
+    "conf": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/conf-pkg/src/genie/libs//conf/hsrp",
+    "file": "_models/hsrp.pdf",
+    "ops": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs//ops/hsrp"
+  },
+  "igmp": {
+    "conf": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/conf-pkg/src/genie/libs//conf/igmp",
+    "file": "_models/igmp.pdf",
+    "ops": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs//ops/igmp"
+  },
+  "interface": {
+    "conf": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/conf-pkg/src/genie/libs//conf/interface",
+    "file": "_models/interface.pdf",
+    "ops": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs//ops/interface"
+  },
+  "isis": {
+    "conf": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/conf-pkg/src/genie/libs//conf/isis",
+    "file": "_models/isis.pdf",
+    "ops": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs//ops/isis"
+  },
+  "l2vpn": {
+    "conf": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/conf-pkg/src/genie/libs//conf/l2vpn",
+    "file": "_models/l2vpn.pdf",
+    "ops": ""
+  },
+  "lag": {
+    "conf": "",
+    "file": "_models/lag.pdf",
+    "ops": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs//ops/lag"
+  },
+  "lisp": {
+    "conf": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/conf-pkg/src/genie/libs//conf/lisp",
+    "file": "_models/lisp.pdf",
+    "ops": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs//ops/lisp"
+  },
+  "lldp": {
+    "conf": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/conf-pkg/src/genie/libs//conf/lldp",
+    "file": "_models/lldp.pdf",
+    "ops": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs//ops/lldp"
+  },
+  "mcast": {
+    "conf": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/conf-pkg/src/genie/libs//conf/mcast",
+    "file": "_models/mcast.pdf",
+    "ops": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs//ops/mcast"
+  },
+  "mld": {
+    "conf": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/conf-pkg/src/genie/libs//conf/mld",
+    "file": "_models/mld.pdf",
+    "ops": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs//ops/mld"
+  },
+  "msdp": {
+    "conf": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/conf-pkg/src/genie/libs//conf/msdp",
+    "file": "_models/msdp.pdf",
+    "ops": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs//ops/msdp"
+  },
+  "nd": {
+    "conf": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/conf-pkg/src/genie/libs//conf/nd",
+    "file": "_models/nd.pdf",
+    "ops": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs//ops/nd"
+  },
+  "ntp": {
+    "conf": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/conf-pkg/src/genie/libs//conf/ntp",
+    "file": "_models/ntp.pdf",
+    "ops": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs//ops/ntp"
+  },
+  "ospf": {
+    "conf": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/conf-pkg/src/genie/libs//conf/ospf",
+    "file": "_models/ospf.pdf",
+    "ops": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs//ops/ospf"
+  },
+  "pim": {
+    "conf": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/conf-pkg/src/genie/libs//conf/pim",
+    "file": "_models/pim.pdf",
+    "ops": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs//ops/pim"
+  },
+  "platform": {
+    "conf": "",
+    "file": "_models/platform.pdf",
+    "ops": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs//ops/platform"
+  },
+  "prefix_list": {
+    "conf": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/conf-pkg/src/genie/libs//conf/prefix_list",
+    "file": "_models/prefix_list.pdf",
+    "ops": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs//ops/prefix_list"
+  },
+  "rip": {
+    "conf": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/conf-pkg/src/genie/libs//conf/rip",
+    "file": "_models/rip.pdf",
+    "ops": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs//ops/rip"
+  },
+  "route_policy": {
+    "conf": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/conf-pkg/src/genie/libs//conf/route_policy",
+    "file": "_models/route_policy.pdf",
+    "ops": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs//ops/route_policy"
+  },
+  "routing": {
+    "conf": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/conf-pkg/src/genie/libs//conf/routing",
+    "file": "_models/routing.pdf",
+    "ops": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs//ops/routing"
+  },
+  "segment_routing": {
+    "conf": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/conf-pkg/src/genie/libs//conf/segment_routing",
+    "file": "_models/segment_routing.pdf",
+    "ops": ""
+  },
+  "static_routing": {
+    "conf": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/conf-pkg/src/genie/libs//conf/static_routing",
+    "file": "_models/static_routing.pdf",
+    "ops": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs//ops/static_routing"
+  },
+  "stp": {
+    "conf": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/conf-pkg/src/genie/libs//conf/stp",
+    "file": "_models/stp.pdf",
+    "ops": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs//ops/stp"
+  },
+  "vlan": {
+    "conf": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/conf-pkg/src/genie/libs//conf/vlan",
+    "file": "_models/vlan.pdf",
+    "ops": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs//ops/vlan"
+  },
+  "vrf": {
+    "conf": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/conf-pkg/src/genie/libs//conf/vrf",
+    "file": "_models/vrf.pdf",
+    "ops": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs//ops/vrf"
+  },
+  "vxlan": {
+    "conf": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/conf-pkg/src/genie/libs//conf/vxlan",
+    "file": "_models/vxlan.pdf",
+    "ops": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs//ops/vxlan"
+  }
+}

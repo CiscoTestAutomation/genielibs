@@ -484,3 +484,68 @@ def unconfigure_cts_manual(device, interface):
         raise SubCommandFailure(
             "Failed to unconfigure cts manual. Error:\n{error}".format(error=e)
         )
+
+def cts_refresh_policy(device, refresh_peer=False, peer_id=None, refresh_sgt=False, sgt_id=None):
+    """ Refresh CTS policy
+        Args:
+            device ('obj'): device to use
+            refresh_peer ('bool', optional): refresh peer or not, default is False
+            peer_id ('str', optional): peer id to refresh, default is None
+            refresh_sgt ('bool', optional): refresh sgt or not, default is False
+            sgt_id ('str', optional): sgt id to refresh, default is None
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to refresh cts policy
+    """
+    cmd = "cts refresh policy"
+
+    if refresh_peer:
+        cmd += " peer"
+        if peer_id:
+            cmd += f" {peer_id}"
+
+    elif refresh_sgt:
+        if sgt_id in ("default", "unknown") or sgt_id.isdigit():
+                cmd += f" sgt {sgt_id}"
+        else:
+            log.error(f'Invalid argument: {sgt_id}. Accepted values: "default", "unknown", sgt_id')
+            return
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to refresh cts policy - Error:\n{e}"
+        )
+
+def cts_refresh_environment_data(device):
+    """ Refresh CTS environment-data
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to refresh cts environment-data
+    """
+    try:
+        device.execute('cts refresh environment-data')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to refresh cts environment-data - Error:\n{e}"
+        )
+
+def cts_refresh_pac(device):
+    """ Refresh CTS pac
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to refresh cts pac
+    """
+    try:
+        device.execute('cts refresh pac')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to refresh cts pac - Error:\n{e}"
+        )

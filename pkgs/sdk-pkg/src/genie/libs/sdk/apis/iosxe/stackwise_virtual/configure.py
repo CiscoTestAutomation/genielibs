@@ -5,6 +5,7 @@ import logging
 
 # Unicon
 from unicon.core.errors import SubCommandFailure
+from unicon.eal.dialogs import Statement, Dialog
 
 log = logging.getLogger(__name__)
 
@@ -78,10 +79,11 @@ def configure_stackwise_virtual_interfaces(device, svl_links):
         raise SubCommandFailure('Failed to configure stackwise-virtual interfaces')
     return output
 
-def unconfigure_stackwise_virtual_interfaces(device, svl_links):
+def unconfigure_stackwise_virtual_interfaces(device, svl_links, timeout=60):
     """ Disable global stackwise-virtual on target device
         Args:
             device ('obj'): Device object
+            timeout ('int',optional): Max time for command execution
             svl_links ('dict'): Dict object
                 Dictionary contains following key, values:
                     key: interface ('str'): Interface Name
@@ -96,17 +98,27 @@ def unconfigure_stackwise_virtual_interfaces(device, svl_links):
         Raises:
             SubCommandFailure
     """
-    # Single command 'no stackwise-virtual' will remove configuration
+    # Single command 'no stackwise-virtual' will remove configuration'
+    dialog = Dialog([
+        Statement(
+        pattern=r"WARNING\: Unconfiguring last active port\, this may result in stack-split\. Are you sure\? \[yes\/no\]\:",
+        action='sendline(y)',
+        loop_continue=True,
+        continue_timer=False)
+        ])
     command_list = []
     for interface, link_id in svl_links.items():
         command_list.append(f'interface {interface}')
         command_list.append(f'no stackwise-virtual link {link_id}')
     try:
-        output = device.configure(command_list)
+       output = device.configure(
+                command_list,
+                reply=dialog,
+                timeout=timeout,
+                append_error_pattern=['.*Command cannot be executed.*'])
     except SubCommandFailure:
-        raise SubCommandFailure('Failed to remove stackwise-virtual interfaces')
-    return output
-
+        raise SubCommandFailure('Failed to unconfigure stackwise-virtual interfaces')
+    
 def configure_stackwise_virtual_dual_active_interfaces(device, dad_links):
     """ Enables interface as dual-active-detection interface on target device
         Args:

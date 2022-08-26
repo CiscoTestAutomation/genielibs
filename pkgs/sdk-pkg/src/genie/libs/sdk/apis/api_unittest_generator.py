@@ -35,7 +35,7 @@ MOCK_DATA_FOLDER = 'mock_data'
 MOCK_DATA_FILE_NAME = 'mock_data.yaml'
 
 DEFAULT_HEADER_WIDTH = 80
-
+DEFAULT_DESTINATION = os.path.join(os.path.dirname(__file__), 'tests')
 
 # method to simplify printing Report headers
 def print_header(title):
@@ -102,6 +102,15 @@ class TestReport:
         if 'destination' in kwargs:
             logger.info('Destination Folder: {}'.format(kwargs['destination']))
 
+        # tests were generated in a different root folder
+        if 'base_destination' in kwargs:
+            logger.warning(
+                'Tests were not generated using the proper test folder structure.\n'
+                'Found: {}\n'
+                'Expected: {}'
+                .format(kwargs['base_destination'], DEFAULT_DESTINATION)
+            )
+
         logger.info('APIs processed: {}'.format(tests_processed))
         logger.info('Time elapsed: {}'.format(time_elapsed))
 
@@ -135,9 +144,11 @@ class TestGenerator:
         except KeyError as e:
             raise Exception("{} is not a valid device".format(device)) from e
 
-        # if no destination is specified, create tests folder in cwd
-        if not destination:
-            destination = os.path.join(os.getcwd(), 'tests')
+        # if no destination is specified, create tests folder where this file is located
+        destination = destination or DEFAULT_DESTINATION
+        if destination != DEFAULT_DESTINATION:
+            # store test root folder to warn user when report is printed
+            self.base_destination = destination
 
         # records data from device and stores in temporary folder
         os.environ['UNICON_RECORD'] = TEMP_DIR
@@ -228,6 +239,10 @@ class TestGenerator:
                     self.destination, api_name)
 
                 Path(api_folder).mkdir(parents=True, exist_ok=True)
+                
+                # create empty __init__.py file
+                init_file = os.path.join(api_folder, '__init__.py')
+                with open(init_file, 'w'): pass
 
                 test_file_name = '{}{}.py'.format(
                     TEST_FILE_NAME_PREFIX, api_name)
@@ -248,7 +263,10 @@ class TestGenerator:
         # temp directory cleanup (if created)
         self._cleanup()
 
-        self.report.print_results(destination=self.destination)
+        print_args = {'destination': self.destination}
+        if hasattr(self, 'base_destination'):
+            print_args.update({'base_destination': self.base_destination})
+        self.report.print_results(**print_args)
 
     def _get_api_expected_output(self, api_name, index=0):
         api = self.test_arguments.get(api_name, {})
@@ -331,6 +349,7 @@ class TestGenerator:
         # load module into unit test
         # Create setUpClass to connect to mocked device
         imports = [
+            'import os',
             'import unittest',
             'from pyats.topology import loader',
             'from {} import {}'.format(self.module_import, api_name)
@@ -409,7 +428,7 @@ class TestGenerator:
             None
         """
 
-        cmd = 'mock_device_cli --os {} --mock_data_dir {} --state connect'.\
+        cmd = 'mock_device_cli --os {} --mock_data_dir {{os.path.dirname(__file__)}}/{} --state connect'.\
             format(self.device.os, MOCK_DATA_FOLDER)
 
         tb_info = {

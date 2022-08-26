@@ -1,0 +1,44 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    snmp-server user privuser256256 privgrp v3: "snmp-server user privuser256256 privgrp\
+      \ v3\r\n"
+    snmp-server user privuser256256 privgrp v3 auth sha-2 256 cisco256: "snmp-server\
+      \ user privuser256256 privgrp v3 auth sha-2 256 cisco256\r\n"
+    snmp-server user privuser256256 privgrp v3 auth sha-2 256 cisco256 priv aes 256 cisco256: "snmp-server\
+      \ user privuser256256 privgrp v3 auth sha-2 256 cisco256 priv aes 256 cisco256\r\
+      \n"
+    snmp-server user privuser256256 privgrp v3 auth sha-2 256 cisco256 priv aes 256 cisco256 access ipv6 nameacl nameacl: "snmp-server\
+      \ user privuser256256 privgrp v3 auth sha-2 256 cisco256 priv aes 256 cisco256\
+      \ access ipv6 nameacl nameacl\r\n"
+  prompt: csr(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: csr(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: csr#

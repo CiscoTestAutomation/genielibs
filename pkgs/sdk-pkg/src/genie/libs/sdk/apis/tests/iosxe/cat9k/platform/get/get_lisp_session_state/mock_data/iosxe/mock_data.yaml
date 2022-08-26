@@ -1,0 +1,42 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: CTLR_1_1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: CTLR_1_1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show lisp session established:
+      response:
+      - "\r\nSessions for VRF default, total: 5, established: 3\r\nPeer          \
+        \                 State      Up/Down        In/Out    Users\r\n107.1.1.1:4342\
+        \                 Up         1d09h          90/47     8\r\n107.1.1.1:35964\
+        \                Up         1d09h          47/90     6\r\n107.201.2.10:58219\
+        \             Up         1d09h          10/9      2"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: CTLR_1_1#

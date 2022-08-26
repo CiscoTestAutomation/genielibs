@@ -53,3 +53,33 @@ def clear_ip_reflexive_list(device, option='*'):
             "Could not clear reflexive-list on {device}. Error:\n{error}".format(device=device, error=e)
         )        
 
+
+def platform_software_fed_fnf_sw_stats_clear(device, switch):
+    """ clear software fed fnf switch statistics
+        Args:
+            device (`obj`): Device object
+            switch('str'): option to include switch in the CLI
+        Returns: 
+            None
+        Raises: 
+            SubCommandFailure
+    """
+    log.debug(" executing show platform software fed switch active fnf sw-stats-clear on device")
+
+    if switch == '1':
+      
+        try:
+           device.execute('show platform software fed switch active fnf sw-stats-clear'.format(device=device))
+
+        except SubCommandFailure as e:
+            raise SubCommandFailure(
+            "Could not clear software fed fnf switch statistic on {device}. Error:\n{error}".format(device=device, error=e)
+        )
+    else:
+        try:
+            device.execute('show platform software fed active fnf sw-stats-clear'.format(device=device))
+
+        except SubCommandFailure as e:
+            raise SubCommandFailure(
+            "Could not clear software fed fnf switch statistic on {device}. Error:\n{error}".format(device=device, error=e)
+        )

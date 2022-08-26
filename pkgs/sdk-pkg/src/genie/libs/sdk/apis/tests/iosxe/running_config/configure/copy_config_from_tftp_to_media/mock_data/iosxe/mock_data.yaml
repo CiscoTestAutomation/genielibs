@@ -1,0 +1,42 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: SPOKE3(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: SPOKE3(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    'copy tftp: bootflash:':
+      response:
+      - "Address or name of remote host [202.153.144.25]? 202.153.144.25\r\nSource\
+        \ filename [/auto/tftp-blr-users3/ashpa/test.txt]? /auto/tftp-blr-users3/ashpa/test.txt\r\
+        \nDestination filename [test.txt]? test.txt\r\nAccessing tftp://202.153.144.25//auto/tftp-blr-users3/ashpa/test.txt...\r\
+        \nLoading /auto/tftp-blr-users3/ashpa/test.txt from 202.153.144.25 (via GigabitEthernet0/0/0):\
+        \ !\r\n[OK - 0 bytes]\r\n\r\n0 bytes copied in 0.028 secs (0 bytes/sec)"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: SPOKE3#

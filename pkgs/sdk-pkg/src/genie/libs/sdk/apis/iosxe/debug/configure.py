@@ -126,3 +126,80 @@ def stop_packet_capture_inject(device):
             'Could not stop packet capture inject'
         )
 
+def debug_platform_memory_fed_callsite(
+    device, action, switch_num=None, switch_type=None
+    ):
+    """ debug debug platform software memory fed configuration
+        Args:
+            device (`obj`): Device object
+            action (`str`): action mustbe either start or stop or clear
+            switch_num (`str`): Default value None. stack device switch number 
+            switch_type (`str`): Default value None. switch type is active or standby
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        if switch_num is not None and switch_type is None and action in ['clear', 'start', 'stop']:
+            device.execute("debug platform software memory fed switch {switch_num} alloc callsite {action}".format(
+                switch_num=switch_num,
+                action=action
+                ))
+        elif switch_type in ['active', 'standby', 'member'] and action in ['clear', 'start', 'stop']:
+            device.execute("debug platform software memory fed {switch_type} alloc callsite {action}".format(
+                switch_type=switch_type,
+                action=action
+                ))
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure debug platform software memory fed backtrace commands on {device}. Error:\n{error}".format(device=device, error=e)
+        )
+
+def debug_platform_memory_fed_backtrace(
+    device, action, switch_num=None, switch_type=None, callsiteid=None, depth=10
+    ):
+    """ debug debug platform software memory fed backtrace configuration
+        Args:
+            device (`obj`): Device object
+            action (`str`): action mustbe either start or stop or clear
+            switch_num (`str`): Default value None. stack device switch number 
+            switch_type (`str`): Default value None. switch type is active or standby
+            callsiteid (`str`): Default value None. option to start particular callsiteid in the CLI
+            depth(`str`): Default value is 10.
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        if switch_num is not None and switch_type is None and action in ['clear', 'stop']:
+            device.execute("debug platform software memory fed switch {switch_num} alloc backtrace {action}".format(
+                switch_num=switch_num,
+                action=action
+                ))
+        elif switch_num is not None and switch_type is None and action == 'start' and callsiteid is not None:
+            device.execute("debug platform software memory fed switch {switch_num} alloc backtrace {action} {callsiteid} depth {depth}".format(
+                switch_num=switch_num,
+                action=action,
+                callsiteid=callsiteid,
+                depth=depth
+                ))
+        elif switch_type in ['active', 'standby', 'member'] and action in ['clear', 'stop']:
+            device.execute("debug platform software memory fed {switch_type} alloc backtrace {action}".format(
+                switch_type=switch_type,
+                action=action
+                ))
+        elif switch_type in ['active', 'standby', 'member'] and action == 'start' and callsiteid is not None:
+            device.execute("debug platform software memory fed {switch_type} alloc backtrace {action} {callsiteid} depth {depth}".format(
+                switch_type=switch_type,
+                action=action,
+                callsiteid=callsiteid,
+                depth=depth
+                ))
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure debug platform software memory fed backtrace commands on {device}. Error:\n{error}".format(device=device, error=e)
+        )

@@ -296,6 +296,7 @@ class TestAPIUnittestGenerator(TestCase):
             'class_name': 'TestGetFakeApi',
             'device': 'fake_device',
             'imports': [
+                'import os',
                 'import unittest',
                 'from pyats.topology import loader',
                 'from fake_module import get_fake_api'
@@ -373,7 +374,7 @@ class TestAPIUnittestGenerator(TestCase):
             {
                 'cmd':
                     'mock_device_cli --os fake_os '
-                    '--mock_data_dir mock_data --state connect',
+                    '--mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect',
                 'device': 'fake_device',
                 'os': 'fake_os',
                 'platform': 'fake_platform',

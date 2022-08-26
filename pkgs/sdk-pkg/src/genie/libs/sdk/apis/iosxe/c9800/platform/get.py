@@ -53,9 +53,10 @@ def get_ap_state(device, ap_name):
     ap_state = ""
     try:
         ap_summary = device.parse('show ap summary')
-        if ap_summary.get('ap_name').get(ap_name):
-            ap_state = ap_summary.get('ap_name').get(ap_name).get('state')
-    except (SchemaEmptyParserError) as e:
+        if ap_summary.get("ap_name"):
+            if ap_summary.get('ap_name').get(ap_name):
+                ap_state = ap_summary.get('ap_name').get(ap_name).get('state')
+    except SchemaEmptyParserError as e:
         log.error("Failed to parse 'show ap summary': {e}".format(e=e))
         return ""
     return ap_state
@@ -74,10 +75,11 @@ def get_ap_country(device, ap_name):
     ap_country = ""
     try:
         ap_summary = device.parse('show ap summary')
-        if ap_summary.get('ap_name').get(ap_name):
-            ap_country = ap_summary.get('ap_name').get(ap_name).get('country')
+        if ap_summary.get("ap_name"):
+            if ap_summary.get('ap_name').get(ap_name):
+                ap_country = ap_summary.get('ap_name').get(ap_name).get('country')
 
-    except (SchemaEmptyParserError) as e:
+    except SchemaEmptyParserError as e:
         log.error("Failed to parse 'show ap summary': {e}".format(e=e))
         return ""
     return ap_country
@@ -98,10 +100,11 @@ def get_ap_mode(device, ap_name):
         ap_config_general = device.parse('show ap name {} config general'.format(ap_name))
         if ap_config_general.get('ap_name').get(ap_name):
             ap_mode = ap_config_general.get('ap_name').get(ap_name).get('ap_mode')
-    except (SchemaEmptyParserError) as e:
+    except SchemaEmptyParserError as e:
         log.error("Failed to parse 'show ap name config general': {e}".format(e=e))
         return ""
     return ap_mode
+
 
 def get_installation_mode(device):
     """Get installation mode
@@ -117,10 +120,11 @@ def get_installation_mode(device):
         show_version = device.parse('show version')
         if show_version.get('version'):
             installation_mode = show_version.get('version', {}).get('installation_mode')
-    except (SchemaEmptyParserError) as e:
-        log.error("Failed to get installation mode from 'show version': Error: {e}".format(e=str(e))) 
+    except SchemaEmptyParserError as e:
+        log.error("Failed to get installation mode from 'show version': Error: {e}".format(e=str(e)))
         return ""
     return installation_mode
+
 
 def get_ap_model(device, ap_name):
     """Get configured ap model 
@@ -135,10 +139,11 @@ def get_ap_model(device, ap_name):
     ap_model = ""
     try:
         ap_summary = device.parse('show ap summary')
-        if ap_summary.get('ap_name').get(ap_name):
-            ap_model = ap_summary.get('ap_name').get(ap_name).get('ap_model')
+        if ap_summary.get("ap_name"):
+            if ap_summary.get('ap_name').get(ap_name):
+                ap_model = ap_summary.get('ap_name').get(ap_name).get('ap_model')
 
-    except (SchemaEmptyParserError) as e:
+    except SchemaEmptyParserError as e:
         log.error("Failed to get ap model from 'show ap summary': Error: {e}".format(e=str(e)))
         return ""
     return ap_model
@@ -160,10 +165,11 @@ def get_tx_power(device, ap_name):
         if radio_summary.get('ap_name').get(ap_name):
             tx_power = radio_summary.get('ap_name').get(ap_name).get('tx_pwr')
 
-    except (SchemaEmptyParserError) as e:
+    except SchemaEmptyParserError as e:
         log.error("Failed to get tx power from 'show ap dot11 5ghz summary': Error: {e}".format(e=str(e)))
         return ""
-    return tx_power 
+    return tx_power
+
 
 def get_unused_channel(device):
     """Get configured un used clannel list 
@@ -180,11 +186,12 @@ def get_unused_channel(device):
         if channel_summary.get('channel_assignment'):
             unused_channel_lst = channel_summary.get('channel_assignment').get('unused_channel_list')
 
-    except (SchemaEmptyParserError) as e:
+    except SchemaEmptyParserError as e:
         log.error("Failed to get unused channel list from 'show ap dot11 5ghz channel': Error: {e}".format(e=str(e)))
         return ""
     unused_channel_lst = unused_channel_lst.split(",")
-    return unused_channel_lst 
+    return unused_channel_lst
+
 
 def get_assignment_mode(device):
     """Get configured assignment mode 
@@ -201,7 +208,7 @@ def get_assignment_mode(device):
         if channel_summary.get('channel_assignment'):
             assignment_mode = channel_summary.get('channel_assignment').get('chan_assn_mode')
 
-    except (SchemaEmptyParserError) as e:
+    except SchemaEmptyParserError as e:
         log.error("Failed to get assignment mode from 'show ap dot11 5ghz channel': Error: {e}".format(e=str(e)))
         return ""
-    return assignment_mode 
+    return assignment_mode

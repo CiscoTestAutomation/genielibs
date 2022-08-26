@@ -433,7 +433,7 @@ def configure_route_map_route_map_to_bgp_neighbor(
 
 def configure_bgp_neighbor_activate(
     device, address_family, bgp_as, neighbor_address, steps=Steps(), 
-    peer_policy=None):
+    peer_policy=None, vrf=None):
     """ Activate bgp neighbor on bgp router 
 
         Args:
@@ -443,6 +443,7 @@ def configure_bgp_neighbor_activate(
             address_family ('str')     : Address family to be configured
             steps('obj')               : Context manager steps
             peer_policy('str')         : peer policy to be configured
+            vrf ('str')                : vrf name
         Returns:
             N/A
         Raises:
@@ -452,15 +453,13 @@ def configure_bgp_neighbor_activate(
     with steps.start(
         "Configure device {dev}".format(dev=device.name), continue_=True
     ) as step:
+        cnfg=[f"router bgp {bgp_as}"]
+        if vrf:
+            cnfg.append(f"address-family {address_family} vrf {vrf}")
+        else:
+            cnfg.append(f"address-family {address_family}")
 
-
-        cnfg=["router bgp {bgp_as}".format(bgp_as=bgp_as)]
-        cnfg.append("address-family {address_family}".format(
-            address_family=address_family
-        ))
-        cnfg.append("neighbor {neighbor_address} activate".format(
-            neighbor_address=neighbor_address
-        ))
+        cnfg.append(f"neighbor {neighbor_address} activate")
         if peer_policy:
             cnfg.append(
                 "neighbor {neighbor_address} inherit peer-policy {peer_policy}"\
@@ -1734,3 +1733,94 @@ def configure_bgp_advertise_l2vpn_evpn(device, bgp_as, address_family, vrf):
             f"Failed to configure bgp advertise l2vpn evpn on device {device}. Error:\n{e}"
         )
         
+
+def configure_bgp_neighbor_advertisement_interval(
+    device,
+    bgp_as,
+    address_family,
+    neighbor_address,
+    advert_interval,       
+    vrf=None
+):
+    """ Configures bgp neighbor advertisement interval on bgp router
+
+        Args:
+            device('obj'): device to configure on
+            bgp_as('str'): bgp_as to configure
+            neighbor_address('str'): address of neighbor
+            address_family('str'): address family ( Default is None )
+            advert_interval('str'): advertisement interval to be configured
+            vrf('str',optional): vrf to configure address_family with ( Default is None )
+        Returns:
+            N/A
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    log_msg = (
+        "Configuring BGP on {hostname}\n"
+        "    -local AS number: {bgp_as}\n"
+        "    -advertisement interval: {advert_interval}\n"
+        "    -neighbor: {neighbor_address}".format(
+            hostname=device.hostname,
+            bgp_as=bgp_as,
+            advert_interval=advert_interval,
+            neighbor_address=neighbor_address,
+        )
+    )
+
+    cmd = [f"router bgp {bgp_as}"]
+
+    if address_family and vrf:
+        cmd.append(f"address-family {address_family} vrf {vrf}")
+    else:
+        cmd.append(f"address-family {address_family}")
+
+    cmd.append(f"neighbor {neighbor_address} advertisement-interval {advert_interval}")
+
+    log.info(log_msg)
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure advertisement interval {advert_interval} for"\
+            f" bgp neighbor {neighbor_address} on router {bgp_as}.Error:\n{e} "
+        )
+
+
+def configure_bgp_l2vpn_evpn_rewrite_evpn_rt_asn(
+    device,
+    bgp_as,
+):
+    """ Configures bgp rewrite-evpn-rt-asn for l2vpn evpn family on bgp router
+
+        Args:
+            device('obj'): device to configure on
+            bgp_as('str'): bgp_as to configure
+            address_family('str'): address family ( Default is None )
+        Returns:
+            N/A
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    log_msg = (
+        "Configuring rewrite evpn rt asn BGP on {hostname}\n"
+        "    -local AS number: {bgp_as}\n".format(
+            hostname=device.hostname,
+            bgp_as=bgp_as,
+        )
+    )
+
+    config = [
+                f'router bgp {bgp_as}',
+                'address-family l2vpn evpn',
+                'rewrite-evpn-rt-asn'
+            ]
+
+    log.info(log_msg)
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure rewrite-evpn-rt-asn for BGP router {bgp_as}"
+            f".Error:\n{e}"
+        )

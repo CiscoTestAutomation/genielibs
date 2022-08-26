@@ -29,15 +29,6 @@ class TestUnconfigureStackwiseVirtualInterfaces(unittest.TestCase):
         )
 
     def test_unconfigure_stackwise_virtual_interfaces(self):
-        result = unconfigure_stackwise_virtual_interfaces(self.device, {'HundredGigE1/0/1': '1', 'HundredGigE1/0/6': '1'})
-        expected_output = ('interface HundredGigE1/0/1\r\n'
- 'interface HundredGigE1/0/1\r\n'
- 'no stackwise-virtual link 1\r\n'
- 'interface HundredGigE1/0/6\r\n'
- 'interface HundredGigE1/0/6\r\n'
- 'WARNING: Stackwise Virtual Configuration for HundredGigE1/0/1 will be '
- 'removed.\r\n'
- 'no stackwise-virtual link 1\r\n'
-  'interface HundredGigE1/0/6\r\n')
-
+        result = unconfigure_stackwise_virtual_interfaces(self.device, {'HundredGigE1/0/1': 1, 'HundredGigE1/0/10': 1}, 60)
+        expected_output = None
         self.assertEqual(result, expected_output)
