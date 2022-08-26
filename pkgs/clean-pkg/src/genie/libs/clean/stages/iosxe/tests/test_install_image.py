@@ -88,21 +88,9 @@ class SetBootVariable(unittest.TestCase):
         self.device.execute = Mock(return_value = data['dir bootflash:/'])
 
         def mock_execute(*args, **kwargs):
-            assert args == (['cd bootflash', 'touch packages.conf'],)
+            assert args == ('puts [open "bootflash:/packages.conf" w+] {}',)
 
-        class ContextMgr:
-            def __enter__(self, *args, **kwargs):
-                return self
-
-            def __exit__(self, exc_type, exc_value, exc_tb):
-                return False
-
-            def __getattr__(self, attr):
-                if attr == 'execute':
-                    return mock_execute
-                return Mock()
-
-        self.device.bash_console = ContextMgr
+        self.device.tclsh = mock_execute
 
         # And we want the execute_set_boot_variable api to be mocked.
         # This simulates the pass case.
@@ -136,21 +124,9 @@ class SetBootVariable(unittest.TestCase):
         self.device.execute = Mock(return_value = data['dir bootflash:/'])
 
         def mock_execute(*args, **kwargs):
-            assert args == (['cd bootflash', 'touch packages.conf'],)
+            assert args == ('puts [open "bootflash:/packages.conf" w+] {}',)
 
-        class ContextMgr:
-            def __enter__(self, *args, **kwargs):
-                return self
-
-            def __exit__(self, exc_type, exc_value, exc_tb):
-                return False
-
-            def __getattr__(self, attr):
-                if attr == 'execute':
-                    return mock_execute
-                return Mock()
-
-        self.device.bash_console = ContextMgr
+        self.device.tclsh = mock_execute
 
         # And we want the execute_set_boot_variable api to raise an exception when called.
         # This simulates the fail case.
@@ -353,7 +329,10 @@ class TestInstallImage(unittest.TestCase):
         cls.install_image(steps=steps, device=device, images=['sftp://server/image.bin'])
 
         device.reload.assert_has_calls([
-            call('install add file sftp://server/image.bin activate commit', reply=ANY, timeout=500, append_error_pattern=['FAILED:.* '])])
+            call('install add file sftp://server/image.bin activate commit', reply=ANY,
+                 reload_creds='default', prompt_recovery=True, append_error_pattern=['FAILED:.* '],
+                 timeout=500)
+        ])
         self.assertEqual(Passed, steps.details[0].result)
 
     def test_iosxe_install_image_skip(self):
@@ -364,3 +343,21 @@ class TestInstallImage(unittest.TestCase):
         device.api.get_running_image.return_value = 'sftp://server/image.bin'
         cls.install_image(steps=steps, device=device, images=['sftp://server/image.bin'])
         self.assertEqual(Skipped, steps.details[0].result)
+
+    def test_iosxe_install_image_grub_boot_image(self):
+        steps = Steps()
+        cls = InstallImage()
+        cls.history = MagicMock()
+        cls.new_boot_var = 'image.bin'
+
+        device = Mock()
+        device.reload = Mock()
+        cls.install_image(steps=steps, device=device, images=['sftp://server/image.bin'],
+                          reload_service_args=dict(grub_boot_image='packages.conf'))
+
+        device.reload.assert_has_calls([
+            call('install add file sftp://server/image.bin activate commit', reply=ANY,
+                 reload_creds='default', prompt_recovery=True, append_error_pattern=['FAILED:.* '],
+                 grub_boot_image='packages.conf', timeout=500)
+        ])
+        self.assertEqual(Passed, steps.details[0].result)

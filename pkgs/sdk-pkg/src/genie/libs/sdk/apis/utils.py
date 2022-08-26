@@ -39,6 +39,8 @@ from genie.utils.timeout import Timeout
 from genie.conf.base import Device
 from genie.utils import Dq
 from genie.libs.sdk.libs.utils.normalize import merge_dict
+from genie.libs.sdk.powercycler import powercyclers
+from genie.libs.sdk.powercycler.base import PowerCycler
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 from genie.libs.filetransferutils import FileServer
 
@@ -2015,6 +2017,54 @@ def get_interface_interfaces(device,
                           opposite=opposite,
                           phy=phy,
                           num=num)
+
+
+def get_power_cyclers(device):
+    """Get power cycler peripherals for a device
+
+    Args:
+        device ('obj'): Device object
+
+    Raises:
+        Exception if powercycler info (including the outlets corresponding
+        to the devices power supplies) are not supplied
+
+    Returns:
+        list of tuples, each tuple has format: (initialized powercycler, list of outlets)
+    """
+
+    # Find device's power cycler information
+    power_cyclers = getattr(device, 'peripherals', {}).get('power_cycler')
+    if not power_cyclers:
+        raise Exception(
+            "Powercycler information is not provided in the testbed YAML file "
+            f"for device '{device.name}'\n"
+        )
+
+    # type(device['peripherals']['power_cycler']) should be a list to support
+    # redundant PDUs. It can also be a dict in case of single PDU (legacy).
+    if isinstance(power_cyclers, dict):
+        power_cyclers = [power_cyclers]
+
+    pcs = []
+
+    # Initialize each power cycler. Save the powercycler object and outlets
+    for power_cycler in power_cyclers:
+        if power_cycler.get('outlets'):
+            # Cyberswitching based powercyclers require the testbed object
+            power_cycler['testbed'] = device.testbed
+
+            pcs.append(
+                (PowerCycler(**power_cycler), power_cycler['outlets'])
+            )
+        else:
+            raise Exception(
+                "Powercycler outlets have not been provided:\n"
+                f"    Device: {device.name}\n"
+                f"    Powercycler info: {power_cycler}"
+            )
+
+    return pcs
 
 
 def verify_pcap_has_imcp_destination_unreachable(pcap_location,

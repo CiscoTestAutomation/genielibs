@@ -12,7 +12,7 @@ from pyats.async_ import pcall
 from genie.abstract import Lookup
 from genie.libs import clean
 from genie.libs.clean.recovery.recovery import _disconnect_reconnect
-from genie.metaparser.util.schemaengine import Optional
+from genie.metaparser.util.schemaengine import Optional, Any
 from genie.utils.timeout import Timeout
 from genie.libs.clean import BaseStage
 from genie.libs.sdk.libs.abstracted_libs.iosxe.subsection import get_default_dir
@@ -508,6 +508,21 @@ install_image:
     reload_timeout (int, optional): Maximum time in seconds to wait for reload
         process to finish. Defaults to 800.
 
+    reload_service_args (optional):
+
+        reload_creds (str, optional): The credential to use after the reload is
+            complete. The credential name comes from the testbed yaml file.
+            Defaults to the 'default' credential.
+
+        prompt_recovery (bool, optional): Enable or disable the prompt recovery
+            feature of unicon. Defaults to True.
+
+        append_error_pattern (list, optional): List of regex strings to check for,
+            to be appended to the default error pattern list. Default: [r"FAILED:.* ",]
+
+        <Key>: <Value>
+            Any other arguments that the Unicon reload service supports
+
 Example
 -------
 install_image:
@@ -524,7 +539,11 @@ install_image:
     SAVE_SYSTEM_CONFIG = False
     INSTALL_TIMEOUT = 500
     RELOAD_TIMEOUT = 800
-
+    RELOAD_SERVICE_ARGS = {
+        'reload_creds': 'default',
+        'prompt_recovery': True,
+        'append_error_pattern': [r"FAILED:.* ",],
+    }
     # ============
     # Stage Schema
     # ============
@@ -533,6 +552,12 @@ install_image:
         Optional('save_system_config'): bool,
         Optional('install_timeout'): int,
         Optional('reload_timeout'): int,
+        Optional('reload_service_args'): {
+            Optional('reload_creds'): str,
+            Optional('prompt_recovery'): bool,
+            Optional('append_error_pattern'): list,
+            Any(): Any()
+        }
     }
 
     # ==============================
@@ -563,8 +588,7 @@ install_image:
 
             if not files.get('packages.conf'):
                 # create packages.conf, if it does not exist
-                with device.bash_console() as bash:
-                    bash.execute([f'cd {directory}'.strip(':/'), 'touch packages.conf'])
+                device.tclsh('puts [open "%spackages.conf" w+] {}' % directory)
 
             # packages.conf is hardcoded because install mode boots using an
             # unpacked packages.conf file
@@ -593,8 +617,18 @@ install_image:
                 step.failed(f"Boot variables are not correctly set to "
                             f"{self.new_boot_var}")
 
-    def install_image(self, steps, device, images, save_system_config=SAVE_SYSTEM_CONFIG,
-                      install_timeout=INSTALL_TIMEOUT):
+    def install_image(self, steps, device, images,
+                      save_system_config=SAVE_SYSTEM_CONFIG,
+                      install_timeout=INSTALL_TIMEOUT,
+                      reload_service_args=None):
+
+        # Set default reload args
+        reload_args = self.RELOAD_SERVICE_ARGS.copy()
+        # If user provides custom values, update the default with the user
+        # provided.
+        if reload_service_args:
+            reload_args.update(reload_service_args)
+
         with steps.start(f"Installing image '{images[0]}'") as step:
             current_image = device.api.get_running_image()
             if current_image == images[0]:
@@ -612,7 +646,7 @@ install_image:
                           action='sendline(y)',
                           loop_continue=True,
                           continue_timer=False),
-                Statement(pattern=r".*Add succeed with reason: Same Image File-No Change.*",
+                Statement(pattern=r".*Same Image File-No Change",
                           loop_continue=False,
                           continue_timer=False),
                 Statement(pattern=r".*reload of the system\. "
@@ -627,14 +661,16 @@ install_image:
             ])
 
             try:
+                reload_args.update({
+                    'timeout': install_timeout,
+                    'reply': install_add_one_shot_dialog
+                })
 
                 device.reload('install add file {} activate commit'.format(images[0]),
-                               reply=install_add_one_shot_dialog,
-                               timeout=install_timeout,
-                               append_error_pattern=[r"FAILED:.* ",])
+                              **reload_args)
 
             except Exception as e:
-                step.failed("Failed to install the iamge", from_exception=e)
+                step.failed("Failed to install the image", from_exception=e)
 
             image_mapping = self.history['InstallImage'].parameters.setdefault(
                 'image_mapping', {})

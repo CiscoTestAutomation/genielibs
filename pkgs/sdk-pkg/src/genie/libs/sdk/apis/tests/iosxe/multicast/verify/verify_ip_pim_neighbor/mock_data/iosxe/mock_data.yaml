@@ -1,0 +1,43 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: leaf1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: leaf1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show ip pim neighbor:
+      response:
+      - "PIM Neighbor Table\r\nMode: B - Bidir Capable, DR - Designated Router, N\
+        \ - Default DR Priority,\r\n      P - Proxy Capable, S - State Refresh Capable,\
+        \ G - GenID Capable,\r\n      L - DR Load-balancing Capable\r\nNeighbor  \
+        \        Interface                Uptime/Expires    Ver   DR\r\nAddress  \
+        \                                                          Prio/Mode\r\n10.10.10.2\
+        \        GigabitEthernet1/0/2     00:18:26/00:01:30 v2    1 / DR S P G"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: leaf1#

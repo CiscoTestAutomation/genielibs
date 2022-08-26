@@ -32,7 +32,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "analyze_rate",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L584"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L586"
     }
   },
   "analyze_udp_in_mpls_packets": {
@@ -77,7 +77,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "arithmetic_operations",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L3850"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L3900"
     }
   },
   "assign_default_ipv4_sgacl": {
@@ -176,7 +176,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "bits_to_netmask",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L830"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L832"
     }
   },
   "cdets_lookup": {
@@ -228,7 +228,7 @@
       "module_name": "execute",
       "package": "genie.libs.sdk.apis",
       "uid": "change_power_cycler_state",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/execute.py#L149"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/execute.py#L152"
     }
   },
   "check_if_device_in_testbed_yaml": {
@@ -879,7 +879,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "compare_config_dicts",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L236"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L238"
     }
   },
   "compare_metric_of_route": {
@@ -897,7 +897,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "compared_with_running_config",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L1525"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L1527"
     }
   },
   "concurrent_ssh_sessions": {
@@ -915,7 +915,7 @@
       "module_name": "acl.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "config_acl_on_interface",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/acl/configure.py#L138"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/acl/configure.py#L166"
     }
   },
   "config_device_tracking_policy": {
@@ -974,7 +974,7 @@
   },
   "config_extended_acl": {
     "iosxe": {
-      "doc": " Configure extended ACL on device\n        Args:\n            device ('obj'): device object\n            acl_name ('str'): acl name\n            permission ('str'): (permit | deny), default value is None\n            protocol ('str'): protocol, default value is None\n            src_ip ('str'): source start ip, default value is None\n            src_step ('str'): increment step for source ip, default value is None\n            src_wildcard ('str'): source wildcard, default value is None\n            dst_ip ('str'): destination start ip, default value is None\n            dst_step ('str'): increment step for destination ip, default value is None\n            dst_wildcard ('str'): destination wildcard, default value is None\n            dst_port ('str'): Acl destination port, default value is None\n            entries ('int'): Acl entries, default value is None\n            acl_type ('str', optional): type of ACL like with or without host keyword, default value is None\n            sequence_num ('str',optional): specific sequence number,default value is None\n        Returns:\n            config\n        Raises:\n            SubCommandFailure: Failed to configure access-list\n    ",
+      "doc": " Configure extended ACL on device\n        Args:\n            device ('obj'): device object\n            acl_name ('str'): acl name\n            permission ('str'): (permit | deny), default value is None\n            protocol ('str'): protocol, default value is None\n            src_ip ('str'): source start ip, default value is None\n            src_step ('str'): (None | '0.0.0.1'), increment step for source ip, default value is None\n            src_wildcard ('str'): source wildcard, default value is None\n            dst_ip ('str'): destination start ip, default value is None\n            dst_step ('str'): increment step for destination ip, default value is None\n            dst_wildcard ('str'): destination wildcard, default value is None\n            dst_port ('str'): Acl destination port, default value is None\n            entries ('int'): Acl entries, default value is None\n            acl_type ('str', optional): type of ACL like with or without host keyword, default value is None\n            sequence_num ('str',optional): specific sequence number,default value is None\n            log_option ('str',optional): (None | log), Option to log ACL match,default value is None\n        Returns:\n            config\n        Raises:\n            SubCommandFailure: Failed to configure access-list\n    ",
       "module_name": "acl.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "config_extended_acl",
@@ -987,7 +987,7 @@
       "module_name": "acl.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "config_extended_acl_with_evaluate",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/acl/configure.py#L491"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/acl/configure.py#L519"
     }
   },
   "config_extended_acl_with_reflect": {
@@ -996,7 +996,7 @@
       "module_name": "acl.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "config_extended_acl_with_reflect",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/acl/configure.py#L553"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/acl/configure.py#L581"
     }
   },
   "config_flow_exporter": {
@@ -1140,7 +1140,7 @@
       "module_name": "acl.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "config_ip_tcp_mss",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/acl/configure.py#L1293"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/acl/configure.py#L1321"
     }
   },
   "config_ipv6_nd_raguard_policy": {
@@ -1381,7 +1381,7 @@
       "module_name": "acl.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "config_refacl_global_timeout",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/acl/configure.py#L1252"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/acl/configure.py#L1280"
     }
   },
   "config_replace_to_flash_memory": {
@@ -2330,6 +2330,15 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/cts/configure.py#L193"
     }
   },
+  "configure_debug_snmp_packets": {
+    "iosxe": {
+      "doc": " enable snmp debugs on device\n        Args:\n            device ('obj'): device to use\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "snmp.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "configure_debug_snmp_packets",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/snmp/configure.py#L426"
+    }
+  },
   "configure_default_gateway": {
     "iosxe": {
       "doc": " Configures default gateway\n\n        Args:\n            device ('obj'): Device obj\n            gateway_ip ('str'): IP address of gateway to be configured\n              \n        Returns:\n            None\n\n        Raises:\n            SubCommandFailure\n    ",
@@ -2363,7 +2372,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "configure_device",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L757"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L759"
     }
   },
   "configure_device_sgt": {
@@ -3809,7 +3818,7 @@
       "module_name": "acl.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "configure_ipv6_acl",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/acl/configure.py#L344"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/acl/configure.py#L372"
     }
   },
   "configure_ipv6_acl_on_interface": {
@@ -5890,6 +5899,15 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/snmp/configure.py#L10"
     }
   },
+  "configure_snmp_host_version": {
+    "iosxe": {
+      "doc": " Configures the snmp-server host 172.21.226.240 vrf Mgmt-vrf version 2c public on device\n        Args:\n            device ('obj'): device to use\n            community_string ('str'): community_string\n            host_name ('str'): Host name\n            vrf_id ('str') : vrf(Mgmt-vrf) is special connection,usually we have it in mgmt-interface for management port.\n            version_id('str') : Snmp Version\n            udp_port('int', optional) :  udp_port should be passed when enabling traps. The value can also be checked in snmp.server.\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "snmp.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "configure_snmp_host_version",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/snmp/configure.py#L373"
+    }
+  },
   "configure_snmp_server_group": {
     "iosxe": {
       "doc": " Configures the snmp server group on device\n        Args:\n            device ('obj'): device to use\n            group_name ('str'): name of the group\n            version ('str'): v1,v2c,v3\n            auth_type ('str'): auth, noauth, priv\n            mode ('str'): write or read mode\n            acl_name ('str'): name of the Standerd acl, acl list name, ipv6 named acl\n            acl_type ('str'): specify IPv6 Named Access-List\n            context_name ('str'): context name\n            match_type ('str'): exact or prefix\n            notify_name ('str'): notify view name\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
@@ -6567,7 +6585,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "convert_server_to_linux_device",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L1471"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L1473"
     }
   },
   "copy_config_from_tftp_to_media": {
@@ -6594,7 +6612,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "copy_file_from_tftp_ftp",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L440"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L442"
     }
   },
   "copy_file_to_running_config": {
@@ -6626,7 +6644,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "copy_from_device",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L1018"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L1020"
     },
     "nxos": {
       "aci": {
@@ -6653,7 +6671,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "copy_pcap_file",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L257"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L259"
     }
   },
   "copy_running_config_to_flash_memory": {
@@ -6678,7 +6696,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "copy_to_device",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L846"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L848"
     },
     "iosxr": {
       "doc": "\n    Copy file from linux server to the device.\n\n    Args:\n        device (Device): Device object\n        remote_path (str): remote file path on the server\n        local_path (str): local file path to copy to on the device (default: harddisk:)\n        server (str): hostname or address of the server (default: None)\n        protocol(str): file transfer protocol to be used (default: http)\n        vrf (str): vrf to use (optional)\n        timeout(int): timeout value in seconds, default 300\n        compact(bool): compress image option for n9k, defaults False\n        fu(obj): FileUtils object to use instead of creating one. Defaults to None.\n        use_kstack(bool): Use faster version of copy, defaults False\n                            Not supported with a file transfer protocol\n                            prompting for a username and password\n        http_auth (bool): Use http authentication (default: True)\n\n    Returns:\n        None\n\n    If the server is not specified, a HTTP server will be spawned\n    on the local system and serve the directory of the file\n    specified via remote_path and the copy operation will use http.\n\n    If the device is connected via CLI proxy (unix jump host) and the proxy has\n    'socat' installed, the transfer will be done via the proxy automatically.\n    ",
@@ -6703,7 +6721,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "copy_to_server",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L370"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L372"
     }
   },
   "create_dhcp_pool": {
@@ -6858,7 +6876,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "delete_file_on_server",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L1369"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L1371"
     }
   },
   "delete_files": {
@@ -6947,7 +6965,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "destroy_connection",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L746"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L748"
     }
   },
   "detach_dhcpv6_guard_policy_to_interface": {
@@ -7037,7 +7055,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "diff_configuration",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L1542"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L1544"
     }
   },
   "disable_aaa_authentication_login": {
@@ -7280,7 +7298,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "dynamic_diff_create_running_config",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L1612"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L1614"
     }
   },
   "dynamic_diff_parameterized_running_config": {
@@ -7289,7 +7307,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "dynamic_diff_parameterized_running_config",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L1564"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L1566"
     }
   },
   "enable_aaa_authentication_login": {
@@ -7617,7 +7635,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "escape_ansi",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L168"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L170"
     }
   },
   "exclude_ip_dhcp": {
@@ -7635,7 +7653,7 @@
       "module_name": "execute",
       "package": "genie.libs.sdk.apis",
       "uid": "execute",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/execute.py#L441"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/execute.py#L444"
     },
     "junos": {
       "doc": " Execute command to device\n\n        Args:\n            device ('obj'): Device object\n            command ('str'): Command with a higher priority\n            alternative_command ('str'): An alternative command that would be executed if the given command creates an error\n        \n        Returns:\n            output which is generated by command\n            \n        Raises:\n            N/A or SubCommandFailure       \n    ",
@@ -7651,7 +7669,7 @@
       "module_name": "execute",
       "package": "genie.libs.sdk.apis",
       "uid": "execute_and_parse_json",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/execute.py#L463"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/execute.py#L466"
     }
   },
   "execute_ap_tx_power_commands": {
@@ -7788,7 +7806,7 @@
       "module_name": "execute",
       "package": "genie.libs.sdk.apis",
       "uid": "execute_clear_line",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/execute.py#L23"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/execute.py#L22"
     }
   },
   "execute_clear_logging": {
@@ -7950,7 +7968,7 @@
       "module_name": "execute",
       "package": "genie.libs.sdk.apis",
       "uid": "execute_copy_run_to_start",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/execute.py#L374"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/execute.py#L377"
     }
   },
   "execute_copy_to_running_config": {
@@ -7959,7 +7977,7 @@
       "module_name": "execute",
       "package": "genie.libs.sdk.apis",
       "uid": "execute_copy_to_running_config",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/execute.py#L329"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/execute.py#L332"
     }
   },
   "execute_copy_to_startup_config": {
@@ -7968,7 +7986,7 @@
       "module_name": "execute",
       "package": "genie.libs.sdk.apis",
       "uid": "execute_copy_to_startup_config",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/execute.py#L351"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/execute.py#L354"
     }
   },
   "execute_create_rollback_description": {
@@ -8219,7 +8237,25 @@
       "module_name": "execute",
       "package": "genie.libs.sdk.apis",
       "uid": "execute_power_cycle_device",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/execute.py#L77"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/execute.py#L128"
+    }
+  },
+  "execute_power_off_device": {
+    "com": {
+      "doc": "Power off a device\n\n    Args:\n        device ('obj'): Device object\n\n    Raises:\n        Exception if power off fails\n\n    Returns:\n        None\n    ",
+      "module_name": "execute",
+      "package": "genie.libs.sdk.apis",
+      "uid": "execute_power_off_device",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/execute.py#L76"
+    }
+  },
+  "execute_power_on_device": {
+    "com": {
+      "doc": "Power on a device\n\n    Args:\n        device ('obj'): Device object\n\n    Raises:\n        Exception if power on fails\n\n    Returns:\n        None\n    ",
+      "module_name": "execute",
+      "package": "genie.libs.sdk.apis",
+      "uid": "execute_power_on_device",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/execute.py#L102"
     }
   },
   "execute_prime_ap": {
@@ -8255,7 +8291,7 @@
       "module_name": "execute",
       "package": "genie.libs.sdk.apis",
       "uid": "execute_reload",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/execute.py#L300"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/execute.py#L303"
     }
   },
   "execute_remove_inactive_pies": {
@@ -8491,7 +8527,7 @@
       "module_name": "execute",
       "package": "genie.libs.sdk.apis",
       "uid": "free_up_disk_space",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/execute.py#L173"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/execute.py#L176"
     }
   },
   "get_RIPng_routes": {
@@ -8695,7 +8731,7 @@
       "module_name": "platform.get",
       "package": "genie.libs.sdk.apis",
       "uid": "get_available_space",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L213"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L212"
     },
     "iosxr": {
       "doc": "Gets available space on a given directory\n        Args:\n            device ('str'): Device object\n            directory ('str'): Directory to check space\n                               If not provided, checks current working directory\n                               i.e. media:/path/to/my/dir\n            output ('str'): Output of 'dir' command\n                            if not provided, executes the cmd on device\n        Returns:\n            space available in bytes in `int` type or \n            None if failed to retrieve available space\n    ",
@@ -9024,7 +9060,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "get_bool",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L3995"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L4045"
     }
   },
   "get_boot_variables": {
@@ -9068,7 +9104,7 @@
       "module_name": "platform.get",
       "package": "genie.libs.sdk.apis",
       "uid": "get_boot_variables",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L265"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L264"
     }
   },
   "get_bridge_domain_bridge_domain_interfaces": {
@@ -9251,7 +9287,7 @@
       "module_name": "platform.get",
       "package": "genie.libs.sdk.apis",
       "uid": "get_chassis_sn",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L680"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L679"
     },
     "nxos": {
       "doc": "Get the chassis SN of the device\n\n    Args:\n        device (obj): Device object\n\n    Return:\n        str: Device chassis SN\n    ",
@@ -9267,7 +9303,7 @@
       "module_name": "platform.get",
       "package": "genie.libs.sdk.apis",
       "uid": "get_chassis_type",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L662"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L661"
     },
     "nxos": {
       "doc": "Get the chassis type of the device\n\n    Args:\n        device (obj): Device object\n\n    Return:\n        str: Device chassis\n    ",
@@ -9344,7 +9380,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "get_config_dict",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L223"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L225"
     }
   },
   "get_config_from_file": {
@@ -9376,7 +9412,7 @@
       "module_name": "platform.get",
       "package": "genie.libs.sdk.apis",
       "uid": "get_config_register",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L305"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L304"
     },
     "iosxr": {
       "doc": "Get config-regsiter on the device\n        Args:\n            device (`obj`): Device object\n        Returns:\n            config-register or None\n    ",
@@ -9428,7 +9464,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "get_connected_alias",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L3592"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L3642"
     }
   },
   "get_connection": {
@@ -9437,7 +9473,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "get_connection",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2947"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2997"
     }
   },
   "get_controller_name": {
@@ -9491,7 +9527,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "get_delta_time_from_outputs",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L567"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L569"
     }
   },
   "get_device_connections_info": {
@@ -9500,7 +9536,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "get_device_connections_info",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L3292"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L3342"
     }
   },
   "get_device_tracking_counters_vlan_faults": {
@@ -9554,7 +9590,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "get_devices",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2994"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L3044"
     }
   },
   "get_dhcpv4_binding_address_list": {
@@ -9626,7 +9662,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "get_dict_items",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L1798"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L1800"
     }
   },
   "get_diffs_platform": {
@@ -9642,7 +9678,7 @@
       "module_name": "platform.get",
       "package": "genie.libs.sdk.apis",
       "uid": "get_diffs_platform",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L68"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L67"
     }
   },
   "get_fabric_ap_state": {
@@ -9669,7 +9705,7 @@
       "module_name": "platform.get",
       "package": "genie.libs.sdk.apis",
       "uid": "get_file_size",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L136"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L135"
     },
     "iosxr": {
       "doc": "Get file size on the device\n        Args:\n            device (`obj`): Device object\n            file (`str`): File name\n            output ('str'): Output of 'dir' command\n                            if not provided, executes the cmd on device\n        Returns:\n            file size in `int` type or None if file size is not available\n    ",
@@ -9699,7 +9735,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "get_file_size_from_server",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L1191"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L1193"
     }
   },
   "get_file_timestamp": {
@@ -9955,7 +9991,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "get_interface_attr_from_yaml",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L3247"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L3297"
     }
   },
   "get_interface_carrier_delay": {
@@ -10009,7 +10045,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "get_interface_from_yaml",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L3141"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L3191"
     }
   },
   "get_interface_ifindex": {
@@ -10057,7 +10093,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "get_interface_interfaces",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L1993"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L1995"
     },
     "iosxe": {
       "doc": " Get interface and device\n\n        Args:\n            device ('obj'): Device object\n            link_name ('str'): link name\n            opposite ('bool'): find opposite device interface\n            num ('int'): num of interface to return\n\n        Returns:\n            topology dictionary\n\n        Raises:\n            None\n    ",
@@ -10464,7 +10500,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "get_interface_type_from_yaml",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L3206"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L3256"
     }
   },
   "get_interface_with_mask": {
@@ -10500,7 +10536,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "get_interfaces",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L1931"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L1933"
     }
   },
   "get_interfaces_description": {
@@ -10587,6 +10623,15 @@
       "package": "genie.libs.sdk.apis",
       "uid": "get_ip_bgp_summary",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/bgp/get.py#L172"
+    }
+  },
+  "get_ip_mfib_hw_pkts_per_sec": {
+    "iosxe": {
+      "doc": "Gets hw packet counters and others for particular mcast-group \n       along with source ip(if given) in             \n       'show ip mfib multicast_group source_ip' - if no vrf, no ip_family\n       'show ip mfib vrf <vrf> multicast_group source_ip '- if vrf given and no ip_family\n       'show ipv6 mfib multicast_group source_ip' - if ip_family given and no vrf\n       'show ipv6 mfib vrf <vrf> multicast_group source_ip' - if both vrf and ip_family given\n           ex:\n            (1.1.1.1,225.1.1.1) Flags: HW\n            SW Forwarding: 0/0/0/0, Other: 11/0/11\n            HW Forwarding:   6225553/705/115/634, Other: 0/0/0\n\n    Args:\n            device ('obj'): Device object\n            multicast_group (`str`): multicast group to be verified\n            source_ip ('str'): source_ip to be verified\n            ip_family ('str'): either ip or ipv6   \n            vrf ('str', optional): vrf        \n    Returns:\n            result(`str`): verified result\n    Raises:\n            error incase of incorrect hw field\n    ",
+      "module_name": "multicast.get",
+      "package": "genie.libs.sdk.apis",
+      "uid": "get_ip_mfib_hw_pkts_per_sec",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/multicast/get.py#L12"
     }
   },
   "get_ip_packet_scapy": {
@@ -10899,7 +10944,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "get_list_items",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L1749"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L1751"
     }
   },
   "get_list_length": {
@@ -10908,7 +10953,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "get_list_length",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L4035"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L4085"
     }
   },
   "get_lldp_neighbors_info": {
@@ -10947,7 +10992,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "get_local_ip",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L3968"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L4018"
     }
   },
   "get_log_message_time": {
@@ -10974,7 +11019,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "get_longest_server_address",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L1350"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L1352"
     }
   },
   "get_mac_aging_timer": {
@@ -11263,7 +11308,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "get_neighbor_address",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L310"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L312"
     }
   },
   "get_neighbor_count": {
@@ -11450,6 +11495,15 @@
       "package": "genie.libs.sdk.apis",
       "uid": "get_ntp_system_peer_vrf",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ntp/get.py#L191"
+    }
+  },
+  "get_number_of_interfaces": {
+    "iosxe": {
+      "doc": " Gets the device number of interfaces\n        Args:\n            device (`obj`): Device object\n        Returns:\n            number of interfaces\n            False if None\n    ",
+      "module_name": "platform.get",
+      "package": "genie.libs.sdk.apis",
+      "uid": "get_number_of_interfaces",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L803"
     }
   },
   "get_operation_state": {
@@ -11823,7 +11877,7 @@
       "module_name": "platform.get",
       "package": "genie.libs.sdk.apis",
       "uid": "get_platform_core",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L348"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L347"
     },
     "iosxr": {
       "doc": "Get the default directory of this device\n\n        Args:\n            device      (`obj`) : Device object\n            default_dir (`str` or `list`) : default directory where core is generated \n                                            on device\n                                            ex.) `harddisk:/dumper`\n            output      (`str`) : Output of `dir` command\n            keyword     (`list`): List of keywords to search\n            num_of_cores (`bool`): flag to return number of core files\n                                   Default to False\n            remote_device (`str`): remote device in testbed yaml\n                                   Default to None\n            remote_path (`str`): path with/without file on remote device\n                                 Default to None\n            remote_via (`str`) : specify connection to get ip\n                                 Default to None\n            vrf (`str`): use vrf where scp find route to remote device\n                                 Default to None\n            archive     (`bool`): flag to save the decode output as file in archive\n                                  Defaults to False\n            delete_core (`bool`): flag to delete core files only when copying to\n                                  remove_device is successfully done\n                                  Defaults to False\n\n            ### CISCO INTERNAL ###\n            decode      (`bool`): flag to enable for decoding core\n                                  copy core file to remote_server and decode on remote_server\n            decode_timeout (`int`): timeout to execute decode script\n                                    Default to 300\n\n        Returns:\n            all_corefiles (`list`, `int`): List of found core files\n                                           or number of core files if num_of_cores=True\n    ",
@@ -11853,7 +11907,7 @@
       "module_name": "platform.get",
       "package": "genie.libs.sdk.apis",
       "uid": "get_platform_cpu_load",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L424"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L423"
     },
     "iosxr": {
       "doc": "Get cpu load on device\n\n        Args:\n            device     (`obj`): Device object\n            command    (`str`): Override show command\n                                Default to `show processes cpu`\n            processes (`list`): List of processes to check\n                                Default to None\n            check_key  (`str`): Key to check in parsed output\n                                Default to `one_min_cpu`\n            output     (`str`): Output of show command\n                                Default to None\n        Returns:\n            cpu_load   (`int`): Cpu load (5 mins average by default) on the device (percentage)\n                                If multiple processes are given, returns average.\n    ",
@@ -11883,7 +11937,7 @@
       "module_name": "platform.get",
       "package": "genie.libs.sdk.apis",
       "uid": "get_platform_cpu_load_detail",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L480"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L479"
     },
     "iosxr": {
       "doc": "Get cpu load on device\n\n        Args:\n            device     (`obj`): Device object\n            command    (`str`): Override show command\n                                Default to `show processes cpu`\n            processes (`list`): List of processes to check\n                                Default to None\n            check_key  (`str`): Key to check in parsed output\n                                Default to `one_min_cpu`\n            output     (`str`): Output of show command\n                                Default to None\n        Returns:\n            cpu_load_dict  (`dict`): Cpu load dictionary on the device\n                                     example:\n                                     {\n                                         'netconf': 0.0,\n                                         'bgp': 0.0,\n                                     }\n    ",
@@ -11913,7 +11967,7 @@
       "module_name": "platform.get",
       "package": "genie.libs.sdk.apis",
       "uid": "get_platform_default_dir",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L330"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L329"
     },
     "iosxr": {
       "doc": "Get the default directory of this device\n\n        Args:\n            device (`obj`): Device object\n            output (`str`): Output of `dir` command\n        Returns:\n            default_dir (`str`): Default directory of the system\n    ",
@@ -11950,7 +12004,7 @@
       "module_name": "platform.get",
       "package": "genie.libs.sdk.apis",
       "uid": "get_platform_logging",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L402"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L401"
     },
     "iosxr": {
       "doc": "Get logging messages\n\n        Args:\n            device    (`obj`): Device object\n            command   (`str`): N/A\n            files    (`list`): Not applicable on this platform\n            keywords (`list`): List of keywords to match\n            output    (`str`): Output of show command\n            num_of_logs (`bool`): flag to return number of log messages\n                                  Default to False\n        Returns:\n            logs     (`list` or `int`): list of logging messages\n                                        OR or number of core files if num_of_logs=True\n    ",
@@ -11987,7 +12041,7 @@
       "module_name": "platform.get",
       "package": "genie.libs.sdk.apis",
       "uid": "get_platform_memory_usage",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L516"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L515"
     },
     "iosxr": {
       "doc": "Get memory usage on device\n\n        Args:\n            device         (`obj`): Device object\n            command        (`str`): Override show command\n                                    Default to `show processes memory`\n            processes     (`list`): List of processes to check\n                                    If both processes and check_key are given,\n                                    processes are preferred.\n                                    Default to None\n            check_key      (`str`): Key to check in parsed output\n                                    Default to 'dynamic'\n            output         (`str`): Output of show command\n                                    Default to None\n        Returns:\n            memory_usage (`float`): memory usage on the device (percentage)\n                                    If multiple processes are given, returns average.\n    ",
@@ -12017,7 +12071,7 @@
       "module_name": "platform.get",
       "package": "genie.libs.sdk.apis",
       "uid": "get_platform_memory_usage_detail",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L598"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L597"
     },
     "iosxr": {
       "doc": "Get memory usage on device\n\n        Args:\n            device         (`obj`): Device object\n            command        (`str`): Override show command\n                                    Default to `show processes memory`\n            processes     (`list`): List of processes to check\n                                    If both processes and check_key are given,\n                                    processes are preferred.\n                                    Default to None\n            check_key      (`str`): Key to check in parsed output\n                                    Default to `dynamic`\n            output         (`str`): Output of show command\n                                    Deault to None\n        Returns:\n            memory_usage_dict (`dict`): memory usage dict on the device (percentage)\n                                        example:\n                                        {\n                                            'OMP': 0.0012294695662956926,\n                                            'NAT-ROUTE': 0.0012294695662956926,\n                                        }\n    ",
@@ -12032,6 +12086,15 @@
       "package": "genie.libs.sdk.apis",
       "uid": "get_platform_memory_usage_detail",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/nxos/platform/get.py#L344"
+    }
+  },
+  "get_platform_model_number": {
+    "iosxe": {
+      "doc": "Get platform model number or chassis type of device\n\n    Args:\n        device (obj): Device object\n\n    Return:\n        str: Device model number or chassis type\n    ",
+      "module_name": "platform.get",
+      "package": "genie.libs.sdk.apis",
+      "uid": "get_platform_model_number",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L772"
     }
   },
   "get_platform_software_dict": {
@@ -12051,7 +12114,7 @@
       "module_name": "platform.get",
       "package": "genie.libs.sdk.apis",
       "uid": "get_platform_standby_rp",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L25"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L24"
     }
   },
   "get_platform_type": {
@@ -12060,7 +12123,7 @@
       "module_name": "platform.get",
       "package": "genie.libs.sdk.apis",
       "uid": "get_platform_type",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L698"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L697"
     },
     "nxos": {
       "doc": "Get platform type of device\n\n    Args:\n        device (obj): Device object\n\n    Return:\n        str: Device platform type\n    ",
@@ -12122,6 +12185,15 @@
       "package": "genie.libs.sdk.apis",
       "uid": "get_policy_map_running_policy_map",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/policy_map/get.py#L25"
+    }
+  },
+  "get_power_cyclers": {
+    "com": {
+      "doc": "Get power cycler peripherals for a device\n\n    Args:\n        device ('obj'): Device object\n\n    Raises:\n        Exception if powercycler info (including the outlets corresponding\n        to the devices power supplies) are not supplied\n\n    Returns:\n        list of tuples, each tuple has format: (initialized powercycler, list of outlets)\n    ",
+      "module_name": "utils",
+      "package": "genie.libs.sdk.apis",
+      "uid": "get_power_cyclers",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2022"
     }
   },
   "get_processes_five_seconds_cpu_usage": {
@@ -12528,7 +12600,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "get_running_config_all",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L3303"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L3353"
     }
   },
   "get_running_config_dict": {
@@ -12659,7 +12731,7 @@
       "module_name": "platform.get",
       "package": "genie.libs.sdk.apis",
       "uid": "get_running_image",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L163"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L162"
     },
     "iosxr": {
       "doc": "Get running image on the device\n        Args:\n            device (`obj`): Device object\n        Returns:\n            Image or None\n    ",
@@ -12951,7 +13023,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "get_single_interface",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L3922"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L3972"
     }
   },
   "get_slice_id_of_interface": {
@@ -12960,7 +13032,7 @@
       "module_name": "platform.get",
       "package": "genie.libs.sdk.apis",
       "uid": "get_slice_id_of_interface",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L716"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L715"
     }
   },
   "get_slot_model": {
@@ -12969,7 +13041,7 @@
       "module_name": "platform.get",
       "package": "genie.libs.sdk.apis",
       "uid": "get_slot_model",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L639"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L638"
     },
     "nxos": {
       "doc": "Gets the model name of all modules\n\n    Args:\n        device (obj): Device object\n        slot (str, optional): Module slot to get. Defaults to None.\n\n    Returns:\n        dict: Dictionary mapped from slot number to model\n    ",
@@ -13069,7 +13141,7 @@
       "module_name": "platform.get",
       "package": "genie.libs.sdk.apis",
       "uid": "get_stack_size",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L610"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L609"
     }
   },
   "get_startup_config_dict": {
@@ -13123,7 +13195,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "get_structure_output",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L3662"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L3712"
     }
   },
   "get_switch_qos_queue_config_on_interface": {
@@ -13294,7 +13366,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "get_testcase_name",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L4013"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L4063"
     }
   },
   "get_time_source_from_output": {
@@ -13303,7 +13375,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "get_time_source_from_output",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L529"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L531"
     }
   },
   "get_tolerance_min_max": {
@@ -13312,7 +13384,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "get_tolerance_min_max",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2190"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2240"
     }
   },
   "get_total_asics_cores": {
@@ -13321,7 +13393,7 @@
       "module_name": "platform.get",
       "package": "genie.libs.sdk.apis",
       "uid": "get_total_asics_cores",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L738"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L737"
     }
   },
   "get_total_cdp_entries_displayed": {
@@ -13346,7 +13418,7 @@
       "module_name": "platform.get",
       "package": "genie.libs.sdk.apis",
       "uid": "get_total_space",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L241"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L240"
     },
     "iosxr": {
       "doc": "Gets total space on a given directory\n        Args:\n            device ('str'): Device object\n            directory ('str'): Directory to check space\n                               If not provided, checks current working directory\n                               i.e. media:/path/to/my/dir\n            output ('str'): Output of 'dir' command\n                            if not provided, executes the cmd on device\n        Returns:\n            space available in bytes in `int` type or \n            None if failed to retrieve available space\n    ",
@@ -13430,7 +13502,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "get_unconfig_line",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L199"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L201"
     }
   },
   "get_unused_channel": {
@@ -13459,7 +13531,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "get_username_password",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L1499"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L1501"
     }
   },
   "get_valid_config_from_running_config": {
@@ -13620,7 +13692,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "has_configuration",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L328"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L330"
     }
   },
   "health_core": {
@@ -13737,7 +13809,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "int_to_mask",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L345"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L347"
     }
   },
   "interface_counter_check": {
@@ -14330,7 +14402,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "load_dict_from_json_file",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2745"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2795"
     }
   },
   "load_jinja": {
@@ -14339,7 +14411,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "load_jinja",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L482"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L484"
     }
   },
   "load_jinja_template": {
@@ -14357,7 +14429,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "mask_to_int",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L360"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L362"
     }
   },
   "modify_filename": {
@@ -14366,7 +14438,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "modify_filename",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L1257"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L1259"
     }
   },
   "netmask_to_bits": {
@@ -14375,7 +14447,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "netmask_to_bits",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L817"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L819"
     }
   },
   "number_to_string": {
@@ -14384,7 +14456,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "number_to_string",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L1699"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L1701"
     }
   },
   "nxapi_method_nxapi_cli": {
@@ -14556,7 +14628,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "question_mark",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L114"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L116"
     }
   },
   "question_mark_retrieve": {
@@ -14565,7 +14637,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "question_mark_retrieve",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L133"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L135"
     }
   },
   "quick_configure_by_jinja2": {
@@ -14592,7 +14664,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "reconnect_device",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L772"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L774"
     }
   },
   "reconnect_device_with_new_credentials": {
@@ -14601,7 +14673,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "reconnect_device_with_new_credentials",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L706"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L708"
     }
   },
   "redistribute_bgp_metric_type_under_ospf": {
@@ -14646,7 +14718,7 @@
       "module_name": "acl.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "remove_acl_from_interface",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/acl/configure.py#L307"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/acl/configure.py#L335"
     }
   },
   "remove_all_span": {
@@ -15113,7 +15185,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "repeat_command_save_output",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2110"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2160"
     }
   },
   "request_chassis_routing_engine_master_switch": {
@@ -15206,7 +15278,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "save_dict_to_json_file",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2702"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2752"
     }
   },
   "save_info_to_file": {
@@ -15215,7 +15287,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "save_info_to_file",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L1639"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L1641"
     }
   },
   "save_running_config": {
@@ -15256,7 +15328,7 @@
       "module_name": "acl.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "scale_accesslist_config",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/acl/configure.py#L189"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/acl/configure.py#L217"
     }
   },
   "scp": {
@@ -15318,7 +15390,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "send_email",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2157"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2207"
     }
   },
   "set_clock": {
@@ -15415,7 +15487,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "slugify",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2089"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2139"
     }
   },
   "socat_relay": {
@@ -15537,7 +15609,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "string_to_number",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L1669"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L1671"
     }
   },
   "switch_vm_power": {
@@ -15555,7 +15627,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "tabber",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L77"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L79"
     }
   },
   "tftp_config": {
@@ -15564,7 +15636,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "tftp_config",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L1414"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L1416"
     }
   },
   "time_to_int": {
@@ -15573,7 +15645,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "time_to_int",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L173"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L175"
     }
   },
   "tokens": [
@@ -15717,7 +15789,7 @@
       "module_name": "acl.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "unconfig_extended_acl",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/acl/configure.py#L174"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/acl/configure.py#L202"
     }
   },
   "unconfig_extended_acl_with_evaluate": {
@@ -15726,7 +15798,7 @@
       "module_name": "acl.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "unconfig_extended_acl_with_evaluate",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/acl/configure.py#L528"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/acl/configure.py#L556"
     }
   },
   "unconfig_extended_acl_with_reflect": {
@@ -15735,7 +15807,7 @@
       "module_name": "acl.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "unconfig_extended_acl_with_reflect",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/acl/configure.py#L935"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/acl/configure.py#L963"
     }
   },
   "unconfig_flow_exporter": {
@@ -15798,7 +15870,7 @@
       "module_name": "acl.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "unconfig_ip_tcp_mss",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/acl/configure.py#L1332"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/acl/configure.py#L1360"
     }
   },
   "unconfig_ipv6_nd_raguard_policy": {
@@ -15915,7 +15987,7 @@
       "module_name": "acl.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "unconfig_refacl_global_timeout",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/acl/configure.py#L1273"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/acl/configure.py#L1301"
     }
   },
   "unconfig_standard_acl_for_ip_pim": {
@@ -16077,7 +16149,7 @@
       "module_name": "acl.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "unconfigure_ace",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/acl/configure.py#L242"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/acl/configure.py#L270"
     }
   },
   "unconfigure_acl": {
@@ -16086,7 +16158,7 @@
       "module_name": "acl.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "unconfigure_acl",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/acl/configure.py#L213"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/acl/configure.py#L241"
     }
   },
   "unconfigure_active_timer_under_et_analytics": {
@@ -16468,6 +16540,15 @@
       "package": "genie.libs.sdk.apis",
       "uid": "unconfigure_cts_manual",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/cts/configure.py#L468"
+    }
+  },
+  "unconfigure_debug_snmp_packets": {
+    "iosxe": {
+      "doc": " enable snmp debugs on device\n        Args:\n            device ('obj'): device to use\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "snmp.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "unconfigure_debug_snmp_packets",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/snmp/configure.py#L444"
     }
   },
   "unconfigure_device_tracking_binding": {
@@ -17313,7 +17394,7 @@
       "module_name": "acl.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "unconfigure_ipv6_acl_ace",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/acl/configure.py#L417"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/acl/configure.py#L445"
     }
   },
   "unconfigure_ipv6_acl_on_interface": {
@@ -18462,6 +18543,15 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/snmp/configure.py#L29"
     }
   },
+  "unconfigure_snmp_host_version": {
+    "iosxe": {
+      "doc": " UnConfigures the snmp-server host 172.21.226.240 vrf Mgmt-vrf version 2c public on device\n        Args:\n            device ('obj'): device to use\n            community_string ('str'): community_string\n            host_name ('str'): Host name\n            vrf_id ('str') : vrf(Mgmt-vrf) is special connection,usually we have it in mgmt-interface for management port.\n            version_id('str') : Snmp Version\n            udp_port('int', optional) :  udp_port should be passed when enabling traps. The value can also be checked in snmp.server.\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "snmp.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "unconfigure_snmp_host_version",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/snmp/configure.py#L400"
+    }
+  },
   "unconfigure_snmp_server_group": {
     "iosxe": {
       "doc": " unconfigures the snmp server group on device\n        Args:\n            device ('obj'): device to use\n            group_name ('str'): name of the group\n            version ('str'): v1,v2c,v3\n            auth_type ('str'): auth, noauth, priv\n            mode ('str'): write or read mode\n            acl_name ('str'): name of the Standerd acl, acl list name, ipv6 named acl\n            acl_type ('str'): specify IPv6 Named Access-List\n            context_name ('str'): context name\n            match_type ('str'): exact or prefix\n            notify_name ('str'): notify view name\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
@@ -18866,7 +18956,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "unit_convert",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L639"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L641"
     }
   },
   "unshut_interface": {
@@ -19683,7 +19773,7 @@
       "module_name": "multicast.verify",
       "package": "genie.libs.sdk.apis",
       "uid": "verify_bidir_groupip",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/multicast/verify.py#L380"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/multicast/verify.py#L381"
     }
   },
   "verify_boot_mode_lxc_config": {
@@ -20807,6 +20897,15 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/interface/verify.py#L32"
     }
   },
+  "verify_interface_config_duplex": {
+    "iosxe": {
+      "doc": "Verify interface configured duplex in - show running-config interface <interface-name>\n\n        Args:\n            device (`obj`): Device object\n            interface (`str`): Interface name\n            max_time (`int`): max time\n            check_interval (`int`): check interval\n            duplex_mode ('str'): duplex mode and default 'duplex auto'\n            flag (`bool`): True if verify duplex\n                           False if verify no duplex\n        Returns:\n            result(`bool`): verify result\n    ",
+      "module_name": "interface.verify",
+      "package": "genie.libs.sdk.apis",
+      "uid": "verify_interface_config_duplex",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/interface/verify.py#L1126"
+    }
+  },
   "verify_interface_config_no_shutdown": {
     "iosxe": {
       "doc": "Verify interface doesn't have shutdown in - show run interface\n\n        Args:\n            device (`obj`): Device object\n            interface (`str`): Interface name\n            max_time (`int`): max time\n            check_interval (`int`): check interval\n        Returns:\n            result(`bool`): verify result\n    ",
@@ -20841,6 +20940,15 @@
       "package": "genie.libs.sdk.apis",
       "uid": "verify_interface_config_shutdown",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/interface/verify.py#L207"
+    }
+  },
+  "verify_interface_config_speed": {
+    "iosxe": {
+      "doc": "Verify interface configured speed in - show running-config interface <interface-name>\n\n        Args:\n            device (`obj`): Device object\n            interface (`str`): Interface name\n            max_time (`int`): max time\n            check_interval (`int`): check interval\n            speed_mbps (`int` or 'str'): speed mbps and default 'speed auto'\n            flag (`bool`): True if verify speed\n                           False if verify no speed\n        Returns:\n            result(`bool`): verify result\n    ",
+      "module_name": "interface.verify",
+      "package": "genie.libs.sdk.apis",
+      "uid": "verify_interface_config_speed",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/interface/verify.py#L1068"
     }
   },
   "verify_interface_data": {
@@ -21279,13 +21387,49 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/sisf/verify.py#L291"
     }
   },
+  "verify_ip_mfib_hw_pkt_per_sec": {
+    "iosxe": {
+      "doc": "Verify for hw packet per sec will be >= rate if given \n       for particular mcast-group & source ip in \n           'show ip mfib multicast_group source_ip' - if no vrf, no ip_family\n           'show ip mfib vrf <vrf> multicast_group source_ip' - if vrf given and no ip_family\n           'show ipv6 mfib multicast_group source_ip' - if ip_family given and no vrf\n           'show ipv6 mfib vrf <vrf> multicast_group source_ip' - if both vrf and ip_family given\n           ex:\n                (1.1.1.1,225.1.1.1) Flags: HW\n                SW Forwarding: 0/0/0/0, Other: 11/0/11\n                HW Forwarding:   6225553/705/115/634, Other: 0/0/0\n\n    Args:\n            device ('obj'): Device object\n            multicast_group (`str`): multicast group to be verified\n            source_ip ('str'): source_ip to be verified           \n            ip_family ('str'): either ipv4 or ipv6 \n            rate ('int', optional): the expected rate of pkts per sec  \n            vrf ('str',optional): vrf   \n            max_time (`int`, optional): Max time, default: 30\n            check_interval (`int`, optional): Check interval, default: 10\n            \n    Returns:\n            result(`bool`): verified result\n    Raises:\n            None\n\n    ",
+      "module_name": "multicast.verify",
+      "package": "genie.libs.sdk.apis",
+      "uid": "verify_ip_mfib_hw_pkt_per_sec",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/multicast/verify.py#L596"
+    }
+  },
+  "verify_ip_mroute_group_and_sourceip": {
+    "iosxe": {
+      "doc": "\n    Verify ip/ipv6 source&Multicast group ip and related data for particular\n    source&group ip combination, in 'show ip/ipv6 mroute mgroup source'  \n    Args:\n            device (`obj`): Device object\n            vrf (`str`): Vrf name\n            groupip (`str`): multicast group ip\n            ip_family ('str'): ip address family ip/ipv6\n            sourceip (`str`, optional): sourceip of the multicast group ip\n            flag (`str`, optional): flag\n               checks the flag that each character in actual output \n               just like subset of a set\n            incmg_intf('str', optional): incoming interface\n            outgng_intf (`str` or 'list', optional): outgoing interface\n            incmg_extranet_vrf (`str`, optional): incoming interface\n            extranet_rec ('list', optional): ['extranet_vrf',extranet_src,extranet_grp,extranet_flags]\n            max_time (`int`, optional): Max time, default: 30\n            check_interval (`int`, optional): Check interval, default: 10\n    ",
+      "module_name": "multicast.verify",
+      "package": "genie.libs.sdk.apis",
+      "uid": "verify_ip_mroute_group_and_sourceip",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/multicast/verify.py#L691"
+    }
+  },
+  "verify_ip_mroute_mgroup_rpf_state": {
+    "iosxe": {
+      "doc": "Verify rpf info state for particular mcast group and source ip (if given)\n        in 'show ip/ipv6 mroute {vrf <vrf>} <multicast_group> {<source_ip>}'\n\n    Args:\n            device ('obj'): Device object\n            multicast_group (`str`): multicast group to be verified\n            expected_rpf ('str',): expected rpf info.ex: Registering etc \n            ip_family ('str'): either ip ot ipv6\n            vrf ('str', optional): vrf\n            source_ip ('str',optional): source_ip to be verified\n            max_time (`int`, optional): Max time, default: 30\n            check_interval (`int`, optional): Check interval, default: 10\n    Returns:\n            result(`bool`): verified result\n    Raises:\n            None\n\n    ",
+      "module_name": "multicast.verify",
+      "package": "genie.libs.sdk.apis",
+      "uid": "verify_ip_mroute_mgroup_rpf_state",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/multicast/verify.py#L536"
+    }
+  },
+  "verify_ip_pim_neighbor": {
+    "iosxe": {
+      "doc": "Verify pim neighbors and along with the interface configured incase of\n       interface is given.\n\n    Args:\n            device ('obj'): Device object\n            expected_neighbor (`str`): neighbor to be verified\n            expected_interface ('str', optional): expected interface \n            max_time (`int`, optional): Max time, default: 30\n            check_interval (`int`, optional): Check interval, default: 10\n    Returns:\n            result(`bool`): verified result\n    Raises:\n            None\n\n    ",
+      "module_name": "multicast.verify",
+      "package": "genie.libs.sdk.apis",
+      "uid": "verify_ip_pim_neighbor",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/multicast/verify.py#L649"
+    }
+  },
   "verify_ip_pim_vrf_neighbor": {
     "iosxe": {
       "doc": "Verify pim neighbors\n\n    Args:\n            device ('obj'): Device object\n            vrf (`str`): vrf id\n            neighbors (`list`): neighbors to be verified\n            max_time (`int`, optional): Max time, default: 30\n            check_interval (`int`, optional): Check interval, default: 10\n    ",
       "module_name": "multicast.verify",
       "package": "genie.libs.sdk.apis",
       "uid": "verify_ip_pim_vrf_neighbor",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/multicast/verify.py#L22"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/multicast/verify.py#L23"
     }
   },
   "verify_ip_precedence_ip_precedence": {
@@ -21447,7 +21591,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "verify_keywords_in_output",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L3610"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L3660"
     }
   },
   "verify_l2route_mac_route_flag": {
@@ -21657,7 +21801,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "verify_login_with_credentials",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2894"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2944"
     }
   },
   "verify_lsp_neighbor": {
@@ -21720,7 +21864,7 @@
       "module_name": "multicast.verify",
       "package": "genie.libs.sdk.apis",
       "uid": "verify_mfib_vrf_hardware_rate",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/multicast/verify.py#L176"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/multicast/verify.py#L177"
     }
   },
   "verify_mfib_vrf_summary": {
@@ -21729,7 +21873,7 @@
       "module_name": "multicast.verify",
       "package": "genie.libs.sdk.apis",
       "uid": "verify_mfib_vrf_summary",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/multicast/verify.py#L239"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/multicast/verify.py#L240"
     }
   },
   "verify_missing_device_tracking_policy_configuration": {
@@ -21822,7 +21966,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "verify_mpls_experimental_bits",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2216"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2266"
     }
   },
   "verify_mpls_forwarding_table_gid_counter": {
@@ -21876,7 +22020,7 @@
       "module_name": "multicast.verify",
       "package": "genie.libs.sdk.apis",
       "uid": "verify_mpls_mldp_count",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/multicast/verify.py#L465"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/multicast/verify.py#L466"
     }
   },
   "verify_mpls_mldp_neighbor": {
@@ -21885,7 +22029,7 @@
       "module_name": "multicast.verify",
       "package": "genie.libs.sdk.apis",
       "uid": "verify_mpls_mldp_neighbor",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/multicast/verify.py#L67"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/multicast/verify.py#L68"
     }
   },
   "verify_mpls_mldp_root": {
@@ -21894,7 +22038,7 @@
       "module_name": "multicast.verify",
       "package": "genie.libs.sdk.apis",
       "uid": "verify_mpls_mldp_root",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/multicast/verify.py#L133"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/multicast/verify.py#L134"
     }
   },
   "verify_mpls_mroute_groupip": {
@@ -21903,7 +22047,7 @@
       "module_name": "multicast.verify",
       "package": "genie.libs.sdk.apis",
       "uid": "verify_mpls_mroute_groupip",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/multicast/verify.py#L295"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/multicast/verify.py#L296"
     }
   },
   "verify_mpls_ping": {
@@ -22002,7 +22146,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "verify_no_mpls_header",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2667"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2717"
     }
   },
   "verify_no_ntp_association_configuration": {
@@ -22676,7 +22820,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "verify_pcap_as_path",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L3322"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L3372"
     }
   },
   "verify_pcap_capability": {
@@ -22685,7 +22829,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "verify_pcap_capability",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L3426"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L3476"
     }
   },
   "verify_pcap_dscp_bits": {
@@ -22694,7 +22838,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "verify_pcap_dscp_bits",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2249"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2299"
     }
   },
   "verify_pcap_has_imcp_destination_unreachable": {
@@ -22703,7 +22847,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "verify_pcap_has_imcp_destination_unreachable",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2020"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2070"
     }
   },
   "verify_pcap_has_imcpv6_destination_unreachable": {
@@ -22712,7 +22856,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "verify_pcap_has_imcpv6_destination_unreachable",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2054"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2104"
     }
   },
   "verify_pcap_ldp_packet": {
@@ -22721,7 +22865,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "verify_pcap_ldp_packet",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L4159"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L4209"
     }
   },
   "verify_pcap_mpls_packet": {
@@ -22730,7 +22874,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "verify_pcap_mpls_packet",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2509"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2559"
     }
   },
   "verify_pcap_packet": {
@@ -22739,7 +22883,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "verify_pcap_packet",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2773"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2823"
     }
   },
   "verify_pcap_packet_destination_port": {
@@ -22748,7 +22892,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "verify_pcap_packet_destination_port",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2479"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2529"
     }
   },
   "verify_pcap_packet_protocol": {
@@ -22757,7 +22901,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "verify_pcap_packet_protocol",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2419"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2469"
     }
   },
   "verify_pcap_packet_source_port": {
@@ -22766,7 +22910,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "verify_pcap_packet_source_port",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2448"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2498"
     }
   },
   "verify_pcap_packet_type": {
@@ -22775,7 +22919,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "verify_pcap_packet_type",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2390"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2440"
     }
   },
   "verify_ping": {
@@ -24306,7 +24450,7 @@
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "web_interaction",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L4064"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L4114"
     }
   },
   "write_erase_reload_device": {

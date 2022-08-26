@@ -1064,4 +1064,120 @@ def verify_interface_status(
         timeout.sleep()
 
     return False
-    
+
+def verify_interface_config_speed(device, 
+    interface, 
+    speed_mbps, 
+    max_time=60,
+    check_interval=10, 
+    flag=True):
+    """Verify interface configured speed in - show running-config interface <interface-name>
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+            max_time (`int`): max time
+            check_interval (`int`): check interval
+            speed_mbps (`int` or 'str'): speed mbps and default 'speed auto'
+            flag (`bool`): True if verify speed
+                           False if verify no speed
+        Returns:
+            result(`bool`): verify result
+    """
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        out = device.execute("show run interface {}".format(interface))
+
+        cfg_dict = get_config_dict(out)
+        key = "interface {}".format(interface)
+
+        if key in cfg_dict and speed_mbps=='auto':
+            for line in cfg_dict[key].keys():
+                if "speed" in line:
+                    log.info(
+                            "interface config settings 'speed' is not set to expected settings 'speed {}' ".format(speed_mbps)
+                    )
+                    result = False 
+                    break
+                else: 
+                    log.info(
+                        "interface config settings 'speed' is set to default settings 'speed {}' as expected ".format(
+                            speed_mbps)
+                    )
+                    result = True
+        elif key in cfg_dict and "speed {}".format(speed_mbps) in cfg_dict[key]:
+            log.info(
+                    "interface config settings 'speed' is set to expected settings 'speed {}' ".format(speed_mbps)
+            )
+            result = True
+        else:
+            log.info(
+                    "interface config settings 'speed' is not set to expected settings 'speed {}' ".format(speed_mbps)
+            )
+            result = False
+
+        if flag == result:
+            return True
+        timeout.sleep()
+
+    return False
+
+def verify_interface_config_duplex(device, 
+    interface, 
+    duplex_mode, 
+    max_time=60, 
+    check_interval=10, 
+    flag=True):  
+    """Verify interface configured duplex in - show running-config interface <interface-name>
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+            max_time (`int`): max time
+            check_interval (`int`): check interval
+            duplex_mode ('str'): duplex mode and default 'duplex auto'
+            flag (`bool`): True if verify duplex
+                           False if verify no duplex
+        Returns:
+            result(`bool`): verify result
+    """
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        out = device.execute("show run interface {}".format(interface))
+
+        cfg_dict = get_config_dict(out)
+        key = "interface {}".format(interface)
+
+        if key in cfg_dict and duplex_mode=='auto':
+            for line in cfg_dict[key].keys():
+                if "duplex " in line:
+                    log.info(
+                        "interface config settings 'duplex mode' is not set to expected settings 'duplex {}'".format(duplex_mode)
+                    )
+                    result = False
+                    break
+            else:
+                log.info(
+                    "interface config settings 'duplex mode' is set to default settings 'duplex {}' as expected".format(duplex_mode)
+                )
+                result = True
+        elif key in cfg_dict and "duplex {}".format(duplex_mode) in cfg_dict[key]:
+            log.info(
+                    "interface config settings 'duplex mode' is set to expected settings 'duplex {}'".format(
+                        duplex_mode)
+            )             
+            result = True
+        else:
+            log.info(
+                    "interface config settings 'duplex mode' is not set to expected settings 'duplex {}'".format(
+                        duplex_mode)
+            )
+            result = False
+
+        if flag == result:
+            return True
+        timeout.sleep()
+
+    return False

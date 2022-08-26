@@ -369,3 +369,92 @@ def unconfigure_snmp_server_user(device,
         raise SubCommandFailure(
             f"Could not unconfigure snmp user. Error:\n{error}"
         )
+
+def configure_snmp_host_version(device,host_name,vrf_id,version_id,community_string, udp_port = 0):
+    """ Configures the snmp-server host 172.21.226.240 vrf Mgmt-vrf version 2c public on device
+        Args:
+            device ('obj'): device to use
+            community_string ('str'): community_string
+            host_name ('str'): Host name
+            vrf_id ('str') : vrf(Mgmt-vrf) is special connection,usually we have it in mgmt-interface for management port.
+            version_id('str') : Snmp Version
+            udp_port('int', optional) :  udp_port should be passed when enabling traps. The value can also be checked in snmp.server.
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configuring snmp host version on device {device}".format(device=device))
+    
+    if  udp_port == 0:
+        cmd = f"snmp-server host {host_name} vrf {vrf_id} version {version_id} {community_string}"
+    else:
+        cmd = f"snmp-server host {host_name} vrf {vrf_id} version {version_id} {community_string} udp-port {udp_port}"
+
+    try:    
+        device.configure(cmd) 
+    except SubCommandFailure as e:
+        raise SubCommandFailure("Could not configure snmp host version. Error:\n{error}".format(error=e))
+        
+
+def unconfigure_snmp_host_version(device,host_name,vrf_id,version_id,community_string, udp_port = 0):
+    """ UnConfigures the snmp-server host 172.21.226.240 vrf Mgmt-vrf version 2c public on device
+        Args:
+            device ('obj'): device to use
+            community_string ('str'): community_string
+            host_name ('str'): Host name
+            vrf_id ('str') : vrf(Mgmt-vrf) is special connection,usually we have it in mgmt-interface for management port.
+            version_id('str') : Snmp Version
+            udp_port('int', optional) :  udp_port should be passed when enabling traps. The value can also be checked in snmp.server.
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configuring snmp host version on device {device}".format(device=device))
+    
+    if  udp_port == 0:
+        cmd = f"no snmp-server host {host_name} vrf {vrf_id} version {version_id} {community_string}"
+    else:
+        cmd = f"no snmp-server host {host_name} vrf {vrf_id} version {version_id} {community_string} udp-port {udp_port}"
+
+    try:
+        device.configure(cmd) 
+    except SubCommandFailure as e:
+        raise SubCommandFailure("Could not configure snmp host version. Error:\n{error}".format(error=e))
+        		
+def configure_debug_snmp_packets(device):
+    """ enable snmp debugs on device
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"Configuring snmp debugs on device {device}")
+
+    try:
+        device.execute("debug snmp packets")
+    except SubCommandFailure as error:
+        raise SubCommandFailure(
+            f"Could not configure debugs on device. Error:\n{error}"
+        )
+
+def unconfigure_debug_snmp_packets(device):
+    """ enable snmp debugs on device
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"Configuring snmp debugs on device {device}")
+
+    try:
+        device.execute("undebug snmp packets")
+    except SubCommandFailure as error:
+        raise SubCommandFailure(
+            f"Could not unconfigure debugs on device. Error:\n{error}"
+        )

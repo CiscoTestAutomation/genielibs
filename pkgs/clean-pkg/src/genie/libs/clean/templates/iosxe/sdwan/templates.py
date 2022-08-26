@@ -84,7 +84,7 @@ DEFAULT = {
         'protocol': ''
     },
     'install_image': {
-        'images:': [],
+        'images': [],
         'save_system_config': True,
         'install_timeout': 1000,
         'reload_timeout': 1000

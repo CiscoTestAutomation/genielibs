@@ -10,8 +10,7 @@ import json
 # Genie
 from genie.utils import Dq
 from genie.utils.timeout import Timeout
-from genie.libs.sdk.powercycler import powercyclers
-from genie.libs.sdk.powercycler.base import PowerCycler
+from genie.libs.sdk.apis.utils import get_power_cyclers
 
 # Unicon
 from unicon.eal.dialogs import Statement, Dialog
@@ -74,6 +73,58 @@ def execute_clear_line(device, alias='cli'):
     device.disconnect(alias=alias)
 
 
+def execute_power_off_device(device):
+    '''Power off a device
+
+    Args:
+        device ('obj'): Device object
+
+    Raises:
+        Exception if power off fails
+
+    Returns:
+        None
+    '''
+
+    pcs = get_power_cyclers(device)
+
+    # Turn power cyclers off
+    for pc, outlets in pcs:
+        try:
+            device.api.change_power_cycler_state(
+                powercycler=pc, state='off', outlets=outlets)
+        except Exception as e:
+            raise Exception(f"Failed to powercycle device off:\n{repr(e)}")
+
+        log.debug(f"Powercycled device '{device.name}' to 'off' state")
+
+
+def execute_power_on_device(device):
+    '''Power on a device
+
+    Args:
+        device ('obj'): Device object
+
+    Raises:
+        Exception if power on fails
+
+    Returns:
+        None
+    '''
+
+    pcs = get_power_cyclers(device)
+
+    # Turn power cyclers on
+    for pc, outlets in pcs:
+        try:
+            device.api.change_power_cycler_state(
+                powercycler=pc, state='on', outlets=outlets)
+        except Exception as e:
+            raise Exception(f"Failed to powercycle device on:\n{repr(e)}")
+
+        log.debug(f"Powercycled device '{device.name}' to 'on' state")
+
+
 def execute_power_cycle_device(device, delay=30):
     ''' Powercycle a device
 
@@ -89,61 +140,13 @@ def execute_power_cycle_device(device, delay=30):
     Returns:
         None
     '''
-
     # Destroy device object
     device.destroy_all()
 
-    # Find device's power cycler information
-    power_cyclers = getattr(device, 'peripherals', {}).get('power_cycler')
-    if not power_cyclers:
-        raise Exception("Powercycler information is not provided in the "
-                        "testbed YAML file for device '{}'\nUnable to "
-                        "powercycle device".format(device.name))
-
-    # type(device['peripherals']['power_cycler']) should be a list to support
-    # redundant PDUs. It can also be a dict in case of single PDU (legacy).
-    if isinstance(power_cyclers, dict):
-        power_cyclers = [power_cyclers]
-
-    pcs = []
-
-    # Initialize each power cycler. Save the powercycler object and outlets
-    # for later user
-    for power_cycler in power_cyclers:
-        if power_cycler.get('outlets'):
-            # Cyberswitching based powercyclers require the testbed object
-            power_cycler['testbed'] = device.testbed
-
-            pcs.append(
-                (PowerCycler(**power_cycler), power_cycler['outlets'])
-            )
-        else:
-            raise Exception("Powercycler outlets have not been provided:\n"
-                            "    Device: {}\n"
-                            "    Powercycler info: {}".format(device.name, power_cycler))
-
-    # Turn power cyclers off
-    for pc, outlets in pcs:
-        try:
-            device.api.change_power_cycler_state(
-                powercycler=pc, state='off', outlets=outlets)
-        except Exception as e:
-            raise Exception("Failed to powercycle device off:\n{}".format(str(e)))
-
-        log.info("Powercycled device '{}' to 'off' state".format(device.name))
-
-    log.info("Waiting '{}' seconds before powercycling device on".format(delay))
+    device.api.execute_power_off_device()
+    log.debug(f"Waiting '{delay}' seconds before powercycling device on")
     time.sleep(delay)
-
-    # Turn power cyclers on
-    for pc, outlets in pcs:
-        try:
-            device.api.change_power_cycler_state(
-                powercycler=pc, state='on', outlets=outlets)
-        except Exception as e:
-            raise Exception("Failed to powercycle device on:\n{}".format(str(e)))
-
-        log.info("Powercycled device '{}' to 'on' state".format(device.name))
+    device.api.execute_power_on_device()
 
 
 def change_power_cycler_state(device, powercycler, state, outlets):

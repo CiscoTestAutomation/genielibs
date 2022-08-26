@@ -92,21 +92,13 @@ class GnmiNotification(Thread):
             # Split returns on the basis of paths,
             # received in opfields
             returns_2 = []
-            cur_xp_found = []
-            for index, ret in enumerate(self.returns):
-                xp = ret['xpath']
-                found = False
-                for op in opfields:
-                    if xp in op:
-                        found = True
+            for op in opfields:
+                for index, ret in enumerate(self.returns):
+                    xp = ret['xpath']
+                    if xp in op and index not in returns_found:
+                        returns_2.append(ret)
+                        returns_found.append(index)
                         break
-                # For list we can have same paths in returns for different keys
-                # Keep track of index and xp to avoid validating the duplicate list path.
-                # Keep track of all returns_found to log the returns which are not found.
-                if found and xp not in cur_xp_found and index not in returns_found:
-                    returns_2.append(ret)
-                    cur_xp_found.append(xp)
-                    returns_found.append(index)
         
             if len(json_dicts):
                 for json_dict in json_dicts:
@@ -152,8 +144,8 @@ class GnmiNotification(Thread):
         first_opfields = []
         response_no = 0
         returns_found = []
+        stop_receiver = False
         try:
-            stop_receiver = False
             for response in self.responses:
                 # Subscribe response ends here
                 if response.HasField('sync_response'):
@@ -183,8 +175,12 @@ class GnmiNotification(Thread):
                         first_json_dicts = json_dicts
                         first_opfields = opfields
                     else:
-                        if json_dicts == first_json_dicts and opfields == first_opfields:
+                        if self.mode == 'STREAM' and json_dicts == first_json_dicts and opfields == first_opfields:
                             self.check_remaining_returns(returns_found)
+                            returns_found = []
+
+                        # Reset on every ON_CHANGE response
+                        if self.sub_mode == 'ON_CHANGE':
                             returns_found = []
 
                     self.log.info(
@@ -199,12 +195,7 @@ class GnmiNotification(Thread):
                     self.stop()
 
                 if self.stopped():
-                    # If we have high number of paths for stream,
-                    # then there can be the case that the last stream
-                    # might not have all the xpaths response.
-                    # Stream is stopped based on seconds
-                    # and not number of responses
-                    if not self.stream_max:
+                    if self.sub_mode != 'ON_CHANGE':
                         self.check_remaining_returns(returns_found)
                     self.time_delta = self.stream_max
                     self.log.info("Terminating notification thread")
@@ -220,7 +211,7 @@ class GnmiNotification(Thread):
                 msg = str(exc)
             self.result = msg
 
-    def stop(self):
+    def stop(self):    
         self.log.info("Stopping notification stream")
         self._stop_event.set()
 

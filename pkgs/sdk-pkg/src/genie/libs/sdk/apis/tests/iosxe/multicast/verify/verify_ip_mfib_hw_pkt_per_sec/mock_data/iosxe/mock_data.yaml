@@ -1,0 +1,55 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: leaf1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: leaf1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show ip mfib vrf red 232.1.1.5 20.20.20.21:
+      response:
+      - "Entry Flags:    C - Directly Connected, S - Signal, IA - Inherit A flag,\r\
+        \n                ET - Data Rate Exceeds Threshold, K - Keepalive\r\n    \
+        \            DDE - Data Driven Event, HW - Hardware Installed\r\n        \
+        \        ME - MoFRR ECMP entry, MNE - MoFRR Non-ECMP entry, MP - MFIB \r\n\
+        \                MoFRR Primary, RP - MRIB MoFRR Primary, P - MoFRR Primary\r\
+        \n                MS  - MoFRR  Entry in Sync, MC - MoFRR entry in MoFRR Client,\r\
+        \n                e   - Encap helper tunnel flag.\r\nI/O Item Flags: IC -\
+        \ Internal Copy, NP - Not platform switched,\r\n                NS - Negate\
+        \ Signalling, SP - Signal Present,\r\n                A - Accept, F - Forward,\
+        \ RA - MRIB Accept, RF - MRIB Forward,\r\n                MA - MFIB Accept,\
+        \ A2 - Accept backup,\r\n                RA2 - MRIB Accept backup, MA2 - MFIB\
+        \ Accept backup\r\n\r\nForwarding Counts: Pkt Count/Pkts per second/Avg Pkt\
+        \ Size/Kbits per second\r\nOther counts:      Total/RPF failed/Other drops\r\
+        \nI/O Item Counts:   HW Pkt Count/FS Pkt Count/PS Pkt Count   Egress Rate\
+        \ in pps\r\nVRF red\r\n (20.20.20.21,232.1.1.5) Flags: HW\r\n   SW Forwarding:\
+        \ 0/0/0/0, Other: 0/0/0\r\n   HW Forwarding:   304019/495/68/262, Other: 0/0/0\r\
+        \n   Vlan100 Flags: A\r\n   Vlan500, VXLAN v4 Encap (50000, 225.2.2.2) Flags:\
+        \ F\r\n     Pkts: 0/0/0    Rate: 0 pps"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: leaf1#

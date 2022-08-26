@@ -24,7 +24,8 @@ def config_extended_acl(
     dst_port=None,
     entries=None,
     acl_type=None,
-    sequence_num=None
+    sequence_num=None,
+    log_option=None
 ):
     """ Configure extended ACL on device
         Args:
@@ -33,7 +34,7 @@ def config_extended_acl(
             permission ('str'): (permit | deny), default value is None
             protocol ('str'): protocol, default value is None
             src_ip ('str'): source start ip, default value is None
-            src_step ('str'): increment step for source ip, default value is None
+            src_step ('str'): (None | '0.0.0.1'), increment step for source ip, default value is None
             src_wildcard ('str'): source wildcard, default value is None
             dst_ip ('str'): destination start ip, default value is None
             dst_step ('str'): increment step for destination ip, default value is None
@@ -42,6 +43,7 @@ def config_extended_acl(
             entries ('int'): Acl entries, default value is None
             acl_type ('str', optional): type of ACL like with or without host keyword, default value is None
             sequence_num ('str',optional): specific sequence number,default value is None
+            log_option ('str',optional): (None | log), Option to log ACL match,default value is None
         Returns:
             config
         Raises:
@@ -52,12 +54,15 @@ def config_extended_acl(
     if permission in ['permit', 'deny']:
         if acl_type:
             # Build config string
-            configs.append("{sequence} {permission} {protocol} host {src_ip} host {dst_ip}".format(
+            cmd = "{sequence} {permission} {protocol} host {src_ip} host {dst_ip} ".format(
                 sequence=sequence_num,
                 permission=permission,
                 protocol=protocol,
                 src_ip=src_ip,
-                dst_ip=dst_ip))
+                dst_ip=dst_ip)
+            if log_option:
+                cmd += log_option
+            configs.append(cmd)
         else:
             if dst_wildcard != "0.0.0.0":
                 if entries > 1:
@@ -68,28 +73,39 @@ def config_extended_acl(
                         dst_step = IPv4Address(dst_step)
                         src_ip_inc = src_ip + i
                         dst_ip_inc = dst_ip + i
-                        configs.append(
-                            " {sequence} {permission} {protocol} {src_ip} {src_wildcard} {dst_ip} {dst_wildcard} eq {dst_port}".format(
+                        cmd = "{sequence} {permission} {protocol} {src_ip} ".format(
                                 sequence=i + 1,
                                 permission=permission,
                                 protocol=protocol,
-                                src_ip=src_ip_inc,
-                                src_wildcard=src_wildcard,
-                                dst_ip=dst_ip_inc,
-                                dst_wildcard=dst_wildcard,
-                                dst_port=dst_port))
+                                src_ip=src_ip_inc)
+                        if src_wildcard:
+                            cmd += f"{src_wildcard} "
+                        cmd += f"{dst_ip_inc} "
+                        if dst_wildcard:
+                            cmd += f"{dst_wildcard} "
+                        if dst_port:
+                            cmd += f"eq {dst_port} "
+                        if log_option:
+                            cmd += log_option
+                        configs.append(cmd)
 
                 if entries == 1:
-                    configs.append(
-                        " {sequence} {permission} {protocol} {src_ip} {src_wildcard} {dst_ip} {dst_wildcard} eq {dst_port}".format(
+                    cmd = "{sequence} {permission} {protocol} {src_ip} ".format(
                             sequence=sequence_num,
                             permission=permission,
                             protocol=protocol,
-                            src_ip=src_ip,
-                            src_wildcard=src_wildcard,
-                            dst_ip=dst_ip,
-                            dst_wildcard=dst_wildcard,
-                            dst_port=dst_port))
+                            src_ip=src_ip)
+                    if src_wildcard:
+                        cmd += f"{src_wildcard} "
+                    cmd += f"{dst_ip} "
+                    if dst_wildcard:
+                        cmd += f"{dst_wildcard} "
+                    if dst_port:
+                        cmd += f"eq {dst_port} "
+                    if log_option:
+                        cmd += log_option
+                    configs.append(cmd)
+                    sequence_num = str(int(sequence_num) + 1)
 
             if src_wildcard != "0.0.0.0":
                 if entries > 1:
@@ -100,29 +116,41 @@ def config_extended_acl(
                         dst_step = IPv4Address(dst_step)
                         src_ip_inc = src_ip + i
                         dst_ip_inc = dst_ip + i
-                        configs.append(
-                            " {sequence} {permission} {protocol} {src_ip} {src_wildcard} {dst_ip} {dst_wildcard} eq {dst_port}".format(
-                                sequence=i + 1,
+                        cmd = "{sequence} {permission} {protocol} {src_ip} ".format(
+                                sequence=i + entries + 1,
                                 permission=permission,
                                 protocol=protocol,
-                                src_ip=src_ip_inc,
-                                src_wildcard=src_wildcard,
-                                dst_ip=dst_ip_inc,
-                                dst_wildcard=dst_wildcard,
-                                dst_port=dst_port))
+                                src_ip=src_ip_inc)
+                        if src_wildcard:
+                            cmd += f"{src_wildcard} "
+                        cmd += f"host {dst_ip_inc} "
+                        if dst_port:
+                            cmd += f"eq {dst_port} "
+                        if log_option:
+                            cmd += log_option
+                        configs.append(cmd)
 
                 if entries == 1:
-                    configs.append(
-                        " {sequence} {permission} {protocol} {src_ip} {src_wildcard} host {dst_ip} eq {dst_port}".format(
+                    cmd = "{sequence} {permission} {protocol} {src_ip} ".format(
                             sequence=sequence_num,
                             permission=permission,
                             protocol=protocol,
-                            src_ip=src_ip,
-                            src_wildcard=src_wildcard,
-                            dst_ip=dst_ip,
-                            dst_port=dst_port))
+                            src_ip=src_ip)
+                    if src_wildcard:
+                        cmd += f"{src_wildcard} "
+                    if dst_ip != "any":
+                        cmd += "host "
+                    cmd += f"{dst_ip} "
+                    if dst_port:
+                        cmd += f"eq {dst_port} "
+                    if log_option:
+                        cmd += log_option
+                    configs.append(cmd)
     else:
-        configs.append("permit {protocol} any any".format(protocol=protocol))
+        cmd = "permit {protocol} any any ".format(protocol=protocol)
+        if log_option:
+            cmd += log_option
+        configs.append(cmd)
 
     try:
         device.configure(configs)

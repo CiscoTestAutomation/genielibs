@@ -414,7 +414,7 @@ class TestYangExec(unittest.TestCase):
 
     def test_run_subscribe_once_gnmi(self):
         """ Test GNMI Subscribe ONCE mode for Subscription List"""
-        
+
         rpc_verify = RpcVerify(log=log, capabilities=[])
         operation = "subscribe"
         request = {
@@ -554,10 +554,9 @@ class TestYangExec(unittest.TestCase):
             **request
         )
         subscribe_thread.start()
-        
+
         # Wait till the thread is stopped.
-        while not subscribe_thread.stopped():
-            continue
+        subscribe_thread.join()
 
         # Test the result
         self.assertEqual(subscribe_thread.result, True)
@@ -569,74 +568,74 @@ class TestYangExec(unittest.TestCase):
         operation = "subscribe"
         request = {
                     'namespace': 
-                    {
-                        'top': 'Cisco-NX-OS-device'
-                    }, 
-                    'nodes': 
-                    [
                         {
-                            'nodetype': 'leaf',
-                            'datatype': '',
-                            'xpath': 'System/igmp-items/inst-items/dom-items/Dom-list[name="default"]/eventHist-items/EventHistory-list[type="nbm"]/size',
-                            'name': 'size',
-                            'value': ''
+                            'top': 'Cisco-NX-OS-device'
                         }, 
-                        {
-                            'nodetype': 'leaf', 
-                            'datatype': '', 
-                            'xpath': 'System/igmp-items/inst-items/dom-items/Dom-list[name="default"]/eventHist-items/EventHistory-list[type="intfDebugs"]/size', 
-                            'name': 'size', 
-                            'value': ''
-                        }
-                    ], 
+                    'nodes': 
+                        [
+                            {
+                                'nodetype': 'leaf',
+                                'datatype': '',
+                                'xpath': 'System/igmp-items/inst-items/dom-items/Dom-list[name="default"]/eventHist-items/EventHistory-list[type="nbm"]/size',
+                                'name': 'size',
+                                'value': ''
+                            }, 
+                            {
+                                'nodetype': 'leaf', 
+                                'datatype': '', 
+                                'xpath': 'System/igmp-items/inst-items/dom-items/Dom-list[name="default"]/eventHist-items/EventHistory-list[type="intfDebugs"]/size', 
+                                'name': 'size', 
+                                'value': ''
+                            }
+                        ], 
                     'request_mode': 'ONCE', 
                     'sub_mode': 'SAMPLE', 
                     'negative_test': False, 
                     'encoding': 'JSON', 
                     'returns': 
-                    [
-                        {
-                            'datatype': '', 
-                            'nodetype': 'leaf', 
-                            'name': 'type', 
-                            'op': '==', 
-                            'selected': 'True', 
-                            'value': 'nbm', 
-                            'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/eventHist-items/EventHistory-list/type'
-                        }, 
-                        {
-                            'datatype': 'uint32',
-                            'nodetype': 'leaf', 
-                            'name': 'size', 
-                            'op': '==',
-                            'selected': 'True', 
-                            'value': 4, 
-                            'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/eventHist-items/EventHistory-list/size'
-                        },
-                        {
-                            'datatype': '', 
-                            'nodetype': 'leaf', 
-                            'name': 'type', 
-                            'op': '==', 
-                            'selected': 'True', 
-                            'value': 'intfDebugs', 
-                            'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/eventHist-items/EventHistory-list/type'
-                        }, 
-                        {
-                            'datatype': 'uint32',
-                            'nodetype': 'leaf', 
-                            'name': 'size', 
-                            'op': '==',
-                            'selected': 'True', 
-                            'value': 3, 
-                            'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/eventHist-items/EventHistory-list/size'
-                        }
-                    ], 
+                        [
+                            {
+                                'datatype': '', 
+                                'nodetype': 'leaf', 
+                                'name': 'type', 
+                                'op': '==', 
+                                'selected': 'True', 
+                                'value': 'nbm', 
+                                'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/eventHist-items/EventHistory-list/type'
+                            }, 
+                            {
+                                'datatype': 'uint32',
+                                'nodetype': 'leaf', 
+                                'name': 'size', 
+                                'op': '==',
+                                'selected': 'True', 
+                                'value': 4, 
+                                'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/eventHist-items/EventHistory-list/size'
+                            },
+                            {
+                                'datatype': '', 
+                                'nodetype': 'leaf', 
+                                'name': 'type', 
+                                'op': '==', 
+                                'selected': 'True', 
+                                'value': 'intfDebugs', 
+                                'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/eventHist-items/EventHistory-list/type'
+                            }, 
+                            {
+                                'datatype': 'uint32',
+                                'nodetype': 'leaf', 
+                                'name': 'size', 
+                                'op': '==',
+                                'selected': 'True', 
+                                'value': 3, 
+                                'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/eventHist-items/EventHistory-list/size'
+                            }
+                        ], 
                     'verifier': rpc_verify.process_operational_state,
                     'namespace_modules': 
-                    {
-                        'top': 'Cisco-NX-OS-device'
-                    }, 
+                        {
+                            'top': 'Cisco-NX-OS-device'
+                        }, 
                     'decode': GnmiMessage.decode_notification, 
                     'log': log
                 }
@@ -653,31 +652,31 @@ class TestYangExec(unittest.TestCase):
 
         val1 = {
                 "igmp-items":
-                {
-                    "inst-items":
                     {
-                        "dom-items":
+                    "inst-items":
                         {
+                        "dom-items":
+                            {
                             "Dom-list":
-                            [
-                                {
+                                [
+                                    {
                                     "name":"default",
                                     "eventHist-items":
-                                    {
+                                        {
                                         "EventHistory-list":
-                                        [
-                                            {
-                                                "type":"nbm",
-                                                "size":4
-                                            }
-                                        ]
+                                            [
+                                                {
+                                                    "type":"nbm",
+                                                    "size":4
+                                                }
+                                            ]
+                                        }
                                     }
-                                }
-                            ]
+                                ]
+                            }
                         }
                     }
                 }
-            }
         val1 = json.dumps(val1).encode('utf-8')
 
         value1 = proto.gnmi_pb2.TypedValue()
@@ -707,31 +706,31 @@ class TestYangExec(unittest.TestCase):
 
         val2 = {
                 "igmp-items":
-                {
-                    "inst-items":
                     {
-                        "dom-items":
+                    "inst-items":
                         {
+                        "dom-items":
+                            {
                             "Dom-list":
-                            [
-                                {
+                                [
+                                    {
                                     "name":"default",
                                     "eventHist-items":
-                                    {
+                                        {
                                         "EventHistory-list":
-                                        [
-                                            {
-                                                "type":"intfDebugs",
-                                                "size":3
-                                            }
-                                        ]
-                                    }
-                                }
-                            ]
+                                            [
+                                                {
+                                                    "type":"intfDebugs",
+                                                    "size": 3
+                                                }
+                                            ]
+                                        }
+                                }   
+                                ]
+                            }
                         }
                     }
                 }
-            }
         val2 = json.dumps(val2).encode('utf-8')
 
         value2 = proto.gnmi_pb2.TypedValue()
@@ -761,8 +760,356 @@ class TestYangExec(unittest.TestCase):
         subscribe_thread.start()
         
         # Wait till the thread is stopped.
-        while not subscribe_thread.stopped():
-            continue
+        subscribe_thread.join()
+
+        # Test the result
+        self.assertEqual(subscribe_thread.result, True)
+
+    def test_run_subscribe_once_2_gnmi(self):
+        """ Test GNMI Subscribe ONCE mode for Container having multiple lists"""
+
+        rpc_verify = RpcVerify(log=log, capabilities=[])
+        operation = "subscribe"
+        request = {
+                    'namespace': 
+                        {
+                            'top': 'Cisco-NX-OS-device'
+                        }, 
+                    'nodes':
+                        [
+                            {
+                                'nodetype': 'container',
+                                'datatype': '',
+                                'xpath': 'System/igmp-items/inst-items/dom-items/Dom-list[name="default"]/eventHist-items',
+                                'name': '',
+                                'value': ''
+                            }
+                        ], 
+                    'request_mode': 'ONCE', 
+                    'sub_mode': 'SAMPLE', 
+                    'negative_test': False, 
+                    'encoding': 'JSON', 
+                    'returns': 
+                        [
+                            {
+                                'nodetype': 'leaf',
+                                'datatype': '',
+                                'value': 'cli',
+                                'op': '==',
+                                'selected': 'True',
+                                'name': 'type',
+                                'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/eventHist-items/EventHistory-list/type'
+                            },
+                            {
+                                'nodetype': 'leaf',
+                                'datatype': 'igmp_Size',
+                                'value': 20,
+                                'op': '==',
+                                'selected': 'True',
+                                'name': 'size',
+                                'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/eventHist-items/EventHistory-list/size'
+                            },
+                            {
+                                'nodetype': 'leaf',
+                                'datatype': '',
+                                'value': 'groupDebugs',
+                                'op': '==',
+                                'selected': 'True',
+                                'name': 'type',
+                                'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/eventHist-items/EventHistory-list/type'
+                            },
+                            {
+                                'nodetype': 'leaf',
+                                'datatype': 'igmp_Size',
+                                'value': 20,
+                                'op': '==',
+                                'selected': 'True',
+                                'name': 'size',
+                                'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/eventHist-items/EventHistory-list/size'
+                            },
+                            {
+                                'nodetype': 'leaf',
+                                'datatype': '',
+                                'value': 'groupEvents',
+                                'op': '==',
+                                'selected': 'True',
+                                'name': 'type',
+                                'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/eventHist-items/EventHistory-list/type'
+                            },
+                            {
+                                'nodetype': 'leaf',
+                                'datatype': 'igmp_Size',
+                                'value': 20,
+                                'op': '==',
+                                'selected': 'True',
+                                'name': 'size',
+                                'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/eventHist-items/EventHistory-list/size'
+                            },
+                            {
+                                'nodetype': 'leaf',
+                                'datatype': '',
+                                'value': 'ha',
+                                'op': '==',
+                                'selected': 'True',
+                                'name': 'type',
+                                'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/eventHist-items/EventHistory-list/type'
+                            },
+                            {
+                                'nodetype': 'leaf',
+                                'datatype': 'igmp_Size',
+                                'value': 20,
+                                'op': '==',
+                                'selected': 'True',
+                                'name': 'size',
+                                'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/eventHist-items/EventHistory-list/size'
+                            },
+                            {
+                                'nodetype': 'leaf',
+                                'datatype': '',
+                                'value': 'intfDebugs',
+                                'op': '==',
+                                'selected': 'True',
+                                'name': 'type',
+                                'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/eventHist-items/EventHistory-list/type'
+                            },
+                            {
+                                'nodetype': 'leaf',
+                                'datatype': 'igmp_Size',
+                                'value': 20,
+                                'op': '==',
+                                'selected': 'True',
+                                'name': 'size',
+                                'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/eventHist-items/EventHistory-list/size'
+                            },
+                            {
+                                'nodetype': 'leaf',
+                                'datatype': '',
+                                'value': 'intfEvents',
+                                'op': '==',
+                                'selected': 'True',
+                                'name': 'type',
+                                'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/eventHist-items/EventHistory-list/type'
+                            },
+                            {
+                                'nodetype': 'leaf',
+                                'datatype': 'igmp_Size',
+                                'value': 20,
+                                'op': '==',
+                                'selected': 'True',
+                                'name': 'size',
+                                'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/eventHist-items/EventHistory-list/size'
+                            },
+                            {
+                                'nodetype': 'leaf',
+                                'datatype': '',
+                                'value': 'mtrace',
+                                'op': '==',
+                                'selected': 'True',
+                                'name': 'type',
+                                'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/eventHist-items/EventHistory-list/type'
+                            },
+                            {
+                                'nodetype': 'leaf',
+                                'datatype': 'igmp_Size',
+                                'value': 20,
+                                'op': '==',
+                                'selected': 'True',
+                                'name': 'size',
+                                'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/eventHist-items/EventHistory-list/size'
+                            },
+                            {
+                                'nodetype': 'leaf',
+                                'datatype': '',
+                                'value': 'mvr',
+                                'op': '==',
+                                'selected': 'True',
+                                'name': 'type',
+                                'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/eventHist-items/EventHistory-list/type'
+                            },
+                            {
+                                'nodetype': 'leaf',
+                                'datatype': 'igmp_Size',
+                                'value': 20,
+                                'op': '==',
+                                'selected': 'True',
+                                'name': 'size',
+                                'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/eventHist-items/EventHistory-list/size'
+                            },
+                            {
+                                'nodetype': 'leaf',
+                                'datatype': '',
+                                'value': 'policy',
+                                'op': '==',
+                                'selected': 'True',
+                                'name': 'type',
+                                'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/eventHist-items/EventHistory-list/type'
+                            },
+                            {
+                                'nodetype': 'leaf',
+                                'datatype': 'igmp_Size',
+                                'value': 20,
+                                'op': '==',
+                                'selected': 'True',
+                                'name': 'size',
+                                'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/eventHist-items/EventHistory-list/size'
+                            },
+                            {
+                                'nodetype': 'leaf',
+                                'datatype': '',
+                                'value': 'vrf',
+                                'op': '==',
+                                'selected': 'True',
+                                'name': 'type',
+                                'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/eventHist-items/EventHistory-list/type'
+                            },
+                            {
+                                'nodetype': 'leaf',
+                                'datatype': 'igmp_Size',
+                                'value': 20,
+                                'op': '==',
+                                'selected': 'True',
+                                'name': 'size',
+                                'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/eventHist-items/EventHistory-list/size'
+                            },
+                            {
+                                'nodetype': 'leaf',
+                                'datatype': '',
+                                'value': 'nbm',
+                                'op': '==',
+                                'selected': 'True',
+                                'name': 'type',
+                                'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/eventHist-items/EventHistory-list/type'
+                            },
+                            {
+                                'nodetype': 'leaf',
+                                'datatype': 'igmp_Size',
+                                'value': 20,
+                                'op': '==',
+                                'selected': 'True',
+                                'name': 'size',
+                                'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/eventHist-items/EventHistory-list/size'
+                            }
+                        ], 
+                    'verifier': rpc_verify.process_operational_state, 
+                    'namespace_modules': 
+                        {
+                            'top': 'Cisco-NX-OS-device'
+                        }, 
+                    'decode': GnmiMessage.decode_notification, 
+                    'log': log
+                }
+
+        # Response 1
+        path_elem1 = proto.gnmi_pb2.PathElem()
+        path_elem1.KeyEntry.key = ""
+        path_elem1.KeyEntry.value = ""
+        path_elem1.name = "System"
+        
+        path1 = proto.gnmi_pb2.Path()
+        path1.origin = "device"
+        path1.elem.append(path_elem1)
+
+        val1 = {
+            "igmp-items":
+                {
+                "inst-items":
+                    {
+                    "dom-items":
+                        {
+                        "Dom-list":
+                            [
+                                {
+                                    "name":"default",
+                                    "eventHist-items":
+                                        {
+                                    "EventHistory-list":
+                                        [
+                                            {
+                                                "type":"nbm",
+                                                "size":20
+                                            },
+                                            {
+                                                "type":"groupDebugs",
+                                                "size":20
+                                            },
+                                            {
+                                                "type":"intfDebugs",
+                                                "size":20
+                                            },
+                                            {
+                                                "type":"ha",
+                                                "size":20
+                                            },
+                                            {
+                                                "type":"mtrace",
+                                                "size":20
+                                            },
+                                            {
+                                                "type":"igmpInternal",
+                                                "size":20
+                                            },
+                                            {
+                                                "type":"intfEvents",
+                                                "size":20
+                                            },
+                                            {
+                                                "type":"groupEvents",
+                                                "size":20
+                                            },
+                                            {
+                                                "type":"cli",
+                                                "size":20
+                                            },
+                                            {
+                                                "type":"policy",
+                                                "size":20
+                                            },
+                                            {
+                                                "type":"mvr",
+                                                "size":20
+                                            },
+                                            {
+                                                "type":"vrf",
+                                                "size":20
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        val1 = json.dumps(val1).encode('utf-8')
+
+        value1 = proto.gnmi_pb2.TypedValue()
+        value1.json_val = val1
+
+        update1 = proto.gnmi_pb2.Update()
+        update1.path.MergeFrom(path1)
+        update1.val.MergeFrom(value1)
+
+        notification1 = proto.gnmi_pb2.Notification()
+        notification1.timestamp = 0
+        notification1.prefix.MergeFrom(proto.gnmi_pb2.Path())
+        notification1.update.append(update1)
+
+        response1 = proto.gnmi_pb2.SubscribeResponse()
+        response1.update.MergeFrom(notification1)
+
+        # Response 2
+        response2 = proto.gnmi_pb2.SubscribeResponse()
+        response2.sync_response = True
+    
+        # initiate subscription thread
+        subscribe_thread = GnmiNotification(
+            [response1, response2],
+            **request
+        )
+        subscribe_thread.start()
+                
+        # Wait till the thread is stopped.
+        subscribe_thread.join()
 
         # Test the result
         self.assertEqual(subscribe_thread.result, True)
