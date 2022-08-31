@@ -757,3 +757,19 @@ def hardware_qfp_active_ipsec_data_drop_clear(device):
         log.error(e)
         raise SubCommandFailure(f"Could not execute active ipsec data drop clear command")
 
+
+def execute_clear_parser_statistics(device):
+    """ clear parser statistics
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+       device.execute("clear parser statistics")
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not clear parser statistics on device")
+

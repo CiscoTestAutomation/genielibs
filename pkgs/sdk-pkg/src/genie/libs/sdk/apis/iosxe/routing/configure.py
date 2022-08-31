@@ -200,7 +200,7 @@ def unconfigure_routing_static_routev6(
 
 
 def configure_routing_static_route(
-    device, route, mask, interface=None, destination_address=None, vrf=None
+    device, route, mask, interface=None, destination_address=None, vrf=None    
 ):
     """ Configure static ip route on device
 
@@ -210,7 +210,7 @@ def configure_routing_static_route(
             mask (str): mask the ip address
             interface ('str'): interface name to configure
             destination_address('str'): destination address to configure
-            vrf ('str',optional): Vrf for static route
+            vrf ('str',optional): Vrf for static route            
 
         Returns:
             None
@@ -228,6 +228,9 @@ def configure_routing_static_route(
     elif vrf and interface:
         configs.append(
             f"ip route vrf {vrf} {route} {mask} {interface}")
+    elif vrf and destination_address and interface:
+        configs.append(
+            f"ip route vrf {vrf} {route} {mask} {interface} {destination_address} global")
     elif interface:
         configs.append(
             f"ip route {route} {mask} {interface}")

@@ -1,12 +1,14 @@
 configure:
   commands:
+    50 permit tcp host 1.1.1.1 eq 2001 host 2.2.2.2 eq 80 reflect R10000 timeout 120: "50\
+      \ permit tcp host 1.1.1.1 eq 2001 host 2.2.2.2 eq 80 reflect R10000 timeout\
+      \ 120\r\n"
     end:
       new_state: execute
-    ip access-list extended test1: "ip access-list extended test1\r\n"
+    ip access-list extended test2: "ip access-list extended test2\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''
-    " permit igmp any any reflect R2  ": " permit igmp any any reflect R2  \r\n"
   prompt: Cat9600-SVL_CGW(config)#
 configure_line:
   commands:

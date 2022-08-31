@@ -1,0 +1,104 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: nyquist3-sjc24(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: nyquist3-sjc24(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show idprom interface TenGigabitEthernet1/1/6:
+      response:
+      - "\r\nGeneral SFP Information\r\n-----------------------------------------------\r\
+        \nIdentifier            :   SFP/SFP+\r\nExt.Identifier        :   SFP function\
+        \ is defined by two-wire interface ID only\r\nConnector             :   LC\
+        \ connector\r\nTransceiver\r\n 10/40GE Comp code       :   10G BASE-SR\r\n\
+        \ SONET Comp code      :   Unknown\r\n GE Comp code         :   Unknown\r\n\
+        \ Link length          :   Unknown\r\n Technology           :   Unknown\r\n\
+        \ Media                :   Unknown\r\n Speed                :   Unknown\r\n\
+        Encoding              :   64B/66B\r\nBR_Nominal            :   10300 Mbps\r\
+        \nLength(9um)-km        :   GBIC does not support single mode fibre\r\nLength(9um)\
+        \           :   GBIC does not support single mode fibre\r\nLength(50um)  \
+        \        :   80 m\r\nLength(62.5um)        :   20 m\r\nLength(Copper)    \
+        \    :   GBIC does not support 50 micron multi mode OM4 fibre\r\nVendor Name\
+        \           :   CISCO-AVAGO     \r\nVendor Part Number    :   SFBR-709SMZ-CS1\
+        \ \r\nVendor Revision       :   0x47 0x34 0x2E 0x31\r\nVendor Serial Number\
+        \  :   AVD212292NK     \r\nWavelength            :   850.00 nm\r\nCC_BASE\
+        \               :   0x17\r\n-----------------------------------------------\r\
+        \n\r\nExtended ID Fields\r\n-----------------------------------------------\r\
+        \nOptions               :   0x00 0x1A\r\nBR, max               :   0x00\r\n\
+        BR, min               :   0x00\r\nDate code             :   170605\r\nDiag\
+        \ monitoring       :   Implemented\r\nInternally calibrated :   Yes\r\nExeternally\
+        \ calibrated:   No\r\nRx.Power measurement  :   Avg.Power\r\nAddress Change\
+        \        :   Not Required\r\nCC_EXT                :   0x2E\r\n-----------------------------------------------\r\
+        \n\r\nOther Information\r\n-----------------------------------------------\r\
+        \nChk for link status   : 00\r\nFlow control Receive  : ON\r\nFlow control\
+        \ Send     : Off\r\nAdministrative Speed  : 10000\r\nAdministrative Duplex\
+        \ : full \r\nOperational Speed     : 10000\r\nOperational Duplex    : auto\r\
+        \n-----------------------------------------------\r\n\r\nSEEPROM contents\
+        \ (hex):\r\n 0x00: 03 04 07 10 00 00 00 00 00 00 00 06 67 00 00 00\r\n 0x10:\
+        \ 08 02 00 1E 43 49 53 43 4F 2D 41 56 41 47 4F 20\r\n 0x20: 20 20 20 20 00\
+        \ 00 17 6A 53 46 42 52 2D 37 30 39\r\n 0x30: 53 4D 5A 2D 43 53 31 20 47 34\
+        \ 2E 31 03 52 00 17\r\n 0x40: 00 1A 00 00 41 56 44 32 31 32 32 39 32 4E 4B\
+        \ 20\r\n 0x50: 20 20 20 20 31 37 30 36 30 35 20 20 68 F0 03 2E\r\n 0x60: 00\
+        \ 00 06 14 16 2D C8 79 47 69 75 F7 7A 5A CA 65\r\n 0x70: 4E 4A EE 00 00 00\
+        \ 00 00 00 00 00 00 F4 F4 93 53\r\n-----------------------------------------------"
+      response_type: circular
+    show interfaces transceiver detail:
+      response:
+      - "mA: milliamperes, dBm: decibels (milliwatts), NA or N/A: not applicable.\r\
+        \n++ : high alarm, +  : high warning, -  : low warning, -- : low alarm.\r\n\
+        A2D readouts (if they differ), are reported in parentheses.\r\nThe threshold\
+        \ values are calibrated.\r\n\r\n                                High Alarm\
+        \  High Warn  Low Warn   Low Alarm\r\n             Temperature        Threshold\
+        \   Threshold  Threshold  Threshold\r\nPort         (Celsius)          (Celsius)\
+        \   (Celsius)  (Celsius)  (Celsius)\r\n---------    -----------------  ----------\
+        \  ---------  ---------  ---------\r\nTe1/1/6      34.1                  \
+        \ 75.0       70.0        0.0       -5.0\r\n\r\n                          \
+        \      High Alarm  High Warn  Low Warn   Low Alarm\r\n             Voltage\
+        \            Threshold   Threshold  Threshold  Threshold\r\nPort         (Volts)\
+        \            (Volts)     (Volts)    (Volts)    (Volts)\r\n---------    -----------------\
+        \  ----------  ---------  ---------  ---------\r\nTe1/1/6      3.29      \
+        \             3.63       3.46       3.13       2.97\r\n\r\n              \
+        \                    High Alarm  High Warn  Low Warn   Low Alarm\r\n     \
+        \            Current          Threshold   Threshold  Threshold  Threshold\r\
+        \nPort       Lane  (milliamperes)   (mA)        (mA)       (mA)       (mA)\r\
+        \n---------  ----  ---------------  ----------  ---------  ---------  ---------\r\
+        \nTe1/1/6    N/A    6.7                 10.5       10.5        2.5       \
+        \ 2.5\r\n\r\n                 Optical          High Alarm  High Warn  Low\
+        \ Warn   Low Alarm\r\n                 Transmit Power   Threshold   Threshold\
+        \  Threshold  Threshold\r\nPort       Lane  (dBm)            (dBm)       (dBm)\
+        \      (dBm)      (dBm)\r\n---------  ----  ---------------  ----------  ---------\
+        \  ---------  ---------\r\nTe1/1/6    N/A   -2.2                  1.7    \
+        \   -1.3       -7.3      -11.3\r\n\r\n                 Optical          High\
+        \ Alarm  High Warn  Low Warn   Low Alarm\r\n                 Receive Power\
+        \    Threshold   Threshold  Threshold  Threshold\r\nPort       Lane  (dBm)\
+        \            (dBm)       (dBm)      (dBm)      (dBm)\r\n---------  ----  ---------------\
+        \  ----------  ---------  ---------  ---------\r\nTe1/1/6    N/A  -40.0  \
+        \                2.0       -1.0       -9.9      -13.9"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: nyquist3-sjc24#

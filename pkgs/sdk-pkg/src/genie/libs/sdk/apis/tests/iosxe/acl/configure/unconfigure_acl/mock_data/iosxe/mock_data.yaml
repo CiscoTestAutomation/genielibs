@@ -2,22 +2,17 @@ configure:
   commands:
     end:
       new_state: execute
-    line console:
-      new_state: configure_line
     line console 0:
       new_state: configure_line
-    no ip access-list extended 40: "no ip access-list extended 40\r\n"
-    no ip access-list standard 40: "no ip access-list standard 40\r\n"
+    no ip access-list extended True: "no ip access-list extended True\r\n"
     no logging console: ''
-  prompt: R1_xe(config)#
+  prompt: Cat9600-SVL_CGW(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-    line vty: ''
-    terminal width 511: ''
-  prompt: R1_xe(config-line)#
+  prompt: Cat9600-SVL_CGW(config-line)#
 connect:
   commands:
     ? ''
@@ -37,6 +32,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-    term width 511: ''
-    terminal session-timeout 0: ''
-  prompt: R1_xe#
+  prompt: Cat9600-SVL_CGW#

@@ -3,19 +3,18 @@ configure:
     end:
       new_state: execute
     interface HundredGigE1/0/1: "interface HundredGigE1/0/1\r\n"
-    interface HundredGigE1/0/6: "WARNING: Stackwise Virtual Configuration for HundredGigE1/0/1\
-      \ will be removed.\r\n"
+    interface HundredGigE1/0/10: "interface HundredGigE1/0/10\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''
-    no stackwise-virtual link 1: "interface HundredGigE1/0/6\r\n"
-  prompt: farscape-pinfra-5(config)#
+    no stackwise-virtual link 1: "no stackwise-virtual link 1\r\n"
+  prompt: Switch(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: farscape-pinfra-5(config-line)#
+  prompt: Switch(config-line)#
 connect:
   commands:
     ? ''
@@ -35,4 +34,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: farscape-pinfra-5#
+  prompt: Switch#

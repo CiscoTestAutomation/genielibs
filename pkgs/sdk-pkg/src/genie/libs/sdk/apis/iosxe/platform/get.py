@@ -21,7 +21,6 @@ from unicon.core.errors import SubCommandFailure
 # Logger
 log = logging.getLogger(__name__)
 
-
 def get_platform_standby_rp(device, max_time=1200, interval=120):
     """ Get standby router slot on device
         Args:
@@ -769,3 +768,58 @@ def get_total_asics_cores(device, switch = None):
     total_cores = list(total_cores)
 
     return total_asics, total_cores 
+
+def get_platform_model_number(device):
+    """Get platform model number or chassis type of device
+
+    Args:
+        device (obj): Device object
+
+    Return:
+        str: Device model number or chassis type
+    """
+
+    try:
+        out_inventory = device.parse('show inventory').q.contains('chassis').get_values('pid', 0)
+        output_detail=out_inventory
+    except SubCommandFailure:
+        log.info('Could not get device chassis type from inventory information')
+        return None
+
+    try:
+        out_version = device.parse('show version').q.contains('version').get_values('chassis', 0)
+    except SubCommandFailure:
+        log.info('Could not get device chassis type from version information')
+        return None
+
+    if out_inventory == out_version:
+        return output_detail
+    else:
+        log.info(
+            'Could not get device "platform model number", mismatch in chassis type in "inventory" and "version" information'
+        )
+        return None
+
+def get_number_of_interfaces(device):
+    """ Gets the device number of interfaces
+        Args:
+            device (`obj`): Device object
+        Returns:
+            number of interfaces
+            False if None
+    """
+    
+    try:
+        # Execute 'show version'
+        out = device.parse("show version")
+    except SchemaEmptyParserError as e:
+        log.error("Command 'show version' did not return any results: {e}".format(e=e))
+    except SchemaMissingKeyError as e:
+        log.error("Missing key while parsing 'show version': {e}".format(e=e))
+    except Exception as e:
+        log.error("Failed to parse 'show version': {e}".format(e=e))
+    else:        
+        return out['version']['number_of_intfs']
+
+    return False
+        

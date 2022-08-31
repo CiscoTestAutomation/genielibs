@@ -260,10 +260,13 @@ def get_component_descr(device):
         r'^Switch\s+(?P<sw_number>\d+)\s+\-\s+C\d+\-\d+\w+\s+\-\s+FAN\s+(?P<fan_number>\d+)$')
 
     # Cisco Catalyst 9400 Series Fan
+    p1 = re.compile(
+        r'^Cisco Catalyst\s+\d+\s+Series +Fan$')
+
     # Cisco Catalyst 9400 Series 7 Slot Chassis Fan Tray
     # Cisco Catalyst 9600 Series C9606 Chassis Fan Tray
-    p1 = re.compile(
-        r'^Cisco Catalyst\s+\d+\s+Series (Fan|[\d\w]+)(\s+Slot)?(\s+Chassis Fan Tray)?$')
+    p2 = re.compile(
+        r'^Cisco Catalyst\s+\d+\s+Series +[\d\w]+(\s+Slot)?\s+Chassis Fan Tray$')
 
     for index, descr_raw in enumerate(descr_raw_list):
         
@@ -276,18 +279,26 @@ def get_component_descr(device):
             continue
 
         # Cisco Catalyst 9400 Series Fan
-        # Cisco Catalyst 9400 Series 7 Slot Chassis Fan Tray
-        # Cisco Catalyst 9600 Series C9606 Chassis Fan Tray
         m = p1.match(descr_raw)
         if m:
             group = m.groupdict()
-            descr = "FAN "+name_list[index][3:]  # 'Cisco Catalyst 9400 Series Fan' to 'FAN x/x' , 'Cisco Catalyst 9400 Series 7 Slot Chassis Fan Tray' to 'FAN Tray'
+            descr = "FAN "+name_list[index][3:]  # 'Cisco Catalyst 9400 Series Fan' to 'FAN x/x' 
+            descr_list.append(descr)
+            continue
+
+        # Cisco Catalyst 9400 Series 7 Slot Chassis Fan Tray
+        # Cisco Catalyst 9600 Series C9606 Chassis Fan Tray
+        m = p2.match(descr_raw)
+        if m:
+            group = m.groupdict()
+            descr = "FAN Tray"  # 'Cisco Catalyst 9400 Series 7 Slot Chassis Fan Tray' to 'FAN Tray'
             descr_list.append(descr)
             continue
         
         descr_list.append(descr_raw)
     
     return {"name":name_list, "descr":descr_list}
+
 
 def get_hardware_version(device):
     """

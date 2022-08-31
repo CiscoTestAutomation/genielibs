@@ -1,0 +1,46 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: PI-9300-Stack-103(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: PI-9300-Stack-103(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    install add file bootflash:cat9k_iosxe.2022-06-06_12.21_mcpre.24042.CSCvq24042.SSA.smu.bin:
+      response:
+      - "$22-06-06_12.21_mcpre.24042.CSCvq24042.SSA.smu.bin\r\ninstall_add: START\
+        \ Sun Aug 07 12:13:49 UTC 2022\r\ninstall_add: Adding IMG\r\n [1] Switch 1\
+        \ Add succeed with reason: SMU Already Added-No Change\r\n [2] Switch 2 Add\
+        \ succeed with reason: SMU Already Added-No Change\r\n [3] Switch 3 Add succeed\
+        \ with reason: SMU Already Added-No Change\r\nSUCCESS: install_add"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    write memory:
+      response:
+      - "Building configuration...\r\n[OK]"
+      response_type: circular
+  prompt: PI-9300-Stack-103#

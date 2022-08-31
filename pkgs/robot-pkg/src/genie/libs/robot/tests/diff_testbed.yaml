@@ -1,0 +1,7 @@
+devices:
+  r1:
+    alias: uut
+    os: iosxr
+    connections:
+      cli:
+        command: mock_device_cli --os iosxr --mock_data_dir mock_device --state connect

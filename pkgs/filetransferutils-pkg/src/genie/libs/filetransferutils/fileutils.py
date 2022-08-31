@@ -37,7 +37,8 @@ FAIL_MSG = ['Permission denied[^,]', 'failed to copy', 'Unable to find', 'Error 
 class FileUtils(FileUtilsBase):
 
     def send_cli_to_device(self, cli, used_server=None, invalid=None,
-                           timeout_seconds=300, prompt_recovery=True, **kwargs):
+                           timeout_seconds=300, prompt_recovery=True,
+                           destination='', **kwargs):
         """ Send command to a particular device and deal with its result
 
             Parameters
@@ -50,6 +51,8 @@ class FileUtils(FileUtilsBase):
                   The number of seconds to wait before aborting the operation.
                 used_server: `str`
                   Server address/name
+                destination: `str`
+                  Destination url/path
 
             Returns
             -------
@@ -80,8 +83,7 @@ class FileUtils(FileUtilsBase):
         # AttributeError
         device = kwargs.get('device') or getattr(self, 'device', None)
         if not device:
-            raise AttributeError("Device object is missing, can't proceed with"
-                                 " execution")
+            raise AttributeError("Device object is missing, can't proceed with execution")
 
         # Extracting username and password to be used during device calls
         if used_server:
@@ -96,6 +98,16 @@ class FileUtils(FileUtilsBase):
             username = None
             password = None
 
+        destination_filename = ''
+        if destination:
+            # proto://server:port//filename.bin -> /filename.bin
+            # bootflash:/filename.bin -> /filename.bin
+            try:
+                p = urlparse(destination)
+                destination_filename = p.path.replace('//', '/')
+            except Exception:
+                pass
+
         # Checking if user passed any extra invalid patterns
         if 'invalid' in kwargs:
             invalid = kwargs['invalid']
@@ -107,7 +119,7 @@ class FileUtils(FileUtilsBase):
                       loop_continue=True,
                       continue_timer=False),
             Statement(pattern=r'Destination filename.*',
-                      action='sendline()',
+                      action=f'sendline({destination_filename})',
                       loop_continue=True,
                       continue_timer=False),
             Statement(pattern=r'Abort Copy?\[confirm\]',
@@ -131,7 +143,7 @@ class FileUtils(FileUtilsBase):
                       loop_continue=True,
                       continue_timer=False),
             Statement(pattern=r'.*[D|d]estination file *name.*',
-                      action='sendline()',
+                      action=f'sendline({destination_filename})',
                       loop_continue=True,
                       continue_timer=False),
             Statement(pattern=r'Enter username:',

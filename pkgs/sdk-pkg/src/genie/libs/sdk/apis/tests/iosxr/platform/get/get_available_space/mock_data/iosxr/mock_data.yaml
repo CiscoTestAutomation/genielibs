@@ -1,0 +1,32 @@
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    dir:
+      response:
+      - "\rTue Jul 19 17:47:49.250 UTC\r\r\n\r\r\nDirectory of /misc/scratch\r\r\n\
+        \   11 drwx------. 2  16384 Jul  4 14:39 lost+found\r\r\n16353 drwxr-xr-x.\
+        \ 8   4096 Jul 19 17:10 ztp\r\r\n   46 -rw-r--r--. 1   1527 Jul 19 17:09 status_file\r\
+        \r\n   12 drwxr-xr-x. 2   4096 Jul  4 14:39 core\r\r\n 8181 drwxr-xr-x. 2\
+        \   4096 Jul  5 20:51 nvgen_traces\r\r\n   43 -rw-rw-rw-. 1  16231 Jul 19\
+        \ 17:10 cvac.log\r\r\n 8177 drwx---r-x. 2   4096 Jul  4 14:39 clihistory\r\
+        \r\n   14 -rw-r--r--. 1 594453 Jul 19 17:07 pnet_cfg.log\r\r\n 8178 drwxr-xr-x.\
+        \ 3   4096 Jul  4 14:41 syslog-hm\r\r\n   18 -rw-r--r--. 1    113 Jul 19 17:26\
+        \ oor_aware_process\r\r\n 8180 drwxrwxrwx. 3   4096 Jul  4 14:45 cvac\r\r\n\
+        \   15 lrwxrwxrwx. 1     12 Jul  4 14:39 config -> /misc/config\r\r\n   13\
+        \ -rw-r--r--. 1   1438 Jul 19 17:07 envoke_log\r\r\n 8179 drwxr-xr-x. 2  \
+        \ 4096 Jul  4 14:42 crypto\r\r\n\r\r\n1012660 kbytes total (933916 kbytes\
+        \ free)"
+      response_type: circular
+    show controller dpc rm dpa: ''
+  prompt: RP/0/0/CPU0:R2_xr#

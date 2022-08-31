@@ -428,32 +428,32 @@ request_multiple_list = {
 }
 
 json_decoded_multiple_list = {
-  'update': 
+  'update':
   [
     {
-      'path': 
+      'path':
       {
-        'elem': 
+        'elem':
         [
           {
             'name': 'System'
-          }, 
+          },
           {
             'name': 'igmp-items'
-          }, 
+          },
           {
             'name': 'inst-items'
-          }, 
+          },
           {
             'name': 'dom-items'
-          }, 
+          },
           {
             'name': 'Dom-list',
-            'key': 
+            'key':
             {
               'name': 'default'
             }
-          }, 
+          },
           {
             'name': 'eventHist-items'
           }
@@ -464,14 +464,14 @@ json_decoded_multiple_list = {
 }
 
 json_val_decoded_multiple_list = {
-  'EventHistory-list': 
+  'EventHistory-list':
   [
     {
     'type': 'nbm',
     'size': 10
-    }, 
+    },
     {
-    'type': 'intfDebugs', 
+    'type': 'intfDebugs',
     'size': 10
     },
     {
@@ -521,22 +521,22 @@ request_nested_list = {
 }
 
 json_decoded_nested_list = {
-  'update': 
+  'update':
   [
     {
-      'path': 
+      'path':
       {
-        'elem': 
+        'elem':
         [
           {
             'name': 'System'
-          }, 
+          },
           {
             'name': 'igmp-items'
-          }, 
+          },
           {
             'name': 'inst-items'
-          }, 
+          },
           {
             'name': 'dom-items'
           }
@@ -547,7 +547,7 @@ json_decoded_nested_list = {
 }
 
 json_val_decoded_nested_list = {
-  "Dom-list": 
+  "Dom-list":
   [
     {
       "name": "default",
@@ -556,38 +556,263 @@ json_val_decoded_nested_list = {
         "type": "nbm", "size": 10
         }
       }
-    }, 
+    },
     {
-      "name": "abc", 
-      "eventHist-items": 
+      "name": "abc",
+      "eventHist-items":
       {
-        "EventHistory-list": 
+        "EventHistory-list":
         {
           "type": "intfDebugs", "size": 10
         }
       }
-    }, 
+    },
     {
-      "name": "cde", 
-      "eventHist-items": 
+      "name": "cde",
+      "eventHist-items":
       {
-        "EventHistory-list": 
+        "EventHistory-list":
         {
           "type": "vrf", "size": 10
         }
       }
-    }, 
+    },
     {
-      "name": "tt", 
-      "eventHist-items": 
+      "name": "tt",
+      "eventHist-items":
       {
-        "EventHistory-list": 
+        "EventHistory-list":
         {
           "type": "groupDebugs", "size": 10
         }
       }
     }
   ]
+}
+
+json_decoded_multiple_key = {
+  'update':
+  [
+    {'path':
+      {'origin': 'openconfig',
+        'elem':
+        [
+          {'name': 'oc-interfaces'}
+        ]
+      }
+    }
+  ]
+}
+
+
+json_val_decoded_multiple_key = {'oc-interface':
+  [
+    {
+      'name': 'TenGigabitEthernet1/0/1',
+      'config':
+      {
+        'type': 'ethernetCsmacd',
+        'description': 'test multiple'
+      }
+    },
+    {
+      'name': 'TenGigabitEthernet1/0/2',
+      'config':
+      {
+        'type': 'ethernetCsmacd',
+        'description': 'test multiple'
+      }
+    }
+  ]
+}
+
+format7 = {
+    'encoding': 'json',
+    'origin': 'openconfig',
+    'prefix': False,
+}
+
+request7 = {
+    'nodes': [
+    {
+        'datatype': 'leafref',
+        'default': '',
+        'value': 'ianaift:ethernetCsmacd',
+        'nodetype': 'leaf',
+        'xpath': '/oc-if:interfaces/oc-if:interface[name="TenGigabitEthernet1/0/1"]/config/type' # noqa
+    },
+    {
+        'datatype': 'leafref',
+        'default': '',
+        'value': 'test multiple',
+        'nodetype': 'leaf',
+        'xpath': '/oc-if:interfaces/oc-if:interface[name="TenGigabitEthernet1/0/1"]/config/description' # noqa
+    },
+    {
+        'datatype': 'leafref',
+        'default': '',
+        'value': 'ianaift:ethernetCsmacd',
+        'nodetype': 'leaf',
+        'xpath': '/oc-if:interfaces/oc-if:interface[name="TenGigabitEthernet1/0/2"]/config/type' # noqa
+    },
+    {
+        'datatype': 'leafref',
+        'default': '',
+        'value': 'test multiple',
+        'nodetype': 'leaf',
+        'xpath': '/oc-if:interfaces/oc-if:interface[name="TenGigabitEthernet1/0/2"]/config/description' # noqa
+    },
+    ],
+    'namespace_modules': {
+    'cisco': 'oc-xr-mapping',
+    'ianaift': 'iana-if-type',
+    'if': 'ietf-interfaces',
+    'inet': 'ietf-inet-types',
+    'ldp': 'openconfig-mpls-ldp',
+    'oc-acl': 'openconfig-acl',
+    'oc-aft': 'openconfig-aft',
+    'oc-aftni': 'openconfig-aft-network-instance',
+    'oc-aftt': 'openconfig-aft-types',
+    'oc-bgp': 'openconfig-bgp',
+    'oc-bgp-pol': 'openconfig-bgp-policy',
+    'oc-bgp-types': 'openconfig-bgp-types',
+    'oc-bgprib-types': 'openconfig-rib-bgp-types',
+    'oc-eth': 'openconfig-if-ethernet',
+    'oc-ext': 'openconfig-extensions',
+    'oc-if': 'openconfig-interfaces',
+    'oc-igmp': 'openconfig-igmp',
+    'oc-igmp-types': 'openconfig-igmp-types',
+    'oc-inet': 'openconfig-inet-types',
+    'oc-ip': 'openconfig-if-ip',
+    'oc-ip-ext': 'openconfig-if-ip-ext',
+    'oc-isis': 'openconfig-isis',
+    'oc-isis-lsdb-types': 'openconfig-isis-lsdb-types',
+    'oc-isis-pol': 'openconfig-isis-policy',
+    'oc-isis-types': 'openconfig-isis-types',
+    'oc-lag': 'openconfig-if-aggregate',
+    'oc-loc-rt': 'openconfig-local-routing',
+    'oc-mpls': 'openconfig-mpls',
+    'oc-mpls-sr': 'openconfig-mpls-sr',
+    'oc-mplst': 'openconfig-mpls-types',
+    'oc-netinst': 'openconfig-network-instance',
+    'oc-netinst-devs': 'cisco-nx-openconfig-network-instance-deviations',
+    'oc-ni-l3': 'openconfig-network-instance-l3',
+    'oc-ni-pol': 'openconfig-network-instance-policy',
+    'oc-ni-types': 'openconfig-network-instance-types',
+    'oc-ospf-pol': 'openconfig-ospf-policy',
+    'oc-ospf-types': 'openconfig-ospf-types',
+    'oc-ospfv2': 'openconfig-ospfv2',
+    'oc-pf': 'openconfig-policy-forwarding',
+    'oc-pim': 'openconfig-pim',
+    'oc-pim-types': 'openconfig-pim-types',
+    'oc-pkt-match': 'openconfig-packet-match',
+    'oc-pkt-match-types': 'openconfig-packet-match-types',
+    'oc-pol-types': 'openconfig-policy-types',
+    'oc-rib-bgp': 'openconfig-rib-bgp',
+    'oc-rpol': 'openconfig-routing-policy',
+    'oc-rsvp': 'openconfig-mpls-rsvp',
+    'oc-sr': 'openconfig-segment-routing',
+    'oc-sr-rsvp-ext': 'openconfig-rsvp-sr-ext',
+    'oc-srt': 'openconfig-segment-routing-types',
+    'oc-types': 'openconfig-types',
+    'oc-vlan': 'openconfig-vlan',
+    'oc-vlan-types': 'openconfig-vlan-types',
+    'oc-yang': 'openconfig-yang-types',
+    'yang': 'ietf-yang-types'
+    },
+    'namespace': {
+    'ianaift': 'urn:ietf:params:xml:ns:yang:iana-if-type',
+    'ietf-if': 'urn:ietf:params:xml:ns:yang:ietf-interfaces',
+    'if': 'urn:ietf:params:xml:ns:yang:ietf-interfaces',
+    'ift': 'urn:ietf:params:xml:ns:yang:iana-if-type',
+    'oc-eth': 'http://openconfig.net/yang/interfaces/ethernet',
+    'oc-ext': 'http://openconfig.net/yang/openconfig-ext',
+    'oc-if': 'http://openconfig.net/yang/interfaces',
+    'oc-inet': 'http://openconfig.net/yang/types/inet',
+    'oc-ip': 'http://openconfig.net/yang/interfaces/ip',
+    'oc-ip-ext': 'http://openconfig.net/yang/interfaces/ip-ext',
+    'oc-lag': 'http://openconfig.net/yang/interfaces/aggregate',
+    'oc-types': 'http://openconfig.net/yang/openconfig-types',
+    'oc-vlan': 'http://openconfig.net/yang/vlan',
+    'oc-vlan-types': 'http://openconfig.net/yang/vlan-types',
+    'oc-yang': 'http://openconfig.net/yang/types/yang',
+    'xr': 'http://cisco.com/ns/yang/cisco-oc-xr-mapping'
+    }
+}
+
+json_decoded_multiple_key_2 = {
+  'update':
+  [
+    {'path':
+      {
+        'elem':
+        [
+          {
+            'name': 'System'
+          },
+          {
+            'name': 'mrib-items'
+          },
+          {
+            'name': 'inst-items'
+          },
+          {
+            'name': 'dom-items'
+          },
+          {
+            'name': 'Dom-list', 'key':
+            {
+              'name': 'default'
+            }
+          },
+          {
+            'name': 'rpfselect-items'
+          }
+        ]
+      }
+    }
+  ]
+}
+
+json_val_decoded_multiple_key_2 = {
+  'RpfSelect-list':
+  [
+    {
+      'vrfName': '224.2.2.2/32', 'srcPfx': '224.1.1.1/32', 'prop': 'test1'
+    },
+    {
+      'vrfName': '224.2.2.2/33', 'srcPfx': '224.1.1.2/33', 'prop': 'test2'
+    }
+  ]
+}
+
+format8 = {
+    'encoding': 'JSON',
+    'origin': ''
+}
+
+request8 = {
+  'nodes': [
+        {
+            'datatype': '',
+            'value': 'test1',
+            'nodetype': 'leaf',
+            'xpath': '/top:System/top:mrib-items/top:inst-items/top:dom-items/top:Dom-list[top:name="default"]/top:rpfselect-items/top:RpfSelect-list[top:vrfName="224.2.2.2/32"][top:srcPfx="224.1.1.1/32"]/prop'
+        },
+        {
+            'datatype': '',
+            'value': 'test2',
+            'nodetype': 'leaf',
+            'xpath': '/top:System/top:mrib-items/top:inst-items/top:dom-items/top:Dom-list[top:name="default"]/top:rpfselect-items/top:RpfSelect-list[top:vrfName="224.2.2.2/33"][top:srcPfx="224.1.1.2/33"]/prop'
+        },
+
+    ],
+    'namespace_modules': {
+        'top': 'http://cisco.com/ns/yang/cisco-nx-os-device'
+    },
+    'namespace': {
+        'top': 'http://cisco.com/ns/yang/cisco-nx-os-device'
+    }
 }
 
 raw_set_dict = {
@@ -711,6 +936,42 @@ class TestGnmiTestRpc(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.maxDiff = None
+
+    def test_set_multiple_list(self):
+        """Verify a List with Multiple Key SET constructs json_val correct."""
+        r5 = deepcopy(request_multiple_list)
+        gmc = GnmiMessageConstructor('set', r5, **format5)
+        jdict = json_format.MessageToDict(gmc.payload)
+        jdict['update'][0].pop('val')
+        self.assertEqual(jdict, json_decoded_multiple_list)
+        self.assertEqual(gmc.json_val, json_val_decoded_multiple_list)
+
+    def test_set_nested_list(self):
+        """Verify a Nested List with Multiple Key SET constructs json_val correct."""
+        r5 = deepcopy(request_nested_list)
+        gmc = GnmiMessageConstructor('set', r5, **format6)
+        jdict = json_format.MessageToDict(gmc.payload)
+        jdict['update'][0].pop('val')
+        self.assertEqual(jdict, json_decoded_nested_list)
+        self.assertEqual(gmc.json_val, json_val_decoded_nested_list)
+
+    def test_multiple_list_2(self):
+        """Verify a Multiple list with Multiple Keys constructs json_val correct."""
+        r5 = deepcopy(request8)
+        gmc = GnmiMessageConstructor('set', r5, **format8)
+        jdict = json_format.MessageToDict(gmc.payload)
+        jdict['update'][0].pop('val')
+        self.assertEqual(jdict, json_decoded_multiple_key_2)
+        self.assertEqual(gmc.json_val, json_val_decoded_multiple_key_2)
+
+    def test_multiple_list(self):
+        """Verify a Multiple list with "/" constructs json_val correct."""
+        r5 = deepcopy(request7)
+        gmc = GnmiMessageConstructor('set', r5, **format7)
+        jdict = json_format.MessageToDict(gmc.payload)
+        jdict['update'][0].pop('val')
+        self.assertEqual(jdict, json_decoded_multiple_key)
+        self.assertEqual(gmc.json_val, json_val_decoded_multiple_key)
 
     def test_set_multiple_list(self):
         """Verify a List with Multiple Key SET constructs json_val correct."""

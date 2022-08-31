@@ -3,6 +3,7 @@ import re
 import time
 import shutil
 import os.path
+import fnmatch
 import logging
 import ipaddress
 from typing import List
@@ -378,7 +379,7 @@ copy_to_linux:
             'directory': str,
             Optional('hostname'): str
         },
-        'protocol': str,
+        Optional('protocol'): str,
         Optional('timeout'): int,
         Optional('check_image_length'): bool,
         Optional('overwrite'): bool,
@@ -1458,33 +1459,13 @@ reload:
             except Exception:
                 log.warning("Failed to destroy the device connection but "
                             "attempting to continue", exc_info=True)
-            device.instantiate()
-            rommon_to_disable = None
-            try:
-                if device.is_ha and hasattr(device, 'subconnections'):
-                    if hasattr(device.subconnections,'__getitem__'):
-                        rommon_to_disable = device.subconnections[0].state_machine.get_path('rommon', 'disable')
-                else:
-                    rommon_to_disable = device.state_machine.get_path('rommon', 'disable')
-            except ValueError:
-                log.warning('There is no path between rommon and disable states.')
-            except IndexError:
-                log.warning('There is no connection in device.subconnections')
-            if rommon_to_disable and hasattr(rommon_to_disable, 'command'):
-                original_command = rommon_to_disable.command
-                if device.is_ha:
-                    index = device.subconnections[0].state_machine.paths.index(rommon_to_disable)
-                    for subcon in device.subconnections:
-                        subcon.state_machine.paths[index].command = lambda state,spawn,context: raise_(Exception(f'Device {device.name} is still '
-                                                                    f'in rommon state after reload.'))
-                else:
-                    index = device.state_machine.paths.index(rommon_to_disable)
-                    device.state_machine.paths[index].command = lambda state,spawn,context: raise_(Exception(f'Device {device.name} is still '
-                                                                    f'in rommon state after reload.'))
             connect_kwargs = {
                         'learn_hostname': True,
                         'prompt_recovery': reload_service_args['prompt_recovery']
                     }
+
+            if reconnect_via:
+                connect_kwargs.update({'via': reconnect_via})
 
             device.instantiate(**connect_kwargs)
             rommon_to_disable = None
@@ -1510,22 +1491,10 @@ reload:
                     device.state_machine.paths[index].command = lambda state,spawn,context: raise_(Exception(f'Device {device.name} is still '
                                                                     f'in rommon state after reload.'))
 
-            if reconnect_via:
-                connect_kwargs.update({'via': reconnect_via})
-
             try:
                 device.connect()
             except Exception as e:
                 step.failed("Failed to reconnect", from_exception=e)
-            if rommon_to_disable and hasattr(rommon_to_disable, 'command'):
-                if device.is_ha:
-                    index = device.subconnections[0].state_machine.paths.index(rommon_to_disable)
-                    for subcon in device.subconnections:
-                        subcon.state_machine.paths[index].command = original_command
-                else:
-                    index = device.state_machine.paths.index(rommon_to_disable)
-                    device.state_machine.paths[index].command = original_command
-
             if rommon_to_disable and hasattr(rommon_to_disable, 'command'):
                 if device.is_ha:
                     index = device.subconnections[0].state_machine.paths.index(rommon_to_disable)
@@ -1561,6 +1530,71 @@ reload:
                     step.failed("Modules are not in a stable state",
                                 from_exception=e)
 
+class ExecuteCommand(BaseStage):
+    """Executing commands on the device.
+
+Stage Schema
+------------
+execute_command:
+
+    commands (list): List of commands to execute.
+
+    execute_timeout (int, optional): Max time in seconds allowed for executing the
+        command. Defaults to 60.
+
+    sleep_time(int,optional): Time in seconds to sleep after running each command.
+
+Example
+-------
+execute_command:
+    commands:
+        - show version
+        - show boot
+    execute_timeout: 60
+    sleep_time: 10
+
+"""
+
+    # =================
+    # Argument Defaults
+    # =================
+    EXECUTE_TIMEOUT = 60
+    SLEEP_TIME = 10
+    # ============
+    # Stage Schema
+    # ============
+    schema = {
+        'commands': list,
+        Optional('execute_timeout'): int,
+        Optional('sleep_time'): int,
+    }
+
+    # ==============================
+    # Execution order of Stage steps
+    # ==============================
+    exec_order = [
+        'execute_command'
+    ]
+
+    def execute_command(self, steps, device, commands,
+                        execute_timeout=EXECUTE_TIMEOUT,
+                        sleep_time=SLEEP_TIME):
+
+        # User has provided a list of commands to apply onto device
+        with steps.start("Executing commands on the device {} ".\
+                         format(device.name)) as step:
+            for cmd in commands:
+                try:
+                    device.execute(cmd, timeout=execute_timeout)
+                except Exception as e:
+                    step.failed("Error while executing command on the device "
+                                "{}\n{}".format(device.name, str(e)))
+                else:
+                    log.info(f"Sleeping for {sleep_time} seconds.")
+                    time.sleep(sleep_time)
+            step.passed(
+                "Successfully executed commands on the device {} ".format(
+                    device.name))
 
 class ApplyConfiguration(BaseStage):
     """Apply configuration on the device, either by providing a file or a
@@ -2194,6 +2228,76 @@ delete_files_from_server:
                         substep.passx(f"Failed to delete '{file}'", from_exception=e)
 
 
+class DeleteFiles(BaseStage):
+    """Delete files from the device.
+
+Uses the `delete_files` device API.
+
+Stage Schema
+------------
+delete_files:
+
+    files (list): List of files including location.
+
+    regex (bool, optional): If regex is used in the file names, set to True. Default False.
+
+Example
+-------
+delete_files:
+    - flash:core/*.gz
+    - crashinfo/*.tar.gz
+"""
+
+    # =================
+    # Argument Defaults
+    # =================
+    REGEX = False
+
+    # ============
+    # Stage Schema
+    # ============
+    schema = {
+        'files': list,
+        Optional('regex'): bool,
+    }
+
+    # ==============================
+    # Execution order of Stage steps
+    # ==============================
+    exec_order = [
+        'delete_files',
+    ]
+
+    def delete_files(self, steps, device, files, regex=REGEX):
+
+        for fn in files:
+            with steps.start(f"Delete '{fn}' from the device") as step:
+
+                # if the filename as a location specified as bootflash:filename, use location1 as "bootflash:"
+                location1 = fn.split(':')[0] + ':' if ':' in fn else ''
+                # if the filename has a slash specified, e.g. flash:/directory/filename, use location2 as "flash:/directory"
+                location2 = '/'.join(fn.split('/')[:-1]) if len(fn.split('/')) > 1 else ''
+                location = location2 or location1
+
+                # Get the filename portion of the expression
+                # if only ':' in the filename, use filenames1
+                filenames1 = fn.split(':')[-1] if ':' in fn else fn
+                # if '/' in filename, get the part after the /
+                filenames = fn.split('/')[-1] if len(fn.split('/')) > 1 else filenames1
+
+                # If user did not specify regex to be used, assume unix filename matching
+                # Translate the expresion to a regex one to pass to the API
+                if not regex:
+                    filenames = fnmatch.translate(filenames)
+
+                log.debug(f'Delete files - Location: {location} filenames: {filenames}')
+
+                try:
+                    device.api.delete_files(locations=[location], filenames=[filenames])
+                except Exception as e:
+                    step.failed("Failed to delete the file.", from_exception=e)
+
+
 class RevertVmSnapshot(BaseStage):
     """This stage reverts the virtual device to the provided snapshot
 
@@ -2574,8 +2678,16 @@ power_cycle:
     boot_timeout (int, optional): Max time in seconds allowed for the
         device to boot. Defaults to 600.
 
+    sleep_before_connect (int, optional): Time to sleep before connecting
+        to the device. Defaults to 60 seconds.
+
     sleep_after_connect (int, optional): Time to sleep after connecting
         to the device. Defaults to 0 (no sleep).
+
+    connect_arguments (dict, optional): Arguments to connect() method.
+
+    connect_retry_wait (int, optional). Time to wait before retrying to
+        connect to the device. Defaults to 60 seconds.
 
 Example
 -------
@@ -2589,7 +2701,10 @@ power_cycle:
     # =================
     SLEEP_AFTER_POWER_OFF = 30
     BOOT_TIMEOUT = 600
+    SLEEP_BEFORE_CONNECT = 60
     SLEEP_AFTER_CONNECT = 0
+    CONNECT_ARGUMENTS = {}
+    CONNECT_RETRY_WAIT = 60
 
     # ============
     # Stage Schema
@@ -2597,7 +2712,10 @@ power_cycle:
     schema = {
         Optional('sleep_after_power_off'): int,
         Optional('boot_timeout'): int,
+        Optional('sleep_before_connect'): int,
         Optional('sleep_after_connect'): int,
+        Optional('connect_arguments'): dict,
+        Optional('connect_retry_wait'): int,
     }
 
     # ==============================
@@ -2617,27 +2735,36 @@ power_cycle:
                 step.failed("Failed to powercycle", from_exception=e)
 
     def reconnect(self, steps, device, boot_timeout=BOOT_TIMEOUT,
-                  sleep_after_connect=SLEEP_AFTER_CONNECT):
+                  sleep_before_connect=SLEEP_BEFORE_CONNECT,
+                  sleep_after_connect=SLEEP_AFTER_CONNECT,
+                  connect_arguments=CONNECT_ARGUMENTS,
+                  connect_retry_wait=CONNECT_RETRY_WAIT):
+
+        if sleep_before_connect:
+            with steps.start(f"Sleeping for {sleep_before_connect} seconds before connect") as step:
+                time.sleep(sleep_before_connect)
+                step.passed(f'Waited {sleep_before_connect} seconds')
 
         with steps.start(f"Reconnecting to '{device.name}'") as step:
 
-            timeout = Timeout(boot_timeout, 60)
+            timeout = Timeout(boot_timeout, connect_retry_wait)
             while timeout.iterate():
-                timeout.sleep()
                 device.destroy()
 
                 try:
-                    device.connect(learn_hostname=True)
+                    device.connect(learn_hostname=True, **connect_arguments)
                 except Exception as e:
                     connect_exception = e
-                    log.info("Could not reconnect")
+                    log.info(f"Could not reconnect {e}")
                 else:
                     step.passed("Reconnected")
+
+                timeout.sleep()
 
             step.failed("Could not reconnect", from_exception=connect_exception)
 
         if sleep_after_connect:
-            with steps.start(f"Sleeping for {sleep_after_connect} seconds") as step:
+            with steps.start(f"Sleeping for {sleep_after_connect} seconds after connect") as step:
                 time.sleep(sleep_after_connect)
                 step.passed(f'Waited {sleep_after_connect} seconds')
 

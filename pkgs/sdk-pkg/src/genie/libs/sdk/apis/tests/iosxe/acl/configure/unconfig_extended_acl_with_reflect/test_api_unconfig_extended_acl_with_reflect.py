@@ -17,8 +17,8 @@ class TestUnconfigExtendedAclWithReflect(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: C9600
-            type: C9600
+            platform: c9600
+            type: c9600
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['Cat9600-SVL_CGW']
@@ -29,6 +29,6 @@ class TestUnconfigExtendedAclWithReflect(unittest.TestCase):
         )
 
     def test_unconfig_extended_acl_with_reflect(self):
-        result = unconfig_extended_acl_with_reflect(self.device, 'test1', 'R2', None, 'igmp', None, None, None, None, None, None, None, None, None, '', '', '', None, None)
+        result = unconfig_extended_acl_with_reflect(self.device, 'test2', 'R10000', 'permit', 'tcp', '1.1.1.1', None, None, '3.3.3.3', None, None, None, None, 'host', '10', '120', 'timeout', None, None)
         expected_output = None
         self.assertEqual(result, expected_output)

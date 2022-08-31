@@ -52,6 +52,50 @@ def clear_ip_nhrp(device,
                 .format(device=device, error=e)
         )
 
+def clear_ipv6_nhrp(device,
+                counters=False,
+                shortcut=False,
+                stats=False,
+                vrf=None,
+                timeout=30):
+    """ clear_ipv6_nhrp
+        Args:
+            device (`obj`): Device object
+            counters('boolean', optional): NHRP Counters, default is False
+            shortcut('boolean', optional): NHRP shortcut entries, default is False
+            stats('boolean', optional): Clears all IPv6 Stats Information for all Interfaces, default is False
+            vrf('str', optional) : VRF name, default is None
+            timeout('int', optional): timeout for exec command execution, default is 30
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = "clear ipv6 nhrp"
+    if counters:
+        cmd += " counters"
+        
+    if shortcut:
+        cmd += " shortcut"
+        
+    if stats:
+        cmd += " stats"
+
+    if vrf is not None:
+        cmd += f" vrf {vrf}"
+
+    try:   
+        device.execute(cmd, 
+                    error_pattern=[f'VRF \"{vrf}\" is not valid.','% Invalid input detected at \'\^\' marker\.'], 
+                    timeout=timeout)
+    
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not clear ipv6 nhrp on {device}. Error:\n{error}"
+                .format(device=device, error=e)
+        )
+
 def clear_dmvpn(device,
                 peer=None,
                 static=False,

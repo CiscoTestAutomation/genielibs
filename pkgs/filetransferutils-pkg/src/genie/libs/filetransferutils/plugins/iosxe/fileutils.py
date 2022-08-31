@@ -1,4 +1,5 @@
 """ File utils base class for XE devices. """
+import logging
 
 # Parent inheritance
 from .. import FileUtils as FileUtilsDeviceBase
@@ -9,6 +10,11 @@ try:
 except ImportError:
     # For apidoc building only
     from unittest.mock import Mock; Dir=Mock()
+
+log = logging.getLogger(__name__)
+
+# Maximum length for IOSXE CLI
+MAX_CLI_LENGTH = 253
 
 
 class FileUtils(FileUtilsDeviceBase):
@@ -84,16 +90,27 @@ class FileUtils(FileUtilsDeviceBase):
                                                        'cache_ip', True))
 
         # copy flash:/memleak.tcl ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl
-        if vrf:
-            cmd = 'copy {f} {t} vrf {vrf_value}'.format(f=source,
-                                                        t=destination,
-                                                        vrf_value=vrf)
-        else:
-            # copy flash:/memleak.tcl ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl
-            if vrf:
-                cmd = 'copy {f} {t} vrf {vrf_value}'.format(f=source, t=destination, vrf_value=vrf)
+        cmd = 'copy {f} {t}'.format(f=source, t=destination)
+        if len(cmd) > MAX_CLI_LENGTH:
+            # path is too long for IOSXE CLI, truncate it by using destination without path
+            if '//' in destination:
+                # ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl => ftp://10.1.0.213/
+                idx = destination.rfind('//') + 1
+                dest = destination[:idx]
+            elif ':' in destination:
+                # bootflash:/path/to/file => bootflash:
+                idx = destination.find(':') + 1
+                dest = destination[:idx]
             else:
-                cmd = 'copy {f} {t}'.format(f=source, t=destination)
+                dest = destination
+            cmd = 'copy {f} {t}'.format(f=source, t=dest)
+
+        if vrf:
+            cmd += f' vrf {vrf}'
+
+        # if still too long, log warning and continue
+        if len(cmd) > MAX_CLI_LENGTH:
+            log.warning(f'Command line might be too long ({len(cmd)} chars)')
 
         # Extract the server address to be used later for authentication
         used_server = self.get_server(source, destination)

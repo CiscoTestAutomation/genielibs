@@ -4805,4 +4805,297 @@ def unconfigure_port_channel_lacp_max_bundle(device, port_channel_num, lacp_bund
         raise SubCommandFailure(
             f"Failed to configure interface Port-channel {port_channel_num} lacp max_bundle {lacp_bundle_num} command"            
             )
+        
+def configure_interface_speed(device, interface, speed_mbps):
+    """ Configure speed on interface
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+            speed_mbps (`int`): speed mbps
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        "Configuring speed {speed_mbps} on interface {interface}".format(
+            speed_mbps=speed_mbps, interface=interface
+        )
+    )
 
+    try:
+        device.configure(
+            [
+                "interface {interface}".format(interface=interface),
+                "speed {speed_mbps}".format(speed_mbps=speed_mbps),
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure speed on {interface}. Error:\n{error}".format(
+                interface=interface, error=e
+            )
+        )
+
+def configure_interface_duplex(device, interface, duplex_mode):
+    """ Configure duplex operation on interface
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+            duplex_mode (`str`): duplex operation
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        "Configuring duplex {duplex_mode} on interface {interface}".format(
+            duplex_mode=duplex_mode, interface=interface
+        )
+    )
+
+    try:
+        device.configure(
+            [
+                "interface {interface}".format(interface=interface),
+                "duplex {duplex_mode}".format(duplex_mode=duplex_mode),
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure duplex on {interface}. Error:\n{error}".format(
+                interface=interface, error=e
+            )
+        )
+        
+def configure_ip_igmp_static_group(device, interface, static_group, source_ip=None):
+    """ configures ip igmp static-group in interface level
+
+    Args:
+        device ('obj'): device to use
+        interface ('str'): interface/svi to be configured
+        static_group ('str'): static ip address to be configured
+        source_ip ('str'): source_ip address to be configured
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure
+    """
+
+    
+    cmd = [f"interface {interface}"]
+    if source_ip:
+        cmd.append(f"ip igmp static-group {static_group} source {source_ip}")
+    else:
+        cmd.append(f"ip igmp static-group {static_group}")
+    try:
+        device.configure(cmd)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure static-group Address on interface. Error:\n{e}"
+        )
+
+
+def configure_ipv6_mld_static_group(device, interface, static_group, ipv6_addr=None):
+    """ configures ipv6 mld static-group in interface level
+
+    Args:
+        device ('obj'): device to use
+        interface ('str'): interface/svi to be configured
+        static_group ('str'): static group address to be configured
+        ipv6_addr ('str'): ipv6_addr address to be configured
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure
+    """
+    cmd = [f"interface {interface}"]
+    if ipv6_addr:
+        cmd.append(f"ipv6 mld static-group {static_group} {ipv6_addr}")
+    else:
+        cmd.append(f"ipv6 mld static-group {static_group}")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure ipv6 mld static-group Address on interface "
+            f"{interface}.Error:\n{e}"
+        )
+
+def configure_ip_igmp_join_group(device, interface, join_group, source_ip):
+    """ configures ip igmp join-group in interface level
+
+    Args:
+        device ('obj'): device to use
+        interface ('str'): interface/svi to be configured
+        join_group ('str'): join group address to be configured
+        source_ip ('str'): source_ip address to be configured
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure
+    """
+    cmd = [
+            f"interface {interface}",
+            f"ip igmp join-group {join_group} source {source_ip}",
+          ]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure join-group Address on interface. Error:\n{e}"
+        )
+
+def tunnel_range_shut_unshut(device,
+        start,
+        end,
+        action="shut"):
+    """ Perform shut or unshut of tunnel range interfaces
+        Args:
+             device (`obj`): Device object
+             start ('int'): tunnel start number
+             end (`int`): tunnel start number
+             action ('str', optional) : shut or unshut(Default is shut)
+    """
+    configs = []
+    configs.append(f"interface range Tunnel {start}-{end}")
+    configs.append(f"{action}")
+
+    try:
+         device.configure(configs)
+    except SubCommandFailure as e:
+         raise SubCommandFailure(
+             f"Failed to shut or unshut Tunnel range:\n{e}"
+         )
+
+def configure_ipv4_dhcp_relay_helper_vrf(device, interface, ip_address, vrf):
+    """ Configure helper IP on an interface with VRF
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface to get address
+            ip_address (`str`): helper IP address to be configured on interface
+            vrf ('str'): VRF to be configured
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    cmd_1 = f"interface {interface}"
+    cmd_2 = f"ip helper-address vrf {vrf} {ip_address}"
+
+    # Configure device
+    try:
+        device.configure([cmd_1, cmd_2])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure helper IP address {ip} on interface with VRF"
+            "{interface} on device {dev}. Error:\n{error}".format(
+                ip=ip_address,
+                interface=interface,
+                dev=device.name,
+                error=e,
+            )
+        )
+
+
+def unconfigure_ipv4_dhcp_relay_helper_vrf(device, interface, ip_address, vrf):
+    """ Unconfigure helper IP on an interface with VRF
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface to get address
+            ip_address (`str`): helper IP address to be configured on interface
+            vrf ('str'): VRF to be configured
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    cmd_1 = f"interface {interface}"
+    cmd_2 = f"no ip helper-address vrf {vrf} {ip_address}"
+
+    # Configure device
+    try:
+        device.configure([cmd_1, cmd_2])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfigure helper IP address {ip} on interface with VRF"
+            "{interface} on device {dev}. Error:\n{error}".format(
+                interface=interface,
+                dev=device.name,
+                error=e,
+            )
+        )
+
+
+def configure_vrf_select_source(device, interface):
+    """ Configure VRF select source on an interface 
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface to configure            
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    cmd_1 = f"interface {interface}"
+    cmd_2 = f"ip vrf select source"
+
+    # Configure device
+    try:
+        device.configure([cmd_1, cmd_2])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure VRF select source on interface"
+            "{interface} on device {dev}. Error:\n{error}".format(
+                interface=interface,
+                dev=device.name,
+                error=e,
+            )
+        )
+
+
+def unconfigure_vrf_select_source(device, interface):
+    """ Unconfigure VRF select source on an interface
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface to configure
+            
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    cmd_1 = f"interface {interface}"
+    cmd_2 = f"no ip vrf select source"
+
+    # Configure device
+    try:
+        device.configure([cmd_1, cmd_2])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfigure VRF select source on interface"
+            "{interface} on device {dev}. Error:\n{error}".format(
+                interface=interface,
+                dev=device.name,
+                error=e,
+            )
+        )

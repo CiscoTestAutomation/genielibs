@@ -1,0 +1,45 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: CTLR_1_1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: CTLR_1_1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show fabric ap summary:
+      response:
+      - "Number of Fabric AP : 2\r\n\r\nAP Name                            Slots \
+        \   AP Model              Ethernet MAC    Radio MAC       Location       \
+        \        Country    IP Address      State         \r\n----------------------------------------------------------------------------------------------------------------------------------------------------------------\r\
+        \nAP00B0.E19A.3F60                     2      AIR-AP1852I-B-K9      00b0.e19a.3f60\
+        \  00b0.e19b.61c0  default location         US       107.201.2.152   Registered\
+        \    \r\nAPA023.9F66.51F8                     2      AIR-AP3802I-B-K9    \
+        \  a023.9f66.51f8  4001.7a03.ab80  default location         US       107.201.2.153\
+        \   Registered"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: CTLR_1_1#

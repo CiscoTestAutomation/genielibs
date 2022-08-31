@@ -1,0 +1,117 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: leaf1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: leaf1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show ip mroute vrf red 239.1.1.1 20.20.20.21:
+      response:
+      - "IP Multicast Routing Table\r\nFlags: D - Dense, S - Sparse, B - Bidir Group,\
+        \ s - SSM Group, C - Connected,\r\n       L - Local, P - Pruned, R - RP-bit\
+        \ set, F - Register flag,\r\n       T - SPT-bit set, J - Join SPT, M - MSDP\
+        \ created entry, E - Extranet,\r\n       X - Proxy Join Timer Running, A -\
+        \ Candidate for MSDP Advertisement,\r\n       U - URD, I - Received Source\
+        \ Specific Host Report, \r\n       Z - Multicast Tunnel, z - MDT-data group\
+        \ sender, \r\n       Y - Joined MDT-data group, y - Sending to MDT-data group,\
+        \ \r\n       G - Received BGP C-Mroute, g - Sent BGP C-Mroute, \r\n      \
+        \ N - Received BGP Shared-Tree Prune, n - BGP C-Mroute suppressed, \r\n  \
+        \     Q - Received BGP S-A Route, q - Sent BGP S-A Route, \r\n       V - RD\
+        \ & Vector, v - Vector, p - PIM Joins on route, \r\n       x - VxLAN group,\
+        \ c - PFP-SA cache created entry, \r\n       * - determined by Assert, # -\
+        \ iif-starg configured on rpf intf, \r\n       e - encap-helper tunnel flag,\
+        \ l - LISP decap ref count contributor\r\nOutgoing interface flags: H - Hardware\
+        \ switched, A - Assert winner, p - PIM Join\r\n                          t\
+        \ - LISP transit group\r\n Timers: Uptime/Expires\r\n Interface state: Interface,\
+        \ Next-Hop or VCD, State/Mode\r\n\r\n(20.20.20.21, 239.1.1.1), 00:10:16/00:02:50,\
+        \ flags: FTGqx\r\n  Incoming interface: Vlan100, RPF nbr 0.0.0.0\r\n  Outgoing\
+        \ interface list:\r\n    Vlan500, VXLAN v4 Encap: (50000, 225.2.2.2), Forward/Sparse,\
+        \ 00:10:14/stopped, flags:"
+      - "IP Multicast Routing Table\r\nFlags: D - Dense, S - Sparse, B - Bidir Group,\
+        \ s - SSM Group, C - Connected,\r\n       L - Local, P - Pruned, R - RP-bit\
+        \ set, F - Register flag,\r\n       T - SPT-bit set, J - Join SPT, M - MSDP\
+        \ created entry, E - Extranet,\r\n       X - Proxy Join Timer Running, A -\
+        \ Candidate for MSDP Advertisement,\r\n       U - URD, I - Received Source\
+        \ Specific Host Report, \r\n       Z - Multicast Tunnel, z - MDT-data group\
+        \ sender, \r\n       Y - Joined MDT-data group, y - Sending to MDT-data group,\
+        \ \r\n       G - Received BGP C-Mroute, g - Sent BGP C-Mroute, \r\n      \
+        \ N - Received BGP Shared-Tree Prune, n - BGP C-Mroute suppressed, \r\n  \
+        \     Q - Received BGP S-A Route, q - Sent BGP S-A Route, \r\n       V - RD\
+        \ & Vector, v - Vector, p - PIM Joins on route, \r\n       x - VxLAN group,\
+        \ c - PFP-SA cache created entry, \r\n       * - determined by Assert, # -\
+        \ iif-starg configured on rpf intf, \r\n       e - encap-helper tunnel flag,\
+        \ l - LISP decap ref count contributor\r\nOutgoing interface flags: H - Hardware\
+        \ switched, A - Assert winner, p - PIM Join\r\n                          t\
+        \ - LISP transit group\r\n Timers: Uptime/Expires\r\n Interface state: Interface,\
+        \ Next-Hop or VCD, State/Mode\r\n\r\n(20.20.20.21, 239.1.1.1), 00:10:28/00:02:38,\
+        \ flags: FTGqx\r\n  Incoming interface: Vlan100, RPF nbr 0.0.0.0\r\n  Outgoing\
+        \ interface list:\r\n    Vlan500, VXLAN v4 Encap: (50000, 225.2.2.2), Forward/Sparse,\
+        \ 00:10:26/stopped, flags:"
+      - "IP Multicast Routing Table\r\nFlags: D - Dense, S - Sparse, B - Bidir Group,\
+        \ s - SSM Group, C - Connected,\r\n       L - Local, P - Pruned, R - RP-bit\
+        \ set, F - Register flag,\r\n       T - SPT-bit set, J - Join SPT, M - MSDP\
+        \ created entry, E - Extranet,\r\n       X - Proxy Join Timer Running, A -\
+        \ Candidate for MSDP Advertisement,\r\n       U - URD, I - Received Source\
+        \ Specific Host Report, \r\n       Z - Multicast Tunnel, z - MDT-data group\
+        \ sender, \r\n       Y - Joined MDT-data group, y - Sending to MDT-data group,\
+        \ \r\n       G - Received BGP C-Mroute, g - Sent BGP C-Mroute, \r\n      \
+        \ N - Received BGP Shared-Tree Prune, n - BGP C-Mroute suppressed, \r\n  \
+        \     Q - Received BGP S-A Route, q - Sent BGP S-A Route, \r\n       V - RD\
+        \ & Vector, v - Vector, p - PIM Joins on route, \r\n       x - VxLAN group,\
+        \ c - PFP-SA cache created entry, \r\n       * - determined by Assert, # -\
+        \ iif-starg configured on rpf intf, \r\n       e - encap-helper tunnel flag,\
+        \ l - LISP decap ref count contributor\r\nOutgoing interface flags: H - Hardware\
+        \ switched, A - Assert winner, p - PIM Join\r\n                          t\
+        \ - LISP transit group\r\n Timers: Uptime/Expires\r\n Interface state: Interface,\
+        \ Next-Hop or VCD, State/Mode\r\n\r\n(20.20.20.21, 239.1.1.1), 00:10:41/00:02:25,\
+        \ flags: FTGqx\r\n  Incoming interface: Vlan100, RPF nbr 0.0.0.0\r\n  Outgoing\
+        \ interface list:\r\n    Vlan500, VXLAN v4 Encap: (50000, 225.2.2.2), Forward/Sparse,\
+        \ 00:10:38/stopped, flags:"
+      - "IP Multicast Routing Table\r\nFlags: D - Dense, S - Sparse, B - Bidir Group,\
+        \ s - SSM Group, C - Connected,\r\n       L - Local, P - Pruned, R - RP-bit\
+        \ set, F - Register flag,\r\n       T - SPT-bit set, J - Join SPT, M - MSDP\
+        \ created entry, E - Extranet,\r\n       X - Proxy Join Timer Running, A -\
+        \ Candidate for MSDP Advertisement,\r\n       U - URD, I - Received Source\
+        \ Specific Host Report, \r\n       Z - Multicast Tunnel, z - MDT-data group\
+        \ sender, \r\n       Y - Joined MDT-data group, y - Sending to MDT-data group,\
+        \ \r\n       G - Received BGP C-Mroute, g - Sent BGP C-Mroute, \r\n      \
+        \ N - Received BGP Shared-Tree Prune, n - BGP C-Mroute suppressed, \r\n  \
+        \     Q - Received BGP S-A Route, q - Sent BGP S-A Route, \r\n       V - RD\
+        \ & Vector, v - Vector, p - PIM Joins on route, \r\n       x - VxLAN group,\
+        \ c - PFP-SA cache created entry, \r\n       * - determined by Assert, # -\
+        \ iif-starg configured on rpf intf, \r\n       e - encap-helper tunnel flag,\
+        \ l - LISP decap ref count contributor\r\nOutgoing interface flags: H - Hardware\
+        \ switched, A - Assert winner, p - PIM Join\r\n                          t\
+        \ - LISP transit group\r\n Timers: Uptime/Expires\r\n Interface state: Interface,\
+        \ Next-Hop or VCD, State/Mode\r\n\r\n(20.20.20.21, 239.1.1.1), 00:10:46/00:02:20,\
+        \ flags: FTGqx\r\n  Incoming interface: Vlan100, RPF nbr 0.0.0.0\r\n  Outgoing\
+        \ interface list:\r\n    Vlan500, VXLAN v4 Encap: (50000, 225.2.2.2), Forward/Sparse,\
+        \ 00:10:44/stopped, flags:"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: leaf1#

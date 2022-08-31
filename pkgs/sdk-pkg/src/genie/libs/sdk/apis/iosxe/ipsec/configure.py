@@ -9,6 +9,70 @@ from unicon.core.errors import SubCommandFailure
 
 log = logging.getLogger(__name__)
 
+def configure_sks_client(device,
+                         sks_client_config_block_name,
+                         ip_mode,
+                         server_ip_address,
+                         server_port_number,
+                         psk_identity,
+                         password_string):
+    """ Configures SKS client
+        Args:
+            device (`obj`): Device object
+            sks_client_config_block_name ('str'): Name of the SKS-Client config block.
+            ip_mode ('str'): ip mode (ipv4/ipv6)
+            server_IP_address ('str'): Server ipv4/ipv6 address
+            server_port_number ('str'): Port configuration
+            psk_identity ('str'): Key identity
+            password ('str'): Unencrypted password
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        "Configuring sks client"
+    )
+ 
+    configs = []
+    configs.append(f"crypto sks-client {sks_client_config_block_name}")
+    configs.append(f"server {ip_mode} {server_ip_address} port {server_port_number}")
+    configs.append(f"psk id {psk_identity} key 0 {password_string}")
+ 
+ 
+    try:
+        device.configure(configs, error_pattern = ["Proposal with ESP is missing cipher"])
+    except SubCommandFailure as e:
+        log.error("Failed to configure sks cient"
+             "Error:\n{error}".format(error=e)
+        )
+        raise e
+
+def unconfigure_sks_client(device,
+                           sks_client_config_block_name):
+    """ Configures SKS client
+        Args:
+            device (`obj`): Device object
+            sks_client_config_block_name ('str'): Name of the SKS-Client config block.
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        "Unconfiguring sks client"
+    )
+ 
+    configs = []
+    configs.append(f"no crypto sks-client {sks_client_config_block_name}") 
+ 
+    try:
+        device.configure(configs, error_pattern = ["Proposal with ESP is missing cipher"])
+    except SubCommandFailure as e:
+        log.error("Failed to configure sks cient"
+             "Error:\n{error}".format(error=e)
+        )
+        raise e
 
 def clear_crypto_sa_counters(device):
     """ Clear all the ipsec sa counters

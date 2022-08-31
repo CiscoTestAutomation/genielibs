@@ -1,0 +1,24 @@
+configure:
+  commands:
+    commit: ""
+    end:
+      new_state: execute
+    interface GigabitEthernet0/0/0/0: "interface GigabitEthernet0/0/0/0\r\r\n"
+    shutdown: "\rRP/0/RP0/CPU0:shutdown\r\r\n"
+  prompt: RP/0/0/CPU0:R2_xr(config)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    configure terminal:
+      new_state: configure
+    show controller dpc rm dpa: ''
+  prompt: RP/0/0/CPU0:R2_xr#

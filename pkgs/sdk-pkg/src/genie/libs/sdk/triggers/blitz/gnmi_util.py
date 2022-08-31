@@ -74,7 +74,7 @@ class GnmiNotification(Thread):
             return False is not self.negative_test
         return all(self.results)
 
-    def process_opfields(self, response):
+    def process_opfields(self, response, returns_found = None):
         """Decode response and verify result.
 
         Decoder callback returns desired format of response.
@@ -88,6 +88,18 @@ class GnmiNotification(Thread):
             json_dicts, opfields = self.decode_response(
                 response, self.namespace
             )
+
+            # Split returns on the basis of paths,
+            # received in opfields
+            returns_2 = []
+            for op in opfields:
+                for index, ret in enumerate(self.returns):
+                    xp = ret['xpath']
+                    if xp in op and index not in returns_found:
+                        returns_2.append(ret)
+                        returns_found.append(index)
+                        break
+        
             if len(json_dicts):
                 for json_dict in json_dicts:
                     if json_dict is not None:
@@ -100,7 +112,7 @@ class GnmiNotification(Thread):
                 self.log.info(msg)
             if opfields:
                 result = self.negative_test is not self.response_verify(
-                    opfields, self.returns.copy()
+                    opfields, returns_2
                 )
                 if self.negative_test:
                     log.info(banner('NEGATIVE TEST'))
@@ -109,42 +121,85 @@ class GnmiNotification(Thread):
                     self.log.error(banner('SUBSCIBE VERIFICATION FAILED'))
                 else:
                     self.log.info(banner('SUBSCIBE VERIFICATION PASSED'))
-            if self.mode in ['ONCE', 'POLL']:
-                self.log.info('Subscribe {0} processed'.format(self.mode))
-                self.stop()
+
         except Exception as exc:
             self.log.error(str(exc))
             self.results.append(False)
             self.stop()
 
+    def check_remaining_returns(self, returns_found):
+        """Check the returns not found in any of the response"""
+        for index, ret in enumerate(self.returns):
+            if index not in returns_found:
+                xp = ret['xpath']
+                val = ret['value']
+                self.log.error('ERROR: "{0} value: {1}" Not found.'.format(xp, str(val)))
+                self.results.append(False)
+                
     def run(self):
         """Check for inbound notifications."""
-        t1 = datetime.now()
         self.log.info('Subscribe notification active')
+        t1 = datetime.now()
+        first_json_dicts = []
+        first_opfields = []
+        response_no = 0
+        returns_found = []
+        stop_receiver = False
         try:
             for response in self.responses:
+                # Subscribe response ends here
                 if response.HasField('sync_response'):
                     self.log.info('Subscribe sync_response')
-                if response.HasField('update'):
+                    stop_receiver = True
+
+                # Check for stream_max before update
+                # to avoid logging extra responses.
+                if self.stream_max:
+                    t2 = datetime.now()
+                    td = t2 - t1
+                    self.time_delta = td.total_seconds()
+                    if self.time_delta > self.stream_max:
+                        self.log.info("Notification MAX timeout")
+                        self.stop()
+
+                if response.HasField('update') and not self.stopped():
+                    json_dicts, opfields = self.decode_response(
+                        response, self.namespace
+                    )
+                    # Since returns_found is acting as a global variable
+                    # for all the responses, so for STREAM mode,
+                    # we need reset returns_found and check_remaining_returns
+                    # for each stream received.
+                    response_no = response_no + 1
+                    if response_no == 1:
+                        first_json_dicts = json_dicts
+                        first_opfields = opfields
+                    else:
+                        if self.mode == 'STREAM' and json_dicts == first_json_dicts and opfields == first_opfields:
+                            self.check_remaining_returns(returns_found)
+                            returns_found = []
+
+                        # Reset on every ON_CHANGE response
+                        if self.sub_mode == 'ON_CHANGE':
+                            returns_found = []
+
                     self.log.info(
                         "gNMI SUBSCRIBE Response\n" + "=" * 23 + "\n{}"
                             .format(response)
                     )
                     self.log.info('Processing returns...')
-                    self.process_opfields(response)
+                    self.process_opfields(response, returns_found)
+
+                if stop_receiver and self.mode in ['ONCE', 'POLL']:
+                    self.log.info('Subscribe {0} processed'.format(self.mode))
+                    self.stop()
 
                 if self.stopped():
+                    if self.sub_mode != 'ON_CHANGE':
+                        self.check_remaining_returns(returns_found)
                     self.time_delta = self.stream_max
                     self.log.info("Terminating notification thread")
                     break
-                if self.stream_max:
-                    t2 = datetime.now()
-                    td = t2 - t1
-                    self.time_delta = td.seconds
-                    if self.time_delta > self.stream_max:
-                        self.log.info("Notification MAX timeout")
-                        self.stop()
-                        break
 
         except Exception as exc:
             msg = ''
@@ -156,7 +211,7 @@ class GnmiNotification(Thread):
                 msg = str(exc)
             self.result = msg
 
-    def stop(self):
+    def stop(self):    
         self.log.info("Stopping notification stream")
         self._stop_event.set()
 
@@ -374,6 +429,16 @@ class GnmiMessage:
                     continue
                 json_val = base64.b64decode(val).decode('utf-8')
                 json_dict = json.loads(json_val, strict=False)
+            elif 'asciiVal' in val:
+                val = val.get('asciiVal', '')
+                if not val:
+                    log.info('"asciiVal" has no content')
+                    continue
+                val = val.strip()
+                opfields.append({
+                    'datatype': 'ascii',
+                    'value': val,
+                })
             elif val:
                 datatype = next(iter(val))
                 value = val[datatype]
@@ -860,7 +925,12 @@ class GnmiMessageConstructor:
         # Helper function for get_shortest_common_path.
         for xpath in xpaths:
             if short_xp not in xpath:
-                xp = short_xp[:short_xp.rfind('/')]
+                if short_xp.endswith(']'):
+                    while short_xp.endswith(']'):
+                        short_xp = short_xp[:short_xp.rfind('[')]
+                    xp = short_xp[:short_xp.rfind('/')]
+                else:
+                    xp = short_xp[:short_xp.rfind('/')]
                 short_xp = self._trim_xpaths(xpaths, xp)
         return short_xp
 
@@ -879,6 +949,8 @@ class GnmiMessageConstructor:
         short_node = [n for n in nodes if n['xpath'] == short_xp]
         if short_node:
             if short_node[0]['nodetype'] not in ['list', 'container']:
+                while short_xp.endswith(']'):
+                    short_xp = short_xp[:short_xp.rfind('[')]
                 short_xp = short_xp[:short_xp.rfind('/')]
         return short_xp
 
@@ -907,7 +979,7 @@ class GnmiMessageConstructor:
             ind = 0
             xp = node['xpath']
             if xp.endswith(']'):
-                continue
+                xp = xp + '/'
             if xp in processed_xp:
                 continue
             jval = json_val

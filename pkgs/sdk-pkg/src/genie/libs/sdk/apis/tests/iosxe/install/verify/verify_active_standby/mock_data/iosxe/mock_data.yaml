@@ -1,0 +1,44 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: PI-9300-Stack-103(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: PI-9300-Stack-103(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show redundancy states:
+      response:
+      - "       my state = 13 -ACTIVE \r\n     peer state = 8  -STANDBY HOT \r\n \
+        \          Mode = Duplex\r\n           Unit = Primary\r\n        Unit ID =\
+        \ 1\r\n\r\nRedundancy Mode (Operational) = sso\r\nRedundancy Mode (Configured)\
+        \  = sso\r\nRedundancy State              = sso\r\n     Maintenance Mode =\
+        \ Disabled\r\n    Manual Swact = enabled\r\n Communications = Up\r\n\r\n \
+        \  client count = 122\r\n client_notification_TMR = 30000 milliseconds\r\n\
+        \           RF debug mask = 0x0"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: PI-9300-Stack-103#

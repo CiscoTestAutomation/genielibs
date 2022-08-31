@@ -1,0 +1,63 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: PI-9300-Stack-103(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: PI-9300-Stack-103(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    install add file bootflash:cat9k_iosxe.2022-06-06_12.21_mcpre.24042.CSCvq24042.SSA.smu.bin activate commit:
+      response:
+      - "$2.21_mcpre.24042.CSCvq24042.SSA.smu.bin activate commit\r\ninstall_add_activate_commit:\
+        \ START Sun Aug 07 12:36:41 UTC 2022\r\ninstall_add: START Sun Aug 07 12:36:41\
+        \ UTC 2022\r\ninstall_add: Adding IMG\r\n--- Starting initial file syncing\
+        \ ---\r\nCopying flash:cat9k_iosxe.2022-06-06_12.21_mcpre.24042.CSCvq24042.SSA.smu.bin\
+        \ from Switch 1 to Switch 1 2 3\r\nInfo: Finished copying to the selected\
+        \ Switch\r\nFinished initial file syncing\r\n\r\n--- Starting SMU Add operation\
+        \ ---\r\nPerforming SMU_ADD on all members\r\nChecking status of SMU_ADD on\
+        \ [1 2 3]\r\nSMU_ADD: Passed on [1 2 3]\r\nFinished SMU Add operation\r\n\r\
+        \ninstall_activate: START Sun Aug 07 12:36:47 UTC 2022\r\ninstall_activate:\
+        \ Activating SMU\r\n--- Starting SMU Activate operation ---\r\nPerforming\
+        \ SMU_ACTIVATE on all members\r\n [1] SMU_ACTIVATE package(s) on Switch 1\r\
+        \n [2] SMU_ACTIVATE package(s) on Switch 2\r\n [3] SMU_ACTIVATE package(s)\
+        \ on Switch 3\r\n [2] Finished SMU_ACTIVATE on Switch 2\r\n [3] Finished SMU_ACTIVATE\
+        \ on Switch 3\r\n [1] Finished SMU_ACTIVATE on Switch 1\r\nChecking status\
+        \ of SMU_ACTIVATE on [1 2 3]\r\nSMU_ACTIVATE: Passed on [1 2 3]\r\nFinished\
+        \ SMU Activate operation\r\n\r\n--- Starting Commit ---\r\nPerforming Commit\
+        \ on all members\r\n--- Starting SMU Commit ---\r\n [1] Commit package(s)\
+        \ on Switch 1\r\n [2] Commit package(s) on Switch 2\r\n [3] Commit package(s)\
+        \ on Switch 3\r\n [2] Finished Commit on Switch 2\r\n [1] Finished Commit\
+        \ on Switch 1\r\n [3] Finished Commit on Switch 3\r\nChecking status of Commit\
+        \ on [1 2 3]\r\nCommit: Passed on [1 2 3]\r\nFinished Commit operation\r\n\
+        \r\nSUCCESS: install_add_activate_commit Sun Aug 07 12:37:05 UTC 2022"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    write memory:
+      response:
+      - "Building configuration...\r\n[OK]"
+      response_type: circular
+  prompt: PI-9300-Stack-103#

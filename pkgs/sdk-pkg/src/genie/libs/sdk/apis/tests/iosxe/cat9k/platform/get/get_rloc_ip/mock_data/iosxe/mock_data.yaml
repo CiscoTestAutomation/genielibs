@@ -1,0 +1,46 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: CTLR_1_1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: CTLR_1_1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show access-tunnel summary:
+      response:
+      - "\r\nAccess Tunnels General Statistics:\r\n  Number of AccessTunnel Data Tunnels\
+        \       = 2  \r\n\r\n\r\nName    RLOC IP(Source)  AP IP(Destination)  VRF\
+        \ ID  Source Port  Destination Port \r\n------  ---------------  ------------------\
+        \  ------  -----------  ----------------\r\nAc1     107.1.1.1        107.201.2.152\
+        \       0       N/A          4789             \r\nAc0     107.1.1.1      \
+        \  107.201.2.153       0       N/A          4789             \r\n\r\n\r\n\
+        Name   IfId            Uptime       \r\n------ ---------- --------------------\r\
+        \nAc1    0x0000006C 1 days, 08:49:59            \r\nAc0    0x0000006B 1 days,\
+        \ 08:49:59"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: CTLR_1_1#

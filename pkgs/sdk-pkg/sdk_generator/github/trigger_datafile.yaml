@@ -1,0 +1,16 @@
+root_directories:
+   Trigger_genie_libs:
+     yaml: main
+     extra_yamls:
+        - ios
+        - iosxe
+        - iosxr
+        - junos
+        - nxos
+        - virl
+     root: 'genie.libs.sdk'
+     mod_name: 'sdk'
+     url:
+         link: 'https://github.com/CiscoTestAutomation/genielibs/tree/{branch}/pkgs/'
+         branch: 'master'
+         style: 'github'

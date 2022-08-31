@@ -161,3 +161,66 @@ def remove_tacacs_server(device, remove_config=None, keyword='tacacs'):
             "Failed to remove {config} configuration on device "
             "{device}".format(device=device.name, config=config_list)
         ) from e
+
+def copy_config_from_tftp_to_media(device,
+        host,
+        config_file_with_path,
+        file,
+        timeout=30,
+        vrf=None,
+        media="bootflash"
+    ):
+    """ Copy configuration file from tftp location to media
+
+        Args:
+            device ('obj'): Device object to modify configuration
+            host ('str'): tftp host ip address
+            config_file_with_path ('str') : configuration file name along with tftp path
+            file('str'): configuration file name
+            timeout('int', Optional): timeout for configuration file load to device(Deafult is 30)
+            vrf('str', Optional): vrf for tftp connectivity(Deafult is None)
+            media('str', Optional): where to copy the file in device(Deafult is bootflash)
+
+        Returns:
+            True or False
+    """
+    dialog = Dialog([
+        Statement(pattern=r'.*Address or name of remote host.*',
+            action=f'sendline({host})',
+            loop_continue=True,
+            continue_timer=False),
+        Statement(pattern=r'.*Source filename.*',
+            action=f'sendline({config_file_with_path})',
+            loop_continue=True,
+            continue_timer=False),
+        Statement(pattern=r'.*Destination filename',
+            action=f'sendline({file})',
+            loop_continue=True,
+            continue_timer=False),
+        Statement(pattern=r'.*Do you want to over write.*',
+            action=f'sendline(yes)',
+            loop_continue=True,
+            continue_timer=False)
+        ])
+    error_patterns = [f'.*%Error opening.*']
+
+    log.debug("Copy configuration file from tftp to device")
+    if vrf is None:
+        command = (f"copy tftp: {media}:")
+    else:
+        command = (f"copy tftp: {media}: vrf {vrf}")
+    try:
+        out = device.execute(command, 
+            reply=dialog, 
+            error_pattern=error_patterns, 
+            timeout=timeout)
+        if "[OK -" in out and "bytes copied in" in out:
+            return True
+        else:
+            return False
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "tftp copy did'nt happen for {device}. Error:\n{error}"
+                .format(device=device, error=e)
+        )
+

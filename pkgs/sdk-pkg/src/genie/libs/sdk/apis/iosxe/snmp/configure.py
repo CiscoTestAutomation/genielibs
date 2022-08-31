@@ -195,3 +195,266 @@ def unconfigure_snmp_server_group(device,
             f"Could not unconfigure snmp server group. Error:\n{str(error)}"
         )
 
+def configure_snmp_server_trap(device, intf, host_name, trap_type, version,
+                               user_name, config_type, engine_id=None):
+    """ Configures the snmp traps or informs on device
+        Args:
+            device ('obj'): device to use
+            intf ('str'): trap source interface
+            host_name ('str'): hostname/ip address of snmp-server
+            trap_type ('str'): Traps or informs
+            version ('str'): v1,v2c,v3
+            user_name ('str'): Name of the user
+            config_type ('str'): snmp trap type i.e config,link up down
+            engine_id ('str'): remote engine id
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cli = f"snmp-server trap-source {intf}\n"
+    cli += "snmp-server enable traps\n"
+    cli += f"snmp-server host {host_name} {trap_type} version {version} priv {user_name} {config_type}\n"
+    if trap_type == 'informs':
+        cli += f"snmp-server engineID remote {host_name} {engine_id}"
+
+    try:
+        device.configure(cli)
+    except SubCommandFailure as error:
+        raise SubCommandFailure(f"Could not configure trap/inform config \
+                on snmp-server. Error:\n{str(error)}")
+
+def unconfigure_snmp_server_trap(device, intf, host_name, trap_type, version,
+                               user_name, config_type, engine_id=None):
+    """ Unconfigures the snmp traps or informs on device
+        Args:
+            device ('obj'): device to use
+            intf ('str'): trap source interface
+            host_name ('str'): hostname/ip address of snmp-server
+            trap_type ('str'): Traps or informs
+            version ('str'): v1,v2c,v3
+            user_name ('str'): Name of the user
+            config_type ('str'): snmp trap type i.e config,link up down
+            engine_id ('str'): remote engine id
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cli = f"no snmp-server trap-source {intf}\n"
+    cli += "no snmp-server enable traps\n"
+    cli += f"no snmp-server host {host_name} {trap_type} version {version} priv {user_name} {config_type}\n"
+    if trap_type == 'informs':
+        cli += f"no snmp-server engineID remote {host_name} {engine_id}"
+
+    try:
+        device.configure(cli)
+    except SubCommandFailure as error:
+        raise SubCommandFailure(f"Could not configure trap or inform config \
+                on snmp-server. Error:\n{str(error)}")
+
+def configure_snmp_server_user(device,
+                               user_name,    
+                               group_name,
+                               version,
+                               auth_type = None,
+                               auth_algorithm = None,
+                               auth_password = None,
+                               priv_method = None,
+                               aes_algorithm = None,
+                               aes_password = None,
+                               priv_password = None,
+                               acl_type = None,
+                               acl_name = None):
+    """ Configures the snmp user on device
+        Args:
+            device ('obj'): device to use
+            user_name ('str'): Name of the user
+            group_name ('str'): Group to which the user belongs
+            version ('str'): v1,v2c,v3
+            auth ('str'): authentication parameters for the user
+            auth_type ('str'): md5, sha
+            auth_algorithm ('str'): 256,192,128
+            auth_password ('str'): authentication password for user
+            priv_method ('str'): 3des,aes,des
+            aes_algorithm ('str'): 128,192,256
+            aes_password ('str'): privacy password for user
+            priv_password ('str'): privacy password for user
+            acl_name ('str'): name of the Standerd acl, acl list name, ipv6 named acl
+            acl_type ('str'): specify IPv6 Named Access-List
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cli = f"snmp-server user {user_name} {group_name} {version}"
+
+    if auth_type is not None:
+        cli = cli+' auth '+auth_type+' '+auth_algorithm+' '+auth_password 
+
+    if priv_method  is not None:
+        if(priv_method == 'aes'):
+            cli = cli+' priv '+priv_method+' '+aes_algorithm+' '+aes_password
+
+    if acl_name is not None:
+        if (acl_type == 'ipv6'):
+            cli = cli+' access ipv6 '+acl_name+' '+acl_name
+        else:
+            cli = cli+' access'+acl_name
+
+    try:
+        device.configure(cli)
+    except SubCommandFailure as error:
+        raise SubCommandFailure(
+            f"Could not configure snmp user. Error:\n{error}"
+        )
+
+
+def unconfigure_snmp_server_user(device,
+                               user_name,    
+                               group_name,
+                               version,
+                               auth_type = None,
+                               auth_algorithm = None,
+                               auth_password = None,
+                               priv_method = None,
+                               aes_algorithm = None,
+                               aes_password = None,
+                               priv_password = None,
+                               acl_type = None,
+                               acl_name = None):
+    """ Unconfigures the snmp user on device
+        Args:
+            device ('obj'): device to use
+            user_name ('str'): Name of the user
+            group_name ('str'): Group to which the user belongs
+            version ('str'): v1,v2c,v3
+            auth ('str'): authentication parameters for the user
+            auth_type ('str'): md5, sha
+            auth_algorithm ('str'): 256,192,128
+            auth_password ('str'): authentication password for user
+            priv_method ('str'): 3des,aes,des
+            aes_algorithm ('str'): 128,192,256
+            aes_password ('str'): privacy password for user
+            priv_password ('str'): privacy password for user
+            acl_name ('str'): name of the Standerd acl, acl list name, ipv6 named acl
+            acl_type ('str'): specify IPv6 Named Access-List
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cli = f"no snmp-server user {user_name} {group_name} {version}"
+
+    if auth_type is not None:
+        cli = cli+' auth '+auth_type+' '+auth_algorithm+' '+auth_password
+
+    if priv_method  is not None:
+        if(priv_method == 'aes'):
+            cli = cli+' priv '+priv_method+' '+aes_algorithm+' '+aes_password
+
+    if acl_name is not None:
+        if (acl_type == 'ipv6'):
+            cli = cli+' access ipv6 '+acl_name+' '+acl_name
+        else:
+            cli = cli+' access'+acl_name
+
+    try:
+        device.configure(cli)
+    except SubCommandFailure as error:
+        raise SubCommandFailure(
+            f"Could not unconfigure snmp user. Error:\n{error}"
+        )
+
+def configure_snmp_host_version(device,host_name,vrf_id,version_id,community_string, udp_port = 0):
+    """ Configures the snmp-server host 172.21.226.240 vrf Mgmt-vrf version 2c public on device
+        Args:
+            device ('obj'): device to use
+            community_string ('str'): community_string
+            host_name ('str'): Host name
+            vrf_id ('str') : vrf(Mgmt-vrf) is special connection,usually we have it in mgmt-interface for management port.
+            version_id('str') : Snmp Version
+            udp_port('int', optional) :  udp_port should be passed when enabling traps. The value can also be checked in snmp.server.
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configuring snmp host version on device {device}".format(device=device))
+    
+    if  udp_port == 0:
+        cmd = f"snmp-server host {host_name} vrf {vrf_id} version {version_id} {community_string}"
+    else:
+        cmd = f"snmp-server host {host_name} vrf {vrf_id} version {version_id} {community_string} udp-port {udp_port}"
+
+    try:    
+        device.configure(cmd) 
+    except SubCommandFailure as e:
+        raise SubCommandFailure("Could not configure snmp host version. Error:\n{error}".format(error=e))
+        
+
+def unconfigure_snmp_host_version(device,host_name,vrf_id,version_id,community_string, udp_port = 0):
+    """ UnConfigures the snmp-server host 172.21.226.240 vrf Mgmt-vrf version 2c public on device
+        Args:
+            device ('obj'): device to use
+            community_string ('str'): community_string
+            host_name ('str'): Host name
+            vrf_id ('str') : vrf(Mgmt-vrf) is special connection,usually we have it in mgmt-interface for management port.
+            version_id('str') : Snmp Version
+            udp_port('int', optional) :  udp_port should be passed when enabling traps. The value can also be checked in snmp.server.
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configuring snmp host version on device {device}".format(device=device))
+    
+    if  udp_port == 0:
+        cmd = f"no snmp-server host {host_name} vrf {vrf_id} version {version_id} {community_string}"
+    else:
+        cmd = f"no snmp-server host {host_name} vrf {vrf_id} version {version_id} {community_string} udp-port {udp_port}"
+
+    try:
+        device.configure(cmd) 
+    except SubCommandFailure as e:
+        raise SubCommandFailure("Could not configure snmp host version. Error:\n{error}".format(error=e))
+        		
+def configure_debug_snmp_packets(device):
+    """ enable snmp debugs on device
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"Configuring snmp debugs on device {device}")
+
+    try:
+        device.execute("debug snmp packets")
+    except SubCommandFailure as error:
+        raise SubCommandFailure(
+            f"Could not configure debugs on device. Error:\n{error}"
+        )
+
+def unconfigure_debug_snmp_packets(device):
+    """ enable snmp debugs on device
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"Configuring snmp debugs on device {device}")
+
+    try:
+        device.execute("undebug snmp packets")
+    except SubCommandFailure as error:
+        raise SubCommandFailure(
+            f"Could not unconfigure debugs on device. Error:\n{error}"
+        )

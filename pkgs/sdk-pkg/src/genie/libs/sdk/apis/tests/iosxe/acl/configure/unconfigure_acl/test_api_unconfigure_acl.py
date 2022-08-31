@@ -10,7 +10,7 @@ class TestUnconfigureAcl(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          R1_xe:
+          Cat9600-SVL_CGW:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,11 +18,13 @@ class TestUnconfigureAcl(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: csr1000v
-            type: CSR1000v
+            platform: c9600
+            type: c9600
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['R1_xe']
+        
+        self.device = self.testbed.devices['Cat9600-SVL_CGW']
+
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,11 +32,6 @@ class TestUnconfigureAcl(unittest.TestCase):
         )
 
     def test_unconfigure_acl(self):
-        result = unconfigure_acl(self.device, 40, True)
-        expected_output = None
-        self.assertEqual(result, expected_output)
-
-    def test_unconfigure_acl_1(self):
-        result = unconfigure_acl(self.device, 40, False)
+        result = unconfigure_acl(self.device, True)
         expected_output = None
         self.assertEqual(result, expected_output)

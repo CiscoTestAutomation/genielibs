@@ -8,6 +8,9 @@ from pyats.utils.objects import find, R
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 from genie.libs.sdk.libs.utils.normalize import GroupKeys
 
+# Unicon
+from unicon.core.errors import SubCommandFailure
+
 log = logging.getLogger(__name__)
 
 
@@ -79,4 +82,30 @@ def get_ospf_router_id(device, vrf='(.*)', address_family='(.*)', instance='(.*)
         log.error("No ospf router id was found")
  
     return router_id
+    
+def get_neighbor_count(device, protocol, neighbor, value):
+    """ verify the neighbor count
+
+        Args:
+            device('obj'): device to configure on
+            protocol('str'): Protocol name
+            neighbor'str'): neighbor (or) neighbors
+            value ('str'): grep the count using specific value
+        Return:
+            None
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    log.info(
+        "verify the neighbor count  on device for  protocol {protocol} neighbor {neighbor} value {value}".format(
+           protocol=protocol, neighbor=neighbor, value=value
+        )
+    )
+    cmd = f'show {protocol} {neighbor} | count {value}'
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not executing neighbor count on device".format(protocol=protocol,neighbor=neighbor,value=value, e=e)
+        )
 

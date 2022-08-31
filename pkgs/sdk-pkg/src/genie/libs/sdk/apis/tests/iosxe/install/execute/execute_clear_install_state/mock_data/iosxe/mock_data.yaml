@@ -1,0 +1,67 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: PI-9300-Stack-103(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: PI-9300-Stack-103(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    'clear install state ':
+      response:
+      - "y\r\n\r\n--- Starting clear_install_state ---\r\nPerforming clear_install_state\
+        \ on all members\r\n  [1] clear_install_state package(s) on switch 1\r\n \
+        \ [1] Finished clear_install_state on switch 1\r\n  [2] clear_install_state\
+        \ package(s) on switch 2\r\n  [2] Finished clear_install_state on switch 2\r\
+        \n  [3] clear_install_state package(s) on switch 3\r\n  [3] Finished clear_install_state\
+        \ on switch 3\r\nChecking status of clear_install_state on [1 2 3]\r\nclear_install_state:\
+        \ Passed on [1 2 3]\r\nFinished clear_install_state\r\n\r\nSend model notification\
+        \ for  before reload\r\n[1 2 3]: Performing Upgrade_Service\r\n300+0 records\
+        \ in\r\n300+0 records out\r\n307200 bytes (307 kB, 300 KiB) copied, 0.194566\
+        \ s, 1.6 MB/s\r\nmount: /tmp/microcode_update/boot_pkg: WARNING: source write-protected,\
+        \ mounted read-only.\r\n  PID TTY          TIME CMD\r\n  PID TTY         \
+        \ TIME CMD\r\n  SUCCESS: Upgrade_Service finished\r\nInstall will reload the\
+        \ system now!\r\n  PID TTY          TIME CMD\r\n\r\nChassis 2 reloading, reason\
+        \ - Reload command\r\nAug  7 09:59:33.649: %PMAN-5-EXITACTION: F0/0: pvp:\
+        \ Process manager is exiting: reload fp action requested\r\nAug  7 09:59:35.253:\
+        \ %P\n\r\n\r\nInitializing Hardware......\r\n\0\0\0\0\r\nSystem Bootstrap,\
+        \ Version 17.10.1r, DEVELOPMENT SOFTWARE\r\nCopyright (c) 1994-2022 by cisco\
+        \ Systems, Inc.\r\nCompiled Tue 05/31/2022  9:57:37.01 by sapitcha\r\n\r\n\
+        Current ROMMON image : Primary\r\nLast reset cause     : SoftwareReload\r\n\
+        C9300-24T platform with 8388608 Kbytes of main memory\r\n\r\nPreparing to\
+        \ autoboot. [Press Ctrl-C to interrupt]  0     \r\nboot: attempting to boot\
+        \ from [flash:packages.conf]\r\nboot: reading file packages.conf\r\n#\r\n\
+        ############################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################\r\
+        \n\r\n\r\n\r\nLoading image in Verbose mode: 0\r\n\r\n\r\n\nWaiting for 120\
+        \ seconds for other switches to boot\n#\nSwitch number is 2\nAll switches\
+        \ in the stack have been discovered. Accelerating discovery"
+      response_type: circular
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    write memory:
+      response:
+      - "Building configuration...\r\n[OK]"
+      response_type: circular
+  prompt: PI-9300-Stack-103#

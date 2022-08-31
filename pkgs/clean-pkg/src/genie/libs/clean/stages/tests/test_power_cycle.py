@@ -78,11 +78,12 @@ class Reconnect(unittest.TestCase):
 
         # Call the method to be tested (clean step inside class)
         self.cls.reconnect(
-            steps=steps, device=self.device, boot_timeout=5
+            steps=steps, device=self.device, boot_timeout=5,
+            sleep_before_connect=1, sleep_after_connect=1
         )
 
         # Check that the result is expected
-        self.assertEqual(Passed, steps.details[0].result)
+        self.assertEqual(Passed, steps.details[1].result)
 
     def test_fail_to_reconnect(self):
         # Make sure we have a unique Steps() object for result verification
@@ -95,11 +96,29 @@ class Reconnect(unittest.TestCase):
         # We expect this step to fail so make sure it raises the signal
         with self.assertRaises(TerminateStepSignal):
             self.cls.reconnect(
-                steps=steps, device=self.device, boot_timeout=5
+                steps=steps, device=self.device, boot_timeout=5,
+                sleep_before_connect=1, sleep_after_connect=1
             )
 
         # Check the overall result is as expected
-        self.assertEqual(Failed, steps.details[0].result)
+        self.assertEqual(Failed, steps.details[1].result)
+
+    def test_sleep_before_connect(self):
+        # Make sure we have a unique Steps() object for result verification
+        steps = Steps()
+
+        # To simulate pass case
+        self.device.connect = Mock()
+
+        # We expect this step to sleep
+        self.cls.reconnect(
+            steps=steps, device=self.device, boot_timeout=1,
+            sleep_before_connect=0.1, sleep_after_connect=0.1
+        )
+
+        # Check the step result is as expected
+        self.assertEqual(Passed, steps.details[0].result)
+        self.assertEqual('Sleeping for 0.1 seconds before connect', steps.details[0].name)
 
     def test_sleep_after_connect(self):
         # Make sure we have a unique Steps() object for result verification
@@ -110,9 +129,10 @@ class Reconnect(unittest.TestCase):
 
         # We expect this step to sleep
         self.cls.reconnect(
-            steps=steps, device=self.device, boot_timeout=1, sleep_after_connect=0.1
+            steps=steps, device=self.device, boot_timeout=1,
+            sleep_before_connect=1, sleep_after_connect=0.1
         )
 
         # Check the step result is as expected
-        self.assertEqual(Passed, steps.details[1].result)
-        self.assertEqual('Sleeping for 0.1 seconds', steps.details[1].name)
+        self.assertEqual(Passed, steps.details[2].result)
+        self.assertEqual('Sleeping for 0.1 seconds after connect', steps.details[2].name)

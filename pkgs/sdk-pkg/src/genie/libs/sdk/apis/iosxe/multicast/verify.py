@@ -5,6 +5,7 @@ import logging
 from netaddr import IPNetwork
 import ipaddress
 import re
+import time
 
 # Unicon
 from unicon.core.errors import SubCommandFailure
@@ -529,4 +530,357 @@ def verify_mpls_mldp_count(
         if res:
             return True
         timeout.sleep()
+    return res
+
+
+def verify_ip_mroute_mgroup_rpf_state(
+    device, multicast_group, expected_rpf, ip_family, vrf=None,
+    source_ip=None, max_time=30, check_interval=10):
+    """Verify rpf info state for particular mcast group and source ip (if given)
+        in 'show ip/ipv6 mroute {vrf <vrf>} <multicast_group> {<source_ip>}'
+
+    Args:
+            device ('obj'): Device object
+            multicast_group (`str`): multicast group to be verified
+            expected_rpf ('str',): expected rpf info.ex: Registering etc 
+            ip_family ('str'): either ip ot ipv6
+            vrf ('str', optional): vrf
+            source_ip ('str',optional): source_ip to be verified
+            max_time (`int`, optional): Max time, default: 30
+            check_interval (`int`, optional): Check interval, default: 10
+    Returns:
+            result(`bool`): verified result
+    Raises:
+            None
+
+    """
+    if ip_family not in ['ip','ipv6']:
+        print("Please provide ip_family either as \'ip\' or \'ipv6\' only")
+        return False
+    # checking for source addr as *
+    source_addr = '' if source_ip == '*' else source_ip
+    if (source_ip and vrf):        
+        cmd = f"show {ip_family} mroute vrf {vrf} {multicast_group} {source_addr}"    
+    elif vrf:
+        cmd = f"show {ip_family} mroute vrf {vrf} {multicast_group}"
+    elif source_ip:
+        cmd = f"show {ip_family} mroute {multicast_group} {source_addr}"
+    else:
+        cmd = f"show {ip_family} mroute {multicast_group}"
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            out = device.parse(cmd)
+        except SubCommandFailure as e:
+            timeout.sleep()
+            continue        
+        if out:
+            family_type = 'ipv4' if ip_family == 'ip' else 'ipv6'
+            vrf_name = 'default' if (not vrf) else vrf
+            # verify for multicast_group in output
+            if out['vrf'][vrf_name]['address_family'][family_type]:
+                if source_ip:
+                    rpf_info_list = out.q.contains(multicast_group).contains(\
+                            source_ip).get_values("rpf_info")
+                else:
+                    rpf_info_list = out.q.contains(multicast_group)\
+                            .get_values("rpf_info")
+                rpf_info_list = [rpf.lower() for rpf in rpf_info_list]
+                if expected_rpf.lower() in rpf_info_list:
+                    return True
+        timeout.sleep()
+    return False
+
+
+def verify_ip_mfib_hw_pkt_per_sec(
+    device, multicast_group, source_ip, ip_family, rate=90, vrf=None, 
+    max_time=30, check_interval=10
+):
+    """Verify for hw packet per sec will be >= rate if given 
+       for particular mcast-group & source ip in 
+           'show ip mfib multicast_group source_ip' - if no vrf, no ip_family
+           'show ip mfib vrf <vrf> multicast_group source_ip' - if vrf given and no ip_family
+           'show ipv6 mfib multicast_group source_ip' - if ip_family given and no vrf
+           'show ipv6 mfib vrf <vrf> multicast_group source_ip' - if both vrf and ip_family given
+           ex:
+                (1.1.1.1,225.1.1.1) Flags: HW
+                SW Forwarding: 0/0/0/0, Other: 11/0/11
+                HW Forwarding:   6225553/705/115/634, Other: 0/0/0
+
+    Args:
+            device ('obj'): Device object
+            multicast_group (`str`): multicast group to be verified
+            source_ip ('str'): source_ip to be verified           
+            ip_family ('str'): either ipv4 or ipv6 
+            rate ('int', optional): the expected rate of pkts per sec  
+            vrf ('str',optional): vrf   
+            max_time (`int`, optional): Max time, default: 30
+            check_interval (`int`, optional): Check interval, default: 10
+            
+    Returns:
+            result(`bool`): verified result
+    Raises:
+            None
+
+    """
+    if ip_family not in ['ip','ipv6']:
+        log.error("Please provide ip_family either as ip or ipv6 only")
+        return False
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        # Get hw counters
+        actual_hw_pkts_per_sec = device.api.get_ip_mfib_hw_pkts_per_sec(
+            multicast_group=multicast_group,
+            source_ip=source_ip,
+            ip_family=ip_family,
+            vrf=vrf
+        )
+        # incase of value is zero
+        if actual_hw_pkts_per_sec != None:
+            # Getting hw packets per second and storing it as int            
+            if actual_hw_pkts_per_sec > rate:
+                return True       
+        timeout.sleep()
+    return False
+
+
+def verify_ip_pim_neighbor(
+    device, expected_neighbor, expected_interface=None, max_time=30, 
+    check_interval=10):
+    """Verify pim neighbors and along with the interface configured incase of
+       interface is given.
+
+    Args:
+            device ('obj'): Device object
+            expected_neighbor (`str`): neighbor to be verified
+            expected_interface ('str', optional): expected interface 
+            max_time (`int`, optional): Max time, default: 30
+            check_interval (`int`, optional): Check interval, default: 10
+    Returns:
+            result(`bool`): verified result
+    Raises:
+            None
+
+    """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            out = device.parse("show ip pim neighbor")
+        except SubCommandFailure as e:
+            timeout.sleep()
+            continue
+        if out:
+            # Verify the neighbor has expected interface
+            if expected_interface:
+                # Getting corresponding neighbor attached to the interface
+                neighbors_list = out.q.contains('interfaces').contains\
+                    (expected_interface).get_values("neighbors")            
+            else:
+                # Getting all the neighbors
+                neighbors_list = out.q.get_values("neighbors")
+            
+            if expected_neighbor in neighbors_list:
+                return True
+
+        timeout.sleep()
+    return False
+
+
+def verify_ip_mroute_group_and_sourceip(
+    device, 
+    groupip,
+    sourceip,
+    ip_family,
+    vrf=None,  
+    flags=None,
+    incmg_intf=None,
+    outgng_intf=None,
+    incmg_extranet_vrf=None,
+    extranet_rec=[],
+    max_time=30, 
+    check_interval=10):
+    """
+    Verify ip/ipv6 source&Multicast group ip and related data for particular
+    source&group ip combination, in 'show ip/ipv6 mroute mgroup source'  
+    Args:
+            device (`obj`): Device object
+            vrf (`str`): Vrf name
+            groupip (`str`): multicast group ip
+            ip_family ('str'): ip address family ip/ipv6
+            sourceip (`str`, optional): sourceip of the multicast group ip
+            flag (`str`, optional): flag
+               checks the flag that each character in actual output 
+               just like subset of a set
+            incmg_intf('str', optional): incoming interface
+            outgng_intf (`str` or 'list', optional): outgoing interface
+            incmg_extranet_vrf (`str`, optional): incoming interface
+            extranet_rec ('list', optional): ['extranet_vrf',extranet_src,extranet_grp,extranet_flags]
+            max_time (`int`, optional): Max time, default: 30
+            check_interval (`int`, optional): Check interval, default: 10
+    """
+    if ip_family not in ['ip','ipv6']:
+        log.error("Please provide ip_family either as \'ip\' or \'ipv6\' only")
+        return False
+    # checking for * source
+    source_addr = '' if sourceip == '*' else sourceip
+    if vrf:
+        cmd = f"show {ip_family} mroute vrf {vrf} {groupip} {source_addr}"
+    else:
+        cmd = f"show {ip_family} mroute {groupip} {source_addr}"
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            output = device.parse(cmd)            
+        except SubCommandFailure as e:
+            timeout.sleep()
+            continue
+        res = True
+        if output:
+            family_type = 'ipv4' if ip_family == 'ip' else 'ipv6'
+            vrf_name = 'default' if (not vrf) else vrf            
+            ##Verify multicast groupip            
+            if not output['vrf'][vrf_name]['address_family'][family_type]:                
+                res = False
+        ##Verify the source ip related data
+        if res and (sourceip in output.q.get_values('source_address')):
+            log.info("Got expected source address {sourceip}".format(\
+                sourceip=sourceip))
+            source_ip_dict = output['vrf'][vrf_name]['address_family'][family_type]\
+                ['multicast_group'][groupip]['source_address'][sourceip] 
+           
+            ##Verify the flags    
+            if flags:       
+                actual_flags=output.q.contains(sourceip).get_values('flags')[0]
+                unmatched_flags = []
+                unmatched_flags = [each_flag for each_flag in flags.lower() if each_flag not in actual_flags.lower()]
+                if len(unmatched_flags) == 0:
+                    log.info("Got expected flag {flags} for source ip "\
+                        "{sourceip}".format(flags=flags,sourceip=sourceip))
+                else:
+                    log.error("Got mismatched flags {unmatched_flags} in "\
+                            "actual flags {actual_flags}".format(unmatched_flags=unmatched_flags,\
+                            actual_flags=actual_flags))
+                    res=False
+
+            ##Verify the incoming interface            
+            if incmg_intf:
+                # if incoming intf is null then the key will not appear in parsed data
+                if 'incoming_interface_list' in source_ip_dict.keys():
+                    actual_incmg_intf = output.q.contains(sourceip).get_values('incoming_interface_list')[0]
+                    if incmg_intf.lower() in actual_incmg_intf.lower():
+                            log.info("Got expected incoming interface {incmg_intf} for source address"\
+                                " {sourceip}".format(incmg_intf=incmg_intf, sourceip=sourceip))
+                    else:
+                            log.error("Unable to find incoming interface {incmg_intf} for "\
+                                "source address {sourceip}, actual incmg intf is {actual_incmg_intf}".\
+                                format(incmg_intf=incmg_intf, sourceip=sourceip,actual_incmg_intf=actual_incmg_intf))
+                            res=False
+                    if incmg_extranet_vrf != None:
+                        actual_incmg_extranet_vrf = output.q.contains('incoming_interface_list').get_values('lisp_vrf')[0]
+                        if actual_incmg_extranet_vrf == incmg_extranet_vrf:
+                            log.info("Got expected incoming extranet vrf {incmg_extranet_vrf} for source address"\
+                                " {sourceip}".format(incmg_extranet_vrf=incmg_extranet_vrf, sourceip=sourceip))
+                        else:
+                            log.error("Unable to find incoming interface {incmg_extranet_vrf} for "\
+                                "source address {sourceip}, actual incmg intf is {actual_incmg_extranet_vrf}".\
+                                format(incmg_extranet_vrf=incmg_extranet_vrf, sourceip=sourceip,actual_incmg_extranet_vrf=actual_incmg_extranet_vrf))
+
+                else:
+                    log.error("Incoming interface list is Null")
+                    res = False
+            ###Verify outgoing interface
+            if outgng_intf:
+                if 'outgoing_interface_list' in source_ip_dict.keys():
+                    actual_out_intf = output.q.contains(sourceip).get_values('outgoing_interface_list')[0]
+                    if isinstance(outgng_intf,str):
+                        if outgng_intf.lower() in actual_out_intf.lower():
+                            log.info("Got expected outgoing interface {outgng_intf} for "\
+                                "source address {sourceip}".format(\
+                                    outgng_intf=outgng_intf, sourceip=sourceip))
+                        else:
+                            log.error("Unable to find outgoing interface {outgng_intf} for "\
+                                "source address {sourceip}, actual outgoing intf is {actual_out_intf}".format(\
+                                outgng_intf=outgng_intf, sourceip=sourceip, actual_out_intf=actual_out_intf))
+                            res=False
+                    if isinstance(outgng_intf,list):
+                        unmatched_intf = []
+                        for intf in outgng_intf:
+                            if intf.lower() not in actual_out_intf.lower():
+                                unmatched_intf.append(intf)
+                        if unmatched_intf:
+                            log.error("Unable to find outgoing interface"
+                                f" {unmatched_intf} \n for source {sourceip},"
+                                f" actual outgoing intf is {actual_out_intf}")
+                            res=False
+            # Verify Extranet interface
+            if extranet_rec:
+                if 'extranet_rx_vrf_list' in source_ip_dict.keys():
+                    actual_extranet_out_vrf = output.q.contains(sourceip).get_values('extranet_rx_vrf_list')[0]
+                    actual_extranet_src = output.q.contains(sourceip).get_values('e_src')[0]
+                    actual_extranet_grp = output.q.contains(sourceip).get_values('e_grp')[0]
+                    actual_extranet_flags = output.q.contains(sourceip).get_values('e_flags')[0]
+
+                    if extranet_rec[0] == actual_extranet_out_vrf:
+                        log.info("Got expected extranet vrf {extranet_rec} for "\
+                            "source address {sourceip}".format(\
+                                extranet_rec=extranet_rec[0], sourceip=sourceip))
+                    else:
+                        log.error("Unable to find outgoing extranet vrf {extranet_rec} for "\
+                            "source address {sourceip}, actual outgoing extranet vrf is {actual_out_vrf}".format(\
+                            extranet_rec=extranet_rec[0], sourceip=sourceip, actual_out_vrf=actual_extranet_out_vrf))
+                        res=False
+
+                    if extranet_rec[1] == actual_extranet_src:
+                        log.info("Got expected extranet source {extranet_rec} for "\
+                            "source address {sourceip}".format(\
+                                extranet_rec=extranet_rec[1], sourceip=sourceip))
+                    else:
+                        log.error("Unable to find outgoing extranet source {extranet_rec} for "\
+                            "source address {sourceip}, actual outgoing extranet source is {actual_out_src}".format(\
+                            extranet_rec=extranet_rec[1], sourceip=sourceip, actual_out_src=actual_extranet_src))
+                        res=False
+
+                    if extranet_rec[2] == actual_extranet_grp:
+                        log.info("Got expected extranet source {extranet_rec} for "\
+                            "source address {sourceip}".format(\
+                                extranet_rec=extranet_rec[2], sourceip=sourceip))
+                    else:
+                        log.error("Unable to find outgoing extranet source {extranet_rec} for "\
+                            "source address {sourceip}, actual outgoing extranet source is {actual_out_grp}".format(\
+                            extranet_rec=extranet_rec[2], sourceip=sourceip, actual_out_grp=actual_extranet_grp))
+                        res=False
+
+                    if extranet_rec[3] == actual_extranet_flags:
+                        log.info("Got expected extranet source {extranet_rec} for "\
+                            "source address {sourceip}".format(\
+                                extranet_rec=extranet_rec[3], sourceip=sourceip))
+                    else:
+                        log.error("Unable to find outgoing extranet source {extranet_rec} for "\
+                            "source address {sourceip}, actual outgoing extranet source is {actual_out_flag}".format(\
+                            extranet_rec=extranet_rec[3], sourceip=sourceip, actual_out_flag=actual_extranet_flags))
+                        res=False
+
+                else:
+                    log.error("Extranet receiver interface list is Null")
+                    res = False
+
+        elif not res:
+            log.info(f"#######res is in not res {res}")
+            log.error("Unable to find the multicast group {}".format(groupip))
+            res = False
+        else:
+            log.info(f"#######res is in else {res}")
+            src_ip = output.q.get_values('source_address')
+            log.error("Unable to find source address {sourceip}, actual "\
+                "source address {src_ip}".format(sourceip=sourceip,\
+                    src_ip=src_ip))
+            res=False
+            
+        if res:
+            return True
+        timeout.sleep()
+
     return res

@@ -249,9 +249,15 @@ def get_clean_function(clean_name, clean_data, device):
     if '_' in name or name == name.lower():
         name = ''.join(word.title() for word in name.split('_'))
 
-    try:
-        data = clean_data[name]
-    except KeyError:
+    data = clean_data.get(name)
+    if data is None and name == "Powercycle":
+        # if 'powercycle' is passed for 'clean_name' argument, rather than
+        # 'power_cycle', then resulting name is 'Powercycle'. It should be
+        # 'PowerCycle'. Fix it here
+        name = "PowerCycle"
+        data = clean_data.get(name)
+
+    if data is None:
         raise Exception(f"The clean stage '{name}' does not exist in the json "
                         f"file") from None
 

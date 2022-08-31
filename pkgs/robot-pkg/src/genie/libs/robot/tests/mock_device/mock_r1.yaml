@@ -1,0 +1,366 @@
+configure:
+  commands:
+    line console:
+      new_state: configure_line
+    logging console disable: ''
+    no logging console: ''
+  prompt: RP/0/RP0/CPU0:r1#(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0 0: ''
+    absolute-timeout 0: ''
+    session-timeout 0: ''
+    line default: ''
+    commit: ''
+  prompt: RP/0/RP0/CPU0:r1#(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: 'RP/0/RP0/CPU0:r1#'
+execute:
+  commands:
+    configure terminal:
+      new_state: configure
+    show running-config:
+      response:
+        - |
+          Mon Jul 25 15:07:18.981 UTC
+          Building configuration...
+          !! IOS XR Configuration 7.8.1.15I
+          !! Last configuration change at Mon Jul 25 15:07:17 2022 by cisco
+          !
+          hostname r1
+          logging console disable
+          username cisco
+           group root-lr
+           group cisco-support
+           secret 10 $6$A5bUt0l7Mi0a9t0.$8eS494pZq0kuOsVc0Dw0S8xodyzyf3UompZGTOevGdTP/lFgwQ88KNlLMrBuyhoWEslxq6tbVJ.QD.cLBn3fQ.
+          !
+          line console
+           exec-timeout 0 0
+           absolute-timeout 0
+           session-timeout 0
+          !
+          line default
+           exec-timeout 0 0
+           absolute-timeout 0
+           session-timeout 0
+          !
+          snmp-server community public RO
+          call-home
+           service active
+           contact smart-licensing
+           profile CiscoTAC-1
+            active
+            destination transport-method email disable
+            destination transport-method http
+           !
+          !
+          netconf-yang agent
+           ssh
+          !
+          interface MgmtEth0/RP0/CPU0/0
+           ipv4 address dhcp
+          !
+          interface FourHundredGigE0/0/0/0
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/1
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/2
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/3
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/4
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/5
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/6
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/7
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/8
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/9
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/10
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/11
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/12
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/13
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/14
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/15
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/16
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/17
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/18
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/19
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/20
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/21
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/22
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/23
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/24
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/25
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/26
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/27
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/28
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/29
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/30
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/31
+           shutdown
+          !
+          ssh server vrf default
+          ssh server netconf vrf default
+          end
+        - |
+          Mon Jul 25 15:07:20.128 UTC
+          Building configuration...
+          !! IOS XR Configuration 7.8.1.15I
+          !! Last configuration change at Mon Jul 25 15:07:17 2022 by cisco
+          !
+          hostname r1
+          logging console disable
+          username cisco
+           group root-lr
+           group cisco-support
+           secret 10 $6$A5bUt0l7Mi0a9t0.$8eS494pZq0kuOsVc0Dw0S8xodyzyf3UompZGTOevGdTP/lFgwQ88KNlLMrBuyhoWEslxq6tbVJ.QD.cLBn3fQ.
+          !
+          line console
+           exec-timeout 0 0
+           absolute-timeout 0
+           session-timeout 0
+          !
+          line default
+           exec-timeout 0 0
+           absolute-timeout 0
+           session-timeout 0
+          !
+          snmp-server community public RO
+          call-home
+           service active
+           contact smart-licensing
+           profile CiscoTAC-1
+            active
+            destination transport-method email disable
+            destination transport-method http
+           !
+          !
+          netconf-yang agent
+           ssh
+          !
+          interface MgmtEth0/RP0/CPU0/0
+           ipv4 address dhcp
+          !
+          interface FourHundredGigE0/0/0/0
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/1
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/2
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/3
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/4
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/5
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/6
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/7
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/8
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/9
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/10
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/11
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/12
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/13
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/14
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/15
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/16
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/17
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/18
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/19
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/20
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/21
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/22
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/23
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/24
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/25
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/26
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/27
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/28
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/29
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/30
+           shutdown
+          !
+          interface FourHundredGigE0/0/0/31
+           shutdown
+          !
+          ssh server vrf default
+          ssh server netconf vrf default
+          end
+      response_type: circular
+    show version: |
+      Mon Jul 25 15:18:26.787 UTC
+      Cisco IOS XR Software, Version 6.6.3
+      Copyright (c) 2013-2019 by Cisco Systems, Inc.
+
+      Build Information:
+       Built By     : hlo
+       Built On     : Fri Dec 13 16:42:11 PST 2019
+       Built Host   : iox-ucs-033
+       Workspace    : /auto/srcarchive15/prod/6.6.3/xrv9k/ws
+       Version      : 6.6.3
+       Location     : /opt/cisco/XR/packages/
+
+      cisco IOS-XRv 9000 () processor
+      System uptime is 13 hours 59 minutes
+    bash cat /etc/bake-info.txt: |
+      cat: /etc/bake-info.txt: No such file or directory
+    bash cat /etc/build-info.txt: |
+      ### XR Information
+      
+      User = hlo
+      Host = iox-ucs-033
+      Workspace = /auto/srcarchive15/prod/6.6.3/xrv9k/ws
+      Lineup = r66x.lu%EFR-00000396035
+      XR version = 6.6.3
+      
+      ### Thirdparty Information
+      
+      Refpoint = thirdparty/opensource/release@tp-main/287
+      Hostname     : calcium-99.cisco.com
+       Workspace    : /nobackup/hetsoi/satori-r66x.release.20191116/target-exr-gdb
+       Source Base  : ssh://wwwin-git-sjc-2/git/thinstack/satori.git
+       Devline      : satori-r66x
+       Devline Ver  : 8b3ead9b8ad5cdde553b57e31e97c8c38854bca9
+       Devline Type : GIT Repository
+      
+      ### Calvados Information for architecture 
+      
+      Refpoint = calvados/release@r66x/2
+      Built By     : hlo
+       Built On     : Fri Dec 13 16:07:52 PST 2019
+       Build Host   : iox-ucs-033
+       Workspace    : /auto/srcarchive15/prod/6.6.3/xrv9k/ws
+       Source Base  : ios_ena
+       Wkspc Type   : non-monolith
+       Devline      : r66x.lu%EFR-00000396035
+       r66x     EFR-00000396035   Project
+       r70x     EFR-00000375145   Project
+       xr-dev   EFR-00000371485   Lineup
+    show configuration lock: ''
+    show ztp log | i 'SUCCESSFULLY': |
+      Mon Jul 25 15:18:29.450 UTC
+      2022-07-25 14:31:23,234   8236 [__main__     ] INF: Exiting SUCCESSFULLY
+    terminal length 0: ''
+    terminal width 0: ''
+  prompt: RP/0/RP0/CPU0:r1#
