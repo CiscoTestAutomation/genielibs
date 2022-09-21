@@ -29,6 +29,6 @@ class TestConfigIpOnInterface(unittest.TestCase):
         )
 
     def test_config_ip_on_interface(self):
-        result = config_ip_on_interface(self.device, 'Fi1/0/5', '14.1.1.2', '255.255.255.0', None, None, None, None, False, False, 'WAN-VRFv4')
+        result = config_ip_on_interface(self.device, 'Fi1/0/5', '14.1.1.2', '255.255.255.0', None, None, None, None, False, False, 'WAN-VRFv4', False)
         expected_output = None
         self.assertEqual(result, expected_output)

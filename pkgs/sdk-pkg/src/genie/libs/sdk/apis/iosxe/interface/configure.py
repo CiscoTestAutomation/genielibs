@@ -597,7 +597,8 @@ def config_ip_on_interface(
     sub_interface=None,
     disable_switchport=False,
     dhcpv4=False,
-    vrf=None
+    vrf=None,
+    secondary=False
 ):
     """ Configure IP on an interface
 
@@ -612,6 +613,7 @@ def config_ip_on_interface(
             sub_interface (`str`): Subinterface to be added to interface name
             dhcpv4 ('bool): configure for ipv4 dhcp
             vrf ('str): vrf for in the interface
+            secondary ('bool): configure as seconday ipv4 address
 
         Returns:
             None
@@ -642,9 +644,14 @@ def config_ip_on_interface(
         cfg_str += "vrf forwarding {vrf}\n".format(vrf=vrf)
     #configure ip and mask
     if ip_address and mask:
-        cfg_str += "ip address {ip} {mask}\n".format(
+        cfg_str += "ip address {ip} {mask}".format(
              ip=ip_address, mask=mask
         )
+
+        if secondary:
+            cfg_str += " secondary"
+
+        cfg_str += '\n'
 
     # Add ipv6 address configuration
     if ipv6_address:
@@ -1447,7 +1454,7 @@ def configure_interface_monitor_session(device, monitor_config):
         Args:
             device (`obj`): Device object
             monitor_config (`list`): list of monitor session configuration
-                ex.) 
+                ex.)
                     monitor_config = [{
                             'session_name': 1,
                             'session_type': 'erspan-source',
@@ -1540,7 +1547,7 @@ def unconfigure_interface_monitor_session(device, session_name, session_type):
                 error=e
             )
         )
-            
+
 
 def configure_subinterfaces_for_vlan_range(
     device, interface, vlan_id_start, vlan_id_step, vlan_id_count,
@@ -2771,7 +2778,7 @@ def configure_ip_on_tunnel_interface(
         if mode:
             # IOSXE Defaults to GRE
             configs.append("tunnel mode {mode} ip".format(mode=mode))
-    
+
     configs.append("tunnel source {ip}".format(ip=tunnel_source))
     configs.append("tunnel destination {ip}".format(ip=tunnel_destination))
     if keepalive_timer:
@@ -3280,7 +3287,7 @@ def disable_ipv6_address_dhcp(device, interface):
                 error=e
             )
         )
-        
+
 def unconfig_interface_ospfv3(device, interface, ospfv3_pid, area, ipv4=False, ipv6=True):
     """unconfig OSPF on interface
 
@@ -3554,7 +3561,7 @@ def configure_control_policies(
             policy_name (`str`): name of the policy
             event (`str`,optional): event name, default value is None
             match (`str`,optional): match-all or match-first, default value is None
-            class_number (`int`,optional): class number between 1 to 254, default value is None 
+            class_number (`int`,optional): class number between 1 to 254, default value is None
             class_name (`str`,optional): class name if any exists, default value is None
             class_action (`str`,optional): class action to be perform, default value is None
             action_number (`int`,optional): action number between 1 to 254, default value is None
@@ -3616,19 +3623,19 @@ def configure_control_policies(
         )
 
 def configure_subinterface(
-    device, 
-    physical_port, 
+    device,
+    physical_port,
     any_number,
     ip_address,
     sub_mask
 ):
-    """ Configure subinterface 
+    """ Configure subinterface
         Args:
             device ('obj'): device to use
             physical_port ('str'): physical port
             any_number ('str'): any number
             ip_address ('str'): Ip address
-            sub_mask ('str'): Subnet mask        
+            sub_mask ('str'): Subnet mask
         Returns:
             console output
         Raises:
@@ -3639,7 +3646,7 @@ def configure_subinterface(
             "encapsulation dot1q {} native".format(any_number),
             "ip address {} {}".format(ip_address,sub_mask)
           ]
-  
+
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -3940,7 +3947,7 @@ def configure_virtual_template(device,
     unnumbered_interface,
     authentication,
     mtu):
-    
+
     """ Configure virtual-template interface
 
         Args:
@@ -3956,7 +3963,7 @@ def configure_virtual_template(device,
         Raises:
             SubCommandFailure
     """
-    
+
     if not device.is_connected():
         connect_device(device=device)
 
@@ -3964,7 +3971,7 @@ def configure_virtual_template(device,
     cli.append(f"interface Virtual-Template {virtual_template_number}")
     cli.append(f"ip unnumbered {unnumbered_interface}")
     cli.append(f"ppp authentication {authentication}")
-    
+
     if len(mtu) != 0:
         cli.append(f"mtu {mtu}")
 
@@ -3976,7 +3983,7 @@ def configure_virtual_template(device,
         )
 
 def unconfigure_virtual_template(device, virtual_template_number):
-    
+
     """ Configure virtual-template interface
 
         Args:
@@ -3989,13 +3996,13 @@ def unconfigure_virtual_template(device, virtual_template_number):
         Raises:
             SubCommandFailure
     """
-    
+
     if not device.is_connected():
         connect_device(device=device)
 
     cli = []
     cli.append(f"no interface Virtual-Template {virtual_template_number}")
-    
+
     try:
         device.configure(cli)
     except SubCommandFailure as e:
@@ -4009,8 +4016,8 @@ def configure_ipv6_enable(device, interface):
             device (`obj`): Device object
             interface ('str'): interface name to enable ipv6
         Returns:
-            None 
-        Raises: 
+            None
+        Raises:
             SubCommandFailure
     """
     log.debug("Configuring ipv6 enable under {interface}".format(interface=interface))
@@ -4038,7 +4045,7 @@ def configure_uplink_interface(device, interfaces, vlan_range, vlan1, vlan2):
         Returns:
             None
         Raises:
-            SubCommandFailure : Failed to configure uplink interface 
+            SubCommandFailure : Failed to configure uplink interface
     """
     log.debug(f"Configuring uplink interface on {interfaces}")
     confg = []
@@ -4079,7 +4086,7 @@ def configure_downlink_interface(device, interfaces, vlan_range, vlan1, vlan2):
          confg.append(f'switchport private-vlan trunk allowed vlan {vlan_range}')
          confg.append(f'switchport private-vlan association trunk {vlan1} {vlan2}')
 
-    try:        
+    try:
         device.configure(confg)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to downlink interface on {interfaces}. Error:\n{e}")
@@ -4104,7 +4111,7 @@ def configure_switchport_trunk_native_vlan(device, interfaces, native_vlan):
          confg.append(f'switchport trunk native vlan {native_vlan}')
          confg.append('switchport mode trunk')
 
-    try:   
+    try:
         device.configure(confg)
 
     except SubCommandFailure as e:
@@ -4116,7 +4123,7 @@ def configure_switchport_mode_trunk_snooping_trust(device, interfaces):
         Args:
             device (`obj`): Device object
             interfaces (`list`): list of Interface to be added to port channel
-            
+
         Returns:
             None
         Raises:
@@ -4129,7 +4136,7 @@ def configure_switchport_mode_trunk_snooping_trust(device, interfaces):
          confg.append('switchport mode trunk')
          confg.append('ip dhcp snooping trust')
 
-    try:   
+    try:
         device.configure(confg)
 
     except SubCommandFailure as e:
@@ -4147,7 +4154,7 @@ def configure_egress_interface(device, interfaces, native_vlan, vlan_range, vlan
             vlan_range (`str`): vlan range to be added
             vlan1 (`str`): vlan to be added to the port
             vlan2 (`str`): vlan to be added to the port
-            
+
         Returns:
             None
         Raises:
@@ -4168,7 +4175,7 @@ def configure_egress_interface(device, interfaces, native_vlan, vlan_range, vlan
 
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure switchport mode trunk snooping trust on {interfaces}. Error:\n{e}")
-        
+
 def unconfigure_interfaces_on_port_channel(
     device, interfaces, mode, channel_group,
     channel_protocol=None, disable_switchport=False,
@@ -4212,7 +4219,7 @@ def unconfigure_interfaces_on_port_channel(
                             error=e
                 )
             )
-            
+
 def unconfigure_ipv6_enable(device, interface):
     """ Disable ipv6
         Args:
@@ -4411,7 +4418,7 @@ def unconfigure_span_monitor_session(device,session_number):
          )
 
 def configure_port_channel_standalone_disable(device, port_channel_num):
-    
+
     """ Configure no port-channel standalone disable command on Port-channel interface
 
         Args:
@@ -4442,7 +4449,7 @@ def configure_port_channel_standalone_disable(device, port_channel_num):
         )
 
 def unconfigure_port_channel_standalone_disable(device,port_channel_num):
-       
+
     """ Unconfigure port-channel standalone disable command on port-channel interface
 
         Args:
@@ -4472,8 +4479,8 @@ def unconfigure_port_channel_standalone_disable(device,port_channel_num):
             format(po_interface_num = port_channel_num, error=e
             )
         )
-    
-         
+
+
 def configure_pppoe_enable_interface(device, interface, name):
     """ Configure pppoe enable group on interface
         Args:
@@ -4616,7 +4623,7 @@ def configure_mdns_on_interface_vlan(device, vlan, policy_name=None, act_qry_tim
         cli.append(f"service-policy {policy_name}")
     if act_qry_time:
         cli.append(f"active-query timer {act_qry_time}")
-    
+
     try:
         device.configure(cli)
     except SubCommandFailure as error:
@@ -4640,7 +4647,7 @@ def unconfigure_mdns_on_interface_vlan(device, vlan):
     cli = []
     cli.append(f"interface vlan {vlan}")
     cli.append(f"no mdns-sd gateway")
-    
+
     try:
         device.configure(cli)
     except SubCommandFailure as error:
@@ -4654,48 +4661,48 @@ def enable_switchport_trunk_on_interface(device, interface):
             device ('obj'): Device object
             interface ('str'): interface name to enable switchport trunk
         Returns:
-            None 
-        Raises: 
+            None
+        Raises:
             SubCommandFailure : Failed to enable switchport trunk on interface
     """
     log.debug(f"Enable switchport mode trunk on interface {interface}")
-    
+
     configs = [
     f"interface {interface}",
     "switchport mode trunk"
     ]
-    
+
     try:
         device.configure(configs)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Failed to enable switchport mode trunk under {interface}. Error:\n{e}"
         )
-        
+
 def disable_autostate_on_interface(device, interface):
     """ Disable autostate on interface
         Args:
             device ('obj'): Device object
             interface ('str'): interface name to disable autostate
         Returns:
-            None 
-        Raises: 
+            None
+        Raises:
             SubCommandFailure : Failed to disable autostate on interface
     """
     log.debug(f"Disable autostate on interface {interface}")
-    
+
     configs = [
         f"interface {interface}",
         "no autostate"
     ]
-    
+
     try:
         device.configure(configs)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Failed to disable autostate under {interface}. Error:\n{e}"
         )
-        
+
 
 def configure_ip_unnumbered_on_interface(device, interface, dest_interface):
     """ configure ip unnumbered loopback on interface <interface>
@@ -4705,24 +4712,24 @@ def configure_ip_unnumbered_on_interface(device, interface, dest_interface):
             dest_interface('str'): Interface details on which ip unnumbered is going to apply (i.e - Loopback0)
         Returns:
             None
-        Raises: 
+        Raises:
             SubCommandFailure : Failed to configure ip unnumbered loopback on interface
     """
 
     log.debug(f"Add ip unnumbered loopback on interface {interface}")
-    
+
     configs = [
         f"interface {interface}",
         f"ip unnumbered {dest_interface}"
     ]
-    
+
     try:
         device.configure(configs)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Failed to add ip unnumbered loopback on interface {interface}. Error:\n{e}"
         )
-        
+
 
 def configure_switchport_trunk_allowed_vlan(device, interface, vlan_id):
     """ Configure switchport trunk allowed vlan on interface <interface>
@@ -4732,26 +4739,26 @@ def configure_switchport_trunk_allowed_vlan(device, interface, vlan_id):
             vlan_id('int'): VLAN IDs of the allowed VLANs
         Returns:
             None
-        Raises: 
+        Raises:
             SubCommandFailure :Failed to Configure switchport trunk allowed vlan on interface
     """
 
     log.debug(f"Configure switchport trunk allowed vlan on interface {interface}")
-    
+
     configs = [
         f"interface {interface}",
         f"switchport trunk allowed vlan {vlan_id}"
     ]
-    
+
     try:
         device.configure(configs)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Failed to Configure switchport trunk allowed vlan on interface {interface}. Error:\n{e}"
         )
-        
+
 def configure_port_channel_lacp_max_bundle(device, port_channel_num, lacp_bundle_num):
-    
+
     """ Configure lacp_max_bundle on the Port-channel interface
 
         Args:
@@ -4768,8 +4775,8 @@ def configure_port_channel_lacp_max_bundle(device, port_channel_num, lacp_bundle
     """
     try:
         device.configure(
-            [ 
-            f"interface Port-channel {port_channel_num}", 
+            [
+            f"interface Port-channel {port_channel_num}",
             f"lacp max-bundle {lacp_bundle_num}"
             ]
         )
@@ -4779,7 +4786,7 @@ def configure_port_channel_lacp_max_bundle(device, port_channel_num, lacp_bundle
             )
 
 def unconfigure_port_channel_lacp_max_bundle(device, port_channel_num, lacp_bundle_num):
-    
+
     """ UnConfigure lacp_max_bundle on the Port-channel interface
 
         Args:
@@ -4793,7 +4800,7 @@ def unconfigure_port_channel_lacp_max_bundle(device, port_channel_num, lacp_bund
 
         Raises:
             SubCommandFailure
-    """ 
+    """
     try:
         device.configure(
             [
@@ -4803,9 +4810,9 @@ def unconfigure_port_channel_lacp_max_bundle(device, port_channel_num, lacp_bund
         )
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            f"Failed to configure interface Port-channel {port_channel_num} lacp max_bundle {lacp_bundle_num} command"            
+            f"Failed to configure interface Port-channel {port_channel_num} lacp max_bundle {lacp_bundle_num} command"
             )
-        
+
 def configure_interface_speed(device, interface, speed_mbps):
     """ Configure speed on interface
         Args:
@@ -4867,7 +4874,7 @@ def configure_interface_duplex(device, interface, duplex_mode):
                 interface=interface, error=e
             )
         )
-        
+
 def configure_ip_igmp_static_group(device, interface, static_group, source_ip=None):
     """ configures ip igmp static-group in interface level
 
@@ -4884,7 +4891,7 @@ def configure_ip_igmp_static_group(device, interface, static_group, source_ip=No
         SubCommandFailure
     """
 
-    
+
     cmd = [f"interface {interface}"]
     if source_ip:
         cmd.append(f"ip igmp static-group {static_group} source {source_ip}")
@@ -5042,11 +5049,11 @@ def unconfigure_ipv4_dhcp_relay_helper_vrf(device, interface, ip_address, vrf):
 
 
 def configure_vrf_select_source(device, interface):
-    """ Configure VRF select source on an interface 
+    """ Configure VRF select source on an interface
 
         Args:
             device (`obj`): Device object
-            interface (`str`): Interface to configure            
+            interface (`str`): Interface to configure
 
         Returns:
             None
@@ -5077,7 +5084,7 @@ def unconfigure_vrf_select_source(device, interface):
         Args:
             device (`obj`): Device object
             interface (`str`): Interface to configure
-            
+
         Returns:
             None
 

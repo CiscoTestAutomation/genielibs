@@ -614,7 +614,7 @@ def get_interface_interfaces_under_vrf(device, vrf):
 
 def get_interface_running_config(device, interface):
     """ Get interface configuration from show running-config interface {interface}
-        
+
         Args:
             device ('obj'): Device object
             interface ('str'): interface name
@@ -1008,7 +1008,7 @@ def get_interface_information(device, interface_list):
             List containing Dictionaries for sucesses
     """
     results = {}
-    empty_ints = []     
+    empty_ints = []
 
     for interface in interface_list:
         try:
@@ -1019,7 +1019,7 @@ def get_interface_information(device, interface_list):
         results[interface] = data
     if empty_ints:
         log.error('No interface information found for {}'.format(empty_ints))
-    
+
     return results
 
 def get_interface_ipv4_address(device, interface):
@@ -1038,7 +1038,7 @@ def get_interface_ipv4_address(device, interface):
     except SchemaEmptyParserError as e:
         log.error('No interface information found for {}: {}'.format(interface, e))
         return None
-    
+
     interface = Common.convert_intf_name(interface)
 
     ip_dict = data[interface].get('ipv4')
@@ -1046,6 +1046,41 @@ def get_interface_ipv4_address(device, interface):
     if ip_dict:
         ip = list(ip_dict)[0]
     return ip
+
+def get_interface_secondary_ipv4_address(device, interface):
+    """ Get the secondary ip address for an interface on target device
+
+        Args:
+            interface('string'): interface to get address for
+            device ('obj'): Device Object
+
+        Returns:
+            None
+            String with interface ip address
+    """
+    log.info(
+        "Getting interface secondary address for {interface} on {device}".format(
+            interface=interface, device=device.name
+        )
+    )
+
+    cmd = "show ip interface {i}".format(i=interface)
+    try:
+        out = device.parse(cmd)
+    except SubCommandFailure:
+        log.error("Invalid command")
+    except Exception as e:
+        log.error("Failed to parse '{cmd}': {e}".format(cmd=cmd, e=e))
+        return
+
+    secondary_addr = "unassigned"
+    addresses = out.get(interface, {}).get('ipv4', {})
+    for a in addresses:
+        if addresses[a]['secondary'] is True:
+            secondary_addr = a
+            break
+
+    return secondary_addr
 
 def get_interface_names(device):
     """Gets the names of all interfaces on the device
@@ -1131,7 +1166,7 @@ def get_ipv6_interface_ip_address(device, interface, link_local=False, as_list=F
     #             },
     #         },
     #     },
-    # }    
+    # }
 
     # get the interface
     intf = list(out.keys())[0]
