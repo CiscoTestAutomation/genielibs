@@ -90,6 +90,13 @@ DEFAULT = {
         'reload_timeout': 1000
     },
     'powercycle': {},
+    'device_recovery': {
+        'break_count': 120,
+        'console_activity_pattern': 'System Bootstrap',
+        'golden_image': [],
+        'recovery_password': 'admin',
+        'timeout': 1400
+    },
 
     'order': ['connect',
               'apply_configuration',

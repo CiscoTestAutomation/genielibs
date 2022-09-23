@@ -5,13 +5,13 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-  prompt: leaf1(config)#
+  prompt: xtr11(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: leaf1(config-line)#
+  prompt: xtr11(config-line)#
 connect:
   commands:
     ? ''
@@ -28,7 +28,7 @@ execute:
       new_state: configure
     config-transaction:
       new_state: configure
-    show ip mroute vrf red 239.1.1.1 20.20.20.21:
+    show ip mroute vrf VRF2 239.5.1.100 70.3.0.2:
       response:
       - "IP Multicast Routing Table\r\nFlags: D - Dense, S - Sparse, B - Bidir Group,\
         \ s - SSM Group, C - Connected,\r\n       L - Local, P - Pruned, R - RP-bit\
@@ -46,12 +46,13 @@ execute:
         \ l - LISP decap ref count contributor\r\nOutgoing interface flags: H - Hardware\
         \ switched, A - Assert winner, p - PIM Join\r\n                          t\
         \ - LISP transit group\r\n Timers: Uptime/Expires\r\n Interface state: Interface,\
-        \ Next-Hop or VCD, State/Mode\r\n\r\n(20.20.20.21, 239.1.1.1), 00:10:14/00:02:52,\
-        \ flags: FTGqx\r\n  Incoming interface: Vlan100, RPF nbr 0.0.0.0\r\n  Outgoing\
-        \ interface list:\r\n    Vlan500, VXLAN v4 Encap: (50000, 225.2.2.2), Forward/Sparse,\
-        \ 00:10:12/stopped, flags:"
+        \ Next-Hop or VCD, State/Mode\r\n\r\n(70.3.0.2, 239.5.1.100), 03:32:47/stopped,\
+        \ flags: T\r\n  Incoming interface: LISP0.4100, RPF nbr 100.99.99.99, using\
+        \ vrf VRF1\r\n  Outgoing interface list:\r\n    Vlan1025, Forward/Sparse,\
+        \ 03:32:47/00:00:12, flags: \r\n    LISP0.4101, 100.99.99.99, Forward/Sparse,\
+        \ 03:32:47/00:03:17, flags:"
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: leaf1#
+  prompt: xtr11#

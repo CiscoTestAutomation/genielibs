@@ -195,29 +195,33 @@ def unconfigure_snmp_server_group(device,
             f"Could not unconfigure snmp server group. Error:\n{str(error)}"
         )
 
-def configure_snmp_server_trap(device, intf, host_name, trap_type, version,
-                               user_name, config_type, engine_id=None):
+def configure_snmp_server_trap(device, intf=None, host_name=None, trap_type=None, version=None,
+                               user_name=None, config_type=None, engine_id=None):
     """ Configures the snmp traps or informs on device
         Args:
             device ('obj'): device to use
-            intf ('str'): trap source interface
-            host_name ('str'): hostname/ip address of snmp-server
-            trap_type ('str'): Traps or informs
-            version ('str'): v1,v2c,v3
-            user_name ('str'): Name of the user
-            config_type ('str'): snmp trap type i.e config,link up down
-            engine_id ('str'): remote engine id
+            intf ('str',optional): trap source interface
+            host_name ('str',optional): hostname/ip address of snmp-server
+            trap_type ('str',optional): Traps or informs
+            version ('str',optional): v1,v2c,v3
+            user_name ('str',optional): Name of the user
+            config_type ('str',optional): snmp trap type i.e config,link up down
+            engine_id ('str',optional): remote engine id
         Returns:
             None
         Raises:
             SubCommandFailure
     """
-
-    cli = f"snmp-server trap-source {intf}\n"
-    cli += "snmp-server enable traps\n"
-    cli += f"snmp-server host {host_name} {trap_type} version {version} priv {user_name} {config_type}\n"
-    if trap_type == 'informs':
-        cli += f"snmp-server engineID remote {host_name} {engine_id}"
+    if intf and host_name and trap_type and version and user_name and config_type:
+        cli = f"snmp-server trap-source {intf}\n"
+        cli += "snmp-server enable traps\n"
+        cli += f"snmp-server host {host_name} {trap_type} version {version} priv {user_name} {config_type}\n"
+        if trap_type == 'informs':
+            cli += f"snmp-server engineID remote {host_name} {engine_id}"
+    elif trap_type:
+        cli = f"snmp-server enable traps {trap_type}"
+    else:
+        cli = f"snmp-server enable traps"       
 
     try:
         device.configure(cli)
@@ -225,29 +229,33 @@ def configure_snmp_server_trap(device, intf, host_name, trap_type, version,
         raise SubCommandFailure(f"Could not configure trap/inform config \
                 on snmp-server. Error:\n{str(error)}")
 
-def unconfigure_snmp_server_trap(device, intf, host_name, trap_type, version,
-                               user_name, config_type, engine_id=None):
+def unconfigure_snmp_server_trap(device,  intf=None, host_name=None, trap_type=None, version=None,
+                               user_name=None, config_type=None, engine_id=None):
     """ Unconfigures the snmp traps or informs on device
         Args:
             device ('obj'): device to use
-            intf ('str'): trap source interface
-            host_name ('str'): hostname/ip address of snmp-server
-            trap_type ('str'): Traps or informs
-            version ('str'): v1,v2c,v3
-            user_name ('str'): Name of the user
-            config_type ('str'): snmp trap type i.e config,link up down
-            engine_id ('str'): remote engine id
+            intf ('str',optional): trap source interface
+            host_name ('str',optional): hostname/ip address of snmp-server
+            trap_type ('str',optional): Traps or informs
+            version ('str',optional): v1,v2c,v3
+            user_name ('str',optional): Name of the user
+            config_type ('str',optional): snmp trap type i.e config,link up down
+            engine_id ('str',optional): remote engine id
         Returns:
             None
         Raises:
             SubCommandFailure
     """
-
-    cli = f"no snmp-server trap-source {intf}\n"
-    cli += "no snmp-server enable traps\n"
-    cli += f"no snmp-server host {host_name} {trap_type} version {version} priv {user_name} {config_type}\n"
-    if trap_type == 'informs':
-        cli += f"no snmp-server engineID remote {host_name} {engine_id}"
+    if intf and host_name and trap_type and version and user_name and config_type:
+        cli = f"no snmp-server trap-source {intf}\n"
+        cli += "no snmp-server enable traps\n"
+        cli += f"no snmp-server host {host_name} {trap_type} version {version} priv {user_name} {config_type}\n"
+        if trap_type == 'informs':
+            cli += f"no snmp-server engineID remote {host_name} {engine_id}"
+    elif trap_type:
+        cli = f"no snmp-server enable traps {trap_type}"
+    else:
+        cli = f"no snmp-server enable traps"        
 
     try:
         device.configure(cli)

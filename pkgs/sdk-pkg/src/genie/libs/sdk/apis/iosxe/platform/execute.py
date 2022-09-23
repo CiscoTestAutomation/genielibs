@@ -773,3 +773,107 @@ def execute_clear_parser_statistics(device):
         log.error(e)
         raise SubCommandFailure("Could not clear parser statistics on device")
 
+def execute_format(device, file_sys, timeout=300):
+    """ Execute 'format <file-system>' on the device
+        Args:
+            device ('obj'): Device object
+            timeout ('int'): Max time to for format to complete in seconds
+            file_sys ("str"): File system should be formatted
+        Returns:
+            None
+        Raises:
+            SubCommandFailure : Failed to format the file system on device
+    """
+
+    log.info("Executing 'format file-system' on the device")
+
+    dialog = Dialog([
+        Statement(pattern=r".*Format operation may take a while\. Continue\? \[confirm\]",
+                  action='sendline(\r)',
+                  loop_continue=True,
+                  continue_timer=False),
+        Statement(pattern=r".*Format operation will destroy all data in \"usbflash.*\:\"\.  Continue\? \[confirm\]",
+                  action='sendline(\r)',
+                  loop_continue=True,
+                  continue_timer=False),
+        Statement(pattern=r".*Format of usbflash.*\: complete",
+                  action='sendline()',
+                  loop_continue=True,
+                  continue_timer=False)
+    ])
+
+
+    cmd = "format {dir}".format(dir=file_sys)
+
+    try:
+        output = device.execute(cmd, reply=dialog, timeout=timeout)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not format the file system Error:\n{error}".format(error=e
+
+        ))
+
+def create_dir_file_system(device, file_sys, dir_name, timeout=300):
+    """ create directory in  '<file_system>' on the device
+        Args:
+            device ('obj'): Device object
+            timeout ('int'): Max time to for format to complete in seconds
+            file_sys ("str"): File system
+            dir_name("str"): directory name should be created
+        Returns:
+            None
+        Raises:
+            SubCommandFailure : Failed to create directory on file system
+    """
+
+    log.info("Executing 'mkdir file-system:dir_name' on the device")
+
+    dialog = Dialog([
+        Statement(pattern=r".*Create directory filename \[.*\]\?",
+                  action='sendline()',
+                  loop_continue=False,
+                  continue_timer=False),
+
+    ])
+
+    cmd = "mkdir {dir}{dr_name}".format(dir=file_sys,dr_name=dir_name)
+
+    try:
+        output = device.execute(cmd, reply=dialog, timeout=timeout)
+        log.info('created directory on file system')
+    except Exception as err:
+        log.error("Failed to execute the command: {err}".format(err=err))
+        raise Exception(err)
+
+def rename_dir_file_system(device, file_sys, file_name, des_file_sys, des_file_name, timeout=300):
+    """ Rename directory in  '<file_system>' on the device
+        Args:
+            device ('obj'): Device object
+            timeout ('int'): Max time to for format to complete in seconds
+            file_sys ("str"): File system
+            file_name("str"): directory name or file name
+            des_file_name("str"): directory name or file name should be renamed
+        Returns:
+            None
+        Raises:
+            SubCommandFailure : Failed to Rename directory on file system
+    """
+
+    log.info("Executing 'rename file-system:file_name file-system:des_file_name' on the device")
+
+    dialog = Dialog([
+        Statement(pattern=r".*Destination filename \[.*\]\?",
+                  action='sendline()',
+                  loop_continue=False,
+                  continue_timer=False),
+
+    ])
+    cmd = "rename {dir}{f_name} {des_dir}{d_name}".format(dir=file_sys,f_name=file_name,des_dir=des_file_sys,d_name=des_file_name)
+
+    try:
+        output = device.execute(cmd, reply=dialog, timeout=timeout)
+        log.info('Successfully renamed the file')
+    except Exception as err:
+        log.error("Failed to execute the command: {err}".format(err=err))
+        raise Exception(err)

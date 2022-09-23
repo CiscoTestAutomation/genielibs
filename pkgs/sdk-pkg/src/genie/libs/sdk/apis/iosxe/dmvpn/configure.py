@@ -223,3 +223,46 @@ def configure_interface_tunnel_spoke(device,
              "Error:\n{error}".format(error=e)
         )
         raise
+
+def configure_interface_tunnel_key(device, tunnel_intf, key):
+    """ Configure tunnel key on a tunnel interface
+        Args:
+            device ('obj'): Device object
+            tunnel_intf ('str'): tunnel interface
+            key ('int'): tunnel key to configure
+        
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = []
+    cmd.append(f'interface {tunnel_intf}')
+    cmd.append(f'tunnel key {key}')
+    try:
+        print(cmd)
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure tunnel key on interface {tunnel_intf}. Error:\n{e}")
+
+def unconfigure_interface_tunnel_key(device, tunnel_intf):
+    """ Unconfigure tunnel key on a tunnel interface
+        Args:
+            device ('obj'): Device object
+            tunnel_intf ('str'): tunnel interface
+        
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = []
+    cmd.append(f'interface {tunnel_intf}')
+    cmd.append('no tunnel key')
+    try:
+        print(cmd)
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure tunnel key on interface {tunnel_intf}. Error:\n{e}")

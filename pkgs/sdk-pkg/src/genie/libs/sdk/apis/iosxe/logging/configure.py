@@ -227,3 +227,30 @@ def unconfigure_logging_console_errors(device):
                 .format(device=device, error=e))
 
 
+def configure_lineconsole_exectimeout(device,console_num,timeout):
+    """ Configure line console exec timeout
+        Args:
+            device (`obj`): Device object
+            console_num ('int'): Line console number
+            timeout ('mins'): timeout in mins
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    log.debug("Configure line console exec timeout on {device}".format(device=device))
+
+    try:
+        device.configure(
+            [
+                "line console {console_num}".format(console_num=console_num),
+                "exec-timeout {timeout}".format(timeout=timeout),
+            ]
+        )
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure line console exec timeout on {device}. Error:\n{error}"
+                .format(device=device, error=e))
+

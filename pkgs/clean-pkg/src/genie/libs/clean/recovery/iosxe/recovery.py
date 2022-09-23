@@ -20,8 +20,9 @@ from genie.libs.clean.recovery.iosxe.dialogs import (
 log = logging.getLogger(__name__)
 
 def recovery_worker(start, device, console_activity_pattern=None,
-                    console_breakboot_char=None, grub_activity_pattern=None,
-                    grub_breakboot_char=None, break_count=10, timeout=600,
+                    console_breakboot_char=None, console_breakboot_telnet_break=None,
+                    grub_activity_pattern=None, grub_breakboot_char=None,
+                    break_count=10, timeout=600,
                     *args, **kwargs):
     """ Starts a Spawn and processes device dialogs during recovery of a device
 
@@ -30,6 +31,7 @@ def recovery_worker(start, device, console_activity_pattern=None,
             device (obj): Device object
             console_activity_pattern (str): Pattern to send the break at
             console_breakboot_char (str): Character to send when console_activity_pattern is matched
+            console_breakboot_telnet_break (bool): Use telnet `send break` to interrupt device boot
             grub_activity_pattern (str): Break pattern on the device for grub boot mode
             grub_breakboot_char (str): Character to send when grub_activity_pattern is matched
             break_count (int, optional): Number of break commands to send. Defaults to 10.
@@ -38,6 +40,28 @@ def recovery_worker(start, device, console_activity_pattern=None,
         Returns:
             None
     """
+
+    def telnet_breakboot(spawn, break_count):
+        """ Breaks the booting process on a device using telnet `send break`
+
+            Args:
+                spawn (obj): Spawn connection object
+                break_count (int): Number of break commands to send
+                break_char (str): Char to send
+
+            Returns:
+                None
+        """
+
+        log.info(f"Found the console_activity_pattern! Breaking the boot process using telnet break.")
+
+        for _ in range(break_count):
+            log.info(f"Using telnet break")
+            spawn.send('\x1d')
+            spawn.expect(r'telnet>\s*$')
+            spawn.sendline('send break')
+            spawn.expect('.+')
+            time.sleep(2)
 
     def console_breakboot(spawn, break_count, break_char):
         """ Breaks the booting process on a device
@@ -79,7 +103,7 @@ def recovery_worker(start, device, console_activity_pattern=None,
     device.instantiate(connection_timeout=timeout)
 
     # Get device console port information
-    last_word_in_start_match = re.match('.*\s(\S+)$', start)
+    last_word_in_start_match = re.match(r'.*\s(\S+)$', start)
     last_word_in_start = last_word_in_start_match.group(1) \
         if last_word_in_start_match else ""
 
@@ -93,12 +117,24 @@ def recovery_worker(start, device, console_activity_pattern=None,
 
     # Stop the device from booting
     break_dialog = BreakBootDialog()
-    if console_activity_pattern and console_breakboot_char:
+
+    # Either use break character or telnet escape break
+    # break character is ctrl-c by default
+    if console_activity_pattern and console_breakboot_char and not console_breakboot_telnet_break:
         break_dialog.add_statement(
             Statement(pattern=console_activity_pattern,
                       action=console_breakboot,
                       args={'break_count': break_count,
                             'break_char': console_breakboot_char},
+                      loop_continue=True,
+                      continue_timer=False), pos=0)
+
+    # telnet escape is used only if user specified
+    if console_activity_pattern and console_breakboot_telnet_break:
+        break_dialog.add_statement(
+            Statement(pattern=console_activity_pattern,
+                      action=telnet_breakboot,
+                      args={'break_count': break_count},
                       loop_continue=True,
                       continue_timer=False), pos=0)
 

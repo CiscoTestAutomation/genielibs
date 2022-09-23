@@ -393,7 +393,7 @@ def execute_copy_run_to_start(device, command_timeout=300, max_time=120,
     # Build Unicon Dialogs
 
     startup = Statement(
-        pattern=r'^.*Destination +(filename|file +name)(\s\(control\-c +to +abort\)\:)? +\[(\/)?startup\-config]\?',
+        pattern=r'^.*Destination +(filename|file +name)(\s\(control\-c +to +(cancel|abort)\)\:)? +\[(\S+\/)?startup\-config]\?\s*$',
         action='sendline()',
         loop_continue=True,
         continue_timer=False)

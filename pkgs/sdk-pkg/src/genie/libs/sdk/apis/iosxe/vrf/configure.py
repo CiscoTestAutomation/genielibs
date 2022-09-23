@@ -760,3 +760,55 @@ def configure_scale_vrf_via_tftp(
             raise Exception('tftp_config failed.')
     else:
         return cmds
+
+
+def configure_mdt_data_vxlan(device, vrf_name, address_family, ip, mask):
+
+    """ configure mdt data vxlan network in vrf
+        Args:
+            device (`obj`): Device object
+            vrf_name ('str'): name of the vrf
+            address_family ('str'):  mention the address-family.
+            ip ('str'): network ip address
+            mask ('str'): mask
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring mdt data vxlan 
+    """
+    config = [ f"vrf definition {vrf_name}",
+               f"address-family {address_family}",
+               f"mdt data vxlan {ip} {mask}"]
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Could not configure {config} on device {device}.Error:\n{e}'
+        )
+
+
+def unconfigure_mdt_data_vxlan(device, vrf_name, address_family, ip, mask):
+
+    """ unconfigure mdt data vxlan network in vrf
+        Args:
+            device (`obj`): Device object
+            vrf_name ('str'): name of the vrf
+            address_family ('str'):  mention the address-family.
+            ip ('str'): network ip address
+            mask ('str'): mask
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed unconfiguring mdt data vxlan 
+    """
+    config = [f"vrf definition {vrf_name}",
+              f"address-family {address_family}",
+              f"no mdt data vxlan {ip} {mask}"]
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Could not configure {config} on device {device}.Error:\n{e}'
+        )

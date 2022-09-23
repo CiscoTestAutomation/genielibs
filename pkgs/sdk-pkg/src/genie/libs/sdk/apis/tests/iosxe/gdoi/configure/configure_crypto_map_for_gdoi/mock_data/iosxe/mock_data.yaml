@@ -1,0 +1,43 @@
+configure:
+  commands:
+    crypto map ipv6 test_map_ipv6 12 gdoi: "crypto map ipv6 test_map_ipv6 12 gdoi\r\
+      \n"
+    crypto map test_map_ipv4 10  gdoi: "crypto map test_map_ipv4 10  gdoi\r\n"
+    description This is a ipv4 crypto map: "\tgroup has been configured.\r\n"
+    description This is a ipv6 crypto map: "\tgroup has been configured.\r\n"
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    set group gp_1: "% NOTE: This new crypto map will remain disabled until a valid\r\
+      \n"
+    set group gp_2: "% NOTE: This new crypto map will remain disabled until a valid\r\
+      \n"
+  prompt: Router(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: Router(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: Router#

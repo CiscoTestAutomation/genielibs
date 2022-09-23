@@ -1,0 +1,51 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: INT1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: INT1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    clear crypto gkm:
+      response:
+      - "% The Key Server and Group Member will destroy created and downloaded policies.\r\
+        \n% All Group Members are required to re-register.\r\n\r\n"
+      response_type: circular
+      new_state: clear_yn
+    clear crypto gkm group bw6000:
+      response:
+      - "% The Key Server and Group Member will destroy created and downloaded policies.\r\
+        \n% All Group Members are required to re-register.\r\n\r\n"
+      response_type: circular
+      new_state: clear_yn
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: INT1#
+clear_yn:
+  prompt: "Are you sure you want to proceed ? [yes/no]: "
+  commands:
+    y:
+      new_state: execute

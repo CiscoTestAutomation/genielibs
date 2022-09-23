@@ -1,0 +1,46 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    interface Gi1/0/1: "interface Gi1/0/1\r\n"
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    power inline auto: "power inline auto\r\n"
+    power inline auto max 4000: "power inline auto max 4000\r\n"
+    power inline consumption 4000: "power inline consumption 4000\r\n"
+    power inline never: "power inline never\r\n"
+    power inline police: "power inline police\r\n"
+    power inline police action errdisable: "power inline police action errdisable\r\
+      \n"
+    power inline police action log: "power inline police action log\r\n"
+    power inline port 1-event: "power inline port 1-event\r\n"
+    power inline port perpetual-poe-ha: "power inline port perpetual-poe-ha\r\n"
+    power inline static max 4000: "power inline static max 4000\r\n"
+  prompt: screwball(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: screwball(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: screwball#

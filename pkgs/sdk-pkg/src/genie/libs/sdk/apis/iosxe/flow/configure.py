@@ -229,14 +229,15 @@ def configure_fnf_monitor_on_interface(device, interface, monitor_name, directio
         )
 
 
-def unconfigure_fnf_monitor_on_interface(device, interface, monitor_name, sampler_name):
+def unconfigure_fnf_monitor_on_interface(device, interface, monitor_name, sampler_name=None, direction='input'):
     """ Unconfig Flow Monitor on Interface
 
         Args:
             device (`obj`): Device object
             interface (`str`): Interface to be unconfigured
             monitor_name (`str`): Flow monitor name
-            sampler_name ('str'): Sampler name
+            sampler_name ('str', Optional): Sampler name
+            direction ('str'): Direction to be unconfigured
 
         Return:
             None
@@ -244,8 +245,12 @@ def unconfigure_fnf_monitor_on_interface(device, interface, monitor_name, sample
         Raise:
             SubCommandFailure: Failed unconfiguring interface with flow monitor
     """
-    cmd = [f"interface {interface}",
-           f"no ip flow monitor {monitor_name} sampler {sampler_name} input"]
+    if sampler_name:
+        cmd = [f"interface {interface}",
+           f"no ip flow monitor {monitor_name} sampler {sampler_name} {direction}"]
+    else:
+        cmd = [f"interface {interface}",
+           f"no ip flow monitor {monitor_name} {direction}" ]
     try:
         device.configure(cmd)
 

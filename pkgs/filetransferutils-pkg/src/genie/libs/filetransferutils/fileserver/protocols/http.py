@@ -4,6 +4,7 @@ import base64
 import logging
 import pathlib
 import http.server
+from socketserver import ForkingMixIn
 
 from pyats.topology.credentials import Credentials
 from pyats.utils.secret_strings import SecretString, to_plaintext
@@ -11,6 +12,7 @@ from pyats.utils.secret_strings import SecretString, to_plaintext
 from ..server import FileServer as BaseFileServer
 
 DEFAULT_PORT = 0
+REQUEST_TIMEOUT = 30
 
 log = logging.getLogger(__name__)
 
@@ -113,6 +115,27 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         super().do_GET()
 
 
+class ForkingHTTPServer(ForkingMixIn, http.server.HTTPServer):
+    '''Forking HTTP server
+
+    Allows the server to process several requests at the time. In some
+    HTTP client implementations, two HTTP requets may be sent without
+    explicitly closing them. This class adds support for this use-case
+    scenario
+    '''
+    def finish_request(self, request, client_address):
+        '''Closes a stale request
+
+        Closes a request after being inactive for REQUEST_TIMEOUT seconds
+        '''
+        request.settimeout(REQUEST_TIMEOUT)
+        try:
+            http.server.HTTPServer.finish_request(self, request, client_address)
+        except BrokenPipeError:
+            # We catch [Errno 32] Broken pipe from first Hello packet
+            log.debug("Cleaned up the following request: %s", str(request))
+
+
 class FileServer(BaseFileServer):
     '''FileServer for http protocol
 
@@ -130,7 +153,7 @@ class FileServer(BaseFileServer):
 
         # Setup local HTTP server
         server_address = (address, port)
-        httpd = http.server.HTTPServer(server_address, HTTPRequestHandler)
+        httpd = ForkingHTTPServer(server_address, HTTPRequestHandler)
         httpd.directory = local_dir
         local_port = httpd.server_port
 

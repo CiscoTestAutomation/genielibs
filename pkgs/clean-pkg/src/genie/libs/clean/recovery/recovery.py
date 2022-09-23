@@ -34,9 +34,12 @@ def _disconnect_reconnect(device):
         Returns:
             None
     '''
-    if device.state_machine.current_state == 'rommon':
-       log.warning("Device is in rommon")
-       return False
+    try:
+        if device.state_machine.current_state == 'rommon':
+            log.warning("Device is in rommon")
+            return False
+    except AttributeError:
+        pass
 
     # Disconnect from the device
     log.info("Disconnecting from device '{}'".format(device.name))
@@ -63,16 +66,18 @@ def _disconnect_reconnect(device):
 
 
 def _connectivity(device, console_activity_pattern=None, console_breakboot_char=None,
-                  grub_activity_pattern=None, grub_breakboot_char=None, break_count=10,
+                  console_breakboot_telnet_break=None, grub_activity_pattern=None,
+                  grub_breakboot_char=None, break_count=10,
                   timeout=None, golden_image=None, tftp_boot=None,
                   recovery_password=None, clear_line=True, powercycler=True,
-                  powercycler_delay=30, section=None, reconnect_delay=60):
+                  powercycler_delay=30, section=None, reconnect_delay=60, **kwargs):
 
     '''Powercycle the device and start the recovery process
        Args:
            device ('obj'): Device object
            console_activity_pattern: <Break pattern on the device for normal boot mode, 'str'>
            console_breakboot_char: <Character to send when console_activity_pattern is matched, 'str'>
+           console_breakboot_telnet_break: Use telnet `send break` to interrupt boot
            grub_activity_pattern: <Break pattern on the device for grub boot mode, 'str'>
            grub_breakboot_char: <Character to send when grub_activity_pattern is matched, 'str'>
            break_count ('int'): Number of sending break times
@@ -161,6 +166,7 @@ def _connectivity(device, console_activity_pattern=None, console_breakboot_char=
                 'device': device,
                 'console_activity_pattern': console_activity_pattern,
                 'console_breakboot_char': console_breakboot_char,
+                'console_breakboot_telnet_break': console_breakboot_telnet_break,
                 'grub_activity_pattern': grub_activity_pattern,
                 'grub_breakboot_char': grub_breakboot_char,
                 'break_count': break_count,
@@ -193,6 +199,7 @@ def _connectivity(device, console_activity_pattern=None, console_breakboot_char=
 @clean_schema({
     Optional('console_activity_pattern'): str,
     Optional('console_breakboot_char'): str,
+    Optional('console_breakboot_telnet_break'): bool,
     Optional('grub_activity_pattern'): str,
     Optional('grub_breakboot_char'): str,
     Optional('break_count'): int,
@@ -219,6 +226,7 @@ def recovery_processor(
         section,
         console_activity_pattern=None,
         console_breakboot_char='\x03', # '\x03' == <ctrl>+C
+        console_breakboot_telnet_break=False,
         grub_activity_pattern=None,
         grub_breakboot_char='c',
         break_count=15,
@@ -242,6 +250,7 @@ def recovery_processor(
           break_count: <Send break count, 'int'> (default to 15)
           console_activity_pattern: <Break pattern on the device for normal boot mode, 'str'>
           console_breakboot_char: <Character to send when console_activity_pattern is matched, 'str'>
+          console_breakboot_telnet_break: Use telnet `send break` to interrupt device boot
           grub_activity_pattern: <Break pattern on the device for grub boot mode, 'str'>
           grub_breakboot_char: <Character to send when grub_activity_pattern is matched, 'str'>
           timeout: <Timeout in seconds to recover the device, 'int'>
@@ -349,7 +358,8 @@ Recovery Steps:
 
         try:
             _connectivity(device, console_activity_pattern, console_breakboot_char,
-                          grub_activity_pattern, grub_breakboot_char, break_count, timeout,
+                          console_breakboot_telnet_break, grub_activity_pattern,
+                          grub_breakboot_char, break_count, timeout,
                           golden_image, tftp_boot, recovery_password, clear_line, powercycler,
                           powercycler_delay, section, reconnect_delay)
         except Exception as e:

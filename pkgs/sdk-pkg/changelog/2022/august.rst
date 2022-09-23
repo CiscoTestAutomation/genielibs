@@ -21,7 +21,6 @@
     * Validation Support for Subscription list containing multiple paths (All Modes).
     * rpcverify.py
         * Fix to handle different namespaces in the rpc reply.
-
 * iosxe
     * Modified verify_bgp_rt7_mvpn_all_ip_mgroup
         * Removed colon check for rd and also corrected the ipv6 check
@@ -37,7 +36,8 @@
         * Splited regex <p1> into <p1> and <p2>; and made the code changes in the respective section
     * Modified configure_bgp_neighbor_activate api
         * Added vrf argument to support vrf
-
+    * Updated config_extended_acl API:
+        * Added log_option and changed how the existing commands are appended
 * common
     * Updated execute_copy_run_to_start API
         * add a dialog for handling device output.
@@ -169,10 +169,37 @@
         * API to refresh CTS pac
     * Added clear_ipv6_nhrp
         * API for clear ipv6 nhrp
-
+    * Added configure_debug_snmp_packets API
+        * Api for configure snmp debug packets
+    * Added unconfigure_debug_snmp_packets API   
+        * Api for un configure snmp debug packets
+    * Added configure_snmp_host_version API
+        * Api for snmp-server host {host_name} vrf {vrf_id} version {version_id} {community_string} udp-port {udp_port}
+    * Added unconfigure_snmp_host_version API   
+        * Api for no snmp-server host {host_name} vrf {vrf_id} version {version_id} {community_string} udp-port {udp_port}
+    * Added get_number_of_interfaces API
+        * API to get number of interfaces/type in device
+    * Added get_platform_model_number API
+        * API to get platform model number or chassis type of device
+    * Added verify_interface_config_speed API
+        * API to verify interface configured speed
+    * Added verify_interface_config_duplex API
+        * API to verify interface configured duplex
+    * Added verify_ip_mroute_group_and_sourceip:
+        * Api for verifying mroute parameters in show ip mroute mgroup supports ipv6 too
+    * Added verify_ip_mroute_mgroup_rpf_state:
+        * Api for verifying mroute rpf state in show ip mroute supports ipv6 and vrf too
+    * Added verify_ip_mfib_hw_pkt_per_sec api:
+        * Api for verifying hw pkt count per sec
+    * Added verify_ip_pim_neighbor:
+        * Api for verifying neighbor in show ip pim neighbor
+    * Added get_ip_mfib_hw_pkts_per_sec:
+        * Api for getting hw counters from show ip mfib supports ipv6 and vrf too
 * blitz
     * Added GNMI ASCII encoding support
         * Specify ASCII encoding in format for GNMI request.
         * To verify the GNMI response, in returns section, set datatype to ascii, and expected value. An acceptable operator is '=='.
 
-
+* Common
+    * Added new power_off_device and power_on_device APIs
+        * Add device APIs to toggle device power on or off

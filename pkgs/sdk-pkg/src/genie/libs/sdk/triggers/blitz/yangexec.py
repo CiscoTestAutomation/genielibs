@@ -730,9 +730,13 @@ def run_gnmi(operation, device, steps,
         response = GnmiMessage.run_get(
             device, payload, namespace_modules
         )
-        if not response:
+        if response is None:
+            result = False
+        elif not response and not returns:
             result = False
         else:
+            if not response:
+                response.append((None, "/"))
             if not rpc_verify.process_operational_state(response, returns):
                 result = False
     elif operation == 'subscribe':

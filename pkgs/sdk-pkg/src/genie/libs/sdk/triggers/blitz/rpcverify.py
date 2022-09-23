@@ -110,13 +110,14 @@ class EvalDatatype:
             if self.value:
                 self.fval = self.value
         if self.op == '==':
-            if self.value != self.fval:
-                # Check if values have prefix
-                if self.value.count(':') == 1 and \
-                        self.fval.count(':') == 1:
-                    # Strip the prefix from values
-                    self.value = self.value.split(':')[1]
-                    self.fval = self.fval.split(':')[1]
+            if isinstance(self.value, string_types):
+                if self.value != self.fval:
+                    # Check if values have prefix
+                    if self.value.count(':') == 1 and \
+                            self.fval.count(':') == 1:
+                        # Strip the prefix from values
+                        self.value = self.value.split(':')[1]
+                        self.fval = self.fval.split(':')[1]
             return self.value == self.fval
         elif self.op == '!=':
             return self.value != self.fval

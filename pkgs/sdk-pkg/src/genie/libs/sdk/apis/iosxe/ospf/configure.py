@@ -1481,3 +1481,122 @@ def configure_ospf_nsf_ietf(device, ospf_process_id):
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure nsf ietf under ospf {ospf_process_id}. Error:\n{e}")
         
+def configure_ospf_area_type(device,ospf_process_id,area_id,area_type,area_subcmd="",nssa_translate_subcmd=None):
+    """ configure area type under ospf
+        Args:
+            device ('obj'): device to execute on
+            ospf_process_id ('int'): process id of ospf  
+            area_id ('int'): area number
+            area_type ('str'): area type of ospf
+            ex:
+                stub or nssa
+            area_subcmd ('str'): sub command for area type
+            ex:
+                area 5 stub <no-summary/no-ext-capability>
+                area 5 nssa < default-information-originate/no-ext-capability/no-redistribution/
+                            no-summary/translate>
+            nssa_translate_subcmd ('str'): nssa translate sub commands
+        Return:
+            None
+        Raises:
+            SubCommandFailure : Failed to configure area type under ospf
+    """
+
+    config = []
+    config.append(f'router ospf {ospf_process_id}')
+    
+    if area_type.lower() == 'stub':
+        if area_subcmd:
+            config.append(f'area {area_id} {area_type} {area_subcmd}')
+        else:
+            config.append(f'area {area_id} {area_type}')
+    elif area_type.lower() == 'nssa':
+        if area_subcmd:
+            if area_subcmd.lower() == "translate":
+                if nssa_translate_subcmd:
+                    config.append(f'area {area_id} {area_type} {area_subcmd} type7 {nssa_translate_subcmd}')
+                else:
+                    log.error('missing nssa translate type')
+            else:
+                config.append(f'area {area_id} {area_type} {area_subcmd}')
+        else:
+            config.append(f'area {area_id} {area_type}')
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure area type under ospf {ospf_process_id}. Error:\n{e}")
+
+def redistribute_eigrp_under_ospf(device,ospf_process_id,eigrp_as,vrf=None):
+    """Redistribute eigrp prefixes under ospf 
+        Args:
+            device (`obj`): Device object
+            ospf_process_id (`int`): OSPF process id
+            vrf (str): ospf with vrf 
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure : Failed to configure redistribute eigrp under ospf
+    """
+
+    cfg_cmd = []
+    if vrf:
+        cfg_cmd.append(f'router ospf {ospf_process_id} vrf {vrf}')
+    else:
+        cfg_cmd.append(f'router ospf {ospf_process_id}')
+
+    cfg_cmd.append(f'redistribute eigrp {eigrp_as}')
+    try:
+        device.configure(cfg_cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure redistribute eigrp under ospf {ospf_process_id}. Error:\n{e}")
+
+def unconfigure_ospf_area_type(device,ospf_process_id,area_id,area_type):
+    """ unconfigure area type under ospf
+        Args:
+            device ('obj'): device to execute on
+            ospf_process_id ('int'): process id of ospf  
+            area_id ('int'): area number
+            area_type ('str'): area type of ospf
+            ex:
+                stub or nssa
+        Return:
+            None
+        Raises:
+            SubCommandFailure : Failed to unconfigure area type under ospf
+    """
+
+    config = []
+    config.append(f'router ospf {ospf_process_id}')
+    config.append(f'no area {area_id} {area_type}')
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure area type under ospf {ospf_process_id}. Error:\n{e}")
+
+def unconfigure_redistribute_eigrp_under_ospf(device,ospf_process_id,eigrp_as,vrf=None):
+    """unconfigure Redistribute eigrp prefixes under ospf 
+        Args:
+            device (`obj`): Device object
+            ospf_process_id (`int`): OSPF process id
+            vrf (str): ospf with vrf 
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure : Failed to unconfigure redistribute eigrp under ospf
+    """
+
+    cfg_cmd = []
+    if vrf:
+        cfg_cmd.append(f'router ospf {ospf_process_id} vrf {vrf}')
+    else:
+        cfg_cmd.append(f'router ospf {ospf_process_id}')
+
+    cfg_cmd.append(f'no redistribute eigrp {eigrp_as}')
+    try:
+        device.configure(cfg_cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure redistribute eigrp under ospf {ospf_process_id}. Error:\n{e}")

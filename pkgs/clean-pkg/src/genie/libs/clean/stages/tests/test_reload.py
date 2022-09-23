@@ -1,4 +1,3 @@
-
 import unittest
 import logging
 
@@ -8,30 +7,29 @@ from pyats.aetest.steps import Steps
 from pyats.results import Passed, Failed
 from pyats.aetest.signals import TerminateStepSignal
 from pyats.topology import loader
-from unicon.plugins.tests.mock.mock_device_iosxe import MockDeviceTcpWrapperIOSXE
+from unicon.plugins.tests.mock.mock_device_iosxr import MockDeviceTcpWrapperIOSXR
 import unicon
 unicon.settings.Settings.POST_DISCONNECT_WAIT_SEC = 0
 unicon.settings.Settings.GRACEFUL_DISCONNECT_WAIT_SEC = 0.2
 
 logger = logging.getLogger(__name__)
 
-class TestIosXEPluginHAConnect(unittest.TestCase):
-    """ Run unit testing on a mocked IOSXE ASR HA device """
-
+class TestIosXRreload(unittest.TestCase):
+    """ Run unit testing on a mocked IOSXR device """
     @classmethod
     def setUpClass(cls):
-        cls.md = MockDeviceTcpWrapperIOSXE(port=0, state='cat9k_rommon', hostname='R1')
+        cls.md = MockDeviceTcpWrapperIOSXR(port=0, state = 'ncs5k_enable', hostname='R1')
         cls.md.start()
 
         cls.testbed = """
         devices:
           R1:
-            os: iosxe
-            type: cat9k
+            os: iosxr
+            type: ncs5k
             credentials:
                 default:
-                    username: cisco
-                    password: cisco
+                    username: lab
+                    password: lab
                 enable:
                     password: Secret12345
             connections:
@@ -48,14 +46,11 @@ class TestIosXEPluginHAConnect(unittest.TestCase):
     def tearDownClass(self):
         self.md.stop()
 
-    def test_disconnect_and_reconnect_fail(self):
+    def test_reload_pass(self):
         tb = loader.load(self.testbed)
         self.reload = Reload()
         device = tb.devices.R1
-        device.connect(mit=True)
         steps = Steps()
-        with self.assertRaises(TerminateStepSignal):
-          self.reload.disconnect_and_reconnect(
-                  steps=steps, device=device
-              )
-        self.assertEqual(Failed, steps.details[0].result)
+        device.connect()
+        self.reload(steps=steps, device=device)
+        self.assertEqual(Passed, steps.details[0].result)

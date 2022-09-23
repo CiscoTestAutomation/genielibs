@@ -794,7 +794,12 @@ def verify_ip_mroute_group_and_sourceip(
             ###Verify outgoing interface
             if outgng_intf:
                 if 'outgoing_interface_list' in source_ip_dict.keys():
+
                     actual_out_intf = output.q.contains(sourceip).get_values('outgoing_interface_list')[0]
+                    actual_out_intf_list = output.q.contains(sourceip).get_values('outgoing_interface_list')
+
+
+
                     if isinstance(outgng_intf,str):
                         if outgng_intf.lower() in actual_out_intf.lower():
                             log.info("Got expected outgoing interface {outgng_intf} for "\
@@ -808,7 +813,7 @@ def verify_ip_mroute_group_and_sourceip(
                     if isinstance(outgng_intf,list):
                         unmatched_intf = []
                         for intf in outgng_intf:
-                            if intf.lower() not in actual_out_intf.lower():
+                            if intf not in actual_out_intf_list:
                                 unmatched_intf.append(intf)
                         if unmatched_intf:
                             log.error("Unable to find outgoing interface"
@@ -868,11 +873,9 @@ def verify_ip_mroute_group_and_sourceip(
                     res = False
 
         elif not res:
-            log.info(f"#######res is in not res {res}")
             log.error("Unable to find the multicast group {}".format(groupip))
             res = False
         else:
-            log.info(f"#######res is in else {res}")
             src_ip = output.q.get_values('source_address')
             log.error("Unable to find source address {sourceip}, actual "\
                 "source address {src_ip}".format(sourceip=sourceip,\

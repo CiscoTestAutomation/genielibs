@@ -75,6 +75,43 @@ def remove_dhcp_pool(
             )
         )
 
+def enable_dhcp_snooping_glean(device):
+    """ Enable DHCP snooping glean globally
+        Args:
+            device ('obj'): device to use            
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring DHCP snooping glean
+    """
+    log.info("Enabling DHCP snooping glean globally")
+    try:
+        device.configure("ip dhcp snooping glean")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not enable DHCP snooping glean Error: {error}".format(
+                error=e)
+        )
+
+
+def disable_dhcp_snooping_glean(device):
+    """ Disable DHCP snooping glean globally
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed disabling DHCP snooping glean globally
+    """
+    log.info("Disabling DHCP snooping glean globally")
+    try:
+        device.configure("no ip dhcp snooping glean")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not disable DHCP snooping glean globally Error: {error}".format(
+                error=e)
+        )
+
 
 def enable_dhcp_snooping_vlan(device, vlan):
     """ Enable DHCP snooping on vlan
@@ -109,9 +146,10 @@ def enable_dhcp_snooping(device):
     log.info("Enabling DHCP snooping")
     try:
         device.configure(["ip dhcp snooping"])
-    except SubCommandFailure:
+    except SubCommandFailure as e:
         raise SubCommandFailure(
-            "Could not enable DHCP snooping"
+            "Could not enable DHCP snooping, Error: {error}".format(
+                error=e)
                   
         )
 		

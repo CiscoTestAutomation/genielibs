@@ -254,7 +254,7 @@ def execute_install_remove(device, file_path=None, timeout=60, connect_timeout=1
 
 
 def execute_install_one_shot(device, file_path=None, prompt=True, issu=False,
-                     timeout=900, connect_timeout=10):
+                             negative_test=False, timeout=900, connect_timeout=10):
     """
     Performs install one shot on the device
     Args:
@@ -263,6 +263,7 @@ def execute_install_one_shot(device, file_path=None, prompt=True, issu=False,
         prompt ('bool, optional'): True sets the command to ask for prompt and
                                    False sets the prompt level to none
         issu ('bool, optional'): Force the operation to use issu technique
+        negative_test ('bool, optional'): Flag for install add pass/Fail cases
         timeout ('int, optional'): Timeout value
         connect_timeout ('int, optional'): Time to wait before sending the prompt
                                             (when pattern "Press RETURN to get 
@@ -279,7 +280,7 @@ def execute_install_one_shot(device, file_path=None, prompt=True, issu=False,
         spawn.sendline('')
 
     dialog = Dialog ([
-        Statement(pattern = r".*\[y/n\]",
+        Statement(pattern = r".*\[y/n\]\s*$",
                   action = "sendline(y)",
                   args = None,
                   loop_continue = True,
@@ -318,10 +319,10 @@ def execute_install_one_shot(device, file_path=None, prompt=True, issu=False,
     except Exception as e:
         log.error(f"Error while executing {cmd} on {device.name}: {e}")
 
-    match = re.search(r"FAILED:*", output)
-    result = 'failed' if match else 'successful'
+    pattern = 'SUCCESS' if negative_test else 'FAILED'
+    result = 'fail' if pattern in output else 'successful'
     log.info(f"install one shot operation {result} on {device.name}")
-    return output if not match else match
+    return (output if result == 'successful' else False)
 
 
 def execute_install_add(device, file_path=None, prompt=True, negative_test=False,

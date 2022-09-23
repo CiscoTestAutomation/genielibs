@@ -822,4 +822,27 @@ def get_number_of_interfaces(device):
         return out['version']['number_of_intfs']
 
     return False
+
+def get_device_uptime(device):
+    """ Gets the device uptime
+        Args:
+            device (`obj`): Device object
+        Returns:
+            uptime
+            False if None
+    """
+    
+    try:
+        # Execute 'show version'
+        out = device.parse("show version")
+    except SchemaEmptyParserError as e:
+        log.error("Command 'show version' did not return any results: {e}".format(e=e))
+    except SchemaMissingKeyError as e:
+        log.error("Missing key while parsing 'show version': {e}".format(e=e))
+    except Exception as e:
+        log.error("Failed to parse 'show version': {e}".format(e=e))
+    else:
+        return out.q.contains('version').get_values('uptime', 0)
+
+    return False
         
