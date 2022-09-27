@@ -1819,4 +1819,275 @@ def unconfigure_enable_password(device,secret=True,privilege=None):
         
 
 
+def configure_aaa_authentication_enable(device, group, group_name, group_action):
 
+    """ configure 'aaa authentication enable default {group} {group_name} {group_action="enable"}'
+    Args:
+        device (`obj`)   : Device object
+        group('str') : Use Server-group
+        group_name('str')  : Below are the possible options
+            WORD     Server-group name
+            ldap     Use list of all LDAP hosts.
+            radius   Use list of all Radius hosts.
+            tacacs+  Use list of all Tacacs+ hosts.
+
+        group_action('str')  : Below are the possible options
+            cache    Use Cached-group
+            enable   Use enable password for authentication.
+            line     Use line password for authentication.
+            none     NO authentication.
+            radius   Use RADIUS authentication.
+            tacacs+  Use TACACS+ authentication.
+            <cr>     <cr>
+
+            Example: 
+            code: uut.api.configure_aaa_authentication_enable(group="group", group_name="DATANET", group_action="enable")
+            Output: aaa authentication enable default group DATANET enable
+   
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    
+    cmd = f'aaa authentication enable default {group} {group_name} {group_action}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Could not configure aaa authentication enable:\n{e}'
+        )
+
+def unconfigure_aaa_authentication_enable(device):
+
+    """ unconfigure 'aaa authentication enable default'
+    Args:
+        device (`obj`)   : Device object
+    Example: 
+        code: uut.api.unconfigure_aaa_authentication_enable()
+        Output: aaa authentication enable default group DATANET enable
+    
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    
+    cmd = f'no aaa authentication enable default'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Could not unconfigure aaa authentication enable:\n{e}'
+        )
+
+def configure_aaa_authorization_commands(device, level, level_name, level_action, group_name=None):
+
+    """ configure 'aaa authorization commands {level=15} {level_name="default"} {level_action="none"}'
+    Args:
+        device (`obj`)   : Device object
+        level('str') : <0-15> Enable level
+        level_name('str')  : Below are the possible options
+            WORD     Named authorization list (max 255 characters, longer will be rejected).
+            default  The default authorization list
+
+        level_action('str')  : Below are the possible options
+            cache             Use Cached-group
+            if-authenticated  Succeed if user has authenticated.
+            local             Use local database.
+            none              No authorization (always succeeds).
+            radius            Use RADIUS data for authorization
+            tacacs+           Use TACACS+.
+
+        group_name('str): Group name
+            Example: 
+            code: uut.api.configure_aaa_authorization_commands(level="15", level_name="test", level_action="local")
+            Output: aaa authorization commands 15 test local
+            code: uut.api.configure_aaa_authorization_commands(level="15", level_name="default", group_name="Test", level_action="if-authenticated")
+            Output: aaa authorization commands 15 default group Test if-authenticated
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    
+    cmd = f'aaa authorization commands {level} {level_name} {level_action}'   
+    if group_name:
+        cmd = f'aaa authorization commands {level} {level_name} group {group_name} {level_action}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Could not configure aaa authorization commands:\n{e}'
+        )
+def unconfigure_aaa_authorization_commands(device, level,level_name="", level_action="", group_name=None):
+
+    """ unconfigure 'aaa authorization commands {level=15} {level_name="default"} {level_action="none"}'
+    Args:
+        device (`obj`)   : Device object
+        level('str') : <0-15> Enable level
+        level_name('str')  : Below are the possible options
+            WORD     Named authorization list (max 255 characters, longer will be rejected).
+            default  The default authorization list
+
+        level_action('str')  : Below are the possible options
+            cache             Use Cached-group
+            if-authenticated  Succeed if user has authenticated.
+            local             Use local database.
+            none              No authorization (always succeeds).
+            radius            Use RADIUS data for authorization
+            tacacs+           Use TACACS+.
+
+            Example: 
+            code: uut.api.unconfigure_aaa_authorization_commands(level="15", level_name="test", level_action="local")
+            Output: no aaa authorization commands 15 test local
+            code: uut.api.unconfigure_aaa_authorization_commands(level="15", level_name="default", group_name="Test", level_action="if-authenticated")
+            Output: no aaa authorization commands 15 default group Test if-authenticated
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    
+    cmd = f'no aaa authorization commands {level} {level_name} {level_action}'   
+    if group_name:
+        cmd = f'no aaa authorization commands {level} {level_name} group {group_name} {level_action}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Could not unconfigure aaa authorization commands:\n{e}'
+        )
+
+
+def configure_aaa_accounting_commands(device, accounting_level, accounting_name, accounting_action, group,group_name=None):
+
+    """ configure 'aaa accounting commands {level=15} {level_name="default"} {level_action="none"}'
+    Args:
+        device (`obj`)   : Device object
+        accounting_level('str') : <0-15> Enable level
+        accounting_name('str')  : Below are the possible options
+            WORD     Named Accounting list (max 255 characters, longer will be rejected).
+            default  The default accounting list.
+        accounting_action('str')  : Below are the possible options
+            none        No accounting.
+            start-stop  Record start and stop without waiting
+            stop-only   Record stop when service terminates.
+            wait-start  Same as start-stop but wait for start-record commit.
+            <cr>        <cr>
+        group ('str')  : Below are the possible options
+            broadcast  Use Broadcast for Accounting
+            group      Use Server-group
+            logger     Use system logger for Accounting
+            tacacs+    Use TACACS+.
+        group_name ('str')  :  Server-group name
+            Example: 
+            code: uut.api.configure_aaa_accounting_commands(accounting_level="15",accounting_name="test",accounting_action="none")
+            Output: aaa accounting commands 15 test none
+            code: uut.api.configure_aaa_accounting_commands(accounting_level="1",accounting_name="default",accounting_action="start-stop",group="broadcast",group_name="DATANET")
+            Output: aaa accounting commands 1 default start-stop group DATANET
+
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    
+    cmd = f'aaa accounting commands {accounting_level} {accounting_name} {accounting_action}'   
+    if accounting_action != "none" and group_name:
+        if group == "broadcast" or group == "tacacs+":
+            cmd = f'aaa accounting commands {accounting_level} {accounting_name} {accounting_action} {group} group {group_name}'
+        elif group == "group":
+            cmd = f'aaa accounting commands {accounting_level} {accounting_name} {accounting_action} {group} {group_name}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Could not configure aaa accounting commands:\n{e}'
+        )
+
+
+def unconfigure_aaa_accounting_commands(device,accounting_level,accounting_name="",accounting_action="",group="",group_name=None):
+
+    """ configure 'aaa accounting commands {level=15} {level_name="default"} {level_action="none"}'
+    Args:
+        device (`obj`)   : Device object
+        accounting_level('str') : <0-15> Enable level
+        accounting_name('str')  : Below are the possible options
+            WORD     Named Accounting list (max 255 characters, longer will be rejected).
+            default  The default accounting list.
+        accounting_action('str')  : Below are the possible options
+            none        No accounting.
+            start-stop  Record start and stop without waiting
+            stop-only   Record stop when service terminates.
+            wait-start  Same as start-stop but wait for start-record commit.
+            <cr>        <cr>
+        group ('str')  : Below are the possible options
+            broadcast  Use Broadcast for Accounting
+            group      Use Server-group
+            logger     Use system logger for Accounting
+            tacacs+    Use TACACS+.
+        group_name ('str')  :  Server-group name
+            Example: 
+            code: uut.api.configure_aaa_accounting_commands(accounting_level="15",accounting_name="test",accounting_action="none")
+            Output: aaa accounting commands 15 test none
+            code: uut.api.configure_aaa_accounting_commands(accounting_level="1",accounting_name="default",accounting_action="start-stop",group="broadcast",group_name="DATANET")
+            Output: aaa accounting commands 1 default start-stop group DATANET
+
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    
+    cmd = f'no aaa accounting commands {accounting_level} {accounting_name} {accounting_action}'   
+    if accounting_action != "none" and group_name:
+        if group == "broadcast" or group == "tacacs+":
+            cmd = f'no aaa accounting commands {accounting_level} {accounting_name} {accounting_action} {group} group {group_name}'
+        elif group == "group":
+            cmd = f'no aaa accounting commands {accounting_level} {accounting_name} {accounting_action} {group} {group_name}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Could not unconfigure aaa accounting commands:\n{e}'
+        )
+
+def unconfigure_tacacs_server(device, server):
+    """ unconfigure tacacs server
+        Args:
+            device ('obj'): Device object
+            server('str'): Name for the tacacs server 
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring tacacs server 
+    """
+
+    cmd = f'no tacacs server {server}'  
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Could remove tacacs server :\n{e}'
+        )
+def unconfigure_tacacs_group(device, server_group):
+    """  Unconfigure aaa tacacs server group
+        Args:
+            device ('obj'): Device object
+            server_group('str'): Name for the tacacs group 
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring tacacs server 
+    """
+
+    cmd = f'no aaa group server tacacs {server_group}'  
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Could remove tacacs group server:\n{e}'
+        )

@@ -1,0 +1,44 @@
+configure:
+  commands:
+    boot system switch all flash:cat9k_iosxe.BLD_V179_THROTTLE_LATEST_20220618_072045.SSA.bin: "boot\
+      \ system switch all flash:cat9k_iosxe.BLD_V179_THROTTLE_LAT\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b$ switch all flash:cat9k_iosxe.BLD_V179_THROTTLE_LATE\
+      \         \b\b\b\b\b\b\b\b\bST_202206\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\bl flash:cat9k_iosxe.BLD_V179_THROTTLE_LATEST_2022061         \b\b\b\b\b\
+      \b\b\b\b8_072045.\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\bt9k_iosxe.BLD_V179_THROTTLE_LATEST_20220618_072045.S\
+      \         \b\b\b\b\b\b\b\b\bSA.bin\r\n"
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: Switch(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: Switch(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: Switch#

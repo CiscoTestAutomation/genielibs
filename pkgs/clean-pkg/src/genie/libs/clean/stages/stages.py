@@ -1467,42 +1467,11 @@ reload:
             if reconnect_via:
                 connect_kwargs.update({'via': reconnect_via})
 
-            device.instantiate(**connect_kwargs)
-            rommon_to_disable = None
             try:
-                if device.is_ha and hasattr(device, 'subconnections'):
-                    if isinstance(device.subconnections, list):
-                        rommon_to_disable = device.subconnections[0].state_machine.get_path('rommon', 'disable')
-                else:
-                    rommon_to_disable = device.state_machine.get_path('rommon', 'disable')
-            except ValueError:
-                log.warning('There is no path between rommon and disable states.')
-            except IndexError:
-                log.warning('There is no connection in device.subconnections')
-            if rommon_to_disable and hasattr(rommon_to_disable, 'command'):
-                original_command = rommon_to_disable.command
-                if device.is_ha:
-                    index = device.subconnections[0].state_machine.paths.index(rommon_to_disable)
-                    for subcon in device.subconnections:
-                        subcon.state_machine.paths[index].command = lambda state,spawn,context: raise_(Exception(f'Device {device.name} is still '
-                                                                    f'in rommon state after reload.'))
-                else:
-                    index = device.state_machine.paths.index(rommon_to_disable)
-                    device.state_machine.paths[index].command = lambda state,spawn,context: raise_(Exception(f'Device {device.name} is still '
-                                                                    f'in rommon state after reload.'))
-
-            try:
-                device.connect()
+                device.connect(**connect_kwargs)
             except Exception as e:
                 step.failed("Failed to reconnect", from_exception=e)
-            if rommon_to_disable and hasattr(rommon_to_disable, 'command'):
-                if device.is_ha:
-                    index = device.subconnections[0].state_machine.paths.index(rommon_to_disable)
-                    for subcon in device.subconnections:
-                        subcon.state_machine.paths[index].command = original_command
-                else:
-                    index = device.state_machine.paths.index(rommon_to_disable)
-                    device.state_machine.paths[index].command = original_command
+
 
     def check_modules(self, steps, device, check_modules=None):
 

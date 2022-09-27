@@ -447,6 +447,7 @@ There is more than one ip address, one for each supervisor.
     CONFIG_REG_TIMEOUT = 30
     SAVE_SYSTEM_CONFIG = False
     DEVICE_MANAGED_MODE = 'autonomous'
+    RELOAD_CHECK_PATTERN = '.*Initializing Hardware.*'
 
     # ============
     # Stage Schema
@@ -480,7 +481,8 @@ There is more than one ip address, one for each supervisor.
                   device_managed_mode=DEVICE_MANAGED_MODE,
                   save_system_config=SAVE_SYSTEM_CONFIG,
                   timeout=TIMEOUT,
-                  config_reg_timeout=CONFIG_REG_TIMEOUT):
+                  config_reg_timeout=CONFIG_REG_TIMEOUT,
+                  reload_check_pattern=RELOAD_CHECK_PATTERN):
 
         log.info("Section steps:"
                  "\n1- Set config-register to 0x40"
@@ -551,10 +553,13 @@ There is more than one ip address, one for each supervisor.
             device.sendline('reload')
             reload_dialog.process(device.spawn)
 
+            # To Replace the reload check pattern with the console_activity pattern from device recovery
+            reload_check_pattern = device.clean.device_recovery.get('console_activity_pattern', reload_check_pattern)
+
             if device.is_ha:
 
                 def reload_check(device, target):
-                    device.expect(['.*Initializing Hardware.*'],
+                    device.expect([reload_check_pattern],
                                   target=target,
                                   timeout=60)
 
@@ -566,7 +571,7 @@ There is more than one ip address, one for each supervisor.
                           'target': 'standby'
                       }])
             else:
-                device.expect(['.*Initializing Hardware.*'], timeout=120)
+                device.expect([reload_check_pattern], timeout=120)
 
             log.info("Device is reloading")
             device.destroy_all()
@@ -697,10 +702,11 @@ Example
 expand_image:
     image:
       - bootflash:stay-isr-image.bin
+    timeout: 120
 """
 
     conf_file = 'bootflash:packages.conf'
-
+    TIMEOUT = 120
     # =================
     # Argument Defaults
     # =================
@@ -711,6 +717,7 @@ expand_image:
     # ============
     schema = {
         Optional('image'): list,
+        Optional('timeout'): int,
     }
 
     # ==============================
@@ -741,12 +748,12 @@ expand_image:
             device.execute('request platform software package clean',
                            reply=clean_package_dialog)
 
-    def expand_image(self, steps, device, image):
+    def expand_image(self, steps, device, image, timeout=TIMEOUT):
 
         with steps.start("Expanding .bin image file.") as step:
 
             output = device.execute(
-                f'request platform software package expand file {image[0]}')
+                f'request platform software package expand file {image[0]}', timeout=timeout)
 
             # Sample Outputs:
             #   WARNING: bootflash:asr1000-universalk9.17.06.01a.SPA.18.conf

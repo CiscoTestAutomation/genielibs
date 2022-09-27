@@ -16,6 +16,7 @@ from genie.metaparser.util.schemaengine import Optional, Any
 from genie.utils.timeout import Timeout
 from genie.libs.clean import BaseStage
 from genie.libs.sdk.libs.abstracted_libs.iosxe.subsection import get_default_dir
+from genie.libs.clean.utils import raise_
 
 # Unicon
 from unicon.eal.dialogs import Statement, Dialog
@@ -759,3 +760,208 @@ install_packages:
                 except Exception as e:
                     step.failed("Failed to install the package",
                                 from_exception=e)
+
+
+class Reload(BaseStage):
+    """ This stage reloads the device.
+
+Stage Schema
+------------
+reload:
+
+    reload_service_args (optional):
+
+        timeout (int, optional): Maximum time in seconds allowed for the reload.
+            Defaults to 800.
+
+        reload_creds (str, optional): The credential to use after the reload is
+            complete. The credential name comes from the testbed yaml file.
+            Defaults to the 'default' credential.
+
+        prompt_recovery (bool, optional): Enable or disable the prompt recovery
+            feature of unicon. Defaults to True.
+
+        <Key>: <Value>
+            Any other arguments that the Unicon reload service supports
+
+    check_modules:
+
+        check (bool, optional): Enable the checking of modules after reload.
+            Defaults to True.
+
+        timeout (int, optional): Maximum time in seconds allowed for verifying
+            the modules are in a stable state. Defaults to 180.
+
+        interval (int, optional): How often to check the module states in
+            seconds. Defaults to 30.
+
+    reconnect_via (str, optional): Specify which connection to use after reloading.
+        Defaults to the 'default' connection in the testbed yaml file.
+
+
+Example
+-------
+reload:
+    reload_service_args:
+        timeout: 600
+        reload_creds: clean_reload_creds
+        prompt_recovery: True
+        reconnect_sleep: 200 (Unicon NXOS reload service argument)
+    check_modules:
+        check: False
+"""
+    # =================
+    # Argument Defaults
+    # =================
+    RELOAD_SERVICE_ARGS = {
+        'timeout': 800,
+        'reload_creds': 'default',
+        'prompt_recovery': True
+    }
+    CHECK_MODULES = {
+        'check': True,
+        'timeout': 180,
+        'interval': 30,
+        'ignore_modules': None
+    }
+    RECONNECT_VIA = None
+
+    # ============
+    # Stage Schema
+    # ============
+    schema = {
+        Optional('check_modules'): {
+            Optional('check'): bool,
+            Optional('timeout'): int,
+            Optional('interval'): int,
+            Optional('ignore_modules'): list
+        },
+        Optional('reload_service_args'): {
+            Optional('timeout'): int,
+            Optional('reload_creds'): str,
+            Optional('prompt_recovery'): bool,
+            #Any(): Any()
+        },
+        Optional('reconnect_via'): str,
+    }
+
+    # ==============================
+    # Execution order of Stage steps
+    # ==============================
+    exec_order = [
+        'reload',
+        'disconnect_and_reconnect',
+        'check_modules'
+    ]
+
+    def reload(self, steps, device, reload_service_args=None):
+
+        if reload_service_args is None:
+            # If user provides no custom values, take the defaults
+            reload_service_args = self.RELOAD_SERVICE_ARGS
+        else:
+            # If user provides custom values, update the default with the user
+            # provided. This is needed because if the user only provides 1 of
+            # the many optional arguments, we still need to default the others.
+            self.RELOAD_SERVICE_ARGS.update(reload_service_args)
+            reload_service_args = self.RELOAD_SERVICE_ARGS
+
+        with steps.start(f"Reload {device.name}") as step:
+
+            try:
+                device.reload(**reload_service_args)
+            except Exception as e:
+                step.failed(f"Failed to reload within {reload_service_args['timeout']} "
+                            f"seconds.", from_exception=e)
+
+    def disconnect_and_reconnect(self, steps, device, reload_service_args=None,
+                                 reconnect_via=RECONNECT_VIA):
+
+        if reload_service_args is None:
+            # If user provides no custom values, take the defaults
+            reload_service_args = self.RELOAD_SERVICE_ARGS
+        else:
+            # If user provides custom values, update the default with the user
+            # provided. This is needed because if the user only provides 1 of
+            # the many optional arguments, we still need to default the others.
+            self.RELOAD_SERVICE_ARGS.update(reload_service_args)
+            reload_service_args = self.RELOAD_SERVICE_ARGS
+
+        with steps.start(f"Disconnect and Reconnect to {device.name}") as step:
+
+            try:
+                device.destroy()
+            except Exception:
+                log.warning("Failed to destroy the device connection but "
+                            "attempting to continue", exc_info=True)
+            connect_kwargs = {
+                        'learn_hostname': True,
+                        'prompt_recovery': reload_service_args['prompt_recovery']
+                    }
+
+            if reconnect_via:
+                connect_kwargs.update({'via': reconnect_via})
+
+            device.instantiate(**connect_kwargs)
+            rommon_to_disable = None
+            try:
+                if device.is_ha and hasattr(device, 'subconnections'):
+                    if isinstance(device.subconnections, list):
+                        rommon_to_disable = device.subconnections[0].state_machine.get_path('rommon', 'disable')
+                else:
+                    rommon_to_disable = device.state_machine.get_path('rommon', 'disable')
+            except ValueError:
+                log.warning('There is no path between rommon and disable states.')
+            except IndexError:
+                log.warning('There is no connection in device.subconnections')
+            if rommon_to_disable and hasattr(rommon_to_disable, 'command'):
+                original_command = rommon_to_disable.command
+                if device.is_ha:
+                    index = device.subconnections[0].state_machine.paths.index(rommon_to_disable)
+                    for subcon in device.subconnections:
+                        subcon.state_machine.paths[index].command = lambda state,spawn,context: raise_(Exception(f'Device {device.name} is still '
+                                                                    f'in rommon state after reload.'))
+                else:
+                    index = device.state_machine.paths.index(rommon_to_disable)
+                    device.state_machine.paths[index].command = lambda state,spawn,context: raise_(Exception(f'Device {device.name} is still '
+                                                                    f'in rommon state after reload.'))
+
+            try:
+                device.connect()
+            except Exception as e:
+                step.failed("Failed to reconnect", from_exception=e)
+            if rommon_to_disable and hasattr(rommon_to_disable, 'command'):
+                if device.is_ha:
+                    index = device.subconnections[0].state_machine.paths.index(rommon_to_disable)
+                    for subcon in device.subconnections:
+                        subcon.state_machine.paths[index].command = original_command
+                else:
+                    index = device.state_machine.paths.index(rommon_to_disable)
+                    device.state_machine.paths[index].command = original_command
+
+    def check_modules(self, steps, device, check_modules=None):
+
+        if check_modules is None:
+            # If user provides no custom values, take the defaults
+            check_modules = self.CHECK_MODULES
+        else:
+            # If user provides custom values, update the default with the user
+            # provided. This is needed because if the user only provides 1 of
+            # the many optional arguments, we still need to default the others.
+            self.CHECK_MODULES.update(check_modules)
+            check_modules = self.CHECK_MODULES
+
+        if check_modules['check']:
+
+            with steps.start(f"Checking the modules on '{device.name}' are in a "
+                             f"stable state") as step:
+
+                try:
+                    device.api.verify_module_status(
+                        timeout=check_modules['timeout'],
+                        interval=check_modules['interval'],
+                        ignore_modules=check_modules['ignore_modules'])
+                except Exception as e:
+                    step.failed("Modules are not in a stable state",
+                                from_exception=e)
+

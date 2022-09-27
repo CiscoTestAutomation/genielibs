@@ -70,3 +70,65 @@ def verify_dhcpv4_binding_address(device, ip_address,
 
     log.debug("Failed to find ip address in DHCPv4 binding table")
     return False
+
+def verify_dhcp_snooping_glean_enabled(device, max_time=30, interval=10):
+    ''' 
+    verify_dhcp_snooping_glean_enabled
+    Check the output of 'show ip dhcp snooping | include gleaning' to confirm glean is enabled
+    Args:
+        device ('obj') : Device object
+        max_time ('int') : max time to wait
+        interval ('int') : interval timer
+    Returns:
+        True
+        False
+    Raises:
+        None
+    '''
+    log.info("Executing verify_dhcp_snooping_glean_enabled API")
+    timeout = Timeout(max_time=max_time, interval=interval)    
+    while timeout.iterate():
+        try:
+            output = device.parse("show ip dhcp snooping | include gleaning")
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+        if output['dhcp_snooping_gleaning_status'].get('gleaning_status', '').strip().lower() == 'enabled':
+                log.info("Switch DHCP gleaning is enabled")
+                return True
+        else:
+            timeout.sleep()        
+
+    log.info("Switch DHCP gleaning is NOT enabled!")
+    return False
+
+def verify_dhcp_snooping_glean_disabled(device, max_time=30, interval=10):
+    ''' 
+    verify_dhcp_snooping_glean_disabled
+    Check the output of 'show ip dhcp snooping | include gleaning' to confirm glean is disabled
+    Args:
+        device ('obj') : Device object
+        max_time ('int') : max time to wait
+        interval ('int') : interval timer
+    Returns:
+        True
+        False
+    Raises:
+        None
+    '''
+    log.info("Executing verify_dhcp_snooping_glean_disabled API")
+    timeout = Timeout(max_time=max_time, interval=interval)    
+    while timeout.iterate():
+        try:
+            output = device.parse("show ip dhcp snooping | include gleaning")
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+        if output['dhcp_snooping_gleaning_status'].get('gleaning_status', '').strip().lower() == 'disabled':
+                log.info("Switch DHCP gleaning is disabled")
+                return True
+        else:
+            timeout.sleep()        
+
+    log.info("Switch DHCP gleaning is NOT disabled!")
+    return False

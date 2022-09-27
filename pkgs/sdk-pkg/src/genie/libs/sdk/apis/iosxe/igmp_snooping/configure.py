@@ -148,3 +148,47 @@ def unconfigure_ip_igmp_snooping_vlan_query_version(device, vlan_id, version_num
     except SubCommandFailure as e:
         log.error(e)
         raise SubCommandFailure("Could not configure ip igmp snooping vlan query version") 
+
+def configure_ip_igmp_snooping(device):
+    """UnConfigure IGMP snooping 
+        Example : ip igmp snooping 
+
+    Args:
+        device('obj'): Device object
+            
+    Returns:
+        None
+    
+    Raises:
+        SubCommandFailure : Could not configure ip igmp snooping
+    
+    """
+    config = "ip igmp snooping"
+    try:
+        device.configure(config)
+
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not configure ip igmp snooping") 
+
+def unconfigure_ip_igmp_snooping(device):
+    """UnConfigure IGMP snooping 
+        Example : no ip igmp snooping 
+
+    Args:
+        device('obj'): Device object
+            
+    Returns:
+        None
+    
+    Raises:
+        SubCommandFailure : Could not unconfigure ip igmp snooping
+    
+    """
+    config = "no ip igmp snooping"
+    try:
+        device.configure(config)
+
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not unconfigure ip igmp snooping") 

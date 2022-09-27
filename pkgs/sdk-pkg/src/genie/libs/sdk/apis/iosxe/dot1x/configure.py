@@ -1197,3 +1197,27 @@ def unconfigure_dot1x_cred_int(device, interface, cred_profile_name=None, eap_pr
         raise SubCommandFailure(
             "Failed to unconfigure credential on interface on {}.Error: {}".format(converted_interface, str(e))
         )
+
+
+def clear_access_session_mac(device, mac):
+    """Clear Access Session MAC
+    Args:
+        device ('obj'): device to use
+        mac (`str`): MAC to be cleared
+        
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: Failed to clear access session mac
+    """
+    log.debug("Clearing Access session MAC")
+    try:
+        device.execute(f'clear access-session mac {mac}')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to clear Access session MAC.Error: {}".format(str(e))
+        )
+
+
+

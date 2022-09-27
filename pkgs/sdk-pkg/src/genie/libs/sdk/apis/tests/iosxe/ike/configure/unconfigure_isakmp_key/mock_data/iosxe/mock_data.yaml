@@ -1,0 +1,41 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no crypto isakmp key 0 ash123 address 20.18.19.5 255.255.255.0: "no crypto isakmp\
+      \ key 0 ash123 address 20.18.19.5 255.255.255.0\r\n"
+    no crypto isakmp key 0 test123 address ipv6 2007:1::44/112 no-xauth: "no crypto\
+      \ isakmp key 0 test123 address ipv6 2007:1::44/112 no-xa\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b$sakmp key 0 test123 address ipv6 2007:1::44/112\
+      \ no-xau         \b\b\b\b\b\b\b\b\bth\r\n"
+    no logging console: ''
+  prompt: INT1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: INT1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: INT1#

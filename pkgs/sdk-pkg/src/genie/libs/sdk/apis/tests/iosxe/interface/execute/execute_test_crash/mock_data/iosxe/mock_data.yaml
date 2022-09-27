@@ -1,0 +1,135 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: startrek-1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: startrek-1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    test crash:
+      response:
+      - "6\r\nCausing a software forced crash...\r\n\r\n\r\nException to IOS Thread:\r\
+        \nFrame pointer 0x7F2F6CD24CA8, PC = 0x7F30DEAAF6D2\r\n\r\nUNIX-EXT-SIGNAL:\
+        \ Aborted(6), Process = Exec\r\n-Traceback= 1#1ec231d3be829d9ffab479b681126008\
+        \ c:7F30DEA99000+166D2 c:7F30DEA99000+56B iosd_crb_ngwc_unix:7F3105B7F000+363E1\
+        \ :55C423B4D000+60BF4C9 :55C423B4D000+3CB5C7F :55C423B4D000+3CB1DBB :55C423B4D000+E29ED3F\
+        \ :55C423B4D000+E26B09F \r\n\r\nFastpath Thread backtrace: \r\n-Traceback=\
+        \ 1#1ec231d3be829d9ffab479b681126008 c:7F30DEA99000+DACC2 iosd_crb_ngwc_unix:7F3105B7F000+8EE50\
+        \ prelib:7F3105B70000+7D04 pthread:7F30DEA55000+1EF3 \r\n\r\nPacket Thread\
+        \ backtrace: \r\n-Traceback= 1#1ec231d3be829d9ffab479b681126008 c:7F30DEA99000+DACC2\
+        \ \r\n\r\nAuxiliary Thread backtrace: \r\n-Traceback= 1#1ec231d3be829d9ffab479b681126008\
+        \ pthread:7F30DEA55000+8408 \r\n\r\nWorker Thread 1 backtrace: \r\n-Traceback=\
+        \ 1#1ec231d3be829d9ffab479b681126008 pthread:7F30DEA55000+8408 \r\n\r\nWorker\
+        \ Thread 2 backtrace: \r\n-Traceback= 1#1ec231d3be829d9ffab479b681126008 pthread:7F30DEA55000+8408\
+        \ \r\n\r\nRAX = 0000000000000000  RBX = 00007F30CB53F980\r\nRCX = 00007F30DEAAF6D2\
+        \  RDX = 0000000000000000\r\nRSP = 00007F2F6CD24CA8  RBP = 00007F2F6CD24D30\r\
+        \nRSI = 00007F2F6CD24C30  RDI = 0000000000000002\r\nR8  = 0000000000000000\
+        \  R9  = 00007F2F6CD24C30\r\nR10 = 0000000000000008  R11 = 0000000000000246\r\
+        \nR12 = 7FFFFFFFFFFFFFFF  R13 = 000055C43675FEA0\r\nR14 = 80007F2F6CD24E90\
+        \  R15 = 800055C432C93326\r\nRFL = 0000000000000246  RIP = 00007F30DEAAF6D2\r\
+        \nCS = 0033  FS = 0000  GS = 0000\r\nST0 = 0000 0000000000000000  ST1 = 0000\
+        \ 0000000000000000\r\nST2 = 0000 0000000000000000  ST3 = 0000 0000000000000000\r\
+        \nST4 = 0000 0000000000000000  ST5 = 3FE8 8000000000000000\r\nST6 = 401D C63E245400000000\
+        \  ST7 = 4007 E180000000000000\r\nX87CW = 037F  X87SW = 0000  X87TG = 0000\
+        \  X87OP = 0000\r\nX87IP = 00007F30DEB2F304  X87DP = 00007F2F63DA0108\r\n\
+        XMM0  = 00000000000000000000000000000000\r\nXMM1  = 5081D16C2F7F00800000000000000000\r\
+        \nXMM2  = B8A91000000000000000000000000000\r\nXMM3  = 00000000000000000000000002420000\r\
+        \nXMM4  = 00000000000000000000000000000000\r\nXMM5  = 01000000000000000000000000000000\r\
+        \nXMM6  = 00000000000000000000000000000000\r\nXMM7  = 00000000000000000000000000000000\r\
+        \nXMM8  = 73250073255F5F4942545F6C64745F5F\r\nXMM9  = 00000000000000000000000000000000\r\
+        \nXMM10 = 00000000000000000000000000000000\r\nXMM11 = 00000000000000000000001C0000001C\r\
+        \nXMM12 = 00000000000000000000000000000000\r\nXMM13 = 00000000000000000000000003020100\r\
+        \nXMM14 = 00000000000000000000000000000000\r\nXMM15 = 00000000000000000000000000000000\r\
+        \nMXCSR = 00001F80\r\n\r\nWriting crashinfo to bootflash:startrek-1_crashinfo_RP_00_00_20220912-111142-UTC\r\
+        \nBuffered messages: (last 4096 bytes only)\r\ndGigE1/0/17, changed state\
+        \ to up\r\n*Sep 12 10:55:35.500: %LINK-3-UPDOWN: Interface FourHundredGigE1/0/21,\
+        \ changed state to up\r\n*Sep 12 10:55:35.710: %LINK-3-UPDOWN: Interface FourHundredGigE1/0/20,\
+        \ changed state to up\r\n*Sep 12 10:55:35.846: %LINEPROTO-5-UPDOWN: Line protocol\
+        \ on Interface FourHundredGigE1/0/22, changed state to up\r\n*Sep 12 10:55:35.936:\
+        \ %LINK-3-UPDOWN: Interface HundredGigE1/0/25, changed state to up\r\n*Sep\
+        \ 12 10:55:36.436: %LINK-3-UPDOWN: Interface HundredGigE1/0/7, changed state\
+        \ to up\r\n*Sep 12 10:55:36.498: %LINK-3-UPDOWN: Interface HundredGigE1/0/28,\
+        \ changed state to up\r\n*Sep 12 10:55:36.499: %LINEPROTO-5-UPDOWN: Line protocol\
+        \ on Interface FourHundredGigE1/0/21, changed state to up\r\n*Sep 12 10:55:36.710:\
+        \ %LINEPROTO-5-UPDOWN: Line protocol on Interface FourHundredGigE1/0/20, changed\
+        \ state to up\r\n*Sep 12 10:55:36.937: %LINEPROTO-5-UPDOWN: Line protocol\
+        \ on Interface HundredGigE1/0/25, changed state to up\r\n*Sep 12 10:55:37.099:\
+        \ %LINK-3-UPDOWN: Interface HundredGigE1/0/29, changed state to up\r\n*Sep\
+        \ 12 10:55:37.437: %LINEPROTO-5-UPDOWN: Line protocol on Interface HundredGigE1/0/7,\
+        \ changed state to up\r\n*Sep 12 10:55:37.498: %LINEPROTO-5-UPDOWN: Line protocol\
+        \ on Interface HundredGigE1/0/28, changed state to up\r\n*Sep 12 10:56:34.230:\
+        \ %LINK-3-UPDOWN: Interface FourHundredGigE1/0/16, changed state to up\r\n\
+        *Sep 12 10:56:35.080: %PLATFORM_PM-6-MODULE_ERRDISABLE: The inserted SFP module\
+        \ with interface name Fou1/0/19 is not supported\r\n*Sep 12 10:56:35.231:\
+        \ %LINEPROTO-5-UPDOWN: Line protocol on Interface FourHundredGigE1/0/16, changed\
+        \ state to up\r\n*Sep 12 10:56:35.079: %IOMD_INFRA-6-UNSUPPORTED_MODE: C1/0:\
+        \ iomd: Transceiver module in Fou1/0/19 going in err-disabled state.\r\n*Sep\
+        \ 12 10:56:35.079: %TRANSCEIVER-3-NOT_COMPATIBLE: C1/0: iomd: Detected for\
+        \ transceiver module in Fou1/0/19, module disabled\r\n*Sep 12 10:56:42.006:\
+        \ %SMART_LIC-3-COMM_FAILED: Communications failure with the Cisco Smart License\
+        \ Utility (CSLU) : Unable to resolve server hostname/domain name \r\n*Sep\
+        \ 12 10:57:02.846: %LINK-3-UPDOWN: Interface HundredGigE1/0/23, changed state\
+        \ to up\r\n*Sep 12 10:57:03.846: %LINEPROTO-5-UPDOWN: Line protocol on Interface\
+        \ HundredGigE1/0/23, changed state to up\r\n*Sep 12 10:57:08.280: %LINK-3-UPDOWN:\
+        \ Interface HundredGigE1/0/26, changed state to up\r\n*Sep 12 10:57:08.769:\
+        \ %TRANSCEIVER-6-INSERTED_QSA_SFP: C1/0: iomd: transceiver module inserted\
+        \ in QSA Hu1/0/26\r\n*Sep 12 10:57:09.280: %LINEPROTO-5-UPDOWN: Line protocol\
+        \ on Interface HundredGigE1/0/26, changed state to up\r\n*Sep 12 10:57:39.038:\
+        \ %SMART_LIC-3-COMM_FAILED: Communications failure with the Cisco Smart License\
+        \ Utility (CSLU) : Unable to resolve server hostname/domain name \r\n*Sep\
+        \ 12 10:57:56.270: %LINK-3-UPDOWN: Interface HundredGigE1/0/27, changed state\
+        \ to up\r\n*Sep 12 10:57:57.271: %LINEPROTO-5-UPDOWN: Line protocol on Interface\
+        \ HundredGigE1/0/27, changed state to up\r\n*Sep 12 10:59:27.375: %LINK-3-UPDOWN:\
+        \ Interface HundredGigE1/0/30, changed state to up\r\n*Sep 12 10:59:28.376:\
+        \ %LINEPROTO-5-UPDOWN: Line protocol on Interface HundredGigE1/0/30, changed\
+        \ state to up\r\n*Sep 12 10:59:46.988: %LINK-3-UPDOWN: Interface HundredGigE1/0/31,\
+        \ changed state to up\r\n*Sep 12 10:59:47.988: %LINEPROTO-5-UPDOWN: Line protocol\
+        \ on Interface HundredGigE1/0/31, changed state to up\r\n*Sep 12 11:00:51.542:\
+        \ %LINK-3-UPDOWN: Interface HundredGigE1/0/33, changed state to up\r\n*Sep\
+        \ 12 11:00:52.542: %LINEPROTO-5-UPDOWN: Line protocol on Interface HundredGigE1/0/33,\
+        \ changed state to up\r\n*Sep 12 11:00:53.871: %TRANSCEIVER-6-INSERTED_QSA_SFP:\
+        \ C1/0: iomd: transceiver module inserted in QSA Hu1/0/33\r\n*Sep 12 11:00:58.640:\
+        \ %LINK-3-UPDOWN: Interface HundredGigE1/0/34, changed state to up\r\n*Sep\
+        \ 12 11:00:59.640: %LINEPROTO-5-UPDOWN: Line protocol on Interface HundredGigE1/0/34,\
+        \ changed state to up\r\n*Sep 12 11:01:59.181: %LINK-3-UPDOWN: Interface HundredGigE1/0/35,\
+        \ changed state to up\r\n*Sep 12 11:02:00.181: %LINEPROTO-5-UPDOWN: Line protocol\
+        \ on Interface HundredGigE1/0/35, changed state to up\r\n*Sep 12 11:11:38.377:\
+        \ %PARSER-5-HIDDEN: Warning!!! '  ' is a hidden command. Use of this command\
+        \ is not recommended/supported and will be removed in future.\r\nQueued messages:\r\
+        \nIOSD RP: 0 messages not written to btrace log fileSep 12 11:12:31.823: %PMAN-3-PROCHOLDDOWN:\
+        \ R0/0: pman: The process linux_iosd-image has been helddown (rc 134)\r\n\
+        Sep 12 11:12:41.929: %PMAN-0-PROCFAILCRIT: R0/0: pvp: A critical process linux_iosd_image\
+        \ has failed (rc 134)\r\nSep 12 11:12:42.225: %PMAN-3-RELOAD_RP_SB_NOT_READY:\
+        \ R0/0: pvp: Reloading: Fault on Active RP bay but Standby RP bay is not ready\r\
+        \nSep 12 11:12:43.153: %PMAN-5-EXITACTION: R0/0: pv\n\r\n\nInitializing Hardware...\r\
+        \n\r\nInitializing Hardware......\r\n\0\0\0\0\0\0\r\nSystem Bootstrap, Version\
+        \ 17.9.1r, RELEASE SOFTWARE (P)\r\nCompiled Thu Apr 28 10:09:57 2022 by rel\r\
+        \n\r\n\r\nCurrent ROMMON image : Primary\r\nLast reset cause     : Critical\
+        \ software exception, check bootflash:"
+      response_type: circular
+  prompt: startrek-1#

@@ -780,6 +780,188 @@ def configure_ikev2_cac(device,
         )
         raise
 
+def configure_isakmp_key(device,
+                         key,
+                         key_type=None,
+                         ipv4_address=None,
+                         sub_mask=None,
+                         host_name=None,
+                         ipv6_prefix=None,
+                         no_xauth=False):
+    """ Configures ISAKMP key 
+        Args:
+            device (`obj`): Device object
+            key_type ('int',optional): type of key that will follow
+            key ('str', optional): preshared key
+            ipv4_address ('str',optional): IPv4 address associated with the keyring
+            sub_mask ('str',optional): subnet mask associated with the keyring
+            host_name ('str',optional): hostname associated with the keyring
+            ipv6_prefix ('str',optional): IPv6 address associated with the keyring
+            no_xauth ('bool',optional): This option specifies if no_xauth needs to be configured or not
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        "Configuring ISAKMP Key"
+    )
+
+    configs = []
+
+    if no_xauth is False:
+        if ipv4_address is not None:
+            configs.append(f"crypto isakmp key {key_type} {key} address {ipv4_address} {sub_mask}")
+        elif host_name is not None:
+            configs.append(f"crypto isakmp key {key_type} {key} hostname {host_name}")
+        elif ipv6_prefix is not None:
+            configs.append(f"crypto isakmp key {key_type} {key} address ipv6 {ipv6_prefix}")
+    else:
+        if ipv4_address is not None:
+            configs.append(f"crypto isakmp key {key_type} {key} address {ipv4_address} {sub_mask} no-xauth")
+        elif host_name is not None:
+            configs.append(f"crypto isakmp key {key_type} {key} hostname {host_name} no-xauth")
+        elif ipv6_prefix is not None:
+            configs.append(f"crypto isakmp key {key_type} {key} address ipv6 {ipv6_prefix} no-xauth")
+
+    
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        log.error("Failed to configure isakmp key,"
+             "Error:\n{error}".format(error=e)
+        )
+        raise
+
+
+def configure_isakmp_policy(device,
+                            policy_number,
+                            auth_type=None,
+                            encr_algos=None,
+                            dh_group=None,
+                            hash=None,
+                            default=None,
+                            lifetime=None
+                        ):
+    """ Configures ISAKMP Policy
+        Args:
+            device (`obj`): Device object
+            policy_number ('str'): isakmp policy number
+            auth_type ('str', optional): autehntication type to be used
+            default ('str', optional): set a command to its defaults
+            encr_algos ('str', optional): encryption algorithms
+            dh_group ('str', optional): Diffie Hellman group
+            hash ('str', optional): hash algorithm for protection suite
+            lifetime ('str', optional): lifetime for ISAKMP security association
+        Returns:
+            True/False
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        "Configuring ISAKMP POLICY"
+    )
+
+    configs = []
+    configs.append(f"crypto isakmp policy {policy_number}")
+    if auth_type is not None:
+        configs.append(f"authentication {auth_type}")
+    if default is not None:
+        configs.append(f"default {default}")
+    if encr_algos is not None:
+        configs.append(f"encryption {encr_algos}")
+    if dh_group is not None:
+        configs.append(f"group {dh_group}")
+    if hash is not None:
+        configs.append(f"hash {hash}")
+    if lifetime is not None:
+        configs.append(f"lifetime {lifetime}")
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        log.error("Failed to configure isakmp policy,"
+             "Error:\n{error}".format(error=e)
+        )
+        raise
+
+def unconfigure_isakmp_policy(device,
+                        policy_number
+                        ):
+    """ Unconfigures ISAKMP POLICY
+        Args:
+            device (`obj`): Device object
+            policy_number ('str'): isakmp policy number
+        Returns:
+            NA
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(
+        "Unconfiguring ISAKMP policy"
+    )
+
+    configs = []
+    configs.append(f"no crypto isakmp policy {policy_number}")
+   
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        log.error("Failed to unconfigure isakmp policy,"
+             "Error:\n{error}".format(error=e)
+        )
+        raise
+
+def unconfigure_isakmp_key(device,
+                        key,
+                        key_type=None,
+                        ipv4_address=None,
+                        sub_mask=None,
+                        host_name=None,
+                        ipv6_prefix=None,
+                        no_xauth=False):
+    """ Unconfigures ISAKMP key 
+        Args:
+            device (`obj`): Device object
+            key_type ('int', optional): type of key that will follow
+            key ('str'): preshared key
+            ipv4_address ('str',optional): IPv4 address associated with the keyring
+            sub_mask ('str',optional): subnet mask associated with the keyring
+            host_name ('str',optional): hostname associated with the keyring
+            ipv6_prefix ('str',optional): IPv6 address associated with the keyring
+            no_xauth ('str',optional): This option specifies if no_xauth needs to be configured or not
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        "Unconfiguring ISAKMP Key"
+    )
+
+    configs = []
+    if no_xauth is False:
+        if ipv4_address is not None:
+            configs.append(f"no crypto isakmp key {key_type} {key} address {ipv4_address} {sub_mask}")
+        elif host_name is not None:
+            configs.append(f"no crypto isakmp key {key_type} {key} hostname {host_name}")
+        elif ipv6_prefix is not None:
+            configs.append(f"no crypto isakmp key {key_type} {key} address ipv6 {ipv6_prefix}")
+    else:
+        if ipv4_address is not None:
+            configs.append(f"no crypto isakmp key {key_type} {key} address {ipv4_address} {sub_mask} no-xauth")
+        elif host_name is not None:
+            configs.append(f"no crypto isakmp key {key_type} {key} hostname {host_name} no-xauth")
+        elif ipv6_prefix is not None:
+            configs.append(f"no crypto isakmp key {key_type} {key} address ipv6 {ipv6_prefix} no-xauth")
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        log.error("Failed to unconfigure isakmp key,"
+             "Error:\n{error}".format(error=e)
+        )
+        raise
+
 def unconfigure_ikev2_proposal(device,
                         proposal_name
                         ):

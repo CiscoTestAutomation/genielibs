@@ -531,4 +531,100 @@ def unconfigure_ethernet_vlan_unlimited(device, subslot):
             "Failed to unconfigure ethernet vlan unlimited"
         )
 
+def configure_vtp_domain(device, vtp_domain):
+    """Configure vtp domain on the device
 
+        Args:
+            device ('obj'): device to use
+            vtp_domain ('str'): vtp domain name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure VTP domain
+    """
+    cmd = f"vtp domain {vtp_domain}"
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Failed to configure VTP domain"
+        )
+
+def configure_vtp_version(device, vtp_version):
+    """Configure vtp domain on the device
+
+        Args:
+            device ('obj'): device to use
+            vtp_version('int'): vtp version
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure VTP version
+    """
+    cmd = f"vtp version {vtp_version}"
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Failed to configure VTP version"
+        )
+
+def unconfigure_vtp_version(device):
+    """Unconfigure vtp version on the device
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to unconfigure VTP version
+    """
+    cmd = ("no vtp version")
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Failed to unconfigure VTP version"
+        )
+
+def configure_interface_vtp(device, interface):
+    """Configure vtp on a interface
+    
+    Args:
+        device ('obj'): device to use
+        interface ('str') : interface to add configs
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure VTP on interface
+    """
+    cmd = []
+    cmd.append(f'interface {interface}')
+    cmd.append('vtp')
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure vtp on interface {interface}. Error:\n{e}")
+
+def unconfigure_interface_vtp(device, interface):
+    """Unconfigure vtp on a interface
+
+    Args:
+        device ('obj'): device to use
+        interface ('str') : interface to add configs
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure VTP on interface
+    """
+    cmd = []
+    cmd.append(f'interface {interface}')
+    cmd.append('no vtp')
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure vtp on interface {interface}. Error:\n{e}")

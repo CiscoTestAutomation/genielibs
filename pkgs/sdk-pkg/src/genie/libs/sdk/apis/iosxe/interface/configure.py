@@ -597,6 +597,7 @@ def config_ip_on_interface(
     sub_interface=None,
     disable_switchport=False,
     dhcpv4=False,
+    dhcp_hostname="",
     vrf=None
 ):
     """ Configure IP on an interface
@@ -611,6 +612,7 @@ def config_ip_on_interface(
             eth_encap_val (`str`): Encapsulation value
             sub_interface (`str`): Subinterface to be added to interface name
             dhcpv4 ('bool): configure for ipv4 dhcp
+            dhcp_hostname ('str): Optionally configure dhcp hostname as well
             vrf ('str): vrf for in the interface
 
         Returns:
@@ -654,7 +656,10 @@ def config_ip_on_interface(
         )
     # configure port to receive ipv4 address via dhcp
     if dhcpv4:
-        cfg_str += "ip address dhcp\n"
+        if dhcp_hostname:
+            cfg_str += "ip address dhcp hostname " + dhcp_hostname + " \n"
+        else:
+            cfg_str += "ip address dhcp\n"
     # Configure device
     try:
         device.configure(cfg_str)
@@ -4594,6 +4599,80 @@ def unconfigure_ipv6_mtu(device, intf, mtu):
             f"Could not unconfigure ipv6 mtu  on interface. Error:\n{e}"
         )
 
+
+def configure_crypto_map_on_interface(
+    device,
+    interface,
+    map_name,
+    ipv6=False
+):
+    """ Configure crypto map on an interface
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface to get address
+            map_name (`str`): Crypto Map name to be configured
+            ipv6 ('bool'):  Indicate if this is ipv6 crypto map. Default false
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        "configuring crypto map on interface {interface}"
+    )
+
+    # Build config string
+    configs = f"interface {interface}\n"
+
+    # Add ipv6 address configuration
+    if not ipv6:
+        configs += f"crypto map {map_name}\n"
+    else:
+        configs += f"ipv6 crypto map {map_name}\n"
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        log.error(f"Failed to configure crypto map in interface,"
+             "Error:\n{e}"
+        )
+        raise
+
+def unconfigure_crypto_map_on_interface(device, interface, ipv6=False):
+    """ Unconfig crypto map on interface
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+            ipv6 (`bool`): Indicate if this is ipv6 crypto map. Default false
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        f"Unconfiguring crypto map on interface {interface}"
+    )
+
+    # Build config string
+    configs = f"interface {interface}\n"
+
+    if not ipv6:
+        configs += f"no crypto map\n"
+    else:
+        configs += f"no ipv6 crypto map\n"
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfig crypto map on interface {interface}. Error:\n{error}".format(
+            interface=interface, error=e
+            )
+        )
+
 def configure_mdns_on_interface_vlan(device, vlan, policy_name=None, act_qry_time=None):
     """ Configure mdns gateway on interface vlan
         Args:
@@ -4695,6 +4774,32 @@ def disable_autostate_on_interface(device, interface):
         raise SubCommandFailure(
             f"Failed to disable autostate under {interface}. Error:\n{e}"
         )
+        
+def configure_access_session_port_control(device, interface, option='auto'):
+    """ Disable autostate on interface
+        Args:
+            device ('obj'): Device object
+            interface ('str'): interface name to disable autostate
+        Returns:
+            None 
+        Raises: 
+            SubCommandFailure : Failed to disable autostate on interface
+    """
+    log.debug(f"configure_access_session_port_control on interface {interface}")
+    
+    configs = [
+        f"interface {interface}",
+        "access-session port-control " + option
+    ]
+    
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure_access_session_port_control under {interface}. Error:\n{e}"
+        )
+        
+    
         
 
 def configure_ip_unnumbered_on_interface(device, interface, dest_interface):
@@ -5099,3 +5204,179 @@ def unconfigure_vrf_select_source(device, interface):
                 error=e,
             )
         )
+
+def configure_power_inline( device, interface, mode = 'auto', watts_value='', action='', portlevel_config = ''):
+
+    """ Configure power inline on an interface 
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface to configure            
+            mode ('str') : Mode to configure (Default is auto)
+            watts_value ('int') : Power value to configure
+            action ('str') : Commands to configure under police mode
+            portlevel_config ('str') : Commands to configure under port mode
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = f"interface {interface}\n"
+
+    if watts_value and mode == 'consumption':
+        cmd += f"power inline consumption {watts_value}"
+    elif action and mode == 'police':
+        cmd += f"power inline police action {action}"
+    elif portlevel_config and mode == 'port':
+        cmd += f"power inline port {portlevel_config}"
+    elif watts_value:
+        cmd += f"power inline {mode} max {watts_value}"
+    else:
+        cmd += f"power inline {mode}"
+    # Configure power inline on interface
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure power line on interface"
+            "{interface} on device {dev}. Error:\n{error}".format(
+                interface=interface,
+                dev=device,
+                error=e,
+            )
+        )
+
+
+def unconfigure_power_inline( device, interface, mode = 'auto', watts_value='', action='', portlevel_config = ''):
+
+    """ Unconfigure power inline on an interface 
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface to unconfigure            
+            mode ('str') : Mode to unconfigure (Default is auto)
+            watts_value ('int') : Power value to unconfigure
+            action ('str') : Commands to unconfigure under police mode
+            portlevel_config ('str') : Commands to unconfigure under port mode
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = f"interface {interface}\n"
+
+    if watts_value and mode == 'consumption':
+        cmd += f"no power inline consumption {watts_value}"
+    elif action and mode == 'police':
+        cmd += f"no power inline police action {action}"
+    elif portlevel_config and mode == 'port':
+        cmd += f"no power inline port {portlevel_config}"
+    elif watts_value:
+        cmd += f"no power inline {mode} max {watts_value}"
+    else:
+        cmd += f"no power inline {mode}"
+    # Configure power inline on interface
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure power line on interface"
+            "{interface} on device {dev}. Error:\n{error}".format(
+                interface=interface,
+                dev=device,
+                error=e,
+            )
+        )
+
+def confgiure_port_channel_min_link(device, port_channel_num, min_link):
+    """ configure port-channel min links
+
+        Args:
+            device (`obj`): Device object
+            port_channel_num('str'): Port-channel number for the Port-channel interface
+            min_link('int'): <2-8>  The minimum number of bundled ports needed before this port channel can come up.
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = []
+    cmd.append(f'interface port-channel {port_channel_num}')
+    cmd.append(f'port-channel min-links {min_link}')
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure {min_link} minimum links on port-channel {port_channel_num}. Error:\n{e}")
+
+def unconfgiure_port_channel_min_link(device, port_channel_num):
+    """ unconfigure port-channel min links
+    
+        Args:
+            device (`obj`): Device object
+            port_channel_num('str'): Port-channel number for the Port-channel interface
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = []
+    cmd.append(f'interface port-channel {port_channel_num}')
+    cmd.append('no port-channel min-links')
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure minimum links on port-channel {port_channel_num}. Error:\n{e}")
+
+def configure_interface_channel_group_auto_lacp(device, interface):
+    """ Configure auto Enable LACP auto on this interface
+    
+    Args:
+        device ('obj'): device to use
+        interface ('str') : interface to add configs
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = []
+    cmd.append(f'interface {interface}')
+    cmd.append('channel-group auto')
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure auto Enable LACP auto on this interface {interface}. Error:\n{e}")
+
+def unconfigure_interface_channel_group_auto_lacp(device, interface):
+    """ Unconfigure auto Enable LACP auto on this interface
+
+    Args:
+        device ('obj'): device to use
+        interface ('str') : interface to add configs
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = []
+    cmd.append(f'interface {interface}')
+    cmd.append('no channel-group auto')
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure auto Enable LACP auto on this interface {interface}. Error:\n{e}")

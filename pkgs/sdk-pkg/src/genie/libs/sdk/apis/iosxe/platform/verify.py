@@ -351,3 +351,143 @@ def verify_mpls_rlist_summary_before_and_after_sso(device,
                 "current_lspvif_adj_label_count verification failed on standby switch")
             return False
     return True
+
+def verify_platform_model_number(device, pid, output=None):
+    ''' Verify given pid are as expected model number or chassis type
+        Args:
+            device ('obj'): Device object
+            pid ('str'): Product Identifcation Number(PID)  or model number or chassis type
+    '''
+
+    if pid == device.api.get_platform_model_number():
+        log.info("Given pid '{}' is as expected platform 'model number' or 'chassis type'".\
+                 format(pid))
+        return True
+    else:
+        log.info("Given pid '{}' is not as expected platform 'model number' or 'chassis type'".\
+                 format(pid))
+        return False
+
+def verify_platform_details(device,      
+                            expected_hw_ver=None,
+                            expected_mac_address=None,
+                            expected_model_name=None,
+                            expected_ports= None,
+                            expected_slot = None,
+                            expected_sn= None,
+                            expected_sw_ver= None,
+                            max_time=15,
+                            check_interval=5):
+                         
+    """Verify  verify platform details in device
+        Args:
+            device (`obj`): Device object
+            expected_hw_ver('str'): Expected hardware version. Default to None if no inputs
+            expected_mac_address('str'): Expected mac_address. Default to None if no inputs
+            expected_model_name('str'): Expected model name. Default to None if no inputs
+            expected_ports('str'):Expected ports. Default to None if no inputs
+            expected_slot('str'): Expected slot. Default to None if no inputs
+            expected_sn('str'): Expected serial number . Default to None if no inputs
+            expected_sw_ver('str'): Expected software version. Default to None if no inputs
+            max_time (`int`, Optional): Max time, default: 60 seconds
+            check_interval (`int`, Optional): Check interval, default: 10 seconds
+        Returns:
+            result (`bool`): Verified result
+        Raises:
+            N/A
+    """
+    
+    timeout = Timeout(max_time, check_interval)
+    
+    while timeout.iterate():
+        try:
+            platform_details = device.parse('show platform')
+        except SchemaEmptyParserError as e:
+            timeout.sleep()
+            continue
+
+        platform_details_result = True
+        log.info("Verify if 'Expected platform_details' is Equal-to 'Actual platform_details' on device i.e {}".format(device.name))
+
+        if expected_hw_ver:
+            platform_details_hw_ver = platform_details.q.contains('rp').get_values('hw_ver', 0)
+
+            log.info(" *Expected_hw_ver: {} , Actual platform_details_hw_ver: {}".format(expected_hw_ver,platform_details_hw_ver))
+            if (expected_hw_ver) and (platform_details_hw_ver) != (expected_hw_ver):
+                
+                log.error("expected_hw_ver is NOT-EQUAL to 'platform_details_hw_ver' present in device '{}'".format(device.name))
+                platform_details_result = False
+            else:
+                log.info("expected_hw_ver is EQUAL-TO 'platform_details_hw_ver' present in device '{}'".format(device.name))                    
+           
+        if expected_mac_address:
+            platform_details_mac_address = platform_details.q.contains('rp').get_values('mac_address', 0)
+
+            log.info(" *Expected_mac_address: {} , Actual platform_details_mac_address : {}".format(expected_mac_address,platform_details_mac_address))
+            if (expected_mac_address) and (platform_details_mac_address) != (expected_mac_address):
+                
+                log.error("expected_mac_address is NOT-EQUAL to 'platform_details_mac_address' present in device '{}'".format(device.name))
+                platform_details_result = False
+            else:
+                log.info("expected_mac_address is EQUAL-TO 'platform_details_mac_address' present in device '{}'".format(device.name))   
+
+        if expected_model_name:
+            platform_details_model_name = platform_details.q.contains('rp').get_values('name', 0)
+            
+            log.info(" *Expected_model_name: {} , Actual platform_details_model_name : {}".format(expected_model_name,platform_details_model_name))
+            if (expected_model_name) and (platform_details_model_name) != (expected_model_name):
+                
+                log.error("expected_model_name is NOT-EQUAL to 'platform_details_model_name' present in device '{}'".format(device.name))
+                platform_details_result = False
+            else:
+                log.info("expected_model_name is EQUAL-TO 'platform_details_model_name' present in device '{}'".format(device.name))
+             
+        if expected_ports:
+            platform_details_ports = platform_details.q.contains('rp').get_values('ports', 0)
+
+            log.info(" *Expected_ports: {} , Actual platform_details_ports : {}".format(expected_ports,platform_details_ports))
+            if (expected_ports) and (platform_details_ports) != (expected_ports):
+                # timeout.sleep()
+                log.error("expected_ports is NOT-EQUAL to 'platform_details_ports' present in device '{}'".format(device.name))
+                platform_details_result = False
+            else:
+                log.info("expected_ports is EQUAL-TO 'platform_details_ports' present in device '{}'".format(device.name))
+              
+        if expected_slot:
+            platform_details_slot = platform_details.q.contains('rp').get_values('slot', 0)
+
+            log.info(" *Expected_slot: {} , Actual platform_details_slot : {}".format(expected_slot,platform_details_slot))
+            if (expected_slot) and (platform_details_slot) != (expected_slot):
+                # timeout.sleep()
+                log.error("expected_slot is NOT-EQUAL to 'platform_details_slot' present in device '{}'".format(device.name))
+               
+                platform_details_result = False
+            else:
+                log.info("expected_slot is EQUAL-TO 'platform_details_slot' present in device '{}'".format(device.name))
+            
+        if expected_sn:
+            platform_details_sn = platform_details.q.contains('rp').get_values('sn', 0)
+
+            log.info(" *Expected_sn: {} , Actual platform_details_sn : {}".format(expected_sn,platform_details_sn))
+            if (expected_sn) and (platform_details_sn) != (expected_sn):
+                
+                log.error("expected_sn is NOT-EQUAL to 'platform_details_sn' present in device '{}'".format(device.name))
+                platform_details_result = False
+            else:
+                log.info("expected_sn is EQUAL-TO 'platform_details_sn' present in device '{}'".format(device.name))
+        
+        if expected_sw_ver:
+            platform_details_sw_ver = platform_details.q.contains('rp').get_values('sw_ver', 0)
+
+            log.info(" *Expected_sw_ver: {} , Actual platform_details_sw_ver : {}".format(expected_sw_ver,platform_details_sw_ver))
+            if (expected_sw_ver) and (platform_details_sw_ver) != (expected_sw_ver):
+                
+                log.error("expected_sw_ver is NOT-EQUAL to 'platform_details_sw_ver' present in device '{}'".format(device.name))
+                platform_details_result = False
+            else:
+                log.info("expected_sw_ver is EQUAL-TO 'platform_details_sw_ver' present in device '{}'".format(device.name))
+                
+        if platform_details_result:
+            return True
+
+    return False

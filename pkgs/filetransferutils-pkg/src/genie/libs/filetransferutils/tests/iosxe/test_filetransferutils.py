@@ -7,25 +7,36 @@ from unittest.mock import patch
 from unittest.mock import Mock
 
 # ATS
-from pyats.topology import Testbed
-from pyats.topology import Device
+from pyats.topology import Device, loader
 from pyats.datastructures import AttrDict
 
 # filetransferutils
-try:
-    from pyats.utils.fileutils import FileUtils
-except:
-    from pyats.utils.fileutils import FileUtils
+from pyats.utils.fileutils import FileUtils
 
 
 class test_filetransferutils(unittest.TestCase):
+    
+    testbed = """
+    devices:
+        csr1000v-1:
+            alias: helper
+            type: router
+            os: iosxe
+            platform: asr1k
+            connections:
+                ssh:
+                    command: mock_device_cli --os iosxe --mock_data_dir mock_data --state execute
+                    protocol: unknown     
+    """
+
     # Instantiate tesbed and device objects
-    tb = Testbed(name='myTestbed')
+    tb = loader.load(testbed)
     device = Device(testbed=tb, name='aDevice', os='iosxe')
+    device1 = tb.devices["helper"]
 
     # Instantiate a filetransferutils instance for IOSXE device
     fu_device = FileUtils.from_device(device)
-
+    fu_device1 = FileUtils.from_device(device1)
     # Add testbed servers for authentication
     device.testbed.servers = AttrDict(
         server_name = dict(
@@ -108,6 +119,24 @@ class test_filetransferutils(unittest.TestCase):
         !!
         27092 bytes copied in 6.764 secs (4005 bytes/sec)
     '''
+    raw8 = r'''
+        copy tftp://172.19.1.250//auto/tftp-kmukku/9300m-tb2/meraki.bin flash:/meraki.bin
+        Loading /auto/tftp-kmukku/9300m-tb2/meraki.bin from 172.19.1.250 (via GigabitEthernet0/0): !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        %Error opening tftp://255.255.255.255/network-confg (Timed out)!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        %Error opening tftp://255.255.255.255/cisconet.cfg (Timed out)!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        %Error opening tftp://255.255.255.255/switch-confg (Timed out)!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        [OK - 1269880464 bytes]
+
+        1269880464 bytes copied in 103.256 secs (12298370 bytes/sec)
+    '''
+    raw9 = r'''
+        copy tftp://172.19.1.250//auto/tftp-kmukku/9300m-tb2/meraki1.bin flash:/meraki1.bin
+        Loading /auto/tftp-kmukku/9300m-tb2/meraki1.bin from 172.19.1.250 (via GigabitEthernet0/0): !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        %Error
+        [OK - 1269880464 bytes]
+
+        1269880464 bytes copied in 103.256 secs (12298370 bytes/sec)
+    '''
 
     outputs = {}
     outputs['copy flash:/memleak.tcl '
@@ -120,6 +149,10 @@ class test_filetransferutils(unittest.TestCase):
       raw5
     outputs['copy running-config tftp://10.1.7.250//auto/tftp-ssr/test_config.py'] = \
       raw7
+    outputs['copy tftp://172.19.1.250//auto/tftp-kmukku/9300m-tb2/meraki.bin flash:/meraki.bin'] = \
+      raw8
+    outputs['copy tftp://172.19.1.250//auto/tftp-kmukku/9300m-tb2/meraki1.bin flash:/meraki1.bin'] = \
+      raw9
 
     def mapper(self, key, timeout=None, reply= None, prompt_recovery=False, error_pattern=None):
         return self.outputs[key]
@@ -195,6 +228,18 @@ class test_filetransferutils(unittest.TestCase):
           destination='tftp://10.1.7.250//auto/tftp-ssr/test_config.py',
           timeout_seconds=300, device=self.device)
 
+    def test_errorpattern(self):
+
+        self.device1.connect(mit=True)
+        self.fu_device1.copyfile(
+            source='tftp://172.19.1.250//auto/tftp-kmukku/9300m-tb2/meraki.bin',
+            destination='flash:/meraki.bin',
+            timeout_seconds=300, device=self.device1)
+        with self.assertRaises(Exception):
+            self.fu_device1.copyfile(
+                source='tftp://172.19.1.250//auto/tftp-kmukku/9300m-tb2/meraki1.bin',
+                destination='flash:/meraki1.bin',
+                timeout_seconds=300, device=self.device1)
 
 if __name__ == '__main__':
     unittest.main()

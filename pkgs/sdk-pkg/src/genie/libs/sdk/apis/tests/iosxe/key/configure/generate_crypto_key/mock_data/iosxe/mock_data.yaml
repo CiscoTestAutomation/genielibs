@@ -1,0 +1,102 @@
+configure:
+  commands:
+    crypto key generate ec keysize 256 label ECKEYS: 
+      response: "crypto key generate ec keysize\
+      \ 256 label ECKEYS\r\n% You already have EC keys defined named ECKEYS.\r\n%"
+      new_state: dialog_1
+    crypto key generate ec keysize 384 exportable: "crypto key generate ec keysize\
+      \ 384 exportable\r\nThe name for the keys will be: INT1.ashritha.com\r\n\r\n"
+    crypto key generate ec keysize 521: 
+      response: "crypto key generate ec keysize 521\r\n% You\
+      \ already have EC keys defined named INT1.ashritha.com.\r\n%"
+      new_state: dialog_1
+    crypto key generate ec keysize 521 exportable label ECKEYS: "crypto key generate\
+      \ ec keysize 521 exportable label ECKEYS\r\nThe name for the keys will be: ECKEYS\r\
+      \n\r\n"
+    crypto key generate rsa: 
+      response: "crypto key generate rsa\r\n% You already have RSA keys\
+      \ defined named INT1.ashritha.com.\r\n"
+      new_state: dialog_2
+    crypto key generate rsa exportable: 
+      response: "crypto key generate rsa exportable\r\n% You\
+      \ already have RSA keys defined named INT1.ashritha.com.\r\n"
+      new_state: dialog_2
+    crypto key generate rsa label RSAKEYS: 
+      response: "crypto key generate rsa label RSAKEYS\r\
+      \n% You already have RSA keys defined named RSAKEYS.\r\n"
+      new_state: dialog_2
+    crypto key generate rsa label RSAKEYS exportable:
+      response: "crypto key generate rsa label\
+      \ RSAKEYS exportable\r\n% You already have RSA keys defined named RSAKEYS.\r\n"
+      new_state: dialog_2
+    crypto key generate rsa label RSAKEYS modulus 4096: "crypto key generate rsa label\
+      \ RSAKEYS modulus 4096\r\n% You already have RSA keys defined named RSAKEYS.\r\
+      \n% They will be replaced.\r\n\r\n% The key modulus size is 4096 bits\r\n% Generating\
+      \ 4096 bit RSA keys, keys will be non-exportable...\r\n[OK] (elapsed time was\
+      \ 7 seconds)\r\n\r\n"
+    crypto key generate rsa label RSAKEYS modulus 4096 exportable: "crypto key generate\
+      \ rsa label RSAKEYS modulus 4096 exportable\r\nThe name for the keys will be:\
+      \ RSAKEYS\r\n\r\n% The key modulus size is 4096 bits\r\n% Generating 4096 bit\
+      \ RSA keys, keys will be exportable...\r\n[OK] (elapsed time was 10 seconds)\r\
+      \n\r\n"
+    crypto key generate rsa modulus 4096: "crypto key generate rsa modulus 4096\r\n\
+      % You already have RSA keys defined named INT1.ashritha.com.\r\n% They will\
+      \ be replaced.\r\n\r\n% The key modulus size is 4096 bits\r\n% Generating 4096\
+      \ bit RSA keys, keys will be non-exportable...\r\n[OK] (elapsed time was 6 seconds)\r\
+      \n\r\n"
+    crypto key generate rsa modulus 4096 exportable: "crypto key generate rsa modulus\
+      \ 4096 exportable\r\n% You already have EC keys defined named INT1.ashritha.com.\r\
+      \n% They will be replaced.\r\n\r\n% The key modulus size is 4096 bits\r\n% Generating\
+      \ 4096 bit RSA keys, keys will be exportable...\r\n[OK] (elapsed time was 4\
+      \ seconds)\r\n\r\n"
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: INT1(config)#
+dialog_1:
+  prompt: "% Do you really want to replace them? [yes/no]: "
+  commands:
+    "yes":
+      new_state: configure
+dialog_2:
+  prompt: "% Do you really want to replace them? [yes/no]: "
+  commands:
+    "yes":
+      new_state: dialog_3
+dialog_3:
+  prompt: "Choose the size of the key modulus in the range of 512 to\
+      \ 4096 for your\r\n  General Purpose Keys. Choosing a key modulus greater than\
+      \ 512 may take\r\n  a few minutes.\r\n\r\nHow many bits in the modulus [2048]: "
+  commands:
+    "2048":
+      response: "% Generating 2048 bit RSA keys, keys will be non-exportable...\r\n\
+      [OK] (elapsed time was 0 seconds)\r\n\r\n"
+      new_state: configure
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: INT1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: INT1#

@@ -99,7 +99,7 @@ class GnmiNotification(Thread):
                         returns_2.append(ret)
                         returns_found.append(index)
                         break
-        
+
             if len(json_dicts):
                 for json_dict in json_dicts:
                     if json_dict is not None:
@@ -111,10 +111,9 @@ class GnmiNotification(Thread):
                 msg = 'Xpath/Value\n' + '=' * 11 + '\n' + pformat(opfields)
                 self.log.info(msg)
             if opfields:
-                result = self.negative_test is not self.response_verify(
-                    opfields, returns_2
-                )
+                result = self.response_verify(opfields, returns_2)
                 if self.negative_test:
+                    result = not result
                     log.info(banner('NEGATIVE TEST'))
                 self.results.append(result)
                 if not result:
@@ -135,7 +134,7 @@ class GnmiNotification(Thread):
                 val = ret['value']
                 self.log.error('ERROR: "{0} value: {1}" Not found.'.format(xp, str(val)))
                 self.results.append(False)
-                
+
     def run(self):
         """Check for inbound notifications."""
         self.log.info('Subscribe notification active')
@@ -211,7 +210,7 @@ class GnmiNotification(Thread):
                 msg = str(exc)
             self.result = msg
 
-    def stop(self):    
+    def stop(self):
         self.log.info("Stopping notification stream")
         self._stop_event.set()
 
@@ -966,7 +965,7 @@ class GnmiMessageConstructor:
                      common_xpath/x-list[type="t2"]/val
 
         json_val will be = "{"x-list": [{"type": "t1", "val": 10}, {"type": "t2", "val": 10}]}"
-        
+
         Args:
           update (list): dicts with xpath in gNMI format, nodetypes, values.
 
@@ -1008,7 +1007,7 @@ class GnmiMessageConstructor:
                         if elem not in jval:
                             if isinstance(jval, list):
                                if(elem not in jval[ind]):
-                                    if(len(jval) == 0 or {} in jval): 
+                                    if(len(jval) == 0 or {} in jval):
                                         ind=0
                                     jval[ind][elem] = []
                                     jval[ind][elem].append({})
@@ -1049,7 +1048,7 @@ class GnmiMessageConstructor:
                             jval[ind][key_elem] = token.strip('"')
                         else:
                             ind = index
-                    else: 
+                    else:
                         jval[ind][key_elem] = token.strip('"')
                     key_elem = None
                     continue

@@ -104,3 +104,44 @@ def unconfigure_spanning_tree_priority(device, vlan, priority):
         raise SubCommandFailure(
             "Could not Unconfigure Spanning Tree with priority- Error:\n{error}".format(error=e)
         )
+        
+def configure_spanning_tree_mode(device, mode, system_id=None):
+    '''Configures spanning-tree mode
+    Args:
+        device ('obj') : Device object
+        mode ('str'): configure the spanning tree mode
+        system_id('str',optinal): provide the system_id
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed configuring spanning-tree mode
+    '''
+    config = []
+    config.append('spanning-tree mode {mode}'.format(mode=mode))
+    if system_id:
+        config.append('spanning-tree {system_id}'.format(system_id=system_id))
+    try:
+        device.configure(config)
+        
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not Configure Spanning Tree mode - Error:\n{error}".format(error=e)
+        )
+        
+def unconfigure_spanning_tree_mode(device):
+    '''Unconfigures spanning-tree mode
+    Args:
+        device ('obj') : Device object
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed unconfigure_spanning_tree mode
+    '''
+    config = 'no spanning-tree mode'
+    try:
+        device.configure(config)
+        
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not Unconfigure Spanning Tree mode - Error:\n{error}".format(error=e)
+        )
