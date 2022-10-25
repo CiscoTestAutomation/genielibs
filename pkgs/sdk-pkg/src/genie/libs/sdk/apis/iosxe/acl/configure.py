@@ -1397,3 +1397,32 @@ def unconfig_ip_tcp_mss(device, seg_size, global_config_key, interface=None):
 
             )
         )
+
+def configure_mac_acl(device, name, action, source, dest):
+    """ Configuring MAC ACL
+        Example: mac access-list extended MAC-ACL
+                permit host 001.00a.00a host 001.00b.00b
+
+        Args:
+            device ('obj'): device to use
+            name ('str'): name of the ACL to which the entry belongs
+            action ('str'): (permit | deny) permits or denies Layer 2 traffic
+            source ('str'): (src-MAC-addr) defines a source MAC address (e.g. 001.00a.00a)
+            dest ('str'): (dst-MAC-addr) defines a destination MAC address (e.g. 001.00b.00b)
+
+        Returns:
+            None
+
+        Raises: 
+            SubCommandFailure
+    """
+    config = [f"mac access-list extended {name}"]
+    action = action.strip().lower()
+    if action in ('permit', 'deny'):
+        config.append(f"{action} host {source} host {dest}")
+    else:
+        raise SubCommandFailure("Invalid action type")
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure mac acl on the device {device.name}. Error:\n{e}")

@@ -758,3 +758,60 @@ def clear_flow_monitor_statistics_for_et_analytics(device):
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not clear flow monitor statistics for et-analytics. Error:\n{e}")
 
+def configure_monitor_capture(device, capture_name, match_type, direction, interface):
+    """ Configure Monitor Capture on Device
+        Args:
+            device (`obj`): Device object
+            capture_name (`str`): Monitor capture name
+            match_type(`str`): Match type of monitor (any/ipv4/ipv6/mac)
+            direction ('str'): Direction of monitor (input/output/both)
+            interface('str'): Interface
+                        
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed to Configure Monitor Capture
+    """
+    cmd = "monitor capture {capture_name} match {match_type} interface {interface} {direction}".format(
+            capture_name=capture_name, match_type=match_type, interface=interface, direction=direction)
+    try:
+        device.execute(cmd)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'monitor capture {capture_name} match {match_type} interface {interface} {direction}. Error:\n{e}') 
+
+def start_monitor_capture(device, capture_name):
+    """ Start Monitor Capture on Device
+        Args:
+            device (`obj`): Device object
+            capture_name (`str`): Monitor capture name
+            
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed to Start Monitor Capture
+    """
+    cmd = "monitor capture {capture_name} start".format(capture_name=capture_name)
+    try:
+        device.execute(cmd)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'monitor capture {capture_name} match start. Error:\n{e}')
+            
+def delete_monitor_capture(device, capture_name):
+    """ delete Monitor Capture on Device
+        Args:
+            device (`obj`): Device object
+            capture_name (`str`): Monitor capture name
+            
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed to delete Monitor Capture
+    """
+    cmd = "no monitor capture {capture_name}".format(capture_name=capture_name)
+    try:
+        device.execute(cmd)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'no monitor capture {capture_name}. Error:\n{e}')

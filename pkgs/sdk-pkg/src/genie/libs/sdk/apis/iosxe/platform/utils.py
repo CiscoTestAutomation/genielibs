@@ -439,4 +439,29 @@ def fp_switchover(device,timeout=420):
         log.info("No Dual FP present in the device...Cannot perform FP SSO")
         return True
 
-
+def clear_logging_onboard_switch(device, switch_number):
+    """ clears logging onboard switch
+        Example: clear logging onboard switch 1
+        
+        Args:
+            device ('obj'): Device object
+            switch_number('int'): Switch number (Range: 1-16)
+        
+        Returns:
+            None
+        
+        Raises:
+            SubCommandFailure
+    """
+    dialog = Dialog([
+        Statement(
+            pattern=r'.*Clear logging onboard buffer\[y\/n\]',
+            action='sendline(y)',
+            loop_continue=False
+        )
+    ])
+    config = f"clear logging onboard switch {switch_number}"
+    try:
+        device.execute(config, reply=dialog)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not clear logging onboard switch {switch_number} on {device.name}. Error:\n{e}")

@@ -2,6 +2,7 @@
 
 # Python
 import logging
+import time
 
 # Unicon
 from unicon.core.errors import SubCommandFailure
@@ -708,3 +709,468 @@ def copy_running_config_to_tftp(device, host, file, timeout=30):
 
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not copy running configuration on tftp. Error:\n{e}") 
+
+def configure_macro_auto_sticky(device):
+    """ Configure macro auto sticky on this device
+    
+    Args:
+        device ('obj'): device to use
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = 'macro auto sticky'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure macro auto sticky on this device. Error:\n{e}")
+
+def unconfigure_macro_auto_sticky(device):
+    """ Unconfigure macro auto sticky on this device
+    
+    Args:
+        device ('obj'): device to use
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = 'no macro auto sticky'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure macro auto sticky on this device. Error:\n{e}")
+
+def configure_device_classifier(device, dc_option="", dc_option_name=""):
+    """ Configure device classifier on this device
+    
+    Args:
+        device ('obj'): device to use
+        dc_option ('str'): device classifier option
+        ex:)
+            condition    Define device classifier condition
+            device-type  Define device type
+        dc_option_name ('str'): Name of device classifier type
+        ex:)
+            WORD  Condition name
+            WORD  Device type name
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    if dc_option:
+        cmd = f'device classifier {dc_option} {dc_option_name}'
+    else:
+        cmd = 'device classifier'
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure classifier on this device. Error:\n{e}")
+
+def unconfigure_device_classifier(device, dc_option="", dc_option_name=""):
+    """ Unconfigure device classifier on this device
+    
+    Args:
+        device ('obj'): device to use
+        dc_option ('str'): device classifier option
+        ex:)
+            condition    Define device classifier condition
+            device-type  Define device type
+        dc_option_name ('str'): Name of device classifier type
+        ex:)
+            WORD  Condition name
+            WORD  Device type name
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    if dc_option:
+        cmd = f'no device classifier {dc_option} {dc_option_name}'
+    else:
+        cmd = 'no device classifier'
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure classifier on this device. Error:\n{e}")
+
+def configure_system_ignore_startupconfig_switch_all(device):
+    """ Configures the system ignore startup configuration on the switch
+        Example: system ignore startupconfig switch all
+        
+        Args:
+            device('obj'): device to configure on
+
+        Return:
+            N/A
+
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    log.info(f"Configuring system ignore startup config on {device.name}")
+    config = 'system ignore startupconfig switch all'
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(f"Could not configure system ignore startup configuration on device {device.name}. Error:\n{e}")
+
+def unconfigure_system_ignore_startupconfig_switch_all(device):
+    """ Unconfigures the system ignore startup configuration on the switch
+        Example: no system ignore startupconfig switch all
+        
+        Args:
+            device('obj'): device to configure on
+
+        Return:
+            N/A
+
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    log.info(f"Unconfiguring system ignore startup config on {device.name}")
+    config = 'no system ignore startupconfig switch all'
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(f"Could not unconfigure system ignore startup configuration on device {device.name}. Error:\n{e}")
+    
+def configure_boot_system_switch_all_flash(device, destination):
+    """ Configures the boot variable on all switches in the stack
+        Example : boot system switch all flash:ctest.bin
+        
+        Args:
+            device ('obj'): device to use
+            destination('str'): destination (e.g. test.bin)
+        
+        Returns:
+            None
+        
+        Raises: 
+            SubCommandFailure
+    """
+    log.info(f"Configuring boot system variable on flash on {device.name}")
+    output = device.execute("show switch")
+    if "Invalid input" not in output:
+        configs = f"boot system switch all flash:{destination}"
+    else:
+        configs = f"boot system flash:{destination}"
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(f"Failed to configure boot system variable on device {device.name}. Error:\n{e}")
+
+def unconfigure_boot_system(device):
+    """ Unconfigures the boot variable from the system
+        Example : no boot system
+        
+        Args:
+            device ('obj'): device to use
+            
+        Returns:
+            None
+        
+        Raises: 
+            SubCommandFailure
+    """
+    log.info(f"Unconfiguring boot system variable on {device.name}")
+    config = "no boot system"
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(f"Failed to unconfigure boot system variable on device {device.name}. Error:\n{e}")
+
+def configure_system_disable_password_recovery_switch_all(device):
+    """ Disables password recovery on the switch
+        Example: system disable password recovery switch all
+        
+        Args:
+            device('obj'): device to configure on
+
+        Return:
+            N/A
+
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+
+    log.info(f"Disable password recovery switch all on {device.name}")
+    config = 'system disable password recovery switch all'
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(f"Could not disable password recovery switch all on device {device.name}. Error:\n{e}")
+
+def unconfigure_system_disable_password_recovery_switch_all(device):
+    """ Enables password recovery on the switch
+        Example: no system disable password recovery switch all
+        
+        Args:
+            device('obj'): device to configure on
+
+        Return:
+            N/A
+
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+
+    log.info(f"Enables password recovery switch all on {device.name}")
+    config = 'no system disable password recovery switch all'
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(f"Could not enable password recovery switch all on device {device.name}. Error:\n{e}")
+
+def configure_snmp_server_contact(device, name):
+    """ Configures contact for snmp-server 
+        Example : snmp-server contact Testname
+
+        Args:
+            device ('obj'): device to use
+            name ('str'): identification of the contact person
+
+        Returns:
+            None
+        
+        Raises: 
+            SubCommandFailure
+    """
+    config = f"snmp-server contact {name}"
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure contact {name} on the device {device.name}. Error:\n{e}")
+
+def unconfigure_snmp_server_contact(device):
+    """ Unconfigures contact for snmp-server
+        Example: no snmp-server contact
+        
+        Args:
+            device ('obj'): device to use
+
+        Returns:
+            None
+            
+        Raises: 
+            SubCommandFailure
+    """
+    config = "no snmp-server contact"
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure snmp-server contact on the device {device.name}. Error:\n{e}")
+
+def configure_snmp_server_location(device, location):
+    """ Configures snmp-server location
+        Example : snmp-server location Regression Test Lab
+
+        Args:
+            device ('obj'): device to use
+            location ('str'): system location information (e.g. Cisco Kanata, Regression Test Lab)
+
+        Returns:
+            None
+
+        Raises: 
+            SubCommandFailure
+    """
+    log.info(f"Configuring snmp-server location on {device.name}")
+    config = f"snmp-server location {location}"
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure snmp-server location on device {device.name}. Error:\n{e}")
+
+def unconfigure_snmp_server_location(device):
+    """ Unconfigures snmp-server location
+        Example : no snmp-server location
+
+        Args:
+            device ('obj'): device to use
+
+        Returns:
+            None
+
+        Raises: 
+            SubCommandFailure
+    """
+    log.info(f"Unconfiguring snmp-server location on {device.name}")
+    config = "no snmp-server location"
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure snmp-server location on device {device.name}. Error:\n{e}")
+		
+def configure_hw_switch_logging_onboard(device, switch):
+    """ Configures OBFL on the specified switch
+        Example : hw-switch switch 1 logging onboard 
+
+        Args:
+            device ('obj'): device to use
+            switch ('int'): switch number (Range 1-16)
+
+        Returns:
+            None
+
+        Raises: 
+            SubCommandFailure
+    """
+    log.info(f"Configuring OBFL on switch {switch} on {device.name}")
+    config = f"hw-switch switch {switch} logging onboard"
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure OBFL on switch {switch} on device {device.name}. Error:\n{e}")
+
+def unconfigure_hw_switch_logging_onboard(device, switch):
+    """ Unconfigures OBFL on the specified switch
+        Example : no hw-switch switch 1 logging onboard 
+
+        Args:
+            device ('obj'): device to use
+            switch ('int'): switch number (Range 1-16)
+
+        Returns:
+            None
+
+        Raises: 
+            SubCommandFailure
+    """
+    log.info(f"Unconfiguring OBFL on switch {switch} on {device.name}")
+    config = f"no hw-switch switch {switch} logging onboard"
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure OBFL on switch {switch} on device {device.name}. Error:\n{e}")
+
+def configure_ip_tftp_blocksize(device, size):
+    """ Specifies the size of TFTP blocks
+        Example : ip tftp blocksize 2000 
+
+        Args:
+            device ('obj'): device to use
+            size ('int'): block size value ranging from 512 to 8192 bytes
+
+        Returns:
+            None
+
+        Raises: 
+            SubCommandFailure
+    """
+    log.info(f"Configuring tftp blocksize {size} on {device.name}")
+    config = f"ip tftp blocksize {size}"
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure tftp blocksize {size} on device {device.name}. Error:\n{e}")
+
+def unconfigure_ip_tftp_blocksize(device):
+    """ Resets the TFTP blocksize to default
+        Example : no ip tftp blocksize 
+
+        Args:
+            device ('obj'): device to use
+
+        Returns:
+            None
+
+        Raises: 
+            SubCommandFailure
+    """
+    log.info(f"Unconfiguring tftp blocksize on {device.name}")
+    config = "no ip tftp blocksize"
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure tftp blocksize on device {device.name}. Error:\n{e}")
+
+def configure_enable_http_server(device):
+    """Configure ip http server
+    Args:
+        device (obj): Device object
+    Returns:
+            None
+    Raises:
+            SubCommandFailure
+    """
+
+    try:
+        device.configure("ip http server")
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to enable http server "
+            "on device {device} "
+            "Error: {e}".format(
+                device=device.name,
+                e=str(e)
+            )
+        ) from e
+
+    else:
+        log.info("Successfully enabled http server for {}".format(device.name))
+
+def configure_set_clock_calendar(device):
+    """Configure clock calendar-valid 
+    Args:
+        device (obj): Device object
+    Returns:
+            None
+    Raises:
+            SubCommandFailure
+    """
+
+    try:
+        device.configure("clock calendar-valid")
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to set valid clock calendar "
+            "on device {device} "
+            "Error: {e}".format(
+                device=device.name,
+                e=str(e)
+            )
+        ) from e
+
+    else:
+        log.info("Successfully set clock calendar for {}".format(device.name))
+
+def configure_clock_timezone(device, timezone_name, hours_offset, minutes_offset):
+    """ Configure Clock Timezone
+        Args:
+            device ('obj'): Device object
+            timezone_name('str'): name of time zone
+            hours_offset('int'): Hours offset from UTC
+            minutes_offset('int'): Minutes offset from UTC
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config = f"clock timezone {timezone_name} {hours_offset} {minutes_offset}"    
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"could not configure clock timezone on {device}"
+                .format(device=device, e=e)
+        )

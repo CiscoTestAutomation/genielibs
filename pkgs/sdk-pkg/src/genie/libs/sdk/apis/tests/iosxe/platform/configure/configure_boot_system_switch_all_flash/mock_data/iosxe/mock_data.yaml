@@ -1,27 +1,19 @@
 configure:
   commands:
-    boot system switch all flash:cat9k_iosxe.BLD_V179_THROTTLE_LATEST_20220618_072045.SSA.bin: "boot\
-      \ system switch all flash:cat9k_iosxe.BLD_V179_THROTTLE_LAT\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b$ switch all flash:cat9k_iosxe.BLD_V179_THROTTLE_LATE\
-      \         \b\b\b\b\b\b\b\b\bST_202206\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\bl flash:cat9k_iosxe.BLD_V179_THROTTLE_LATEST_2022061         \b\b\b\b\b\
-      \b\b\b\b8_072045.\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\bt9k_iosxe.BLD_V179_THROTTLE_LATEST_20220618_072045.S\
-      \         \b\b\b\b\b\b\b\b\bSA.bin\r\n"
+    boot system switch all flash:ctest.bin: "boot system switch all flash:ctest.bin\r\
+      \n"
     end:
       new_state: execute
     line console 0:
       new_state: configure_line
     no logging console: ''
-  prompt: Switch(config)#
+  prompt: n08HA(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: Switch(config-line)#
+  prompt: n08HA(config-line)#
 connect:
   commands:
     ? ''
@@ -38,7 +30,17 @@ execute:
       new_state: configure
     config-transaction:
       new_state: configure
+    show switch:
+      response:
+      - "Switch/Stack Mac Address : 70c9.c6b9.ab80 - Local Mac Address\r\nMac persistency\
+        \ wait time: Indefinite\r\n                                             H/W\
+        \   Current\r\nSwitch#   Role    Mac Address     Priority Version  State \r\
+        \n-------------------------------------------------------------------------------------\r\
+        \n*1       Active   70c9.c6b9.ab80     1      V02     Ready              \
+        \                 \r\n 2       Standby  70c9.c6d1.e500     1      V02    \
+        \ Ready"
+      response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: Switch#
+  prompt: n08HA#

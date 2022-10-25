@@ -78,6 +78,7 @@ class TestGetInterfaceInformation(unittest.TestCase):
                                                             'send': False},
                                            'ipv4': {'172.16.1.211/24': {'ip': '172.16.1.211',
                                                                         'prefix_length': '24'}},
+                                           'is_deleted': False,
                                            'keepalive': 10,
                                            'last_input': '00:00:00',
                                            'last_output': '00:00:22',

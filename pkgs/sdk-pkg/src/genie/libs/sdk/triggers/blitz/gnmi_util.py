@@ -12,7 +12,9 @@ from google.protobuf import json_format
 from six import string_types
 from pprint import pformat
 from pyats.log.utils import banner
+from pyats.utils.secret_strings import to_plaintext
 
+import grpc
 from cisco_gnmi import proto
 
 
@@ -149,7 +151,11 @@ class GnmiNotification(Thread):
                 # Subscribe response ends here
                 if response.HasField('sync_response'):
                     self.log.info('Subscribe sync_response')
-                    stop_receiver = True
+                    if self.mode in ["ONCE", "POLL"]:
+                        stop_receiver = True
+                    # Stop the stream when no response is received
+                    if self.mode == "STREAM" and response_no == 0:
+                        stop_receiver = True
 
                 # Check for stream_max before update
                 # to avoid logging extra responses.
@@ -189,7 +195,7 @@ class GnmiNotification(Thread):
                     self.log.info('Processing returns...')
                     self.process_opfields(response, returns_found)
 
-                if stop_receiver and self.mode in ['ONCE', 'POLL']:
+                if stop_receiver:
                     self.log.info('Subscribe {0} processed'.format(self.mode))
                     self.stop()
 
@@ -199,7 +205,13 @@ class GnmiNotification(Thread):
                     self.time_delta = self.stream_max
                     self.log.info("Terminating notification thread")
                     break
-
+        except grpc.RpcError as exc:
+            if exc.code() == grpc.StatusCode.DEADLINE_EXCEEDED:
+                self.log.info("Notification MAX timeout")
+                self.stop()
+            else:
+                self.log.error("Unknown error: %s", exc)
+                self.stop()
         except Exception as exc:
             msg = ''
             if hasattr(exc, 'details'):
@@ -224,6 +236,7 @@ class GnmiMessage:
     def __init__(self, message_type, cfg):
         self.msg_type = message_type
         self.cfg = cfg
+        self.metadata = None
 
     @classmethod
     def run_set(self, device, payload):
@@ -252,7 +265,11 @@ class GnmiMessage:
             gnmi_string
         ))
         try:
-            response = device.gnmi.service.Set(payload)
+            self.metadata = [
+                ("username", device.device.credentials.default.get('username', '')),
+                ("password", to_plaintext(device.device.credentials.default.get('password', ''))),
+            ]
+            response = device.gnmi.service.Set(payload, metadata=self.metadata)
             log.info(
                 'gNMI SET Response\n' + '=' * 17 + '\n{0}'.format(
                     str(response)
@@ -301,7 +318,11 @@ class GnmiMessage:
             gnmi_string
         ))
         try:
-            response = device.gnmi.service.Get(payload)
+            self.metadata = [
+                ("username", device.device.credentials.default.get('username', '')),
+                ("password", to_plaintext(device.device.credentials.default.get('password', ''))),
+            ]
+            response = device.gnmi.service.Get(payload, metadata=self.metadata)
             log.info(
                 'gNMI GET Response\n' + '=' * 17 + '\n{0}'.format(
                     str(response)
@@ -421,6 +442,7 @@ class GnmiMessage:
                     continue
                 json_val = base64.b64decode(val).decode('utf-8')
                 json_dict = json.loads(json_val, strict=False)
+                opfields.append((json_dict, xpath))
             elif 'jsonVal' in val:
                 val = val.get('jsonVal', '')
                 if not val:
@@ -428,6 +450,7 @@ class GnmiMessage:
                     continue
                 json_val = base64.b64decode(val).decode('utf-8')
                 json_dict = json.loads(json_val, strict=False)
+                opfields.append((json_dict, xpath))
             elif 'asciiVal' in val:
                 val = val.get('asciiVal', '')
                 if not val:
@@ -547,6 +570,10 @@ class GnmiMessage:
             gnmi_string
         ))
         try:
+            self.metadata = [
+                ("username", device.device.credentials.default.get('username', '')),
+                ("password", to_plaintext(device.device.credentials.default.get('password', ''))),
+            ]
             payloads = [payload]
             delay = 0
             if request['request_mode'] == 'POLL':
@@ -568,7 +595,9 @@ class GnmiMessage:
             request['log'] = log
 
             response = device.gnmi.service.Subscribe(
-                self.iter_subscribe_request(payloads, delay)
+                self.iter_subscribe_request(payloads, delay),
+                timeout=request.get('stream_max', 120),
+                metadata=self.metadata
             )
 
             subscribe_thread = GnmiNotification(
@@ -815,7 +844,13 @@ class GnmiMessageConstructor:
         # Construct an Update structure for a SetRequest gNMI message.
         json_val = self._manage_paths(upd_req, gnmi_upd_req)
         # Human readable saved for logs
-        self.json_val = json_val
+
+        if self.json_val:
+            if not isinstance(self.json_val, list):
+                self.json_val = [self.json_val]
+            self.json_val.append(json_val)
+        else:
+            self.json_val = json_val
 
         json_val = json.dumps(json_val).encode('utf-8')
 
@@ -828,6 +863,41 @@ class GnmiMessageConstructor:
             gnmi_upd_req.val.json_val = json_val
 
         return [gnmi_upd_req]
+
+    def group_nodes(self, update):
+        """ Group the nodes based on leaf/list/container level
+
+        Args:
+          nodes (list): dicts with xpath in gNMI format, nodetypes, values.
+        """   
+        gnmi_update_paths = []
+        update_filter = []
+        update_nodes = []
+        list_or_cont = False
+        # Group the nodes based on leaf/list/container level
+        # Eg nodes: [leaf, leaf, leaf, list, leaf, leaf]
+        # leaf level: [leaf], [leaf], [leaf] - Leaf level RPCs
+        # will build sepeartely for each leaf node.
+        # list level: [list, leaf, leaf]
+        for xp in update:
+            if xp['xpath'].endswith("]") \
+            or xp['nodetype'] == 'list' \
+            or xp['nodetype'] == 'container':
+                list_or_cont = True
+                if update_filter:
+                    update_nodes.append(update_filter)
+                update_filter = []
+                update_filter.append(xp)
+            else:
+                update_filter.append(xp)
+                if not list_or_cont:
+                    update_nodes.append(update_filter)
+                    update_filter = []
+
+        if update_filter:
+            update_nodes.append(update_filter)
+
+        return update_nodes
 
     def nodes_to_dict(self, nodes=None, origin=None):
         """Construct full gNMI request message to be sent through service.
@@ -850,13 +920,19 @@ class GnmiMessageConstructor:
 
         if update:
             gnmi_update = proto.gnmi_pb2.Update()
-            self.update = self._gnmi_update_request(update, gnmi_update)
-            self.payload.update.extend(self.update)
+            update_nodes = self.group_nodes(update)
+            # Send each group for payload building
+            for node in update_nodes:
+                self.update = self._gnmi_update_request(node, gnmi_update)
+                self.payload.update.extend(self.update)
 
         if replace:
             gnmi_replace = proto.gnmi_pb2.Update()
-            self.replace = self._gnmi_update_request(replace, gnmi_replace)
-            self.payload.replace.extend(self.replace)
+            replace_nodes = self.group_nodes(replace)
+            # Send each group for payload building.
+            for node in replace_nodes:
+                self.replace = self._gnmi_update_request(node, gnmi_replace)
+                self.payload.replace.extend(self.replace)
 
         if delete:
             gnmi_delete_paths = []
@@ -942,12 +1018,15 @@ class GnmiMessageConstructor:
         Return:
           str
         """
+        if(len(nodes) == 1):
+            return nodes[0]['xpath']
         xpaths = [n['xpath'] for n in nodes]
         short_xp = min(set(xpaths), key=len)
         short_xp = self._trim_xpaths(xpaths, short_xp)
         short_node = [n for n in nodes if n['xpath'] == short_xp]
         if short_node:
-            if short_node[0]['nodetype'] not in ['list', 'container']:
+            if not short_node[0]['xpath'].endswith("]") \
+            and short_node[0]['nodetype'] not in ['list', 'container']:                
                 while short_xp.endswith(']'):
                     short_xp = short_xp[:short_xp.rfind('[')]
                 short_xp = short_xp[:short_xp.rfind('/')]
@@ -972,6 +1051,8 @@ class GnmiMessageConstructor:
         Returns:
           dict
         """
+        if(len(update) == 1 and not update[0]['xpath']):
+            return update[0]['value']
         json_val = {}
         processed_xp = []
         for node in update:
@@ -1081,7 +1162,7 @@ class GnmiMessageConstructor:
         for i in range(len(nodes)):
             if nodes[i]['xpath'] == long_xp:
                 continue
-            if nodes[i]['xpath'] in long_xp:
+            if nodes[i]['xpath']+'/' in long_xp:
                 nodes.remove(nodes[i])
                 return self._trim_nodes(nodes)
         return nodes
@@ -1139,6 +1220,7 @@ class GnmiMessageConstructor:
 
         module = self.request.get('module')
         self.namespace_modules = self.request.get("namespace_modules", {})
+        parent_edit_op = None
         for node in nodes:
             if "xpath" not in node:
                 log.error("Xpath is not in message")
@@ -1147,6 +1229,13 @@ class GnmiMessageConstructor:
                 value = node.get("value", "")
                 datatype = node.get('datatype', 'string')
                 edit_op = node.get("edit-op", "")
+                if(xpath.endswith("]")):
+                    nodetype = "list"
+                else:
+                    nodetype = node.get("nodetype","")
+
+                if nodetype in ['list', 'container']:
+                    parent_edit_op = edit_op
 
                 # Ready value for proper JSON conversion.
                 if datatype == 'boolean':
@@ -1221,7 +1310,10 @@ class GnmiMessageConstructor:
 
                 if self.msg_type == 'set':
                     if not edit_op:
-                        edit_op = 'merge'
+                        if parent_edit_op:
+                            edit_op = parent_edit_op
+                        else:
+                            edit_op = 'merge'
 
                     if self.edit_op[edit_op] in ["update", "replace"]:
                         if self.edit_op[edit_op] == "replace":

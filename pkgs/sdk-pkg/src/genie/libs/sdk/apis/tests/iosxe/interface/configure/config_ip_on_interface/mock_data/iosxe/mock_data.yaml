@@ -4,6 +4,9 @@ configure:
       new_state: execute
     interface Fi1/0/5: "interface Fi1/0/5\r\n"
     ip address 14.1.1.2 255.255.255.0: "ip address 14.1.1.2 255.255.255.0\r\n"
+    ip address 14.1.1.4 255.255.255.0: "ip address 14.1.1.4 255.255.255.0\r\
+                                      \n% 14.1.1.0 overlaps with Fi1/0/6\r\
+                                      \n% 14.1.1.0 overlaps with Fi1/0/6"
     line console 0:
       new_state: configure_line
     no logging console: ''

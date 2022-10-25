@@ -1,0 +1,42 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    interface GigabitEthernet0/0/1: "interface GigabitEthernet0/0/1\r\n"
+    line console 0:
+      new_state: configure_line
+    no ipv6 dhcp client vendor-class ascii: "no ipv6 dhcp client vendor-class ascii\r\
+      \n"
+    no ipv6 dhcp client vendor-class disable: "no ipv6 dhcp client vendor-class disable\r\
+      \n"
+    no ipv6 dhcp client vendor-class hex: "no ipv6 dhcp client vendor-class hex\r\n"
+    no ipv6 dhcp client vendor-class mac-address: "no ipv6 dhcp client vendor-class\
+      \ mac-address\r\n"
+    no logging console: ''
+  prompt: Fei-Elixir2(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: Fei-Elixir2(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: Fei-Elixir2#

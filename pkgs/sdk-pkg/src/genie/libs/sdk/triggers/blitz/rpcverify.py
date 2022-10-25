@@ -165,6 +165,7 @@ class RpcVerify():
     """
 
     NETCONF_NAMESPACE = "urn:ietf:params:xml:ns:netconf:base:1.0"
+    RE_FIND_KEYS = re.compile(r'\[.*?\]')
 
     def __init__(self, log=log, rpc_reply=None,
                  rpc_verify=None, capabilities=[]):
@@ -399,6 +400,10 @@ class RpcVerify():
         """
         log_msg = 'None'
 
+        if 'default_xpath' in field:
+            xpath = field['default_xpath']
+        else:
+            xpath = field['xpath']
         try:
             # set this to operation in case we get an exception
             eval_text = field['op']
@@ -412,7 +417,7 @@ class RpcVerify():
                         value = float(value)
                 except ValueError:
                     log_msg = 'OPERATION VALUE {0}: {1} invalid for range {2}{3}'.format(
-                            field['xpath'],
+                            xpath,
                             str(value),
                             str(field['value']),
                             ' FAILED'
@@ -462,7 +467,7 @@ class RpcVerify():
                         value = float(value)
                 except TypeError:
                     log_msg = 'OPERATION VALUE {0}: range datatype "{1}" {2}{3}'.format(
-                        field['xpath'],
+                        xpath,
                         datatype,
                         str(field['value']),
                         ' FAILED'
@@ -470,11 +475,11 @@ class RpcVerify():
                     return (False, log_msg)
                 if value >= r1 and value <= r2:
                     log_msg = 'OPERATION VALUE {0}: {1} in range {2} SUCCESS'.format(
-                            field['xpath'], str(value), str(field['value'])
+                            xpath, str(value), str(field['value'])
                         )
                 else:
                     log_msg = 'OPERATION VALUE {0}: {1} out of range {2}{3}'.format(
-                            field['xpath'],
+                            xpath,
                             str(value),
                             str(field['value']),
                             ' FAILED'
@@ -494,7 +499,7 @@ class RpcVerify():
                         eval_text = '"' + value + '" ' + field['op']
                         eval_text += ' "' + fval + '"'
                         log_msg = 'OPERATION VALUE {0}: {1} FAILED'.format(
-                                field['xpath'], eval_text
+                                xpath, eval_text
                             )
                         return (False, log_msg)
                     if value.isnumeric():
@@ -518,7 +523,7 @@ class RpcVerify():
                                 eval_text += ' "' + fval + '"'
                     if eval(eval_text):
                         log_msg = 'OPERATION VALUE {0}: {1} SUCCESS'.format(
-                                field['xpath'], eval_text
+                                xpath, eval_text
                             )
                     #check if values have prefixes
                     elif value.count(':') == 1 and fval.count(':') == 1:
@@ -527,15 +532,15 @@ class RpcVerify():
                         eval_text = f'"{value}" {field["op"]} "{fval}"'
                         if eval(eval_text):
                             log_msg = 'OPERATION VALUE {0}: {1} SUCCESS'.format(
-                                field['xpath'], eval_text
+                                xpath, eval_text
                             )
                         else:
                             log_msg = 'OPERATION VALUE {0}: {1} FAILED'.format(
-                                field['xpath'], eval_text
+                                xpath, eval_text
                             )
                     else:
                         log_msg = 'OPERATION VALUE {0}: {1} FAILED'.format(
-                                field['xpath'], eval_text
+                                xpath, eval_text
                             )
                         return (False, log_msg)
                 else:
@@ -544,7 +549,7 @@ class RpcVerify():
                     evaldt = EvalDatatype(value, field)
                     if evaldt.evaluate():
                         log_msg = log_tmp.format(
-                                field['xpath'], str(value),
+                                xpath, str(value),
                                 field['op'], str(field['value']),
                                 'SUCCESS'
                             )
@@ -556,7 +561,7 @@ class RpcVerify():
                         elif evaldt.bool_failed:
                             failed_type = 'BOOLEAN FAILED'
                         log_msg = log_tmp.format(
-                                field['xpath'], str(value),
+                                xpath, str(value),
                                 field['op'], str(field['value']),
                                 failed_type
                             )
@@ -564,13 +569,13 @@ class RpcVerify():
 
         except Exception as e:
             log_msg = 'OPERATION VALUE {0}: {1} {2} FAILED\n{3}'.format(
-                    field['xpath'], str(value), eval_text, str(e)
+                    xpath, str(value), eval_text, str(e)
                 )
             return (False, log_msg)
 
         return (True, log_msg)
 
-    def process_one_operational_state(self, response, field, key=False):
+    def process_one_operational_state(self, response, field, key=False, sequence=None):
         """Check if a response contains an expected result.
 
         Args:
@@ -582,7 +587,12 @@ class RpcVerify():
         Returns:
           bool: True if successful.
         """
-        log_msg = 'ERROR: "{0} value: {1}" Not found.'.format(field['xpath'], str(field.get('value')))
+        if 'default_xpath' in field:
+            xpath = field['default_xpath']
+        else:
+            xpath = field['xpath']
+
+        log_msg = 'ERROR: "{0} value: {1}" Not found.'.format(xpath, str(field.get('value')))
         datatype = ''
         result = False
 
@@ -612,16 +622,26 @@ class RpcVerify():
                         name = reply_xpath[reply_xpath.rfind('/') + 1:]
                     if 'xpath' in field and field['xpath'] == reply_xpath and \
                             name == field['name']:
-                
+
                         if datatype == 'empty':
                             field['value'] = 'empty'
 
                         result, log_msg = self.check_opfield(value, field)
+                        # If sequence is applied, then
+                        # first value found should be the target value
+                        # Since the new_response is already trimmed from the list entry.
+                        # <List1> ---->  Response is trimmed from here
+                        #    <Key>K1</Key>
+                        #    <Prop>v1<Prop> ---> First value found should be the target value.
+                        # </List1>
+                        if sequence and not result:
+                            log.error(log_msg)
+                            return result
                         if result:
                             if not datatype:
                                 log.warning(
                                     "{0} has no datatype; default to string".format(
-                                        field['xpath']
+                                        xpath
                                     )
                                 )
                             log.info(log_msg)
@@ -636,12 +656,294 @@ class RpcVerify():
         if not datatype:
             log.warning(
                 "{0} has no datatype; default to string".format(
-                    field['xpath']
+                    xpath
                 )
             )
 
         log.error(log_msg)
         return result
+
+    def pre_process_returns(self, returns):
+        """Check for keys embedded in xpaths and extract them into separate fields.
+        Args:
+            returns (list): List of fields in returns containing
+                            list keys in xpath as well.
+            Eg:
+            returns:
+                [
+                    {
+                        'nodetype': 'leaf',
+                        'value': 'test03',
+                        'op': '==',
+                        'selected': 'True',
+                        'name': 'rtMap',
+                        'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list[name="default"]/rtMap
+                    }
+                ]
+
+        Returns:
+            new_returns (list): List of dict with possible new fields containing xpath/key pairs.
+            Eg:
+            new_returns:
+                [
+                    {
+                        'sequence' : 1,
+                        'nodetype': 'leaf',
+                        'value': 'default',
+                        'op': '==',
+                        'key': True,
+                        'selected': 'True',
+                        'name': 'name',
+                        'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/name
+                    },
+                    {
+                        'sequence' : 1,
+                        'nodetype': 'leaf',
+                        'value': 'test03',
+                        'op': '==',
+                        'selected': 'True',
+                        'name': 'rtMap',
+                        'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/rtMap
+                    }
+                ]
+        """
+        new_returns = []
+        sequence_no = 1
+        for field in returns:
+            xpath = field['xpath']
+            ret_xp = ""
+            key_xp = ""
+            key_xp_val = ""
+            return_xpaths = {}
+            key = False
+            key_value = False
+            for xp in xpath:
+                # List key ends here
+                # Store the key xpath and value
+                if xp == "]":
+                    return_xpaths[key_xp] = key_xp_val
+                    key_xp_val = ""
+                    key_value = False
+                    continue
+                # Start of Key value
+                if xp == "=":
+                    key = False
+                    key_value = True
+                    continue
+                # Start of list key
+                if xp == "[":
+                    key_xp = ret_xp+"/"
+                    key = True
+                    continue
+                # Start collecting list key name
+                if key:
+                    key_xp += xp
+                    continue
+                # Start collecting list key value
+                if key_value:
+                    key_xp_val += xp
+                # Collect rest of the xpath
+                if not key and not key_value:
+                    ret_xp += xp
+
+            # Create returns field for all the keys found
+            for xpath,value in return_xpaths.items():
+                node = {}
+                xpath = xpath.replace("\"","")
+                value = value.replace("\"","")
+                node['sequence'] = sequence_no
+                node['nodetype'] = 'leaf'
+                node['value'] = value
+                node['op'] = '=='
+                node['key'] = True
+                node['selected'] = True
+                node['name'] = xpath[xpath.rfind('/')+1:]
+                node['xpath'] = xpath
+                new_returns.append(node)
+            # Convert the current field xpath to opfield xpath
+            field['sequence'] = sequence_no
+            field['default_xpath'] = field['xpath']
+            field['xpath'] = re.sub(self.RE_FIND_KEYS, '', field['xpath'])
+            new_returns.append(field)
+            sequence_no += 1
+
+        return new_returns
+
+    def trim_response(self, response, parent_key_indexes, field):
+        """Trims the response for specific list entry
+
+        Args:
+            response (list): List of tuples containing
+                           NETCONF - lxml.Element, xpath.
+                           GNMI - value, xpath
+            Eg:
+                response:
+                    [
+                        (myContainer/myList1/key, k1), --> Parent Index
+                        (myContainer/myList1/Val, v1), --> Property to validate
+                        (myContainer/myList2/key, k2), --> Next Index
+                        (myContainer/myList2/Val, v2)
+                    ]
+
+        Returns:
+            new_response: trimmed response for specific list entry.
+            Eg:
+                response:
+                    [
+                        (myContainer/myList1/key, k1),
+                        (myContainer/myList1/Val, v1)
+                    ]
+        """
+        parent_dict = self.get_parent_dict(parent_key_indexes, field['xpath'])
+        parent_key_xpath = list(parent_dict.keys())[0]
+        parent_key_index = list(parent_dict.values())[0]
+        if not parent_key_index == 0:
+            next_index = self.find_next_index(response[0], parent_key_index+1, parent_key_xpath)
+        else:
+            next_index = len(response[0])
+        # Trim the response for specific list entry
+        new_response = [
+            response[0][
+                parent_key_index:next_index
+                ]
+            ]
+
+        return new_response, parent_key_index
+
+    def process_sequencial_operational_state(self, response, returns, key=False):
+        """Given multiple list entries, pick the specific entry required and validate.
+
+        response:
+                [
+                    (myContainer/myList1/key, Key1),
+                    (myContainer/myList1/Val, Val1),
+                    (myContainer/myList2/key, Key2),
+                    (myContainer/myList2/Val, Val2)
+                ]
+
+        returns:
+            1. container/list/key=key1 (key: True)
+            2. container/list/value (key: False) -> validate value for key 1
+            3. container/list/key=key2 (key: True)
+            4. container/list/value (key: False) -> validate value for key 2
+
+        Implementation:
+            For key fields: Find the parent key index and cut the response from that point.
+                            Store the index of current key field.
+            For leaf fields: Find parent key index and cut the response from that point.
+            Start the validation.
+
+        Args:
+            response (list): List of tuples containing
+                            NETCONF - lxml.Element, xpath.
+                            GNMI - value, xpath
+            opfields (list): List of dict representing opfields.
+
+        Returns:
+            bool: True if successful.
+        """
+        sequence = True
+        results = []
+        index = 0
+        parent_key_indexes = {}
+        sequence_broke_no = -1
+        sequence_no = 0
+        prev_seq_no = 0
+        for field in returns:
+            isKey = False
+            key_found = False
+            index = 0
+            sequence_no = field['sequence']
+            if 'default_xpath' in field:
+                xpath = field['default_xpath']
+            else:
+                xpath = field['xpath']
+            # Determine if current field is a key or not
+            if 'key' in field and str(field['key']).lower() == 'true':
+                isKey = True
+            # Refresh the parent_key_indexes when new sequence starts
+            if not sequence_no == prev_seq_no:
+                parent_key_indexes = {}
+            # Check if sequence is running or broken
+            # If broken then skip all the values in that sequence
+            # by logging Not Found.
+            if sequence_no == sequence_broke_no:
+                log_msg = 'ERROR: "{0} value: {1}" Not found.'.format(xpath, str(field.get('value')))
+                log.error(log_msg)
+                results.append(False)
+                continue
+            else:
+                sequence_broke_no = 0
+            # Get the new response by trimming the actual response
+            # to just the list we are looking for
+            new_response, parent_key_index = self.trim_response(response, parent_key_indexes, field)
+            # Start loop from the new_response
+            for resp in new_response:
+                for reply, reply_xpath in resp:
+                    # If it's a leaf value, then
+                    # the response is already trimmed
+                    # based on previous key field, so
+                    # directly jump to validation
+                    if not isKey:
+                        break
+                    index += 1
+                    if self.et.iselement(reply):
+                        # NETCONF response
+                        value_state = self._process_values(reply, '')
+                        value = value_state.get('reply_val', 'empty')
+                        name = self.et.QName(reply).localname
+                    else:
+                        # GNMI response
+                        if reply is False:
+                            value = reply
+                        else:
+                            if reply == '':
+                                value = 'empty'
+                            else:
+                                value = reply
+                        name = reply_xpath[reply_xpath.rfind('/') + 1:]
+
+                    if 'xpath' in field and field['xpath'] == reply_xpath and \
+                            name == field['name']:
+                        if isKey:
+                            result, log_msg = self.check_opfield(value, field)
+                            if result:
+                                # Trim the new response from the index where
+                                # current key is found
+                                key_found = True
+                                next_index = self.find_next_index(resp, index, field['xpath'])
+                                new_response = [
+                                    resp[
+                                        index-1:next_index
+                                        ]
+                                    ]
+                                # Store current key index
+                                parent_key_indexes[field['xpath']] = parent_key_index + index
+                                break
+
+                # If a key-value is not found in the entire response
+                # then the sequence is broken
+                if isKey and not key_found:
+                    log_msg = 'ERROR: "{0} value: {1}" Not found.'.format(xpath, str(field.get('value')))
+                    results.append(False)
+                    log.error(log_msg)
+                    sequence_broke_no = sequence_no
+                else:
+                    if not isKey:
+                        # Validation of leaf with the trimmed response
+                        sel = field.get('selected', False)
+                        if sel is False or str(sel).lower() == 'false':
+                            continue
+                        if not self.process_one_operational_state(new_response, field, key, sequence):
+                            result = False
+                            results.append(result)
+
+            prev_seq_no = sequence_no
+
+        if False in results:
+            return False
+        else:
+            return True
 
     def process_operational_state(self, response, returns, key=False, sequence=None):
         """Test NETCONF or GNMI operational state response.
@@ -672,53 +974,106 @@ class RpcVerify():
             # yang.connector only returned one list of fields
             response = [response]
 
+        list_found = self.check_list_in_returns(returns)
+        new_returns = []
+        if list_found:
+            # Update returns for list keys
+            new_returns = self.pre_process_returns(returns)
+            sequence = True
+
         # To process the operational state in a sequence
         if sequence:
-            log.info('RETURNS SEQUENCE ENFORCED')
-            # To map the sequence with the first return value
-            field = returns[0]
-            seq_count = 0
-            for resp in response:
-                for reply, reply_xpath in resp:
-                    seq_count += 1
-                    if self.et.iselement(reply):
-                        # NETCONF response
-                        value_state = self._process_values(reply, '')
-                        value = value_state.get('reply_val', 'empty')
-                        name = self.et.QName(reply).localname
-                    else:
-                        # GNMI response
-                        if reply is False:
-                            value = reply
-                        else:
-                            if reply == '':
-                                value = 'empty'
-                            else:
-                                value = reply
-                        name = reply_xpath[reply_xpath.rfind('/') + 1:]
-
-                    if 'xpath' in field and field['xpath'] == reply_xpath and \
-                            name == field['name']:
-                        result, log_msg = self.check_opfield(value, field)
-                        if result:
-                            # Carve out the sequence from the response
-                            response = [
-                                resp[
-                                    seq_count - 1: seq_count - 1 + len(returns)
-                                ]
-                            ]
-                            break
-
-        for field in returns:
-            sel = field.get('selected', False)
-            if sel is False or str(sel).lower() == 'false':
-                continue
-            if not self.process_one_operational_state(response, field, key):
-                result = False
-            if sequence and not result:
-                return result
-
+            result = self.process_sequencial_operational_state(response, new_returns, key)
+        else:
+            for field in returns:
+                sel = field.get('selected', False)
+                if sel is False or str(sel).lower() == 'false':
+                    continue
+                if not self.process_one_operational_state(response, field, key):
+                    result = False
         return result
+
+    def find_next_index(self, response, index, xpath):
+        """Get next index of the list key in the response
+
+        Args:
+          response (list): List of tuples containing
+                           NETCONF - lxml.Element, xpath.
+                           GNMI - value, xpath
+          index (Integer): First index of current list
+          xpath (String): List key xpath
+        Returns:
+          Integer: The index till the response needs to be trimmed.
+
+        Eg:
+            <List1> ---->  This is parent_key_index
+                <Key>K1</Key> 
+                <Prop>v1<Prop> ---> Property to validate
+            </List1>
+            <List2> -----> Return next_index
+                <Key>K2</Key>
+                <Prop>v2<Prop>
+            </List2>        
+        """
+        for ix,resp in enumerate(response[index:]):
+            if resp[1] == xpath:
+                return ix+index
+
+        return len(response)
+
+    def check_list_in_returns(self, returns):
+        """Check if there are lists in returns
+
+        Args:
+          returns (list): List of dictionaries containing
+                        returns fields.
+        Returns:
+          bool: True if List found, else False.
+        """
+        for field in returns:
+            if "[" in field['xpath']:
+                return True
+
+        return False
+
+    def get_parent_dict(self, parent_key_indexes, current_xpath):
+        """Return last parent key index of a key/leaf value
+
+        Args:
+            parent_key_indexes: Dictionary {key path: index in response}
+            current_xpath: xpath of the current field in returns.
+
+        Returns:
+            parent key index of the current xpath.
+
+        Implementation:
+            current_xpath = container/list/value
+            parent_key_indexes = {"container/list/key": 3}
+
+            Trim the names
+                current_xpath = container/list/value
+                    -> current_xp = container/list
+                parent_key_indexes[0] = container/list/key
+                    -> xp = container/list
+
+                if "container/list" in "container/list/key", then it is a parent_key.
+                Return the parent_key_index.
+        """
+        parent_key_index = 0
+        parent_key_xpath = "/"
+        parent_dict = {}
+        for xpath, index in parent_key_indexes.items():
+            # Trim name from the xpaths
+            xp = xpath[:xpath.rfind('/')]
+            current_xp = current_xpath[:current_xpath.rfind('/')]
+            # if xp is in current_xp, that means
+            # xp is parent key of current_xp
+            if not xpath == current_xpath and xp in current_xp:
+                parent_key_index = index
+                parent_key_xpath = xpath
+
+        parent_dict[parent_key_xpath] = parent_key_index
+        return parent_dict
 
     def verify_reply(self, response, expected, opfields):
         """Verify values and namespaces are what is expected.

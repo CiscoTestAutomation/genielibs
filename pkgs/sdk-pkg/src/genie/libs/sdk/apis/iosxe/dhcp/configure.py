@@ -489,6 +489,63 @@ def disable_ip_dhcp_auto_broadcast(device):
             f"Could not disable DHCP auto-broadcast on device. Error:\n{e}"
             )
 
+def configure_ip_dhcp_client_vendor_class(
+        device,
+        interface,
+        type,
+        string=None):
+    """ Configure IP DHCP Client Vendor-class on interface:
+        Args:
+            device ('obj'): device to use
+            interface ('str'): Interface to configure
+            type('str'): vendor-class type (i.e. mac-address, ascii, hex, disable)
+            string('str', optional): The value string when type set to ascii or hex
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure ip dhcp vendor-class
+    """
+    log.info(f"Configure ip dhcp client vendor-class {type} on {interface}")
+    if type in ['mac-address', 'disable']:
+        cmd = f'ip dhcp client vendor-class {type}'
+
+    elif type in ['ascii', 'hex'] and string:
+        cmd = f'ip dhcp client vendor-class {type} {string}'
+
+    else:
+        raise SubCommandFailure("Invalid vendor-class type or string missing")
+
+    try:
+        device.configure([f"interface {interface}", cmd])
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure ip dhcp vendor-class on {interface}. Error:\n{e}")
+
+
+def unconfigure_ip_dhcp_client_vendor_class(
+        device,
+        interface,
+        type):
+    """ Unconfigure IP DHCP Client Vendor-class on interface:
+        Args:
+            device ('obj'): device to use
+            interface ('str'): Interface to configure
+            type('str'): vendor-class type (i.e. mac-address, ascii, hex, disable)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to unconfigure ip dhcp vendor-class
+    """
+    log.info(f"Unconfigure ip dhcp client vendor-class {type} on {interface}")
+    cmd = f'no ip dhcp client vendor-class {type}'
+    try:
+        device.configure([f"interface {interface}", cmd])
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure ip dhcp vendor-class on {interface}. Error:\n{e}")
+
 def enable_dhcp_smart_relay(device):
     """ Enable dhcp smart-relay on device
         Args:
@@ -716,3 +773,170 @@ def unconfigure_ip_dhcp_snooping_information_option_allow_untrusted(device, inte
             "Could not unconfigure dhcp snooping information option allow-untrusted. Error:\n{e}"
         )
 
+def configure_ip_dhcp_snooping_information_option(device):
+    """Configures dhcp snooping information option on device
+       Example: ip dhcp snooping information option
+
+       Args:
+            device ('obj'): device object
+
+       Return:
+            None
+
+       Raises:
+            SubCommandFailure
+    """
+    log.info("Configuring dhcp snooping information option")
+    try:
+        device.configure("ip dhcp snooping information option")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to configure dhcp snooping information option on {device.name}\n{e}'
+        )
+
+def unconfigure_ip_dhcp_snooping_information_option(device):
+    """Unconfigures dhcp snooping information option on device
+       Example: no ip dhcp snooping information option
+
+       Args:
+            device ('obj'): device object
+
+       Return:
+            None
+
+       Raises:
+            SubCommandFailure
+    """
+    log.info("Unconfiguring dhcp snooping information option")
+    try:
+        device.configure("no ip dhcp snooping information option")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to unconfigure dhcp snooping information option on {device.name}\n{e}'
+        )
+
+def configure_ip_dhcp_pool(device, name):
+    """Configures dhcp pool on device
+       Example: ip dhcp pool POOL_88
+
+       Args:
+            device ('obj'): device object
+            name ('str'): name of the pool (eg. POOL_88, testpool)
+
+       Return:
+            None
+
+       Raises:
+            SubCommandFailure
+    """
+    log.info(f"Configuring dhcp pool {name}")
+    try:
+        device.configure(f"ip dhcp pool {name}")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to configure dhcp pool {name} on {device.name}\n{e}'
+        )
+
+def unconfigure_ip_dhcp_pool(device, name):
+    """Unconfigures dhcp pool on device
+       Example: no ip dhcp pool POOL_88
+
+       Args:
+            device ('obj'): device object
+            name ('str'): name of the pool (eg. POOL_88, testpool)
+
+       Return:
+            None
+
+       Raises:
+            SubCommandFailure
+    """
+    log.info(f"Unconfiguring dhcp pool {name}")
+    try:
+        device.configure(f"no ip dhcp pool {name}")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to unconfigure dhcp pool {name} on {device.name}\n{e}'
+        )
+
+def configure_dhcp_channel_group_mode(device, interface, group, mode):
+    """Configures Ethernet port to an EtherChannel group
+       Example: channel-group 120 mode active
+
+       Args:
+            device ('obj'): device object
+            interface ('str): interface to configure (eg. Gig1/0/1)
+            group ('int'): Channel group number. The range is 1 to 128
+            mode ('str'): EtherChannel mode (eg. active, passive, auto)
+
+       Return:
+            None
+
+       Raises:
+            SubCommandFailure
+    """
+    log.info(f"Configuring DHCP EtherChannel group mode {mode} on {interface}")
+    config= [
+        f'interface {interface}',
+        f'channel-group {group} mode {mode}'
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to configure DHCP channel-group mode {mode} on {interface}\n{e}'
+        )
+
+def unconfigure_dhcp_channel_group_mode(device, interface, group, mode):
+    """Unconfigures Ethernet port to an EtherChannel group
+       Example: no channel-group 120 mode active
+
+       Args:
+            device ('obj'): device object
+            interface ('str): interface to configure (eg. Gig1/0/1)
+            group ('int'): Channel group number. The range is 1 to 128
+            mode ('str'): EtherChannel mode (eg. active, passive, auto)
+
+       Return:
+            None
+
+       Raises:
+            SubCommandFailure
+    """
+    log.info(f"Unconfiguring DHCP EtherChannel group mode {mode} on {interface}")
+    config= [
+        f'interface {interface}',
+        f'no channel-group {group} mode {mode}'
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to unconfigure DHCP channel-group mode {mode} on {interface}\n{e}'
+        )
+
+def configure_cts_manual(device, interface):
+    """Configures cts manual on the interface
+       Example: cts manual
+
+       Args:
+            device ('obj'): device object
+            interface ('str): interface to configure (eg. Gig1/0/1, Te1/0/10)
+
+       Return:
+            None
+
+       Raises:
+            SubCommandFailure
+    """
+    log.info(f"Configuring cts manual on {interface}")
+    config= [
+        f'interface {interface}',
+        f'cts manual'
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to configure cts manual on {interface} on {device.name}\n{e}'
+        )

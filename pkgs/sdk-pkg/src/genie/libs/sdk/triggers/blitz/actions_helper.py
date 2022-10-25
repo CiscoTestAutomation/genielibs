@@ -1129,11 +1129,11 @@ def _verify_dq_query_and_execute_include_exclude(action_output, style, key):
         not action_output):
 
         # change the msg_style depending on style
-        msg_style = "satisfied" if style == "included" else "not satisfied"
+        msg_style =  "present in output" if style == "included" else "not present in output"
         return (Passed, message.format(style=style[:-1], ms=msg_style))
     else:
         # change the msg_style depending on style
-        msg_style = "satisfied" if style == "excluded" else "not satisfied"
+        msg_style = "present in output" if style == "excluded" else "not present in output"
         return (Failed, message.format(style=style[:-1], ms=msg_style))
 
 def _condition_validator(items):

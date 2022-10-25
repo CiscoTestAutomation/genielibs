@@ -14,6 +14,7 @@ from genie.conf.base import Interface
 from genie.libs.conf.base import IPv4Address, IPv6Address
 from genie.libs.conf.interface import IPv4Addr, IPv6Addr
 from genie.harness.utils import connect_device
+from unicon.eal.dialogs import Dialog, Statement
 
 # Interface
 from genie.libs.sdk.apis.iosxe.interface.get import (
@@ -617,6 +618,7 @@ def config_ip_on_interface(
 
         Returns:
             None
+            Warning messages
 
         Raises:
             SubCommandFailure
@@ -662,7 +664,7 @@ def config_ip_on_interface(
             cfg_str += "ip address dhcp\n"
     # Configure device
     try:
-        device.configure(cfg_str)
+        out = device.configure(cfg_str)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Failed to configure IP address {ip} on interface "
@@ -673,6 +675,9 @@ def config_ip_on_interface(
                 error=e,
             )
         )
+
+    result = [line for line in out.splitlines() if line.startswith('%')]
+    return result if result else None
 
 def config_ip_subinterface(
         device,
@@ -4531,17 +4536,23 @@ def unconfigure_pppoe_enable_interface(device, interface, name):
         )
 
 
-def configure_hsrp_interface(device,interface,version,ip_address):
+def configure_hsrp_interface(device,interface,version,ip_address,priority=None,preempt=None):
     """ Configure hsrp on interface
         Args:
              device (`obj`): Device object
              interface ('str'): Interface to configure hsrp
              version (`int`): version number
              ip_address ('str') : ip address
+             priority ('str', optional) : config custom priority to hsrp
+             preempt ('str', optional) : config custom preempt delay sync to hsrp
     """
     configs = []
     configs.append(f"interface {interface}")
     configs.append(f"standby {version}  ip {ip_address}")
+    if priority:
+        configs.append(f"standby {version}  priority {priority}")
+    if preempt:
+        configs.append(f"standby {version}  preempt delay sync {preempt}")
 
     try:
          device.configure(configs)
@@ -5380,3 +5391,281 @@ def unconfigure_interface_channel_group_auto_lacp(device, interface):
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure auto Enable LACP auto on this interface {interface}. Error:\n{e}")
+
+def unconfigure_interface_switchport_mode_access(device, interface):
+    """ unconfigures switchport mode access on interface
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface to unconfigure
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    config_list = []
+    config_list.append(f'interface {interface}')
+    config_list.append("no switchport mode access")
+
+    try:
+        device.configure(config_list)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigures switchport mode access on interface. Error:\n{error}"\
+                .format(error=e
+            )
+        )
+
+def configure_interface_macro_auto_port_sticky(device, interface):
+    """ Configure macro auto port sticky on this interface
+    
+    Args:
+        device ('obj'): device to use
+        interface ('str') : interface to add configs
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = []
+    cmd.append(f'interface {interface}')
+    cmd.append('macro auto port sticky')
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure macro auto port sticky on this interface {interface}. Error:\n{e}")
+
+def unconfigure_interface_macro_auto_port_sticky(device, interface):
+    """ Unconfigure macro auto port sticky on this interface
+    
+    Args:
+        device ('obj'): device to use
+        interface ('str') : interface to add configs
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = []
+    cmd.append(f'interface {interface}')
+    cmd.append('no macro auto port sticky')
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure macro auto port sticky on this interface {interface}. Error:\n{e}")
+
+def configure_interface_template_sticky(device, interface, timer=None):
+    """ configure interface-template sticky
+        Args:
+            device ('obj'): device to use
+            interface ('str') : interface to add configs
+            timer ('int', optional): <1-65535>  Enter a value between 1 and 65535
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    dialog = Dialog(
+        [
+            Statement(
+                pattern=r'.*Do you wish to continue\?\s\[yes\]\:',
+                action='sendline()',
+                loop_continue=True,
+                continue_timer=False
+            )
+        ]
+    )
+
+    cmd = []
+    cmd.append(f'interface {interface}')
+    if timer:
+        cmd.append(f'access-session interface-template sticky timer {timer}')
+    else:
+        cmd.append('access-session interface-template sticky')
+    try:
+        device.configure(cmd,reply=dialog)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure interface-template sticky on this interface {interface}. Error:\n{e}")
+
+def unconfigure_interface_template_sticky(device, interface, timer=None):
+    """ unconfigure interface-template sticky
+        Args:
+            device ('obj'): device to use
+            interface ('str') : interface to add configs
+            timer ('int', optional): <1-65535>  Enter a value between 1 and 65535
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = []
+    cmd.append(f'interface {interface}')
+    if timer:
+        cmd.append(f'no access-session interface-template sticky timer {timer}')
+    else:
+        cmd.append('no access-session interface-template sticky')
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure interface-template sticky on this interface {interface}. Error:\n{e}")
+
+def configure_interface_inherit_disable(device, interface, disable_option):
+    """ Configure access-session inherit disable
+        Args:
+            device ('obj'): device to use
+            interface ('str') : interface to add configs
+            disable_option('str') : Select option to disable
+            ex:)
+                autoconf                   Auto Conf
+                interface-template-sticky  Interface Template Sticky
+                service-policy             Service Policy
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = []
+    cmd.append(f'interface {interface}')
+    cmd.append(f'access-session inherit disable {disable_option}')
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure access-session inherit disable on this interface {interface}. Error:\n{e}")
+
+def unconfigure_interface_inherit_disable(device, interface, disable_option):
+    """ Unconfigure access-session inherit disable
+        Args:
+            device ('obj'): device to use
+            interface ('str') : interface to add configs
+            disable_option('str') : Select option to disable
+            ex:)
+                autoconf                   Auto Conf
+                interface-template-sticky  Interface Template Sticky
+                service-policy             Service Policy
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = []
+    cmd.append(f'interface {interface}')
+    cmd.append(f'no access-session inherit disable {disable_option}')
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure access-session inherit disable on this interface {interface}. Error:\n{e}")
+
+def unconfigure_control_policies(device, policy_name):
+    """ Unconfigure policy-map on an device
+
+        Args:
+            device (`obj`): Device object
+            policy_name (`str`): name of the policy
+        
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cfg_lst = []
+    cfg_lst.append(f"no policy-map type control subscriber {policy_name}")
+
+    try:
+        device.configure(cfg_lst)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure policy-map on device. Error:\n{e}")
+
+
+def configure_interface_span_vlan_priority(device, interface, vlan, priority):
+    """ Configures Spanning Tree vlan priority on port
+        Args:
+            device ('obj')    : device to use
+            interface ('str') : interface to configure
+            vlan ('int') : vlan to configure
+            priority ('int') : priority to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    config_list = [f"interface {interface}", f"spanning-tree vlan {vlan} priority {priority}"]
+    try:
+        device.configure(config_list)
+    except SubCommandFailure as error:
+        raise SubCommandFailure(
+            f'Could not configure Interface Spanning Tree Vlan Priority, Error-\n{error}'
+        )
+
+def unconfigure_interface_span_vlan_priority(device, interface, vlan):
+    """ Configures Spanning Tree vlan priority on port
+        Args:
+            device ('obj')    : device to use
+            interface ('str') : interface to configure
+            vlan ('int') : vlan to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    config_list = [f"interface {interface}", f"no spanning-tree vlan {vlan} priority"]
+    try:
+        device.configure(config_list)
+    except SubCommandFailure as error:
+        raise SubCommandFailure(
+            f'Could not unconfigure Interface Spanning Tree Vlan Priority, Error-\n{error}'
+        )
+
+def configure_interface_span_cost(device, interface, cost):
+    """ Configures Spanning Tree cost on port
+        Args:
+            device ('obj')    : device to use
+            interface ('str') : interface to configure
+            cost ('int')      : cost to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    config_list = [f"interface {interface}", f"spanning-tree cost {cost}"]
+    try:
+        device.configure(config_list)
+    except SubCommandFailure as error:
+        raise SubCommandFailure(
+            f'Could not configure Interface Spanning Tree cost, Error-\n{error}'
+        )
+
+def unconfigure_interface_span_cost(device, interface):
+    """ Unconfigures Spanning Tree cost on port
+        Args:
+            device ('obj')    : device to use
+            interface ('str') : interface to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    config_list = [f"interface {interface}", f"no spanning-tree cost"]
+    try:
+        device.configure(config_list)
+    except SubCommandFailure as error:
+        raise SubCommandFailure(
+            f'Could not unconfigure Interface Spanning Tree cost, Error-\n{error}'
+        )

@@ -441,6 +441,15 @@ def _validate_pause(pause):
             log.error('Invalid "pause" type {0}'.format(type(pause)))
     return 0
 
+def log_Instructions():
+    """Log message for the instruction of returns format to test in sequence"""
+
+    log_msg = " Sequence flag is no longer needed to test in sequence for lists.\n \
+    To test lists in the sequence of the keys. Make sure your returns xpath format is as below.\n \
+    returns:\n \
+        xpath: 'root/container1/list1[key=\"value\"]/container2/list2[key=\"value\"]/property'"
+
+    log.warning(log_msg)
 
 def run_netconf(operation, device, steps, datastore, rpc_data, returns, **kwargs):
     """Form NETCONF message and send to testbed."""
@@ -452,9 +461,9 @@ def run_netconf(operation, device, steps, datastore, rpc_data, returns, **kwargs
     if kwargs.get('format', None):
         sequence = kwargs['format'].get('sequence', None)
 
-    # To check the sequence
-    if kwargs.get('format', None):
-        sequence = kwargs['format'].get('sequence', None)
+    if(sequence):
+        log_Instructions()
+        return False
 
     try:
         device.raise_mode = RaiseMode.NONE
@@ -621,6 +630,7 @@ def run_netconf(operation, device, steps, datastore, rpc_data, returns, **kwargs
             return negative_test != False
 
     if rpc_data['operation'] == 'edit-config' and auto_validate:
+        log.info(banner('AUTO-VALIDATION'))
         # Verify custom rpc's with a follow-up action.
         if pause:
             sleep(pause)
@@ -690,7 +700,16 @@ def run_gnmi(operation, device, steps,
     log.debug('gNMI MESSAGE')
     result = True
     payload = None
-    namespace_modules ={}
+    sequence = None
+    namespace_modules = {}
+
+    # To check the sequence
+    if kwargs.get('format', None):
+        sequence = kwargs['format'].get('sequence', None)
+
+    if(sequence):
+        log_Instructions()
+        return False
 
     rpc_verify = RpcVerify(log=log, capabilities=[])
     format = kwargs.get('format', {})
@@ -705,7 +724,14 @@ def run_gnmi(operation, device, steps,
     if negative_test:
         log.info(banner('NEGATIVE TEST'))
 
+    if 'auto_validate' in format:
+        auto_validate = format.get('auto_validate')
+    else:
+        auto_validate = True
+
     if operation == 'edit-config':
+        if auto_validate:
+            rpc_clone = deepcopy(rpc_data)
         if 'rpc' in rpc_data:
             # Assume we have a well-formed dict representing gNMI set
             payload = json.dumps(rpc_data.get('rpc', {}), indent=2)
@@ -716,8 +742,27 @@ def run_gnmi(operation, device, steps,
         if not resp:
             result = False
         if 'returns' in rpc_data:
-            if not rpc_verify.process_operational_state(resp, returns):
+            if not rpc_verify.process_operational_state(resp, returns, sequence=sequence):
                 result = False
+        else:
+            if auto_validate:
+                log.info(banner('AUTO-VALIDATION'))
+
+                rpc_clone_clone = deepcopy(rpc_clone)
+                format['get_type'] = 'CONFIG'
+                gmc = GnmiMessageConstructor('get', rpc_clone, **format)
+                payload = gmc.payload
+                namespace_modules = gmc.namespace_modules
+                response = GnmiMessage.run_get(
+                    device, payload, namespace_modules
+                )
+                for node in rpc_clone_clone.get('nodes'):
+                    node.pop('edit-op', '')
+                if not response:
+                    result = False
+                else:
+                    result = rpc_verify.verify_rpc_data_reply(response, rpc_clone_clone)
+
     elif operation in ['get', 'get-config']:
         if 'rpc' in rpc_data:
             # Assume we have a well-formed dict representing gNMI get
@@ -737,7 +782,7 @@ def run_gnmi(operation, device, steps,
         else:
             if not response:
                 response.append((None, "/"))
-            if not rpc_verify.process_operational_state(response, returns):
+            if not rpc_verify.process_operational_state(response, returns, sequence=sequence):
                 result = False
     elif operation == 'subscribe':
         rpc_data.update(format)

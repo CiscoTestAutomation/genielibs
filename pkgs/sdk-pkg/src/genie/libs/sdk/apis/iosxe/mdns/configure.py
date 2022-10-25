@@ -921,7 +921,7 @@ def configure_mdns_sd_service_peer(device, vlan, ip_addr, response_timer=None, t
             "sdg-agent {ipv4_ipv6}".format(ipv4_ipv6=ip_addr)
         ]
         if response_timer != None:
-            config.extend(["active-response-timer {resp_timer}".format(resp_timer=response_timer)])
+            config.extend(["active-response timer {resp_timer}".format(resp_timer=response_timer)])
         if timer != None and count != None:
             config.extend([
                 "service-announcement-timer periodicity {timer_val}".format(
@@ -1413,7 +1413,7 @@ def unconfigure_controller_service_policy_service_export(device, name, policy_na
     try:
             device.configure([
                 "service-export mdns-sd controller {}".format(name),
-                "no controller-service-policy policy_name {}".format(policy_name)
+                "no controller-service-policy {}".format(policy_name)
             ])
 
     except SubCommandFailure:
@@ -1682,7 +1682,7 @@ def unconfigure_controller_policy_service_export(device, name, policy_name):
         for type in policy_name:
             device.configure([
                 "service-export mdns-sd controller {}".format(name),
-                "no controller-service-policy policy_name {}".format(type)
+                "no controller-service-policy {}".format(type)
             ])
     except SubCommandFailure as e:
 

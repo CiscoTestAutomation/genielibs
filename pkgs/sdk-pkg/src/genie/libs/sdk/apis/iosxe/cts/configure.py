@@ -988,3 +988,51 @@ def unconfigure_ip_role_based_acl(device, acl_name, protocol):
     except SubCommandFailure as e:
         log.error(e)
         raise SubCommandFailure("Could not unconfigure ip role based ACL on device")
+
+def configure_cts_enforcement_logging(device, log_interval):
+    """ Configure cts enforcement logging
+        Args:
+            device ('obj'): device to use
+            log_interval ('str'): logging interval in seconds
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to Configure cts enforcement logging
+    """
+    log.info("Configure cts enforcement logging")
+    cmd = f"cts role-based enforcement logging-interval {log_interval}"    
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure cts enforcement logging. Error:\n {e}")
+
+def unconfigure_cts_enforcement_logging(device, log_interval):
+    """ Unconfigure cts enforcement logging
+        Args:
+            device ('obj'): device to use
+            log_interval ('str'): logging interval in seconds
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to Unconfigure cts enforcement logging
+    """
+    log.info("Unconfigure cts enforcement logging")
+    cmd = f"no cts role-based enforcement logging-interval {log_interval}"    
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not unconfigure cts enforcement logging. Error:\n {e}")
+
+def clear_cts_counters_ipv6(device):
+    """ Clear CTS counters ipv6
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to clear CTS counters ipv6
+    """ 
+    try:
+        device.execute('clear cts role-based counters ipv6')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not clear CTS counters ipv6. Error:\n {e}")

@@ -877,3 +877,26 @@ def rename_dir_file_system(device, file_sys, file_name, des_file_sys, des_file_n
     except Exception as err:
         log.error("Failed to execute the command: {err}".format(err=err))
         raise Exception(err)
+
+def show_switch_redirect(device, storage_type, file_name):
+    """ storing output in a file format 
+        Example: show switch | redirect flash:test.txt
+        
+        Args:
+            device ('obj'): Device object
+            storage_type ('str'): the storage type (e.g. flash, bootflash, nvram)
+            file_name ('str'): file to store the output in 
+
+        Returns:
+            None
+        
+        Raises: 
+            SubCommandFailure
+ 
+    """
+    config = f"show switch | redirect {storage_type}:{file_name}"
+    try:
+       device.execute(config)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to redirect to {file_name} on the device {device.name}. Error:\n{e}")

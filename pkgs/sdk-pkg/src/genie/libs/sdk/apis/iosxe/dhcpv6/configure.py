@@ -364,3 +364,59 @@ def configure_dhcp_pool_ipv6_domain_name(device, pool_name,domain_name):
                 error=e
             )
         )
+
+def configure_ipv6_dhcp_client_vendor_class(
+        device,
+        interface,
+        type,
+        string=None):
+    """ Configure IPV6 DHCP Client Vendor-class on interface:
+        Args:
+            device ('obj'): device to use
+            interface ('str'): Interface to configure
+            type('str'): vendor-class type (i.e. mac-address, ascii, hex, disable)
+            string('str', optional): The value string when type set to ascii or hex
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure ipv6 dhcp vendor-class
+    """
+    log.info(f"Configure ipv6 dhcp client vendor-class {type} on {interface}")
+    if type in ['mac-address', 'disable']:
+        cmd = f'ipv6 dhcp client vendor-class {type}'
+
+    elif type in ['ascii', 'hex'] and string:
+        cmd = f'ipv6 dhcp client vendor-class {type} {string}'
+
+    else:
+        raise SubCommandFailure("Invalid vendor-class type or string missing")
+
+    try:
+        device.configure([f"interface {interface}", cmd])
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure ipv6 dhcp vendor-class on {interface}. Error:\n{e}")
+
+def unconfigure_ipv6_dhcp_client_vendor_class(
+        device,
+        interface,
+        type):
+    """ Unconfigure IPv6 DHCP Client Vendor-class on interface:
+        Args:
+            device ('obj'): device to use
+            interface ('str'): Interface to configure
+            type('str'): vendor-class type (i.e. mac-address, ascii, hex, disable)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to unconfigure ipv6 dhcp vendor-class
+    """
+    log.info(f"Unconfigure ipv6 dhcp client vendor-class {type} on {interface}")
+    cmd = f'no ipv6 dhcp client vendor-class {type}'
+    try:
+        device.configure([f"interface {interface}", cmd])
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure ipv6 dhcp vendor-class on {interface}. Error:\n{e}")

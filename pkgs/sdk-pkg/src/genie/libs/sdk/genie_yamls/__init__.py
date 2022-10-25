@@ -1,6 +1,6 @@
 import os
-curr_dir = os.path.dirname(os.path.abspath(__file__))
 
+curr_dir = os.path.dirname(os.path.abspath(__file__))
 
 trigger_datafiles = {}
 trigger_datafiles['main'] = os.path.join(curr_dir, 'trigger_datafile.yaml')
@@ -22,16 +22,21 @@ verification_datafiles['junos'] = os.path.join(curr_dir, 'junos/verification_dat
 subsection_datafile = os.path.join(curr_dir, 'subsection_datafile.yaml')
 pts_datafile = os.path.join(curr_dir, 'pts_datafile.yaml')
 
-def datafile(mode, os='main'):
- 
+
+def datafile(mode, os_='main'):
     if mode == 'trigger':
-        return trigger_datafiles[os]
+        return trigger_datafiles[os_]
     elif mode == 'verification':
-        return verification_datafiles[os]
+        return verification_datafiles[os_]
     elif mode == 'subsection':
         return subsection_datafile
     elif mode == 'pts':
         return pts_datafile
+    elif mode == 'health':
+        # import here to avoid circular import error
+        import genie.libs.health
+        health_datafile = os.path.join(os.path.dirname(genie.libs.health.__file__), 'health_yamls', 'pyats_health.yaml')
+        return health_datafile
     else:
         raise Exception('{m} is not a valid datafile mode - valid: '
-                        'trigger, verification, subsection pts'.format(m=mode))
+                        'trigger, verification, subsection, pts or health'.format(m=mode))

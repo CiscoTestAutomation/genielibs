@@ -1491,3 +1491,155 @@ def configure_nat_ipv6_acl(
     except SubCommandFailure as e:
         log.error(e)
         raise SubCommandFailure("Could not Configure NAT ipv6 acl")
+
+def configure_nat64_nd_ra_prefix(device, 
+    prefix, prefix_length, interface=None,
+    sub_interface=None, life_time=None, 
+    int1=None, int2=None, 
+    start_int=None, end_int=None
+):
+    """ Configure nat64 nd ra prefix  
+        Args:
+            device ('obj'): device to use
+            prefix ('str'): prefix
+            prefix_length ('int'): prefix length
+            interface ('str', optional): interface
+            sub_interface('str', optional): Subinterface to be added to interface name
+            life_time ('int', optional): lifetime
+            int1('str', optional): Interface 1
+            int2('str', optional): Interface 2
+            start_int('str', optional): Starting Interface
+            end_int('str', optional): Ending Interface number
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = []
+    
+    #Configure nd ra prefix on an sub-interface
+    if sub_interface:
+        interface_name = interface + "." + sub_interface
+        cmd = [f"interface {interface_name}\n"]
+    #Configure nd ra prefix on an interface
+    else:
+        if int1 and int2:
+            cmd = [f"interface range {int1},{int2}"]
+        elif start_int and end_int:
+            cmd = [f"interface range {start_int} - {end_int}"]
+        else:
+            cmd = [f"interface {interface}"]
+
+    if life_time:  
+        cmd += [f"ipv6 nd ra nat64-prefix {prefix}/{prefix_length} lifetime {life_time}"]
+    else:          
+        cmd += [f"ipv6 nd ra nat64-prefix {prefix}/{prefix_length}"]                                    
+            
+    try:
+        device.configure(cmd)        
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not configure nat64 nd ra prefix")
+        
+def unconfigure_nat64_nd_ra_prefix(device, 
+    prefix, prefix_length, interface=None,
+    sub_interface=None, 
+    int1=None, int2=None, 
+    start_int=None, end_int=None
+):
+    """ UnConfigure nat64 nd ra prefix  
+        Args:
+            device ('obj'): device to use
+            prefix ('str'): prefix
+            prefix_length ('int'): prefix length
+            interface ('str', optional): interface
+            sub_interface('str', optional): Subinterface to be added to interface name
+            int1('str', optional): Interface 1
+            int2('str', optional): Interface 2
+            start_int('str', optional): Starting Interface
+            end_int('str', optional): Ending Interface number
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = []
+    
+    #UnConfigure nd ra prefix on an sub-interface
+    if sub_interface:
+        interface_name = interface + "." + sub_interface
+        cmd = [f"interface {interface_name}"]
+    #UnConfigure nd ra prefix on an interface
+    else:
+        if int1 and int2:
+            cmd = [f"interface range {int1},{int2}"]
+        elif start_int and end_int:
+            cmd = [f"interface range {start_int} - {end_int}"]
+        else:
+            cmd = [f"interface {interface}"]
+
+    cmd += [f"no ipv6 nd ra nat64-prefix {prefix}/{prefix_length}"]                                    
+            
+    try:
+        device.configure(cmd)        
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not unconfigure nat64 nd ra prefix")
+
+def configure_ip_access_group_in_out(
+    device,
+    interface,
+    acl_name,
+    acl_direction,
+):
+    """ Enable ip access_group IN and OUT over interface 
+        Args:
+            device ('obj'): device to use
+            acl_name ('str'): name of the ACL
+            acl_direction ('str'): in or out direction of the acl
+            interface ('str'): enable ip access_group {aclname}in/out on this interface
+        Returns:
+            console output
+        Raises:
+            SubCommandFailure: ip access_group IN OUT not enabled over interface
+    """
+    cmd = [
+                f"interface {interface}",
+                f"ip access-group {acl_name} {acl_direction}"           
+          ]  
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not Enable the ip access-group. Error:\n{error}".format(error=e)
+        )
+
+def unconfigure_ip_access_group_in_out(
+    device,
+    interface,
+    acl_name,
+    acl_direction,
+):
+    """ Disable ip access_group IN and OUT over interface 
+        Args:
+            device ('obj'): device to use
+            acl_name ('str'): name of the ACL
+            acl_direction ('str'): in or out direction of the acl
+            interface ('str'): disable ip access_group {acl_name} in/out over this interface
+        Returns:
+            console output
+        Raises:
+            SubCommandFailure: ip access_group IN OUT is enabled over interface
+    """
+    cmd = [
+                f"interface {interface}",
+                f"no ip access-group {acl_name} {acl_direction}"
+          ]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not disable the ip access-group. Error:\n{error}".format(error=e)
+        )

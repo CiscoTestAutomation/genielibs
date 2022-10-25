@@ -1824,3 +1824,159 @@ def configure_bgp_l2vpn_evpn_rewrite_evpn_rt_asn(
             f"Could not configure rewrite-evpn-rt-asn for BGP router {bgp_as}"
             f".Error:\n{e}"
         )
+
+def configure_router_bgp_maximum_paths(device, system, paths):
+    """ Configures the maximum paths on router bgp
+        Example: router bgp 100
+                maximum-paths 3
+        Args:
+            device ('obj'): device to configure on
+            system ('int'): Autonomous system number (Range 1-4294967295 or 1.0-XX.YY)
+            paths ('int'): Number of paths (Range 1-32)
+        Return:
+            None
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    log.info(f"Configuring maximum-paths on router bgp on device {device.name}")
+    config = [
+        f'router bgp {system}',
+        f'maximum-paths {paths}'
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure maximum-paths on router bgp on {device.name}. Error:\n{e}")
+
+def unconfigure_router_bgp_maximum_paths(device, system, paths):
+    """ Unconfigures the maximum paths on router bgp
+        Example: router bgp 100
+                no maximum-paths 3
+        Args:
+            device ('obj'): device to configure on
+            system ('int'): Autonomous system number (Range 1-4294967295 or 1.0-XX.YY)
+            paths ('int'): Number of paths (Range 1-32)
+        Return:
+            None
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    log.info(f"Unconfiguring maximum-paths on router bgp on {device.name}")
+    config = [
+        f'router bgp {system}',
+        f'no maximum-paths {paths}'
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not unconfigure maximum-paths on router bgp on {device.name}. Error:\n{e}")
+
+def configure_router_bgp_synchronization(device, system):
+    """ Configures the synchronization on router bgp
+        Example: router bgp 100
+                synchronization
+        Args:
+            device ('obj'): device to configure on
+            system ('int'): Autonomous system number (Range 1-4294967295 or 1.0-XX.YY)
+        Return:
+            None
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    log.info(f"Configuring synchronization on router bgp on device {device.name}")
+    config = [
+        f'router bgp {system}',
+        f'synchronization'
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure("Could not configure synchronization on router bgp on {device.name}. Error:\n{e}")
+
+def unconfigure_router_bgp_synchronization(device, system):
+    """ Unconfigures the synchronization on router bgp
+        Example: router bgp 100
+                no synchronization
+        Args:
+            device ('obj'): device to configure on
+            system ('int'): Autonomous system number (Range 1-4294967295 or 1.0-XX.YY)
+        Return:
+            None
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    log.info(f"Unconfiguring synchronization on router bgp on {device.name}")
+    config = [
+        f'router bgp {system}',
+        f'no synchronization'
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure("Could not unconfigure synchronization on router bgp on {device.name}. Error:\n{e}")
+
+def unconfigure_bgp_log_neighbor_changes(device, system):
+    """ Unconfigures the log neighbor changes on router bgp
+        Example: router bgp 100
+                no log-neighbor-changes
+        Args:
+            device ('obj'): device to configure on
+            system ('int'): Autonomous system number (Range 1-4294967295 or 1.0-XX.YY)
+        Return:
+            None
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    log.info(f"Unconfiguring log-neighbor-changes on router bgp on {device.name}")
+    config = [
+        f'router bgp {system}',
+        f'no bgp log-neighbor-changes'
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not unconfigure log neighbor changes on router bgp on {device.name}. Error:\n{e}")
+
+def configure_bgp_auto_summary(device, system):
+    """ Configures the auto-summary on router bgp
+        Example: router bgp 100
+                auto-summary
+        Args:
+            device ('obj'): device to configure on
+            system ('int'): Autonomous system number (Range 1-4294967295 or 1.0-XX.YY)
+        Return:
+            None
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    log.info(f"Configuring auto-summary on router bgp on device {device.name}")
+    config = [
+        f'router bgp {system}',
+        f'auto-summary'
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure auto summary on router bgp on {device.name}. Error:\n{e}")
+
+def unconfigure_bgp_auto_summary(device, system):
+    """ Configures the auto-summary on router bgp
+        Example: router bgp 100
+                no auto-summary
+        Args:
+            device ('obj'): device to configure on
+            system ('int'): Autonomous system number (Range 1-4294967295 or 1.0-XX.YY)
+        Return:
+            None
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    log.info(f"Unconfiguring auto-summary on router bgp on {device.name}")
+    config = [
+        f'router bgp {system}',
+        f'no auto-summary'
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not unconfigure auto summary on router bgp on {device.name}. Error:\n{e}")

@@ -2,7 +2,17 @@ import re
 import logging
 import time
 
-from .snmp_client import SNMPClient
+from .snmp_client import SNMPClient, SNMPv3Client
+try:
+    import pysnmp
+    from pysnmp.proto.rfc1905 import NoSuchInstance, NoSuchObject
+    from pysnmp.hlapi import  UsmUserData, usmHMACMD5AuthProtocol, usmHMACSHAAuthProtocol, usmHMAC128SHA224AuthProtocol,\
+     usmHMAC192SHA256AuthProtocol, usmHMAC256SHA384AuthProtocol, usmHMAC384SHA512AuthProtocol, usmNoAuthProtocol,\
+     usmDESPrivProtocol, usm3DESEDEPrivProtocol, usmAesCfb128Protocol, usmAesCfb192Protocol,\
+     usmAesCfb256Protocol, usmNoPrivProtocol
+    pysnmp_installed = True
+except ImportError:
+    pysnmp_installed = False
 
 # Unicon
 from unicon.eal.dialogs import Statement, Dialog
@@ -128,6 +138,178 @@ class BaseSNMPPowerCycler(PowerCycler):
         return ret
 
     def get_state(self, *outlets):
+
+        outlet_ids = []
+        for outlet in outlets:
+            outlet_ids.append('.'.join([self.oid, str(outlet)]))
+        return self.snmp_client.snmp_get(*outlet_ids)
+
+
+class BaseSNMPv3PowerCycler(PowerCycler):
+
+    def __init__(self,
+                 snmp_port=161,
+                 **kwargs):
+
+        super().__init__(**kwargs)
+        self.port = snmp_port
+        self.snmp_client = None
+        self.connect(**kwargs)
+
+    def get_usm_user_data(self, **kwargs):
+        """
+        To collect the user data for snmpv3
+
+        Snmpv3 supports three security levels
+            1. AuthPriv (Authentication and privacy)
+            2. AuthNoPriv (Authentication)
+            3. NoAuthNoPriv (None)
+
+        List of supported Authentication protocols:
+            usmNoAuthProtocol (default is authKey not given)
+            usmHMACMD5AuthProtocol
+            usmHMACSHAAuthProtocol
+            usmHMAC128SHA224AuthProtocol
+            usmHMAC192SHA256AuthProtocol
+            usmHMAC256SHA384AuthProtocol
+            usmHMAC384SHA512AuthProtocol
+
+        List of supported Private protocols:
+            usmNoPrivProtocol (default is privKey not given)
+            usmDESPrivProtocol
+            usm3DESEDEPrivProtocol
+            usmAesCfb128Protocol
+            usmAesCfb192Protocol
+            usmAesCfb256Protocol
+
+        To learn more about snmpv3 USMUserData refer the following docs
+        https://pysnmp.readthedocs.io/en/latest/docs/api-reference.html#user-based
+        """
+
+        # Snmpv3 authentication protocols
+        snmp_auth_protocol = {
+            'md5': usmHMACMD5AuthProtocol,
+            'sha': usmHMACSHAAuthProtocol,
+            'sha224': usmHMAC128SHA224AuthProtocol,
+            'sha256': usmHMAC192SHA256AuthProtocol,
+            'sha384': usmHMAC256SHA384AuthProtocol,
+            'sha512': usmHMAC384SHA512AuthProtocol,
+        }
+        # Snmpv3 private protocols
+        snmp_priv_protocol = {
+            'des': usmDESPrivProtocol,
+            '3des': usm3DESEDEPrivProtocol,
+            'aes128': usmAesCfb128Protocol,
+            'aes192': usmAesCfb192Protocol,
+            'aes256': usmAesCfb256Protocol,
+        }
+
+        auth_protocol=None
+        priv_protocol=None
+
+        # Get the username and security level
+        username = kwargs.get('username')
+
+        # Security level defaults to NoAuthNoPriv if its not provided
+        security_level = kwargs.get('security_level', 'noauthnopriv')
+
+        # To handle Authentication protocol and key
+        if security_level in ['authpriv', 'authnopriv']:
+            try:
+                auth_protocol = snmp_auth_protocol[kwargs.get('auth_protocol')]
+            except Exception as e:
+                auth_protocol = None
+
+        if not auth_protocol:
+            log.info("No authentication protocol is provided.")
+            auth_protocol = usmNoAuthProtocol
+
+        auth_key = kwargs.get('auth_key')
+        if auth_protocol != usmNoAuthProtocol:
+            if not auth_key:
+                raise Exception("The authentication key does not exist in the testbed")
+
+        # To handle private protocol and key
+        if security_level in ['authpriv']:
+            priv_protocol = kwargs.get('priv_protocol')
+            try:
+                priv_protocol = snmp_priv_protocol[kwargs.get('priv_protocol')]
+            except Exception as e:
+                auth_protocol = None
+
+        if not priv_protocol:
+            log.info("No private protocol is provided.")
+            priv_protocol = usmNoPrivProtocol
+
+        priv_key = kwargs.get('priv_key')
+        if priv_protocol != usmNoPrivProtocol:
+            if not priv_key:
+                raise Exception("The private key does not exist in the testbed")
+
+        # build USMuserdata
+        auth = UsmUserData(
+            userName=username,
+            authKey=auth_key,
+            authProtocol=auth_protocol,
+            privKey=priv_key,
+            privProtocol=priv_protocol
+        )
+
+        return auth
+
+    def connect(self, **kwargs):
+        """ To connect the snmpv3 client
+        """
+
+        # To get the usm user data for authentication
+        self.auth = self.get_usm_user_data(**kwargs)
+
+        self.snmp_client = SNMPv3Client(host=self.host,
+                                        port=self.port,
+                                        auth=self.auth,
+                                        log=self.log)
+
+    def on(self, *outlets, after=None):
+        """ To turn on the powercycler
+        """
+
+        ret = []
+        if after and not isinstance(after, int):
+            raise TypeError('"after" should be an int')
+
+        if after:
+            time.sleep(after)
+
+        for outlet in outlets:
+            outlet_id = '.'.join([self.oid, str(outlet)])
+            result = self.snmp_client.snmp_set(oid=outlet_id,
+                                               value=self.on_state,
+                                               type='Integer')
+            ret.extend(result)
+        return ret
+
+    def off(self, *outlets, after=None):
+        """ To turn off the powercycler
+        """
+
+        ret = []
+        if isinstance(after, int):
+            raise TypeError('"after" should be an int')
+
+        if after:
+            time.sleep(after)
+
+        for outlet in outlets:
+            outlet_id = '.'.join([self.oid, str(outlet)])
+            result = self.snmp_client.snmp_set(oid=outlet_id,
+                                               value=self.off_state,
+                                               type='Integer')
+            ret.extend(result)
+        return ret
+
+    def get_state(self, *outlets):
+        """ To get the powercycler state
+        """
 
         outlet_ids = []
         for outlet in outlets:
