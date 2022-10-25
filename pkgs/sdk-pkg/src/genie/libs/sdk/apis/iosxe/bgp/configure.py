@@ -606,9 +606,13 @@ def configure_shut_bgp_neighbors(
 
     if neighbors:
         if noshut:
+	    if vrf:
+		cmd += "address-family {} vrf {}".format(address_family, vrf
             for neighbor in neighbors:
                 cmd += "no neighbor {} shutdown".format(neighbor)
         else:
+	    if vrf:
+		cmd += "address-family {} vrf {}".format(address_family, vrf							 
             for neighbor in neighbors:
                 cmd += "neighbor {} shutdown".format(neighbor)
         try:
