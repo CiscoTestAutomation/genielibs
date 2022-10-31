@@ -10,7 +10,7 @@ class TestConfigureBootSystemSwitchAllFlash(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          stack12-gala-1:
+          n08HA:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,11 +18,11 @@ class TestConfigureBootSystemSwitchAllFlash(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: c9300
-            type: c9300
+            platform: c9500
+            type: c9500
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['stack12-gala-1']
+        self.device = self.testbed.devices['n08HA']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,6 @@ class TestConfigureBootSystemSwitchAllFlash(unittest.TestCase):
         )
 
     def test_configure_boot_system_switch_all_flash(self):
-        result = configure_boot_system_switch_all_flash(self.device, 'cat9k_iosxe.BLD_V179_THROTTLE_LATEST_20220618_072045.SSA.bin')
+        result = configure_boot_system_switch_all_flash(self.device, 'ctest.bin')
         expected_output = None
         self.assertEqual(result, expected_output)

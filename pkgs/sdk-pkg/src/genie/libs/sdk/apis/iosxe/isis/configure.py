@@ -230,3 +230,329 @@ def unconfig_interface_isis_router_name(device, interface, router_name):
             "Could not configure isis {router_name} on interface {interface} on {hostname}"
             .format(hostname=device.hostname, router_name=router_name, interface=interface, e=e)
             )
+
+def configure_isis_keychain_key(device, keychain_name, key_id, text):
+    """ Configures the authentication string for a key on a key-chain
+        Args:
+            device('obj'): device to configure on
+            keychain_name ('str'): name of the key chain
+            key_id('int'): id of the key on key chain (Range 0-2147483647)
+            text('str'): The unencrypted user password (Maximum 80 characters)
+        Return:
+            N/A
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    log.info(
+        "Configuring isis key with key-string on {hostname}".format(
+            hostname=device.hostname 
+        )
+    )
+    config = []
+    config.append('key  chain {name}'.format(name=keychain_name))
+    config.append('key {id}'.format(id=key_id))
+    config.append('key-string {text}'.format(text=text))
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(
+            "Could not configure isis with key-string on device {dev}. Error:\n{error}".format(
+                dev=device.name,
+                error=e
+            )
+        )
+
+def unconfigure_isis_keychain_key(device, keychain_name):
+    """ Unconfigures the isis key chain
+        Args:
+            device('obj'): device to configure on
+            keychain_name ('str'): name of the key chain
+        Return:
+            N/A
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    log.info(
+        "Unconfiguring isis key chain {name} on {hostname}".format(
+            name=keychain_name,
+            hostname=device.hostname 
+        )
+    )
+    try:
+        device.configure("no key chain {name}".format(name=keychain_name))
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(
+            "Could not unconfigure isis key chain {name} on device {dev}. Error:\n{error}".format(
+                name=keychain_name,
+                dev=device.name,
+                error=e
+            )
+        )
+
+def configure_isis_authentication_mode(device, interface, mode, level=None):
+    """ Configures the ISIS authentication mode
+        Args:
+            device('obj'): device to configure on
+            interface ('str'): name of the interface
+            mode('str'): Authentication mode for PDUs (md5 or text)
+            level('str'): Level for ISIS authentication (level-1 or level-2)
+        Return:
+            N/A
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    log.info(
+        "Configuring isis authentication mode {mode} on {dev}".format(
+            mode=mode,
+            dev=device.name
+        )
+    )
+    config = []
+    config.append('interface {interface}'.format(interface=interface))
+    if level==None:
+        config.append('isis authentication mode {mode}'.format(mode=mode))
+    else:
+        config.append('isis authentication mode {mode} {level}'.format(mode=mode, level=level))
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(
+            "Could not configure isis authentication mode {mode} on device {dev}. Error:\n{error}".format(
+                mode=mode,
+                dev=device.name,
+                error=e
+            )
+        )
+
+def unconfigure_isis_authentication_mode(device, interface, mode, level=None):
+    """ Unconfigures the ISIS authentication mode
+        Args:
+            device('obj'): device to configure on
+            interface ('str'): name of the interface
+            mode('str'): Authentication mode for PDUs (md5 or text)
+            level('str'): Level for ISIS authentication (level-1 or level-2)
+        Return:
+            N/A
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    log.info(
+        "Unconfiguring isis authentication mode {mode} on {dev}".format(
+            mode=mode,
+            dev=device.name
+        )
+    )
+    config = []
+    config.append('interface {interface}'.format(interface=interface))
+    if level==None:
+        config.append('no isis authentication mode {mode}'.format(mode=mode))
+    else:
+        config.append('no isis authentication mode {mode} {level}'.format(mode=mode, level=level))
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(
+            "Could not unconfigure isis authentication mode {mode} on device {dev}. Error:\n{error}".format(
+                mode=mode,
+                dev=device.name,
+                error=e
+            )
+        )
+
+def configure_isis_authentication_key_chain(device, interface, key_chain_name):
+    """ Configures the ISIS authentication Key-chain
+        Args:
+            device('obj'): device to configure on
+            interface ('str'): name of the interface
+            key_chain_name('str'): Name of the key-chain
+        Return:
+            N/A
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    log.info(
+        "Configuring isis authentication key-chain {name} on {dev}".format(
+            name=key_chain_name,
+            dev=device.name
+        )
+    )
+    config = []
+    config.append('interface {interface}'.format(interface=interface))
+    config.append('isis authentication key-chain {name}'.format(name=key_chain_name))
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(
+            "Could not configure isis authentication key-chain {name} on device {dev}. Error:\n{error}".format(
+                name=key_chain_name,
+                dev=device.name,
+                error=e
+            )
+        )
+
+def unconfigure_isis_authentication_key_chain(device, interface, key_chain_name):
+    """ Unconfigures the ISIS authentication Key-chain
+        Args:
+            device('obj'): device to configure on
+            interface ('str'): name of the interface
+            key_chain_name('str'): Name of the key-chain
+        Return:
+            N/A
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    log.info(
+        "Unconfiguring isis authentication key-chain {name} on {dev}".format(
+            name=key_chain_name,
+            dev=device.name
+        )
+    )
+    config = []
+    config.append('interface {interface}'.format(interface=interface))
+    config.append('no isis authentication key-chain {name}'.format(name=key_chain_name))
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(
+            "Could not unconfigure isis authentication key-chain {name} on device {dev}. Error:\n{error}".format(
+                name=key_chain_name,
+                dev=device.name,
+                error=e
+            )
+        )
+
+def configure_isis_circuit_type(device, interface, level=None):
+    """ Configures the ISIS ciruit type
+        Args:
+            device('obj'): device to configure on
+            interface ('str'): name of the interface
+            level('str'): level for ISIS circuit type (level-1, level-1-2 or level-2-only)
+        Return:
+            N/A
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    log.info(
+        "Configuring isis circuit-type on interface {interface} on {dev}".format(
+            interface=interface,
+            dev=device.name
+        )
+    )
+    config = []
+    config.append('interface {interface}'.format(interface=interface))
+    if level==None:
+        config.append('isis circuit-type')
+    else:
+        config.append('isis circuit-type {level}'.format(level=level))
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(
+            "Could not configure isis circuit-type on interface {interface} on device {dev}. Error:\n{error}".format(
+                interface=interface,
+                dev=device.name,
+                error=e
+            )
+        )
+
+def unconfigure_isis_circuit_type(device, interface):
+    """ Unconfigures the ISIS ciruit type
+        Args:
+            device('obj'): device to configure on
+            interface ('str'): name of the interface
+        Return:
+            N/A
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    log.info(
+        "Unconfiguring isis circuit-type on interface {interface} on {dev}".format(
+            interface=interface,
+            dev=device.name
+        )
+    )
+    config = []
+    config.append('interface {interface}'.format(interface=interface))
+    config.append('no isis circuit-type')
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(
+            "Could not unconfigure isis circuit-type on interface {interface} on device {dev}. Error:\n{error}".format(
+                interface=interface,
+                dev=device.name,
+                error=e
+            )
+        )
+
+def configure_isis_password(device, interface, password):
+    """ Configures the ISIS password
+        Args:
+            device('obj'): device to configure on
+            interface ('str'): name of the interface
+            password('str'): password for ISIS
+        Return:
+            N/A
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    log.info(
+        "Configuring isis password on {interface} on {dev}".format(
+            interface=interface,
+            dev=device.name
+        )
+    )
+    config = []
+    config.append('interface {interface}'.format(interface=interface))
+    config.append('isis password {pwd}'.format(pwd=password))
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(
+            "Could not configure isis password on interface {interface} on device {dev}. Error:\n{error}".format(
+                interface=interface,
+                dev=device.name,
+                error=e
+            )
+        )
+
+def unconfigure_isis_password(device, interface, password):
+    """ Unconfigures the ISIS password
+        Args:
+            device('obj'): device to configure on
+            interface ('str'): name of the interface
+            password('str'): password for ISIS
+        Return:
+            N/A
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    log.info(
+        "Unconfiguring isis password on {interface} on {dev}".format(
+            interface=interface,
+            dev=device.name
+        )
+    )
+    config = []
+    config.append('interface {interface}'.format(interface=interface))
+    config.append('no isis password {pwd}'.format(pwd=password))
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(
+            "Could not unconfigure isis password on interface {interface} on device {dev}. Error:\n{error}".format(
+                interface=interface,
+                dev=device.name,
+                error=e
+            )
+        )

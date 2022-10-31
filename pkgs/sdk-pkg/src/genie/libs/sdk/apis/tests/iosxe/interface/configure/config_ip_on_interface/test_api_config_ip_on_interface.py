@@ -29,6 +29,11 @@ class TestConfigIpOnInterface(unittest.TestCase):
         )
 
     def test_config_ip_on_interface(self):
-        result = config_ip_on_interface(self.device, 'Fi1/0/5', '14.1.1.2', '255.255.255.0', None, None, None, None, False, False, 'WAN-VRFv4')
+        result = config_ip_on_interface(self.device, 'Fi1/0/5', '14.1.1.2', '255.255.255.0', None, None, None, None, False, False, '', 'WAN-VRFv4')
         expected_output = None
+        self.assertEqual(result, expected_output)
+
+    def test_config_duplicate_ip_on_interface(self):
+        result = config_ip_on_interface(self.device, 'Fi1/0/5', '14.1.1.4', '255.255.255.0', None, None, None, None, False, False, '', 'WAN-VRFv4')
+        expected_output = ['% 14.1.1.0 overlaps with Fi1/0/6', '% 14.1.1.0 overlaps with Fi1/0/6']
         self.assertEqual(result, expected_output)

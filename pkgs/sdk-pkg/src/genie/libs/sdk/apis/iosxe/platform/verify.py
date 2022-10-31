@@ -16,7 +16,6 @@ from genie.libs.sdk.apis.iosxe.platform.get import get_diffs_platform
 # Logger
 log = logging.getLogger(__name__)
 
-
 def is_platform_slot_in_state(device, slot, state="ok, active", max_time=1200,
     interval=120):
     """ Verify if slot is in state
@@ -90,7 +89,6 @@ def verify_changes_platform(device, platform_before, platform_after,
         timeout.sleep()
 
     return False
-
 
 def verify_file_exists(device, file, size=None, dir_output=None):
     '''Verify that the given file exist on device with the same name and size
@@ -168,7 +166,6 @@ def verify_boot_variable(device, boot_images, output=None):
                  format(boot_images))
         return False
 
-
 def verify_config_register(device, config_register, next_reload=False,
     output=None):
     ''' Check current config register value
@@ -187,7 +184,6 @@ def verify_config_register(device, config_register, next_reload=False,
         log.error("Configuration register value '{}' is incorrect".\
                   format(value))
         return False
-
 
 def verify_module_status(device, timeout=180, interval=30, ignore_modules=None):
     ''' Check status of slot using 'show platform'
@@ -378,116 +374,126 @@ def verify_platform_details(device,
                             expected_sw_ver= None,
                             max_time=15,
                             check_interval=5):
-                         
     """Verify  verify platform details in device
         Args:
             device (`obj`): Device object
-            expected_hw_ver('str'): Expected hardware version. Default to None if no inputs
-            expected_mac_address('str'): Expected mac_address. Default to None if no inputs
-            expected_model_name('str'): Expected model name. Default to None if no inputs
-            expected_ports('str'):Expected ports. Default to None if no inputs
-            expected_slot('str'): Expected slot. Default to None if no inputs
-            expected_sn('str'): Expected serial number . Default to None if no inputs
-            expected_sw_ver('str'): Expected software version. Default to None if no inputs
-            max_time (`int`, Optional): Max time, default: 60 seconds
-            check_interval (`int`, Optional): Check interval, default: 10 seconds
+            expected_hw_ver ('str'): Expected hardware version. Default to None if no inputs
+            expected_mac_address ('str'): Expected mac_address. Default to None if no inputs
+            expected_model_name ('str'): Expected model name. Default to None if no inputs
+            expected_ports ('str'): Expected ports. Default to None if no inputs
+            expected_slot ('str'): Expected slot. Default to None if no inputs
+            expected_sn ('str'): Expected serial number . Default to None if no inputs
+            expected_sw_ver ('str'): Expected software version. Default to None if no inputs
+            max_time (`int`, Optional): Max time, default: 15 seconds
+            check_interval (`int`, Optional): Check interval, default: 5 seconds
         Returns:
-            result (`bool`): Verified result
+            result ('bool'): Verified result
         Raises:
             N/A
     """
-    
     timeout = Timeout(max_time, check_interval)
-    
     while timeout.iterate():
         try:
-            platform_details = device.parse('show platform')
+            out = device.parse('show platform')
         except SchemaEmptyParserError as e:
             timeout.sleep()
             continue
 
         platform_details_result = True
-        log.info("Verify if 'Expected platform_details' is Equal-to 'Actual platform_details' on device i.e {}".format(device.name))
 
-        if expected_hw_ver:
-            platform_details_hw_ver = platform_details.q.contains('rp').get_values('hw_ver', 0)
-
-            log.info(" *Expected_hw_ver: {} , Actual platform_details_hw_ver: {}".format(expected_hw_ver,platform_details_hw_ver))
-            if (expected_hw_ver) and (platform_details_hw_ver) != (expected_hw_ver):
-                
-                log.error("expected_hw_ver is NOT-EQUAL to 'platform_details_hw_ver' present in device '{}'".format(device.name))
-                platform_details_result = False
-            else:
-                log.info("expected_hw_ver is EQUAL-TO 'platform_details_hw_ver' present in device '{}'".format(device.name))                    
-           
-        if expected_mac_address:
-            platform_details_mac_address = platform_details.q.contains('rp').get_values('mac_address', 0)
-
-            log.info(" *Expected_mac_address: {} , Actual platform_details_mac_address : {}".format(expected_mac_address,platform_details_mac_address))
-            if (expected_mac_address) and (platform_details_mac_address) != (expected_mac_address):
-                
-                log.error("expected_mac_address is NOT-EQUAL to 'platform_details_mac_address' present in device '{}'".format(device.name))
-                platform_details_result = False
-            else:
-                log.info("expected_mac_address is EQUAL-TO 'platform_details_mac_address' present in device '{}'".format(device.name))   
-
-        if expected_model_name:
-            platform_details_model_name = platform_details.q.contains('rp').get_values('name', 0)
-            
-            log.info(" *Expected_model_name: {} , Actual platform_details_model_name : {}".format(expected_model_name,platform_details_model_name))
-            if (expected_model_name) and (platform_details_model_name) != (expected_model_name):
-                
-                log.error("expected_model_name is NOT-EQUAL to 'platform_details_model_name' present in device '{}'".format(device.name))
-                platform_details_result = False
-            else:
-                log.info("expected_model_name is EQUAL-TO 'platform_details_model_name' present in device '{}'".format(device.name))
-             
-        if expected_ports:
-            platform_details_ports = platform_details.q.contains('rp').get_values('ports', 0)
-
-            log.info(" *Expected_ports: {} , Actual platform_details_ports : {}".format(expected_ports,platform_details_ports))
-            if (expected_ports) and (platform_details_ports) != (expected_ports):
-                # timeout.sleep()
-                log.error("expected_ports is NOT-EQUAL to 'platform_details_ports' present in device '{}'".format(device.name))
-                platform_details_result = False
-            else:
-                log.info("expected_ports is EQUAL-TO 'platform_details_ports' present in device '{}'".format(device.name))
-              
-        if expected_slot:
-            platform_details_slot = platform_details.q.contains('rp').get_values('slot', 0)
-
-            log.info(" *Expected_slot: {} , Actual platform_details_slot : {}".format(expected_slot,platform_details_slot))
-            if (expected_slot) and (platform_details_slot) != (expected_slot):
-                # timeout.sleep()
-                log.error("expected_slot is NOT-EQUAL to 'platform_details_slot' present in device '{}'".format(device.name))
-               
-                platform_details_result = False
-            else:
-                log.info("expected_slot is EQUAL-TO 'platform_details_slot' present in device '{}'".format(device.name))
-            
-        if expected_sn:
-            platform_details_sn = platform_details.q.contains('rp').get_values('sn', 0)
-
-            log.info(" *Expected_sn: {} , Actual platform_details_sn : {}".format(expected_sn,platform_details_sn))
-            if (expected_sn) and (platform_details_sn) != (expected_sn):
-                
-                log.error("expected_sn is NOT-EQUAL to 'platform_details_sn' present in device '{}'".format(device.name))
-                platform_details_result = False
-            else:
-                log.info("expected_sn is EQUAL-TO 'platform_details_sn' present in device '{}'".format(device.name))
+        expected_platform_details ={
+            'hw_ver': expected_hw_ver, 
+            'mac_address': expected_mac_address,
+            'name': expected_model_name, 
+            'ports': expected_ports,
+            'slot': expected_slot, 
+            'sn': expected_sn,
+            'sw_ver':expected_sw_ver
+        }
         
-        if expected_sw_ver:
-            platform_details_sw_ver = platform_details.q.contains('rp').get_values('sw_ver', 0)
+        log.info("Verify if 'Expected platform_details' is Equal-to 'Actual platform_details' on device i.e {}".format(device.name))
+        for platform_details, platform_details_value  in expected_platform_details.items():
+            if platform_details_value:
+                actual_platform_details = out.q.contains('rp').get_values(platform_details, 0)
 
-            log.info(" *Expected_sw_ver: {} , Actual platform_details_sw_ver : {}".format(expected_sw_ver,platform_details_sw_ver))
-            if (expected_sw_ver) and (platform_details_sw_ver) != (expected_sw_ver):
-                
-                log.error("expected_sw_ver is NOT-EQUAL to 'platform_details_sw_ver' present in device '{}'".format(device.name))
-                platform_details_result = False
-            else:
-                log.info("expected_sw_ver is EQUAL-TO 'platform_details_sw_ver' present in device '{}'".format(device.name))
-                
+                log.info(f"*Expected '{platform_details} is': {platform_details_value} , Actual '{platform_details} is': {actual_platform_details}")
+                if (platform_details_value) and (actual_platform_details) != platform_details_value:
+                    log.error(f"Expected '{platform_details} ' is NOT-EQUAL to '{platform_details}' present in device '{device.name}'")
+                    platform_details_result = False
+                else:
+                    log.info(f"Expected '{platform_details}' is EQUAL-TO '{platform_details}' present in device '{device.name}'")
+        
         if platform_details_result:
             return True
+
+        timeout.sleep()
+
+    return False
+
+def verify_number_of_interfaces(device,     
+                            expected_fast_ethernet=None,
+                            expected_gigabit_ethernet=None,
+                            expected_two_gigabit_ethernet=None,
+                            expected_five_gigabit_ethernet = None,
+                            expected_ten_gigabit_ethernet= None,
+                            expected_virtual_ethernet= None,
+                            max_time=15,
+                            check_interval=5):
+    """ Verify  verify number of interfaces in device
+        Args:
+            device (`obj`): Device object
+            expected_fast_ethernet ('str'): Expected fast ethernet interfaces. 
+            Default to None if no inputs
+            expected_gigabit_ethernet ('str'): Expected gigabit ethernet interfaces.
+            Default to None if no inputs
+            expected_two_gigabit_ethernet ('str'): Expected 2.5 gigabit ethernet interfaces. 
+            Default to None if no inputs
+            expected_five_gigabit_ethernet ('str'): Expected five gigabit ethernet interfaces. 
+            Default to None if no inputs
+            expected_ten_gigabit_ethernet ('str'): Expected ten gigabit ethernet interfaces. 
+            Default to None if no inputs
+            expected_virtual_ethernet ('str'): Expected virtual gigabit ethernet interfaces. 
+            Default to None if no inputs
+            max_time ('int', Optional): Max time, default: 15 seconds
+            check_interval ('int', Optional): Check interval, default: 5 seconds
+        Returns:
+            result ('bool'): Verified result
+        Raises:
+            N/A
+    """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            out = device.parse('show version')
+        except SchemaEmptyParserError as e:
+            timeout.sleep()
+            continue
+
+        number_of_intfs_result = True
+
+        expected_ethernet_interfaces ={
+            'FastEthernet': expected_fast_ethernet, 
+            'Gigabit Ethernet': expected_gigabit_ethernet,
+            '2.5 Gigabit Ethernet': expected_two_gigabit_ethernet, 
+            'Five Gigabit Ethernet': expected_five_gigabit_ethernet,
+            'Ten Gigabit Ethernet': expected_ten_gigabit_ethernet, 
+            'Virtual Ethernet': expected_virtual_ethernet
+        }
+
+        log.info("Verify if 'Expected number_of_interfaces' is Equal-to 'Actual number_of_interfaces' on  device i.e {}".format(device.name))
+        for type_of_intfs, ethernet_interfaces  in expected_ethernet_interfaces.items():
+            if ethernet_interfaces:
+                number_of_intfs = out.q.contains('version').contains('number_of_intfs').get_values(type_of_intfs, 0)
+
+                log.info(f"*Expected '{type_of_intfs} interfaces': {ethernet_interfaces} , Actual '{type_of_intfs} interfaces': {number_of_intfs}")
+                if (ethernet_interfaces) and (number_of_intfs) != ethernet_interfaces:
+                    log.error(f"Expected '{type_of_intfs} interfaces' is NOT-EQUAL to '{type_of_intfs} interfaces' present in device '{device.name}'")
+                    number_of_intfs_result = False
+                else:
+                    log.info(f"Expected '{type_of_intfs} interfaces' is EQUAL-TO '{type_of_intfs} interfaces' present in device '{device.name}'")
+
+        if number_of_intfs_result:
+            return True
+        timeout.sleep()
 
     return False

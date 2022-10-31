@@ -25,8 +25,196 @@ format1 = {
 request1 = {
   'nodes': [
         {
+            'edit-op': 'create',
             'datatype': 'leafref',
+            'value': 'default',
+            'xpath': '/oc-netinst:network-instances/oc-netinst:network-instance[name="default"]' # noqa
+        },
+        {
+            'edit-op': 'create',
+            'datatype': 'string',
             'nodetype': 'leaf',
+            'value': 'default',
+            'xpath': '/oc-netinst:network-instances/oc-netinst:network-instance[name="default"]/oc-netinst:config/oc-netinst:name' # noqa
+        },
+        {
+            'edit-op': 'create',
+            'datatype': 'leafref',
+            'xpath': '/oc-netinst:network-instances/oc-netinst:network-instance[name="default"]/oc-netinst:protocols/oc-netinst:protocol[identifier="oc-pol-types:OSPF"][name="100"]' # noqa
+        },
+        {
+            'edit-op': 'create',
+            'datatype': 'identityref',
+            'nodetype': 'leaf',
+            'value': 'oc-pol-types:OSPF',
+            'xpath': '/oc-netinst:network-instances/oc-netinst:network-instance[name="default"]/oc-netinst:protocols/oc-netinst:protocol[identifier="oc-pol-types:OSPF"][name="100"]/oc-netinst:config/oc-netinst:identifier' # noqa
+        },
+        {
+            'edit-op': 'create',
+            'datatype': 'string',
+            'nodetype': 'leaf',
+            'value': '100',
+            'xpath': '/oc-netinst:network-instances/oc-netinst:network-instance[name="default"]/oc-netinst:protocols/oc-netinst:protocol[identifier="oc-pol-types:OSPF"][name="100"]/oc-netinst:config/oc-netinst:name' # noqa
+        },
+        {
+            'edit-op': 'create',
+            'datatype': 'leafref',
+            'xpath': '/oc-netinst:network-instances/oc-netinst:network-instance[name="default"]/oc-netinst:protocols/oc-netinst:protocol[identifier="oc-pol-types:OSPF"][name="100"]/oc-netinst:bgp/oc-netinst:neighbors/oc-netinst:neighbor[neighbor-address="1.1.1.1"]' # noqa
+        },
+        {
+            'edit-op': 'create',
+            'datatype': 'union',
+            'nodetype': 'leaf',
+            'value': '1.1.1.1',
+            'xpath': '/oc-netinst:network-instances/oc-netinst:network-instance[name="default"]/oc-netinst:protocols/oc-netinst:protocol[identifier="oc-pol-types:OSPF"][name="100"]/oc-netinst:bgp/oc-netinst:neighbors/oc-netinst:neighbor[neighbor-address="1.1.1.1"]/oc-netinst:config/oc-netinst:neighbor-address' # noqa
+        }
+    ],
+    'namespace_modules': {
+        'oc-netinst': 'openconfig-network-instance',
+        'oc-pol-types': 'openconfig-policy-types'
+    },
+    'namespace': {
+        'ianaift': 'urn:ietf:params:xml:ns:yang:iana-if-type',
+        'ietf-if': 'urn:ietf:params:xml:ns:yang:ietf-interfaces',
+        'if': 'urn:ietf:params:xml:ns:yang:ietf-interfaces',
+        'ift': 'urn:ietf:params:xml:ns:yang:iana-if-type',
+        'oc-eth': 'http://openconfig.net/yang/interfaces/ethernet',
+        'oc-ext': 'http://openconfig.net/yang/openconfig-ext',
+        'oc-if': 'http://openconfig.net/yang/interfaces',
+        'oc-inet': 'http://openconfig.net/yang/types/inet',
+        'oc-ip': 'http://openconfig.net/yang/interfaces/ip',
+        'oc-ip-ext': 'http://openconfig.net/yang/interfaces/ip-ext',
+        'oc-lag': 'http://openconfig.net/yang/interfaces/aggregate',
+        'oc-types': 'http://openconfig.net/yang/openconfig-types',
+        'oc-vlan': 'http://openconfig.net/yang/vlan',
+        'oc-vlan-types': 'http://openconfig.net/yang/vlan-types',
+        'oc-yang': 'http://openconfig.net/yang/types/yang',
+        'xr': 'http://cisco.com/ns/yang/cisco-oc-xr-mapping',
+        'oc-netinst': 'http://openconfig.net/yang/network-instance',
+        'oc-pol-types': 'http://openconfig.net/yang/policy-types'
+    }
+}
+
+json_decoded = {
+  'update':
+  [
+    {
+      'path':
+      {
+        'origin': 'openconfig',
+        'elem':
+        [
+          {
+            'name': 'network-instances'
+          },
+          {
+            'name': 'network-instance',
+            'key':
+            {
+              'name': 'default'
+            }
+          }
+        ]
+      }
+    },
+    {
+      'path':
+      {
+        'origin': 'openconfig', 'elem':
+        [
+          {
+            'name': 'network-instances'
+          },
+          {
+            'name': 'network-instance',
+            'key':
+            {
+              'name': 'default'
+            }
+          },
+          {
+            'name': 'protocols'
+          },
+          {
+            'name': 'protocol',
+            'key':
+            {
+              'identifier': 'OSPF',
+              'name': '100'
+            }
+          }
+        ]
+      }
+    },
+    {
+      'path':
+      {
+        'origin': 'openconfig',
+        'elem':
+        [
+          {
+            'name': 'network-instances'
+          },
+          {
+            'name': 'network-instance',
+            'key':
+            {
+              'name': 'default'
+            }
+          },
+          {
+            'name': 'protocols'
+          },
+          {
+            'name': 'protocol',
+            'key':
+            {
+              'identifier': 'OSPF',
+              'name': '100'
+            }
+          },
+          {
+            'name': 'bgp'
+          },
+          {
+            'name': 'neighbors'
+          },
+          {
+            'name': 'neighbor',
+            'key':
+            {
+              'neighbor-address': '1.1.1.1'
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
+
+json_val_decoded_oc_1 = {
+  'config': {
+    'name': 'default'
+    }
+  }
+
+json_val_decoded_oc_2 = {
+  'config': {
+    'identifier': 'OSPF',
+    'name': '100'
+    }
+  }
+
+json_val_decoded_oc_3 = {
+  'config': {
+    'neighbor-address': '1.1.1.1'
+    }
+  }
+
+request_no_edit_op = {
+  'nodes': [
+        {
+            'edit-op': 'replace',
             'value': 'default',
             'xpath': '/oc-netinst:network-instances/oc-netinst:network-instance[name="default"]' # noqa
         },
@@ -37,15 +225,7 @@ request1 = {
             'xpath': '/oc-netinst:network-instances/oc-netinst:network-instance[name="default"]/oc-netinst:config/oc-netinst:name' # noqa
         },
         {
-            'datatype': 'leafref',
-            'nodetype': 'leaf',
-            'value': 'oc-pol-types:OSPF',
-            'xpath': '/oc-netinst:network-instances/oc-netinst:network-instance[name="default"]/oc-netinst:protocols/oc-netinst:protocol[identifier="oc-pol-types:OSPF"][name="100"]' # noqa
-        },
-        {
-            'datatype': 'leafref',
-            'nodetype': 'leaf',
-            'value': '100',
+            'edit-op': 'replace',
             'xpath': '/oc-netinst:network-instances/oc-netinst:network-instance[name="default"]/oc-netinst:protocols/oc-netinst:protocol[identifier="oc-pol-types:OSPF"][name="100"]' # noqa
         },
         {
@@ -61,9 +241,7 @@ request1 = {
             'xpath': '/oc-netinst:network-instances/oc-netinst:network-instance[name="default"]/oc-netinst:protocols/oc-netinst:protocol[identifier="oc-pol-types:OSPF"][name="100"]/oc-netinst:config/oc-netinst:name' # noqa
         },
         {
-            'datatype': 'leafref',
-            'nodetype': 'leaf',
-            'value': '1.1.1.1',
+            'edit-op': 'replace',
             'xpath': '/oc-netinst:network-instances/oc-netinst:network-instance[name="default"]/oc-netinst:protocols/oc-netinst:protocol[identifier="oc-pol-types:OSPF"][name="100"]/oc-netinst:bgp/oc-netinst:neighbors/oc-netinst:neighbor[neighbor-address="1.1.1.1"]' # noqa
         },
         {
@@ -99,84 +277,156 @@ request1 = {
     }
 }
 
-json_decoded = {
-  'update': [
+json_decoded_no_edit_op = {
+  'replace':
+  [
     {
-      'path': {
-        'elem': [
+      'path':
+      {
+        'origin': 'openconfig',
+        'elem':
+        [
           {
             'name': 'network-instances'
           },
           {
-            'key': {
+            'name': 'network-instance',
+            'key':
+            {
               'name': 'default'
-            },
-            'name': 'network-instance'
+            }
           }
-        ],
-        'origin': 'openconfig'
+        ]
+      }
+    },
+    {
+      'path':
+      {
+        'origin': 'openconfig', 'elem':
+        [
+          {
+            'name': 'network-instances'
+          },
+          {
+            'name': 'network-instance',
+            'key':
+            {
+              'name': 'default'
+            }
+          },
+          {
+            'name': 'protocols'
+          },
+          {
+            'name': 'protocol',
+            'key':
+            {
+              'identifier': 'OSPF',
+              'name': '100'
+            }
+          }
+        ]
+      }
+    },
+    {
+      'path':
+      {
+        'origin': 'openconfig',
+        'elem':
+        [
+          {
+            'name': 'network-instances'
+          },
+          {
+            'name': 'network-instance',
+            'key':
+            {
+              'name': 'default'
+            }
+          },
+          {
+            'name': 'protocols'
+          },
+          {
+            'name': 'protocol',
+            'key':
+            {
+              'identifier': 'OSPF',
+              'name': '100'
+            }
+          },
+          {
+            'name': 'bgp'
+          },
+          {
+            'name': 'neighbors'
+          },
+          {
+            'name': 'neighbor',
+            'key':
+            {
+              'neighbor-address': '1.1.1.1'
+            }
+          }
+        ]
       }
     }
   ]
 }
 
-json_val_decoded = {
+json_val_no_edit_op_1 = {
   'config': {
     'name': 'default'
-  },
-  'protocols': {
-    'protocol': {
-      'bgp': {
-        'neighbors': {
-          'neighbor': {
-            'config': {
-              'neighbor-address': '1.1.1.1'
-            },
-            'neighbor-address': '1.1.1.1'
-          }
-        }
-      },
-      'config': {
-        'identifier': 'OSPF',
-        'name': '100'
-      },
-      'identifier': 'OSPF',
-      'name': '100'
     }
   }
-}
+
+json_val_no_edit_op_2 = {
+  'config': {
+    'identifier': 'OSPF',
+    'name': '100'
+    }
+  }
+
+json_val_no_edit_op_3 = {
+  'config': {
+    'neighbor-address': '1.1.1.1'
+    }
+  }
 
 json_decoded2 = {
-  'update': [
-    {
-      'path': {
-        'elem': [
+  'update':
+  [
+    {'path':
+      {
+        'origin': 'openconfig',
+        'elem':
+        [
           {
             'name': 'interfaces'
           },
           {
-            'key': {
+            'name': 'interface',
+            'key':
+            {
               'name': 'TenGigabitEthernet1/0/1'
-              },
-            'name': 'interface'
+            }
           },
           {
             'name': 'ethernet'
           },
           {
             'name': 'config'
+          },
+          {
+            'name': 'enable-flow-control'
           }
-        ],
-        'origin': 'openconfig'
-      },
-      'val': {
-        'jsonVal': 'eyJlbmFibGUtZmxvdy1jb250cm9sIjogdHJ1ZX0='
+        ]
       }
     }
   ]
 }
 
-json_val_decoded2 = {'enable-flow-control': True}
+json_val_decoded2 = True
 
 format2 = {
     'encoding': 'JSON_IETF',
@@ -301,12 +551,6 @@ format4 = {
 request4 = {
     'nodes': [
     {
-        'datatype': 'leafref',
-        'default': '',
-        'nodetype': 'leaf',
-        'xpath': '/oc-if:interfaces/oc-if:interface[name="TenGigabitEthernet1/0/1"]' # noqa
-    },
-    {
         'datatype': 'boolean',
         'default': 'false',
         'name': 'enable-flow-control',
@@ -397,25 +641,47 @@ format5 = {
     'origin': ''
 }
 
-request_multiple_list = {
+request_multiple_list_replace = {
   'nodes': [
         {
+            'edit-op': 'replace',
             'datatype': 'uint32',
             'nodetype': 'leaf',
             'value': '10',
             'xpath': '/top:System/top:igmp-items/top:inst-items/top:dom-items/top:Dom-list[top:name="default"]/top:eventHist-items/top:EventHistory-list[top:type="nbm"]/top:size'
         },
         {
+            'edit-op': 'replace',
             'datatype': 'uint32',
             'nodetype': 'leaf',
-            'value': '10',
+            'value': '20',
             'xpath': '/top:System/top:igmp-items/top:inst-items/top:dom-items/top:Dom-list[top:name="default"]/top:eventHist-items/top:EventHistory-list[top:type="intfDebugs"]/top:size'
         },
+
+    ],
+    'namespace_modules': {
+        'top': 'http://cisco.com/ns/yang/cisco-nx-os-device'
+    },
+    'namespace': {
+        'top': 'http://cisco.com/ns/yang/cisco-nx-os-device'
+    }
+}
+
+request_multiple_list = {
+  'nodes': [
         {
+            'edit-op': 'create',
             'datatype': 'uint32',
             'nodetype': 'leaf',
             'value': '10',
-            'xpath': '/top:System/top:igmp-items/top:inst-items/top:dom-items/top:Dom-list[top:name="default"]/top:eventHist-items/top:EventHistory-list[top:type="vrf"]/top:size'
+            'xpath': '/top:System/top:igmp-items/top:inst-items/top:dom-items/top:Dom-list[top:name="default"]/top:eventHist-items/top:EventHistory-list[top:type="nbm"]/top:size'
+        },
+        {
+            'edit-op': 'create',
+            'datatype': 'uint32',
+            'nodetype': 'leaf',
+            'value': '20',
+            'xpath': '/top:System/top:igmp-items/top:inst-items/top:dom-items/top:Dom-list[top:name="default"]/top:eventHist-items/top:EventHistory-list[top:type="intfDebugs"]/top:size'
         },
 
     ],
@@ -430,6 +696,45 @@ request_multiple_list = {
 json_decoded_multiple_list = {
   'update':
   [
+    {'path':
+      {
+        'elem':
+        [
+          {
+            'name': 'System'
+          }, 
+          {
+            'name': 'igmp-items'
+          }, 
+          {
+            'name': 'inst-items'
+          },
+          {
+            'name': 'dom-items'
+          },
+          {
+            'name': 'Dom-list',
+            'key':
+            {
+              'name': 'default'
+            }
+          },
+          {
+            'name': 'eventHist-items'
+          },
+          {
+            'name': 'EventHistory-list',
+            'key':
+            {
+              'type': 'nbm'
+            }
+          },
+          {
+            'name': 'size'
+          }
+        ]
+      }
+    },
     {
       'path':
       {
@@ -456,6 +761,16 @@ json_decoded_multiple_list = {
           },
           {
             'name': 'eventHist-items'
+          },
+          {
+            'name': 'EventHistory-list',
+            'key':
+            {
+              'type': 'intfDebugs'
+            }
+          },
+          {
+            'name': 'size'
           }
         ]
       }
@@ -463,22 +778,93 @@ json_decoded_multiple_list = {
   ]
 }
 
-json_val_decoded_multiple_list = {
-  'EventHistory-list':
+json_decoded_multiple_list_replace = {
+  'replace':
   [
-    {
-    'type': 'nbm',
-    'size': 10
+    {'path':
+      {
+        'elem':
+        [
+          {
+            'name': 'System'
+          },
+          {
+            'name': 'igmp-items'
+          },
+          {
+            'name': 'inst-items'
+          },
+          {
+            'name': 'dom-items'
+          },
+          {
+            'name': 'Dom-list',
+            'key':
+            {
+              'name': 'default'
+            }
+          },
+          {
+            'name': 'eventHist-items'
+          },
+          {
+            'name': 'EventHistory-list',
+            'key':
+            {
+              'type': 'nbm'
+            }
+          },
+          {
+            'name': 'size'
+          }
+        ]
+      }
     },
     {
-    'type': 'intfDebugs',
-    'size': 10
-    },
-    {
-      'type': 'vrf', 'size': 10
+      'path':
+      {
+        'elem':
+        [
+          {
+            'name': 'System'
+          },
+          {
+            'name': 'igmp-items'
+          },
+          {
+            'name': 'inst-items'
+          },
+          {
+            'name': 'dom-items'
+          },
+          {
+            'name': 'Dom-list',
+            'key':
+            {
+              'name': 'default'
+            }
+          },
+          {
+            'name': 'eventHist-items'
+          },
+          {
+            'name': 'EventHistory-list',
+            'key':
+            {
+              'type': 'intfDebugs'
+            }
+          },
+          {
+            'name': 'size'
+          }
+        ]
+      }
     }
   ]
 }
+
+json_val_decoded_multiple_list_1 = 10
+json_val_decoded_multiple_list_2 = 20
 
 format6 = {
     'encoding': 'JSON',
@@ -488,29 +874,24 @@ format6 = {
 request_nested_list = {
   'nodes': [
         {
+            'edit-op': 'create',
+            'nodetype': 'container',
+            'xpath': '/top:System/top:igmp-items/top:inst-items/top:dom-items'
+        },
+        {
+            'edit-op': 'create',
             'datatype': 'uint32',
             'nodetype': 'leaf',
             'value': '10',
             'xpath': '/top:System/top:igmp-items/top:inst-items/top:dom-items/top:Dom-list[top:name="default"]/top:eventHist-items/top:EventHistory-list[top:type="nbm"]/top:size'
         },
         {
+            'edit-op': 'create',
             'datatype': 'uint32',
             'nodetype': 'leaf',
             'value': '10',
             'xpath': '/top:System/top:igmp-items/top:inst-items/top:dom-items/top:Dom-list[top:name="abc"]/top:eventHist-items/top:EventHistory-list[top:type="intfDebugs"]/top:size'
-        },
-        {
-            'datatype': 'uint32',
-            'nodetype': 'leaf',
-            'value': '10',
-            'xpath': '/top:System/top:igmp-items/top:inst-items/top:dom-items/top:Dom-list[top:name="cde"]/top:eventHist-items/top:EventHistory-list[top:type="vrf"]/top:size'
-        },
-        {
-            'datatype': 'uint32',
-            'nodetype': 'leaf',
-            'value': '10',
-            'xpath': '/top:System/top:igmp-items/top:inst-items/top:dom-items/top:Dom-list[top:name="tt"]/top:eventHist-items/top:EventHistory-list[top:type="groupDebugs"]/top:size'
-        },
+        }
     ],
     'namespace_modules': {
         'top': 'http://cisco.com/ns/yang/cisco-nx-os-device'
@@ -566,26 +947,6 @@ json_val_decoded_nested_list = {
           "type": "intfDebugs", "size": 10
         }
       }
-    },
-    {
-      "name": "cde",
-      "eventHist-items":
-      {
-        "EventHistory-list":
-        {
-          "type": "vrf", "size": 10
-        }
-      }
-    },
-    {
-      "name": "tt",
-      "eventHist-items":
-      {
-        "EventHistory-list":
-        {
-          "type": "groupDebugs", "size": 10
-        }
-      }
     }
   ]
 }
@@ -593,11 +954,102 @@ json_val_decoded_nested_list = {
 json_decoded_multiple_key = {
   'update':
   [
-    {'path':
-      {'origin': 'openconfig',
+    {
+      'path':
+      {
+        'origin': 'openconfig',
         'elem':
         [
-          {'name': 'oc-interfaces'}
+          {
+            'name': 'oc-interfaces'
+          },
+          {
+            'name': 'oc-interface',
+            'key':
+            {
+              'name': 'TenGigabitEthernet1/0/1'
+            }
+          },
+          {
+            'name': 'config'
+          },
+          {
+            'name': 'type'
+          }
+        ]
+      }
+    },
+    {
+      'path':
+      {
+        'origin': 'openconfig',
+        'elem':
+        [
+          {
+            'name': 'oc-interfaces'
+          },
+          {
+            'name': 'oc-interface',
+            'key':
+            {
+              'name': 'TenGigabitEthernet1/0/1'
+            }
+          },
+          {
+            'name': 'config'
+          },
+          {
+            'name': 'description'
+          }
+        ]
+      }
+    },
+    {
+      'path':
+      {
+        'origin': 'openconfig',
+        'elem':
+        [
+          {'name': 'oc-interfaces'
+          },
+          {
+            'name': 'oc-interface',
+            'key':
+            {
+              'name': 'TenGigabitEthernet1/0/2'
+            }
+          },
+          {
+            'name': 'config'
+          },
+          {
+            'name': 'type'
+          }
+        ]
+      }
+    },
+    {
+      'path':
+      {
+        'origin': 'openconfig',
+        'elem':
+        [
+          {
+            'name': 'oc-interfaces'
+          },
+          {
+            'name': 'oc-interface',
+            'key':
+            {
+              'name': 'TenGigabitEthernet1/0/2'
+            }
+            },
+          {
+            'name': 'config'
+          },
+          {
+            'name': 'description'
+          }
         ]
       }
     }
@@ -605,26 +1057,10 @@ json_decoded_multiple_key = {
 }
 
 
-json_val_decoded_multiple_key = {'oc-interface':
-  [
-    {
-      'name': 'TenGigabitEthernet1/0/1',
-      'config':
-      {
-        'type': 'ethernetCsmacd',
-        'description': 'test multiple'
-      }
-    },
-    {
-      'name': 'TenGigabitEthernet1/0/2',
-      'config':
-      {
-        'type': 'ethernetCsmacd',
-        'description': 'test multiple'
-      }
-    }
-  ]
-}
+json_val_decoded_1 = 'ethernetCsmacd'
+json_val_decoded_2 = 'test multiple'
+json_val_decoded_3 = 'ethernetCsmacd'
+json_val_decoded_4 = 'test multiple'
 
 format7 = {
     'encoding': 'json',
@@ -635,6 +1071,7 @@ format7 = {
 request7 = {
     'nodes': [
     {
+        'edit-op': 'create',
         'datatype': 'leafref',
         'default': '',
         'value': 'ianaift:ethernetCsmacd',
@@ -642,6 +1079,7 @@ request7 = {
         'xpath': '/oc-if:interfaces/oc-if:interface[name="TenGigabitEthernet1/0/1"]/config/type' # noqa
     },
     {
+        'edit-op': 'create',
         'datatype': 'leafref',
         'default': '',
         'value': 'test multiple',
@@ -649,6 +1087,7 @@ request7 = {
         'xpath': '/oc-if:interfaces/oc-if:interface[name="TenGigabitEthernet1/0/1"]/config/description' # noqa
     },
     {
+        'edit-op': 'create',
         'datatype': 'leafref',
         'default': '',
         'value': 'ianaift:ethernetCsmacd',
@@ -656,6 +1095,7 @@ request7 = {
         'xpath': '/oc-if:interfaces/oc-if:interface[name="TenGigabitEthernet1/0/2"]/config/type' # noqa
     },
     {
+        'edit-op': 'create',
         'datatype': 'leafref',
         'default': '',
         'value': 'test multiple',
@@ -760,13 +1200,22 @@ json_decoded_multiple_key_2 = {
             'name': 'dom-items'
           },
           {
-            'name': 'Dom-list', 'key':
+            'name': 'Dom-list',
+            'key':
             {
               'name': 'default'
             }
           },
           {
             'name': 'rpfselect-items'
+          },
+          {
+            'name': 'RpfSelect-list',
+            'key':
+            {
+              'vrfName': '224.2.2.2/32',
+              'srcPfx': '224.1.1.1/32'
+            }
           }
         ]
       }
@@ -774,17 +1223,7 @@ json_decoded_multiple_key_2 = {
   ]
 }
 
-json_val_decoded_multiple_key_2 = {
-  'RpfSelect-list':
-  [
-    {
-      'vrfName': '224.2.2.2/32', 'srcPfx': '224.1.1.1/32', 'prop': 'test1'
-    },
-    {
-      'vrfName': '224.2.2.2/33', 'srcPfx': '224.1.1.2/33', 'prop': 'test2'
-    }
-  ]
-}
+json_val_decoded_multiple_key_2 = {'prop': 'test1'}
 
 format8 = {
     'encoding': 'JSON',
@@ -794,18 +1233,17 @@ format8 = {
 request8 = {
   'nodes': [
         {
+            'edit-op': 'create',
+            'nodetype': 'leaf',
+            'xpath': '/top:System/top:mrib-items/top:inst-items/top:dom-items/top:Dom-list[top:name="default"]/top:rpfselect-items/top:RpfSelect-list[top:vrfName="224.2.2.2/32"][top:srcPfx="224.1.1.1/32"]'
+        },
+        {
+            'edit-op': 'create',
             'datatype': '',
             'value': 'test1',
             'nodetype': 'leaf',
             'xpath': '/top:System/top:mrib-items/top:inst-items/top:dom-items/top:Dom-list[top:name="default"]/top:rpfselect-items/top:RpfSelect-list[top:vrfName="224.2.2.2/32"][top:srcPfx="224.1.1.1/32"]/prop'
-        },
-        {
-            'datatype': '',
-            'value': 'test2',
-            'nodetype': 'leaf',
-            'xpath': '/top:System/top:mrib-items/top:inst-items/top:dom-items/top:Dom-list[top:name="default"]/top:rpfselect-items/top:RpfSelect-list[top:vrfName="224.2.2.2/33"][top:srcPfx="224.1.1.2/33"]/prop'
-        },
-
+        }
     ],
     'namespace_modules': {
         'top': 'http://cisco.com/ns/yang/cisco-nx-os-device'
@@ -937,17 +1375,19 @@ class TestGnmiTestRpc(unittest.TestCase):
     def setUpClass(cls):
         cls.maxDiff = None
 
-    def test_set_multiple_list(self):
-        """Verify a List with Multiple Key SET constructs json_val correct."""
+    def test_rpc_for_leaf_level_multiple_list(self):
+        """Verify a List with Multiple Key SET at leaf level constructs json_val correct."""
         r5 = deepcopy(request_multiple_list)
         gmc = GnmiMessageConstructor('set', r5, **format5)
         jdict = json_format.MessageToDict(gmc.payload)
         jdict['update'][0].pop('val')
+        jdict['update'][1].pop('val')
         self.assertEqual(jdict, json_decoded_multiple_list)
-        self.assertEqual(gmc.json_val, json_val_decoded_multiple_list)
+        self.assertEqual(gmc.json_val[0], json_val_decoded_multiple_list_1)
+        self.assertEqual(gmc.json_val[1], json_val_decoded_multiple_list_2)
 
     def test_set_nested_list(self):
-        """Verify a Nested List with Multiple Key SET constructs json_val correct."""
+        """Verify a List with Multiple Key SET at container level constructs json_val correct."""
         r5 = deepcopy(request_nested_list)
         gmc = GnmiMessageConstructor('set', r5, **format6)
         jdict = json_format.MessageToDict(gmc.payload)
@@ -956,7 +1396,7 @@ class TestGnmiTestRpc(unittest.TestCase):
         self.assertEqual(gmc.json_val, json_val_decoded_nested_list)
 
     def test_multiple_list_2(self):
-        """Verify a Multiple list with Multiple Keys constructs json_val correct."""
+        """Verify a List with Multiple Key SET at list level constructs json_val correct."""
         r5 = deepcopy(request8)
         gmc = GnmiMessageConstructor('set', r5, **format8)
         jdict = json_format.MessageToDict(gmc.payload)
@@ -970,26 +1410,39 @@ class TestGnmiTestRpc(unittest.TestCase):
         gmc = GnmiMessageConstructor('set', r5, **format7)
         jdict = json_format.MessageToDict(gmc.payload)
         jdict['update'][0].pop('val')
-        self.assertEqual(jdict, json_decoded_multiple_key)
-        self.assertEqual(gmc.json_val, json_val_decoded_multiple_key)
+        jdict['update'][1].pop('val')
+        jdict['update'][2].pop('val')
+        jdict['update'][3].pop('val')
 
-    def test_set_multiple_list(self):
+        self.assertEqual(jdict, json_decoded_multiple_key)
+        self.assertEqual(gmc.json_val[0], json_val_decoded_1)
+        self.assertEqual(gmc.json_val[1], json_val_decoded_2)
+        self.assertEqual(gmc.json_val[2], json_val_decoded_3)
+        self.assertEqual(gmc.json_val[3], json_val_decoded_4)
+
+    def test_set_replace_multiple_list(self):
         """Verify a List with Multiple Key SET constructs json_val correct."""
-        r5 = deepcopy(request_multiple_list)
+        r5 = deepcopy(request_multiple_list_replace)
         gmc = GnmiMessageConstructor('set', r5, **format5)
         jdict = json_format.MessageToDict(gmc.payload)
-        jdict['update'][0].pop('val')
-        self.assertEqual(jdict, json_decoded_multiple_list)
-        self.assertEqual(gmc.json_val, json_val_decoded_multiple_list)
+        jdict['replace'][0].pop('val')
+        jdict['replace'][1].pop('val')
+        self.assertEqual(jdict, json_decoded_multiple_list_replace)
+        self.assertEqual(gmc.json_val[0], json_val_decoded_multiple_list_1)
+        self.assertEqual(gmc.json_val[1], json_val_decoded_multiple_list_2)
 
-    def test_set_nested_list(self):
-        """Verify a Nested List with Multiple Key SET constructs json_val correct."""
-        r5 = deepcopy(request_nested_list)
-        gmc = GnmiMessageConstructor('set', r5, **format6)
+    def test_set_oc_net_instance_no_edit_op(self):
+        """Verify a SET constructs with no edit_op in leaf json_val correct."""
+        r1 = deepcopy(request_no_edit_op)
+        gmc = GnmiMessageConstructor('set', r1, **format1)
         jdict = json_format.MessageToDict(gmc.payload)
-        jdict['update'][0].pop('val')
-        self.assertEqual(jdict, json_decoded_nested_list)
-        self.assertEqual(gmc.json_val, json_val_decoded_nested_list)
+        jdict['replace'][0].pop('val')
+        jdict['replace'][1].pop('val')
+        jdict['replace'][2].pop('val')
+        self.assertEqual(jdict, json_decoded_no_edit_op)
+        self.assertEqual(gmc.json_val[0], json_val_no_edit_op_1)
+        self.assertEqual(gmc.json_val[1], json_val_no_edit_op_2)
+        self.assertEqual(gmc.json_val[2], json_val_no_edit_op_3)
 
     def test_set_oc_net_instance(self):
         """Verify a complex SET constructs json_val correct."""
@@ -997,17 +1450,20 @@ class TestGnmiTestRpc(unittest.TestCase):
         gmc = GnmiMessageConstructor('set', r1, **format1)
         jdict = json_format.MessageToDict(gmc.payload)
         jdict['update'][0].pop('val')
+        jdict['update'][1].pop('val')
+        jdict['update'][2].pop('val')
         self.assertEqual(jdict, json_decoded)
-        self.assertEqual(gmc.json_val, json_val_decoded)
+        self.assertEqual(gmc.json_val[0], json_val_decoded_oc_1)
+        self.assertEqual(gmc.json_val[1], json_val_decoded_oc_2)
+        self.assertEqual(gmc.json_val[2], json_val_decoded_oc_3)
 
     def test_set_one_xpath(self):
         """Verify SET constructs json_val correct for one leaf node."""
         r4 = deepcopy(request4)
         gmc = GnmiMessageConstructor('set', r4, **format4)
-        self.assertEqual(
-            json_format.MessageToDict(gmc.payload),
-            json_decoded2
-        )
+        jdict = json_format.MessageToDict(gmc.payload)
+        jdict['update'][0].pop('val')
+        self.assertEqual(jdict, json_decoded2)
         self.assertEqual(gmc.json_val, json_val_decoded2)
 
     def test_set_no_namespace_modules(self):
@@ -1015,10 +1471,9 @@ class TestGnmiTestRpc(unittest.TestCase):
         r4 = deepcopy(request4)
         r4.pop('namespace_modules')
         gmc = GnmiMessageConstructor('set', r4, **format4)
-        self.assertEqual(
-            json_format.MessageToDict(gmc.payload),
-            json_decoded2
-        )
+        jdict = json_format.MessageToDict(gmc.payload)
+        jdict['update'][0].pop('val')
+        self.assertEqual(jdict, json_decoded2)
         self.assertEqual(gmc.json_val, json_val_decoded2)
 
     def test_get_2_paths(self):

@@ -177,3 +177,154 @@ class SNMPClient(object):
                     raise ValueError('Invalid object ' + str(msg))
                 results.append(value)
         return results
+
+
+
+class SNMPv3Client(object):
+
+    """Implements SNMPv3 client using pysnmp package
+    provides two API's snmpget and snmpset
+
+    Usage:
+        cl = SNMPv3Client(host='10.104.233.42', port=161)
+        cl = SNMPv3Client(host='10.104.233.42',
+                          auth= USMuserdata()
+                          port=161,
+                          log=logging.getLogger(__name__))
+
+        # Get value
+        cl.snmp_get(oid='1.3.6.1.4.1.13742.6.4.1.2.1.2.1.16')
+
+        # Set value
+        cl.snmp_set(oid='1.3.6.1.4.1.13742.6.4.1.2.1.2.1.15',
+                   value=1, type='Integer')
+
+    """
+
+    def __init__(self, host,
+                 port=161,
+                 auth=auth,
+                 log=log):
+
+        """ Instantiates snmp client
+        """
+        if not pysnmp_installed:
+            raise Exception(
+                "pysnmp is not installed. Please run 'pip install pysnmp' to use this feature")
+
+        self.host = host
+        self.port = port
+
+        # USM userdata for v3
+        self.auth = auth
+        self.log = log
+
+    def snmp_get(self, oid, *more_oids):
+
+        """ Performs a SNMP get operation
+
+        Usage:
+            cl.snmp_get(oid='1.3.6.1.4.1.13742.6.4.1.2.1.2.1.16')
+
+            cl.snmp_get(oid='1.3.6.1.4.1.13742.6.4.1.2.1.2.1.16',
+                        '1.3.6.1.4.1.13742.6.4.1.2.1.2.1.15')
+        """
+
+        # Create ObjectIdentifier for each oid's in the more list
+        more_oid_obj = [ObjectType(ObjectIdentity(obj)) for obj in more_oids]
+
+        # Create command generator
+        cmd_generator = \
+            getCmd(SnmpEngine(),
+                   self.auth,
+                   UdpTransportTarget((self.host, self.port)),
+                   ContextData(),
+                   ObjectType(
+                       ObjectIdentity(oid)),
+                   *more_oid_obj
+                   )
+
+        # Fetch the values
+        error_indication, error_status, error_index, var_binds =\
+            next(cmd_generator)
+
+        # Predefine our results list
+        results = []
+
+        # Check for errors and print out results
+        if error_indication:
+            self.log.info(error_indication)
+            raise Exception(str(error_indication))
+        elif error_status:
+            msg = '%s at %s' % (error_status.prettyPrint(),
+                                   error_index and var_binds[int(error_index) - 1][
+                                       0] or '?')
+            log.info(msg)
+            raise Exception(msg)
+        else:
+            for name, value in var_binds:
+                msg = ' = '.join([name.prettyPrint(), value.prettyPrint()])
+                self.log.info(msg)
+                if isinstance(value, (NoSuchObject, NoSuchInstance)):
+                    raise ValueError('Invalid object ' + str(msg))
+                results.append(value.prettyPrint())
+        return results
+
+
+    def snmp_set(self, oid, value, type='Integer'):
+
+        """ Performs a SNMP set operation
+
+        Takes three arguments,
+            OID = snmp object Identifier,
+            value = value to be se
+            type = Type can be any of SNMP supported types
+                    like Integer, Integer32
+
+        Usage:
+            cl.snmp_set(oid='1.3.6.1.4.1.13742.6.4.1.2.1.2.1.16', value=1,
+                        type='Integer')
+
+        """
+        # Get the pysnmp class for oid
+        value_class = getattr(pysnmp.hlapi, type, None)
+        if not value_class:
+            raise TypeError('Invalid Type provided: %s' % (type,))
+
+        # Create command generator
+        cmd_generator = \
+            setCmd(SnmpEngine(),
+                   self.auth,
+                   UdpTransportTarget((self.host, self.port)),
+                   ContextData(),
+                   ObjectType(
+                       ObjectIdentity(oid), value_class(value)
+                    )
+                   )
+
+        # Fetch the values
+        error_indication, error_status, error_index, var_binds =\
+            next(cmd_generator)
+
+        # Predefine our results list
+        results = []
+
+        # Check for errors and print out results
+        if error_indication:
+            log.info(error_indication)
+            raise Exception(str(error_indication))
+        elif error_status:
+            msg = '%s at %s' % (error_status.prettyPrint(),
+                                   error_index and var_binds[int(error_index) - 1][
+                                       0] or '?')
+            log.info(msg)
+            raise Exception(msg)
+        else:
+            for name, value in var_binds:
+                msg = ' = '.join([name.prettyPrint(), value.prettyPrint()])
+                self.log.info(msg)
+                if isinstance(value, (NoSuchObject, NoSuchInstance)):
+                    raise ValueError('Invalid object ' + str(msg))
+                results.append(value)
+        return results
+

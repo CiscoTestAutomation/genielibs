@@ -4,18 +4,18 @@ configure:
       new_state: execute
     line console 0:
       new_state: configure_line
-    no controller-service-policy policy_name cntrl-policy77: "no controller-service-policy\
-      \ policy_name cntrl-policy77\r\n"
+    no controller-service-policy default-mdns-service-policy: "no controller-service-policy\
+      \ default-mdns-service-policy\r\n"
     no logging console: ''
-    service-export mdns-sd controller DNAC: "service-export mdns-sd controller DNAC\r\
-      \n"
-  prompt: C9500H_Sathya(config)#
+    service-export mdns-sd controller APIC-EM: "service-export mdns-sd controller\
+      \ APIC-EM\r\n"
+  prompt: Vishal_C9600_SP(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: C9500H_Sathya(config-line)#
+  prompt: Vishal_C9600_SP(config-line)#
 connect:
   commands:
     ? ''
@@ -35,4 +35,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: C9500H_Sathya#
+  prompt: Vishal_C9600_SP#

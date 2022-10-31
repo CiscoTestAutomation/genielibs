@@ -14,7 +14,7 @@ from google.protobuf import json_format
 # Genie Libs
 from genie.libs.sdk.triggers.blitz.yangexec import run_netconf, run_gnmi, run_restconf
 from genie.libs.sdk.triggers.blitz.yangexec_helper import DictionaryToXML, dict_to_ordereddict
-from genie.libs.sdk.triggers.blitz.gnmi_util import GnmiNotification, GnmiMessage
+from genie.libs.sdk.triggers.blitz.gnmi_util import GnmiNotification, GnmiMessage, GnmiMessageConstructor
 from genie.libs.sdk.triggers.blitz.rpcverify import RpcVerify
 
 
@@ -27,7 +27,7 @@ class Service:
     def __init__(self, response):
         self.response = response
 
-    def Get(self, blah):
+    def Get(self, blah, metadata=None):
         return self.response
 
 
@@ -36,7 +36,18 @@ class Gnmi:
         self.response = response
         self.service = Service(response)
 
+
+class Default:
+    default = {'username': 'test', 'password': 'password'}
+
+
+class Creds:
+    credentials = Default()
+
+
 class TestDevice:
+    device = Creds()
+
     def __init__(self, response):
         self.gnmi = Gnmi(response)
 
@@ -560,6 +571,68 @@ class TestYangExec(unittest.TestCase):
 
         # Test the result
         self.assertEqual(subscribe_thread.result, True)
+
+    def test_run_subscribe_stream_gnmi(self):
+        """ Test GNMI STREAM Subscribe for invalid xpath"""
+
+        rpc_verify = RpcVerify(log=log, capabilities=[])
+        operation = "subscribe"
+        request = {
+                    'namespace': 
+                        {
+                            'top': 'Cisco-NX-OS-device'
+                        }, 
+                    'nodes': 
+                        [
+                            {
+                                'nodetype': 'leaf',
+                                'datatype': '',
+                                'xpath': 'System/invalid-path',
+                            }
+                        ], 
+                    'request_mode': 'STREAM', 
+                    'sub_mode': 'SAMPLE', 
+                    'negative_test': False, 
+                    'encoding': 'JSON',
+                    'sample_interval': 1,
+                    'stream_max': 5,
+                    'returns':
+                        [
+                            {
+                                'datatype': 'boolean',
+                                'value': 'true',
+                                'op': '==',
+                                'selected': 'True',
+                                'name': 'heavyTemplate',
+                                'xpath': '/System/igmp-items/inst-items/heavyTemplate'
+                            }
+                        ], 
+                    'verifier': rpc_verify.process_operational_state,
+                    'namespace_modules': 
+                        {
+                            'top': 'Cisco-NX-OS-device'
+                        }, 
+                    'decode': GnmiMessage.decode_notification, 
+                    'log': log
+                }
+
+        # Response
+        response = proto.gnmi_pb2.SubscribeResponse()
+        response.sync_response = True
+    
+        # initiate subscription thread
+        subscribe_thread = GnmiNotification(
+            [response],
+            **request
+        )
+        subscribe_thread.start()
+
+        # Wait till the thread is stopped
+        while not subscribe_thread.stopped():
+            log.info('Waiting for notification...')
+
+        # Test the result
+        self.assertEqual(subscribe_thread.result, False)
 
     def test_run_subscribe_once_gnmi_list(self):
         """ Test GNMI Subscribe for list xpaths ONCE mode for Subscription List"""
@@ -1428,6 +1501,371 @@ class TestYangExec(unittest.TestCase):
 
         self.assertEqual(result, False)
 
+    @patch('genie.libs.sdk.triggers.blitz.yangexec.netconf_send')
+    def test_run_netconf_get_config_sequence_fail(self, netconf_send_mock):
+        """ Test run_netconf get-config with List Keys in returns"""
+        operation = 'get-config'
+        steps = "STEP 1: Starting action yang on device 'CSR1K-5'"
+        datastore = {'lock': True, 'retry': 40, 'type': 'running'}
+        rpc_data = {
+            'namespace': {
+                'top': 'http://cisco.com/ns/yang/cisco-nx-os-device',
+            },
+            'nodes': [{
+                'xpath': '/top:System/top:igmp-items/top:inst-items/top:dom-items',
+                'nodetype': 'container'
+            }]
+        }
+        returns = [{
+            'nodetype': 'leaf',
+            'value': 'test03',
+            'op': '==',
+            'selected': 'True',
+            'name': 'rtMap',
+            'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list[name="default"]/if-items/If-list[id="eth1/2"]/streppol-items/StRepP-list[joinType="0"]/rtMap'
+        }, {
+            'nodetype': 'leaf',
+            'value': 'test13',
+            'op': '==',
+            'selected': 'True',
+            'name': 'rtMap',
+            'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list[name="default"]/if-items/If-list[id="eth1/2"]/streppol-items/StRepP-list[joinType="1"]/rtMap'
+        }, {
+            'nodetype': 'leaf',
+            'value': 'test02',
+            'op': '==',
+            'selected': 'True',
+            'name': 'rtMap',
+            'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list[name="default"]/if-items/If-list[id="eth1/3"]/streppol-items/StRepP-list[joinType="0"]/rtMap'
+        }, {
+            'nodetype': 'leaf',
+            'value': 'test12',
+            'op': '==',
+            'selected': 'True',
+            'name': 'rtMap',
+            'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list[name="default"]/if-items/If-list[id="eth1/3"]/streppol-items/StRepP-list[joinType="1"]/rtMap'
+        }]
+
+        format = {
+            'auto_validate': False,
+            'negative_test': False,
+            'pause': 0,
+            'timeout': 30,
+        }
+
+        netconf_send_mock.return_value = [(
+            'get-config',
+            '<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">\
+            <data><System xmlns="http://cisco.com/ns/yang/cisco-nx-os-device"><igmp-items><inst-items>\
+            <dom-items><Dom-list><name>default</name><if-items><If-list>\
+            <id>eth1/3</id><adminSt>enabled</adminSt><allowv3Asm>true</allowv3Asm>\
+            <grpTimeout>260</grpTimeout><immediateLeave>false</immediateLeave>\
+            <reportLl>false</reportLl><streppol-items><StRepP-list><joinType>1</joinType>\
+            <rtMap>test13</rtMap><useAccessGrpCommand>false</useAccessGrpCommand>\
+            </StRepP-list><StRepP-list><joinType>0</joinType><rtMap>test03</rtMap>\
+            <useAccessGrpCommand>false</useAccessGrpCommand></StRepP-list>\
+            </streppol-items><suppressv3Gsq>false</suppressv3Gsq><ver>v2</ver>\
+            </If-list><If-list><id>eth1/2</id><adminSt>enabled</adminSt>\
+            <allowv3Asm>true</allowv3Asm><grpTimeout>260</grpTimeout>\
+            <immediateLeave>false</immediateLeave><reportLl>false</reportLl>\
+            <streppol-items><StRepP-list><joinType>1</joinType><rtMap>test12</rtMap>\
+            <useAccessGrpCommand>false</useAccessGrpCommand></StRepP-list>\
+            <StRepP-list><joinType>0</joinType><rtMap>test02</rtMap>\
+            <useAccessGrpCommand>false</useAccessGrpCommand></StRepP-list>\
+            </streppol-items><suppressv3Gsq>false</suppressv3Gsq><ver>v2</ver>\
+            </If-list></if-items></Dom-list></dom-items></inst-items>\
+            </igmp-items></System></data></rpc-reply>'
+        )]
+
+        result = run_netconf(
+            operation, self.netconf_device, steps, datastore, rpc_data, returns, format=format
+        )
+
+        self.assertEqual(result, False)
+
+    @patch('genie.libs.sdk.triggers.blitz.yangexec.netconf_send')
+    def test_run_netconf_get_config_sequence_pass(self, netconf_send_mock):
+        """ Test run_netconf get-config with List Keys in returns"""
+        operation = 'get-config'
+        steps = "STEP 1: Starting action yang on device 'CSR1K-5'"
+        datastore = {'lock': True, 'retry': 40, 'type': 'running'}
+        rpc_data = {
+            'namespace': {
+                'top': 'http://cisco.com/ns/yang/cisco-nx-os-device',
+            },
+            'nodes': [{
+                'xpath': '/top:System/top:igmp-items/top:inst-items/top:dom-items',
+                'nodetype': 'container'
+            }]
+        }
+        returns = [{
+            'nodetype': 'leaf',
+            'value': 'test02',
+            'op': '==',
+            'selected': 'True',
+            'name': 'rtMap',
+            'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list[name="default"]/if-items/If-list[id="eth1/2"]/streppol-items/StRepP-list[joinType="0"]/rtMap'
+        }, {
+            'nodetype': 'leaf',
+            'value': 'test12',
+            'op': '==',
+            'selected': 'True',
+            'name': 'rtMap',
+            'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list[name="default"]/if-items/If-list[id="eth1/2"]/streppol-items/StRepP-list[joinType="1"]/rtMap'
+        }, {
+            'nodetype': 'leaf',
+            'value': 'test03',
+            'op': '==',
+            'selected': 'True',
+            'name': 'rtMap',
+            'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list[name="default"]/if-items/If-list[id="eth1/3"]/streppol-items/StRepP-list[joinType="0"]/rtMap'
+        }, {
+            'nodetype': 'leaf',
+            'value': 'test13',
+            'op': '==',
+            'selected': 'True',
+            'name': 'rtMap',
+            'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list[name="default"]/if-items/If-list[id="eth1/3"]/streppol-items/StRepP-list[joinType="1"]/rtMap'
+        }]
+
+        format = {
+            'auto_validate': False,
+            'negative_test': False,
+            'pause': 0,
+            'timeout': 30,
+        }
+
+        netconf_send_mock.return_value = [(
+            'get-config',
+            '<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">\
+            <data><System xmlns="http://cisco.com/ns/yang/cisco-nx-os-device"><igmp-items><inst-items>\
+            <dom-items><Dom-list><name>default</name><if-items><If-list>\
+            <id>eth1/3</id><adminSt>enabled</adminSt><allowv3Asm>true</allowv3Asm>\
+            <grpTimeout>260</grpTimeout><immediateLeave>false</immediateLeave>\
+            <reportLl>false</reportLl><streppol-items><StRepP-list><joinType>1</joinType>\
+            <rtMap>test13</rtMap><useAccessGrpCommand>false</useAccessGrpCommand>\
+            </StRepP-list><StRepP-list><joinType>0</joinType><rtMap>test03</rtMap>\
+            <useAccessGrpCommand>false</useAccessGrpCommand></StRepP-list>\
+            </streppol-items><suppressv3Gsq>false</suppressv3Gsq><ver>v2</ver>\
+            </If-list><If-list><id>eth1/2</id><adminSt>enabled</adminSt>\
+            <allowv3Asm>true</allowv3Asm><grpTimeout>260</grpTimeout>\
+            <immediateLeave>false</immediateLeave><reportLl>false</reportLl>\
+            <streppol-items><StRepP-list><joinType>1</joinType><rtMap>test12</rtMap>\
+            <useAccessGrpCommand>false</useAccessGrpCommand></StRepP-list>\
+            <StRepP-list><joinType>0</joinType><rtMap>test02</rtMap>\
+            <useAccessGrpCommand>false</useAccessGrpCommand></StRepP-list>\
+            </streppol-items><suppressv3Gsq>false</suppressv3Gsq><ver>v2</ver>\
+            </If-list></if-items></Dom-list></dom-items></inst-items>\
+            </igmp-items></System></data></rpc-reply>'
+        )]
+
+        result = run_netconf(
+            operation, self.netconf_device, steps, datastore, rpc_data, returns, format=format
+        )
+
+        self.assertEqual(result, True)
+
+    @patch('genie.libs.sdk.triggers.blitz.yangexec.netconf_send')
+    def test_run_netconf_get_config_sequence_2(self, netconf_send_mock):
+        """ Test run_netconf get-config with Wrong List Key in returns"""
+        operation = 'get-config'
+        steps = "STEP 1: Starting action yang on device 'CSR1K-5'"
+        datastore = {'lock': True, 'retry': 40, 'type': ''}
+        rpc_data = {
+            'namespace': {
+                'top': 'http://cisco.com/ns/yang/cisco-nx-os-device',
+            },
+            'nodes': [{
+                'xpath': '/top:System/top:igmp-items/top:inst-items/top:dom-items',
+                'nodetype': 'container'
+            }]
+        }
+        returns = [{
+            'nodetype': 'leaf',
+            'value': '0',
+            'op': '==',
+            'selected': 'True',
+            'name': 'joinType',
+            'key': 'True',
+            'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list[name="Wrong key"]/if-items/If-list[id="eth1/2"]/streppol-items/StRepP-list/joinType'
+        }]
+
+        format = {
+            'auto_validate': False,
+            'negative_test': False,
+            'pause': 0,
+            'timeout': 30,
+        }
+
+        netconf_send_mock.return_value = [(
+            'get-config',
+            '<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">\
+            <data><System xmlns="http://cisco.com/ns/yang/cisco-nx-os-device"><igmp-items><inst-items>\
+            <dom-items><Dom-list><name>default</name><if-items><If-list>\
+            <id>eth1/3</id><adminSt>enabled</adminSt><allowv3Asm>true</allowv3Asm>\
+            <grpTimeout>260</grpTimeout><immediateLeave>false</immediateLeave>\
+            <reportLl>false</reportLl><streppol-items><StRepP-list><joinType>1</joinType>\
+            <rtMap>test13</rtMap><useAccessGrpCommand>false</useAccessGrpCommand>\
+            </StRepP-list><StRepP-list><joinType>0</joinType><rtMap>test03</rtMap>\
+            <useAccessGrpCommand>false</useAccessGrpCommand></StRepP-list>\
+            </streppol-items><suppressv3Gsq>false</suppressv3Gsq><ver>v2</ver>\
+            </If-list><If-list><id>eth1/2</id><adminSt>enabled</adminSt>\
+            <allowv3Asm>true</allowv3Asm><grpTimeout>260</grpTimeout>\
+            <immediateLeave>false</immediateLeave><reportLl>false</reportLl>\
+            <streppol-items><StRepP-list><joinType>1</joinType><rtMap>test12</rtMap>\
+            <useAccessGrpCommand>false</useAccessGrpCommand></StRepP-list>\
+            <StRepP-list><joinType>0</joinType><rtMap>test02</rtMap>\
+            <useAccessGrpCommand>false</useAccessGrpCommand></StRepP-list>\
+            </streppol-items><suppressv3Gsq>false</suppressv3Gsq><ver>v2</ver>\
+            </If-list></if-items></Dom-list></dom-items></inst-items>\
+            </igmp-items></System></data></rpc-reply>'
+        )]
+
+        result = run_netconf(
+            operation, self.netconf_device, steps, datastore, rpc_data, returns, format=format
+        )
+
+        self.assertEqual(result, False)
+
+    def test_run_gnmi_get_config_sequence(self):
+        """ Test run_gnmi get-config with List Keys in returns"""
+        operation = 'get'
+        steps = "STEP 1: Starting action yang on device 'ncs1004'"
+        datastore = {
+            'type': '',
+            'lock': False,
+            'retry': 10
+        }
+        rpc_data = {
+            'namespace': {
+                'top': 'http://cisco.com/ns/yang/cisco-nx-os-device',
+            },
+            'nodes': [{
+                'xpath': '/top:System/top:igmp-items/top:inst-items/top:dom-items',
+                'nodetype': 'container'
+            }]
+        }
+        returns = [{
+            'nodetype': 'leaf',
+            'value': '2',
+            'op': '==',
+            'selected': 'True',
+            'name': 'size',
+            'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list[name="default"]/eventHist-items/EventHistory-list[type="cli"]/size'
+        },{
+            'nodetype': 'leaf',
+            'value': '3',
+            'op': '==',
+            'selected': 'True',
+            'name': 'size',
+            'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list[name="default"]/eventHist-items/EventHistory-list[type="groupEvents"]/size'
+        }]
+
+        format = {
+            'auto_validate': False,
+            'negative_test': False,
+            'pause': 0,
+            'timeout': 30,
+        }
+
+        response = proto.gnmi_pb2.GetResponse()
+        upd = {
+          'path': {
+            'elem': [
+                {
+                'name': "System"
+                },
+                {
+                  'name': "igmp-items"
+                },
+                {
+                  'name': "inst-items"
+                },
+                {
+                  'name': "dom-items"
+                }
+            ]
+          }
+        }
+        update = json_format.ParseDict(
+            upd,
+            proto.gnmi_pb2.Update()
+        )
+
+        json_val = {
+            "Dom-list":
+            [
+                {
+                    "name":"default",
+                    "eventHist-items":
+                    {
+                        "EventHistory-list":
+                        [
+                            {
+                                "type":"nbm",
+                                "size":4
+                            },
+                            {
+                                "type":"igmpInternal",
+                                "size":2
+                            },
+                            {
+                                "type":"vrf",
+                                "size":2
+                            },
+                            {
+                                "type":"mtrace",
+                                "size":2
+                            },
+                            {
+                                "type":"ha",
+                                "size":3
+                            },
+                            {
+                                "type":"groupEvents",
+                                "size":3
+                            },
+                            {
+                                "type":"intfEvents",
+                                "size":3
+                            },
+                            {
+                                "type":"intfDebugs",
+                                "size":3
+                            },
+                            {
+                                "type":"policy",
+                                "size":2
+                            },
+                            {
+                                "type":"cli",
+                                "size":3
+                            },
+                            {
+                                "type":"mvr",
+                                "size":3
+                            },
+                            {
+                                "type":"groupDebugs",
+                                "size":3
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+        
+        update.val.json_ietf_val = json.dumps(json_val).encode('utf-8')
+        notif = proto.gnmi_pb2.Notification()
+        notif.update.append(update)
+        response.notification.append(notif)
+        device = TestDevice(response)
+
+        result = run_gnmi(
+            operation, device, steps, datastore, rpc_data, returns, format=format
+        )
+
+        self.assertEqual(result, False)
 
     @patch('genie.libs.sdk.triggers.blitz.yangexec.netconf_send')
     def test_run_netconf_get_lxml_without_format(self, netconf_send_mock):
@@ -1478,6 +1916,56 @@ class TestYangExec(unittest.TestCase):
         )
         self.assertEqual(result, True)
 
+    def test_run_subscribe_multiple_leaf_nodes(self):
+        """ Test _trim_nodes for multiple leaf nodes"""
+        rpc_verify = RpcVerify(log=log, capabilities=[])
+        rpc_data =  {
+                        'namespace':
+                        {
+                            'oc-netinst': 'http://openconfig.net/yang/network-instance'
+                        },
+                        'nodes':
+                        [
+                            {
+                                'nodetype': 'leaf',
+                                'xpath': '/oc-netinst:network-instances/oc-netinst:network-instance[oc-netinst:name="default"]/oc-netinst:connection-points/oc-netinst:connection-point[oc-netinst:connection-point-id="nve1"]/oc-netinst:endpoints/oc-netinst:endpoint[oc-netinst:endpoint-id="nve1"]/oc-netinst:vxlan/oc-netinst:endpoint-vnis/oc-netinst:endpoint-vni[oc-netinst:vni="3120400"]/oc-netinst:state/oc-netinst:vni'
+                            },
+                            {
+                                'nodetype': 'leaf',
+                                'xpath': '/oc-netinst:network-instances/oc-netinst:network-instance[oc-netinst:name="default"]/oc-netinst:connection-points/oc-netinst:connection-point[oc-netinst:connection-point-id="nve1"]/oc-netinst:endpoints/oc-netinst:endpoint[oc-netinst:endpoint-id="nve1"]/oc-netinst:vxlan/oc-netinst:endpoint-vnis/oc-netinst:endpoint-vni[oc-netinst:vni="3120400"]/oc-netinst:state/oc-netinst:vni-state'
+                            }
+                        ],
+                        'request_mode': 'ONCE',
+                        'negative_test': False,
+                        'sub_mode': 'SAMPLE',
+                        'encoding': 'PROTO',
+                        'returns':
+                        [
+                            {
+                                'nodetype': 'leaf',
+                                'value': 3120400,
+                                'op': '==',
+                                'selected': True,
+                                'name': 'vni',
+                                'xpath': '/network-instances/network-instance[name=default]/connection-points/connection-point[connection-point-id=nve1]/endpoints/endpoint[endpoint-id=nve1]/vxlan/endpoint-vnis/endpoint-vni[vni=3120400]/state/vni'
+                            },
+                            {
+                                'nodetype': 'leaf',
+                                'value': 'UP',
+                                'op': '==',
+                                'selected': True,
+                                'name': 'vni-state',
+                                'xpath': '/network-instances/network-instance[name=default]/connection-points/connection-point[connection-point-id=nve1]/endpoints/endpoint[endpoint-id=nve1]/vxlan/endpoint-vnis/endpoint-vni[vni=3120400]/state/vni-state'
+                            }
+                        ],
+                        'verifier': rpc_verify.process_operational_state
+                    }
+
+        format = {'request_mode': 'ONCE', 'negative_test': False, 'sub_mode': 'SAMPLE', 'encoding': 'PROTO'}
+        gmc = GnmiMessageConstructor('subscribe', rpc_data, **format)
+        nodes = gmc._trim_nodes(rpc_data['nodes'])
+        nodes_len = len(nodes)
+        self.assertEqual(nodes_len, 2)
 
 if __name__ == '__main__':
     unittest.main()

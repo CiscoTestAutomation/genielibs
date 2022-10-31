@@ -148,3 +148,70 @@ def unconfigure_cdp_neighbors(device):
             "Could not unconfigure CDP Globally"
             "Error: {error}".format(error=e)
         )
+
+def configure_cdp_timer(device, timer):
+    """ Configure cdp timer on target device globally on the device
+        Args:
+            device ('obj'): Device object
+            timer ('int'): CDP timer in seconds between 5-254 seconds
+        Returns:
+            None
+    """
+    command_list = [f'cdp timer {timer}']
+    try:
+        device.configure(command_list)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure CDP timer"
+            "Error: {error}".format(error=e)
+        )
+
+def unconfigure_cdp_timer(device):
+    """ Disable cdp timer on target device globally on the device
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+    """ 
+    command_list = ['no cdp timer']
+    try:
+        device.configure(command_list)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure CDP timer"
+            "Error: {error}".format(error=e)
+        )
+
+
+def configure_cdp_holdtime(device, timer):
+    """ Configure cdp holdtime on target device globally on the device
+        Args:
+            device ('obj'): Device object
+            timer ('int'): CDP holdtime in seconds between 10-255 seconds
+        Returns:
+            None
+    """
+    command_list = [f'cdp holdtime {timer}']
+    try:
+        device.configure(command_list)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure CDP holdime"
+            "Error: {error}".format(error=e)
+        )
+
+def unconfigure_cdp_holdtime(device):
+    """ Disable cdp holdtime on target device globally on the device
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+    """ 
+    command_list = ['no cdp holdtime']
+    try:
+        device.configure(command_list)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure CDP holdtime"
+            "Error: {error}".format(error=e)
+        )

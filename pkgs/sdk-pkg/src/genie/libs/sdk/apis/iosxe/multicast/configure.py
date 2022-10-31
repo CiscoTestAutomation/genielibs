@@ -575,3 +575,239 @@ def configure_ip_pim_rp_candidate_priority(device, interface, priority_value):
             f"Failed to Configure ip pim rp-candidate priority on device {device}. Error:\n{e}"
         )
         
+def configure_ipv6_mld_snooping(device):
+    """ Configure Enable IPv6 mld snooping
+    Args:
+        device (`obj`): Device object
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    try:
+        device.configure([
+            "ipv6 mld snooping"
+        ])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure ipv6 mld snooping. Error:\n{error}".format(error=e)
+        )
+
+def unconfigure_ipv6_mld_snooping(device):
+    """ Unconfigure IPv6 mld snooping
+    Args:
+        device (`obj`): Device object
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    try:
+        device.configure([
+            "no ipv6 mld snooping"
+        ])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure ipv6 mld snooping. Error:\n{error}".format(error=e)
+        )
+
+def configure_ipv6_mld_vlan_immediate_leave(device, id):
+    """ Configure Enable IPv6 mld vlan immediate leave
+    Args:
+        device (`obj`): Device object
+        id ('int'): VLAN ID 
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    try:
+        device.configure([
+            "ipv6 mld snooping vlan {id} immediate-leave".format(id=id)
+        ])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure ipv6 mld vlan {id} immediate-leave. Error:\n{error}".format(id=id, error=e)
+        )
+
+def unconfigure_ipv6_mld_vlan_immediate_leave(device, id):
+    """ Unconfigure Enable IPv6 mld vlan immediate leave 
+    Args:
+        device (`obj`): Device object
+        id ('int'): VLAN ID 
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    try:
+        device.configure([
+            "no ipv6 mld snooping vlan {id} immediate-leave".format(id=id)
+        ])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure ipv6 mld vlan {id} immediate-leave. Error:\n{error}".format(id=id, error=e)
+        )
+
+
+def configure_ipv6_mld_vlan(device, id):
+    """ Configure Enable IPv6 mld vlan 
+    Args:
+        device (`obj`): Device object
+        id ('int'): VLAN ID 
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    try:
+        device.configure([
+            "ipv6 mld snooping vlan {id}".format(id=id)
+        ])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure ipv6 mld vlan {id}. Error:\n{error}".format(id=id, error=e)
+        )
+
+def unconfigure_ipv6_mld_vlan(device, id):
+    """ Unconfigure Enable IPv6 mld vlan 
+    Args:
+        device (`obj`): Device object
+        id ('int'): VLAN ID 
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    try:
+        device.configure([
+            "no ipv6 mld snooping vlan {id}".format(id=id)
+        ])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure ipv6 mld vlan {id}. Error:\n{error}".format(id=id, error=e)
+        )
+
+
+def configure_ipv6_pim_rp_address(device, address):
+    """ Configure Enable ipv6 pim rp-address 
+    Args:
+        device (`obj`): Device object
+        address ('str'): rp address  
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    try:
+        device.configure([
+            "ipv6 pim rp-address {address}".format(address=address)
+        ])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure ipv6 pim rp-address {address}. Error:\n{error}".format(naaddressme=address, error=e)
+        )
+
+def unconfigure_ipv6_pim_rp_address(device, address):
+    """ Unconfigure Enable ipv6 pim rp-address 
+    Args:
+        device (`obj`): Device object
+        address ('str'): ipv6 address
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    try:
+        device.configure([
+            "no ipv6 pim rp-address {address}".format(address=address)
+        ])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure ipv6 pim rp-address {address}. Error:\n{error}".format(address=address, error=e)
+        )
+
+def configure_ipv6_mld_join_group(device, address, interface_id):
+    """ Configure Enable ipv6 mld join-group 
+    Args:
+        device (`obj`): Device object
+        address ('str'): ipv6 address  
+        interface_id ('str'): id of the interface to be configured 
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    cmd = [
+            f"interface {interface_id}",
+            f"ipv6 mld join-group {address}",
+          ]
+    try:
+        device.configure(cmd)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure ipv6 mld join-group  {address}. Error:\n{error}".format(address=address, error=e)
+        )
+def unconfigure_ipv6_mld_join_group(device, address, interface_id):
+    """ Unconfigure Enable ipv6 mld join-group 
+    Args:
+        device (`obj`): Device object
+        address ('str'): ipv6 address  
+        interface_id ('str'): id of the interface to be configured 
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    cmd = [
+            f"interface {interface_id}",
+            f"no ipv6 mld join-group {address}",
+          ]
+    try:
+        device.configure(cmd)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure ipv6 mld join-group  {address}. Error:\n{error}".format(address=address, error=e)
+        )
+
+def configure_ipv6_mld_snooping_vlan_static_interface(device, vlan_id, address, interface_id):
+    """ Configure Enable ipv6 mld snooping vlan static interfac
+    Args:
+        device (`obj`): Device object
+        address ('str'): ipv6 address  
+        interface_id ('str'): id of the interface to be configured 
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+
+    try:
+        device.configure(f"ipv6 mld snooping vlan {vlan_id} static {address} interface {interface_id}")
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure ipv6 mld join-group  {address}. Error:\n{error}".format(address=address, error=e)
+        )
+
+def unconfigure_ipv6_mld_snooping_vlan_static_interface(device, vlan_id, address, interface_id):
+    """ Unconfigure Enable ipv6 mld snooping vlan static interfac
+    Args:
+        device (`obj`): Device object
+        address ('str'): ipv6 address  
+        interface_id ('str'): id of the interface to be configured 
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+
+    try:
+        device.configure(f"no ipv6 mld snooping vlan {vlan_id} static {address} interface {interface_id}")
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure ipv6 mld join-group  {address}. Error:\n{error}".format(address=address, error=e)
+        )
