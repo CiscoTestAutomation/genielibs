@@ -467,7 +467,8 @@ class test_nx_interface(TestCase):
         vnis_map['nve_vni_suppress_arp'] = False
         vnis_map['nve_vni_ir'] = True
         vnis_map['nve_vni_multisite_ingress_replication'] = True
-        vnis_map['nve_vni_ir_proto'] =  'bgp'
+        vnis_map['nve_vni_ir_proto'] =  'static'
+        vnis_map['nve_vni_ir_peer_ip'] = '100.100.100.3'
         vnis_map['nve_vni_suppress_arp'] = True
         vnis_map['nve_vni'] = '1001-1100'
         vni_map['1001-1100'] = vnis_map
@@ -507,7 +508,9 @@ class test_nx_interface(TestCase):
                 ' multisite border-gateway interface loopback100',
                 ' member vni 1001-1100',
                 '  suppress-arp',
-                '  ingress-replication protocol bgp',
+                '  ingress-replication protocol static',
+                '   peer-ip 100.100.100.3',
+                '   exit',
                 '  multisite ingress-replication',
                 '  exit',
                 ' exit'
@@ -539,7 +542,8 @@ class test_nx_interface(TestCase):
         vnis_map = {}
         vni_map['nve_vni_multisite_ingress_replication'] = True
         vni_map['nve_vni_ir'] = True
-        vni_map['nve_vni_ir_proto'] = 'bgp'
+        vni_map['nve_vni_ir_proto'] = 'static'
+        vni_map['nve_vni_ir_peer_ip'] = '100.100.100.3'
         vni_map['nve_vni_suppress_arp'] = True
         vni_map['nve_vni'] = '1001-1100'
         vnis_map['1001-1100'] = vni_map
@@ -566,7 +570,9 @@ class test_nx_interface(TestCase):
                  ' no source-interface hold-down-time 30',
                  ' member vni 1001-1100',
                  '  no suppress-arp',
-                 '  no ingress-replication protocol bgp',
+                 '  ingress-replication protocol static',
+                 '   no peer-ip 100.100.100.3',
+                 '   exit',
                  '  no multisite ingress-replication',
                  '  exit',
                  ' exit'
