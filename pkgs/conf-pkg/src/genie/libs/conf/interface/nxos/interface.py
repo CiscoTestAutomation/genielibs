@@ -1247,6 +1247,14 @@ class NveInterface(VirtualInterface, genie.libs.conf.interface.NveInterface):
 
                     if attributes.value('nve_vni_suppress_arp'):
                         configurations.append_line('suppress-arp')
+                    
+                    if attributes.value('nve_vni_ir_proto'):
+                        configurations.append_line(
+                            attributes.format('ingress-replication protocol {}'.format(vni_config_dict[key].get('nve_vni_ir_proto',None))))
+                        
+                    if attributes.value('nve_vni_ir_peer_ip'):
+                            configurations.append_line(
+                                attributes.format('peer-ip {}'.format(vni_config_dict[key].get('nve_vni_ir_peer_ip',None))))
 
                     if attributes.value('nve_vni_multisite_ingress_replication'):
                         configurations.append_line('multisite ingress-replication')
@@ -1281,8 +1289,10 @@ class NveInterface(VirtualInterface, genie.libs.conf.interface.NveInterface):
                             attributes.format('suppress-arp'))
 
                       if vni_config_dict[key].get('nve_vni_ir', False):
-                          configurations.append_line(
-                            attributes.format('ingress-replication protocol {}'.format(vni_config_dict[key].get('nve_vni_ir_proto',None))))
+                          cfg_line = attributes.format('ingress-replication protocol {}'.format(vni_config_dict[key].get('nve_vni_ir_proto',None)))
+                          with configurations.submode_context(attributes.format(cfg_line, force=True)):
+                            configurations.append_line(
+                                attributes.format('peer-ip {}'.format(vni_config_dict[key].get('nve_vni_ir_peer_ip',None))))
 
                       if vni_config_dict[key].get('nve_vni_multisite_ingress_replication', False):
                           configurations.append_line(
