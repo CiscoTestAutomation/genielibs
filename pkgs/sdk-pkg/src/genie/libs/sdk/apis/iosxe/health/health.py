@@ -361,7 +361,6 @@ def health_logging(device,
 
     return logs
 
-
 def health_core(device,
                 default_dir=['bootflash:/core/', 'harddisk:/core/'],
                 output=None,
@@ -376,7 +375,8 @@ def health_core(device,
                 vrf=None,
                 archive=False,
                 delete_core=False,
-                health=True):
+                health=True,
+                **kwargs):
     '''Get the default directory of this device
 
         Args:
@@ -645,23 +645,43 @@ def health_core(device,
                         return []
 
     if health:
-        health_data = {}
-        health_data.setdefault('health_data', {})
-        health_data['health_data'].setdefault('num_of_cores',
-                                              len(all_corefiles))
+        if hasattr(runtime, 'health_data') and runtime.health_data is not None:
+            log.debug(f'runtime health data {runtime.health_data}')
+            runtime.health_data.setdefault(device.name, runtime.synchro.dict())
+            runtime.health_data[device.name].setdefault('core', {})
+            runtime_health_data = runtime.health_data[device.name]['core']
+        else:
+            runtime_health_data = {}
+
+        runtime_health_data.setdefault('corefiles', [])
+        # get existing core files from health data
+        existing_core_files = [hf.get('filename') for hf in runtime_health_data.get('corefiles', [])]
+        if existing_core_files:
+            log.info(f'Existing core files: {existing_core_files}')
+
+        # create list of new core files
+        new_core_files = [cf for cf in health_corefiles if cf not in existing_core_files]
+
+        # init health_data
+        health_data = {'health_data': {}}
+        health_data['health_data'].setdefault('num_of_cores', len(new_core_files))
         health_data['health_data'].setdefault('corefiles', [])
-        for filename in health_corefiles:
+
+        # process core files, add to existing health data
+        for filename in new_core_files:
+            file_data = {'filename': filename}
             if 'decode' in health_corefiles[filename]:
-                health_data['health_data']['corefiles'].append({
-                    'filename':
-                    filename,
-                    'decode':
-                    health_corefiles[filename]['decode']
-                })
-            else:
-                health_data['health_data']['corefiles'].append(
-                    {'filename': filename})
+                file_data.update({'decode': health_corefiles[filename]['decode']})
+
+            log.info(f'Adding file {filename} to health core info for device {device.name}')
+            health_data['health_data']['corefiles'].append(file_data)
+            runtime_health_data['corefiles'].append(file_data)
+
+        if hasattr(runtime, 'health_data'):
+            runtime.health_data[device.name]['core'] = runtime_health_data
+            log.debug(f'runtime health data {runtime.health_data}')
         return health_data
+
     if num_of_cores:
         return len(all_corefiles)
     return all_corefiles

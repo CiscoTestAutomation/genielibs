@@ -1,0 +1,47 @@
+configure:
+  commands:
+    access-session closed: "access-session closed\r\n"
+    access-session port-control auto: "access-session port-control auto\r\n"
+    authentication periodic: "authentication periodic\r\n"
+    authentication timer reauthenticate server: "authentication timer reauthenticate\
+      \ server\r\n"
+    dot1x pae authenticator: "dot1x pae authenticator\r\n"
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    mab: "mab\r\n"
+    no logging console: ''
+    service-policy type control subscriber PMAP_DefaultWiredDot1xClosedAuth_1X_MAB: "service-policy\
+      \ type control subscriber PMAP_DefaultWiredDot1xClosedAuth_1X_MAB\r\n"
+    switchport access vlan 7: "switchport access vlan 7\r\n"
+    switchport mode access: "switchport mode access\r\n"
+    switchport voice vlan 4: "switchport voice vlan 4\r\n"
+    template DefaultWiredDot1xClosedAuth: "template DefaultWiredDot1xClosedAuth\r\n"
+  prompt: stack-12m(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: stack-12m(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: stack-12m#

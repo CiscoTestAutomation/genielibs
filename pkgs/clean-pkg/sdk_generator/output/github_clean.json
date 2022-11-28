@@ -22,6 +22,13 @@
         "uid": "ApplyConfiguration",
         "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/sdwan/stages.py#L262"
       }
+    },
+    "iosxr": {
+      "doc": "Apply configuration on the device, either by providing a file or a\nraw configuration.\n\nStage Schema\n------------\napply_configuration:\n\n    configuration (str, optional): String representation of the configuration to\n        apply. Defaults to None.\n\n    configuration_from_file (str, optional): A file that contains a configuration\n        that will be read. The configuration contained will then be applied as\n        if a string representation of the config was applied. Defaults to None.\n\n    file (str, optional): A saved configuration file that will be used. The file\n        will either be used in copy run start or configure replace based on the\n        'configure_replace' argument. Defaults to None.\n\n    configure_replace (bool, optional): When 'True' use 'configure replace' instead\n        of 'copy run start'. Defaults to False.\n\n    config_timeout (int, optional): Max time in seconds allowed for applying the\n        configuration. Defaults to 60.\n\n    config_stable_time (int, optional): Max time in seconds allowed for the\n        configuration to stabilize. Defaults to 10.\n\n    copy_directly_to_startup (bool, optional): If 'True' copy the provided\n        configuration directly to the startup config. Defaults to False.\n\nExample\n-------\napply_configuration:\n    configuration: |\n        interface ethernet2/1\n        no shutdown\n    config_timeout: 600\n    config_stable_time: 10\n    copy_directly_to_startup: False\n\n",
+      "module_name": "stages.stages",
+      "package": "genie.libs.clean",
+      "uid": "ApplyConfiguration",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxr/stages.py#L645"
     }
   },
   "ApplySelfSignedCert": {
@@ -298,7 +305,7 @@
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "InstallImageAndPackages",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxr/stages.py#L262"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxr/stages.py#L263"
     }
   },
   "InstallPackages": {
@@ -325,7 +332,7 @@
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "LoadPies",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxr/stages.py#L28"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxr/stages.py#L29"
     }
   },
   "NodeRegistration": {
@@ -449,7 +456,7 @@
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "TftpBoot",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxr/stages.py#L154"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxr/stages.py#L155"
     },
     "nxos": {
       "doc": "This stage boots a new image onto your device using the tftp booting method.\n\nStage Schema\n------------\ntftp_boot:\n\n    image (str): Image to boot the device with\n\n    ip_address (str): The management IP address that will be configured in order\n        to reach the TFTP server.\n\n    subnet_mask (str): The management subnet mask that will be configured in\n        order to reach the TFTP server.\n\n    gateway (str): The management gateway that will be configured in order\n        to reach the TFTP server.\n\n    tftp_server (str): The TFTP server that is reachable through the management\n        interface.\n\n    timeout (int): The maximum time allowed in seconds to complete the tftp\n        booting process.\n\n    reboot_delay (int, optional): Time in seconds to sleep after sending the\n        reboot command. Defaults to 20.\n\n    reconnect_delay (int, optional): Time is seconds to sleep before reconnecting\n        after the device has come up. Defaults to 60.\n\nExample:\n--------\ntftp_boot:\n    image:\n      - /auto/some-location/that-this/image/stay-isr-image.bin\n    ip_address: [10.1.7.126, 10.1.7.127]\n    gateway: 10.1.7.1\n    subnet_mask: 255.255.255.0\n    tftp_server: 11.1.7.251\n\nThere is more than one ip address, one for each supervisor.\n",
@@ -538,7 +545,7 @@
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "VerifyRunningImage",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxr/stages.py#L593"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxr/stages.py#L594"
     }
   },
   "VerifyWirelessProcess": {

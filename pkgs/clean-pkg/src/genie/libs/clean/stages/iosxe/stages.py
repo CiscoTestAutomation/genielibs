@@ -285,8 +285,11 @@ There is more than one ip address, one for each supervisor.
         'write_memory'
     ]
 
-    def check_image_length(self ,steps, image, image_length_limit=IMAGE_LENGTH_LIMIT):
-
+    def check_image_length(self ,steps, image, image_length_limit=IMAGE_LENGTH_LIMIT): 
+        log.warning('The next release will REMOVE the following keys from the tftp_boot schema:\n'
+                    'recovery_password, recovery_username, recovery_en_password, ether_port, save_system_config\n'
+                    'Please update the clean YAML file accordingly.'
+                )
         with steps.start("Check the length of image: {}".format(image[0])) as step:
             if len(image[0]) > image_length_limit:
                 step.failed(f"The length of image path {image[0]} is more than the limit of"
@@ -840,7 +843,7 @@ reload:
             Optional('timeout'): int,
             Optional('reload_creds'): str,
             Optional('prompt_recovery'): bool,
-            #Any(): Any()
+            Any(): Any()
         },
         Optional('reconnect_via'): str,
     }

@@ -538,6 +538,7 @@ class RpcVerify():
                             log_msg = 'OPERATION VALUE {0}: {1} FAILED'.format(
                                 xpath, eval_text
                             )
+                            return (False, log_msg)
                     else:
                         log_msg = 'OPERATION VALUE {0}: {1} FAILED'.format(
                                 xpath, eval_text
@@ -663,6 +664,89 @@ class RpcVerify():
         log.error(log_msg)
         return result
 
+    def pre_process_keys(self, returns, response):
+        """Check for lists with multiple keys in returns xpaths.
+            and store the order of keys.
+
+        Args: 
+            returns (list): List of fields in returns containing
+                            list keys in xpath
+            response (list): List of tuples containing
+                            NETCONF - lxml.Element, xpath.
+                            GNMI - value, xpath
+        Implementation:
+            Eg: We have a returns field['xpath']:
+            field['xpath'] = /Sys/Cont1/List1[key1=val1]/Cont2/List2[key2=val2][key3=val3]
+            Since List2 has multiple keys under it we store the order
+            that key2 comes first and key3 comes second, 
+            so that we can compare it and correct the order in response.
+            
+            Store in key_orders = [
+                                    [ 
+                                      (val2,/Sys/Cont1/List1/Cont2/List2/key2),
+                                      (val3,/Sys/Cont1/List1/Cont2/List2/key3)
+                                    ]
+                                  ]
+        """
+        key_orders = []
+        for field in returns:
+            xpath = field['xpath']
+            key_order = []
+            prev_start_index = -1
+            prev_end_index = -1
+            for match in re.finditer(self.RE_FIND_KEYS, xpath):
+                key = match.group()
+                start_index = match.start()
+                end_index = match.end()
+                # Extract the key name
+                # Eg: '[Key1=Val1]'
+                # key_name = Key1
+                key_name = key.split('=')[0].strip('[')
+                # Extract the key value
+                # Eg: '[Key1=Val1]'
+                # key_val = Val1
+                key_val = key.split('=')[1].strip(']')
+                key_val = re.sub('"', '', key_val)
+                # Extract the key path from xpath
+                # Eg: /Sys/Cont/Lis[Key1=Val1]
+                # key_path = /Sys/Cont/Lis/Key1
+                key_path = xpath.split(key)[0] + '/' + key_name
+                key_path = re.sub(self.RE_FIND_KEYS, '', key_path)        
+
+                # We have the start and end index of keys found
+                # to detect if we have multiple keys or not
+                # Eg. Sys/List[k1=v1][k2=v2]
+                # End index of '[k1=v1]' == Start index of '[k2=v2]'
+                # If yes then we have detected a multiple list
+                # Store them as (key_value, key_path)
+                if start_index == prev_end_index:
+                    if (prev_key_val, prev_key_path) not in key_order:
+                        key_order.append((prev_key_val, prev_key_path))
+                    key_order.append((key_val, key_path))
+                else:
+                    # If multiple keys are found then only store it
+                    if len(key_order) > 1:
+                        key_orders.append(key_order)
+                    key_order = []
+                    
+                # Keep track of previous indexes, key_val, key_path.
+                # to match them with current
+                prev_start_index = start_index
+                prev_end_index = end_index
+                prev_key_path = key_path
+                prev_key_val = key_val
+
+            # If multiple keys are found then only store it        
+            if len(key_order) > 1:
+                key_orders.append(key_order)
+
+        # After storing all the key_orders, we send these key orders
+        # to find_groups_in_response() function which will find all
+        # these key orders in response even when they are not in correct order
+        if key_orders:
+            self.find_groups_in_response(key_orders, response)
+        return response
+    
     def pre_process_returns(self, returns):
         """Check for keys embedded in xpaths and extract them into separate fields.
         Args:
@@ -711,63 +795,163 @@ class RpcVerify():
         sequence_no = 1
         for field in returns:
             xpath = field['xpath']
-            ret_xp = ""
-            key_xp = ""
-            key_xp_val = ""
-            return_xpaths = {}
-            key = False
-            key_value = False
-            for xp in xpath:
-                # List key ends here
-                # Store the key xpath and value
-                if xp == "]":
-                    return_xpaths[key_xp] = key_xp_val
-                    key_xp_val = ""
-                    key_value = False
-                    continue
-                # Start of Key value
-                if xp == "=":
-                    key = False
-                    key_value = True
-                    continue
-                # Start of list key
-                if xp == "[":
-                    key_xp = ret_xp+"/"
-                    key = True
-                    continue
-                # Start collecting list key name
-                if key:
-                    key_xp += xp
-                    continue
-                # Start collecting list key value
-                if key_value:
-                    key_xp_val += xp
-                # Collect rest of the xpath
-                if not key and not key_value:
-                    ret_xp += xp
+            for key in self.RE_FIND_KEYS.findall(xpath):
+                # Extract the key name
+                # Eg: '[Key1=Val1]'
+                # key_name = Key1
+                key_name = key.split('=')[0].strip('[')
+                # Extract the key value
+                # Eg: '[Key1=Val1]'
+                # key_val = Val1
+                key_val = key.split('=')[1].strip(']')
+                key_val = re.sub('"', '', key_val)
+                # Extract the key path from xpath
+                # Eg: /Sys/Cont/Lis[Key1=Val1]
+                # key_path = /Sys/Cont/Lis/Key1
+                key_path = xpath.split(key)[0] + '/' + key_name
+                key_path = re.sub(self.RE_FIND_KEYS, '', key_path)  
 
-            # Create returns field for all the keys found
-            for xpath,value in return_xpaths.items():
+                # Create returns field for the key found
                 node = {}
-                xpath = xpath.replace("\"","")
-                value = value.replace("\"","")
                 node['sequence'] = sequence_no
                 node['nodetype'] = 'leaf'
-                node['value'] = value
+                node['value'] = key_val
                 node['op'] = '=='
                 node['key'] = True
                 node['selected'] = True
-                node['name'] = xpath[xpath.rfind('/')+1:]
-                node['xpath'] = xpath
+                node['name'] = key_name
+                node['xpath'] = key_path
                 new_returns.append(node)
-            # Convert the current field xpath to opfield xpath
             field['sequence'] = sequence_no
             field['default_xpath'] = field['xpath']
             field['xpath'] = re.sub(self.RE_FIND_KEYS, '', field['xpath'])
             new_returns.append(field)
             sequence_no += 1
-
         return new_returns
+
+    def find_groups_in_response(self, key_orders, response):
+        """Find the all the key_orders groups in response/opfields
+        Args:
+            key_orders (list): List of list of tuples containing (key_value, key_path)
+            Paths:
+                1. /cont/lis[k=v]/cont/lis[key1=val1][key2=val2]
+                2. /cont/lis[k=v]/cont/lis[key3=val3][key4=val4]
+            Eg key_orders: 
+                [
+                    [(val1, /cont/lis/cont/lis/key1), (val2, /cont/lis/cont/lis/key2)], # For path 1
+                    [(val3, /cont/lis/cont/lis/key3), (val4, /cont/lis/cont/lis/key4)]  # For path 2
+                ]
+
+        Implementation:
+            Eg response:
+            [
+                (some_val,some_path),(some_val,some_path),
+                # Below section of response is Group 1 of key_orders.
+                # Order of keys may be different as shown in this example. (key1 comes second and key2 comes first)
+                (val2, /cont/lis/cont/lis/key2), (val1, /cont/lis/cont/lis/key1)
+                # Below section of response is Group 1 of key_orders.
+                # Order of keys may be different as shown in this example. (key3 comes second and key4 comes first)
+                (val4, /cont/lis/cont/lis/key4), (val3, /cont/lis/cont/lis/key3)
+            ]
+            
+        # This function finds all the groups of key_orders in response even when they are not in correct order.
+        # Group is each key order of N multiple keys.
+        # Eg group1 = [(val1, key1_path),(val2, key2_path)], group2 = [(val3, key3_path),(val4 key4_path)]
+        # Eg: For group 1 in response key1 comes second and key2 comes first
+        # We found key1 and key2 at Index [2,1] in response
+        # This index will be sent to reorder_keys_in_opfield() function to correct it as [1,2]
+        """        
+        response = response[0]
+        # Iterate over all the groups in key_orders
+        for key_order in key_orders:
+            values = []
+            # Store the key_values of each key_path.
+            for field in key_order:
+                values.append(field[0])
+            # We store the first key path
+            # Eg: key1 path = /cont/lis/cont/lis/key1
+            #     key2 path = /cont/lis/cont/lis/key2
+            # Notice that we have a common list path between both
+            # Store first_key_path = /cont/lis/cont/lis/key1
+            first_key_path = key_order[0][1]
+            # Extract the list of first_key_path
+            # list_in_key = /cont/lis/cont/lis
+            # Now '/cont/lis/cont/lis' this list path will be 
+            # common for all keys in the group
+            # This will help us identify all the list keys in response
+            # to check whether they are together or not.
+            list_in_key = first_key_path[:first_key_path.rfind('/')]
+            key_len = len(key_order)
+            count = 0
+            key_indexes = []
+            for index,resp in enumerate(response):
+                # For every response, we trim the path upto last '/'
+                # To match it with out key list.
+                # Eg: resp = (value, Sys/cont/list/key)
+                # trim path to 'Sys/cont/list' and match it with
+                # our target list '/cont/lis/cont/lis'
+                list_in_response = resp[1][:resp[1].rfind('/')]
+                # If list is matched, check whether the response value is in
+                # our values[] list (has all the key_values of the group)
+                # This makes sure that the key found in response is in our current group.
+                # For every key found increase the count and check with key_len
+                # key_len is total number of keys for each group.
+                if(list_in_key == list_in_response and resp[0] in values):
+                    count += 1
+                    key_indexes.append(index)
+                else:
+                    count = 0
+                    key_indexes = []
+
+                # all keys are found and we have store the indexes
+                if(count == key_len):
+                    # Send those indexes for reordering
+                    self.reorder_keys_in_opfield(response, key_indexes, key_order)
+                    key_indexes = []
+                    count = 0
+
+    def reorder_keys_in_opfield(self, response, key_indexes, key_order):
+        """Correct the key order in the response
+        Args:
+            key_indexes (list): [2,1] (Key Indexes found in response)
+            key_order: [(val1, cont/lis/cont/lis/key1), (val2, cont/lis/cont/lis/key2)]
+
+        Implementation:
+            Eg response:
+            [
+                (some_val,some_path),(some_val,some_path),
+                # Below section of response is Group 1 of key_orders.
+                # But order of keys are different (key1 comes second and key2 comes first)
+                (val2, cont/lis/cont/lis/key2), (val1, cont/lis/cont/lis/key1),
+                (some_val,some_path),(some_val,some_path)
+            ]
+
+                Group 1 in response = (val2, cont/lis/cont/lis/key2), (val1, cont/lis/cont/lis/key1)
+                key_indexes = [2,1]
+
+                Reorder it:
+                    We have key_order: [(val1, cont/lis/cont/lis/key1), (val2, cont/lis/cont/lis/key2)]
+                    and key_indexes = [2,1]
+
+                    Store response[2] = key_order[0]
+                    Store response[1] = key_order[1]
+                
+        Return: Response with correct key_order
+                response =
+                    [
+                        (some_val,some_path),(some_val,some_path),
+                        (val1, cont/lis/cont/lis/key1), (val2, cont/lis/cont/lis/key2),
+                        (some_val,some_path),(some_val,some_path)
+                    ]
+            
+        """
+        index = key_indexes[0]
+        for field in key_order:
+            # Substituting fields(key_val,key_path) from key_order to response
+            # will ultimately fix the order in response
+            # as key_order fields has the correct order already
+            response[index] = field
+            index += 1
 
     def trim_response(self, response, parent_key_indexes, field):
         """Trims the response for specific list entry
@@ -796,9 +980,10 @@ class RpcVerify():
         """
         parent_dict = self.get_parent_dict(parent_key_indexes, field['xpath'])
         parent_key_xpath = list(parent_dict.keys())[0]
-        parent_key_index = list(parent_dict.values())[0]
+        parent_key_index = list(parent_dict.values())[0][0]
+        parent_key_value = list(parent_dict.values())[0][1]
         if not parent_key_index == 0:
-            next_index = self.find_next_index(response[0], parent_key_index+1, parent_key_xpath)
+            next_index = self.find_next_index(response[0], parent_key_index+1, parent_key_xpath, parent_key_value)
         else:
             next_index = len(response[0])
         # Trim the response for specific list entry
@@ -911,14 +1096,14 @@ class RpcVerify():
                                 # Trim the new response from the index where
                                 # current key is found
                                 key_found = True
-                                next_index = self.find_next_index(resp, index, field['xpath'])
+                                next_index = self.find_next_index(resp, index, field['xpath'], field['value'])
                                 new_response = [
                                     resp[
                                         index-1:next_index
                                         ]
                                     ]
                                 # Store current key index
-                                parent_key_indexes[field['xpath']] = parent_key_index + index
+                                parent_key_indexes[field['xpath']] = [parent_key_index + index, field['value']]
                                 break
 
                 # If a key-value is not found in the entire response
@@ -977,13 +1162,15 @@ class RpcVerify():
         list_found = self.check_list_in_returns(returns)
         new_returns = []
         if list_found:
+            # Check for multiple keys and correct the order in response
+            new_response = self.pre_process_keys(returns, response)
             # Update returns for list keys
             new_returns = self.pre_process_returns(returns)
             sequence = True
 
         # To process the operational state in a sequence
         if sequence:
-            result = self.process_sequencial_operational_state(response, new_returns, key)
+            result = self.process_sequencial_operational_state(new_response, new_returns, key)
         else:
             for field in returns:
                 sel = field.get('selected', False)
@@ -993,7 +1180,7 @@ class RpcVerify():
                     result = False
         return result
 
-    def find_next_index(self, response, index, xpath):
+    def find_next_index(self, response, index, xpath, value):
         """Get next index of the list key in the response
 
         Args:
@@ -1007,16 +1194,16 @@ class RpcVerify():
 
         Eg:
             <List1> ---->  This is parent_key_index
-                <Key>K1</Key> 
+                <Key>K1</Key>
                 <Prop>v1<Prop> ---> Property to validate
             </List1>
             <List2> -----> Return next_index
                 <Key>K2</Key>
                 <Prop>v2<Prop>
-            </List2>        
+            </List2>
         """
         for ix,resp in enumerate(response[index:]):
-            if resp[1] == xpath:
+            if resp[1] == xpath and not str(resp[0]) == value:
                 return ix+index
 
         return len(response)
@@ -1061,9 +1248,12 @@ class RpcVerify():
         """
         parent_key_index = 0
         parent_key_xpath = "/"
+        parent_key_value = ""
         parent_dict = {}
-        for xpath, index in parent_key_indexes.items():
+        for xpath, values in parent_key_indexes.items():
             # Trim name from the xpaths
+            index = values[0]
+            value = values[1]
             xp = xpath[:xpath.rfind('/')]
             current_xp = current_xpath[:current_xpath.rfind('/')]
             # if xp is in current_xp, that means
@@ -1071,8 +1261,9 @@ class RpcVerify():
             if not xpath == current_xpath and xp in current_xp:
                 parent_key_index = index
                 parent_key_xpath = xpath
+                parent_key_value = value
 
-        parent_dict[parent_key_xpath] = parent_key_index
+        parent_dict[parent_key_xpath] = [parent_key_index, parent_key_value]
         return parent_dict
 
     def verify_reply(self, response, expected, opfields):

@@ -127,12 +127,20 @@
   },
   "device": {
     "iosxe": {
+      "cat9k": {
+        "class_name": "Device",
+        "doc": "Device Genie Ops Object",
+        "module_name": "device.device",
+        "package": "genie.libs.ops",
+        "uid": "device",
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/device/iosxe/cat9k/device.py#L7"
+      },
       "class_name": "Device",
       "doc": "Device Genie Ops Object",
       "module_name": "device.device",
       "package": "genie.libs.ops",
       "uid": "device",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/device/iosxe/device.py#L129"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/device/iosxe/device.py#L24"
     },
     "iosxr": {
       "class_name": "Device",
@@ -140,7 +148,7 @@
       "module_name": "device.device",
       "package": "genie.libs.ops",
       "uid": "device",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/device/iosxr/device.py#L15"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/device/iosxr/device.py#L21"
     },
     "nxos": {
       "class_name": "Device",
@@ -148,7 +156,7 @@
       "module_name": "device.device",
       "package": "genie.libs.ops",
       "uid": "device",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/device/nxos/device.py#L15"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/device/nxos/device.py#L23"
     }
   },
   "dot1x": {
@@ -966,6 +974,7 @@
     "c8200",
     "c9500",
     "cat6k",
+    "cat9k",
     "ios",
     "iosxe",
     "iosxr",

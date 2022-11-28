@@ -1,0 +1,38 @@
+configure:
+  commands:
+    class-map type control subscriber match-any IN_CRITICAL_AUTH: "class-map type\
+      \ control subscriber match-any IN_CRITICAL_AUTH\r\n"
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    match activated-service-template DefaultCriticalVoice_SRV_TEMPLATE: "match activated-service-template\
+      \ DefaultCriticalVoice_SRV_TEMPLATE\r\n"
+    no logging console: ''
+  prompt: stack-12m(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: stack-12m(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: stack-12m#

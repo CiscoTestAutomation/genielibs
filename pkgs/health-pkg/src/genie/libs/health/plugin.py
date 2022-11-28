@@ -306,6 +306,7 @@ class HealthCheckPlugin(BasePlugin):
             runtime.health_results = runtime.synchro.dict()
             runtime.health_results.update(health_config)
             runtime.health_results['health_data'] = []
+            runtime.health_data = runtime.synchro.dict()
 
         # convert from pyATS testbed to Genie testbed
         tb = testbed.load(runtime.testbed)

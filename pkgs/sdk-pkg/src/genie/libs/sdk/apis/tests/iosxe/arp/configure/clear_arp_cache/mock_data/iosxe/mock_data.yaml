@@ -38,4 +38,8 @@ execute:
     term width 0: ''
     term width 511: ''
     terminal session-timeout 0: ''
+    clear arp-cache vrf red 1.1.1.1: ''
+    clear arp-cache 1.1.1.1: ''
+    clear arp-cache counters ha: ''
+    clear arp-cache interface Gi1/0/1: ''
   prompt: Switch#

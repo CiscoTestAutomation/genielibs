@@ -1,0 +1,38 @@
+configure:
+  commands:
+    crypto pki export test pkcs12 bootflash:client_chain.p12 password cisco123: "crypto\
+      \ pki export test pkcs12 bootflash:client_chain.p12 password cisco123\r\nDestination\
+      \ filename [client_chain.p12]? \r\nWriting pkcs12 file to bootflash:client_chain.p12\r\
+      \n\r\nCRYPTO_PKI: Exported PKCS12 file successfully.\r\nCSR4(config)#\r\n"
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: CSR4(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: CSR4(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: CSR4#

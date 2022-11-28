@@ -775,11 +775,22 @@ def run_gnmi(operation, device, steps,
         response = GnmiMessage.run_get(
             device, payload, namespace_modules
         )
+        # Response will be 'None' when some error is received
         if response is None:
             result = False
+        # Response will be empty, when no response received,
+        # If returns not provided, set result false.
         elif not response and not returns:
             result = False
+        # Response is received, but user don't want to validate returns
+        # set result to True as response is successfully received.
+        elif response and not returns:
+            result = True
+        # Returns is provided by user.
         else:
+            # No response received, but returns is provided
+            # We need to log all the returns not found
+            # Assign a temporary response
             if not response:
                 response.append((None, "/"))
             if not rpc_verify.process_operational_state(response, returns, sequence=sequence):

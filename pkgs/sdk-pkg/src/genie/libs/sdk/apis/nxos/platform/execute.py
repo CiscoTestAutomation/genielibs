@@ -167,3 +167,28 @@ def delete_unprotected_files(device, directory, protected, files_to_delete=None,
     else:
         log.info("No files will be deleted, the following files are protected:\n{}".format(
             '\n'.join(protected_set)))
+
+def execute_delete_files(device, path, filename, timeout=300):
+    ''' Delete the file in bootflash
+        Args:
+            device ('obj'): Device object
+            timeout ('int'): Max time to delete boot vars in seconds
+            path: Path where the file is present
+            filename: Name of the file required to delete
+    '''
+    dialog = Dialog(
+        [
+            Statement(
+                pattern=r".*\[(yes|no)\].*",
+                action="sendline(y)",
+                loop_continue=True,
+                continue_timer=False,
+            )
+        ]
+    )
+    try:
+        device.configure("delete {0}:{1} no-prompt".format(path,filename), reply=dialog, timeout=timeout)
+    except Exception as e:
+        raise Exception("Failed to delete file from the device on '{}'\n{}".format(device.name, str(e)))
+    else:
+        log.info("Deleted the files {0} successfully".format(filename))

@@ -5,6 +5,7 @@ import time
 
 # Unicon
 from unicon.eal.dialogs import Statement, Dialog
+from unicon.core.errors import SubCommandFailure
 
 log = logging.getLogger(__name__)
 
@@ -72,3 +73,20 @@ def install_remove_version(device, version=None, timeout=60, connect_timeout = 1
             return False
 
     return False
+
+def install_autoupgrade(device):
+    """ Perform install upgrade on the device
+    Args:
+        device ('obj'): Device object
+
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    
+    cmd = "install autoupgrade"
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to install upgrade on the device. Error:\n{e}")

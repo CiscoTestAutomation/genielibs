@@ -1,6 +1,5 @@
 import os
 import json
-from threading import Thread
 import time
 import json
 import logging
@@ -24,7 +23,7 @@ from .actions_helper import (configure_handler, api_handler, learn_handler,
                              parse_handler, execute_handler, _get_exclude,
                              _condition_validator, rest_handler,
                              bash_console_handler, dialog_handler,
-                             yang_handler)
+                             yang_handler, check_yang_subscribe)
 
 # skip in case pyats.contrib is not installed
 try:
@@ -305,6 +304,7 @@ def configure(self,
                        'expected_failure': expected_failure})
 
         output = configure_handler(**kwargs)
+        check_yang_subscribe(device, step)
 
     return output
 
@@ -772,11 +772,7 @@ def yang(self,
                 }
 
             result = yang_handler(**handler_kwargs)
-            if operation == 'subscribe' and isinstance(result, Thread):
-                while not result.stopped():
-                    log.info('Waiting for notification...')
-                    time.sleep(1)
-                result = result.result
+            check_yang_subscribe(device, step, result)
     else:
         result = None
 

@@ -8,7 +8,7 @@ import json
 from unittest.mock import patch
 from collections import OrderedDict
 import yang
-from cisco_gnmi import proto
+from yang.connector import proto
 from google.protobuf import json_format
 
 # Genie Libs
@@ -358,6 +358,50 @@ class TestYangExec(unittest.TestCase):
 
         self.assertEqual(result, True)
 
+    def test_path_elem_to_xpath(self):
+        """ Test if path_elem_to_xpath is adding prefix keys in opfields"""
+        update = [
+        {
+            'prefix':
+            {
+                'elem': 
+                [
+                    {
+                    'name': "System"
+                    },
+                    {
+                    'name': "ssh-server",
+                        'key':
+                        {
+                            'name': 'default'
+                        }
+                    }
+                ]
+            },
+            'path': 
+            {
+                'elem': 
+                [
+                    {
+                    'name': "state"
+                    },
+                    {
+                    'name': "rate-limit"
+                    }
+                ]
+            },
+            'val':
+            {
+                'json_val': '10'
+            }
+        }
+        ]
+
+        opfields = []
+        GnmiMessage.process_update(update=update, prefix=update[0]['prefix'], opfields=opfields)
+        result = ('default', '/System/ssh-server/name') in opfields
+        self.assertEqual(result, True)
+
     def test_run_get_gnmi(self):
         """ Test run_gnmi with get action and range op """
         operation = 'get'
@@ -479,7 +523,7 @@ class TestYangExec(unittest.TestCase):
                     {
                         'top': 'Cisco-NX-OS-device'
                     }, 
-                    'decode': GnmiMessage.decode_notification, 
+                    'decode': GnmiMessage.process_subscribe_response, 
                     'log': log
                 }
 
@@ -612,7 +656,7 @@ class TestYangExec(unittest.TestCase):
                         {
                             'top': 'Cisco-NX-OS-device'
                         }, 
-                    'decode': GnmiMessage.decode_notification, 
+                    'decode': GnmiMessage.process_subscribe_response, 
                     'log': log
                 }
 
@@ -709,7 +753,7 @@ class TestYangExec(unittest.TestCase):
                         {
                             'top': 'Cisco-NX-OS-device'
                         }, 
-                    'decode': GnmiMessage.decode_notification, 
+                    'decode': GnmiMessage.process_subscribe_response, 
                     'log': log
                 }
 
@@ -1068,7 +1112,7 @@ class TestYangExec(unittest.TestCase):
                         {
                             'top': 'Cisco-NX-OS-device'
                         }, 
-                    'decode': GnmiMessage.decode_notification, 
+                    'decode': GnmiMessage.process_subscribe_response, 
                     'log': log
                 }
 
@@ -1727,6 +1771,70 @@ class TestYangExec(unittest.TestCase):
 
         self.assertEqual(result, False)
 
+    def test_gnmi_leaf_list_proto(self):
+        """ Test leaf-list property for proto encoding """
+        returns = [{
+            'nodetype': 'leaf',
+            'value': ['route-target:100:2130052', '8'],
+            'op': '==',
+            'selected': True,
+            'name':'ext-community',
+            'xpath': '/network-instances/network-instance/protocols/protocol/ext-communities/ext-community/state/ext-community'
+        }]
+
+        update = [{
+          'path': {
+            'elem': [
+                {
+                'name': "network-instances"
+                },
+                {
+                'name': "network-instance",
+                'key': {'name':'default'}
+                },
+                {
+                'name': "protocols"
+                },
+                {
+                  'name': "protocol",
+                  'key':
+                    {
+                        'identifier':'BGP',
+                        'name': 'bgp'
+                    }
+                },
+                {
+                  'name': "ext-communities"
+                },
+                {
+                  'name': "ext-community",
+                  'key':
+                    {
+                        'identifier':'index',
+                        'name': '123149186346232'
+                    }
+                },
+                {
+                  'name': "state"
+                },
+                {
+                  'name': "ext-community"
+                }
+            ]
+        },
+            'val':
+                {
+                    'leaflist_val': {'element':[{'string_val':'route-target:100:2130052'}, {'string_val':'8'}]}
+                }
+            }
+        ]
+
+        opfields = []
+        GnmiMessage.process_update(update,opfields=opfields)
+        rpc_verify = RpcVerify(log=log, capabilities=[])
+        result = rpc_verify.process_operational_state(response=opfields, returns=returns)
+        self.assertEqual(result, True)
+
     def test_run_gnmi_get_config_sequence(self):
         """ Test run_gnmi get-config with List Keys in returns"""
         operation = 'get'
@@ -1867,6 +1975,131 @@ class TestYangExec(unittest.TestCase):
 
         self.assertEqual(result, False)
 
+    def test_run_gnmi_get_config_no_returns(self):
+        """ Test run_gnmi get-config with no returns should pass"""
+        operation = 'get-config'
+        steps = "STEP 1: Starting action yang on device 'ncs1004'"
+        datastore = {
+            'type': '',
+            'lock': False,
+            'retry': 10
+        }
+        rpc_data = {
+            'namespace': {
+                'top': 'http://cisco.com/ns/yang/cisco-nx-os-device',
+            },
+            'nodes': [{
+                'xpath': '/top:System/top:igmp-items/top:inst-items/top:dom-items',
+                'nodetype': 'container'
+            }]
+        }
+
+        format = {
+            'auto_validate': False,
+            'negative_test': False,
+            'pause': 0,
+            'timeout': 30,
+        }
+
+        response = proto.gnmi_pb2.GetResponse()
+        upd = {
+          'path': {
+            'elem': [
+                {
+                'name': "System"
+                },
+                {
+                  'name': "igmp-items"
+                },
+                {
+                  'name': "inst-items"
+                },
+                {
+                  'name': "dom-items"
+                }
+            ]
+          }
+        }
+        update = json_format.ParseDict(
+            upd,
+            proto.gnmi_pb2.Update()
+        )
+
+        json_val = {
+            "Dom-list":
+            [
+                {
+                    "name":"default",
+                    "eventHist-items":
+                    {
+                        "EventHistory-list":
+                        [
+                            {
+                                "type":"nbm",
+                                "size":4
+                            },
+                            {
+                                "type":"igmpInternal",
+                                "size":2
+                            },
+                            {
+                                "type":"vrf",
+                                "size":2
+                            },
+                            {
+                                "type":"mtrace",
+                                "size":2
+                            },
+                            {
+                                "type":"ha",
+                                "size":3
+                            },
+                            {
+                                "type":"groupEvents",
+                                "size":3
+                            },
+                            {
+                                "type":"intfEvents",
+                                "size":3
+                            },
+                            {
+                                "type":"intfDebugs",
+                                "size":3
+                            },
+                            {
+                                "type":"policy",
+                                "size":2
+                            },
+                            {
+                                "type":"cli",
+                                "size":3
+                            },
+                            {
+                                "type":"mvr",
+                                "size":3
+                            },
+                            {
+                                "type":"groupDebugs",
+                                "size":3
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+        
+        update.val.json_ietf_val = json.dumps(json_val).encode('utf-8')
+        notif = proto.gnmi_pb2.Notification()
+        notif.update.append(update)
+        response.notification.append(notif)
+        device = TestDevice(response)
+
+        result = run_gnmi(
+            operation, device, steps, datastore, rpc_data, returns=None, format=format
+        )
+
+        self.assertEqual(result, True)
+        
     @patch('genie.libs.sdk.triggers.blitz.yangexec.netconf_send')
     def test_run_netconf_get_lxml_without_format(self, netconf_send_mock):
         """ Test run_netconf get action with lxml objects"""
@@ -1916,6 +2149,420 @@ class TestYangExec(unittest.TestCase):
         )
         self.assertEqual(result, True)
 
+    def test_run_gnmi_get_list_val(self):
+        """ Test run_gnmi get-config for property having list as a value"""
+        operation = 'get'
+        steps = "STEP 1: Starting action yang on device 'ncs1004'"
+        datastore = {
+            'type': '',
+            'lock': False,
+            'retry': 10
+        }
+        rpc_data = {
+            'namespace': {
+                'oc-netinst': 'http://openconfig.net/yang/network-instance',
+            },
+            'nodes': [{
+                'xpath': '/oc-netinst:network-instances/oc-netinst:network-instance[oc-netinst:name="default"]/oc-netinst:protocols/oc-netinst:protocol[oc-netinst:identifier="BGP"][oc-netinst:name="bgp"]/oc-netinst:bgp/oc-netinst:rib/oc-netinst:afi-safis/oc-netinst:afi-safi[oc-netinst:afi-safi-name="L2VPN_EVPN"]/oc-netinst:l2vpn-evpn/oc-netinst:loc-rib/oc-netinst:routes/oc-netinst:route-distinguisher[oc-netinst:route-distinguisher="10.1.0.11:32776"]/oc-netinst:type-two-mac-ip-advertisement/oc-netinst:type-two-route[oc-netinst:ethernet-tag="0"][oc-netinst:ip-length="32"][oc-netinst:ip-prefix="5.0.120.0/32"][oc-netinst:mac-address="00:11:c0:08:00:01"][oc-netinst:mac-length="48"]/oc-netinst:paths/oc-netinst:path[oc-netinst:peer-ip="0.0.0.0"][oc-netinst:peer-path-id="0"][oc-netinst:source-address-family="L2VPN_EVPN"][oc-netinst:source-route-distinguisher="0:0"]/oc-netinst:state',
+                'nodetype': 'container'
+            }]
+        }
+        returns = [{
+            'nodetype': 'leaf',
+            'value': ['10.1.0.31', '10.1.0.32'],
+            'op': '==',
+            'selected': 'True',
+            'name': 'advertised-to-peer',
+            'xpath': '/network-instances/network-instance/protocols/protocol/bgp/rib/afi-safis/afi-safi/l2vpn-evpn/loc-rib/routes/route-distinguisher/type-two-mac-ip-advertisement/type-two-route/paths/path/state/advertised-to-peer'
+        }]
+
+        format = {
+            'auto_validate': False,
+            'negative_test': False,
+            'pause': 0,
+            'timeout': 30,
+        }
+
+        response = proto.gnmi_pb2.GetResponse()
+        upd = {
+            'path': 
+            {
+                'origin': 'openconfig', 
+                'elem': 
+                [
+                    {'name': 'network-instances'}, 
+                    {
+                        'name': 'network-instance', 
+                        'key': {'name': 'default'}
+                    }, 
+                    {'name': 'protocols'}, 
+                    {
+                        'name': 'protocol', 
+                        'key': 
+                        {
+                            'name': 'bgp', 
+                            'identifier': 'BGP'
+                        }
+                    }, 
+                    {'name': 'bgp'}, 
+                    {'name': 'rib'}, 
+                    {'name': 'afi-safis'}, 
+                    {
+                        'name': 'afi-safi', 
+                        'key': 
+                        {
+                            'afi-safi-name': 'L2VPN_EVPN'
+                        }
+                    }, 
+                    {
+                        'name': 'l2vpn-evpn'
+                    }, 
+                    {
+                        'name': 'loc-rib'
+                    }, 
+                    {'name': 'routes'}, 
+                    {
+                        'name': 'route-distinguisher', 
+                        'key': 
+                        {
+                            'route-distinguisher': '10.1.0.11:32776'
+                        }
+                    }, 
+                    {'name': 'type-two-mac-ip-advertisement'}, 
+                    {
+                        'name': 'type-two-route', 
+                        'key': 
+                        {
+                            'mac-address': '00:11:c0:08:00:01', 
+                            'ethernet-tag': '0', 
+                            'mac-length': '48', 
+                            'ip-prefix': '5.0.120.0/32', 
+                            'ip-length': '32'
+                        }
+                    }, 
+                    {'name': 'paths'},
+                    {
+                        'name': 'path', 
+                        'key': 
+                        {
+                            'peer-ip': '0.0.0.0', 
+                            'source-route-distinguisher': '0:0', 
+                            'peer-path-id': '0', 
+                            'source-address-family': 'L2VPN_EVPN'
+                        }
+                    }, 
+                    {'name': 'state'}
+                ]
+            }
+        }
+        update = json_format.ParseDict(
+            upd,
+            proto.gnmi_pb2.Update()
+        )
+
+        json_val = {
+            "esi":"0000.0000.0000.0000.0000",
+            "peer-ip":"0.0.0.0",
+            "peer-path-id":0,
+            "source-route-distinguisher":"0:0",
+            "source-address-family":"L2VPN_EVPN",
+            "label":"2120009",
+            "label2":"3120004",
+            "multipath":'false',
+            "attr-index":"139658684353756",
+            "ext-community-index":"123149105194088",
+            "advertised-to-peer":["10.1.0.31","10.1.0.32"],
+            "bestpath":'true'
+        }
+        
+        update.val.json_ietf_val = json.dumps(json_val).encode('utf-8')
+        notif = proto.gnmi_pb2.Notification()
+        notif.update.append(update)
+        response.notification.append(notif)
+        device = TestDevice(response)
+
+        result = run_gnmi(
+            operation, device, steps, datastore, rpc_data, returns, format=format
+        )
+
+        self.assertEqual(result, True)
+
+    def test_run_gnmi_get_config_sequence_key_order(self):
+        """ Test run_gnmi get-config when multiple key order in response is changed."""
+        operation = 'get'
+        steps = "STEP 1: Starting action yang on device 'ncs1004'"
+        datastore = {
+            'type': '',
+            'lock': False,
+            'retry': 10
+        }
+        rpc_data = {
+            'namespace': {
+                'oc-netinst': 'http://openconfig.net/yang/network-instance'
+            },
+            'nodes': [{
+                'xpath': '/oc-netinst:network-instances/oc-netinst:network-instance[oc-netinst:name="default"]/oc-netinst:protocols/oc-netinst:protocol[oc-netinst:identifier="BGP"][oc-netinst:name="bgp"]/oc-netinst:bgp/oc-netinst:rib/oc-netinst:afi-safis/oc-netinst:afi-safi[oc-netinst:afi-safi-name="L2VPN_EVPN"]/oc-netinst:l2vpn-evpn/oc-netinst:loc-rib/oc-netinst:routes/oc-netinst:route-distinguisher[oc-netinst:route-distinguisher="10.1.0.11:32769"]/oc-netinst:type-two-mac-ip-advertisement/oc-netinst:type-two-route[oc-netinst:ethernet-tag="0"][oc-netinst:ip-length="128"][oc-netinst:ip-prefix="5::809/oc-netinst:128"][oc-netinst:mac-address="00:14:01:00:00:0a"][oc-netinst:mac-length="48"]/oc-netinst:state/oc-netinst:ip-prefix',
+                'nodetype': 'leaf'
+            },{
+                'xpath': '/oc-netinst:network-instances/oc-netinst:network-instance[oc-netinst:name="default"]/oc-netinst:protocols/oc-netinst:protocol[oc-netinst:identifier="BGP"][oc-netinst:name="bgp"]/oc-netinst:bgp/oc-netinst:rib/oc-netinst:afi-safis/oc-netinst:afi-safi[oc-netinst:afi-safi-name="L2VPN_EVPN"]/oc-netinst:l2vpn-evpn/oc-netinst:loc-rib/oc-netinst:routes/oc-netinst:route-distinguisher[oc-netinst:route-distinguisher="10.1.0.11:32769"]/oc-netinst:type-two-mac-ip-advertisement/oc-netinst:type-two-route[oc-netinst:ethernet-tag="0"][oc-netinst:ip-length="0"][oc-netinst:ip-prefix="0.0.0.0/32"][oc-netinst:mac-address="00:11:c0:01:00:1e"][oc-netinst:mac-length="48"]/oc-netinst:state/oc-netinst:ip-prefix',
+                'nodetype': 'leaf'
+            },
+            ]
+        }
+        returns = [{
+            'nodetype': 'leaf',
+            'value': '5::809/128',
+            'op': '==',
+            'selected': 'True',
+            'name': 'ip-prefix',
+            'xpath': '/network-instances/network-instance[name=default]/protocols/protocol[identifier=BGP][name=bgp]/bgp/rib/afi-safis/afi-safi[afi-safi-name=L2VPN_EVPN]/l2vpn-evpn/loc-rib/routes/route-distinguisher[route-distinguisher=10.1.0.11:32769]/type-two-mac-ip-advertisement/type-two-route[ethernet-tag=0][ip-length=128][ip-prefix=5::809/128][mac-address=00:14:01:00:00:0a][mac-length=48]/state/ip-prefix'
+        },{
+            'nodetype': 'leaf',
+            'value': '0.0.0.0/32',
+            'op': '==',
+            'selected': 'True',
+            'name': 'ip-prefix',
+            'xpath': '/network-instances/network-instance[name=default]/protocols/protocol[identifier=BGP][name=bgp]/bgp/rib/afi-safis/afi-safi[afi-safi-name=L2VPN_EVPN]/l2vpn-evpn/loc-rib/routes/route-distinguisher[route-distinguisher=10.1.0.11:32769]/type-two-mac-ip-advertisement/type-two-route[ethernet-tag=0][ip-length=0][ip-prefix=0.0.0.0/32][mac-address=00:11:c0:01:00:1e][mac-length=48]/state/ip-prefix'
+        }]
+
+        format = {
+            'auto_validate': False,
+            'negative_test': False,
+            'encoding': 'JSON',
+            'pause': 0,
+            'timeout': 30,
+        }
+
+        response = proto.gnmi_pb2.GetResponse()
+        upd = {
+            'path':
+            {
+                'origin': 'openconfig',
+                'elem':
+                [
+                    {'name': 'network-instances'}, 
+                    {
+                        'name': 'network-instance',
+                        'key': {'name': 'default'}
+                    },
+                    {'name': 'protocols'},
+                    {
+                        'name': 'protocol',
+                        'key':
+                        {
+                            'identifier': 'BGP',
+                            'name': 'bgp'
+                        }
+                    },
+                    {'name': 'bgp'},
+                    {'name': 'rib'},
+                    {'name': 'afi-safis'},
+                    {
+                        'name': 'afi-safi',
+                        'key': {'afi-safi-name': 'L2VPN_EVPN'}
+                    },
+                    {
+                        'name': 'l2vpn-evpn'
+                    },
+                    {
+                        'name': 'loc-rib'
+                    },
+                    {
+                        'name': 'routes'
+                    },
+                    {
+                        'name': 'route-distinguisher',
+                        'key':
+                        {
+                            'route-distinguisher': '10.1.0.11:32769'
+                        }
+                    },
+                    {'name': 'type-two-mac-ip-advertisement'},
+                    {
+                        'name': 'type-two-route',
+                        'key':
+                        {
+                            'mac-length': '48',
+                            'mac-address': '00:14:01:00:00:0a',
+                            'ip-length': '128',
+                            'ethernet-tag': '0',
+                            'ip-prefix': '5::809/128'
+                        }
+                    },
+                    {'name': 'state'},
+                    {'name': 'ip-prefix'}
+                ]
+            }
+        }
+        update = json_format.ParseDict(
+            upd,
+            proto.gnmi_pb2.Update()
+        )
+
+        update.val.json_val = json.dumps('5::809/128').encode('utf-8')
+        notif = proto.gnmi_pb2.Notification()
+        notif.update.append(update)
+        response.notification.append(notif)
+
+        upd = {
+            'path':
+            {
+                'origin': 'openconfig',
+                'elem':
+                [
+                    {'name': 'network-instances'},
+                    {
+                        'name': 'network-instance',
+                        'key': {'name': 'default'}
+                    },
+                    {'name': 'protocols'},
+                    {
+                        'name': 'protocol',
+                        'key':
+                        {
+                            'identifier': 'BGP',
+                            'name': 'bgp'
+                        }
+                    },
+                    {'name': 'bgp'},
+                    {'name': 'rib'},
+                    {'name': 'afi-safis'},
+                    {
+                        'name': 'afi-safi',
+                        'key': {'afi-safi-name': 'L2VPN_EVPN'}
+                    },
+                    {
+                        'name': 'l2vpn-evpn'
+                    },
+                    {
+                        'name': 'loc-rib'
+                    },
+                    {
+                        'name': 'routes'
+                    },
+                    {
+                        'name': 'route-distinguisher',
+                        'key':
+                        {
+                            'route-distinguisher': '10.1.0.11:32769'
+                        }
+                    },
+                    {'name': 'type-two-mac-ip-advertisement'},
+                    {
+                        'name': 'type-two-route',
+                        'key':
+                        {
+                            'mac-length': '48',
+                            'mac-address': '00:11:c0:01:00:1e',
+                            'ip-length': '0',
+                            'ethernet-tag': '0',
+                            'ip-prefix': '0.0.0.0/32'
+                        }
+                    },
+                    {'name': 'state'},
+                    {'name': 'ip-prefix'}
+                ]
+            }
+        }
+        update = json_format.ParseDict(
+            upd,
+            proto.gnmi_pb2.Update()
+        )
+
+        update.val.json_val = json.dumps('0.0.0.0/32').encode('utf-8')
+        notif.update.append(update)
+        response.notification.append(notif)
+        device = TestDevice(response)
+
+        result = run_gnmi(
+            operation, device, steps, datastore, rpc_data, returns, format=format
+        )
+
+        self.assertEqual(result, True)
+
+    def test_run_subscribe_no_returns(self):
+        """ Test GNMI Subscribe with no returns should pass"""
+
+        rpc_verify = RpcVerify(log=log, capabilities=[])
+        operation = "subscribe"
+        request = {
+                    'namespace':
+                        {
+                            'top': 'Cisco-NX-OS-device'
+                        },
+                    'nodes':
+                        [
+                            {
+                                'nodetype': 'leaf',
+                                'xpath': 'System/igmp-items/inst-items/heavy-Template',
+                            }
+                        ],
+                    'request_mode': 'ONCE',
+                    'sub_mode': 'SAMPLE',
+                    'negative_test': False,
+                    'encoding': 'JSON',              # No returns in request
+                    'verifier': rpc_verify.process_operational_state,
+                    'namespace_modules':
+                        {
+                            'top': 'Cisco-NX-OS-device'
+                        },
+                    'decode': GnmiMessage.process_subscribe_response,
+                    'log': log
+                }
+
+        # Response 1
+        path_elem1 = proto.gnmi_pb2.PathElem()
+        path_elem1.KeyEntry.key = ""
+        path_elem1.KeyEntry.value = ""
+        path_elem1.name = "System"
+
+        path1 = proto.gnmi_pb2.Path()
+        path1.origin = "device"
+        path1.elem.append(path_elem1)
+
+        val1 = {
+                "igmp-items":
+                    {
+                    "inst-items":
+                        {
+                            "heavy-Template": True
+                        }
+                    }
+                }
+        val1 = json.dumps(val1).encode('utf-8')
+
+        value1 = proto.gnmi_pb2.TypedValue()
+        value1.json_val = val1
+
+        update1 = proto.gnmi_pb2.Update()
+        update1.path.MergeFrom(path1)
+        update1.val.MergeFrom(value1)
+
+        notification1 = proto.gnmi_pb2.Notification()
+        notification1.timestamp = 0
+        notification1.prefix.MergeFrom(proto.gnmi_pb2.Path())
+        notification1.update.append(update1)
+
+        response1 = proto.gnmi_pb2.SubscribeResponse()
+        response1.update.MergeFrom(notification1)
+
+        # Response 2
+        response2 = proto.gnmi_pb2.SubscribeResponse()
+        response2.sync_response = True
+
+        # initiate subscription thread
+        subscribe_thread = GnmiNotification(
+            [response1, response2],
+            **request
+        )
+        subscribe_thread.start()
+
+        # Wait till the thread is stopped.
+        subscribe_thread.join()
+
+        # Test the result
+        self.assertEqual(subscribe_thread.result, True)
+        
     def test_run_subscribe_multiple_leaf_nodes(self):
         """ Test _trim_nodes for multiple leaf nodes"""
         rpc_verify = RpcVerify(log=log, capabilities=[])
@@ -1966,6 +2613,837 @@ class TestYangExec(unittest.TestCase):
         nodes = gmc._trim_nodes(rpc_data['nodes'])
         nodes_len = len(nodes)
         self.assertEqual(nodes_len, 2)
+        
+    def test_check_opfield(self):
+        """ Test check_opfield"""
+        value = 'pref:eth1/3'
+        field = {'nodetype': 'leaf', 'value': 'pref:eth1/1', 'op': '==', 'selected': 'True', 'name': 'id', 'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/if-items/If-list/id'}
+        rpc_verify = RpcVerify(log=log, capabilities=[])
+        result = rpc_verify.check_opfield(value,field)
+        self.assertEqual(result[0], False)
+
+    def test_run_subscribe_stream_dynamic_values(self):
+        """ Test GNMI Subscribe ONCE mode for Subscription List"""
+
+        rpc_verify = RpcVerify(log=log, capabilities=[])
+        operation = "subscribe"
+        request = {
+                    'namespace': 
+                    {
+                        'top': 'Cisco-NX-OS-device'
+                    }, 
+                    'nodes': 
+                    [
+                        {
+                            'nodetype': 'leaf',
+                            'datatype': '',
+                            'xpath': 'System/igmp-items/inst-items/bootupDelay',
+                            'name': 'bootupDelay',
+                            'value': ''
+                        }
+                    ], 
+                    'request_mode': 'STREAM', 
+                    'sub_mode': 'SAMPLE', 
+                    'negative_test': False, 
+                    'encoding': 'JSON',
+                    'sample_interval': 1,
+                    'stream_max': 5,
+                    'returns': 
+                    [
+                        {
+                            'datatype': 'ipmc_BootupDelay', 
+                            'nodetype': 'leaf', 
+                            'name': 'bootupDelay', 
+                            'op': '==', 
+                            'selected': 'True', 
+                            'value': 0, 
+                            'xpath': '/System/igmp-items/inst-items/bootupDelay'
+                        }
+                    ], 
+                    'verifier': rpc_verify.process_operational_state, 
+                    'namespace_modules': 
+                    {
+                        'top': 'Cisco-NX-OS-device'
+                    }, 
+                    'decode': GnmiMessage.process_subscribe_response, 
+                    'log': log
+                }
+
+        # Response 1
+        path_elem1 = proto.gnmi_pb2.PathElem()
+        path_elem1.KeyEntry.key = ""
+        path_elem1.KeyEntry.value = ""
+        path_elem1.name = "System"
+
+        path1 = proto.gnmi_pb2.Path()
+        path1.origin = "device"
+        path1.elem.append(path_elem1)
+
+        val1 = {
+                'igmp-items': 
+                {
+                    'inst-items': 
+                    {
+                        'bootupDelay': 0,
+                        'upTime': 100
+                    }
+                }
+            }
+        val1 = json.dumps(val1).encode('utf-8')
+
+        value1 = proto.gnmi_pb2.TypedValue()
+        value1.json_val = val1
+
+        update1 = proto.gnmi_pb2.Update()
+        update1.path.MergeFrom(path1)
+        update1.val.MergeFrom(value1)
+
+        notification1 = proto.gnmi_pb2.Notification()
+        notification1.timestamp = 0
+        notification1.prefix.MergeFrom(proto.gnmi_pb2.Path())
+        notification1.update.append(update1)
+
+        response1 = proto.gnmi_pb2.SubscribeResponse()
+        response1.update.MergeFrom(notification1)
+
+        # Response 2
+        path_elem2 = proto.gnmi_pb2.PathElem()
+        path_elem2.KeyEntry.key = ""
+        path_elem2.KeyEntry.value = ""
+        path_elem2.name = "System"
+
+        path2 = proto.gnmi_pb2.Path()
+        path2.origin = "device"
+        path2.elem.append(path_elem2)
+
+        val2 = {
+                'igmp-items': 
+                {
+                    'inst-items': 
+                    {
+                        'bootupDelay': 0,
+                        'upTime': 200
+                    }
+                }
+            }
+        val2 = json.dumps(val2).encode('utf-8')
+
+        value2 = proto.gnmi_pb2.TypedValue()
+        value2.json_val = val2
+
+        update2 = proto.gnmi_pb2.Update()
+        update2.path.MergeFrom(path2)
+        update2.val.MergeFrom(value2)
+
+        notification2 = proto.gnmi_pb2.Notification()
+        notification2.timestamp = 0
+        notification2.prefix.MergeFrom(proto.gnmi_pb2.Path())
+        notification2.update.append(update2)
+
+        response2 = proto.gnmi_pb2.SubscribeResponse()
+        response2.update.MergeFrom(notification2)
+
+        # initiate subscription thread
+        subscribe_thread = GnmiNotification(
+            [response1, response2],
+            **request
+        )
+        subscribe_thread.start()
+
+        # Wait till the thread is stopped.
+        subscribe_thread.join()
+
+        # Test the result
+        self.assertEqual(subscribe_thread.result, True)
+
+    def test_json_dict_multiple_updates(self):
+         """ Test json_dict for multiple updates received for a get response """
+         operation = 'get'
+         steps = "STEP 1: Starting action yang on device 'ncs1004'"
+         datastore = {
+             'type': '',
+             'lock': False,
+             'retry': 10
+         }
+         rpc_data = {
+             'namespace': {
+                 'top': 'http://cisco.com/ns/yang/cisco-nx-os-device'
+             },
+             'nodes': [{
+                 'xpath': '/top:System/top:igmp-items/top:inst-items/top:dom-items/top:Dom-list[top:name="default"]/top:eventHist-items/top:EventHistory-list/type'
+             }]
+         }
+         returns = [{
+             'nodetype': 'leaf',
+             'count': 3,
+             'op': '==',
+             'selected': True,
+             'name': 'type',
+             'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/eventHist-items/EventHistory-list/type'
+         }]
+
+         format = {
+             'auto-validate': False
+         }
+         response = proto.gnmi_pb2.GetResponse()
+         # First Update
+         upd1 = {
+             'path': 
+             {
+                 'elem': 
+                 [
+                     {'name': 'System'}, 
+                     {'name': 'igmp-items'}, 
+                     {'name': 'inst-items'},
+                     {'name': 'dom-items'}, 
+                     {
+                         'name': 'Dom-list', 
+                         'key': {'name': 'default'}
+                     }, 
+                     {'name': 'eventHist-items'}, 
+                     {
+                         'name': 'EventHistory-list', 
+                         'key': {'type': 'nbm'}
+                     }, 
+                     {'name': 'type'}
+                 ]
+             }
+         }
+         update1 = json_format.ParseDict(
+             upd1,
+             proto.gnmi_pb2.Update()
+         )
+         update1.val.json_val = json.dumps('nbm').encode('utf-8')
+
+         # Second Update
+         upd2 = {
+             'path': 
+             {
+                 'elem': 
+                 [
+                     {'name': 'System'}, 
+                     {'name': 'igmp-items'}, 
+                     {'name': 'inst-items'}, 
+                     {'name': 'dom-items'}, 
+                     {
+                         'name': 'Dom-list', 
+                         'key': {'name': 'default'}
+                     }, 
+                     {'name': 'eventHist-items'}, 
+                     {
+                         'name': 'EventHistory-list', 
+                         'key': {'type': 'igmpInternal'}
+                     }, 
+                     {'name': 'type'}
+                 ]
+             }
+         }
+         update2 = json_format.ParseDict(
+             upd2,
+             proto.gnmi_pb2.Update()
+         )
+         update2.val.json_val = json.dumps('igmpInternal').encode('utf-8')
+
+         # Third Update
+         upd3 = {
+             'path': 
+             {
+                 'elem': 
+                 [
+                     {'name': 'System'}, 
+                     {'name': 'igmp-items'}, 
+                     {'name': 'inst-items'}, 
+                     {'name': 'dom-items'}, 
+                     {
+                         'name': 'Dom-list', 
+                         'key': {'name': 'default'}
+                     }, 
+                     {'name': 'eventHist-items'}, 
+                     {
+                         'name': 'EventHistory-list', 
+                         'key': {'type': 'vrf'}
+                     }, 
+                     {'name': 'type'}
+                 ]
+             }
+         }
+         update3 = json_format.ParseDict(
+             upd3,
+             proto.gnmi_pb2.Update()
+         )
+         update3.val.json_val = json.dumps('vrf').encode('utf-8')
+
+         notif = proto.gnmi_pb2.Notification()
+         notif.update.append(update1)
+         notif.update.append(update2)
+         notif.update.append(update3)
+         response.notification.append(notif)
+         device = TestDevice(response)
+
+         namespace = rpc_data['namespace']
+         json_dicts, opfields, update = GnmiMessage.process_get_response(response, namespace)
+         self.assertEqual(json_dicts,['nbm', 'igmpInternal', 'vrf'])
+
+    def test_run_subscribe_once_gnmi_list_2(self):
+        """ Test GNMI Subscribe for list xpaths ONCE mode for Subscription List
+            with list keys present in returns xpath"""
+
+        rpc_verify = RpcVerify(log=log, capabilities=[])
+        operation = "subscribe"
+        request = {
+                    'namespace':
+                        {
+                            'top': 'Cisco-NX-OS-device'
+                        },
+                    'nodes':
+                        [
+                            {
+                                'nodetype': 'leaf',
+                                'datatype': '',
+                                'xpath': 'System/igmp-items/inst-items/dom-items/Dom-list[name="default"]/eventHist-items/EventHistory-list[type="nbm"]/size',
+                                'name': 'size',
+                                'value': ''
+                            },
+                            {
+                                'nodetype': 'leaf',
+                                'datatype': '',
+                                'xpath': 'System/igmp-items/inst-items/dom-items/Dom-list[name="default"]/eventHist-items/EventHistory-list[type="intfDebugs"]/size', 
+                                'name': 'size',
+                                'value': ''
+                            }
+                        ],
+                    'request_mode': 'ONCE',
+                    'sub_mode': 'SAMPLE',
+                    'negative_test': False,
+                    'encoding': 'JSON',
+                    'returns':
+                        [
+                            {
+                                'datatype': 'uint32',
+                                'nodetype': 'leaf',
+                                'name': 'size',
+                                'op': '==',
+                                'selected': 'True',
+                                'value': 3,
+                                'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list[name="default"]/eventHist-items/EventHistory-list[type="nbm"]/size'
+                            },
+                            {
+                                'datatype': 'uint32',
+                                'nodetype': 'leaf',
+                                'name': 'size',
+                                'op': '==',
+                                'selected': 'True',
+                                'value': 4,
+                                'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list[name="default"]/eventHist-items/EventHistory-list[type="intfDebugs"]/size'
+                            }
+                        ],
+                    'verifier': rpc_verify.process_operational_state,
+                    'namespace_modules':
+                        {
+                            'top': 'Cisco-NX-OS-device'
+                        },
+                    'decode': GnmiMessage.process_subscribe_response,
+                    'log': log
+                }
+
+        # Response 1
+        path_elem1 = proto.gnmi_pb2.PathElem()
+        path_elem1.KeyEntry.key = ""
+        path_elem1.KeyEntry.value = ""
+        path_elem1.name = "System"
+
+        path1 = proto.gnmi_pb2.Path()
+        path1.origin = "device"
+        path1.elem.append(path_elem1)
+
+        val1 = {
+                "igmp-items":
+                    {
+                    "inst-items":
+                        {
+                        "dom-items":
+                            {
+                            "Dom-list":
+                                [
+                                    {
+                                    "name":"default",
+                                    "eventHist-items":
+                                        {
+                                        "EventHistory-list":
+                                            [
+                                                {
+                                                    "type":"nbm",
+                                                    "size": 4
+                                                }
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+        val1 = json.dumps(val1).encode('utf-8')
+
+        value1 = proto.gnmi_pb2.TypedValue()
+        value1.json_val = val1
+
+        update1 = proto.gnmi_pb2.Update()
+        update1.path.MergeFrom(path1)
+        update1.val.MergeFrom(value1)
+
+        notification1 = proto.gnmi_pb2.Notification()
+        notification1.timestamp = 0
+        notification1.prefix.MergeFrom(proto.gnmi_pb2.Path())
+        notification1.update.append(update1)
+
+        response1 = proto.gnmi_pb2.SubscribeResponse()
+        response1.update.MergeFrom(notification1)
+
+        # Response 2
+        path_elem2 = proto.gnmi_pb2.PathElem()
+        path_elem2.KeyEntry.key = ""
+        path_elem2.KeyEntry.value = ""
+        path_elem2.name = "System"
+        path2 = proto.gnmi_pb2.Path()
+        path2.origin = "device"
+        path2.elem.append(path_elem2)
+
+        val2 = {
+                "igmp-items":
+                    {
+                    "inst-items":
+                        {
+                        "dom-items":
+                            {
+                            "Dom-list":
+                                [
+                                    {
+                                    "name":"default",
+                                    "eventHist-items":
+                                        {
+                                        "EventHistory-list":
+                                            [
+                                                {
+                                                    "type":"intfDebugs",
+                                                    "size": 3
+                                                }
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+        val2 = json.dumps(val2).encode('utf-8')
+
+        value2 = proto.gnmi_pb2.TypedValue()
+        value2.json_val = val2
+
+        update2 = proto.gnmi_pb2.Update()
+        update2.path.MergeFrom(path2)
+        update2.val.MergeFrom(value2)
+
+        notification2 = proto.gnmi_pb2.Notification()
+        notification2.timestamp = 0
+        notification2.prefix.MergeFrom(proto.gnmi_pb2.Path())
+        notification2.update.append(update2)
+
+        response2 = proto.gnmi_pb2.SubscribeResponse()
+        response2.update.MergeFrom(notification2)
+
+        # Response 3
+        response3 = proto.gnmi_pb2.SubscribeResponse()
+        response3.sync_response = True
+
+        # initiate subscription thread
+        subscribe_thread = GnmiNotification(
+            [response1, response2, response3],
+            **request
+        )
+        subscribe_thread.start()
+
+        # Wait till the thread is stopped.
+        subscribe_thread.join()
+
+        # Test the result
+        self.assertEqual(subscribe_thread.result, False)
+
+    def test_run_subscribe_once_gnmi_list_pass(self):
+        """ Test GNMI Subscribe for list xpaths ONCE mode for Subscription List
+            with list keys present in returns xpath"""
+
+        rpc_verify = RpcVerify(log=log, capabilities=[])
+        operation = "subscribe"
+        request = {
+                    'namespace':
+                        {
+                            'top': 'Cisco-NX-OS-device'
+                        },
+                    'nodes':
+                        [
+                            {
+                                'nodetype': 'leaf',
+                                'datatype': '',
+                                'xpath': 'System/igmp-items/inst-items/dom-items/Dom-list[name="default"]/eventHist-items/EventHistory-list[type="nbm"]/size',
+                                'name': 'size',
+                                'value': ''
+                            },
+                            {
+                                'nodetype': 'leaf',
+                                'datatype': '',
+                                'xpath': 'System/igmp-items/inst-items/dom-items/Dom-list[name="default"]/eventHist-items/EventHistory-list[type="intfDebugs"]/size',
+                                'name': 'size',
+                                'value': ''
+                            }
+                        ],
+                    'request_mode': 'ONCE',
+                    'sub_mode': 'SAMPLE',
+                    'negative_test': False,
+                    'encoding': 'JSON',
+                    'returns':
+                        [
+                            {
+                                'datatype': 'uint32',
+                                'nodetype': 'leaf',
+                                'name': 'size',
+                                'op': '==',
+                                'selected': 'True',
+                                'value': 4,
+                                'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list[name="default"]/eventHist-items/EventHistory-list[type="nbm"]/size'
+                            },
+                            {
+                                'datatype': 'uint32',
+                                'nodetype': 'leaf',
+                                'name': 'size',
+                                'op': '==',
+                                'selected': 'True',
+                                'value': 3,
+                                'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list[name="default"]/eventHist-items/EventHistory-list[type="intfDebugs"]/size'
+                            }
+                        ],
+                    'verifier': rpc_verify.process_operational_state,
+                    'namespace_modules':
+                        {
+                            'top': 'Cisco-NX-OS-device'
+                        },
+                    'decode': GnmiMessage.process_subscribe_response,
+                    'log': log
+                }
+
+        # Response 1
+        path_elem1 = proto.gnmi_pb2.PathElem()
+        path_elem1.KeyEntry.key = ""
+        path_elem1.KeyEntry.value = ""
+        path_elem1.name = "System"
+
+        path1 = proto.gnmi_pb2.Path()
+        path1.origin = "device"
+        path1.elem.append(path_elem1)
+
+        val1 = {
+                "igmp-items":
+                    {
+                    "inst-items":
+                        {
+                        "dom-items":
+                            {
+                            "Dom-list":
+                                [
+                                    {
+                                    "name":"default",
+                                    "eventHist-items":
+                                        {
+                                        "EventHistory-list":
+                                            [
+                                                {
+                                                    "type":"nbm",
+                                                    "size": 4
+                                                }
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+        val1 = json.dumps(val1).encode('utf-8')
+
+        value1 = proto.gnmi_pb2.TypedValue()
+        value1.json_val = val1
+
+        update1 = proto.gnmi_pb2.Update()
+        update1.path.MergeFrom(path1)
+        update1.val.MergeFrom(value1)
+
+        notification1 = proto.gnmi_pb2.Notification()
+        notification1.timestamp = 0
+        notification1.prefix.MergeFrom(proto.gnmi_pb2.Path())
+        notification1.update.append(update1)
+
+        response1 = proto.gnmi_pb2.SubscribeResponse()
+        response1.update.MergeFrom(notification1)
+
+        # Response 2
+        path_elem2 = proto.gnmi_pb2.PathElem()
+        path_elem2.KeyEntry.key = ""
+        path_elem2.KeyEntry.value = ""
+        path_elem2.name = "System"
+
+        path2 = proto.gnmi_pb2.Path()
+        path2.origin = "device"
+        path2.elem.append(path_elem2)
+
+        val2 = {
+                "igmp-items":
+                    {
+                    "inst-items":
+                        {
+                        "dom-items":
+                            {
+                            "Dom-list":
+                                [
+                                    {
+                                    "name":"default",
+                                    "eventHist-items":
+                                        {
+                                        "EventHistory-list":
+                                            [
+                                                {
+                                                    "type":"intfDebugs",
+                                                    "size": 3
+                                                }
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+        val2 = json.dumps(val2).encode('utf-8')
+
+        value2 = proto.gnmi_pb2.TypedValue()
+        value2.json_val = val2
+
+        update2 = proto.gnmi_pb2.Update()
+        update2.path.MergeFrom(path2)
+        update2.val.MergeFrom(value2)
+
+        notification2 = proto.gnmi_pb2.Notification()
+        notification2.timestamp = 0
+        notification2.prefix.MergeFrom(proto.gnmi_pb2.Path())
+        notification2.update.append(update2)
+
+        response2 = proto.gnmi_pb2.SubscribeResponse()
+        response2.update.MergeFrom(notification2)
+
+        # Response 3
+        response3 = proto.gnmi_pb2.SubscribeResponse()
+        response3.sync_response = True
+
+        # initiate subscription thread
+        subscribe_thread = GnmiNotification(
+            [response1, response2, response3],
+            **request
+        )
+        subscribe_thread.start()
+
+        # Wait till the thread is stopped.
+        subscribe_thread.join()
+
+        # Test the result
+        self.assertEqual(subscribe_thread.result, True)
+            
+    def test_run_subscribe_gnmi_list(self):
+        """ Test GNMI Subscribe for list xpaths ONCE mode for Subscription List
+            with list keys present in returns xpath"""
+
+        rpc_verify = RpcVerify(log=log, capabilities=[])
+        operation = "subscribe"
+        request = {
+                    'namespace':
+                        {
+                            'top': 'Cisco-NX-OS-device'
+                        },
+                    'nodes':
+                        [
+                            {
+                                'nodetype': 'leaf',
+                                'datatype': '',
+                                'xpath': 'System/igmp-items/inst-items/dom-items/Dom-list[name="default"]/eventHist-items/EventHistory-list[type="intfDebugs"]/size',
+                                'name': 'size',
+                                'value': ''
+                            },
+                            {
+                                'nodetype': 'leaf',
+                                'datatype': '',
+                                'xpath': 'System/igmp-items/inst-items/dom-items/Dom-list[name="default"]/eventHist-items/EventHistory-list[type="nbm"]/size',
+                                'name': 'size',
+                                'value': ''
+                            }
+                        ],
+                    'request_mode': 'ONCE',
+                    'sub_mode': 'SAMPLE',
+                    'negative_test': False,
+                    'encoding': 'JSON',
+                    'returns':
+                        [
+                            {
+                                'datatype': 'uint32',
+                                'nodetype': 'leaf',
+                                'name': 'size',
+                                'op': '==',
+                                'selected': 'True',
+                                'value': 4,
+                                'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list[name="default"]/eventHist-items/EventHistory-list[type="nbm"]/size'
+                            },
+                            {
+                                'datatype': 'uint32',
+                                'nodetype': 'leaf',
+                                'name': 'size',
+                                'op': '==',
+                                'selected': 'True',
+                                'value': 3,
+                                'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list[name="default"]/eventHist-items/EventHistory-list[type="intfDebugs"]/size'
+                            }
+                        ],
+                    'verifier': rpc_verify.process_operational_state,
+                    'namespace_modules':
+                        {
+                            'top': 'Cisco-NX-OS-device'
+                        },
+                    'decode': GnmiMessage.process_subscribe_response,
+                    'log': log
+                }
+
+        # Response 1
+        path_elem1 = proto.gnmi_pb2.PathElem()
+        path_elem1.KeyEntry.key = ""
+        path_elem1.KeyEntry.value = ""
+        path_elem1.name = "System"
+
+        path1 = proto.gnmi_pb2.Path()
+        path1.origin = "device"
+        path1.elem.append(path_elem1)
+
+        val1 = {
+                "igmp-items":
+                    {
+                    "inst-items":
+                        {
+                        "dom-items":
+                            {
+                            "Dom-list":
+                                [
+                                    {
+                                    "name":"default",
+                                    "eventHist-items":
+                                        {
+                                        "EventHistory-list":
+                                            [
+                                                {
+                                                    "type":"nbm",
+                                                    "size": 4
+                                                }
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+        val1 = json.dumps(val1).encode('utf-8')
+
+        value1 = proto.gnmi_pb2.TypedValue()
+        value1.json_val = val1
+
+        update1 = proto.gnmi_pb2.Update()
+        update1.path.MergeFrom(path1)
+        update1.val.MergeFrom(value1)
+
+        notification1 = proto.gnmi_pb2.Notification()
+        notification1.timestamp = 0
+        notification1.prefix.MergeFrom(proto.gnmi_pb2.Path())
+        notification1.update.append(update1)
+
+        response1 = proto.gnmi_pb2.SubscribeResponse()
+        response1.update.MergeFrom(notification1)
+
+        # Response 2
+        path_elem2 = proto.gnmi_pb2.PathElem()
+        path_elem2.KeyEntry.key = ""
+        path_elem2.KeyEntry.value = ""
+        path_elem2.name = "System"
+
+        path2 = proto.gnmi_pb2.Path()
+        path2.origin = "device"
+        path2.elem.append(path_elem2)
+
+        val2 = {
+                "igmp-items":
+                    {
+                    "inst-items":
+                        {
+                        "dom-items":
+                            {
+                            "Dom-list":
+                                [
+                                    {
+                                    "name":"default",
+                                    "eventHist-items":
+                                        {
+                                        "EventHistory-list":
+                                            [
+                                                {
+                                                    "type":"intfDebugs",
+                                                    "size": 3
+                                                }
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+        val2 = json.dumps(val2).encode('utf-8')
+
+        value2 = proto.gnmi_pb2.TypedValue()
+        value2.json_val = val2
+
+        update2 = proto.gnmi_pb2.Update()
+        update2.path.MergeFrom(path2)
+        update2.val.MergeFrom(value2)
+
+        notification2 = proto.gnmi_pb2.Notification()
+        notification2.timestamp = 0
+        notification2.prefix.MergeFrom(proto.gnmi_pb2.Path())
+        notification2.update.append(update2)
+
+        response2 = proto.gnmi_pb2.SubscribeResponse()
+        response2.update.MergeFrom(notification2)
+
+        # Response 3
+        response3 = proto.gnmi_pb2.SubscribeResponse()
+        response3.sync_response = True
+
+        # initiate subscription thread
+        subscribe_thread = GnmiNotification(
+            [response1, response2, response3],
+            **request
+        )
+        subscribe_thread.start()
+
+        # Wait till the thread is stopped.
+        subscribe_thread.join()
+
+        # Test the result
+        self.assertEqual(subscribe_thread.result, True)
+
 
 if __name__ == '__main__':
     unittest.main()

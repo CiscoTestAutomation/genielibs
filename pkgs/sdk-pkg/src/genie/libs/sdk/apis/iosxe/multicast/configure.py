@@ -574,7 +574,127 @@ def configure_ip_pim_rp_candidate_priority(device, interface, priority_value):
         raise SubCommandFailure(
             f"Failed to Configure ip pim rp-candidate priority on device {device}. Error:\n{e}"
         )
+
+def configure_ip_igmp_snooping_tcn_flood(device, query_count):
+    """ Configures flood query count to IGMP snooping TCN behavior
+        Example : ip igmp snooping tcn flood query count 3
+
+        Args:
+            device ('obj'): device to use
+            query_count ('int'): number of multicast traffic queries (1-10)
         
+        Returns:
+            None
+        
+        Raises: 
+            SubCommandFailure
+    """
+    log.info("configuring flood query count on ip igmp snooping tcn on {device}".format(
+        device=device.name, count=query_count
+        )
+    )
+    configs = "ip igmp snooping tcn flood query count {count}".format(count=query_count)
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(
+            "Failed to configure query count {count} on device {dev}. Error:\n{error}".format(
+                count=query_count,
+                dev=device.name,
+                error=e
+            )
+        )
+
+def unconfigure_ip_igmp_snooping_tcn_flood(device):
+    """ Unconfigures flood query count to IGMP snooping TCN behavior
+        Example : no ip igmp snooping tcn flood query count
+        
+        Args:
+            device ('obj'): device to use
+        
+        Returns:
+            None
+        
+        Raises: 
+            SubCommandFailure
+    """
+    log.info("unconfiguring ip igmp snooping tcn flood query count on {device}".format(
+        device=device.name
+        )
+    )
+    configs = "no ip igmp snooping tcn flood query count"
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(
+            "Failed to unconfigure flood query count on device {dev}. Error:\n{error}".format(
+                dev=device.name,
+                error=e
+            )
+        )
+
+def configure_ip_igmp_snooping_last_member_query_interval(device, time):
+    """ Configures the IGMP last-member query interval on an interface
+        Example : ip igmp snooping last-member-query-interval 1500
+        
+        Args:
+            device ('obj'): device to use
+            time ('int'): interval, in milliseconds, at which host query messages are sent (100-25500)
+        
+        Returns:
+            None
+        
+        Raises: 
+            SubCommandFailure
+    """
+    log.info("configuring IGMP last-member query interval on {device}".format(
+        device=device.name
+        )
+    )
+    configs = "ip igmp snooping last-member-query-interval {time}".format(time=time)
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(
+            "Failed to configure last-member-query-interval {time} on device {dev}. Error:\n{error}".format(
+                time=time,
+                dev=device.name,
+                error=e
+            )
+        )
+
+def unconfigure_ip_igmp_snooping_last_member_query_interval(device):
+    """ Restore the default IGMP query interval on an interface
+        Example : no ip igmp snooping last-member-query-interval
+        
+        Args:
+            device ('obj'): device to use
+        
+        Returns:
+            None
+        
+        Raises: 
+            SubCommandFailure
+    """
+    log.info("Restoring default query interval on {device}".format(
+        device=device.name
+        )
+    )
+    configs = "no ip igmp snooping last-member-query-interval"
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(
+            "Failed to restore default query interval on device {dev}. Error:\n{error}".format(
+                dev=device.name,
+                error=e
+            )
+        )
+
 def configure_ipv6_mld_snooping(device):
     """ Configure Enable IPv6 mld snooping
     Args:
@@ -811,3 +931,259 @@ def unconfigure_ipv6_mld_snooping_vlan_static_interface(device, vlan_id, address
         raise SubCommandFailure(
             "Could not unconfigure ipv6 mld join-group  {address}. Error:\n{error}".format(address=address, error=e)
         )
+
+def unconfigure_ipv6_mld_snooping_vlan_mrouter_interface(device, vlan_id, interface_id):
+    """ Unconfigure ipv6 mld snooping vlan <vlan-id> mrouter interface <interface-id>
+    Args:
+        device (`obj`): Device object
+        vlan_id ('int'): vlan id to unconfigure
+        interface_id ('str'): interface id
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    cmd = f"no ipv6 mld snooping vlan {vlan_id} mrouter interface {interface_id}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure Multicast routing. Error:\n{error}".format(error=e)
+        )
+
+def configure_clear_ipv6_mld_counters(device):
+    """ Configure clear ipv6 mld counters
+        Args:
+            device (`obj`): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    log.debug("Clear ipv6 mld counters on {device}".format(device=device))
+
+    try:
+        device.execute('clear ipv6 mld counters')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not clear ipv6 mld counters on {device}. Error:\n{error}"
+                .format(device=device, error=e)
+        )
+
+
+def configure_ip_igmp_ssm_map_enable(device):
+    """ Configure ip igmp ssm-map enable 
+    Args:
+        device (`obj`): Device object
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    cmd = f"ip igmp ssm-map enable"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure ip igmp ssm-map enable. Error:\n{error}".format(error=e)
+        )
+
+def configure_ip_igmp_snooping_vlan_mrouter_interface(device, vlan_id, interface_id):
+    """ Configure ip igmp snooping vlan mrouter interface 
+    Args:
+        device (`obj`): Device object
+        vlan_id ('int'): vlan id 
+        interfac_id ('str'): interface id 
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    cmd = f"ip igmp snooping vlan {vlan_id} mrouter interface {interface_id}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure ip igmp snooping vlan mrouter interface. Error:\n{error}".format(error=e)
+        )
+
+def configure_debug_ip_pim(device):
+    """ Configure debug ip pim 
+        Args:
+            device (`obj`): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.execute('debug ip pim')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not debug ip pim on {device}. Error:\n{error}"
+                .format(device=device, error=e)
+        )
+
+def configure_ip_igmp_snooping_vlan_static_ipaddr_interface(device, vlan_id, ip_add, interface_name, port):
+    """ Configure ip igmp snooping vlan static ipaddr interface 
+    Args:
+        device (`obj`): Device object
+        vlan_id ('int'): vlan id 
+        ip_add ('str'):  ip address
+        interface_name ('str'): the name of interface 
+        port ('int'): port number
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    cmd = f"ip igmp snooping vlan {vlan_id} static {ip_add} interface {interface_name} {port} "
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure ip igmp snooping vlan static ipaddr interface. Error:\n{error}".format(error=e)
+        )
+
+def configure_ip_igmp_snooping_vlan_mrouter_learn_pim_dvmrp(device, vlan_id):
+    """ Configure ip igmp snooping vlan mrouter learn pim-dvmrp 
+    Args:
+        device (`obj`): Device object
+        vlan_id ('int'): vlan id 
+
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    cmd = f"ip igmp snooping vlan {vlan_id} mrouter learn pim-dvmrp "
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure ip igmp snooping vlan mrouter learn pim-dvmrp . Error:\n{error}".format(error=e)
+        )
+
+def configure_ip_igmp_static_group(device, vlan_number, group_address):
+    """ Configures ip igmp static-group to an vlan interface
+        Example : ip igmp static-group 239.100.100.101
+
+        Args:
+            device ('obj'): device to use
+            vlan_number ('int'): Vlan interface number (Range 1-4093)
+            group_address ('str'): IP group address
+
+        Returns:
+            None
+
+        Raises: 
+            SubCommandFailure
+    """
+    log.info(f"Configuring ip igmp static-group on {device.name}")
+    configs = [
+        f"interface vlan {vlan_number}",
+        f"ip igmp static-group {group_address}"
+    ]
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure ip igmp static-group on device {device.name}. Error:\n{e}")
+
+def configure_ip_igmp_join_group(device, vlan_number, group_address, source_address):
+    """ Configures ip igmp join-group to an vlan interface
+        Example : ip igmp join-group 239.100.100.101 source 4.4.4.4
+
+        Args:
+            device ('obj'): device to use
+            vlan_number ('int'): Vlan interface number (Range 1-4093)
+            group_address ('str'): IP group addres
+            source_address ('str'): IP source address
+
+        Returns:
+            None
+
+        Raises: 
+            SubCommandFailure
+    """
+    log.info(f"Configuring ip igmp join-group on {device.name}")
+    configs = [
+        f"interface vlan {vlan_number}",
+        f"ip igmp join-group {group_address} source {source_address}"
+    ]
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure ip igmp join-group on device {device.name}. Error:\n{e}")
+
+def configure_ip_igmp_ssm_map(device):
+    """ Configures ip igmp ssm-map
+        Example : ip igmp ssm-map enable
+
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises: 
+            SubCommandFailure
+    """
+    log.info(f"Configuring ip igmp ssm-map on {device.name}")
+    cmd = "ip igmp ssm-map enable"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure ip igmp ssm-map on device {device.name}. Error:\n{e}")
+
+def unconfigure_ip_igmp_ssm_map(device):
+    """ Unconfigures ip igmp ssm-map
+        Example : no ip igmp ssm-map enable
+
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises: 
+            SubCommandFailure
+    """
+    log.info(f"Unconfiguring ip igmp ssm-map on {device.name}")
+    cmd = "no ip igmp ssm-map enable"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure ip igmp ssm-map on device {device.name}. Error:\n{e}")
+
+def configure_ip_igmp_ssm_map_query_dns(device):
+    """ Configures ip igmp ssm-map query dns
+        Example : ip igmp ssm-map query dns
+
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises: 
+            SubCommandFailure
+    """
+    log.info(f"Configuring ip igmp ssm-map query dns on {device.name}")
+    cmd = "ip igmp ssm-map query dns"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure ssm-map query dns on device {device.name}. Error:\n{e}")
+
+def unconfigure_ip_igmp_ssm_map_query_dns(device):
+    """ Unconfigures ip igmp ssm-map query dns
+        Example : no ip igmp ssm-map query dns
+
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises: 
+            SubCommandFailure
+    """
+    log.info(f"Unconfiguring ip igmp ssm-map query dns on {device.name}")
+    cmd = "no ip igmp ssm-map query dns"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure ssm-map query dns on device {device.name}. Error:\n{e}")

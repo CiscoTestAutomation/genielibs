@@ -1276,7 +1276,29 @@ def unconfig_extended_acl_with_reflect(
                 dev=device.name,
                 error=e,
             )
-        )  
+        )
+
+def configure_scale_ipv6_accesslist_config(device, acl_name, acl_list):
+    """ Configure the huge(more than 1k static acl) acls under ipv6 access-list
+        Args:
+            device ('obj'): device to use
+            acl_name ('str'): name of acl
+            acl_list ('str') : acl_lists
+        Returns:
+            None
+        Raises:
+            SubCommandFailure : Failed to configure acls under ipv6 access-list
+    """
+    log.info(f"Configuring acls under ipv6 access-list")
+    configs=[
+        f"ipv6 access-list {acl_name}",
+        f"{acl_list}",
+    ]
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure acl under ipv6 access-list. Error:\n{e}")
+
 def config_refacl_global_timeout(device, timeout):
     """ Configures timeout for reflexive acl globally 
 
@@ -1426,3 +1448,49 @@ def configure_mac_acl(device, name, action, source, dest):
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure mac acl on the device {device.name}. Error:\n{e}")
+
+
+def configure_access_map_match_ip_address_action_forward(device, vlan_access_name):
+    """ Configuring access map match ip address action forward 
+
+        Args:
+            device ('obj'): device to use
+            vlan_access_name ('str'): name of vlan to access 
+
+        Returns:
+            None
+
+        Raises: 
+            SubCommandFailure
+    """
+    cmd = [
+        f"vlan access-map {vlan_access_name}",
+        f"match ip address {vlan_access_name}",
+        "action forward",
+        "exit"
+    ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure access map match ip address action forward  on the device {device.name}. Error:\n{e}")
+
+def configure_filter_vlan_list(device, vlan_access_name, vlan_id):
+    """ Configuring vlan filter vlan-list
+        Args:
+            device ('obj'): device to use
+            vlan_access_name ('str'): name of vlan to access 
+            vlan_id ('str'): vlan id for vlan list 
+        Returns:
+            None
+
+        Raises: 
+            SubCommandFailure
+    """
+    cmd = [
+        f"vlan filter {vlan_access_name} vlan-list {vlan_id}"
+    ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure vlan filter vlan-list on the device {device.name}. Error:\n{e}")
+

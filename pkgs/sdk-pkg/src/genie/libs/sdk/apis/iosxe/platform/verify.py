@@ -497,3 +497,125 @@ def verify_number_of_interfaces(device,
         timeout.sleep()
 
     return False
+
+def verify_platform_resources(device, dram_max = "0", tmpfs_max = "0", bootflash_max = "0", harddisk_max = "0", max_time=15, check_interval=5):
+    """
+    Verifies the details for show platform resource
+    Args:
+            device (`obj`): Device object
+            dram_max ('str'): max value for the dram for a device
+            tmpfs_max ('str'): max value for the tmpfs for a device
+            bootflash_max ('str'): max value for the bootflash for a device
+            harddisk_max ('str'): max value for the harddisk for a device
+            max_time ('str', Optional): Max time, default: 15 seconds
+            check_interval ('str', Optional): Check interval, default: 5 seconds
+    Returns:
+            result ('bool'): Verified result
+    Raises:
+            N/A
+    """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            output = device.parse('show platform resources')
+        except SchemaEmptyParserError as e:
+            timeout.sleep()
+            continue
+        if Dq(output).contains('rp'):
+            resources = output['rp']['0']
+        elif Dq(output).contains('control_processer'):
+            resources = output
+        platform_resources_details = False
+        if (resources['control_processer']['max_perc'] != 100 or
+                resources['control_processer']['warning_perc'] < 80 or
+                resources['control_processer']['critical_perc'] < 85 or
+                resources['control_processer']['state'] != 'H' or
+                resources['control_processer']['usage_perc'] > resources['control_processer']['warning_perc']):
+            log.error('''\n\n ERROR : Control processer Expected \"max percentage\": 100, Actual \"max percentage\": {0}
+            ERROR : Control processer Expected \"warning percentage\" >= 80, Actual \"warning percentage\": {1}
+            ERROR : Control processer Expected \"critical percentage\" >= 85 Actual \"critical percentage\": {2}
+            ERROR : Control processer Expected \"state\": H, Actual \"state\": {3}
+            ERROR : Control processer \"usage percentage\" < \"warning percentage\", \"usage percentage\": {4}, \"warning percentage\": {5}\n'''
+            .format(resources['control_processer']['max_perc'],
+                resources['control_processer']['warning_perc'],
+                resources['control_processer']['critical_perc'] ,
+                resources['control_processer']['state'],
+                resources['control_processer']['usage_perc'] ,
+                resources['control_processer']['warning_perc']))
+            platform_resources_details = False
+        else:
+            log.info('''\n\n            Control processer Expected \"max percentage\" is: 100, Actual \"max percentage\" is: {} on the device {}
+            Control processer Expected \"warning percentage\" is: >= 80, Actual \"warning percentage\" is: {} on the device {}
+            Control processer Expected \"critical percentage\" is: >= 85, Actual \"critical percentage\" is: {} on the device {}
+            Control processer Expected \"state\" is: H, Actual \"state\" is: {} on the device {}
+            Control processer \"usage percentage\" should be less than \"warning percentage\", \"usage percentage\": {}, \"warning percentage\": {} which is as expected \n'''
+            .format(resources['control_processer']['max_perc'],
+                device.name,
+                resources['control_processer']['warning_perc'],
+                device.name,
+                resources['control_processer']['critical_perc'] ,
+                device.name,
+                resources['control_processer']['state'],
+                device.name,
+                resources['control_processer']['usage_perc'] ,
+                resources['control_processer']['warning_perc'] ))
+
+        temp_dict = {}
+
+        if Dq(resources['control_processer']).contains('dram'):
+            temp_dict.update({'dram': int(dram_max)})
+        if Dq(resources['control_processer']).contains('tmpfs'):
+            temp_dict.update({'tmpfs': int(tmpfs_max)})
+        if Dq(resources['control_processer']).contains('harddisk'):
+            temp_dict.update({'harddisk': int(harddisk_max)})
+        if Dq(resources['control_processer']).contains('bootflash'):
+            temp_dict.update({'bootflash': int(bootflash_max)})
+
+        for item in temp_dict:
+            if Dq(temp_dict).contains(item):
+                if int(resources['control_processer'][item]['max_mb']) != int(temp_dict[item]):
+                    log.error("ERROR : please check the max_db value for {} in show platform resource".format(item))
+                    platform_resources_details = False
+                    break
+                else:
+                    if item == 'dram' or item == 'bootflash' or item == 'harddisk':
+                        if (int(int(resources['control_processer'][item]['usage_mb']) * 100/int(temp_dict[item])) !=  int(resources['control_processer'][item]['usage_perc']) or
+                                resources['control_processer'][item]['warning_perc'] < 85 or resources['control_processer'][item]['critical_perc'] < 90 ):
+                            log.error('''\n ERROR : please calculate \"usage\" MB percentage for {0}
+                                    {1} ERROR : \"warning percentage\" >= 85 but \"warning percentage\" in device: {2}
+                                    ERROR : {3} \"critical percentage\" >= 90, \"critical percentage\" in device: {4}\n\n'''
+                                    .format(item, item , resources['control_processer'][item]['warning_perc'],
+                                        item , resources['control_processer'][item]['critical_perc'] ))
+                            platform_resources_details = False
+                            break
+                        else:
+                            log.info('''\n\n                                 {0} \"warning percentage\" >= 85, Actual \"warning percentage\" in device: {1}
+                                    {2} \"critical percentage\" >= 90, Actual \"critical percentage\" in device: {3}\n\n'''
+                                    .format( item , resources['control_processer'][item]['warning_perc'],
+                                        item , resources['control_processer'][item]['critical_perc'] ))
+                            platform_resources_details = True
+                    elif item == "tmpfs":
+                        if (int(int(resources['control_processer'][item]['usage_mb']) * 100/int(temp_dict[item])) !=  int(resources['control_processer'][item]['usage_perc']) or
+                                int(resources['control_processer'][item]['warning_perc']) < 40 or int(resources['control_processer'][item]['critical_perc']) < 50 ):
+                            log.error('''\n ERROR : please calculate usage MB percentage for {0}
+                                    ERROR : {1} \"warning percentage\" >= 40, Actual \"warning percentage\" in device: {2}
+                                    ERROR : {3} \"critical percentage\" >= 50, Actual \"critical percentage\" in device: {4}\n\n'''
+                                    .format(item, item , resources['control_processer'][item]['warning_perc'],
+                                        item , resources['control_processer'][item]['critical_perc'] ))
+                            platform_resources_details = False
+                            break
+                        else:
+                            log.info('''\n\n                         {0} \"warning percentage\" >= 40, Actual \"warning percentage\" in device: {1}
+                            {2} \"critical percentage\" >= 50, Actual \"critical percentage\" in device: {4}\n\n'''
+                            .format(item, item , resources['control_processer'][item]['warning_perc'],
+                                item , resources['control_processer'][item]['critical_perc'] ))
+                            platform_resources_details = True
+            else:
+                log.error(" ERROR : please pass max_db value of {}".format(item))
+                platform_resources_details = False
+                break
+        if platform_resources_details:
+            return True
+        timeout.sleep()
+    return False
+

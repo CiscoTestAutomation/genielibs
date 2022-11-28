@@ -1,0 +1,42 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    service-policy type control subscriber PMAP_DefaultWiredDot1xClosedAuth_1X_MAB: "service-policy\
+      \ type control subscriber PMAP_DefaultWiredDot1xClos\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b$icy type control subscriber PMAP_DefaultWiredDot1xClose\
+      \         \b\b\b\b\b\b\b\b\bdAuth_1X_\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\bontrol subscriber PMAP_DefaultWiredDot1xClosedAuth_1X_M        \
+      \ \b\b\b\b\b\b\b\b\bAB\r\n"
+  prompt: VCR(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: VCR(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: VCR#
