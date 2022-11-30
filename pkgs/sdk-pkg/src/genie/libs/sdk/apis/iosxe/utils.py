@@ -559,7 +559,8 @@ def ping(device,
          validate=False,
          vrf=None,
          command=None,
-         output=None):
+         output=None,
+         extended_data=None):
     """ execute ping and parse ping result and return structure data
 
     Args:
@@ -578,6 +579,7 @@ def ping(device,
         vrf ('str'): VRF name
         command (`str`): ping command. This will ignore all other arguments
         output (`str`): ping command output. no parser call involved
+        extended_data ('str'): Hex extended data pattern 0-FFFFFFFF
     Returns:
         Boolean
     Raises:
@@ -599,7 +601,8 @@ def ping(device,
                          do_not_fragment=do_not_fragment,
                          validate=validate,
                          command=command,
-                         output=output)
+                         output=output,
+                         extended_data=extended_data)
     except SchemaEmptyParserError:
         log.info('parsed_output was empty')
         return {}
@@ -789,6 +792,31 @@ def get_show_output_include(device, command, filter, output=None):
 
     return [result,output]
 
+def get_show_output_exclude(device, command, filter, output=None):
+    """ Find the lines which are match from show command.
+        Args:
+            device (`obj`): Device object
+            command (`str`): show command
+            filter (`str`): filter expression
+            output (`str`): output of show command. (optional) Default to None
+        Returns:
+            bool, output('str') : True/False, include command output based on the output
+        Raises:
+            N/A
+    """
+    command += f' | exclude {filter}'
+    result = True
+
+    try:
+        output= device.execute(command)
+        if output == "":
+            log.error('No match found')
+            result = False
+    except:
+        log.info("In valid command")
+        result = False
+
+    return [result, output]
 
 def decrypt_tacacs_pcap(filename, key, filepath):
     """Decrypt and Converting the tacacs pcap file to tacacs txt file
@@ -1574,3 +1602,35 @@ def clear_ip_traffic(device):
             Error:\n{error}".format(device=device, error=e)
         )
 
+def copy_file(device, source_path, destination_path, filename):
+    '''
+        Copying file from source path to destination path in local device.
+        Args:
+            device ('obj'): Device object
+            source_path ('str'): source path
+            destination_path ('str'): destination path
+            filename ('str'): filename that needs to copy
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    '''
+    s1 = Statement(pattern=r".*Destination filename",
+                   action="sendline()",
+                   args=None,
+                   loop_continue=True,
+                   continue_timer=False)
+    s2 = Statement(pattern=r".*Do you want to over write",
+                   action="sendline()",
+                   args=None,
+                   loop_continue=True,
+                   continue_timer=False)
+
+    dialog = Dialog([s1, s2])
+    cmd = "copy {src_path}:{file} {dst_path}".format(
+        src_path=source_path, file=filename, dst_path=destination_path)
+    try:
+        device.execute(cmd, reply=dialog)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(log.error("failed to copy file from source to destination""Error:\n{error}".format(error=e)))

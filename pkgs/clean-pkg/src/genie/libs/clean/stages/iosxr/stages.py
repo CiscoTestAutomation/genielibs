@@ -17,6 +17,7 @@ from genie.utils.timeout import Timeout
 from genie.libs.clean import BaseStage
 from genie.libs.clean.stages.iosxe.stages import TftpBoot as IOSXETftpBoot
 from genie.metaparser.util.schemaengine import Optional
+from genie.libs.clean.utils import _apply_configuration
 
 # Unicon
 from unicon.eal.dialogs import Statement, Dialog
@@ -639,3 +640,118 @@ verify_running_image:
                 step.passed("The version of the running image is as expected")
             else:
                 step.failed("The version of the running image is not as expected")
+
+
+class ApplyConfiguration(BaseStage):
+    """Apply configuration on the device, either by providing a file or a
+raw configuration.
+
+Stage Schema
+------------
+apply_configuration:
+
+    configuration (str, optional): String representation of the configuration to
+        apply. Defaults to None.
+
+    configuration_from_file (str, optional): A file that contains a configuration
+        that will be read. The configuration contained will then be applied as
+        if a string representation of the config was applied. Defaults to None.
+
+    file (str, optional): A saved configuration file that will be used. The file
+        will either be used in copy run start or configure replace based on the
+        'configure_replace' argument. Defaults to None.
+
+    configure_replace (bool, optional): When 'True' use 'configure replace' instead
+        of 'copy run start'. Defaults to False.
+
+    config_timeout (int, optional): Max time in seconds allowed for applying the
+        configuration. Defaults to 60.
+
+    config_stable_time (int, optional): Max time in seconds allowed for the
+        configuration to stabilize. Defaults to 10.
+
+    copy_directly_to_startup (bool, optional): If 'True' copy the provided
+        configuration directly to the startup config. Defaults to False.
+
+Example
+-------
+apply_configuration:
+    configuration: |
+        interface ethernet2/1
+        no shutdown
+    config_timeout: 600
+    config_stable_time: 10
+    copy_directly_to_startup: False
+
+"""
+
+    # =================
+    # Argument Defaults
+    # =================
+    CONFIGURATION = None
+    CONFIGURATION_FROM_FILE = None
+    FILE = None
+    CONFIG_TIMEOUT = 60
+    CONFIG_STABLE_TIME = 10
+    CONFIGURE_REPLACE = False
+    COPY_DIRECTLY_TO_STARTUP = False
+
+    # ============
+    # Stage Schema
+    # ============
+    schema = {
+        Optional('configuration'): str,
+        Optional('configuration_from_file'): str,
+        Optional('file'): str,
+        Optional('config_timeout'): int,
+        Optional('config_stable_time'): int,
+        Optional('configure_replace'): bool,
+        Optional('copy_directly_to_startup'): bool,
+    }
+
+    # ==============================
+    # Execution order of Stage steps
+    # ==============================
+    exec_order = [
+        'apply_configuration'
+    ]
+
+    def apply_configuration(self, steps, device,
+                            configuration=CONFIGURATION,
+                            configuration_from_file=CONFIGURATION_FROM_FILE,
+                            file=FILE,
+                            config_timeout=CONFIG_TIMEOUT,
+                            config_stable_time=CONFIG_STABLE_TIME,
+                            configure_replace=CONFIGURE_REPLACE,
+                            copy_directly_to_startup=COPY_DIRECTLY_TO_STARTUP):
+        log.info("Section steps:\n1- Copy/Apply configuration to/on the device"
+                 "\n2- Sleep to stabilize configuration on the device")
+
+        # User has provided raw output or configuration file to apply onto device
+        with steps.start("Apply configuration to device {} after reload".\
+                         format(device.name)) as step:
+            try:
+                _apply_configuration(
+                    device=device,
+                    configuration=configuration,
+                    configuration_from_file=configuration_from_file,
+                    file=file,
+                    configure_replace=configure_replace,
+                    timeout=config_timeout,
+                    copy_directly_to_startup=copy_directly_to_startup)
+            except Exception as e:
+                step.failed("Error while applying configuration to device "
+                            "{}\n{}".format(device.name, str(e)))
+            else:
+                step.passed(
+                    "Successfully applied configuration to device {} ".format(
+                        device.name))
+
+        # Allow configuration to stabilize
+        with steps.start("Allow configuration to stabilize on device {}".\
+                         format(device.name)) as step:
+            log.info("Sleeping for '{}' seconds".format(config_stable_time))
+            time.sleep(config_stable_time)
+            step.passed("Successfully applied configuration on device {}".format(
+                device.name))
+

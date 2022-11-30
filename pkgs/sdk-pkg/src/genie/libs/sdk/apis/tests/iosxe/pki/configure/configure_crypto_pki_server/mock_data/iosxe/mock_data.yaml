@@ -1,35 +1,25 @@
 configure:
   commands:
-    auto-rollover 7 2 32: "auto-rollover 7 2 32\r\n"
-    cdp-url http://cisco.com/abc.crl.crl: "% The archive password is not configured.\
-      \ Rollover CA keys and certificates will not be automatically archived.\r\n"
-    crypto pki server root: "crypto pki server root\r\n"
-    database archive pem: "cdp-url http://cisco.com/abc.crl.crl\r\n"
-    database archive pem password  Cisco123: "database archive pem\r\n"
-    database level minimum: "database archive pem password  Cisco123\r\n"
-    database url cnm publish http://ciscoo.com: "database level minimum\r\n"
-    eku email-protection ocsp-signing server-auth: "database url cnm publish http://ciscoo.com\r\
-      \n"
+    crypto pki server ca: "crypto pki server ca\r\n"
+    database archive pkcs12: "database archive pkcs12\r\n"
+    database archive pkcs12 password  cisco123: "database archive pkcs12 password\
+      \  cisco123\r\n"
+    'database url p12 bootflash:': "database url p12 bootflash:\r\n"
     end:
       new_state: execute
-    grant auto: "eku email-protection ocsp-signing server-auth\r\n"
-    hash md5: "grant auto\r\n"
+    grant auto: "grant auto\r\n"
     ip http server: "ip http server\r\n"
-    issuer-name CN=R1: "hash md5\r\n"
-    lifetime ca-certificate 45 2: "issuer-name CN=R1\r\n"
-    lifetime certificate 45 3 3: "lifetime ca-certificate 45 2\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''
     no shut: "no shut\r\n"
-    serial-number 0x44: "lifetime certificate 45 3 3\r\n"
-  prompt: vm5006(config)#
+  prompt: fugazi(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: vm5006(config-line)#
+  prompt: fugazi(config-line)#
 connect:
   commands:
     ? ''
@@ -49,4 +39,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: vm5006#
+  prompt: fugazi#

@@ -203,7 +203,7 @@ class SNMPv3Client(object):
 
     def __init__(self, host,
                  port=161,
-                 auth=auth,
+                 auth=None,
                  log=log):
 
         """ Instantiates snmp client

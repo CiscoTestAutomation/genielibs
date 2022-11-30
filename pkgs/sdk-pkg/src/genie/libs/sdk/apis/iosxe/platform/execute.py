@@ -900,3 +900,82 @@ def show_switch_redirect(device, storage_type, file_name):
 
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to redirect to {file_name} on the device {device.name}. Error:\n{e}")
+        
+def execute_install_three_step_issu_package(device, image_dir, image, save_system_config=True,
+                            install_timeout=660, reconnect_max_time=200,
+                            reconnect_interval=30, _install=True, install_commit_sleep_time=None,
+                            append_error_pattern = ['.*FAILED.*']):
+    """ Installs package
+        Args:
+            device ("obj"): Device object
+            image_dir ("str"): Directory image is located in
+            image ("str"): Image name
+            save_system_config ("bool"): If config changed do we save it?
+            install_timeout ("int"): Maximum time for install. Default 660
+            reconnect_max_time ("int"): Maximum time for reconnect. Default 120
+            reconnect_interval ("int"): Time between reconnect attempts. Default 30
+            install_commit_sleep_time ("int"): Sleep time before install commit command
+            _install ("bool"): True to install, False to uninstall.
+                Not meant to be changed manually.
+        Raises:
+            Exception
+        Returns:
+            True if install succeeded else False
+    """
+    dialog = Dialog([
+        Statement(pattern=r".*Press Quit\(q\) to exit, you may save "
+                          r"configuration and re-enter the command\. "
+                          r"\[y\/n\/q\]",
+                  action='sendline(y)' if save_system_config else 'sendline(n)',
+                  loop_continue=True,
+                  continue_timer=False),
+        Statement(pattern=r".*This operation may require a reload of the "
+                          r"system\. Do you want to proceed\? \[y\/n\]",
+                  action='sendline(y)',
+                  loop_continue=True,
+                  continue_timer=False),
+        Statement(pattern=r"^.*RETURN to get started",
+                  action='sendline()',
+                  loop_continue=False,
+                  continue_timer=False)
+    ])
+
+    if _install:
+        cmd = """install add file {dir}{image}
+        install activate issu""".format(
+            dir=image_dir, image=image
+        )
+
+    try:
+        device.execute('write mem')
+        device.execute(cmd, reply=dialog, timeout=install_timeout,append_error_pattern=append_error_pattern)
+        device.api.reconnect_device(max_time=600,interval=60)
+        device.enable()
+    except StateMachineError:
+        timeout = Timeout(reconnect_max_time, reconnect_interval)
+        while timeout.iterate():
+            timeout.sleep()
+            device.destroy()
+            try:
+                device.api.reconnect_device(max_time=600,interval=60)
+            except Exception as e:
+                connection_error = str(e)
+                continue
+            break
+        else:
+            raise Exception("Couldn't reconnect to the device. Error: {}"\
+                            .format(connection_error))
+
+    if _install:
+        cmd = "install commit"
+
+    try:
+        output = device.execute(cmd, timeout=install_timeout)
+    except Exception as e:
+        log.error(f"Error while executing {cmd} on {device.name}: {e}")
+
+    match = re.search(r"FAILED:*", output)
+    result = 'failed' if match else 'successful'
+    log.info(f"install three shot operation {result} on {device.name}")
+    return output if not match else match
+    

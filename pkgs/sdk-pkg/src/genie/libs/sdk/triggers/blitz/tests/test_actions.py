@@ -29,7 +29,10 @@ from genie.libs.sdk.triggers.blitz.actions_helper import (Dialog,
                                                           _send_command,
                                                           _prompt_handler,
                                                           _condition_validator,
-                                                          _output_query_template)
+                                                          _output_query_template,
+                                                          check_yang_subscribe)
+
+from genie.libs.sdk.triggers.blitz.gnmi_util import GnmiNotification
 
 
 from unicon import Connection
@@ -862,7 +865,7 @@ class TestActions(unittest.TestCase):
 
         arguments['device'] = 'PE1'
         api(**self.kwargs)
-        if exception == Exception:
+        if exception in [AttributeError, Exception]:
           self.assertEqual(steps.result, Failed)
         else:
           self.assertEqual(steps.result, Errored)
@@ -1634,6 +1637,37 @@ class TestActions(unittest.TestCase):
         self.kwargs.update(print_dict)
         print_(**self.kwargs)
         self.assertEqual(step.result, Passed)
+
+    def test_check_yang_subscribe_pass(self):
+
+      steps = Steps()
+      gnmi_thrd = GnmiNotification([])
+      gnmi_thrd.sub_mode = 'ON_CHANGE'
+
+      with steps.start("Starting action") as step:
+        # thread is saved in active_subscriptions
+        step.passed('Subscription helper passed.')
+        check_yang_subscribe(self.testbed, step, gnmi_thrd)
+        check_yang_subscribe(self.testbed, step, 'junk')
+        # saved thread is found and result recorded
+        gnmi_thrd.stop()
+        self.assertEqual(step.result, Passed)
+
+    def test_check_yang_subscribe_fail(self):
+
+      steps = Steps()
+      gnmi_thrd = GnmiNotification([])
+      gnmi_thrd.sub_mode = 'ON_CHANGE'
+
+      with steps.start("Starting action") as step:
+        # thread is saved in active_subscriptions
+        step.passed('Subscription helper passed.')
+        check_yang_subscribe(self.testbed, step, gnmi_thrd)
+        # thread stopped prematurely
+        gnmi_thrd.stop()
+        check_yang_subscribe(self.testbed, step, 'junk')
+        # saved thread is found and result recorded
+        self.assertEqual(step.result, Failed)
 
 
 if __name__ == '__main__':

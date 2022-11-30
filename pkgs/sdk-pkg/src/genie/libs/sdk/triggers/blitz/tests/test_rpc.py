@@ -7,6 +7,7 @@ import base64
 from yang.connector.gnmi import Gnmi
 from genie.libs.sdk.triggers.blitz import yangexec
 from genie.libs.sdk.triggers.blitz.rpcverify import RpcVerify
+from genie.libs.sdk.triggers.blitz.gnmi_util import GnmiMessage
 
 
 # TODO: Needs to be part of genielibs test run
@@ -294,7 +295,7 @@ basic-mode=explicit&also-supported=report-all-tagged']
              'op': '=='}]
 
         self._base64encode()
-        resp = self.gnmi.decode_opfields(self.operstate_gnmi['update'])
+        resp = GnmiMessage.decode_opfields(self.operstate_gnmi['update'])
         result = self.rpcv.process_operational_state(resp, opfields)
         self.assertTrue(result)
 
@@ -356,7 +357,7 @@ basic-mode=explicit&also-supported=report-all-tagged']
              'op': '=='}]
 
         self._base64encode()
-        resp = self.gnmi.decode_opfields(self.operstate_gnmi['update'])
+        resp = GnmiMessage.decode_opfields(self.operstate_gnmi['update'])
         result = self.rpcv.process_operational_state(resp, opfields)
         self.assertFalse(result)
 
@@ -390,7 +391,7 @@ basic-mode=explicit&also-supported=report-all-tagged']
              'op': '=='}]
 
         self._base64encode()
-        resp = self.gnmi.decode_opfields(self.operstate_gnmi['update'])
+        resp = GnmiMessage.decode_opfields(self.operstate_gnmi['update'])
         result = self.rpcv.process_operational_state(resp, opfields)
         self.assertTrue(result)
 
@@ -425,7 +426,7 @@ basic-mode=explicit&also-supported=report-all-tagged']
              'op': '=='}]
 
         self._base64encode()
-        resp = self.gnmi.decode_opfields(self.operstate_gnmi['update'])
+        resp = GnmiMessage.decode_opfields(self.operstate_gnmi['update'])
         result = self.rpcv.process_operational_state(resp, opfields)
         self.assertTrue(result)
 
@@ -460,7 +461,7 @@ basic-mode=explicit&also-supported=report-all-tagged']
              'op': '=='}]
 
         self._base64encode()
-        resp = self.gnmi.decode_opfields(self.operstate_gnmi['update'])
+        resp = GnmiMessage.decode_opfields(self.operstate_gnmi['update'])
         result = self.rpcv.process_operational_state(resp, opfields)
         self.assertFalse(result)
 
@@ -494,7 +495,7 @@ basic-mode=explicit&also-supported=report-all-tagged']
              'op': '=='}]
 
         self._base64encode()
-        resp = self.gnmi.decode_opfields(self.operstate_gnmi['update'])
+        resp = GnmiMessage.decode_opfields(self.operstate_gnmi['update'])
         result = self.rpcv.process_operational_state(resp, opfields)
         self.assertTrue(result)
 
@@ -531,7 +532,7 @@ basic-mode=explicit&also-supported=report-all-tagged']
         oper_gnmi = self.jsonIetfVal.replace('330', '-330')
         self.jsonIetfVal = oper_gnmi
         self._base64encode()
-        resp = self.gnmi.decode_opfields(self.operstate_gnmi['update'])
+        resp = GnmiMessage.decode_opfields(self.operstate_gnmi['update'])
         result = self.rpcv.process_operational_state(resp, opfields)
         self.assertTrue(result)
 
@@ -568,7 +569,7 @@ basic-mode=explicit&also-supported=report-all-tagged']
         oper_gnmi = self.jsonIetfVal.replace('330', '-330')
         self.jsonIetfVal = oper_gnmi
         self._base64encode()
-        resp = self.gnmi.decode_opfields(self.operstate_gnmi['update'])
+        resp = GnmiMessage.decode_opfields(self.operstate_gnmi['update'])
         result = self.rpcv.process_operational_state(resp, opfields)
         self.assertTrue(result)
 
@@ -602,7 +603,7 @@ basic-mode=explicit&also-supported=report-all-tagged']
              'op': '=='}]
 
         self._base64encode()
-        resp = self.gnmi.decode_opfields(self.operstate_gnmi['update'])
+        resp = GnmiMessage.decode_opfields(self.operstate_gnmi['update'])
         result = self.rpcv.process_operational_state(resp, opfields)
         self.assertFalse(result)
 
@@ -636,7 +637,7 @@ basic-mode=explicit&also-supported=report-all-tagged']
              'op': '=='}]
 
         self._base64encode()
-        resp = self.gnmi.decode_opfields(self.operstate_gnmi['update'])
+        resp = GnmiMessage.decode_opfields(self.operstate_gnmi['update'])
         result = self.rpcv.process_operational_state(resp, opfields)
         self.assertFalse(result)
 
@@ -673,7 +674,7 @@ basic-mode=explicit&also-supported=report-all-tagged']
              'op': '=='}]
 
         self._base64encode()
-        resp = self.gnmi.decode_opfields(self.operstate_gnmi['update'])
+        resp = GnmiMessage.decode_opfields(self.operstate_gnmi['update'])
         result = self.rpcv.process_operational_state(resp, opfields)
         self.assertTrue(result)
 
@@ -718,7 +719,7 @@ basic-mode=explicit&also-supported=report-all-tagged']
         self.jsonIetfVal = oper_gnmi
         self._base64encode()
 
-        resp = self.gnmi.decode_opfields(self.operstate_gnmi['update'])
+        resp = GnmiMessage.decode_opfields(self.operstate_gnmi['update'])
         result = self.rpcv.process_operational_state(resp, opfields)
         self.assertTrue(result)
 
@@ -765,7 +766,7 @@ basic-mode=explicit&also-supported=report-all-tagged']
         self.jsonIetfVal = oper_gnmi
         self._base64encode()
 
-        resp = self.gnmi.decode_opfields(self.operstate_gnmi['update'])
+        resp = GnmiMessage.decode_opfields(self.operstate_gnmi['update'])
         result = self.rpcv.process_operational_state(resp, opfields)
         self.assertTrue(result)
 
@@ -810,7 +811,7 @@ basic-mode=explicit&also-supported=report-all-tagged']
         self.jsonIetfVal = oper_gnmi
         self._base64encode()
 
-        resp = self.gnmi.decode_opfields(self.operstate_gnmi['update'])
+        resp = GnmiMessage.decode_opfields(self.operstate_gnmi['update'])
         result = self.rpcv.process_operational_state(resp, opfields)
         self.assertTrue(result)
 
@@ -857,7 +858,7 @@ basic-mode=explicit&also-supported=report-all-tagged']
         self.jsonIetfVal = oper_gnmi
         self._base64encode()
 
-        resp = self.gnmi.decode_opfields(self.operstate_gnmi['update'])
+        resp = GnmiMessage.decode_opfields(self.operstate_gnmi['update'])
         result = self.rpcv.process_operational_state(resp, opfields)
         self.assertTrue(result)
 
@@ -904,7 +905,7 @@ basic-mode=explicit&also-supported=report-all-tagged']
         self.jsonIetfVal = oper_gnmi
         self._base64encode()
 
-        resp = self.gnmi.decode_opfields(self.operstate_gnmi['update'])
+        resp = GnmiMessage.decode_opfields(self.operstate_gnmi['update'])
         result = self.rpcv.process_operational_state(resp, opfields)
         self.assertTrue(result)
 

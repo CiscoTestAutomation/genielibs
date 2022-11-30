@@ -72,7 +72,7 @@ pyats_health_processors:
                   common_api: true
                   function: get_devices
                   health_tc_sections:
-                    - type:TestCase
+                    - type:CommonSetup
                   hide_processor: true
                   processor: post
                   save:
@@ -173,6 +173,36 @@ pyats_health_processors:
                           - type:TestCase
                         include:
                           - value_operator('num_of_cores', '==', 0)
+                        save:
+                          - variable_name: health_value
+                            filter: get_values('filename')
+                        processor: post
+                  loop_variable_name: dev
+                  parallel: true
+                  value: "%VARIABLES{testscript.health_settings.devices}"
+    - core_pre_check:
+        - run_condition:
+            if: "%VARIABLES{testscript.health_settings.checks[core]} == True"
+            actions:
+              - loop:
+                  actions:
+                    - api:
+                        arguments:
+                          default_dir: "%VARIABLES{testscript.health_settings.core_default_dir.%VARIABLES{dev._values}}"
+                          delete_core: true
+                          num_of_cores: true
+                          remote_device: "%VARIABLES{testscript.health_settings.remote_device.name}"
+                          remote_path: "%VARIABLES{testscript.health_settings.remote_device.path}"
+                          remote_via: "%VARIABLES{testscript.health_settings.remote_device.via}"
+                          protocol: "%VARIABLES{testscript.health_settings.remote_device.protocol}"
+                          vrf: "%VARIABLES{testscript.health_settings.mgmt_vrf.%VARIABLES{dev._values}}"
+                        device: "%VARIABLES{dev._keys}"
+                        function: health_core
+                        health_tc_sections:
+                          - type:CommonSetup
+                        include:
+                          - value_operator('num_of_cores', '==', 0)
+                        failed_result_status: passx
                         save:
                           - variable_name: health_value
                             filter: get_values('filename')

@@ -3723,7 +3723,7 @@
         "interval": 10,
         "max_time": 180
       },
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/triggers/modify/bgp/iosxe/modify.py"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/triggers/modify/bgp/iosxr/modify.py"
     },
     "top": {
       "contribute": false,
@@ -3800,7 +3800,7 @@
         "interval": 10,
         "max_time": 180
       },
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/triggers/modify/bgp/iosxe/modify.py"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/triggers/modify/bgp/iosxr/modify.py"
     },
     "top": {
       "contribute": false,
@@ -3958,7 +3958,7 @@
         "interval": 10,
         "max_time": 180
       },
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/triggers/modify/interface/iosxe/modify.py"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/triggers/modify/interface/iosxr/modify.py"
     },
     "top": {
       "contribute": false,
@@ -8503,7 +8503,7 @@
         "interval": 10,
         "max_time": 180
       },
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/triggers/shutnoshut/interface/iosxe/shutnoshut.py"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/triggers/shutnoshut/interface/iosxr/shutnoshut.py"
     },
     "top": {
       "contribute": false,
@@ -9006,7 +9006,7 @@
         "interval": 10,
         "max_time": 180
       },
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/triggers/unconfigconfig/bgp/iosxe/unconfigconfig.py"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/triggers/unconfigconfig/bgp/iosxr/unconfigconfig.py"
     },
     "top": {
       "contribute": false,
@@ -9808,7 +9808,7 @@
         "interval": 10,
         "max_time": 180
       },
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/triggers/unconfigconfig/bgp/iosxe/unconfigconfig.py"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/triggers/unconfigconfig/bgp/iosxr/unconfigconfig.py"
     },
     "top": {
       "contribute": false,

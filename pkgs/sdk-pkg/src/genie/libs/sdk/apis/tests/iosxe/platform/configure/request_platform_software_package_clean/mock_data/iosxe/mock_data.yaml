@@ -1,0 +1,53 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: 9300-24UX-1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: 9300-24UX-1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    'request platform software package clean switch all file flash:':
+      response:
+      - "This operation may take several minutes...\r\nRunning command on switch 1\r\
+        \nCleaning up unnecessary package files\r\n  Scanning boot directory for packages\
+        \ ... done.\r\n  Preparing packages list to delete ... \r\n    packages.conf\r\
+        \n      File is in use, will not delete.\r\n    cat9k-cc_srdriver.BLD_POLARIS_DEV_LATEST_20220815_071713_V17_10_0_31.SSA.pkg\r\
+        \n      File is in use, will not delete.\r\n    cat9k-espbase.BLD_POLARIS_DEV_LATEST_20220815_071713_V17_10_0_31.SSA.pkg\r\
+        \n      File is in use, will not delete.\r\n    cat9k-guestshell.BLD_POLARIS_DEV_LATEST_20220815_071713_V17_10_0_31.SSA.pkg\r\
+        \n      File is in use, will not delete.\r\n    cat9k-lni.BLD_POLARIS_DEV_LATEST_20220815_071713_V17_10_0_31.SSA.pkg\r\
+        \n      File is in use, will not delete.\r\n    cat9k-rpbase.BLD_POLARIS_DEV_LATEST_20220815_071713_V17_10_0_31.SSA.pkg\r\
+        \n      File is in use, will not delete.\r\n    cat9k-sipbase.BLD_POLARIS_DEV_LATEST_20220815_071713_V17_10_0_31.SSA.pkg\r\
+        \n      File is in use, will not delete.\r\n    cat9k-sipspa.BLD_POLARIS_DEV_LATEST_20220815_071713_V17_10_0_31.SSA.pkg\r\
+        \n      File is in use, will not delete.\r\n    cat9k-srdriver.BLD_POLARIS_DEV_LATEST_20220815_071713_V17_10_0_31.SSA.pkg\r\
+        \n      File is in use, will not delete.\r\n    cat9k-webui.BLD_POLARIS_DEV_LATEST_20220815_071713_V17_10_0_31.SSA.pkg\r\
+        \n      File is in use, will not delete.\r\n    cat9k-wlc.BLD_POLARIS_DEV_LATEST_20220815_071713_V17_10_0_31.SSA.pkg\r\
+        \n      File is in use, will not delete.\r\n    cat9k-rpboot.BLD_POLARIS_DEV_LATEST_20220815_071713_V17_10_0_31.SSA.pkg\r\
+        \n      File is in use, will not delete.\r\n  done.\r\n  \r\nSUCCESS: No extra\
+        \ package or provisioning files found on media. Nothing to clean."
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: 9300-24UX-1#

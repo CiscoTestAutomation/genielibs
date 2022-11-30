@@ -116,98 +116,40 @@ json_decoded = {
           }
         ]
       }
-    },
-    {
-      'path':
-      {
-        'origin': 'openconfig', 'elem':
-        [
-          {
-            'name': 'network-instances'
-          },
-          {
-            'name': 'network-instance',
-            'key':
-            {
-              'name': 'default'
-            }
-          },
-          {
-            'name': 'protocols'
-          },
-          {
-            'name': 'protocol',
-            'key':
-            {
-              'identifier': 'OSPF',
-              'name': '100'
-            }
-          }
-        ]
-      }
-    },
-    {
-      'path':
-      {
-        'origin': 'openconfig',
-        'elem':
-        [
-          {
-            'name': 'network-instances'
-          },
-          {
-            'name': 'network-instance',
-            'key':
-            {
-              'name': 'default'
-            }
-          },
-          {
-            'name': 'protocols'
-          },
-          {
-            'name': 'protocol',
-            'key':
-            {
-              'identifier': 'OSPF',
-              'name': '100'
-            }
-          },
-          {
-            'name': 'bgp'
-          },
-          {
-            'name': 'neighbors'
-          },
-          {
-            'name': 'neighbor',
-            'key':
-            {
-              'neighbor-address': '1.1.1.1'
-            }
-          }
-        ]
-      }
     }
   ]
 }
 
-json_val_decoded_oc_1 = {
+
+json_val_decoded_oc = {
   'config': {
     'name': 'default'
-    }
-  }
-
-json_val_decoded_oc_2 = {
-  'config': {
-    'identifier': 'OSPF',
-    'name': '100'
-    }
-  }
-
-json_val_decoded_oc_3 = {
-  'config': {
-    'neighbor-address': '1.1.1.1'
+    }, 'protocols':
+    {
+      'protocol':
+      {
+        'identifier': 'OSPF',
+        'name': '100',
+        'config':
+        {
+          'identifier': 'OSPF',
+          'name': '100'
+        },
+        'bgp':
+        {
+          'neighbors':
+          {
+            'neighbor':
+            {
+              'neighbor-address': '1.1.1.1',
+              'config':
+              {
+                'neighbor-address': '1.1.1.1'
+              }
+            }
+          }
+        }
+      }
     }
   }
 
@@ -298,98 +240,39 @@ json_decoded_no_edit_op = {
           }
         ]
       }
-    },
-    {
-      'path':
-      {
-        'origin': 'openconfig', 'elem':
-        [
-          {
-            'name': 'network-instances'
-          },
-          {
-            'name': 'network-instance',
-            'key':
-            {
-              'name': 'default'
-            }
-          },
-          {
-            'name': 'protocols'
-          },
-          {
-            'name': 'protocol',
-            'key':
-            {
-              'identifier': 'OSPF',
-              'name': '100'
-            }
-          }
-        ]
-      }
-    },
-    {
-      'path':
-      {
-        'origin': 'openconfig',
-        'elem':
-        [
-          {
-            'name': 'network-instances'
-          },
-          {
-            'name': 'network-instance',
-            'key':
-            {
-              'name': 'default'
-            }
-          },
-          {
-            'name': 'protocols'
-          },
-          {
-            'name': 'protocol',
-            'key':
-            {
-              'identifier': 'OSPF',
-              'name': '100'
-            }
-          },
-          {
-            'name': 'bgp'
-          },
-          {
-            'name': 'neighbors'
-          },
-          {
-            'name': 'neighbor',
-            'key':
-            {
-              'neighbor-address': '1.1.1.1'
-            }
-          }
-        ]
-      }
     }
   ]
 }
 
-json_val_no_edit_op_1 = {
+json_val_no_edit_op = {
   'config': {
     'name': 'default'
-    }
-  }
-
-json_val_no_edit_op_2 = {
-  'config': {
-    'identifier': 'OSPF',
-    'name': '100'
-    }
-  }
-
-json_val_no_edit_op_3 = {
-  'config': {
-    'neighbor-address': '1.1.1.1'
+    }, 'protocols':
+    {
+      'protocol':
+      {
+        'identifier': 'OSPF',
+        'name': '100',
+        'config':
+        {
+          'identifier': 'OSPF',
+          'name': '100'
+        },
+        'bgp':
+        {
+          'neighbors':
+          {
+            'neighbor':
+            {
+              'neighbor-address': '1.1.1.1',
+              'config':
+              {
+                'neighbor-address': '1.1.1.1'
+              }
+            }
+          }
+        }
+      }
     }
   }
 
@@ -702,10 +585,10 @@ json_decoded_multiple_list = {
         [
           {
             'name': 'System'
-          }, 
+          },
           {
             'name': 'igmp-items'
-          }, 
+          },
           {
             'name': 'inst-items'
           },
@@ -1437,12 +1320,8 @@ class TestGnmiTestRpc(unittest.TestCase):
         gmc = GnmiMessageConstructor('set', r1, **format1)
         jdict = json_format.MessageToDict(gmc.payload)
         jdict['replace'][0].pop('val')
-        jdict['replace'][1].pop('val')
-        jdict['replace'][2].pop('val')
         self.assertEqual(jdict, json_decoded_no_edit_op)
-        self.assertEqual(gmc.json_val[0], json_val_no_edit_op_1)
-        self.assertEqual(gmc.json_val[1], json_val_no_edit_op_2)
-        self.assertEqual(gmc.json_val[2], json_val_no_edit_op_3)
+        self.assertEqual(gmc.json_val, json_val_no_edit_op)
 
     def test_set_oc_net_instance(self):
         """Verify a complex SET constructs json_val correct."""
@@ -1450,12 +1329,8 @@ class TestGnmiTestRpc(unittest.TestCase):
         gmc = GnmiMessageConstructor('set', r1, **format1)
         jdict = json_format.MessageToDict(gmc.payload)
         jdict['update'][0].pop('val')
-        jdict['update'][1].pop('val')
-        jdict['update'][2].pop('val')
         self.assertEqual(jdict, json_decoded)
-        self.assertEqual(gmc.json_val[0], json_val_decoded_oc_1)
-        self.assertEqual(gmc.json_val[1], json_val_decoded_oc_2)
-        self.assertEqual(gmc.json_val[2], json_val_decoded_oc_3)
+        self.assertEqual(gmc.json_val, json_val_decoded_oc)
 
     def test_set_one_xpath(self):
         """Verify SET constructs json_val correct for one leaf node."""

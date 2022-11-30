@@ -46,21 +46,34 @@ def configure_arp_timeout(device, interface, timeout):
             )
         ) from e
 
-def clear_arp_cache(device):
+def clear_arp_cache(device, ip_address=None, counter=None, interface=None, vrf=None):
     """ Clears device cache
 
         Args:
             device (`obj`): Device object
+            ip_address (`str`): ip address of arp entry
+            counters (`str`): counter type of arp entry
+            interface (`str`): interface to clear arp entry
+            vrf (`str`): vrf to clear arp entry
         Returns:
             None
         Raises:
             SubCommandFailure
     """
+    cmd = 'clear arp-cache'
+    if vrf and ip_address:
+        cmd+= ' vrf {vrf} {ip_address}'.format(vrf=vrf, ip_address=ip_address)
+    elif ip_address:
+        cmd+= ' {ip_address}'.format(ip_address=ip_address)
+    elif counter:
+        cmd+= ' counters {counter}'.format(counter=counter)
+    elif interface:
+        cmd+= ' interface {interface}'.format(interface=interface)
     try:
-        device.execute('clear arp-cache')
+        device.execute(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            f'Failed to clear arp-cache on device {device}, '
+            f'Failed to {cmd} on device {device}, '
             f'Error: {e} {device.name}, {str(e)}'
         ) from e
 

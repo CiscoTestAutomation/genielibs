@@ -1980,3 +1980,85 @@ def unconfigure_bgp_auto_summary(device, system):
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not unconfigure auto summary on router bgp on {device.name}. Error:\n{e}")
+
+def configure_router_bgp_neighbor_remote_as(device, system, neighbor_address, remote_as):
+    """ Configures the router bgp neighbor
+        Example: router bgp 100
+                neighbor 20.20.20.2 remote-as 200
+
+        Args:
+            device ('obj'): device to configure on
+            system ('int'): Autonomous system number (Range 1-4294967295)
+            neighbor_address ('str'): Neighbor address (A.B.C.D)
+            remote_as ('int'): AS of remote neighbor (Range 1-4294967295)
+
+        Return:
+            None
+
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    log.info(f"Configuring neighbor {neighbor_address} remote-AS {remote_as} on router bgp on {device.name}")
+    config = [
+        f'router bgp {system}',
+        f'neighbor {neighbor_address} remote-as {remote_as}'
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure neighbor {neighbor_address} on router bgp on {device.name}. Error:\n{e}")
+
+def configure_router_bgp_network_mask(device, system, network_number, network_mask):
+    """ Configures the router bgp network mask
+        Example: router bgp 100
+                network 11.11.11.0 mask 255.255.255.0
+
+        Args:
+            device ('obj'): device to configure on
+            system ('int'): Autonomous system number (Range 1-4294967295)
+            network_number ('str'): Network number (A.B.C.D)
+            network_mask ('str'): Network mask (A.B.C.D)
+
+        Return:
+            None
+
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    log.info(f"Configuring network {network_number} mask {network_mask} on router bgp on {device.name}")
+    config = [
+        f'router bgp {system}',
+        f'network {network_number} mask {network_mask}'
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure network {network_number} on router bgp on {device.name}. Error:\n{e}")
+
+def configure_router_bgp_neighbor_ebgp_multihop(device, system, neighbor_address, hop_count):
+    """ Configures the router bgp neighbor ebgp multihop
+        Example: router bgp 100
+                neighbor 22.22.22.22 ebgp-multihop 2
+
+        Args:
+            device ('obj'): device to configure on
+            system ('int'): Autonomous system number (Range 1-4294967295)
+            neighbor_address ('str'): Neighbor IPv6 address
+            hop_count ('int): Maximum hop count (Range 1-255)
+
+        Return:
+            None
+
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    log.info(f"Configuring neighbor {neighbor_address} ebgp multihop {hop_count} on router bgp on {device.name}")
+    config = [
+        f'router bgp {system}',
+        f'neighbor {neighbor_address} ebgp-multihop {hop_count}'
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure neighbor {neighbor_address} ebgp-multihop on router bgp on {device.name}. Error:\n{e}")
+

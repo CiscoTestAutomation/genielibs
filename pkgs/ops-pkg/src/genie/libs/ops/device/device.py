@@ -7,9 +7,13 @@ from genie.metaparser.util.schemaengine import Any, Or, Optional
 schema = {
     Optional('bootvar'): {
         Optional('current_boot_variable'): str,
-        Optional('next_reload_boot_variable'): str,
+        Optional('next_reload_boot_variable'): str,       
         Optional('config_file'): str,
         Optional('bootldr'): str,
+        Optional('manual_boot'): bool,
+        Optional('enable_break'): bool,        
+        Optional('boot_mode'): str,
+        Optional('ipxe_timeout'): int,
         Optional('active'): {
             Optional('configuration_register'): str,
             Optional("next_reload_configuration_register"): str,
@@ -21,7 +25,7 @@ schema = {
             Optional('boot_variable'): str,
         },
 		'raw_data': {
-		    'show bootvar': str
+		    Or('show bootvar', 'show boot'): str
 		}
     },
     'config': {

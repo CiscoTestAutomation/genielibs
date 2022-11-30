@@ -2,25 +2,24 @@ configure:
   commands:
     end:
       new_state: execute
-    interface tunnel20: "interface tunnel20\r\n"
-    ip address 140.1.1.2 255.255.255.0: "ip address 140.1.1.2 255.255.255.0\r\n"
+    interface Tunnel1: "interface Tunnel1\r\n"
+    ip address 6.6.6.1 255.255.255.0: "ip address 6.6.6.1 255.255.255.0\r\n"
     keepalive 10: "keepalive 10\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''
-    tunnel destination 5.1.1.1: "tunnel destination 5.1.1.1\r\n"
-    tunnel protection ipsec profile dut1_dut2_v4IPsecProfile120: "tunnel protection\
-      \ ipsec profile dut1_dut2_v4IPsecProfile120\r\n"
-    tunnel source 5.1.1.2: "tunnel source 5.1.1.2\r\n"
-    tunnel vrf WAN-VRFv4: "tunnel vrf WAN-VRFv4\r\n"
-    vrf forwarding CLIENT-VRFv4: "vrf forwarding CLIENT-VRFv4\r\n"
-  prompt: Galaga-4(config)#
+    tunnel destination 1.1.1.2: "tunnel destination 1.1.1.2\r\n"
+    tunnel mode ipsec ipv4: "tunnel mode ipsec ipv4\r\n"
+    tunnel protection ipsec profile trans: "tunnel protection ipsec profile trans\r\
+      \n"
+    tunnel source 2.2.2.2: "tunnel source 2.2.2.2\r\n"
+  prompt: Hub(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: Galaga-4(config-line)#
+  prompt: Hub(config-line)#
 connect:
   commands:
     ? ''
@@ -40,4 +39,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: Galaga-4#
+  prompt: Hub#

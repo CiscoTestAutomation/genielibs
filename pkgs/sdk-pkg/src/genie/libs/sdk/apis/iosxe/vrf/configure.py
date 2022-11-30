@@ -812,3 +812,51 @@ def unconfigure_mdt_data_vxlan(device, vrf_name, address_family, ip, mask):
         raise SubCommandFailure(
             f'Could not configure {config} on device {device}.Error:\n{e}'
         )
+
+def configure_vrf_forwarding_interface(device, interface, vrf_name):
+    """ Create vrf forwarding on interface
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface name
+            vrf_name ('str'): vrf name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure ip vrf forwarding
+    """
+
+    cmd = []
+    cmd.append(f"interface {interface}")
+    cmd.append(f"vrf forwarding {vrf_name}")
+
+    log.info("Creating vrf forwarding on interface")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Failed to configure vrf forwarding"
+        )
+
+def unconfigure_vrf_forwarding_interface(device, interface, vrf_name):
+    """ Remove vrf forwarding on interface
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface name
+            vrf_name ('str'): vrf name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to unconfigure ip vrf forwarding
+    """
+
+    cmd = []
+    cmd.append(f"interface {interface}")
+    cmd.append(f"no vrf forwarding {vrf_name}")
+
+    log.info("Removing vrf forwarding")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Failed to unconfigure vrf forwarding"
+        )

@@ -1817,6 +1817,182 @@ def unconfigure_enable_password(device,secret=True,privilege=None):
             f'Could not unconfigure enable password or secret:\n{e}'
         )
         
+def configure_aaa_authentication_login(device,auth_list,auth_type):
+    """ configure aaa authentication login
+        Args:
+            device (`obj`): Device object
+            auth_list (`str`): authentication list (default/Named authentication list)
+            auth_type ('str'): authentication type (none/local)
+            None
+        Raise:
+            SubCommandFailure: Failed configuring aaa authentication login
+    """
+    logger.info(f"Configuring aaa authentication login")
+	
+    configs=f"aaa authentication login {auth_list} {auth_type}"
+	
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure aaa authentication login. Error:\n{e}")
+
+def configure_aaa_default_group_methods(device,server_grp,server_grp_name):
+    """ configure aaa default group methods
+        Args:
+            device (`obj`): Device object
+            server_grp (`str`): Server-group (i.e group)
+            server_grp_name ('str'): Server-group name 
+            None
+        Raise:
+            SubCommandFailure: Failed configuring aaa default group methods
+    """
+    logger.info(f"Configuring aaa default group methods")
+	
+    configs=[
+	    f"aaa authentication dot1x default {server_grp} {server_grp_name}",
+		f"aaa authorization network default {server_grp} {server_grp_name}",
+		f"aaa authorization network MLIST {server_grp} {server_grp_name}",
+		f"aaa authorization auth-proxy default {server_grp} {server_grp_name}",
+		f"aaa accounting network default start-stop {server_grp} {server_grp_name}"
+	]
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure aaa default group methods. Error:\n{e}")
+
+def configure_aaa_authorization_exec_default(device,auth_type):
+    """ configure aaa authorization exec default
+        Args:
+            device (`obj`): Device object
+            auth_type (`str`): authentication type (i.e group/local/none) 
+            None
+        Raise:
+            SubCommandFailure: Failed configuring aaa authentication login
+    """
+    logger.info(f"Configuring aaa authorization exec default")
+	
+    configs=f"aaa authorization exec default {auth_type}"
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure aaa authorization exec default. Error:\n{e}")
+
+def configure_aaa_accounting_update_periodic(device,interval):
+    """ configure aaa accounting update newinfo periodic
+            device (`obj`): Device object
+            interval (`str`): intervals in minutes 
+            None
+        Raise:
+            SubCommandFailure: Failed configuring aaa accounting update newinfo periodic
+    """
+    logger.info(f"Configuring aaa accounting update newinfo periodic")
+	
+    configs=f"aaa accounting update newinfo periodic {interval}"
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure aaa accounting update newinfo periodic. Error:\n{e}")
+
+def configure_aaa_accounting_identity_default_start_stop(device,server_grp,server_grp_name):
+    """ configure aaa accounting identity default start-stop
+        Args:
+            device (`obj`): Device object
+            server_grp (`str`): Server-group (i.e group)
+            server_grp_name ('str'): Server-group name 
+            None
+        Raise:
+            SubCommandFailure: Failed configuring aaa accounting identity default start-stop
+    """
+    logger.info(f"Configuring acls under ipv6 access-list")
+	
+    configs=f"aaa accounting identity default start-stop {server_grp} {server_grp_name}"
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure aaa accounting identity default start-stop. Error:\n{e}")
+
+def configure_radius_attribute_8(device):
+
+    """
+    Configure radius-server attribute 8 include-in-access-req
+    Args:
+        device (`obj`): Device object
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring radius-server attribute 8 include-in-access-req
+    """
+    logger.info(f"Configuring acls under ipv6 access-list")
+    
+    configs= "radius-server attribute 8 include-in-access-req"
+	
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure radius-server attribute 8 include-in-access-req . Error:\n{e}")
+
+def configure_radius_attribute_25(device):
+
+    """
+    Configure radius-server attribute 25 access-request include
+    Args:
+        device (`obj`): Device object
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring radius-server attribute 25 access-request include
+    """
+    logger.info(f"Configuring radius-server attribute 25 access-request include")
+    
+    configs= "radius-server attribute 25 access-request include"
+	
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure radius-server attribute 25 access-request include . Error:\n{e}")
+
+def configure_radius_attribute_31_mac_format(device):
+
+    """
+    Configure radius-server attribute 31 mac format ietf upper-case
+    Args:
+        device (`obj`): Device object
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring radius-server attribute 31 mac format ietf upper-case
+    """
+    logger.info(f"Configuring radius-server attribute 31 mac format ietf upper-case")
+    
+    configs= "radius-server attribute 31 mac format ietf upper-case"
+	
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure radius-server attribute 31 mac format ietf upper-case. Error:\n{e}")
+
+def configure_radius_attribute_31_send_mac(device):
+
+    """
+    Configure radius-server attribute 31 send nas-port-detail mac-only
+    Args:
+        device (`obj`): Device object
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring radius-server attribute 31 send nas-port-detail mac-only
+    """
+    logger.info(f"Configuring radius-server attribute 31 send nas-port-detail mac-only")
+    
+    configs= "radius-server attribute 31 send nas-port-detail mac-only"
+	
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure radius-server attribute 31 send nas-port-detail mac-only. Error:\n{e}")
+
+
 
 
 def configure_aaa_authentication_enable(device, group, group_name, group_action):

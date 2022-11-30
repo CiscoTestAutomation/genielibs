@@ -332,13 +332,14 @@ class Device(SuperDevice):
             version['os'] = self.device.os
             version['platform'] = self.device.platform or ''
 
-        bootvar_src = '[(?P<bv>.*)]'
-        bootvar_dest = '{}[bootvar][(?P<bv>.*)]'.format(info_dest)
+        if hasattr(self, 'info') and 'bootvar' not in self.info:
+            bootvar_src = '[(?P<bv>.*)]'
+            bootvar_dest = '{}[bootvar][(?P<bv>.*)]'.format(info_dest)
 
-        self.add_leaf(
-            cmd=ShowBootvar,
-            src=bootvar_src,
-            dest=bootvar_dest)
+            self.add_leaf(
+                cmd=ShowBootvar,
+                src=bootvar_src,
+                dest=bootvar_dest)
 
         # Running-config
         self.add_leaf(

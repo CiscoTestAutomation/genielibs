@@ -5,16 +5,17 @@ configure:
       new_state: execute
     line console 0:
       new_state: configure_line
+    match fvrf any: "proposal newproposal\r\n"
     no logging console: ''
     proposal newproposal: "IKEv2 policy MUST have atleast one complete proposal attached\
       \ \r\n"
-  prompt: VCR(config)#
+  prompt: ARCADE1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: VCR(config-line)#
+  prompt: ARCADE1(config-line)#
 connect:
   commands:
     ? ''
@@ -34,4 +35,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: VCR#
+  prompt: ARCADE1#

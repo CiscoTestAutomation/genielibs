@@ -4,6 +4,8 @@ import logging
 import operator
 import xmltodict
 import xml.etree.ElementTree as ET
+import time
+from threading import Thread
 
 # from genie
 from genie.utils.dq import Dq
@@ -31,7 +33,7 @@ def configure_handler(step, device, command, expected_failure=False, **kwargs):
     action = kwargs.pop('action', 'configure')
     connection_alias = kwargs.get('connection_alias', None)
     result_status = kwargs.get('result_status', None)
-
+    failed_result_status = kwargs.get('failed_result_status', None)
 
     # configure dual commands should be entered as a list
     if action == 'configure_dual':
@@ -62,9 +64,13 @@ def configure_handler(step, device, command, expected_failure=False, **kwargs):
     if result_status and step.result == Passed:
         result_status_message = 'The {} result status is changed from passed to {}' \
                                 ' based on the result_status'.format(action, result_status)
-        log.warning('The {} result status is changed from passed to {}' \
-                    ' based on the result_status'.format(action, result_status))
+        log.warning(result_status_message)
         getattr(step, result_status)(result_status_message)
+    elif failed_result_status and step.result == Failed:
+        result_status_message = 'The {} result status is changed from failed to {}' \
+                                ' based on the result_status'.format(action, failed_result_status)
+        log.warning(result_status_message)
+        getattr(step, failed_result_status)(result_status_message)
 
     return output
 
@@ -215,14 +221,14 @@ def api_handler(step,
                 include=None,
                 exclude=None,
                 result_status=None,
+                failed_result_status=None,
                 max_time=None,
                 check_interval=None,
                 continue_=True,
                 arguments=None,
-                action='api',
                 **kwargs):
 
-    #handeling api command
+    #handling api command
     output = None
     # if no arguments send an empty argument list to api function
     if not arguments:
@@ -245,24 +251,27 @@ def api_handler(step,
                                 command,
                                 device=device,
                                 common_api=common_api)
-    # check the os and decide how to call the api_function
-    # will be changed when we figure out the use of device.type for more general use
-    api_function = device if device.os == 'ixianative' else device.api
-    try:
-        output = getattr(api_function, command)(**arguments)
-    except (AttributeError, TypeError) as e:
-        # if could not find api or the kwargs is wrong for api
-        if not expected_failure:
-            step.errored("Got an error with API {c}: {e}\nAPI arguments: {a}".format(c=command, e=e, a=arguments))
-        else:
-            step.passed('API failed as expected, the step test result is set as passed')
+    # check if device has API attribute, otherwise fallback to device default behavior
+    api_function = device if not hasattr(device, 'api') else device.api
 
-    except Exception as e:
-        # anything else
-        if not expected_failure:
-            step.failed(str(e))
-        else:
-            step.passed('API failed as expected, the step test result is set as passed')
+    # Skip if API is not available
+    if command in dir(api_function):
+        try:
+            output = getattr(api_function, command)(**arguments)
+        except TypeError as e:
+            # kwargs is wrong for api
+            if not expected_failure:
+                step.errored("Got an error with API {c}: {e}\nAPI arguments: {a}".format(c=command, e=e, a=arguments))
+            else:
+                step.passed('API failed as expected, the step test result is set as passed')
+        except Exception as e:
+            # anything else
+            if not expected_failure:
+                step.failed(str(e))
+            else:
+                step.passed('API failed as expected, the step test result is set as passed')
+    else:
+        step.skipped(f'API {command} not available for device {device.name}')
 
     kwargs = {'output': output,
               'steps': step,
@@ -271,6 +280,7 @@ def api_handler(step,
               'include': include,
               'exclude': exclude,
               'result_status': result_status,
+              'failed_result_status': failed_result_status,
               'max_time': max_time,
               'check_interval': check_interval,
               'continue_': continue_,
@@ -309,6 +319,55 @@ def yang_handler(step,
     # go through the include/exclude process
     return _output_query_template(**kwargs)
 
+# saved ON_CHANGE subscriptions waiting for change to happen
+active_subscriptions = {}
+
+
+def check_yang_subscribe(device, step, result=None):
+    """Look for subscribe, wait for subscribe thread to stop, return result."""
+    if step.result.value == 'failed':
+        # subscribe or change for ON_CHANGE subscribe failed
+        return
+    subscribe_thread = None
+    hostname = None
+    if hasattr(device, 'name'):
+        hostname = device.name
+    if hostname is None:
+        # how did we get this far?
+        log.info('YANG Subscribe check, cannot find hostname')
+        return
+
+    if isinstance(result, Thread):
+        if result.sub_mode == 'ON_CHANGE':
+            active_subscriptions[hostname] = result
+            return
+        else:
+            subscribe_thread = result
+    elif hostname in active_subscriptions:
+        # ON_CHANGE thread waiting for change
+        on_change = active_subscriptions[hostname]
+        if not on_change.stopped():
+            if not on_change.result:
+                step.failed('ON_CHANGE subscription failed.')
+        else:
+            log.info('ON_CHANGE subscribe terminated...')
+            active_subscriptions[hostname].stop()
+            del active_subscriptions[hostname]
+        return
+
+    if subscribe_thread is not None:
+        # Wait for subscribe thread to finish and return result.
+        while not subscribe_thread.stopped():
+            log.info('Waiting for notification...')
+            time.sleep(1)
+        # set subscribe result
+        if not subscribe_thread.result:
+            step.failed('{0} subscription failed'.format(
+                subscribe_thread.mode
+            ))
+
+    # return normal result
+    return result
 
 def _api_device_update(arguments, testbed, step, command, device=None, common_api=None):
     """
@@ -524,6 +583,7 @@ def _output_query_template(output,
                            continue_,
                            action,
                            result_status=None,
+                           failed_result_status=None,
                            arguments=None,
                            rest_device_alias=None,
                            expected_failure=False,
@@ -600,6 +660,11 @@ def _output_query_template(output,
                         getattr(substep, result_status)(message)
                     else:
                         substep.passed(message)
+                if failed_result_status and step_result == Failed:
+                    # step_result will only change to failed_result_status if it failed.
+                    log.warning('The result status is changed from failed to {}' \
+                                ' based on the failed_result_status'.format(failed_result_status))
+                    getattr(substep, failed_result_status)(message)
 
                 send_cmd = True
                 timeout.sleep()
@@ -637,9 +702,14 @@ def _output_query_template(output,
     if result_status and steps.result == Passed:
         result_status_message = 'The {} result status is changed from passed to {}' \
                                 ' based on the result_status'.format(action, result_status)
-        log.warning('The {} result status is changed from passed to {}' \
-                    ' based on the result_status'.format(action, result_status))
+        log.warning(result_status_message)
         getattr(steps, result_status)(result_status_message)
+    elif failed_result_status and steps.result == Failed:
+        result_status_message = 'The {} result status is changed from failed to {}' \
+                                ' based on the result_status'.format(action, failed_result_status)
+        log.warning(result_status_message)
+        getattr(steps, failed_result_status)(result_status_message)
+
     return output
 
 def _include_exclude_list(include, exclude):

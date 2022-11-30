@@ -1036,3 +1036,39 @@ def clear_cts_counters_ipv6(device):
         device.execute('clear cts role-based counters ipv6')
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not clear CTS counters ipv6. Error:\n {e}")
+
+def configure_cts_aaa_methods(device, server_grp, list_name):
+    """ Configure cts aaa methods
+        Args:
+            device ('obj'): device to use
+            server_grp ('str'): server group name
+            list_name ('str'): cts authorisation list name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to Configure cts aaa methods
+    """
+    log.info("Configure cts aaa methods")   
+    cmd = [f"aaa authentication dot1x default group {server_grp}", f"aaa authorization network {list_name} group {server_grp}"]    
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure cts aaa methods. Error:\n {e}")
+
+def unconfigure_cts_aaa_methods(device, server_grp, list_name):
+    """ Unconfigure cts aaa methods
+        Args:
+            device ('obj'): device to use
+            server_grp ('str'): server group name
+            list_name ('str'): cts authorisation list name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to Unconfigure cts aaa methods
+    """
+    log.info("Unconfigure cts aaa methods")   
+    cmd = [f"no aaa authentication dot1x default group {server_grp}", f"no aaa authorization network {list_name} group {server_grp}"]    
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not unconfigure cts aaa methods. Error:\n {e}")

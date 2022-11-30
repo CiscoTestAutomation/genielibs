@@ -32,3 +32,9 @@ class TestClearArpCache(unittest.TestCase):
         result = clear_arp_cache(self.device)
         expected_output = None
         self.assertEqual(result, expected_output)
+        result = clear_arp_cache(self.device, ip_address='1.1.1.1', vrf='red')
+        self.assertEqual(result, expected_output)
+        result = clear_arp_cache(self.device, ip_address='1.1.1.1')
+        self.assertEqual(result, expected_output)
+        result = clear_arp_cache(self.device, interface='Gi1/0/1')
+        self.assertEqual(result, expected_output)

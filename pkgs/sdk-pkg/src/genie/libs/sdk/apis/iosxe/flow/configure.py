@@ -140,7 +140,7 @@ def configure_fnf_exporter(device, exporter_name, dest_ip, udp_port, source_int=
             device.configure([
                           f"flow exporter {exporter_name}",                          
                           f"destination {dest_ip}",
-                          f"source {int}",
+                          f"source {source_int}",
                           f"transport udp {udp_port}",
                           f"template data timeout {timeout}",
                           f"option vrf-table timeout {timeout}",
@@ -815,3 +815,21 @@ def delete_monitor_capture(device, capture_name):
 
     except SubCommandFailure as e:
         raise SubCommandFailure(f'no monitor capture {capture_name}. Error:\n{e}')
+
+def stop_monitor_capture(device, capture_name):
+    """ Stop Monitor Capture on Device
+        Args:
+            device (`obj`): Device object
+            capture_name (`str`): Monitor capture name
+            
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed to Stop Monitor Capture
+    """
+    cmd = "monitor capture {capture_name} stop".format(capture_name=capture_name)
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'monitor capture {capture_name} match stop. Error:\n{e}')
+                    

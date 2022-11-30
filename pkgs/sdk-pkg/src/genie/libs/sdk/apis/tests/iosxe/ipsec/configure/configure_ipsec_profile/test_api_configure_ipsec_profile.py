@@ -1,3 +1,4 @@
+import os
 import unittest
 from pyats.topology import loader
 from genie.libs.sdk.apis.iosxe.ipsec.configure import configure_ipsec_profile
@@ -7,21 +8,21 @@ class TestConfigureIpsecProfile(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        testbed = """
+        testbed = f"""
         devices:
-          TLS_Mad2:
+          fugazi:
             connections:
               defaults:
                 class: unicon.Unicon
               a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
+                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
             platform: iosxe
             type: iosxe
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['TLS_Mad2']
+        self.device = self.testbed.devices['fugazi']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -29,6 +30,6 @@ class TestConfigureIpsecProfile(unittest.TestCase):
         )
 
     def test_configure_ipsec_profile(self):
-        result = configure_ipsec_profile(self.device, 'IPSec_PROFILE', 'IPSec_TRANSFORM', 'IKEv2_PRFOILE', None, True, True, False, False, True, False, 100, True, 20, False, None, None, False, 256, None, True, 'group19', 250, None, None, None, '1.1.1.1', False, None, False)
+        result = configure_ipsec_profile(self.device, 'test1', 'test1', None, None, False, False, False, False, False, False, None, False, None, False, None, None, False, None, None, False, None, None, None, None, None, None, False, None, False)
         expected_output = None
         self.assertEqual(result, expected_output)

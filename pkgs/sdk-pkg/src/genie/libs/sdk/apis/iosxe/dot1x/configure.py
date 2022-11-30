@@ -34,13 +34,14 @@ def source_configured_template(device, interface, template_name):
             "Could not source a configured template {}.Error: {}".format(template_name, str(e))
         )
 
-def configure_dot1x_cred_profile(device, profile_name, user_name, passwd):
+def configure_dot1x_cred_profile(device, profile_name, user_name, passwd, passwd_type=None):
     """Configure EAP Md5 profile
         Args:
             device ('obj'): device to use
             profile_name (`str`): dot1x credential profile name
             username (`str`): username for dot1x user
             passwd (`str`): password in plain text
+            passwd_type('str',optional): password type (HIDDEN/UNENCRYPTED),defaults to None
         Returns:
             None
         Raises:
@@ -49,7 +50,13 @@ def configure_dot1x_cred_profile(device, profile_name, user_name, passwd):
     cmd = ''
     cmd += 'dot1x credentials {}\n'.format(profile_name)
     cmd += 'username {}\n'.format(user_name)
-    cmd += 'password {}\n'.format(passwd)
+    if passwd_type == 'HIDDEN':
+        cmd += 'password 7 {}\n'.format(passwd)
+    elif passwd_type == 'UNENCRYPTED':
+        cmd += 'password 0 {}\n'.format(passwd)
+    else:
+        cmd += 'password {}\n'.format(passwd)
+    #cmd += 'password {}\n'.format(passwd)
     log.info("configure dot1x credential")
     try:
         device.configure(cmd)
@@ -1198,6 +1205,199 @@ def unconfigure_dot1x_cred_int(device, interface, cred_profile_name=None, eap_pr
             "Failed to unconfigure credential on interface on {}.Error: {}".format(converted_interface, str(e))
         )
 
+def configure_radius_server_accounting_system(device,minutes,seconds,privilege_level,auth_list):
+    """ configure radius-server accounting system host-config
+    Args:
+        device ('obj'): Device object
+        minutes ('int): Specify timeout in minutes
+        seconds ('int'): Specify timeout in seconds
+        privilege_level ('int'): Specify privilege level for line
+        auth_list ('str') : Specify authentication list
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring radius-server accounting system host-config
+    """
+    log.info(f"Configuring radius-server accounting system host-config")
+	
+    configs=[
+        "radius-server accounting system host-config",
+        "line console 0",
+        f"exec-timeout {minutes} {seconds}",
+        f"privilege level {privilege_level}",
+        f"login authentication {auth_list}"    
+	]
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure radius-server accounting system host-config. Error:\n{e}")
+
+def configure_service_template_with_inactivity_timer(device,template_name,timer):
+    """ configure service template with inactivity timer
+    Args:
+        device ('obj'): Device object
+        template_name ('str'): Specify a template name
+        timer ('int'): inactivity timer value 
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring service template with inactivity timer
+    """
+    log.info(f"Configuring service template with inactivity timer")
+	
+    configs=[
+	    f"service-template {template_name}",
+	    f"inactivity-timer {timer}"
+	]
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure service template with inactivity timer. Error:\n{e}")
+
+def configure_service_template_with_vlan(device,template_name,vlan_id):
+    """ configure service template with vlan
+    Args:
+        device ('obj'): Device object
+        template_name ('str'): Specify a template name
+        vlan_id ('int'): Vlan ID to configure
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring service template with vlan
+    """
+    log.info(f"Configuring service template with vlan")
+	
+    configs=[
+	    f"service-template {template_name}",
+	    f"vlan {vlan_id}"
+	]
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure service template with vlan. Error:\n{e}")
+
+def configure_service_template_with_access_group(device,template_name,access_grp):
+    """ configure service template with access group
+    Args:
+        device ('obj'): Device object
+        template_name ('str): Specify a template name
+        access_grp ('str'): Access-Group
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring service template with access group
+    """
+    log.info(f"Configuring service template with access group")
+	
+    configs=[
+	    f"service-template {template_name}",
+	    f"access-group {access_grp}"
+	]
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure service template with access group. Error:\n{e}")
+
+def configure_class_map_type_match_any(device,class_map_name,service_temp_name):
+    """ configure class-map type control subscriber match-any
+    Args:
+        device ('obj'): Device object
+        class_map_name ('str): Specify a class map name
+        service_temp_name ('str'): Specify service template name
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring class-map type control subscriber match-any
+    """
+    log.info(f"Configuring service template with access group")
+	
+    configs=[
+	    f"class-map type control subscriber match-any {class_map_name}",
+	    f"match activated-service-template {service_temp_name}"
+	]
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure class-map type control subscriber match-any. Error:\n{e}")
+
+def configure_class_map_type_match_none(device,class_map_name,service_temp_name):
+    """ configure class-map type control subscriber match-none
+    Args:
+        device ('obj'): Device object
+        class_map_name ('str): Specify a class map name
+        service_temp_name ('str'): Specify service template name
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring class-map type control subscriber match-none
+    """
+    log.info(f"Configuring service template with access group")
+	
+    configs=[
+	    f"class-map type control subscriber match-none {class_map_name}",
+	    f"match activated-service-template {service_temp_name}"
+	]
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure class-map type control subscriber match-none. Error:\n{e}")
+
+def configure_template_methods_for_dot1x(device,template_name,vlan_id,voice_vlan_id,policy_map_name):
+    """ configure template methods for dot1x
+    Args:
+        device ('obj'): Device object
+        template_name ('str): Specify template name
+        vlan_id ('str'): Specify VLAN ID of the VLAN when this port is in access mode
+        voice_vlan_id ('str'): Specify Vlan for voice traffic
+        policy_map_name ('str'): Policy-map name
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring template methods for dot1x
+    """
+    log.info(f"Configuring template methods for dot1x")
+	
+    configs=[
+        f"template {template_name}",
+        "dot1x pae authenticator",
+        f"switchport access vlan {vlan_id}",
+        "switchport mode access",
+        f"switchport voice vlan {voice_vlan_id}",
+        "mab",
+        "access-session closed",
+        "access-session port-control auto",
+        "authentication periodic",
+        "authentication timer reauthenticate server",
+	    f"service-policy type control subscriber {policy_map_name}"
+	]
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure template methods for dot1x. Error:\n{e}")
+
+def configure_template_methods_using_max_reauth(device,template_name,timeout_period,max_reauth):
+    """ configure template methods using max reauth and timeout
+    Args:
+        device ('obj'): Device object
+        template_name ('str): Specify template name
+        timeout_period ('int'): Specify VLAN ID of the VLAN when this port is in access mode
+        max_reauth ('int'): Specify max-reauth-req value <1-10>
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring template methods using max reauth and timeout
+    """
+    log.info(f"Configuring template methods for dot1x")
+	
+    configs=[
+        f"template {template_name}",
+        f"dot1x timeout tx-period {timeout_period}",
+        f"dot1x max-reauth-req {max_reauth}" 
+	]
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure template methods using max reauth and timeout. Error:\n{e}")   
 
 def clear_access_session_mac(device, mac):
     """Clear Access Session MAC
@@ -1219,5 +1419,124 @@ def clear_access_session_mac(device, mac):
             "Failed to clear Access session MAC.Error: {}".format(str(e))
         )
 
+def unconfigure_source_template(device, interface, template_name):
+    """Unconfigure Source template config
+        Args:
+            device ('obj'): device to use
+            interface (`str`): Interface name
+            template (`str`): Built-in/User defined template Name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to remove the source template
+    """
+	
+    converted_interface = Common.convert_intf_name(interface)
+    cmd = [
+                f"interface {interface}",
+                f"no source template {template_name}"           
+          ]  
+    log.info("Unconfigure source template {tmp} on {intf}".format(tmp=template_name, intf=converted_interface))
+	
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure the source template {}.Error: {}".format(template_name, str(e))
+        )
 
+
+def configure_service_policy(device, policy_name):
+    """Configure Service policy
+        Args:
+            device ('obj'): device to use
+            policy_name (`str`): Policy_name
+            
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure: Failed to configure Service policy
+    """
+    
+    cmd = [f'service-policy type control subscriber {policy_name}']
+
+    log.debug("Configure Service policy")
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure Service policy")
+
+
+def unconfigure_service_policy(device):
+    """Unconfigure Service policy
+        Args:
+            device ('obj'): device to use
+                        
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure: Failed to unconfigure Service policy
+    """
+    
+    cmd = ['no service-policy type control subscriber']
+
+    log.debug("Unconfigure Service policy")
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure Service policy")
+
+
+def configure_access_session_limit(device, session_limit, event_limit):
+    """Configure Access session and event limit
+        Args:
+            device ('obj'): device to use
+            session_limit (`int`): Session Limit or max sessions to be logged
+            event_limit ('int'): Event Limit per session
+            
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure: Failed to configure Access session and event limit
+    """
+    
+    cmd = [f'access-session event-logging enable session-limit {session_limit} event-limit {event_limit}']
+
+    log.debug("Configure Access session and event limit")
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure Access session and event limit")
+
+
+def unconfigure_access_session_limit(device):
+    """Unconfigure Access session and event limit
+        Args:
+            device ('obj'): device to use
+                        
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure: Failed to unconfigure Access session and event limit
+    """
+    
+    cmd = ['no access-session event-logging enable session-limit']
+
+    log.debug("Unconfigure Access session and event limit")
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure Access session and event limit")
 

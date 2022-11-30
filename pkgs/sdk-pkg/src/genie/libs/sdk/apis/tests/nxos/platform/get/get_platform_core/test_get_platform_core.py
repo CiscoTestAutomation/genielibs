@@ -1,13 +1,13 @@
 import unittest
+import os
 from pyats.topology import loader
 from genie.libs.sdk.apis.nxos.platform.get import get_platform_core
-
 
 class TestPlatformCore(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        testbed = """
+        testbed = f"""
         testbed:
             servers:
                 scp:
@@ -22,7 +22,7 @@ class TestPlatformCore(unittest.TestCase):
               defaults:
                 class: unicon.Unicon
               a:
-                command: mock_device_cli --os nxos --mock_data_dir mock_data --state connect
+                command: mock_device_cli --os nxos --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: nxos
             platform: n9k

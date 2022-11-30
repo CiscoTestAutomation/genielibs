@@ -5,15 +5,15 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-    no spanning-tree vlan 123 priority 4096: "no spanning-tree vlan 123 priority 4096\r\
-      \n"
-  prompt: LG-PK(config)#
+    no spanning-tree vlan 10 priority: "no spanning-tree vlan 10 priority\r\n"
+    no spanning-tree vlan 10 priority 5: "no spanning-tree vlan 10 priority 5\r\n"
+  prompt: Switch(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: LG-PK(config-line)#
+  prompt: Switch(config-line)#
 connect:
   commands:
     ? ''
@@ -33,4 +33,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: LG-PK#
+  prompt: Switch#

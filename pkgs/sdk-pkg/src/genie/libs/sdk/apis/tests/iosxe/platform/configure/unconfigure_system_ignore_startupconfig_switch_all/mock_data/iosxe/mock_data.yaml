@@ -8,13 +8,13 @@ configure:
     no system ignore startupconfig switch all: "no system ignore startupconfig switch\
       \ all\r\nApplying config on Switch 1...[DONE]\r\nApplying config on Switch 2...[DONE]\r\
       \n"
-  prompt: n08HA(config)#
+  prompt: n10SVL(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: n08HA(config-line)#
+  prompt: n10SVL(config-line)#
 connect:
   commands:
     ? ''
@@ -34,4 +34,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: n08HA#
+  prompt: n10SVL#

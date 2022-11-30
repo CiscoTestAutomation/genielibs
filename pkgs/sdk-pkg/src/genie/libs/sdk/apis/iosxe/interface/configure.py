@@ -599,7 +599,9 @@ def config_ip_on_interface(
     disable_switchport=False,
     dhcpv4=False,
     dhcp_hostname="",
-    vrf=None
+    vrf=None,
+    link_local_address=None,
+    secondary=False
 ):
     """ Configure IP on an interface
 
@@ -615,6 +617,7 @@ def config_ip_on_interface(
             dhcpv4 ('bool): configure for ipv4 dhcp
             dhcp_hostname ('str): Optionally configure dhcp hostname as well
             vrf ('str): vrf for in the interface
+            secondary ('bool): configure as secondary ipv4 address
 
         Returns:
             None
@@ -646,15 +649,26 @@ def config_ip_on_interface(
         cfg_str += "vrf forwarding {vrf}\n".format(vrf=vrf)
     #configure ip and mask
     if ip_address and mask:
-        cfg_str += "ip address {ip} {mask}\n".format(
+        cfg_str += "ip address {ip} {mask}".format(
              ip=ip_address, mask=mask
         )
+
+        if secondary:
+            cfg_str += " secondary"
+
+        cfg_str += '\n'
 
     # Add ipv6 address configuration
     if ipv6_address:
         cfg_str += "ipv6 enable\n" \
                    "ipv6 address {ipv6}\n".format(
             ipv6=ipv6_address
+        )
+    # Configure ipv6 link-local address
+    if link_local_address:
+        cfg_str += "ipv6 enable\n" \
+                   "ipv6 address {link_local_address} link-local\n".format(
+            link_local_address=link_local_address
         )
     # configure port to receive ipv4 address via dhcp
     if dhcpv4:
@@ -1457,7 +1471,7 @@ def configure_interface_monitor_session(device, monitor_config):
         Args:
             device (`obj`): Device object
             monitor_config (`list`): list of monitor session configuration
-                ex.) 
+                ex.)
                     monitor_config = [{
                             'session_name': 1,
                             'session_type': 'erspan-source',
@@ -1550,7 +1564,7 @@ def unconfigure_interface_monitor_session(device, session_name, session_type):
                 error=e
             )
         )
-            
+
 
 def configure_subinterfaces_for_vlan_range(
     device, interface, vlan_id_start, vlan_id_step, vlan_id_count,
@@ -1962,12 +1976,19 @@ def attach_ipv6_raguard_policy_to_interface(device, interface, policy_name):
             )
         )
 
-def remove_interface_ip(device, interface):
+def remove_interface_ip(device,
+                        interface,
+                        ip_address="",
+                        mask="",
+                        secondary=False):
     """ Remove ip on interface
 
         Args:
             device (`obj`): Device object
             interface (`str`): Interface name
+            ip_address (`str`,optional): IPv4 address
+            mask (`str`,optional): Mask
+            secondary (`bool`,optional): Remove secondary IPv4 address
 
         Returns:
             None
@@ -1980,17 +2001,28 @@ def remove_interface_ip(device, interface):
             interface=interface
         )
     )
+
+    cmd = "no ip address"
+    if ip_address:
+        cmd += f" {ip_address}"
+    if mask:
+        cmd += f" {mask}"
+    if secondary:
+        cmd += " secondary"
+
+
     try:
         device.configure(
             [
                 "interface {interface}".format(interface=interface),
-                "no ip address",
+                cmd,
             ]
         )
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            "Failed to unconfig ip address on interface {interface}. "
-            "Error:\n{error}".format(interface=interface, error=e
+            "Failed to unconfig ip address on interface {interface}.\n"
+            "Command: {command}\n"
+            "Error:\n{error}".format(interface=interface, command=cmd, error=e
             )
         )
 
@@ -2780,7 +2812,7 @@ def configure_ip_on_tunnel_interface(
 
         if mode:
             # IOSXE Defaults to GRE
-            configs.append("tunnel mode {mode} ip".format(mode=mode))
+            configs.append("tunnel mode {mode} ipv4".format(mode=mode))
     
     configs.append("tunnel source {ip}".format(ip=tunnel_source))
     configs.append("tunnel destination {ip}".format(ip=tunnel_destination))
@@ -3290,7 +3322,7 @@ def disable_ipv6_address_dhcp(device, interface):
                 error=e
             )
         )
-        
+
 def unconfig_interface_ospfv3(device, interface, ospfv3_pid, area, ipv4=False, ipv6=True):
     """unconfig OSPF on interface
 
@@ -3564,7 +3596,7 @@ def configure_control_policies(
             policy_name (`str`): name of the policy
             event (`str`,optional): event name, default value is None
             match (`str`,optional): match-all or match-first, default value is None
-            class_number (`int`,optional): class number between 1 to 254, default value is None 
+            class_number (`int`,optional): class number between 1 to 254, default value is None
             class_name (`str`,optional): class name if any exists, default value is None
             class_action (`str`,optional): class action to be perform, default value is None
             action_number (`int`,optional): action number between 1 to 254, default value is None
@@ -3626,19 +3658,19 @@ def configure_control_policies(
         )
 
 def configure_subinterface(
-    device, 
-    physical_port, 
+    device,
+    physical_port,
     any_number,
     ip_address,
     sub_mask
 ):
-    """ Configure subinterface 
+    """ Configure subinterface
         Args:
             device ('obj'): device to use
             physical_port ('str'): physical port
             any_number ('str'): any number
             ip_address ('str'): Ip address
-            sub_mask ('str'): Subnet mask        
+            sub_mask ('str'): Subnet mask
         Returns:
             console output
         Raises:
@@ -3649,7 +3681,7 @@ def configure_subinterface(
             "encapsulation dot1q {} native".format(any_number),
             "ip address {} {}".format(ip_address,sub_mask)
           ]
-  
+
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -3950,7 +3982,7 @@ def configure_virtual_template(device,
     unnumbered_interface,
     authentication,
     mtu):
-    
+
     """ Configure virtual-template interface
 
         Args:
@@ -3966,7 +3998,7 @@ def configure_virtual_template(device,
         Raises:
             SubCommandFailure
     """
-    
+
     if not device.is_connected():
         connect_device(device=device)
 
@@ -3974,7 +4006,7 @@ def configure_virtual_template(device,
     cli.append(f"interface Virtual-Template {virtual_template_number}")
     cli.append(f"ip unnumbered {unnumbered_interface}")
     cli.append(f"ppp authentication {authentication}")
-    
+
     if len(mtu) != 0:
         cli.append(f"mtu {mtu}")
 
@@ -3986,7 +4018,7 @@ def configure_virtual_template(device,
         )
 
 def unconfigure_virtual_template(device, virtual_template_number):
-    
+
     """ Configure virtual-template interface
 
         Args:
@@ -3999,13 +4031,13 @@ def unconfigure_virtual_template(device, virtual_template_number):
         Raises:
             SubCommandFailure
     """
-    
+
     if not device.is_connected():
         connect_device(device=device)
 
     cli = []
     cli.append(f"no interface Virtual-Template {virtual_template_number}")
-    
+
     try:
         device.configure(cli)
     except SubCommandFailure as e:
@@ -4019,8 +4051,8 @@ def configure_ipv6_enable(device, interface):
             device (`obj`): Device object
             interface ('str'): interface name to enable ipv6
         Returns:
-            None 
-        Raises: 
+            None
+        Raises:
             SubCommandFailure
     """
     log.debug("Configuring ipv6 enable under {interface}".format(interface=interface))
@@ -4048,7 +4080,7 @@ def configure_uplink_interface(device, interfaces, vlan_range, vlan1, vlan2):
         Returns:
             None
         Raises:
-            SubCommandFailure : Failed to configure uplink interface 
+            SubCommandFailure : Failed to configure uplink interface
     """
     log.debug(f"Configuring uplink interface on {interfaces}")
     confg = []
@@ -4089,7 +4121,7 @@ def configure_downlink_interface(device, interfaces, vlan_range, vlan1, vlan2):
          confg.append(f'switchport private-vlan trunk allowed vlan {vlan_range}')
          confg.append(f'switchport private-vlan association trunk {vlan1} {vlan2}')
 
-    try:        
+    try:
         device.configure(confg)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to downlink interface on {interfaces}. Error:\n{e}")
@@ -4114,7 +4146,7 @@ def configure_switchport_trunk_native_vlan(device, interfaces, native_vlan):
          confg.append(f'switchport trunk native vlan {native_vlan}')
          confg.append('switchport mode trunk')
 
-    try:   
+    try:
         device.configure(confg)
 
     except SubCommandFailure as e:
@@ -4126,7 +4158,7 @@ def configure_switchport_mode_trunk_snooping_trust(device, interfaces):
         Args:
             device (`obj`): Device object
             interfaces (`list`): list of Interface to be added to port channel
-            
+
         Returns:
             None
         Raises:
@@ -4139,7 +4171,7 @@ def configure_switchport_mode_trunk_snooping_trust(device, interfaces):
          confg.append('switchport mode trunk')
          confg.append('ip dhcp snooping trust')
 
-    try:   
+    try:
         device.configure(confg)
 
     except SubCommandFailure as e:
@@ -4157,7 +4189,7 @@ def configure_egress_interface(device, interfaces, native_vlan, vlan_range, vlan
             vlan_range (`str`): vlan range to be added
             vlan1 (`str`): vlan to be added to the port
             vlan2 (`str`): vlan to be added to the port
-            
+
         Returns:
             None
         Raises:
@@ -4178,7 +4210,7 @@ def configure_egress_interface(device, interfaces, native_vlan, vlan_range, vlan
 
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure switchport mode trunk snooping trust on {interfaces}. Error:\n{e}")
-        
+
 def unconfigure_interfaces_on_port_channel(
     device, interfaces, mode, channel_group,
     channel_protocol=None, disable_switchport=False,
@@ -4222,7 +4254,7 @@ def unconfigure_interfaces_on_port_channel(
                             error=e
                 )
             )
-            
+
 def unconfigure_ipv6_enable(device, interface):
     """ Disable ipv6
         Args:
@@ -4421,7 +4453,7 @@ def unconfigure_span_monitor_session(device,session_number):
          )
 
 def configure_port_channel_standalone_disable(device, port_channel_num):
-    
+
     """ Configure no port-channel standalone disable command on Port-channel interface
 
         Args:
@@ -4452,7 +4484,7 @@ def configure_port_channel_standalone_disable(device, port_channel_num):
         )
 
 def unconfigure_port_channel_standalone_disable(device,port_channel_num):
-       
+
     """ Unconfigure port-channel standalone disable command on port-channel interface
 
         Args:
@@ -4482,8 +4514,8 @@ def unconfigure_port_channel_standalone_disable(device,port_channel_num):
             format(po_interface_num = port_channel_num, error=e
             )
         )
-    
-         
+
+
 def configure_pppoe_enable_interface(device, interface, name):
     """ Configure pppoe enable group on interface
         Args:
@@ -4706,7 +4738,7 @@ def configure_mdns_on_interface_vlan(device, vlan, policy_name=None, act_qry_tim
         cli.append(f"service-policy {policy_name}")
     if act_qry_time:
         cli.append(f"active-query timer {act_qry_time}")
-    
+
     try:
         device.configure(cli)
     except SubCommandFailure as error:
@@ -4730,7 +4762,7 @@ def unconfigure_mdns_on_interface_vlan(device, vlan):
     cli = []
     cli.append(f"interface vlan {vlan}")
     cli.append(f"no mdns-sd gateway")
-    
+
     try:
         device.configure(cli)
     except SubCommandFailure as error:
@@ -4744,74 +4776,74 @@ def enable_switchport_trunk_on_interface(device, interface):
             device ('obj'): Device object
             interface ('str'): interface name to enable switchport trunk
         Returns:
-            None 
-        Raises: 
+            None
+        Raises:
             SubCommandFailure : Failed to enable switchport trunk on interface
     """
     log.debug(f"Enable switchport mode trunk on interface {interface}")
-    
+
     configs = [
     f"interface {interface}",
     "switchport mode trunk"
     ]
-    
+
     try:
         device.configure(configs)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Failed to enable switchport mode trunk under {interface}. Error:\n{e}"
         )
-        
+
 def disable_autostate_on_interface(device, interface):
     """ Disable autostate on interface
         Args:
             device ('obj'): Device object
             interface ('str'): interface name to disable autostate
         Returns:
-            None 
-        Raises: 
+            None
+        Raises:
             SubCommandFailure : Failed to disable autostate on interface
     """
     log.debug(f"Disable autostate on interface {interface}")
-    
+
     configs = [
         f"interface {interface}",
         "no autostate"
     ]
-    
+
     try:
         device.configure(configs)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Failed to disable autostate under {interface}. Error:\n{e}"
         )
-        
+
 def configure_access_session_port_control(device, interface, option='auto'):
     """ Disable autostate on interface
         Args:
             device ('obj'): Device object
             interface ('str'): interface name to disable autostate
         Returns:
-            None 
-        Raises: 
+            None
+        Raises:
             SubCommandFailure : Failed to disable autostate on interface
     """
     log.debug(f"configure_access_session_port_control on interface {interface}")
-    
+
     configs = [
         f"interface {interface}",
         "access-session port-control " + option
     ]
-    
+
     try:
         device.configure(configs)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Failed to configure_access_session_port_control under {interface}. Error:\n{e}"
         )
-        
-    
-        
+
+
+
 
 def configure_ip_unnumbered_on_interface(device, interface, dest_interface):
     """ configure ip unnumbered loopback on interface <interface>
@@ -4821,24 +4853,24 @@ def configure_ip_unnumbered_on_interface(device, interface, dest_interface):
             dest_interface('str'): Interface details on which ip unnumbered is going to apply (i.e - Loopback0)
         Returns:
             None
-        Raises: 
+        Raises:
             SubCommandFailure : Failed to configure ip unnumbered loopback on interface
     """
 
     log.debug(f"Add ip unnumbered loopback on interface {interface}")
-    
+
     configs = [
         f"interface {interface}",
         f"ip unnumbered {dest_interface}"
     ]
-    
+
     try:
         device.configure(configs)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Failed to add ip unnumbered loopback on interface {interface}. Error:\n{e}"
         )
-        
+
 
 def configure_switchport_trunk_allowed_vlan(device, interface, vlan_id):
     """ Configure switchport trunk allowed vlan on interface <interface>
@@ -4848,26 +4880,26 @@ def configure_switchport_trunk_allowed_vlan(device, interface, vlan_id):
             vlan_id('int'): VLAN IDs of the allowed VLANs
         Returns:
             None
-        Raises: 
+        Raises:
             SubCommandFailure :Failed to Configure switchport trunk allowed vlan on interface
     """
 
     log.debug(f"Configure switchport trunk allowed vlan on interface {interface}")
-    
+
     configs = [
         f"interface {interface}",
         f"switchport trunk allowed vlan {vlan_id}"
     ]
-    
+
     try:
         device.configure(configs)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Failed to Configure switchport trunk allowed vlan on interface {interface}. Error:\n{e}"
         )
-        
+
 def configure_port_channel_lacp_max_bundle(device, port_channel_num, lacp_bundle_num):
-    
+
     """ Configure lacp_max_bundle on the Port-channel interface
 
         Args:
@@ -4884,8 +4916,8 @@ def configure_port_channel_lacp_max_bundle(device, port_channel_num, lacp_bundle
     """
     try:
         device.configure(
-            [ 
-            f"interface Port-channel {port_channel_num}", 
+            [
+            f"interface Port-channel {port_channel_num}",
             f"lacp max-bundle {lacp_bundle_num}"
             ]
         )
@@ -4895,7 +4927,7 @@ def configure_port_channel_lacp_max_bundle(device, port_channel_num, lacp_bundle
             )
 
 def unconfigure_port_channel_lacp_max_bundle(device, port_channel_num, lacp_bundle_num):
-    
+
     """ UnConfigure lacp_max_bundle on the Port-channel interface
 
         Args:
@@ -4909,7 +4941,7 @@ def unconfigure_port_channel_lacp_max_bundle(device, port_channel_num, lacp_bund
 
         Raises:
             SubCommandFailure
-    """ 
+    """
     try:
         device.configure(
             [
@@ -4919,9 +4951,9 @@ def unconfigure_port_channel_lacp_max_bundle(device, port_channel_num, lacp_bund
         )
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            f"Failed to configure interface Port-channel {port_channel_num} lacp max_bundle {lacp_bundle_num} command"            
+            f"Failed to configure interface Port-channel {port_channel_num} lacp max_bundle {lacp_bundle_num} command"
             )
-        
+
 def configure_interface_speed(device, interface, speed_mbps):
     """ Configure speed on interface
         Args:
@@ -4938,7 +4970,7 @@ def configure_interface_speed(device, interface, speed_mbps):
             speed_mbps=speed_mbps, interface=interface
         )
     )
-
+    
     try:
         device.configure(
             [
@@ -4951,6 +4983,31 @@ def configure_interface_speed(device, interface, speed_mbps):
             "Could not configure speed on {interface}. Error:\n{error}".format(
                 interface=interface, error=e
             )
+        )
+
+def unconfigure_ip_route_cache(device, interface):
+    """ Unconfigure ip route-cache on interface <interface>
+        Args:
+            device ('obj'): Device object
+            interface('str'): interface details on which we config
+        Returns:
+            None
+	    Raises:
+            SubCommandFailure : Failed to unconfigure ip route-cache
+    """
+
+    log.debug(f"Unconfigure ip route-cache on interface {interface}")
+    
+    configs = [
+        f"interface {interface}",
+        "no ip route-cache"
+    ]
+    
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure ip route-cache on interface {interface}. Error:\n{e}"
         )
 
 def configure_interface_duplex(device, interface, duplex_mode):
@@ -4983,7 +5040,7 @@ def configure_interface_duplex(device, interface, duplex_mode):
                 interface=interface, error=e
             )
         )
-        
+
 def configure_ip_igmp_static_group(device, interface, static_group, source_ip=None):
     """ configures ip igmp static-group in interface level
 
@@ -5000,7 +5057,7 @@ def configure_ip_igmp_static_group(device, interface, static_group, source_ip=No
         SubCommandFailure
     """
 
-    
+
     cmd = [f"interface {interface}"]
     if source_ip:
         cmd.append(f"ip igmp static-group {static_group} source {source_ip}")
@@ -5158,11 +5215,11 @@ def unconfigure_ipv4_dhcp_relay_helper_vrf(device, interface, ip_address, vrf):
 
 
 def configure_vrf_select_source(device, interface):
-    """ Configure VRF select source on an interface 
+    """ Configure VRF select source on an interface
 
         Args:
             device (`obj`): Device object
-            interface (`str`): Interface to configure            
+            interface (`str`): Interface to configure
 
         Returns:
             None
@@ -5193,7 +5250,7 @@ def unconfigure_vrf_select_source(device, interface):
         Args:
             device (`obj`): Device object
             interface (`str`): Interface to configure
-            
+
         Returns:
             None
 
@@ -5218,11 +5275,11 @@ def unconfigure_vrf_select_source(device, interface):
 
 def configure_power_inline( device, interface, mode = 'auto', watts_value='', action='', portlevel_config = ''):
 
-    """ Configure power inline on an interface 
+    """ Configure power inline on an interface
 
         Args:
             device (`obj`): Device object
-            interface (`str`): Interface to configure            
+            interface (`str`): Interface to configure
             mode ('str') : Mode to configure (Default is auto)
             watts_value ('int') : Power value to configure
             action ('str') : Commands to configure under police mode
@@ -5263,11 +5320,11 @@ def configure_power_inline( device, interface, mode = 'auto', watts_value='', ac
 
 def unconfigure_power_inline( device, interface, mode = 'auto', watts_value='', action='', portlevel_config = ''):
 
-    """ Unconfigure power inline on an interface 
+    """ Unconfigure power inline on an interface
 
         Args:
             device (`obj`): Device object
-            interface (`str`): Interface to unconfigure            
+            interface (`str`): Interface to unconfigure
             mode ('str') : Mode to unconfigure (Default is auto)
             watts_value ('int') : Power value to unconfigure
             action ('str') : Commands to unconfigure under police mode
@@ -5330,7 +5387,7 @@ def confgiure_port_channel_min_link(device, port_channel_num, min_link):
 
 def unconfgiure_port_channel_min_link(device, port_channel_num):
     """ unconfigure port-channel min links
-    
+
         Args:
             device (`obj`): Device object
             port_channel_num('str'): Port-channel number for the Port-channel interface
@@ -5352,7 +5409,7 @@ def unconfgiure_port_channel_min_link(device, port_channel_num):
 
 def configure_interface_channel_group_auto_lacp(device, interface):
     """ Configure auto Enable LACP auto on this interface
-    
+
     Args:
         device ('obj'): device to use
         interface ('str') : interface to add configs
@@ -5420,7 +5477,7 @@ def unconfigure_interface_switchport_mode_access(device, interface):
 
 def configure_interface_macro_auto_port_sticky(device, interface):
     """ Configure macro auto port sticky on this interface
-    
+
     Args:
         device ('obj'): device to use
         interface ('str') : interface to add configs
@@ -5441,7 +5498,7 @@ def configure_interface_macro_auto_port_sticky(device, interface):
 
 def unconfigure_interface_macro_auto_port_sticky(device, interface):
     """ Unconfigure macro auto port sticky on this interface
-    
+
     Args:
         device ('obj'): device to use
         interface ('str') : interface to add configs
@@ -5543,6 +5600,7 @@ def configure_interface_inherit_disable(device, interface, disable_option):
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure access-session inherit disable on this interface {interface}. Error:\n{e}")
 
+
 def unconfigure_interface_inherit_disable(device, interface, disable_option):
     """ Unconfigure access-session inherit disable
         Args:
@@ -5568,13 +5626,14 @@ def unconfigure_interface_inherit_disable(device, interface, disable_option):
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure access-session inherit disable on this interface {interface}. Error:\n{e}")
 
+
 def unconfigure_control_policies(device, policy_name):
     """ Unconfigure policy-map on an device
 
         Args:
             device (`obj`): Device object
             policy_name (`str`): name of the policy
-        
+
         Returns:
             None
         Raises:
@@ -5587,8 +5646,28 @@ def unconfigure_control_policies(device, policy_name):
     try:
         device.configure(cfg_lst)
     except SubCommandFailure as e:
-        raise SubCommandFailure(f"Failed to unconfigure policy-map on device. Error:\n{e}")
-
+        raise SubCommandFailure(f"Failed to unconfigure policy-map on device. Error:\n{e}")        
+                
+def unconfigure_subinterface(
+    device, 
+    physical_port, 
+    any_number
+):
+    """ UnConfigure subinterface 
+        Args:
+            device ('obj'): device to use
+            physical_port ('str'): physical port
+            any_number ('str'): any number 
+    """
+    cmd = [
+            f"no interface {physical_port}.{any_number}"
+          ]
+  
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not UnConfigure subinterface")     
 
 def configure_interface_span_vlan_priority(device, interface, vlan, priority):
     """ Configures Spanning Tree vlan priority on port
@@ -5602,7 +5681,6 @@ def configure_interface_span_vlan_priority(device, interface, vlan, priority):
         Raises:
             SubCommandFailure
     """
-
     config_list = [f"interface {interface}", f"spanning-tree vlan {vlan} priority {priority}"]
     try:
         device.configure(config_list)
@@ -5669,3 +5747,877 @@ def unconfigure_interface_span_cost(device, interface):
         raise SubCommandFailure(
             f'Could not unconfigure Interface Spanning Tree cost, Error-\n{error}'
         )
+
+
+def configure_interface_switchport_port_security_violation(device, interface, violation_type):
+    """ Configure switchport port-security violation
+        Args:
+            device ('obj'): device to use
+            interface ('str') : interface to add configs
+            violation_type('str') : Select violation type
+            ex:)
+                 protect   Security violation protect mode
+                 report    Security violation report only mode
+                 restrict  Security violation restrict mode
+                shutdown  Security violation shutdown mode
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = []
+    cmd.append(f'interface {interface}')
+    cmd.append(f'switchport port-security violation {violation_type}')
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure switchport port-security violation on this interface {interface}. Error:\n{e}")
+
+
+def unconfigure_interface_switchport_port_security_violation(device, interface):
+    """ Unconfigure switchport port-security violation
+        Args:
+            device ('obj'): device to use
+            interface ('str') : interface to remove configs
+            
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = []
+    cmd.append(f'interface {interface}')
+    cmd.append('no switchport port-security violation')
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure switchport port-security violation on this interface {interface}. Error:\n{e}")
+
+
+def configure_interface_dot1x_timeout_txp(device, interface, timeout):
+    """ Configure DOT1x timeout for suppplicant retries
+        Args:
+            device ('obj'): device to use
+            interface ('str') : interface to add configs
+            timeout ('int') : Timeout for supplicant retries
+            
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = []
+    cmd.append(f'interface {interface}')
+    cmd.append(f'dot1x timeout tx-period {timeout}')
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure DOT1x timeout for suppplicant retries on this interface {interface}. Error:\n{e}")
+
+
+def unconfigure_interface_dot1x_timeout_txp(device, interface):
+    """ Unconfigure DOT1x timeout for suppplicant retries
+        Args:
+            device ('obj'): device to use
+            interface ('str') : interface to remove configs
+            
+        Returns:
+            None
+            
+        Raises:
+            SubCommandFailure
+    """            
+    cmd = []
+    cmd.append(f'interface {interface}')
+    cmd.append('no dot1x timeout tx-period')
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure DOT1x timeout for suppplicant retries on this interface {interface}. Error:\n{e}")
+
+
+def configure_interface_span_vlan_priority(device, interface, vlan, priority):
+    """ Configures Spanning Tree vlan priority on port
+        Args:
+            device ('obj')    : device to use
+            interface ('str') : interface to configure
+            vlan ('int') : vlan to configure
+            priority ('int') : priority to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """            
+    config_list = [f"interface {interface}", f"spanning-tree vlan {vlan} priority {priority}"]
+    try:
+        device.configure(config_list)
+    except SubCommandFailure as error:
+        raise SubCommandFailure(
+            f'Could not configure Interface Spanning Tree Vlan Priority, Error-\n{error}'
+        )
+
+        
+def configure_interface_dot1x_max_req(device, interface, retries):
+    """ Configure DOT1x Max No. of Retries
+        Args:
+            device ('obj'): device to use
+            interface ('str') : interface to add configs
+            retires ('int') : Max No. of Retries
+            
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = []
+    cmd.append(f'interface {interface}')
+    cmd.append(f'dot1x max-req {retries}')
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure DOT1x Max No. of Retries on this interface {interface}. Error:\n{e}")
+
+
+def unconfigure_interface_dot1x_max_req(device, interface):
+    """ Unconfigure DOT1x Max No. of Retries
+        Args:
+            device ('obj'): device to use
+            interface ('str') : interface to remove configs
+            
+        Returns:
+            None
+            
+        Raises:
+            SubCommandFailure
+    """
+            
+    cmd = []
+    cmd.append(f'interface {interface}')
+    cmd.append('no dot1x max-req')
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure DOT1x Max No. of Retries on this interface {interface}. Error:\n{e}")
+    
+
+def unconfigure_interface_span_vlan_priority(device, interface, vlan):
+    """ Configures Spanning Tree vlan priority on port
+        Args:
+            device ('obj')    : device to use
+            interface ('str') : interface to configure
+            vlan ('int') : vlan to configure
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    config_list = [f"interface {interface}", f"no spanning-tree vlan {vlan} priority"]
+    try:
+        device.configure(config_list)
+    except SubCommandFailure as error:
+        raise SubCommandFailure(
+            f'Could not unconfigure Interface Spanning Tree Vlan Priority, Error-\n{error}'
+        )    
+
+
+def configure_interface_dot1x_max_reauth_req(device, interface, reattempts):
+    """ Configure DOT1x Max No. of Reauthentication Attempts
+        Args:
+            device ('obj'): device to use
+            interface ('str') : interface to add configs
+            reattempts ('int') : Max No. of Reauthentication Attempts
+            
+        Returns:
+            None
+            
+        Raises:
+            SubCommandFailure
+    """    
+            
+    cmd = []
+    cmd.append(f'interface {interface}')
+    cmd.append(f'dot1x max-reauth-req {reattempts}')
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure DOT1x Max No. of Reauthentication Attempts on this interface {interface}. Error:\n{e}")
+    
+
+def configure_interface_span_cost(device, interface, cost):
+    """ Configures Spanning Tree cost on port
+        Args:
+            device ('obj')    : device to use
+            interface ('str') : interface to configure
+            cost ('int')      : cost to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure      
+    """
+
+    config_list = [f"interface {interface}", f"spanning-tree cost {cost}"]
+    try:
+        device.configure(config_list)
+    except SubCommandFailure as error:
+        raise SubCommandFailure(
+            f'Could not configure Interface Spanning Tree cost, Error-\n{error}'
+        )
+
+
+def unconfigure_interface_dot1x_max_reauth_req(device, interface):
+    """ Unconfigure DOT1x Max No. of Reauthentication Attempts
+        Args:
+            device ('obj'): device to use
+            interface ('str') : interface to remove configs
+            
+        Returns:
+            None
+            
+        Raises:
+            SubCommandFailure
+    """
+        
+    cmd = []
+    cmd.append(f'interface {interface}')
+    cmd.append('no dot1x max-reauth-req')
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure DOT1x Max No. of Reauthentication Attempts on this interface {interface}. Error:\n{e}")
+    
+
+def unconfigure_interface_span_cost(device, interface):
+    """ Unconfigures Spanning Tree cost on port
+        Args:
+            device ('obj')    : device to use
+            interface ('str') : interface to configure
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    config_list = [f"interface {interface}", f"no spanning-tree cost"]
+    try:
+        device.configure(config_list)
+    except SubCommandFailure as error:
+        raise SubCommandFailure(
+            f'Could not unconfigure Interface Spanning Tree cost, Error-\n{error}'
+        )
+
+        
+def configure_interface_dot1x_eap_profile(device, interface, profile_name):
+    """ Configure DOT1x EAP supplicant profile configuration
+        Args:
+            device ('obj'): device to use
+            interface ('str') : interface to add configs
+            profile_name ('name') : EAP supplicant profile name
+            
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = []
+    cmd.append(f'interface {interface}')
+    cmd.append(f'dot1x supplicant eap profile {profile_name}')
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure DOT1x EAP supplicant profile configuration on this interface {interface}. Error:\n{e}")
+
+
+def unconfigure_interface_dot1x_eap_profile(device, interface):
+    """ Unconfigure DOT1x EAP supplicant profile configuration
+        Args:
+            device ('obj'): device to use
+            interface ('str') : interface to remove configs
+            
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    
+    cmd = []
+    cmd.append(f'interface {interface}')
+    cmd.append('no dot1x supplicant eap profile')
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure DOT1x EAP supplicant profile configuration on this interface {interface}. Error:\n{e}")
+
+
+def configure_interface_ip_verify_unicast_source(device, interface, reachable_option, suboptions="" ):
+    """ configure interface ip verify unicast source
+        Args:
+            device ('obj'): device to use
+            interface ('str') : interface to add configs
+            reachable_option ('str') : option for source reachability
+            ex:) 
+                any  Source is reachable via any interface
+                rx   Source is reachable via interface on which packet was received
+            suboptions ('str') : sub commands
+            ex:)
+                <1-199>          IP access list (standard or extended)
+                <1300-2699>      IP expanded access list (standard or extended)
+                allow-default    Allow default route to match when checking source address
+                allow-self-ping  Allow router to ping itself (opens vulnerability in verification)
+                l2-src           Check packets arrive with correct L2 source address
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = []
+    cmd.append(f'interface {interface}')
+    cmd.append('no switchport')
+    if suboptions:
+        cmd.append(f'ip verify unicast source reachable-via {reachable_option} {suboptions}')
+    else:
+        cmd.append(f'ip verify unicast source reachable-via {reachable_option}')
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure ip verify unicast source on interface. Error:\n{e}")
+
+def unconfigure_interface_ip_verify_unicast(device, interface):
+    """ unconfigure interface ip verify unicast
+        Args:
+            device ('obj'): device to use
+            interface ('str') : interface to add configs
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = []
+    cmd.append(f'interface {interface}')
+    cmd.append('no ip verify unicast')
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure ip verify unicast on interface. Error:\n{e}")
+
+
+def configure_interface_auth_vlan(device, interface, vlan):
+    """ Configure authorize vlan on interface
+        Args:
+            device ('obj'): device to use
+            interface ('str') : interface to add configs
+            vlan ('int') : VLAN ID to be configured
+            
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = []
+    cmd.append(f'interface {interface}')
+    cmd.append(f'authentication event fail action authorize vlan {vlan}')
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure authorize vlan on this interface {interface}. Error:\n{e}")
+
+
+def unconfigure_interface_auth_vlan(device, interface):
+    """ Unconfigure authorize vlan on interface
+        Args:
+            device ('obj'): device to use
+            interface ('str') : interface to remove configs
+            
+        Returns:
+            None
+
+       Raises:
+            SubCommandFailure
+    """
+    cmd = []
+    cmd.append(f'interface {interface}')
+    cmd.append('no authentication event fail action authorize vlan')
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure authorize vlan on this interface {interface}. Error:\n{e}")
+
+
+def configure_interface_ipv6_verify_unicast_source(device, interface, reachable_option, suboptions="" ):
+    """ configure interface ipv6 verify unicast source
+        Args:
+            device ('obj'): device to use
+            interface ('str') : interface to add configs
+            reachable_option ('str') : option for source reachability
+            ex:) 
+                any  Source is reachable via any interface
+                rx   Source is reachable via interface on which packet was received
+            suboptions ('str') : sub commands
+            ex:)
+                WORD           Access-list name
+                allow-default  Allow default route to match when checking source address
+                <cr>           <cr>
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = []
+    cmd.append(f'interface {interface}')
+    cmd.append('no switchport')
+    if suboptions:
+        cmd.append(f'ipv6 verify unicast source reachable-via {reachable_option} {suboptions}')
+    else:
+        cmd.append(f'ipv6 verify unicast source reachable-via {reachable_option}')
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure ipv6 verify unicast source on interface. Error:\n{e}")
+
+
+def configure_interface_auth_vlan_no_resp(device, interface, vlan):
+    """ Configure authorize vlan for no response on interface
+        Args:
+            device ('obj'): device to use
+            interface ('str') : interface to add configs
+            vlan ('int') : VLAN ID to be configured
+            
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = []
+    cmd.append(f'interface {interface}')
+    cmd.append(f'authentication event no-response action authorize vlan {vlan}')
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure authorize vlan for no response on this interface {interface}. Error:\n{e}")
+
+
+def unconfigure_interface_auth_vlan_no_resp(device, interface):
+    """ Unconfigure authorize vlan for no response on interface
+        Args:
+            device ('obj'): device to use
+            interface ('str') : interface to remove configs
+            
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = []
+    cmd.append(f'interface {interface}')
+    cmd.append('no authentication event no-response action authorize vlan')
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure authorize vlan for no response on this interface {interface}. Error:\n{e}")
+
+
+def unconfigure_interface_ipv6_verify_unicast(device, interface):
+    """ unconfigure interface ipv6 verify unicast
+        Args:
+            device ('obj'): device to use
+            interface ('str') : interface to add configs
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = []
+    cmd.append(f'interface {interface}')
+    cmd.append('no ipv6 verify unicast')
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure ipv6 verify unicast on interface. Error:\n{e}")
+        
+def configure_eui_64_over_ipv6_enabled_interface(device, interface, ipv6_address):
+    """ Configures eui-64 over ipv6 enabled interface
+        Args:
+            device ('obj')       : device to use
+            interface ('str')    : interface to configure
+            ipv6_address ('str') : ipv6 address
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = [f"interface {interface}", f"ipv6 address {ipv6_address} eui-64"]
+    try:
+        device.configure(cmd)        
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not configure eui-64 over ipv6 enabled interface")
+
+def unconfigure_eui_64_over_ipv6_enabled_interface(device, interface, ipv6_address):
+    """ UnConfigures eui-64 over ipv6 enabled interface
+        Args:
+            device ('obj')       : device to use
+            interface ('str')    : interface to configure
+            ipv6_address ('str') : ipv6 address
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = [f"interface {interface}", f"no ipv6 address {ipv6_address} eui-64"]
+    try:
+        device.configure(cmd)        
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not unconfigure eui-64 over ipv6 enabled interface")
+
+def configure_ipv6_nd_dad_processing(device, interface, no_of_attempts):
+    """ Configures ipv6 nd dad processing
+        Args:
+            device ('obj')         : device to use
+            interface ('str')      : interface to configure
+            no_of_attempts ('str') : Set IPv6 Duplicate Address Detection Transmits
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = [f"interface {interface}", f"ipv6 nd dad attempts {no_of_attempts}"]
+    try:
+        device.configure(cmd)        
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not configure ipv6 nd dad processing")
+
+def unconfigure_ipv6_nd_dad_processing(device, interface, no_of_attempts):
+    """ UnConfigures ipv6 nd dad processing
+        Args:
+            device ('obj')         : device to use
+            interface ('str')      : interface to configure
+            no_of_attempts ('str') : Set IPv6 Duplicate Address Detection Transmits
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = [f"interface {interface}", f"no ipv6 nd dad attempts {no_of_attempts}"]
+    try:
+        device.configure(cmd)        
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not unconfigure ipv6 nd dad processing") 
+
+def configure_interface_ip_verify_unicast_reversepath(device, interface, reversepath_option="" ):
+    """ configure interface ip verify unicast reverse-path
+        Args:
+            device ('obj'): device to use
+            interface ('str') : interface to add configs
+            reversepath_option ('str') : Reverse path validation of source address
+            ex:)
+                <1-199>          IP access list (standard or extended)
+                <1300-2699>      IP expanded access list (standard or extended)
+                allow-self-ping  Allow router to ping itself (opens vulnerability in verification)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    
+    cmd = []
+    cmd.append(f'interface {interface}')
+    cmd.append('no switchport')
+    if reversepath_option:
+        cmd.append(f'ip verify unicast reverse-path {reversepath_option}')
+    else:
+        cmd.append('ip verify unicast reverse-path')
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure interface ip verify unicast reverse-path on interface. Error:\n{e}")
+
+def configure_interface_ip_verify_unicast_notification(device, interface, threshold):
+    """ configure interface ip verify unicast notification threshold
+        Args:
+            device ('obj'): device to use
+            interface ('str') : interface to add configs
+            threshold ('str') :  Urpf NOTIFY drop rate threshold
+            ex:)
+                <0-4294967295>  Drop rate in pps triggering notify - 0 is any drops
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = []
+    cmd.append(f'interface {interface}')
+    cmd.append('no switchport')
+    cmd.append(f'ip verify unicast notification threshold {threshold}')
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure ip verify unicast notification threshold on interface. Error:\n{e}")
+
+def configure_interface_ipv6_verify_unicast_reversepath(device, interface, reversepath_option=""):
+    """ configure interface ipv6 verify unicast reverse-path
+        Args:
+            device ('obj'): device to use
+            interface ('str') : interface to add configs
+            reversepath_option ('str') : Reverse path validation of source address
+            ex:)
+                WORD  Access-list name
+                <cr>  <cr>
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = []
+    cmd.append(f'interface {interface}')
+    cmd.append('no switchport')
+    if reversepath_option:
+        cmd.append(f'ipv6 verify unicast reverse-path {reversepath_option}')
+    else:
+        cmd.append('ipv6 verify unicast reverse-path')
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure ipv6 verify unicast reverse-path on interface. Error:\n{e}")
+
+
+def configure_interface_switchport_block_address(device, interface, address_type):
+    """ Configures Interface Switchport block 
+        Args:
+            device ('obj')       : device to use
+            interface ('str')    : interface to configure
+            address_type ('str') : address type to block (i.e multicast or unicast)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure(
+            [
+                f"interface {interface}",
+                f"switchport block {address_type}",
+            ]
+        )
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not configure Interface Switchport block'
+        )
+
+def unconfigure_interface_switchport_block_address(device, interface, address_type):
+    """ Unconfigures Interface Switchport block 
+        Args:
+            device ('obj')       : device to use
+            interface ('str')    : interface to configure
+            address_type ('str') : address type to unblock (i.e multicast or unicast)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure(
+            [
+                f"interface {interface}",
+                f"no switchport block {address_type}",
+            ]
+        )
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not unconfigure Interface Switchport block'
+        )
+
+def configure_interface_logging_event(device, interface, event_type):
+    """ Configures Interface Logging Event 
+        Args:
+            device ('obj')       : device to use
+            interface ('str')    : interface to configure
+            event_type ('str')   : loggint event type (i.e bundle-status, link-status,
+                                   nfas-status, power-inline-status, etc )
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure(
+            [
+                f"interface {interface}",
+                f"logging event {event_type}",
+            ]
+        )
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not configure Interface Logging Event'
+        )
+
+def unconfigure_interface_logging_event(device, interface, event_type):
+    """ Unconfigures Interface Logging Event 
+        Args:
+            device ('obj')       : device to use
+            interface ('str')    : interface to configure
+            event_type ('str')   : loggint event type (i.e bundle-status, link-status,
+                                   nfas-status, power-inline-status, etc )
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure(
+            [
+                f"interface {interface}",
+                f"no logging event {event_type}",
+            ]
+        )
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not unconfigure Interface Logging Event'
+        )
+
+def unconfigure_ipv4_dhcp_relay_helper(device, interface, ip_address):
+    """ Unconfigure helper IP on an interface
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface to get address
+            ip_address (`str`): helper IP address to be unconfigured on interface
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """ 
+    cmd = [
+              f"interface {interface}",
+              f"no ip helper-address {ip_address}"
+          ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure helper IP address {ip_address} on interface {interface}"
+            )
+
+def unconfigure_ipv6_dhcp_relay(device, interface, dest_ipv6, vlan):
+    """ Unconfigure IPv6 DHCP Relay
+        Args:
+            device ('obj'): device to use
+            interface ('str'): name of the interface to be configured
+            dest_ipv6 ('str'): IPv6 destination address
+            vlan ('int'): vlan number
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed unconfiguring IPv6 DHCP Relay
+    """
+    cmd = [
+              f"interface {interface}",
+              f"no ipv6 dhcp relay destination {dest_ipv6} {vlan}"
+          ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            f"Could not unconfigure IPv6 DHCP Relay address {dest_ipv6} on interface {interface}"
+            )
+def configure_interface_switchport_dot1q_ethertype(device, interface, ethervalue):
+    """ Configures switchport on interface
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface to configure
+            ethervalue ('str'): Configure ethertype
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        "Configuring switchport on {interface} with ethertype = {ethervalue}"\
+            .format(interface=interface, ethervalue=ethervalue
+        )
+    )
+
+    config_list=["interface {interface}".format(interface=interface),\
+        "switchport dot1q ethertype {ethervalue}".format(ethervalue=ethervalue)]
+
+    try:
+        device.configure(config_list)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure switchport dot1q ethertype. Error:\n{error}"\
+                .format(error=e
+            )
+        )
+
+def unconfigure_interface_switchport_dot1q_ethertype(device, interface, ethervalue):
+    """ unConfigures switchport on interface
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface to unconfigure
+            ethervalue ('str'): unConfigure ethertype
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        "unConfiguring switchport on {interface} with ethertype = {ethervalue}"\
+            .format(interface=interface, ethervalue=ethervalue
+        )
+    )
+
+    config_list=["interface {interface}".format(interface=interface),\
+        "no switchport dot1q ethertype {ethervalue}".format(ethervalue=ethervalue)]
+
+    try:
+        device.configure(config_list)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure switchport dot1q ethertype. Error:\n{error}"\
+                .format(error=e
+            )
+        )         
+
+

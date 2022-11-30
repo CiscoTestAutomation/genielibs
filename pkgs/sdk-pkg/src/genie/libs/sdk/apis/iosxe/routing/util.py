@@ -159,3 +159,58 @@ def get_routes_from_parsed(output=None):
     vrf_key = next(iter(output['vrf']))
     route_list = list(output['vrf'][vrf_key]['address_family']['ipv4']['routes'].keys())
     return route_list
+
+def clear_ipv6_route(device, route ,vrf=None):
+    """
+        clear ipv6 route {route}
+        clear ipv6 route vrf {vrf} {route} 
+
+        Args:
+            device ('obj'): Device object
+            route ('str'): ipv6 address
+            vrf ('str', optional): vrf name, default=None
+        Returns:
+            None
+        Raises:
+            SubcommandFailure: Failed executing command
+    """
+
+    log.debug("Clearing ipv6 route on {device}".format(device=device))
+
+    try:
+        if vrf:
+            device.execute("clear ipv6 route vrf {vrf} {route}".format(vrf=vrf, route=route))
+        else:
+            device.execute("clear ipv6 route {route}".format(route=route))
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not clear ipv6 route {route} on {device}. Error:\n{error}".format(
+                device=device, route=route, error=e
+            )
+        )
+
+def clear_ipv6_route_all(device, vrf=None):
+    """ clear ipv6 route *
+        clear ipv6 route vrf {vrf} *
+        Args:
+            device ('obj'): Device object
+            vrf ('str'): vrf name, default=None
+        Returns:
+            None
+        Raises:
+            SubcommandFailure: Failed executing command
+    """
+
+
+    log.debug("Clearing ipv6 routes on {device}".format(device=device))
+
+    try:
+        if vrf:
+            device.execute("clear ipv6 route vrf {vrf} *".format(vrf))
+        else:
+            device.execute("clear ipv6 route *")
+            
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not clear ipv6 route on {device}. Error:\n{error}".format(device=device, error=e)
+        )

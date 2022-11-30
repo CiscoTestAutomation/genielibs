@@ -1,4 +1,5 @@
 import logging
+import re
 import base64
 import json
 import sys
@@ -13,9 +14,8 @@ from six import string_types
 from pprint import pformat
 from pyats.log.utils import banner
 from pyats.utils.secret_strings import to_plaintext
-
 import grpc
-from cisco_gnmi import proto
+from yang.connector import proto
 
 
 log = logging.getLogger(__name__)
@@ -41,7 +41,7 @@ class ForkedPdb(pdb.Pdb):
 
 class GnmiNotification(Thread):
     """Thread listening for event notifications from the device."""
-
+    RE_FIND_KEYS = re.compile(r'\[.*?\]')
     def __init__(self, response, **request):
         Thread.__init__(self)
         self._stop_event = Event()
@@ -50,14 +50,14 @@ class GnmiNotification(Thread):
             self.log = logging.getLogger(__name__)
             self.log.setLevel(logging.DEBUG)
         self.request = request
-        self.mode = request.get('request_mode')
+        self.mode = request.get('request_mode', 'STREAM')
         self.responses = response
         self.returns = request.get('returns')
         self.response_verify = request.get('verifier')
         self.decode_response = request.get('decode')
         self.namespace = request.get('namespace')
         self.sub_mode = request.get('sub_mode')
-        self.encoding = request.get('encoding')
+        self.encoding = request.get('encoding', 'JSON')
         self.sample_interval = request.get('sample_interval', 0)
         self.stream_max = request.get('stream_max', 0)
         if self.stream_max:
@@ -68,6 +68,7 @@ class GnmiNotification(Thread):
         self.time_delta = 0
         self.results = []
         self.negative_test = request.get('negative_test')
+        self.on_change_base = None
         self.log.info(banner('GNMI Subscription reciever started'))
 
     @property
@@ -87,21 +88,41 @@ class GnmiNotification(Thread):
               have changes since last timestamp.
         """
         try:
-            json_dicts, opfields = self.decode_response(
+            json_dicts, opfields, update = self.decode_response(
                 response, self.namespace
             )
 
-            # Split returns on the basis of paths,
-            # received in opfields
-            returns_2 = []
-            for op in opfields:
-                for index, ret in enumerate(self.returns):
-                    xp = ret['xpath']
-                    if xp in op and index not in returns_found:
-                        returns_2.append(ret)
-                        returns_found.append(index)
-                        break
-
+            if self.sub_mode != 'ON_CHANGE':
+                # Split returns on the basis of paths,
+                # received in opfields
+                returns_2 = []
+                for field in opfields:
+                    for ret in returns_found:
+                        xp = ret['xpath']
+                        if xp in field:
+                            returns_2.append(ret)
+                            returns_found.remove(ret)
+                            break
+                        else:
+                            # if list keys are found in the returns field['xpath']
+                            # Eg: returns['xpath'] = /Sys/List[key=value]/leaf
+                            if '[' in xp:
+                                # if above xpath with no keys '/Sys/List/leaf'
+                                # is in the opfield that means this might be the
+                                # possible returns to select, but we need check
+                                # keys in opfields as well.
+                                xp_no_keys = re.sub(self.RE_FIND_KEYS, '', xp)
+                                if xp_no_keys in field:
+                                    # To make sure that this is the correct returns to select
+                                    # we need to check that all the keys mentioned in the xpath
+                                    # are in opfield or not.
+                                    all_keys_in_opfield = self.find_keys_in_opfield(xp, opfields)
+                                    # If all keys are present in opfield, then take this returns for validation.
+                                    if all_keys_in_opfield:
+                                        returns_2.append(ret)
+                                        returns_found.remove(ret)
+                                        break
+                                    
             if len(json_dicts):
                 for json_dict in json_dicts:
                     if json_dict is not None:
@@ -111,12 +132,38 @@ class GnmiNotification(Thread):
                         self.log.info(msg)
             if opfields and self.log.level == logging.DEBUG:
                 msg = 'Xpath/Value\n' + '=' * 11 + '\n' + pformat(opfields)
-                self.log.info(msg)
+                self.log.debug(msg)
             if opfields:
-                result = self.response_verify(opfields, returns_2)
+                result = False
+                if self.sub_mode == 'ON_CHANGE':
+                    self.log.info("Checking all possible ON_CHANGE values")
+                    for ret in returns_found:
+                        if self.on_change_base is None:
+                            # first return of ON_CHANGE must have True result
+                            result = self.response_verify(opfields, [ret])
+                            if result:
+                                self.on_change_base = ret['value']
+                            break
+                        else:
+                            result = self.response_verify(opfields, [ret])
+                            # an expected value is found
+                            if result and self.on_change_base == ret['value']:
+                                # value did not change
+                                result = False
+                            elif result:
+                                # change from last value and it is expected
+                                self.on_change_base = ret['value']
+                                result = True
+                                break
+                    else:
+                        # no True results
+                        result = False
+
+                else:
+                    result = self.response_verify(opfields, returns_2)
                 if self.negative_test:
                     result = not result
-                    log.info(banner('NEGATIVE TEST'))
+                    self.log.info(banner('NEGATIVE TEST'))
                 self.results.append(result)
                 if not result:
                     self.log.error(banner('SUBSCIBE VERIFICATION FAILED'))
@@ -128,24 +175,62 @@ class GnmiNotification(Thread):
             self.results.append(False)
             self.stop()
 
-    def check_remaining_returns(self, returns_found):
-        """Check the returns not found in any of the response"""
-        for index, ret in enumerate(self.returns):
-            if index not in returns_found:
-                xp = ret['xpath']
-                val = ret['value']
-                self.log.error('ERROR: "{0} value: {1}" Not found.'.format(xp, str(val)))
-                self.results.append(False)
+    def find_keys_in_opfield(self, xpath, opfields):
+        """Check if all keys in xpath present in opfields or not
+
+        Args:
+          xpath (Returns['xpath']): xpath with list keys in it
+            xpath = /Sys/List[key=key_value]/leaf
+        
+          opfields (Decoded gNMI response): List of tuples(val, xpath)
+
+        Return true if (key_value, /Sys/List/Key) is in opfield, else False    
+        """        
+        for match in re.finditer(self.RE_FIND_KEYS, xpath):
+            key = match.group()
+            # Extract the key name
+            # Eg: '[Key1=Val1]'
+            # key_name = Key1
+            key_name = key.split('=')[0].strip('[')
+            # Extract the key value
+            # Eg: '[Key1=Val1]'
+            # key_val = Val1
+            key_val = key.split('=')[1].strip(']')
+            key_val = re.sub('"', '', key_val)
+            # Extract the key path from xpath
+            # Eg: /Sys/Cont/Lis[Key1=Val1]
+            # key_path = /Sys/Cont/Lis/Key1
+            key_path = xpath.split(key)[0] + '/' + key_name
+            key_path = re.sub(self.RE_FIND_KEYS, '', key_path)
+
+            # create (key_val, key_path) field to check in opfield
+            key_field = (key_val, key_path)
+
+            if not key_field in opfields:
+                return False
+        return True
+
+    def log_remaining_returns(self, returns_found):
+        """Log the returns not found in any of the response"""
+        if self.sub_mode == 'ON_CHANGE':
+            # ON_CHANGE may have returns not matched but still pass.
+            return
+        for ret in returns_found:
+            xp = ret['xpath']
+            val = ret['value']
+            self.log.error('ERROR: "{0} value: {1}" Not found.'.format(xp, str(val)))
+            self.results.append(False)
 
     def run(self):
         """Check for inbound notifications."""
         self.log.info('Subscribe notification active')
         t1 = datetime.now()
-        first_json_dicts = []
-        first_opfields = []
+        first_subs_path = []
         response_no = 0
         returns_found = []
         stop_receiver = False
+        if self.returns:
+            returns_found = self.returns.copy()
         try:
             for response in self.responses:
                 # Subscribe response ends here
@@ -168,32 +253,35 @@ class GnmiNotification(Thread):
                         self.stop()
 
                 if response.HasField('update') and not self.stopped():
-                    json_dicts, opfields = self.decode_response(
+                    json_dicts, opfields, subscribe_path = self.decode_response(
                         response, self.namespace
                     )
-                    # Since returns_found is acting as a global variable
-                    # for all the responses, so for STREAM mode,
-                    # we need reset returns_found and check_remaining_returns
-                    # for each stream received.
                     response_no = response_no + 1
                     if response_no == 1:
-                        first_json_dicts = json_dicts
-                        first_opfields = opfields
+                        first_subs_path = subscribe_path
                     else:
-                        if self.mode == 'STREAM' and json_dicts == first_json_dicts and opfields == first_opfields:
-                            self.check_remaining_returns(returns_found)
-                            returns_found = []
+                        # Start for next stream
+                        # Copy returns for each stream
+                        if self.mode == 'STREAM' and subscribe_path == first_subs_path:
+                            self.log_remaining_returns(returns_found)
+                            if self.returns:
+                                returns_found = self.returns.copy()
 
-                        # Reset on every ON_CHANGE response
+                        # Copy returns on every ON_CHANGE response
                         if self.sub_mode == 'ON_CHANGE':
-                            returns_found = []
+                            if self.returns:
+                                returns_found = self.returns.copy()
 
                     self.log.info(
                         "gNMI SUBSCRIBE Response\n" + "=" * 23 + "\n{}"
                             .format(response)
                     )
-                    self.log.info('Processing returns...')
-                    self.process_opfields(response, returns_found)
+                    if self.returns:
+                        self.log.info('Processing returns...')
+                        self.process_opfields(response, returns_found)
+                    else:
+                        # If no returns is provided, then result is True if an update is received.
+                        self.results.append(True)
 
                 if stop_receiver:
                     self.log.info('Subscribe {0} processed'.format(self.mode))
@@ -201,7 +289,7 @@ class GnmiNotification(Thread):
 
                 if self.stopped():
                     if self.sub_mode != 'ON_CHANGE':
-                        self.check_remaining_returns(returns_found)
+                        self.log_remaining_returns(returns_found)
                     self.time_delta = self.stream_max
                     self.log.info("Terminating notification thread")
                     break
@@ -340,7 +428,7 @@ class GnmiMessage:
             except:
                 pass
 
-            json_dicts, opfields = GnmiMessage.decode_notification(
+            json_dicts, opfields, update = GnmiMessage.process_get_response(
                 response, namespace
             )
             log.info(
@@ -367,8 +455,8 @@ class GnmiMessage:
                 log.error(str(exc))
 
     @staticmethod
-    def get_opfields(val, xpath_str, opfields=[], namespace={}):
-        if isinstance(val, dict):
+    def get_opfields(val, xpath_str, opfields=[], namespace={}, is_list_or_dict=True):
+        if isinstance(val, dict) and is_list_or_dict:
             for name, dict_val in val.items():
                 opfields = GnmiMessage.get_opfields(
                     dict_val,
@@ -376,9 +464,17 @@ class GnmiMessage:
                     opfields,
                     namespace
                 )
-        elif isinstance(val, list):
+        elif isinstance(val, list) and is_list_or_dict:
+            is_list_or_dict = False
             for item in val:
-                GnmiMessage.get_opfields(item, xpath_str, opfields, namespace)
+                # Call recursion only if val is list of list or list of dict
+                if isinstance(item, dict) or isinstance(item, list):
+                    is_list_or_dict = True
+                    GnmiMessage.get_opfields(item, xpath_str, opfields, namespace)
+            # if val is a leaf-list type Eg: val = [a,b]
+            # then we dont need to split it into two opfields
+            if not is_list_or_dict:
+                GnmiMessage.get_opfields(val, xpath_str, opfields, namespace, is_list_or_dict)
         else:
             xpath_list = xpath_str.split('/')
             name = xpath_list.pop()
@@ -415,7 +511,7 @@ class GnmiMessage:
             return ''
 
     @staticmethod
-    def decode_update(update, prefix=None, namespace={}, opfields=[]):
+    def process_update(update, prefix=None, namespace={}, opfields=[]):
         """Convert Update to Xpath, value, and datatype."""
         pre_path = ''
         xpath = ''
@@ -424,9 +520,9 @@ class GnmiMessage:
         if not isinstance(update, list):
             update = [update]
 
-        if prefix is not None:
+        if prefix:
             pre_path = GnmiMessage.path_elem_to_xpath(
-                prefix, pre_path, namespace, []
+                prefix, pre_path, namespace, opfields
             )
 
         for upd in update:
@@ -442,7 +538,6 @@ class GnmiMessage:
                     continue
                 json_val = base64.b64decode(val).decode('utf-8')
                 json_dict = json.loads(json_val, strict=False)
-                opfields.append((json_dict, xpath))
             elif 'jsonVal' in val:
                 val = val.get('jsonVal', '')
                 if not val:
@@ -450,7 +545,6 @@ class GnmiMessage:
                     continue
                 json_val = base64.b64decode(val).decode('utf-8')
                 json_dict = json.loads(json_val, strict=False)
-                opfields.append((json_dict, xpath))
             elif 'asciiVal' in val:
                 val = val.get('asciiVal', '')
                 if not val:
@@ -466,60 +560,159 @@ class GnmiMessage:
                 value = val[datatype]
                 if 'int' in datatype:
                     value = int(value)
-                elif 'float' in datatype or 'Decimal64' in datatype:
+                elif ('float' in datatype or
+                      'decimal' in datatype or
+                      'double' in datatype):
                     value = float(value)
                 elif 'bytes' in datatype:
-                    value = bytes(value)
-
+                    value = bytes(value, encoding='utf8')
+                elif 'leaflist' in datatype:
+                    value = GnmiMessage.process_leaf_list_val(value)
                 opfields.append((value, xpath))
             else:
                 log.info('Update has no value')
 
-        if json_dict is not None:
-            GnmiMessage.get_opfields(json_dict, xpath, opfields, namespace)
+        if json_dict == {}:
+            json_dict = None
 
+        if json_dict is not None:
+            if not isinstance(json_dict, (dict, list)):
+                # Just one value returned
+                opfields.append((json_dict, xpath))
+            else:
+                GnmiMessage.get_opfields(json_dict, xpath, opfields, namespace)
         return json_dict
 
     @staticmethod
-    def decode_notification(response, namespace={}):
-        """Convert JSON return to python dict for display or processing.
+    def process_leaf_list_val(value):
+        """Convert leaf list value to list of values
 
         Args:
-          update (dict): Could also be a gNMI response.
+          value (dict): leaf list value
+
+        For proto encoding leaf list value is received as below format:
+        val{
+           leaflist_val: {
+                element: [{'datatype':'value'},{'datatype':'value'}]
+           }
+        }
+
+        Returns (list): leaf list value convert into list format
+                        leaf_list_val = ['value','value']
+        """
+        leaf_list_val = []
+        elements = value['element']
+        for elem in elements:
+            for datatype, val in elem.items():
+                if 'int' in datatype:
+                    val = int(val)
+                elif 'float' in datatype or 'Decimal64' in datatype:
+                    val = float(val)
+                elif 'bytes' in datatype:
+                    val = bytes(value, encoding='utf8')
+                leaf_list_val.append(val)
+
+        return leaf_list_val
+
+    @staticmethod
+    def process_get_response(response, namespace={}):
+        """Process get response and convert into dict
+
+        Args:
+          response (dict): gNMI get response.
           namespace (dict): Can be used if verifier is implemented.
 
         Returns:
           str
         """
-        # Try to cover different return formats.
-        opfields = []
         json_dicts = []
-        log.info('Decoding notification')
-        if isinstance(response, proto.gnmi_pb2.SubscribeResponse):
-            notification = json_format.MessageToDict(response)
+        opfields = []
+        update = []
+        get_resp = json_format.MessageToDict(response)
+        if 'notification' not in get_resp:
+            raise GnmiMessageException('No notification in GetResponse')
+        notifications = get_resp['notification']
+        for notification in notifications:
             if 'update' not in notification:
-                raise GnmiMessageException('No update in SubscribeResponse')
-            update = notification['update']
-            prefix = update.get('prefix')
-            json_dicts.append(GnmiMessage.decode_update(
-                update['update'], prefix, namespace, opfields
-            ))
-        elif isinstance(response, proto.gnmi_pb2.GetResponse):
-            get_resp = json_format.MessageToDict(response)
-            if 'notification' not in get_resp:
-                raise GnmiMessageException('No notification in GetResponse')
-            notifications = get_resp['notification']
-            for notification in notifications:
-                if 'update' not in notification:
-                    raise GnmiMessageException('No update in GetResponse')
-                prefix = notification.get('prefix')
-                json_dicts.append(GnmiMessage.decode_update(
-                    notification['update'],
+                raise GnmiMessageException('No update in GetResponse')
+            prefix = notification.get('prefix')
+            for updates in notification['update']:
+                json_dicts.append(GnmiMessage.process_update(
+                    updates,
                     prefix,
                     namespace,
                     opfields
                 ))
-        return (json_dicts, opfields)
+
+        return (json_dicts, opfields, update)
+
+    @staticmethod
+    def process_subscribe_response(response, namespace={}):
+        """Process subscribe response and convert into dict
+
+        Args:
+          response (dict): gNMI Subscibe response.
+          namespace (dict): Can be used if verifier is implemented.
+
+        Returns:
+          str
+        """
+        json_dicts = []
+        opfields = []
+        update = []
+        notification = json_format.MessageToDict(response)
+        if 'update' not in notification:
+            raise GnmiMessageException('No update in SubscribeResponse')
+        update = notification['update']
+        prefix = update.get('prefix')
+        json_dicts.append(GnmiMessage.process_update(
+            update['update'], prefix, namespace, opfields
+        ))
+        val = update['update'][0].get('val', {})
+        if val:
+            update['update'][0].pop('val')
+        update = update['update']
+
+        return (json_dicts, opfields, update)
+
+    @staticmethod
+    def decode_opfields(update=None, namespace=None):
+        if update is None:
+            update = {}
+        if namespace is None:
+            namespace = {}
+        opfields = []
+        xpath_str = GnmiMessage.path_elem_to_xpath(update.get('path', {}),
+                                            namespace=namespace,
+                                            opfields=opfields)
+
+        if not xpath_str:
+            log.error('Xpath not determined from response')
+            return []
+        # TODO: the val depends on the encoding type
+        val = update.get('val', {}).get('jsonIetfVal', '')
+        if not val:
+            val = update.get('val', {}).get('jsonVal', '')
+        if not val:
+            log.error('{0} has no values'.format(xpath_str))
+            return []
+        json_val = base64.b64decode(val).decode('utf-8')
+        update_val = json.loads(json_val)
+        if not isinstance(update_val, (dict, list)):
+            # Just one value returned
+            opfields.append((update_val, xpath_str))
+            return opfields
+        else:
+            # Reset opfields to avoid duplicates
+            opfields = []
+        if isinstance(update_val, dict):
+            opfields = GnmiMessage.get_opfields(update_val, xpath_str, opfields,
+                                         namespace)
+        elif isinstance(update_val, list):
+            for val_dict in update_val:
+                opfields = GnmiMessage.get_opfields(val_dict, xpath_str, opfields,
+                                             namespace)
+        return opfields
 
     @classmethod
     def iter_subscribe_request(self, payloads, delay=0):
@@ -591,12 +784,14 @@ class GnmiMessage:
                     log.info('"returns" will be ignored.')
             if request.get('decode') is None:
                 log.info('Default decoder used.')
-                request['decode'] = GnmiMessage.decode_notification
+                request['decode'] = GnmiMessage.process_subscribe_response
             request['log'] = log
-
+            timeout = None
+            if request.get('request_mode', 'STREAM') == 'STREAM':
+                timeout = request.get('stream_max', 120)
             response = device.gnmi.service.Subscribe(
                 self.iter_subscribe_request(payloads, delay),
-                timeout=request.get('stream_max', 120),
+                timeout=timeout,
                 metadata=self.metadata
             )
 
@@ -869,27 +1064,30 @@ class GnmiMessageConstructor:
 
         Args:
           nodes (list): dicts with xpath in gNMI format, nodetypes, values.
-        """   
+        """
         gnmi_update_paths = []
         update_filter = []
         update_nodes = []
         list_or_cont = False
+        parent_xp = ""
         # Group the nodes based on leaf/list/container level
         # Eg nodes: [leaf, leaf, leaf, list, leaf, leaf]
         # leaf level: [leaf], [leaf], [leaf] - Leaf level RPCs
         # will build sepeartely for each leaf node.
         # list level: [list, leaf, leaf]
-        for xp in update:
-            if xp['xpath'].endswith("]") \
-            or xp['nodetype'] == 'list' \
-            or xp['nodetype'] == 'container':
+        for node in update:
+            if (node['xpath'].endswith("]") \
+            or node['nodetype'] == 'list' \
+            or node['nodetype'] == 'container') \
+            and (not parent_xp or not parent_xp in node['xpath']):
+                parent_xp = node['xpath']
                 list_or_cont = True
                 if update_filter:
                     update_nodes.append(update_filter)
                 update_filter = []
-                update_filter.append(xp)
+                update_filter.append(node)
             else:
-                update_filter.append(xp)
+                update_filter.append(node)
                 if not list_or_cont:
                     update_nodes.append(update_filter)
                     update_filter = []
@@ -956,7 +1154,7 @@ class GnmiMessageConstructor:
             subscribe_list.encoding = proto.gnmi_pb2.Encoding.Value(
                 self.encoding
             )
-            mode = self.cfg.get('request_mode')
+            mode = self.cfg.get('request_mode', 'STREAM')
             subscribe_list.mode = proto.gnmi_pb2.SubscriptionList.Mode.Value(
                 mode
             )
@@ -1026,7 +1224,7 @@ class GnmiMessageConstructor:
         short_node = [n for n in nodes if n['xpath'] == short_xp]
         if short_node:
             if not short_node[0]['xpath'].endswith("]") \
-            and short_node[0]['nodetype'] not in ['list', 'container']:                
+            and short_node[0]['nodetype'] not in ['list', 'container']:
                 while short_xp.endswith(']'):
                     short_xp = short_xp[:short_xp.rfind('[')]
                 short_xp = short_xp[:short_xp.rfind('/')]
@@ -1248,7 +1446,7 @@ class GnmiMessageConstructor:
                         datatype.startswith('uint'):
                     if value:
                         value = int(value)
-                elif datatype == 'decimal64':
+                elif datatype in ('decimal64', 'float', 'double'):
                     if value:
                         value = float(value)
 

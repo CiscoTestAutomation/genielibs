@@ -209,7 +209,7 @@ def unconfigure_crypto_transform_set(device, transform_name):
 def configure_ipsec_profile(device,
                             profile_name,
                             transform_set_name,
-                            ikev2_profile_name,
+                            ikev2_profile_name=None,
                             isakmp_profile_name=None,
                             is_responder_only=False,
                             sa_dfbit_clear=False,
@@ -281,7 +281,8 @@ def configure_ipsec_profile(device,
     configs = []
     configs.append(f"crypto ipsec profile {profile_name}")
     configs.append(f"set transform-set {transform_set_name}")
-    configs.append(f"set ikev2-profile {ikev2_profile_name}")
+    if ikev2_profile_name:
+        configs.append(f"set ikev2-profile {ikev2_profile_name}")
 
     if isakmp_profile_name is not None:
         configs.append(f"set isakmp-profile {isakmp_profile_name}")
@@ -434,9 +435,9 @@ def configure_ipsec_tunnel(device,
     if vrf:
         configs.append("vrf forwarding {vrf}".format(vrf=vrf))
     configs.append("ip address {tunnel_ip} {tunnel_mask}".format(tunnel_ip=tunnel_ip,tunnel_mask=tunnel_mask))
+    configs.append("tunnel mode ipsec {tunnel_mode}".format(tunnel_mode=tunnel_mode))
     configs.append("tunnel source {tunnel_src_ip}".format(tunnel_src_ip=tunnel_src_ip))
     configs.append("tunnel destination {tunnel_dst_ip}".format(tunnel_dst_ip=tunnel_dst_ip))
-    configs.append("tunnel mode ipsec {tunnel_mode}".format(tunnel_mode=tunnel_mode))
     if tunnel_vrf:
         configs.append("tunnel vrf {tunnel_vrf}".format(tunnel_vrf=tunnel_vrf))
     configs.append("tunnel protection ipsec profile {ipsec_profile_name}".format(ipsec_profile_name=ipsec_profile_name))
@@ -943,12 +944,13 @@ def unconfigure_ipsec_sa_global(device,
         )
         raise
 
-def configure_crypto_ikev2_policy(device, policy_name, proposal_name):
+def configure_crypto_ikev2_policy(device, policy_name, proposal_name, fvrf=None):
     """ Configure crypto ikev2 policy ikev2policy
     Args:
         device (`obj`): Device object
         policy_name (`str`): name of ikev2 policy
         proposal_name (`str`): name of ikev2 proposal
+        fvrf ('str',optional) FVRF name (Default None)
     Return:
         None
     Raise:
@@ -959,6 +961,8 @@ def configure_crypto_ikev2_policy(device, policy_name, proposal_name):
     # Configure Peer Attributes
     if proposal_name:
         config_list.append('proposal {proposal_name}'.format(proposal_name=proposal_name))
+    if fvrf:
+        config_list.append("match fvrf {fvrf}".format(fvrf=fvrf))
     try:
         device.configure(config_list)
     except SubCommandFailure as e:

@@ -17,7 +17,7 @@ execute:
         \n1    1       1         sysmgr           18436     2022-02-16 10:16:51"
     clear cores: ''
     show file: ''
-    'copy core://1/18436/1 scp://rcpuser@10.10.10.10/ vrf management':
+    'copy core://1/18436/1 scp://rcpuser@10.10.10.10/ vrf management use-kstack':
       new_state: enter_password
 enter_password:
   prompt: "rcpuser@172.29.151.141's password:"

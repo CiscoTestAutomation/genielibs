@@ -48,7 +48,7 @@ def version_info(*paths):
 version = find_version('src', 'genie', 'libs', 'sdk', '__init__.py')
 
 install_requires = [
-    'ruamel.yaml', 'protobuf <= 3.20.2', 'cisco-gnmi', 'yang.connector'
+    'ruamel.yaml', 'yang.connector'
 ]
 
 # launch setup

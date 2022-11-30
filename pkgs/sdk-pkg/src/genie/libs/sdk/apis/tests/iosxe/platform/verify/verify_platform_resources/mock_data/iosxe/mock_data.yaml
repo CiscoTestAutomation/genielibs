@@ -1,0 +1,45 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: IE-3100-8T2C(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: IE-3100-8T2C(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show platform resources:
+      response:
+      - "**State Acronym: H - Healthy, W - Warning, C - Critical                 \
+        \                            \r\nResource                 Usage          \
+        \       Max             Warning         Critical        State\r\n----------------------------------------------------------------------------------------------------\r\
+        \nRP0 (ok, active)                                                       \
+        \                        H    \r\n Control Processor       7.60%         \
+        \        100%            80%             85%             H    \r\n  DRAM \
+        \                  1173MB(70%)           1656MB          90%             95%\
+        \             H"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: IE-3100-8T2C#
