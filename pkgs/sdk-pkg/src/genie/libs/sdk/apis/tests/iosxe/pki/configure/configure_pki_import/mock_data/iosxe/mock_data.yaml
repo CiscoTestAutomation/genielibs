@@ -1,15 +1,24 @@
 configure:
   commands:
-    crypto pki import test1 pkcs12 bootflash:self.p12 password cisco123: "crypto pki\
-      \ import test1 pkcs12 bootflash:self.p12 password cisco123\r\n% Importing pkcs12...\r\
-      \nSource filename [self.p12]? \r\nReading file from bootflash:self.p12\r\nfugazi(config)#\r\
-      \n"
+    crypto pki import test1 pkcs12 bootflash:self.p12 password cisco123:
+      new_state: crypto
     end:
       new_state: execute
     line console 0:
       new_state: configure_line
     no logging console: ''
   prompt: fugazi(config)#
+crypto:
+  prompt: "% Importing pkcs12...\r\
+      \nSource filename [self.p12]? "
+  commands:
+    ? ''
+    : new_state: crypto_2
+crypto_2:
+  prompt: "Reading file from bootflash:self.p12\r\nfugazi(config)#"
+  commands:
+    end:
+      new_state: execute
 configure_line:
   commands:
     end:

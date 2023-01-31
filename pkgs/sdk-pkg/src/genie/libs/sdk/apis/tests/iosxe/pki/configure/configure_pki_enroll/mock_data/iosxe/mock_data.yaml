@@ -1,21 +1,60 @@
 configure:
   commands:
-    crypto pki enroll test: "crypto pki enroll test\r\n%\r\n% Start certificate enrollment\
-      \ .. \r\n% Create a challenge password. You will need to verbally provide this\r\
-      \n   password to the CA Administrator in order to revoke your certificate.\r\
-      \n   For security reasons your password will not be saved in the configuration.\r\
-      \n   Please make a note of it.\r\n\r\nPassword: \r\nRe-enter password: \r\n\r\
-      \n% The subject name in the certificate will include: cn=test\r\n% The subject\
-      \ name in the certificate will include: CSR4\r\nRequest certificate from CA?\
-      \ [yes/no]: yes\r\n% Certificate request sent to Certificate Authority\r\n%\
-      \ The 'show crypto pki certificate verbose test' commandwill show the fingerprint.\r\
-      \n\r\n"
+    crypto pki enroll test: 
+      response: |
+        %
+        % Start certificate enrollment .. 
+        % Create a challenge password. You will need to verbally provide this
+          password to the CA Administrator in order to revoke your certificate.
+          For security reasons your password will not be saved in the configuration.
+          Please make a note of it.
+      new_state: password
     end:
       new_state: execute
     line console 0:
       new_state: configure_line
     no logging console: ''
   prompt: CSR4(config)#
+
+password:
+  prompt: "Password: "
+  commands: 
+    "abcd1234":
+      new_state: 
+        reenter_password
+
+reenter_password:
+  prompt: "Re-enter password: "
+  commands: 
+    "abcd1234":
+      response: |
+        % The subject name in the certificate will include: ipsec_reg8_new
+      new_state: 
+        router_serial_confirmation
+
+router_serial_confirmation:
+  prompt: "% Include the router serial number in the subject name? [yes/no]: "
+  commands:
+    "no":
+      new_state: 
+        ip_address_confirmation
+
+ip_address_confirmation:
+  prompt: "% Include an IP address in the subject name? [no]: "
+  commands: 
+    "no":
+      new_state: request_cert_confirmation
+
+request_cert_confirmation:
+  prompt: "Request certificate from CA? [yes/no]: "
+  commands:
+    "yes":
+      response: |
+        % Certificate request sent to Certificate Authority
+        % The 'show crypto pki certificate verbose test' command will show the fingerprint.
+      new_state: 
+        configure
+
 configure_line:
   commands:
     end:

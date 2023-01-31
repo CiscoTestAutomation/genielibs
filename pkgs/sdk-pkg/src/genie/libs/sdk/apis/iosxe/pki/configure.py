@@ -547,7 +547,7 @@ def unconfigure_trustpoint(device,
 
 def configure_pki_enroll(device,
                         tp_name,
-                        password=None):
+                        password):
     '''
         Configuring crypto pki enroll
         Args:
