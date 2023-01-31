@@ -1,4 +1,3 @@
-#! /usr/bin/env python
 # Python
 import unittest
 import logging
@@ -14,7 +13,11 @@ from google.protobuf import json_format
 # Genie Libs
 from genie.libs.sdk.triggers.blitz.yangexec import run_netconf, run_gnmi, run_restconf
 from genie.libs.sdk.triggers.blitz.yangexec_helper import DictionaryToXML, dict_to_ordereddict
-from genie.libs.sdk.triggers.blitz.gnmi_util import GnmiNotification, GnmiMessage, GnmiMessageConstructor
+from genie.libs.sdk.triggers.blitz.gnmi_util import (GnmiMessage,
+                                                     GnmiMessageConstructor,
+                                                     GnmiSubscriptionOnce,
+                                                     GnmiSubscriptionStream,
+                                                     GnmiSubscriptionPoll,)
 from genie.libs.sdk.triggers.blitz.rpcverify import RpcVerify
 
 
@@ -467,6 +470,394 @@ class TestYangExec(unittest.TestCase):
 
         self.assertEqual(result, True)
 
+    def test_run_subscribe_on_change_gnmi_multiple_paths(self):
+        """ Test GNMI Subscribe ON_CHANGE mode for multiple paths"""
+
+        rpc_verify = RpcVerify(log=log, capabilities=[])
+        operation = "subscribe"
+        request = {
+                    'namespace':
+                    {
+                        'top': 'Cisco-NX-OS-device'
+                    }, 
+                    'nodes': 
+                    [
+                        {
+                            'nodetype': 'leaf',
+                            'datatype': '',
+                            'xpath': 'System/igmp-items/inst-items/bootupDelay',
+                            'name': 'bootupDelay',
+                        },
+                        {
+                            'nodetype': 'leaf',
+                            'datatype': '',
+                            'xpath': 'System/igmp-items/inst-items/syslogThreshold',
+                            'name': 'syslogThreshold',
+                        },
+                    ], 
+                    'request_mode': 'STREAM', 
+                    'sub_mode': 'ON_CHANGE',
+                    'stream_max': 10,
+                    'negative_test': False, 
+                    'encoding': 'JSON', 
+                    'returns': 
+                    [
+                        {
+                            'datatype': 'ipmc_BootupDelay', 
+                            'nodetype': 'leaf', 
+                            'name': 'bootupDelay', 
+                            'op': '==', 
+                            'selected': 'True', 
+                            'value': 10,
+                            'xpath': '/System/igmp-items/inst-items/bootupDelay'
+                        },
+                        {
+                            'datatype': 'ipmc_BootupDelay', 
+                            'nodetype': 'leaf',
+                            'name': 'bootupDelay',
+                            'op': '==', 
+                            'selected': 'True', 
+                            'value': 20,
+                            'xpath': '/System/igmp-items/inst-items/bootupDelay'
+                        },
+                        {
+                            'datatype': 'ipmc_syslogThreshold', 
+                            'nodetype': 'leaf', 
+                            'name': 'syslogThreshold', 
+                            'op': '==', 
+                            'selected': 'True', 
+                            'value': 10,
+                            'xpath': '/System/igmp-items/inst-items/syslogThreshold'
+                        },
+                        {
+                            'datatype': 'ipmc_syslogThreshold', 
+                            'nodetype': 'leaf',
+                            'name': 'syslogThreshold', 
+                            'op': '==', 
+                            'selected': 'True', 
+                            'value': 20,
+                            'xpath': '/System/igmp-items/inst-items/syslogThreshold'
+                        }
+                    ], 
+                    'verifier': rpc_verify.process_operational_state, 
+                    'namespace_modules': 
+                    {
+                        'top': 'Cisco-NX-OS-device'
+                    }, 
+                    'decode': GnmiMessage.process_subscribe_response, 
+                    'log': log
+                }
+
+        # Response 1
+        path_elem1 = proto.gnmi_pb2.PathElem()
+        path_elem1.KeyEntry.key = ""
+        path_elem1.KeyEntry.value = ""
+        path_elem1.name = "System"
+        
+        path1 = proto.gnmi_pb2.Path()
+        path1.origin = "device"
+        path1.elem.append(path_elem1)
+
+        val1 = {
+                'igmp-items': 
+                {
+                    'inst-items': 
+                    {
+                        'bootupDelay': 10
+                    }
+                }
+            }
+        val1 = json.dumps(val1).encode('utf-8')
+
+        value1 = proto.gnmi_pb2.TypedValue()
+        value1.json_val = val1
+
+        update1 = proto.gnmi_pb2.Update()
+        update1.path.MergeFrom(path1)
+        update1.val.MergeFrom(value1)
+
+        notification1 = proto.gnmi_pb2.Notification()
+        notification1.timestamp = 0
+        notification1.prefix.MergeFrom(proto.gnmi_pb2.Path())
+        notification1.update.append(update1)
+
+        response1 = proto.gnmi_pb2.SubscribeResponse()
+        response1.update.MergeFrom(notification1)
+
+        # Response 2
+        path_elem2 = proto.gnmi_pb2.PathElem()
+        path_elem2.KeyEntry.key = ""
+        path_elem2.KeyEntry.value = ""
+        path_elem2.name = "System"
+        
+        path2 = proto.gnmi_pb2.Path()
+        path2.origin = "device"
+        path2.elem.append(path_elem1)
+
+        val2 = {
+                'igmp-items': 
+                {
+                    'inst-items': 
+                    {
+                        'syslogThreshold': 10
+                    }
+                }
+            }
+        val2 = json.dumps(val2).encode('utf-8')
+
+        value2 = proto.gnmi_pb2.TypedValue()
+        value2.json_val = val2
+
+        update2 = proto.gnmi_pb2.Update()
+        update2.path.MergeFrom(path2)
+        update2.val.MergeFrom(value2)
+
+        notification2 = proto.gnmi_pb2.Notification()
+        notification2.timestamp = 0
+        notification2.prefix.MergeFrom(proto.gnmi_pb2.Path())
+        notification2.update.append(update2)
+
+        response2 = proto.gnmi_pb2.SubscribeResponse()
+        response2.update.MergeFrom(notification2)     
+
+        # Change Update for path 1
+        path_elem3 = proto.gnmi_pb2.PathElem()
+        path_elem3.KeyEntry.key = ""
+        path_elem3.KeyEntry.value = ""
+        path_elem3.name = "System"
+        
+        path3 = proto.gnmi_pb2.Path()
+        path3.origin = "device"
+        path3.elem.append(path_elem3)
+
+        val3 = {
+                'igmp-items': 
+                {
+                    'inst-items': 
+                    {
+                        'bootupDelay': 20
+                    }
+                }
+            }
+        val3 = json.dumps(val3).encode('utf-8')
+
+        value3 = proto.gnmi_pb2.TypedValue()
+        value3.json_val = val3
+
+        update3 = proto.gnmi_pb2.Update()
+        update3.path.MergeFrom(path3)
+        update3.val.MergeFrom(value3)
+
+        notification3 = proto.gnmi_pb2.Notification()
+        notification3.timestamp = 0
+        notification3.prefix.MergeFrom(proto.gnmi_pb2.Path())
+        notification3.update.append(update3)
+
+        response3 = proto.gnmi_pb2.SubscribeResponse()
+        response3.update.MergeFrom(notification3)
+
+        # Change Update for path 2
+        path_elem4 = proto.gnmi_pb2.PathElem()
+        path_elem4.KeyEntry.key = ""
+        path_elem4.KeyEntry.value = ""
+        path_elem4.name = "System"
+        
+        path4 = proto.gnmi_pb2.Path()
+        path4.origin = "device"
+        path4.elem.append(path_elem3)
+
+        val4 = {
+                'igmp-items': 
+                {
+                    'inst-items': 
+                    {
+                        'syslogThreshold': 20
+                    }
+                }
+            }
+        val4 = json.dumps(val4).encode('utf-8')
+
+        value4 = proto.gnmi_pb2.TypedValue()
+        value4.json_val = val4
+
+        update4 = proto.gnmi_pb2.Update()
+        update4.path.MergeFrom(path4)
+        update4.val.MergeFrom(value4)
+
+        notification4 = proto.gnmi_pb2.Notification()
+        notification4.timestamp = 0
+        notification4.prefix.MergeFrom(proto.gnmi_pb2.Path())
+        notification4.update.append(update4)
+
+        response4 = proto.gnmi_pb2.SubscribeResponse()
+        response4.update.MergeFrom(notification4)
+
+        # sync_response
+        sync_response = proto.gnmi_pb2.SubscribeResponse()
+        sync_response.sync_response = True
+
+        # initiate subscription thread
+        subscribe_thread = GnmiSubscriptionStream(
+            responses=[response1, sync_response, response2, sync_response, response3,\
+             sync_response, response4, sync_response],
+            **request
+        )
+        subscribe_thread.start()
+
+        # Wait till the thread is stopped.
+        subscribe_thread.join()
+
+        # Test the result
+        self.assertEqual(subscribe_thread.result, True)        
+
+    def test_run_subscribe_stream_update(self):
+        """ Test GNMI Subscribe STREAM mode for Subscription List"""
+
+        rpc_verify = RpcVerify(log=log, capabilities=[])
+        operation = "subscribe"
+        request = {
+                    'namespace': 
+                    {
+                        'top': 'Cisco-NX-OS-device'
+                    }, 
+                    'nodes': 
+                    [
+                        {
+                            'nodetype': 'leaf',
+                            'datatype': '',
+                            'xpath': 'System/igmp-items/inst-items/bootupDelay',
+                            'name': 'bootupDelay',
+                        },
+                        {
+                            'nodetype': 'leaf',
+                            'datatype': '',
+                            'xpath': 'System/igmp-items/inst-items/heavyTemplate',
+                            'name': 'heavyTemplate',
+                        }
+                    ], 
+                    'request_mode': 'STREAM', 
+                    'sub_mode': 'SAMPLE', 
+                    'negative_test': False, 
+                    'encoding': 'JSON',
+                    'sample_interval': 1,
+                    'stream_max': 5,
+                    'returns': 
+                    [
+                        {
+                            'datatype': 'ipmc_BootupDelay', 
+                            'nodetype': 'leaf', 
+                            'name': 'bootupDelay',
+                            'op': '==', 
+                            'selected': 'True', 
+                            'value': 0, 
+                            'xpath': '/System/igmp-items/inst-items/bootupDelay'
+                        },
+                        {
+                            'datatype': 'ipmc_HeavyTemplate', 
+                            'nodetype': 'leaf', 
+                            'name': 'heavyTemplate',
+                            'op': '==', 
+                            'selected': 'True', 
+                            'value': True, 
+                            'xpath': '/System/igmp-items/inst-items/heavyTemplate'
+                        }
+                    ], 
+                    'verifier': rpc_verify.process_operational_state, 
+                    'namespace_modules': 
+                    {
+                        'top': 'Cisco-NX-OS-device'
+                    }, 
+                    'decode': GnmiMessage.process_subscribe_response, 
+                    'log': log
+                }
+
+        # Response 1
+        path_elem1 = proto.gnmi_pb2.PathElem()
+        path_elem1.KeyEntry.key = ""
+        path_elem1.KeyEntry.value = ""
+        path_elem1.name = "System"
+
+        path1 = proto.gnmi_pb2.Path()
+        path1.origin = "device"
+        path1.elem.append(path_elem1)
+
+        val1 = {
+                'igmp-items': 
+                {
+                    'inst-items': 
+                    {
+                        'bootupDelay': 0
+                    }
+                }
+            }
+        val1 = json.dumps(val1).encode('utf-8')
+
+        value1 = proto.gnmi_pb2.TypedValue()
+        value1.json_val = val1
+
+        update1 = proto.gnmi_pb2.Update()
+        update1.path.MergeFrom(path1)
+        update1.val.MergeFrom(value1)
+
+        notification1 = proto.gnmi_pb2.Notification()
+        notification1.timestamp = 0
+        notification1.prefix.MergeFrom(proto.gnmi_pb2.Path())
+        notification1.update.append(update1)
+
+        response1 = proto.gnmi_pb2.SubscribeResponse()
+        response1.update.MergeFrom(notification1)
+
+        # Response 2
+        path_elem2 = proto.gnmi_pb2.PathElem()
+        path_elem2.KeyEntry.key = ""
+        path_elem2.KeyEntry.value = ""
+        path_elem2.name = "System"
+
+        path2 = proto.gnmi_pb2.Path()
+        path2.origin = "device"
+        path2.elem.append(path_elem2)
+
+        val2 = {
+                'igmp-items': 
+                {
+                    'inst-items':
+                    {
+                        'heavyTemplate': True,
+                        'upTime': 200
+                    }
+                }
+            }
+        val2 = json.dumps(val2).encode('utf-8')
+
+        value2 = proto.gnmi_pb2.TypedValue()
+        value2.json_val = val2
+
+        update2 = proto.gnmi_pb2.Update()
+        update2.path.MergeFrom(path2)
+        update2.val.MergeFrom(value2)
+
+        notification2 = proto.gnmi_pb2.Notification()
+        notification2.timestamp = 0
+        notification2.prefix.MergeFrom(proto.gnmi_pb2.Path())
+        notification2.update.append(update2)
+
+        response2 = proto.gnmi_pb2.SubscribeResponse()
+        response2.update.MergeFrom(notification2)
+
+        # initiate subscription thread
+        subscribe_thread = GnmiSubscriptionStream(
+            responses=[response1, response2, response1, response2],
+            **request
+        )
+        subscribe_thread.start()
+
+        # Wait till the thread is stopped.
+        subscribe_thread.join()
+
+        # Test the result
+        self.assertEqual(subscribe_thread.result, True)
+
+
     def test_run_subscribe_once_gnmi(self):
         """ Test GNMI Subscribe ONCE mode for Subscription List"""
 
@@ -602,10 +993,10 @@ class TestYangExec(unittest.TestCase):
         # Response 3
         response3 = proto.gnmi_pb2.SubscribeResponse()
         response3.sync_response = True
-    
+
         # initiate subscription thread
-        subscribe_thread = GnmiNotification(
-            [response1, response2, response3],
+        subscribe_thread = GnmiSubscriptionOnce(
+            responses=[response1, response2, response3],
             **request
         )
         subscribe_thread.start()
@@ -665,8 +1056,8 @@ class TestYangExec(unittest.TestCase):
         response.sync_response = True
     
         # initiate subscription thread
-        subscribe_thread = GnmiNotification(
-            [response],
+        subscribe_thread = GnmiSubscriptionStream(
+            responses=[response],
             **request
         )
         subscribe_thread.start()
@@ -712,42 +1103,24 @@ class TestYangExec(unittest.TestCase):
                     'returns': 
                         [
                             {
-                                'datatype': '', 
-                                'nodetype': 'leaf', 
-                                'name': 'type', 
-                                'op': '==', 
-                                'selected': 'True', 
-                                'value': 'nbm', 
-                                'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/eventHist-items/EventHistory-list/type'
-                            }, 
-                            {
                                 'datatype': 'uint32',
                                 'nodetype': 'leaf', 
                                 'name': 'size', 
                                 'op': '==',
                                 'selected': 'True', 
                                 'value': 4, 
-                                'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/eventHist-items/EventHistory-list/size'
+                                'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/eventHist-items/EventHistory-list[type="nbm"]/size'
                             },
-                            {
-                                'datatype': '', 
-                                'nodetype': 'leaf', 
-                                'name': 'type', 
-                                'op': '==', 
-                                'selected': 'True', 
-                                'value': 'intfDebugs', 
-                                'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/eventHist-items/EventHistory-list/type'
-                            }, 
                             {
                                 'datatype': 'uint32',
                                 'nodetype': 'leaf', 
                                 'name': 'size', 
                                 'op': '==',
-                                'selected': 'True', 
+                                'selected': 'True',
                                 'value': 3, 
-                                'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/eventHist-items/EventHistory-list/size'
+                                'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/eventHist-items/EventHistory-list[type="intfDebugs"]/size'
                             }
-                        ], 
+                        ],
                     'verifier': rpc_verify.process_operational_state,
                     'namespace_modules': 
                         {
@@ -870,8 +1243,8 @@ class TestYangExec(unittest.TestCase):
         response3.sync_response = True
     
         # initiate subscription thread
-        subscribe_thread = GnmiNotification(
-            [response1, response2, response3],
+        subscribe_thread = GnmiSubscriptionOnce(
+            responses=[response1, response2, response3],
             **request
         )
         subscribe_thread.start()
@@ -1219,8 +1592,8 @@ class TestYangExec(unittest.TestCase):
         response2.sync_response = True
     
         # initiate subscription thread
-        subscribe_thread = GnmiNotification(
-            [response1, response2],
+        subscribe_thread = GnmiSubscriptionOnce(
+            responses=[response1, response2],
             **request
         )
         subscribe_thread.start()
@@ -2551,8 +2924,8 @@ class TestYangExec(unittest.TestCase):
         response2.sync_response = True
 
         # initiate subscription thread
-        subscribe_thread = GnmiNotification(
-            [response1, response2],
+        subscribe_thread = GnmiSubscriptionOnce(
+            responses=[response1, response2],
             **request
         )
         subscribe_thread.start()
@@ -2621,6 +2994,138 @@ class TestYangExec(unittest.TestCase):
         rpc_verify = RpcVerify(log=log, capabilities=[])
         result = rpc_verify.check_opfield(value,field)
         self.assertEqual(result[0], False)
+
+    def test_get_config_transaction_time(self):
+        operation = 'get'
+        steps = "STEP 1: Starting action yang on device 'ncs1004'"
+        datastore = {
+            'type': '',
+            'lock': False,
+            'retry': 10
+        }
+        rpc_data = {
+            'namespace': {
+                'oc-sys': 'http://openconfig.net/yang/system'
+            },
+            'nodes': [{
+                'xpath': '/oc-sys:system/oc-sys:ssh-server/oc-sys:state/oc-sys:rate-limit'
+            }]
+        }
+        returns = [{
+            'id': 1,
+            'name': 'rate-limit',
+            'op': 'range',
+            'selected': True,
+            'datatype': 'integer',
+            'value': '50 - 70',
+            'xpath': '/system/ssh-server/state/rate-limit'
+        }]
+
+        format = {
+            'auto-validate': False,
+            'transaction_time': 0.00000001
+        }
+        response = proto.gnmi_pb2.GetResponse()
+        upd = {
+            'path': {
+                'elem': [
+                    {
+                        'name': "system"
+                    },
+                    {
+                        'name': "ssh-server"
+                    },
+                    {
+                        'name': "state"
+                    },
+                    {
+                        'name': "rate-limit"
+                    }
+                ]
+            }
+        }
+        update = json_format.ParseDict(
+            upd,
+            proto.gnmi_pb2.Update()
+        )
+        update.val.json_ietf_val = json.dumps(60).encode('utf-8')
+        notif = proto.gnmi_pb2.Notification()
+        notif.update.append(update)
+        response.notification.append(notif)
+        device = TestDevice(response)
+
+        result = run_gnmi(
+            operation, device, steps, datastore, rpc_data, returns, format=format
+        )
+        self.assertEqual(result, False)
+
+        format['transaction_time'] = 2
+        result = run_gnmi(
+            operation, device, steps, datastore, rpc_data, returns, format=format
+        )
+        self.assertEqual(result, True)
+
+
+    def test_subscribe_poll_transaction_time(self):
+        request = self.make_test_subscribe_request()
+        request['transaction_time'] = 0.00000001
+        subscribe_thread = GnmiSubscriptionPoll(
+            responses=[self.make_test_subscribe_response()],
+            **request
+        )
+        subscribe_thread.start()
+        subscribe_thread.join()
+        self.assertEqual(subscribe_thread.result, False)
+
+        request['transaction_time'] = 2
+        subscribe_thread = GnmiSubscriptionPoll(
+            responses=[self.make_test_subscribe_response()],
+            **request
+        )
+        subscribe_thread.start()
+        subscribe_thread.join()
+        self.assertEqual(subscribe_thread.result, True)
+    
+    def test_subscribe_once_transaction_time(self):
+        request = self.make_test_subscribe_request()
+        request['transaction_time'] = 0.00000001
+        subscribe_thread = GnmiSubscriptionOnce(
+            responses=[self.make_test_subscribe_response()],
+            **request
+        )
+        subscribe_thread.start()
+        subscribe_thread.join()
+        self.assertEqual(subscribe_thread.result, False)
+
+        request['transaction_time'] = 2
+        subscribe_thread = GnmiSubscriptionOnce(
+            responses=[self.make_test_subscribe_response()],
+            **request
+        )
+        subscribe_thread.start()
+        subscribe_thread.join()
+        self.assertEqual(subscribe_thread.result, True)
+
+    def test_subscribe_stream_transaction_time(self):
+        request = self.make_test_subscribe_request()
+        request['transaction_time'] = 0.00000001
+        subscribe_thread = GnmiSubscriptionStream(
+            responses=[self.make_test_subscribe_response()],
+            **request
+        )
+        subscribe_thread.start()
+        subscribe_thread.join()
+        self.assertEqual(subscribe_thread.result, False)
+
+        request = self.make_test_subscribe_request()
+        request['transaction_time'] = 2
+        subscribe_thread = GnmiSubscriptionStream(
+            responses=[self.make_test_subscribe_response()],
+            **request
+        )
+        subscribe_thread.start()
+        subscribe_thread.join()
+        self.assertEqual(subscribe_thread.result, True)
 
     def test_run_subscribe_stream_dynamic_values(self):
         """ Test GNMI Subscribe ONCE mode for Subscription List"""
@@ -2744,8 +3249,8 @@ class TestYangExec(unittest.TestCase):
         response2.update.MergeFrom(notification2)
 
         # initiate subscription thread
-        subscribe_thread = GnmiNotification(
-            [response1, response2],
+        subscribe_thread = GnmiSubscriptionStream(
+            responses=[response1, response2],
             **request
         )
         subscribe_thread.start()
@@ -2881,7 +3386,7 @@ class TestYangExec(unittest.TestCase):
          device = TestDevice(response)
 
          namespace = rpc_data['namespace']
-         json_dicts, opfields, update = GnmiMessage.process_get_response(response, namespace)
+         json_dicts, opfields = GnmiMessage.process_get_response(response, namespace)
          self.assertEqual(json_dicts,['nbm', 'igmpInternal', 'vrf'])
 
     def test_run_subscribe_once_gnmi_list_2(self):
@@ -3058,8 +3563,8 @@ class TestYangExec(unittest.TestCase):
         response3.sync_response = True
 
         # initiate subscription thread
-        subscribe_thread = GnmiNotification(
-            [response1, response2, response3],
+        subscribe_thread = GnmiSubscriptionOnce(
+            responses=[response1, response2, response3],
             **request
         )
         subscribe_thread.start()
@@ -3245,8 +3750,8 @@ class TestYangExec(unittest.TestCase):
         response3.sync_response = True
 
         # initiate subscription thread
-        subscribe_thread = GnmiNotification(
-            [response1, response2, response3],
+        subscribe_thread = GnmiSubscriptionOnce(
+            responses=[response1, response2, response3],
             **request
         )
         subscribe_thread.start()
@@ -3432,8 +3937,8 @@ class TestYangExec(unittest.TestCase):
         response3.sync_response = True
 
         # initiate subscription thread
-        subscribe_thread = GnmiNotification(
-            [response1, response2, response3],
+        subscribe_thread = GnmiSubscriptionOnce(
+            responses=[response1, response2, response3],
             **request
         )
         subscribe_thread.start()
@@ -3443,6 +3948,84 @@ class TestYangExec(unittest.TestCase):
 
         # Test the result
         self.assertEqual(subscribe_thread.result, True)
+
+    def make_test_subscribe_response(self) -> proto.gnmi_pb2.SubscribeResponse:
+        path_elem1 = proto.gnmi_pb2.PathElem()
+        path_elem1.KeyEntry.key = ""
+        path_elem1.KeyEntry.value = ""
+        path_elem1.name = "System"
+
+        path1 = proto.gnmi_pb2.Path()
+        path1.origin = "device"
+        path1.elem.append(path_elem1)
+
+        val1 = {
+                'igmp-items': 
+                {
+                    'inst-items': 
+                    {
+                        'bootupDelay': 0,
+                        'upTime': 100
+                    }
+                }
+            }
+        val1 = json.dumps(val1).encode('utf-8')
+
+        value1 = proto.gnmi_pb2.TypedValue()
+        value1.json_val = val1
+
+        update1 = proto.gnmi_pb2.Update()
+        update1.path.MergeFrom(path1)
+        update1.val.MergeFrom(value1)
+
+        notification1 = proto.gnmi_pb2.Notification()
+        notification1.timestamp = 0
+        notification1.prefix.MergeFrom(proto.gnmi_pb2.Path())
+        notification1.update.append(update1)
+
+        response1 = proto.gnmi_pb2.SubscribeResponse()
+        response1.update.MergeFrom(notification1)
+        return response1
+
+    def make_test_subscribe_request(self) -> dict:
+        rpc_verify = RpcVerify(log=log, capabilities=[])
+        return {
+            'namespace':
+            {
+                'top': 'Cisco-NX-OS-device'
+            },
+            'nodes':
+            [
+                {
+                    'nodetype': 'leaf',
+                    'datatype': '',
+                    'xpath': 'System/igmp-items/inst-items/bootupDelay',
+                    'name': 'bootupDelay',
+                            'value': ''
+                }
+            ],
+            'negative_test': False,
+            'encoding': 'JSON',
+            'returns':
+            [
+                {
+                    'datatype': 'ipmc_BootupDelay',
+                    'nodetype': 'leaf',
+                    'name': 'bootupDelay',
+                    'op': '==',
+                    'selected': 'True',
+                    'value': 0,
+                    'xpath': '/System/igmp-items/inst-items/bootupDelay'
+                }
+            ],
+            'verifier': rpc_verify.process_operational_state,
+            'namespace_modules':
+            {
+                'top': 'Cisco-NX-OS-device'
+            },
+            'decode': GnmiMessage.process_subscribe_response,
+            'log': log
+        }
 
 
 if __name__ == '__main__':

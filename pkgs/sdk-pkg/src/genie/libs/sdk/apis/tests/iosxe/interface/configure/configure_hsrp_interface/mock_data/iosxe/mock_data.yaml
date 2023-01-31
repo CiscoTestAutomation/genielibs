@@ -6,16 +6,16 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-    standby 10  ip 10.10.10.1: "standby 10  ip 10.10.10.1\r\n"
-    standby 10  preempt delay sync 60: "standby 10  preempt delay sync 60\r\n"
-    standby 10  priority 110: "standby 10  priority 110\r\n"
-  prompt: Vishal_C9600_SP(config)#
+    standby 0  ip 10.1.0.3: "standby 0  ip 10.1.0.3\r\n"
+    standby 0  preempt delay sync 0: "standby 0  preempt delay sync 0\r\n"
+    standby 0 timers 1 4: "standby 0 timers 1 4\r\n"
+  prompt: 9300-1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: Vishal_C9600_SP(config-line)#
+  prompt: 9300-1(config-line)#
 connect:
   commands:
     ? ''
@@ -35,4 +35,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: Vishal_C9600_SP#
+  prompt: 9300-1#

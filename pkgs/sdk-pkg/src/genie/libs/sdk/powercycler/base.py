@@ -33,7 +33,12 @@ class PowerCyclerMeta(type):
 
             type_ = attrs['type']
             connection_type = attrs['connection_type']
-            PowerCycler._SUPPORTED_PC_TYPES[type_] = {connection_type: obj}
+
+            # To update muliple connection_types for supported powercyclers
+            if type_ in PowerCycler._SUPPORTED_PC_TYPES:
+                PowerCycler._SUPPORTED_PC_TYPES[type_].update({connection_type: obj})
+            else:
+                PowerCycler._SUPPORTED_PC_TYPES[type_] = {connection_type: obj}
 
         return obj
 
@@ -403,66 +408,69 @@ class BaseEsxiPowerCycler(PowerCycler):
             except Exception as e:
                 raise Exception("Turning off outlet '{}' on the powercycler "
                                 "failed. Error: {}".format(outlet, str(e)))
-                                
-class BaseRaritanPowerCycler(PowerCycler):
 
-    def __init__(self, testbed, **kwargs):
+
+class BaseCliPowerCycler(PowerCycler):
+
+    def __init__(self, testbed, commands=None, **kwargs):
         super().__init__(**kwargs)
         self.testbed = testbed
+        if commands:
+            self.commands = commands
         self.connect()
 
     def connect(self):
+
         if self.host not in self.testbed.devices:
             raise Exception("The device '{}' does not exist in the testbed"
                             .format(self.host))
-        log.info('Assigning the host')
-        self.host = self.testbed.devices[self.host]
-        
-        self.host.connect(learn_hostname=True,mit=True, allow_state_change=True)
-        
-        log.info('Device is connected')
-        
-        #self.con = con
 
-    def off(self, *outlets, after=None):
-        if isinstance(after, int):
-            raise TypeError('"after" should be an int')
+        self.host = self.testbed.devices[self.host]
+
+        self.host.connect(learn_hostname=True)
+
+        log.info('Device is connected')
+
+    def on(self, outlets=None):
+        if outlets and not isinstance(outlets, list):
+            outlets = [outlets]
+
+        log.info('Turning on the device')
+        try:
+            if outlets:
+                clear_line_dialog = Dialog([
+                    Statement(pattern='.*\?\s*\[y\/n\]\s*$',
+                      action='sendline(y)',
+                      loop_continue=True,
+                      continue_timer=False)])
+                for outlet in outlets:
+                    self.host.execute(self.commands['power_on'].format(outlet=outlet), reply=clear_line_dialog)
+            else:
+                self.host.execute(self.commands['power_on'])
+        except Exception as e:
+            raise Exception("Turning on the powercycler "
+                            "failed. Error: {}".format(str(e)))
+
+    def off(self, outlets=None, after=None):
+        if outlets and not isinstance(outlets, list):
+            outlets = [outlets]
 
         if after:
             time.sleep(after)
 
-        clear_line_dialog = Dialog([
-            Statement(pattern='.*\?\s*\[y\/n\]',
-                      action='sendline(y)',
-                      loop_continue=True,
-                      continue_timer=False)])
-        #time.sleep(40)
-        for outlet in outlets:
-            time.sleep(10)
-            log.info('INSIDE OFF')
-            log.info('{0}'.format(outlet))
-            try:
-                self.host.execute('power outlets {} off'.format(outlet),
-                                  reply=clear_line_dialog)               
-            except Exception as e:
-                raise Exception("Turning off outlet '{}' on the powercycler "
-                                "failed. Error: {}".format(outlet, str(e)))
-
-    def on(self, *outlets):
-        time.sleep(40)
-        for outlet in outlets:
-            time.sleep(10)
-            log.info('INSIDE ON')
-            log.info('{0}'.format(outlet))
-            try:
+        log.info('Turning off the device')
+        try:
+            if outlets:
                 clear_line_dialog = Dialog([
-                    Statement(pattern='.*\?\s*\[y\/n\]',
+                    Statement(pattern='.*\?\s*\[y\/n\]\s*$',
                       action='sendline(y)',
                       loop_continue=True,
                       continue_timer=False)])
-                self.host.execute('power outlets {} on'.format(outlet),
-                                 reply=clear_line_dialog)                                 
-                       
-            except Exception as e:
-                raise Exception("Turning on outlet '{}' on the powercycler "
-                                "failed. Error: {}".format(outlet, str(e)))
+                for outlet in outlets:
+                    self.host.execute(self.commands['power_off'].format(outlet=outlet), reply=clear_line_dialog)
+            else:
+                self.host.execute(self.commands['power_off'])
+        except Exception as e:
+            raise Exception("Turning off the powercycler ",\
+                            "failed. Error: {}".format(str(e)))
+

@@ -192,3 +192,135 @@ def unconfigure_ip_igmp_snooping(device):
     except SubCommandFailure as e:
         log.error(e)
         raise SubCommandFailure("Could not unconfigure ip igmp snooping") 
+
+
+
+def configure_ip_igmp_snooping_vlan_vlanid(device, vlan_id):
+            
+    """Configure IGMP snooping vlan configuration
+        Example : ip igmp snooping vlan 200
+    Args:
+        device('obj'): Device object
+        vlan_id('int'): vlan id of the switch
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    cmd = "ip igmp snooping vlan {}".format(vlan_id)
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure ip igmp snooping vlan query version Error:\n{error}".format(
+                error=e,
+            )
+        )
+
+def unconfigure_ip_igmp_snooping_vlan_vlanid(device, vlan_id):
+    """UnConfigure IGMP snooping vlan configuration
+        Example : no ip igmp snooping vlan 200 
+    Args:
+        device('obj'): Device object
+        vlan_id('int'): vlan id of the switch            
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    cmd = "no ip igmp snooping vlan {}".format(vlan_id)
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure ip igmp snooping vlan Error:\n{error}".format(
+                error=e,
+            )
+        )
+
+
+def configure_igmp_snooping_tcn_flood(device, interface):
+    """Configure IGMP snooping tcn flooding
+    Args:
+        device('obj'): Device object
+        interface('str'): interface in which tcn flooding needs to be enabled
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    configs = []
+    configs.append("interface {interface}".format(interface=interface))
+    configs.append("ip igmp snooping tcn flood")
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not configure ip igmp snooping tcn flood on {device.name}. Error:\n{e}")
+def unconfigure_igmp_snooping_tcn_flood(device, interface):
+    """unconfigure IGMP snooping tcn flooding
+    Args:
+        device('obj'): Device object
+        interface('str'): interface in which tcn flooding needs to be disabled
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    configs = []
+    configs.append("interface {interface}".format(interface=interface))
+    configs.append("no ip igmp snooping tcn flood")
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not unconfigure ip igmp snooping tcn flood on {device.name}. Error:\n{e}")
+
+def configure_ip_igmp_snooping_vlan_static(device, vlan_id, group_ip, interface):
+    """
+    Configure IGMP snooping vlan static configuration
+    Example : ip igmp snooping vlan 200 static 225.0.0.100 interface gig 1/0/1
+
+    Args:
+        device('obj'): Device object
+        vlan_id('int'): vlan id of the switch
+        group_ip('str'): group ip address
+        interface('str'): interface name
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure
+    """
+    cmd = f"ip igmp snooping vlan {vlan_id} static {group_ip} interface {interface}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(f"Could not configure ip igmp snooping vlan id static interface. Error:\n{e}")
+
+def unconfigure_ip_igmp_snooping_vlan_static(device, vlan_id, group_ip, interface):
+    """
+    Unconfigure IGMP snooping vlan static configuration
+    Example : no ip igmp snooping vlan 200 static 225.0.0.100 interface gig 1/0/1
+
+    Args:
+        device('obj'): Device object
+        vlan_id('int'): vlan id of the switch
+        group_ip('str'): group ip address
+        interface('str'): interface name
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure
+    """
+    cmd = f"no ip igmp snooping vlan {vlan_id} static {group_ip} interface {interface}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(f"Could not unconfigure ip igmp snooping vlan id static interface. Error:\n{e}")
+

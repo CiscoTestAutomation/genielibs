@@ -1069,7 +1069,7 @@ def verify_num_routes_equal_before_and_after_clear(device, show_cmd, clr_cmd):
     log.info("# Preclean routes: {}\n# Postclean routes: {}".format(num_preclean, num_postclean))
     return num_preclean == num_postclean
 
-def verify_ipv6_intf_ip_address(device, interface, address):
+def verify_ipv6_intf_ip_address(device, interface, address,max_time=30,interval=10):
     """
     Verifies that the address is valid and exists in the interface given
 
@@ -1077,21 +1077,61 @@ def verify_ipv6_intf_ip_address(device, interface, address):
         device (): Device used to run commands
         interface ('str'): interface on device
         address ('str'): address to verify
+        max_time ('int'): time in seconds for trying verification. Default=30
+        interval ('int'): time in seconds how often to retry verification. Default=10
 
     Returns True if address exists in interface, false otherwise
     """
 
     log.info("Verifying that interface {} on device {} has address {}".format(interface, device.name, address))
 
-    try:
-        ipv6_addresses = device.api.get_ipv6_intf_valid_ip_addresses(interface)
-    except Exception as e:
-        log.error("Error: an exception occured\n{}".format(e))
-    if address in ipv6_addresses:
-        log.info("A valid Address: {} is found on interface {}".format(address, interface))
-        return True
-
+    timeout_obj = Timeout(max_time=max_time, interval=interval)            
+    ipv6_addresses=''
+    while timeout_obj.iterate():
+        try:
+            ipv6_addresses = device.api.get_ipv6_intf_valid_ip_addresses(interface)
+            if ipv6_addresses:
+                if address in ipv6_addresses:
+                    log.info("A valid Address: {} is found on interface {}".format(address, interface))
+                    return True
+                else:
+                    timeout_obj.sleep()                              
+            else:
+                timeout_obj.sleep()                
+        except Exception as e:
+            log.error("Error: an exception occured\n{}".format(e))
+            timeout_obj.sleep()
     log.error("Address: {} was not found on interface {}".format(address, interface))
+    return False
+
+def verify_ipv6_intf_ip_address_notexist(device, interface, address,max_time=30,interval=10):
+    """
+    Verifies that the valid address does not exist in the interface given
+
+    Args:
+        device (): Device used to run commands
+        interface ('str'): interface on device
+        address ('str'): address to verify
+        max_time ('int'): time in seconds for trying verification. Default=30
+        interval ('int'): time in seconds how often to try verification. Default=10
+
+    Returns True if address does not exist in interface, false otherwise
+    """
+    timeout_obj = Timeout(max_time=max_time, interval=interval)            
+    ipv6_addresses=''   
+    while timeout_obj.iterate():     
+        try:
+            exist=False
+            ipv6_addresses = device.api.get_ipv6_intf_valid_ip_addresses(interface)
+            if ipv6_addresses:
+                if address in ipv6_addresses:
+                    exist=True
+            if exist==True:
+                timeout_obj.sleep()                
+            else:
+                return True                                
+        except Exception as e:
+            return True
     return False
 
 def verify_linklocal_from_mac_address(device, linklocal_intf, mac_intf):

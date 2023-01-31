@@ -699,7 +699,11 @@ class GenieRobot(object):
         try:
             # Make sure its reset, as we dont need some of these functionalities
             executer.reset()
-            result = cls()
+            if alias:
+                with device_handle.temp_default_alias(alias):
+                    result = cls()
+            else:
+                result = cls()
         except Exception as e:
             # No need, as pyats has already logged the error
             pass

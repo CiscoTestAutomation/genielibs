@@ -30,6 +30,6 @@ class TestConfigureIpOnTunnelInterface(unittest.TestCase):
         )
 
     def test_configure_ip_on_tunnel_interface(self):
-        result = configure_ip_on_tunnel_interface(self.device, 'Tunnel1', '6.6.6.1', '255.255.255.0', '2.2.2.2', '1.1.1.2', 10, None, None, None, 'ipsec', 'ipsec', 'trans', None, None)
+        result = configure_ip_on_tunnel_interface(self.device, 'tunnel1', '6.6.6.1', '255.255.255.0', '2.2.2.2', '1.1.1.2', 10, None, None, None, None, 'ipsec', 'P1', None, None, '100', 'ipv4')
         expected_output = None
         self.assertEqual(result, expected_output)

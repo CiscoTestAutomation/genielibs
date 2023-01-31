@@ -30,6 +30,6 @@ class TestConfigureIpIgmpStaticGroup(unittest.TestCase):
         )
 
     def test_configure_ip_igmp_static_group(self):
-        result = configure_ip_igmp_static_group(self.device, '10', '239.100.100.101')
+        result = configure_ip_igmp_static_group(self.device, 'vlan 10', '239.100.100.101')
         expected_output = None
         self.assertEqual(result, expected_output)

@@ -1,0 +1,73 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: stack-2m-c9k(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: stack-2m-c9k(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show license rum id all | inc TELEMETRY:
+      response:
+      - "1667873757          DELETED   N     TELEMETRY\r\n1667873760          DELETED\
+        \   N     TELEMETRY\r\n1667873763          DELETED   N     TELEMETRY\r\n1667873766\
+        \          DELETED   N     TELEMETRY\r\n1667873769          DELETED   N  \
+        \   TELEMETRY\r\n1667873770          DELETED   N     TELEMETRY\r\n1667873781\
+        \          DELETED   N     TELEMETRY\r\n1667873784          DELETED   N  \
+        \   TELEMETRY\r\n1667873789          DELETED   N     TELEMETRY\r\n1667873792\
+        \          DELETED   N     TELEMETRY\r\n1667873799          DELETED   N  \
+        \   TELEMETRY\r\n1667873802          DELETED   N     TELEMETRY\r\n1667873805\
+        \          DELETED   N     TELEMETRY\r\n1667873808          DELETED   N  \
+        \   TELEMETRY\r\n1667873815          DELETED   N     TELEMETRY\r\n1667873822\
+        \          DELETED   N     TELEMETRY\r\n1667873825          DELETED   N  \
+        \   TELEMETRY\r\n1667873828          DELETED   N     TELEMETRY\r\n1667873831\
+        \          DELETED   N     TELEMETRY\r\n1667873834          DELETED   N  \
+        \   TELEMETRY\r\n1667873837          DELETED   N     TELEMETRY\r\n1667873840\
+        \          DELETED   N     TELEMETRY\r\n1667873843          DELETED   N  \
+        \   TELEMETRY\r\n1667873846          DELETED   N     TELEMETRY\r\n1667873849\
+        \          DELETED   N     TELEMETRY\r\n1667873852          DELETED   N  \
+        \   TELEMETRY\r\n1667873855          DELETED   N     TELEMETRY\r\n1667873858\
+        \          DELETED   N     TELEMETRY\r\n1667873861          DELETED   N  \
+        \   TELEMETRY\r\n1667873864          DELETED   N     TELEMETRY\r\n1667873871\
+        \          DELETED   N     TELEMETRY\r\n1667873874          DELETED   N  \
+        \   TELEMETRY\r\n1667873877          DELETED   N     TELEMETRY\r\n1667873880\
+        \          DELETED   N     TELEMETRY\r\n1667873883          DELETED   N  \
+        \   TELEMETRY\r\n1667873886          DELETED   N     TELEMETRY\r\n1667873889\
+        \          DELETED   N     TELEMETRY\r\n1667873892          DELETED   N  \
+        \   TELEMETRY\r\n1667873895          DELETED   N     TELEMETRY\r\n1667873898\
+        \          DELETED   N     TELEMETRY\r\n1667873901          DELETED   N  \
+        \   TELEMETRY\r\n1667873904          DELETED   N     TELEMETRY\r\n1667873907\
+        \          DELETED   N     TELEMETRY\r\n1667873910          DELETED   N  \
+        \   TELEMETRY\r\n1667873913          DELETED   N     TELEMETRY\r\n1667873916\
+        \          DELETED   N     TELEMETRY\r\n1667873919          DELETED   N  \
+        \   TELEMETRY\r\n1667873922          DELETED   N     TELEMETRY\r\n1667873929\
+        \          DELETED   N     TELEMETRY\r\n1667873932          DELETED   N  \
+        \   TELEMETRY\r\n1667873935          DELETED   N     TELEMETRY\r\n1667873938\
+        \          DELETED   N     TELEMETRY\r\n1667873941          DELETED   N  \
+        \   TELEMETRY"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: stack-2m-c9k#

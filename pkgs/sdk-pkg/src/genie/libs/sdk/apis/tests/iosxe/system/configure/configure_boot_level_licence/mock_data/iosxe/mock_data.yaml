@@ -1,0 +1,36 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    license boot level ipbase: "license boot level ipbase\r\n% use 'write' command\
+      \ to make license boot config take effect on next boot\r\n\r\n"
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: BB_ASR1006-X(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: BB_ASR1006-X(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: BB_ASR1006-X#

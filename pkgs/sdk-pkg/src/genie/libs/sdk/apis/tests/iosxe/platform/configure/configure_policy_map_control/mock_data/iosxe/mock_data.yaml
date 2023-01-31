@@ -1,0 +1,42 @@
+configure:
+  commands:
+    1 activate interface-template DMP_INTERFACE_TEMPLATE: "1 class always do-all\r\
+      \n"
+    1 class always do-all: "event identity-update match-first\r\n"
+    end:
+      new_state: execute
+    event identity-update match-first: "%Warning, modifying policy-map \"BUILTIN_AUTOCONF_POLICY\"\
+      \ may impact sessions hosted on ports for which \"BUILTIN_AUTOCONF_POLICY\"\
+      \ has already been applied.\r\n"
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    policy-map type control subscriber BUILTIN_AUTOCONF_POLICY: "policy-map type control\
+      \ subscriber BUILTIN_AUTOCONF_POLICY\r\n"
+  prompt: n08HA(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: n08HA(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: n08HA#

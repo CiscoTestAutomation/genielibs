@@ -10,7 +10,7 @@ class TestConfigureRouterBgpMaximumPaths(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          n10SVL:
+          PE-A:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,11 +18,11 @@ class TestConfigureRouterBgpMaximumPaths(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: c9500
-            type: c9500
+            platform: cat9k
+            type: c9300
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['n10SVL']
+        self.device = self.testbed.devices['PE-A']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,6 @@ class TestConfigureRouterBgpMaximumPaths(unittest.TestCase):
         )
 
     def test_configure_router_bgp_maximum_paths(self):
-        result = configure_router_bgp_maximum_paths(self.device, '100', '3')
+        result = configure_router_bgp_maximum_paths(self.device, 65001, 4, None)
         expected_output = None
         self.assertEqual(result, expected_output)

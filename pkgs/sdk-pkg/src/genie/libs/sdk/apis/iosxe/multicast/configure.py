@@ -42,7 +42,90 @@ def config_ip_pim(device, interface, mode):
                 error=e,
             )
         )
+
+
+def configure_ipv6_pim_bsr_candidate_bsr(device, ipv6_address, candidate_filter=None,
+                                         priority=None, scope=None, mask_length=None, vrf=None):
+    """ Configure ipv6 pim candidate bsr
+    Args:
+        device ('obj'): Device object
+        ipv6_address ('str'): ipv6_address for candidate
+        mask_length ('int'): BSR Hash mask length
+        candidate_filter ('str', optional): RP candidate filter
+        priority ('int', optional):BSR Priority
+        scope ('int', optional):IPv6 Scope value
+        vrf ('str', optional): vrf name
+    Returns:
+        None
+    Raises:
+        SubCommandFailure : Failed to configure ipv6 pim candidate bsr
+    """
+
+    log.info(f"Configure ipv6 pim candidate bsr")
+
+    if vrf:
+        cmd = f"ipv6 pim vrf {vrf} bsr candidate bsr {ipv6_address}"
+    else:
+        cmd = f"ipv6 pim bsr candidate bsr {ipv6_address}"
+
+    if mask_length:
+        cmd += f" {mask_length}"
+    if priority:
+        cmd += f" priority {priority}"
+    if scope:
+        cmd += f" scope {scope}"
+    if candidate_filter:
+        cmd += f" accept-rp-candidate {candidate_filter}"
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure ipv6 pim candidate bsr, Error:\n{e}"
+        )
+
+
+def configure_ipv6_pim_bsr_candidate_rp(device, ipv6_address, group_list=None, priority=None,
+                                        interval=None, scope=None, bidir=False, vrf=None):
+    """ Configure ipv6 pim candidate rp 
+    Args:
+        device ('obj'): Device object
+        ipv6_address ('str'): ipv6_address for candidate
+        group_list ('str', optional): Group list
+        priority ('int', optional): priority for configured RP
+        interval ('int', optional): advertisement interval for configured RP
+        scope ('int', optional):IPv6 Scope value
+        bidir ('bool', optional): configure a bidir RP
+        vrf ('str', optional): vrf name
+    Returns:
+        None
+    Raises:
+        SubCommandFailure : Failed to configure ipv6 pim candidate rp 
+    """
+
+    log.info(f"Configure ipv6 pim candidate rp")
+
+    if vrf:
+        cmd = f"ipv6 pim vrf {vrf} bsr candidate rp {ipv6_address}"
+    else:
+        cmd = f"ipv6 pim bsr candidate rp {ipv6_address}"
+    if group_list:
+        cmd += f" group-list {group_list}"
+    if interval:
+        cmd += f" interval {interval}"
+    if priority:
+        cmd += f" priority {priority}"
+    if bidir:
+        cmd += " bidir"
         
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure ipv6 pim candidate rp, Error:\n{e}"
+        )
+
+
 def config_rp_address(device, vrf, ip_address):
     """Configures a static IP address of a rendezvous point for a multicast group range.
 
@@ -1065,13 +1148,13 @@ def configure_ip_igmp_snooping_vlan_mrouter_learn_pim_dvmrp(device, vlan_id):
             "Could not configure ip igmp snooping vlan mrouter learn pim-dvmrp . Error:\n{error}".format(error=e)
         )
 
-def configure_ip_igmp_static_group(device, vlan_number, group_address):
-    """ Configures ip igmp static-group to an vlan interface
+def configure_ip_igmp_static_group(device, interface, group_address):
+    """ Configures ip igmp static-group to an interface
         Example : ip igmp static-group 239.100.100.101
 
         Args:
             device ('obj'): device to use
-            vlan_number ('int'): Vlan interface number (Range 1-4093)
+            interface ('str'): interface or Vlan number (Eg. ten1/0/1 or vlan 10)
             group_address ('str'): IP group address
 
         Returns:
@@ -1082,7 +1165,7 @@ def configure_ip_igmp_static_group(device, vlan_number, group_address):
     """
     log.info(f"Configuring ip igmp static-group on {device.name}")
     configs = [
-        f"interface vlan {vlan_number}",
+        f"interface {interface}",
         f"ip igmp static-group {group_address}"
     ]
     try:
@@ -1090,13 +1173,13 @@ def configure_ip_igmp_static_group(device, vlan_number, group_address):
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure ip igmp static-group on device {device.name}. Error:\n{e}")
 
-def configure_ip_igmp_join_group(device, vlan_number, group_address, source_address):
+def configure_ip_igmp_join_group(device, interface, group_address, source_address):
     """ Configures ip igmp join-group to an vlan interface
         Example : ip igmp join-group 239.100.100.101 source 4.4.4.4
 
         Args:
             device ('obj'): device to use
-            vlan_number ('int'): Vlan interface number (Range 1-4093)
+            interface ('str'): interface or Vlan number (Eg. ten1/0/1 or vlan 10)
             group_address ('str'): IP group addres
             source_address ('str'): IP source address
 
@@ -1108,7 +1191,7 @@ def configure_ip_igmp_join_group(device, vlan_number, group_address, source_addr
     """
     log.info(f"Configuring ip igmp join-group on {device.name}")
     configs = [
-        f"interface vlan {vlan_number}",
+        f"interface {interface}",
         f"ip igmp join-group {group_address} source {source_address}"
     ]
     try:
@@ -1116,6 +1199,25 @@ def configure_ip_igmp_join_group(device, vlan_number, group_address, source_addr
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure ip igmp join-group on device {device.name}. Error:\n{e}")
 
+def configure_ip_igmp_ssmmap_static(device, acl_name, source_address):
+    """ Configure ip igmp ssm-map static
+    Args:
+        device ('obj'): Device object
+        acl_name ('int'): acl name
+        source_address ('str'): ssm source address
+
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    cmd = f"ip igmp ssm-map static {acl_name} {source_address}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure ip igmp ssm-map static {acl_name} {source_address}. Error:\n{e}")
+        
 def configure_ip_igmp_ssm_map(device):
     """ Configures ip igmp ssm-map
         Example : ip igmp ssm-map enable
@@ -1187,3 +1289,37 @@ def unconfigure_ip_igmp_ssm_map_query_dns(device):
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure ssm-map query dns on device {device.name}. Error:\n{e}")
+
+def enable_ip_igmp_snooping_report_suppression(device):
+    """ Enables a limit on membership report traffic sent to multicast-capable routers
+        Example : ip igmp snooping report-suppression
+
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises: 
+            SubCommandFailure
+    """
+    log.info(f"Enabling igmp report-suppression on {device.name}")
+    try:
+        device.configure("ip igmp snooping report-suppression")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to enable igmp report-suppression on device {device.name}. Error:\n{e}")
+
+def disable_ip_igmp_snooping_report_suppression(device):
+    """ Disables the report-suppression
+        Example : no ip igmp snooping report-suppression
+
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises: 
+            SubCommandFailure
+    """
+    log.info(f"Disabling igmp report-suppression on {device.name}")
+    try:
+        device.configure("no ip igmp snooping report-suppression")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to disable igmp report-suppression on device {device.name}. Error:\n{e}")

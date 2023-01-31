@@ -35,3 +35,26 @@ def execute_switch_renumber(device, switch_number, switch_renumber):
     except SubCommandFailure as err:
         log.error(f"Failed to execute {cmd}': {err}".format(err=err))
         raise
+
+def execute_switch_priority(device, switch_number, priority_number):
+    """ 
+    API for the CLI :- 
+        switch {switch_number} priority {priority_number}
+        e.g.
+        Args:
+            device ('obj'): device to use  
+            switch_number ('int'): Switch id of node which should be renumbered
+			switch_priority ('int'): Switch Priority
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f"switch {switch_number} priority {priority_number}" 
+   
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as err:
+        raise SubCommandFailure(
+            f'Unable to configure the switch priority on stack. Error:\n{err}'
+        )

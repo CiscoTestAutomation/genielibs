@@ -1,0 +1,42 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    interface Tunnel50: "interface Tunnel50\r\n"
+    ip address 11.11.11.1 255.255.255.0: "ip address 11.11.11.1 255.255.255.0\r\n"
+    keepalive 5 2: "keepalive 5 2\r\n"
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    tunnel destination 2.2.2.2: "tunnel destination 2.2.2.2\r\n"
+    tunnel mode gre ip: "tunnel mode gre ip\r\n"
+    tunnel protection ipsec profile ipsec_profile_v4_lo: "tunnel protection ipsec\
+      \ profile ipsec_profile_v4_lo\r\n"
+    tunnel source 2.2.2.1: "tunnel source 2.2.2.1\r\n"
+  prompt: PE-A(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: PE-A(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: PE-A#

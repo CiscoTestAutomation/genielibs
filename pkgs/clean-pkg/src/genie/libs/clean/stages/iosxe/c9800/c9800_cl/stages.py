@@ -76,7 +76,7 @@ class ApplySelfSignedCert(BaseStage):
                                  signature_algorithm=SIGNATURE_ALGORITHM,
                                  encryption_type=ENCRYPTION_TYPE, timeout=TIMEOUT):
 
-        # Configuring the self signed certificate on the device
+        # Configuring the self-signed certificate on the device
         with steps.start("Configuring the self-signed certificate on {}".format(device.name)) as step:
             try:
                 device.api.enable_http_server()
@@ -93,7 +93,7 @@ class ApplySelfSignedCert(BaseStage):
 
     def verify_configured_trustpoint(self, device, steps, max_time=MAX_TIME, check_interval=CHECK_INTERVAL):
         # the trustpoint name will always be in the following format of '<dev name>_WLC_TP' as it comes from the device
-        trustpoint_name = device.name + "_WLC_TP"
+        trustpoint_name = device.hostname + "_WLC_TP"
 
         with steps.start("Verify the self-signed certificate is configured")as step:
             # verifying if the trustpoint is configured properly

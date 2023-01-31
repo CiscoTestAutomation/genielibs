@@ -29,3 +29,49 @@ def config_license(device, license):
             'Could not configure license {license}, Error: {error}'.format(
                 license=license, error=e)
         )
+
+def configure_boot_level_licence(device, nw_advantage=False, nw_essentials=False,
+        nw_premier=False, addon=False, adventerprise=False, advipservices=False,
+        ipbase=False):
+    """ Config boot level license on Device
+    Args:
+        device ('obj'): Device object
+        network-advantage ('bool'): boot level network-advantage
+        network-essentials ('bool'): boot level network-essentials
+        network-premier ('bool'): boot level network-premier
+        addon ('bool'): addon option for license
+        adventerprise ('bool'): boot level adventerprise
+        advipservices ('bool'): boot level advipservices
+        ipbase ('bool'): boot level ipbase
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring boot level license
+    """
+    log.info(f"Configure boot level license")
+
+    cmd = "license boot level"
+    if adventerprise:
+        cmd += " adventerprise"
+    elif advipservices:
+        cmd += " advipservices"
+    elif ipbase:
+        cmd += " ipbase"
+    elif nw_advantage:
+        cmd += " network-advantage"
+        if addon:
+             cmd += " addon dna-advantage"
+    elif nw_essentials:
+        cmd += " network-essentials"
+        if addon:
+            cmd += " addon dna-essentials"
+    elif nw_premier:
+        cmd += " network-premier"
+        if addon:
+            cmd += " addon dna-premier"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+                raise SubCommandFailure(
+            f"Failed to configure boot level license Error, Error:\n{e}"
+        )

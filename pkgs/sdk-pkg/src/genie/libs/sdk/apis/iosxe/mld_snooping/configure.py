@@ -226,4 +226,39 @@ def unconfigure_ipv6_mld_snooping_querier(device):
     except SubCommandFailure as e:
         log.error(e)
         raise SubCommandFailure("Could not unconfigure ipv6 mld snooping querier in the device")
-
+def configure_ipv6_mld_snooping_tcn_flood(device, interface):
+    """Configure IPv6 MLD snooping tcn flooding
+    Args:
+        device('obj'): Device object
+            interface('str'): interface in which tcn flooding needs to be enabled
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    configs = []
+    configs.append("interface {interface}".format(interface=interface))
+    configs.append("ipv6 mld snooping tcn flood")
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not configure ipv6 mld snooping tcn flood on {device.name}. Error:\n{e}")
+def unconfigure_ipv6_mld_snooping_tcn_flood(device, interface):
+    """unconfigure IPv6 MLD snooping tcn flooding
+    Args:
+        device('obj'): Device object
+        interface('str'): interface in which tcn flooding needs to be disabled
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    configs = []
+    configs.append("interface {interface}".format(interface=interface))
+    configs.append("no ipv6 mld snooping tcn flood")
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not unconfigure ipv6 mld snooping tcn flood on {device.name}. Error:\n{e}")

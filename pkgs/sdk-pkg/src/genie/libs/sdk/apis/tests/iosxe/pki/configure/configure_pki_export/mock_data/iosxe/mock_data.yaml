@@ -1,15 +1,24 @@
 configure:
   commands:
-    crypto pki export test pkcs12 bootflash:client_chain.p12 password cisco123: "crypto\
-      \ pki export test pkcs12 bootflash:client_chain.p12 password cisco123\r\nDestination\
-      \ filename [client_chain.p12]? \r\nWriting pkcs12 file to bootflash:client_chain.p12\r\
-      \n\r\nCRYPTO_PKI: Exported PKCS12 file successfully.\r\nCSR4(config)#\r\n"
+    crypto pki export test pkcs12 bootflash:client_chain.p12 password cisco123:
+      new_state: crypto
     end:
       new_state: execute
     line console 0:
       new_state: configure_line
     no logging console: ''
   prompt: CSR4(config)#
+crypto:
+  prompt: "Destination filename [client_chain.p12]? "
+  commands:
+    ? ''
+    : new_state: crypto_2
+crypto_2:
+  prompt: "Writing pkcs12 file to bootflash:client_chain.p12\r\
+    \n\r\nCRYPTO_PKI: Exported PKCS12 file successfully.\r\nCSR4(config)#"
+  commands:
+    end:
+      new_state: execute
 configure_line:
   commands:
     end:

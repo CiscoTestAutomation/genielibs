@@ -4,16 +4,16 @@ configure:
       new_state: execute
     line console 0:
       new_state: configure_line
-    maximum-paths 3: "maximum-paths 3\r\n"
+    maximum-paths 4: "maximum-paths 4\r\n"
     no logging console: ''
-    router bgp 100: "router bgp 100\r\n"
-  prompt: n10SVL(config)#
+    router bgp 65001: "router bgp 65001\r\n"
+  prompt: PE-A(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: n10SVL(config-line)#
+  prompt: PE-A(config-line)#
 connect:
   commands:
     ? ''
@@ -33,4 +33,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: n10SVL#
+  prompt: PE-A#

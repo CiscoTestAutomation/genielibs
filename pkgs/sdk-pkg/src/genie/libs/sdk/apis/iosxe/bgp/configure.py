@@ -878,7 +878,6 @@ def configure_bgp_advertise_additional_paths(device, bgp_as, neighbor):
             "additional paths on bgp router {}".format(bgp_as)
         )
 
-
 def configure_bgp_address_advertisement(
     device, bgp_as, address_family, ip_address, mask
 ):
@@ -905,7 +904,9 @@ def configure_bgp_address_advertisement(
     cmd.append("router bgp {}".format(bgp_as))
     cmd.append("address-family {}".format(address_family))
     if address_family == 'ipv4':
-        cmd.append("network {} mask {}".format(ip_address, mask))
+        cmd.append("network {} mask {}".format(ip_address, mask))       
+    elif address_family == 'ipv6':
+        cmd.append("network {}/{}".format(ip_address, mask))
     else:
         cmd.append("network {}".format(ip_address))
 
@@ -1213,6 +1214,13 @@ def configure_bgp_redistribute_ospf(
                     "redistribute ospf {ospf_instance}".format(
                         address_family=address_family,
                         vrf=vrf,
+                        ospf_instance=ospf_instance
+                    )
+                )
+        else:
+            cmd += ("address-family {address_family}\n"
+                    "redistribute ospf {ospf_instance}".format(
+                        address_family=address_family,
                         ospf_instance=ospf_instance
                     )
                 )
@@ -1825,7 +1833,7 @@ def configure_bgp_l2vpn_evpn_rewrite_evpn_rt_asn(
             f".Error:\n{e}"
         )
 
-def configure_router_bgp_maximum_paths(device, system, paths):
+def configure_router_bgp_maximum_paths(device, system, paths, address_family=None):
     """ Configures the maximum paths on router bgp
         Example: router bgp 100
                 maximum-paths 3
@@ -1833,16 +1841,20 @@ def configure_router_bgp_maximum_paths(device, system, paths):
             device ('obj'): device to configure on
             system ('int'): Autonomous system number (Range 1-4294967295 or 1.0-XX.YY)
             paths ('int'): Number of paths (Range 1-32)
+            address_family('str'): address family ( Default is None )
         Return:
             None
         Raises:
             SubCommandFailure: Failed executing command
     """
     log.info(f"Configuring maximum-paths on router bgp on device {device.name}")
-    config = [
-        f'router bgp {system}',
-        f'maximum-paths {paths}'
-    ]
+    config = [f'router bgp {system}']
+    if address_family:
+        config += [f'address-family {address_family}',
+        f'maximum-paths {paths}']
+    else:
+        config += [f'maximum-paths {paths}']
+
     try:
         device.configure(config)
     except SubCommandFailure as e:
@@ -2061,4 +2073,148 @@ def configure_router_bgp_neighbor_ebgp_multihop(device, system, neighbor_address
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not configure neighbor {neighbor_address} ebgp-multihop on router bgp on {device.name}. Error:\n{e}")
+
+
+def configure_label_mode_all_explicit_null(device, bgp_as, neighbor_address):
+
+    """ Configures label mode all-explicit-null on BGP router
+        Args:
+            device('obj'): device to configure on
+            bgp_as('str'): bgp_as to configure
+            neighbor_address('str'): what neighbor to configure on
+        Return:
+            N/A
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    try:
+        device.configure(
+            "router bgp {bgp_as}\n"
+            "address-family ipv6\n"
+            "label mode all-explicit-null\n".format(bgp_as=bgp_as,neighbor_address=neighbor_address)
+        )
+    except SubCommandFailure as e:
+        log.error("Unable to configure vlan label mode all-explicit-null on, Error:\n{}".format(e))
+        raise SubCommandFailure(
+            "Could not configure label mode all-explicit-null on "
+            "BGP router {}, Error: {}".format(bgp_as, e)
+        )
+
+
+def configure_bgp_redistribute_internal(device, bgp_as):
+    """ Configures bgp redistribute internal on bgp router
+        Args:
+            device('obj'): device to configure on
+            bgp_as('str'): bgp_as to configure
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config = [
+        f'router bgp {bgp_as}',
+        'bgp redistribute-internal'
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure bgp redistribute internal on device {device}. Error:\n{e}")
+
+def unconfigure_bgp_redistribute_internal(device, bgp_as):
+    """ Unconfigures bgp redistribute internal on bgp router
+        Args:
+            device('obj'): device to configure on
+            bgp_as('str'): bgp_as to configure
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    config = [
+        f'router bgp {bgp_as}',
+        'no bgp redistribute-internal'
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not unconfigure bgp redistribute internal on device {device}. Error:\n{e}")
+
+def configure_redestribute_ospf_metric_in_bgp(device, bgp_as, process_id, metric):
+    """ Configure redistributes ospf metric route under bgp
+        Args:
+            device ('obj'): device to use
+            bgp_as ('int'): bgp router to configure
+            process_id ('int'): ospf process id
+            metric('int): Metric for redistributed routes
+                ex:)
+                    <0-4294967295>  Default metric
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    confg = [
+            f'router bgp {bgp_as}',
+            f'redistribute ospf {process_id} metric {metric}'
+    ]
+    try:
+        device.configure(confg)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure redistributes ospf metric route under bgp on device {device}. Error:\n{e}")
+
+def unconfigure_redestribute_ospf_metric_in_bgp(device, bgp_as, process_id, metric):
+    """ Unconfigure redistributes ospf metric route under bgp
+        Args:
+            device ('obj'): device to use
+            bgp_as ('int'): bgp router to configure
+            process_id ('int'): ospf process id
+            metric('int): Metric for redistributed routes
+                ex:)
+                    <0-4294967295>  Default metric
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    
+    confg = [
+            f'router bgp {bgp_as}',
+            f'no redistribute ospf {process_id} metric {metric}'
+    ]
+    try:
+        device.configure(confg)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not unconfigure redistributes ospf metric route under bgp on device {device}. Error:\n{e}")
+
+def configure_bgp_neighbor_remote_as_fall_over_as_with_peergroup(device, bgp_as, neighbor_address,
+        fall_over_as=None, remote_as=None, peer_group_as=None):
+    """Configure bgp neighbour and remote as fall over as
+       Args:
+       device('obj'): device to configure on
+       bgp_as('str'): bgp_as to configure
+       neighbor_address ('str'): Neighbor address
+       remote_as ('str'): Destination
+       peer_group_as('str'): configure the peer-group
+       fall_over_as ('str'): falloveras
+       Returns:
+            N/A
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    log.info(f"configure the bgp neighbor remote address and fall over details on {device}")
+    config = ['router bgp {bgp_as}'.format(bgp_as=bgp_as)]
+    if remote_as:
+        config.append('neighbor {neighbor_address} remote-as {remote_as}'.format(neighbor_address=neighbor_address, remote_as=remote_as))
+    if peer_group_as:
+        config.append('neighbor {neighbor_address} peer-group {peer_group_as}'.format(neighbor_address=neighbor_address, peer_group_as=peer_group_as))
+    if fall_over_as:
+        config.append('neighbor {neighbor_address} fall-over {fall_over_as}'.format(neighbor_address=neighbor_address, fall_over_as=fall_over_as))
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure the {neighbor_address} and {fall_over_as} on {device}".format(neighbor_address=neighbor_address,fall_over_as=fall_over_as,device=device, e=e)
+        )
 

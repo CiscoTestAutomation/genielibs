@@ -466,3 +466,61 @@ def unconfigure_debug_snmp_packets(device):
         raise SubCommandFailure(
             f"Could not unconfigure debugs on device. Error:\n{error}"
         )
+
+def configure_snmp_server_enable_traps_power_ethernet_group(device, number, ip, snmp_v, name=None, rw='rw'):
+    """ Configure snmp-server enable traps power-ethernet group
+        Args:
+            device ('obj'): Device object
+            number ('str'): The group number 
+            snmp_v ('str'): snmpv1/v2c community string or snmpv3 user name
+            name ('str'): snmp community string
+            rw ('str'): read-write/read-only
+
+        Returns:
+                None
+        Raises:
+                SubCommandFailure
+    """
+    cmd = [
+        f'snmp-server enable traps power-ethernet group {number}',
+        'snmp-server host {ip} {snmpv}',
+        'snmp-server enable traps power-ethernet police',
+        'snmp-server community {name} {rw}',
+        'snmp-server manager'
+    ]
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure snmp-server enable traps power-ethernet group on the device. Error:\n{e}")
+
+def configure_snmp_server_manager(device):
+    """
+        Configures the snmp-server manager
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"Configuring snmp manager on {device}")
+    try:
+        device.configure("snmp-server manager")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure snmp-server manager . Error:\n{e}")
+
+def unconfigure_snmp_server_manager(device):
+    """
+        Unconfigures the snmp-server manager
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"Unconfiguring snmp manager on {device}")
+    try:
+        device.configure("no snmp-server manager")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not un configure snmp-server manager . Error:\n{e}")

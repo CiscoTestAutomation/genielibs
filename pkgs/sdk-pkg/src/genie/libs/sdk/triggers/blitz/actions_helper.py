@@ -332,17 +332,18 @@ def check_yang_subscribe(device, step, result=None):
     hostname = None
     if hasattr(device, 'name'):
         hostname = device.name
+    elif hasattr(device, 'device') and hasattr(device.device, 'name'):
+        hostname = device.device.name
     if hostname is None:
         # how did we get this far?
-        log.info('YANG Subscribe check, cannot find hostname')
+        log.error('YANG Subscribe check, cannot find hostname')
         return
 
     if isinstance(result, Thread):
         if result.sub_mode == 'ON_CHANGE':
             active_subscriptions[hostname] = result
             return
-        else:
-            subscribe_thread = result
+        subscribe_thread = result
     elif hostname in active_subscriptions:
         # ON_CHANGE thread waiting for change
         on_change = active_subscriptions[hostname]
@@ -362,12 +363,8 @@ def check_yang_subscribe(device, step, result=None):
             time.sleep(1)
         # set subscribe result
         if not subscribe_thread.result:
-            step.failed('{0} subscription failed'.format(
-                subscribe_thread.mode
-            ))
+            step.failed('subscription failed')
 
-    # return normal result
-    return result
 
 def _api_device_update(arguments, testbed, step, command, device=None, common_api=None):
     """

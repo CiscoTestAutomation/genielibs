@@ -1,7 +1,6 @@
 import os
 import json
 import time
-import json
 import logging
 from datetime import datetime
 
@@ -24,6 +23,7 @@ from .actions_helper import (configure_handler, api_handler, learn_handler,
                              _condition_validator, rest_handler,
                              bash_console_handler, dialog_handler,
                              yang_handler, check_yang_subscribe)
+from .yang_snapshot import YangSnapshot
 
 # skip in case pyats.contrib is not installed
 try:
@@ -724,6 +724,11 @@ def yang(self,
     if 'ret_dict' in kwargs:
         kwargs.pop('ret_dict')
 
+    # Register yang action so that related Xpaths are collected.
+    if hasattr(self.parent, 'yang_snapshot'):
+        self.parent.yang_snapshot.register(
+            device, connection, protocol, operation, content)
+
     if connection:
         device = getattr(device, connection)
         # Verify that we are connected
@@ -1194,6 +1199,181 @@ def dialog(self,
     return output
 
 
+@add_result_as_extra
+def yang_snapshot(
+    self,
+    device,
+    steps,
+    section,
+    name,
+    continue_=True,
+    processor='',
+    health_uids=None,
+    health_groups=None,
+    health_sections=None,
+    result_status=None,
+    *args,
+    **kwargs,
+):
+    '''
+    Action to collect the device config before a group of test cases. E.g.,
+    when a leaf /native/ntp/peer/ipv6[host-name="genericstring"]/burst-opt is
+    tested, YangSuite generates five test cases: create, delete, merge,
+    replace and remove. These five test cases are in one group. After the last
+    test case remove, in this example,
+    /native/ntp/peer/ipv6[host-name="genericstring"] remains. This behavior is
+    not desirable as its leftover config may impact other test cases in a
+    negative way. The yang_snapshot action here is to start collecting config
+    snapshot so that the leftover may be removed later.
+
+    Parameters
+    ----------
+    self : `object`
+        pyATS testcase object.
+
+    device : `object`
+        pyATS device object.
+
+    steps : `object`
+        pyATS Steps object.
+
+    section : `object`
+        pyATS Section object.
+
+    name : `str`
+        Action name.
+
+    continue_ : `boolean`
+        Whether steps should continue in case of failure.
+
+    processor : `str`
+        Processor string.
+
+    health_uids : `object`
+        UIDs of Genie Health.
+
+    health_groups : `object`
+        Groups of Genie Health.
+
+    health_sections : `object`
+        Sections of Genie Health.
+
+    result_status : `str`
+        It is allowed to change the result status to failed, passed, aborted,
+        blocked, skipped, errored or passx when the step is passed. The desired
+        result status can be specified here.
+
+    Returns
+    -------
+    boolean
+        Return True when the yang_snapshot action was successful, and False
+        otherwise.
+    '''
+
+    # Attribute yang_snapshot holds a YangSnapshot object, which contains
+    # related snapshot info.
+    if not hasattr(self.parent, 'yang_snapshot'):
+        self.parent.yang_snapshot = YangSnapshot(device)
+    result = self.parent.yang_snapshot.snapshot(
+        self, device, steps, section, **kwargs)
+    if result:
+        steps.passed('Collected a snapshot.')
+    else:
+        steps.failed('Failed to collect a snapshot.')
+    return result
+
+
+@add_result_as_extra
+def yang_snapshot_restore(
+    self,
+    device,
+    steps,
+    section,
+    name,
+    continue_=True,
+    processor='',
+    health_uids=None,
+    health_groups=None,
+    health_sections=None,
+    result_status=None,
+    *args,
+    **kwargs,
+):
+    '''
+    Action to remove the leftover config after a group of test cases. E.g.,
+    when a leaf /native/ntp/peer/ipv6[host-name="genericstring"]/burst-opt is
+    tested, YangSuite generates five test cases: create, delete, merge,
+    replace and remove. These five test cases are in one group. After the last
+    test case remove, in this example,
+    /native/ntp/peer/ipv6[host-name="genericstring"] remains. This behavior is
+    not desirable as its leftover config may impact other test cases in a
+    negative way. The yang_snapshot_restore action is to detect and remove the
+    leftover config caused by Yang actions.
+
+    Parameters
+    ----------
+    self : `object`
+        pyATS testcase object.
+
+    device : `object`
+        pyATS device object.
+
+    steps : `object`
+        pyATS Steps object.
+
+    section : `object`
+        pyATS Section object.
+
+    name : `str`
+        Action name.
+
+    continue_ : `boolean`
+        Whether steps should continue in case of failure.
+
+    processor : `str`
+        Processor string.
+
+    health_uids : `object`
+        UIDs of Genie Health.
+
+    health_groups : `object`
+        Groups of Genie Health.
+
+    health_sections : `object`
+        Sections of Genie Health.
+
+    result_status : `str`
+        It is allowed to change the result status to failed, passed, aborted,
+        blocked, skipped, errored or passx when the step is passed. The desired
+        result status can be specified here.
+
+    Returns
+    -------
+    boolean
+        Return True when the yang_snapshot_restore action was successful, and
+        False otherwise. It may return None when the yang_snapshot_restore
+        action finds nothing to remove.
+    '''
+
+    # Attribute yang_snapshot holds a YangSnapshot object, which contains
+    # related snapshot info.
+    if not hasattr(self.parent, 'yang_snapshot'):
+        self.parent.yang_snapshot = YangSnapshot(device)
+    connection = kwargs.get('connection')
+    protocol = kwargs.get('protocol')
+    result = self.parent.yang_snapshot.snapshot_restore(
+        device, connection, protocol)
+    if result is None:
+        steps.passed('Nothing to remove')
+    elif result:
+        steps.passed('RPC edit-config is accepted and the snapshot is '
+                     'restored.')
+    else:
+        steps.failed('RPC edit-config is not accepted so the snapshot is not '
+                     'restored.')
+    return result
+
+
 actions = {
     'configure': configure,
     'configure_dual': configure_dual,
@@ -1215,5 +1395,7 @@ actions = {
     'compare': compare,
     'maple_search': maple_search,
     'diff': diff,
-    'bash_console': bash_console
+    'bash_console': bash_console,
+    'yang_snapshot': yang_snapshot,
+    'yang_snapshot_restore': yang_snapshot_restore,
 }

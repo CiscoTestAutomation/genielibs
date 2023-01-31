@@ -940,3 +940,27 @@ def configure_cts_manual(device, interface):
         raise SubCommandFailure(
             f'Failed to configure cts manual on {interface} on {device.name}\n{e}'
         )
+
+def unconfigure_ip_dhcp_snooping_trust(device, interface):
+    """Unconfigures ip dhcp snooping trust
+
+       Args:
+            device ('obj'): device object
+            interface ('str'): name of interface
+
+       Return:
+            None
+
+       Raises:
+            SubCommandFailure
+    """
+    cmd = [
+        f"interface {interface}",
+        "no ip dhcp snooping trust"
+    ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to unconfigure no ip dhcp snooping trust on {device.name}\n{e}'
+        )

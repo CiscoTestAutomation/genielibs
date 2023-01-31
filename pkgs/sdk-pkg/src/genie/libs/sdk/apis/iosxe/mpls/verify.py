@@ -735,4 +735,53 @@ def verify_mpls_forwarding_table_gid_counter(device,
         if cnt == mdt_data_cnt:
             return True
         timeout.sleep()     
-    return False        
+    return False   
+
+def verify_mpls_summary_label(device,label_stack,prefix):
+    """ Verifying mpls label value with label stack value
+        Args:
+            device ('obj'): Device object
+            label_stack ('str'): Label value
+            prefix('str'): Prefix value
+        Returns:
+            result(`str`): verify result
+    """
+    result = []
+    out = device.execute("show platform software fed switch active mpls summary | include LABEL")
+    p = re.compile(r'Num+\s+of+\s+\S+\s+entries+\s+allocated:\s+(\d+).*$')
+    for line in out.splitlines():
+        line = line.strip()
+        m = p.match(line)
+        if m:
+            label_value = m.group(1)
+            result.append(label_value)
+            if not (label_stack and label_value) >= prefix:
+                log.error("Label stack id,mpls label value and route ranges are not approximately equal")
+            else:
+                log.info("Label stack id,mpls label value and route ranges approximately equal")
+
+    return "\n".join(result)
+
+def verify_mpls_summary_lspa(device,bgp_value):
+    """ Verifying mpls lspa value with bgp value
+      
+        Args: 
+            bgp_value('str'): Bgp value
+        Returns:
+            result(`str`): verify result
+    """
+    result = []
+    out = device.execute("show platform software fed switch active mpls summary | include LSPA")
+    p = re.compile(r'^Num of LSPA entries allocated:\s+(\d+).*$')
+    for line in out.splitlines():
+        line = line.strip()
+        m = p.match(line)
+        if m:
+            lspa_value = m.group(1)
+            result.append(lspa_value)
+            if not bgp_value == int(lspa_value):
+                log.error("Verification Failed for value of bgp and mpls lspa")
+            else:
+                log.info("Verified value for bgp and mpls")
+
+    return "\n".join(result)          

@@ -200,7 +200,7 @@ def unconfigure_routing_static_routev6(
 
 
 def configure_routing_static_route(
-    device, route, mask, interface=None, destination_address=None, vrf=None    
+    device, route, mask, interface=None, destination_address=None, vrf=None, dhcp=False, dhcp_metirc=None
 ):
     """ Configure static ip route on device
 
@@ -211,7 +211,8 @@ def configure_routing_static_route(
             interface ('str'): interface name to configure
             destination_address('str'): destination address to configure
             vrf ('str',optional): Vrf for static route            
-
+            dhcp ('boolean',optional): Flag to configure default Gateway obtained from DHCP (Default False)
+            dhcp_metirc('int',optional ): Distance metric for this dhcp route 
         Returns:
             None
 
@@ -237,6 +238,13 @@ def configure_routing_static_route(
     elif destination_address:
         configs.append(
             f"ip route {route} {mask} {destination_address}")
+    elif dhcp:
+        if dhcp_metirc:
+            configs.append(
+                f"ip route {route} {mask} dhcp {dhcp_metirc}")
+        else:
+            configs.append(
+                f"ip route {route} {mask} dhcp")
     try:
         device.configure(configs)
         log.info("Configuration successful for {route} ".format(route=route))
@@ -269,16 +277,16 @@ def unconfigure_routing_static_route(
             f"no ip route {route} {mask} {interface} {destination_address}")
     elif vrf and destination_address:
         configs.append(
-            f"ip route {vrf} {route} {mask} {destination_address}")
+            f"no ip route {vrf} {route} {mask} {destination_address}")
     elif vrf and interface:
         configs.append(
-            f"ip route {vrf} {route} {mask} {interface}")
+            f"no ip route {vrf} {route} {mask} {interface}")
     elif interface:
         configs.append(
-            f"ip route {route} {mask} {interface}")
+            f"no ip route {route} {mask} {interface}")
     elif destination_address:
         configs.append(
-            f"ip route {route} {mask} {destination_address}")
+            f"no ip route {route} {mask} {destination_address}")
     try:
         device.configure(configs)
         log.info("Configuration successful for {route} ".format(route=route))

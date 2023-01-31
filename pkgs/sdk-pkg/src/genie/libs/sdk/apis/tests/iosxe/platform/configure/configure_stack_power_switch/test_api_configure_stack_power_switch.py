@@ -10,7 +10,7 @@ class TestConfigureStackPowerSwitch(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          n10SVL:
+          n08HA:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -22,7 +22,7 @@ class TestConfigureStackPowerSwitch(unittest.TestCase):
             type: c9500
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['n10SVL']
+        self.device = self.testbed.devices['n08HA']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],

@@ -319,7 +319,7 @@ class HA(HA_main):
                 address=device.filetransfer_attributes['server_address'],
                 upgrade_image=upgrade_image)
             filetransfer.copyfile(source=from_url, destination=disk,
-                                  device=device, vrf='management', timeout_seconds=600)
+                                  device=device, vrf='management', timeout_seconds=900)
 
             # Verify location:<filename> exists
             output = device.execute('dir {disk}{image}'.format(disk=disk,
@@ -359,9 +359,11 @@ class HA(HA_main):
         ctrlplane_downtime = self.parameters.get('ctrlplane_downtime')
         user_boot_mode = self.parameters.get('mode')
         disrupt_flag = self.parameters.get('disrupt_flag',False)
+        allow_disruptive = self.parameters.get('allow_disruptive',True)
         issu_timeout = self.parameters.get('issu_timeout')
         cfg_transfer = self.parameters.get('cfg_transfer')
         cfg_timeout = self.parameters.get('cfg_timeout')
+        config_ver_exclude = self.parameters.get("config_ver_exclude",[])
         with steps.start("Check boot mode on {}".format(self.device.hostname)) as step:
             invalid_cmd = False
             out = self.device.execute('show boot mode')
@@ -390,7 +392,7 @@ class HA(HA_main):
                 step.passed(
                     "System boot mode {} matches user expected boot mode {}".format(sys_boot_mode, user_boot_mode))
 
-        with steps.start("Take a running-config snapshot pre trigger on {}".format(self.device.hostname)):
+        with steps.start("Take a running-config snapshot pre trigger on {}".format(self.device.hostname)) as step:
             if cfg_transfer:
                 self.device.execute('show run > {}_pre_issu_trig.cfg'.format(self.device.hostname),
                                     timeout=cfg_timeout, reply=dialog)
@@ -408,7 +410,8 @@ class HA(HA_main):
                         "file not found.Please check path/content of the file")
                 pre_trig_config = get_config_dict(pre_cfg_str)
             else:
-                pre_trig_config = self.device.api.get_running_config_dict()
+                out = self.device.execute('show run', timeout=cfg_timeout, reply=dialog)
+                pre_trig_config = get_config_dict(out)
         with steps.start("Perform copy run start on {}".format(self.device.hostname)):
             execute_copy_run_to_start(self.device)
         if disrupt_flag:
@@ -418,6 +421,15 @@ class HA(HA_main):
                    'install all nxos bootflash:{}'.format(image_name), timeout=issu_timeout,
                    reply=dialog)
         else:
+            with steps.start("Performing ISSU impact only check on the device {}".format(self.device.hostname)) as step:
+                image_name = basename(upgrade_image)
+                impact_output = self.device.execute(
+                                "show install all impact nxos bootflash:{} non-disruptive".format(image_name), timeout=600)
+                if "Upgrade will be disruptive" in impact_output and not allow_disruptive:
+                    step.failed(
+                        "Upgrade will be disruptive and disruptive ISSU is not allowed")
+            #Allows previous install all instance to complete before proceeding
+            time.sleep(5)
             with steps.start("Performing non disruptive issu on the device {}".format(self.device.hostname)):
                 image_name = basename(upgrade_image)
                 self.device.execute(
@@ -460,6 +472,8 @@ class HA(HA_main):
                     step.passed(
                       "show install all time-stats detail unsupported on lxc mode and cp downtime is minimal")
                 else:
+                    #<show install all time-stats detail> requires a maximum of 60s to fully populate post ISSU
+                    time.sleep(60)
                     out = self.device.execute('show install all time-stats detail')
                     output_error = False
                     cp_downtime = None
@@ -507,9 +521,10 @@ class HA(HA_main):
                         "file not found. Please check path/content of the file")
                 post_trig_config = get_config_dict(post_cfg_str)
             else:
-                post_trig_config = self.device.api.get_running_config_dict()
+                out = self.device.execute('show run', timeout=cfg_timeout, reply=dialog)
+                post_trig_config = get_config_dict(out)
             output = compare_config_dicts(
-                pre_trig_config, post_trig_config, [r'(boot|version)'])
+                pre_trig_config, post_trig_config, [r'(boot|version)']+config_ver_exclude)
             if output:
                 step.failed(
                     "Inconsistencies in running config post trigger:{}".format(output))

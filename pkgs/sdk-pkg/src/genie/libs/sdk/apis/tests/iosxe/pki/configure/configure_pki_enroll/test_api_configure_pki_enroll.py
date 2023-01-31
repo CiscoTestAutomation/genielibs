@@ -30,6 +30,6 @@ class TestConfigurePkiEnroll(unittest.TestCase):
         )
 
     def test_configure_pki_enroll(self):
-        result = configure_pki_enroll(self.device, 'test', None)
+        result = configure_pki_enroll(self.device, 'test', 'abcd1234')
         expected_output = None
         self.assertEqual(result, expected_output)

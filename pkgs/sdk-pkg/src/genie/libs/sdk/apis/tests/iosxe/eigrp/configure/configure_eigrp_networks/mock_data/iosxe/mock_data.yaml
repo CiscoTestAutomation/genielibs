@@ -1,20 +1,21 @@
 configure:
   commands:
+    bfd all-interfaces: "bfd all-interfaces\r\n"
     end:
       new_state: execute
     line console 0:
       new_state: configure_line
-    network 98.1.1.1 0.255.255.255: "network 98.1.1.1 0.255.255.255\r\n"
-    network 99.0.0.0 0.255.255.255: "network 99.0.0.0 0.255.255.255\r\n"
+    network 100.100.0.0 255.255.0.0: "network 100.100.0.0 255.255.0.0\r\n"
     no logging console: ''
-    router eigrp 99: "router eigrp 99\r\n"
-  prompt: 9300x-A(config)#
+    router eigrp 10: "router eigrp 10\r\n"
+    router-id 1.1.1.1: "router-id 1.1.1.1\r\n"
+  prompt: mac-gen2(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: 9300x-A(config-line)#
+  prompt: mac-gen2(config-line)#
 connect:
   commands:
     ? ''
@@ -34,4 +35,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: 9300x-A#
+  prompt: mac-gen2#

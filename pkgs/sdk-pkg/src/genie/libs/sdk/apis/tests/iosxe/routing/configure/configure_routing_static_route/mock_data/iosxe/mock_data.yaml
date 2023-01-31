@@ -2,18 +2,18 @@ configure:
   commands:
     end:
       new_state: execute
-    ip route vrf VRF1 10.1.1.0 255.255.255.0 tunnel8: "ip route vrf VRF1 10.1.1.0\
-      \ 255.255.255.0 tunnel8\r\n"
+    ip route 7.7.7.0 255.255.255.0 dhcp 6: "ip route 7.7.7.0 255.255.255.0 dhcp 6\r\
+      \n"
     line console 0:
       new_state: configure_line
     no logging console: ''
-  prompt: R1_xe(config)#
+  prompt: Switch(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: R1_xe(config-line)#
+  prompt: Switch(config-line)#
 connect:
   commands:
     ? ''
@@ -33,4 +33,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: R1_xe#
+  prompt: Switch#

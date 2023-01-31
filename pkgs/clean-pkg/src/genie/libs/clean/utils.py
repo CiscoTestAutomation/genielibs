@@ -82,7 +82,7 @@ def verify_num_images_provided(image_list, expected_images=1):
 
 def _apply_configuration(device, configuration=None, configuration_from_file=None,
                          file=None, configure_replace=False, timeout=60,
-                         copy_directly_to_startup=False):
+                         copy_directly_to_startup=False, error_pattern=None):
     if configuration or configuration_from_file and not file:
         # Apply raw configuration using configure service
 
@@ -95,7 +95,10 @@ def _apply_configuration(device, configuration=None, configuration_from_file=Non
 
         log.info("Applying configuration on '{}'".format(device.name))
         try:
-            device.configure(configuration, timeout=timeout)
+            if error_pattern is None:
+                device.configure(configuration, timeout=timeout)
+            else:
+                device.configure(configuration, timeout=timeout, error_pattern=error_pattern)
         except Exception as e:
             if isinstance(e, StateMachineError):
                 # StateMachineError is expected as the hostname could change after

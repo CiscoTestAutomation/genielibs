@@ -38,7 +38,7 @@ def unconfigure_lldp(device):
             "Error: {error}".format(error=e)
             )
 
-def configure_lldp_interface(device, interface):
+def configure_lldp_interface(device, interface, transmit=True, receive=True):
     """ Configure LLDP on interface
 
         Args:
@@ -53,8 +53,10 @@ def configure_lldp_interface(device, interface):
     configs = []
     configs.append("lldp run")
     configs.append(f"interface {interface}")
-    configs.append("lldp transmit")
-    configs.append("lldp receive")
+    if transmit:
+        configs.append("lldp transmit")
+    if receive:
+        configs.append("lldp receive")
     try:
         device.configure(configs)
     except SubCommandFailure as e:
@@ -63,7 +65,7 @@ def configure_lldp_interface(device, interface):
             "Error: {error}".format(error=e)
             )
 
-def unconfigure_lldp_interface(device, interface):
+def unconfigure_lldp_interface(device, interface, transmit=True, receive=True):
     """ Unconfigure LLDP on interface
 
         Args:
@@ -78,8 +80,10 @@ def unconfigure_lldp_interface(device, interface):
     configs = []
     configs.append("no lldp run")
     configs.append(f"interface {interface}")
-    configs.append("no lldp transmit")
-    configs.append("no lldp receive")
+    if transmit:
+        configs.append("no lldp transmit")
+    if receive:
+        configs.append("no lldp receive")
     try:
         device.configure(configs)
     except SubCommandFailure as e:

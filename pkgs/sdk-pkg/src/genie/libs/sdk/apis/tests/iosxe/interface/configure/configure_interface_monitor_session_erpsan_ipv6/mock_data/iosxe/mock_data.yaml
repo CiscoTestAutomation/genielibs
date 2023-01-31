@@ -1,0 +1,42 @@
+configure:
+  commands:
+    destination: "destination\r\n"
+    end:
+      new_state: execute
+    erspan-id 1001: "erspan-id 1001\r\n"
+    exit: "exit\r\n"
+    ipv6 address 2004::2: "ipv6 address 2004::2\r\n"
+    line console 0:
+      new_state: configure_line
+    monitor session 2 type erspan-source: "monitor session 2 type erspan-source\r\n"
+    no logging console: ''
+    no shutdown: "no shutdown\r\n"
+    origin ipv6 address 2040::1: "origin ipv6 address 2040::1\r\n"
+    source interface Fif2/0/1 rx: "source interface Fif2/0/1 rx\r\n"
+  prompt: Intrepid_HA_DUT2(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: Intrepid_HA_DUT2(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: Intrepid_HA_DUT2#

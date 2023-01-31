@@ -1251,6 +1251,16 @@ raw_subscribe_dict = {
   }
 }
 
+format9 = {
+    'encoding': 'json_ietf',
+    'origin': 'rfc7951',
+    'prefix': True,
+    'sample_interval': 20,
+    'request_mode': 'STREAM',
+    'sub_mode': 'SAMPLE',
+    'updates_only': True
+}
+
 
 class TestGnmiTestRpc(unittest.TestCase):
 
@@ -1404,6 +1414,13 @@ class TestGnmiTestRpc(unittest.TestCase):
         self.assertEqual(
           json_format.MessageToDict(gnmi_msg), raw_subscribe_dict
         )
+
+    def test_updates_only(self):
+      """Verify that updates_only field is proccessed correctly."""
+      r3 = deepcopy(request3)
+      gmc = GnmiMessageConstructor('subscribe', r3, **format9)
+      x = json_format.MessageToDict(gmc.payload)
+      self.assertTrue(x['subscribe']['updatesOnly'])
 
 
 if __name__ == '__main__':

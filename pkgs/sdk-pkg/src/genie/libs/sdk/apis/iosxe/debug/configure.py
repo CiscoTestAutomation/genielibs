@@ -203,3 +203,24 @@ def debug_platform_memory_fed_backtrace(
         raise SubCommandFailure(
             "Could not configure debug platform software memory fed backtrace commands on {device}. Error:\n{error}".format(device=device, error=e)
         )
+
+def enable_debug_ilpower_event(device):
+    """ debug ilpower event
+        Args:
+            device (`obj`): Device object
+
+        Return:
+            None
+
+        Raise:
+            SubCommandFailure: Failed to enable the debug ilpower event
+    """
+
+    try:
+        device.execute(["debug ilpower event"])
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not execute cli debug ilpower event. Error:\n{error}". format(error=e))
+
+

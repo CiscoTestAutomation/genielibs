@@ -10,7 +10,7 @@ class TestConfigureHsrpInterface(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          Vishal_C9600_SP:
+          9300-1:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -19,10 +19,10 @@ class TestConfigureHsrpInterface(unittest.TestCase):
                 protocol: unknown
             os: iosxe
             platform: cat9k
-            type: c9600
+            type: C9300
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Vishal_C9600_SP']
+        self.device = self.testbed.devices['9300-1']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,6 @@ class TestConfigureHsrpInterface(unittest.TestCase):
         )
 
     def test_configure_hsrp_interface(self):
-        result = configure_hsrp_interface(self.device, 'vlan10', '10', '10.10.10.1', '110', '60')
+        result = configure_hsrp_interface(self.device, 'vlan10', 0, '10.1.0.3', None, '0', '1', '4')
         expected_output = None
         self.assertEqual(result, expected_output)

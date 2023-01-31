@@ -1,0 +1,49 @@
+configure:
+  commands:
+    add test1: "add test1\r\n"
+    enable: "retry 2\r\n"
+    end:
+      new_state: execute
+    exit: "poll-interval 1\r\n"
+    format schemaASCII: "snmp mib bulkstat transfer test2\r\n"
+    instance wild interface g1/1/1: "object-list name\r\n"
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    object-list name: "exit\r\n"
+    poll-interval 1: "snmp mib bulkstat schema name\r\n"
+    retain 2: "url primary 123@cisco.com\r\n"
+    retry 2: "transfer-interval 1\r\n"
+    schema name: "exit\r\n"
+    snmp mib bulkstat object-list name: "snmp mib bulkstat object-list name\r\n"
+    snmp mib bulkstat schema name: "\r\n"
+    snmp mib bulkstat transfer test2: "instance wild interface g1/1/1\r\n"
+    transfer-interval 1: "schema name\r\n"
+    url primary 123@cisco.com: "format schemaASCII\r\n"
+  prompt: n08HA(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: n08HA(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: n08HA#

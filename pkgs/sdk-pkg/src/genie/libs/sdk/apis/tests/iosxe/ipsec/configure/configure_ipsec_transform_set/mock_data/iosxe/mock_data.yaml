@@ -1,24 +1,20 @@
 configure:
   commands:
-    crypto ipsec transform-set IPSec_TRANSFORM esp-sha512-hmac esp-aes 256: "crypto\
-      \ ipsec transform-set IPSec_TRANSFORM esp-sha512-hmac e\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b$c transform-set IPSec_TRANSFORM esp-sha512-hmac es  \
-      \       \b\b\b\b\b\b\b\b\bp-aes 256\r\n"
+    crypto ipsec transform-set T1 esp-aes 192: "crypto ipsec transform-set T1 esp-aes\
+      \ 192\r\n"
     end:
       new_state: execute
-    esn: "esn\r\n"
     line console 0:
       new_state: configure_line
     mode tunnel: "mode tunnel\r\n"
     no logging console: ''
-  prompt: TLS_Mad2(config)#
+  prompt: Hub(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: TLS_Mad2(config-line)#
+  prompt: Hub(config-line)#
 connect:
   commands:
     ? ''
@@ -38,4 +34,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: TLS_Mad2#
+  prompt: Hub#

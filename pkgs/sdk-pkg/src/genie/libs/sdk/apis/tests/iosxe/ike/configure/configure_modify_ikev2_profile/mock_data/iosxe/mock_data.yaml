@@ -1,0 +1,41 @@
+configure:
+  commands:
+    crypto ikev2 profile IKE-PROF: "crypto ikev2 profile IKE-PROF\r\n"
+    end:
+      new_state: execute
+    identity local email efg@cisco.com: "   1. A local and a remote authentication\
+      \ method.\r\n"
+    keyring ppk HUB-KEY: "   2. A match identity or a match certificate or match any\
+      \ statement.\r\n"
+    lifetime 240: "match identity remote email abc@cisco.com\r\n"
+    line console 0:
+      new_state: configure_line
+    match identity remote email abc@cisco.com: "IKEv2 profile MUST have:\r\n"
+    no logging console: ''
+  prompt: Hub(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: Hub(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: Hub#

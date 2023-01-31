@@ -13,8 +13,8 @@ log = logging.getLogger(__name__)
 def configure_ikev2_keyring(device,
                             keyring_name,
                             peer_name,
-                            peer_ip,
-                            peer_mask,
+                            peer_ip=None,
+                            peer_mask=None,
                             key=None,
                             required=False,
                             ppk_id=None,
@@ -25,8 +25,8 @@ def configure_ikev2_keyring(device,
             device (`obj`): Device object
             keyring_name ('str'): Name for the keyring
             peer_name ('str'): peer name
-            peer_ip ('str'): peer ip addr
-            peer_mask ('str'): peer nw mask
+            peer_ip ('str',optional): peer ip addr
+            peer_mask ('str',optional): peer nw mask
             key ('str',optional): preshared key
             required ('boolean',optional): Required option for PPK
             ppk_id ('str',optional): ppk id for manual ppk
@@ -44,20 +44,21 @@ def configure_ikev2_keyring(device,
     configs = []
     configs.append("crypto ikev2 keyring {keyring_name}".format(keyring_name=keyring_name))
     configs.append("peer {peer_name}".format(peer_name=peer_name))
-    configs.append("address {peer_ip} {peer_mask}".format(peer_ip=peer_ip,peer_mask=peer_mask))
+    
+    if peer_ip is not None and peer_mask is not None:    
+        configs.append("address {peer_ip} {peer_mask}".format(peer_ip=peer_ip,peer_mask=peer_mask))
     if key is not None:
         configs.append("pre-shared-key {key}".format(key=key))
     if ppk_key is not None:
+        cmd = f'ppk manual id {ppk_id} key {ppk_key}'
         if required:
-            configs.append("ppk manual id {ppk_id} key {ppk_key} required".format(ppk_key=ppk_key,ppk_id=ppk_id))
-        else:
-            configs.append("ppk manual id {ppk_id} key {ppk_key}".format(ppk_key=ppk_key,ppk_id=ppk_id))
+            cmd += ' required'
+        configs.append(cmd)                
     if sks_client_config_block_name is not None:
+        cmd = f"ppk dynamic {sks_client_config_block_name}"
         if required:
-            configs.append("ppk dynamic {sks_client_config_block_name} required".format(sks_client_config_block_name=sks_client_config_block_name))
-        else:
-            configs.append("ppk dynamic {sks_client_config_block_name}".format(sks_client_config_block_name=sks_client_config_block_name))
-
+            cmd += ' required'
+        configs.append(cmd)                
     try:
         device.configure(configs)
     except SubCommandFailure as e:
@@ -1162,7 +1163,7 @@ def unconfigure_ikev2_keyring(device,keyring_name):
                 error=e,
             )
         )
-
+        
 def unconfigure_ikev2_profile(device,profile_name):
     """ unconfigure IKEV2 profile
         Args:
@@ -1232,3 +1233,175 @@ def clear_crypto_session(device,
             "Could not clear crypto session on {device}. Error:\n{error}"
                 .format(device=device, error=e)
         )
+
+def unconfigure_ppk_on_keyring(device,
+                            keyring_name,
+                            peer_name,
+                            peer_ip=None,
+                            peer_mask=None,
+                            key=None,
+                            required=True,
+                            ppk_id=None,
+                            ppk_key=None,
+                            sks_client_config_block_name=None):
+    """ unconfigures IKEV2 keyring or Preshared Key (PSK)
+        Args:
+            device (`obj`): Device object
+            keyring_name ('str'): Name for the keyring
+            peer_name ('str'): peer name
+            peer_ip ('str',optional): peer ip addr
+            peer_mask ('str',optional): peer nw mask
+            key ('str',optional): preshared key
+            required ('boolean',optional): Required option for PPK
+            ppk_id ('str',optional): ppk id for manual ppk
+            ppk_key ('str',optional): Post-quantum preshared key
+            sks_client_config_block_name ('str',optional): SKS client config block name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+
+    log.info(
+        "unconfiguring ppk Key"
+    )
+
+    configs = []
+    configs.append("crypto ikev2 keyring {keyring_name}".format(keyring_name=keyring_name))
+    configs.append("peer {peer_name}".format(peer_name=peer_name))
+    if peer_ip is not None and peer_mask is not None:
+        configs.append("no address {peer_ip} {peer_mask}".format(peer_ip=peer_ip,peer_mask=peer_mask))
+    if key is not None:
+        configs.append("no pre-shared-key {key}".format(key=key))
+    if ppk_key is not None:
+        cmd = f'no ppk manual id {ppk_id} key {ppk_key}'
+        if required:
+            cmd += ' required'
+        configs.append(cmd)
+    if sks_client_config_block_name is not None:
+        cmd = f"no ppk dynamic {sks_client_config_block_name}"
+        if required:
+            cmd += ' required'
+        configs.append(cmd)
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to  unconfigure ikev2 keyring "
+            "on device {dev}. Error:\n{error}".format(
+                dev=device,
+                error=e,
+            )
+        )
+
+def configure_modify_ikev2_profile(device,
+                            profile_name,
+                            remote_addr = None,
+                            local_add = None,
+                            remote_auth = None,
+                            local_auth = None,
+                            keyring_type = None,
+                            keyring_name = None,
+                            lifetime = None):
+
+    """ Configures IKEV2 keyring or Preshared Key (PSK)
+        Args:
+            device (`obj`): Device object
+            profile_name ('str'): ikev2 profile name
+            remote_addr ('str'): peer/remote ip address
+            remote_auth ('str'): remote authentication method
+            local_auth ('str'): local authentication method
+            keyring ('str'): ikev2 keyring name
+            dpd_hello_time ('int'): DPD R-U-THERE interval
+            dpd_retry_time ('int'): DPD Retry Interval
+            dpd_query ('str'): DPD queires on-demand or periodic
+            lifetime ('int') Optional : configuring session lifetime
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    log.info(
+        "Configuring IKEV2 Profile"
+    )
+
+    configs = [f"crypto ikev2 profile {profile_name}"]    
+    configs.append(f"crypto ikev2 profile {profile_name}")
+    if remote_addr is not None:
+        configs.append(f"match identity remote {remote_addr}")
+    if local_add is not None:
+        configs.append(f"identity local {local_add}")
+    if remote_auth is not None:
+        configs.append(f"authentication remote {remote_auth}")
+    if local_auth is not None:
+        configs.append(f"authentication local {local_auth}")
+    if keyring_type in ('ppk', 'local'):
+        configs.append(f"keyring {keyring_type} {keyring_name}")        
+    if lifetime is not None:
+        configs.append(f"lifetime {lifetime}")
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure ikev2 params under profile "
+            "on device {dev}. Error:\n{error}".format(
+                dev=device,
+                error=e,
+            )
+        )
+
+def unconfigure_modify_ikev2_profile(device,
+                            profile_name,
+                            remote_addr = None,
+                            local_add = None,
+                            remote_auth = None,
+                            local_auth = None,
+                            keyring_type = None,
+                            keyring_name = None,
+                            lifetime = None):
+    """ Unconfigures IKEV2 keyring or Preshared Key (PSK)
+        Args:
+            device (`obj`): Device object
+            profile_name ('str'): ikev2 profile name
+            remote_addr ('str'): peer/remote ip address
+            remote_auth ('str'): remote authentication method
+            local_auth ('str'): local authentication method
+            keyring ('str'): ikev2 keyring name
+            lifetime ('int') : configuring session lifetime
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        "unconfiguring IKEV2 Profile parameters"
+    )
+
+    configs = [f"crypto ikev2 profile {profile_name}"]    
+    if remote_addr is not None:
+        configs.append(f"no match identity remote {remote_addr}")
+    if local_add is not None:
+        configs.append(f"no identity local {local_add}")
+    if remote_auth is not None:
+        configs.append(f"no authentication remote {remote_auth}")
+    if local_auth is not None:
+        configs.append(f"no authentication local {local_auth}")
+    if keyring_type in ('ppk', 'local'):
+        configs.append(f"no keyring {keyring_type} {keyring_name}")        
+    if lifetime is not None:
+        configs.append(f"no lifetime {lifetime}")
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfigure ikev2 params under profile "
+            "on device {dev}. Error:\n{error}".format(
+                dev=device,
+                error=e,
+            )
+        )
+

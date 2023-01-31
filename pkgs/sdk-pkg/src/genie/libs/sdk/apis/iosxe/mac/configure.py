@@ -133,3 +133,233 @@ def configure_mac_address_table_aging(device, aging_time):
         raise SubCommandFailure(
             "Could not configure aging time"
             ) 
+
+def configure_mac_global_address_table_static(device, mac, vlan, interface=None):
+    """Configure address-table static under global mac on this device
+        Args:
+            device ('obj'): Device object
+            mac ('str'): 48 bit mac address
+            vlan ('int'): vlan id
+            interface ('str',optional): interface
+        Returns:
+                None
+        Raises:
+                SubCommandFailure
+    """
+
+    if interface:
+        cmd = f'mac address-table static {mac} vlan {vlan} interface {interface}'
+    else:
+        cmd = f'mac address-table static {mac} vlan {vlan} drop'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure address-table static under global mac on this device. Error:\n{e}")
+
+def unconfigure_mac_global_address_table_static(device, mac, vlan, interface=None):
+    """Unconfigure address-table static under global mac on this device
+        Args:
+            device ('obj'): Device object
+            mac ('str'): 48 bit mac address
+            vlan ('int'): vlan id
+            interface ('str',optional): interface
+        Returns:
+                None
+        Raises:
+                SubCommandFailure
+    """
+
+    if interface:
+        cmd = f'no mac address-table static {mac} vlan {vlan} interface {interface}'
+    else:
+        cmd = f'no mac address-table static {mac} vlan {vlan} drop'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure address-table static under global mac on this device. Error:\n{e}")
+
+def configure_mac_global_address_table_notification_change(device, change_option="", size=None, interval=None):
+    """Configure address-table notification change under global mac on this device
+        Args:
+            device ('obj'): Device object
+            change_option ('str',optional): change option history-size/interval
+            size ('int',optional): Number of MAC notifications to be stored
+            interval ('int',optional): Interval between the MAC notifications
+        Returns:
+                None
+        Raises:
+                SubCommandFailure
+    """
+
+    if change_option.lower()== "history-size":
+        cmd = f'mac address-table notification change history-size {size}'
+    elif change_option.lower()== "interval":
+        cmd = f'mac address-table notification change interval {interval}'
+    else:
+        cmd = 'mac address-table notification change'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure address-table notification change under global mac on this device. Error:\n{e}")
+
+def unconfigure_mac_global_address_table_notification_change(device, change_option="", size=None, interval=None):
+    """Unconfigure address-table notification change under global mac on this device
+        Args:
+            device ('obj'): Device object
+            change_option ('str',optional): change option history-size/interval
+            size ('int',optional): Number of MAC notifications to be stored
+            interval ('int',optional): Interval between the MAC notifications
+        Returns:
+                None
+        Raises:
+                SubCommandFailure
+    """
+
+    if change_option.lower()== "history-size":
+        cmd = f'no mac address-table notification change history-size {size}'
+    elif change_option.lower()== "interval":
+        cmd = f'no mac address-table notification change interval {interval}'
+    else:
+        cmd = 'no mac address-table notification change'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure address-table notification change under global mac on this device. Error:\n{e}")
+
+def configure_mac_address_table_notification_change(device,change_option="",size=None,interval=None):
+    """Configure mac-address-table notification change on this device
+        Args:
+            device ('obj'): Device object
+            change_option ('str',optional): change option history-size/interval
+            size ('int',optional): Number of MAC notifications to be stored
+            interval ('int',optional): Interval between the MAC notifications
+        Returns:
+                None
+        Raises:
+                SubCommandFailure
+    """
+
+    if change_option.lower()== "history-size":
+        cmd = f'mac-address-table notification change history-size {size}'
+    elif change_option.lower()== "interval":
+        cmd = f'mac-address-table notification change interval {interval}'
+    else:
+        cmd = 'mac-address-table notification change'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure mac-address-table notification change on this device. Error:\n{e}")
+
+def unconfigure_mac_address_table_notification_change(device,change_option="",size=None,interval=None):
+    """Unconfigure mac-address-table notification change on this device
+        Args:
+            device ('obj'): Device object
+            change_option ('str',optional): change option history-size/interval
+            size ('int',optional): Number of MAC notifications to be stored
+            interval ('int',optional): Interval between the MAC notifications
+        Returns:
+                None
+        Raises:
+                SubCommandFailure
+    """
+
+    if change_option.lower()== "history-size":
+        cmd = f'no mac-address-table notification change history-size {size}'
+    elif change_option.lower()== "interval":
+        cmd = f'no mac-address-table notification change interval {interval}'
+    else:
+        cmd = 'no mac-address-table notification change'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure mac-address-table notification change on this device. Error:\n{e}")
+
+def configure_default_mac_global_address_table_notification_change(device,change_option="",size=None,interval=None):
+    """Configure default address-table notification change under global mac on this device
+        Args:
+            device ('obj'): Device object
+            change_option ('str',optional): change option history-size/interval
+            size ('int',optional): Number of MAC notifications to be stored
+            interval ('int',optional): Interval between the MAC notifications
+        Returns:
+                None
+        Raises:
+                SubCommandFailure
+    """
+    if change_option.lower()== "history-size":
+        cmd = f'default mac address-table notification change history-size {size}'
+    elif change_option.lower()== "interval":
+        cmd = f'default mac address-table notification change interval {interval}'
+    else:
+        cmd = 'default mac address-table notification change'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure default address-table notification change under global mac on this device. Error:\n{e}")
+
+def configure_mac_address_table_learning(device, vlan_id):
+    """ Config mac-learning on device
+        Args:
+            device (`obj`): device object
+            vlan_id (`int`): vlan id 
+        Return:
+            None
+        Raises:
+            SubCommandFailure 
+    """
+    try:
+        device.configure(f'mac address-table learning vlan {vlan_id}')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure the mac address-table learning vlan. Error:\n{error}".format(error=e)
+        )
+
+def unconfigure_mac_address_table_learning(device, vlan_id):
+    """ Unconfig mac-learning on device
+        Args:
+            device (`obj`): device object
+            vlan_id (`int`): vlan id 
+        Return:
+            None
+        Raises:
+            SubCommandFailure 
+    """
+    try:
+        device.configure(f'no mac address-table learning vlan {vlan_id}')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure the mac address-table learning vlan. Error:\n{error}".format(error=e)
+        )
+
+def configure_mac_address_table_aging_default(device, aging, vlan_id=1):
+    """ Config mac-aging time default on device
+        Args:
+            device (`obj`): device object
+            aging (`str`,`int`): mac aging-time
+            ex:)
+                <0-0>         Enter 0 to disable aging
+                <10-1000000>  Enter aging-time
+                routed-mac    Set RM Aging interval
+                vlan          VLAN Keyword
+                <cr>          <cr>
+            vlan_id (`int`): Vlan number for aging-time option vlan (keeping default as vlan 1)
+
+        Return:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring device
+    """
+    if aging == "routed-mac":
+        cmd = 'default mac address-table aging-time routed-mac'
+    elif aging == "vlan":
+        cmd = f'default mac address-table aging-time vlan {vlan_id}'
+    else:
+        cmd = f'default mac address-table aging-time {aging}'
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure default mac address-table aging . Error:\n{error}".format(error=e)
+            ) 
+

@@ -107,7 +107,7 @@ class TestFileServer(unittest.TestCase):
     def test_http_multipart_single(self):
         with tempfile.TemporaryDirectory() as td:
             with FileServer(protocol='http', subnet='127.0.0.1/32', path=td) as fs:
-                url = 'http://{u}:{p}@127.0.0.1:{port}/test.txt'.format(
+                url = 'http://{u}:{p}@localhost:{port}/test.txt'.format(
                     port = fs['port'],
                     u = fs['credentials']['http']['username'],
                     p = to_plaintext(fs['credentials']['http']['password'])
@@ -123,7 +123,7 @@ class TestFileServer(unittest.TestCase):
     def test_http_multipart_multi(self):
         with tempfile.TemporaryDirectory() as td:
             with FileServer(protocol='http', subnet='127.0.0.1/32', path=td) as fs:
-                url = 'http://{u}:{p}@127.0.0.1:{port}/test.txt'.format(
+                url = 'http://{u}:{p}@localhost:{port}/test.txt'.format(
                     port = fs['port'],
                     u = fs['credentials']['http']['username'],
                     p = to_plaintext(fs['credentials']['http']['password'])

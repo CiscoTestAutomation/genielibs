@@ -254,3 +254,40 @@ def configure_lineconsole_exectimeout(device,console_num,timeout):
             "Could not configure line console exec timeout on {device}. Error:\n{error}"
                 .format(device=device, error=e))
 
+
+def configure_logging_monitor_debugging(device):
+    """ logging monitor debugging
+        Args:
+            device (`obj`): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    try:
+        device.configure('logging monitor debugging')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure logging monitor debugging on {device}. Error:\n{error}".format(device=device, error=e))
+
+def configure_logging_buffered_debugging(device):
+    """ Confgiure logging buffered debugging
+        Args:
+            device (`obj`): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    log.debug("Configure logging buffered debugging on {device}".format(device=device))
+    
+    try:
+        device.configure('logging buffered debugging')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure logging buffered debugging on {device}. Error:\n{error}"
+                .format(device=device, error=e))
+
+

@@ -900,6 +900,59 @@ def show_switch_redirect(device, storage_type, file_name):
 
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to redirect to {file_name} on the device {device.name}. Error:\n{e}")
+
+def license_smart_sync_all(device):
+    """ license smart sync all 
+        
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+            
+        Raises: 
+            SubCommandFailure
+    """
+    try:
+        device.execute("license smart sync all")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to execute license smart sync all  on the device {device.name}. Error:\n{e}")
+
+def terminal_no_monitor(device):
+    """ terminal no monitor
+    Args:
+        device (`obj`): Device object
+
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    cmd = f"terminal no monitor"
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not run terminal no monitor. Error:\n{error}".format(error=e)
+        )
+
+
+def request_platform_software_cflow_copy(device):
+    """ request platform software cflow copy
+    Args:
+        device (`obj`): Device object
+
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    cmd = f"request platform software cflow copy"
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not request platform software cflow copy. Error:\n{error}".format(error=e)
+        )
         
 def execute_install_three_step_issu_package(device, image_dir, image, save_system_config=True,
                             install_timeout=660, reconnect_max_time=200,
@@ -978,4 +1031,52 @@ def execute_install_three_step_issu_package(device, image_dir, image, save_syste
     result = 'failed' if match else 'successful'
     log.info(f"install three shot operation {result} on {device.name}")
     return output if not match else match
+
+def execute_stack_power(device, switch_number, port_number, mode ):
+    """ Enable stack-power stack
+        Example : stack-power switch 1 port 1 enable
+        
+        Args:
+            device ('obj'): device to use
+			switch_number('int') : Switch number range <1-16>
+            port_number	('int') : port number range <1-2>	
+            mode ('str') : enable/disable option	
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f"enable stack-power stack on {device.name}")
+    config = f'stack-power switch {switch_number} port {port_number} {mode}'
+    try:
+        device.execute(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to enable stack-power on device {device.name}. Error:\n{e}")
+
+def execute_diagnostic_start_switch_test(device, switch_number, test_id=None, test_name=None):
+    """ execute diagnostic start switch 1 test
+        Args:
+            device ('obj'): Device object
+            test_id ('str'): Test ID list (e.g. 1,3-6) or Test Name or minimal  or complete 
+              Interface port number WORD    Port number list (e.g. 2,4-7)
+            switch_number ('int'): Switch number on which diagnostic has to be performed
+            test_name ('str'): Word , test name 
+            
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f"diagnostic start switch {switch_number} test "
     
+    if test_name in ("non-disruptive", "per-port", "basic"):
+        cmd += f"{test_name} port {test_id} "
+    else:
+        cmd += f"{test_id}"
+    try:
+       device.execute(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(
+            f"Could not execute diagnostic start switch {switch_number} test {test_name} on device. Error:\n{e}")

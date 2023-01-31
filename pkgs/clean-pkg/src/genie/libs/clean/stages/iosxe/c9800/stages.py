@@ -15,6 +15,9 @@ log = logging.getLogger(__name__)
 # MetaParser
 from genie.metaparser.util.schemaengine import Optional
 
+# Errors
+from genie.metaparser.util.exceptions import SchemaMissingKeyError, SchemaUnsupportedKeyError
+
 
 class VerifyApMode(BaseStage):
     """ This stage verifies the mode of a given access point.
@@ -281,7 +284,7 @@ class ConfigureApTxPower(BaseStage):
         'verify_ap_tx_power_configure'
     ]
 
-    def configure_ap_tx_power(self, device, steps, access_points, tx_power=TX_POWER, assignment_mode=ASSIGNMENT_MODE):
+    def configure_ap_tx_power(self, device, steps, access_points, tx_power=TX_POWER):
 
         for ap_name in access_points:
 
@@ -307,3 +310,71 @@ class ConfigureApTxPower(BaseStage):
                         step.failed("TX power {} is not configured".format(tx_power))
                 else:
                     step.failed("Given assignment mode " + assignment_mode + " is not configured")
+
+
+class VerifyHaState(BaseStage):
+    """ This stage verifies the if HA pair has formed successfully
+
+        Stage Schema
+        ------------
+        verify_ha_state:
+
+        Examples:
+            verify_ha_state:
+        """
+
+    # =================
+    # Argument Defaults
+    # =================
+    TIMEOUT = 900
+    RETRY_INTERVAL = 30
+
+    # ============
+    # Stage Schema
+    # ============
+    schema = {
+            Optional('timeout'): int,
+    }
+
+    # ==============================
+    # Execution order of Stage steps
+    # ==============================
+    exec_order = [
+        'verify_show_redundancy_states',
+        'verify_show_chassis'
+    ]
+
+    def verify_show_redundancy_states(self, device, steps, timeout=TIMEOUT, interval=RETRY_INTERVAL):
+        with steps.start("Checking the HA pairing in show redundancy states for {}".format(device)) as step:
+            retry_timeout = Timeout(timeout, interval)
+            while retry_timeout.iterate():
+                # Verify show redundancy states for HA pairing
+                try:
+                    show_redundancy = device.parse("show redundancy states")
+                    if show_redundancy.get("peer_state") and "STANDBY HOT" in show_redundancy.get("peer_state"):
+                        step.passed('Device is in STANDBY HOT state')
+                    elif show_redundancy.get("peer_state") and "STANDBY HOT" not in show_redundancy.get("peer_state"):
+                        log.warning('Device is not in STANDBY HOT state yet')
+                        retry_timeout.sleep()
+                    elif show_redundancy.get("peer_state") is None:
+                        log.warning('Standby Device has not yet registered')
+                        retry_timeout.sleep()
+                except (SchemaUnsupportedKeyError, SubCommandFailure, SchemaMissingKeyError) as e:
+                    step.failed("Failed to parse show redundancy states", from_exception=e)
+            step.failed("Device never formed the HA Instance after timeout of {}. Hence failed".format(timeout))
+
+    def verify_show_chassis(self, device, steps, timeout=TIMEOUT, interval=RETRY_INTERVAL):
+        with steps.start("Checking the HA pairing in show chassis for {}".format(device)) as step:
+            retry_timeout = Timeout(timeout, interval)
+            while retry_timeout.iterate():
+                show_chassis = device.parse("show chassis")
+                for chassis_details in show_chassis.get("chassis_index").values():
+                    if chassis_details.get("role") == "Standby" and chassis_details.get("current_state") == "Ready":
+                        step.passed("Device has formed HA and Standby chassis is ready")
+                    elif chassis_details.get("role") == "Standby" and chassis_details.get(
+                            "current_state") != "Ready":
+                        log.warning("Device has formed HA but Standby chassis is not ready. Hence waiting...")
+                        retry_timeout.sleep()
+                    elif chassis_details.get("role") == "Active":
+                        continue
+            step.failed("Device never formed the HA Instance after timeout of {}. Hence failed".format(timeout))

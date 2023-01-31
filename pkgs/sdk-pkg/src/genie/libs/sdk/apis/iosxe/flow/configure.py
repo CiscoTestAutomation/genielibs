@@ -832,4 +832,185 @@ def stop_monitor_capture(device, capture_name):
         device.execute(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'monitor capture {capture_name} match stop. Error:\n{e}')
-                    
+
+def configure_monitor_capture_without_match(device, capture_name, direction, interface):
+    """ Configure Monitor Capture on Device
+        Args:
+            device (`obj`): Device object
+            capture_name (`str`): Monitor capture name
+            direction ('str'): Direction of monitor (input/output/both)
+            interface('str'): Interface
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed to Configure Monitor Capture
+    """
+    cmd = "monitor capture {capture_name} interface {interface} {direction}".format(
+            capture_name=capture_name, interface=interface, direction=direction)
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure monitor capture {capture_name} on interface {interface} Error:\n{error}".format(
+                capture_name=capture_name, interface=interface, error=e,
+            )
+        )
+
+def configure_monitor_capture_buffer_size(device, capture_name, size):
+    """ Configure Monitor Capture on Device
+        Args:
+            device (`obj`): Device object
+            capture_name (`str`): Monitor capture name
+            size ('str'): butffer size number
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed to Configure Monitor Capture Buffer Size
+    """
+    cmd = "monitor capture {capture_name} buffer size {size}".format(
+            capture_name=capture_name, size=size)
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure monitor capture {capture_name} buffer size {size} Error:\n{error}".format(
+                capture_name=capture_name, size=size, error=e,
+            )
+        )
+
+def configure_monitor_capture_limit_packet_len(device, capture_name, length, pps):
+    """ Configure Monitor Capture on Device
+        Args:
+            device (`obj`): Device object
+            capture_name (`str`): Monitor capture name
+            length ('str'): Limit packet-len
+            pps ('str'): pps value
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed to Configure Monitor Capture Buffer Size
+    """
+    cmd = "monitor capture {capture_name} limit packet-len {length} pps {pps}".format(
+            capture_name=capture_name, length=length, pps=pps)
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure monitor capture {capture_name} limit packet-len {length} Error:\n{error}".format(
+                capture_name=capture_name, length=length, error=e,
+            )
+        )
+
+def unconfigure_monitor_capture_without_match(device, capture_name, direction, interface):
+    """ Unconfigure Monitor Capture on Device
+        Args:
+            device (`obj`): Device object
+            capture_name (`str`): Monitor capture name
+            direction ('str'): Direction of monitor (input/output/both)
+            interface('str'): Interface
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed To Unconfigure Monitor Capture
+    """
+    cmd = "no monitor capture {capture_name} interface {interface} {direction}".format(
+            capture_name=capture_name, interface=interface, direction=direction)
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not Unconfigure monitor capture {capture_name} on interface {interface} Error:\n{error}".format(
+                capture_name=capture_name, interface=interface, error=e,
+            )
+        )
+
+def unconfigure_monitor_capture_buffer_size(device, capture_name):
+    """ Unconfigure Monitor Capture on Device
+        Args:
+            device (`obj`): Device object
+            capture_name (`str`): Monitor capture name
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed to Unconfigure Monitor Capture Buffer Size
+    """
+    cmd = "no monitor capture {capture_name} buffer size".format(
+            capture_name=capture_name)
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not Unconfigure monitor capture {capture_name} buffer size Error:\n{error}".format(
+                capture_name=capture_name, error=e,
+            )
+        )
+
+def unconfigure_monitor_capture_limit_packet_len(device, capture_name):
+    """ Unconfigure Monitor Capture on Device
+        Args:
+            device (`obj`): Device object
+            capture_name (`str`): Monitor capture name
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed to Unconfigure Monitor Capture Buffer Size
+    """
+    cmd = "no monitor capture {capture_name} limit packet-len".format(
+            capture_name=capture_name)
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not Unconfigure monitor capture {capture_name} limit packet-len Error:\n{error}".format(
+                capture_name=capture_name, error=e,
+            )
+        )
+
+def configure_monitor_capture_match(
+    device, 
+    capture_name, 
+    type,
+    host=None,
+    src_ip=None,
+    dst_ip=None):
+    """ Configure Monitor Capture on Device
+        Args:
+            device (`obj`): Device object
+            capture_name (`str`): Monitor capture name
+            type ('str'): Address type (ipv4/ipv6)
+            src_ip ('str', optional): source start ip, default value is None
+            dst_ip ('str', optional): destination start ip, default value is None
+            host ('str', optional): A single source/destination host, default value is None
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed to Configure Monitor Capture
+    """
+    if host is None:
+        cmd = "monitor capture {capture_name} match {type} any any".format(
+            capture_name=capture_name, 
+            type=type)
+    elif host is not None and src_ip is not None and dst_ip is None:
+        cmd = "monitor capture {capture_name} match {type} host {src_ip} any".format(
+            capture_name=capture_name, 
+            type=type, 
+            src_ip=src_ip)
+    elif host is not None and src_ip is None and dst_ip is not None:
+        cmd = "monitor capture {capture_name} match {type} any host {dst_ip}".format(
+            capture_name=capture_name, 
+            type=type, 
+            dst_ip=dst_ip) 
+    elif host and src_ip and dst_ip is not None:
+        cmd = "monitor capture {capture_name} match {type} host {src_ip} host {dst_ip}".format(
+            capture_name=capture_name, 
+            type=type, 
+            src_ip=src_ip,
+            dst_ip=dst_ip)                                 
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure monitor capture {capture_name} Error:\n{error}".format(
+                capture_name=capture_name, error=e,
+            )
+        )

@@ -1606,6 +1606,9 @@ apply_configuration:
     copy_directly_to_startup (bool, optional): If 'True' copy the provided
         configuration directly to the startup config. Defaults to False.
 
+    error_pattern (list, optional): if error_pattern list is given,
+        it will be passed to device.configure() to use the error_pattern
+
 Example
 -------
 apply_configuration:
@@ -1635,6 +1638,7 @@ apply_configuration:
     CONFIGURE_REPLACE = False
     SKIP_COPY_RUN_START = False
     COPY_DIRECTLY_TO_STARTUP = False
+    ERROR_PATTERN = None
 
     # ============
     # Stage Schema
@@ -1651,6 +1655,7 @@ apply_configuration:
         Optional('configure_replace'): bool,
         Optional('skip_copy_run_start'): bool,
         Optional('copy_directly_to_startup'): bool,
+        Optional('error_pattern'): list,
     }
 
     # ==============================
@@ -1671,7 +1676,8 @@ apply_configuration:
                             check_interval=CHECK_INTERVAL,
                             configure_replace=CONFIGURE_REPLACE,
                             skip_copy_run_start=SKIP_COPY_RUN_START,
-                            copy_directly_to_startup=COPY_DIRECTLY_TO_STARTUP):
+                            copy_directly_to_startup=COPY_DIRECTLY_TO_STARTUP,
+                            error_pattern=ERROR_PATTERN):
         log.info("Section steps:\n1- Copy/Apply configuration to/on the device"
                  "\n2- Copy running-config to startup-config"
                  "\n3- Sleep to stabilize configuration on the device")
@@ -1687,7 +1693,8 @@ apply_configuration:
                     file=file,
                     configure_replace=configure_replace,
                     timeout=config_timeout,
-                    copy_directly_to_startup=copy_directly_to_startup)
+                    copy_directly_to_startup=copy_directly_to_startup,
+                    error_pattern=error_pattern)
             except Exception as e:
                 step.failed("Error while applying configuration to device "
                             "{}\n{}".format(device.name, str(e)))

@@ -3,6 +3,7 @@
 # Python
 import logging
 import re
+from unicon.eal.dialogs import Dialog, Statement
 
 # Unicon
 from unicon.core.errors import SubCommandFailure
@@ -654,4 +655,71 @@ def configure_replication_type_on_evi(device, evi, srvinst, replication_type):
         raise SubCommandFailure(
             f"configure replication-type {replication_type} on evi {evi}. Error:\n{e}" 
         )
-        
+
+
+def configure_nve_interface_group_based_policy(device, nve_num):
+    """ Configure group-based-policy for nve interface
+        Args:
+            device (`obj`): Device object
+            nve_num (`int`): nve interface number
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    configs = []
+    configs.append("interface nve {nve_num}".format(nve_num=nve_num))
+    configs.append("group-based-policy")
+    
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure nve interface on device {dev}. Error:\n{error}".format(
+                dev=device.name,
+                error=e,))
+            
+def unconfigure_nve_interface_group_based_policy(device, nve_num):
+    """ Un-configure group-based-policy for nve interface
+        Args:
+            device (`obj`): Device object
+            nve_num (`int`): nve interface number
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    configs = []
+    configs.append("interface nve {nve_num}".format(nve_num=nve_num))
+    configs.append("no group-based-policy")
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfigure nve interface on device {dev}. Error:\n{error}".format(
+                dev=device.name,
+                error=e,))
+
+
+def clear_bgp_l2vpn_evpn(device):
+    """ clear bgp l2vpn evpn
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info("clear bgp l2vpn evpn on {device}".format(device=device))
+
+    dialog = Dialog([Statement(pattern=r'\[confirm\].*', action='sendline(\r)',loop_continue=True,continue_timer=False)])
+
+    try:
+        device.execute("clear bgp l2vpn evpn *", reply=dialog)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not clear bgp l2vpn evpn on {device}. Error:\n{error}".format(device=device, error=e)
+        )
+

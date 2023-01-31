@@ -5,7 +5,7 @@ configure:
       new_state: execute
     interface Te1/0/10: "interface Te1/0/10\r\n"
     ip address 50.1.1.2 255.255.0.0: "ip address 50.1.1.2 255.255.0.0\r\n"
-    ip unreachables: "% 50.1.0.0 overlaps with TenGigabitEthernet1/0/12\r\n"
+    ip unreachables: "ip unreachables\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''

@@ -193,3 +193,53 @@ def unconfigure_interface_pim(device,interface,pim_mode):
                 error=e,
             )
         )
+
+def configure_pim_ssm_default(device):
+
+    """ Configure PIM SSM Default
+    Example : ip pim ssm default
+
+        Args:
+            device ('obj'): Device object
+           
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    configs = f"ip pim ssm default"
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure IP pim ssm default device {dev}. Error:\n{error}".format(
+                dev=device.name,
+                error=e,
+            )
+        )
+def unconfigure_pim_ssm_default(device):
+
+    """ Unconfigure PIM SSM Default
+    Example : no ip pim ssm default
+
+        Args:
+            device ('obj'): Device object
+           
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    configs = f"no ip pim ssm default"
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfigure IP pim ssm default device {dev}. Error:\n{error}".format(
+                dev=device.name,
+                error=e,
+            )
+        )
+        

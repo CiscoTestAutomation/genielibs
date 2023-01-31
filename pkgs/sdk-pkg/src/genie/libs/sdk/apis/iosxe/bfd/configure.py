@@ -228,3 +228,68 @@ def unconfigure_bfd_neighbor_on_interface(
                 interface=interface
             )
         )
+
+def unconfigure_bfd_value_on_interface(device, interface, value):
+    """ Unconfigures bfd on interface
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface to configure
+            bfd ('str'): bfd value to unconfigure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring bfd on interface
+    """
+    log.info(
+        "Unconfiguring bfd on "
+        "interface {}".format(interface)
+    )
+    config = [
+                "interface {}".format(interface),
+                "no bfd {}".format(value)
+            ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure bfd value on interface {interface}. Error:\n{e}"
+        )
+
+def enable_bfd_on_isis_ipv6_address(device, interface):
+    """ Enabled bfd on isis ipv6 address on interface
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface to configure under
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring bfd on isis ipv6 address
+    """
+    log.info("Enabling bfd on isis ipv6 address")
+    cmd = ["interface {}".format(interface), "isis ipv6 bfd"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+             f"Could not enable bfd on isis ipv6 address on interface {interface}. Error:\n{e}"
+        )
+
+def disable_bfd_on_isis_ipv6_address(device, interface):
+    """ Disables bfd on isis ipv6 address
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface to configure under
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed disabling bfd on isis ipv6 address
+    """
+    log.info("Disabling bfd on isis ipv6 address")
+    cmd = ["interface {}".format(interface), "no isis ipv6 bfd"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not disable bfd on isis ipv6 address on interface {interface}. Error:\n{e}"
+        )
+
