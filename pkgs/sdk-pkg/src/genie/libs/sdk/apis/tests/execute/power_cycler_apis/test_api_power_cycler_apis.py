@@ -86,8 +86,8 @@ devices:
         protocol: unknown
     peripherals:
       power_cycler:
-          - type: raritan-px2_v3
-            connection_type: snmp
+          - type: raritan-px2
+            connection_type: snmpv3
             host: vmtb-pdu1
             outlets: [15]
             username: test

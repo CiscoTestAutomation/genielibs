@@ -33,7 +33,12 @@ class PowerCyclerMeta(type):
 
             type_ = attrs['type']
             connection_type = attrs['connection_type']
-            PowerCycler._SUPPORTED_PC_TYPES[type_] = {connection_type: obj}
+
+            # To update muliple connection_types for supported powercyclers
+            if type_ in PowerCycler._SUPPORTED_PC_TYPES:
+                PowerCycler._SUPPORTED_PC_TYPES[type_].update({connection_type: obj})
+            else:
+                PowerCycler._SUPPORTED_PC_TYPES[type_] = {connection_type: obj}
 
         return obj
 

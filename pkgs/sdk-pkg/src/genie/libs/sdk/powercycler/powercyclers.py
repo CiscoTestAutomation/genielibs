@@ -47,8 +47,8 @@ class DualCommSnmpPDU(BaseSNMPPowerCycler):
 
 
 class RaritanSnmpv3PX2(BaseSNMPv3PowerCycler):
-    type = 'raritan-px2_v3'
-    connection_type = 'snmp'
+    type = 'raritan-px2'
+    connection_type = 'snmpv3'
     oid = '1.3.6.1.4.1.13742.6.4.1.2.1.2.1'
     on_state = 1
     off_state = 0

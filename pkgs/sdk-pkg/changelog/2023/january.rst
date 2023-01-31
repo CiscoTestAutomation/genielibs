@@ -533,6 +533,7 @@
 
 * sdk/powercycler
     * Added cli powercycler to support custom cli powercycle commands.
+    * Modified raritan-px2_v3 to raritan-px2 and changed the connection_type to snmpv3.
 
 
 --------------------------------------------------------------------------------
