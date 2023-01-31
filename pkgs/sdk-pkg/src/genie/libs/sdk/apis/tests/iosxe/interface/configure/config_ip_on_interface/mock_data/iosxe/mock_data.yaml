@@ -7,9 +7,7 @@ configure:
     ipv6 enable: "ipv6 enable\r\n"
     ip address 14.1.1.2 255.255.255.0: "ip address 14.1.1.2 255.255.255.0\r\n"
     ip address 14.1.1.3 255.255.255.0 secondary: "ip address 14.1.1.3 255.255.255.0 secondary\r\n"
-    ip address 14.1.1.4 255.255.255.0: "ip address 14.1.1.4 255.255.255.0\r\
-                                      \n% 14.1.1.0 overlaps with TenGigabitEthernet1/2/0/18\r\
-                                      \n% 14.1.1.0 overlaps with TenGigabitEthernet1/2/0/18"
+    ip address 14.1.1.4 255.255.255.0: "ip address 14.1.1.4 255.255.255.0\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''

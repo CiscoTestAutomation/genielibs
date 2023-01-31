@@ -1,0 +1,45 @@
+configure:
+  commands:
+    activate: "% 228.10.10.2 not in the same subnet as 16.18.27.2 on VirtualPortGroup1\r\
+      \n"
+    end:
+      new_state: execute
+    exit: "guest ip address 228.10.10.2\r\n"
+    guest ip address 228.10.10.2: "vnic gateway VirtualPortGroup1\r\n"
+    interface VirtualPortGroup1: "interface VirtualPortGroup1\r\n"
+    ip address 16.18.27.2 255.255.255.0: "ip address 16.18.27.2 255.255.255.0\r\n"
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    no shut: "% The virtual-service UTD interface configuration has been lost due\
+      \ to address change on virtualportgroup1. Please validate that the virtual-service\
+      \ configuration has the correct network settings.\r\n"
+    virtual-service enable: "no shut\r\n"
+    vnic gateway VirtualPortGroup1: "virtual-service enable\r\n"
+  prompt: n08HA(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: n08HA(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: n08HA#

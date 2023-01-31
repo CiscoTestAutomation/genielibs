@@ -1,0 +1,43 @@
+configure:
+  commands:
+    destination interface Twe1/0/7: "destination interface Twe1/0/7\r\n"
+    end:
+      new_state: execute
+    erspan-id 101: "erspan-id 101\r\n"
+    exit: "exit\r\n"
+    interface Twe1/0/7: "interface Twe1/0/7\r\n"
+    ipv6 address 2040::1: "ipv6 address 2040::1\r\n"
+    line console 0:
+      new_state: configure_line
+    monitor session 6 type erspan-destination: "monitor session 6 type erspan-destination\r\
+      \n"
+    no logging console: ''
+    no shutdown: "no shutdown\r\n"
+    source: "source\r\n"
+  prompt: Cat9500H_SVL_DUT3(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: Cat9500H_SVL_DUT3(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: Cat9500H_SVL_DUT3#

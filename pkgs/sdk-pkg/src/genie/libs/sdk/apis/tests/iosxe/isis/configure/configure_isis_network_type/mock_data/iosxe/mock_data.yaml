@@ -1,0 +1,39 @@
+configure:
+  commands:
+    bfd all-interfaces: "bfd all-interfaces\r\n"
+    end:
+      new_state: execute
+    is-type level-1: "is-type level-1\r\n"
+    line console 0:
+      new_state: configure_line
+    log-adjacency-changes: "log-adjacency-changes\r\n"
+    net 49.0000.aaaa.aaaa.aaaa.00: "net 49.0000.aaaa.aaaa.aaaa.00\r\n"
+    no logging console: ''
+    router isis: "router isis\r\n"
+  prompt: mac-gen2(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: mac-gen2(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: mac-gen2#

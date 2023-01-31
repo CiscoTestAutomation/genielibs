@@ -1,0 +1,40 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    interface g1/1/3: "interface g1/1/3\r\n"
+    ip domain lookup source-interface g1/1/3: "ip domain lookup source-interface g1/1/3\r\
+      \n"
+    ip http client source-interface g1/1/3: "ip http client source-interface g1/1/3\r\
+      \n"
+    line console 0:
+      new_state: configure_line
+    no ip name-server vrf mgmt-vrf: "no ip name-server vrf mgmt-vrf\r\n"
+    no logging console: ''
+  prompt: n10SVL(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: n10SVL(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: n10SVL#

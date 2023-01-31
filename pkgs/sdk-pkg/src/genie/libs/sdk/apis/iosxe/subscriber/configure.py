@@ -61,3 +61,23 @@ def remove_subscriber(
                 e=str(e),
             )
         ) from e
+
+def configure_subscriber_template(device):
+    """ Add subscriber template
+    Args:
+        device ('obj'): Device object
+    Returns:
+        None
+    Raise:
+        SubCommandFailure: Failed to configure subscriber templating and authorization
+    """
+    log.info(f"Configure subscriber templating and authorization")
+
+    cmd = ["subscriber templating",
+           "subscriber authorization enable"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+           f"Failed to configure subscriber templating and authorization, Error:\n{e}"
+        )

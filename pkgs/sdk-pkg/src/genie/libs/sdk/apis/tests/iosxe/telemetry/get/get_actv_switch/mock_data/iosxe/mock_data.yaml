@@ -1,0 +1,45 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: Switch(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: Switch(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show redundancy states:
+      response:
+      - "       my state = 13 -ACTIVE \r\n     peer state = 1  -DISABLED \r\n    \
+        \       Mode = Simplex\r\n           Unit = Primary\r\n        Unit ID = 2\r\
+        \n\r\nRedundancy Mode (Operational) = Non-redundant\r\nRedundancy Mode (Configured)\
+        \  = sso\r\nRedundancy State              = Non Redundant\r\n     Maintenance\
+        \ Mode = Disabled\r\n    Manual Swact = disabled (system is simplex (no peer\
+        \ unit))\r\n Communications = Down      Reason: Simplex mode\r\n\r\n   client\
+        \ count = 121\r\n client_notification_TMR = 30000 milliseconds\r\n       \
+        \    RF debug mask = 0x0"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: Switch#

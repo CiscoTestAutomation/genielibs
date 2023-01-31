@@ -6,13 +6,13 @@ configure:
       new_state: configure_line
     no logging console: ''
     stack-power switch 1: "stack-power switch 1\r\n"
-  prompt: n10SVL(config)#
+  prompt: n08HA(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: n10SVL(config-line)#
+  prompt: n08HA(config-line)#
 connect:
   commands:
     ? ''
@@ -32,4 +32,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: n10SVL#
+  prompt: n08HA#

@@ -7,6 +7,7 @@ import jinja2
 
 # Genie
 from genie.utils.timeout import Timeout
+from unicon.eal.dialogs import Dialog, Statement
 
 # Utils
 from genie.libs.sdk.apis.iosxe.running_config.get import (
@@ -72,12 +73,13 @@ def remove_isis_configuration(device):
             .format(hostname=device.hostname, e=e)
         )
 
-def config_interface_isis(device, interface,ipv6=False):
+def config_interface_isis(device, interface,ipv6=False,mtu=None):
     """config ISIS on interface
         Args:
             device (`obj`): Device object
             interface (`str`): Interface name
             ipv6 ('boolean',optional): Flag to configure IPv6 (Default False)
+            mtu ('str',optional): mtu configuration on interface
         Returns:
             None
         Raises:
@@ -92,6 +94,8 @@ def config_interface_isis(device, interface,ipv6=False):
         config.append("ipv6 router isis")
     else:
         config.append("ip router isis")
+    if mtu:
+        config.append("clns mtu {mtu}".format(mtu=mtu))
     try:
         device.configure(config)
     except SubCommandFailure as e:
@@ -555,4 +559,118 @@ def unconfigure_isis_password(device, interface, password):
                 dev=device.name,
                 error=e
             )
+        )
+
+def configure_isis_network_type(device, network_entity, is_type=None, bfd=None, adjacency=None):
+    """ Configure network_entity on ISIS router
+        Args:
+            device('obj'): device to configure on
+            network_entity('str'): network_entity of device
+            is_type('str', optional): level-1 (or) Level-2 , by default is None
+            bfd ('str', optional) : bfd name, default value is None
+            adjacency ('str', optional) : adjacency details, default value is None
+        Return:
+            N/A
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    log.info(
+        "configure the isis network type {is_type}\n".format(is_type=is_type)
+    )
+    config = []
+    config.append("router isis")
+    config.append("net {network_entity}".format(network_entity=network_entity))
+    if is_type:
+        config.append("is-type {is_type}".format(is_type=is_type))
+    if bfd:
+        config.append("bfd {bfd}".format(bfd=bfd))
+    if adjacency:
+        config.append("{adjacency}".format(adjacency=adjacency))
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure isis network type {is_type}"
+            .format(is_type=is_type, e=e)
+        )
+
+def configure_isis_redistributed_connected(device):
+    """ configure redistribute connected under isis
+        Args:
+            device (`obj`): device to execute on
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config=["router isis"]
+    config.append("redistribute connected")
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure("Failed to configure redistribute connected under isis on {device} ".format(device=device, e=e)
+        )
+
+def clear_isis(device):
+    """ clear isis
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info("clear isis on {device}".format(device=device))
+
+    dialog = Dialog([Statement(pattern=r'\[confirm\].*', action='sendline(\r)',loop_continue=True,continue_timer=False)])
+
+    try:
+        device.execute("clear isis *", reply=dialog)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not clear isis on {device}. Error:\n{error}".format(device=device, error=e)
+        )
+
+def configure_isis_router_configs(device, max_paths=None):
+    """ Configures ISIS Router
+        Args:
+            device ('obj'):                 device to use
+            max_paths ('int', optional):    Number of paths (Default is None)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config_list = ["router isis"]
+
+    if max_paths:
+        config_list.append(f"maximum-paths {max_paths}")
+    try:
+        device.configure(config_list)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            'Could not configure Router ISIS. Error:\n{error}'.format(error=e)
+        )
+
+
+def unconfigure_isis_router_configs(device, max_paths=None):
+    """ Unconfigures ISIS Router
+        Args:
+            device ('obj'):  device to use
+            max_paths ('int', optional):  Number of paths (Default is None)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config_list = ["router isis"]
+
+    if max_paths:
+        config_list.append(f"no maximum-paths {max_paths}")
+
+    try:
+        device.configure(config_list)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            'Could not Unconfigure Router ISIS. Error:\n{error}'.format(error=e)
         )

@@ -729,6 +729,8 @@ def run_gnmi(operation, device, steps,
     else:
         auto_validate = True
 
+    transaction_time = format.get('transaction_time', 0)
+
     if operation == 'edit-config':
         if auto_validate:
             rpc_clone = deepcopy(rpc_data)
@@ -773,7 +775,8 @@ def run_gnmi(operation, device, steps,
             payload = gmc.payload
             namespace_modules = gmc.namespace_modules
         response = GnmiMessage.run_get(
-            device, payload, namespace_modules
+            device, payload, namespace_modules,
+            transaction_time=transaction_time
         )
         # Response will be 'None' when some error is received
         if response is None:

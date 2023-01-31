@@ -1,0 +1,42 @@
+configure:
+  commands:
+    crypto ikev2 keyring HUB-KEY: "crypto ikev2 keyring HUB-KEY\r\n"
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no address 1.1.1.1 0.0.0.0: "no address 1.1.1.1 0.0.0.0\r\n"
+    no logging console: ''
+    no ppk dynamic sks-client-cfg required: "no ppk dynamic sks-client-cfg required\r\
+      \n"
+    no ppk manual id ppk1 key cisco123 required: "no ppk manual id ppk1 key cisco123\
+      \ required\r\n"
+    no pre-shared-key cisco: "no pre-shared-key cisco\r\n"
+    peer 1: "peer 1\r\n"
+  prompt: Hub(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: Hub(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: Hub#

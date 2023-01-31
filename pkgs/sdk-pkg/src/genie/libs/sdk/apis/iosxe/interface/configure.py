@@ -1470,14 +1470,20 @@ def configure_interface_monitor_session(device, monitor_config):
     """ configure monitor session on device
         Args:
             device (`obj`): Device object
-            monitor_config (`list`): list of monitor session configuration
+            monitor_config (`list`) : List of monitor session configuration
                 ex.)
                     monitor_config = [{
                             'session_name': 1,
                             'session_type': 'erspan-source',
                             'interface': 'GigabitEthernet10',
+                            'vlan_id' : '100',
                             'erspan_id': 10,
-                            'ip_address': '192.168.1.1'
+                            'ip_address': '192.168.1.1',
+                            'origin_ip_address': '192.168.1.2',
+                            'ipv6_address': '2001::2',
+                            'mtu': 1500,
+                            'vrf': 'red',
+                            'origin_ipv6_address': '2001::1'
                         },
                         {
                             'session_name': 2,
@@ -1485,6 +1491,7 @@ def configure_interface_monitor_session(device, monitor_config):
                             'interface': 'GigabitEthernet11',
                             'erspan_id': 10,
                             'ip_address': '192.168.1.1'
+                            'ipv6_address' : '2001::2'
                         }
                     ]
 
@@ -1502,23 +1509,36 @@ def configure_interface_monitor_session(device, monitor_config):
                     mc["session_name"], mc["session_type"]
                 )
             )
-            config.append("source interface {}\n".format(mc["interface"]))
+            if 'interface' in mc:
+               config.append("source interface {}\n".format(mc["interface"]))
+            if 'vlan_id' in mc:
+               config.append("source vlan {}\n".format(mc["vlan_id"])) 
             config.append("destination\n")
             config.append("erspan-id {}\n".format(mc["erspan_id"]))
-            config.append("ip address {}\n".format(mc["ip_address"]))
-            config.append("origin ip address {}\n".format(mc["ip_address"]))
+            if 'ip_address' in mc:
+               config.append("ip address {}\n".format(mc["ip_address"]))
+            if 'origin_ip_address' in mc:
+               config.append("origin ip address {}\n".format(mc["origin_ip_address"]))
+            if 'ipv6_address' in mc:
+               config.append("ipv6 address {}\n".format(mc["ipv6_address"]))
+            if 'origin_ipv6_address' in mc:
+               config.append("origin ipv6 address {}\n".format(mc["origin_ipv6_address"]))
         else:
             unshut_interface(device=device, interface=mc["interface"])
             config.append(
                 "monitor session {} type {}\n".format(
                     mc["session_name"], mc["session_type"]
                 )
-            )
+            )  
             config.append("destination interface {}\n".format(mc["interface"]))
+            if 'vlan_id' in mc:
+               config.append("destination vlan {}\n".format(mc["vlan_id"]))
             config.append("source\n")
             config.append("erspan-id {}\n".format(mc["erspan_id"]))
-            config.append("ip address {}\n".format(mc["ip_address"]))
-
+            if 'ip_address' in mc:
+               config.append("ip address {}\n".format(mc["ip_address"]))
+            if 'ipv6_address' in mc:
+               config.append("ipv6 address {}\n".format(mc["ipv6_address"]))   
         if 'description' in mc:
             config.append("description {}\n".format(mc["description"]))
         if 'source_vlan' in mc:
@@ -2777,7 +2797,9 @@ def configure_ip_on_tunnel_interface(
     tunnel_protection=None,
     profile=None,
     in_vrf=None,
-    out_vrf=None
+    out_vrf=None,
+    acl_name=None, 
+    tunnel_protocol=None
 ):
     """ Configure tunnel interface
         Args:
@@ -2796,6 +2818,8 @@ def configure_ip_on_tunnel_interface(
             profile ('str',optional): Tunnel protection profile name
             in_vrf ('str',optional): client vrf for  the tunnel
             out_vrf ('str',optional): wan vrf for  the tunnel
+            acl_name('str',optional): acl policy applied on tunnel inetrface            
+            tunnel_protocol ('str',optional): Protocol type (i.e ipv4)
 
         Returns:
             None
@@ -2832,6 +2856,8 @@ def configure_ip_on_tunnel_interface(
     if tunnel_protection:
         configs.append("tunnel protection {tunnel_protection} profile {profile}".
                        format(tunnel_protection=tunnel_protection,profile=profile))
+    if tunnel_protection is not None and tunnel_protocol == 'ipv4' and acl_name is not None:
+        configs.append(f"tunnel protection {tunnel_protection} policy {tunnel_protocol} {acl_name}")        
     try:
         device.configure(configs)
     except SubCommandFailure as e:
@@ -4568,7 +4594,8 @@ def unconfigure_pppoe_enable_interface(device, interface, name):
         )
 
 
-def configure_hsrp_interface(device,interface,version,ip_address,priority=None,preempt=None):
+def configure_hsrp_interface(device, interface, version, ip_address, priority=None,
+        preempt=None, hello_interval=None, hold_time=None):
     """ Configure hsrp on interface
         Args:
              device (`obj`): Device object
@@ -4577,6 +4604,12 @@ def configure_hsrp_interface(device,interface,version,ip_address,priority=None,p
              ip_address ('str') : ip address
              priority ('str', optional) : config custom priority to hsrp
              preempt ('str', optional) : config custom preempt delay sync to hsrp
+             hello_interval ('str', optional) : config the hello time for hsrp session
+             hold_time ('str', optional) : config the hold time for hsrp session
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
     """
     configs = []
     configs.append(f"interface {interface}")
@@ -4585,12 +4618,14 @@ def configure_hsrp_interface(device,interface,version,ip_address,priority=None,p
         configs.append(f"standby {version}  priority {priority}")
     if preempt:
         configs.append(f"standby {version}  preempt delay sync {preempt}")
+    if hello_interval and hold_time:
+        configs.append(f"standby {version} timers {hello_interval} {hold_time}")
 
     try:
          device.configure(configs)
     except SubCommandFailure as e:
          raise SubCommandFailure(
-             f"Failed to configure hsrp on interface:\n{e}"
+             f"Failed to configure hsrp on interface. Error:\n{e}"
          )
 
 
@@ -5302,6 +5337,8 @@ def configure_power_inline( device, interface, mode = 'auto', watts_value='', ac
         cmd += f"power inline port {portlevel_config}"
     elif watts_value:
         cmd += f"power inline {mode} max {watts_value}"
+    elif mode == 'four-pair':
+        cmd += f"power inline {mode} forced"
     else:
         cmd += f"power inline {mode}"
     # Configure power inline on interface
@@ -5477,7 +5514,6 @@ def unconfigure_interface_switchport_mode_access(device, interface):
 
 def configure_interface_macro_auto_port_sticky(device, interface):
     """ Configure macro auto port sticky on this interface
-
     Args:
         device ('obj'): device to use
         interface ('str') : interface to add configs
@@ -5498,7 +5534,6 @@ def configure_interface_macro_auto_port_sticky(device, interface):
 
 def unconfigure_interface_macro_auto_port_sticky(device, interface):
     """ Unconfigure macro auto port sticky on this interface
-
     Args:
         device ('obj'): device to use
         interface ('str') : interface to add configs
@@ -5600,7 +5635,6 @@ def configure_interface_inherit_disable(device, interface, disable_option):
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure access-session inherit disable on this interface {interface}. Error:\n{e}")
 
-
 def unconfigure_interface_inherit_disable(device, interface, disable_option):
     """ Unconfigure access-session inherit disable
         Args:
@@ -5626,14 +5660,12 @@ def unconfigure_interface_inherit_disable(device, interface, disable_option):
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure access-session inherit disable on this interface {interface}. Error:\n{e}")
 
-
 def unconfigure_control_policies(device, policy_name):
     """ Unconfigure policy-map on an device
 
         Args:
             device (`obj`): Device object
             policy_name (`str`): name of the policy
-
         Returns:
             None
         Raises:
@@ -6423,7 +6455,6 @@ def configure_interface_ipv6_verify_unicast_reversepath(device, interface, rever
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure ipv6 verify unicast reverse-path on interface. Error:\n{e}")
 
-
 def configure_interface_switchport_block_address(device, interface, address_type):
     """ Configures Interface Switchport block 
         Args:
@@ -6517,6 +6548,27 @@ def unconfigure_interface_logging_event(device, interface, event_type):
         raise SubCommandFailure(
             'Could not unconfigure Interface Logging Event'
         )
+def unconfigure_ipv4_dhcp_relay_helper(device, interface, ip_address):
+    """ Unconfigure helper IP on an interface
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface to get address
+            ip_address (`str`): helper IP address to be unconfigured on interface
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """ 
+    cmd = [
+              f"interface {interface}",
+              f"no ip helper-address {ip_address}"
+          ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure helper IP address {ip_address} on interface {interface}"
+            )
 
 def unconfigure_ipv4_dhcp_relay_helper(device, interface, ip_address):
     """ Unconfigure helper IP on an interface
@@ -6562,6 +6614,7 @@ def unconfigure_ipv6_dhcp_relay(device, interface, dest_ipv6, vlan):
         raise SubCommandFailure(
             f"Could not unconfigure IPv6 DHCP Relay address {dest_ipv6} on interface {interface}"
             )
+
 def configure_interface_switchport_dot1q_ethertype(device, interface, ethervalue):
     """ Configures switchport on interface
         Args:
@@ -6590,7 +6643,6 @@ def configure_interface_switchport_dot1q_ethertype(device, interface, ethervalue
                 .format(error=e
             )
         )
-
 def unconfigure_interface_switchport_dot1q_ethertype(device, interface, ethervalue):
     """ unConfigures switchport on interface
         Args:
@@ -6618,6 +6670,599 @@ def unconfigure_interface_switchport_dot1q_ethertype(device, interface, etherval
             "Could not unconfigure switchport dot1q ethertype. Error:\n{error}"\
                 .format(error=e
             )
-        )         
+        )
+
+def configure_hsrp_version_on_interface(device, interface, version):
+    """ Configure hsrp version on interface
+        Args:
+             device (`obj`): Device object
+             interface ('str'): Interface to configure hsrp
+             version (`int`): version number
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    configs = [f"interface {interface}",
+               f"standby version {version}"]
+    try:
+         device.configure(configs)
+    except SubCommandFailure as e:
+         raise SubCommandFailure(
+             f"Failed to configure hsrp version on interface. Error:\n{e}"
+         )
+
+def configure_ipv6_address_on_hsrp_interface(device, interface, version, ipv6_address, priority=None,
+        preempt=None, hello_interval=None, hold_time=None):
+    """ Configure ipv6 address on hsrp interface
+        Args:
+             device (`obj`): Device object
+             interface ('str'): Interface to configure hsrp
+             version (`int`): version number
+             ipv6_address ('str') : ipv6 address
+             priority ('str', optional) : config custom priority to hsrp
+             preempt ('str', optional) : config custom preempt delay sync to hsrp
+             hello_interval ('str', optional) : config the hello time for hsrp session
+             hold_time ('str', optional) : config the hold time for hsrp session
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    configs = [f"interface {interface}",
+               f"standby {version} ipv6 {ipv6_address}"]
+    if priority:
+        configs.append(f"standby {version}  priority {priority}")
+    if preempt:
+        configs.append(f"standby {version}  preempt delay sync {preempt}")
+    if hello_interval and hold_time:
+        configs.append(f"standby {version} timers {hello_interval} {hold_time}")
+
+    try:
+         device.configure(configs)
+    except SubCommandFailure as e:
+         raise SubCommandFailure(
+             f"Failed to configure ipv6 address on hsrp interface. Error:\n{e}"
+         )
+
+def configure_interface_ip_tcp_adjust_mss(device, interface, mss_size):
+    """ Configure ip tcp adjust-mss on interface 
+        Args:
+            device ('obj')    : device to use
+            interface ('str') : interface to configure
+            mss_size('int')   : Maximum segment size in bytes
+        Returns:
+            None
+        Raises:
+            SubCommandFailure    
+    """
+
+    cmd = []
+    cmd.append(f'interface {interface}')
+    cmd.append('no switchport')
+    cmd.append(f'ip tcp adjust-mss {mss_size}')
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure ip tcp adjust-mss on interface. Error:\n{e}")
+
+def unconfigure_interface_ip_tcp_adjust_mss(device, interface):
+    """ Unconfigure ip tcp adjust-mss on interface 
+        Args:
+            device ('obj')    : device to use
+            interface ('str') : interface to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure    
+    """
+
+    cmd = []
+    cmd.append(f'interface {interface}')
+    cmd.append(f'no ip tcp adjust-mss')
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure ip tcp adjust-mss on interface. Error:\n{e}")
+
+def configure_interface_ipv6_tcp_adjust_mss(device, interface, mss_size):
+    """ Configure ipv6 tcp adjust-mss on interface 
+        Args:
+            device ('obj')    : device to use
+            interface ('str') : interface to configure
+            mss_size('int')   : Maximum segment size in bytes
+        Returns:
+            None
+        Raises:
+            SubCommandFailure    
+    """
+
+    cmd = []
+    cmd.append(f'interface {interface}')
+    cmd.append('no switchport')
+    cmd.append(f'ipv6 tcp adjust-mss {mss_size}')
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure ipv6 tcp adjust-mss on interface. Error:\n{e}")
+
+def unconfigure_interface_ipv6_tcp_adjust_mss(device, interface):
+    """ Unconfigure ipv6 tcp adjust-mss on interface 
+        Args:
+            device ('obj')    : device to use
+            interface ('str') : interface to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure    
+    """
+    cmd = []
+    cmd.append(f'interface {interface}')
+    cmd.append(f'no ipv6 tcp adjust-mss')
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure ipv6 tcp adjust-mss on interface. Error:\n{e}")
 
 
+def unconfigure_interface_access_session(device, interface):
+    """ Unconfigure interface access-session
+        Args:
+            device ('obj'): device to use
+            interface ('str') : interface to remove configs
+            
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = []
+    cmd.append(f'interface {interface}')
+    cmd.append(f'no access-session closed')
+    
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure interface access-session closed on this interface {interface}. Error:\n{e}")
+
+
+def configure_vrrp_version_on_device(device, version):
+    """ Configure vrrp version on interface
+        Args:
+             device (`obj`): Device object
+             version('str'): configure the version
+    """
+    configs = []
+    configs.append(f"fhrp version vrrp {version}")
+    try:
+         device.configure(configs)
+    except SubCommandFailure as e:
+         raise SubCommandFailure(
+             f"Failed to configure vrrp version on device:\n{e}"
+         )
+
+def configure_vrrp_on_interface(device, interface, group_number, address_family, 
+        advertise_timer=None,priority=None,ip_address=None,option=None):
+    """configure vrrp version on interface
+       Args:
+           device (`obj`): Device object
+           interface ('str'): Interface to configure vrrp
+           group_number (`int`): group number
+           address_family('str'): configure the address family
+           advertise_timer(int, optional): configure the advertise timer
+           priority ('str', optional) : config custom priority to vrrp
+           ip_address ('str', optional): configure the ip_address
+           option ('str', optional) : configure ip adress is primary (or) secondary
+    """
+    configs = []
+    configs.append(f"interface {interface}")
+    configs.append(f"vrrp {group_number} address-family {address_family}")
+    if advertise_timer:
+        configs.append(f"timers advertise {advertise_timer}")
+    if priority:
+        configs.append(f"priority {priority}")
+    if ip_address and option:
+        configs.append(f"address {ip_address} {option}")
+    configs.append(f"exit-vrrp")
+    try:
+         device.configure(configs)
+    except SubCommandFailure as e:
+         raise SubCommandFailure(
+             f"Failed to configure ip address on vrrp interface:\n{e}"
+         )
+
+def config_link_local_ip_on_interface(device, interface, ipv6_address=None):
+    """ config link_local ip on interface
+        Args:
+            device ('obj')    : device to use
+            interface ('str') : interface to configure
+            ipv6_address (`str`): IPv6 address 
+        Returns:
+            None
+        Raises:
+            SubCommandFailure    
+    """
+    configs = []
+    configs.append(f"interface {interface}")
+    if ipv6_address:
+        configs.append(f"ipv6 address {ipv6_address} link-local")
+    try:
+         device.configure(configs)
+    except SubCommandFailure as e:
+         raise SubCommandFailure(
+             f"Failed to configure link_local ip address on interface:\n{e}"
+         )
+
+def configure_tunnel_with_ipsec(
+    device,
+    tunnel_intf,
+    overlay='ipv4',
+    tunnel_ip=None,
+    tunnel_mask=None,
+    tunnel_src_ip=None,
+    tunnel_dst_ip=None,
+    keepalive_timer = None,
+    ip_mtu = None,
+    tunnel_ipv6=None,
+    tunnel_maskv6=None,
+    tunnel_mode='ipsec',
+    tunnel_protection='ipsec',
+    ipsec_profile_name=None,
+    vrf=None,
+    tunnel_vrf=None,
+    v6_overlay=None
+):
+    """ Configure ipsec on Tunnel interface
+        Args:
+            device (`obj`): Device object
+            tunnel_intf (`str`): Interface to get address
+            overlay (`str`): Tunnel is eitehr IPv4 or Ipv6 or dual-overlay default value is ipv4
+            tunnel_ip (`str`,optional): IPv4 addressed to be configured on interface
+            tunnel_mask (`str`,optional): IPv4 Mask address to be used in configuration
+            tunnel_src_ip (`str`): tunnel source address
+            tunnel_dst_ip (`str`): tunnel destination address
+            keepalive_timer ('int',optional): tunnel keepalive timer,default value is 10
+            ip_mtu ('str',optional): tunnel mtu, default value is None
+            tunnel_ipv6 (`str`,optional): IPv6 address with subnet mask,default value is None
+            tunnel_maskv6 ('str',optional): IPv6 mask (Default None)
+            tunnel_mode ('str',optional): Tunnel mode. Default is gre
+            tunnel_protection ('str',optional): Protection type (i.e ipsec,dike)
+            ipsec_profile_name ('str',optional): Tunnel protection profile name
+            vrf ('str',optional): client vrf for  the tunnel
+            tunnel_vrf ('str',optional): wan vrf for  the tunnel
+            v6_overlay:('boolean', optional): True if v6-over-ipv4. Default is False
+            """
+    configs = []
+    configs.append("interface {intf}".format(intf=tunnel_intf))
+    #configure vrf (vrf to be configured before ip)
+    if vrf:
+        configs.append("vrf forwarding {vrf}".format(vrf=vrf))
+    if tunnel_ip:
+        configs.append("ip address {ip} {mask}".format(ip=tunnel_ip,mask=tunnel_mask))
+    if tunnel_ipv6:
+        if tunnel_maskv6:
+            configs.append("ipv6 enable")
+            configs.append("ipv6 address {ipv6}/{v6_mask}".format(ipv6=tunnel_ipv6, v6_mask=tunnel_maskv6))
+        else:
+            configs.append("ipv6 enable")
+            configs.append("ipv6 address {ipv6}".format(ipv6=tunnel_ipv6))
+
+    if tunnel_mode == 'gre':
+        if overlay == 'ipv6':
+            configs.append("tunnel mode {mode} ipv6".format(mode=tunnel_mode))
+        else:
+            configs.append("tunnel mode {mode} ip".format(mode=tunnel_mode))
+    else:
+        configs.append("tunnel mode {mode} {over}".format(mode=tunnel_mode, over=overlay))
+    configs.append("tunnel source {ip}".format(ip=tunnel_src_ip))
+    configs.append("tunnel destination {ip}".format(ip=tunnel_dst_ip))
+    if keepalive_timer:
+        configs.append("keepalive {timer}".format(timer=keepalive_timer))
+    if ip_mtu:
+        configs.append("ip mtu {mtu}".format(mtu=ip_mtu))
+    if tunnel_vrf:
+        configs.append("tunnel vrf {vrf}".format(vrf=tunnel_vrf))
+    if tunnel_protection:
+        configs.append("tunnel protection {tunnel_protection} profile {profile}".
+                       format(tunnel_protection=tunnel_protection,profile=ipsec_profile_name))
+    if v6_overlay:
+        configs.append("tunnel mode ipsec {tunnel_mode} v6-overlay".format(tunnel_mode=tunnel_mode))
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure Tunnel interface "
+            "{interface} on device {dev}. Error:\n{error}".format(
+                interface=tunnel_intf,
+                dev=device.name,
+                error=e,
+            )
+        )
+
+def configure_interface_lacp_fast_switchover(device, po_intf, dampening_time=None):
+    """ configure interface lacp fast-switchover
+        Args:
+            device ('obj'): device to use
+            po_intf ('str'): name of the port-channel interface to be configured
+            dampening_time ('int', optional):  LACP Fast Switchover Hot-Standby Dampening Time in Seconds
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = []
+    cmd.append(f'interface {po_intf}')
+    if dampening_time:
+        cmd.append(f'lacp fast-switchover dampening {dampening_time}')
+    else:
+        cmd.append('lacp fast-switchover')
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure interface lacp fast-switchover on "
+            "{interface} on device {dev}. Error:\n{error}".format(
+                interface=po_intf,
+                dev=device.name,
+                error=e,
+            )
+        )
+
+def unconfigure_interface_lacp_fast_switchover(device, po_intf):
+    """ unconfigure interface lacp fast-switchover
+        Args:
+            device ('obj'): device to use
+            po_intf ('str'): name of the port-channel interface to be unconfigured
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = [
+            f'interface {po_intf}',
+            'no lacp fast-switchover'
+        ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure interface lacp fast-switchover on "
+            "{interface} on device {dev}. Error:\n{error}".format(
+                interface=po_intf,
+                dev=device.name,
+                error=e,
+            )
+        )
+
+def configure_interface_lacp_max_bundle(device, po_intf, max_port):
+    """ configure interface lacp max-bundle
+        Args:
+            device ('obj'): device to use
+            po_intf ('str'): name of the port-channel interface to be configured
+            max_port ('int'): Max number of ports to bundle in this Port Channel
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = [
+            f'interface {po_intf}',
+            f'lacp max-bundle {max_port}'
+        ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure interface lacp max-bundle on "
+            "{interface} on device {dev}. Error:\n{error}".format(
+                interface=po_intf,
+                dev=device.name,
+                error=e,
+            )
+        )
+
+def unconfigure_interface_lacp_max_bundle(device, po_intf):
+    """ unconfigure interface lacp max-bundle
+        Args:
+            device ('obj'): device to use
+            po_intf ('str'): name of the port-channel interface to be unconfigured
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = [
+            f'interface {po_intf}',
+            'no lacp max-bundle'
+        ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure interface lacp max-bundle on "
+            "{interface} on device {dev}. Error:\n{error}".format(
+                interface=po_intf,
+                dev=device.name,
+                error=e,
+            )
+        )
+
+def configure_interface_snmp_trap_mac_notification_change(device, interface, change_option):
+    """ configure interface snmp trap mac-notification change 
+        Args:
+            device ('obj'): device to use
+            interface ('str'): name of the interface to be configured
+            change_option ('str'): change option added/removed
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = [
+            f'interface {interface}',
+            f'snmp trap mac-notification change {change_option}'
+        ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure interface snmp trap mac-notification change "
+            "{interface} on device {dev}. Error:\n{error}".format(
+                interface=interface,
+                dev=device.name,
+                error=e,
+            )
+        )
+
+def unconfigure_interface_snmp_trap_mac_notification_change(device, interface, change_option):
+    """ unconfigure interface snmp trap mac-notification change 
+        Args:
+            device ('obj'): device to use
+            interface ('str'): name of the interface to be unconfigured
+            change_option ('str'): change option added/removed
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = [
+            f'interface {interface}',
+            f'no snmp trap mac-notification change {change_option}'
+        ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure interface snmp trap mac-notification change "
+            "{interface} on device {dev}. Error:\n{error}".format(
+                interface=interface,
+                dev=device.name,
+                error=e,
+            )
+        )
+
+def configure_interface_default_snmp_trap_mac_notification_change(device, interface, change_option):
+    """ configure interface default snmp trap mac-notification change 
+        Args:
+            device ('obj'): device to use
+            interface ('str'): name of the interface to be configured
+            change_option ('str'): change option added/removed
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = [
+            f'interface {interface}',
+            f'default snmp trap mac-notification change {change_option}'
+        ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure interface default snmp trap mac-notification change "
+            "{interface} on device {dev}. Error:\n{error}".format(
+                interface=interface,
+                dev=device.name,
+                error=e,
+            )
+        )
+
+def configure_interface_flow_control(device, interface, flow_control_option):
+    """ Configure flow control receive on this interface
+    
+    Args:
+        device ('obj'): device to use
+        interface ('str') : interface to add configs
+        flow_control_option ('str') : flow control option to be configured
+            ex:)
+                desired  Allow but do not require flow-control packets on port
+                off      Disable flow-control packets on port
+                on       Enable flow-control packets on port
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = [f'interface {interface}',
+           f'flowcontrol receive {flow_control_option}']
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure flow control receive on this interface {interface}. Error:\n{e}")
+
+def unconfigure_interface_flow_control(device, interface):
+    """ Unconfigure flow control receive on this interface
+    
+    Args:
+        device ('obj'): device to use
+        interface ('str') : interface to add configs
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = [f'interface {interface}',
+           'no flowcontrol receive']
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure flow control receive on this interface {interface}. Error:\n{e}")
+
+def unconfigure_profile_on_tunnel_interface(
+    device,
+    interface,
+    tunnel_protection=None,
+    profile=None,
+):
+    """ Configure tunnel interface
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface to get address
+            tunnel_protection ('str',optional): Protection type (i.e ipsec,dike)
+            profile ('str',optional): Tunnel protection profile name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    configs = [f"interface {interface}"]
+    if tunnel_protection is not None:
+        configs.append(f"no tunnel protection {tunnel_protection} profile {profile}")
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure profile on {interface}. Error:\n{e}")
+
+def configure_power_efficient_ethernet_auto(device, interface):
+    """ configure power efficient ethernet auto
+	Args:
+        device ('obj'): Device object
+        interface ('str'): interface
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed configuring interface
+    """
+    cmd = [f"interface {interface}",
+           "power efficient-ethernet auto"]
+    try:
+        device.configure(cmd)                   
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+        'Could not configure power efficient ethernet auto on {interface}, Error:\n{e}'.format(
+            interface=interface, error=e))
+
+            

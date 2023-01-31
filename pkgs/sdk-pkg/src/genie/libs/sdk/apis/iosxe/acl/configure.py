@@ -442,6 +442,27 @@ def configure_ipv6_acl(
             )
         )
 
+def unconfigure_ipv6_acl(
+        device,
+        acl_name,
+):
+    """ Unconfigure IPv6 ACL
+
+        Args:
+            device (`obj`): Device object
+            acl_name ('str'): access-list name to unconfigure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+            
+    """
+    configs=f"no ipv6 access-list {acl_name}"
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure route map {acl_name} on device {device.name}. Error:\n{e}")
+
 def unconfigure_ipv6_acl_ace(
         device,
         acl_name,
@@ -1420,6 +1441,28 @@ def unconfig_ip_tcp_mss(device, seg_size, global_config_key, interface=None):
             )
         )
 
+def configure_mac_access_group_mac_acl_in_out(device, interface_id, acl_name, acl_direction):
+    """ configures mac access group ACL in/out
+
+        Args:
+            device ('obj'): device to use
+            interface_id ('str'): interface on which mss needs to be configured.
+    """
+    cmd = [
+        f"interface {interface_id}",
+        f"mac access-group {acl_name} {acl_direction}"
+    ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure mac access group ACL in/out on the device {dev}. Error:\n{error}".format(
+                dev=device.name,
+                error=e,
+
+        )
+    )
+
 def configure_mac_acl(device, name, action, source, dest):
     """ Configuring MAC ACL
         Example: mac access-list extended MAC-ACL
@@ -1493,4 +1536,54 @@ def configure_filter_vlan_list(device, vlan_access_name, vlan_id):
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure vlan filter vlan-list on the device {device.name}. Error:\n{e}")
+
+def configure_acl_with_src_dsc_net(device,
+                            acl_name,
+                            action,
+                            src_net,
+                            src_wild_mask,
+                            dsc_net,
+                            dsc_wild_mask):
+    """ configure ACL
+        Args:
+            device (`obj`): Device object
+            acl_name ('str'): ACL name
+            action ('str')Optional: Permit or Deny
+            src_net ('str'): Source network
+            dsc_net ('str'): Destination network
+            src_wild_mask('str'): Source wild card mask
+            dst_wild_mask('str'): Destination wild card mask
+    """
+    log.info(
+        "Configures acl's with source and destination network"
+    )
+
+    configs = []
+    configs.append(f"access-list {acl_name} {action} ip {src_net} {src_wild_mask} {dsc_net} {dsc_wild_mask}")
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+                raise SubCommandFailure(f"Failed to configure acl for source and \
+                destination networks on device  {device.name}. Error:\n{e}")
+
+def unconfigure_acl_with_src_dsc_net(device,
+                              acl_name):
+    """ Unconfigures acl
+        Args:
+            device (`obj`): Device object
+            acl_name ('str'): ACL name
+    """
+    log.info(
+        "unconfiguring acl's"
+    )
+
+    configs = []
+    configs.append(f"no access-list {acl_name}")
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure access map match source and \
+                destination networks on device  {device.name}. Error:\n{e}")
 

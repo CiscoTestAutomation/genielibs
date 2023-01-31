@@ -42,8 +42,11 @@ def execute_clear_line(device, alias='cli'):
 
     for server, ports in terminal_server.items():
         # Fix ports type if incorrect from user
+        if isinstance(ports, (str, int)):
+            ports = [ports, ]
+
         if not isinstance(ports, list):
-            ports = [ports]
+            raise Exception(f"The port/s of terminal_server '{server}' are not in list, string or an integer format.")
 
         # Connect to terminal server
         term_serv_dev = device.testbed.devices[server]
@@ -144,7 +147,7 @@ def execute_power_cycle_device(device, delay=30):
     device.destroy_all()
 
     device.api.execute_power_off_device()
-    log.debug(f"Waiting '{delay}' seconds before powercycling device on")
+    log.info(f"Waiting '{delay}' seconds before powercycling device on")
     time.sleep(delay)
     device.api.execute_power_on_device()
 

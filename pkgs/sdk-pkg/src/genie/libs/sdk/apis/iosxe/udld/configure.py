@@ -126,3 +126,38 @@ def unconfigure_udld_message_time(device):
         raise SubCommandFailure(
             f'Could not Unconfigure UDLD Message Time. Error: {error}'
         )
+
+def configure_udld_enable(device):
+    """ Enabling the UDLD mode on device
+        Args:
+            device ('obj'): Device object
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"configuring udld enable on device")
+    try:
+        device.configure('udld enable')
+    except SubCommandFailure as error:
+        raise SubCommandFailure(
+            f'Could not enable udld on device. Error: {error}'
+        )
+
+def unconfigure_udld_enable(device):
+    """ UnConfigures UDLD enable on device
+        Args:
+            device ('obj'): Device object
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"Unconfigure udld enable on device")
+    try:
+        device.configure('no udld enable')
+    except SubCommandFailure as error:
+        raise SubCommandFailure(
+            f'Could not unconfigure udld enable on device. Error: {error}'
+        )
+    

@@ -1,0 +1,41 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: 9300-24UX-1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: 9300-24UX-1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    configure replace flash:new_config:
+      response:
+      - "This will apply all necessary additions and deletions\r\nto replace the current\
+        \ running configuration with the\r\ncontents of the specified configuration\
+        \ file, which is\r\nassumed to be a complete configuration, not a partial\r\
+        \nconfiguration. Enter Y if you are sure you want to proceed. ? [no]:"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: 9300-24UX-1#

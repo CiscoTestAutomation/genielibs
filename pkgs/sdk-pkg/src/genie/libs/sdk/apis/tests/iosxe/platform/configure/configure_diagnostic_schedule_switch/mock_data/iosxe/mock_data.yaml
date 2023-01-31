@@ -1,0 +1,41 @@
+configure:
+  commands:
+    diagnostic schedule switch 1 test all on jan 12 2023 06:00: "diagnostic schedule\
+      \ switch 1 test all on jan 12 2023\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b$schedule switch\
+      \ 1 test all on jan 12 2023          \b\b\b\b\b\b\b\b\b06:00\r\nDiagnostic[switch\
+      \ 1]: Scheduling test(s) 4,14-15 may disrupt normal system operation and requires\
+      \ reload\r\nDiagnostic[switch 1]: The date/time for schedule diagnostic is not\
+      \ valid.\r\n\r\n"
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: stack3-nyquist-1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: stack3-nyquist-1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: stack3-nyquist-1#

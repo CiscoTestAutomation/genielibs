@@ -628,3 +628,47 @@ def unconfigure_interface_vtp(device, interface):
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure vtp on interface {interface}. Error:\n{e}")
+
+def configure_switchport_trunk_allowed_vlan_remove(device, interface, number):
+    """Configure switchport trunk allowed vlan remove
+
+    Args:
+        device ('obj'): device to use
+        interface ('str') : interface to add configs
+        number ('int'): vlan id of disallowed vlans when this port is in trunking mode
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure VTP on interface
+    """
+    cmd = [
+        f"interface {interface}",
+        f"switchport trunk allowed vlan remove {number}"
+    ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure switchport trunk allowed vlan remove on this device. Error:\n{e}")
+
+def configure_switchport_trunk_allowed_vlan_except(device, interface, number):
+    """Configure switchport trunk allowed vlan except 
+
+    Args:
+        device ('obj'): device to use
+        interface ('str') : interface to add configs
+        number ('int'): vlan id of disallowed vlans when this port is in trunking mode
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure VTP on interface
+    """
+    cmd = [
+        f"interface {interface}",
+        f"switchport trunk allowed vlan except {number}"
+    ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to switchport trunk allowed vlan except on this device. Error:\n{e}")

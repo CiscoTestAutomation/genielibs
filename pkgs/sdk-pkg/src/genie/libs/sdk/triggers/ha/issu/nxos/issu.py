@@ -21,12 +21,14 @@ log = logging.getLogger(__name__)
 # Which key to exclude for Platform Ops comparison
 platform_exclude = ['maker', 'rp_uptime', 'sn', 'main_mem',
                     'switchover_reason', 'config_register',
-                    'image', 'disk_used_space', 'disk_free_space',
+                    'image', 'disk_used_space', 'disk_total_space',
+                    'disk_free_space', 'installed_packages',
                     'version', 'rp_boot_image']
 
 platform_exclude_lxc = ['maker', 'rp_uptime', 'sn', 'main_mem',
                         'switchover_reason', 'config_register',
                         'image', 'disk_used_space', 'disk_free_space',
+                        'installed_packages', 'disk_total_space',
                         'version', 'rp_boot_image', 'rp']
 
 class TriggerIssuLxc(CommonIssu):

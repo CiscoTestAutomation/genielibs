@@ -652,6 +652,7 @@ def configure_pki_authenticate(device,
             )
         )
 
+
 def configure_pki_import(device,
                          tp_name,
                          import_type,
@@ -688,6 +689,8 @@ def configure_pki_import(device,
             is_pem_exportable_url ('bool'): True if pem is import as exportable
             is_pem_usage_keys_url ('bool'): True if pem is import with usage-keys url
             is_pem_usage_keys_exportable_url ('bool'): True if pem is import with usage-keys as exportable
+            pem_import_cert ('bool'): Defaults to None
+            is_key_replace ('string'): Defauls to 'yes'
         Returns:
             None
         Raises:
@@ -721,7 +724,7 @@ def configure_pki_import(device,
                       "% Please delete it or use a different label.",
                       "% Trustpoint {tp_name} is in use."]
     if import_type == 'certificate':
-        import_config = (f"crypto pki import {tp_name} certificate")
+        import_config = f"crypto pki import {tp_name} certificate"
     elif import_type == 'pkcs12':
         if pkcs_media_type in media_file:
             import_config = (
@@ -771,6 +774,7 @@ def configure_pki_import(device,
                          )
         )
 
+
 def configure_pki_export(device,
                          tp_name,
                          export_type,
@@ -789,7 +793,7 @@ def configure_pki_export(device,
         Args:
             device ('obj'): Device object
             tp_name ('str'): Name of the trustpoint
-            import_type ('str'): Type of import [certificate, pkcs12, pem]
+            export_type ('str'): Type of import [certificate, pkcs12, pem]
             pkcs_media_type ('str'): Filesytem for importing pkcs12 file
             pkcs_file ('str'): Pkcs file name that needs import
             pkcs_url ('str'): pkcs file url

@@ -313,25 +313,29 @@ def clear_access_session(device, interface=None):
             "Failed to execute clear access-sesssion.Error: {}".format(str(e))
         )
 
-def config_identity_ibns(device, interface, policy_map, access=True, port_control='auto', **kwargs):
-    """ Configured 802.1x port based authentication for
-        IBNS2.0 with service policy
+
+def config_identity_ibns(device, policy_map, interface=None, access=True, port_control='auto', template_name=None, **kwargs):
+    """ Configure 802.1x port based authentication for
+        IBNS2.0 with service policy under interface/template
     Mandatory args:
             device ('obj'): device to use
-            interface (`str`): Interface name
-            access(bol): Set to True, False to configure in Trunk mode
-            Policy_map: Name of policy map to be attached.
+            access ('bol'): Set to True, False to configure in Trunk mode
+            policy_map('str'): Name of policy map to be attached.
     Optional args:
+        interface (`str`,optional): Interface name
         data_vlan(`int`): vlan_id for data traffic
         voice_vlan(`int`): vlan_id for voice traffic
         max_req:(`int`) Max No. of Retries
-        max-reauth-req(`int`): Max No. of Reauthentication Attempts
+        max_reauth_req(`int`): Max No. of Reauthentication Attempts
         authmod('str'): default(multi-auth), mult-host peer, multi-domain etc
         closed('bol'):  {False: closed | True: open (default) }
+        open('bol'): {False: closed | True: open (default) }
         reauth('str'):  server or numberic range is 1 to 65535 seconds
         ctr('str'): {both | in}
         txp(`int`):The range is 1 to 65535 seconds
         port_control ('str'): {auto|force-authorized|force-unauthorized}. Default = 'auto'
+        template_name ('str'): Template name to be configured
+        txp_sup ('int'): The range is 1 to 65535 seconds
     Returns:
             None
     Raises:
@@ -339,20 +343,30 @@ def config_identity_ibns(device, interface, policy_map, access=True, port_contro
     """
     dict1 = {}
     #For IBNS2.0  access-session is in Open mode (default)
-    dict1['open'] = True
+    #dict1['open'] = True
     #For IBNS2.0 default access-session host-mode is in multi-auth (default)
-    dict1['authmod'] ='multi-auth'
+    dict1['authmod'] ='multi-auth'    
     
-    converted_interface = Common.convert_intf_name(interface)
     cmd = " "
-    cmd += 'interface {}\n'.format(converted_interface)
+    if interface is not None:
+        converted_interface = Common.convert_intf_name(interface)
+        cmd += 'interface {}\n'.format(converted_interface)
+    else:
+        cmd += f'template {template_name}\n'
 
     if access:
-        cmd += "switchport\n"
-        cmd += "switchport mode access\n"
+        if template_name is None:
+            cmd += "switchport\n"
+            cmd += "switchport mode access\n"
+        else:
+            cmd += "switchport mode access\n"
     else:
-        cmd += "switchport\n"
-        cmd += "switchport mode trunk\n"
+        if template_name is None:
+            cmd += "switchport\n"
+            cmd += "switchport mode trunk\n"
+        else:
+            cmd += "switchport mode trunk\n"
+
     cmd += "access-session port-control {port_control}\n".format(port_control=port_control)
     cmd += "authentication periodic\n"
     cmd += "mab\n"
@@ -378,6 +392,9 @@ def config_identity_ibns(device, interface, policy_map, access=True, port_contro
 
     if  'txp' in dict1:
         cmd += "dot1x timeout tx-period {}\n".format(dict1['txp'])
+
+    if 'txp_sup' in dict1 :
+        cmd += f"dot1x timeout supp-timeout {dict1['txp_sup']}\n"
 
     if dict1['authmod'] != 'multi-auth':
         cmd += "access-session host-mode {}\n".format(dict1['authmod'])
@@ -1540,3 +1557,197 @@ def unconfigure_access_session_limit(device):
         raise SubCommandFailure(
             "Could not unconfigure Access session and event limit")
 
+
+def unconfigure_dot1x_template(device, template_name):
+    """template unconfig
+        Args:
+            device ('obj'): device to use
+            template (`str`): Built-in/User defined template Name
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure: Failed to unconfigure template
+    """
+    cmd = ''
+    cmd += f'no template {template_name}'
+        
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure template {}.Error: {}".format(template_name, str(e))
+        )
+
+
+def configure_parameter_map_subscriber(device, parameter_map_name, map_num, filter_type, parameter_type, parameter_name):
+    """Configure parameter map subscriber
+        Args:
+            device ('obj'): device to use
+            parameter_map_name (`str`): Parameter Map name to be configured
+            map_num ('int'): Map number to be configured
+            filter_type ('str'): Filter type to be configured
+            parameter_type ('str'): parameter type to be configured
+            parameter_name ('str'): Parameter name to be configured
+            
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure: Failed to configure parameter map subscriber
+    """
+    cmd = ''
+    cmd += f'parameter-map type subscriber attribute-to-service {parameter_map_name}\n'
+    cmd += f'{map_num} map {parameter_type} {filter_type} {parameter_name}'
+
+    log.debug("Configure parameter map subscriber")
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure parameter map subscriber")
+
+
+def configure_service_template_with_absolute_timer(device, template_name, timer):
+    """ configure service template with absolute timer
+    Args:
+        device ('obj'): Device object
+        template_name ('str'): Specify a template name
+        timer ('int'): timer
+    Return:
+        None
+    Raise:
+        SubCommandFailure
+    """
+    log.info(f"Configuring service template with absolute timer")
+	
+    configs=[
+	    f"service-template {template_name}",
+	    f"absolute-timer {timer}"
+	]
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure service template with absolute timer. Error:\n{e}")
+
+def configure_service_template_with_description(device, template_name, desc_line):
+    """ configure service template with description
+    Args:
+        device ('obj'): Device object
+        template_name ('str'): Specify a template name
+        desc_line ('str'): description line
+    Return:
+        None
+    Raise:
+        SubCommandFailure
+    """
+    log.info(f"Configuring service template with description")
+	
+    configs=[
+	    f"service-template {template_name}",
+	    f"description {desc_line}"
+	]
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure service template with description. Error:\n{e}")
+
+def configure_service_template_with_inactivity_timer(device, template_name, timer, probe=None):
+    """ configure service template with inactivity timer
+    Args:
+        device ('obj'): Device object
+        template_name ('str'): Specify a template name
+        timer ('int'): timer
+        probe('str',optional): probe
+    Return:
+        None
+    Raise:
+        SubCommandFailure
+    """
+    log.info(f"Configuring service template with inactivity timer")
+	
+    cmd = []
+    cmd.append(f"service-template {template_name}")
+    if probe:
+        cmd.append(f"inactivity-timer {timer} probe")
+    else:
+        cmd.append(f"inactivity-timer {timer}")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure service template with inactivity timer. Error:\n{e}")
+
+def configure_service_template_with_redirect_url(device, template_name, url_link, acl_name="", redirect_option=""):
+    """ configure service template with redirect url
+    Args:
+        device ('obj'): Device object
+        template_name ('str'): Specify a template name
+        url_link ('str'): url link
+        acl_name('str'): acl name
+        redirect_option('str'): redirect option
+    Return:
+        None
+    Raise:
+        SubCommandFailure
+    """
+    log.info(f"Configuring service template with redirect url")
+	
+    cmd = []
+    cmd.append(f"service-template {template_name}")
+    if acl_name:
+        if redirect_option:
+            cmd.append(f"redirect url {url_link} match {acl_name} {redirect_option}")
+        else:
+            cmd.append(f"redirect url {url_link} match {acl_name}")
+    else:
+        cmd.append(f"redirect url {url_link}")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure service template with redirect url. Error:\n{e}")
+
+def configure_service_template_with_sgt(device, template_name, sgt_range):
+    """ configure service template with sgt
+    Args:
+        device ('obj'): Device object
+        template_name ('str'): Specify a template name
+        sgt_range ('int'): sgt range
+    Return:
+        None
+    Raise:
+        SubCommandFailure
+    """
+    log.info(f"Configuring service template with sgt")
+	
+    configs=[
+	    f"service-template {template_name}",
+	    f"sgt {sgt_range}"
+	]
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure service template with sgt. Error:\n{e}")
+
+def configure_service_template_with_tag(device, template_name, tag):
+    """ configure service template with sgt range
+    Args:
+        device ('obj'): Device object
+        template_name ('str'): Specify a template name
+        tag ('str'): tag name
+    Return:
+        None
+    Raise:
+        SubCommandFailure
+    """
+    log.info(f"Configuring service template with tag")
+	
+    configs=[
+	    f"service-template {template_name}",
+	    f"tag {tag}"
+	]
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure service template with tag. Error:\n{e}")

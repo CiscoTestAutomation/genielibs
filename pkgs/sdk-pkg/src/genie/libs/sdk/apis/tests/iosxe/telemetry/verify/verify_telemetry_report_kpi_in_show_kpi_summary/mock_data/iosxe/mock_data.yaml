@@ -1,0 +1,41 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: Switch(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: Switch(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show product-analytics kpi summary:
+      response:
+      - "Product Analytics Engine KPIs\r\n\r\nTime                          Report\
+        \ ID                     KPI Name                   \r\n-----------------------------\
+        \ ----------------------------- ---------------------------\r\n\r\n11/14/2022\
+        \ 13:42:35            1668458555                      hardware_inventory"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: Switch#

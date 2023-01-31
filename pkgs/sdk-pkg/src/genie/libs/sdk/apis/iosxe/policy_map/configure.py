@@ -329,3 +329,49 @@ def unconfigure_bandwidth_remaining_policy_map(device,policy_names):
         raise SubCommandFailure(
             "Could not unconfigure policy-map. Error:\n{e}".format(e))
 
+def configure_policy_map_type_service(device, policy_map_name, pppoe_service_name=None):
+    """ Configure policy-map type service on Device
+    Args:
+        device ('obj'): Device object
+        policy_map_name ('str'): policy-map name to configure
+        pppoe_service_name('str',optional): service name to configure
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed to configure policy-map service
+    """
+    log.info("Configuring policy-map type service on device")
+
+    cmd = []
+    cmd = [f"policy-map type service {policy_map_name}"]
+    if pppoe_service_name:
+        cmd.append(f"pppoe service {pppoe_service_name}")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+                raise SubCommandFailure(
+            f"Failed to configure policy-map service, Error:\n{e}"
+    )
+
+def configure_policy_map_with_pps(device, policy_name, class_map_name, police_rate):
+    """ Configures policy_map
+        Args:
+             device ('obj'): device to use
+             policy_name('str) : name of the policy name
+             class_map_name('str'): class map information
+             police_rate('int'): police rate details
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info("configure policy_map {policy_name} with {class_map_name} and {police_rate} in pps".format(policy_name=policy_name, class_map_name=class_map_name, police_rate=police_rate))
+    config = [f"policy-map {policy_name}", 
+              f"class {class_map_name}", 
+              f"police rate {police_rate} pps"]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure policy_map {policy_name} with {class_map_name} and {police_rate} in pps. Error:\n{error}".format(policy_name=policy_name, class_map_name=class_map_name, police_rate=police_rate, error=e)
+        )

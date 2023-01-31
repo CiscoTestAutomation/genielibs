@@ -129,6 +129,9 @@ def configure_ipsec_transform_set(device,
     configs = []
     if transform_auth is None and transform_bit is None:
         configs.append(f"crypto ipsec transform-set {transform_set_name} {transform_method}")
+
+    if transform_auth is None and transform_bit is not None:
+        configs.append(f"crypto ipsec transform-set {transform_set_name} {transform_method} {transform_bit}")
     
     if transform_auth is not None and transform_bit is None:
         configs.append(f"crypto ipsec transform-set {transform_set_name} {transform_auth} {transform_method}")
@@ -235,7 +238,8 @@ def configure_ipsec_profile(device,
                             rr_route=None,
                             rr_static=False,
                             redundancy_name=None,
-                            stateful=False
+                            stateful=False,
+                            rr_enable=None
                             ):
     """ Configures ipsec transform set
         Args:
@@ -269,6 +273,7 @@ def configure_ipsec_profile(device,
             rr_static ('boolean') : Create routes based on static ACLs permanently
             redundancy_name ('str') : Redundancy group name
             stateful ('boolean') : enable stateful failover
+            rr_enable ('str') : Create routes based on ACLs permanently            
         Returns:
             None
         Raises:
@@ -361,6 +366,9 @@ def configure_ipsec_profile(device,
     
     if redundancy_name is not None and stateful == False:
         configs.append(f"redundancy {redundancy_name}")
+
+    if rr_enable:
+        configs.append(f"reverse-route")
 
     try:
         device.configure(configs)
@@ -988,3 +996,117 @@ def unconfigure_crypto_ikev2_policy(device,policy_name):
         raise SubCommandFailure(
             "Could not unconfigure Crypto proposal. Error: {error}".format(error=e)
         )
+
+def configure_tunnel_with_ipsec(
+    device,
+    tunnel_intf,
+    overlay='ipv4',
+    tunnel_ip=None,
+    tunnel_mask=None,
+    tunnel_src_ip=None,
+    tunnel_dst_ip=None,
+    keepalive_timer=None,
+    ip_mtu=None,
+    tunnel_ipv6=None,
+    tunnel_maskv6=None,
+    tunnel_mode='ipsec',
+    tunnel_protection='ipsec',
+    ipsec_profile_name=None,
+    vrf=None,
+    tunnel_vrf=None,
+    v6_overlay=None
+):
+    """ Configure ipsec on Tunnel interface
+        Args:
+            device (`obj`): Device object
+            tunnel_intf (`str`): Interface to get address
+            overlay (`str`): Tunnel is eitehr IPv4 or Ipv6 or dual-overlay default value is ipv4
+            tunnel_ip (`str`,optional): IPv4 addressed to be configured on interface
+            tunnel_mask (`str`,optional): IPv4 Mask address to be used in configuration
+            tunnel_src_ip (`str`): tunnel source address
+            tunnel_dst_ip (`str`): tunnel destination address
+            keepalive_timer ('int',optional): tunnel keepalive timer,default value is 10
+            ip_mtu ('str',optional): tunnel mtu, default value is None
+            tunnel_ipv6 (`str`,optional): IPv6 address with subnet mask,default value is None
+            tunnel_maskv6 ('str',optional): IPv6 mask (Default None)
+            tunnel_mode ('str',optional): Tunnel mode. Default is gre
+            tunnel_protection ('str',optional): Protection type (i.e ipsec,dike)
+            ipsec_profile_name ('str',optional): Tunnel protection profile name
+            vrf ('str',optional): client vrf for  the tunnel
+            tunnel_vrf ('str',optional): wan vrf for  the tunnel
+            v6_overlay:('boolean', optional): True if v6-over-ipv4. Default is False
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    configs = []
+    configs.append("interface {intf}".format(intf=tunnel_intf))
+    #configure vrf (vrf to be configured before ip)
+    if vrf:
+        configs.append("vrf forwarding {vrf}".format(vrf=vrf))
+    if tunnel_ip:
+        configs.append("ip address {ip} {mask}".format(ip=tunnel_ip,mask=tunnel_mask))
+    if tunnel_ipv6:
+        if tunnel_maskv6:
+            configs.append("ipv6 enable")
+            configs.append("ipv6 address {ipv6}/{v6_mask}".format(ipv6=tunnel_ipv6, v6_mask=tunnel_maskv6))
+        else:
+            configs.append("ipv6 enable")
+            configs.append("ipv6 address {ipv6}".format(ipv6=tunnel_ipv6))
+
+    if tunnel_mode == 'gre':
+        if overlay == 'ipv6':
+            configs.append("tunnel mode {mode} ipv6".format(mode=tunnel_mode))
+        else:
+            configs.append("tunnel mode {mode} ip".format(mode=tunnel_mode))
+    else:
+        configs.append("tunnel mode {mode} {over}".format(mode=tunnel_mode, over=overlay))
+    configs.append("tunnel source {ip}".format(ip=tunnel_src_ip))
+    configs.append("tunnel destination {ip}".format(ip=tunnel_dst_ip))
+    if keepalive_timer:
+        configs.append("keepalive {timer}".format(timer=keepalive_timer))
+    if ip_mtu:
+        configs.append("ip mtu {mtu}".format(mtu=ip_mtu))
+    if tunnel_vrf:
+        configs.append("tunnel vrf {vrf}".format(vrf=tunnel_vrf))
+    if tunnel_protection:
+        configs.append("tunnel protection {tunnel_protection} profile {profile}".
+                       format(tunnel_protection=tunnel_protection,profile=ipsec_profile_name))
+    if v6_overlay:
+        configs.append("tunnel mode ipsec {tunnel_mode} v6-overlay".format(tunnel_mode=tunnel_mode))
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure Tunnel interface "
+            "{interface} on device {dev}. Error:\n{error}".format(
+                interface=tunnel_intf,
+                dev=device.name,
+                error=e,
+            )
+        )
+
+def clear_crypto_ikev2_stats(device):
+    """ Clear crypto ikev2 stats
+        Args:
+            device (`obj`): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        "Clearing crypto ikev2 stats"
+    )
+
+    try:
+        device.execute(
+            "clear crypto ikev2 stats"
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not clear crypto ikev2 stats. Error:\n{error}".format(error=e)
+        )
+        

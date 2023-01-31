@@ -99,9 +99,9 @@ def verify_device_tracking_policies(device, policy_name, vlan=None, iface=None, 
     """
     target = None
     if vlan:
-        target = "vlan " + vlan
+        target = f"Vlan{vlan}"
     elif iface:
-        target = iface
+        target = Common.convert_intf_name(iface)
     else:
         log.error('No Target provide')
         return False
@@ -112,14 +112,18 @@ def verify_device_tracking_policies(device, policy_name, vlan=None, iface=None, 
         if output['policies']:
             policies = output['policies']
             for i in range(1, len(policies)+1):
-                if (policies[i]['policy_name'] == policy_name and
-                        policies[i]['target'] == target and policies[i]['feature'] == feature):
-                    log.debug('Target policy found on expected target')
+                output_name = policies[i]['policy_name']
+                output_target = Common.convert_intf_name(policies[i]['target'])
+                output_feature = policies[i]['feature']
+                if (output_name == policy_name and output_target == target
+                        and output_feature == feature):
+                    log.info('Target policy found on expected target')
                     return True
 
         timeout.sleep()
 
-    log.debug('Target policy not found')
+    log.info(f'Expected - policy: {policy_name}, target: {target}, feature: {feature}\n \
+               Actual - policy: {output_name}, target: {output_target}, feature: {output_feature}')
     return False
 
 def verify_empty_device_tracking_policies(device, max_time=60, check_interval=10):

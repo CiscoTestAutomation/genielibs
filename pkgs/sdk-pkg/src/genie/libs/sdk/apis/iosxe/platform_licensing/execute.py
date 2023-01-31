@@ -44,3 +44,45 @@ def disable_debug_all(device):
         device.execute(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Failed to turn off debugging on device {device.name}. Error:\n{e}')
+
+def enable_license_smart_authorization_return(device, device_type, mode, path_name=''):
+    """ Enable license smart authorization return
+        Example : license smart authorization return all online
+
+        Args:
+            device ('obj'): device to use
+            device_type ('str'): type of device for authorization code return (eg. all, local)
+            mode ('str'): authorization code return mode (eg. offline, online)
+            path_name ('str'): offline path name
+        Returns:
+            None
+        Raises: 
+            SubCommandFailure
+    """
+    log.info(f'Enable license smart authorization return on {device.name}')
+    if mode.lower() == "offline":
+        config = f'license smart authorization return {device_type} {mode} {path_name}'
+    else:
+        config = f'license smart authorization return {device_type} {mode}'
+    try:
+        device.execute(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Failed to enable license smart authorization on device {device.name}. Error:\n{e}')
+
+def enable_license_smart_clear_eventlog(device):
+    """ Enable license smart clear eventlog
+        Example : license smart clear eventlog
+
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises: 
+            SubCommandFailure
+    """
+    log.info(f'Enable license smart clear eventlog on {device.name}')
+    config = 'license smart clear eventlog'
+    try:
+        device.execute(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Failed to enable license smart clear eventlog on device {device.name}. Error:\n{e}')

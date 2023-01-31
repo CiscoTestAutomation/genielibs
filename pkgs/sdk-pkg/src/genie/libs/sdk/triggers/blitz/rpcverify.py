@@ -576,7 +576,7 @@ class RpcVerify():
 
         return (True, log_msg)
 
-    def process_one_operational_state(self, response, field, key=False, sequence=None):
+    def process_one_operational_state(self, response, field, key=False, sequence=None, on_change=False):
         """Check if a response contains an expected result.
 
         Args:
@@ -636,8 +636,9 @@ class RpcVerify():
                         #    <Prop>v1<Prop> ---> First value found should be the target value.
                         # </List1>
                         if sequence and not result:
-                            log.error(log_msg)
-                            return result
+                            if not on_change:
+                                log.error(log_msg)
+                                return result
                         if result:
                             if not datatype:
                                 log.warning(
@@ -654,14 +655,17 @@ class RpcVerify():
             ))
             return True
 
-        if not datatype:
-            log.warning(
-                "{0} has no datatype; default to string".format(
-                    xpath
+        # Dont log non matched returns for on_change
+        if not on_change:
+            if not datatype:
+                log.warning(
+                    "{0} has no datatype; default to string".format(
+                        xpath
+                    )
                 )
-            )
-
-        log.error(log_msg)
+        # Dont log non matched returns for on_change
+        if not on_change:
+            log.error(log_msg)
         return result
 
     def pre_process_keys(self, returns, response):
@@ -995,7 +999,7 @@ class RpcVerify():
 
         return new_response, parent_key_index
 
-    def process_sequencial_operational_state(self, response, returns, key=False):
+    def process_sequencial_operational_state(self, response, returns, key=False, on_change=False):
         """Given multiple list entries, pick the specific entry required and validate.
 
         response:
@@ -1119,10 +1123,9 @@ class RpcVerify():
                         sel = field.get('selected', False)
                         if sel is False or str(sel).lower() == 'false':
                             continue
-                        if not self.process_one_operational_state(new_response, field, key, sequence):
+                        if not self.process_one_operational_state(new_response, field, key, sequence, on_change=on_change):
                             result = False
                             results.append(result)
-
             prev_seq_no = sequence_no
 
         if False in results:
@@ -1130,7 +1133,7 @@ class RpcVerify():
         else:
             return True
 
-    def process_operational_state(self, response, returns, key=False, sequence=None):
+    def process_operational_state(self, response, returns, key=False, sequence=None, on_change=False):
         """Test NETCONF or GNMI operational state response.
 
         Args:
@@ -1170,13 +1173,13 @@ class RpcVerify():
 
         # To process the operational state in a sequence
         if sequence:
-            result = self.process_sequencial_operational_state(new_response, new_returns, key)
+            result = self.process_sequencial_operational_state(new_response, new_returns, key, on_change=on_change)
         else:
             for field in returns:
                 sel = field.get('selected', False)
                 if sel is False or str(sel).lower() == 'false':
                     continue
-                if not self.process_one_operational_state(response, field, key):
+                if not self.process_one_operational_state(response, field, key, on_change=on_change):
                     result = False
         return result
 

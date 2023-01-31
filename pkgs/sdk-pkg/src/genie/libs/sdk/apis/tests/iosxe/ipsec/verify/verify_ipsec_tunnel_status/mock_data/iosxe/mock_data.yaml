@@ -1,0 +1,49 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: PE-A(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: PE-A(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show crypto session interface Tunnel10 detail:
+      response:
+      - "Crypto session current status\r\n\r\nCode: C - IKE Configuration mode, D\
+        \ - Dead Peer Detection     \r\nK - Keepalives, N - NAT-traversal, T - cTCP\
+        \ encapsulation     \r\nX - IKE Extended Authentication, F - IKE Fragmentation\r\
+        \nR - IKE Auto Reconnect, U - IKE Dynamic Route Update\r\nS - SIP VPN\r\n\r\
+        \nInterface: Tunnel10\r\nProfile: ikev2_profile_v4_lo\r\nUptime: 11:05:59\r\
+        \nSession status: UP-ACTIVE     \r\nPeer: 101.1.1.2 port 500 fvrf: (none)\
+        \ ivrf: (none)\r\n      Phase1_id: 101.1.1.2\r\n      Desc: (none)\r\n  Session\
+        \ ID: 8  \r\n  IKEv2 SA: local 101.1.1.1/500 remote 101.1.1.2/500 Active \r\
+        \n          Capabilities:DU connid:5 lifetime:12:54:01\r\n  IPSEC FLOW: permit\
+        \ 47   host 101.1.1.1 host 101.1.1.2 \r\n        Active SAs: 2, origin: crypto\
+        \ map\r\n        Inbound:  #pkts dec'ed 66775 drop 0 life (KB/Sec) 1123/826\r\
+        \n        Outbound: #pkts enc'ed 199554 drop 0 life (KB/Sec) 4086/826"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: PE-A#

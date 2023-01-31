@@ -1,0 +1,40 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    no mac address-table learning vlan 11: "no mac address-table learning vlan 11\r\
+      \n%Warning: Disabling mac address learning would cause full or partial impact\r\
+      \n on features which rely upon mac address learning. Most notable of them are\r\
+      \n Dot1x, port-security, VQPC, flexlink and private vlans. Hence it is not\r\
+      \n advisable to disable mac learning when these features are configured.\r\n\
+      \ Please see configuration guide for additional information.\r\n"
+  prompt: 9300-24UX-1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: 9300-24UX-1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: 9300-24UX-1#

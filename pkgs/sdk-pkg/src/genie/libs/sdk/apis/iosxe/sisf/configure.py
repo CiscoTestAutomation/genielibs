@@ -1780,7 +1780,8 @@ def device_tracking_unit_test(device, options=None):
         )
 
 
-def configure_device_tracking_binding(device, vlan, address, interface, mac, tracking="default"):
+def configure_device_tracking_binding(device, vlan, address, interface, mac, tracking="default",
+                                      reachable_lifetime=None, retry_interval=None):
     """Adds static entry to binding table
     Args:
         device ('obj'): device object
@@ -1794,8 +1795,13 @@ def configure_device_tracking_binding(device, vlan, address, interface, mac, tra
     Raises:
         SubCommandFailure: Failed to add static entry
     """
-    cmd = "device-tracking binding vlan {vlan} {address} interface {interface} {mac} tracking {tracking}"
-    cmd = cmd.format(vlan=vlan, address=address, interface=interface, mac=mac, tracking=tracking)
+    cmd = f"device-tracking binding vlan {vlan} {address} interface {interface} {mac} tracking {tracking}"
+
+    if retry_interval is not None:
+        cmd = f'{cmd} retry-interval {retry_interval}'
+
+    if reachable_lifetime is not None:
+        cmd = f'{cmd} reachable-lifetime {reachable_lifetime}'
 
     try:
         device.configure(cmd)
@@ -2063,6 +2069,34 @@ def configure_device_tracking_tracking(device, auto_source=None, retry_interval=
         log.warning("Failed to configure device-tracking tracking")
         raise
 
+def unconfigure_device_tracking_tracking(device, auto_source=False, retry_interval=False):
+    """ Unconfigure device-tracking tracking
+
+    Args:
+        device ("obj"): The device to configure
+        auto_source ("bool", optional): The configuration for auto_source - either override or failback address. Defaults to False.
+        retry_interval ("bool", optional): Device-tracking retry-interval in seconds. Defaults to False.
+
+    Raises:
+        SubCommandFailure: Failed to unconfigure device-tracking tracking
+    """
+    config_cmds = []
+
+    cmd = "no device-tracking tracking"
+    if auto_source:
+        config_cmds.append(f"{cmd} auto-source")
+    if retry_interval:
+        config_cmds.append(f"{cmd} retry-interval")
+
+    if not auto_source and not retry_interval:
+        config_cmds.append(f"{cmd}")
+
+    try:
+        device.configure(config_cmds)
+    except SubCommandFailure:
+        log.warning("Failed to unconfigure device-tracking tracking")
+        raise
+
 def clear_device_tracking_messages(device):
     """ Clear device-tracking database
         Args:
@@ -2219,4 +2253,196 @@ def clear_device_tracking_counters(device, interface=None, vlan=None, bdi=None):
     except SubCommandFailure:
         raise SubCommandFailure(
             "Failure to clear device-tracking counters"
+        )
+
+def configure_ipv6_nd_raguard_on_interface(device, interface):
+    """ configure ipv6 nd raguard on interface
+    Args:
+        device ('obj'): device object
+        interface ('str'): interface name
+    Returns:
+        None
+    Raises:
+         SubCommandFailure: Failed to configure ipv6 nd raguard on interface
+    """
+    config = [f"interface {interface}",
+               "ipv6 nd raguard"]
+    try:
+        device.configure(config)
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Failure to remove ipv6 nd raguard from interface"
+        )
+
+def unconfigure_ipv6_nd_raguard_on_interface(device, interface):
+    """ Unconfigure ipv6 nd raguard on interface
+    Args:
+        device ('obj'): device object
+        interface ('str'): interface name
+    Returns:
+        None
+    Raises:
+         SubCommandFailure: Failed to remove ipv6 nd raguard from interface
+    """
+    config = [f"interface {interface}",
+               "no ipv6 nd raguard"]
+    try:
+        device.configure(config)
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Failure to remove ipv6 nd raguard from interface"
+        )
+
+def configure_device_tracking_on_interface(device, interface):
+    """ Configure device-tracking on interface
+    Args:
+        device ('obj'): device object
+        interface ('str'): interface name
+    Returns:
+        None
+    Raises:
+         SubCommandFailure: Failed to configure device-tracking on interface
+    """
+    config = [f"interface {interface}",
+               "device-tracking"]
+    try:
+        device.configure(config)
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Failure to configure device-tracking on interface"
+        )
+
+def unconfigure_device_tracking_on_interface(device, interface):
+    """ Unconfigure device-tracking on interface
+    Args:
+        device ('obj'): device object
+        interface ('str'): interface name
+    Returns:
+        None
+    Raises:
+         SubCommandFailure: Failed to remove device-tracking from interface
+    """
+    config = [f"interface {interface}",
+               "no device-tracking"]
+    try:
+        device.configure(config)
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Failure to remove device-tracking from interface"
+        )
+
+def configure_ipv6_dhcp_guard_on_interface(device, interface):
+    """ Configure ipv6 dhcp guard on interface
+    Args:
+        device ('obj'): device object
+        interface ('str'): interface name
+    Returns:
+        None
+    Raises:
+         SubCommandFailure: Failed to configure ipv6 dhcp guard on interface
+    """
+    config = [f"interface {interface}",
+               "ipv6 dhcp guard"]
+    try:
+        device.configure(config)
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Failure to configure ipv6 dhcp guard on interface"
+        )
+
+def unconfigure_ipv6_dhcp_guard_on_interface(device, interface):
+    """ Unconfigure ipv6 dhcp guard on interface
+    Args:
+        device ('obj'): device object
+        interface ('str'): interface name
+    Returns:
+        None
+    Raises:
+         SubCommandFailure: Failed to remove ipv6 dhcp guard from interface
+    """
+    config = [f"interface {interface}",
+               "no ipv6 dhcp guard"]
+    try:
+        device.configure(config)
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Failure to remove ipv6 dhcp guard from interface"
+        )
+
+def configure_interface_template_with_default_ipv6_nd_raguard_policy(device, template_name, vlan=None):
+    """ configure interface template with default ipv6 nd raguard policy
+    Args:
+        device ('obj'): device object
+        template_name ('str'): template_name name,
+        vlan ('str', optional): vlan id
+    Returns:
+        None
+    Raises:
+         SubCommandFailure: Failed to configure default ipv6 nd raguard policy on template
+    """
+    config = [f'template {template_name}']
+
+    cmd = 'ipv6 nd raguard'
+    if vlan:
+        cmd = f'{cmd} vlan {vlan}'
+
+    config.append(cmd)
+
+    try:
+        device.configure(config)
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Failed to configure default ipv6 nd raguard policy on template"
+        )
+
+def configure_interface_template_with_default_device_tracking_policy(device, template_name, vlan=None):
+    """ configure interface template with default device-tracking policy
+    Args:
+        device ('obj'): device object
+        template_name ('str'): template_name name,
+        vlan ('str', optional): vlan id
+    Returns:
+        None
+    Raises:
+         SubCommandFailure: Failed to configure default device-tracking policy on template
+    """
+    config = [f'template {template_name}']
+
+    cmd = 'device-tracking'
+    if vlan:
+        cmd = f'{cmd} vlan {vlan}'
+
+    config.append(cmd)
+
+    try:
+        device.configure(config)
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Failed to configure default device-tracking policy on template"
+        )
+
+def configure_interface_template_with_default_ipv6_dhcp_guard_policy(device, template_name, vlan=None):
+    """ configure interface template with default ipv6 dhcp guard policy
+    Args:
+        device ('obj'): device object
+        template_name ('str'): template_name name,
+        vlan ('str', optional): vlan id
+    Returns:
+        None
+    Raises:
+         SubCommandFailure: Failed to configure default ipv6 dhcp guard policy on template
+    """
+    config = [f'template {template_name}']
+
+    cmd = 'ipv6 dhcp guard'
+    if vlan:
+        cmd = f'{cmd} vlan {vlan}'
+
+    config.append(cmd)
+
+    try:
+        device.configure(config)
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Failed to configure default ipv6 dhcp guard policy on template"
         )

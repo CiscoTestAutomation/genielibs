@@ -95,3 +95,170 @@ def configure_prefix_list_prefix_list(device, prefix_list):
             "on device {device}, "
             "Error: {e}".format(device=device.name, e=str(e))
         ) from e
+
+def configure_ip_prefix_list_deny_permit(device, prefix_list_name, option, 
+                                        ip_address, subnet_id, 
+                                        match_option=None, match_length=1):
+    """ configure ip prefix-list on device
+        Args:
+            device (`obj`): device to execute on
+            prefix_list_name (`int`): prefix list name to be used
+            option (`str`): option for prefix list
+                ex:)
+                    deny         Specify packets to reject
+                    permit       Specify packets to forward
+            ip_address (`str`): ip address to be used
+            subnet_id (`int`): subnet_id to be used, default value is 32n
+            match_option (`str`,optional): prefix matching option
+            match_length (`int`,optional): prefix matching length(keeping default length 1)
+            ex:)
+                <1-32>  Minimum prefix length
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = []
+    if match_option:
+        cmd.append(f'ip prefix-list {prefix_list_name} {option} {ip_address}/{subnet_id} {match_option} {match_length}')
+    else:
+        cmd.append(f'ip prefix-list {prefix_list_name} {option} {ip_address}/{subnet_id}')
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure ip prefix-list on device. Error:\n{e}")
+
+def configure_ip_prefix_list_description(device, prefix_list_name, desc_line):
+    """ configure ip prefix-list on device
+        Args:
+            device (`obj`): device to execute on
+            prefix_list_name (`int`): prefix list name to be used
+            desc_line (`str`): description line for option description
+
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = f'ip prefix-list {prefix_list_name} description {desc_line}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure ip prefix-list on device. Error:\n{e}")
+
+def configure_ip_prefix_list_seq(device, prefix_list_name, ip_address, 
+                                 subnet_id, seq_num, seq_rule,
+                                 match_option=None, match_length=1):
+    """ configure ip prefix-list on device
+        Args:
+            device (`obj`): device to execute on
+            prefix_list_name (`int`): prefix list name to be used
+            ip_address (`str`): ip address to be used
+            subnet_id (`int`): subnet_id to be used, default value is 32
+            seq_num (`int`): sequence number
+            seq_rule (`str`): rule permit/deny when option is seq
+            match_option (`str`,optional): prefix matching option
+            match_length (`int`,optional): prefix matching length(keeping default length 1)
+            ex:)
+                <1-32>  Minimum prefix length
+
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = []
+    if match_option:
+        cmd.append(f'ip prefix-list {prefix_list_name} seq {seq_num} {seq_rule} {ip_address}/{subnet_id} {match_option} {match_length}')
+    else:
+        cmd.append(f'ip prefix-list {prefix_list_name} seq {seq_num} {seq_rule} {ip_address}/{subnet_id}')
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure ip prefix-list on device. Error:\n{e}")
+
+def unconfigure_ip_prefix_list_deny_permit(device, prefix_list_name, option, 
+                                           ip_address, subnet_id, 
+                                           match_option=None, match_length=1):
+    """ unconfigure ip prefix-list on device
+        Args:
+            device (`obj`): device to execute on
+            prefix_list_name (`int`): prefix list name to be used
+            option (`str`): option for prefix list
+                ex:)
+                    deny         Specify packets to reject
+                    permit       Specify packets to forward
+            ip_address (`str`): ip address to be used
+            subnet_id (`int`): subnet_id to be used, default value is 32n
+            match_option (`str`,optional): prefix matching option
+            match_length (`int`,optional): prefix matching length(keeping default length 1)
+            ex:)
+                <1-32>  Minimum prefix length
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = []
+    if match_option:
+        cmd.append(f'no ip prefix-list {prefix_list_name} {option} {ip_address}/{subnet_id} {match_option} {match_length}')
+    else:
+        cmd.append(f'no ip prefix-list {prefix_list_name} {option} {ip_address}/{subnet_id}')
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not unconfigure ip prefix-list on device. Error:\n{e}")
+
+def unconfigure_ip_prefix_list_description(device, prefix_list_name, desc_line):
+    """ Unconfigure ip prefix-list on device
+        Args:
+            device (`obj`): device to execute on
+            prefix_list_name (`int`): prefix list name to be used
+            desc_line (`str`): description line for option description
+
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = f'no ip prefix-list {prefix_list_name} description {desc_line}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not unconfigure ip prefix-list on device. Error:\n{e}")
+
+def unconfigure_ip_prefix_list_seq(device, prefix_list_name, ip_address, 
+                                   subnet_id, seq_num, seq_rule,
+                                   match_option=None, match_length=1):
+    """ configure ip prefix-list on device
+        Args:
+            device (`obj`): device to execute on
+            prefix_list_name (`int`): prefix list name to be used
+            ip_address (`str`): ip address to be used
+            subnet_id (`int`): subnet_id to be used, default value is 32
+            seq_num (`int`): sequence number
+            seq_rule (`str`): rule permit/deny when option is seq
+            match_option (`str`,optional): prefix matching option
+            match_length (`int`,optional): prefix matching length(keeping default length 1)
+            ex:)
+                <1-32>  Minimum prefix length
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = []
+    if match_option:
+        cmd.append(f'no ip prefix-list {prefix_list_name} seq {seq_num} {seq_rule} {ip_address}/{subnet_id} {match_option} {match_length}')
+    else:
+        cmd.append(f'no ip prefix-list {prefix_list_name} seq {seq_num} {seq_rule} {ip_address}/{subnet_id}')
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not unconfigure ip prefix-list on device. Error:\n{e}")

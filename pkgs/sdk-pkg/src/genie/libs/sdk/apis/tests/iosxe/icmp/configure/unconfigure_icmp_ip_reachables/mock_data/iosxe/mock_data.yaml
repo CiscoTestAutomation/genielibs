@@ -7,7 +7,7 @@ configure:
     ip address 50.1.1.2 255.255.0.0: "ip address 50.1.1.2 255.255.0.0\r\n"
     line console 0:
       new_state: configure_line
-    no ip unreachables: "% 50.1.0.0 overlaps with TenGigabitEthernet1/0/12\r\n"
+    no ip unreachables: "no ip unreachables\r\n"
     no logging console: ''
     no switchport: "no switchport\r\n"
   prompt: n08HA(config)#

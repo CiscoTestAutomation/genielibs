@@ -203,3 +203,34 @@ def get_snmp_cli_dict(device):
         return {}
 
     return out["slot"]
+
+def get_dir_byte_total(device, directory):
+    '''Get the total and free bytes for directory
+
+        Args:
+            device ('obj'): Device object
+            directory ('str'): Directory or file name (Eg. flash:, crashinfo:)
+        Returns:
+            ret_dict ('dict'): directory with bytes total and bytes free
+    '''
+    ret_dict = {}
+    cmd = f"dir {directory} | include bytes total"
+    try:
+        output = device.execute(cmd)
+    except SchemaEmptyParserError as e:
+        raise Exception("Command 'dir' did not return any output") from e
+    
+    # 11353194496 bytes total (6827765760 bytes free)
+    p = re.compile(r"^(?P<bytes_total>\d+) bytes total \((?P<bytes_free>\d+) bytes free\)$")
+    for line in output.splitlines():
+        line = line.strip()
+
+        # 11353194496 bytes total (6827765760 bytes free)
+        m = p.match(line)
+        if m:
+            group = m.groupdict()
+            ret_dict['bytes_total']=int(group['bytes_total'])
+            ret_dict['bytes_free']=int(group['bytes_free'])
+            continue
+
+    return ret_dict

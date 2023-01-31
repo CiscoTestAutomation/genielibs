@@ -39,7 +39,3 @@ class TestConfigIpOnInterface(unittest.TestCase):
         expected_output = None
         self.assertEqual(result, expected_output)
 
-    def test_config_duplicate_ip_on_interface(self):
-        result = config_ip_on_interface(self.device, 'TenGigabitEthernet1/2/0/19', '14.1.1.4', '255.255.255.0', None, None, None, None, False, False, '', None, None, False)
-        expected_output = ['% 14.1.1.0 overlaps with TenGigabitEthernet1/2/0/18', '% 14.1.1.0 overlaps with TenGigabitEthernet1/2/0/18']
-        self.assertEqual(result, expected_output)

@@ -1181,3 +1181,47 @@ def verify_interface_config_duplex(device,
         timeout.sleep()
 
     return False
+def verify_tunnel_protection( device, 
+    interface, 
+    max_time=5, 
+    check_interval=1,  
+    mode='GRE', 
+    protocol='IP',
+    protection='IPsec'
+):
+    """Verify if tunnel protection is enabled
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+            max_time (`int`): max time
+            check_interval (`int`): check interval
+            mode=(`str`): Tunnel mode (Default is GRE)
+            protocol(`str`): Tunnel Protocol(Default is IP)
+            protection('str'): Tunnel protection (Default is IPSEC)
+
+        Returns:
+            result(`bool`): True if is up else False
+    """
+    timeout = Timeout(max_time, check_interval)
+
+    interface = Common.convert_intf_name(interface)
+    while timeout.iterate():
+        try:
+            cmd = 'show interfaces {interface}'.format(
+                interface=interface)
+            out = device.parse(cmd)
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+        oper_status = out[interface]["oper_status"]
+        line_protocol = out[interface]["line_protocol"]
+        enabled = out[interface]["enabled"]
+        if oper_status == line_protocol == "up" and enabled == True:
+            mode_protocol = mode+'/'+protocol
+            tunnel_protection = out[interface]["tunnel_protection"]
+            tunnel_protocol = out[interface]["tunnel_protocol"]
+            if mode_protocol.lower() == tunnel_protocol.lower() and \
+                protection.lower() == tunnel_protection.lower():
+                return True
+        timeout.sleep()
+    return False

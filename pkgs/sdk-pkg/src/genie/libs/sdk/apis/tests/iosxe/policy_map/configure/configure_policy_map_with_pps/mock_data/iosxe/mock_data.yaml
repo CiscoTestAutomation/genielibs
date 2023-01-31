@@ -1,0 +1,38 @@
+configure:
+  commands:
+    class system-cpp-police-routing-control: "class system-cpp-police-routing-control\r\
+      \n"
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    police rate 2000 pps: "police rate 2000 pps\r\n"
+    policy-map system-cpp-policy: "policy-map system-cpp-policy\r\n"
+  prompt: mac-gen2(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: mac-gen2(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: mac-gen2#

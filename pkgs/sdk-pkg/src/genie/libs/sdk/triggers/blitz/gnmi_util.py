@@ -4,6 +4,7 @@ import base64
 import json
 import sys
 import pdb
+from copy import copy, deepcopy
 from threading import Thread, Event
 import traceback
 from datetime import datetime
@@ -16,10 +17,11 @@ from pyats.log.utils import banner
 from pyats.utils.secret_strings import to_plaintext
 import grpc
 from yang.connector import proto
-
-
+from yang.connector.proto import gnmi_pb2
+from abc import ABC
+from yang.connector.gnmi import Gnmi
 log = logging.getLogger(__name__)
-
+from typing import List
 
 class GnmiMessageException(Exception):
     pass
@@ -37,285 +39,6 @@ class ForkedPdb(pdb.Pdb):
             pdb.Pdb.interaction(self, *args, **kwargs)
         finally:
             sys.stdin = _stdin
-
-
-class GnmiNotification(Thread):
-    """Thread listening for event notifications from the device."""
-    RE_FIND_KEYS = re.compile(r'\[.*?\]')
-    def __init__(self, response, **request):
-        Thread.__init__(self)
-        self._stop_event = Event()
-        self.log = request.get('log')
-        if self.log is None:
-            self.log = logging.getLogger(__name__)
-            self.log.setLevel(logging.DEBUG)
-        self.request = request
-        self.mode = request.get('request_mode', 'STREAM')
-        self.responses = response
-        self.returns = request.get('returns')
-        self.response_verify = request.get('verifier')
-        self.decode_response = request.get('decode')
-        self.namespace = request.get('namespace')
-        self.sub_mode = request.get('sub_mode')
-        self.encoding = request.get('encoding', 'JSON')
-        self.sample_interval = request.get('sample_interval', 0)
-        self.stream_max = request.get('stream_max', 0)
-        if self.stream_max:
-            self.log.info('Notification MAX timeout {0} seconds.'.format(
-                    str(self.stream_max)
-                )
-            )
-        self.time_delta = 0
-        self.results = []
-        self.negative_test = request.get('negative_test')
-        self.on_change_base = None
-        self.log.info(banner('GNMI Subscription reciever started'))
-
-    @property
-    def result(self):
-        if not self.results:
-            return False is not self.negative_test
-        return all(self.results)
-
-    def process_opfields(self, response, returns_found = None):
-        """Decode response and verify result.
-
-        Decoder callback returns desired format of response.
-        Verify callback returns verification of expected results.
-
-        Args:
-          response (proto.gnmi_pb2.Notification): Contains updates that
-              have changes since last timestamp.
-        """
-        try:
-            json_dicts, opfields, update = self.decode_response(
-                response, self.namespace
-            )
-
-            if self.sub_mode != 'ON_CHANGE':
-                # Split returns on the basis of paths,
-                # received in opfields
-                returns_2 = []
-                for field in opfields:
-                    for ret in returns_found:
-                        xp = ret['xpath']
-                        if xp in field:
-                            returns_2.append(ret)
-                            returns_found.remove(ret)
-                            break
-                        else:
-                            # if list keys are found in the returns field['xpath']
-                            # Eg: returns['xpath'] = /Sys/List[key=value]/leaf
-                            if '[' in xp:
-                                # if above xpath with no keys '/Sys/List/leaf'
-                                # is in the opfield that means this might be the
-                                # possible returns to select, but we need check
-                                # keys in opfields as well.
-                                xp_no_keys = re.sub(self.RE_FIND_KEYS, '', xp)
-                                if xp_no_keys in field:
-                                    # To make sure that this is the correct returns to select
-                                    # we need to check that all the keys mentioned in the xpath
-                                    # are in opfield or not.
-                                    all_keys_in_opfield = self.find_keys_in_opfield(xp, opfields)
-                                    # If all keys are present in opfield, then take this returns for validation.
-                                    if all_keys_in_opfield:
-                                        returns_2.append(ret)
-                                        returns_found.remove(ret)
-                                        break
-                                    
-            if len(json_dicts):
-                for json_dict in json_dicts:
-                    if json_dict is not None:
-                        msg = 'JSON Decoded\n' + '=' * 12 + '\n' + json.dumps(
-                            json_dict, indent=2
-                        )
-                        self.log.info(msg)
-            if opfields and self.log.level == logging.DEBUG:
-                msg = 'Xpath/Value\n' + '=' * 11 + '\n' + pformat(opfields)
-                self.log.debug(msg)
-            if opfields:
-                result = False
-                if self.sub_mode == 'ON_CHANGE':
-                    self.log.info("Checking all possible ON_CHANGE values")
-                    for ret in returns_found:
-                        if self.on_change_base is None:
-                            # first return of ON_CHANGE must have True result
-                            result = self.response_verify(opfields, [ret])
-                            if result:
-                                self.on_change_base = ret['value']
-                            break
-                        else:
-                            result = self.response_verify(opfields, [ret])
-                            # an expected value is found
-                            if result and self.on_change_base == ret['value']:
-                                # value did not change
-                                result = False
-                            elif result:
-                                # change from last value and it is expected
-                                self.on_change_base = ret['value']
-                                result = True
-                                break
-                    else:
-                        # no True results
-                        result = False
-
-                else:
-                    result = self.response_verify(opfields, returns_2)
-                if self.negative_test:
-                    result = not result
-                    self.log.info(banner('NEGATIVE TEST'))
-                self.results.append(result)
-                if not result:
-                    self.log.error(banner('SUBSCIBE VERIFICATION FAILED'))
-                else:
-                    self.log.info(banner('SUBSCIBE VERIFICATION PASSED'))
-
-        except Exception as exc:
-            self.log.error(str(exc))
-            self.results.append(False)
-            self.stop()
-
-    def find_keys_in_opfield(self, xpath, opfields):
-        """Check if all keys in xpath present in opfields or not
-
-        Args:
-          xpath (Returns['xpath']): xpath with list keys in it
-            xpath = /Sys/List[key=key_value]/leaf
-        
-          opfields (Decoded gNMI response): List of tuples(val, xpath)
-
-        Return true if (key_value, /Sys/List/Key) is in opfield, else False    
-        """        
-        for match in re.finditer(self.RE_FIND_KEYS, xpath):
-            key = match.group()
-            # Extract the key name
-            # Eg: '[Key1=Val1]'
-            # key_name = Key1
-            key_name = key.split('=')[0].strip('[')
-            # Extract the key value
-            # Eg: '[Key1=Val1]'
-            # key_val = Val1
-            key_val = key.split('=')[1].strip(']')
-            key_val = re.sub('"', '', key_val)
-            # Extract the key path from xpath
-            # Eg: /Sys/Cont/Lis[Key1=Val1]
-            # key_path = /Sys/Cont/Lis/Key1
-            key_path = xpath.split(key)[0] + '/' + key_name
-            key_path = re.sub(self.RE_FIND_KEYS, '', key_path)
-
-            # create (key_val, key_path) field to check in opfield
-            key_field = (key_val, key_path)
-
-            if not key_field in opfields:
-                return False
-        return True
-
-    def log_remaining_returns(self, returns_found):
-        """Log the returns not found in any of the response"""
-        if self.sub_mode == 'ON_CHANGE':
-            # ON_CHANGE may have returns not matched but still pass.
-            return
-        for ret in returns_found:
-            xp = ret['xpath']
-            val = ret['value']
-            self.log.error('ERROR: "{0} value: {1}" Not found.'.format(xp, str(val)))
-            self.results.append(False)
-
-    def run(self):
-        """Check for inbound notifications."""
-        self.log.info('Subscribe notification active')
-        t1 = datetime.now()
-        first_subs_path = []
-        response_no = 0
-        returns_found = []
-        stop_receiver = False
-        if self.returns:
-            returns_found = self.returns.copy()
-        try:
-            for response in self.responses:
-                # Subscribe response ends here
-                if response.HasField('sync_response'):
-                    self.log.info('Subscribe sync_response')
-                    if self.mode in ["ONCE", "POLL"]:
-                        stop_receiver = True
-                    # Stop the stream when no response is received
-                    if self.mode == "STREAM" and response_no == 0:
-                        stop_receiver = True
-
-                # Check for stream_max before update
-                # to avoid logging extra responses.
-                if self.stream_max:
-                    t2 = datetime.now()
-                    td = t2 - t1
-                    self.time_delta = td.total_seconds()
-                    if self.time_delta > self.stream_max:
-                        self.log.info("Notification MAX timeout")
-                        self.stop()
-
-                if response.HasField('update') and not self.stopped():
-                    json_dicts, opfields, subscribe_path = self.decode_response(
-                        response, self.namespace
-                    )
-                    response_no = response_no + 1
-                    if response_no == 1:
-                        first_subs_path = subscribe_path
-                    else:
-                        # Start for next stream
-                        # Copy returns for each stream
-                        if self.mode == 'STREAM' and subscribe_path == first_subs_path:
-                            self.log_remaining_returns(returns_found)
-                            if self.returns:
-                                returns_found = self.returns.copy()
-
-                        # Copy returns on every ON_CHANGE response
-                        if self.sub_mode == 'ON_CHANGE':
-                            if self.returns:
-                                returns_found = self.returns.copy()
-
-                    self.log.info(
-                        "gNMI SUBSCRIBE Response\n" + "=" * 23 + "\n{}"
-                            .format(response)
-                    )
-                    if self.returns:
-                        self.log.info('Processing returns...')
-                        self.process_opfields(response, returns_found)
-                    else:
-                        # If no returns is provided, then result is True if an update is received.
-                        self.results.append(True)
-
-                if stop_receiver:
-                    self.log.info('Subscribe {0} processed'.format(self.mode))
-                    self.stop()
-
-                if self.stopped():
-                    if self.sub_mode != 'ON_CHANGE':
-                        self.log_remaining_returns(returns_found)
-                    self.time_delta = self.stream_max
-                    self.log.info("Terminating notification thread")
-                    break
-        except grpc.RpcError as exc:
-            if exc.code() == grpc.StatusCode.DEADLINE_EXCEEDED:
-                self.log.info("Notification MAX timeout")
-                self.stop()
-            else:
-                self.log.error("Unknown error: %s", exc)
-                self.stop()
-        except Exception as exc:
-            msg = ''
-            if hasattr(exc, 'details'):
-                msg += 'details: ' + exc.details()
-            if hasattr(exc, 'debug_error_string'):
-                msg += exc.debug_error_string()
-            if not msg:
-                msg = str(exc)
-            self.result = msg
-
-    def stop(self):
-        self.log.info("Stopping notification stream")
-        self._stop_event.set()
-
-    def stopped(self):
-        return self._stop_event.is_set()
 
 
 class GnmiMessage:
@@ -378,7 +101,7 @@ class GnmiMessage:
                 log.error(str(exc))
 
     @classmethod
-    def run_get(self, device, payload, namespace):
+    def run_get(self, device, payload, namespace, transaction_time=0):
         """Run gNMI get service.
 
         Args:
@@ -410,7 +133,23 @@ class GnmiMessage:
                 ("username", device.device.credentials.default.get('username', '')),
                 ("password", to_plaintext(device.device.credentials.default.get('password', ''))),
             ]
-            response = device.gnmi.service.Get(payload, metadata=self.metadata)
+            if transaction_time:
+                start_time = time.time()
+                response = device.gnmi.service.Get(
+                    payload, metadata=self.metadata)
+                response_time = time.time() - start_time
+                if response_time > transaction_time:
+                    log.info(
+                        'gNMI GET Response\n' + '=' * 17 + '\n{0}'.format(
+                            str(response)
+                        )
+                    )
+                    log.error(banner(
+                        f'Response time: {response_time:.3f} seconds exceeded transaction_time {transaction_time:.3f}',
+                    ))
+                    return
+            else:
+                response = device.gnmi.service.Get(payload, metadata=self.metadata)
             log.info(
                 'gNMI GET Response\n' + '=' * 17 + '\n{0}'.format(
                     str(response)
@@ -428,7 +167,7 @@ class GnmiMessage:
             except:
                 pass
 
-            json_dicts, opfields, update = GnmiMessage.process_get_response(
+            json_dicts, opfields = GnmiMessage.process_get_response(
                 response, namespace
             )
             log.info(
@@ -538,6 +277,7 @@ class GnmiMessage:
                     continue
                 json_val = base64.b64decode(val).decode('utf-8')
                 json_dict = json.loads(json_val, strict=False)
+                opfields.append((json_dict, xpath))
             elif 'jsonVal' in val:
                 val = val.get('jsonVal', '')
                 if not val:
@@ -545,6 +285,7 @@ class GnmiMessage:
                     continue
                 json_val = base64.b64decode(val).decode('utf-8')
                 json_dict = json.loads(json_val, strict=False)
+                opfields.append((json_dict, xpath))
             elif 'asciiVal' in val:
                 val = val.get('asciiVal', '')
                 if not val:
@@ -644,7 +385,7 @@ class GnmiMessage:
                     opfields
                 ))
 
-        return (json_dicts, opfields, update)
+        return json_dicts, opfields
 
     @staticmethod
     def process_subscribe_response(response, namespace={}):
@@ -668,12 +409,8 @@ class GnmiMessage:
         json_dicts.append(GnmiMessage.process_update(
             update['update'], prefix, namespace, opfields
         ))
-        val = update['update'][0].get('val', {})
-        if val:
-            update['update'][0].pop('val')
-        update = update['update']
 
-        return (json_dicts, opfields, update)
+        return json_dicts, opfields
 
     @staticmethod
     def decode_opfields(update=None, namespace=None):
@@ -715,23 +452,6 @@ class GnmiMessage:
         return opfields
 
     @classmethod
-    def iter_subscribe_request(self, payloads, delay=0):
-        """Generator passed to Subscribe service to handle stream payloads.
-
-        Args:
-          payload (list): proto.gnmi_pb2.SubscribeRequest
-        """
-        for payload in payloads:
-            if delay:
-                time.sleep(delay)
-                if payload.HasField('poll'):
-                    log.info('gNMI SUBSCRIBE POLL\n' + '=' * 19 + '\n{0}'.format(
-                        str(payload)
-                        )
-                    )
-            yield payload
-
-    @classmethod
     def run_subscribe(self, device, payload, request):
         """Run gNMI subscribe service.
 
@@ -763,18 +483,8 @@ class GnmiMessage:
             gnmi_string
         ))
         try:
-            self.metadata = [
-                ("username", device.device.credentials.default.get('username', '')),
-                ("password", to_plaintext(device.device.credentials.default.get('password', ''))),
-            ]
-            payloads = [payload]
-            delay = 0
-            if request['request_mode'] == 'POLL':
-                delay = 3
-                payloads.append(
-                    GnmiMessageConstructor.get_subscribe_poll()
-                )
 
+            payloads = [payload]
             def verify(data, returns={}):
                 return data
             if request.get('verifier') is None:
@@ -786,19 +496,16 @@ class GnmiMessage:
                 log.info('Default decoder used.')
                 request['decode'] = GnmiMessage.process_subscribe_response
             request['log'] = log
-            timeout = None
-            if request.get('request_mode', 'STREAM') == 'STREAM':
-                timeout = request.get('stream_max', 120)
-            response = device.gnmi.service.Subscribe(
-                self.iter_subscribe_request(payloads, delay),
-                timeout=timeout,
-                metadata=self.metadata
-            )
-
-            subscribe_thread = GnmiNotification(
-                response,
-                **request
-            )
+            request_mode = request.get('request_mode', 'ONCE')
+            if request_mode == 'ONCE':
+                subscribe_thread = GnmiSubscriptionOnce(
+                    device, payloads, **request)
+            elif request_mode == 'POLL':
+                subscribe_thread = GnmiSubscriptionPoll(
+                    device, payloads, **request)
+            elif request_mode == 'STREAM':
+                subscribe_thread = GnmiSubscriptionStream(
+                    device, payloads, **request)
             device.active_notifications[device] = subscribe_thread
             subscribe_thread.start()
 
@@ -1151,6 +858,7 @@ class GnmiMessageConstructor:
         if subscribes:
             # Create subscribe list.
             subscribe_list = proto.gnmi_pb2.SubscriptionList()
+            subscribe_list.updates_only = self.cfg.get('updates_only', False)
             subscribe_list.encoding = proto.gnmi_pb2.Encoding.Value(
                 self.encoding
             )
@@ -1617,3 +1325,417 @@ class GnmiMessageConstructor:
 
         path.elem.extend(path_elems)
         return path
+
+
+class GnmiSubscription(ABC, Thread):
+    RE_FIND_KEYS = re.compile(r'\[.*?\]')
+
+    def __init__(self, device: Gnmi = None, **request):
+        Thread.__init__(self)
+        self.delay = 0
+        self._stop_event = Event()
+        self.log = request.get('log')
+        if self.log is None:
+            self.log = logging.getLogger(__name__)
+            self.log.setLevel(logging.DEBUG)
+        self.request = request
+        self.returns = request.get('returns')
+        self.response_verify = request.get('verifier')
+        self.decode_response = request.get('decode')
+        self.namespace = request.get('namespace')
+        self.sub_mode = request.get('sub_mode')
+        self.encoding = request.get('encoding')
+        self.transaction_time = request.get('transaction_time', 0)
+        self.time_delta = 0
+        self.results = []
+        self.processed_returns = []
+        self.negative_test = request.get('negative_test')
+        self.log.info(banner('GNMI Subscription reciever started'))
+        if device is not None:
+            self.metadata = [
+                ("username", device.device.credentials.default.get('username', '')),
+                ("password", to_plaintext(
+                    device.device.credentials.default.get('password', ''))),
+            ]
+        self.stream_max = request.get('stream_max', 0)
+        self.sample_interval = request.get('sample_interval', 0)
+        if self.stream_max:
+            self.log.info('Notification MAX timeout {0} seconds.'.format(
+                str(self.stream_max)
+            )
+            )
+        self.on_change_base = {}
+
+    class TransactionTimeExceeded(Exception):
+        def __init__(self, response_time):
+            self.response_time = response_time
+
+    @property
+    def result(self):
+        if not self.results:
+            return False is not self.negative_test
+        return all(self.results)
+
+    def process_opfields(self,
+                          response: gnmi_pb2.SubscribeResponse):
+        """Decode response and verify result.
+
+        Decoder callback returns desired format of response.
+        Verify callback returns verification of expected results.
+
+        Args:
+          response (proto.gnmi_pb2.Notification): Contains updates that
+              have changes since last timestamp.
+        """
+        try:
+            json_dicts, opfields = self.decode_response(
+                response, self.namespace
+            )
+
+            # Split returns on the basis of paths,
+            # received in opfields
+            returns_2 = []
+            current_processed_returns = []
+            for field in opfields:
+                for ret in self.returns:
+                    xp = ret['xpath']
+                    if xp in field and ret not in current_processed_returns:
+                        returns_2.append(ret)
+                        current_processed_returns.append(ret)
+                        self.processed_returns.append(ret)
+                        # Need all the possible returns for ON_CHANGE
+                        if self.sub_mode != 'ON_CHANGE':
+                            break
+                    else:
+                        # if list keys are found in the returns field['xpath']
+                        # Eg: returns['xpath'] = /Sys/List[key=value]/leaf
+                        if '[' in xp:
+                            # if above xpath with no keys '/Sys/List/leaf'
+                            # is in the opfield that means this might be the
+                            # possible returns to select, but we need check
+                            # keys in opfields as well.
+                            xp_no_keys = re.sub(self.RE_FIND_KEYS, '', xp)
+                            if xp_no_keys in field:
+                                # To make sure that this is the correct returns to select
+                                # we need to check that all the keys mentioned in the xpath
+                                # are in opfield or not.
+                                all_keys_in_opfield = self.find_keys_in_opfield(xp, opfields)
+                                # If all keys are present in opfield, then take this returns for validation.
+                                if all_keys_in_opfield and ret not in current_processed_returns:
+                                    returns_2.append(ret)
+                                    current_processed_returns.append(ret)
+                                    self.processed_returns.append(ret)
+                                    if self.sub_mode != 'ON_CHANGE':
+                                        break
+
+            if len(json_dicts):
+                for json_dict in json_dicts:
+                    if json_dict is not None:
+                        msg = 'JSON Decoded\n' + '=' * 12 + '\n' + json.dumps(
+                            json_dict, indent=2
+                        )
+                        self.log.info(msg)
+            if opfields and self.log.level == logging.DEBUG:
+                msg = 'Xpath/Value\n' + '=' * 11 + '\n' + pformat(opfields)
+                self.log.debug(msg)
+            if opfields:
+                # set initial result to false
+                result = False
+                if self.sub_mode == 'ON_CHANGE':
+                    for ret in returns_2:
+                        result = self.response_verify(opfields, deepcopy([ret]), on_change=True)
+                        if result:
+                            # If a new path found for on_change_base
+                            # Store the base value and break
+                            if not ret['xpath'] in self.on_change_base:
+                                self.on_change_base[ret['xpath']] = ret['value']
+                                break
+                            # else if path already present in on_change base
+                            else:
+                                # Value did not change, false result
+                                if ret['value'] == self.on_change_base[ret['xpath']]:
+                                    self.log.error('Value did not change for {0}'.format(ret['xpath']))
+                                    result = False
+                                else:
+                                    # Value changed as expected, update base value
+                                    # true result
+                                    self.on_change_base[ret['xpath']] = ret['value']
+                                    result = True
+                                    break
+                    # As we are not logging non matched returns in the verifier for on_change
+                    # So if all of the returns are not matched, Log Operation failed message
+                    if not result:
+                        self.response_verify(opfields, deepcopy(returns_2), on_change=False)
+                        self.stop()
+
+                else:
+                    result = self.response_verify(opfields, deepcopy(returns_2))
+                if self.negative_test:
+                    result = not result
+                    self.log.info(banner('NEGATIVE TEST'))
+                self.results.append(result)
+                if not result:
+                    self.log.error(banner('SUBSCIBE VERIFICATION FAILED'))
+                else:
+                    self.log.info(banner('SUBSCIBE VERIFICATION PASSED'))
+
+        except Exception as exc:
+            self.log.error(str(exc))
+            self.results.append(False)
+            self.stop()
+
+    def find_keys_in_opfield(self, xpath, opfields):
+        """Check if all keys in xpath present in opfields or not
+
+        Args:
+            xpath (Returns['xpath']): xpath with list keys in it
+            xpath = /Sys/List[key=key_value]/leaf
+            opfields (Decoded gNMI response): List of tuples(val, xpath)
+        Return true if (key_value, /Sys/List/Key) is in opfield, else False  
+        """
+        for match in re.finditer(self.RE_FIND_KEYS, xpath):
+            key = match.group()
+            # Extract the key name
+            # Eg: '[Key1=Val1]'
+            # key_name = Key1
+            key_name = key.split('=')[0].strip('[')
+            # Extract the key value
+            # Eg: '[Key1=Val1]'
+            # key_val = Val1
+            key_val = key.split('=')[1].strip(']')
+            key_val = re.sub('"', '', key_val)
+            # Extract the key path from xpath
+            # Eg: /Sys/Cont/Lis[Key1=Val1]
+            # key_path = /Sys/Cont/Lis/Key1
+            key_path = xpath.split(key)[0] + '/' + key_name
+            key_path = re.sub(self.RE_FIND_KEYS, '', key_path)
+
+            # create (key_val, key_path) field to check in opfield
+            key_field = (key_val, key_path)
+
+            if not key_field in opfields:
+                return False
+        return True
+
+    def log_remaining_returns(self):
+        """Log the returns not found in any of the response"""
+        for ret in self.returns:
+            if not ret in self.processed_returns:
+                xp = ret['xpath']
+                val = ret['value']
+                self.log.error(
+                    'ERROR: "{0} value: {1}" Not found.'.format(xp, str(val)))
+                self.results.append(False)
+
+    def stop(self):
+        self.log.info("Stopping notification stream")
+        self._stop_event.set()
+
+    def stopped(self):
+        return self._stop_event.is_set()
+
+    @classmethod
+    def iter_subscribe_request(self,
+                               payloads: List[gnmi_pb2.SubscribeRequest],
+                               delay: int = 0,
+                               sample_interval: int = 0):
+        """Generator passed to Subscribe service to handle stream payloads.
+
+        Args:
+          payload (list): proto.gnmi_pb2.SubscribeRequest
+        """
+        for payload in payloads:
+            if delay:
+                time.sleep(delay)
+            if payload.HasField('poll'):
+                time.sleep(sample_interval)
+                log.info('gNMI SUBSCRIBE POLL\n' + '=' * 19 + '\n{0}'.format(
+                    str(payload)
+                )
+                )
+            elif sample_interval:
+                log.info('Sample interval ignored for non-poll request')
+            yield payload
+
+    def cover_exceptions(func):
+        """Decorator to catch exceptions, log them and stop the thread."""
+        def inner(self):
+            try:
+                func(self)
+            except grpc.RpcError as exc:
+                if exc.code() == grpc.StatusCode.DEADLINE_EXCEEDED:
+                    self.log.info("Notification MAX timeout")
+                    if self.sub_mode != 'ON_CHANGE':
+                        self.log_remaining_returns()
+                        self.time_delta = self.stream_max
+                        self.log.info("Terminating notification thread")
+                    self.stop()
+                else:
+                    self.log.error("Unknown error: %s", exc)
+            except GnmiSubscription.TransactionTimeExceeded as exc:
+                self.log.error(banner(
+                    f'Response time: {exc.response_time:.3f} seconds exceeded transaction_time {self.transaction_time:.3f}',
+                ))
+                self.stop()
+            except Exception as exc:
+                msg = ''
+                if hasattr(exc, 'details'):
+                    msg += 'details: ' + exc.details()
+                if hasattr(exc, 'debug_error_string'):
+                    msg += exc.debug_error_string()
+                if not msg:
+                    msg = str(exc)
+                self.log.error("Unknown error: %s", exc)
+                self.stop()
+        return inner
+
+
+class GnmiSubscriptionStream(GnmiSubscription):
+    def __init__(self,
+                 device: Gnmi = None,
+                 payload: List[gnmi_pb2.SubscribeRequest] = None,
+                 responses: List[gnmi_pb2.SubscribeResponse] = None,
+                 **request):
+        super().__init__(device, **request)
+        timeout = request.get('stream_max', 120)
+        if responses is not None:
+            self.responses = responses
+        elif device is not None and payload is not None:
+            self.responses = device.gnmi.service.Subscribe(
+                self.iter_subscribe_request(payload, self.delay),
+                timeout=timeout,
+                metadata=self.metadata
+            )
+
+    @GnmiSubscription.cover_exceptions
+    def run(self):
+        """Check for inbound notifications."""
+        self.log.info('Subscribe notification active')
+        t = time.time()
+        for response in self.responses:
+            if self.transaction_time and time.time() - t > self.transaction_time:
+                raise GnmiSubscription.TransactionTimeExceeded(time.time() - t)
+            if response.HasField('sync_response'):
+                # Don't count sync_response as a response for transaction_time
+                self.log.info("Initial updates received")
+                continue
+            if response.HasField('update') and not self.stopped():
+                json_dicts, opfields = self.decode_response(
+                    response, self.namespace
+                )
+
+                self.log.info(
+                    "gNMI SUBSCRIBE Response\n" + "=" * 23 + "\n{}"
+                        .format(response)
+                )
+                if self.returns:
+                    self.log.info('Processing returns...')
+                    self.process_opfields(response)
+                else:
+                    # If no returns is provided, then result is True if an update is received.
+                    self.results.append(True)
+            t = time.time()
+        self.stop()
+
+
+class GnmiSubscriptionOnce(GnmiSubscription):
+    def __init__(self,
+                 device: Gnmi = None,
+                 payload: List[gnmi_pb2.SubscribeRequest] = None,
+                 responses: List[gnmi_pb2.SubscribeResponse] = None,
+                 ** request):
+        super().__init__(device, **request)
+        if responses is not None:
+            self.responses = responses
+        elif device is not None and payload is not None:
+            self.responses = device.gnmi.service.Subscribe(
+                self.iter_subscribe_request(payload, self.delay),
+                metadata=self.metadata
+            )
+
+    @GnmiSubscription.cover_exceptions
+    def run(self):
+        """Check for inbound notifications."""
+        self.log.info('Subscribe notification active')
+        stop_receiver = False
+        t = time.time()
+        for response in self.responses:
+            # Subscribe response ends here
+            if response.HasField('sync_response'):
+                self.log.info('Subscribe sync_response')
+                stop_receiver = True
+            elif self.transaction_time and time.time() - t > self.transaction_time:
+                raise GnmiSubscription.TransactionTimeExceeded(time.time() - t)
+
+            if response.HasField('update') and not self.stopped():
+                self.log.info(
+                    "gNMI SUBSCRIBE Response\n" + "=" * 23 + "\n{}"
+                        .format(response)
+                )
+                if self.returns:
+                    self.log.info('Processing returns...')
+                    self.process_opfields(response)
+                else:
+                    # If no returns is provided, then result is True if an update is received.
+                    self.results.append(True)
+
+            if stop_receiver:
+                self.log_remaining_returns()
+                self.log.info('Subscribe ONCE processed')
+                self.stop()
+        self.stop()
+
+
+class GnmiSubscriptionPoll(GnmiSubscription):
+    def __init__(self,
+                 device: Gnmi = None,
+                 payload: List[gnmi_pb2.SubscribeRequest] = None,
+                 responses: List[gnmi_pb2.SubscribeResponse] = None,
+                 **request):
+        super().__init__(device, **request)
+        timeout = request.get('stream_max', 120)
+        self.sample_interval = request.get('sample_interval', 5)
+        if responses is not None:
+            self.responses = responses
+        elif device is not None and payload is not None:
+            polls_number = request.get(
+                'polls_number', 0)
+            if polls_number == 0:
+                polls_number = timeout // self.sample_interval
+
+            for _ in range(polls_number):
+                payload.append(GnmiMessageConstructor.get_subscribe_poll())
+            self.responses = device.gnmi.service.Subscribe(
+                self.iter_subscribe_request(
+                    payload, sample_interval=self.sample_interval),
+                timeout=timeout,
+                metadata=self.metadata
+            )
+
+    @GnmiSubscription.cover_exceptions
+    def run(self):
+        """Check for inbound notifications."""
+        self.log.info('Subscribe notification active')
+        t = time.time()
+        for (i, response) in enumerate(self.responses):
+            if (i == 0):
+                diff = time.time() - t
+            else:
+                diff = time.time() - t - self.sample_interval
+            if (self.transaction_time and t and diff > self.transaction_time):
+                raise GnmiSubscription.TransactionTimeExceeded(diff)
+            if response.HasField('sync_response'):
+                self.log.info('Subscribe sync_response')
+
+            if response.HasField('update') and not self.stopped():
+                self.log.info(
+                    "gNMI SUBSCRIBE Response\n" + "=" * 23 + "\n{}"
+                        .format(response)
+                )
+                if self.returns:
+                    self.log.info('Processing returns...')
+                    self.process_opfields(response)
+                else:
+                    self.results.append(True)
+            t = time.time()
+        self.stop()

@@ -30,6 +30,6 @@ class TestConfigureIpIgmpJoinGroup(unittest.TestCase):
         )
 
     def test_configure_ip_igmp_join_group(self):
-        result = configure_ip_igmp_join_group(self.device, '10', '239.100.100.101', '4.4.4.4')
+        result = configure_ip_igmp_join_group(self.device, 'vlan 10', '239.100.100.101', '4.4.4.4')
         expected_output = None
         self.assertEqual(result, expected_output)

@@ -8,7 +8,7 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/apic/stages.py#L1036"
     },
     "com": {
-      "doc": "Apply configuration on the device, either by providing a file or a\nraw configuration.\n\nStage Schema\n------------\napply_configuration:\n\n    configuration (str, optional): String representation of the configuration to\n        apply. Defaults to None.\n\n    configuration_from_file (str, optional): A file that contains a configuration\n        that will be read. The configuration contained will then be applied as\n        if a string representation of the config was applied. Defaults to None.\n\n    file (str, optional): A saved configuration file that will be used. The file\n        will either be used in copy run start or configure replace based on the\n        'configure_replace' argument. Defaults to None.\n\n    configure_replace (bool, optional): When 'True' use 'configure replace' instead\n        of 'copy run start'. Defaults to False.\n\n    config_timeout (int, optional): Max time in seconds allowed for applying the\n        configuration. Defaults to 60.\n\n    config_stable_time (int, optional): Max time in seconds allowed for the\n        configuration to stabilize. Defaults to 10.\n\n    copy_vdc_all (bool, optional): If 'True' copy on all VDCs. Defaults to False.\n\n    max_time (int, optional): Maximum time in seconds allowed for any\n        verifications. Defaults to 300.\n\n    check_interval (int, optional): How often in seconds to check. Defaults to 60.\n\n    skip_copy_run_start (bool, optional): If 'True' do not copy the running config\n        to the startup config. Defaults to False.\n\n    copy_directly_to_startup (bool, optional): If 'True' copy the provided\n        configuration directly to the startup config. Defaults to False.\n\nExample\n-------\napply_configuration:\n    configuration: |\n        interface ethernet2/1\n        no shutdown\n    config_timeout: 600\n    config_stable_time: 10\n    copy_vdc_all: True\n    max_time: 300\n    check_interval: 20\n    copy_directly_to_startup: False\n\n",
+      "doc": "Apply configuration on the device, either by providing a file or a\nraw configuration.\n\nStage Schema\n------------\napply_configuration:\n\n    configuration (str, optional): String representation of the configuration to\n        apply. Defaults to None.\n\n    configuration_from_file (str, optional): A file that contains a configuration\n        that will be read. The configuration contained will then be applied as\n        if a string representation of the config was applied. Defaults to None.\n\n    file (str, optional): A saved configuration file that will be used. The file\n        will either be used in copy run start or configure replace based on the\n        'configure_replace' argument. Defaults to None.\n\n    configure_replace (bool, optional): When 'True' use 'configure replace' instead\n        of 'copy run start'. Defaults to False.\n\n    config_timeout (int, optional): Max time in seconds allowed for applying the\n        configuration. Defaults to 60.\n\n    config_stable_time (int, optional): Max time in seconds allowed for the\n        configuration to stabilize. Defaults to 10.\n\n    copy_vdc_all (bool, optional): If 'True' copy on all VDCs. Defaults to False.\n\n    max_time (int, optional): Maximum time in seconds allowed for any\n        verifications. Defaults to 300.\n\n    check_interval (int, optional): How often in seconds to check. Defaults to 60.\n\n    skip_copy_run_start (bool, optional): If 'True' do not copy the running config\n        to the startup config. Defaults to False.\n\n    copy_directly_to_startup (bool, optional): If 'True' copy the provided\n        configuration directly to the startup config. Defaults to False.\n\n    error_pattern (list, optional): if error_pattern list is given,\n        it will be passed to device.configure() to use the error_pattern\n\nExample\n-------\napply_configuration:\n    configuration: |\n        interface ethernet2/1\n        no shutdown\n    config_timeout: 600\n    config_stable_time: 10\n    copy_vdc_all: True\n    max_time: 300\n    check_interval: 20\n    copy_directly_to_startup: False\n\n",
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "ApplyConfiguration",
@@ -50,7 +50,7 @@
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "BackupFileOnDevice",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L1882"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L1889"
     }
   },
   "ChangeBootVariable": {
@@ -113,7 +113,7 @@
         "module_name": "stages.stages",
         "package": "genie.libs.clean",
         "uid": "ConfigureApTxPower",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/c9800/stages.py#L247"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/c9800/stages.py#L250"
       }
     }
   },
@@ -124,7 +124,7 @@
         "module_name": "stages.stages",
         "package": "genie.libs.clean",
         "uid": "ConfigureRrmDcaChannel",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/c9800/stages.py#L146"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/c9800/stages.py#L149"
       }
     }
   },
@@ -152,7 +152,7 @@
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "CopyRunToFlash",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L2741"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L2748"
     }
   },
   "CopyToDevice": {
@@ -186,7 +186,7 @@
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "DeleteBackupFromDevice",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L1977"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L1984"
     }
   },
   "DeleteFiles": {
@@ -195,7 +195,7 @@
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "DeleteFiles",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L2200"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L2207"
     }
   },
   "DeleteFilesFromServer": {
@@ -204,7 +204,7 @@
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "DeleteFilesFromServer",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L2101"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L2108"
     }
   },
   "EraseApConfiguration": {
@@ -278,7 +278,7 @@
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "InstallImage",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L493"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L496"
     },
     "iosxr": {
       "ncs540": {
@@ -314,7 +314,7 @@
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "InstallPackages",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L681"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L684"
     }
   },
   "InstallRemoveInactive": {
@@ -323,7 +323,7 @@
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "InstallRemoveInactive",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L438"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L441"
     }
   },
   "LoadPies": {
@@ -359,7 +359,7 @@
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "PowerCycle",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L2637"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L2644"
     }
   },
   "PrimeAp": {
@@ -386,7 +386,7 @@
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "Reload",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L765"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L768"
     }
   },
   "RevertVmSnapshot": {
@@ -395,7 +395,7 @@
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "RevertVmSnapshot",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L2270"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L2277"
     }
   },
   "RommonBoot": {
@@ -484,7 +484,7 @@
         "module_name": "stages.stages",
         "package": "genie.libs.clean",
         "uid": "VerifyApAssociation",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/c9800/stages.py#L84"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/c9800/stages.py#L87"
       }
     }
   },
@@ -506,7 +506,18 @@
         "module_name": "stages.stages",
         "package": "genie.libs.clean",
         "uid": "VerifyApMode",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/c9800/stages.py#L19"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/c9800/stages.py#L22"
+      }
+    }
+  },
+  "VerifyHaState": {
+    "iosxe": {
+      "c9800": {
+        "doc": " This stage verifies the if HA pair has formed successfully\n\n        Stage Schema\n        ------------\n        verify_ha_state:\n\n        Examples:\n            verify_ha_state:\n        ",
+        "module_name": "stages.stages",
+        "package": "genie.libs.clean",
+        "uid": "VerifyHaState",
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/c9800/stages.py#L315"
       }
     }
   },
@@ -517,7 +528,7 @@
         "module_name": "stages.stages",
         "package": "genie.libs.clean",
         "uid": "VerifyInstallationMode",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/c9800/stages.py#L203"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/c9800/stages.py#L206"
       }
     }
   },
@@ -538,7 +549,7 @@
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "VerifyRunningImage",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L1724"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L1731"
     },
     "iosxr": {
       "doc": "This stage verifies the current running image is the expected image.\nThe verification will be done by compare the result of 'show version' and provided\nimage name under 'images' keyword in the clean yaml file.\n\nStage Schema\n------------\nverify_running_image:\n\n    images (list): Image(s) that should be running on the device. \n\nExample\n-------\nverify_running_image:\n    images:\n        - test_image-7.5.4.08I.ios\n",

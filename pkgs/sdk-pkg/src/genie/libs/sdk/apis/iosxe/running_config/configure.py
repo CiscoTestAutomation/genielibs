@@ -224,3 +224,48 @@ def copy_config_from_tftp_to_media(device,
                 .format(device=device, error=e)
         )
 
+def configure_replace(device, path, file, config_replace_options="", timer=1, timeout=60):
+    """ Restore config from local file
+        Args:
+            device ('obj'): Device object
+            path ('str'): directory
+            file ('str'): file name
+            config_replace_options ('str'): configure replace command suboption
+                ex:)
+                    force       Forcibly replace without prompting for user input
+                    ignorecase  Ignore case
+                    list        List the commands applied in each pass
+                    nolock      Do not acquire config lock
+                    revert      Options for reverting back to the original config
+                    time        Time for which to wait for confirmation
+            time ('int', optional): config_replace_options selected as time (default is 1 second)
+            timeout ('int'): Timeout for applying config (default is 30 second)
+            
+        Returns:
+            execution output
+        Raises:
+            SubCommandFailure
+    """
+    dialog = Dialog(
+        [
+            Statement(
+                pattern=r".*\[no\].*",
+                action="sendline(Y)",
+                loop_continue=False,
+                continue_timer=False,
+            )
+        ]
+    )
+    cmd = f'configure replace {path}{file}'
+    if config_replace_options:
+        if config_replace_options == "revert":
+            cmd +=  ' revert trigger' 
+        elif config_replace_options == "time":
+            cmd += f' time {timer}'
+        else:
+            cmd += f' {config_replace_options}'
+    try:
+        return device.execute(cmd,reply=dialog,timeout=timeout)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to replace saved configuration on device {device}. Error:\n{e}")

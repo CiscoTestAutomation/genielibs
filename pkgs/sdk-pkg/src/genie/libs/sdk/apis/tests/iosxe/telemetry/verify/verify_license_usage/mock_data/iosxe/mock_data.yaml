@@ -1,0 +1,43 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: Switch(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: Switch(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show license summary:
+      response:
+      - "Account Information:\r\n  Smart Account: InternalTestDemoAccount37.cisco.com\
+        \ As of Nov 14 13:45:00 2022 PDT\r\n  Virtual Account: C9300-Switching-Telemetry\r\
+        \n\r\nLicense Usage:\r\n  License                 Entitlement Tag        \
+        \       Count Status\r\n  -----------------------------------------------------------------------------\r\
+        \n  network-advantage       (C9300-48 Network Advan...)       1 IN USE\r\n\
+        \  dna-advantage           (C9300-48 DNA Advantage)          1 IN USE"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: Switch#

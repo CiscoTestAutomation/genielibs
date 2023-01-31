@@ -32,7 +32,7 @@ from genie.libs.sdk.triggers.blitz.actions_helper import (Dialog,
                                                           _output_query_template,
                                                           check_yang_subscribe)
 
-from genie.libs.sdk.triggers.blitz.gnmi_util import GnmiNotification
+from genie.libs.sdk.triggers.blitz.gnmi_util import GnmiSubscriptionStream
 
 
 from unicon import Connection
@@ -1590,7 +1590,7 @@ class TestActions(unittest.TestCase):
       steps = Steps()
 
       kwargs = {
-        'self': self, 
+        'self': self,
         'device': self.dev,
         'steps': steps,
         'section': None,
@@ -1601,7 +1601,7 @@ class TestActions(unittest.TestCase):
           {
             'step_msg': 'First step',
             'expect': 'switch#'
-          }, 
+          },
           {
             'step_msg': 'Second step',
             'expect': 'switch#'
@@ -1641,7 +1641,7 @@ class TestActions(unittest.TestCase):
     def test_check_yang_subscribe_pass(self):
 
       steps = Steps()
-      gnmi_thrd = GnmiNotification([])
+      gnmi_thrd = GnmiSubscriptionStream(responses=[])
       gnmi_thrd.sub_mode = 'ON_CHANGE'
 
       with steps.start("Starting action") as step:
@@ -1656,7 +1656,7 @@ class TestActions(unittest.TestCase):
     def test_check_yang_subscribe_fail(self):
 
       steps = Steps()
-      gnmi_thrd = GnmiNotification([])
+      gnmi_thrd = GnmiSubscriptionStream(responses=[])
       gnmi_thrd.sub_mode = 'ON_CHANGE'
 
       with steps.start("Starting action") as step:

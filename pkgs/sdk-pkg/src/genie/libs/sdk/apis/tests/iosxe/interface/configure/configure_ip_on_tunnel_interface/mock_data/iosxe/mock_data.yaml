@@ -2,16 +2,16 @@ configure:
   commands:
     end:
       new_state: execute
-    interface Tunnel1: "interface Tunnel1\r\n"
+    interface tunnel1: "interface tunnel1\r\n"
     ip address 6.6.6.1 255.255.255.0: "ip address 6.6.6.1 255.255.255.0\r\n"
     keepalive 10: "keepalive 10\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''
     tunnel destination 1.1.1.2: "tunnel destination 1.1.1.2\r\n"
-    tunnel mode ipsec ipv4: "tunnel mode ipsec ipv4\r\n"
-    tunnel protection ipsec profile trans: "tunnel protection ipsec profile trans\r\
-      \n"
+    tunnel protection ipsec policy ipv4 100: "tunnel protection ipsec policy ipv4\
+      \ 100\r\n"
+    tunnel protection ipsec profile P1: "tunnel protection ipsec profile P1\r\n"
     tunnel source 2.2.2.2: "tunnel source 2.2.2.2\r\n"
   prompt: Hub(config)#
 configure_line:

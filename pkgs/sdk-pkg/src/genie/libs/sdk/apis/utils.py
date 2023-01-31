@@ -2050,19 +2050,18 @@ def get_power_cyclers(device):
 
     # Initialize each power cycler. Save the powercycler object and outlets
     for power_cycler in power_cyclers:
-        if power_cycler.get('outlets'):
-            # Cyberswitching based powercyclers require the testbed object
-            power_cycler['testbed'] = device.testbed
-
-            pcs.append(
-                (PowerCycler(**power_cycler), power_cycler['outlets'])
-            )
-        else:
-            raise Exception(
+        # Cyberswitching based powercyclers require the testbed object
+        power_cycler['testbed'] = device.testbed
+        outlets = power_cycler.get('outlets', [])
+        if not outlets:
+            log.warning(
                 "Powercycler outlets have not been provided:\n"
                 f"    Device: {device.name}\n"
                 f"    Powercycler info: {power_cycler}"
             )
+        pcs.append(
+            (PowerCycler(**power_cycler), outlets)
+        )
 
     return pcs
 

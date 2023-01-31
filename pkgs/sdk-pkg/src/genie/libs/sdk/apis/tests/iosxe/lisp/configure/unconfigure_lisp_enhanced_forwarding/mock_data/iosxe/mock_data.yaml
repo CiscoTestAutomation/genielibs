@@ -1,0 +1,39 @@
+configure:
+  commands:
+    eid-table vlan 110: "eid-table vlan 110\r\n"
+    end:
+      new_state: execute
+    instance-id 2: "instance-id 2\r\n"
+    line console 0:
+      new_state: configure_line
+    no enhanced-forwarding: "no enhanced-forwarding\r\n"
+    no logging console: ''
+    router lisp: "router lisp\r\n"
+    service ethernet: "service ethernet\r\n"
+  prompt: FE1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: FE1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: FE1#

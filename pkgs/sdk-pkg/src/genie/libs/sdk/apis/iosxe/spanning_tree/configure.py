@@ -472,6 +472,23 @@ def unconfigure_spanning_tree_backbonefast(device):
             f'Could not unconfigure spanning-tree backbonefast - Error:\n{error}'
         )
 
+def configure_spanning_tree_portfast_default(device):
+    """ Configures Spanning Tree portfast default
+        Args:
+            device ('obj')    : device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    try:
+        device.configure("spanning-tree portfast default")
+    except SubCommandFailure as error:
+        raise SubCommandFailure(
+            f'Could not configure spanning-tree portfast default - Error:\n{error}'
+        )
+
 def configure_spanning_tree_vlan_root(device, vlan_range, mode, diameter=int()):
     ''' 
     Configures spanning-tree vlan root with input vlan or vlan range
@@ -518,3 +535,143 @@ def unconfigure_spanning_tree_vlan_root(device, vlan_range):
             f"Could not Unconfigure Spanning Tree Vlan Root.- Error:\n{error}"
         )
 
+def configure_spanning_tree_bpdufilter_disable(device, interface):
+
+    """ Disable spanning-tree bpdufilter over interface 
+        Args:
+            device ('obj'): device to use
+            interface ('str'): Disable spanning-tree bpdufilter on this interface
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [
+                f"interface {interface}",
+                f"spanning-tree bpdufilter disable"           
+          ]  
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not disable the spanning-tree bpdufilter. Error:\n{error}".format(error=e)
+        )
+
+def configure_spanning_tree_bpdugaurd(device, interface, option):
+
+    """ Configure spanning-tree bpdugaurd over interface 
+        Args:
+            device ('obj'): device to use
+            interface ('str'): spanning-tree bpdufilter on this interface
+            option('str'): enable/disable
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [
+                f"interface {interface}",
+                f"spanning-tree bpduguard {option}"           
+          ]  
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure the spanning-tree bpdugaurd enable/diable. Error:\n{error}".format(error=e)
+        )
+
+def configure_spanning_tree_mst_configuration_name(device, name):
+    '''
+    Configure spanning-tree configuration with configuration name
+    Args:
+        device ('obj') : Device object
+        name ('str') : configuration name
+    Returns:
+        None
+    Raise:
+        SubCommandFailure
+    '''
+    log.info(
+        "configuring the spanning tree mst configuration name "
+    )
+    config = [
+        "spanning-tree mst configuration",
+        f"name {name}"
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure the spanning tree mst configuration name on {device} "
+            .format(device=device, e=e)
+        )
+
+def configure_spanning_tree_mst_configuration_revision(device, rev_num):
+
+    '''
+    Configure spanning-tree configuration with revision
+    Args:
+        device ('obj') : Device object
+        rev_num ('int') : Configuration revision number
+    Returns:
+        None
+    Raise:
+        SubCommandFailure
+    '''
+    log.info(
+        "configuring the spanning tree mst configuration revision "
+    )
+    config = [
+        "spanning-tree mst configuration",
+        f"revision {rev_num}"
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure the spanning tree mst configuration revision on {device} "
+            .format(device=device, e=e)
+        )
+
+def configure_default_spanning_tree(device, spanning_tree, mst="", portfast="", range=""):
+    """ Configure spanning-tree mode mst
+        Args:
+            device ('obj'): Device object]
+            spanning_tree ('str'): spanning tree 
+            mst ('str'): instance range, example: 0-3,5,7-9
+            portfast ('str'): enable portfast
+            range ('str'): vlan range, example: 1,3-5,7,9-11
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    if spanning_tree == "bridge":
+        cmd = f"default spanning-tree {spanning_tree} assurance" 
+    if spanning_tree == "etherchannel":
+        cmd = f"default spanning-tree {spanning_tree} guard misconfig" 
+    if spanning_tree == "extend":
+        cmd = f"default spanning-tree {spanning_tree} system-id" 
+    if spanning_tree == "mst":
+        cmd = f"default spanning-tree {spanning_tree} {mst}" 
+    if spanning_tree == "pathcost":
+        cmd = f"default spanning-tree {spanning_tree} method" 
+    if spanning_tree == "portfast":
+        cmd = f"default spanning-tree {spanning_tree} {portfast}" 
+    if spanning_tree == "sso":
+        cmd = f"default spanning-tree {spanning_tree} block-tcn" 
+    if spanning_tree == "transmit":
+        cmd = f"default spanning-tree {spanning_tree} hold-count" 
+    if spanning_tree == "uplinkfast":
+        cmd = f"default spanning-tree {spanning_tree} max-update-rate" 
+    if spanning_tree == "vlan":
+        cmd = f"default spanning-tree {spanning_tree} {range}" 
+    else:
+        cmd = f"default spanning-tree {spanning_tree}" 
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure spanning-tree mode mst on device. Error:\n{e}") 

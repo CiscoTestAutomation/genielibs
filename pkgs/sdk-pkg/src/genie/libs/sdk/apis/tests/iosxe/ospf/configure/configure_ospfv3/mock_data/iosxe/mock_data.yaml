@@ -1,0 +1,44 @@
+configure:
+  commands:
+    address-family ipv4: "address-family ipv4\r\n"
+    address-family ipv4 unicast: "address-family ipv4 unicast\r\n"
+    end:
+      new_state: execute
+    exit-address-family: "exit-address-family\r\n"
+    graceful-restart: "graceful-restart\r\n"
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    nsr: "nsr\r\n"
+    redistribute connected: "redistribute connected\r\n"
+    redistribute connected metric 1 metric-type 1: "redistribute connected metric\
+      \ 1 metric-type 1\r\n"
+    router ospfv3 1: "router ospfv3 1\r\n"
+    router-id 1.1.1.1: "router-id 1.1.1.1\r\n"
+  prompt: UUT1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: UUT1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: UUT1#

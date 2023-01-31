@@ -2,19 +2,18 @@ configure:
   commands:
     end:
       new_state: execute
-    inactivity-timer 3600: "inactivity-timer 3600\r\n"
+    inactivity-timer 10: "inactivity-timer 10\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''
-    service-template webauth-global-inactive: "service-template webauth-global-inactive\r\
-      \n"
-  prompt: stack-12m(config)#
+    service-template cisco_inac: "service-template cisco_inac\r\n"
+  prompt: 9300-24UX-1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: stack-12m(config-line)#
+  prompt: 9300-24UX-1(config-line)#
 connect:
   commands:
     ? ''
@@ -34,4 +33,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: stack-12m#
+  prompt: 9300-24UX-1#

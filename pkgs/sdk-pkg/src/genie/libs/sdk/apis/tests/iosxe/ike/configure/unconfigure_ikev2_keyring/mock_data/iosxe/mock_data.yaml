@@ -4,15 +4,17 @@ configure:
       new_state: execute
     line console 0:
       new_state: configure_line
-    no crypto ikev2 keyring ikev10_key: "no crypto ikev2 keyring ikev10_key\r\n"
+    no crypto ikev2 keyring HUB-KEY: "no crypto ikev2 keyring HUB-KEY\r\n"
+    no crypto ikev2 keyring dynamic: "no crypto ikev2 keyring dynamic\r\n"
+    no crypto ikev2 keyring manual: "no crypto ikev2 keyring manual\r\n"
     no logging console: ''
-  prompt: rad-vtep1(config)#
+  prompt: Hub(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: rad-vtep1(config-line)#
+  prompt: Hub(config-line)#
 connect:
   commands:
     ? ''
@@ -32,4 +34,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: rad-vtep1#
+  prompt: Hub#

@@ -161,6 +161,7 @@ class EraseApConfiguration(BaseStage):
         with steps.start("Erasing the AP-{}".format(device.name)) as step:
             if not device.api.execute_erase_ap():
                 step.failed("Failed to erase the AP")
+            time.sleep(300)
             timeout = Timeout(max_time, check_interval)
             while timeout.iterate():
                 try:

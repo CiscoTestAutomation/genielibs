@@ -2,20 +2,20 @@ configure:
   commands:
     end:
       new_state: execute
-    interface Twe2/0/15: "interface Twe2/0/15\r\n"
+    interface Tw1/0/28: "interface Tw1/0/28\r\n"
     line console 0:
       new_state: configure_line
     no lldp receive: "no lldp receive\r\n"
     no lldp run: "no lldp run\r\n"
     no lldp transmit: "no lldp transmit\r\n"
     no logging console: ''
-  prompt: Cat9600HA_DUT1(config)#
+  prompt: stack3-nyquist-1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: Cat9600HA_DUT1(config-line)#
+  prompt: stack3-nyquist-1(config-line)#
 connect:
   commands:
     ? ''
@@ -35,4 +35,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: Cat9600HA_DUT1#
+  prompt: stack3-nyquist-1#
