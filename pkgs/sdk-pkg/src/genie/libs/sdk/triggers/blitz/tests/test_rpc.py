@@ -241,6 +241,31 @@ remove_response_fail = """<rpc-reply message-id="101" xmlns="urn:ietf:params:xml
  </data>
 </rpc-reply>"""
 
+delete_only_one_node_response = """
+<rpc-reply xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0" xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="urn:uuid:bb6fb478-4e27-4826-9fd6-08454515e503">
+    <data>
+        <network-instances xmlns="http://openconfig.net/yang/network-instance">
+            <network-instance>
+                <name>DEFAULT</name>
+                <protocols>
+                    <protocol>
+                        <identifier xmlns:idx="http://openconfig.net/yang/policy-types">idx:BGP</identifier>
+                        <name>default</name>
+                        <bgp>
+                            <global>
+                                <config>
+                                    <as>200</as>
+                                </config>
+                            </global>
+                        </bgp>
+                    </protocol>
+                </protocols>
+            </network-instance>
+        </network-instances>
+    </data>
+</rpc-reply>
+"""
+
 class TestRpcVerify(unittest.TestCase):
     """Test cases for the rpcverify.RpcVerify methods."""
 
@@ -1148,6 +1173,31 @@ basic-mode=explicit&also-supported=report-all-tagged']
         result = self.rpcv.verify_rpc_data_reply(resp, rpc_data)
         self.assertTrue(result)
 
+    def test_auto_validate_remove_only_one_leaf(self):
+        """Test a remove operation only on one leaf with data returned"""
+        rpc_data = {
+            'nodes' : [
+                {
+                    'datatype': 'uint32', 
+                    'nodetype': 'leaf', 
+                    'value': '200',
+                    'xpath': '/oc-netinst:network-instances/oc-netinst:network-instance[oc-netinst:name="DEFAULT"]/oc-netinst:protocols/oc-netinst:protocol[oc-netinst:identifier="BGP"][oc-netinst:name="default"]/oc-netinst:bgp/oc-netinst:global/oc-netinst:config/oc-netinst:as'
+                }, 
+                {
+                    'datatype': 'boolean', 
+                    'edit-op': 'delete', 
+                    'nodetype': 'leaf', 
+                    'value': 'true', 
+                    'xpath': '/oc-netinst:network-instances/oc-netinst:network-instance[oc-netinst:name="DEFAULT"]/oc-netinst:protocols/oc-netinst:protocol[oc-netinst:identifier="BGP"][oc-netinst:name="default"]/oc-netinst:bgp/oc-netinst:global/oc-netinst:graceful-restart/oc-netinst:config/oc-netinst:enabled'
+                }
+            ],
+            'datastore' : 'candidate',
+            'operation': 'edit-config',
+        }
+        resp = self.rpcv.process_rpc_reply(delete_only_one_node_response)
+        result = self.rpcv.verify_rpc_data_reply(resp, rpc_data)
+        self.assertTrue(result)
+
     def test_auto_validate_remove_leaf(self):
         """Test a removed leaf is ok with no data returned."""
         rpc_data = {
@@ -1415,7 +1465,6 @@ basic-mode=explicit&also-supported=report-all-tagged']
             format=self.format
         )
         self.assertFalse(result)
-
 
 if __name__ == '__main__':
     unittest.main()

@@ -108,3 +108,92 @@ def configure_flow_monitor(device, monitor_name, exporter_name, record_name,
                f'Could not configure flow monitor {monitor_name}'
             )
 
+def  configure_mac_address_table_notification_change(device):
+    """ Config mac-address-table notification change on Device
+        Args:
+            device (`obj`): Device object
+            
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring flow monitor
+    """
+    log.info("mac-address-table notification change on device")
+    try:
+        device.configure("mac-address-table notification change")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure mac-address-table notification change device {device.name}. Error:\n{e}"
+            )
+            
+
+def  unconfigure_mac_address_table_notification_change(device):
+    """ unConfig mac-address-table notification change on Device
+        Args:
+            device (`obj`): Device object
+            
+        Return:
+            None
+
+        Raise:
+            SubCommandFailure: Failed unconfiguring mac-address-table notification change
+    """
+    log.info("no mac-address-table notification change on device")
+    try:
+        device.configure("no mac-address-table notification change")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure mac-address-table notification change device {device.name}. Error:\n{e}"
+            )
+
+def  configure_datalink_flow_monitor(device, interface):
+    """ Config datalink flow monitor m4out input on Device
+        Args:
+            device ('obj'): Device object
+            interface('str'): interface
+            modetype('str'): different mode types
+            ex:)
+                input    Apply Flow Monitor on input traffic
+                output   Apply Flow Monitor on output traffic
+                sampler  Optional Sampler to apply to this Flow Monitor
+        Return:
+            None
+
+        Raise:
+            SubCommandFailure: Failed configuring datalink flow monitor m4out
+    """
+    log.info("datalink flow monitor m2in1 input on device")
+    config=[f'interface {interface}',f'datalink flow monitor']
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure datalink flow monitor m4out device {device.name}. Error:\n{e}"
+            )
+
+def  unconfigure_datalink_flow_monitor(device, interface):
+    """ Config datalink flow monitor m4out input on Device
+        Args:
+            device ('obj'): Device object
+            interface('str'): interface
+            modetype('str'): different mode types
+            ex:)
+                input    Apply Flow Monitor on input traffic
+                output   Apply Flow Monitor on output traffic
+                sampler  Optional Sampler to apply to this Flow Monitor
+        Return:
+            None
+
+        Raise:
+            SubCommandFailure: Failed configuring datalink flow monitor m4out
+    """
+    log.info("datalink flow monitor m2in1 input on device")
+    config=[f'interface {interface}',f'no datalink flow monitor']
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure datalink flow monitor m4out device {device.name}. Error:\n{e}"
+            )
+
+

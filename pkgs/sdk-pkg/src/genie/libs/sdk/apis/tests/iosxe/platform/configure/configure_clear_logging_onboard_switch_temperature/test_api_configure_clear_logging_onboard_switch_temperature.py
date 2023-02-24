@@ -10,7 +10,7 @@ class TestConfigureClearLoggingOnboardSwitchTemperature(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          n10SVL:
+          stack3-nyquist-1:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,11 +18,11 @@ class TestConfigureClearLoggingOnboardSwitchTemperature(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: c9500
-            type: c9500
+            platform: c9300
+            type: c9300
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['n10SVL']
+        self.device = self.testbed.devices['stack3-nyquist-1']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,6 @@ class TestConfigureClearLoggingOnboardSwitchTemperature(unittest.TestCase):
         )
 
     def test_configure_clear_logging_onboard_switch_temperature(self):
-        result = configure_clear_logging_onboard_switch_temperature(self.device, '1')
+        result = configure_clear_logging_onboard_switch_temperature(self.device, 1)
         expected_output = None
         self.assertEqual(result, expected_output)

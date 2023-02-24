@@ -1,0 +1,61 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: wsim4ca14d90(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: wsim4ca14d90(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    configure client container avahi number total 1 ap 1:
+      response:
+      - "Waiting... it may take minutes to clean up!\r\n initializing the setup\r\n\
+        00000000 reset system...\r\n00000551 stopped all clients\r\n00002627 stopped\
+        \ all virtual APs\r\n00003495 Stopped mac80211\r\nReset done. [3495ms]\r\n\
+        initial setup [clean up]  elapsed: 11623 ms\r\ninitial setup [load mac80211_hwsim]\
+        \  elapsed: 170 ms\r\ninitial setup [interface] elapsed: 133 ms\r\nsetup containerized\
+        \ AP...\r\nSet bridge WSIMCP991b0f74 uplink to ens_wmedium 00:0c:29:a6:27:7a\r\
+        \nStart initializing WSIMCP991b0f74\r\nCreating a session - 991b0f74\r\nWSIM\
+        \ internal bridge Setup [ 2.559s ]\r\nAp start id 1, AP Count is 1\r\nwsim-AP-0001\
+        \ created! 789f50623581c858c5ab1c42a2747e86a5d9c74b2c4b6a851bdd112bece4551e:\
+        \ PID:672206 [ 1.559s ]\r\nstarting vAP setup\r\nvAP radio interface setup\
+        \ [ 0.199s ]\r\nwsim-AP-0001 VLAN: 46 set, which requires the external switch\
+        \ port in TRUNK mode with vlan 46 allowed\r\nvAP cleanup/creation [16140 ms]\r\
+        \nCreating wireless client id 1 to 1\r\n00000000 Configuring wireless client\
+        \ id 1 to 1...\r\nset client 1: sta00001 mac 00:00:E5:64:00:01 mtu 1400\r\n\
+        Starting webauth client daemon for clients 1 to 1\r\nWSIM DHCP client (PID:\
+        \ 672851) started!\r\nWSIM DHCP client (PID: 672853) started!\r\n00004239\
+        \ Wireless client id 1 to 1 are ready. \r\n% Note: client in docker container\
+        \ is experimental, and may not work compatible with other\r\ntest modules\
+        \ where client interface is assumed in global network namespace."
+      response_type: circular
+    configure hwsim connect mode ALL:
+      response:
+      - "connect_mode=ALL\r\nap_beacon_bitmask=65535\r\nap_beacon_sampling=200\r\n\
+        roaming_hops=0\r\n%vAP and vSTA radio connect mode is changed"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: wsim4ca14d90#

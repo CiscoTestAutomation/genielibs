@@ -131,6 +131,47 @@ class EvalDatatype:
             return self.value >= self.fval
 
 
+class OperationalFieldsNode:
+    """Data class for opfields and metadata default value, edit operation."""
+
+    def __init__(self, name, value, xpath, selected, operator, default_value, edit_op):
+        """
+        Args:
+            name (str): Name of a node.
+            value (str): Value of a node.
+            xpath (str): Xpath to a node.
+            selected (bool): Select this node to be used in processing operational state.
+            op (str): Logical operator used to compare state.
+        Metadata:            
+            default_value (bool): Default node value used.
+            edit_op (str): Edit operation used.
+        """
+        self._opfields = dict(
+            name=name,
+            value=value,
+            xpath=xpath,
+            selected=selected,
+            op=operator
+        )
+        self._default_value = default_value
+        self._edit_op = edit_op
+
+    @property
+    def opfields(self):
+        """Dict representing opfields."""
+        return self._opfields
+
+    @property
+    def default_value(self):
+        """Default value used in opfields"""
+        return self._default_value
+
+    @property
+    def edit_op(self):
+        """Edit operation"""
+        return self._edit_op
+
+
 class RpcVerify():
     """Verification of NETCONF rpc and rpc-reply messages.
 
@@ -1454,23 +1495,27 @@ class RpcVerify():
                     'report-all' in self.with_defaults:
                 # RFC 6243 - if value is default it should match
                 if edit_op in ['delete', 'remove']:
-                    nodes.append(
-                        {'name': xpath.split('/')[-1],
-                         'value': default,
-                         'xpath': xpath,
-                         'selected': True,
-                         'op': '=='}
-                    )
+                    nodes.append(OperationalFieldsNode(
+                        name=xpath.split('/')[-1],
+                        value=default,
+                        xpath=xpath,
+                        selected=True,
+                        operator='==',
+                        default_value=True,
+                        edit_op=edit_op
+                    ))
                     continue
 
-            if edit_op not in ['delete', 'remove']:
-                nodes.append(
-                    {'name': xpath.split('/')[-1],
-                     'value': value,
-                     'xpath': xpath,
-                     'selected': True,
-                     'op': '=='}
-                )
+            nodes.append(OperationalFieldsNode(
+                name=xpath.split('/')[-1],
+                value=value,
+                xpath=xpath,
+                selected=True,
+                operator='==',
+                default_value=False,
+                edit_op=edit_op
+            ))
+
         if not response and not nodes and \
                 edit_op in ['delete', 'remove']:
             log.info('NO DATA RETURNED')
@@ -1487,7 +1532,9 @@ class RpcVerify():
                             log.error("Config not removed. {0} operation failed".format(edit_op))
                             return False
         for node in nodes:
-            if not self.process_operational_state(response, [node]):
+            if not self.process_operational_state(response, [node.opfields]):
+                if node.edit_op in ['delete', 'remove'] and not node.default_value:
+                    continue
                 result = False
         for node in list_keys:
             if not self.process_operational_state(response, [node], key=True):

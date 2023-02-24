@@ -1,0 +1,44 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: stack3-nyquist-1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: stack3-nyquist-1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    'install label 3 label-name baseImageId_3 ':
+      response:
+      - "install_add_label: START Thu Feb  9 05:41:32 UTC 2023\r\n--- Starting install_add_label\
+        \ ---\r\nPerforming install_add_label on all members\r\n  [2] install_add_label\
+        \ package(s) on switch 2\r\n    FAILED: install_add_label : No rollback id\
+        \ 3 present\r\n  [2] Finished install_add_label on switch 2\r\nChecking status\
+        \ of install_add_label on [2]\r\ninstall_add_label: Passed on []. Failed on\
+        \ [2]\r\nFinished install_add_label\r\n\r\nFAILED: install_add_label  exit(1)\
+        \ Thu Feb  9 05:41:35 UTC 2023"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: stack3-nyquist-1#

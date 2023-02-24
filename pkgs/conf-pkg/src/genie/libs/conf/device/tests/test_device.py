@@ -28,8 +28,8 @@ class test_device(TestCase):
         with self.assertNoWarnings():
 
             Genie.testbed = Testbed()
-
-            with self.assertWarns(UnsupportedDeviceOsWarning,
+            # added DeprecationWarning for the issue with import __namespace__
+            with self.assertWarns((UnsupportedDeviceOsWarning, DeprecationWarning),
                                   msg='Device PE1 OS is unknown; Extended Device functionality will not be available: mandatory field \'os\' was  not given in the yaml file'):
                 dev1 = Device(name='PE1')
             self.assertIsInstance(dev1, Device)

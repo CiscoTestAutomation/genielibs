@@ -291,7 +291,8 @@ def free_up_disk_space(device, destination, required_size, skip_deletion,
                                                 protected=protected_files,
                                                 files_to_delete=[file],
                                                 dir_output=dir_out,
-                                                allow_failure=allow_deletion_failure)
+                                                allow_failure=allow_deletion_failure,
+                                                destination=destination)
 
             if device.api.verify_enough_disk_space(required_size, destination):
                 log.info("Verified there is enough space on the device after "

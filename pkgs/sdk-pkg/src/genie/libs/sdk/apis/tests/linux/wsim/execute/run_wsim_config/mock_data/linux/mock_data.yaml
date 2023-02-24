@@ -1,0 +1,1760 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: wsim4ca14d90(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: wsim4ca14d90(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    configure client number total 1 ap 1:
+      response:
+      - "Creating wireless client id 1 to 1\r\nWaiting... it may take minutes to clean\
+        \ up!\r\n initializing the setup\r\n00000000 reset system...\r\n00000603 stopped\
+        \ all clients\r\n00002621 stopped all virtual APs\r\n00003875 Stopped mac80211\r\
+        \nReset done. [3875ms]\r\ninitial setup [clean up]  elapsed: 11821 ms\r\n\
+        initial setup [load mac80211_hwsim]  elapsed: 168 ms\r\ninitial setup [interface]\
+        \ elapsed: 134 ms\r\nsetup containerized AP...\r\nSet bridge WSIMCPfae5a47e\
+        \ uplink to ens_wmedium 00:0c:29:a6:27:7a\r\nStart initializing WSIMCPfae5a47e\r\
+        \nCreating a session - fae5a47e\r\nWSIM internal bridge Setup [ 2.511s ]\r\
+        \nAp start id 1, AP Count is 1\r\nwsim-AP-0001 created! bf828167fd9886b2f188f8219db2d0cff097dfce9312f2998f5448ff5963965e:\
+        \ PID:670541 [ 1.695s ]\r\nstarting vAP setup\r\nvAP radio interface setup\
+        \ [ 0.155s ]\r\nwsim-AP-0001 VLAN: 46 set, which requires the external switch\
+        \ port in TRUNK mode with vlan 46 allowed\r\nvAP cleanup/creation [16180 ms]\r\
+        \n00000000 Configuring wireless client id 1 to 1...\r\n00000017 created wireless\
+        \ client interfaces.\r\n00000031 wireless client interfaces are available.\r\
+        \n00000045 Wireless client interfaces are link-down.\r\n00000085 Wireless\
+        \ client mac and mtu set.\r\n00000094 Wireless client interfaces are link-up.\r\
+        \n00000122 Wireless client interface IPv6 disabled.\r\n00000126 Wireless client\
+        \ id 1 to 1 are ready. \r\nStart wpa_supplicant daemons...\r\nDone. [19ms]\r\
+        \nStart WebAutth daemon...\r\nDone. [16ms]\r\nstarting dhclient daemon...WSIM\
+        \ DHCP client (PID: 671082) started!\r\nDone [ 7 ms]\r\nstarting dhclient\
+        \ IPv6 daemon...WSIM DHCP client (PID: 671086) started!\r\nDone [ 8 ms]\r\n\
+        00000178 Wireless clients' daemons started.\r\nWireless client setup completed!\
+        \ [186ms]\r\n[29255 ms]"
+      response_type: circular
+    run wlc apply certs:
+      response:
+      - "Applying WLC certificate...\r\n...Connecting to ssh://9.2.45.15:22 (logfile\
+        \ is /tmp/wlc_ssh_session.log)...\r\n\r\n% Enter PEM-formatted CA certificate.\r\
+        \r\n% End with a blank line or \"quit\" on a line by itself.\r\r\n...Sending\
+        \ CA certificate...\r\n% Enter PEM-formatted encrypted private General Purpose\
+        \ key.\r\r\n% End with \"quit\" on a line by itself.\r\r\n...Sending private\
+        \ General Purpose key...\r\n% Enter PEM-formatted General Purpose certificate.\r\
+        \r\n% End with a blank line or \"quit\" on a line by itself.\r\r\n...Sending\
+        \ private General Purpose certificate...\r\n% PEM files import succeeded.\r\
+        \r\n\r\newlc_2#show wireless management trustpoint\r\n\r\nTrustpoint Name\
+        \  : manual_certs\r\nCertificate Info : Available\r\nCertificate Type : SSC\r\
+        \nCertificate Hash : 79df56bf1dc160ed44a83966e9b08e258a9b6c21\r\nPrivate key\
+        \ Info : Available\r\nFIPS suitability : Not Applicable\r\n\r\newlc_2#write\r\
+        \nBuilding configuration...\r\n[OK]"
+      response_type: circular
+    run wlc get capwap:
+      response:
+      - "...Connecting to ssh://9.2.45.15:22 (logfile is /tmp/wlc_ssh_session.log)...\r\
+        \n\r\nGot capwap 17.9.2.52 from \"show ap image file summary\"\r\nCAPWAP version\
+        \ is set to 17.9.2.52"
+      response_type: circular
+    run wlc remove certs:
+      response:
+      - "Removing WLC certificate...\r\n...Connecting to ssh://9.2.45.15:22 (logfile\
+        \ is /tmp/wlc_ssh_session.log)...\r\n\r\newlc_2(config)#no crypto pki trustpoint\
+        \ manual_certs\r\n\r\n% Removing an enrolled trustpoint will destroy all certificates\r\
+        \n received from the related Certificate Authority.\r\n\r\nAre you sure you\
+        \ want to do this? [yes/no]: y\r\ny\r\n\r\n% Be sure to ask the CA administrator\
+        \ to revoke your certificates.\r\n\r\newlc_2(config)#crypto key zeroize rsa\
+        \ manual_certs\r\n% Keys to be removed are named 'manual_certs'.\r\n% All\
+        \ router certs issued using these keys will also be removed.\r\nDo you really\
+        \ want to remove these keys? [yes/no]: y\r\ny\r\n\r\n\r\ny\r\n%% 'y' * looks\
+        \ incomplete!\r\n-- clean system log \r\n-- clean system log <vacuum-time>\
+        \ \r\n-- configure ap all mesh mesh_ap \r\n-- configure ap all mesh root_ap\
+        \ \r\n-- configure ap id <ap-id> mesh mesh_ap \r\n-- configure ap id <ap-id>\
+        \ mesh root_ap \r\n-- configure ap id <ap-id> to <ap-id> mesh mesh_ap \r\n\
+        -- configure ap id <ap-id> to <ap-id> mesh root_ap \r\n-- configure client\
+        \ all cred anonymous_identity <anonymous_identity> \r\n-- configure client\
+        \ all cred ca_cert <ca_cert> \r\n-- configure client all cred eap <eap> \r\
+        \n-- configure client all cred identity <identity> \r\n-- configure client\
+        \ all cred password <password> \r\n-- configure client all cred priority <priority>\
+        \ \r\n-- configure client all cred username <username> \r\n-- configure client\
+        \ all device samsung <seq> \r\n-- configure client all dhcp \r\n-- configure\
+        \ client all dhcp disable \r\n-- configure client all dhcp6 \r\n-- configure\
+        \ client all dhcp6 disable \r\n-- configure client all dhcp6 stateless \r\n\
+        -- configure client all gen ap_scan <ap_scan> \r\n-- configure client all\
+        \ gen beacon_int <beacon_int> \r\n-- configure client all gen bss_expiration_age\
+        \ <bss_expiration_age> \r\n-- configure client all gen bss_max_count <bss_max_count>\
+        \ \r\n-- configure client all gen country <country> \r\n-- configure client\
+        \ all gen disable_scan_offload <disable_scan_offload> \r\n-- configure client\
+        \ all gen dtim_period <dtim_period> \r\n-- configure client all gen eapol_version\
+        \ <eapol_version> \r\n-- configure client all gen fast_reauth <fast_reauth>\
+        \ \r\n-- configure client all gen persistent_reconnect <persistent_reconnect>\
+        \ \r\n-- configure client all gen pmf <pmf> \r\n-- configure client all gen\
+        \ update_config <update_config> \r\n-- configure client all ip cidr <addr/prefix>\
+        \ gw <gw> \r\n-- configure client all ip disable \r\n-- configure client all\
+        \ ipv6 cidr <addr/prefix> gw <gw> \r\n-- configure client all ipv6 disable\
+        \ \r\n-- configure client all mac <mac> \r\n-- configure client all mac file\
+        \ <path/to/file> \r\n-- configure client all mac random \r\n-- configure client\
+        \ all network <network-id> anonymous_identity <anonymous_identity> \r\n--\
+        \ configure client all network <network-id> auth_alg <auth_alg> \r\n-- configure\
+        \ client all network <network-id> bgscan <bgscan> \r\n-- configure client\
+        \ all network <network-id> bssid <bssid> \r\n-- configure client all network\
+        \ <network-id> eap <eap> \r\n-- configure client all network <network-id>\
+        \ eapol_flags <eapol_flags> \r\n-- configure client all network <network-id>\
+        \ group <group> \r\n-- configure client all network <network-id> identity\
+        \ <identity> \r\n-- configure client all network <network-id> ieee80211w <ieee80211w>\
+        \ \r\n-- configure client all network <network-id> key_mgmt <key_mgmt> \r\n\
+        -- configure client all network <network-id> pairwise <pairwise> \r\n-- configure\
+        \ client all network <network-id> password <password> \r\n-- configure client\
+        \ all network <network-id> proto <proto> \r\n-- configure client all network\
+        \ <network-id> psk <psk> \r\n-- configure client all network <network-id>\
+        \ scan_freq <scan_freq> \r\n-- configure client all network <network-id> scan_ssid\
+        \ <scan_ssid> \r\n-- configure client all network <network-id> ssid <ssid>\
+        \ \r\n-- configure client all network <network-id> username <username> \r\n\
+        -- configure client all network anonymous_identity <anonymous_identity> \r\
+        \n-- configure client all network auth_alg <auth_alg> \r\n-- configure client\
+        \ all network bgscan <bgscan> \r\n-- configure client all network bssid <bssid>\
+        \ \r\n-- configure client all network eap <eap> \r\n-- configure client all\
+        \ network eapol_flags <eapol_flags> \r\n-- configure client all network group\
+        \ <group> \r\n-- configure client all network identity <identity> \r\n-- configure\
+        \ client all network ieee80211w <ieee80211w> \r\n-- configure client all network\
+        \ key_mgmt <key_mgmt> \r\n-- configure client all network pairwise <pairwise>\
+        \ \r\n-- configure client all network password <password> \r\n-- configure\
+        \ client all network proto <proto> \r\n-- configure client all network psk\
+        \ <psk> \r\n-- configure client all network scan_freq <scan_freq> \r\n-- configure\
+        \ client all network scan_ssid <scan_ssid> \r\n-- configure client all network\
+        \ ssid <ssid> \r\n-- configure client all network username <username> \r\n\
+        -- configure client all template client id <client-id> \r\n-- configure client\
+        \ all template file <path/to/file> \r\n-- configure client ap list \r\n--\
+        \ configure client container <docker-image> number total <num> ap <num> \r\
+        \n-- configure client id <client-id> cred anonymous_identity <anonymous_identity>\
+        \ \r\n-- configure client id <client-id> cred ca_cert <ca_cert> \r\n-- configure\
+        \ client id <client-id> cred eap <eap> \r\n-- configure client id <client-id>\
+        \ cred identity <identity> \r\n-- configure client id <client-id> cred password\
+        \ <password> \r\n-- configure client id <client-id> cred priority <priority>\
+        \ \r\n-- configure client id <client-id> cred username <username> \r\n-- configure\
+        \ client id <client-id> device samsung <seq> \r\n-- configure client id <client-id>\
+        \ dhcp \r\n-- configure client id <client-id> dhcp disable \r\n-- configure\
+        \ client id <client-id> dhcp6 \r\n-- configure client id <client-id> dhcp6\
+        \ disable \r\n-- configure client id <client-id> dhcp6 stateless \r\n-- configure\
+        \ client id <client-id> gen ap_scan <ap_scan> \r\n-- configure client id <client-id>\
+        \ gen beacon_int <beacon_int> \r\n-- configure client id <client-id> gen bss_expiration_age\
+        \ <bss_expiration_age> \r\n-- configure client id <client-id> gen bss_max_count\
+        \ <bss_max_count> \r\n-- configure client id <client-id> gen country <country>\
+        \ \r\n-- configure client id <client-id> gen disable_scan_offload <disable_scan_offload>\
+        \ \r\n-- configure client id <client-id> gen dtim_period <dtim_period> \r\n\
+        -- configure client id <client-id> gen eapol_version <eapol_version> \r\n\
+        -- configure client id <client-id> gen fast_reauth <fast_reauth> \r\n-- configure\
+        \ client id <client-id> gen persistent_reconnect <persistent_reconnect> \r\
+        \n-- configure client id <client-id> gen pmf <pmf> \r\n-- configure client\
+        \ id <client-id> gen update_config <update_config> \r\n-- configure client\
+        \ id <client-id> ip cidr <addr/prefix> gw <gw> \r\n-- configure client id\
+        \ <client-id> ip disable \r\n-- configure client id <client-id> ipv6 cidr\
+        \ <addr/prefix> gw <gw> \r\n-- configure client id <client-id> ipv6 disable\
+        \ \r\n-- configure client id <client-id> mac <mac> \r\n-- configure client\
+        \ id <client-id> mac file <path/to/file> \r\n-- configure client id <client-id>\
+        \ mac random \r\n-- configure client id <client-id> network <network-id> anonymous_identity\
+        \ <anonymous_identity> \r\n-- configure client id <client-id> network <network-id>\
+        \ auth_alg <auth_alg> \r\n-- configure client id <client-id> network <network-id>\
+        \ bgscan <bgscan> \r\n-- configure client id <client-id> network <network-id>\
+        \ bssid <bssid> \r\n-- configure client id <client-id> network <network-id>\
+        \ eap <eap> \r\n-- configure client id <client-id> network <network-id> eapol_flags\
+        \ <eapol_flags> \r\n-- configure client id <client-id> network <network-id>\
+        \ group <group> \r\n-- configure client id <client-id> network <network-id>\
+        \ identity <identity> \r\n-- configure client id <client-id> network <network-id>\
+        \ ieee80211w <ieee80211w> \r\n-- configure client id <client-id> network <network-id>\
+        \ key_mgmt <key_mgmt> \r\n-- configure client id <client-id> network <network-id>\
+        \ pairwise <pairwise> \r\n-- configure client id <client-id> network <network-id>\
+        \ password <password> \r\n-- configure client id <client-id> network <network-id>\
+        \ proto <proto> \r\n-- configure client id <client-id> network <network-id>\
+        \ psk <psk> \r\n-- configure client id <client-id> network <network-id> scan_freq\
+        \ <scan_freq> \r\n-- configure client id <client-id> network <network-id>\
+        \ scan_ssid <scan_ssid> \r\n-- configure client id <client-id> network <network-id>\
+        \ ssid <ssid> \r\n-- configure client id <client-id> network <network-id>\
+        \ username <username> \r\n-- configure client id <client-id> network anonymous_identity\
+        \ <anonymous_identity> \r\n-- configure client id <client-id> network auth_alg\
+        \ <auth_alg> \r\n-- configure client id <client-id> network bgscan <bgscan>\
+        \ \r\n-- configure client id <client-id> network bssid <bssid> \r\n-- configure\
+        \ client id <client-id> network eap <eap> \r\n-- configure client id <client-id>\
+        \ network eapol_flags <eapol_flags> \r\n-- configure client id <client-id>\
+        \ network group <group> \r\n-- configure client id <client-id> network identity\
+        \ <identity> \r\n-- configure client id <client-id> network ieee80211w <ieee80211w>\
+        \ \r\n-- configure client id <client-id> network key_mgmt <key_mgmt> \r\n\
+        -- configure client id <client-id> network pairwise <pairwise> \r\n-- configure\
+        \ client id <client-id> network password <password> \r\n-- configure client\
+        \ id <client-id> network proto <proto> \r\n-- configure client id <client-id>\
+        \ network psk <psk> \r\n-- configure client id <client-id> network scan_freq\
+        \ <scan_freq> \r\n-- configure client id <client-id> network scan_ssid <scan_ssid>\
+        \ \r\n-- configure client id <client-id> network ssid <ssid> \r\n-- configure\
+        \ client id <client-id> network username <username> \r\n-- configure client\
+        \ id <client-id> template client id <client-id> \r\n-- configure client id\
+        \ <client-id> template file <path/to/file> \r\n-- configure client id <client-id>\
+        \ to <client-id> cred anonymous_identity <anonymous_identity> \r\n-- configure\
+        \ client id <client-id> to <client-id> cred ca_cert <ca_cert> \r\n-- configure\
+        \ client id <client-id> to <client-id> cred eap <eap> \r\n-- configure client\
+        \ id <client-id> to <client-id> cred identity <identity> \r\n-- configure\
+        \ client id <client-id> to <client-id> cred password <password> \r\n-- configure\
+        \ client id <client-id> to <client-id> cred priority <priority> \r\n-- configure\
+        \ client id <client-id> to <client-id> cred username <username> \r\n-- configure\
+        \ client id <client-id> to <client-id> device samsung <seq> \r\n-- configure\
+        \ client id <client-id> to <client-id> dhcp \r\n-- configure client id <client-id>\
+        \ to <client-id> dhcp disable \r\n-- configure client id <client-id> to <client-id>\
+        \ dhcp6 \r\n-- configure client id <client-id> to <client-id> dhcp6 disable\
+        \ \r\n-- configure client id <client-id> to <client-id> dhcp6 stateless \r\
+        \n-- configure client id <client-id> to <client-id> gen ap_scan <ap_scan>\
+        \ \r\n-- configure client id <client-id> to <client-id> gen beacon_int <beacon_int>\
+        \ \r\n-- configure client id <client-id> to <client-id> gen bss_expiration_age\
+        \ <bss_expiration_age> \r\n-- configure client id <client-id> to <client-id>\
+        \ gen bss_max_count <bss_max_count> \r\n-- configure client id <client-id>\
+        \ to <client-id> gen country <country> \r\n-- configure client id <client-id>\
+        \ to <client-id> gen disable_scan_offload <disable_scan_offload> \r\n-- configure\
+        \ client id <client-id> to <client-id> gen dtim_period <dtim_period> \r\n\
+        -- configure client id <client-id> to <client-id> gen eapol_version <eapol_version>\
+        \ \r\n-- configure client id <client-id> to <client-id> gen fast_reauth <fast_reauth>\
+        \ \r\n-- configure client id <client-id> to <client-id> gen persistent_reconnect\
+        \ <persistent_reconnect> \r\n-- configure client id <client-id> to <client-id>\
+        \ gen pmf <pmf> \r\n-- configure client id <client-id> to <client-id> gen\
+        \ update_config <update_config> \r\n-- configure client id <client-id> to\
+        \ <client-id> ip cidr <addr/prefix> gw <gw> \r\n-- configure client id <client-id>\
+        \ to <client-id> ip disable \r\n-- configure client id <client-id> to <client-id>\
+        \ ipv6 cidr <addr/prefix> gw <gw> \r\n-- configure client id <client-id> to\
+        \ <client-id> ipv6 disable \r\n-- configure client id <client-id> to <client-id>\
+        \ mac <mac> \r\n-- configure client id <client-id> to <client-id> mac file\
+        \ <path/to/file> \r\n-- configure client id <client-id> to <client-id> mac\
+        \ random \r\n-- configure client id <client-id> to <client-id> network <network-id>\
+        \ anonymous_identity <anonymous_identity> \r\n-- configure client id <client-id>\
+        \ to <client-id> network <network-id> auth_alg <auth_alg> \r\n-- configure\
+        \ client id <client-id> to <client-id> network <network-id> bgscan <bgscan>\
+        \ \r\n-- configure client id <client-id> to <client-id> network <network-id>\
+        \ bssid <bssid> \r\n-- configure client id <client-id> to <client-id> network\
+        \ <network-id> eap <eap> \r\n-- configure client id <client-id> to <client-id>\
+        \ network <network-id> eapol_flags <eapol_flags> \r\n-- configure client id\
+        \ <client-id> to <client-id> network <network-id> group <group> \r\n-- configure\
+        \ client id <client-id> to <client-id> network <network-id> identity <identity>\
+        \ \r\n-- configure client id <client-id> to <client-id> network <network-id>\
+        \ ieee80211w <ieee80211w> \r\n-- configure client id <client-id> to <client-id>\
+        \ network <network-id> key_mgmt <key_mgmt> \r\n-- configure client id <client-id>\
+        \ to <client-id> network <network-id> pairwise <pairwise> \r\n-- configure\
+        \ client id <client-id> to <client-id> network <network-id> password <password>\
+        \ \r\n-- configure client id <client-id> to <client-id> network <network-id>\
+        \ proto <proto> \r\n-- configure client id <client-id> to <client-id> network\
+        \ <network-id> psk <psk> \r\n-- configure client id <client-id> to <client-id>\
+        \ network <network-id> scan_freq <scan_freq> \r\n-- configure client id <client-id>\
+        \ to <client-id> network <network-id> scan_ssid <scan_ssid> \r\n-- configure\
+        \ client id <client-id> to <client-id> network <network-id> ssid <ssid> \r\
+        \n-- configure client id <client-id> to <client-id> network <network-id> username\
+        \ <username> \r\n-- configure client id <client-id> to <client-id> network\
+        \ anonymous_identity <anonymous_identity> \r\n-- configure client id <client-id>\
+        \ to <client-id> network auth_alg <auth_alg> \r\n-- configure client id <client-id>\
+        \ to <client-id> network bgscan <bgscan> \r\n-- configure client id <client-id>\
+        \ to <client-id> network bssid <bssid> \r\n-- configure client id <client-id>\
+        \ to <client-id> network eap <eap> \r\n-- configure client id <client-id>\
+        \ to <client-id> network eapol_flags <eapol_flags> \r\n-- configure client\
+        \ id <client-id> to <client-id> network group <group> \r\n-- configure client\
+        \ id <client-id> to <client-id> network identity <identity> \r\n-- configure\
+        \ client id <client-id> to <client-id> network ieee80211w <ieee80211w> \r\n\
+        -- configure client id <client-id> to <client-id> network key_mgmt <key_mgmt>\
+        \ \r\n-- configure client id <client-id> to <client-id> network pairwise <pairwise>\
+        \ \r\n-- configure client id <client-id> to <client-id> network password <password>\
+        \ \r\n-- configure client id <client-id> to <client-id> network proto <proto>\
+        \ \r\n-- configure client id <client-id> to <client-id> network psk <psk>\
+        \ \r\n-- configure client id <client-id> to <client-id> network scan_freq\
+        \ <scan_freq> \r\n-- configure client id <client-id> to <client-id> network\
+        \ scan_ssid <scan_ssid> \r\n-- configure client id <client-id> to <client-id>\
+        \ network ssid <ssid> \r\n-- configure client id <client-id> to <client-id>\
+        \ network username <username> \r\n-- configure client id <client-id> to <client-id>\
+        \ template client id <client-id> \r\n-- configure client id <client-id> to\
+        \ <client-id> template file <path/to/file> \r\n-- configure client mac <mac>\
+        \ \r\n-- configure client mac file <path/to/file> \r\n-- configure client\
+        \ mac random \r\n-- configure client number add <num> \r\n-- configure client\
+        \ number add <num> ap <ap-id> \r\n-- configure client number total <num> \r\
+        \n-- configure client number total <num> ap <num> \r\n-- configure dhcpd disable\
+        \ \r\n-- configure dhcpd enable \r\n-- configure global ap base_mac <base-mac>\
+        \ \r\n-- configure global ap base_mac random \r\n-- configure global ap base_serial\
+        \ <base-serial> \r\n-- configure global ap beacon bitmask <bitmask> \r\n--\
+        \ configure global ap beacon loss <loss> \r\n-- configure global ap beacon\
+        \ sampling <sampling> \r\n-- configure global ap bunch <num> \r\n-- configure\
+        \ global ap capwap_brain <enable/disable> \r\n-- configure global ap country\
+        \ <country> \r\n-- configure global ap dev_mode <enable/disable> \r\n-- configure\
+        \ global ap ecomode <yes/no> \r\n-- configure global ap freq <freq> \r\n--\
+        \ configure global ap grpc server <enable/disable> \r\n-- configure global\
+        \ ap interval <seconds> \r\n-- configure global ap ip v4 <yes/no> \r\n-- configure\
+        \ global ap ip v6 <yes/no> \r\n-- configure global ap mode flex \r\n-- configure\
+        \ global ap mode local \r\n-- configure global ap mode mesh \r\n-- configure\
+        \ global ap mode mesh <aps> \r\n-- configure global ap model \r\n-- configure\
+        \ global ap model <model> \r\n-- configure global ap name <prefix> \r\n--\
+        \ configure global ap offchan <yes/no> \r\n-- configure global ap office-extended\
+        \ <enable/disable> \r\n-- configure global ap pnp <enable/disable> \r\n--\
+        \ configure global ap radio <num> \r\n-- configure global ap start-rate <num>\
+        \ \r\n-- configure global ap storage <yes/no> \r\n-- configure global ap tls\
+        \ gateway address <address> port <port> \r\n-- configure global ap type capwap\
+        \ \r\n-- configure global ap type cloud \r\n-- configure global ap type mobility-express\
+        \ \r\n-- configure global ap vci <vci> \r\n-- configure global ap web server\
+        \ <enable/disable> \r\n-- configure global client alive <yes/no> \r\n-- configure\
+        \ global client alive client id <client-id> \r\n-- configure global client\
+        \ alive client monitor \r\n-- configure global client alive interval <seconds>\
+        \ \r\n-- configure global client alive ip <ip> mac <mac> \r\n-- configure\
+        \ global client alive packet size <packet-size> \r\n-- configure global client\
+        \ alive port <port> \r\n-- configure global client base_mac <base-mac> \r\n\
+        -- configure global client base_name <base_name> \r\n-- configure global client\
+        \ bunch <num> \r\n-- configure global client dhcpv4 no \r\n-- configure global\
+        \ client dhcpv4 yes \r\n-- configure global client dhcpv6 no \r\n-- configure\
+        \ global client dhcpv6 stateless \r\n-- configure global client dhcpv6 yes\
+        \ \r\n-- configure global client ip v6 no \r\n-- configure global client ip\
+        \ v6 yes \r\n-- configure global client ipv4 dhcp \r\n-- configure global\
+        \ client ipv4 no \r\n-- configure global client ipv4 static \r\n-- configure\
+        \ global client ipv4 static <addr/prefix> gw <gw> \r\n-- configure global\
+        \ client ipv4 static list \r\n-- configure global client ipv6 dhcp stateful\
+        \ \r\n-- configure global client ipv6 dhcp stateless \r\n-- configure global\
+        \ client ipv6 no \r\n-- configure global client ipv6 static \r\n-- configure\
+        \ global client ipv6 static <addr/prefix> gw <gw> <num> \r\n-- configure global\
+        \ client name <client-name-prefix> \r\n-- configure global client start-rate\
+        \ <rate> \r\n-- configure global client template <path/to/file> \r\n-- configure\
+        \ global client test mtu <mtu> \r\n-- configure global client test webauth_timeout\
+        \ <sec> \r\n-- configure global client timeoutx <factor> \r\n-- configure\
+        \ global client vendor_class_id <vendor-class-id> \r\n-- configure global\
+        \ log capwap <level> \r\n-- configure global log click <level> \r\n-- configure\
+        \ global log dhcp <level> \r\n-- configure global log hostapd <level> \r\n\
+        -- configure global log kernel <level> \r\n-- configure global log supplicant\
+        \ <level> \r\n-- configure global reset factory \r\n-- configure global setup\
+        \ ap access <yes/no> \r\n-- configure global setup ap access group <group-size>\
+        \ \r\n-- configure global setup ap access vlan <vlan> \r\n-- configure global\
+        \ setup ap list remove <seq> \r\n-- configure global setup ap list remove\
+        \ all \r\n-- configure global setup ap list seq <seq> vlan <vlan> <aps> <clients>\
+        \ start_ip <addr/prefix> gateway <gw> wlc <wlc-ip> <wlc-2nd-ip> <wlc-3rd-ip>\
+        \ \r\n-- configure global setup ap list seq <seq> vlan <vlan> <aps> <clients>\
+        \ start_ip <addr/prefix> gateway <gw> wlc <wlc-ip> <wlc-2nd-ip> <wlc-3rd-ip>\
+        \ model <model> \r\n-- configure global setup ap list seq <seq> vlan <vlan>\
+        \ <aps> <clients> start_ip <addr/prefix> gateway <gw> wlc <wlc-ip> <wlc-2nd-ip>\
+        \ <wlc-3rd-ip> model <model> uplink_port <port> \r\n-- configure global setup\
+        \ ap list seq <seq> vlan <vlan> <aps> <clients> start_ip <addr/prefix> gateway\
+        \ <gw> wlc <wlc-ip> <wlc-2nd-ip> <wlc-3rd-ip> uplink_port <port> \r\n-- configure\
+        \ global setup ap monitoring <yes/no> \r\n-- configure global setup aux <num>\
+        \ \r\n-- configure global setup aux connect <direction> \r\n-- configure global\
+        \ setup bridge linux \r\n-- configure global setup bridge ovs \r\n-- configure\
+        \ global setup client ap blocking \r\n-- configure global setup client ap\
+        \ interleaving \r\n-- configure global setup client device compliance 11n\
+        \ <yes/no> \r\n-- configure global setup client device compliance wifi6 <yes/no>\
+        \ \r\n-- configure global setup client dns_cache <yes/no> \r\n-- configure\
+        \ global setup client dns_cache remove all \r\n-- configure global setup client\
+        \ dns_cache remove seq <seq> \r\n-- configure global setup client dns_cache\
+        \ seq <seq> hostname <hostname> port <port> <ipv4> <ipv6> \r\n-- configure\
+        \ global setup client dns_server <ipv4> <ipv6> \r\n-- configure global setup\
+        \ client dns_server dhcp \r\n-- configure global setup client dns_server no\
+        \ \r\n-- configure global setup client list remove <seq> \r\n-- configure\
+        \ global setup client list remove all \r\n-- configure global setup client\
+        \ list seq <seq> <clients> startip <addr/prefix> gateway <gw> \r\n-- configure\
+        \ global setup client monitor <yes/no> \r\n-- configure global setup client\
+        \ monitor interface <interface> \r\n-- configure global setup client monitor\
+        \ internal \r\n-- configure global setup client post_action_frame <yes/no>\
+        \ \r\n-- configure global setup client post_action_frame hexdump <hexdump>\
+        \ \r\n-- configure global setup client user_agent <user-agent> \r\n-- configure\
+        \ global setup client-vlan-allow <yes/no> \r\n-- configure global setup device\
+        \ samsung <yes/no> \r\n-- configure global setup device samsung adaptive_11r\
+        \ <yes/no> \r\n-- configure global setup device samsung profile seq <seq>\
+        \ type <type> <model> <sw-ver> <sales-code> <plat-ver> key <key-index> \r\n\
+        -- configure global setup device samsung rfc8325_dscp <yes/no> \r\n-- configure\
+        \ global setup dhcpd <yes/no> \r\n-- configure global setup dhcpd ap server\
+        \ <addr/prefix> pool <begin-ip> <end-ip> router <router> \r\n-- configure\
+        \ global setup dhcpd client server <addr/prefix> pool <begin-ip> <end-ip>\
+        \ router <router> \r\n-- configure global setup dhcpd v6 <yes/no> \r\n-- configure\
+        \ global setup dhcpd v6 ap server <addr/prefix> pool <begin-ip> <end-ip> router\
+        \ <router> \r\n-- configure global setup dhcpd v6 client server <addr/prefix>\
+        \ pool <begin-ip> <end-ip> router <router> \r\n-- configure global setup disk\
+        \ <GB> \r\n-- configure global setup interface mgmt <PCI> \r\n-- configure\
+        \ global setup interface wired <PCI> \r\n-- configure global setup interface\
+        \ wmedium <PCI> \r\n-- configure global setup refresh <seconds> \r\n-- configure\
+        \ global setup roaming <rate> interval <seconds> roams <times> hops <hops>\
+        \ \r\n-- configure global setup roaming <rate> interval <seconds> roams <times>\
+        \ hops <hops> ft_over_ds \r\n-- configure global setup roaming dhcp <yes/no>\
+        \ \r\n-- configure global setup roaming limit <limit> \r\n-- configure global\
+        \ setup session <session> \r\n-- configure global setup sit <yes/no> \r\n\
+        -- configure global setup transport vlan <QinQ> \r\n-- configure global setup\
+        \ webauth autologin <yes/no> \r\n-- configure global setup webauth autostart\
+        \ <yes/no> \r\n-- configure global setup webauth l3vlan_override <yes/no>\
+        \ \r\n-- configure global setup webauth process fast \r\n-- configure global\
+        \ setup webauth process normal \r\n-- configure global setup webauth process\
+        \ slow \r\n-- configure global setup webauth required <yes/no> \r\n-- configure\
+        \ global setup webauth syslog <level> \r\n-- configure global setup webauth\
+        \ timeout <ms> tries <tries> \r\n-- configure global setup webauth url <url>\
+        \ \r\n-- configure global setup webauth username <username> password <password>\
+        \ \r\n-- configure global wlc ap-vlan <vlan> \r\n-- configure global wlc ap-vlan\
+        \ <vlan> native \r\n-- configure global wlc ap-vlan-ip <ipaddr> \r\n-- configure\
+        \ global wlc ap-vlan-ipv6 <ipaddr6> \r\n-- configure global wlc capwap <capwap-version>\
+        \ \r\n-- configure global wlc client-vlan <vlan> \r\n-- configure global wlc\
+        \ client-vlan <vlan> native \r\n-- configure global wlc client-vlan-ip <ipaddr>\
+        \ \r\n-- configure global wlc client-vlan-ipv6 <ipaddr6> \r\n-- configure\
+        \ global wlc dhcp-option43 <yes/no> \r\n-- configure global wlc ip <wlc-ip>\
+        \ \r\n-- configure global wlc ipv6 <wlc-ipv6> \r\n-- configure global wlc\
+        \ password <password> \r\n-- configure global wlc type <wlc_type> \r\n-- configure\
+        \ global wlc user <username> \r\n-- configure hostname <hostname> \r\n-- configure\
+        \ hwsim ap beacon bitmask <bitmask> \r\n-- configure hwsim ap beacon sampling\
+        \ <sampling> \r\n-- configure hwsim connect mode ALL \r\n-- configure hwsim\
+        \ connect mode BOTH \r\n-- configure hwsim connect mode DIRECT \r\n-- configure\
+        \ hwsim connect mode HOPS \r\n-- configure hwsim connect mode NEXT \r\n--\
+        \ configure management dhcp \r\n-- configure management ip <ip> netmask <netmask>\
+        \ gateway <gw> \r\n-- configure management none \r\n-- configure start rate\
+        \ <rate> \r\n-- configure vap <wlc-ip> <capwap-version> \r\n-- debug cli handler\
+        \ disable \r\n-- debug cli handler enable \r\n-- debug cli parser disable\
+        \ \r\n-- debug cli parser enable \r\n-- disconnect client all \r\n-- disconnect\
+        \ client all reason <80211_code> \r\n-- disconnect client all samsung <80211_code>\
+        \ <samsung_code> \r\n-- disconnect client id <client-id> \r\n-- disconnect\
+        \ client id <client-id> reason <80211_code> \r\n-- disconnect client id <client-id>\
+        \ samsung <80211_code> <samsung_code> \r\n-- disconnect client id <client-id>\
+        \ to <client-id> \r\n-- disconnect client id <client-id> to <client-id> reason\
+        \ <80211_code> \r\n-- disconnect client id <client-id> to <client-id> samsung\
+        \ <80211_code> <samsung_code> \r\n-- get \r\n-- get <key> \r\n-- initialize\
+        \ <path/to/file> \r\n-- initialize ftp <url> username <username> \r\n-- initialize\
+        \ ftp <url> username <username> password <password> \r\n-- initialize help\
+        \ \r\n-- initialize http <url> \r\n-- initialize https <url> username <username>\
+        \ \r\n-- initialize https <url> username <username> password <password> \r\
+        \n-- initialize scp <url> username <username> \r\n-- initialize scp <url>\
+        \ username <username> password <password> \r\n-- initialize startup \r\n--\
+        \ initialize status \r\n-- initialize tftp <url> \r\n-- load configure file\
+        \ <path/to/file> \r\n-- load configure ftp <url> username <username> \r\n\
+        -- load configure ftp <url> username <username> password <password> \r\n--\
+        \ load configure http <url> \r\n-- load configure https <url> username <username>\
+        \ \r\n-- load configure https <url> username <username> password <password>\
+        \ \r\n-- load configure scp <url> username <username> \r\n-- load configure\
+        \ scp <url> username <username> password <password> \r\n-- load configure\
+        \ tftp <url> \r\n-- reassoc client all \r\n-- reassoc client all all \r\n\
+        -- reassoc client id <client-id> \r\n-- reassoc client id <client-id> all\
+        \ \r\n-- reassoc client id <client-id> to <client-id> \r\n-- reassoc client\
+        \ id <client-id> to <client-id> all \r\n-- reconfig client all \r\n-- reconfig\
+        \ client all file <path/to/file> \r\n-- reconfig client id <client-id> \r\n\
+        -- reconfig client id <client-id> file <path/to/file> \r\n-- reconfig client\
+        \ id <client-id> to <client-id> \r\n-- reconfig client id <client-id> to <client-id>\
+        \ file <path/to/file> \r\n-- reconnect client all \r\n-- reconnect client\
+        \ id <client-id> \r\n-- reconnect client id <client-id> to <client-id> \r\n\
+        -- remove client all network <network-id> \r\n-- remove client id <client-id>\
+        \ network <network-id> \r\n-- remove client id <client-id> to <client-id>\
+        \ network <network-id> \r\n-- restart ap all \r\n-- restart ap all process\
+        \ capwapd \r\n-- restart ap all process click \r\n-- restart ap all process\
+        \ hostapd \r\n-- restart ap all uplink_port <port> \r\n-- restart ap id <ap-id>\
+        \ \r\n-- restart ap id <ap-id> process capwapd \r\n-- restart ap id <ap-id>\
+        \ process click \r\n-- restart ap id <ap-id> process hostapd \r\n-- restart\
+        \ ap id <ap-id> to <ap-id> \r\n-- restart ap id <ap-id> to <ap-id> process\
+        \ capwapd \r\n-- restart ap id <ap-id> to <ap-id> process click \r\n-- restart\
+        \ ap id <ap-id> to <ap-id> process hostapd \r\n-- restart ap id <ap-id> to\
+        \ <ap-id> uplink_port <port> \r\n-- restart ap id <ap-id> uplink_port <port>\
+        \ \r\n-- roam client all ap <ap-id> \r\n-- roam client all ap <ap-id> ft_over_ds\
+        \ \r\n-- roam client all bssid <bssid> \r\n-- roam client all bssid <bssid>\
+        \ ft_over_ds \r\n-- roam client id <client-id> ap <ap-id> \r\n-- roam client\
+        \ id <client-id> ap <ap-id> ft_over_ds \r\n-- roam client id <client-id> bssid\
+        \ <bssid> \r\n-- roam client id <client-id> bssid <bssid> ft_over_ds \r\n\
+        -- roam client id <client-id> to <client-id> ap <ap-id> \r\n-- roam client\
+        \ id <client-id> to <client-id> ap <ap-id> ft_over_ds \r\n-- roam client id\
+        \ <client-id> to <client-id> bssid <bssid> \r\n-- roam client id <client-id>\
+        \ to <client-id> bssid <bssid> ft_over_ds \r\n-- run ap <ap-id> os-shell \r\
+        \n-- run ap <ap-id> shell \r\n-- run ap all devshell <commands> \r\n-- run\
+        \ ap id <ap-id> devshell <commands> \r\n-- run ap id <ap-id> to <ap-id> devshell\
+        \ <commands> \r\n-- run client all avahi browse kill \r\n-- run client all\
+        \ avahi browse params <params> \r\n-- run client all avahi publish kill \r\
+        \n-- run client all avahi publish params <params> \r\n-- run client all avahi\
+        \ publish service <service> type <service-type> port <port> \r\n-- run client\
+        \ all avahi publish service <service> type <service-type> port <port> txt\
+        \ <txt-data> \r\n-- run client id <client-id> avahi browse kill \r\n-- run\
+        \ client id <client-id> avahi browse params <params> \r\n-- run client id\
+        \ <client-id> avahi publish kill \r\n-- run client id <client-id> avahi publish\
+        \ params <params> \r\n-- run client id <client-id> avahi publish service <service>\
+        \ type <service-type> port <port> \r\n-- run client id <client-id> avahi publish\
+        \ service <service> type <service-type> port <port> txt <txt-data> \r\n--\
+        \ run client id <client-id> shell \r\n-- run client id <client-id> to <client-id>\
+        \ avahi browse kill \r\n-- run client id <client-id> to <client-id> avahi\
+        \ browse params <params> \r\n-- run client id <client-id> to <client-id> avahi\
+        \ publish kill \r\n-- run client id <client-id> to <client-id> avahi publish\
+        \ params <params> \r\n-- run client id <client-id> to <client-id> avahi publish\
+        \ service <service> type <service-type> port <port> \r\n-- run client id <client-id>\
+        \ to <client-id> avahi publish service <service> type <service-type> port\
+        \ <port> txt <txt-data> \r\n-- run client id <client-id> wpa_cli \r\n-- run\
+        \ configure \r\n-- run monitor ap interval <interval> times <times> \r\n--\
+        \ run sta dhcpd shell \r\n-- run sta wiredwlc shell \r\n-- run system setup\
+        \ \r\n-- run telemetry <secret> \r\n-- run wlc <ip> apply certs \r\n-- run\
+        \ wlc <ip> apply certs <cert_name> \r\n-- run wlc <ip> cli <wlc-cli> \r\n\
+        -- run wlc <ip> config auth-list \r\n-- run wlc <ip> config auth-list <hash_code>\
+        \ \r\n-- run wlc <ip> devshell \r\n-- run wlc <ip> get capwap \r\n-- run wlc\
+        \ <ip> remove certs \r\n-- run wlc <ip> remove certs <cert_name> \r\n-- run\
+        \ wlc <ip> set ap mode flexconnect \r\n-- run wlc <ip> shell \r\n-- run wlc\
+        \ <ip> show certs \r\n-- run wlc <ip> sync_time \r\n-- run wlc apply certs\
+        \ \r\n-- run wlc apply certs <cert_name> \r\n-- run wlc cli <wlc-cli> \r\n\
+        -- run wlc config auth-list \r\n-- run wlc config auth-list <hash_code> \r\
+        \n-- run wlc devshell \r\n-- run wlc get capwap \r\n-- run wlc remove certs\
+        \ \r\n-- run wlc remove certs <cert_name> \r\n-- run wlc set ap mode flexconnect\
+        \ \r\n-- run wlc shell \r\n-- run wlc show certs \r\n-- run wlc sync_time\
+        \ \r\n-- save configure client all \r\n-- save configure client id <client-id>\
+        \ \r\n-- save configure client id <client-id> file <path/to/file> \r\n-- save\
+        \ configure client id <client-id> to <client-id> \r\n-- save configure file\
+        \ <path/to/file> \r\n-- save configure ftp <url> username <username> \r\n\
+        -- save configure ftp <url> username <username> password <password> \r\n--\
+        \ save configure http <url> \r\n-- save configure https <url> username <username>\
+        \ \r\n-- save configure https <url> username <username> password <password>\
+        \ \r\n-- save configure scp <url> username <username> \r\n-- save configure\
+        \ scp <url> username <username> password <password> \r\n-- save configure\
+        \ tftp <url> \r\n-- set \r\n-- set <key=value> \r\n-- show ap image \r\n--\
+        \ show ap process capwapd stats \r\n-- show ap process click stats \r\n--\
+        \ show ap process hostapd stats \r\n-- show ap process stats \r\n-- show ap\
+        \ status \r\n-- show ap wlan \r\n-- show cert \r\n-- show client all brief\
+        \ \r\n-- show client all configure \r\n-- show client all ipv6 brief \r\n\
+        -- show client all ipv6 summary \r\n-- show client all status \r\n-- show\
+        \ client all summary \r\n-- show client brief \r\n-- show client configure\
+        \ \r\n-- show client id <client-id> brief \r\n-- show client id <client-id>\
+        \ configure \r\n-- show client id <client-id> configure file \r\n-- show client\
+        \ id <client-id> ipv6 brief \r\n-- show client id <client-id> ipv6 summary\
+        \ \r\n-- show client id <client-id> status \r\n-- show client id <client-id>\
+        \ summary \r\n-- show client id <client-id> to <client-id> brief \r\n-- show\
+        \ client id <client-id> to <client-id> configure \r\n-- show client id <client-id>\
+        \ to <client-id> ipv6 brief \r\n-- show client id <client-id> to <client-id>\
+        \ ipv6 summary \r\n-- show client id <client-id> to <client-id> status \r\n\
+        -- show client id <client-id> to <client-id> summary \r\n-- show client interface\
+        \ stats \r\n-- show client ipv6 brief \r\n-- show client ipv6 summary \r\n\
+        -- show client status \r\n-- show client summary \r\n-- show configure \r\n\
+        -- show cores \r\n-- show help \r\n-- show help <substr> \r\n-- show help\
+        \ <substr> verbose \r\n-- show help verbose \r\n-- show info \r\n-- show system\
+        \ diskspace stats \r\n-- show system interface \r\n-- show system log \r\n\
+        -- show system process stats \r\n-- show system stats \r\n-- show tech-support\
+        \ \r\n-- show version \r\n-- start ap all \r\n-- start ap all uplink_port\
+        \ <port> \r\n-- start ap id <ap-id> \r\n-- start ap id <ap-id> to <ap-id>\
+        \ \r\n-- start ap id <ap-id> to <ap-id> uplink_port <port> \r\n-- start ap\
+        \ id <ap-id> uplink_port <port> \r\n-- start client all \r\n-- start client\
+        \ all network <network-id> \r\n-- start client id <client-id> \r\n-- start\
+        \ client id <client-id> network <network-id> \r\n-- start client id <client-id>\
+        \ to <client-id> \r\n-- start client id <client-id> to <client-id> network\
+        \ <network-id> \r\n-- stop ap all \r\n-- stop ap id <ap-id> \r\n-- stop ap\
+        \ id <ap-id> to <ap-id> \r\n-- stop client all \r\n-- stop client id <client-id>\
+        \ \r\n-- stop client id <client-id> to <client-id> \r\n-- test ap all ble\
+        \ <scan-records> \r\n-- test ap all ble telemetry cache_size <cache-size>\
+        \ time_interval <time-interval> transmit_cycle <transmit-cycle> \r\n-- test\
+        \ ap ble help \r\n-- test ap client idle start \r\n-- test ap client idle\
+        \ stop \r\n-- test ap client stats \r\n-- test ap client stats params <params>\
+        \ \r\n-- test ap help \r\n-- test ap id <ap-id> ble <scan-records> \r\n--\
+        \ test ap id <ap-id> ble telemetry cache_size <cache-size> time_interval <time-interval>\
+        \ transmit_cycle <transmit-cycle> \r\n-- test ap id <ap-id> to <ap-id> ble\
+        \ <scan-records> \r\n-- test ap id <ap-id> to <ap-id> ble telemetry cache_size\
+        \ <cache-size> time_interval <time-interval> transmit_cycle <transmit-cycle>\
+        \ \r\n-- test ap standalone start \r\n-- test ap standalone stop \r\n-- test\
+        \ ap wifi6 assurance \r\n-- test ap wifi6 assurance data bytes <bytes> dimension\
+        \ all wifi 11ax \r\n-- test ap wifi6 assurance data bytes <bytes> dimension\
+        \ all wifi pre_11ax \r\n-- test ap wifi6 assurance data bytes <bytes> dimension\
+        \ radio_0 wifi 11ax \r\n-- test ap wifi6 assurance data bytes <bytes> dimension\
+        \ radio_0 wifi pre_11ax \r\n-- test ap wifi6 assurance data bytes <bytes>\
+        \ dimension radio_1 wifi 11ax \r\n-- test ap wifi6 assurance data bytes <bytes>\
+        \ dimension radio_1 wifi pre_11ax \r\n-- test ap wifi6 assurance help \r\n\
+        -- test ap wifi6 assurance interval <seconds> \r\n-- test ap wifi6 assurance\
+        \ interval <seconds> data bytes <bytes> dimension all wifi 11ax \r\n-- test\
+        \ ap wifi6 assurance interval <seconds> data bytes <bytes> dimension all wifi\
+        \ pre_11ax \r\n-- test ap wifi6 assurance interval <seconds> data bytes <bytes>\
+        \ dimension radio_0 wifi 11ax \r\n-- test ap wifi6 assurance interval <seconds>\
+        \ data bytes <bytes> dimension radio_0 wifi pre_11ax \r\n-- test ap wifi6\
+        \ assurance interval <seconds> data bytes <bytes> dimension radio_1 wifi 11ax\
+        \ \r\n-- test ap wifi6 assurance interval <seconds> data bytes <bytes> dimension\
+        \ radio_1 wifi pre_11ax \r\n-- test ap wifi6 assurance param access be \r\n\
+        -- test ap wifi6 assurance param access bg \r\n-- test ap wifi6 assurance\
+        \ param access vi \r\n-- test ap wifi6 assurance param access vo \r\n-- test\
+        \ ap wifi6 assurance param data bytes <bytes> airtime <airtime> packets <packets>\
+        \ latency <avg_latency> clients <active-clients> \r\n-- test ap wifi6 assurance\
+        \ param dimension all \r\n-- test ap wifi6 assurance param dimension radio_0\
+        \ \r\n-- test ap wifi6 assurance param dimension radio_1 \r\n-- test ap wifi6\
+        \ assurance param direction rx \r\n-- test ap wifi6 assurance param direction\
+        \ tx \r\n-- test ap wifi6 assurance param rssi average \r\n-- test ap wifi6\
+        \ assurance param rssi good \r\n-- test ap wifi6 assurance param rssi poor\
+        \ \r\n-- test ap wifi6 assurance param traffic legacy \r\n-- test ap wifi6\
+        \ assurance param traffic mu \r\n-- test ap wifi6 assurance param traffic\
+        \ ofdma \r\n-- test ap wifi6 assurance param traffic su \r\n-- test ap wifi6\
+        \ assurance param wifi 11ax \r\n-- test ap wifi6 assurance param wifi pre_11ax\
+        \ \r\n-- test autoroam pause \r\n-- test autoroam resume \r\n-- test autoroam\
+        \ start \r\n-- test autoroam stats \r\n-- test autoroam stats clear \r\n--\
+        \ test autoroam stats client all \r\n-- test autoroam stats client all summary\
+        \ \r\n-- test autoroam stats client id <client-id> \r\n-- test autoroam stats\
+        \ client id <client-id> summary \r\n-- test autoroam stats client id <client-id>\
+        \ to <client-id> \r\n-- test autoroam stats client id <client-id> to <client-id>\
+        \ summary \r\n-- test autoroam stats summary \r\n-- test autoroam stop \r\n\
+        -- test awips alarm airdrop \r\n-- test awips alarm association \r\n-- test\
+        \ awips alarm authentication \r\n-- test awips alarm authentication failure\
+        \ \r\n-- test awips alarm beacon \r\n-- test awips alarm beacon wrong_channel\
+        \ <channel> \r\n-- test awips alarm block_ack \r\n-- test awips alarm cts\
+        \ \r\n-- test awips alarm cts counter_trigger <frames> interval <seconds>\
+        \ \r\n-- test awips alarm custom pcap </path/to/file> ap_to_ap \r\n-- test\
+        \ awips alarm custom pcap </path/to/file> ap_to_client \r\n-- test awips alarm\
+        \ custom pcap </path/to/file> client_to_ap \r\n-- test awips alarm deauthentication\
+        \ \r\n-- test awips alarm deauthentication broadcast \r\n-- test awips alarm\
+        \ disassociation \r\n-- test awips alarm disassociation broadcast \r\n-- test\
+        \ awips alarm eapol_logoff \r\n-- test awips alarm eapol_start \r\n-- test\
+        \ awips alarm fuzzed beacon \r\n-- test awips alarm fuzzed probe_request \r\
+        \n-- test awips alarm fuzzed probe_response \r\n-- test awips alarm invalid_oui\
+        \ \r\n-- test awips alarm malformed assoc_req \r\n-- test awips alarm malformed\
+        \ authentication \r\n-- test awips alarm probe_request \r\n-- test awips alarm\
+        \ probe_response \r\n-- test awips alarm ps_poll \r\n-- test awips alarm reassociation\
+        \ \r\n-- test awips alarm rts \r\n-- test awips alarm rts counter_trigger\
+        \ <frames> interval <seconds> \r\n-- test awips alarm rts duration <duration>\
+        \ \r\n-- test awips help \r\n-- test awips params client number <num> mac\
+        \ <mac> \r\n-- test awips params count <count> interval <interval> repeat\
+        \ <times> \r\n-- test awips reset \r\n-- test awips verbose <yes/no> \r\n\
+        -- test bridgedvm help \r\n-- test bridgedvm id <vm-id> shell \r\n-- test\
+        \ bridgedvm id <vm-id> shell <commands> \r\n-- test bridgedvm id <vm-id> traffic\
+        \ pcap <path/to/file> \r\n-- test bridgedvm id <vm-id> traffic pcap <path/to/file>\
+        \ params <key=value> \r\n-- test bridgedvm id <vm-id> webbrowser \r\n-- test\
+        \ bridgedvm list \r\n-- test bridgedvm renew \r\n-- test bridgedvm reset \r\
+        \n-- test bridgedvm setup \r\n-- test bridgedvm setup ipv6 no \r\n-- test\
+        \ bridgedvm setup ipv6 stateful \r\n-- test bridgedvm setup ipv6 stateless\
+        \ \r\n-- test bridgedvm setup nic <pci-list> \r\n-- test bridgedvm setup params\
+        \ <key=value> \r\n-- test client all bridgedvm list \r\n-- test client all\
+        \ bridgedvm renew \r\n-- test client all bridgedvm reset \r\n-- test client\
+        \ all bridgedvm setup <num> \r\n-- test client all bridgedvm setup <num> params\
+        \ <key=value> \r\n-- test client all connect <ssid> \r\n-- test client all\
+        \ connect <ssid> config <config> \r\n-- test client all device apple <device-version>\
+        \ os <os-version> \r\n-- test client all device intel \r\n-- test client all\
+        \ device intel post_action_frame hexdump <hexdump> \r\n-- test client all\
+        \ generate udp dst <dst> dport <dport> sport <sport> \r\n-- test client all\
+        \ generate udp dst <dst> dport <dport> sport <sport> count <count> interval\
+        \ <msec> \r\n-- test client all generate udp ipv6 dst <dst> dport <dport>\
+        \ sport <sport> \r\n-- test client all generate udp ipv6 dst <dst> dport <dport>\
+        \ sport <sport> count <count> interval <msec> \r\n-- test client all multicast\
+        \ join group <group-ip> \r\n-- test client all multicast leave group <group-ip>\
+        \ \r\n-- test client all multicast listen udp port <port> \r\n-- test client\
+        \ all multicast send group <group-ip> udp port <port> payload <payload> \r\
+        \n-- test client all multicast send group <group-ip> udp port <port> payload\
+        \ <payload> count <count> \r\n-- test client all neighbor_report request <ssid>\
+        \ \r\n-- test client all probing ap all count <count> interval <msec> \r\n\
+        -- test client all probing ap id <ap-id> count <count> interval <msec> \r\n\
+        -- test client all probing ap id <ap-id> to <ap-id> count <count> interval\
+        \ <msec> \r\n-- test client all webauth login \r\n-- test client all webauth\
+        \ logout \r\n-- test client all webauth status \r\n-- test client all webauth\
+        \ user <username> pass <password> login \r\n-- test client all wnm_bss_query\
+        \ \r\n-- test client bridgedvm help \r\n-- test client device help \r\n--\
+        \ test client id <client-id> bridgedvm list \r\n-- test client id <client-id>\
+        \ bridgedvm renew \r\n-- test client id <client-id> bridgedvm reset \r\n--\
+        \ test client id <client-id> bridgedvm setup <num> \r\n-- test client id <client-id>\
+        \ bridgedvm setup <num> params <key=value> \r\n-- test client id <client-id>\
+        \ connect <ssid> \r\n-- test client id <client-id> connect <ssid> config <config>\
+        \ \r\n-- test client id <client-id> device apple <device-version> os <os-version>\
+        \ \r\n-- test client id <client-id> device intel \r\n-- test client id <client-id>\
+        \ device intel post_action_frame hexdump <hexdump> \r\n-- test client id <client-id>\
+        \ generate udp dst <dst> dport <dport> sport <sport> \r\n-- test client id\
+        \ <client-id> generate udp dst <dst> dport <dport> sport <sport> count <count>\
+        \ interval <msec> \r\n-- test client id <client-id> generate udp ipv6 dst\
+        \ <dst> dport <dport> sport <sport> \r\n-- test client id <client-id> generate\
+        \ udp ipv6 dst <dst> dport <dport> sport <sport> count <count> interval <msec>\
+        \ \r\n-- test client id <client-id> multicast join group <group-ip> \r\n--\
+        \ test client id <client-id> multicast leave group <group-ip> \r\n-- test\
+        \ client id <client-id> multicast listen udp port <port> \r\n-- test client\
+        \ id <client-id> multicast send group <group-ip> udp port <port> payload <payload>\
+        \ \r\n-- test client id <client-id> multicast send group <group-ip> udp port\
+        \ <port> payload <payload> count <count> \r\n-- test client id <client-id>\
+        \ multicast send group <group-ip> udp port <port> payload <payload> loop \r\
+        \n-- test client id <client-id> neighbor_report request <ssid> \r\n-- test\
+        \ client id <client-id> network id <network-id> get config \r\n-- test client\
+        \ id <client-id> network id <network-id> get variable <variable-name> \r\n\
+        -- test client id <client-id> network id <network-id> remove \r\n-- test client\
+        \ id <client-id> network id <network-id> select \r\n-- test client id <client-id>\
+        \ network id <network-id> set <config> \r\n-- test client id <client-id> network\
+        \ list \r\n-- test client id <client-id> probing ap all count <count> interval\
+        \ <msec> \r\n-- test client id <client-id> probing ap id <ap-id> count <count>\
+        \ interval <msec> \r\n-- test client id <client-id> probing ap id <ap-id>\
+        \ to <ap-id> count <count> interval <msec> \r\n-- test client id <client-id>\
+        \ scan \r\n-- test client id <client-id> to <client-id> bridgedvm list \r\n\
+        -- test client id <client-id> to <client-id> bridgedvm renew \r\n-- test client\
+        \ id <client-id> to <client-id> bridgedvm reset \r\n-- test client id <client-id>\
+        \ to <client-id> bridgedvm setup <num> \r\n-- test client id <client-id> to\
+        \ <client-id> bridgedvm setup <num> params <key=value> \r\n-- test client\
+        \ id <client-id> to <client-id> device apple <device-version> os <os-version>\
+        \ \r\n-- test client id <client-id> to <client-id> device intel \r\n-- test\
+        \ client id <client-id> to <client-id> device intel post_action_frame hexdump\
+        \ <hexdump> \r\n-- test client id <client-id> to <client-id> generate udp\
+        \ dst <dst> dport <dport> sport <sport> \r\n-- test client id <client-id>\
+        \ to <client-id> generate udp dst <dst> dport <dport> sport <sport> count\
+        \ <count> interval <msec> \r\n-- test client id <client-id> to <client-id>\
+        \ generate udp ipv6 dst <dst> dport <dport> sport <sport> \r\n-- test client\
+        \ id <client-id> to <client-id> generate udp ipv6 dst <dst> dport <dport>\
+        \ sport <sport> count <count> interval <msec> \r\n-- test client id <client-id>\
+        \ to <client-id> multicast join group <group-ip> \r\n-- test client id <client-id>\
+        \ to <client-id> multicast leave group <group-ip> \r\n-- test client id <client-id>\
+        \ to <client-id> multicast listen udp port <port> \r\n-- test client id <client-id>\
+        \ to <client-id> multicast send group <group-ip> udp port <port> payload <payload>\
+        \ \r\n-- test client id <client-id> to <client-id> multicast send group <group-ip>\
+        \ udp port <port> payload <payload> count <count> \r\n-- test client id <client-id>\
+        \ to <client-id> neighbor_report request <ssid> \r\n-- test client id <client-id>\
+        \ to <client-id> probing ap all count <count> interval <msec> \r\n-- test\
+        \ client id <client-id> to <client-id> probing ap id <ap-id> count <count>\
+        \ interval <msec> \r\n-- test client id <client-id> to <client-id> probing\
+        \ ap id <ap-id> to <ap-id> count <count> interval <msec> \r\n-- test client\
+        \ id <client-id> to <client-id> webauth login \r\n-- test client id <client-id>\
+        \ to <client-id> webauth logout \r\n-- test client id <client-id> to <client-id>\
+        \ webauth status \r\n-- test client id <client-id> to <client-id> webauth\
+        \ user <username> pass <password> login \r\n-- test client id <client-id>\
+        \ to <client-id> wnm_bss_query \r\n-- test client id <client-id> webauth login\
+        \ \r\n-- test client id <client-id> webauth logout \r\n-- test client id <client-id>\
+        \ webauth status \r\n-- test client id <client-id> webauth user <username>\
+        \ pass <password> login \r\n-- test client id <client-id> wnm_bss_query \r\
+        \n-- test client multicast show ap <ap-id> \r\n-- test client multicast start\
+        \ join-timer <join-timer> \r\n-- test client multicast status \r\n-- test\
+        \ client multicast stop \r\n-- test client probing start \r\n-- test client\
+        \ probing stop \r\n-- test client retain help \r\n-- test client retain reason\
+        \ CAPWAP_DOWN \r\n-- test client retain reason DOT11_POOR_CHANNEL_CONDITIONS\
+        \ \r\n-- test client retain reason GROUP_KEY_UPDATE_TIMEOUT \r\n-- test client\
+        \ retain reason IP_DOWN_NO_IP \r\n-- test client retain reason RADIO_DOWN\
+        \ \r\n-- test client retain reset \r\n-- test connect help \r\n-- test connect\
+        \ http client all client monitor \r\n-- test connect http client all url <url>\
+        \ \r\n-- test connect http client id <client-id> client monitor \r\n-- test\
+        \ connect http client id <client-id> to <client-id> client monitor \r\n--\
+        \ test connect http client id <client-id> to <client-id> url <url> \r\n--\
+        \ test connect http client id <client-id> url <url> \r\n-- test connect multicast\
+        \ join client all bridgedvm id <vm-id> dst <group-ip> \r\n-- test connect\
+        \ multicast join client all dst <group-ip> \r\n-- test connect multicast join\
+        \ client id <client-id> bridgedvm id <vm-id> dst <group-ip> \r\n-- test connect\
+        \ multicast join client id <client-id> dst <group-ip> \r\n-- test connect\
+        \ multicast join client id <client-id> to <client-id> bridgedvm id <vm-id>\
+        \ dst <group-ip> \r\n-- test connect multicast join client id <client-id>\
+        \ to <client-id> dst <group-ip> \r\n-- test connect multicast leave client\
+        \ all bridgedvm id <vm-id> dst <group-ip> \r\n-- test connect multicast leave\
+        \ client all dst <group-ip> \r\n-- test connect multicast leave client id\
+        \ <client-id> bridgedvm id <vm-id> dst <group-ip> \r\n-- test connect multicast\
+        \ leave client id <client-id> dst <group-ip> \r\n-- test connect multicast\
+        \ leave client id <client-id> to <client-id> bridgedvm id <vm-id> dst <group-ip>\
+        \ \r\n-- test connect multicast leave client id <client-id> to <client-id>\
+        \ dst <group-ip> \r\n-- test connect params <key=value> \r\n-- test connect\
+        \ params data <hex-data> \r\n-- test connect params ping timeout <timeout>\
+        \ count <count> \r\n-- test connect params tcp flags <flags> \r\n-- test connect\
+        \ ping client all bridgedvm id <vm-id> dst client id <dst-client-id> \r\n\
+        -- test connect ping client all bridgedvm id <vm-id> dst client monitor \r\
+        \n-- test connect ping client all bridgedvm id <vm-id> dst ip <dst> \r\n--\
+        \ test connect ping client all bridgedvm id <vm-id> dst ip <dst> mac <dst_mac>\
+        \ \r\n-- test connect ping client all dst client id <dst-client-id> \r\n--\
+        \ test connect ping client all dst client monitor \r\n-- test connect ping\
+        \ client all dst ip <dst> \r\n-- test connect ping client all dst ip <dst>\
+        \ mac <dst_mac> \r\n-- test connect ping client all src client monitor \r\n\
+        -- test connect ping client id <client-id> bridgedvm id <vm-id> dst client\
+        \ id <dst-client-id> \r\n-- test connect ping client id <client-id> bridgedvm\
+        \ id <vm-id> dst client monitor \r\n-- test connect ping client id <client-id>\
+        \ bridgedvm id <vm-id> dst ip <dst> \r\n-- test connect ping client id <client-id>\
+        \ bridgedvm id <vm-id> dst ip <dst> mac <dst_mac> \r\n-- test connect ping\
+        \ client id <client-id> dst client id <dst-client-id> \r\n-- test connect\
+        \ ping client id <client-id> dst client monitor \r\n-- test connect ping client\
+        \ id <client-id> dst ip <dst> \r\n-- test connect ping client id <client-id>\
+        \ dst ip <dst> mac <dst_mac> \r\n-- test connect ping client id <client-id>\
+        \ src client monitor \r\n-- test connect ping client id <client-id> to <client-id>\
+        \ bridgedvm id <vm-id> dst client id <dst-client-id> \r\n-- test connect ping\
+        \ client id <client-id> to <client-id> bridgedvm id <vm-id> dst client monitor\
+        \ \r\n-- test connect ping client id <client-id> to <client-id> bridgedvm\
+        \ id <vm-id> dst ip <dst> \r\n-- test connect ping client id <client-id> to\
+        \ <client-id> bridgedvm id <vm-id> dst ip <dst> mac <dst_mac> \r\n-- test\
+        \ connect ping client id <client-id> to <client-id> dst client id <dst-client-id>\
+        \ \r\n-- test connect ping client id <client-id> to <client-id> dst client\
+        \ monitor \r\n-- test connect ping client id <client-id> to <client-id> dst\
+        \ ip <dst> \r\n-- test connect ping client id <client-id> to <client-id> dst\
+        \ ip <dst> mac <dst_mac> \r\n-- test connect ping client id <client-id> to\
+        \ <client-id> src client monitor \r\n-- test connect ping6 client all bridgedvm\
+        \ id <vm-id> dst client id <dst-client-id> \r\n-- test connect ping6 client\
+        \ all bridgedvm id <vm-id> dst client monitor \r\n-- test connect ping6 client\
+        \ all bridgedvm id <vm-id> dst ip <dst> \r\n-- test connect ping6 client all\
+        \ bridgedvm id <vm-id> dst ip <dst> mac <dst_mac> \r\n-- test connect ping6\
+        \ client all dst client id <dst-client-id> \r\n-- test connect ping6 client\
+        \ all dst client monitor \r\n-- test connect ping6 client all dst ip <dst>\
+        \ \r\n-- test connect ping6 client all dst ip <dst> mac <dst_mac> \r\n-- test\
+        \ connect ping6 client all src client monitor \r\n-- test connect ping6 client\
+        \ id <client-id> bridgedvm id <vm-id> dst client id <dst-client-id> \r\n--\
+        \ test connect ping6 client id <client-id> bridgedvm id <vm-id> dst client\
+        \ monitor \r\n-- test connect ping6 client id <client-id> bridgedvm id <vm-id>\
+        \ dst ip <dst> \r\n-- test connect ping6 client id <client-id> bridgedvm id\
+        \ <vm-id> dst ip <dst> mac <dst_mac> \r\n-- test connect ping6 client id <client-id>\
+        \ dst client id <dst-client-id> \r\n-- test connect ping6 client id <client-id>\
+        \ dst client monitor \r\n-- test connect ping6 client id <client-id> dst ip\
+        \ <dst> \r\n-- test connect ping6 client id <client-id> dst ip <dst> mac <dst_mac>\
+        \ \r\n-- test connect ping6 client id <client-id> src client monitor \r\n\
+        -- test connect ping6 client id <client-id> to <client-id> bridgedvm id <vm-id>\
+        \ dst client id <dst-client-id> \r\n-- test connect ping6 client id <client-id>\
+        \ to <client-id> bridgedvm id <vm-id> dst client monitor \r\n-- test connect\
+        \ ping6 client id <client-id> to <client-id> bridgedvm id <vm-id> dst ip <dst>\
+        \ \r\n-- test connect ping6 client id <client-id> to <client-id> bridgedvm\
+        \ id <vm-id> dst ip <dst> mac <dst_mac> \r\n-- test connect ping6 client id\
+        \ <client-id> to <client-id> dst client id <dst-client-id> \r\n-- test connect\
+        \ ping6 client id <client-id> to <client-id> dst client monitor \r\n-- test\
+        \ connect ping6 client id <client-id> to <client-id> dst ip <dst> \r\n-- test\
+        \ connect ping6 client id <client-id> to <client-id> dst ip <dst> mac <dst_mac>\
+        \ \r\n-- test connect ping6 client id <client-id> to <client-id> src client\
+        \ monitor \r\n-- test connect tcp client all bridgedvm id <vm-id> dst client\
+        \ id <dst-client-id> \r\n-- test connect tcp client all bridgedvm id <vm-id>\
+        \ dst client monitor \r\n-- test connect tcp client all bridgedvm id <vm-id>\
+        \ dst ip <dst> mac <dst_mac> \r\n-- test connect tcp client all dst client\
+        \ id <dst-client-id> \r\n-- test connect tcp client all dst client monitor\
+        \ \r\n-- test connect tcp client all dst ip <dst> \r\n-- test connect tcp\
+        \ client all dst ip <dst> mac <dst_mac> \r\n-- test connect tcp client id\
+        \ <client-id> bridgedvm id <vm-id> dst client id <dst-client-id> \r\n-- test\
+        \ connect tcp client id <client-id> bridgedvm id <vm-id> dst client monitor\
+        \ \r\n-- test connect tcp client id <client-id> bridgedvm id <vm-id> dst ip\
+        \ <dst> mac <dst_mac> \r\n-- test connect tcp client id <client-id> dst client\
+        \ id <dst-client-id> \r\n-- test connect tcp client id <client-id> dst client\
+        \ monitor \r\n-- test connect tcp client id <client-id> dst ip <dst> \r\n\
+        -- test connect tcp client id <client-id> dst ip <dst> mac <dst_mac> \r\n\
+        -- test connect tcp client id <client-id> to <client-id> bridgedvm id <vm-id>\
+        \ dst client id <dst-client-id> \r\n-- test connect tcp client id <client-id>\
+        \ to <client-id> bridgedvm id <vm-id> dst client monitor \r\n-- test connect\
+        \ tcp client id <client-id> to <client-id> bridgedvm id <vm-id> dst ip <dst>\
+        \ mac <dst_mac> \r\n-- test connect tcp client id <client-id> to <client-id>\
+        \ dst client id <dst-client-id> \r\n-- test connect tcp client id <client-id>\
+        \ to <client-id> dst client monitor \r\n-- test connect tcp client id <client-id>\
+        \ to <client-id> dst ip <dst> \r\n-- test connect tcp client id <client-id>\
+        \ to <client-id> dst ip <dst> mac <dst_mac> \r\n-- test connect udp client\
+        \ all bridgedvm id <vm-id> dst client id <dst-client-id> \r\n-- test connect\
+        \ udp client all bridgedvm id <vm-id> dst client monitor \r\n-- test connect\
+        \ udp client all bridgedvm id <vm-id> dst ip <dst> mac <dst_mac> \r\n-- test\
+        \ connect udp client all dst client id <dst-client-id> \r\n-- test connect\
+        \ udp client all dst client monitor \r\n-- test connect udp client all dst\
+        \ ip <dst> \r\n-- test connect udp client all dst ip <dst> mac <dst_mac> \r\
+        \n-- test connect udp client id <client-id> bridgedvm id <vm-id> dst client\
+        \ id <dst-client-id> \r\n-- test connect udp client id <client-id> bridgedvm\
+        \ id <vm-id> dst client monitor \r\n-- test connect udp client id <client-id>\
+        \ bridgedvm id <vm-id> dst ip <dst> mac <dst_mac> \r\n-- test connect udp\
+        \ client id <client-id> dst client id <dst-client-id> \r\n-- test connect\
+        \ udp client id <client-id> dst client monitor \r\n-- test connect udp client\
+        \ id <client-id> dst ip <dst> \r\n-- test connect udp client id <client-id>\
+        \ dst ip <dst> mac <dst_mac> \r\n-- test connect udp client id <client-id>\
+        \ to <client-id> bridgedvm id <vm-id> dst client id <dst-client-id> \r\n--\
+        \ test connect udp client id <client-id> to <client-id> bridgedvm id <vm-id>\
+        \ dst client monitor \r\n-- test connect udp client id <client-id> to <client-id>\
+        \ bridgedvm id <vm-id> dst ip <dst> mac <dst_mac> \r\n-- test connect udp\
+        \ client id <client-id> to <client-id> dst client id <dst-client-id> \r\n\
+        -- test connect udp client id <client-id> to <client-id> dst client monitor\
+        \ \r\n-- test connect udp client id <client-id> to <client-id> dst ip <dst>\
+        \ \r\n-- test connect udp client id <client-id> to <client-id> dst ip <dst>\
+        \ mac <dst_mac> \r\n-- test deauth all ap broadcast \r\n-- test deauth all\
+        \ ap unicast \r\n-- test deauth all client \r\n-- test deauth bssid <bssid>\
+        \ ap broadcast \r\n-- test deauth bssid <bssid> ap unicast \r\n-- test deauth\
+        \ bssid <bssid> client \r\n-- test dhcp client all \r\n-- test dhcp client\
+        \ all hwsim \r\n-- test dhcp client all init \r\n-- test dhcp client all ip\
+        \ <cidr> gateway <gw> \r\n-- test dhcp client all release \r\n-- test dhcp\
+        \ client all renew \r\n-- test dhcp client all vendor_class_id <vendor-class-id>\
+        \ \r\n-- test dhcp client id <client-id> \r\n-- test dhcp client id <client-id>\
+        \ hwsim \r\n-- test dhcp client id <client-id> init \r\n-- test dhcp client\
+        \ id <client-id> ip <cidr> gateway <gw> \r\n-- test dhcp client id <client-id>\
+        \ release \r\n-- test dhcp client id <client-id> renew \r\n-- test dhcp client\
+        \ id <client-id> to <client-id> \r\n-- test dhcp client id <client-id> to\
+        \ <client-id> hwsim \r\n-- test dhcp client id <client-id> to <client-id>\
+        \ init \r\n-- test dhcp client id <client-id> to <client-id> ip <cidr> gateway\
+        \ <gw> \r\n-- test dhcp client id <client-id> to <client-id> release \r\n\
+        -- test dhcp client id <client-id> to <client-id> renew \r\n-- test dhcp client\
+        \ id <client-id> to <client-id> vendor_class_id <vendor-class-id> \r\n-- test\
+        \ dhcp client id <client-id> vendor_class_id <vendor-class-id> \r\n-- test\
+        \ dhcp help \r\n-- test dhcp params <key=value> \r\n-- test hotspot2 anqp\
+        \ request advice_of_charge_13 \r\n-- test hotspot2 anqp request advice_of_charge_278\
+        \ \r\n-- test hotspot2 anqp request operator_icon_metadata_12 \r\n-- test\
+        \ hotspot2 help \r\n-- test hotspot2 params clients <client-num> base_mac\
+        \ <base-mac> interval <ms> \r\n-- test ipv6 release global client all \r\n\
+        -- test ipv6 release global client id <client-id> \r\n-- test ipv6 release\
+        \ global client id <client-id> to <client-id> \r\n-- test ipv6 request client\
+        \ all \r\n-- test ipv6 request client id <client-id> \r\n-- test ipv6 request\
+        \ client id <client-id> to <client-id> \r\n-- test mdns advertisement interval\
+        \ <interval> \r\n-- test mdns client all advertisement all \r\n-- test mdns\
+        \ client all advertisement all active_query \r\n-- test mdns client all advertisement\
+        \ service <service-list> \r\n-- test mdns client all advertisement service\
+        \ <service-list> active_query \r\n-- test mdns client all advertisement service\
+        \ <service-list> na \r\n-- test mdns client all query service <service-list>\
+        \ type A \r\n-- test mdns client all query service <service-list> type AAAA\
+        \ \r\n-- test mdns client all query service <service-list> type PTR \r\n--\
+        \ test mdns client all query service <service-list> type SRV \r\n-- test mdns\
+        \ client all query service <service-list> type TXT \r\n-- test mdns client\
+        \ id <client-id> advertisement all \r\n-- test mdns client id <client-id>\
+        \ advertisement all active_query \r\n-- test mdns client id <client-id> advertisement\
+        \ service <service-list> \r\n-- test mdns client id <client-id> advertisement\
+        \ service <service-list> active_query \r\n-- test mdns client id <client-id>\
+        \ advertisement service <service-list> na \r\n-- test mdns client id <client-id>\
+        \ query service <service-list> type A \r\n-- test mdns client id <client-id>\
+        \ query service <service-list> type AAAA \r\n-- test mdns client id <client-id>\
+        \ query service <service-list> type PTR \r\n-- test mdns client id <client-id>\
+        \ query service <service-list> type SRV \r\n-- test mdns client id <client-id>\
+        \ query service <service-list> type TXT \r\n-- test mdns client id <client-id>\
+        \ to <client-id> advertisement all \r\n-- test mdns client id <client-id>\
+        \ to <client-id> advertisement all active_query \r\n-- test mdns client id\
+        \ <client-id> to <client-id> advertisement service <service-list> \r\n-- test\
+        \ mdns client id <client-id> to <client-id> advertisement service <service-list>\
+        \ active_query \r\n-- test mdns client id <client-id> to <client-id> advertisement\
+        \ service <service-list> na \r\n-- test mdns client id <client-id> to <client-id>\
+        \ query service <service-list> type A \r\n-- test mdns client id <client-id>\
+        \ to <client-id> query service <service-list> type AAAA \r\n-- test mdns client\
+        \ id <client-id> to <client-id> query service <service-list> type PTR \r\n\
+        -- test mdns client id <client-id> to <client-id> query service <service-list>\
+        \ type SRV \r\n-- test mdns client id <client-id> to <client-id> query service\
+        \ <service-list> type TXT \r\n-- test mdns help \r\n-- test mdns query timeout\
+        \ <timeout> no-response <yes/no> \r\n-- test mdns reset \r\n-- test mdns verbose\
+        \ <yes/no> \r\n-- test rfid <base-mac> total <num> interval <msec> repeat\
+        \ <times> \r\n-- test rfid start \r\n-- test rfid stop \r\n-- test rogue ap\
+        \ <rogueAP-total> <rogueAP-per-AP> 11w_mfp client <rogueClient-total> <rogueClient-per-AP>\
+        \ \r\n-- test rogue ap <rogueAP-total> <rogueAP-per-AP> dsie <ds_channel>\
+        \ client <rogueClient-total> <rogueClient-per-AP> \r\n-- test rogue ap <rogueAP-total>\
+        \ <rogueAP-per-AP> wpa2_dot1x client <rogueClient-total> <rogueClient-per-AP>\
+        \ \r\n-- test rogue ap <rogueAP-total> <rogueAP-per-AP> wpa3_owe client <rogueClient-total>\
+        \ <rogueClient-per-AP> \r\n-- test rogue ap <rogueAP-total> <rogueAP-per-AP>\
+        \ wpa3_sae client <rogueClient-total> <rogueClient-per-AP> \r\n-- test rogue\
+        \ param channel <channel> \r\n-- test rogue start \r\n-- test rogue stop \r\
+        \n-- update image ap dev \r\n-- update image ap file <path/to/file> \r\n--\
+        \ update image ap ftp <url> username <username> \r\n-- update image ap ftp\
+        \ <url> username <username> password <password> \r\n-- update image ap http\
+        \ <url> \r\n-- update image ap https <url> username <username> \r\n-- update\
+        \ image ap https <url> username <username> password <password> \r\n-- update\
+        \ image ap latest \r\n-- update image ap release \r\n-- update image ap scp\
+        \ <url> username <username> \r\n-- update image ap scp <url> username <username>\
+        \ password <password> \r\n-- update image ap tftp <url> \r\n-- update image\
+        \ wsim file <path/to/file> \r\n-- update image wsim ftp <url> username <username>\
+        \ \r\n-- update image wsim ftp <url> username <username> password <password>\
+        \ \r\n-- update image wsim http <url> \r\n-- update image wsim https <url>\
+        \ username <username> \r\n-- update image wsim https <url> username <username>\
+        \ password <password> \r\n-- update image wsim scp <url> username <username>\
+        \ \r\n-- update image wsim scp <url> username <username> password <password>\
+        \ \r\n-- update image wsim tftp <url> \r\n-- update wsim info \r\nAre you\
+        \ looking for these commands?\r\ny\r\n%% 'y' * looks incomplete!\r\n-- clean\
+        \ system log \r\n-- clean system log <vacuum-time> \r\n-- configure ap all\
+        \ mesh mesh_ap \r\n-- configure ap all mesh root_ap \r\n-- configure ap id\
+        \ <ap-id> mesh mesh_ap \r\n-- configure ap id <ap-id> mesh root_ap \r\n--\
+        \ configure ap id <ap-id> to <ap-id> mesh mesh_ap \r\n-- configure ap id <ap-id>\
+        \ to <ap-id> mesh root_ap \r\n-- configure client all cred anonymous_identity\
+        \ <anonymous_identity> \r\n-- configure client all cred ca_cert <ca_cert>\
+        \ \r\n-- configure client all cred eap <eap> \r\n-- configure client all cred\
+        \ identity <identity> \r\n-- configure client all cred password <password>\
+        \ \r\n-- configure client all cred priority <priority> \r\n-- configure client\
+        \ all cred username <username> \r\n-- configure client all device samsung\
+        \ <seq> \r\n-- configure client all dhcp \r\n-- configure client all dhcp\
+        \ disable \r\n-- configure client all dhcp6 \r\n-- configure client all dhcp6\
+        \ disable \r\n-- configure client all dhcp6 stateless \r\n-- configure client\
+        \ all gen ap_scan <ap_scan> \r\n-- configure client all gen beacon_int <beacon_int>\
+        \ \r\n-- configure client all gen bss_expiration_age <bss_expiration_age>\
+        \ \r\n-- configure client all gen bss_max_count <bss_max_count> \r\n-- configure\
+        \ client all gen country <country> \r\n-- configure client all gen disable_scan_offload\
+        \ <disable_scan_offload> \r\n-- configure client all gen dtim_period <dtim_period>\
+        \ \r\n-- configure client all gen eapol_version <eapol_version> \r\n-- configure\
+        \ client all gen fast_reauth <fast_reauth> \r\n-- configure client all gen\
+        \ persistent_reconnect <persistent_reconnect> \r\n-- configure client all\
+        \ gen pmf <pmf> \r\n-- configure client all gen update_config <update_config>\
+        \ \r\n-- configure client all ip cidr <addr/prefix> gw <gw> \r\n-- configure\
+        \ client all ip disable \r\n-- configure client all ipv6 cidr <addr/prefix>\
+        \ gw <gw> \r\n-- configure client all ipv6 disable \r\n-- configure client\
+        \ all mac <mac> \r\n-- configure client all mac file <path/to/file> \r\n--\
+        \ configure client all mac random \r\n-- configure client all network <network-id>\
+        \ anonymous_identity <anonymous_identity> \r\n-- configure client all network\
+        \ <network-id> auth_alg <auth_alg> \r\n-- configure client all network <network-id>\
+        \ bgscan <bgscan> \r\n-- configure client all network <network-id> bssid <bssid>\
+        \ \r\n-- configure client all network <network-id> eap <eap> \r\n-- configure\
+        \ client all network <network-id> eapol_flags <eapol_flags> \r\n-- configure\
+        \ client all network <network-id> group <group> \r\n-- configure client all\
+        \ network <network-id> identity <identity> \r\n-- configure client all network\
+        \ <network-id> ieee80211w <ieee80211w> \r\n-- configure client all network\
+        \ <network-id> key_mgmt <key_mgmt> \r\n-- configure client all network <network-id>\
+        \ pairwise <pairwise> \r\n-- configure client all network <network-id> password\
+        \ <password> \r\n-- configure client all network <network-id> proto <proto>\
+        \ \r\n-- configure client all network <network-id> psk <psk> \r\n-- configure\
+        \ client all network <network-id> scan_freq <scan_freq> \r\n-- configure client\
+        \ all network <network-id> scan_ssid <scan_ssid> \r\n-- configure client all\
+        \ network <network-id> ssid <ssid> \r\n-- configure client all network <network-id>\
+        \ username <username> \r\n-- configure client all network anonymous_identity\
+        \ <anonymous_identity> \r\n-- configure client all network auth_alg <auth_alg>\
+        \ \r\n-- configure client all network bgscan <bgscan> \r\n-- configure client\
+        \ all network bssid <bssid> \r\n-- configure client all network eap <eap>\
+        \ \r\n-- configure client all network eapol_flags <eapol_flags> \r\n-- configure\
+        \ client all network group <group> \r\n-- configure client all network identity\
+        \ <identity> \r\n-- configure client all network ieee80211w <ieee80211w> \r\
+        \n-- configure client all network key_mgmt <key_mgmt> \r\n-- configure client\
+        \ all network pairwise <pairwise> \r\n-- configure client all network password\
+        \ <password> \r\n-- configure client all network proto <proto> \r\n-- configure\
+        \ client all network psk <psk> \r\n-- configure client all network scan_freq\
+        \ <scan_freq> \r\n-- configure client all network scan_ssid <scan_ssid> \r\
+        \n-- configure client all network ssid <ssid> \r\n-- configure client all\
+        \ network username <username> \r\n-- configure client all template client\
+        \ id <client-id> \r\n-- configure client all template file <path/to/file>\
+        \ \r\n-- configure client ap list \r\n-- configure client container <docker-image>\
+        \ number total <num> ap <num> \r\n-- configure client id <client-id> cred\
+        \ anonymous_identity <anonymous_identity> \r\n-- configure client id <client-id>\
+        \ cred ca_cert <ca_cert> \r\n-- configure client id <client-id> cred eap <eap>\
+        \ \r\n-- configure client id <client-id> cred identity <identity> \r\n-- configure\
+        \ client id <client-id> cred password <password> \r\n-- configure client id\
+        \ <client-id> cred priority <priority> \r\n-- configure client id <client-id>\
+        \ cred username <username> \r\n-- configure client id <client-id> device samsung\
+        \ <seq> \r\n-- configure client id <client-id> dhcp \r\n-- configure client\
+        \ id <client-id> dhcp disable \r\n-- configure client id <client-id> dhcp6\
+        \ \r\n-- configure client id <client-id> dhcp6 disable \r\n-- configure client\
+        \ id <client-id> dhcp6 stateless \r\n-- configure client id <client-id> gen\
+        \ ap_scan <ap_scan> \r\n-- configure client id <client-id> gen beacon_int\
+        \ <beacon_int> \r\n-- configure client id <client-id> gen bss_expiration_age\
+        \ <bss_expiration_age> \r\n-- configure client id <client-id> gen bss_max_count\
+        \ <bss_max_count> \r\n-- configure client id <client-id> gen country <country>\
+        \ \r\n-- configure client id <client-id> gen disable_scan_offload <disable_scan_offload>\
+        \ \r\n-- configure client id <client-id> gen dtim_period <dtim_period> \r\n\
+        -- configure client id <client-id> gen eapol_version <eapol_version> \r\n\
+        -- configure client id <client-id> gen fast_reauth <fast_reauth> \r\n-- configure\
+        \ client id <client-id> gen persistent_reconnect <persistent_reconnect> \r\
+        \n-- configure client id <client-id> gen pmf <pmf> \r\n-- configure client\
+        \ id <client-id> gen update_config <update_config> \r\n-- configure client\
+        \ id <client-id> ip cidr <addr/prefix> gw <gw> \r\n-- configure client id\
+        \ <client-id> ip disable \r\n-- configure client id <client-id> ipv6 cidr\
+        \ <addr/prefix> gw <gw> \r\n-- configure client id <client-id> ipv6 disable\
+        \ \r\n-- configure client id <client-id> mac <mac> \r\n-- configure client\
+        \ id <client-id> mac file <path/to/file> \r\n-- configure client id <client-id>\
+        \ mac random \r\n-- configure client id <client-id> network <network-id> anonymous_identity\
+        \ <anonymous_identity> \r\n-- configure client id <client-id> network <network-id>\
+        \ auth_alg <auth_alg> \r\n-- configure client id <client-id> network <network-id>\
+        \ bgscan <bgscan> \r\n-- configure client id <client-id> network <network-id>\
+        \ bssid <bssid> \r\n-- configure client id <client-id> network <network-id>\
+        \ eap <eap> \r\n-- configure client id <client-id> network <network-id> eapol_flags\
+        \ <eapol_flags> \r\n-- configure client id <client-id> network <network-id>\
+        \ group <group> \r\n-- configure client id <client-id> network <network-id>\
+        \ identity <identity> \r\n-- configure client id <client-id> network <network-id>\
+        \ ieee80211w <ieee80211w> \r\n-- configure client id <client-id> network <network-id>\
+        \ key_mgmt <key_mgmt> \r\n-- configure client id <client-id> network <network-id>\
+        \ pairwise <pairwise> \r\n-- configure client id <client-id> network <network-id>\
+        \ password <password> \r\n-- configure client id <client-id> network <network-id>\
+        \ proto <proto> \r\n-- configure client id <client-id> network <network-id>\
+        \ psk <psk> \r\n-- configure client id <client-id> network <network-id> scan_freq\
+        \ <scan_freq> \r\n-- configure client id <client-id> network <network-id>\
+        \ scan_ssid <scan_ssid> \r\n-- configure client id <client-id> network <network-id>\
+        \ ssid <ssid> \r\n-- configure client id <client-id> network <network-id>\
+        \ username <username> \r\n-- configure client id <client-id> network anonymous_identity\
+        \ <anonymous_identity> \r\n-- configure client id <client-id> network auth_alg\
+        \ <auth_alg> \r\n-- configure client id <client-id> network bgscan <bgscan>\
+        \ \r\n-- configure client id <client-id> network bssid <bssid> \r\n-- configure\
+        \ client id <client-id> network eap <eap> \r\n-- configure client id <client-id>\
+        \ network eapol_flags <eapol_flags> \r\n-- configure client id <client-id>\
+        \ network group <group> \r\n-- configure client id <client-id> network identity\
+        \ <identity> \r\n-- configure client id <client-id> network ieee80211w <ieee80211w>\
+        \ \r\n-- configure client id <client-id> network key_mgmt <key_mgmt> \r\n\
+        -- configure client id <client-id> network pairwise <pairwise> \r\n-- configure\
+        \ client id <client-id> network password <password> \r\n-- configure client\
+        \ id <client-id> network proto <proto> \r\n-- configure client id <client-id>\
+        \ network psk <psk> \r\n-- configure client id <client-id> network scan_freq\
+        \ <scan_freq> \r\n-- configure client id <client-id> network scan_ssid <scan_ssid>\
+        \ \r\n-- configure client id <client-id> network ssid <ssid> \r\n-- configure\
+        \ client id <client-id> network username <username> \r\n-- configure client\
+        \ id <client-id> template client id <client-id> \r\n-- configure client id\
+        \ <client-id> template file <path/to/file> \r\n-- configure client id <client-id>\
+        \ to <client-id> cred anonymous_identity <anonymous_identity> \r\n-- configure\
+        \ client id <client-id> to <client-id> cred ca_cert <ca_cert> \r\n-- configure\
+        \ client id <client-id> to <client-id> cred eap <eap> \r\n-- configure client\
+        \ id <client-id> to <client-id> cred identity <identity> \r\n-- configure\
+        \ client id <client-id> to <client-id> cred password <password> \r\n-- configure\
+        \ client id <client-id> to <client-id> cred priority <priority> \r\n-- configure\
+        \ client id <client-id> to <client-id> cred username <username> \r\n-- configure\
+        \ client id <client-id> to <client-id> device samsung <seq> \r\n-- configure\
+        \ client id <client-id> to <client-id> dhcp \r\n-- configure client id <client-id>\
+        \ to <client-id> dhcp disable \r\n-- configure client id <client-id> to <client-id>\
+        \ dhcp6 \r\n-- configure client id <client-id> to <client-id> dhcp6 disable\
+        \ \r\n-- configure client id <client-id> to <client-id> dhcp6 stateless \r\
+        \n-- configure client id <client-id> to <client-id> gen ap_scan <ap_scan>\
+        \ \r\n-- configure client id <client-id> to <client-id> gen beacon_int <beacon_int>\
+        \ \r\n-- configure client id <client-id> to <client-id> gen bss_expiration_age\
+        \ <bss_expiration_age> \r\n-- configure client id <client-id> to <client-id>\
+        \ gen bss_max_count <bss_max_count> \r\n-- configure client id <client-id>\
+        \ to <client-id> gen country <country> \r\n-- configure client id <client-id>\
+        \ to <client-id> gen disable_scan_offload <disable_scan_offload> \r\n-- configure\
+        \ client id <client-id> to <client-id> gen dtim_period <dtim_period> \r\n\
+        -- configure client id <client-id> to <client-id> gen eapol_version <eapol_version>\
+        \ \r\n-- configure client id <client-id> to <client-id> gen fast_reauth <fast_reauth>\
+        \ \r\n-- configure client id <client-id> to <client-id> gen persistent_reconnect\
+        \ <persistent_reconnect> \r\n-- configure client id <client-id> to <client-id>\
+        \ gen pmf <pmf> \r\n-- configure client id <client-id> to <client-id> gen\
+        \ update_config <update_config> \r\n-- configure client id <client-id> to\
+        \ <client-id> ip cidr <addr/prefix> gw <gw> \r\n-- configure client id <client-id>\
+        \ to <client-id> ip disable \r\n-- configure client id <client-id> to <client-id>\
+        \ ipv6 cidr <addr/prefix> gw <gw> \r\n-- configure client id <client-id> to\
+        \ <client-id> ipv6 disable \r\n-- configure client id <client-id> to <client-id>\
+        \ mac <mac> \r\n-- configure client id <client-id> to <client-id> mac file\
+        \ <path/to/file> \r\n-- configure client id <client-id> to <client-id> mac\
+        \ random \r\n-- configure client id <client-id> to <client-id> network <network-id>\
+        \ anonymous_identity <anonymous_identity> \r\n-- configure client id <client-id>\
+        \ to <client-id> network <network-id> auth_alg <auth_alg> \r\n-- configure\
+        \ client id <client-id> to <client-id> network <network-id> bgscan <bgscan>\
+        \ \r\n-- configure client id <client-id> to <client-id> network <network-id>\
+        \ bssid <bssid> \r\n-- configure client id <client-id> to <client-id> network\
+        \ <network-id> eap <eap> \r\n-- configure client id <client-id> to <client-id>\
+        \ network <network-id> eapol_flags <eapol_flags> \r\n-- configure client id\
+        \ <client-id> to <client-id> network <network-id> group <group> \r\n-- configure\
+        \ client id <client-id> to <client-id> network <network-id> identity <identity>\
+        \ \r\n-- configure client id <client-id> to <client-id> network <network-id>\
+        \ ieee80211w <ieee80211w> \r\n-- configure client id <client-id> to <client-id>\
+        \ network <network-id> key_mgmt <key_mgmt> \r\n-- configure client id <client-id>\
+        \ to <client-id> network <network-id> pairwise <pairwise> \r\n-- configure\
+        \ client id <client-id> to <client-id> network <network-id> password <password>\
+        \ \r\n-- configure client id <client-id> to <client-id> network <network-id>\
+        \ proto <proto> \r\n-- configure client id <client-id> to <client-id> network\
+        \ <network-id> psk <psk> \r\n-- configure client id <client-id> to <client-id>\
+        \ network <network-id> scan_freq <scan_freq> \r\n-- configure client id <client-id>\
+        \ to <client-id> network <network-id> scan_ssid <scan_ssid> \r\n-- configure\
+        \ client id <client-id> to <client-id> network <network-id> ssid <ssid> \r\
+        \n-- configure client id <client-id> to <client-id> network <network-id> username\
+        \ <username> \r\n-- configure client id <client-id> to <client-id> network\
+        \ anonymous_identity <anonymous_identity> \r\n-- configure client id <client-id>\
+        \ to <client-id> network auth_alg <auth_alg> \r\n-- configure client id <client-id>\
+        \ to <client-id> network bgscan <bgscan> \r\n-- configure client id <client-id>\
+        \ to <client-id> network bssid <bssid> \r\n-- configure client id <client-id>\
+        \ to <client-id> network eap <eap> \r\n-- configure client id <client-id>\
+        \ to <client-id> network eapol_flags <eapol_flags> \r\n-- configure client\
+        \ id <client-id> to <client-id> network group <group> \r\n-- configure client\
+        \ id <client-id> to <client-id> network identity <identity> \r\n-- configure\
+        \ client id <client-id> to <client-id> network ieee80211w <ieee80211w> \r\n\
+        -- configure client id <client-id> to <client-id> network key_mgmt <key_mgmt>\
+        \ \r\n-- configure client id <client-id> to <client-id> network pairwise <pairwise>\
+        \ \r\n-- configure client id <client-id> to <client-id> network password <password>\
+        \ \r\n-- configure client id <client-id> to <client-id> network proto <proto>\
+        \ \r\n-- configure client id <client-id> to <client-id> network psk <psk>\
+        \ \r\n-- configure client id <client-id> to <client-id> network scan_freq\
+        \ <scan_freq> \r\n-- configure client id <client-id> to <client-id> network\
+        \ scan_ssid <scan_ssid> \r\n-- configure client id <client-id> to <client-id>\
+        \ network ssid <ssid> \r\n-- configure client id <client-id> to <client-id>\
+        \ network username <username> \r\n-- configure client id <client-id> to <client-id>\
+        \ template client id <client-id> \r\n-- configure client id <client-id> to\
+        \ <client-id> template file <path/to/file> \r\n-- configure client mac <mac>\
+        \ \r\n-- configure client mac file <path/to/file> \r\n-- configure client\
+        \ mac random \r\n-- configure client number add <num> \r\n-- configure client\
+        \ number add <num> ap <ap-id> \r\n-- configure client number total <num> \r\
+        \n-- configure client number total <num> ap <num> \r\n-- configure dhcpd disable\
+        \ \r\n-- configure dhcpd enable \r\n-- configure global ap base_mac <base-mac>\
+        \ \r\n-- configure global ap base_mac random \r\n-- configure global ap base_serial\
+        \ <base-serial> \r\n-- configure global ap beacon bitmask <bitmask> \r\n--\
+        \ configure global ap beacon loss <loss> \r\n-- configure global ap beacon\
+        \ sampling <sampling> \r\n-- configure global ap bunch <num> \r\n-- configure\
+        \ global ap capwap_brain <enable/disable> \r\n-- configure global ap country\
+        \ <country> \r\n-- configure global ap dev_mode <enable/disable> \r\n-- configure\
+        \ global ap ecomode <yes/no> \r\n-- configure global ap freq <freq> \r\n--\
+        \ configure global ap grpc server <enable/disable> \r\n-- configure global\
+        \ ap interval <seconds> \r\n-- configure global ap ip v4 <yes/no> \r\n-- configure\
+        \ global ap ip v6 <yes/no> \r\n-- configure global ap mode flex \r\n-- configure\
+        \ global ap mode local \r\n-- configure global ap mode mesh \r\n-- configure\
+        \ global ap mode mesh <aps> \r\n-- configure global ap model \r\n-- configure\
+        \ global ap model <model> \r\n-- configure global ap name <prefix> \r\n--\
+        \ configure global ap offchan <yes/no> \r\n-- configure global ap office-extended\
+        \ <enable/disable> \r\n-- configure global ap pnp <enable/disable> \r\n--\
+        \ configure global ap radio <num> \r\n-- configure global ap start-rate <num>\
+        \ \r\n-- configure global ap storage <yes/no> \r\n-- configure global ap tls\
+        \ gateway address <address> port <port> \r\n-- configure global ap type capwap\
+        \ \r\n-- configure global ap type cloud \r\n-- configure global ap type mobility-express\
+        \ \r\n-- configure global ap vci <vci> \r\n-- configure global ap web server\
+        \ <enable/disable> \r\n-- configure global client alive <yes/no> \r\n-- configure\
+        \ global client alive client id <client-id> \r\n-- configure global client\
+        \ alive client monitor \r\n-- configure global client alive interval <seconds>\
+        \ \r\n-- configure global client alive ip <ip> mac <mac> \r\n-- configure\
+        \ global client alive packet size <packet-size> \r\n-- configure global client\
+        \ alive port <port> \r\n-- configure global client base_mac <base-mac> \r\n\
+        -- configure global client base_name <base_name> \r\n-- configure global client\
+        \ bunch <num> \r\n-- configure global client dhcpv4 no \r\n-- configure global\
+        \ client dhcpv4 yes \r\n-- configure global client dhcpv6 no \r\n-- configure\
+        \ global client dhcpv6 stateless \r\n-- configure global client dhcpv6 yes\
+        \ \r\n-- configure global client ip v6 no \r\n-- configure global client ip\
+        \ v6 yes \r\n-- configure global client ipv4 dhcp \r\n-- configure global\
+        \ client ipv4 no \r\n-- configure global client ipv4 static \r\n-- configure\
+        \ global client ipv4 static <addr/prefix> gw <gw> \r\n-- configure global\
+        \ client ipv4 static list \r\n-- configure global client ipv6 dhcp stateful\
+        \ \r\n-- configure global client ipv6 dhcp stateless \r\n-- configure global\
+        \ client ipv6 no \r\n-- configure global client ipv6 static \r\n-- configure\
+        \ global client ipv6 static <addr/prefix> gw <gw> <num> \r\n-- configure global\
+        \ client name <client-name-prefix> \r\n-- configure global client start-rate\
+        \ <rate> \r\n-- configure global client template <path/to/file> \r\n-- configure\
+        \ global client test mtu <mtu> \r\n-- configure global client test webauth_timeout\
+        \ <sec> \r\n-- configure global client timeoutx <factor> \r\n-- configure\
+        \ global client vendor_class_id <vendor-class-id> \r\n-- configure global\
+        \ log capwap <level> \r\n-- configure global log click <level> \r\n-- configure\
+        \ global log dhcp <level> \r\n-- configure global log hostapd <level> \r\n\
+        -- configure global log kernel <level> \r\n-- configure global log supplicant\
+        \ <level> \r\n-- configure global reset factory \r\n-- configure global setup\
+        \ ap access <yes/no> \r\n-- configure global setup ap access group <group-size>\
+        \ \r\n-- configure global setup ap access vlan <vlan> \r\n-- configure global\
+        \ setup ap list remove <seq> \r\n-- configure global setup ap list remove\
+        \ all \r\n-- configure global setup ap list seq <seq> vlan <vlan> <aps> <clients>\
+        \ start_ip <addr/prefix> gateway <gw> wlc <wlc-ip> <wlc-2nd-ip> <wlc-3rd-ip>\
+        \ \r\n-- configure global setup ap list seq <seq> vlan <vlan> <aps> <clients>\
+        \ start_ip <addr/prefix> gateway <gw> wlc <wlc-ip> <wlc-2nd-ip> <wlc-3rd-ip>\
+        \ model <model> \r\n-- configure global setup ap list seq <seq> vlan <vlan>\
+        \ <aps> <clients> start_ip <addr/prefix> gateway <gw> wlc <wlc-ip> <wlc-2nd-ip>\
+        \ <wlc-3rd-ip> model <model> uplink_port <port> \r\n-- configure global setup\
+        \ ap list seq <seq> vlan <vlan> <aps> <clients> start_ip <addr/prefix> gateway\
+        \ <gw> wlc <wlc-ip> <wlc-2nd-ip> <wlc-3rd-ip> uplink_port <port> \r\n-- configure\
+        \ global setup ap monitoring <yes/no> \r\n-- configure global setup aux <num>\
+        \ \r\n-- configure global setup aux connect <direction> \r\n-- configure global\
+        \ setup bridge linux \r\n-- configure global setup bridge ovs \r\n-- configure\
+        \ global setup client ap blocking \r\n-- configure global setup client ap\
+        \ interleaving \r\n-- configure global setup client device compliance 11n\
+        \ <yes/no> \r\n-- configure global setup client device compliance wifi6 <yes/no>\
+        \ \r\n-- configure global setup client dns_cache <yes/no> \r\n-- configure\
+        \ global setup client dns_cache remove all \r\n-- configure global setup client\
+        \ dns_cache remove seq <seq> \r\n-- configure global setup client dns_cache\
+        \ seq <seq> hostname <hostname> port <port> <ipv4> <ipv6> \r\n-- configure\
+        \ global setup client dns_server <ipv4> <ipv6> \r\n-- configure global setup\
+        \ client dns_server dhcp \r\n-- configure global setup client dns_server no\
+        \ \r\n-- configure global setup client list remove <seq> \r\n-- configure\
+        \ global setup client list remove all \r\n-- configure global setup client\
+        \ list seq <seq> <clients> startip <addr/prefix> gateway <gw> \r\n-- configure\
+        \ global setup client monitor <yes/no> \r\n-- configure global setup client\
+        \ monitor interface <interface> \r\n-- configure global setup client monitor\
+        \ internal \r\n-- configure global setup client post_action_frame <yes/no>\
+        \ \r\n-- configure global setup client post_action_frame hexdump <hexdump>\
+        \ \r\n-- configure global setup client user_agent <user-agent> \r\n-- configure\
+        \ global setup client-vlan-allow <yes/no> \r\n-- configure global setup device\
+        \ samsung <yes/no> \r\n-- configure global setup device samsung adaptive_11r\
+        \ <yes/no> \r\n-- configure global setup device samsung profile seq <seq>\
+        \ type <type> <model> <sw-ver> <sales-code> <plat-ver> key <key-index> \r\n\
+        -- configure global setup device samsung rfc8325_dscp <yes/no> \r\n-- configure\
+        \ global setup dhcpd <yes/no> \r\n-- configure global setup dhcpd ap server\
+        \ <addr/prefix> pool <begin-ip> <end-ip> router <router> \r\n-- configure\
+        \ global setup dhcpd client server <addr/prefix> pool <begin-ip> <end-ip>\
+        \ router <router> \r\n-- configure global setup dhcpd v6 <yes/no> \r\n-- configure\
+        \ global setup dhcpd v6 ap server <addr/prefix> pool <begin-ip> <end-ip> router\
+        \ <router> \r\n-- configure global setup dhcpd v6 client server <addr/prefix>\
+        \ pool <begin-ip> <end-ip> router <router> \r\n-- configure global setup disk\
+        \ <GB> \r\n-- configure global setup interface mgmt <PCI> \r\n-- configure\
+        \ global setup interface wired <PCI> \r\n-- configure global setup interface\
+        \ wmedium <PCI> \r\n-- configure global setup refresh <seconds> \r\n-- configure\
+        \ global setup roaming <rate> interval <seconds> roams <times> hops <hops>\
+        \ \r\n-- configure global setup roaming <rate> interval <seconds> roams <times>\
+        \ hops <hops> ft_over_ds \r\n-- configure global setup roaming dhcp <yes/no>\
+        \ \r\n-- configure global setup roaming limit <limit> \r\n-- configure global\
+        \ setup session <session> \r\n-- configure global setup sit <yes/no> \r\n\
+        -- configure global setup transport vlan <QinQ> \r\n-- configure global setup\
+        \ webauth autologin <yes/no> \r\n-- configure global setup webauth autostart\
+        \ <yes/no> \r\n-- configure global setup webauth l3vlan_override <yes/no>\
+        \ \r\n-- configure global setup webauth process fast \r\n-- configure global\
+        \ setup webauth process normal \r\n-- configure global setup webauth process\
+        \ slow \r\n-- configure global setup webauth required <yes/no> \r\n-- configure\
+        \ global setup webauth syslog <level> \r\n-- configure global setup webauth\
+        \ timeout <ms> tries <tries> \r\n-- configure global setup webauth url <url>\
+        \ \r\n-- configure global setup webauth username <username> password <password>\
+        \ \r\n-- configure global wlc ap-vlan <vlan> \r\n-- configure global wlc ap-vlan\
+        \ <vlan> native \r\n-- configure global wlc ap-vlan-ip <ipaddr> \r\n-- configure\
+        \ global wlc ap-vlan-ipv6 <ipaddr6> \r\n-- configure global wlc capwap <capwap-version>\
+        \ \r\n-- configure global wlc client-vlan <vlan> \r\n-- configure global wlc\
+        \ client-vlan <vlan> native \r\n-- configure global wlc client-vlan-ip <ipaddr>\
+        \ \r\n-- configure global wlc client-vlan-ipv6 <ipaddr6> \r\n-- configure\
+        \ global wlc dhcp-option43 <yes/no> \r\n-- configure global wlc ip <wlc-ip>\
+        \ \r\n-- configure global wlc ipv6 <wlc-ipv6> \r\n-- configure global wlc\
+        \ password <password> \r\n-- configure global wlc type <wlc_type> \r\n-- configure\
+        \ global wlc user <username> \r\n-- configure hostname <hostname> \r\n-- configure\
+        \ hwsim ap beacon bitmask <bitmask> \r\n-- configure hwsim ap beacon sampling\
+        \ <sampling> \r\n-- configure hwsim connect mode ALL \r\n-- configure hwsim\
+        \ connect mode BOTH \r\n-- configure hwsim connect mode DIRECT \r\n-- configure\
+        \ hwsim connect mode HOPS \r\n-- configure hwsim connect mode NEXT \r\n--\
+        \ configure management dhcp \r\n-- configure management ip <ip> netmask <netmask>\
+        \ gateway <gw> \r\n-- configure management none \r\n-- configure start rate\
+        \ <rate> \r\n-- configure vap <wlc-ip> <capwap-version> \r\n-- debug cli handler\
+        \ disable \r\n-- debug cli handler enable \r\n-- debug cli parser disable\
+        \ \r\n-- debug cli parser enable \r\n-- disconnect client all \r\n-- disconnect\
+        \ client all reason <80211_code> \r\n-- disconnect client all samsung <80211_code>\
+        \ <samsung_code> \r\n-- disconnect client id <client-id> \r\n-- disconnect\
+        \ client id <client-id> reason <80211_code> \r\n-- disconnect client id <client-id>\
+        \ samsung <80211_code> <samsung_code> \r\n-- disconnect client id <client-id>\
+        \ to <client-id> \r\n-- disconnect client id <client-id> to <client-id> reason\
+        \ <80211_code> \r\n-- disconnect client id <client-id> to <client-id> samsung\
+        \ <80211_code> <samsung_code> \r\n-- get \r\n-- get <key> \r\n-- initialize\
+        \ <path/to/file> \r\n-- initialize ftp <url> username <username> \r\n-- initialize\
+        \ ftp <url> username <username> password <password> \r\n-- initialize help\
+        \ \r\n-- initialize http <url> \r\n-- initialize https <url> username <username>\
+        \ \r\n-- initialize https <url> username <username> password <password> \r\
+        \n-- initialize scp <url> username <username> \r\n-- initialize scp <url>\
+        \ username <username> password <password> \r\n-- initialize startup \r\n--\
+        \ initialize status \r\n-- initialize tftp <url> \r\n-- load configure file\
+        \ <path/to/file> \r\n-- load configure ftp <url> username <username> \r\n\
+        -- load configure ftp <url> username <username> password <password> \r\n--\
+        \ load configure http <url> \r\n-- load configure https <url> username <username>\
+        \ \r\n-- load configure https <url> username <username> password <password>\
+        \ \r\n-- load configure scp <url> username <username> \r\n-- load configure\
+        \ scp <url> username <username> password <password> \r\n-- load configure\
+        \ tftp <url> \r\n-- reassoc client all \r\n-- reassoc client all all \r\n\
+        -- reassoc client id <client-id> \r\n-- reassoc client id <client-id> all\
+        \ \r\n-- reassoc client id <client-id> to <client-id> \r\n-- reassoc client\
+        \ id <client-id> to <client-id> all \r\n-- reconfig client all \r\n-- reconfig\
+        \ client all file <path/to/file> \r\n-- reconfig client id <client-id> \r\n\
+        -- reconfig client id <client-id> file <path/to/file> \r\n-- reconfig client\
+        \ id <client-id> to <client-id> \r\n-- reconfig client id <client-id> to <client-id>\
+        \ file <path/to/file> \r\n-- reconnect client all \r\n-- reconnect client\
+        \ id <client-id> \r\n-- reconnect client id <client-id> to <client-id> \r\n\
+        -- remove client all network <network-id> \r\n-- remove client id <client-id>\
+        \ network <network-id> \r\n-- remove client id <client-id> to <client-id>\
+        \ network <network-id> \r\n-- restart ap all \r\n-- restart ap all process\
+        \ capwapd \r\n-- restart ap all process click \r\n-- restart ap all process\
+        \ hostapd \r\n-- restart ap all uplink_port <port> \r\n-- restart ap id <ap-id>\
+        \ \r\n-- restart ap id <ap-id> process capwapd \r\n-- restart ap id <ap-id>\
+        \ process click \r\n-- restart ap id <ap-id> process hostapd \r\n-- restart\
+        \ ap id <ap-id> to <ap-id> \r\n-- restart ap id <ap-id> to <ap-id> process\
+        \ capwapd \r\n-- restart ap id <ap-id> to <ap-id> process click \r\n-- restart\
+        \ ap id <ap-id> to <ap-id> process hostapd \r\n-- restart ap id <ap-id> to\
+        \ <ap-id> uplink_port <port> \r\n-- restart ap id <ap-id> uplink_port <port>\
+        \ \r\n-- roam client all ap <ap-id> \r\n-- roam client all ap <ap-id> ft_over_ds\
+        \ \r\n-- roam client all bssid <bssid> \r\n-- roam client all bssid <bssid>\
+        \ ft_over_ds \r\n-- roam client id <client-id> ap <ap-id> \r\n-- roam client\
+        \ id <client-id> ap <ap-id> ft_over_ds \r\n-- roam client id <client-id> bssid\
+        \ <bssid> \r\n-- roam client id <client-id> bssid <bssid> ft_over_ds \r\n\
+        -- roam client id <client-id> to <client-id> ap <ap-id> \r\n-- roam client\
+        \ id <client-id> to <client-id> ap <ap-id> ft_over_ds \r\n-- roam client id\
+        \ <client-id> to <client-id> bssid <bssid> \r\n-- roam client id <client-id>\
+        \ to <client-id> bssid <bssid> ft_over_ds \r\n-- run ap <ap-id> os-shell \r\
+        \n-- run ap <ap-id> shell \r\n-- run ap all devshell <commands> \r\n-- run\
+        \ ap id <ap-id> devshell <commands> \r\n-- run ap id <ap-id> to <ap-id> devshell\
+        \ <commands> \r\n-- run client all avahi browse kill \r\n-- run client all\
+        \ avahi browse params <params> \r\n-- run client all avahi publish kill \r\
+        \n-- run client all avahi publish params <params> \r\n-- run client all avahi\
+        \ publish service <service> type <service-type> port <port> \r\n-- run client\
+        \ all avahi publish service <service> type <service-type> port <port> txt\
+        \ <txt-data> \r\n-- run client id <client-id> avahi browse kill \r\n-- run\
+        \ client id <client-id> avahi browse params <params> \r\n-- run client id\
+        \ <client-id> avahi publish kill \r\n-- run client id <client-id> avahi publish\
+        \ params <params> \r\n-- run client id <client-id> avahi publish service <service>\
+        \ type <service-type> port <port> \r\n-- run client id <client-id> avahi publish\
+        \ service <service> type <service-type> port <port> txt <txt-data> \r\n--\
+        \ run client id <client-id> shell \r\n-- run client id <client-id> to <client-id>\
+        \ avahi browse kill \r\n-- run client id <client-id> to <client-id> avahi\
+        \ browse params <params> \r\n-- run client id <client-id> to <client-id> avahi\
+        \ publish kill \r\n-- run client id <client-id> to <client-id> avahi publish\
+        \ params <params> \r\n-- run client id <client-id> to <client-id> avahi publish\
+        \ service <service> type <service-type> port <port> \r\n-- run client id <client-id>\
+        \ to <client-id> avahi publish service <service> type <service-type> port\
+        \ <port> txt <txt-data> \r\n-- run client id <client-id> wpa_cli \r\n-- run\
+        \ configure \r\n-- run monitor ap interval <interval> times <times> \r\n--\
+        \ run sta dhcpd shell \r\n-- run sta wiredwlc shell \r\n-- run system setup\
+        \ \r\n-- run telemetry <secret> \r\n-- run wlc <ip> apply certs \r\n-- run\
+        \ wlc <ip> apply certs <cert_name> \r\n-- run wlc <ip> cli <wlc-cli> \r\n\
+        -- run wlc <ip> config auth-list \r\n-- run wlc <ip> config auth-list <hash_code>\
+        \ \r\n-- run wlc <ip> devshell \r\n-- run wlc <ip> get capwap \r\n-- run wlc\
+        \ <ip> remove certs \r\n-- run wlc <ip> remove certs <cert_name> \r\n-- run\
+        \ wlc <ip> set ap mode flexconnect \r\n-- run wlc <ip> shell \r\n-- run wlc\
+        \ <ip> show certs \r\n-- run wlc <ip> sync_time \r\n-- run wlc apply certs\
+        \ \r\n-- run wlc apply certs <cert_name> \r\n-- run wlc cli <wlc-cli> \r\n\
+        -- run wlc config auth-list \r\n-- run wlc config auth-list <hash_code> \r\
+        \n-- run wlc devshell \r\n-- run wlc get capwap \r\n-- run wlc remove certs\
+        \ \r\n-- run wlc remove certs <cert_name> \r\n-- run wlc set ap mode flexconnect\
+        \ \r\n-- run wlc shell \r\n-- run wlc show certs \r\n-- run wlc sync_time\
+        \ \r\n-- save configure client all \r\n-- save configure client id <client-id>\
+        \ \r\n-- save configure client id <client-id> file <path/to/file> \r\n-- save\
+        \ configure client id <client-id> to <client-id> \r\n-- save configure file\
+        \ <path/to/file> \r\n-- save configure ftp <url> username <username> \r\n\
+        -- save configure ftp <url> username <username> password <password> \r\n--\
+        \ save configure http <url> \r\n-- save configure https <url> username <username>\
+        \ \r\n-- save configure https <url> username <username> password <password>\
+        \ \r\n-- save configure scp <url> username <username> \r\n-- save configure\
+        \ scp <url> username <username> password <password> \r\n-- save configure\
+        \ tftp <url> \r\n-- set \r\n-- set <key=value> \r\n-- show ap image \r\n--\
+        \ show ap process capwapd stats \r\n-- show ap process click stats \r\n--\
+        \ show ap process hostapd stats \r\n-- show ap process stats \r\n-- show ap\
+        \ status \r\n-- show ap wlan \r\n-- show cert \r\n-- show client all brief\
+        \ \r\n-- show client all configure \r\n-- show client all ipv6 brief \r\n\
+        -- show client all ipv6 summary \r\n-- show client all status \r\n-- show\
+        \ client all summary \r\n-- show client brief \r\n-- show client configure\
+        \ \r\n-- show client id <client-id> brief \r\n-- show client id <client-id>\
+        \ configure \r\n-- show client id <client-id> configure file \r\n-- show client\
+        \ id <client-id> ipv6 brief \r\n-- show client id <client-id> ipv6 summary\
+        \ \r\n-- show client id <client-id> status \r\n-- show client id <client-id>\
+        \ summary \r\n-- show client id <client-id> to <client-id> brief \r\n-- show\
+        \ client id <client-id> to <client-id> configure \r\n-- show client id <client-id>\
+        \ to <client-id> ipv6 brief \r\n-- show client id <client-id> to <client-id>\
+        \ ipv6 summary \r\n-- show client id <client-id> to <client-id> status \r\n\
+        -- show client id <client-id> to <client-id> summary \r\n-- show client interface\
+        \ stats \r\n-- show client ipv6 brief \r\n-- show client ipv6 summary \r\n\
+        -- show client status \r\n-- show client summary \r\n-- show configure \r\n\
+        -- show cores \r\n-- show help \r\n-- show help <substr> \r\n-- show help\
+        \ <substr> verbose \r\n-- show help verbose \r\n-- show info \r\n-- show system\
+        \ diskspace stats \r\n-- show system interface \r\n-- show system log \r\n\
+        -- show system process stats \r\n-- show system stats \r\n-- show tech-support\
+        \ \r\n-- show version \r\n-- start ap all \r\n-- start ap all uplink_port\
+        \ <port> \r\n-- start ap id <ap-id> \r\n-- start ap id <ap-id> to <ap-id>\
+        \ \r\n-- start ap id <ap-id> to <ap-id> uplink_port <port> \r\n-- start ap\
+        \ id <ap-id> uplink_port <port> \r\n-- start client all \r\n-- start client\
+        \ all network <network-id> \r\n-- start client id <client-id> \r\n-- start\
+        \ client id <client-id> network <network-id> \r\n-- start client id <client-id>\
+        \ to <client-id> \r\n-- start client id <client-id> to <client-id> network\
+        \ <network-id> \r\n-- stop ap all \r\n-- stop ap id <ap-id> \r\n-- stop ap\
+        \ id <ap-id> to <ap-id> \r\n-- stop client all \r\n-- stop client id <client-id>\
+        \ \r\n-- stop client id <client-id> to <client-id> \r\n-- test ap all ble\
+        \ <scan-records> \r\n-- test ap all ble telemetry cache_size <cache-size>\
+        \ time_interval <time-interval> transmit_cycle <transmit-cycle> \r\n-- test\
+        \ ap ble help \r\n-- test ap client idle start \r\n-- test ap client idle\
+        \ stop \r\n-- test ap client stats \r\n-- test ap client stats params <params>\
+        \ \r\n-- test ap help \r\n-- test ap id <ap-id> ble <scan-records> \r\n--\
+        \ test ap id <ap-id> ble telemetry cache_size <cache-size> time_interval <time-interval>\
+        \ transmit_cycle <transmit-cycle> \r\n-- test ap id <ap-id> to <ap-id> ble\
+        \ <scan-records> \r\n-- test ap id <ap-id> to <ap-id> ble telemetry cache_size\
+        \ <cache-size> time_interval <time-interval> transmit_cycle <transmit-cycle>\
+        \ \r\n-- test ap standalone start \r\n-- test ap standalone stop \r\n-- test\
+        \ ap wifi6 assurance \r\n-- test ap wifi6 assurance data bytes <bytes> dimension\
+        \ all wifi 11ax \r\n-- test ap wifi6 assurance data bytes <bytes> dimension\
+        \ all wifi pre_11ax \r\n-- test ap wifi6 assurance data bytes <bytes> dimension\
+        \ radio_0 wifi 11ax \r\n-- test ap wifi6 assurance data bytes <bytes> dimension\
+        \ radio_0 wifi pre_11ax \r\n-- test ap wifi6 assurance data bytes <bytes>\
+        \ dimension radio_1 wifi 11ax \r\n-- test ap wifi6 assurance data bytes <bytes>\
+        \ dimension radio_1 wifi pre_11ax \r\n-- test ap wifi6 assurance help \r\n\
+        -- test ap wifi6 assurance interval <seconds> \r\n-- test ap wifi6 assurance\
+        \ interval <seconds> data bytes <bytes> dimension all wifi 11ax \r\n-- test\
+        \ ap wifi6 assurance interval <seconds> data bytes <bytes> dimension all wifi\
+        \ pre_11ax \r\n-- test ap wifi6 assurance interval <seconds> data bytes <bytes>\
+        \ dimension radio_0 wifi 11ax \r\n-- test ap wifi6 assurance interval <seconds>\
+        \ data bytes <bytes> dimension radio_0 wifi pre_11ax \r\n-- test ap wifi6\
+        \ assurance interval <seconds> data bytes <bytes> dimension radio_1 wifi 11ax\
+        \ \r\n-- test ap wifi6 assurance interval <seconds> data bytes <bytes> dimension\
+        \ radio_1 wifi pre_11ax \r\n-- test ap wifi6 assurance param access be \r\n\
+        -- test ap wifi6 assurance param access bg \r\n-- test ap wifi6 assurance\
+        \ param access vi \r\n-- test ap wifi6 assurance param access vo \r\n-- test\
+        \ ap wifi6 assurance param data bytes <bytes> airtime <airtime> packets <packets>\
+        \ latency <avg_latency> clients <active-clients> \r\n-- test ap wifi6 assurance\
+        \ param dimension all \r\n-- test ap wifi6 assurance param dimension radio_0\
+        \ \r\n-- test ap wifi6 assurance param dimension radio_1 \r\n-- test ap wifi6\
+        \ assurance param direction rx \r\n-- test ap wifi6 assurance param direction\
+        \ tx \r\n-- test ap wifi6 assurance param rssi average \r\n-- test ap wifi6\
+        \ assurance param rssi good \r\n-- test ap wifi6 assurance param rssi poor\
+        \ \r\n-- test ap wifi6 assurance param traffic legacy \r\n-- test ap wifi6\
+        \ assurance param traffic mu \r\n-- test ap wifi6 assurance param traffic\
+        \ ofdma \r\n-- test ap wifi6 assurance param traffic su \r\n-- test ap wifi6\
+        \ assurance param wifi 11ax \r\n-- test ap wifi6 assurance param wifi pre_11ax\
+        \ \r\n-- test autoroam pause \r\n-- test autoroam resume \r\n-- test autoroam\
+        \ start \r\n-- test autoroam stats \r\n-- test autoroam stats clear \r\n--\
+        \ test autoroam stats client all \r\n-- test autoroam stats client all summary\
+        \ \r\n-- test autoroam stats client id <client-id> \r\n-- test autoroam stats\
+        \ client id <client-id> summary \r\n-- test autoroam stats client id <client-id>\
+        \ to <client-id> \r\n-- test autoroam stats client id <client-id> to <client-id>\
+        \ summary \r\n-- test autoroam stats summary \r\n-- test autoroam stop \r\n\
+        -- test awips alarm airdrop \r\n-- test awips alarm association \r\n-- test\
+        \ awips alarm authentication \r\n-- test awips alarm authentication failure\
+        \ \r\n-- test awips alarm beacon \r\n-- test awips alarm beacon wrong_channel\
+        \ <channel> \r\n-- test awips alarm block_ack \r\n-- test awips alarm cts\
+        \ \r\n-- test awips alarm cts counter_trigger <frames> interval <seconds>\
+        \ \r\n-- test awips alarm custom pcap </path/to/file> ap_to_ap \r\n-- test\
+        \ awips alarm custom pcap </path/to/file> ap_to_client \r\n-- test awips alarm\
+        \ custom pcap </path/to/file> client_to_ap \r\n-- test awips alarm deauthentication\
+        \ \r\n-- test awips alarm deauthentication broadcast \r\n-- test awips alarm\
+        \ disassociation \r\n-- test awips alarm disassociation broadcast \r\n-- test\
+        \ awips alarm eapol_logoff \r\n-- test awips alarm eapol_start \r\n-- test\
+        \ awips alarm fuzzed beacon \r\n-- test awips alarm fuzzed probe_request \r\
+        \n-- test awips alarm fuzzed probe_response \r\n-- test awips alarm invalid_oui\
+        \ \r\n-- test awips alarm malformed assoc_req \r\n-- test awips alarm malformed\
+        \ authentication \r\n-- test awips alarm probe_request \r\n-- test awips alarm\
+        \ probe_response \r\n-- test awips alarm ps_poll \r\n-- test awips alarm reassociation\
+        \ \r\n-- test awips alarm rts \r\n-- test awips alarm rts counter_trigger\
+        \ <frames> interval <seconds> \r\n-- test awips alarm rts duration <duration>\
+        \ \r\n-- test awips help \r\n-- test awips params client number <num> mac\
+        \ <mac> \r\n-- test awips params count <count> interval <interval> repeat\
+        \ <times> \r\n-- test awips reset \r\n-- test awips verbose <yes/no> \r\n\
+        -- test bridgedvm help \r\n-- test bridgedvm id <vm-id> shell \r\n-- test\
+        \ bridgedvm id <vm-id> shell <commands> \r\n-- test bridgedvm id <vm-id> traffic\
+        \ pcap <path/to/file> \r\n-- test bridgedvm id <vm-id> traffic pcap <path/to/file>\
+        \ params <key=value> \r\n-- test bridgedvm id <vm-id> webbrowser \r\n-- test\
+        \ bridgedvm list \r\n-- test bridgedvm renew \r\n-- test bridgedvm reset \r\
+        \n-- test bridgedvm setup \r\n-- test bridgedvm setup ipv6 no \r\n-- test\
+        \ bridgedvm setup ipv6 stateful \r\n-- test bridgedvm setup ipv6 stateless\
+        \ \r\n-- test bridgedvm setup nic <pci-list> \r\n-- test bridgedvm setup params\
+        \ <key=value> \r\n-- test client all bridgedvm list \r\n-- test client all\
+        \ bridgedvm renew \r\n-- test client all bridgedvm reset \r\n-- test client\
+        \ all bridgedvm setup <num> \r\n-- test client all bridgedvm setup <num> params\
+        \ <key=value> \r\n-- test client all connect <ssid> \r\n-- test client all\
+        \ connect <ssid> config <config> \r\n-- test client all device apple <device-version>\
+        \ os <os-version> \r\n-- test client all device intel \r\n-- test client all\
+        \ device intel post_action_frame hexdump <hexdump> \r\n-- test client all\
+        \ generate udp dst <dst> dport <dport> sport <sport> \r\n-- test client all\
+        \ generate udp dst <dst> dport <dport> sport <sport> count <count> interval\
+        \ <msec> \r\n-- test client all generate udp ipv6 dst <dst> dport <dport>\
+        \ sport <sport> \r\n-- test client all generate udp ipv6 dst <dst> dport <dport>\
+        \ sport <sport> count <count> interval <msec> \r\n-- test client all multicast\
+        \ join group <group-ip> \r\n-- test client all multicast leave group <group-ip>\
+        \ \r\n-- test client all multicast listen udp port <port> \r\n-- test client\
+        \ all multicast send group <group-ip> udp port <port> payload <payload> \r\
+        \n-- test client all multicast send group <group-ip> udp port <port> payload\
+        \ <payload> count <count> \r\n-- test client all neighbor_report request <ssid>\
+        \ \r\n-- test client all probing ap all count <count> interval <msec> \r\n\
+        -- test client all probing ap id <ap-id> count <count> interval <msec> \r\n\
+        -- test client all probing ap id <ap-id> to <ap-id> count <count> interval\
+        \ <msec> \r\n-- test client all webauth login \r\n-- test client all webauth\
+        \ logout \r\n-- test client all webauth status \r\n-- test client all webauth\
+        \ user <username> pass <password> login \r\n-- test client all wnm_bss_query\
+        \ \r\n-- test client bridgedvm help \r\n-- test client device help \r\n--\
+        \ test client id <client-id> bridgedvm list \r\n-- test client id <client-id>\
+        \ bridgedvm renew \r\n-- test client id <client-id> bridgedvm reset \r\n--\
+        \ test client id <client-id> bridgedvm setup <num> \r\n-- test client id <client-id>\
+        \ bridgedvm setup <num> params <key=value> \r\n-- test client id <client-id>\
+        \ connect <ssid> \r\n-- test client id <client-id> connect <ssid> config <config>\
+        \ \r\n-- test client id <client-id> device apple <device-version> os <os-version>\
+        \ \r\n-- test client id <client-id> device intel \r\n-- test client id <client-id>\
+        \ device intel post_action_frame hexdump <hexdump> \r\n-- test client id <client-id>\
+        \ generate udp dst <dst> dport <dport> sport <sport> \r\n-- test client id\
+        \ <client-id> generate udp dst <dst> dport <dport> sport <sport> count <count>\
+        \ interval <msec> \r\n-- test client id <client-id> generate udp ipv6 dst\
+        \ <dst> dport <dport> sport <sport> \r\n-- test client id <client-id> generate\
+        \ udp ipv6 dst <dst> dport <dport> sport <sport> count <count> interval <msec>\
+        \ \r\n-- test client id <client-id> multicast join group <group-ip> \r\n--\
+        \ test client id <client-id> multicast leave group <group-ip> \r\n-- test\
+        \ client id <client-id> multicast listen udp port <port> \r\n-- test client\
+        \ id <client-id> multicast send group <group-ip> udp port <port> payload <payload>\
+        \ \r\n-- test client id <client-id> multicast send group <group-ip> udp port\
+        \ <port> payload <payload> count <count> \r\n-- test client id <client-id>\
+        \ multicast send group <group-ip> udp port <port> payload <payload> loop \r\
+        \n-- test client id <client-id> neighbor_report request <ssid> \r\n-- test\
+        \ client id <client-id> network id <network-id> get config \r\n-- test client\
+        \ id <client-id> network id <network-id> get variable <variable-name> \r\n\
+        -- test client id <client-id> network id <network-id> remove \r\n-- test client\
+        \ id <client-id> network id <network-id> select \r\n-- test client id <client-id>\
+        \ network id <network-id> set <config> \r\n-- test client id <client-id> network\
+        \ list \r\n-- test client id <client-id> probing ap all count <count> interval\
+        \ <msec> \r\n-- test client id <client-id> probing ap id <ap-id> count <count>\
+        \ interval <msec> \r\n-- test client id <client-id> probing ap id <ap-id>\
+        \ to <ap-id> count <count> interval <msec> \r\n-- test client id <client-id>\
+        \ scan \r\n-- test client id <client-id> to <client-id> bridgedvm list \r\n\
+        -- test client id <client-id> to <client-id> bridgedvm renew \r\n-- test client\
+        \ id <client-id> to <client-id> bridgedvm reset \r\n-- test client id <client-id>\
+        \ to <client-id> bridgedvm setup <num> \r\n-- test client id <client-id> to\
+        \ <client-id> bridgedvm setup <num> params <key=value> \r\n-- test client\
+        \ id <client-id> to <client-id> device apple <device-version> os <os-version>\
+        \ \r\n-- test client id <client-id> to <client-id> device intel \r\n-- test\
+        \ client id <client-id> to <client-id> device intel post_action_frame hexdump\
+        \ <hexdump> \r\n-- test client id <client-id> to <client-id> generate udp\
+        \ dst <dst> dport <dport> sport <sport> \r\n-- test client id <client-id>\
+        \ to <client-id> generate udp dst <dst> dport <dport> sport <sport> count\
+        \ <count> interval <msec> \r\n-- test client id <client-id> to <client-id>\
+        \ generate udp ipv6 dst <dst> dport <dport> sport <sport> \r\n-- test client\
+        \ id <client-id> to <client-id> generate udp ipv6 dst <dst> dport <dport>\
+        \ sport <sport> count <count> interval <msec> \r\n-- test client id <client-id>\
+        \ to <client-id> multicast join group <group-ip> \r\n-- test client id <client-id>\
+        \ to <client-id> multicast leave group <group-ip> \r\n-- test client id <client-id>\
+        \ to <client-id> multicast listen udp port <port> \r\n-- test client id <client-id>\
+        \ to <client-id> multicast send group <group-ip> udp port <port> payload <payload>\
+        \ \r\n-- test client id <client-id> to <client-id> multicast send group <group-ip>\
+        \ udp port <port> payload <payload> count <count> \r\n-- test client id <client-id>\
+        \ to <client-id> neighbor_report request <ssid> \r\n-- test client id <client-id>\
+        \ to <client-id> probing ap all count <count> interval <msec> \r\n-- test\
+        \ client id <client-id> to <client-id> probing ap id <ap-id> count <count>\
+        \ interval <msec> \r\n-- test client id <client-id> to <client-id> probing\
+        \ ap id <ap-id> to <ap-id> count <count> interval <msec> \r\n-- test client\
+        \ id <client-id> to <client-id> webauth login \r\n-- test client id <client-id>\
+        \ to <client-id> webauth logout \r\n-- test client id <client-id> to <client-id>\
+        \ webauth status \r\n-- test client id <client-id> to <client-id> webauth\
+        \ user <username> pass <password> login \r\n-- test client id <client-id>\
+        \ to <client-id> wnm_bss_query \r\n-- test client id <client-id> webauth login\
+        \ \r\n-- test client id <client-id> webauth logout \r\n-- test client id <client-id>\
+        \ webauth status \r\n-- test client id <client-id> webauth user <username>\
+        \ pass <password> login \r\n-- test client id <client-id> wnm_bss_query \r\
+        \n-- test client multicast show ap <ap-id> \r\n-- test client multicast start\
+        \ join-timer <join-timer> \r\n-- test client multicast status \r\n-- test\
+        \ client multicast stop \r\n-- test client probing start \r\n-- test client\
+        \ probing stop \r\n-- test client retain help \r\n-- test client retain reason\
+        \ CAPWAP_DOWN \r\n-- test client retain reason DOT11_POOR_CHANNEL_CONDITIONS\
+        \ \r\n-- test client retain reason GROUP_KEY_UPDATE_TIMEOUT \r\n-- test client\
+        \ retain reason IP_DOWN_NO_IP \r\n-- test client retain reason RADIO_DOWN\
+        \ \r\n-- test client retain reset \r\n-- test connect help \r\n-- test connect\
+        \ http client all client monitor \r\n-- test connect http client all url <url>\
+        \ \r\n-- test connect http client id <client-id> client monitor \r\n-- test\
+        \ connect http client id <client-id> to <client-id> client monitor \r\n--\
+        \ test connect http client id <client-id> to <client-id> url <url> \r\n--\
+        \ test connect http client id <client-id> url <url> \r\n-- test connect multicast\
+        \ join client all bridgedvm id <vm-id> dst <group-ip> \r\n-- test connect\
+        \ multicast join client all dst <group-ip> \r\n-- test connect multicast join\
+        \ client id <client-id> bridgedvm id <vm-id> dst <group-ip> \r\n-- test connect\
+        \ multicast join client id <client-id> dst <group-ip> \r\n-- test connect\
+        \ multicast join client id <client-id> to <client-id> bridgedvm id <vm-id>\
+        \ dst <group-ip> \r\n-- test connect multicast join client id <client-id>\
+        \ to <client-id> dst <group-ip> \r\n-- test connect multicast leave client\
+        \ all bridgedvm id <vm-id> dst <group-ip> \r\n-- test connect multicast leave\
+        \ client all dst <group-ip> \r\n-- test connect multicast leave client id\
+        \ <client-id> bridgedvm id <vm-id> dst <group-ip> \r\n-- test connect multicast\
+        \ leave client id <client-id> dst <group-ip> \r\n-- test connect multicast\
+        \ leave client id <client-id> to <client-id> bridgedvm id <vm-id> dst <group-ip>\
+        \ \r\n-- test connect multicast leave client id <client-id> to <client-id>\
+        \ dst <group-ip> \r\n-- test connect params <key=value> \r\n-- test connect\
+        \ params data <hex-data> \r\n-- test connect params ping timeout <timeout>\
+        \ count <count> \r\n-- test connect params tcp flags <flags> \r\n-- test connect\
+        \ ping client all bridgedvm id <vm-id> dst client id <dst-client-id> \r\n\
+        -- test connect ping client all bridgedvm id <vm-id> dst client monitor \r\
+        \n-- test connect ping client all bridgedvm id <vm-id> dst ip <dst> \r\n--\
+        \ test connect ping client all bridgedvm id <vm-id> dst ip <dst> mac <dst_mac>\
+        \ \r\n-- test connect ping client all dst client id <dst-client-id> \r\n--\
+        \ test connect ping client all dst client monitor \r\n-- test connect ping\
+        \ client all dst ip <dst> \r\n-- test connect ping client all dst ip <dst>\
+        \ mac <dst_mac> \r\n-- test connect ping client all src client monitor \r\n\
+        -- test connect ping client id <client-id> bridgedvm id <vm-id> dst client\
+        \ id <dst-client-id> \r\n-- test connect ping client id <client-id> bridgedvm\
+        \ id <vm-id> dst client monitor \r\n-- test connect ping client id <client-id>\
+        \ bridgedvm id <vm-id> dst ip <dst> \r\n-- test connect ping client id <client-id>\
+        \ bridgedvm id <vm-id> dst ip <dst> mac <dst_mac> \r\n-- test connect ping\
+        \ client id <client-id> dst client id <dst-client-id> \r\n-- test connect\
+        \ ping client id <client-id> dst client monitor \r\n-- test connect ping client\
+        \ id <client-id> dst ip <dst> \r\n-- test connect ping client id <client-id>\
+        \ dst ip <dst> mac <dst_mac> \r\n-- test connect ping client id <client-id>\
+        \ src client monitor \r\n-- test connect ping client id <client-id> to <client-id>\
+        \ bridgedvm id <vm-id> dst client id <dst-client-id> \r\n-- test connect ping\
+        \ client id <client-id> to <client-id> bridgedvm id <vm-id> dst client monitor\
+        \ \r\n-- test connect ping client id <client-id> to <client-id> bridgedvm\
+        \ id <vm-id> dst ip <dst> \r\n-- test connect ping client id <client-id> to\
+        \ <client-id> bridgedvm id <vm-id> dst ip <dst> mac <dst_mac> \r\n-- test\
+        \ connect ping client id <client-id> to <client-id> dst client id <dst-client-id>\
+        \ \r\n-- test connect ping client id <client-id> to <client-id> dst client\
+        \ monitor \r\n-- test connect ping client id <client-id> to <client-id> dst\
+        \ ip <dst> \r\n-- test connect ping client id <client-id> to <client-id> dst\
+        \ ip <dst> mac <dst_mac> \r\n-- test connect ping client id <client-id> to\
+        \ <client-id> src client monitor \r\n-- test connect ping6 client all bridgedvm\
+        \ id <vm-id> dst client id <dst-client-id> \r\n-- test connect ping6 client\
+        \ all bridgedvm id <vm-id> dst client monitor \r\n-- test connect ping6 client\
+        \ all bridgedvm id <vm-id> dst ip <dst> \r\n-- test connect ping6 client all\
+        \ bridgedvm id <vm-id> dst ip <dst> mac <dst_mac> \r\n-- test connect ping6\
+        \ client all dst client id <dst-client-id> \r\n-- test connect ping6 client\
+        \ all dst client monitor \r\n-- test connect ping6 client all dst ip <dst>\
+        \ \r\n-- test connect ping6 client all dst ip <dst> mac <dst_mac> \r\n-- test\
+        \ connect ping6 client all src client monitor \r\n-- test connect ping6 client\
+        \ id <client-id> bridgedvm id <vm-id> dst client id <dst-client-id> \r\n--\
+        \ test connect ping6 client id <client-id> bridgedvm id <vm-id> dst client\
+        \ monitor \r\n-- test connect ping6 client id <client-id> bridgedvm id <vm-id>\
+        \ dst ip <dst> \r\n-- test connect ping6 client id <client-id> bridgedvm id\
+        \ <vm-id> dst ip <dst> mac <dst_mac> \r\n-- test connect ping6 client id <client-id>\
+        \ dst client id <dst-client-id> \r\n-- test connect ping6 client id <client-id>\
+        \ dst client monitor \r\n-- test connect ping6 client id <client-id> dst ip\
+        \ <dst> \r\n-- test connect ping6 client id <client-id> dst ip <dst> mac <dst_mac>\
+        \ \r\n-- test connect ping6 client id <client-id> src client monitor \r\n\
+        -- test connect ping6 client id <client-id> to <client-id> bridgedvm id <vm-id>\
+        \ dst client id <dst-client-id> \r\n-- test connect ping6 client id <client-id>\
+        \ to <client-id> bridgedvm id <vm-id> dst client monitor \r\n-- test connect\
+        \ ping6 client id <client-id> to <client-id> bridgedvm id <vm-id> dst ip <dst>\
+        \ \r\n-- test connect ping6 client id <client-id> to <client-id> bridgedvm\
+        \ id <vm-id> dst ip <dst> mac <dst_mac> \r\n-- test connect ping6 client id\
+        \ <client-id> to <client-id> dst client id <dst-client-id> \r\n-- test connect\
+        \ ping6 client id <client-id> to <client-id> dst client monitor \r\n-- test\
+        \ connect ping6 client id <client-id> to <client-id> dst ip <dst> \r\n-- test\
+        \ connect ping6 client id <client-id> to <client-id> dst ip <dst> mac <dst_mac>\
+        \ \r\n-- test connect ping6 client id <client-id> to <client-id> src client\
+        \ monitor \r\n-- test connect tcp client all bridgedvm id <vm-id> dst client\
+        \ id <dst-client-id> \r\n-- test connect tcp client all bridgedvm id <vm-id>\
+        \ dst client monitor \r\n-- test connect tcp client all bridgedvm id <vm-id>\
+        \ dst ip <dst> mac <dst_mac> \r\n-- test connect tcp client all dst client\
+        \ id <dst-client-id> \r\n-- test connect tcp client all dst client monitor\
+        \ \r\n-- test connect tcp client all dst ip <dst> \r\n-- test connect tcp\
+        \ client all dst ip <dst> mac <dst_mac> \r\n-- test connect tcp client id\
+        \ <client-id> bridgedvm id <vm-id> dst client id <dst-client-id> \r\n-- test\
+        \ connect tcp client id <client-id> bridgedvm id <vm-id> dst client monitor\
+        \ \r\n-- test connect tcp client id <client-id> bridgedvm id <vm-id> dst ip\
+        \ <dst> mac <dst_mac> \r\n-- test connect tcp client id <client-id> dst client\
+        \ id <dst-client-id> \r\n-- test connect tcp client id <client-id> dst client\
+        \ monitor \r\n-- test connect tcp client id <client-id> dst ip <dst> \r\n\
+        -- test connect tcp client id <client-id> dst ip <dst> mac <dst_mac> \r\n\
+        -- test connect tcp client id <client-id> to <client-id> bridgedvm id <vm-id>\
+        \ dst client id <dst-client-id> \r\n-- test connect tcp client id <client-id>\
+        \ to <client-id> bridgedvm id <vm-id> dst client monitor \r\n-- test connect\
+        \ tcp client id <client-id> to <client-id> bridgedvm id <vm-id> dst ip <dst>\
+        \ mac <dst_mac> \r\n-- test connect tcp client id <client-id> to <client-id>\
+        \ dst client id <dst-client-id> \r\n-- test connect tcp client id <client-id>\
+        \ to <client-id> dst client monitor \r\n-- test connect tcp client id <client-id>\
+        \ to <client-id> dst ip <dst> \r\n-- test connect tcp client id <client-id>\
+        \ to <client-id> dst ip <dst> mac <dst_mac> \r\n-- test connect udp client\
+        \ all bridgedvm id <vm-id> dst client id <dst-client-id> \r\n-- test connect\
+        \ udp client all bridgedvm id <vm-id> dst client monitor \r\n-- test connect\
+        \ udp client all bridgedvm id <vm-id> dst ip <dst> mac <dst_mac> \r\n-- test\
+        \ connect udp client all dst client id <dst-client-id> \r\n-- test connect\
+        \ udp client all dst client monitor \r\n-- test connect udp client all dst\
+        \ ip <dst> \r\n-- test connect udp client all dst ip <dst> mac <dst_mac> \r\
+        \n-- test connect udp client id <client-id> bridgedvm id <vm-id> dst client\
+        \ id <dst-client-id> \r\n-- test connect udp client id <client-id> bridgedvm\
+        \ id <vm-id> dst client monitor \r\n-- test connect udp client id <client-id>\
+        \ bridgedvm id <vm-id> dst ip <dst> mac <dst_mac> \r\n-- test connect udp\
+        \ client id <client-id> dst client id <dst-client-id> \r\n-- test connect\
+        \ udp client id <client-id> dst client monitor \r\n-- test connect udp client\
+        \ id <client-id> dst ip <dst> \r\n-- test connect udp client id <client-id>\
+        \ dst ip <dst> mac <dst_mac> \r\n-- test connect udp client id <client-id>\
+        \ to <client-id> bridgedvm id <vm-id> dst client id <dst-client-id> \r\n--\
+        \ test connect udp client id <client-id> to <client-id> bridgedvm id <vm-id>\
+        \ dst client monitor \r\n-- test connect udp client id <client-id> to <client-id>\
+        \ bridgedvm id <vm-id> dst ip <dst> mac <dst_mac> \r\n-- test connect udp\
+        \ client id <client-id> to <client-id> dst client id <dst-client-id> \r\n\
+        -- test connect udp client id <client-id> to <client-id> dst client monitor\
+        \ \r\n-- test connect udp client id <client-id> to <client-id> dst ip <dst>\
+        \ \r\n-- test connect udp client id <client-id> to <client-id> dst ip <dst>\
+        \ mac <dst_mac> \r\n-- test deauth all ap broadcast \r\n-- test deauth all\
+        \ ap unicast \r\n-- test deauth all client \r\n-- test deauth bssid <bssid>\
+        \ ap broadcast \r\n-- test deauth bssid <bssid> ap unicast \r\n-- test deauth\
+        \ bssid <bssid> client \r\n-- test dhcp client all \r\n-- test dhcp client\
+        \ all hwsim \r\n-- test dhcp client all init \r\n-- test dhcp client all ip\
+        \ <cidr> gateway <gw> \r\n-- test dhcp client all release \r\n-- test dhcp\
+        \ client all renew \r\n-- test dhcp client all vendor_class_id <vendor-class-id>\
+        \ \r\n-- test dhcp client id <client-id> \r\n-- test dhcp client id <client-id>\
+        \ hwsim \r\n-- test dhcp client id <client-id> init \r\n-- test dhcp client\
+        \ id <client-id> ip <cidr> gateway <gw> \r\n-- test dhcp client id <client-id>\
+        \ release \r\n-- test dhcp client id <client-id> renew \r\n-- test dhcp client\
+        \ id <client-id> to <client-id> \r\n-- test dhcp client id <client-id> to\
+        \ <client-id> hwsim \r\n-- test dhcp client id <client-id> to <client-id>\
+        \ init \r\n-- test dhcp client id <client-id> to <client-id> ip <cidr> gateway\
+        \ <gw> \r\n-- test dhcp client id <client-id> to <client-id> release \r\n\
+        -- test dhcp client id <client-id> to <client-id> renew \r\n-- test dhcp client\
+        \ id <client-id> to <client-id> vendor_class_id <vendor-class-id> \r\n-- test\
+        \ dhcp client id <client-id> vendor_class_id <vendor-class-id> \r\n-- test\
+        \ dhcp help \r\n-- test dhcp params <key=value> \r\n-- test hotspot2 anqp\
+        \ request advice_of_charge_13 \r\n-- test hotspot2 anqp request advice_of_charge_278\
+        \ \r\n-- test hotspot2 anqp request operator_icon_metadata_12 \r\n-- test\
+        \ hotspot2 help \r\n-- test hotspot2 params clients <client-num> base_mac\
+        \ <base-mac> interval <ms> \r\n-- test ipv6 release global client all \r\n\
+        -- test ipv6 release global client id <client-id> \r\n-- test ipv6 release\
+        \ global client id <client-id> to <client-id> \r\n-- test ipv6 request client\
+        \ all \r\n-- test ipv6 request client id <client-id> \r\n-- test ipv6 request\
+        \ client id <client-id> to <client-id> \r\n-- test mdns advertisement interval\
+        \ <interval> \r\n-- test mdns client all advertisement all \r\n-- test mdns\
+        \ client all advertisement all active_query \r\n-- test mdns client all advertisement\
+        \ service <service-list> \r\n-- test mdns client all advertisement service\
+        \ <service-list> active_query \r\n-- test mdns client all advertisement service\
+        \ <service-list> na \r\n-- test mdns client all query service <service-list>\
+        \ type A \r\n-- test mdns client all query service <service-list> type AAAA\
+        \ \r\n-- test mdns client all query service <service-list> type PTR \r\n--\
+        \ test mdns client all query service <service-list> type SRV \r\n-- test mdns\
+        \ client all query service <service-list> type TXT \r\n-- test mdns client\
+        \ id <client-id> advertisement all \r\n-- test mdns client id <client-id>\
+        \ advertisement all active_query \r\n-- test mdns client id <client-id> advertisement\
+        \ service <service-list> \r\n-- test mdns client id <client-id> advertisement\
+        \ service <service-list> active_query \r\n-- test mdns client id <client-id>\
+        \ advertisement service <service-list> na \r\n-- test mdns client id <client-id>\
+        \ query service <service-list> type A \r\n-- test mdns client id <client-id>\
+        \ query service <service-list> type AAAA \r\n-- test mdns client id <client-id>\
+        \ query service <service-list> type PTR \r\n-- test mdns client id <client-id>\
+        \ query service <service-list> type SRV \r\n-- test mdns client id <client-id>\
+        \ query service <service-list> type TXT \r\n-- test mdns client id <client-id>\
+        \ to <client-id> advertisement all \r\n-- test mdns client id <client-id>\
+        \ to <client-id> advertisement all active_query \r\n-- test mdns client id\
+        \ <client-id> to <client-id> advertisement service <service-list> \r\n-- test\
+        \ mdns client id <client-id> to <client-id> advertisement service <service-list>\
+        \ active_query \r\n-- test mdns client id <client-id> to <client-id> advertisement\
+        \ service <service-list> na \r\n-- test mdns client id <client-id> to <client-id>\
+        \ query service <service-list> type A \r\n-- test mdns client id <client-id>\
+        \ to <client-id> query service <service-list> type AAAA \r\n-- test mdns client\
+        \ id <client-id> to <client-id> query service <service-list> type PTR \r\n\
+        -- test mdns client id <client-id> to <client-id> query service <service-list>\
+        \ type SRV \r\n-- test mdns client id <client-id> to <client-id> query service\
+        \ <service-list> type TXT \r\n-- test mdns help \r\n-- test mdns query timeout\
+        \ <timeout> no-response <yes/no> \r\n-- test mdns reset \r\n-- test mdns verbose\
+        \ <yes/no> \r\n-- test rfid <base-mac> total <num> interval <msec> repeat\
+        \ <times> \r\n-- test rfid start \r\n-- test rfid stop \r\n-- test rogue ap\
+        \ <rogueAP-total> <rogueAP-per-AP> 11w_mfp client <rogueClient-total> <rogueClient-per-AP>\
+        \ \r\n-- test rogue ap <rogueAP-total> <rogueAP-per-AP> dsie <ds_channel>\
+        \ client <rogueClient-total> <rogueClient-per-AP> \r\n-- test rogue ap <rogueAP-total>\
+        \ <rogueAP-per-AP> wpa2_dot1x client <rogueClient-total> <rogueClient-per-AP>\
+        \ \r\n-- test rogue ap <rogueAP-total> <rogueAP-per-AP> wpa3_owe client <rogueClient-total>\
+        \ <rogueClient-per-AP> \r\n-- test rogue ap <rogueAP-total> <rogueAP-per-AP>\
+        \ wpa3_sae client <rogueClient-total> <rogueClient-per-AP> \r\n-- test rogue\
+        \ param channel <channel> \r\n-- test rogue start \r\n-- test rogue stop \r\
+        \n-- update image ap dev \r\n-- update image ap file <path/to/file> \r\n--\
+        \ update image ap ftp <url> username <username> \r\n-- update image ap ftp\
+        \ <url> username <username> password <password> \r\n-- update image ap http\
+        \ <url> \r\n-- update image ap https <url> username <username> \r\n-- update\
+        \ image ap https <url> username <username> password <password> \r\n-- update\
+        \ image ap latest \r\n-- update image ap release \r\n-- update image ap scp\
+        \ <url> username <username> \r\n-- update image ap scp <url> username <username>\
+        \ password <password> \r\n-- update image ap tftp <url> \r\n-- update image\
+        \ wsim file <path/to/file> \r\n-- update image wsim ftp <url> username <username>\
+        \ \r\n-- update image wsim ftp <url> username <username> password <password>\
+        \ \r\n-- update image wsim http <url> \r\n-- update image wsim https <url>\
+        \ username <username> \r\n-- update image wsim https <url> username <username>\
+        \ password <password> \r\n-- update image wsim scp <url> username <username>\
+        \ \r\n-- update image wsim scp <url> username <username> password <password>\
+        \ \r\n-- update image wsim tftp <url> \r\n-- update wsim info \r\nAre you\
+        \ looking for these commands?"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: wsim4ca14d90#

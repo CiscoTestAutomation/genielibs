@@ -160,4 +160,23 @@ def unconfigure_udld_enable(device):
         raise SubCommandFailure(
             f'Could not unconfigure udld enable on device. Error: {error}'
         )
+
+def unconfigure_udld(device, option):
+    """ UnConfigures UDLD enable on device
+        Args:
+            device ('obj'): Device object
+            option ('str'): possible optins are aggressive, enable, recovery, 
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"Unconfigure udld enable on device")
+    cmd = f"no udld {option}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as error:
+        raise SubCommandFailure(
+            f'Could not unconfigure udld on device. Error: {error}'
+        )
     

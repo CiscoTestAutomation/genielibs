@@ -860,3 +860,48 @@ def unconfigure_vrf_forwarding_interface(device, interface, vrf_name):
         raise SubCommandFailure(
             "Failed to unconfigure vrf forwarding"
         )
+
+def configure_mdt_overlay_use_bgp_spt_only(device, vrf_name, address_family):
+
+    """ configure mdt overlay under vrf 
+        Args:
+            device ('obj'): Device object
+            vrf_name ('str'): name of the vrf
+            address_family ('str'):  mention the address-family.
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring vrf
+    """
+    confg = [
+        f'vrf definition {vrf_name}'.format(vrf_name=vrf_name),
+        f'address-family {address_family}'.format(
+            address_family=address_family),
+        f'mdt overlay use-bgp spt-only']
+    try:
+        device.configure(confg)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Could not configure "mdt overlay use-bgp spt-only under vrf definition {vrf_name}" on device. Error:\n{e}')
+
+def configure_default_vxlan(device, vrf_name, address_family, multicast_group_address):
+
+    """ configure mdt default in vxlan
+        Args:
+            device ('obj'): Device object
+            vrf_name ('str'): name of the vrf
+            address_family ('str'):  mention the address-family.
+            multicast_group_address ('str'): vxlan multicast group address
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring default vxlan
+    """
+    confg = [f'vrf definition {vrf_name}',
+            f'address-family {address_family}',
+            f'mdt default vxlan  {multicast_group_address}']
+    try:
+        device.configure(confg)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Could not configure mdt default vxlan under vrf definition on device. Error:\n{e}')

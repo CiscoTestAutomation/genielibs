@@ -25,7 +25,9 @@ class testAPI(unittest.TestCase):
         F0        ISR4451-X/K9        ok, active            00:02:59      
         P0        PWR-4450-AC         ok                    00:02:32      
         P1        Unknown             empty                 never         
-        P2        ACS-4450-FANASSY    ok                    00:02:32      
+        P2        ACS-4450-FANASSY    ok                    00:02:32
+        P3        ACS-4450-FANASSY    inserted                    00:02:32
+        P4        ACS-4450-FANASSY    N/A                    00:02:32
 
         Slot      CPLD Version        Firmware Version                        
         --------- ------------------- --------------------------------------- 

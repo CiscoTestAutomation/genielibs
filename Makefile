@@ -45,10 +45,13 @@ CYTHON_CMD	  = compileAll
 # Development pkg requirements
 RELATED_PKGS = genie.libs.health genie.libs.clean genie.libs.conf genie.libs.ops genie.libs.robot genie.libs.sdk
 RELATED_PKGS += genie.libs.filetransferutils
-DEPENDENCIES = restview psutil Sphinx wheel asynctest pysnmp
-DEPENDENCIES += sphinx-rtd-theme pyftpdlib tftpy\<0.8.1 robotframework
-DEPENDENCIES += Cython requests ruamel.yaml grpcio protobuf\<=3.20.1
-
+DEPENDENCIES = restview psutil==5.8.0 Sphinx wheel asynctest pysnmp
+DEPENDENCIES += sphinx-rtd-theme==1.1.0 pyftpdlib tftpy\<0.8.1 robotframework
+# cisco-distutils requires Cython 0.29.22
+# aiohttp-swagger 1.0.15 requires jinja2==2.11.2 and markupsafe==1.1.1
+DEPENDENCIES += Cython==0.29.22 requests ruamel.yaml grpcio protobuf\<=3.20.1 jinja2==2.11.2 markupsafe==1.1.1
+# aiohttp requires charset-normalizer<3.0.0
+DEPENDENCIES += charset-normalizer==2.1.1
 # Internal variables.
 # (note - build examples & templates last because it will fail uploading to pypi
 #  due to duplicates, and we'll for now accept that error)
@@ -185,7 +188,11 @@ develop:
 	@echo ""
 	@echo "--------------------------------------------------------------------"
 	@echo "Installing development dependencies"
-	@pip install $(DEPENDENCIES)
+	# workaround for Polaris SDK
+	@if [ $BINOS_ATESTS ]; \
+	 then pip install $(DEPENDENCIES) --ignore-installed docutils; \
+	 else pip install $(DEPENDENCIES); \
+	fi
 	@pip uninstall -y $(RELATED_PKGS) || true
 	@echo ""
 	@echo "--------------------------------------------------------------------"

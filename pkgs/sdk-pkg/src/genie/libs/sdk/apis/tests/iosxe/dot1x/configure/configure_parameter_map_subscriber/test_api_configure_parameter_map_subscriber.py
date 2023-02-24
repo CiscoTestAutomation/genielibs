@@ -10,7 +10,7 @@ class TestConfigureParameterMapSubscriber(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          VCR:
+          ECR:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -22,7 +22,7 @@ class TestConfigureParameterMapSubscriber(unittest.TestCase):
             type: c9200
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['VCR']
+        self.device = self.testbed.devices['ECR']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,6 @@ class TestConfigureParameterMapSubscriber(unittest.TestCase):
         )
 
     def test_configure_parameter_map_subscriber(self):
-        result = configure_parameter_map_subscriber(self.device, 'Identity', 10, 'eq', 'device-type', 'device1')
+        result = configure_parameter_map_subscriber(self.device, 'Identity', 10, 'eq', 'device-type', 'device1', 10, 'interface-template', 'Identity')
         expected_output = None
         self.assertEqual(result, expected_output)

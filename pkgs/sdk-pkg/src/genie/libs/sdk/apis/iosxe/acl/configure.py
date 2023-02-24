@@ -1586,4 +1586,128 @@ def unconfigure_acl_with_src_dsc_net(device,
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure access map match source and \
                 destination networks on device  {device.name}. Error:\n{e}")
+def configure_interface_ipv6_acl(device, interface, acl_name, ipv6_address):
+    """ 
+    API for the CLI :- 
+        interface {interface}\nipv6 access-list {acl_name}\npermit ipv6 any host {ipv6_address}
+        e.g.
+        Args:
+            device ('obj'): Device object
+            interface ('str'): interface name
+            acl_name ('str'): name of the acl
+            ipv6_address('str'): ipv6 address
+        Return:
+            None
+        Raise:
+            SubCommandFailure
+    """
+    cmd = f"interface {interface}\nipv6 access-list {acl_name}\npermit ipv6 any host {ipv6_address}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure acl on device {dev} with evalute. Error:\n{error}".format(
+                dev=device, error=e)
+            )
 
+def configure_standard_acl(device, acl_name, sequence_number=None, action=None, host=None, ip_host=None):
+    """ unconfigure Access-list
+        Args:
+            device ('obj'): Device object
+            acl_name ('str'): Access-list name or Standard IP access-list number range <100-199> , expanded range <2000-2699>
+            sequence_number('str'): Sequence Number range <1-2147483647>
+            action ('str'): permit / deny 
+            host('str'): host specific key word host
+            ip_host('str') : host ip address
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f"ip access-list standard {acl_name}\n"
+
+    if host and ip_host:
+        cmd += f"{sequence_number} {action} host {ip_host}\n"
+    elif ip_host:
+        cmd += f"{sequence_number} {action} {ip_host}\n"
+    else:
+        cmd += f"{sequence_number} {action} any\n"
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure {acl} on device {dev}. Error:\n{error}".format(
+                acl=acl_name, dev=device.name, error=e))
+
+def unconfigure_standard_acl(device, acl_name, sequence_number=None, action=None, host=None, ip_host=None):
+    """ unconfigure Access-list
+        Args:
+            device ('obj'): Device object
+            acl_name ('str'): Access-list name or Standard IP access-list number range <100-199> , expanded range <2000-2699>
+            sequence_number('str'): Sequence Number range <1-2147483647>
+            action ('str'): permit / deny 
+            host('str'): host specific key word host
+            ip_host('str') : host ip address
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f"ip access-list standard {acl_name}\n"
+
+    if host and ip_host:
+        cmd += f"no {sequence_number} {action} host {ip_host}\n"
+    elif ip_host:
+        cmd += f"no {sequence_number} {action} {ip_host}\n"
+    else:
+        cmd += f"no {sequence_number} {action} any\n"
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfigure {acl} on device {dev}. Error:\n{error}".format(
+                acl=acl_name, dev=device.name, error=e, ) )
+def configure_as_path_acl(device, acces_list_number=None, action=None, reg_exp=None):
+    """ configure Access-list for as-path
+        Args:
+            device ('obj'): Device object
+            acces_list_number (`int`): Access-list identifier ranges from <1-500>
+            action('str'): permit or deny
+            reg_exp ('str'): regular expression which matches for the acl
+            
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f"ip as-path access-list {acces_list_number} {action} {reg_exp}"
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure acl on device {dev}. Error:\n{error}".format(
+                dev=device.name, error=e,) )
+
+def unconfigure_as_path_acl(device, acces_list_number=None, action=None, reg_exp=None):
+    """ unconfigure Access-list for as-path
+        Args:
+            device ('obj'): Device object
+            acces_list_number ('int'): Access-list identifier ranges from <1-500>
+            action('str'): permit or deny
+            reg_exp ('str'): regular expression which matches for the acl
+            
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f"no ip as-path access-list {acces_list_number} {action} {reg_exp}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfigure acl on device {dev}. Error:\n{error}".format(
+                dev=device.name, error=e,))

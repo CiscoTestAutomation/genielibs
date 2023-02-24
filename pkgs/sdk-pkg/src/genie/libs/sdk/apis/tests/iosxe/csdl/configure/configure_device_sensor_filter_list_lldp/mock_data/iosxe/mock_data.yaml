@@ -1,0 +1,46 @@
+configure:
+  commands:
+    device-sensor filter-list lldp list system-capabilities: "device-sensor filter-list\
+      \ lldp list \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b$or filter-list lldp list s         \b\b\b\b\b\b\b\b\bystem-cap\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\blist lldp list\
+      \ system-capa         \b\b\b\b\b\b\b\b\bbilities\r\n"
+    device-sensor filter-list lldp list system-description: "device-sensor filter-list\
+      \ lldp list \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b$or filter-list lldp list s         \b\b\b\b\b\b\b\b\bystem-des\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\blist lldp list\
+      \ system-desc         \b\b\b\b\b\b\b\b\bription\r\n"
+    device-sensor filter-list lldp list system-name: "device-sensor filter-list lldp\
+      \ list system-name\r\n"
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: stack3-nyquist-1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: stack3-nyquist-1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: stack3-nyquist-1#

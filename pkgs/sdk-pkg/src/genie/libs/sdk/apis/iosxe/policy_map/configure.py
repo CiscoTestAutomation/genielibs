@@ -10,9 +10,8 @@ from pyats.aetest.steps import Steps
 
 log = logging.getLogger(__name__)
 def configure_policy_map(device,
-        policy_name,
-        class_map_list
-        ):
+    policy_name,
+    class_map_list):
     """ Configures policy_map
         Args:
              device ('obj'): device to use
@@ -101,16 +100,15 @@ def unconfigure_policy_map(device, policy_name):
 
 
 def configure_hqos_policer_map(device,
-        policy_name,
-        class_map_name,
-        policer_percent_val=None,
-        table_map_name=None,
-        table_map_mode=None,
-        match_mode=None,
-        matched_value=None,
-        child_policy=None,
-        set_table_map=False
-        ):
+    policy_name,
+    class_map_name,
+    policer_percent_val=None,
+    table_map_name=None,
+    table_map_mode=None,
+    match_mode=None,
+    matched_value=None,
+    child_policy=None,
+    set_table_map=False):
 
     """ Configures HQos policy_map
         Args:
@@ -150,8 +148,8 @@ def configure_hqos_policer_map(device,
 
         )
     )
-    cmd = [f"policy-map {policy_name}"]
-    cmd.append(f"class {class_map_name}")
+    cmd = [f"policy-map {policy_name}",
+           f"class {class_map_name}"]
     if policer_percent_val:
         cmd.append(f" police cir percent {policer_percent_val} conform-action transmit exceed-action set-dscp-transmit {table_map_mode} table {table_map_name}")
     if match_mode and matched_value :
@@ -162,21 +160,18 @@ def configure_hqos_policer_map(device,
 
     if child_policy:
         cmd.append(f"service-policy {child_policy}")
+
     try:
         device.configure(cmd)
-
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not configure class_map. Error:\n{error}".format(
-                error=e
-            )
-        )
+                error=e))
 
 def configure_shape_map(device,
-        queue_name,
-        class_map_list,
-        service_policy='service-policy'
-        ):
+    queue_name,
+    class_map_list,
+    service_policy='service-policy'):
     """ Configures policy_map type queueing
         Args:
              device('obj'): device to use
@@ -283,8 +278,7 @@ def configure_bandwidth_remaining_policy_map(device,policy_names,
     """
 
     counter = 0
-    cli = []
-    cli.append(f"policy-map {policy_names[0]}")
+    cli = [f"policy-map {policy_names[0]}"]
 
     for class_val in class_names:
         cli.append(f"class {class_val}")

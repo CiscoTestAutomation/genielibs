@@ -572,6 +572,92 @@ class test_nx_interface(TestCase):
                  ' exit'
             ]))
 
+
+    def test_nve_interface_ir_static_peer(self):
+
+        # Set Genie Tb
+        testbed = Testbed()
+        Genie.testbed = testbed
+
+        # Device
+        dev1 = Device(name='BL1', testbed=testbed, os='nxos')
+        intf1 = Interface(name='nve1', device=dev1)
+
+        # Apply configuration
+        vni_map= {}
+        vnis_map = {}
+        vnis_map['nve_vni_ir'] = True
+        vnis_map['nve_vni_ir_proto'] =  'static'
+        vnis_map['nve_vni_suppress_arp'] = True
+        vnis_map['nve_vni_ir_peer_ip'] = '100.100.100.3'
+        vnis_map['nve_vni'] = '1001-1100'
+        vni_map['1001-1100'] = vnis_map
+        intf1.vni_map = vni_map
+
+        # Build config
+
+        cfgs = intf1.build_config(apply=False, attributes = {'vni_map':vnis_map})
+        # Check config build correctly
+        self.assertMultiLineEqual(
+            str(cfgs),
+            '\n'.join([
+                'interface nve1',
+                ' member vni 1001-1100',
+                '  suppress-arp',
+                '  ingress-replication protocol static',
+                '   peer-ip 100.100.100.3',
+                '   exit',
+                '  exit',
+                ' exit'
+            ]))
+
+        dev1 = Device(name='BL1', testbed=testbed, os='nxos')
+        intf1 = Interface(name='nve1', device=dev1)
+
+        vnis_map = {}
+        vnis_map['nve_vni'] = '1001-1100'
+        vni_map['1001-1100'] = vnis_map
+        intf1.vni_map = vni_map
+        # Build unconfig
+        uncfgs = intf1.build_unconfig(apply=False,attributes = {'vni_map': vni_map})
+        # Check config build correctly
+        self.assertMultiLineEqual(
+            str(uncfgs),
+            '\n'.join([
+                'interface nve1',
+                ' no member vni 1001-1100',
+                ' exit'
+            ]))
+        # Apply configuration
+        vni_map= {}
+        vnis_map = {}
+        vni_map['nve_vni_ir'] = True
+        vni_map['nve_vni_ir_proto'] = 'static'
+        vni_map['nve_vni_ir_peer_ip'] = '100.100.100.3'
+        vni_map['nve_vni'] = '1001-1100'
+        vnis_map['1001-1100'] = vni_map
+        intf1.vni_map = vnis_map
+       #uncfgs = intf1.build_unconfig(apply=False)
+
+        # Build unconfig
+        # uncfgs = intf1.build_unconfig(apply=False)
+        # Build unconfig
+        uncfgs = intf1.build_unconfig(apply=False, attributes={'vni_map': vnis_map})
+
+        # Check config build correctly
+        self.assertMultiLineEqual(
+            str(uncfgs),
+            '\n'.join([
+                 'interface nve1',
+                 ' member vni 1001-1100',
+                 '  ingress-replication protocol static',
+                 '   no peer-ip 100.100.100.3',
+                 '   exit',
+                 '  exit',
+                 ' exit'
+            ]))
+
+
     # Below function is for L2VNI when Fabric underlay is
     # ASM and DCI underlay is also ASM
     def test_nve_interface_msite_mcast_underlay_l2vni(self):

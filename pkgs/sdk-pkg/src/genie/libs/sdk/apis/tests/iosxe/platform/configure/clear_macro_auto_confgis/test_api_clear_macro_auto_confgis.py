@@ -10,7 +10,7 @@ class TestClearMacroAutoConfgis(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          9300-24UX-1:
+          stack3-nyquist-1:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -19,10 +19,10 @@ class TestClearMacroAutoConfgis(unittest.TestCase):
                 protocol: unknown
             os: iosxe
             platform: cat9k
-            type: c9300
+            type: router
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['9300-24UX-1']
+        self.device = self.testbed.devices['stack3-nyquist-1']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,6 @@ class TestClearMacroAutoConfgis(unittest.TestCase):
         )
 
     def test_clear_macro_auto_confgis(self):
-        result = clear_macro_auto_confgis(self.device)
-        expected_output = None
+        result = clear_macro_auto_confgis(self.device, '')
+        expected_output = ''
         self.assertEqual(result, expected_output)

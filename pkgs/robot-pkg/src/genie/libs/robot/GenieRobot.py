@@ -74,8 +74,12 @@ class GenieRobot(object):
 
     @keyword('use genie testbed "${testbed}"')
     def genie_testbed(self, testbed):
-        '''*DEPRECATED* Please use the "use testbed "${testbed}" keyword instead.'''
         self.ats_pyats.use_testbed(testbed)
+        # organize the genie testbed, ensuring it has mapping values set
+        self.ats_pyats.testbed = self.testscript.organize_testbed(
+            self.testbed,
+            mapping_datafile=None,
+            devices=None)
         self.testscript.parameters['testbed'] = self.testbed
 
         # Load Genie Datafiles (Trigger, Verification and PTS)
@@ -666,6 +670,16 @@ class GenieRobot(object):
 
         # Remove both common sections
         testcases = sections[1:-1]
+
+        # Unpack verifications container - only one verification has been
+        # requested to run
+        expanded_testcases = []
+        for tc in testcases:
+            if getattr(tc, 'verifiers', None) is not None:
+                expanded_testcases.extend(tc.verifiers)
+            else:
+                expanded_testcases.append(tc)
+        testcases = expanded_testcases
 
         # Its possible multiple devices were found, only
         # keep the one with the correct device

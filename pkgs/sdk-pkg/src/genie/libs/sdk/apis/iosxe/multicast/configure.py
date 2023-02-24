@@ -778,41 +778,6 @@ def unconfigure_ip_igmp_snooping_last_member_query_interval(device):
             )
         )
 
-def configure_ipv6_mld_snooping(device):
-    """ Configure Enable IPv6 mld snooping
-    Args:
-        device (`obj`): Device object
-    Return:
-        None
-    Raise:
-        SubCommandFailure: Failed configuring
-    """
-    try:
-        device.configure([
-            "ipv6 mld snooping"
-        ])
-    except SubCommandFailure as e:
-        raise SubCommandFailure(
-            "Could not configure ipv6 mld snooping. Error:\n{error}".format(error=e)
-        )
-
-def unconfigure_ipv6_mld_snooping(device):
-    """ Unconfigure IPv6 mld snooping
-    Args:
-        device (`obj`): Device object
-    Return:
-        None
-    Raise:
-        SubCommandFailure: Failed configuring
-    """
-    try:
-        device.configure([
-            "no ipv6 mld snooping"
-        ])
-    except SubCommandFailure as e:
-        raise SubCommandFailure(
-            "Could not unconfigure ipv6 mld snooping. Error:\n{error}".format(error=e)
-        )
 
 def configure_ipv6_mld_vlan_immediate_leave(device, id):
     """ Configure Enable IPv6 mld vlan immediate leave
@@ -1173,7 +1138,7 @@ def configure_ip_igmp_static_group(device, interface, group_address):
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure ip igmp static-group on device {device.name}. Error:\n{e}")
 
-def configure_ip_igmp_join_group(device, interface, group_address, source_address):
+def configure_ip_igmp_join_group(device, interface, group_address, source_address=""):
     """ Configures ip igmp join-group to an vlan interface
         Example : ip igmp join-group 239.100.100.101 source 4.4.4.4
 
@@ -1181,7 +1146,7 @@ def configure_ip_igmp_join_group(device, interface, group_address, source_addres
             device ('obj'): device to use
             interface ('str'): interface or Vlan number (Eg. ten1/0/1 or vlan 10)
             group_address ('str'): IP group addres
-            source_address ('str'): IP source address
+            source_address ('str', optional): IP source address
 
         Returns:
             None
@@ -1190,12 +1155,14 @@ def configure_ip_igmp_join_group(device, interface, group_address, source_addres
             SubCommandFailure
     """
     log.info(f"Configuring ip igmp join-group on {device.name}")
-    configs = [
-        f"interface {interface}",
-        f"ip igmp join-group {group_address} source {source_address}"
-    ]
+    config = [f"interface {interface}"]
+    if source_address:
+        config.append(f"ip igmp join-group {group_address} source {source_address}")
+    else:
+        config.append(f"ip igmp join-group {group_address}")
+    
     try:
-        device.configure(configs)
+        device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure ip igmp join-group on device {device.name}. Error:\n{e}")
 
@@ -1323,3 +1290,165 @@ def disable_ip_igmp_snooping_report_suppression(device):
         device.configure("no ip igmp snooping report-suppression")
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to disable igmp report-suppression on device {device.name}. Error:\n{e}")
+
+def unconfigure_ip_igmp_ssmmap_static(device, acl_name, source_address):
+    """ Unconfigure ip igmp ssm-map static
+    Args:
+        device ('obj'): Device object
+        acl_name ('int'): acl name
+        source_address ('str'): ssm source address
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed to Unconfigure
+    """
+    cmd = f"no ip igmp ssm-map static {acl_name} {source_address}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not Unconfigure ip igmp ssm-map static {acl_name} {source_address}. Error:\n{e}")
+
+def configure_ip_igmp_access_group(device, interface, acl_name):
+    """ Configure ip igmp access_group
+    Args:
+        device ('obj'): Device object
+        interface ('int'): interface to configure
+        acl_name ('int'): acl name
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    cmd = [f'interface {interface}',
+	       f'ip igmp access-group {acl_name}']
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure ip igmp access-group {acl_name} on interface. Error:\n{e}")
+
+def configure_ipv6_mld_snooping_vlan_mrouter_interface(device, vlan_id, interface_id):
+    """ configure ipv6 mld snooping vlan <vlan-id> mrouter interface <interface-id>
+
+    Args:
+        device ('obj'): Device object
+        vlan_id ('int'): vlan id to unconfigure
+        interface_id ('str'): interface id
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed unconfigure rp address
+    """
+    cmd = f"ipv6 mld snooping vlan {vlan_id} mrouter interface {interface_id}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(
+            "Could not configure ipv6 mld snooping vlan. Error:\n{error}".format(error=e))
+
+def configure_ip_pim_enable_bidir_enable(device):
+    """ configure ip pim bidir
+        Example : ip pim bidir-enable
+
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure("ip pim bidir-enable")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure ip pim bidir on device {device.name}. Error:\n{e}")
+
+
+def unconfigure_ip_pim_enable_bidir_enable(device):
+    """ unconfigure ip pim bidir
+        Example : ip pim bidir-enable
+
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure("no ip pim bidir-enable")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure ip pim bidir on device {device.name}. Error:\n{e}")
+
+
+def configure_ip_pim_rp_address(device, ip_address, option):
+    """Configures a IP pim address group range
+
+    Args:
+        device ('obj'): Device object
+        ip_address ('str'): IP address
+        option ('str') : can be user choice bidir,override, ccess-list reference for group <1-99> or <1300-1999>
+
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring rp address
+    """
+    cmd = f"ip pim rp-address {ip_address} {option}"
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(
+            "Failed to configure ip pim rp-address {device.name}. Error:\n{e}")
+
+
+def unconfigure_ip_pim_rp_address(device, ip_address, option):
+    """unconfigures  IP pim address group range
+
+    Args:
+        device ('obj'): Device object
+        ip_address ('str'): IP address
+        option ('str') : can be user choice bidir,override, ccess-list reference for group <1-99> or <1300-1999>
+
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed unconfigure rp address
+    """
+    cmd = f"no ip pim rp-address {ip_address} {option}"
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(
+            "Failed to unconfigure ip pim rp-address {device.name}. Error:\n{e}")
+
+def unconfigure_ip_igmp_join_group(device, interface, group_address, source_address=""):
+    """ unconfigures ip igmp join-group to an vlan interface
+        Example : ip igmp join-group 239.100.100.101 source 4.4.4.4
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface or Vlan number (Eg. ten1/0/1 or vlan 10)
+            group_address ('str'): IP group addres
+            source_address ('str', optional): IP source address
+        Returns:
+            None
+        Raises: 
+            SubCommandFailure
+    """
+    log.info(f"Unconfiguring ip igmp join-group on {device.name}")
+    config = [f"interface {interface}"]
+    if source_address:
+        config.append(f"no ip igmp join-group {group_address} source {source_address}")
+    else:
+        config.append(f"no ip igmp join-group {group_address}")
+    
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure ip igmp join-group on device {device.name}. Error:\n{e}")

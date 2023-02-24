@@ -35,6 +35,7 @@ from pyats.utils.commands import do_lint
 
 # Unicon
 from unicon.core.errors import StateMachineError
+from unicon.eal.dialogs import Dialog
 
 # Logger
 log = logging.getLogger(__name__)
@@ -95,10 +96,13 @@ def _apply_configuration(device, configuration=None, configuration_from_file=Non
 
         log.info("Applying configuration on '{}'".format(device.name))
         try:
+            accept = Dialog([
+                [r'ACCEPT\? \(yes/\[no\]\):', 'sendline(yes)', None, True, False]
+            ])
             if error_pattern is None:
-                device.configure(configuration, timeout=timeout)
+                device.configure(configuration, timeout=timeout, reply=accept)
             else:
-                device.configure(configuration, timeout=timeout, error_pattern=error_pattern)
+                device.configure(configuration, timeout=timeout, error_pattern=error_pattern, reply=accept)
         except Exception as e:
             if isinstance(e, StateMachineError):
                 # StateMachineError is expected as the hostname could change after

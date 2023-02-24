@@ -1,0 +1,56 @@
+configure:
+  commands:
+    bgp dampening 1: "bgp dampening 1\r\n"
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    neighbor 20.20.20.3 description session ibgp vers SWTDATA01: "neighbor 20.20.20.3\
+      \ description session ibgp \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b$.20.20.3 description session ibgp v\
+      \         \b\b\b\b\b\b\b\b\bers SWTDA\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\bescription session ibgp vers\
+      \ SWTDAT         \b\b\b\b\b\b\b\b\bA01\r\n"
+    neighbor 20.20.20.3 peer-group externalpg: "neighbor 20.20.20.3 peer-group externalpg\r\
+      \n"
+    neighbor 20.20.20.3 remote-as 300: "neighbor 20.20.20.3 remote-as 300\r\n"
+    neighbor 20.20.20.3 soft-reconfiguration inbound: "neighbor 20.20.20.3 soft-reconfiguration\
+      \ inbo\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b$.20.20.3 soft-reconfiguration inbou         \b\b\b\b\b\b\
+      \b\b\bnd\r\n"
+    neighbor 20.20.20.3 transport path-mtu-discovery: "neighbor 20.20.20.3 transport\
+      \ path-mtu-discov\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b$.20.20.3 transport path-mtu-discove         \b\
+      \b\b\b\b\b\b\b\bry\r\n"
+    neighbor externalpg filter-list 1 out: "neighbor externalpg filter-list 1 out\r\
+      \n"
+    neighbor externalpg peer-group: "neighbor externalpg peer-group\r\n"
+    no logging console: ''
+    router bgp 100: "router bgp 100\r\n"
+  prompt: stack3-nyquist-1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: stack3-nyquist-1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: stack3-nyquist-1#

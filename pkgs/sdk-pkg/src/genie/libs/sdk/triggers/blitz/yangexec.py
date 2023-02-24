@@ -68,8 +68,9 @@ def try_lock(uut, target, timer=30, sleeptime=1):
 def netconf_send(uut, rpcs, ds_state, lock=True, lock_retry=40, timeout=30):
     """Handle NETCONF messaging with exceptions caught by pyATS."""
     # TODO: handle edit-data and get-data
-    if not uut.connected:
-        uut.connect()
+    # Below is the temp fix for Netconf connection.
+    # Needs to be handled in a better way to check whether the connection is alive
+    uut.connect()
 
     result = []
     target_locked = False
@@ -732,8 +733,6 @@ def run_gnmi(operation, device, steps,
     transaction_time = format.get('transaction_time', 0)
 
     if operation == 'edit-config':
-        if auto_validate:
-            rpc_clone = deepcopy(rpc_data)
         if 'rpc' in rpc_data:
             # Assume we have a well-formed dict representing gNMI set
             payload = json.dumps(rpc_data.get('rpc', {}), indent=2)
@@ -749,21 +748,19 @@ def run_gnmi(operation, device, steps,
         else:
             if auto_validate:
                 log.info(banner('AUTO-VALIDATION'))
-
-                rpc_clone_clone = deepcopy(rpc_clone)
                 format['get_type'] = 'CONFIG'
-                gmc = GnmiMessageConstructor('get', rpc_clone, **format)
+                gmc = GnmiMessageConstructor('get', rpc_data, **format)
                 payload = gmc.payload
                 namespace_modules = gmc.namespace_modules
                 response = GnmiMessage.run_get(
                     device, payload, namespace_modules
                 )
-                for node in rpc_clone_clone.get('nodes'):
+                for node in rpc_data.get('nodes'):
                     node.pop('edit-op', '')
                 if not response:
                     result = False
                 else:
-                    result = rpc_verify.verify_rpc_data_reply(response, rpc_clone_clone)
+                    result = rpc_verify.verify_rpc_data_reply(response, rpc_data)
 
     elif operation in ['get', 'get-config']:
         if 'rpc' in rpc_data:

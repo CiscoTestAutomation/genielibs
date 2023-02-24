@@ -1060,7 +1060,7 @@ def configure_clear_logging_onboard_switch_temperature(device, switch_number):
         [
             Statement(
                 pattern=r".*Clear logging.*",
-                action="sendline()",
+                action="sendline(y)",
                 loop_continue=False,
                 continue_timer=False,
             )
@@ -1089,7 +1089,7 @@ def configure_clear_logging_onboard_switch_voltage(device, switch_number):
         [
             Statement(
                 pattern=r".*Clear logging.*",
-                action="sendline()",
+                action="sendline(y)",
                 loop_continue=False,
                 continue_timer=False,
             )
@@ -1119,7 +1119,7 @@ def configure_clear_logging_onboard_switch_environment(device, switch_number):
         [
             Statement(
                 pattern=r".*Clear logging.*",
-                action="sendline()",
+                action="sendline(y)",
                 loop_continue=False,
                 continue_timer=False,
             )
@@ -1982,7 +1982,7 @@ def clear_macro_auto_confgis(device, interface=""):
     else:
         cmd = "clear macro auto configuration all"
     try:
-        device.execute(cmd)
+        return device.execute(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to clear macro auto configuration on device. Error:\n{e}")
 
@@ -1992,6 +1992,7 @@ def configure_software_auto_upgrade(device, auto_upgrade_option, src_url=""):
             device (`obj`): Device object
             auto_upgrade_option (`str`): auto upgrade options
                 ex:)
+                    disable  Disable the auto upgrade installation feature
                     enable  Enable the auto upgrade installation feature
                     source  Configure software auto upgrade source parameters
             src_url('str',optional) : Location of the software to install during auto upgrades
@@ -2016,6 +2017,8 @@ def configure_software_auto_upgrade(device, auto_upgrade_option, src_url=""):
     cmd = []
     if auto_upgrade_option == "source":
         cmd.append(f'software auto-upgrade source url {src_url}')
+    elif auto_upgrade_option == "disable":
+        cmd.append(f'no software auto-upgrade disable')
     elif auto_upgrade_option == "enable":
         cmd.append(f'software auto-upgrade enable')
     try:
@@ -3377,3 +3380,441 @@ def unconfigure_diagnostic_schedule_switch(
     except SubCommandFailure as e:
         log.error(e)
         raise SubCommandFailure(f"Could not execute diagnostic schedule switch {switch_number} on device. Error:\n{e}") 
+
+
+def configure_stack_power_switch_power_priority(
+    device,
+    stack_parameters,
+    switch_number,
+    power_priority,
+    power_priority_value
+    ):
+    """ configure_stack power switch <sw_num> power priority low <priority_value>
+        Example : stack-power switch 1 power priority low 15
+        Args:
+            device ('obj'): device to use
+            stack_parameters ('str'): stack_parameters (stack/switch)
+            switch_number ('int'): Switch number (1-16)
+            power_priority('str'): power_priority (low/high/switch)
+            power_priority_value ('int'): priority_values <1-27>
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info("configuring stack-power switch power priority value")
+    config = [
+        f"stack-power {stack_parameters} {switch_number}",
+        f"power-priority {power_priority} {power_priority_value}"]
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure power priorities stack-power stack on device {device.name}. Error:\n{e}")
+
+def unconfigure_stack_power_switch_power_priority(
+    device,
+    stack_parameters,
+    switch_number,
+    power_priority,
+    power_priority_value
+    ):
+    """ unconfigure_stack power switch <sw_num> power priority low <priority_value>
+        Example : stack-power switch 1 power priority low 15
+        Args:
+            device ('obj'): device to use
+            stack_parameters ('str'): stack_parameters (stack/switch)
+            switch_number ('int'): Switch number (1-16)
+            power_priority('str'): power_priority (low/high/switch)
+            power_priority_value ('int'): priority_values <1-27>
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info("Unconfiguring stack-power switch power priority value")
+    
+    config = [ 
+        f"stack-power {stack_parameters} {switch_number}",
+        f"no power-priority {power_priority} {power_priority_value}"]
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure stack-power stack on device {device.name}. Error:\n{e}")
+
+def configure_default_stack_power_switch_power_priority(
+    device,
+    stack_parameters,
+    switch_number,
+    power_priority,
+    power_priority_value
+    ):
+    """ configure_default stack power switch <sw_num> power priority low/high/switch <priority_value>
+        Example : stack-power switch 1 default power priority low 15
+        Args:
+            device ('obj'): device to use
+            stack_parameters ('str'): stack_parameters (stack/switch)
+            switch_number ('int'): Switch number (1-16)
+            power_priority('str'): default power_priority (low/high/switch)
+            power_priority_value ('int'): priority_values <1-27>
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info('configure default stack-power switch power priority')
+
+    config = [
+        f"stack-power {stack_parameters} {switch_number}",
+        f"default power-priority {power_priority} {power_priority_value}"]
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure default power priority on device {device.name}. Error:\n{e}")
+
+def configure_stackpower_stack_switch_standalone(device,powerstack_name,switch_number,stack_name,mode=None):
+    """ Configures power_shared mode on stack-power stack
+        
+        Args:
+            device ('obj'): device to use
+            powerstack_name ('str'): Power stack name - Up to 31 chars
+            switch_number ('int'): Switch number (1-16)
+            stack_name ('str'): Power stack name - Up to 31 chars
+            mode('str'): mode- standalone/no standalone
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f"Configuring stack power standalone and no standalone {device.name}")
+    
+    config = [
+        f'stack-power stack {powerstack_name}',
+        f'stack-power switch {switch_number}',
+        f'stack {stack_name}']
+
+    if mode is None:
+        config.append ('no standalone')
+    else:
+        config.append ('standalone')
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure stack power switch standalone on device {device.name}. Error:\n{e}") 
+
+def unconfigure_stackpower_stack_switch_no_standalone(device,powerstack_name,switch_number,stack_name,mode=None):
+    """ Configures power_shared mode on stack-power stack
+        
+        Args:
+            device ('obj'): device to use
+            powerstack_name ('str'): Power stack name - Up to 31 chars
+            switch_number ('int'): Switch number (1-16)
+            stack_name ('str'): Power stack name - Up to 31 chars
+            mode('str'): no standalone
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f"Configuring stack power standalone and no standalone {device.name}")
+    
+    config = [
+        f'no stack-power stack {powerstack_name}',
+        f'stack-power switch {switch_number}',
+        f'no stack {stack_name}']
+
+    if mode is None:
+        config.append ('no standalone')
+    else:
+        config.append ('standalone')
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure stack power switch standalone on device {device.name}. Error:\n{e}")
+
+def configure_stack_power_switch_standalone(device,switch_number):
+    """ configure standalone on stack power switch
+        Example : standalone on stack power switch <sw_num>
+        Args:
+            device ('obj'): device to use
+            switch_number ('int'): Switch number (1-16)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info("configuring standalone on stack-power switch")
+    
+    config = [ 
+        f'stack-power switch {switch_number}',
+        'standalone']
+        
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure standalone stack-power switch  on device {device.name}. Error:\n{e}")
+
+def configure_stack_power_switch_no_standalone(device,switch_number):
+    """ configure no standalone on stack power switch
+        Example: no standalone on stack power switch <sw_num>
+        Args:
+            device ('obj'): device to use
+            switch_number ('int'): Switch number (1-16)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f"Unconfiguring standalone on stack power switch")
+    
+    config = [
+        f'stack-power switch {switch_number}',
+        'no standalone']
+        
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure no standalone stack-power switch on device {device.name}.Error:\n{e}")
+
+def configure_stack_power_mode_power_shared(device, powerstack_name, strict=None):
+    """ Configures power_shared mode on stack-power stack
+        Example : power-shared_ / power-shared-strict
+        Args:
+            device ('obj'): device to use
+            powerstack_name ('str'): Power stack name - Up to 31 chars
+            strict ('str'): Strict mode
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f"Configuring power_shared mode on stack-power stack on {device.name}")
+    
+    config = [f'stack-power stack {powerstack_name}']
+    
+    if strict is None:
+        config.append ('mode power-shared')
+    else:
+        config.append ('mode power-shared strict')
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure power_shared mode on device {device.name}.Error:\n{e}")
+
+
+def unconfigure_boot_system_switch_switchnumber(device, switch_num):
+    ''' Delete the boot variables
+        Args:
+            device ('obj'): Device object
+            switch_num ('int'): Switch number
+    '''
+    log.info("Removing boot system switch with switch number on {device}".format(device=device))
+
+    cmd = f'no boot system switch {switch_num}'
+    try:
+        device.configure(cmd)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not remove boot system switch with switch number on {device}. Error:\n{e}") 
+
+
+def configure_boot_system_switch_switchnumber(device, switch_num, destination):
+    ''' Configure Boot System Switch with Destination
+        Args:
+            device ('obj'): Device object
+            switch_num ('int'): Switch number
+            destination ('int'): Destination path
+    '''
+    log.info(f"Configuring boot system switch with switch number and destination on {device}")
+
+    cmd = f'boot system switch {switch_num} {destination}'
+    
+    try:
+        device.configure(cmd)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Configuring boot system switch with switch number and destination on {device}. Error:\n{e}") 
+
+
+def restore_running_config_file(device, path, file, timeout=120):
+    """ Restore config from local file
+        Args:
+            device ('obj'): Device object
+            path ('str'): directory
+            file ('str'): file name
+            timeout ('int'): Timeout for applying config
+        Returns:
+            None
+    """
+    dialog = Dialog(
+        [
+            Statement(
+                pattern=r".*\[(yes|no)\].*",
+                action="sendline(y)",
+                loop_continue=False,
+                continue_timer=False,
+            )
+        ]
+    )
+    try:
+        output = device.execute(
+            "configure replace {path}{file}".format(path=path, file=file),
+            reply=dialog,
+            timeout=timeout
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not replace saved configuration on device {device}\nError: {e}")       
+    return output 
+
+def configure_macro_auto_global_processing_on_interface(device, interface):
+    """ Configure macro auto global processing on the device interface
+    
+    Args:
+        device ('obj'): device to use
+        interface (int): interface to configure
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed to configure macro auto global processing
+    """
+
+    config = [f'interface {interface}',
+              f'macro auto global processing']
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure macro auto global processing on the device interface. Error:\n{e}")
+
+def unconfigure_macro_auto_global_processing_on_interface(device, interface):
+    """ unConfigure macro auto global processing on the device interface
+    
+    Args:
+        device ('obj'): device to use
+        interface (int): interface to configure
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed to unconfigure macro auto global processing
+    """
+
+    config = [f'interface {interface}',
+              f'no macro auto global processing']
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure macro auto global processing on the device interface. Error:\n{e}")
+
+def configure_macro_auto_global_processing(device):
+    """ Configure macro auto global processing on the device globally
+    
+    Args:
+        device ('obj'): device to use
+    Returns:
+            None
+    Raises:
+            SubCommandFailure: Failed to configure macro auto global processing
+    """
+
+    config = f'macro auto global processing'
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure macro auto global processing on the device. Error:\n{e}")
+
+def unconfigure_macro_auto_global_processing(device):
+    """ unConfigure macro auto global processing on the device globally
+    
+    Args:
+        device ('obj'): device to use
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed to unconfigure macro auto global processing
+    """
+
+    config = f'no macro auto global processing'
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure macro auto global processing on the device. Error:\n{e}")
+
+def configure_process_cpu_threshold_type_rising_interval(device, utilization_level, rising_level, interval):
+    """ Configures process cpu threshold type  rising interval
+        Example : no process cpu threshold type {utilization_level} rising {rising_level} interval {interval}
+        Args:
+            device ('obj'): device to use
+            utilization_level ('str'): interrupt/process/total cpu level utilization
+            rising_level ('str'): default rising level(1-100)
+            interval('str'):default interval (5-86400)
+        Returns:
+            None
+        Raises: 
+            SubCommandFailure
+    """
+    config = f"process cpu threshold type {utilization_level} rising {rising_level} interval {interval}"
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure process cpu threshold type  on the device {device.name}. Error:\n{e}")
+
+def unconfigure_process_cpu_threshold_type_rising_interval(device, utilization_level, rising_level, interval):
+    """ Unconfigures process cpu threshold type  rising interval
+        Example : no process cpu threshold type {utilization_level} rising {rising_level} interval {interval}
+        Args:
+            device ('obj'): device to use
+            utilization_level ('str'): interrupt/process/total cpu level utilization
+            rising_level ('str'): default rising level(1-100)
+            interval('str'):default interval (5-86400)
+        Returns:
+            None
+        Raises: 
+            SubCommandFailure
+    """
+    config = f"no process cpu threshold type {utilization_level} rising {rising_level} interval {interval}"
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure process cpu threshold type  on the device {device.name}. Error:\n{e}")
+
+def configure_process_cpu_statistics_limit_entry_percentage_size(device, entry_percentage, size):
+    """ Configures process cpu  statistics limit entry-percentage size
+        Example : process cpu  statistics limit entry-percentage <10> size <100>
+        Args:
+            device ('obj'): device to use
+            entry percentage ('str'): default entry percentage (1-100)
+            size('str'):default interval (5-86400)
+        Returns:
+            None
+        Raises: 
+            SubCommandFailure
+    """
+    config = f"process cpu  statistics limit entry-percentage {entry_percentage} size {size}"
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure process cpu  statistics limit entry-percentage size on the device {device.name}. Error:\n{e}")
+
+def unconfigure_process_cpu_statistics_limit_entry_percentage_size(device, entry_percentage, size):
+    """ unconfigures process cpu  statistics limit entry-percentage size
+        Example :no process cpu  statistics limit entry-percentage <10> size <100>
+        Args:
+            device ('obj'): device to use
+            entry percentage ('str'): default entry percentage (1-100)
+            size('str'):default interval (5-86400)
+        Returns:
+            None
+        Raises: 
+            SubCommandFailure
+    """
+    config = f"no process cpu  statistics limit entry-percentage {entry_percentage} size {size}"
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure process cpu  statistics limit entry-percentage size on the device {device.name}. Error:\n{e}")
+

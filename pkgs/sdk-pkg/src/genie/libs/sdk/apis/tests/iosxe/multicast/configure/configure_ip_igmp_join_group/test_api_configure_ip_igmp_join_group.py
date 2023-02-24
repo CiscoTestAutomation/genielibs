@@ -10,7 +10,7 @@ class TestConfigureIpIgmpJoinGroup(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          n08HA:
+          stack3-nyquist-1:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,11 +18,11 @@ class TestConfigureIpIgmpJoinGroup(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: c9500
-            type: c9500
+            platform: c9300
+            type: c9300
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['n08HA']
+        self.device = self.testbed.devices['stack3-nyquist-1']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,6 @@ class TestConfigureIpIgmpJoinGroup(unittest.TestCase):
         )
 
     def test_configure_ip_igmp_join_group(self):
-        result = configure_ip_igmp_join_group(self.device, 'vlan 10', '239.100.100.101', '4.4.4.4')
+        result = configure_ip_igmp_join_group(self.device, 'te1/0/1', '226.1.1.1', '')
         expected_output = None
         self.assertEqual(result, expected_output)
