@@ -624,23 +624,26 @@ def configure_explicit_path(device, path_name, path, path_type=None):
             SubCommandFailure
     """
 
-    config = "ip explicit-path name {path_name} enable \n".format(
-                                        path_name=path_name)         
+    config = [f"ip explicit-path name {path_name} enable"]
+         
     if path_type == "strict":
         for path_num,ip in enumerate(path):
             path_num=path_num+1
-            config +="index {path_num} next-address strict {ip} \n".format(
-                                        path_num=path_num, ip=ip)            
+            config.append(f"index {path_num} next-address strict {ip}".format(
+                                        path_num=path_num, ip=ip))          
     elif path_type == "loose":
         for path_num,ip in enumerate(path):
             path_num=path_num+1
-            config +="index {path_num} next-address loose {ip} \n".format(
-                                        path_num=path_num ,ip=ip)
+            config.append(f"index {path_num} next-address loose {ip}".format(
+                                        path_num=path_num ,ip=ip))
+    elif path_type == "exclude_address":
+        for ip in path:
+            config.append(f"exclude-address {ip}".format(ip=ip))
     else:
         for path_num,ip in enumerate(path):
             path_num=path_num+1
-            config += "index {path_num} next-address {ip} \n".format(
-                                        path_num=path_num, ip=ip)
+            config.append(f"index {path_num} next-address {ip}".format(
+                                        path_num=path_num, ip=ip))
     try:                
         device.config(config)
     except SubCommandFailure as e:
@@ -1805,4 +1808,159 @@ def unconfigure_ldp_discovery_targeted_hello_accept(device):
         raise SubCommandFailure(
             'Could not unconfigure mpls ldp discovery targeted-hello accept'
             'Error:{e}'.format(e=e)
+        ) 
+
+def configure_administrative_weight(device, tunnel, weight):
+    
+    """ configure administrative weight in tunnel interface
+
+        Args:
+            device ('obj'): Device object
+            tunnel ('str'): Tunnel name
+            weight ('int'): Mention the admin weight
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    config_list=[f"interface {tunnel}",
+                 f"mpls traffic-eng administrative-weight {weight}"]
+
+    try:
+        device.configure(config_list)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure administrative_weight {weight} for {tunnel}. "
+            "Error:\n{error}".format(weight=weight, 
+                                     tunnel=tunnel, error=e)
+        )
+
+def configure_interface_path_selection_metric(device, tunnel, metric):
+    
+    """ configure path selection metric for tunnel interface
+
+        Args:
+            device ('obj'): Device object
+            tunnel ('str'): Tunnel name
+            metric ('str'): Specify igp or te
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    config_list=[f"interface {tunnel}",
+                 f"tunnel mpls traffic-eng path-selection metric {metric}"]
+
+    try:
+        device.configure(config_list)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure path-selection metric {metric} for {tunnel}. "
+            "Error:\n{error}".format(metric=metric, 
+                                     tunnel=tunnel, error=e)
+        )
+
+def unconfigure_ip_rsvp_bandwidth(device, interface, bandwidth=None):
+    """ unconfigure ip rsvp bandiwth on interface
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Interface name
+            bandwidth ('str'): rsvp bandwidth
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed unconfiguring interface
+    """
+
+    config_list=[f"interface {interface}",
+                 f"no ip rsvp bandwidth"]
+    
+    if bandwidth:
+        config_list.append(f"no ip rsvp bandwidth {bandwidth}")
+    
+    try:
+        device.configure(config_list)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure rsvp bandwidth on {interface}."
+            "Error:\n{error}".format(interface=interface, error=e)
+        )
+
+def unconfigure_dynamic_path_in_tunnel(device, tunnel,
+                                    path_option,dynamic=False, attribute_name=None,
+                                    explicit_name=None,
+                                    lockdown=False,
+                                    metric=None):
+    """unconfigure dynamic path in tunnel
+        Args:
+            device ('obj'): Device object
+            tunnel ('str'): Tunnel name
+            path_option ('int'): Mention the path option value <1-1000>
+            dynamic('Boolean'): Set to True to unconfigure dynamic path option
+            attribute_name ('str'): Attribute name to be set
+            explicit_name ('str'): Name for the explicit path
+            lockdown('Boolean'): set the lockdown if true
+            metric('str'): Specify igp or te
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config_list=[f"interface {tunnel}"]
+
+    if dynamic:
+        config_list.append(f"no tunnel mpls traffic-eng path-option {path_option} dynamic".format(path_option=path_option))
+    if explicit_name:
+        config_list.append(f"no tunnel mpls traffic-eng path-option {path_option} explicit name {explicit_name}".format(
+            path_option=path_option,explicit_name=explicit_name))
+    if attribute_name:
+        config_list.append(f"no tunnel mpls traffic-eng path-option {path_option} explicit name {explicit_name} attributes {attribute_name}".format(
+            path_option=path_option,explicit_name=explicit_name,attribute_name=attribute_name))
+    if lockdown:
+        config_list.append(f"no tunnel mpls traff path-option {path_option} dynamic lockdown".format(path_option=path_option))
+    if metric:
+        config_list.append(f"no tunnel mpls traffic-eng path-selection metric {metric}".format(metric=metric))
+
+    try:
+        device.configure(config_list)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure dynamic path for {tunnel}. Error:\n{error}".format(
+                tunnel=tunnel, error=e
+            )
+        ) 
+
+def l2vpn_xconnect_context_interface(device, context_name, pseudowire_member, interface, type):
+
+    '''configure L2VPN xconnect context with internwtworking
+        Args:
+        device ('obj'): Device 
+        context_name ('str'): l2vpn cross connect name
+        pseudowire_member ('str') : member pseudowire name 
+        interface ('str') : member interface name.
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    '''
+
+    config_list=["interface {interface}".format(interface=interface),
+                "l2vpn xconnect context {context_name}".format(context_name=context_name),
+    	        "member pseudowire {pseudowire_member}".format(pseudowire_member=pseudowire_member),
+    			"member {interface}".format(interface=interface),
+                "internetworking {type}".format(type=type)]
+
+    try:
+        device.configure(config_list)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure l2vpn xconnect context {context_name}."
+            "Error:\n{error}".format(context_name=context_name,error=e)
         ) 

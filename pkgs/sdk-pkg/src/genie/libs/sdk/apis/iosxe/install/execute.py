@@ -254,7 +254,7 @@ def execute_install_remove(device, file_path=None, timeout=60, connect_timeout=1
 
 
 def execute_install_one_shot(device, file_path=None, prompt=True, issu=False,
-                             negative_test=False, timeout=900, connect_timeout=10):
+                             negative_test=False, timeout=900, connect_timeout=10, xfsu=False):
     """
     Performs install one shot on the device
     Args:
@@ -307,6 +307,9 @@ def execute_install_one_shot(device, file_path=None, prompt=True, issu=False,
     cmd = f"install add file {file_path} activate"
     if issu:
         cmd += f" issu"
+
+    if xfsu:
+        cmd += f" xfsu"
 
     cmd += " commit"
 

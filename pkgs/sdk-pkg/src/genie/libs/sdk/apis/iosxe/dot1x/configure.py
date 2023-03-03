@@ -1581,7 +1581,9 @@ def unconfigure_dot1x_template(device, template_name):
         )
 
 
-def configure_parameter_map_subscriber(device, parameter_map_name, map_num, filter_type, parameter_type, parameter_name):
+def configure_parameter_map_subscriber(device, parameter_map_name, map_num, 
+    filter_type, parameter_type, parameter_name, action_num, template_type,
+    template_name):
     """Configure parameter map subscriber
         Args:
             device ('obj'): device to use
@@ -1590,6 +1592,9 @@ def configure_parameter_map_subscriber(device, parameter_map_name, map_num, filt
             filter_type ('str'): Filter type to be configured
             parameter_type ('str'): parameter type to be configured
             parameter_name ('str'): Parameter name to be configured
+            action_num ('int'): Action number to be configure
+            template_type ('str'): Template type to be configured
+            template_name ('str'): Template name to be configured
             
         Returns:
             None
@@ -1599,7 +1604,10 @@ def configure_parameter_map_subscriber(device, parameter_map_name, map_num, filt
     """
     cmd = ''
     cmd += f'parameter-map type subscriber attribute-to-service {parameter_map_name}\n'
-    cmd += f'{map_num} map {parameter_type} {filter_type} {parameter_name}'
+    cmd = [  f'parameter-map type subscriber attribute-to-service {parameter_map_name}\n',
+                   f'{map_num} map {parameter_type} {filter_type} {parameter_name}\n',
+                   f'{action_num} {template_type} {template_name}' ]
+
 
     log.debug("Configure parameter map subscriber")
 
@@ -1751,3 +1759,42 @@ def configure_service_template_with_tag(device, template_name, tag):
         device.configure(configs)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not configure service template with tag. Error:\n{e}")
+
+def unconfigure_autoconf(device):
+    """ Unconfigure autoconf enable
+    
+    Args:
+        device ('obj'): device to use
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+
+    cmd = 'no autoconf enable'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to  Unconfigure autoconf enable on this device. Error:\n{e}")
+
+def configure_service_template_with_command_line(device, template_name, command):
+    """ configure service template with command
+    Args:
+        device ('obj'): Device object
+        template_name ('str'): Specify a template name
+        command ('str'): command to configure
+    Return:
+        None
+    Raise:
+        SubCommandFailure
+    """
+    log.info(f"Configuring service template with command")
+	
+    configs=[
+	    f"service-template {template_name}",
+	    f"{command}"
+	]
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure service template with command. Error:\n{e}")

@@ -197,16 +197,13 @@ def unconfigure_auto_qos_global(device,compact):
     )
 
     try:
-       result= device.configure(
-                "no auto qos global {compact}".format(compact=compact)
-        )
+       device.configure("no auto qos global {compact}".format(compact=compact))
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not unconfigure auto qos global compact. Error:\n{error}".format(
                 error=e
             )
         )
-    return  result  
 
 def copy_running_config_to_flash_memory(device, timeout=60):
     """ Restore config from local file using copy function

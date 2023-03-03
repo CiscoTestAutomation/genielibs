@@ -30,6 +30,6 @@ class TestConfigureNetworkPolicyProfileVoiceVlan(unittest.TestCase):
         )
 
     def test_configure_network_policy_profile_voice_vlan(self):
-        result = configure_network_policy_profile_voice_vlan(self.device, 1, 10, 3, 24, True)
+        result = configure_network_policy_profile_voice_vlan(self.device, 2, 10, 3, 13, True)
         expected_output = None
         self.assertEqual(result, expected_output)

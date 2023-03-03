@@ -205,12 +205,10 @@ def verify_module_status(device, timeout=180, interval=30, ignore_modules=None):
             continue
 
         # Check state for all slots
-        failed_slots = Dq(output).contains('state').\
-                            not_contains_key_value('state', 'empty').\
-                            not_contains_key_value('state',
-                                                   '.*ok.*|standby|ha-standby|Ready',
-                                                   value_regex=True).\
-                            get_values('slot')
+        failed_slots = Dq(output).contains('state').not_contains_key_value(
+            'state', 'empty').not_contains_key_value(
+                'state', r'.*ok.*|standby|ha-standby|Ready|inserted|N\/A',
+                value_regex=True).get_values('slot')
 
         # To ignore specified modules
         if ignore_modules:

@@ -1,10 +1,7 @@
 configure:
   commands:
-    10 map device-type eq device1: "This operation will permanently convert all relevant\
-      \ authentication commands to their CPL control-policy equivalents. As this conversion\
-      \ is irreversible and will disable the conversion CLI 'authentication display\
-      \ [legacy|new-style]', you are strongly advised to back up your current configuration\
-      \ before proceeding. \r\n"
+    10 interface-template Identity: "10 interface-template Identity\r\n"
+    10 map device-type eq device1: "10 map device-type eq device1\r\n"
     end:
       new_state: execute
     line console 0:
@@ -12,13 +9,13 @@ configure:
     no logging console: ''
     parameter-map type subscriber attribute-to-service Identity: "parameter-map type\
       \ subscriber attribute-to-service Identity\r\n"
-  prompt: VCR(config)#
+  prompt: ECR(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: VCR(config-line)#
+  prompt: ECR(config-line)#
 connect:
   commands:
     ? ''
@@ -38,4 +35,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: VCR#
+  prompt: ECR#

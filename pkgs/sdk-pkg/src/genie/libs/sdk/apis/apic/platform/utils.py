@@ -39,7 +39,8 @@ def delete_unprotected_files(device,
                              directory,
                              protected,
                              files_to_delete=None,
-                             dir_output=None):
+                             dir_output=None,
+                             destination=None):
     """delete all files not matching regex in the protected list
         Args:
             device ('obj'): Device object
@@ -48,6 +49,7 @@ def delete_unprotected_files(device,
                                 and ends with (), it will be considered as a regex
             files_to_delete('list') list of files that should be deleted unless they are not protected
             dir_output ('str'): output of dir command, if not provided execute the cmd on device to get the output
+            destination ('str') : Destination directory. default to None. i.e bootflash:/
         Returns:
             None
             """

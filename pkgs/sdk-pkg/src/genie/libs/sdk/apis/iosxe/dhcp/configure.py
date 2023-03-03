@@ -964,3 +964,72 @@ def unconfigure_ip_dhcp_snooping_trust(device, interface):
         raise SubCommandFailure(
             f'Failed to unconfigure no ip dhcp snooping trust on {device.name}\n{e}'
         )
+
+def configure_ip_dhcp_pool_host(device, pool_name, host, client_identifier=None,
+                                hardware_address=None, client_name=None, **kwargs):
+    """ Configure DHCP host pool 
+        Args:
+            device ('obj'): device to use
+            pool_name ('str'): name of the pool to be configured
+            host ('str'): IP and subnet mask of the DHCP client
+            client_identifier ('str'): Unique identifier for client
+            hardware_address ('str'): Hardware address of the client
+            client_name ('str'): Name of the client
+        Returns:
+            str: Response of command
+        Raises:
+            SubCommandFailure: Failed to configure dhcp host pool
+    """
+    log.info(f"Configuring DHCP host pool {pool_name} for {host}")
+
+    cmd_list = [f"ip dhcp pool {pool_name}",
+                f"host {host}"]
+
+    if client_identifier:
+        cmd_list.append(f"client-identifier {client_identifier}")
+    if hardware_address:
+        cmd_list.append(f"hardware-address {hardware_address}")
+    if client_name:
+        cmd_list.append(f"client-name {client_name}")
+    try:
+        device.configure(cmd_list, **kwargs)
+
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(
+            f"Failed to configure DHCP host pool {pool_name}"
+        )
+
+def unconfigure_ip_dhcp_pool_host(device, pool_name, host, client_identifier=None,
+                                hardware_address=None, client_name=None, **kwargs):
+    """ Unconfigure host from DHCP pool 
+        Args:
+            device ('obj'): device to use
+            pool_name ('str'): name of the DHCP pool
+            host ('str'): IP and subnet mask of the DHCP client
+            client_identifier ('str'): Unique identifier for client
+            hardware_address ('str'): Hardware address of the client
+            client_name ('str'): Name of the client
+        Returns:
+            str: Response of command
+        Raises:
+            SubCommandFailure: Failed to unconfigure host from dhcp pool
+    """
+    log.info(f"Unconfiguring host {host} from DHCP pool {pool_name}")
+
+    cmd_list = [f"ip dhcp pool {pool_name}",
+                f"no host {host}"]
+
+    if client_identifier:
+        cmd_list.append(f"no client-identifier {client_identifier}")
+    if hardware_address:
+        cmd_list.append(f"no hardware-address {hardware_address}")
+    if client_name:
+        cmd_list.append(f"no client-name {client_name}")
+    try:
+        device.configure(cmd_list, **kwargs)
+
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(
+            f"Failed to uniconfigure host from DHCP pool {pool_name}")

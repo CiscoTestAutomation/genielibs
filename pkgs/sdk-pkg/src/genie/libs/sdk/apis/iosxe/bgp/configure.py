@@ -2218,3 +2218,108 @@ def configure_bgp_neighbor_remote_as_fall_over_as_with_peergroup(device, bgp_as,
             f"Could not configure the {neighbor_address} and {fall_over_as} on {device}".format(neighbor_address=neighbor_address,fall_over_as=fall_over_as,device=device, e=e)
         )
 
+def configure_bgp_neighbor_filter_description(device, bgp_as, route_map):
+    """ Configures bgp neighbor on bgp router
+        Args:
+            device('obj'): device to configure on
+            bgp_as('int'): BGP AS number
+            route_map ('list'): route map list which contains dictionary 
+                dictionary contains following keys:
+                    damping_id ('int'): bgp damping id number
+                    neighbor_tag ('str'): Neighbor tag as string
+                    neighbor_ip ('str') : Neighbor ip address
+                    as_id ('int') : AS identifier
+                    filter_list ('int'): filter list identifier
+                    filter_routes ('str'): filter incoming/outgoing routes
+                    description ('str'): Description of session
+                    soft_reconfiguration('str') : soft-reconfiguration 0 to ignore the 
+                    command anything else will trigger the command
+                    mtu_discovery('str'): mtu-discovery 0 to ignore the command anything 
+                    else will trigger the command
+                ex.)
+                [  
+                    {
+                        'damping_id' : "1", 
+                        'neighbor_tag' : 'externalpg', 
+                        'neighbor_ip' : '20.20.20.3', 
+                        'as_id' : '300', 
+                        'filter_list' : '1', 
+                        'filter_routes' : 'out' 
+                        'description' : 'ibgp vers SWTDATA01', 
+                        'soft_reconfiguration': '1',
+                        'mtu_discovery': '1' 
+                    }
+                ]
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring route map
+    """ 
+    config = [f"router bgp {bgp_as}".format(bgp_as=bgp_as)]
+    for rm in route_map:
+
+        if "damping_id" in rm:
+            config.append(
+                "bgp dampening {damping_id}".format(damping_id=rm["damping_id"])
+            )
+        if "neighbor_tag" in rm:
+            config.append(
+                "neighbor {neighbor_tag} peer-group".format(neighbor_tag=rm["neighbor_tag"])                 
+            )
+        if "as_id" in rm:
+            config.append(
+                "neighbor {neighbor_ip} remote-as {as_id}"
+                .format(neighbor_ip=rm["neighbor_ip"],as_id=rm["as_id"])
+            )
+        if "neighbor_ip" in rm:
+            config.append(
+                "neighbor {neighbor_ip} peer-group {neighbor_tag}"
+                .format(neighbor_ip=rm["neighbor_ip"],neighbor_tag=rm["neighbor_tag"])
+            )
+        if "filter_list" in rm:
+            config.append("neighbor {neighbor_tag} filter-list {filter_list} {filter_routes}".format(
+            neighbor_tag=rm["neighbor_tag"],filter_list=rm["filter_list"],filter_routes=rm["filter_routes"])
+            )
+        if "soft_reconfiguration" in rm:
+            config.append("neighbor {neighbor_ip} soft-reconfiguration inbound"
+                          .format(neighbor_ip=rm["neighbor_ip"]),
+            )
+        if "description" in rm:
+            config.append("neighbor {neighbor_ip} description session {description}"
+                          .format(neighbor_ip=rm["neighbor_ip"],description=rm["description"]),
+            )
+        if "mtu_discovery" in rm:
+            config.append("neighbor {neighbor_ip} transport path-mtu-discovery"
+                          .format(neighbor_ip=rm["neighbor_ip"])
+            )
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure bgp neighbor "
+            "on router {bgp_as}.\nError: {e}".format(bgp_as=bgp_as, e=e)
+        )
+
+def unconfigure_router_bgp_network_mask(device, autonomous_system, network_ip, network_mask):
+    """ Unconfigures the router bgp network mask
+        Example: router bgp 100
+                no network 11.11.11.0 mask 255.255.255.0
+        Args:
+            device ('obj'): device to configure on
+            autonomous_system ('int'): Autonomous system number (Range 1-4294967295)
+            network_ip ('str'): Network number (A.B.C.D)
+            network_mask ('str'): Network mask (A.B.C.D)
+        Return:
+            None
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    log.info(f"Configuring no network {network_ip} mask {network_mask} on router bgp")
+    config = [
+        f'router bgp {autonomous_system}',
+        f'no network {network_ip} mask {network_mask}'
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not unconfigure network on router bgp. Error:\n{e}")

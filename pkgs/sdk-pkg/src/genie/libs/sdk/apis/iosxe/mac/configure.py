@@ -363,3 +363,46 @@ def configure_mac_address_table_aging_default(device, aging, vlan_id=1):
             "Could not configure default mac address-table aging . Error:\n{error}".format(error=e)
             ) 
 
+def configure_mac_address_table_static(device, mac_address, vlan_number, interface):
+    """ 
+    API for the CLI :- 
+        mac address-table static {mac_address,} vlan {vlan_number} interface {interface}
+        e.g.
+        Args:
+            device ('obj'): Device object
+            mac_address('str'): MAC address
+            vlan_number('int'): Vlan ID number
+            interface('str'): interface name
+        Return:
+            None
+        Raise:
+            SubCommandFailure
+    """
+    cmd = f"mac address-table static {mac_address} vlan {vlan_number} interface {interface}"
+    try:
+        output = device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure mac address table on device {device} . Error:\n{e}")
+
+def unconfigure_mac_address_table_static(device, mac_address, vlan_number, interface):
+    """ 
+    API for the CLI :- 
+        no mac address-table static {MAC_Address} vlan {vlan_ID_number} interface {interface}
+        e.g.
+        Args:
+            device ('obj'): Device object
+            mac_address('str'): MAC address
+            vlan_number('int'): Vlan ID number
+            interface('str'): interface name
+        Return:
+            None
+        Raise:
+            SubCommandFailure
+    """
+    cmd = f"no mac address-table static {mac_address} vlan {vlan_number} interface {interface}"
+    try:
+        output = device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure mac address table on device {device} . Error:\n{e}")

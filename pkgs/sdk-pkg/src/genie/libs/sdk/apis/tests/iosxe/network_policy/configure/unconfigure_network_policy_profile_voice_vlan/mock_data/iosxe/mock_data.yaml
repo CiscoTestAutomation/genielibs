@@ -4,10 +4,12 @@ configure:
       new_state: execute
     line console 0:
       new_state: configure_line
-    network-policy profile 1: "network-policy profile 1\r\n"
+    network-policy profile 2: "network-policy profile 2\r\n"
     no logging console: ''
     no voice vlan 10: "no voice vlan 10\r\n"
     no voice-signaling vlan: "no voice-signaling vlan\r\n"
+    no voice-signaling vlan 10 cos 3: "no voice-signaling vlan 10 cos 3\r\n"
+    no voice-signaling vlan 10 dscp 13: "no voice-signaling vlan 10 dscp 13\r\n"
   prompt: stack3-nyquist-1(config)#
 configure_line:
   commands:

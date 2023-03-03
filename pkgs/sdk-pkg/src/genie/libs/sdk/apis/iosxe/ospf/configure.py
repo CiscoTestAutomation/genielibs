@@ -1893,3 +1893,51 @@ def configure_ospf_max_lsa_limit(device, pid, lsa_limit):
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure ospf max lsa limit. Error:\n{e}")
+
+def unconfigure_ospf_cost(device, interface, ospf_cost):
+    """unconfigure ospf cost in interface
+
+        Args:
+            device ('obj'): Device object
+            ospf_cost ('int'): Ospf cost value
+            interface ('str'): interface to configure
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config = []
+    config.append(f"interface {interface}")
+    config.append(f"no ip ospf cost {ospf_cost}")
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Error unconfiguring {ospf_cost} on device"
+            " {device} with interface {interface}".format(
+                ospf_cost=ospf_cost, device=device, interface=interface
+            )
+        ) from e
+def configure_router_ospf_redistribute_internal_external(device, process_id, redistribute_ospf_route, redistribute_type, redistribute_type_route ):
+    """configure router ospf redistribute internal/external
+      Args:
+            device ('obj'): device object
+            process_id ('int'): process ID
+            redistribute_ospf_route ('str'): redistribute ospf routes for external or internal
+            redistribute_type('str'): resdistribute external or internal type routes
+            redistribute_type_route('str'): Redistribute external type 2 routes
+            
+       Return:
+            None
+       Raises:
+            SubCommandFailure : Failed configuring ospf  under redistribute
+    """
+    cmd=[f'router ospf {process_id}',
+         f'redistribute ospf {process_id} match internal {redistribute_ospf_route} \
+            {redistribute_type} {redistribute_ospf_route} {redistribute_type_route}']
+     
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure router redistribute ospf with {redistribute_ospf_route}. Error:\n{e}")

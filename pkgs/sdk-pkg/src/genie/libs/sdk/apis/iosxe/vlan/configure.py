@@ -672,3 +672,224 @@ def configure_switchport_trunk_allowed_vlan_except(device, interface, number):
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to switchport trunk allowed vlan except on this device. Error:\n{e}")
+
+def configure_interface_port_channel(device, 
+channel_number, mapping_number, mapping_value):
+    """ Get interface members
+        Args:
+            device ('obj'): Device object
+            channel_number ('int') : channel number of interface range  <1-128> 
+            mapping_number ('int') : mapping number 
+            mapping_value ('int') : mapping value
+        Returns:
+            interface members
+        Raises:
+            None
+    """
+    cmd = [f'interface port-channel {channel_number}',
+     f'switchport private-vlan mapping {mapping_number} {mapping_value}']
+    
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure port channel on {device}. Error:\n{error}"
+                .format(device=device, error=e)
+        )
+
+def unconfigure_interface_port_channel(
+    device, channel_number, 
+    mapping_number, mapping_value):
+    """ Get interface members
+        Args:
+            device ('obj'): Device object
+            channel_number ('int') : channel number of interface
+            mapping_number ('int') : mapping number 
+            mapping_value ('int') : mapping value
+        Returns:
+            interface members
+        Raises:
+            None
+    """
+    cmd = [f'interface port-channel {channel_number}', 
+    f'no switchport private-vlan mapping {mapping_number} {mapping_value}']
+    
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfigure port channel on {device}. Error:\n{error}"
+                .format(device=device, error=e)
+        )
+ 
+def configure_default_switchport_trunk_vlan(device, interface):
+    """ Get interface members
+        Args:
+            device ('obj'): Device object
+            interface ('str'): interface to search member for
+        Returns:
+            interface members
+        Raises:
+            None
+    """
+    cmd = [f'interface {interface}', 
+    f'default switchport trunk native vlan']
+    
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:   
+        raise SubCommandFailure(
+            "Failed to configure switchport trunk vlan on {device}. Error:\n{error}"
+                .format(device=device, error=e)
+        )
+
+def unconfigure_default_switchport_trunk_vlan(device, interface):
+    """ Get interface members
+        Args:
+            device ('obj'): Device object
+            interface ('str'): interface to search member for
+        Returns:
+            interface members
+        Raises:
+            None
+    """
+    cmd = [f'interface {interface}', 
+    f'default switchport trunk native vlan']
+    
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:   
+        raise SubCommandFailure(
+            "Failed to unconfigure switchport trunk vlan on {device}. Error:\n{error}"
+                .format(device=device, error=e)
+        )
+
+def configure_vlan_state_suspend(device, 
+interface, vlan, state1):
+    """ Get interface members
+        Args:
+            device ('obj'): Device object
+            interface ('str'): interface to search member for
+            vlan ('str'): vlan 100 
+		    state ('str') : in which state
+        Returns:
+            interface members
+        Raises:
+            Nonel
+    """
+    cmd = [f'interface {interface}', 
+    f'vlan {vlan}', f'state {state1}']
+    
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure vlan state suspend on {device}. Error:\n{error}"
+                .format(device=device, error=e)
+        )
+
+def unconfigure_vlan_state_suspend(device, 
+interface, vlan, state1):
+    """ Get interface members
+        Args:
+            device ('obj'): Device object
+            interface ('str'): interface to search member for
+            vlan ('str'): vlan 100 
+		    state ('str') : in which state
+        Returns:
+            interface members
+        Raises:
+            Nonel
+    """
+    cmd = [f'interface {interface}', 
+    f'vlan {vlan}', f'state {state1}']
+    
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfigure vlan state suspend on {device}. Error:\n{error}"
+                .format(device=device, error=e)
+        )
+
+def configure_vlan_state_active(device, 
+interface, vlan, state):
+    """ Get interface members
+        Args:
+            device ('obj'): Device object
+            interface ('str'): interface to search member for
+            vlan ('str'): vlan 100 
+		    state ('str') : in which state
+        Returns:
+            interface members
+        Raises:
+            Nonel
+    """
+    cmd = [f'interface {interface}', 
+    f'vlan {vlan}', f'state {state}']
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure vlan state active on {device}. Error:\n{error}"
+                .format(device=device, error=e)
+        )
+
+def unconfigure_vlan_state_active(device, 
+interface, vlan, state):
+    """ Get interface members
+        Args:
+            device ('obj'): Device object
+            interface ('str'): interface to search member for
+            vlan ('str'): vlan 100 
+		    state ('str') : in which state
+        Returns:
+            interface members
+        Raises:
+            Nonel
+    """
+    cmd = [f'interface {interface}', 
+    f'vlan {vlan}', f'state {state}']
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfigure vlan state active on {device}. Error:\n{error}"
+                .format(device=device, error=e)
+        )
+def configure_vtp_password(device, vtp_password):
+    """Configure vtp password on the device
+    
+        Args:
+            device ('obj'): device to use
+            vtp_password('str'): vtp password
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure VTP password
+    """
+    cmd = f"vtp password {vtp_password}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure vtp password on device {device}. Error:\n{e}")
+
+def unconfigure_vtp_password(device, vtp_password):
+    """unconfigure vtp password on the device
+    
+        Args:
+            device ('obj'): device to use
+            vtp_password('str'): vtp password
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to unconfigure VTP password
+    """
+    cmd = f"no vtp password {vtp_password}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure vtp password on device {device}. Error:\n{e}")

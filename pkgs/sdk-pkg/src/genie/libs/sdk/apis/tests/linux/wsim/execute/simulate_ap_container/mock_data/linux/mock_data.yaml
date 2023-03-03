@@ -1,0 +1,39 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: wsim4ca14d90(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: wsim4ca14d90(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    start ap id 1 to 1:
+      response:
+      - "Starting vAPs at 1/1s\r\nStarting AP wsim-AP-0001..done! [141 ms]\r\n1 vAP\
+        \ started [ 1142 ms] (exec time [ 141 ms])"
+      response_type: circular
+    term length 0: ''
+    term width 0: ''
+  prompt: wsim4ca14d90#

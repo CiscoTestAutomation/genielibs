@@ -1,0 +1,39 @@
+configure:
+  commands:
+    address 11.1.2.3 primary: "address 11.1.2.3 primary\r\n"
+    end:
+      new_state: execute
+    interface vlan 11: "interface vlan 11\r\n"
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    priority 150: "priority 150\r\n"
+    timers advertise 250: "timers advertise 250\r\n"
+    vrrp 1 address-family ipv4: "vrrp 1 address-family ipv4\r\n"
+  prompt: stack3-nyquist-1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: stack3-nyquist-1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: stack3-nyquist-1#

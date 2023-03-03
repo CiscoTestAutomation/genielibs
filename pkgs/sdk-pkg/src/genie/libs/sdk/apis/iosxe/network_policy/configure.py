@@ -83,8 +83,10 @@ def configure_network_policy_profile_voice_vlan(device, profile, vlan, cos=None,
         cmd.append(f"voice vlan {vlan} cos {cos}")
     if dscp:
         cmd.append(f"voice vlan {vlan} dscp {dscp}")
-    if voice_signaling:
+    if voice_signaling and cos and dscp:
         cmd.append(f"voice-signaling vlan {vlan}")
+        cmd.append(f"voice-signaling vlan {vlan} cos {cos}")
+        cmd.append(f"voice-signaling vlan {vlan} dscp {dscp}")
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -92,24 +94,69 @@ def configure_network_policy_profile_voice_vlan(device, profile, vlan, cos=None,
             f"Could not configure network-policy profile {profile}. Error:\n{e}"
         )
 
-def unconfigure_network_policy_profile_voice_vlan(device, profile, vlan, voice_signaling=True):
+def unconfigure_network_policy_profile_voice_vlan(device, profile, vlan, voice_signaling=True, cos=None, dscp=None):
     """unconfigure Network-Policy Profile on target device
         Args:
             device (`obj`): Device object
             profile (`int`): profile number
             vlan (`int`): vlan id
             voice_signaling ('boolean',optional): Flag to unconfigure voice-signaling (Default True)
+            cos ('int', optional): cos value (Default is None)
+            dscp ('int', optional): dscp value (Default is None)
         Returns:
             None
         Raises:
             SubCommandFailure
     """
     cmd = [f"network-policy profile {profile}", f"no voice vlan {vlan}"]
-    if voice_signaling:
+    if voice_signaling and cos and dscp:
         cmd.append("no voice-signaling vlan")
+        cmd.append(f"no voice-signaling vlan {vlan} cos {cos}")
+        cmd.append(f"no voice-signaling vlan {vlan} dscp {dscp}")
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not unconfigure network-policy profile {profile}. Error:\n{e}"
+        )
+
+def unconfigure_network_policy_profile_number(device, profile_number):
+    """unconfigure Network-Policy Profile on target device
+        Args:
+            device ('obj'): Device object
+            profile_number ('int'): profile number
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [f"no network-policy profile {profile_number}"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure network-policy profile {profile_number}. Error:\n{e}")
+def unconfigure_global_network_policy(device, profile):
+    """
+    Unconfigure Network Policy Gloablly
+        Args:
+            device (`obj`): Device object
+            profile ('int'): Network Policy profile number
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    try:
+        device.configure(
+            [
+                f"no network-policy profile {profile}",
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not Unconfigure Network-Policy Profile. Error:\n{e}"
         )

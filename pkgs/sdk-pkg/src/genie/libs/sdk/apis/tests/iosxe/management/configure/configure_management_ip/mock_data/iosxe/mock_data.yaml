@@ -1,0 +1,39 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    interface GigabitEthernet0: "interface GigabitEthernet0\r\n"
+    ip address 10.29.30.167 255.255.255.255: "ip address 10.29.30.167 255.255.255.255\r\
+      \n"
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    no shutdown: "Bad mask /32 for address 10.29.30.167\r\n"
+    vrf forwarding Mgmt-intf: "vrf forwarding Mgmt-intf\r\n"
+  prompt: vmtb-isr4451(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: vmtb-isr4451(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: vmtb-isr4451#

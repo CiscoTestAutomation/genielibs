@@ -2361,7 +2361,7 @@ def remove_port_channel_interface(device, port_channel):
 
         Args:
             device (`obj`): Device object
-            port_channel (`str`): Port channel to be removed
+            port_channel (`str`): Port channel number to be removed
 
         Returns:
             None
@@ -2371,7 +2371,7 @@ def remove_port_channel_interface(device, port_channel):
     """
 
     try:
-        device.configure("no interface port-channel{port_channel}".format(
+        device.configure("no interface Port-channel {port_channel}".format(
             port_channel=port_channel))
     except SubCommandFailure as e:
         raise SubCommandFailure(
@@ -4923,6 +4923,8 @@ def configure_switchport_trunk_allowed_vlan(device, interface, vlan_id):
 
     configs = [
         f"interface {interface}",
+        f"switchport",
+        f"switchport mode trunk",
         f"switchport trunk allowed vlan {vlan_id}"
     ]
 

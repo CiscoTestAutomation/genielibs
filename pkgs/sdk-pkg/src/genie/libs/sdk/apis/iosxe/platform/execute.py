@@ -284,7 +284,8 @@ def delete_unprotected_files(device,
                              protected,
                              files_to_delete=None,
                              dir_output=None,
-                             allow_failure=False):
+                             allow_failure=False,
+                             destination=None):
     """delete all files not matching regex in the protected list
         Args:
             device ('obj'): Device object
@@ -294,6 +295,7 @@ def delete_unprotected_files(device,
             files_to_delete('list') list of files that should be deleted unless they are not protected
             dir_output ('str'): output of dir command, if not provided execute the cmd on device to get the output
             allow_failure (bool, optional): Allow the deletion of a file to silently fail. Defaults to False.
+            destination ('str') : Destination directory. default to None. i.e bootflash:/
         Returns:
             None
             """
@@ -340,17 +342,20 @@ def delete_unprotected_files(device,
             # it's a directory, dont delete
             if file.endswith('/'):
                 continue
-            log.info('Deleting the unprotected file "{}"'.format(file))
+            log.info(f'Deleting the unprotected file "{file}"')
             try:
-                fu_device.deletefile(file, device=device)
+                if destination:
+                    fu_device.deletefile(f"{destination}{file}", device=device)
+                else:
+                    fu_device.deletefile(file, device=device)
             except Exception as e:
                 if allow_failure:
-                    log.info('Failed to delete file "{}" but ignoring and moving '
-                             'on due to "allow_failure=True".'.format(file))
+                    log.info(
+                        f'Failed to delete file "{file}" but ignoring and moving on due to "allow_failure=True".'
+                    )
                     continue
 
-                error_messages.append('Failed to delete file "{}" due '
-                                      'to :{}'.format(file, str(e)))
+                error_messages.append(f'Failed to delete file "{file}" due to :{str(e)}')
         if error_messages:
             raise Exception('\n'.join(error_messages))
     else:
@@ -1080,3 +1085,28 @@ def execute_diagnostic_start_switch_test(device, switch_number, test_id=None, te
         log.error(e)
         raise SubCommandFailure(
             f"Could not execute diagnostic start switch {switch_number} test {test_name} on device. Error:\n{e}")
+
+def execute_install_label(device, id = None ,label_name = None, description_name = None, word = ""):
+    """
+    Performs install state on device
+    Args:
+            device ('obj'): device to use
+            id('int' optional) : id range <1-4294967295>
+            label_name  ('str' optional) : Add a label name to specified install point
+            description_name ('str', optional) : Add a description to specified install point  
+            word ('str') : any name can give <Max character 32>
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    log.info(f'install label {id} {label_name} {word} on {device.name}') 
+    if label_name:       
+       config = f'install label {id} label-name {label_name} {word}'
+    else:
+        config = f'install label {id} description {description_name} {word}'
+    try:
+        device.execute(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to install label {id} {label_name} {word} on {device.name}. Error:\n{e}")

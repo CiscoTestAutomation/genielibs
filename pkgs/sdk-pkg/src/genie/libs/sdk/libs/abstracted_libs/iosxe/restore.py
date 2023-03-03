@@ -442,7 +442,10 @@ class Restore(object):
                 raise KeyError(
                     '{n} is failed to create - no recent archive is found'.format(n=name))
         else:
-            if (not ret) or ('most_recent_file' not in ret['checkpoint']):
+            if ret and \
+                ('error' in ret['archive'] and \
+                 ret['archive']['error'] == 'Archive feature not enabled') and \
+                ('most_recent_file' not in ret['archive']):
                 log.info('{n} is successfully deleted'.format(n=name))
             else:
                 raise KeyError(

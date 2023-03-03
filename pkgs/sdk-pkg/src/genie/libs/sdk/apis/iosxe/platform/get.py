@@ -133,7 +133,7 @@ def get_diffs_platform(platform_before, platform_after):
 
 
 def get_file_size(device, file, output=None):
-    '''Get file size on the device
+    """Get file size on the device
         Args:
             device (`obj`): Device object
             file (`str`): File name
@@ -141,7 +141,7 @@ def get_file_size(device, file, output=None):
                             if not provided, executes the cmd on device
         Returns:
             file size in `int` type or None if file size is not available
-    '''
+    """
 
     directory = ''.join([os.path.dirname(file), '/'])
     filename = os.path.basename(file)
@@ -160,12 +160,12 @@ def get_file_size(device, file, output=None):
 
 
 def get_running_image(device):
-    '''Get running image on the device
+    """Get running image on the device
         Args:
             device (`obj`): Device object
         Returns:
             Image or None
-    '''
+    """
 
     output = {}
     try:
@@ -210,7 +210,7 @@ def get_running_image(device):
 
 
 def get_available_space(device, directory='', output=None):
-    '''Gets available space on a given directory
+    """Gets available space on a given directory
         Args:
             device ('str'): Device object
             directory ('str'): Directory to check space
@@ -221,7 +221,7 @@ def get_available_space(device, directory='', output=None):
         Returns:
             space available in bytes in `int` type or 
             None if failed to retrieve available space
-    '''
+    """
 
     try:
         dir_output = device.parse('dir {}'.format(directory), output=output)
@@ -238,7 +238,7 @@ def get_available_space(device, directory='', output=None):
 
 
 def get_total_space(device, directory='', output=None):
-    '''Gets total space on a given directory
+    """Gets total space on a given directory
         Args:
             device ('str'): Device object
             directory ('str'): Directory to check space
@@ -249,7 +249,7 @@ def get_total_space(device, directory='', output=None):
         Returns:
             space available in bytes in `int` type or 
             None if failed to retrieve available space
-    '''
+    """
 
     try:
         dir_output = device.parse('dir {}'.format(directory), output=output)
@@ -262,14 +262,14 @@ def get_total_space(device, directory='', output=None):
 
 
 def get_boot_variables(device, boot_var, output=None):
-    '''Get current or next-reload boot variables on the device
+    """Get current or next-reload boot variables on the device
         Args:
             device (`obj`): Device object
             boot_var (`str`): Type of boot variable to return to caller
             output (`str`): output from show boot
         Returns:
             List of boot images or []
-    '''
+    """
 
     # Check type
     assert boot_var in ['current', 'next']
@@ -302,13 +302,13 @@ def get_boot_variables(device, boot_var, output=None):
 
 
 def get_config_register(device, next_reload=False, output=None):
-    '''Get current config-register setting on the device
+    """Get current config-register setting on the device
         Args:
             device (`obj`): Device object
             next_reload (`bool`): Determine if returning next-reload value
         Returns:
             config-register value or None
-    '''
+    """
 
     try:
         boot_out = device.parse("show bootvar", output=output)
@@ -327,14 +327,14 @@ def get_config_register(device, next_reload=False, output=None):
         return boot_out.get('active').get(cr_key)
 
 def get_platform_default_dir(device, output=None):
-    '''Get the default directory of this device
+    """Get the default directory of this device
 
         Args:
             device (`obj`): Device object
             output (`str`): Output of `dir` command
         Returns:
             default_dir (`str`): Default directory of the system
-    '''
+    """
 
     try:
         output = device.parse("dir", output=output)
@@ -357,7 +357,7 @@ def get_platform_core(device,
                       vrf=None,
                       archive=False,
                       delete_core=False):
-    '''Get the default directory of this device
+    """Get the default directory of this device
 
         Args:
             device      (`obj`) : Device object
@@ -391,7 +391,7 @@ def get_platform_core(device,
         Returns:
             all_corefiles (`list`, `int`): List of found core files
                                            or number of core files if num_of_cores=True
-    '''
+    """
     return device.api.health_core(default_dir, output, keyword, num_of_cores,
                                   decode, decode_timeout, remote_device,
                                   remote_path, remote_via, vrf, archive,
@@ -404,7 +404,7 @@ def get_platform_logging(device,
                          keywords=None,
                          output=None,
                          num_of_logs=False):
-    '''Get logging messages
+    """Get logging messages
 
         Args:
             device    (`obj`): Device object
@@ -417,7 +417,7 @@ def get_platform_logging(device,
         Returns:
             logs     (`list` or `int`): list of logging messages
                                         OR or number of core files if num_of_logs=True
-    '''
+    """
     return device.api.health_logging(command, files, keywords, output, num_of_logs, health=False)
 
 def get_platform_cpu_load(device,
@@ -425,7 +425,7 @@ def get_platform_cpu_load(device,
                           processes=None,
                           check_key='five_sec_cpu',
                           output=None):
-    '''Get cpu load on device
+    """Get cpu load on device
 
         Args:
             device     (`obj`): Device object
@@ -438,7 +438,7 @@ def get_platform_cpu_load(device,
         Returns:
             cpu_load   (`int`): Cpu load (5 secs average by default) on the device (percentage)
                                 If multiple processes are given, returns average.
-    '''
+    """
     cpu_load = 0
 
     try:
@@ -482,7 +482,7 @@ def get_platform_cpu_load_detail(device,
                                  check_key='five_sec_cpu',
                                  check_key_total='five_sec_cpu_total',
                                  output=None):
-    '''Get cpu load on device
+    """Get cpu load on device
 
         Args:
             device     (`obj`): Device object
@@ -503,7 +503,7 @@ def get_platform_cpu_load_detail(device,
                                          'OMP': 0.0,
                                          'NAT-ROUTE': 0.0,
                                      }
-    '''
+    """
     return device.api.health_cpu(command,
                                  processes,
                                  check_key,
@@ -517,7 +517,7 @@ def get_platform_memory_usage(device,
                               processes=None,
                               check_key='processor_pool',
                               output=None):
-    '''Get memory usage on device
+    """Get memory usage on device
 
         Args:
             device         (`obj`): Device object
@@ -532,7 +532,7 @@ def get_platform_memory_usage(device,
         Returns:
             memory_usage (`float`): memory usage on the device (percentage)
                                     If multiple processes are given, returns average.
-    '''
+    """
 
     memory_usage = 0
     try:
@@ -845,4 +845,53 @@ def get_device_uptime(device):
         return out.q.contains('version').get_values('uptime', 0)
 
     return False
-        
+    
+def get_dscp_cos_qos_queue_stats(
+    device,
+    interface,
+    cos=None,
+    dscp=None,
+    switch_type=None,
+    switch_num=None,
+    switch=None):
+
+    """ Gets the ingress or egress dscp and cos stats
+        Args:
+            device (`obj`): Device object
+            interface ('str'): Device interface
+            cos ('str',optional): Ingress COS0 or Egress COS7
+            dscp ('str',optional): Ingress DSCP0 or Egress DSCP43
+            switch ('str',optional): switch to get info
+            switch_type ('str',optional): switch_type active or standby to get info
+            switch_num ('str',optional): switch_num 1 or 2 or 3 to get info
+        Returns:
+            heading,frames and bytes
+            If condition not matched it will return None
+    """
+    try:
+        if switch:
+            if switch_num:
+                output=device.parse("show platform hardware fed switch {switch_num} qos dscp-cos counters interface {interface}".format(switch_num=switch_num,switch=switch,interface=interface))
+            elif switch_type:
+                output=device.parse("show platform hardware fed switch {switch_type} qos dscp-cos counters interface {interface}".format(switch_type=switch_type,switch=switch,interface=interface))        
+        else:
+            output=device.parse("show platform hardware fed {switch_type} qos dscp-cos counters interface {interface}".format(interface=interface,switch_type=switch_type))
+    except SubCommandFailure:
+        log.error('Could not get dscp or cos qos queue stats')
+        return None
+
+    heading = output['@heading']
+    if dscp and cos:
+        dscp_frames = output['traffictype'][dscp]['frames']
+        cos_frames = output['traffictype'][cos]['frames']
+        return heading,dscp_frames,cos_frames
+    elif dscp:
+        dscp_frames = output['traffictype'][dscp]['frames']
+        dscp_bytes = output['traffictype'][dscp]['bytes']
+        return heading,dscp_frames,dscp_bytes
+    elif cos:
+        cos_frames = output['traffictype'][cos]['frames']
+        cos_bytes = output['traffictype'][cos]['bytes']
+        return heading,cos_frames,cos_bytes
+    else:
+        return None

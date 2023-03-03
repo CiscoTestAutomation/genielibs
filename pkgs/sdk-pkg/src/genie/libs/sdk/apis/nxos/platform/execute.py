@@ -95,7 +95,7 @@ def execute_write_erase_boot(device, timeout=300):
 
 
 def delete_unprotected_files(device, directory, protected, files_to_delete=None,
-                             dir_output=None, allow_failure=False):
+                             dir_output=None, allow_failure=False, destination=None):
     """ Delete all files not matching regex in the protected list
         Args:
             device ('obj'): Device object
@@ -105,6 +105,7 @@ def delete_unprotected_files(device, directory, protected, files_to_delete=None,
             files_to_delete('list') list of files that should be deleted unless they are not protected
             dir_output ('str'): output of dir command, if not provided execute the cmd on device to get the output
             allow_failure (bool, optional): Allow the deletion of a file to silently fail. Defaults to False.
+            destination ('str') : Destination directory. default to None. i.e bootflash:/
         Returns:
             None
             """

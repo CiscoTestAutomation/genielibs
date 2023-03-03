@@ -114,3 +114,22 @@ def clear_ip_bgp_af_as(device, address_family, as_numbers):
             f"Could not clear ip bgp {address_family} as {as_numbers} on device"
             f" {device}.Error:\n{e}"
         )
+
+def clear_bgp_all_as(device, as_number):
+   """ clear all bgp AS number
+        i.e 'clear bgp all {as_number}'
+        Args:
+            device ('obj'): device object
+            as_number ('int'): BGP AS number
+        Returns:
+            N/A
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+   cmd = f'clear bgp all {as_number}'
+
+   try:
+        device.execute(cmd)
+   except SubCommandFailure as err:
+        raise SubCommandFailure(
+            f"Could not clear bgp all as {as_number} on device. Error:\n{err}")

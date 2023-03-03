@@ -1,0 +1,41 @@
+configure:
+  commands:
+    cry key generate rsa encryption mod 2048 label BillRSAkey1: "cry key generate\
+      \ rsa encryption mod 2048 label BillR\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b$erate rsa encryption\
+      \ mod 2048 label BillRS         \b\b\b\b\b\b\b\b\bAkey1\r\n% You already have\
+      \ RSA keys defined named BillRSAkey1.\r\n% They will be replaced.\r\n\r\n% The\
+      \ key modulus size is 2048 bits\r\n% Generating 2048 bit RSA keys, keys will\
+      \ be non-exportable...\r\n[OK] (elapsed time was 1 seconds)\r\n\r\n"
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: stack3-nyquist-1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: stack3-nyquist-1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: stack3-nyquist-1#

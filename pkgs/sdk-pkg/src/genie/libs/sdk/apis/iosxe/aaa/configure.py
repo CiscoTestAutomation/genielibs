@@ -2267,3 +2267,22 @@ def unconfigure_tacacs_group(device, server_group):
         raise SubCommandFailure(
             f'Could remove tacacs group server:\n{e}'
         )
+
+def configure_aaa_authorization_network(device, server_grp, server_grp_name):
+    """ configure aaa authorization network group methods
+        Args:
+            device ('obj'): Device object
+            server_grp ('str'): Server-group (i.e group)
+            server_grp_name ('str'): Server-group name 
+            None
+        Raise:
+            SubCommandFailure: Failed configuring aaa authorization network
+    """
+    logger.info(f"Configuring aaa authorization network group")
+    
+    configs= f"aaa authorization network {server_grp} group {server_grp_name}"
+	
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure aaa authorization group methods. Error:\n{e}")

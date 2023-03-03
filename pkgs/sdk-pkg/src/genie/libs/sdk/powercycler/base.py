@@ -422,8 +422,7 @@ class BaseCliPowerCycler(PowerCycler):
     def connect(self):
 
         if self.host not in self.testbed.devices:
-            raise Exception("The device '{}' does not exist in the testbed"
-                            .format(self.host))
+            raise Exception(f"The device '{self.host}' does not exist in the testbed")
 
         self.host = self.testbed.devices[self.host]
 
@@ -431,8 +430,8 @@ class BaseCliPowerCycler(PowerCycler):
 
         log.info('Device is connected')
 
-    def on(self, outlets=None):
-        if outlets and not isinstance(outlets, list):
+    def on(self, *outlets):
+        if outlets and not (isinstance(outlets, (list, tuple))):
             outlets = [outlets]
 
         log.info('Turning on the device')
@@ -448,11 +447,10 @@ class BaseCliPowerCycler(PowerCycler):
             else:
                 self.host.execute(self.commands['power_on'])
         except Exception as e:
-            raise Exception("Turning on the powercycler "
-                            "failed. Error: {}".format(str(e)))
+            raise Exception(f"Turning on the powercycler failed. Error: {str(e)}") from e
 
-    def off(self, outlets=None, after=None):
-        if outlets and not isinstance(outlets, list):
+    def off(self, *outlets, after=None):
+        if outlets and not (isinstance(outlets, (list, tuple))):
             outlets = [outlets]
 
         if after:
@@ -471,6 +469,7 @@ class BaseCliPowerCycler(PowerCycler):
             else:
                 self.host.execute(self.commands['power_off'])
         except Exception as e:
-            raise Exception("Turning off the powercycler ",\
-                            "failed. Error: {}".format(str(e)))
+            raise Exception(
+                "Turning off the powercycler ", f"failed. Error: {str(e)}"
+            ) from e
 
