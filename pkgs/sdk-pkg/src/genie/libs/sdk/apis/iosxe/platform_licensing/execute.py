@@ -86,3 +86,64 @@ def enable_license_smart_clear_eventlog(device):
         device.execute(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Failed to enable license smart clear eventlog on device {device.name}. Error:\n{e}')
+
+def execute_license_smart_save_usage_all_file(device, path):
+    """ Executes license smart save usage all file
+        Example : license smart save usage all file bootflash:test.txt
+        Args:
+            device ('obj'): device to use
+            path ('str'): Absolute path to the file, including the filename (eg. bootflash:test.txt)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f'License smart save usage all file {path} on {device.name}')
+    cmd = f'license smart save usage all file {path}'
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to license smart save usage all file on device {device.name}. Error:\n{e}'
+        )
+
+def execute_more_file_count(device, filepath, regex):
+    """ Executes more file <filepath> | count <regex>
+        Example : more bootflash:test.txt | count Ready
+        Args:
+            device ('obj'): device to use
+            filepath ('str'): path to the file, including the filename (eg. bootflash:test.txt)
+            regex ('str'): regular expression for the count (eg. Ready)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f'Executing more {filepath} | count {regex} on {device.name}')
+    cmd = f'more {filepath} | count {regex}'
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to execute more {filepath} | count {regex} on device {device.name}. Error:\n{e}'
+        )
+
+def execute_license_smart_save_usage_unreported_file(device, path):
+    """ Executes license smart save usage unreported file
+        Example : license smart save usage unreported file bootflash:test.txt
+        Args:
+            device ('obj'): device to use
+            path ('str'): Absolute path to the file, including the filename (eg. bootflash:test.txt)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f'Executing license smart save usage unreported file {path} on {device.name}')
+    cmd = f'license smart save usage unreported file {path}'
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to execute license smart save usage unreported file {path} on device {device.name}. Error:\n{e}'
+        )

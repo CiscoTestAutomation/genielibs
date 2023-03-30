@@ -351,9 +351,9 @@ def configure_policy_map_with_pps(device, policy_name, class_map_name, police_ra
     """ Configures policy_map
         Args:
              device ('obj'): device to use
-             policy_name('str) : name of the policy name
-             class_map_name('str'): class map information
-             police_rate('int'): police rate details
+             policy_name ('str) : name of the policy name
+             class_map_name ('str'): class map information
+             police_rate ('int'): police rate details
         Returns:
             None
         Raises:
@@ -369,3 +369,200 @@ def configure_policy_map_with_pps(device, policy_name, class_map_name, police_ra
         raise SubCommandFailure(
             "Could not configure policy_map {policy_name} with {class_map_name} and {police_rate} in pps. Error:\n{error}".format(policy_name=policy_name, class_map_name=class_map_name, police_rate=police_rate, error=e)
         )
+
+def configure_policy_map_with_percent(device, policy_name, class_map_name, police_percent_val):
+    """ Configures policy_map
+        Args:
+             device ('obj'): device to use
+             policy_name ('str) : name of the policy name
+             class_map_name ('str'): class map information
+             police_percent_val ('int'): police rate details
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f"configure policy_map {policy_name} with {class_map_name} and {police_percent_val}")
+    config = [f"policy-map {policy_name}",
+              f"class {class_map_name}",
+              f"police rate percent {police_percent_val}"]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure policy_map with {police_percent_val}. Error:\n{error}".format(
+                police_percent_val=police_percent_val, error=e)
+        )
+
+
+def unconfigure_table_map(device, table_map_name,from_val,to_val,):
+    """ UnConfigures table_map
+        Args:
+             device ('obj'): device to use
+             table_map_name ('str') : name of the table map  name
+             from_val ('int') : list of from values
+             to_val ('int') : list of to values 
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+   
+    cli = [f'table-map {table_map_name}',
+           f'no map from {from_val} to {to_val}']
+  
+    
+    try:
+        device.configure(cli)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure table map with {from_val} to {to_val}. Error:\n{e}")
+
+def configure_table_map(device, table_map_name,from_val,to_val,):
+    """ Configures table_map
+        Args:
+             device ('obj'): device to use
+             table_map_name('str') : name of the table map  name
+             from_val ('int') : list of from values
+             to_val ('int') : list of to values 
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+   
+    cli = [f'table-map {table_map_name}',
+           f'map from {from_val} to {to_val}']
+      
+    try:
+        device.configure(cli)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure table_map with {from_val} to {to_val}. Error:\n{e}")
+
+def configure_policy_map_with_dscp_table(device, policy_map_name, class_map_name, match_mode, match_packet, table_map_name):
+    """ Configure policy-map type with dscp table on Device
+    Args:
+        device ('obj'): Device object
+        policy_map_name ('str'): policy-map name to configure
+        class_map_name ('str'): class map name to configure
+        match_mode ('str'): match mode name for cos or dscp
+        match_packet ('str'): match packets for qos or dscp
+        table_map_name ('str',optional): set packet dscp based on table_map_name
+        
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring policy on device
+    """
+    cli = [f'policy-map {policy_map_name}',
+           f'class {class_map_name}',
+           f'set {match_mode} {match_packet} table {table_map_name}']
+
+    try:
+        device.configure(cli)
+        
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+        "Could not configure policy map with dscp table. Error:\n{error}".format(error=e ))
+
+def configure_policy_map_with_no_set_dscp(device, policy_map_name, class_map_name, police_bit_rate, match_mode,match_packets_precedence):
+    """ Configure policy map type with no dscp on Device
+    Args:
+        device ('obj'): Device object
+        policy_map_name ('str'): policy-map name to configure
+        class_map_name ('str'): class map name to configure
+        police_bit_rate ('str'): policy_bit_rate to configure
+        match_mode ('str'): match mode name for cos or dscp
+        match_packets_precendence ('str'): match packets with dscp
+
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring policy-no-set on device
+    """
+    cli = [f'policy-map {policy_map_name}',
+           f'class {class_map_name}',
+           f'police {police_bit_rate}',
+           f'no set {match_mode} {match_packets_precedence}']
+    
+    try:
+        device.configure(cli)
+        
+    except SubCommandFailure as e:
+        raise SubCommandFailure
+        ("Could not configure policy map with no dscp value")
+
+def configure_policy_map_with_dscp_police(device, policy_map_name, class_map_name, policy_var, table_map_mode, table_map_name):
+    """ Configure policy-map type on Device
+    Args:
+        device ('obj'): Device object
+        policy_map_name ('str'): policy-map name to configure
+        class_map_name ('str'): class map name to configure
+        policy_var ('str'): policy-var to configure
+        table_map_mode ('str'): table map mode for dscp
+        table_map_name ('str',optional): set table_map_name
+        
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring policy-map on device
+    """
+    cli = [f'policy-map {policy_map_name}',
+           f'class {class_map_name}',
+           f'police {policy_var}',
+           f'exit',
+           f'set {table_map_mode} {table_map_mode} table {table_map_name}']
+    try:
+        device.configure(cli)
+        
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+        f"Could not configure policy map with {table_map_mode} table {table_map_name}. Error:\n{e}")
+
+def unconfigure_policy_map_with_type_queue(device, policy_type, queue_name):
+    """ Unconfigures policy map with type queueing
+    Args:
+        device ('obj'): device to use
+        policy_type ('str'): Configure Queueing policy type
+        queue_name ('str') : queue name to configure
+			 
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    cli = [f'no policy-map type {policy_type} {queue_name}']
+
+    try:
+        device.configure(cli)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure policy-map. Error:\n{e}".format(e))
+
+def configure_service_policy_with_queueing_name(device, interface, policy_type, queue_name):
+    """ Configures policy_map type queueing
+        Args:
+             device ('obj'): device to use
+			 interface ('str'): interface to configure
+             policy_type ('str'): Configure Queueing Service Policy
+             queue_name ('str'): name of the queue service_policy name
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [f'interface {interface}',
+	       f'service-policy type {policy_type} output {queue_name}']
+		   
+    try:
+        device.configure(cmd)
+        
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Unable to configure service policy type with {queue_name}. Error:\n{e}")
+

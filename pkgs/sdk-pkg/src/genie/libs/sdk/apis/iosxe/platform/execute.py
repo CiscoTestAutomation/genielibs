@@ -649,7 +649,7 @@ def execute_switch_card_OIR(device, switch_number, slot, timeout=60):
         log.debug("Successfully executed 'hw-module switch <switch_number> subslot <slot> oir power-cycle'")
     else:
         raise Exception("Failed to execute 'hw-module switch <switch_number> subslot <slot> oir power-cycle'")
-        
+
 def execute_clear_platform_software_fed_active_cpu_interface(device):
     """ clear platform software fed active cpu-interface
         Args:
@@ -694,10 +694,10 @@ def execute_diagnostic_start_switch_module_test(device,switch_num,mod_num,includ
         Raises:
             SubCommandFailure
     """
-    
-    
+
+
     cmd = f"diagnostic start switch {switch_num} module {mod_num} test {include}"
-    
+
     try:
        device.execute(cmd)
     except SubCommandFailure as e:
@@ -716,10 +716,10 @@ def execute_diagnostic_start_module_test(device,mod_num,include):
         Raises:
             SubCommandFailure
     """
-    
-    
+
+
     cmd = f"diagnostic start module {mod_num} test {include}"
-    
+
     try:
        device.execute(cmd)
     except SubCommandFailure as e:
@@ -737,7 +737,7 @@ def hardware_qfp_active_statistics_drop_clear(device):
     """
 
     cmd = "show platform hardware qfp active statistics drop clear"
-    
+
     try:
         device.execute(cmd)
     except SubCommandFailure as e:
@@ -884,20 +884,20 @@ def rename_dir_file_system(device, file_sys, file_name, des_file_sys, des_file_n
         raise Exception(err)
 
 def show_switch_redirect(device, storage_type, file_name):
-    """ storing output in a file format 
+    """ storing output in a file format
         Example: show switch | redirect flash:test.txt
-        
+
         Args:
             device ('obj'): Device object
             storage_type ('str'): the storage type (e.g. flash, bootflash, nvram)
-            file_name ('str'): file to store the output in 
+            file_name ('str'): file to store the output in
 
         Returns:
             None
-        
-        Raises: 
+
+        Raises:
             SubCommandFailure
- 
+
     """
     config = f"show switch | redirect {storage_type}:{file_name}"
     try:
@@ -907,14 +907,14 @@ def show_switch_redirect(device, storage_type, file_name):
         raise SubCommandFailure(f"Failed to redirect to {file_name} on the device {device.name}. Error:\n{e}")
 
 def license_smart_sync_all(device):
-    """ license smart sync all 
-        
+    """ license smart sync all
+
         Args:
             device ('obj'): device to use
         Returns:
             None
-            
-        Raises: 
+
+        Raises:
             SubCommandFailure
     """
     try:
@@ -958,7 +958,7 @@ def request_platform_software_cflow_copy(device):
         raise SubCommandFailure(
             "Could not request platform software cflow copy. Error:\n{error}".format(error=e)
         )
-        
+
 def execute_install_three_step_issu_package(device, image_dir, image, save_system_config=True,
                             install_timeout=660, reconnect_max_time=200,
                             reconnect_interval=30, _install=True, install_commit_sleep_time=None,
@@ -1040,12 +1040,12 @@ def execute_install_three_step_issu_package(device, image_dir, image, save_syste
 def execute_stack_power(device, switch_number, port_number, mode ):
     """ Enable stack-power stack
         Example : stack-power switch 1 port 1 enable
-        
+
         Args:
             device ('obj'): device to use
 			switch_number('int') : Switch number range <1-16>
-            port_number	('int') : port number range <1-2>	
-            mode ('str') : enable/disable option	
+            port_number	('int') : port number range <1-2>
+            mode ('str') : enable/disable option
         Returns:
             None
         Raises:
@@ -1063,18 +1063,18 @@ def execute_diagnostic_start_switch_test(device, switch_number, test_id=None, te
     """ execute diagnostic start switch 1 test
         Args:
             device ('obj'): Device object
-            test_id ('str'): Test ID list (e.g. 1,3-6) or Test Name or minimal  or complete 
+            test_id ('str'): Test ID list (e.g. 1,3-6) or Test Name or minimal  or complete
               Interface port number WORD    Port number list (e.g. 2,4-7)
             switch_number ('int'): Switch number on which diagnostic has to be performed
-            test_name ('str'): Word , test name 
-            
+            test_name ('str'): Word , test name
+
         Returns:
             None
         Raises:
             SubCommandFailure
     """
     cmd = f"diagnostic start switch {switch_number} test "
-    
+
     if test_name in ("non-disruptive", "per-port", "basic"):
         cmd += f"{test_name} port {test_id} "
     else:
@@ -1093,15 +1093,15 @@ def execute_install_label(device, id = None ,label_name = None, description_name
             device ('obj'): device to use
             id('int' optional) : id range <1-4294967295>
             label_name  ('str' optional) : Add a label name to specified install point
-            description_name ('str', optional) : Add a description to specified install point  
+            description_name ('str', optional) : Add a description to specified install point
             word ('str') : any name can give <Max character 32>
     Returns:
         None
     Raises:
         SubCommandFailure
     """
-    log.info(f'install label {id} {label_name} {word} on {device.name}') 
-    if label_name:       
+    log.info(f'install label {id} {label_name} {word} on {device.name}')
+    if label_name:
        config = f'install label {id} label-name {label_name} {word}'
     else:
         config = f'install label {id} description {description_name} {word}'
@@ -1110,3 +1110,120 @@ def execute_install_label(device, id = None ,label_name = None, description_name
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Failed to install label {id} {label_name} {word} on {device.name}. Error:\n{e}")
+
+def execute_config_confirm(device):
+    """ execute config confirm
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    try:
+        device.execute("config confirm")
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not execute config confirm. Error:\n{e}"
+        )
+
+def execute_device_dir_path(device, path):
+    """ Execute device total bytes for local file
+        Example: dir flash: | include bytes total | include
+        Args:
+            device ('obj'): Device object
+            path ('str'): specifying path for flash:, flash-1:, flash2:/crashinfo:, crashinfo-1: , crashinfo2:
+        Returns:
+            output
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        output = device.execute(
+            "dir {path} | include bytes total | include".format(path=path)
+            )
+        return output
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not execute dir {path} on device. Error:\n{e}"
+            )
+
+
+def execute_archive_config(device):
+    """ execute archive config in switch
+        Args:
+            device ('obj'): Device object
+        Returns:
+            Execution output
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f'archive config'
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to do archive config on device {device}. Error:\n{e}"
+            )
+
+def execute_switch_clear_stack_mode(device):
+    """ Execute clear stack-mode for a switch
+        Example: switch clear stack-mode
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info("Executing 'switch clear stack-mode' on the device")
+    dialog = Dialog(
+        [
+            Statement(
+                pattern=r".*Do you wish to continue\?\s*\[y\/n\]\? \[yes\]:",
+                action='sendline(y)',
+                loop_continue=False,
+                continue_timer=False
+            )
+        ]
+    )
+    cmd = f'switch clear stack-mode'
+    try:
+        device.execute(cmd, reply=dialog)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to clear the stack-mode on device {device.name}. Error:\n{e}'
+        )
+
+def execute_switch_role(device, switch_number, mode):
+    """ Execute switch <switch_number> role <mode> for a switch
+        Example: switch 2 role active
+        Args:
+            device ('obj'): device to use
+            switch_number ('int'): switch number (Range: 1-16)
+            mode ('str'): set the new switch to Active or Standby mode
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f"Executing 'switch {switch_number} role {mode}' on the device")
+    dialog = Dialog(
+        [
+            Statement(
+                pattern=r".*Do you want to continue\?\s*\[y\/n\]\? \[yes\]:",
+                action='sendline(y)',
+                loop_continue=False,
+                continue_timer=False
+            )
+        ]
+    )
+    cmd = f'switch {switch_number} role {mode}'
+    try:
+        device.execute(cmd, reply=dialog)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to change the switch {switch_number} mode to {mode} on {device.name}. Error:\n{e}'
+        )

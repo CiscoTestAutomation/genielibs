@@ -54,7 +54,7 @@ def configure_ip_local_pool(device,name,start,end):
             name ('str') : pool name
             start ('str') : pool start ip
             end ('str') : pool end ip
-        
+
         Returns:
             None
         Raises:
@@ -199,7 +199,7 @@ def configure_call_admission(device, limit, cpu_limit, session_lifetime, per_ses
     """Common funtion to configure call admission new model
         Args:
             device ('obj'): device to use
-            limit('int'): call admission limit value 
+            limit('int'): call admission limit value
             cpu_limit('int'):call admission cpu limit value
             session_lifetime('int'): call admission session lifetime value
             per_session_charge('int'): call admission per session charge value
@@ -250,7 +250,7 @@ def unconfigure_call_admission(device, limit, cpu_limit, session_lifetime, per_s
 
 def configure_broadband_aaa(device, server_name, interval):
 
-    """ Configure aaa configuration for broadband 
+    """ Configure aaa configuration for broadband
         Args:
             device (`obj`): Device object
             server_name (`str`): aaa group server name
@@ -275,7 +275,7 @@ def configure_broadband_aaa(device, server_name, interval):
 
 def unconfigure_broadband_aaa(device, server_name, interval):
 
-    """ Unconfigure aaa configuration for broadband 
+    """ Unconfigure aaa configuration for broadband
         Args:
             device (`obj`): Device object
             server_name (`str`): aaa group server name
@@ -297,7 +297,7 @@ def unconfigure_broadband_aaa(device, server_name, interval):
         device.configure(cli)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not unconfig aaa on {device}. Error:\n{e}")
-                
+
 def configure_no_boot_system_switch_all(device):
     """ no boot system switch all
         Args:
@@ -315,7 +315,7 @@ def configure_no_boot_system_switch_all(device):
             "Could not config no boot system on {device}. Error:\n{error}"
                 .format(device=device, error=e)
         )
-        
+
 def configure_boot_system_switch_all_flash(device, image):
     """ boot system switch all flash
         Args:
@@ -344,21 +344,21 @@ def configure_diagonistics_monitor_switch(device, switch_num, test_name, time, m
             test_name('str'): diagnostic_test_name
             time('str'): time in hh:mm:ss
             millisec('int'): milli seconds
-            days('int'): test_days 
+            days('int'): test_days
         Returns:
             None
         Raises:
             SubCommandFailure
     """
-    config = f"diagnostic monitor interval switch {switch_num} test {test_name} {time} {millisec} {days}"    
+    config = f"diagnostic monitor interval switch {switch_num} test {test_name} {time} {millisec} {days}"
     try:
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"could not configure diagnostic monitor interval switch {device}"
                 .format(device=device, e=e)
-        )      
-        
+        )
+
 def unconfigure_diagonistics_monitor_switch(device, switch_num, test_name, time, millisec, days):
     """ diagonistics monitor switch
         Args:
@@ -367,20 +367,20 @@ def unconfigure_diagonistics_monitor_switch(device, switch_num, test_name, time,
             test_name('str'): diagnostic_test_name
             time('str'): time in hh:mm:ss
             millisec('int'): milli seconds
-            days('int'): test_days 
+            days('int'): test_days
         Returns:
             None
         Raises:
             SubCommandFailure
     """
-    config = f"no diagnostic monitor interval switch {switch_num} test {test_name} {time} {millisec} {days}"    
+    config = f"no diagnostic monitor interval switch {switch_num} test {test_name} {time} {millisec} {days}"
     try:
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"could not Unconfigure diagnostic monitor interval switch  {device}"
                 .format(device=device, e=e)
-        )        
+        )
 
 def configure_ipxe_timeout(device, timeout, switch_number):
     """ Configure ipxe timeout for switch
@@ -423,14 +423,14 @@ def hw_module_beacon_slot_on_off(device, slot, operation):
             device ('obj'): Device object
             slot('int'): Switch number
             operation('str'): ON/OFF
-            
+
     """
 
     cmd = "hw-module beacon slot {} {}".format(slot, operation)
     try:
         device.execute(cmd)
     except SubCommandFailure as e:
-        raise SubCommandFailure('Failed to switch {} the beacon slot :'.format(operation)) 
+        raise SubCommandFailure('Failed to switch {} the beacon slot :'.format(operation))
 
 def stack_ports_enable_disable(device, switch_num, stack_port, operation):
     """ Enable/Disable the stack port
@@ -556,8 +556,8 @@ def configure_service_timestamps(device, msg_type="", timestamp_type="", datetim
         Args:
             device ('obj'): Device object
             msg_type ('str'): timestamp message type log/debug
-            timestamp_type ('str'): timestap type 
-            ex:)   
+            timestamp_type ('str'): timestap type
+            ex:)
                 datetime  Timestamp with date and time
                 uptime    Timestamp with system uptime
             datetime_subcmd ('str'): timestamp type for datetime
@@ -625,7 +625,7 @@ def copy_startup_config_to_flash_memory(device, timeout):
         Raises:
             SubCommandFailure
     """
-    
+
     dialog = Dialog(
         [
             Statement(
@@ -640,7 +640,7 @@ def copy_startup_config_to_flash_memory(device, timeout):
     try:
         device.execute(cmd,reply=dialog, timeout=timeout)
     except SubCommandFailure as e:
-        raise SubCommandFailure(f"Could not copy saved configuration on {device}. Error:\n{e}")  
+        raise SubCommandFailure(f"Could not copy saved configuration on {device}. Error:\n{e}")
 
 def copy_startup_config_to_tftp(device, host, file, timeout=30):
     """ Copy startup configuration to tftp location
@@ -652,11 +652,11 @@ def copy_startup_config_to_tftp(device, host, file, timeout=30):
             ex:)
                 /tftpboot/startup_config
             timeout('int', Optional): timeout in seconds for configuration file load to device(Default is 30 seconds)
-    
+
         Returns:
             None
         Raises:
-            SubCommandFailure            
+            SubCommandFailure
     """
 
     log.debug("copy startup configuration to tftp")
@@ -670,7 +670,7 @@ def copy_startup_config_to_tftp(device, host, file, timeout=30):
             loop_continue=True,
             continue_timer=False)
         ])
-    
+
     cmd = f"copy startup-config tftp://{host}/{file}"
     try:
         device.execute(cmd,reply=dialog, timeout=timeout)
@@ -687,7 +687,7 @@ def copy_running_config_to_tftp(device, host, file, timeout=30):
             ex:)
                 /tftpboot/running_config
             timeout('int', Optional): timeout in seconds for configuration file load to device(Default is 30 seconds)
-    
+
         Returns:
             None
         Raises:
@@ -711,11 +711,11 @@ def copy_running_config_to_tftp(device, host, file, timeout=30):
         device.execute(cmd,reply=dialog, timeout=timeout)
 
     except SubCommandFailure as e:
-        raise SubCommandFailure(f"Could not copy running configuration on tftp. Error:\n{e}") 
+        raise SubCommandFailure(f"Could not copy running configuration on tftp. Error:\n{e}")
 
 def configure_macro_auto_sticky(device):
     """ Configure macro auto sticky on this device
-    
+
     Args:
         device ('obj'): device to use
 
@@ -733,7 +733,7 @@ def configure_macro_auto_sticky(device):
 
 def unconfigure_macro_auto_sticky(device):
     """ Unconfigure macro auto sticky on this device
-    
+
     Args:
         device ('obj'): device to use
 
@@ -751,7 +751,7 @@ def unconfigure_macro_auto_sticky(device):
 
 def configure_device_classifier(device, dc_option="", dc_option_name=""):
     """ Configure device classifier on this device
-    
+
     Args:
         device ('obj'): device to use
         dc_option ('str'): device classifier option
@@ -781,7 +781,7 @@ def configure_device_classifier(device, dc_option="", dc_option_name=""):
 
 def unconfigure_device_classifier(device, dc_option="", dc_option_name=""):
     """ Unconfigure device classifier on this device
-    
+
     Args:
         device ('obj'): device to use
         dc_option ('str'): device classifier option
@@ -811,7 +811,7 @@ def unconfigure_device_classifier(device, dc_option="", dc_option_name=""):
 
 def unconfigure_system_ignore_startupconfig_switch_all(device):
     """ Unconfigure no system ignore startupconfig switch all
-    
+
     Args:
         device ('obj'): device to use
 
@@ -824,14 +824,14 @@ def unconfigure_system_ignore_startupconfig_switch_all(device):
 
 def configure_virtual_service_vnic_gateway_guest_ip_address(device, interface_id, ip, ip_mask, virtual_service, guest_ip):
     """ configure virtual service vnic gateway guest ip address
-    
+
     Args:
         device ('obj'): device to use
         interface_id ('str'): The interface id
-        ip ('str'): ip address 
-        ip_mask ('str'): ip mask 
-        virtual_service ('str'): The virtual service 
-        guest_ip ('str'): the guest ip address 
+        ip ('str'): ip address
+        ip_mask ('str'): ip mask
+        virtual_service ('str'): The virtual service
+        guest_ip ('str'): the guest ip address
 
         Returns:
             None
@@ -858,16 +858,16 @@ def configure_snmp_mib_bulkstat(device, object_name, oid, schema_name, poll_inte
     """ configure snmp mib bulkstat
     Args:
         device ('obj'): device to use
-        object_name ('str'): The name of the object 
+        object_name ('str'): The name of the object
         oid ('str'): object name to be added
-        schema_name ('str'): The name of the schema 
-        poll_interval ('int'): The poll interval value 
-        snmp_interface ('str'): The snmp interface 
-        transfer_name ('str'): bulkstat transfer name 
-        transfer_number ('int'): bulkstat transfer number 
-        url ('str'): url primary 
-        retry_number ('int'): The retry nymber 
-        retain_number ('int'): The retain number 
+        schema_name ('str'): The name of the schema
+        poll_interval ('int'): The poll interval value
+        snmp_interface ('str'): The snmp interface
+        transfer_name ('str'): bulkstat transfer name
+        transfer_number ('int'): bulkstat transfer number
+        url ('str'): url primary
+        retry_number ('int'): The retry nymber
+        retain_number ('int'): The retain number
 
         Returns:
             None
@@ -902,7 +902,7 @@ def configure_bulkstat_profile(device, name):
     """ configure bulkstat profile
     Args:
         device ('obj'): device to use
-        name ('str') : profile name to be added 
+        name ('str') : profile name to be added
         Returns:
             None
         Raises:
@@ -918,7 +918,7 @@ def unconfigure_bulkstat_profile(device, name):
     """ unconfigure bulkstat profile
     Args:
         device ('obj'): device to use
-        name ('str') : profile name to be removed 
+        name ('str') : profile name to be removed
 
         Returns:
             None
@@ -939,10 +939,10 @@ def configure_hw_switch_switch_logging_onboard_voltage(device, switch_number):
     """ configures hw-switch switch <#> logging onboard voltage
         Args:
             device ('obj'): device to use
-            switch_number ('int'): switch number to configure 
+            switch_number ('int'): switch number to configure
     """
     cmd = f"hw-switch switch {switch_number} logging onboard voltage"
-   
+
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -958,10 +958,10 @@ def unconfigure_hw_switch_switch_logging_onboard_voltage(device, switch_number):
     """ unconfigures hw-switch switch <#> logging onboard voltage
         Args:
             device ('obj'): device to use
-            switch_number ('int'): switch number to configure 
+            switch_number ('int'): switch number to configure
     """
     cmd = f"no hw-switch switch {switch_number} logging onboard voltage"
-   
+
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -978,10 +978,10 @@ def configure_hw_switch_switch_logging_onboard_environment(device, switch_number
     """ configures hw-switch switch <#> logging onboard environment
         Args:
             device ('obj'): device to use
-            switch_number ('int'): switch number to configure 
+            switch_number ('int'): switch number to configure
     """
     cmd = f"hw-switch switch {switch_number} logging onboard environment"
-   
+
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -997,10 +997,10 @@ def unconfigure_hw_switch_switch_logging_onboard_environment(device, switch_numb
     """ unconfigures hw-switch switch <#> logging onboard environment
         Args:
             device ('obj'): device to use
-            switch_number ('int'): switch number to configure 
+            switch_number ('int'): switch number to configure
     """
     cmd = f"no hw-switch switch {switch_number} logging onboard environment"
-   
+
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -1016,10 +1016,10 @@ def configure_hw_switch_switch_logging_onboard_temperature(device, switch_number
     """ configures hw-switch switch <#> logging onboard temperature
         Args:
             device ('obj'): device to use
-            switch_number ('int'): switch number to configure 
+            switch_number ('int'): switch number to configure
     """
     cmd = f"hw-switch switch {switch_number} logging onboard temperature"
-   
+
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -1035,10 +1035,10 @@ def unconfigure_hw_switch_switch_logging_onboard_temperature(device, switch_numb
     """ unconfigures hw-switch switch <#> logging onboard temperature
         Args:
             device ('obj'): device to use
-            switch_number ('int'): switch number to configure 
+            switch_number ('int'): switch number to configure
     """
     cmd = f"no hw-switch switch {switch_number} logging onboard temperature"
-   
+
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -1054,7 +1054,7 @@ def configure_clear_logging_onboard_switch_temperature(device, switch_number):
     """ unconfigures clear  logging  onboard  switch  temperature
         Args:
             device ('obj'): device to use
-            switch_number ('int'): switch number to configure 
+            switch_number ('int'): switch number to configure
     """
     dialog = Dialog(
         [
@@ -1083,7 +1083,7 @@ def configure_clear_logging_onboard_switch_voltage(device, switch_number):
     """ unconfigures clear  logging  onboard  switch  voltage
         Args:
             device ('obj'): device to use
-            switch_number ('int'): switch number to configure 
+            switch_number ('int'): switch number to configure
     """
     dialog = Dialog(
         [
@@ -1113,7 +1113,7 @@ def configure_clear_logging_onboard_switch_environment(device, switch_number):
     """ unconfigures clear  logging  onboard  switch  Environment
         Args:
             device ('obj'): device to use
-            switch_number ('int'): switch number to configure 
+            switch_number ('int'): switch number to configure
     """
     dialog = Dialog(
         [
@@ -1141,7 +1141,7 @@ def configure_clear_logging_onboard_switch_environment(device, switch_number):
 def configure_system_ignore_startupconfig_switch_all(device):
     """ Configures the system ignore startup configuration on the switch
         Example: system ignore startupconfig switch all
-        
+
         Args:
             device('obj'): device to configure on
 
@@ -1162,7 +1162,7 @@ def configure_system_ignore_startupconfig_switch_all(device):
 def unconfigure_system_ignore_startupconfig_switch_all(device):
     """ Unconfigures the system ignore startup configuration on the switch
         Example: no system ignore startupconfig switch all
-        
+
         Args:
             device('obj'): device to configure on
 
@@ -1179,19 +1179,19 @@ def unconfigure_system_ignore_startupconfig_switch_all(device):
     except SubCommandFailure as e:
         log.error(e)
         raise SubCommandFailure(f"Could not unconfigure system ignore startup configuration on device {device.name}. Error:\n{e}")
-    
+
 def configure_boot_system_switch_all_flash(device, destination):
     """ Configures the boot variable on all switches in the stack
         Example : boot system switch all flash:ctest.bin
-        
+
         Args:
             device ('obj'): device to use
             destination('str'): destination (e.g. test.bin)
-        
+
         Returns:
             None
-        
-        Raises: 
+
+        Raises:
             SubCommandFailure
     """
     log.info(f"Configuring boot system variable on flash on {device.name}")
@@ -1209,14 +1209,14 @@ def configure_boot_system_switch_all_flash(device, destination):
 def unconfigure_boot_system(device):
     """ Unconfigures the boot variable from the system
         Example : no boot system
-        
+
         Args:
             device ('obj'): device to use
-            
+
         Returns:
             None
-        
-        Raises: 
+
+        Raises:
             SubCommandFailure
     """
     log.info(f"Unconfiguring boot system variable on {device.name}")
@@ -1230,7 +1230,7 @@ def unconfigure_boot_system(device):
 def configure_system_disable_password_recovery_switch_all(device):
     """ Disables password recovery on the switch
         Example: system disable password recovery switch all
-        
+
         Args:
             device('obj'): device to configure on
 
@@ -1252,7 +1252,7 @@ def configure_system_disable_password_recovery_switch_all(device):
 def unconfigure_system_disable_password_recovery_switch_all(device):
     """ Enables password recovery on the switch
         Example: no system disable password recovery switch all
-        
+
         Args:
             device('obj'): device to configure on
 
@@ -1272,7 +1272,7 @@ def unconfigure_system_disable_password_recovery_switch_all(device):
         raise SubCommandFailure(f"Could not enable password recovery switch all on device {device.name}. Error:\n{e}")
 
 def configure_snmp_server_contact(device, name):
-    """ Configures contact for snmp-server 
+    """ Configures contact for snmp-server
         Example : snmp-server contact Testname
 
         Args:
@@ -1281,8 +1281,8 @@ def configure_snmp_server_contact(device, name):
 
         Returns:
             None
-        
-        Raises: 
+
+        Raises:
             SubCommandFailure
     """
     config = f"snmp-server contact {name}"
@@ -1294,14 +1294,14 @@ def configure_snmp_server_contact(device, name):
 def unconfigure_snmp_server_contact(device):
     """ Unconfigures contact for snmp-server
         Example: no snmp-server contact
-        
+
         Args:
             device ('obj'): device to use
 
         Returns:
             None
-            
-        Raises: 
+
+        Raises:
             SubCommandFailure
     """
     config = "no snmp-server contact"
@@ -1321,7 +1321,7 @@ def configure_snmp_server_location(device, location):
         Returns:
             None
 
-        Raises: 
+        Raises:
             SubCommandFailure
     """
     log.info(f"Configuring snmp-server location on {device.name}")
@@ -1341,7 +1341,7 @@ def unconfigure_snmp_server_location(device):
         Returns:
             None
 
-        Raises: 
+        Raises:
             SubCommandFailure
     """
     log.info(f"Unconfiguring snmp-server location on {device.name}")
@@ -1350,10 +1350,10 @@ def unconfigure_snmp_server_location(device):
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure snmp-server location on device {device.name}. Error:\n{e}")
-		
+
 def configure_hw_switch_logging_onboard(device, switch):
     """ Configures OBFL on the specified switch
-        Example : hw-switch switch 1 logging onboard 
+        Example : hw-switch switch 1 logging onboard
 
         Args:
             device ('obj'): device to use
@@ -1362,7 +1362,7 @@ def configure_hw_switch_logging_onboard(device, switch):
         Returns:
             None
 
-        Raises: 
+        Raises:
             SubCommandFailure
     """
     log.info(f"Configuring OBFL on switch {switch} on {device.name}")
@@ -1374,7 +1374,7 @@ def configure_hw_switch_logging_onboard(device, switch):
 
 def unconfigure_hw_switch_logging_onboard(device, switch):
     """ Unconfigures OBFL on the specified switch
-        Example : no hw-switch switch 1 logging onboard 
+        Example : no hw-switch switch 1 logging onboard
 
         Args:
             device ('obj'): device to use
@@ -1383,7 +1383,7 @@ def unconfigure_hw_switch_logging_onboard(device, switch):
         Returns:
             None
 
-        Raises: 
+        Raises:
             SubCommandFailure
     """
     log.info(f"Unconfiguring OBFL on switch {switch} on {device.name}")
@@ -1395,7 +1395,7 @@ def unconfigure_hw_switch_logging_onboard(device, switch):
 
 def configure_ip_tftp_blocksize(device, size):
     """ Specifies the size of TFTP blocks
-        Example : ip tftp blocksize 2000 
+        Example : ip tftp blocksize 2000
 
         Args:
             device ('obj'): device to use
@@ -1404,7 +1404,7 @@ def configure_ip_tftp_blocksize(device, size):
         Returns:
             None
 
-        Raises: 
+        Raises:
             SubCommandFailure
     """
     log.info(f"Configuring tftp blocksize {size} on {device.name}")
@@ -1416,7 +1416,7 @@ def configure_ip_tftp_blocksize(device, size):
 
 def unconfigure_ip_tftp_blocksize(device):
     """ Resets the TFTP blocksize to default
-        Example : no ip tftp blocksize 
+        Example : no ip tftp blocksize
 
         Args:
             device ('obj'): device to use
@@ -1424,7 +1424,7 @@ def unconfigure_ip_tftp_blocksize(device):
         Returns:
             None
 
-        Raises: 
+        Raises:
             SubCommandFailure
     """
     log.info(f"Unconfiguring tftp blocksize on {device.name}")
@@ -1461,7 +1461,7 @@ def configure_enable_http_server(device):
         log.info("Successfully enabled http server for {}".format(device.name))
 
 def configure_set_clock_calendar(device):
-    """Configure clock calendar-valid 
+    """Configure clock calendar-valid
     Args:
         device (obj): Device object
     Returns:
@@ -1498,7 +1498,7 @@ def configure_clock_timezone(device, timezone_name, hours_offset, minutes_offset
         Raises:
             SubCommandFailure
     """
-    config = f"clock timezone {timezone_name} {hours_offset} {minutes_offset}"    
+    config = f"clock timezone {timezone_name} {hours_offset} {minutes_offset}"
     try:
         device.configure(config)
     except SubCommandFailure as e:
@@ -1518,7 +1518,7 @@ def configure_virtual_service(device, name):
         Returns:
             None
 
-        Raises: 
+        Raises:
             SubCommandFailure
     """
     log.info(f"Configuring virtual-service {name} on {device.name}")
@@ -1539,7 +1539,7 @@ def unconfigure_virtual_service(device, name):
         Returns:
             None
 
-        Raises: 
+        Raises:
             SubCommandFailure
     """
     log.info(f"Unconfiguring virtual-service {name} on {device.name}")
@@ -1561,7 +1561,7 @@ def unconfigure_virtual_service_activate(device, name):
         Returns:
             None
 
-        Raises: 
+        Raises:
             SubCommandFailure
     """
     log.info(f"Deactivating virtual-service {name} on {device.name}")
@@ -1585,7 +1585,7 @@ def configure_interface_VirtualPortGroup(device, number):
         Returns:
             None
 
-        Raises: 
+        Raises:
             SubCommandFailure
     """
     log.info(f"Configuring interface VirtualPortGroup {number} on {device.name}")
@@ -1606,7 +1606,7 @@ def unconfigure_interface_VirtualPortGroup(device, number):
         Returns:
             None
 
-        Raises: 
+        Raises:
             SubCommandFailure
     """
     log.info(f"Unconfiguring VirtualPortGroup interface {number} on {device.name}")
@@ -1618,7 +1618,7 @@ def unconfigure_interface_VirtualPortGroup(device, number):
 
 def configure_source_template(device, template_name, source_template):
     """ Configure source template
-    
+
     Args:
         device ('obj'): device to use
         template_name ('str'): Select a template to configure
@@ -1637,9 +1637,9 @@ def configure_source_template(device, template_name, source_template):
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure source template on this device. Error:\n{e}")
 
-def unconfigure_source_template(device, template_name, source_template):
+def unconfigure_source_template_global(device, template_name, source_template):
     """ unconfigure source template
-    
+
     Args:
         device ('obj'): device to use
         template_name ('str'): Select a template to configure
@@ -1661,7 +1661,7 @@ def unconfigure_source_template(device, template_name, source_template):
 
 def unconfigure_global_source_template(device, source_template):
     """ unconfigure source template globally
-    
+
     Args:
         device ('obj'): device to use
         source_template ('str'): Template name to source configs
@@ -1679,7 +1679,7 @@ def unconfigure_global_source_template(device, source_template):
 
 def configure_commands_to_template(device, template_name, cmd_to_add):
     """ Configure commands to a template
-    
+
     Args:
         device ('obj'): device to use
         template_name ('str'): Select a template to configure
@@ -1734,7 +1734,7 @@ def configure_commands_to_template(device, template_name, cmd_to_add):
 
 def unconfigure_commands_from_template(device, template_name, cmd_to_add):
     """ Unconfigure commands from a template
-    
+
     Args:
         device ('obj'): device to use
         template_name ('str'): Select a template to configure
@@ -1788,7 +1788,7 @@ def unconfigure_commands_from_template(device, template_name, cmd_to_add):
         raise SubCommandFailure(f"Failed to unconfigure commands from a template on this device. Error:\n{e}")
 
 def request_platform_software_package_clean(device, switch_detail, clean_option, file_path):
-    """ Perform request platform software package clean switch 
+    """ Perform request platform software package clean switch
         Args:
             device ('obj'): Device object
             switch_detail ('str'): Switch id, or 'all' for all switches
@@ -1847,7 +1847,7 @@ def configure_stack_power_switch(device, switch_number):
             switch_number ('int'): Switch number (1-16)
         Returns:
             None
-        Raises: 
+        Raises:
             SubCommandFailure
     """
     log.info(f"Configuring stack-power switch {switch_number} on {device.name}")
@@ -2068,7 +2068,7 @@ def power_supply_on_off(device, switch_number, ps_slot, operation):
         Args:
             device (`obj`): Device object
             switch_number ('int'): Switch number
-            ps_slot ('str'): power supply slot 
+            ps_slot ('str'): power supply slot
             operation('str'): on/off
         Returns:
             None
@@ -2080,8 +2080,8 @@ def power_supply_on_off(device, switch_number, ps_slot, operation):
     try:
         device.execute(cmd)
     except SubCommandFailure as e:
-        raise SubCommandFailure(f'Failed to {operation} power supply {ps_slot} on switch{switch_number} . Error:\n{e}') 
-       
+        raise SubCommandFailure(f'Failed to {operation} power supply {ps_slot} on switch{switch_number} . Error:\n{e}')
+
 def configure_archive_default(device, archive_option, archive_subcmd=""):
     """ Configure archive default for switch
         Args:
@@ -2275,7 +2275,7 @@ def configure_archive_time_period(device, time_period):
             time_period ('int'): Number of minutes to wait between archive creation
             ex:)
                 <1-525600>  Number of minutes to wait between archive creation
-                
+
         Returns:
             result
         Raises:
@@ -2297,7 +2297,7 @@ def unconfigure_archive_time_period(device):
     """ Unconfigure archive time-period for switch
         Args:
             device ('obj'): Device object
-                
+
         Returns:
             None
         Raises:
@@ -2317,7 +2317,7 @@ def configure_archive_write_memory(device):
     """ Configure archive write memory for switch
         Args:
             device ('obj'): Device object
-            
+
         Returns:
             output
         Raises:
@@ -2338,7 +2338,7 @@ def unconfigure_archive_write_memory(device):
     """ Unconfigure archive write memory for switch
         Args:
             device ('obj'): Device object
-            
+
         Returns:
             None
         Raises:
@@ -2607,7 +2607,7 @@ def configure_stack_power_switch(device, switch_number):
             switch_number ('int'): Switch number (1-16)
         Returns:
             None
-        Raises: 
+        Raises:
             SubCommandFailure
     """
     log.info(f"Configuring stack-power switch {switch_number} on {device.name}")
@@ -2627,7 +2627,7 @@ def configure_service_template(device, template_name):
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
-        raise SubCommandFailure(f'Failed configure service-template on this device. Error:\n{e}') 
+        raise SubCommandFailure(f'Failed configure service-template on this device. Error:\n{e}')
 
 def configure_policy_map_control(device, subscriber, class_number, action_number, template_name, match_type=None, action=None):
     """ Configures policy-map type control
@@ -2695,10 +2695,10 @@ def configure_port_channel_persistent(device, channel_group_num):
 
 def unconfigure_license_smart_reservation(device):
     """ Unconfigure license smart reservation
-    
+
     Args:
         device ('obj'): device to use
-        Returns:    
+        Returns:
             None
         Raises:
             SubCommandFailure
@@ -2712,7 +2712,7 @@ def unconfigure_license_smart_reservation(device):
 
 def configure_license_smart_transport_off(device):
     """ Configure license smart transport off
-    
+
     Args:
         device ('obj'): device to use
         Returns
@@ -2729,7 +2729,7 @@ def configure_license_smart_transport_off(device):
 
 def configure_ip_domain_timeout(device, value):
     """ Configure ip domain timeout
-    
+
     Args:
         device ('obj'): device to use
         value ('int'): timeout value
@@ -2747,7 +2747,7 @@ def configure_ip_domain_timeout(device, value):
 
 def configure_platform_shell(device):
     """ Configure platform shell
-    
+
     Args:
         device ('obj'): device to use
         Returns
@@ -2764,7 +2764,7 @@ def configure_platform_shell(device):
 
 def configure_ip_http_authentication_local(device):
     """ Configure ip http authentication local
-    
+
     Args:
         device ('obj'): device to use
         Returns
@@ -2781,11 +2781,11 @@ def configure_ip_http_authentication_local(device):
 
 
 def configure_ip_domain_name(device, name):
-    """ Configure ip domain name 
+    """ Configure ip domain name
     Args:
         device ('obj'): device to use
         name ('str'): domain name
-        Returns:    
+        Returns:
             None
         Raises:
             SubCommandFailure
@@ -2799,7 +2799,7 @@ def configure_ip_domain_name(device, name):
 
 
 def configure_ip_domain_name_vrf_mgmt_vrf(device, name):
-    """ Configure ip domain name vrf mgmt-vrf 
+    """ Configure ip domain name vrf mgmt-vrf
     Args:
         device ('obj'): device to use
         name ('str'): domain name
@@ -2817,7 +2817,7 @@ def configure_ip_domain_name_vrf_mgmt_vrf(device, name):
 
 
 def configure_ip_name_server_vrf(device, name, ip):
-    """ Configure ip name-server vrf 
+    """ Configure ip name-server vrf
     Args:
         device ('obj'): device to use
         name ('str'): domain name
@@ -2837,7 +2837,7 @@ def configure_ip_http_client_source_interface_vlan_domain_lookup(device, vlan_id
     """ Configure ip http client source-interface vlan domain lookup
     Args:
         device ('obj'): device to use
-        vlan_id ('str'): vlan id 
+        vlan_id ('str'): vlan id
         Returns
             None
         Raises:
@@ -2873,7 +2873,7 @@ def configure_ip_http_client_source_interface_vlan_domain_lookup_name_server_vrf
     """ Configure ip http client source-interface vlan domain lookup
     Args:
         device ('obj'): device to use
-        interface_id ('str'): interface id 
+        interface_id ('str'): interface id
         Returns
             None
         Raises:
@@ -2891,10 +2891,10 @@ def configure_ip_http_client_source_interface_vlan_domain_lookup_name_server_vrf
         raise SubCommandFailure(f"Failed to configure ip http client source-interface vlan domain lookup on this device. Error:\n{e}")
 
 def configure_ip_http_client_source_interface(device, interface_name, interface_id):
-    """ Configure ip http client source-interface 
+    """ Configure ip http client source-interface
     Args:
         device ('obj'): device to use
-        interface_id ('str'): vlan id 
+        interface_id ('str'): vlan id
         Returns
             None
         Raises:
@@ -2966,7 +2966,7 @@ def unconfigure_key_config_key_password_encrypt(device, password):
     """ Unconfigures key config-key password encrypt on device
         Args:
             device (`obj`): Device object
-            password('str'): password, The config-key 
+            password('str'): password, The config-key
                 Minimum 8 characters not beginning with
                 IOS special character(! # ;)
         Returns:
@@ -2976,7 +2976,7 @@ def unconfigure_key_config_key_password_encrypt(device, password):
     """
     log.info("Configuring no key config-key password encrypt on device")
     cmd = [f'no key config-key password encrypt {password}']
-    
+
     dialog = Dialog([
         Statement(pattern=r"Continue with master key deletion \? \[yes\/no\]\:\s*$",
                   action='sendline(yes)',
@@ -3021,7 +3021,7 @@ def configure_event_manager_applet(device, event):
     cmd = [
         f"event manager applet {event}",
         "event none"
-    ]    
+    ]
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -3031,8 +3031,8 @@ def configure_power_inline_auto_max(device, interface, time):
     """ Configures power inline auto max
         Args:
             device ('obj'): device to use
-            interface ('obj'): interface name 
-            time ('str'): <4000-60000>  milli-watt 
+            interface ('obj'): interface name
+            time ('str'): <4000-60000>  milli-watt
         Returns:
             None
         Raises:
@@ -3045,14 +3045,14 @@ def configure_power_inline_auto_max(device, interface, time):
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
-        raise SubCommandFailure(f"Failed to configure power inline auto max on device {device.name}. Error:\n{e}") 
+        raise SubCommandFailure(f"Failed to configure power inline auto max on device {device.name}. Error:\n{e}")
 
 def configure_switch_provision_model(device, switch_number, model):
-    """ Configures switch provision 
+    """ Configures switch provision
         Args:
             device ('obj'): device to use
-            switch_number ('int'): switch number 
-            model ('str'): provision model 
+            switch_number ('int'): switch number
+            model ('str'): provision model
         Returns:
             None
         Raises:
@@ -3137,7 +3137,7 @@ def unconfigure_key_config_key_password_encrypt(device, password):
     """ Unconfigures key config-key password encrypt on device
         Args:
             device (`obj`): Device object
-            password('str'): password, The config-key 
+            password('str'): password, The config-key
                 Minimum 8 characters not beginning with
                 IOS special character(! # ;)
         Returns:
@@ -3147,7 +3147,7 @@ def unconfigure_key_config_key_password_encrypt(device, password):
     """
     log.info("Configuring no key config-key password encrypt on device")
     cmd = [f'no key config-key password encrypt {password}']
-    
+
     dialog = Dialog([
         Statement(pattern=r"Continue with master key deletion \? \[yes\/no\]\:\s*$",
                   action='sendline(yes)',
@@ -3165,8 +3165,8 @@ def configure_enable_secret_password(device, enable_secret):
     ''' Apply enable secret password for switch
         Args:
             device ('obj'): Device object
-            enable_secret('str'): password 
-            ex.)             
+            enable_secret('str'): password
+            ex.)
         Raises:
             SubCommandFailure
     '''
@@ -3175,7 +3175,7 @@ def configure_enable_secret_password(device, enable_secret):
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            f"Failed to apply enable secrate password on device {device}. Error:\n{e}") 
+            f"Failed to apply enable secrate password on device {device}. Error:\n{e}")
 
 def configure_call_home_reporting(device, address="", proxy_server="", email="", port=-1):
     """ Configures call home reporting
@@ -3198,11 +3198,11 @@ def configure_call_home_reporting(device, address="", proxy_server="", email="",
     elif address == "contact-email-addr":
         cmd = f"call-home reporting {address} {email}"
     else:
-        raise SubCommandFailure("Incorrect call-home reporting address type.") 
+        raise SubCommandFailure("Incorrect call-home reporting address type.")
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
-        raise SubCommandFailure(f"Failed to configure call home reporting on device {device.name}. Error:\n{e}") 
+        raise SubCommandFailure(f"Failed to configure call home reporting on device {device.name}. Error:\n{e}")
 
 def unconfigure_enable_secret_password(device, enable_secret):
     ''' Apply enable secret password for switch
@@ -3222,8 +3222,8 @@ def unconfigure_enable_secret_password(device, enable_secret):
 
 def configure_line_vty(
     device, first_line_number, second_line_number=''):
-    """ Configures line vty on switch 
-    
+    """ Configures line vty on switch
+
         Args:
             device ('obj'): device to use
             first_line_number('int'): first line number
@@ -3242,7 +3242,7 @@ def configure_line_vty(
 
 def unconfigure_line_vty(
     device, first_line_number, second_line_number=''):
-    """ unconfigures line vty  on switch 
+    """ unconfigures line vty  on switch
         Args:
             device ('obj'): device to use
             first_line_number ('int'): first line number
@@ -3262,26 +3262,26 @@ def unconfigure_line_vty(
 def configure_diagnostic_monitor_switch(
     device, switch_number, test_name, failure_count=None):
     """ execute diagnostic start switch 1 test
-    
+
         Args:
             device ('obj'): Device object
-            test_id ('str'): Test ID list (e.g. 1,3-6) or Test Name or minimal  or complete 
+            test_id ('str'): Test ID list (e.g. 1,3-6) or Test Name or minimal  or complete
               Interface port number WORD    Port number list (e.g. 2,4-7)
             switch_number ('int'): Switch number on which diagnostic has to be performed
-            test_name ('str'): Word , test name 
-            
+            test_name ('str'): Word , test name
+
         Returns:
             None
         Raises:
             SubCommandFailure
     """
-    
+
     cmd = []
     if failure_count :
         cmd = f"diagnostic monitor threshold switch {switch_number} test {test_name} failure count {failure_count}"
     else:
         cmd = f"diagnostic monitor switch {switch_number} test {test_name}"
-    
+
     try:
        device.configure(cmd)
     except SubCommandFailure as e:
@@ -3291,19 +3291,19 @@ def configure_diagnostic_monitor_switch(
 def unconfigure_diagnostic_monitor_switch(
     device, switch_number, test_name):
     """ execute diagnostic start switch 1 test
-    
+
         Args:
             device ('obj'): Device object
             switch_number ('int'): Switch number on which diagnostic has to be performed
-            test_name ('str'): Word , test name 
-            
+            test_name ('str'): Word , test name
+
         Returns:
             None
         Raises:
             SubCommandFailure
     """
     cmd = [f"no diagnostic monitor switch {switch_number} test {test_name}"]
-    
+
     try:
        device.configure(cmd)
     except SubCommandFailure as e:
@@ -3312,10 +3312,10 @@ def unconfigure_diagnostic_monitor_switch(
 
 
 def configure_diagnostic_schedule_switch(
-    device, switch_number, time, 
+    device, switch_number, time,
     day=None, month=None, day_number=None, year=None):
     """ execute diagnostic start switch 1 test
-    
+
         Args:
             device ('obj'): Device object
             switch_number ('int'): Switch number on which diagnostic has to be performed
@@ -3323,19 +3323,19 @@ def configure_diagnostic_schedule_switch(
             day ('str'): Day of the week
             day_number ('int'): day number of a month
             month ('str'): name of the month
-            year ('int'): year number , 
-          
+            year ('int'): year number ,
+
         Returns:
             None
         Raises:
             SubCommandFailure
     """
-    
+
     cmd = []
     cmd = f"diagnostic schedule switch {switch_number} test all "
-    
+
     if day and time :
-        cmd += f"weekly {day} {time}"        
+        cmd += f"weekly {day} {time}"
     elif month and year and time:
         cmd += f"on {month} {day_number} {year} {time}"
     else:
@@ -3347,8 +3347,8 @@ def configure_diagnostic_schedule_switch(
         raise SubCommandFailure(f"Could not execute diagnostic schedule switch {switch_number} on device. Error:\n{e}")
 
 def unconfigure_diagnostic_schedule_switch(
-    device, switch_number, 
-    time, day=None, month=None, 
+    device, switch_number,
+    time, day=None, month=None,
     day_number=None, year=None):
     """ execute diagnostic start switch 1 test
         Args:
@@ -3358,17 +3358,17 @@ def unconfigure_diagnostic_schedule_switch(
             day ('str'): Day of the week
             day_number ('int'): day number of a month
             month('str'): name of the month
-            year ('int'): year number , 
-          
+            year ('int'): year number ,
+
         Returns:
             None
         Raises:
             SubCommandFailure
     """
-    
+
     cmd = []
     cmd = f"no diagnostic schedule switch {switch_number} test all "
-    
+
     if day and time :
         cmd += f"weekly {day} {time}"
     elif month and year and time:
@@ -3379,7 +3379,7 @@ def unconfigure_diagnostic_schedule_switch(
        device.configure(cmd)
     except SubCommandFailure as e:
         log.error(e)
-        raise SubCommandFailure(f"Could not execute diagnostic schedule switch {switch_number} on device. Error:\n{e}") 
+        raise SubCommandFailure(f"Could not execute diagnostic schedule switch {switch_number} on device. Error:\n{e}")
 
 
 def configure_stack_power_switch_power_priority(
@@ -3433,8 +3433,8 @@ def unconfigure_stack_power_switch_power_priority(
             SubCommandFailure
     """
     log.info("Unconfiguring stack-power switch power priority value")
-    
-    config = [ 
+
+    config = [
         f"stack-power {stack_parameters} {switch_number}",
         f"no power-priority {power_priority} {power_priority_value}"]
 
@@ -3476,7 +3476,7 @@ def configure_default_stack_power_switch_power_priority(
 
 def configure_stackpower_stack_switch_standalone(device,powerstack_name,switch_number,stack_name,mode=None):
     """ Configures power_shared mode on stack-power stack
-        
+
         Args:
             device ('obj'): device to use
             powerstack_name ('str'): Power stack name - Up to 31 chars
@@ -3489,7 +3489,7 @@ def configure_stackpower_stack_switch_standalone(device,powerstack_name,switch_n
             SubCommandFailure
     """
     log.info(f"Configuring stack power standalone and no standalone {device.name}")
-    
+
     config = [
         f'stack-power stack {powerstack_name}',
         f'stack-power switch {switch_number}',
@@ -3502,11 +3502,11 @@ def configure_stackpower_stack_switch_standalone(device,powerstack_name,switch_n
     try:
         device.configure(config)
     except SubCommandFailure as e:
-        raise SubCommandFailure(f"Failed to configure stack power switch standalone on device {device.name}. Error:\n{e}") 
+        raise SubCommandFailure(f"Failed to configure stack power switch standalone on device {device.name}. Error:\n{e}")
 
 def unconfigure_stackpower_stack_switch_no_standalone(device,powerstack_name,switch_number,stack_name,mode=None):
     """ Configures power_shared mode on stack-power stack
-        
+
         Args:
             device ('obj'): device to use
             powerstack_name ('str'): Power stack name - Up to 31 chars
@@ -3519,7 +3519,7 @@ def unconfigure_stackpower_stack_switch_no_standalone(device,powerstack_name,swi
             SubCommandFailure
     """
     log.info(f"Configuring stack power standalone and no standalone {device.name}")
-    
+
     config = [
         f'no stack-power stack {powerstack_name}',
         f'stack-power switch {switch_number}',
@@ -3546,11 +3546,11 @@ def configure_stack_power_switch_standalone(device,switch_number):
             SubCommandFailure
     """
     log.info("configuring standalone on stack-power switch")
-    
-    config = [ 
+
+    config = [
         f'stack-power switch {switch_number}',
         'standalone']
-        
+
     try:
         device.configure(config)
     except SubCommandFailure as e:
@@ -3568,11 +3568,11 @@ def configure_stack_power_switch_no_standalone(device,switch_number):
             SubCommandFailure
     """
     log.info(f"Unconfiguring standalone on stack power switch")
-    
+
     config = [
         f'stack-power switch {switch_number}',
         'no standalone']
-        
+
     try:
         device.configure(config)
     except SubCommandFailure as e:
@@ -3591,9 +3591,9 @@ def configure_stack_power_mode_power_shared(device, powerstack_name, strict=None
             SubCommandFailure
     """
     log.info(f"Configuring power_shared mode on stack-power stack on {device.name}")
-    
+
     config = [f'stack-power stack {powerstack_name}']
-    
+
     if strict is None:
         config.append ('mode power-shared')
     else:
@@ -3618,7 +3618,7 @@ def unconfigure_boot_system_switch_switchnumber(device, switch_num):
 
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            f"Could not remove boot system switch with switch number on {device}. Error:\n{e}") 
+            f"Could not remove boot system switch with switch number on {device}. Error:\n{e}")
 
 
 def configure_boot_system_switch_switchnumber(device, switch_num, destination):
@@ -3631,13 +3631,13 @@ def configure_boot_system_switch_switchnumber(device, switch_num, destination):
     log.info(f"Configuring boot system switch with switch number and destination on {device}")
 
     cmd = f'boot system switch {switch_num} {destination}'
-    
+
     try:
         device.configure(cmd)
 
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            f"Configuring boot system switch with switch number and destination on {device}. Error:\n{e}") 
+            f"Configuring boot system switch with switch number and destination on {device}. Error:\n{e}")
 
 
 def restore_running_config_file(device, path, file, timeout=120):
@@ -3648,14 +3648,14 @@ def restore_running_config_file(device, path, file, timeout=120):
             file ('str'): file name
             timeout ('int'): Timeout for applying config
         Returns:
-            None
+            output
     """
     dialog = Dialog(
         [
             Statement(
                 pattern=r".*\[(yes|no)\].*",
                 action="sendline(y)",
-                loop_continue=False,
+                loop_continue=True,
                 continue_timer=False,
             )
         ]
@@ -3667,12 +3667,12 @@ def restore_running_config_file(device, path, file, timeout=120):
             timeout=timeout
         )
     except SubCommandFailure as e:
-        raise SubCommandFailure(f"Could not replace saved configuration on device {device}\nError: {e}")       
-    return output 
+        raise SubCommandFailure(f"Could not replace saved configuration on device {device}\nError: {e}")
+    return output
 
 def configure_macro_auto_global_processing_on_interface(device, interface):
     """ Configure macro auto global processing on the device interface
-    
+
     Args:
         device ('obj'): device to use
         interface (int): interface to configure
@@ -3691,7 +3691,7 @@ def configure_macro_auto_global_processing_on_interface(device, interface):
 
 def unconfigure_macro_auto_global_processing_on_interface(device, interface):
     """ unConfigure macro auto global processing on the device interface
-    
+
     Args:
         device ('obj'): device to use
         interface (int): interface to configure
@@ -3710,7 +3710,7 @@ def unconfigure_macro_auto_global_processing_on_interface(device, interface):
 
 def configure_macro_auto_global_processing(device):
     """ Configure macro auto global processing on the device globally
-    
+
     Args:
         device ('obj'): device to use
     Returns:
@@ -3727,7 +3727,7 @@ def configure_macro_auto_global_processing(device):
 
 def unconfigure_macro_auto_global_processing(device):
     """ unConfigure macro auto global processing on the device globally
-    
+
     Args:
         device ('obj'): device to use
     Returns:
@@ -3752,7 +3752,7 @@ def configure_process_cpu_threshold_type_rising_interval(device, utilization_lev
             interval('str'):default interval (5-86400)
         Returns:
             None
-        Raises: 
+        Raises:
             SubCommandFailure
     """
     config = f"process cpu threshold type {utilization_level} rising {rising_level} interval {interval}"
@@ -3772,7 +3772,7 @@ def unconfigure_process_cpu_threshold_type_rising_interval(device, utilization_l
             interval('str'):default interval (5-86400)
         Returns:
             None
-        Raises: 
+        Raises:
             SubCommandFailure
     """
     config = f"no process cpu threshold type {utilization_level} rising {rising_level} interval {interval}"
@@ -3791,7 +3791,7 @@ def configure_process_cpu_statistics_limit_entry_percentage_size(device, entry_p
             size('str'):default interval (5-86400)
         Returns:
             None
-        Raises: 
+        Raises:
             SubCommandFailure
     """
     config = f"process cpu  statistics limit entry-percentage {entry_percentage} size {size}"
@@ -3809,7 +3809,7 @@ def unconfigure_process_cpu_statistics_limit_entry_percentage_size(device, entry
             size('str'):default interval (5-86400)
         Returns:
             None
-        Raises: 
+        Raises:
             SubCommandFailure
     """
     config = f"no process cpu  statistics limit entry-percentage {entry_percentage} size {size}"
@@ -3818,3 +3818,310 @@ def unconfigure_process_cpu_statistics_limit_entry_percentage_size(device, entry
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure process cpu  statistics limit entry-percentage size on the device {device.name}. Error:\n{e}")
 
+def configure_macro_auto_processing_on_interface(device, interface):
+    """ Configure macro auto processing on the device on interface level
+
+    Args:
+        device ('obj'): device to use
+        interface ('int'): interface to configure
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed to configure macro auto processing
+    """
+
+    config = [f'interface {interface}',
+              f'macro auto processing']
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure macro auto processing on the device interface. Error:\n{e}")
+
+def unconfigure_macro_auto_processing_on_interface(device, interface):
+    """ Unconfigure macro auto processing on the device on interface level
+
+    Args:
+        device ('obj'): device to use
+        interface ('int'): interface to configure
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed to unconfigure macro auto processing
+    """
+
+    config = [f'interface {interface}',
+              f'no macro auto processing']
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure macro auto processing on the device interface. Error:\n{e}")
+
+def configure_diagnostic_monitor_syslog(device):
+    """ diagnostic monitor syslog
+    Args:
+        device ('obj'): Device object
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    try:
+        device.configure('diagnostic monitor syslog')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure diagnostic monitor syslog on {device}. Error:\n{error}"
+                .format(device=device, error=e)
+        )
+
+
+def unconfigure_diagnostic_monitor_syslog(device):
+    """ no diagnostic monitor syslog
+    Args:
+        device ('obj'): Device object
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    try:
+        device.configure('no diagnostic monitor syslog')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure diagnostic monitor syslog on {device}. Error:\n{error}"
+                .format(device=device, error=e)
+        )
+
+
+def unconfigure_device_classifier_command(
+        device, dc_option="", dc_option_name="", dc_command="",
+        dc_command_name=""
+):
+    """ Unconfigure device classifier on this device
+
+    Args:
+        device ('obj'): device to use
+        dc_option ('str'):device classifier option
+            ex:)
+            condition   - Define device classifier condition
+            device-type - Define device type
+        dc_option_name ('str'): Name of device classifier type
+            ex:)
+            WORD  Condition name
+            WORD  Device type name
+        dc_command ('str'): Define device rule commands
+            ex:)
+            cdp      CDP related rules
+            default  Set a command to its defaults
+            dhcp     DHCP related rules
+            exit     Exit from device-classifier condition configuration mode
+            lldp     LLDP related rules
+            no       Negate a command or set its defaults
+        dc_command_name('str'): command names
+            ex:)
+            cdp tlv-type 1 value String 9300-24UX-2
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [
+        'no device classifier',
+        f'device classifier {dc_option} {dc_option_name}',
+        f'{dc_command} {dc_command_name}']
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure classifier command on this device. Error:\n{e}")
+
+
+def unconfigure_device_classifier_profile_command(
+    device, dc_option="", dc_option_name="", dc_command= "",
+    dc_command_name="", dc_profile_commands="", dc_option_type="",
+    dc_profile_command_name=""
+):
+    """ Unconfigure device classifier on this device
+
+    Args:
+        device ('obj'): device to use
+        dc_option ('str'): device classifier option
+            ex:)
+            condition    Define device classifier condition
+            device-type  Define device type
+        dc_option_name ('str'): Name of device classifier type
+            ex:)
+            WORD  Condition name
+            WORD  Device type name
+        dc_command ('str'): Define device rule commands
+            ex:)
+            Device classifier profile commands
+            condition  Give condition name
+            default    Set a command to its defaults
+            exit       Exit from device-classifier dev-type configuration mode
+            no         Negate a command or set its defaults
+        dc_command_name(str'): Command names
+            ex:)
+            CDP_RULE_TLV_1
+        dc_profile_commands('str'): Given commands
+            ex:)
+            Device classifier profile commands
+            condition  Give condition name
+            default    Set a command to its defaults
+            exit       Exit from device-classifier dev-type configuration mode
+            no         Negate a command or set its defaults
+        dc_option_type('str'): Name of device classifier type
+            ex:)
+            WORD  Condition name
+            WORD  Device type name
+        dc_profile_command_name('str'): profile command and it's configuration
+            ex:)
+            no device classifier device-type CDP_TYPE_TLV_1
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [
+        'no device classifier',
+        f'device classifier {dc_option} {dc_option_name}',
+        f'{dc_command} {dc_command_name}',
+        f'{dc_profile_commands} {dc_option_type} {dc_profile_command_name}']
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure classifier command on this device. Error:\n{e}")
+
+
+def configure_device_classifier_command(
+        device, dc_option="", dc_option_name="", dc_command="",
+        dc_command_name="", dc_profile_commands=""
+):
+    """ configure device classifier on this device
+
+    Args:
+        device ('obj'): device to use
+        dc_option ('str'): device classifier option
+            ex:)
+            condition    Define device classifier condition
+            device-type  Define device type
+        dc_option_name ('str'): Name of device classifier type
+            ex:)
+            WORD  Condition name
+            WORD  Device type name
+        dc_command ('str'): Define device rule commands
+            ex:)
+            Device classifier profile commands
+            condition  Give condition name
+            default    Set a command to its defaults
+            exit       Exit from device-classifier dev-type configuration mode
+            no         Negate a command or set its defaults
+        dc_command_name('str'): command names
+            ex:)
+            cdp tlv-type 1 value String 9300-24UX-2
+        dc_profile_commands('str'): Given commands
+            ex:)
+            Device classifier profile commands
+            condition  Give condition name
+            default    Set a command to its defaults
+            exit       Exit from device-classifier dev-type configuration mode
+            no         Negate a command or set its defaults
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [
+        f'device classifier {dc_option} {dc_option_name}',
+        f'{dc_command} {dc_command_name}',f'{dc_profile_commands}']
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure classifier command on this device. Error:\n{e}")
+
+
+def unconfigure_device_classifier_profile(
+    device, dc_option, dc_option_name, dc_command, dc_command_name,
+    dc_profile_commands, dc_option_type, dc_profile_command_name
+):
+    """ Unconfigure device classifier on this device
+
+    Args:
+        device ('obj'): device to use
+        dc_option ('str'): device classifier option
+            ex:)
+            condition    Define device classifier condition
+            device-type  Define device type
+        dc_option_name ('str'): Name of device classifier type
+            ex:)
+            WORD  Condition name
+            WORD  Device type name
+        dc_command ('str'): Define device rule commands
+            ex:)
+            Device classifier profile commands
+            condition  Give condition name
+            default    Set a command to its defaults
+            exit       Exit from device-classifier dev-type configuration mode
+            no         Negate a command or set its defaults
+        dc_command_name(str'): Command names
+            ex:)
+            CDP_RULE_TLV_1
+        dc_profile_commands('str'): Given commands
+            ex:)
+            Device classifier profile commands
+            condition  Give condition name
+            default    Set a command to its defaults
+            exit       Exit from device-classifier dev-type configuration mode
+            no         Negate a command or set its defaults
+        dc_option_type('str'): Name of device classifier type
+            ex:)
+            WORD  Condition name
+            WORD  Device type name
+        dc_profile_command_name('str'): profile command and it's configuration
+            ex:)
+            no device classifier device-type CDP_TYPE_TLV_1
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [
+        'no device classifier',
+        f'device classifier {dc_option} {dc_option_name}',
+        f'{dc_command} {dc_command_name}',
+        f'{dc_profile_commands} {dc_option_type} {dc_profile_command_name}']
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure classifier command on this device. Error:\n{e}")
+
+def unconfigure_device_classifier_operator(device, dc_option="", dc_option_name="", operator_type=""):
+    """ Unconfigure device classifier on this device
+    Args:
+        device ('obj'):  device to use
+        dc_option ('str'):  device classifier option
+            ex:)
+            condition     Define device classifier condition
+            device-type   Define device type
+        dc_option_name ('str'):  Name of device classifier type
+            ex:)
+            WORD  Condition name
+            WORD  Device type name
+        operator_type('str'):  Name of the given operator name
+            ex:)
+            <operator-type(AND/OR)>
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    if all((dc_option, dc_option_name, operator_type)):
+        cmd = f'no device classifier {dc_option} {dc_option_name} op {operator_type}'
+    else:
+        cmd = 'no device classifier'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure classifier on this device. Error:\n{e}")

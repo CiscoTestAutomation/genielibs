@@ -91,3 +91,109 @@ def configure_route_map_route_map(device, route_map):
         device.configure("".join(config))
     except SubCommandFailure as e:
         raise SubCommandFailure("Failed to execute configuration command")
+
+
+def configure_route_map_permit(
+        device, route_map, seq, prefix_list=None, set_community=None,
+        match_community=None, set_metric=None, set_weight=None,
+        set_as_path_prepend=None, local_preference=None,
+        match_as_path=None, continue_id=None):
+    """ Configures route-map on device
+        Args:
+            device('obj'): device to configure on
+            route_map('list'): route-map
+            seq ('int'): sequence number
+            prefix_list ('str'): prefix-list value
+            set_community ('int'): set community value
+            match_community ('int'): match community value
+            set_as_path ('int') : set as-path values
+            set_metric ('int'): set metric value
+            set_weight ('int'): set weight value
+            set_as_path_prepend ('int'): set aspat prepend value
+            local_preference ('int'): set local preference value
+            match_as_path ('int'): set as path value
+           continue_id ('int'): set continue id value
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring route map
+    """
+    cmd = [f"route-map {route_map} permit {seq}"]
+    if prefix_list:
+        cmd.append(f"match ip address prefix-list {prefix_list}")
+    if match_community:
+        cmd.append(f"match community {match_community}")
+    if set_community:
+        cmd.append(f"set community {set_community}")
+    if set_metric:
+        cmd.append(f"set metric {set_metric}")
+    if set_weight:
+        cmd.append(f"set weight {set_weight}")
+    if set_as_path_prepend:
+        cmd.append(f"set as-path prepend {set_as_path_prepend}")
+    if local_preference:
+        cmd.append(f"set local-preference {local_preference}")
+    if match_as_path:
+        cmd.append(f"match as-path {match_as_path}")
+    if continue_id:
+        cmd.append(f"continue {continue_id}")
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to execute configuration command on device{device}. Error:\n{error}"
+            .format(device=device, error=e))
+
+
+def unconfigure_route_map_permit(
+        device, route_map, seq, prefix_list=None, set_community=None,
+        match_community=None, set_metric=None, set_weight=None,
+        set_as_path_prepend=None, local_preference=None,
+        match_as_path=None, continue_id=None):
+    """ unconfigures route-map on device
+        Args:
+            device('obj'): device to configure on
+            route_map('list'): route-map
+            seq ('int'): sequence number
+            prefix_list ('str'): prefix-list value
+            set_community ('int'): set community value
+            match_community ('int'): match community value
+            set_as_path ('int') : set as-path values
+            set_metric ('int'): set metric value
+            set_weight ('int'): set weight value
+            set_as_path_prepend ('int'): set aspat prepend value
+            local_preference ('int'): set local preference value
+            match_as_path ('int'): set as path value
+           continue_id ('int'): set continue id value
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed unconfigure route map
+    """
+    cmd = [f"route-map {route_map} permit {seq}"]
+    if prefix_list:
+        cmd.append(f"no match ip address prefix-list {prefix_list}")
+    if match_community:
+        cmd.append(f"no match community {match_community}")
+    if set_community:
+        cmd.append(f"no set community {set_community}")
+    if set_metric:
+        cmd.append(f"no set metric {set_metric}")
+    if set_weight:
+        cmd.append(f"no set weight {set_weight}")
+    if set_as_path_prepend:
+        cmd.append(f"no set as-path prepend {set_as_path_prepend}")
+    if local_preference:
+        cmd.append(f"no set local-preference {local_preference}")
+    if match_as_path:
+        cmd.append(f"no match as-path {match_as_path}")
+    if continue_id:
+        cmd.append(f"no continue {continue_id}")
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfigure route_map on device{device}. Error:\n{error}"
+            .format(device=device, error=e))

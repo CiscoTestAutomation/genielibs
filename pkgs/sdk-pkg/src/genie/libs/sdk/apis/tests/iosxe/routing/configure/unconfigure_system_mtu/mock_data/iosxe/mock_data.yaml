@@ -1,0 +1,38 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    no system mtu 9216: "no system mtu 9216\r\nGlobal Ethernet MTU is set to 1500\
+      \ bytes.\r\nNote: this is the Ethernet payload size, not the total\r\nEthernet\
+      \ frame size, which includes the Ethernet\r\nheader/trailer and possibly other\
+      \ tags, such as ISL or\r\n802.1q tags.\r\n\r\n"
+  prompt: n10SVL(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: n10SVL(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: n10SVL#

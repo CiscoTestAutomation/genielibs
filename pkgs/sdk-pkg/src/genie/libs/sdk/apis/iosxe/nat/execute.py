@@ -156,3 +156,49 @@ def execute_clear_nat64_translations_protocol(device, protocol_name):
     except SubCommandFailure as e:
         log.error(e)
         raise SubCommandFailure("Could not clear nat64 translations protocol {protocol_name} on device")
+
+
+def execute_clear_ip_nat_translation(device, tcp=False, udp=False, forced=False, inside_local_ip=None, 
+    inside_global_ip=None, inside_local_port=None, inside_global_port=None, outside_local_ip=None, 
+    outside_global_ip=None, outside_local_port=None, outside_global_port=None):
+    """ Clear IP NAT Flows
+        Args:
+            device ('obj'): Device object
+            tcp ('bool', optional): clear ip nat tcp. Default to False.
+            udp ('bool', optional): clear ip nat udp. Default to False.
+            forced ('bool', optional): clear ip nat forcefully. Default to False.
+            inside_local_ip ('str', optional): Inside local ip address. Default to None.
+            inside_global_ip ('str', optional): Inside global ip address. Default to None.
+            inside_local_port ('str', optional): Inside local port in case of tcp/udp. Default to None.
+            inside_global_port ('str', optional): Inside global port in case of tcp/udp. Default to None.
+            outside_local_ip ('str', optional): Outside local ip address. Default to None.
+            outside_global_ip ('str', optional): Outside global ip address. Default to None.
+            outside_local_port ('str', optional): Outside local port in case of tcp/udp. Default to None.
+            outside_global_port ('str', optional): Outside global port in case of tcp/udp. Default to None.
+
+        Returns:
+            output
+
+        Raises:
+            SubCommandFailure
+    """
+    cmd = 'clear ip nat translation'
+
+    if tcp:
+        cmd += ' tcp'
+    elif udp:
+        cmd += ' udp'
+    if inside_global_ip:
+        cmd += f' inside {inside_global_ip} {inside_global_port} {inside_local_ip} {inside_local_port}'
+    if outside_local_ip:
+        cmd += f' outside {outside_local_ip} {outside_local_port} {outside_global_ip} {outside_global_port}'
+    if forced:
+        cmd += ' forced'
+    
+    try:
+        out = device.execute(cmd)
+    
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not clear ip nat translation. Error:{e}")
+
+    return out

@@ -4,15 +4,16 @@ configure:
       new_state: execute
     line console 0:
       new_state: configure_line
-    nat64 v6v4 list acl_3 pool n64_pool: "nat64 v6v4 list acl_3 pool n64_pool\r\n"
+    nat64 v6v4 list acl_1 pool pool_1 vrf vrf1: "nat64 v6v4 list acl_1 pool pool_1\
+      \ vrf vrf1\r\n"
     no logging console: ''
-  prompt: Starfleet(config)#
+  prompt: Stargazer(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: Starfleet(config-line)#
+  prompt: Stargazer(config-line)#
 connect:
   commands:
     ? ''
@@ -32,4 +33,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: Starfleet#
+  prompt: Stargazer#

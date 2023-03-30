@@ -1108,7 +1108,7 @@ def verify_tacacs_packet(tacacs_json_dict, verfifydict):
     return final_verify
 
 
-def perform_ssh(device,hostname, ip_address, username, password, vrf=None, enable_pass='lab',timeout=60,port=22):
+def perform_ssh(device,hostname, ip_address, username, password, vrf=None, enable_pass='lab',timeout=60,port=22, hmac=None):
     """
     Restore config from local file using copy function
         Args:
@@ -1123,6 +1123,13 @@ def perform_ssh(device,hostname, ip_address, username, password, vrf=None, enabl
                            default value 60
             vrf (`str1`) : vrf id if applicable
             port (`int`) : port number for ssh i.e 22 for default, 830 for netconf
+            hmac (`str`) : SSHv2 Hmac list:
+                            hmac-sha1-160 hmac-sha1 SHA1 based HMAC(160 bits)
+                            hmac-sha2-256 sha2 based HMAC(256 bits)
+                            hmac-sha2-256-etm@openssh.com sha2 based HMAC-ETM(256 bits)
+                            hmac-sha2-512 sha2 based HMAC(512 bits)
+                            hmac-sha2-512-etm@openssh.com sha2 based HMAC-ETM(512 bits)
+
 
         Returns:
             True : When the connection establishment and termination succeeds
@@ -1151,7 +1158,7 @@ def perform_ssh(device,hostname, ip_address, username, password, vrf=None, enabl
             cli_command = '''
                 <rpc message-id="101"
                              xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
-                          <kill-session> 
+                          <kill-session>  
                             <target>
                               <running/>
                             </target>
@@ -1166,7 +1173,6 @@ def perform_ssh(device,hostname, ip_address, username, password, vrf=None, enabl
     def send_enable(spawn):
         ssh_dict['enable_pass_flag'] = True
         spawn.sendline('enable')
-        # breakpoint
 
     dialog = Dialog([
 
@@ -1188,18 +1194,20 @@ def perform_ssh(device,hostname, ip_address, username, password, vrf=None, enabl
 
     ])
 
-    try:
-        if vrf:
-            device.execute('ssh -l {u} -vrf {vrf} -p {port} {i}'.format(u=username, i=ip_address,vrf=vrf,port=port),
-                        reply=dialog,
-                        prompt_recovery=True,
-                        timeout=timeout)
+    cmd = f'ssh -l {username}'
 
-        else:
-            device.execute('ssh -l {u} -p {port} {i}'.format(u=username, i=ip_address,port=port),
-                        reply=dialog,
-                        prompt_recovery=True,
-                        timeout=timeout)
+    if vrf:
+        cmd += f' -vrf {vrf}'
+
+    cmd += f' -p {port}'
+
+    if hmac:
+        cmd += f' -m {hmac}'
+
+    cmd += f' {ip_address}'
+
+    try:
+        device.execute(cmd, reply=dialog, prompt_recovery=True, timeout=timeout)
 
     except Exception as e:
         log.info(f"Error occurred while performing ssh : {e}")
@@ -1507,7 +1515,7 @@ def perform_telnet(device, hostname, ip_address, username, password, vrf=None, e
                       loop_continue=True),
             Statement(pattern=r""+hostname+">",
                       action=send_enable,
-                      loop_continue=False),
+                      loop_continue=True),
             Statement(pattern=r""+hostname+"#",
                       action=telnet_pass_case,
                       loop_continue=False),

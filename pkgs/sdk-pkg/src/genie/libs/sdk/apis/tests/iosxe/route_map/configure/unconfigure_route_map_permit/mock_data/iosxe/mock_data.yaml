@@ -1,0 +1,41 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no continue 20: "no continue 20\r\n"
+    no logging console: ''
+    no match as-path 12: "no match as-path 12\r\n"
+    no set as-path prepend 45000: "no set as-path prepend 45000\r\n"
+    no set local-preference 500: "no set local-preference 500\r\n"
+    no set metric 30: "no set metric 30\r\n"
+    no set weight 100: "no set weight 100\r\n"
+    route-map internal permit 10: "route-map internal permit 10\r\n"
+  prompt: stack3-nyquist-1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: stack3-nyquist-1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: stack3-nyquist-1#

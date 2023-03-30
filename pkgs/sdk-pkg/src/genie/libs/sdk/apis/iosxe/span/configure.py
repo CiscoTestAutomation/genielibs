@@ -141,3 +141,53 @@ def unconfigure_local_span_destination_interface(device, session_id, int_type, s
         raise SubCommandFailure(
             "Could not configure local_span_destination interface. Error:\n{error}".format(error=e)
         )
+
+def configure_local_span_filter(device, session_id, access_control_rule, access_list='', vlan_id=''):
+    """ Configure local span filter
+        Args:
+            device (`obj`): Device object
+            session_id ('int'): SPAN session number
+            access_control_rule('str'): SPAN filter access control rule (eg. ip,ipv6,mac,vlan)
+            access_list('str',optional): The name of access control list
+            vlan_id('int', optional): SPAN source vlan number (eg. 1-4094)
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring local span filter.
+    """
+    if access_control_rule in ('ip', 'ipv6', 'mac', 'vlan'):
+        if vlan_id:
+            cmd = f"monitor session {session_id} filter {access_control_rule} {vlan_id}"
+        elif access_list:
+            cmd = f"monitor session {session_id} filter {access_control_rule} access-group {access_list}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure local span filter. Error:\n{e}"
+        )
+
+def unconfigure_local_span_filter(device, session_id, access_control_rule, access_list='', vlan_id=''):
+    """ Unconfigure local span filter
+        Args:
+            device (`obj`): Device object
+            session_id ('int'): SPAN session number
+            access_control_rule('str'): SPAN filter access control rule (eg. ip,ipv6,mac,vlan)
+            access_list('str'): The name of access control list
+            vlan_id('int', optional): SPAN source vlan number (eg. 1-4094)
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed unconfiguring local span filter
+    """
+    if access_control_rule in ('ip', 'ipv6', 'mac', 'vlan'):
+        if vlan_id:
+            cmd = f"no monitor session {session_id} filter {access_control_rule} {vlan_id}"
+        elif access_list:
+            cmd = f"no monitor session {session_id} filter {access_control_rule} access-group {access_list}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure local span filter. Error:\n{e}"
+        )

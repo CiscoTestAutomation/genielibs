@@ -87,7 +87,7 @@ def configure_ipv6_pim_bsr_candidate_bsr(device, ipv6_address, candidate_filter=
 
 def configure_ipv6_pim_bsr_candidate_rp(device, ipv6_address, group_list=None, priority=None,
                                         interval=None, scope=None, bidir=False, vrf=None):
-    """ Configure ipv6 pim candidate rp 
+    """ Configure ipv6 pim candidate rp
     Args:
         device ('obj'): Device object
         ipv6_address ('str'): ipv6_address for candidate
@@ -100,7 +100,7 @@ def configure_ipv6_pim_bsr_candidate_rp(device, ipv6_address, group_list=None, p
     Returns:
         None
     Raises:
-        SubCommandFailure : Failed to configure ipv6 pim candidate rp 
+        SubCommandFailure : Failed to configure ipv6 pim candidate rp
     """
 
     log.info(f"Configure ipv6 pim candidate rp")
@@ -117,7 +117,7 @@ def configure_ipv6_pim_bsr_candidate_rp(device, ipv6_address, group_list=None, p
         cmd += f" priority {priority}"
     if bidir:
         cmd += " bidir"
-        
+
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -132,7 +132,7 @@ def config_rp_address(device, vrf, ip_address):
         Args:
             device (`obj`): Device object
             vrf (`str`): VRF name
-            ip_address (`str`): IP address of the group-range 
+            ip_address (`str`): IP address of the group-range
         Return:
             None
         Raise:
@@ -179,7 +179,7 @@ def config_multicast_routing_mvpn_vrf(device, vrf):
                 error=e,
             )
         )
-    
+
 def configure_igmp_version(device, interface, version):
     """configures the IGMP version that the switch uses on interfaces.
 
@@ -206,7 +206,7 @@ def configure_igmp_version(device, interface, version):
                 error=e,
             )
         )
-        
+
 def unconfigure_igmp_version(device, interface, version):
     """configures the IGMP version that the switch uses on interfaces.
 
@@ -233,7 +233,7 @@ def unconfigure_igmp_version(device, interface, version):
                 error=e,
             )
         )
-        
+
 def configure_ip_pim_vrf_ssm_default(device, vrf):
     """configure ip pim vrf ssm default on device.
         Args:
@@ -315,7 +315,7 @@ def config_standard_acl_for_ip_pim(
                     vrf=vrf, rp_address=rp_address, acl_name=acl_name))
     else:
         configs.append("ip pim vrf {vrf} rp-address {rp_address} {acl_name}".format(
-                    vrf=vrf, rp_address=rp_address, acl_name=acl_name))   
+                    vrf=vrf, rp_address=rp_address, acl_name=acl_name))
     try:
         device.configure(configs)
     except SubCommandFailure as e:
@@ -326,7 +326,7 @@ def config_standard_acl_for_ip_pim(
                 error=e,
             )
         )
-        
+
 def unconfig_standard_acl_for_ip_pim(
         device,
         acl_name,
@@ -620,14 +620,14 @@ def configure_ip_pim_bsr_candidate(device, interface, mask_length):
             mask_length('int'): Hash Mask length for RP selection
         Returns:
             None
-        Raises: 
+        Raises:
             SubCommandFailure : Failed to configure ip pim bsr-candidate on interface
     """
 
     log.debug(f"Configure ip pim bsr-candidate on interface {interface}")
-    
+
     cmd = f"ip pim bsr-candidate {interface} {mask_length}"
-    
+
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -643,14 +643,14 @@ def configure_ip_pim_rp_candidate_priority(device, interface, priority_value):
             priority_value('int'): priority value to be set
         Returns:
             None
-        Raises: 
+        Raises:
             SubCommandFailure : Failed to configure ip pim rp-candidate priority on device
     """
 
     log.debug(f"Configure ip pim rp-candidate priority on device")
-    
+
     cmd = f"ip pim rp-candidate {interface} priority {priority_value}"
-    
+
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -665,11 +665,11 @@ def configure_ip_igmp_snooping_tcn_flood(device, query_count):
         Args:
             device ('obj'): device to use
             query_count ('int'): number of multicast traffic queries (1-10)
-        
+
         Returns:
             None
-        
-        Raises: 
+
+        Raises:
             SubCommandFailure
     """
     log.info("configuring flood query count on ip igmp snooping tcn on {device}".format(
@@ -692,14 +692,14 @@ def configure_ip_igmp_snooping_tcn_flood(device, query_count):
 def unconfigure_ip_igmp_snooping_tcn_flood(device):
     """ Unconfigures flood query count to IGMP snooping TCN behavior
         Example : no ip igmp snooping tcn flood query count
-        
+
         Args:
             device ('obj'): device to use
-        
+
         Returns:
             None
-        
-        Raises: 
+
+        Raises:
             SubCommandFailure
     """
     log.info("unconfiguring ip igmp snooping tcn flood query count on {device}".format(
@@ -721,15 +721,15 @@ def unconfigure_ip_igmp_snooping_tcn_flood(device):
 def configure_ip_igmp_snooping_last_member_query_interval(device, time):
     """ Configures the IGMP last-member query interval on an interface
         Example : ip igmp snooping last-member-query-interval 1500
-        
+
         Args:
             device ('obj'): device to use
             time ('int'): interval, in milliseconds, at which host query messages are sent (100-25500)
-        
+
         Returns:
             None
-        
-        Raises: 
+
+        Raises:
             SubCommandFailure
     """
     log.info("configuring IGMP last-member query interval on {device}".format(
@@ -752,14 +752,14 @@ def configure_ip_igmp_snooping_last_member_query_interval(device, time):
 def unconfigure_ip_igmp_snooping_last_member_query_interval(device):
     """ Restore the default IGMP query interval on an interface
         Example : no ip igmp snooping last-member-query-interval
-        
+
         Args:
             device ('obj'): device to use
-        
+
         Returns:
             None
-        
-        Raises: 
+
+        Raises:
             SubCommandFailure
     """
     log.info("Restoring default query interval on {device}".format(
@@ -783,7 +783,7 @@ def configure_ipv6_mld_vlan_immediate_leave(device, id):
     """ Configure Enable IPv6 mld vlan immediate leave
     Args:
         device (`obj`): Device object
-        id ('int'): VLAN ID 
+        id ('int'): VLAN ID
     Return:
         None
     Raise:
@@ -799,10 +799,10 @@ def configure_ipv6_mld_vlan_immediate_leave(device, id):
         )
 
 def unconfigure_ipv6_mld_vlan_immediate_leave(device, id):
-    """ Unconfigure Enable IPv6 mld vlan immediate leave 
+    """ Unconfigure Enable IPv6 mld vlan immediate leave
     Args:
         device (`obj`): Device object
-        id ('int'): VLAN ID 
+        id ('int'): VLAN ID
     Return:
         None
     Raise:
@@ -819,10 +819,10 @@ def unconfigure_ipv6_mld_vlan_immediate_leave(device, id):
 
 
 def configure_ipv6_mld_vlan(device, id):
-    """ Configure Enable IPv6 mld vlan 
+    """ Configure Enable IPv6 mld vlan
     Args:
         device (`obj`): Device object
-        id ('int'): VLAN ID 
+        id ('int'): VLAN ID
     Return:
         None
     Raise:
@@ -838,10 +838,10 @@ def configure_ipv6_mld_vlan(device, id):
         )
 
 def unconfigure_ipv6_mld_vlan(device, id):
-    """ Unconfigure Enable IPv6 mld vlan 
+    """ Unconfigure Enable IPv6 mld vlan
     Args:
         device (`obj`): Device object
-        id ('int'): VLAN ID 
+        id ('int'): VLAN ID
     Return:
         None
     Raise:
@@ -858,10 +858,10 @@ def unconfigure_ipv6_mld_vlan(device, id):
 
 
 def configure_ipv6_pim_rp_address(device, address):
-    """ Configure Enable ipv6 pim rp-address 
+    """ Configure Enable ipv6 pim rp-address
     Args:
         device (`obj`): Device object
-        address ('str'): rp address  
+        address ('str'): rp address
     Return:
         None
     Raise:
@@ -877,7 +877,7 @@ def configure_ipv6_pim_rp_address(device, address):
         )
 
 def unconfigure_ipv6_pim_rp_address(device, address):
-    """ Unconfigure Enable ipv6 pim rp-address 
+    """ Unconfigure Enable ipv6 pim rp-address
     Args:
         device (`obj`): Device object
         address ('str'): ipv6 address
@@ -896,11 +896,11 @@ def unconfigure_ipv6_pim_rp_address(device, address):
         )
 
 def configure_ipv6_mld_join_group(device, address, interface_id):
-    """ Configure Enable ipv6 mld join-group 
+    """ Configure Enable ipv6 mld join-group
     Args:
         device (`obj`): Device object
-        address ('str'): ipv6 address  
-        interface_id ('str'): id of the interface to be configured 
+        address ('str'): ipv6 address
+        interface_id ('str'): id of the interface to be configured
     Return:
         None
     Raise:
@@ -918,11 +918,11 @@ def configure_ipv6_mld_join_group(device, address, interface_id):
             "Could not configure ipv6 mld join-group  {address}. Error:\n{error}".format(address=address, error=e)
         )
 def unconfigure_ipv6_mld_join_group(device, address, interface_id):
-    """ Unconfigure Enable ipv6 mld join-group 
+    """ Unconfigure Enable ipv6 mld join-group
     Args:
         device (`obj`): Device object
-        address ('str'): ipv6 address  
-        interface_id ('str'): id of the interface to be configured 
+        address ('str'): ipv6 address
+        interface_id ('str'): id of the interface to be configured
     Return:
         None
     Raise:
@@ -944,8 +944,8 @@ def configure_ipv6_mld_snooping_vlan_static_interface(device, vlan_id, address, 
     """ Configure Enable ipv6 mld snooping vlan static interfac
     Args:
         device (`obj`): Device object
-        address ('str'): ipv6 address  
-        interface_id ('str'): id of the interface to be configured 
+        address ('str'): ipv6 address
+        interface_id ('str'): id of the interface to be configured
     Return:
         None
     Raise:
@@ -964,8 +964,8 @@ def unconfigure_ipv6_mld_snooping_vlan_static_interface(device, vlan_id, address
     """ Unconfigure Enable ipv6 mld snooping vlan static interfac
     Args:
         device (`obj`): Device object
-        address ('str'): ipv6 address  
-        interface_id ('str'): id of the interface to be configured 
+        address ('str'): ipv6 address
+        interface_id ('str'): id of the interface to be configured
     Return:
         None
     Raise:
@@ -1021,7 +1021,7 @@ def configure_clear_ipv6_mld_counters(device):
 
 
 def configure_ip_igmp_ssm_map_enable(device):
-    """ Configure ip igmp ssm-map enable 
+    """ Configure ip igmp ssm-map enable
     Args:
         device (`obj`): Device object
     Return:
@@ -1038,11 +1038,11 @@ def configure_ip_igmp_ssm_map_enable(device):
         )
 
 def configure_ip_igmp_snooping_vlan_mrouter_interface(device, vlan_id, interface_id):
-    """ Configure ip igmp snooping vlan mrouter interface 
+    """ Configure ip igmp snooping vlan mrouter interface
     Args:
         device (`obj`): Device object
-        vlan_id ('int'): vlan id 
-        interfac_id ('str'): interface id 
+        vlan_id ('int'): vlan id
+        interfac_id ('str'): interface id
     Return:
         None
     Raise:
@@ -1057,7 +1057,7 @@ def configure_ip_igmp_snooping_vlan_mrouter_interface(device, vlan_id, interface
         )
 
 def configure_debug_ip_pim(device):
-    """ Configure debug ip pim 
+    """ Configure debug ip pim
         Args:
             device (`obj`): Device object
         Returns:
@@ -1074,12 +1074,12 @@ def configure_debug_ip_pim(device):
         )
 
 def configure_ip_igmp_snooping_vlan_static_ipaddr_interface(device, vlan_id, ip_add, interface_name, port):
-    """ Configure ip igmp snooping vlan static ipaddr interface 
+    """ Configure ip igmp snooping vlan static ipaddr interface
     Args:
         device (`obj`): Device object
-        vlan_id ('int'): vlan id 
+        vlan_id ('int'): vlan id
         ip_add ('str'):  ip address
-        interface_name ('str'): the name of interface 
+        interface_name ('str'): the name of interface
         port ('int'): port number
     Return:
         None
@@ -1095,10 +1095,10 @@ def configure_ip_igmp_snooping_vlan_static_ipaddr_interface(device, vlan_id, ip_
         )
 
 def configure_ip_igmp_snooping_vlan_mrouter_learn_pim_dvmrp(device, vlan_id):
-    """ Configure ip igmp snooping vlan mrouter learn pim-dvmrp 
+    """ Configure ip igmp snooping vlan mrouter learn pim-dvmrp
     Args:
         device (`obj`): Device object
-        vlan_id ('int'): vlan id 
+        vlan_id ('int'): vlan id
 
     Return:
         None
@@ -1125,7 +1125,7 @@ def configure_ip_igmp_static_group(device, interface, group_address):
         Returns:
             None
 
-        Raises: 
+        Raises:
             SubCommandFailure
     """
     log.info(f"Configuring ip igmp static-group on {device.name}")
@@ -1138,7 +1138,7 @@ def configure_ip_igmp_static_group(device, interface, group_address):
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure ip igmp static-group on device {device.name}. Error:\n{e}")
 
-def configure_ip_igmp_join_group(device, interface, group_address, source_address=""):
+def configure_ip_igmp_join_group_source(device, interface, group_address, source_address=""):
     """ Configures ip igmp join-group to an vlan interface
         Example : ip igmp join-group 239.100.100.101 source 4.4.4.4
 
@@ -1151,7 +1151,7 @@ def configure_ip_igmp_join_group(device, interface, group_address, source_addres
         Returns:
             None
 
-        Raises: 
+        Raises:
             SubCommandFailure
     """
     log.info(f"Configuring ip igmp join-group on {device.name}")
@@ -1160,7 +1160,7 @@ def configure_ip_igmp_join_group(device, interface, group_address, source_addres
         config.append(f"ip igmp join-group {group_address} source {source_address}")
     else:
         config.append(f"ip igmp join-group {group_address}")
-    
+
     try:
         device.configure(config)
     except SubCommandFailure as e:
@@ -1184,7 +1184,7 @@ def configure_ip_igmp_ssmmap_static(device, acl_name, source_address):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not configure ip igmp ssm-map static {acl_name} {source_address}. Error:\n{e}")
-        
+
 def configure_ip_igmp_ssm_map(device):
     """ Configures ip igmp ssm-map
         Example : ip igmp ssm-map enable
@@ -1193,7 +1193,7 @@ def configure_ip_igmp_ssm_map(device):
             device ('obj'): device to use
         Returns:
             None
-        Raises: 
+        Raises:
             SubCommandFailure
     """
     log.info(f"Configuring ip igmp ssm-map on {device.name}")
@@ -1211,7 +1211,7 @@ def unconfigure_ip_igmp_ssm_map(device):
             device ('obj'): device to use
         Returns:
             None
-        Raises: 
+        Raises:
             SubCommandFailure
     """
     log.info(f"Unconfiguring ip igmp ssm-map on {device.name}")
@@ -1229,7 +1229,7 @@ def configure_ip_igmp_ssm_map_query_dns(device):
             device ('obj'): device to use
         Returns:
             None
-        Raises: 
+        Raises:
             SubCommandFailure
     """
     log.info(f"Configuring ip igmp ssm-map query dns on {device.name}")
@@ -1247,7 +1247,7 @@ def unconfigure_ip_igmp_ssm_map_query_dns(device):
             device ('obj'): device to use
         Returns:
             None
-        Raises: 
+        Raises:
             SubCommandFailure
     """
     log.info(f"Unconfiguring ip igmp ssm-map query dns on {device.name}")
@@ -1265,7 +1265,7 @@ def enable_ip_igmp_snooping_report_suppression(device):
             device ('obj'): device to use
         Returns:
             None
-        Raises: 
+        Raises:
             SubCommandFailure
     """
     log.info(f"Enabling igmp report-suppression on {device.name}")
@@ -1282,7 +1282,7 @@ def disable_ip_igmp_snooping_report_suppression(device):
             device ('obj'): device to use
         Returns:
             None
-        Raises: 
+        Raises:
             SubCommandFailure
     """
     log.info(f"Disabling igmp report-suppression on {device.name}")
@@ -1428,7 +1428,7 @@ def unconfigure_ip_pim_rp_address(device, ip_address, option):
         raise SubCommandFailure(
             "Failed to unconfigure ip pim rp-address {device.name}. Error:\n{e}")
 
-def unconfigure_ip_igmp_join_group(device, interface, group_address, source_address=""):
+def unconfigure_ip_igmp_join_group_source(device, interface, group_address, source_address=""):
     """ unconfigures ip igmp join-group to an vlan interface
         Example : ip igmp join-group 239.100.100.101 source 4.4.4.4
         Args:
@@ -1438,7 +1438,7 @@ def unconfigure_ip_igmp_join_group(device, interface, group_address, source_addr
             source_address ('str', optional): IP source address
         Returns:
             None
-        Raises: 
+        Raises:
             SubCommandFailure
     """
     log.info(f"Unconfiguring ip igmp join-group on {device.name}")
@@ -1447,8 +1447,312 @@ def unconfigure_ip_igmp_join_group(device, interface, group_address, source_addr
         config.append(f"no ip igmp join-group {group_address} source {source_address}")
     else:
         config.append(f"no ip igmp join-group {group_address}")
-    
+
     try:
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure ip igmp join-group on device {device.name}. Error:\n{e}")
+
+
+def configure_ipv6_mld_snooping_enhance(device, variable_number=None, interval=None,
+                                query=None, flood=None, flood_count=None ):
+    """ Configure Enable IPv6 mld snooping
+    Args:
+        device ('obj'): Device object
+        variable_number ('int', optional): variabl number value range <1-3>  Robustness Variable number
+        interval ('int', optional): inverval value range , <100-32768>  Last listener query interval
+        query  ('str', optional): yes/no to enable the command
+        flood ('int', optional): flood value range from
+        flood_count ('int', optional): flood count value range  1-10
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+
+    cmd = f"ipv6 mld snooping "
+
+    if variable_number:
+        cmd += f"robustness-variable {variable_number}"
+    if interval:
+        cmd += f"last-listener-query-interval {interval}"
+    if query:
+        cmd += f"tcn query solicit"
+    if flood:
+        cmd += f"tcn flood query count {flood_count}"
+
+    try:
+         device.configure(cmd)
+    except SubCommandFailure as e:
+         raise SubCommandFailure(
+             "Failed to configure IPv6 mld snooping on device {dev}. Error:\n{error}".format(dev=device.name, error=e))
+
+
+def unconfigure_ipv6_mld_snooping_enhance(device, variable_number=None, interval=None,
+                                query=None, flood=None, flood_count=None ):
+    """ unconfigure IPv6 mld snooping
+    Args:
+        device ('obj'): Device object
+        variable_number ('int', optional): variabl number value range <1-3>  Robustness Variable number
+        interval ('int', optional): inverval value range , <100-32768>  Last listener query interval
+        query  ('str', optional): yes/no to enable the command
+        flood ('int', optional): flood value range from
+        flood_count ('int', optional): flood count value range  1-10
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed unconfigure
+    """
+    cmd = f"no ipv6 mld snooping "
+
+    if variable_number:
+        cmd += f"robustness-variable {variable_number}"
+    if interval:
+        cmd += f"last-listener-query-interval {interval}"
+    if query:
+        cmd += f"tcn query solicit"
+    if flood:
+        cmd += f"tcn flood query count {flood_count}"
+
+    try:
+         device.configure(cmd)
+    except SubCommandFailure as e:
+         raise SubCommandFailure(
+             "Failed to unconfigure IPv6 mld snooping on device {dev}. Error:\n{error}".format(dev=device.name, error=e))
+
+
+def configure_ip_pim_ssm(device, range=None):
+    """configure ip pim ssm default on device.
+        Args:
+            device ('obj'): Device object
+            range ('str'): Access list number or  IP named access list
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring interface
+    """
+    log.info("configuring ip pim ssm on {device}".format(device=device.name))
+    if range==None:
+        configs ="ip pim ssm default"
+    else:
+        configs = "ip pim ssm range {range}".format(range=range)
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(
+            "Failed to configure ip pim ssm on device {dev}. Error:\n{error}".format(dev=device.name,error=e))
+
+
+def unconfigure_ip_pim_ssm(device):
+    """unconfigure ip pim ssm default on device.
+        Args:
+            device ('obj'): Device object
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed unconfigure ip pim
+    """
+    log.info("unconfiguring ip pim ssm on {device}".format(device=device.name))
+    configs ="no ip pim ssm"
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(
+            "Failed to unconfigure ip pim ssm on {dev} . Error:\n{error}".format(dev=device.name,error=e))
+
+
+def unconfigure_ip_igmp_snooping_vlan_mrouter_interface(device, vlan_id, interface_id):
+    """ unconfigure ip igmp snooping vlan mrouter interface
+    Args:
+        device ('obj'): Device object
+        vlan_id ('int'): vlan id
+        interfac_id ('str'): interface id
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    cmd = f"no ip igmp snooping vlan {vlan_id} mrouter interface {interface_id}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure ip igmp snooping vlan mrouter interface. Error:\n{error}".format(error=e)
+        )
+
+def configure_ipv6_mld_access_group(device, interface=None, groupe_name=None):
+    """ Configure ipv6 mld  access_group
+    Args:
+        device ('obj'): Device object
+        interface ('int', optional): interface to configure
+        groupe_name ('str', optional): Named access list specifying access group range
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    cmd = []
+
+    if interface:
+        cmd.append(f"int {interface}")
+        cmd.append(f"ipv6 mld access-group {groupe_name}")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure ipv6 mld access-group on device. Error:\n{e}")
+
+def unconfigure_ipv6_mld_access_group(device, interface=None, groupe_name=None):
+    """ unconfigure ipv6 mld  access_group
+    Args:
+        device ('obj'): Device object
+        interface ('int', optional): interface to configure
+        groupe_name ('str', optional): Named access list specifying access group range
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed unonfiguring
+    """
+    cmd = []
+
+    if interface:
+        cmd.append(f"int {interface}")
+        cmd.append(f"no ipv6 mld access-group {groupe_name}")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure ipv6 mld access-group on device. Error:\n{e}")
+
+def unconfigure_ipv6_pim_bsr_candidate_bsr(device, ipv6_address, vrf=None):
+    """ Unconfigure ipv6 pim candidate bsr
+    Args:
+        device ('obj'): Device object
+        ipv6_address ('str'): ipv6_address for candidate
+        vrf ('str', optional): vrf name
+    Returns:
+        None
+    Raises:
+        SubCommandFailure : Failed to unconfigure ipv6 pim candidate bsr
+    """
+
+    log.info(f"Unconfigure ipv6 pim candidate bsr")
+
+    if vrf:
+        cmd = f"no ipv6 pim vrf {vrf} bsr candidate bsr {ipv6_address}"
+    else:
+        cmd = f"no ipv6 pim bsr candidate bsr {ipv6_address}"
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure ipv6 pim candidate bsr, Error:\n{e}"
+        )
+
+
+def unconfigure_ipv6_pim_bsr_candidate_rp(device, ipv6_address, vrf=None):
+    """ Configure ipv6 pim candidate rp
+    Args:
+        device ('obj'): Device object
+        ipv6_address ('str'): ipv6_address for candidate
+        vrf ('str', optional): vrf name
+    Returns:
+        None
+    Raises:
+        SubCommandFailure : Failed to configure ipv6 pim candidate rp
+    """
+
+    log.info(f"Unconfigure ipv6 pim candidate rp")
+
+    if vrf:
+        cmd = f"no ipv6 pim vrf {vrf} bsr candidate rp {ipv6_address}"
+    else:
+        cmd = f"no ipv6 pim bsr candidate rp {ipv6_address}"
+
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure ipv6 pim candidate rp, Error:\n{e}"
+        )
+
+
+def config_pim_acl(device, acl_name):
+    """ Configure ipv6 pim access-list
+    Args:
+        device ('obj'): Device object
+        acl_name('str'): Standard access-list name
+    Returns:
+        None
+    Raises:
+        SubCommandFailure : Failed to configure ipv6 pim accept-register list acl_name
+    Example:
+        device.api.config_pim_acl(acl_name="ssm_source")
+    """
+
+    log.info(f"Configure ipv6 pim accept-register list acl_name")
+
+    cmd = f"ipv6 pim accept-register list {acl_name}"
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure ipv6 pim accept-register list acl_name, Error:\n{e}"
+        )
+
+def unconfig_pim_acl(device, acl_name):
+    """ Unconfigure ipv6 pim access-list
+    Args:
+        device ('obj'): Device object
+        acl_name('str'): Standard access-list name
+    Returns:
+        None
+    Raises:
+        SubCommandFailure : Failed to unconfigure ipv6 pim accept-register list acl_name
+    Example:
+        device.api.unconfig_pim_acl(acl_name="ssm_source")
+    """
+
+    log.info(f"Unconfigure ipv6 pim accept-register list acl_name")
+
+    cmd = f"no ipv6 pim accept-register list {acl_name}"
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure ipv6 pim accept-register list acl_name, Error:\n{e}"
+        )
+
+
+def configure_ipv6_mld_join_group_acl(device, address, interface_id, acl_name):
+    """ Configure Enable ipv6 mld join-group
+    Args:
+        device (`obj`): Device object
+        address ('str'): ipv6 address
+        interface_id ('str'): id of the interface to be configured
+        acl_name('str): acl_name
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    Example:
+        device.api.configure_ipv6_mld_join_group_acl(address="FF3E:6::1",interface_id="Loopback1",acl_name="ssm_source")
+    """
+    cmd = [
+            f"interface {interface_id}",
+            f"ipv6 mld join-group {address} source-list {acl_name}",
+          ]
+    try:
+        device.configure(cmd)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure ipv6 mld join-group {address} source-list {acl_name}. Error:\n{error}".format(address=address, acl_name=acl_name,error=e)
+        )
+

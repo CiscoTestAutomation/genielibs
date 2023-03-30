@@ -1,0 +1,40 @@
+configure:
+  commands:
+    address ipv4 20.20.20.2 auth-port 1812 acct-port 1813: "address ipv4 20.20.20.2\
+      \ auth-port 1812 acct-port 1813\r\n"
+    dscp acct 10: "dscp acct 10\r\n"
+    dscp auth 20: "dscp auth 20\r\n"
+    end:
+      new_state: execute
+    key Cisco: "key Cisco\r\n"
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    radius server ISE2.7: "radius server ISE2.7\r\n"
+  prompt: n08HA(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: n08HA(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: n08HA#

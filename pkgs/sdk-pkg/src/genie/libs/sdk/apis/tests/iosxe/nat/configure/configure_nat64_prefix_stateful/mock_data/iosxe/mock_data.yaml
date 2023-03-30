@@ -2,10 +2,15 @@ configure:
   commands:
     end:
       new_state: execute
-    interface TenGigabitEthernet1/2/0/35: "interface TenGigabitEthernet1/2/0/35\r\n"
     line console 0:
       new_state: configure_line
-    nat64 prefix stateful 2010:1::/96: "nat64 prefix stateful 2010:1::/96\r\n"
+    nat64 prefix stateful 2002:0001:0000:0000:0000:0000:0000:0000/96 vrf vrf1: "nat64\
+      \ prefix stateful 2002:0001:0000:0000:0000:0000:0000:00\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b$x stateful 2002:0001:0000:0000:0000:0000:0000:000     \
+      \    \b\b\b\b\b\b\b\b\b0/96 vrf \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b 2002:0001:0000:0000:0000:0000:0000:0000/96\
+      \ vrf v         \b\b\b\b\b\b\b\b\brf1\r\n"
     no logging console: ''
   prompt: Stargazer(config)#
 configure_line:

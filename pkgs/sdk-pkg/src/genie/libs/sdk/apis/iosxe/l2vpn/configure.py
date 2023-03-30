@@ -135,3 +135,43 @@ def unconfigure_l2vpn_vfi_context_vpls(device):
             dev=device.name, e=str(e)
             )
         )
+
+def configure_evpn_instance_vlan_based_flood_suppression(device, instance):
+    """ Configuring l2vpn evpn instance vlan based flooding-suppression address-resolution disable
+        Args:
+            device ('obj'): Device object
+            instance ('int'): instance number
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config = ["l2vpn evpn instance {} vlan-based".format(instance),
+              "encapsulation vxlan",
+              "flooding-suppression address-resolution disable"]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        log.error("Configuration failed for flooding-suppression address-resolution disable"
+            "of instance: {} with exception:\n{}".format(instance, str(e))
+        )
+
+def unconfigure_evpn_instance_vlan_based_flood_suppression(device, instance):
+    """ Un-Configuring l2vpn evpn instance vlan based flooding-suppression address-resolution disable
+        Args:
+            device ('obj'): Device object
+            instance ('int'): instance number
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config = ["l2vpn evpn instance {} vlan-based".format(instance),
+              "encapsulation vxlan",
+              "no flooding-suppression address-resolution disable"]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        log.error("Failed to un-configure flooding-suppression address-resolution disable"
+            "of instance: {} with exception:\n{}".format(instance, str(e))
+        )

@@ -139,7 +139,7 @@ def configure_bgp_neighbor(
         cmd.append(cmd2)
 
     cmd.append("neighbor {neighbor_address} remote-as {neighbor_as}".format(
-        neighbor_address=neighbor_address, 
+        neighbor_address=neighbor_address,
         neighbor_as=neighbor_as))
 
     if source_interface:
@@ -226,7 +226,7 @@ def configure_prefix_list_prefix_list_to_bgp_neighbor(
                     'prefix_list': prefix,
                     'direction': direction
                 }]
-            ex.) 
+            ex.)
                 [
                     {
                         'neighbor': '192.168.1.4',
@@ -291,7 +291,7 @@ def configure_maximum_prefix_to_bgp_neighbor(
                     'neighbor': neighbor address,
                     'maximum_prefix': maximum prefix number
                 }]
-            ex.) 
+            ex.)
                 [
                     {
                         'neighbor': '192.168.1.6,
@@ -372,7 +372,7 @@ def configure_route_map_route_map_to_bgp_neighbor(
                         'route_map': 'community_test_in',
                         'direction': 'in'
                     },
-         
+
        ]
         Returns:
             N/A
@@ -432,9 +432,9 @@ def configure_route_map_route_map_to_bgp_neighbor(
 
 
 def configure_bgp_neighbor_activate(
-    device, address_family, bgp_as, neighbor_address, steps=Steps(), 
+    device, address_family, bgp_as, neighbor_address, steps=Steps(),
     peer_policy=None, vrf=None):
-    """ Activate bgp neighbor on bgp router 
+    """ Activate bgp neighbor on bgp router
 
         Args:
             device ('obj')             : Device to be configured
@@ -448,7 +448,7 @@ def configure_bgp_neighbor_activate(
             N/A
         Raises:
             SubCommandFailure: Failed executing configure commands
-            
+
     """
     with steps.start(
         "Configure device {dev}".format(dev=device.name), continue_=True
@@ -463,7 +463,7 @@ def configure_bgp_neighbor_activate(
         if peer_policy:
             cnfg.append(
                 "neighbor {neighbor_address} inherit peer-policy {peer_policy}"\
-                    .format(neighbor_address=neighbor_address, 
+                    .format(neighbor_address=neighbor_address,
                             peer_policy=peer_policy))
         try:
             device.configure(cnfg)
@@ -487,14 +487,14 @@ def configure_inherit_peer_session(
             N/A
         Raises:
             SubCommandFailure: Failed executing configure commands
-            
+
     """
     try:
 
         cnfg=["router bgp {bgp_as}".format(bgp_as=bgp_as)]
         cnfg.append(
             "neighbor {neighbor_address} inherit peer-session {peer_policy}"\
-                .format(neighbor_address=neighbor_address, 
+                .format(neighbor_address=neighbor_address,
                         peer_policy=peer_policy))
         device.configure(cnfg)
     except SubCommandFailure as e:
@@ -502,12 +502,12 @@ def configure_inherit_peer_session(
             "Could not inherit peer session in "
             "router {bgp_as}".format(bgp_as=bgp_as)
         )
-            
+
 def configure_bgp_l2vpn_neighbor_activate(
-            device, address_family, bgp_as, neighbor_address, 
+            device, address_family, bgp_as, neighbor_address,
             address_family_modifier="", community=""
             ):
-    """ Activate bgp neighbor on bgp router 
+    """ Activate bgp neighbor on bgp router
 
         Args:
             device ('obj')             : Device to be configured
@@ -522,7 +522,7 @@ def configure_bgp_l2vpn_neighbor_activate(
             N/A
         Raises:
             SubCommandFailure: Failed executing configure commands
-            
+
     """
     log.info("configure l2vpn vpls address-family on router bgp {bgp_as}"
                               .format(bgp_as=bgp_as))
@@ -530,12 +530,12 @@ def configure_bgp_l2vpn_neighbor_activate(
         device.configure([
             "router bgp {bgp_as}".format(bgp_as=bgp_as),
             "address-family {address_family} {address_family_modifier}".format(
-                address_family=address_family, 
+                address_family=address_family,
                 address_family_modifier=address_family_modifier),
             "neighbor {neighbor_address} activate".format(
                 neighbor_address=neighbor_address),
             "neighbor {neighbor_address} send-community {community}".format(
-                neighbor_address=neighbor_address, community=community)               
+                neighbor_address=neighbor_address, community=community)
         ])
     except SubCommandFailure as e:
         raise SubCommandFailure(
@@ -544,7 +544,7 @@ def configure_bgp_l2vpn_neighbor_activate(
         )
 
 def configure_shut_bgp_neighbors(
-    device, bgp_as, neighbors=None, address_family=None, vrf=None, 
+    device, bgp_as, neighbors=None, address_family=None, vrf=None,
     noshut=False):
     """ Configures shut/enable on bgp neighbors if provided otherwise the ones found in running config
 
@@ -555,7 +555,7 @@ def configure_shut_bgp_neighbors(
             vrf ('str'): vrf to configure under
             neighbors ('list'): List of neighbors to shut/enable
             noshut ('bool'): does the opposite of shut if True
-        Returns:        
+        Returns:
             N/A
         Raises:
             SubCommandFailure: Failed executing configure commands
@@ -904,7 +904,7 @@ def configure_bgp_address_advertisement(
     cmd.append("router bgp {}".format(bgp_as))
     cmd.append("address-family {}".format(address_family))
     if address_family == 'ipv4':
-        cmd.append("network {} mask {}".format(ip_address, mask))       
+        cmd.append("network {} mask {}".format(ip_address, mask))
     elif address_family == 'ipv6':
         cmd.append("network {}/{}".format(ip_address, mask))
     else:
@@ -924,7 +924,7 @@ def configure_redistribute_connected(device, bgp_as, address_family, vrf=None):
         Args:
             device ('obj'): device to use
             bgp_as ('str'): bgp as number
-            address_family ('str'): address family under bgp 
+            address_family ('str'): address family under bgp
             vrf ('str'): vrf in address_family default to None
         Returns:
             None
@@ -942,7 +942,7 @@ def configure_redistribute_connected(device, bgp_as, address_family, vrf=None):
     else:
         confg.append("address-family {address_family}".format(
                              address_family=address_family))
-    confg.append("redistribute connected")              
+    confg.append("redistribute connected")
     try:
         device.configure(confg)
     except SubCommandFailure:
@@ -952,11 +952,11 @@ def configure_redistribute_connected(device, bgp_as, address_family, vrf=None):
         )
 
 def configure_bgp_address_family_attributes(
-    device, bgp_as, address_family, neighbor, send_label=False, 
+    device, bgp_as, address_family, neighbor, send_label=False,
     route_reflector_client=False, next_hop_self_all=False,
     next_hop_unchanged=False
 ):
-    """ configure attributes for bgp 
+    """ configure attributes for bgp
 
         Args:
             device ('obj'): device to use
@@ -989,7 +989,7 @@ def configure_bgp_address_family_attributes(
             "Could not configure bgp attribute Error: {e} "
             "router bgp {bgp_as}".format(e=e, bgp_as=bgp_as)
         )
-        
+
 def configure_no_bgp_default(
     device, bgp_as, ipv4_unicast=False, route_target_filter=False
 ):
@@ -998,14 +998,14 @@ def configure_no_bgp_default(
         Args:
             device ('obj'): device to use
             bgp_as ('int'): bgp router to configure
-            ipv4_unicast ('boolean'): disable the default behavior of the BGP routing process 
+            ipv4_unicast ('boolean'): disable the default behavior of the BGP routing process
                                   exchanging IPv4 address info, if set to true
             route_target_filter ('boolean'): disable automatic route-target filtering globally for all VRFs.
                                             if set to true.
         Return:
             N/A
         Raises:
-            SubCommandFailure: Failed executing command                                            
+            SubCommandFailure: Failed executing command
     """
     try:
         confg = ["router bgp {}".format(bgp_as)]
@@ -1019,7 +1019,7 @@ def configure_no_bgp_default(
             "Could not configure bgp attribute Error: {e} "
             "router bgp {bgp_as}".format(e=e, bgp_as=bgp_as)
         )
-        
+
 def configure_bgp_graceful_restart(device, bgp_as):
     """ Configures graceful-restart on BGP router
 
@@ -1069,7 +1069,7 @@ def configure_bgp_log_neighbor_changes(device, bgp_as):
         )
 
 def configure_bgp_neighbor_send_community(
-    device, bgp_as, neighbor_address, address_family=None, vrf=None, 
+    device, bgp_as, neighbor_address, address_family=None, vrf=None,
     send_community=None):
     """ Add send-community attribute for bgp neighbor on bgp router
 
@@ -1116,11 +1116,11 @@ def configure_bgp_neighbor_send_community(
         raise SubCommandFailure(
             "Failed to configure send-community {send_community}"
             "For router bgp {bgp_as}".format(
-                send_community=send_community, 
+                send_community=send_community,
                 bgp_as=bgp_as)
         )
 
-        
+
 def configure_ospf_internal_external_routes_into_bgp(
     device, bgp_as, process_id, vrf=None, address_family=None
 ):
@@ -1147,7 +1147,7 @@ def configure_ospf_internal_external_routes_into_bgp(
                 address_family=address_family, vrf=vrf))
             confg.append("redistribute ospf {process_id} match internal "
                          "external 1 external 2".format(process_id=process_id))
-            
+
         device.configure(confg)
     except SubCommandFailure as e:
         raise SubCommandFailure(
@@ -1155,7 +1155,7 @@ def configure_ospf_internal_external_routes_into_bgp(
             " Address family {address_family}.  Error: {e} ".format(
                 bgp_as=bgp_as, address_family=address_family, e=e)
         )
-        
+
 def configure_ospf_include_connected_in_bgp(
     device, bgp_as, process_id, vrf=None, address_family=None
 ):
@@ -1183,7 +1183,7 @@ def configure_ospf_include_connected_in_bgp(
             confg.append("redistribute ospf {process_id} match internal "
                          "external 1 external 2 include-connected"\
                          .format(process_id=process_id))
-            
+
         device.configure(confg)
     except SubCommandFailure as e:
         raise SubCommandFailure(
@@ -1207,7 +1207,7 @@ def configure_bgp_redistribute_ospf(
             SubCommandFailure: Failed executing command
     """
     cmd="router bgp {bgp_as}\n".format(
-                bgp_as=bgp_as)    
+                bgp_as=bgp_as)
     if address_family:
         if vrf:
             cmd += ("address-family {address_family} vrf {vrf}\n"
@@ -1238,7 +1238,7 @@ def configure_bgp_redistribute_ospf(
         )
 
 def configure_bgp_template_peer_policy(
-    device, bgp_as, policy=None, send_community=None, 
+    device, bgp_as, policy=None, send_community=None,
     route_reflect_client=False, next_hop_self=None):
     """ Configures template peer-policy on BGP
         Args:
@@ -1261,7 +1261,7 @@ def configure_bgp_template_peer_policy(
         confg.append("send-community {send_community}".format(\
             send_community=send_community))
     if next_hop_self:
-        confg.append("next-hop-self")    
+        confg.append("next-hop-self")
     try:
         device.configure(confg)
     except SubCommandFailure:
@@ -1365,7 +1365,7 @@ def enable_bgp_forwarding(
         )
 
 def unconfigure_bgp_neighbor_send_community(
-    device, bgp_as, neighbor_address, address_family=None, vrf=None, 
+    device, bgp_as, neighbor_address, address_family=None, vrf=None,
     send_community=None):
     """ Remove send-community attribute for bgp neighbor on bgp router
 
@@ -1500,7 +1500,7 @@ def unconfigure_bgp_neighbor_remote_as(
             "for router bgp {bgp_as}".format(neighbor_address=neighbor_address,
                 bgp_as=bgp_as)
         )
-     
+
 def configure_bgp_update_delay(device, bgp_as, delay):
     """ Configures update_delay time on BGP router
         Args:
@@ -1521,12 +1521,12 @@ def configure_bgp_update_delay(device, bgp_as, delay):
         )
     )
 
-    
+
     config = [
                 'router bgp {bgp_as}'.format(bgp_as=bgp_as),
                 'bgp update-delay {delay}'.format(delay=delay)
             ]
-    
+
     try:
         device.configure(config)
     except SubCommandFailure:
@@ -1534,7 +1534,7 @@ def configure_bgp_update_delay(device, bgp_as, delay):
             "Could not configure update_delay {delay} on "
             "BGP router {bgp_as}".format(delay=delay, bgp_as=bgp_as)
         )
-        
+
 def configure_bgp_router_id_peergroup_neighbor(device, bgp_as, neighborname, as_id):
     """ Configures router-id on BGP router
 
@@ -1554,7 +1554,7 @@ def configure_bgp_router_id_peergroup_neighbor(device, bgp_as, neighborname, as_
         "    -local AS number: {bgp_as}\n"
         "    -bgp neighborname: {neighborname}"
 		"    -remote AS number: {as_id}".format(
-            hostname=device.hostname, bgp_as=bgp_as, neighborname=neighborname, as_id=as_id 
+            hostname=device.hostname, bgp_as=bgp_as, neighborname=neighborname, as_id=as_id
         )
     )
     config = [
@@ -1577,7 +1577,7 @@ def configure_bgp_router_id_neighbor_ip_peergroup_neighbor(device, bgp_as, neigh
         Args:
             device('obj'): device to configure on
             bgp_as('str'): bgp id (autonomous system number) to configure
-            neighbor_ip 'str'): neighbor_ip address to peer-group 
+            neighbor_ip 'str'): neighbor_ip address to peer-group
             neighborname('str'): neighbor peer-group-name  to configure
         Return:
             None
@@ -1664,17 +1664,17 @@ def configure_bgp_router_id_interface(device, bgp_as, interface):
             interface('str'): interface details on which we config
         Returns:
             None
-        Raises: 
+        Raises:
             SubCommandFailure : Failed to configure bgp router-id on interface
     """
 
     log.debug(f"Configure bgp router-id interface on interface {interface}")
-    
+
     configs = [
         f"router bgp {bgp_as}",
         f"bgp router-id interface {interface}"
     ]
-    
+
     try:
         device.configure(configs)
     except SubCommandFailure as e:
@@ -1687,7 +1687,7 @@ def configure_bgp_redistribute_static(device, bgp_as, address_family, vrf=None):
         Args:
             device ('obj'): device to use
             bgp_as ('int'): bgp as number
-            address_family ('str'): address family under bgp 
+            address_family ('str'): address family under bgp
             vrf ('str'): vrf in address_family
         Returns:
             None
@@ -1703,14 +1703,14 @@ def configure_bgp_redistribute_static(device, bgp_as, address_family, vrf=None):
         confg.append(f"address-family {address_family} vrf {vrf}")
     else:
         confg.append(f"address-family {address_family}")
-    confg.append("redistribute static")              
+    confg.append("redistribute static")
     try:
         device.configure(confg)
     except SubCommandFailure:
         raise SubCommandFailure(
             f"Could not configure redistribute static under bgp {bgp_as}"
         )
-        
+
 
 def configure_bgp_advertise_l2vpn_evpn(device, bgp_as, address_family, vrf):
     """ Configure bgp advertise l2vpn evpn on device <device>
@@ -1721,33 +1721,33 @@ def configure_bgp_advertise_l2vpn_evpn(device, bgp_as, address_family, vrf):
             vrf('str'): vrf for in the device
         Returns:
             None
-        Raises: 
-            SubCommandFailure : Failed to configure bgp advertise l2vpn evpn on device            
+        Raises:
+            SubCommandFailure : Failed to configure bgp advertise l2vpn evpn on device
 
     """
 
     log.debug(f"Configure bgp advertise l2vpn evpn on device {device}")
-    
+
     configs = [
         f"router bgp {bgp_as}",
         f"address-family {address_family} vrf {vrf}",
         "advertise l2vpn evpn"
     ]
-    
+
     try:
         device.configure(configs)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Failed to configure bgp advertise l2vpn evpn on device {device}. Error:\n{e}"
         )
-        
+
 
 def configure_bgp_neighbor_advertisement_interval(
     device,
     bgp_as,
     address_family,
     neighbor_address,
-    advert_interval,       
+    advert_interval,
     vrf=None
 ):
     """ Configures bgp neighbor advertisement interval on bgp router
@@ -2178,7 +2178,7 @@ def unconfigure_redestribute_ospf_metric_in_bgp(device, bgp_as, process_id, metr
         Raises:
             SubCommandFailure
     """
-    
+
     confg = [
             f'router bgp {bgp_as}',
             f'no redistribute ospf {process_id} metric {metric}'
@@ -2223,7 +2223,7 @@ def configure_bgp_neighbor_filter_description(device, bgp_as, route_map):
         Args:
             device('obj'): device to configure on
             bgp_as('int'): BGP AS number
-            route_map ('list'): route map list which contains dictionary 
+            route_map ('list'): route map list which contains dictionary
                 dictionary contains following keys:
                     damping_id ('int'): bgp damping id number
                     neighbor_tag ('str'): Neighbor tag as string
@@ -2232,29 +2232,29 @@ def configure_bgp_neighbor_filter_description(device, bgp_as, route_map):
                     filter_list ('int'): filter list identifier
                     filter_routes ('str'): filter incoming/outgoing routes
                     description ('str'): Description of session
-                    soft_reconfiguration('str') : soft-reconfiguration 0 to ignore the 
+                    soft_reconfiguration('str') : soft-reconfiguration 0 to ignore the
                     command anything else will trigger the command
-                    mtu_discovery('str'): mtu-discovery 0 to ignore the command anything 
+                    mtu_discovery('str'): mtu-discovery 0 to ignore the command anything
                     else will trigger the command
                 ex.)
-                [  
+                [
                     {
-                        'damping_id' : "1", 
-                        'neighbor_tag' : 'externalpg', 
-                        'neighbor_ip' : '20.20.20.3', 
-                        'as_id' : '300', 
-                        'filter_list' : '1', 
-                        'filter_routes' : 'out' 
-                        'description' : 'ibgp vers SWTDATA01', 
+                        'damping_id' : "1",
+                        'neighbor_tag' : 'externalpg',
+                        'neighbor_ip' : '20.20.20.3',
+                        'as_id' : '300',
+                        'filter_list' : '1',
+                        'filter_routes' : 'out'
+                        'description' : 'ibgp vers SWTDATA01',
                         'soft_reconfiguration': '1',
-                        'mtu_discovery': '1' 
+                        'mtu_discovery': '1'
                     }
                 ]
         Returns:
             None
         Raises:
             SubCommandFailure: Failed configuring route map
-    """ 
+    """
     config = [f"router bgp {bgp_as}".format(bgp_as=bgp_as)]
     for rm in route_map:
 
@@ -2264,14 +2264,14 @@ def configure_bgp_neighbor_filter_description(device, bgp_as, route_map):
             )
         if "neighbor_tag" in rm:
             config.append(
-                "neighbor {neighbor_tag} peer-group".format(neighbor_tag=rm["neighbor_tag"])                 
+                "neighbor {neighbor_tag} peer-group".format(neighbor_tag=rm["neighbor_tag"])
             )
         if "as_id" in rm:
             config.append(
                 "neighbor {neighbor_ip} remote-as {as_id}"
                 .format(neighbor_ip=rm["neighbor_ip"],as_id=rm["as_id"])
             )
-        if "neighbor_ip" in rm:
+        if "neighbor_ip" in rm and "neighbor_tag" in rm:
             config.append(
                 "neighbor {neighbor_ip} peer-group {neighbor_tag}"
                 .format(neighbor_ip=rm["neighbor_ip"],neighbor_tag=rm["neighbor_tag"])

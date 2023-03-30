@@ -9,7 +9,7 @@ Description:
 
 '''
 
-__version__ = '23.2'
+__version__ = '23.3'
 __author__ = 'Cisco Systems Inc.'
 __contact__ = ['pyats-support@cisco.com', 'pyats-support-ext@cisco.com']
 __copyright__ = 'Copyright (c) 2018, Cisco Systems Inc.'
