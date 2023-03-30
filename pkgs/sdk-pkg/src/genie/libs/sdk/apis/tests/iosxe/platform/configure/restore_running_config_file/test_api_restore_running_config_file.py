@@ -30,6 +30,6 @@ class TestRestoreRunningConfigFile(unittest.TestCase):
         )
 
     def test_restore_running_config_file(self):
-        result = restore_running_config_file(self.device, 'flash:', 'running-config5', 120)
+        result = restore_running_config_file(self.device, 'flash:', 'configtest', 120)
         expected_output = 'no'
         self.assertEqual(result, expected_output)

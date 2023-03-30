@@ -69,7 +69,7 @@ class EvalDatatype:
             if self.value < self.min or self.value > self.max:
                 self.min_max_failed = True
         elif datatype == 'boolean':
-            if field.get('op') not in ['==', '!=']:
+            if field.get('op') not in ['==', '!=', 'any']:
                 self.bool_failed = True
             if self.value in [1, '1', 'true']:
                 self.value = 'true'
@@ -109,6 +109,8 @@ class EvalDatatype:
             self.value = re.findall(self.fval, self.value)
             if self.value:
                 self.fval = self.value
+        if self.op == 'any':
+            return True
         if self.op == '==':
             if isinstance(self.value, string_types):
                 if self.value != self.fval:
@@ -428,6 +430,7 @@ class RpcVerify():
         * ">"  - Reply value must be greater than expect value.
         * "<"  - Reply value must be less than expect value.
         * "range" - Reply value must be withn a value range.
+        * "any" - Verify existence and datatype regardless of value.
 
         Args:
           value (str): The XML tag value from replay

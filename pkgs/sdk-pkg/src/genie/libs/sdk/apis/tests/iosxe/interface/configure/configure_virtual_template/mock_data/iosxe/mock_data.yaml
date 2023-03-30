@@ -2,19 +2,22 @@ configure:
   commands:
     end:
       new_state: execute
-    interface Virtual-Template 1: "interface Virtual-Template 1 \r\n"
-    ip unnumbered Loopback1: "ip unnumbered Loopback1 \r\n"
+    interface Virtual-Template 1: "interface Virtual-Template 1\r\n"
+    ip tcp adjust-mss 1444: "ip tcp adjust-mss 1444\r\n"
+    ip unnumbered vmi1: "ip unnumbered vmi1\r\n"
+    ipv6 mtu 1484: "ipv6 mtu 1484\r\n"
     line console 0:
       new_state: configure_line
+    load-interval 30: "load-interval 30\r\n"
     no logging console: ''
-    ppp authentication pap: " ppp authentication pap\r\n"
-  prompt: ASR_2hx(config)#
+    no peer default ip address: "no peer default ip address\r\n"
+  prompt: c8kv-1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: ASR_2hx(config-line)#
+  prompt: c8kv-1(config-line)#
 connect:
   commands:
     ? ''
@@ -34,4 +37,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: ASR_2hx#
+  prompt: c8kv-1#

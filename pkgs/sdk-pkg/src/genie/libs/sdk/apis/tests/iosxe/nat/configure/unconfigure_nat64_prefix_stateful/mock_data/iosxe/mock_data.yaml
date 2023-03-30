@@ -5,7 +5,14 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-    no nat64 prefix stateful: "no nat64 prefix stateful\r\n"
+    no nat64 prefix stateful 2002:0001:0000:0000:0000:0000:0000:0000/96 vrf vrf1: "no\
+      \ nat64 prefix stateful 2002:0001:0000:0000:0000:0000:0000\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b\b\b$efix stateful 2002:0001:0000:0000:0000:0000:0000: \
+      \        \b\b\b\b\b\b\b\b\b0000/96 v\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      ful 2002:0001:0000:0000:0000:0000:0000:0000/96 vr         \b\b\b\b\b\b\b\b\b\
+      f vrf1\r\n"
   prompt: Stargazer(config)#
 configure_line:
   commands:

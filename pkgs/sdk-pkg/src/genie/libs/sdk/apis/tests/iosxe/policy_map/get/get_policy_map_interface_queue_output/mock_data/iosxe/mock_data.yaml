@@ -1,0 +1,50 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: NGSVL(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: NGSVL(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show policy-map type queueing interface HundredGigE1/0/13.1 output:
+      response:
+      - " HundredGigE1/0/13.1 \r\n\r\n  Service-policy queueing output: hqos\r\n\r\
+        \n    Class-map: class-default (match-any)  \r\n      5017 packets\r\n   \
+        \   Match: any \r\n      Queueing\r\n      queue limit 7500000 bytes\r\n \
+        \     (total drops) 0\r\n      (bytes output) 0\r\n      shape (average) cir\
+        \ 10000000000, bc 40000000, be 40000000\r\n      target shape rate 10000000000\r\
+        \n\r\n      Service-policy queueing : policy2\r\n\r\n        Class-map: tc7\
+        \ (match-all)  \r\n          0 packets\r\n          Match: traffic-class 7\r\
+        \n          Queueing\r\n          queue limit 7500000 bytes\r\n          (total\
+        \ drops) 0\r\n          (bytes output) 0\r\n          shape (average) cir\
+        \ 4000000000, bc 16000000, be 16000000\r\n          target shape rate 4000000000\r\
+        \n\r\n        Class-map: class-default (match-any)  \r\n          5017 packets\r\
+        \n          Match: any \r\n          \r\n          queue limit 7500000 bytes\r\
+        \n          (total drops) 0\r\n          (bytes output) 0"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: NGSVL#

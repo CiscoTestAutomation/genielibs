@@ -5,8 +5,8 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-    no nat64 v6v4 static 2001:1::2 1.1.1.2: "no nat64 v6v4 static 2001:1::2 1.1.1.2\r\
-      \n"
+    no nat64 v6v4 static 2009::2 4.4.4.4 vrf vrf1: "no nat64 v6v4 static 2009::2 4.4.4.4\
+      \ vrf vrf1\r\n"
   prompt: Stargazer(config)#
 configure_line:
   commands:

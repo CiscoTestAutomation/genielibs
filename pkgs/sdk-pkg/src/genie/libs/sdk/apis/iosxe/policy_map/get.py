@@ -309,3 +309,23 @@ def get_policy_map_class_maps(device, policy_map, control_plane_policy):
         return {}
 
     return class_maps
+
+def get_policy_map_interface_queue_output(
+    device,
+    interface):
+
+    """ Gets the policy-map type queueing interface output
+        Args:
+            device (`obj`): Device object
+            interface ('str'): Device interface
+        Returns:
+            output
+    """
+    try:
+        output=device.parse("show policy-map type queueing interface {interface} output".format(interface=interface))
+    except SchemaEmptyParserError as e:
+        log.error('Could not get policy map queue stats')
+        return None
+    
+    return output
+

@@ -57,6 +57,7 @@ def reset_interface(device, interface):
             )
         )
 
+
 def config_enable_ip_routing(device):
     """ Enable IP Routing
 
@@ -552,7 +553,8 @@ def config_interface_ospf(device, interface, ospf_pid, area):
         )
 
 
-def config_interface_ospfv3(device, interface, ospfv3_pid, area, ipv4=False, ipv6=True):
+def config_interface_ospfv3(device, interface, ospfv3_pid, area, ipv4=False, ipv6=True,
+                            network=None, hello_interval=0):
     """config OSPF on interface
 
         Args:
@@ -562,6 +564,8 @@ def config_interface_ospfv3(device, interface, ospfv3_pid, area, ipv4=False, ipv
             area ('int'): Ospf area code
             ipv4 ('boolean',optional): Flag to configure IPv4 (Default False)
             ipv6 ('boolean',optional): Flag to configure IPv6 (Default True)
+            network(`str`,optional): network name
+            hello_interval('int',optional): hello time
 
         Returns:
             None
@@ -578,12 +582,215 @@ def config_interface_ospfv3(device, interface, ospfv3_pid, area, ipv4=False, ipv
         cmd.append("ospfv3 {pid} ipv4 area {area}".format(pid=ospfv3_pid, area=area))
     if ipv6:
         cmd.append("ospfv3 {pid} ipv6 area {area}".format(pid=ospfv3_pid, area=area))
+    if network:
+        cmd.append("ospfv3 {pid} network {network}".format(pid=ospfv3_pid, network=network))
+    if hello_interval:
+        cmd.append("ospfv3 {pid} hello-interval {hello_interval}".format(pid=ospfv3_pid, hello_interval=hello_interval))
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not configure ospfv3 {pid}. Error:\n{error}"
             .format(pid=ospfv3_pid, error=e)
+        )
+
+
+def config_interface_ospfv3_network_type(device, interface, process_id, network_type, ip_version):
+    """Configure the OSPFv3 network type for an interface
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Name of the interface
+            process_id (`int`): Ospfv3 process id
+            network_type (`str`): Network-type
+            ip_version (`str`): Internet protocol version (`ipv4` or `ipv6`)
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    if ip_version not in ["ipv4", "ipv6"]:
+        raise SubCommandFailure(
+            "Internet protocol version not recognised: '{ip_version}'. "
+            "Expected 'ipv4' or 'ipv6'.".format(
+                ip_version=ip_version
+            )
+        )
+    log.info(
+        "Configuring OSPFv3 {ip_version} network type for interface "
+        "{interface} PID {process_id} as {network_type}".format(
+            ip_version=ip_version,
+            interface=interface,
+            process_id=process_id,
+            network_type=network_type
+        )
+    )
+    cmd = "interface {interface}\n".format(interface=interface)
+    cmd += "ospfv3 {process_id} ".format(process_id=process_id)
+    if ip_version == "ipv6":
+        cmd += "ipv6 "
+    cmd += "network {network_type}".format(network_type=network_type)
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure ospfv3 network type for interface " \
+            "{interface}, PID {process_id}, network type {network_type}. " \
+            "Error:\n{error}".format(
+                interface=interface,
+                process_id=process_id,
+                network_type=network_type,
+                error=e
+            )
+        )
+
+
+def unconfig_interface_ospfv3_network_type(device, interface, process_id, network_type, ip_version):
+    """Unconfigure the OSPFv3 network type for an interface
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Name of the interface
+            process_id (`int`): Ospfv3 process id
+            network_type (`str`): Network-type
+            ip_version (`str`): Internet protocol version (`ipv4` or `ipv6`)
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    if ip_version not in ["ipv4", "ipv6"]:
+        raise SubCommandFailure(
+            "Internet protocol version not recognised: '{ip_version}'. "
+            "Expected 'ipv4' or 'ipv6'.".format(
+                ip_version=ip_version
+            )
+        )
+    log.info(
+        "Unconfiguring OSPFv3 {ip_version} network type for interface "
+        "{interface} PID {process_id}".format(
+            ip_version=ip_version,
+            interface=interface,
+            process_id=process_id
+        )
+    )
+    cmd = "interface {interface}\n".format(interface=interface)
+    cmd += "no ospfv3 {process_id} ".format(process_id=process_id)
+    if ip_version == "ipv6":
+        cmd += "ipv6 "
+    cmd += "network {network_type}".format(network_type=network_type)
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure ospfv3 network type for interface " \
+            "{interface}, PID {process_id}, network type {network_type}. " \
+            "Error:\n{error}".format(
+                interface=interface,
+                process_id=process_id,
+                network_type=network_type,
+                error=e
+            )
+        )
+
+
+def config_interface_ospfv3_flood_reduction(device, interface, process_id, ip_version):
+    """Configure OSPFv3 flood reduction for an interface
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Name of the interface
+            process_id (`int`): Ospfv3 process id
+            ip_version (`str`): Internet protocol version (`ipv4` or `ipv6`)
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    if ip_version not in ["ipv4", "ipv6"]:
+        raise SubCommandFailure(
+            "Internet protocol version not recognised: '{ip_version}'. "
+            "Expected 'ipv4' or 'ipv6'.".format(
+                ip_version=ip_version
+            )
+        )
+    log.info(
+        "Configuring {ip_version} OSPFv3 flood reduction on {interface} "
+        "for PID {process_id}".format(
+            ip_version=ip_version,
+            interface=interface,
+            process_id=process_id
+        )
+    )
+    cmd = "interface {interface}\n".format(interface=interface)
+    cmd += "ospfv3 {process_id} ".format(process_id=process_id)
+    if ip_version == "ipv6":
+        cmd += "ipv6 "
+    cmd += "flood-reduction"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure {ip_version} OSPFv3 flood-reduction for "
+            "interface {interface} for PID {process_id}".format(
+                ip_version=ip_version,
+                interface=interface,
+                process_id=process_id
+            )
+        )
+
+
+def unconfig_interface_ospfv3_flood_reduction(device, interface, process_id, ip_version):
+    """Unconfigure OSPFv3 flood reduction for an interface
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Name of the interface
+            process_id (`int`): Ospfv3 process id
+            ip_version (`str`): Internet protocol version (`ipv4` or `ipv6`)
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    if ip_version not in ["ipv4", "ipv6"]:
+        raise SubCommandFailure(
+            "Internet protocol version not recognised: '{ip_version}'. "
+            "Expected 'ipv4' or 'ipv6'.".format(
+                ip_version=ip_version
+            )
+        )
+    log.info(
+        "Unconfiguring {ip_version} OSPFv3 flood reduction on {interface} "
+        "for PID {process_id}".format(
+            ip_version=ip_version,
+            interface=interface,
+            process_id=process_id
+        )
+    )
+    cmd = "interface {interface}\n".format(interface=interface)
+    cmd += "no ospfv3 {process_id} ".format(process_id=process_id)
+    if ip_version == "ipv6":
+        cmd += "ipv6 "
+    cmd += "flood-reduction"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure {ip_version} OSPFv3 flood-reduction for "
+            "interface {interface} for PID {process_id}".format(
+                ip_version=ip_version,
+                interface=interface,
+                process_id=process_id
+            )
         )
 
 
@@ -3349,7 +3556,7 @@ def disable_ipv6_address_dhcp(device, interface):
             )
         )
 
-def unconfig_interface_ospfv3(device, interface, ospfv3_pid, area, ipv4=False, ipv6=True):
+def unconfig_interface_ospfv3(device, interface, ospfv3_pid, area, ipv4=False, ipv6=True, manet=False):
     """unconfig OSPF on interface
 
         Args:
@@ -3359,6 +3566,7 @@ def unconfig_interface_ospfv3(device, interface, ospfv3_pid, area, ipv4=False, i
             area ('int'): Ospf area code
             ipv4 ('boolean',optional): Flag to remove IPv4 (Default False)
             ipv6 ('boolean',optional): Flag to remove IPv6 (Default True)
+            manet ('boolean',optional): Flag to remove manet (Default False)
 
         Returns:
             None
@@ -3376,6 +3584,8 @@ def unconfig_interface_ospfv3(device, interface, ospfv3_pid, area, ipv4=False, i
         cmd.append("no ospfv3 {pid} ipv4 area {area}".format(pid=ospfv3_pid, area=area))
     if ipv6:
         cmd.append("no ospfv3 {pid} ipv6 area {area}".format(pid=ospfv3_pid, area=area))
+    if manet:
+        cmd.append("no ospfv3 {pid} network manet".format(pid=ospfv3_pid))
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -4006,21 +4216,35 @@ def configure_interface_switchport_pvlan_mapping(device, interface, mode, primar
 def configure_virtual_template(device,
     virtual_template_number,
     unnumbered_interface,
-    authentication,
-    mtu):
-
+    auth=False,
+    authentication=None,
+    mss=False,
+    load_delay=False,
+    mss_size=0,
+    load_delay_interval=0,
+    mtu='',
+    ipv6_mtu='',
+    no_ip_redirects=False,
+    no_peer_ip=False):
     """ Configure virtual-template interface
 
         Args:
             device (`obj`): Device object
             virtual_template_number ('int') : virtual template number
             unnumbered_interface (`str`): Interface name
-            authentication ('str') : PAP, CHAP
-            mtu ('str') : mtu value
+            auth('bool', optional): check for authentication
+            authentication ('str', optional) : PAP, CHAP
+            mtu ('str', optional) : mtu value
+            mss:('bool', optional): check for mss config
+            mss_size('int', optional): Maximum segment size
+            load_delay('bool', optional):load_delay check
+            load_delay_interval('int', optional): load delay
+            no_ip_redirects('bool', optional): no ip redirects option
+            no_peer_ip('bool', optional): no peer ip default option
+        For the arguments that are optional, the default value is None.
 
         Returns:
             None
-
         Raises:
             SubCommandFailure
     """
@@ -4031,10 +4255,20 @@ def configure_virtual_template(device,
     cli = []
     cli.append(f"interface Virtual-Template {virtual_template_number}")
     cli.append(f"ip unnumbered {unnumbered_interface}")
-    cli.append(f"ppp authentication {authentication}")
-
+    if auth:
+        cli.append(f"ppp authentication {authentication}")
+    if mss:
+        cli.append(f"ip tcp adjust-mss {mss_size}")
+    if load_delay:
+        cli.append(f"load-interval {load_delay_interval}")
     if len(mtu) != 0:
         cli.append(f"mtu {mtu}")
+    if len(ipv6_mtu) != 0:
+        cli.append(f"ipv6 mtu {ipv6_mtu}")
+    if no_ip_redirects:
+        cli.append("no ip redirects")
+    if no_peer_ip:
+        cli.append("no peer default ip address")
 
     try:
         device.configure(cli)
@@ -4594,18 +4828,29 @@ def unconfigure_pppoe_enable_interface(device, interface, name):
         )
 
 
-def configure_hsrp_interface(device, interface, version, ip_address, priority=None,
-        preempt=None, hello_interval=None, hold_time=None):
+def configure_hsrp_interface(device, interface, version, ip_address=None, priority=None, 
+                             preempt=None, hello_interval=None, hold_time=None, group_number=None, 
+                             ipv6_address=None, mask=None, link_local=None, ipv6_prefix=None, 
+                             preempt_delay=None, auto_config=None, delay_type=None, delay_time=None):
     """ Configure hsrp on interface
         Args:
-             device (`obj`): Device object
-             interface ('str'): Interface to configure hsrp
-             version (`int`): version number
-             ip_address ('str') : ip address
-             priority ('str', optional) : config custom priority to hsrp
-             preempt ('str', optional) : config custom preempt delay sync to hsrp
-             hello_interval ('str', optional) : config the hello time for hsrp session
-             hold_time ('str', optional) : config the hold time for hsrp session
+            device ('obj'): Device object
+            interface ('str'): Interface to configure hsrp
+            version ('int'): version number
+            ip_address ('str', optional) : ipv4 address
+            group_number ('int', optional) : group number limit 0-255
+            priority ('str', optional) : config custom priority to hsrp , limit <0-255> (Default priority value is 100)
+            preempt ('str', optional) : config custom preempt delay sync to hsrp
+            hello_interval ('str', optional) : config the hello time for hsrp session , limit is 1 to 154 sec
+            hold_time ('str', optional) : config the hold time for hsrp session , limit is 254 to 255 sec
+            ipv6_address ('str', optional) : ipv6 address
+            mask ('str', optional) : mask for ipv6 address
+            link_local ('str', optional) : IPv6 link-local address
+            ipv6_prefix ('str', optional) : IPv6 prefix address
+            preempt_delay ('str', optional) : boolian , Wait before preempting 
+            auto_config ('str', optional) : boolian true to enable auto config
+            delay_type ('str', optional) : preempt delay type can be minimum, reload or sync
+            delay_time ('int', optional) : preempt delay timer <0-3600>  Number of seconds for delay type
         Returns:
             None
         Raises:
@@ -4613,20 +4858,30 @@ def configure_hsrp_interface(device, interface, version, ip_address, priority=No
     """
     configs = []
     configs.append(f"interface {interface}")
-    configs.append(f"standby {version}  ip {ip_address}")
+    configs.append(f"standby version {version}")
+    if ip_address:
+        configs.append(f"standby {group_number}  ip {ip_address}")
+    if ipv6_address:
+        if link_local:
+            configs.append(f"standby {group_number} ipv6 {link_local}")
+        if ipv6_prefix:
+            configs.append(f"standby {group_number} ipv6 {ipv6_prefix}/{mask}")
+        if auto_config:
+            configs.append(f"standby {group_number} ipv6 autoconfig")
     if priority:
-        configs.append(f"standby {version}  priority {priority}")
+        configs.append(f"standby {group_number} priority {priority}")
     if preempt:
-        configs.append(f"standby {version}  preempt delay sync {preempt}")
+        configs.append(f"standby {group_number} preempt")
     if hello_interval and hold_time:
-        configs.append(f"standby {version} timers {hello_interval} {hold_time}")
+        configs.append(f"standby {group_number} timers {hello_interval} {hold_time}")
+    if preempt_delay:
+        configs.append(f"standby {group_number} preempt delay {delay_type} {delay_time}")
 
     try:
          device.configure(configs)
     except SubCommandFailure as e:
          raise SubCommandFailure(
-             f"Failed to configure hsrp on interface. Error:\n{e}"
-         )
+            f"Failed to configure hsrp on interface. Error:\n{e}")
 
 
 def configure_ipv6_mtu(device, intf, mtu):
@@ -7268,3 +7523,221 @@ def configure_power_efficient_ethernet_auto(device, interface):
             interface=interface, error=e))
 
             
+def configure_interface_monitor_session_shutdown(device, monitor_config):
+    """ configure monitor session on device by doing no shut of the interface
+        Args:
+            device ('obj'): Device object
+            monitor_config ('list') : List of monitor session configuration
+                ex.)
+                    monitor_config = [{
+                            'session_name': 1,
+                            'session_type': 'erspan-source',
+                            'interface': 'GigabitEthernet10',
+                            'vlan_id' : '100',
+                            'erspan_id': 10,
+                            'ip_address': '192.168.1.1',
+                            'origin_ip_address': '192.168.1.2',
+                            'ipv6_address': '2001::2',
+                            'mtu': 1500,
+                            'vrf': 'red',
+                            'origin_ipv6_address': '2001::1'
+                        },
+                        {
+                            'session_name': 2,
+                            'session_type': 'erspan-destination',
+                            'interface': 'GigabitEthernet11',
+                            'erspan_id': 10,
+                            'ip_address': '192.168.1.1'
+                            'ipv6_address' : '2001::2'
+                        }
+                    ]
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    for mc in monitor_config:
+        config = []
+        if "source" in mc["session_type"]:
+            config.append(
+                "monitor session {} type {}".format(
+                    mc["session_name"], mc["session_type"]
+                )
+            )
+
+            if 'interface' in mc:
+               config.append("source interface {}".format(mc["interface"]))
+            else:
+               config.append("source vlan {}".format(mc["vlan_id"])) 
+            config.append("destination")
+            config.append("erspan-id {}".format(mc["erspan_id"]))
+
+            if 'ip_address' in mc:
+               config.append("ip address {}".format(mc["ip_address"]))
+               config.append("origin ip address {}".format(mc["origin_ip_address"]))			   
+            else:
+               config.append("ipv6 address {}".format(mc["ipv6_address"]))
+               config.append("origin ipv6 address {}".format(mc["origin_ipv6_address"]))
+        else:
+            unshut_interface(device=device, interface=mc["interface"])
+            config.append(
+                "monitor session {} type {}".format(
+                    mc["session_name"], mc["session_type"]
+                )
+            )   
+            config.append("destination interface {}".format(mc["interface"]))			
+            if 'vlan_id' in mc:
+               config.append("destination vlan {}".format(mc["vlan_id"]))
+            config.append("source")
+            config.append("erspan-id {}".format(mc["erspan_id"]))
+            if 'ip_address' in mc:
+               config.append("ip address {}".format(mc["ip_address"]))
+            else:
+               config.append("ipv6 address {}".format(mc["ipv6_address"]))   
+        if 'description' in mc:
+            config.append("description {}".format(mc["description"]))
+        if 'source_vlan' in mc:
+            config.append("source vlan {}".format(mc["source_vlan"]))
+        if 'mtu' in mc:
+            config.append("mtu {}".format(mc["mtu"]))
+        if 'vrf' in mc:
+            config.append("vrf {}".format(mc["vrf"]))
+        config.append(f"exit")
+        config.append(f"no shutdown")
+
+        try:
+            device.configure(config)
+        except SubCommandFailure as e:
+            raise SubCommandFailure(f"Could not configure monitor session. Error:\n{e}")
+
+
+def configure_interface_switchport(device, interface):
+    """ Configures Switchport interface
+        Args:
+            device ('obj') : device to use
+            interface ('str') : interface to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = [f"interface {interface}", "switchport"]
+    try:
+        device.configure(cmd)        
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure switchport interface on {device}. Error:\n{error}".format(device=device, error=e)
+        )        
+
+
+def configure_ip_dlep(device,
+    physical_interface,
+    virtual_template_number,
+    udp_port=None,
+    tcp_port=None,
+    client_ip_address=None,
+    client_tcp_port=None):
+    """ Configure ip dlep on physical main/sub-interface
+
+        Args:
+            device (`obj`): Device object/device to use
+            physical_interface('str'): physical interface(main or sub-interface)
+            virtual_template_number ('int'): virtual template number
+            udp_port ('int', optional): server/router udp port number
+            tcp_port ('int', optional): server/router tcp port number
+            client_ip_address ('str', optional): client/radio ip address
+            client_tcp_port ('int', optional): client/radio tcp port number
+        For the arguments that are optional, the default value is None.
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+
+        Example:
+            device.api.configure_ip_dlep(physical_interface='GigabitEthernet0/0/0',virtual_template_number=1)
+    """
+
+    cli = [f"interface {physical_interface}"]
+
+    cmd = f"ip dlep vtemplate {virtual_template_number}"
+    if udp_port:
+        cmd += f" port {udp_port}"
+    if  tcp_port:
+        cmd += f" tcp port {tcp_port}"
+    if client_ip_address:
+        cmd += f" client ip {client_ip_address}"
+    if client_tcp_port:
+        cmd += f" port {client_tcp_port}"
+    
+    cli.append(cmd)
+
+    try:
+        device.configure(cli)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure ip dlep on physical main/sub-interface interface on device. Error:\n{e}"
+        )
+
+
+def unconfigure_ip_dlep(device,
+    physical_interface,
+    virtual_template_number):
+    """ Unconfigure ip dlep on physical main/sub-interface
+
+        Args:
+            device (`obj`): Device object/device to use
+            physical_interface('str'): physical interface(main or sub-interface)
+            virtual_template_number ('int'): virtual template number
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+
+        Example:
+            device.api.unconfigure_ip_dlep(physical_interface='GigabitEthernet0/0/0',virtual_template_number=1)        
+    """
+
+    cli = [f"interface {physical_interface}",
+           f"no ip dlep vtemplate {virtual_template_number}"]
+    try:
+        device.configure(cli)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure ip dlep on physical main/sub-interface interface on device. Error:\n{e}"
+        )
+
+def configure_physical_interface_vmi(device, vmi_name, rar_interface_name, mode_op):
+    """ configure vmi  interface
+    Args:
+        device (`obj`): Device object
+        vmi_name(`str`): vmi interface name
+        rar_interface_name (`str`): rar interface name
+        mode_op(`str`): vmi operation mode
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed to configure vmi interface
+    Example:
+        device.api.configure_physical_interface_vmi(vmi_name='vmi1',rar_interface_name='GigabitEthnernet0/0/0',mode_op='bypass')
+    """
+
+    log.info(f"Configure vmi  interface")
+
+    cmd = [
+            f"interface {vmi_name}",
+            f"physical-interface {rar_interface_name}",
+            f"mode {mode_op}"
+        ]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+                "Failed to configure vmi interface, Error:\n{e}"
+            )
+

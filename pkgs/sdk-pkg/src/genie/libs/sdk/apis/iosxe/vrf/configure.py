@@ -774,7 +774,7 @@ def configure_mdt_data_vxlan(device, vrf_name, address_family, ip, mask):
         Return:
             None
         Raise:
-            SubCommandFailure: Failed configuring mdt data vxlan 
+            SubCommandFailure: Failed configuring mdt data vxlan
     """
     config = [ f"vrf definition {vrf_name}",
                f"address-family {address_family}",
@@ -800,7 +800,7 @@ def unconfigure_mdt_data_vxlan(device, vrf_name, address_family, ip, mask):
         Return:
             None
         Raise:
-            SubCommandFailure: Failed unconfiguring mdt data vxlan 
+            SubCommandFailure: Failed unconfiguring mdt data vxlan
     """
     config = [f"vrf definition {vrf_name}",
               f"address-family {address_family}",
@@ -863,7 +863,7 @@ def unconfigure_vrf_forwarding_interface(device, interface, vrf_name):
 
 def configure_mdt_overlay_use_bgp_spt_only(device, vrf_name, address_family):
 
-    """ configure mdt overlay under vrf 
+    """ configure mdt overlay under vrf
         Args:
             device ('obj'): Device object
             vrf_name ('str'): name of the vrf
@@ -905,3 +905,29 @@ def configure_default_vxlan(device, vrf_name, address_family, multicast_group_ad
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f'Could not configure mdt default vxlan under vrf definition on device. Error:\n{e}')
+
+def configure_mdt_auto_discovery_vxlan(device, vrf_name, address_family, keyword=""):
+
+    """ configure mdt auto-discovery vxlan
+        Args:
+            device ('obj'): Device object
+            vrf_name ('str'): name of the vrf
+            address_family ('str'):  mention the address-family.
+            keyword('str',optional): Enable Inter-AS BGP auto-discovery for vxlan
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring mdt auto-discovery on vrf
+    """
+    config = [f'vrf definition {vrf_name}',
+             f'address-family {address_family}']
+    if keyword == 'inter-as':
+        config.append(f'mdt auto-discovery vxlan inter-as')
+    else:
+        config.append(f'mdt auto-discovery vxlan')
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure mdt auto-discovery vxlan on device vrf {vrf_name} definition. Error:\n{e}"
+        )

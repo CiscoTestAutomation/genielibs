@@ -78,7 +78,7 @@ def remove_dhcp_pool(
 def enable_dhcp_snooping_glean(device):
     """ Enable DHCP snooping glean globally
         Args:
-            device ('obj'): device to use            
+            device ('obj'): device to use
         Returns:
             None
         Raises:
@@ -134,10 +134,10 @@ def enable_dhcp_snooping_vlan(device, vlan):
         )
 
 def enable_dhcp_snooping(device):
-    """ Enable DHCP snooping 
+    """ Enable DHCP snooping
         Args:
             device ('obj'): device to use
-            
+
         Returns:
             None
         Raises:
@@ -150,9 +150,9 @@ def enable_dhcp_snooping(device):
         raise SubCommandFailure(
             "Could not enable DHCP snooping, Error: {error}".format(
                 error=e)
-                  
+
         )
-		
+
 def disable_dhcp_snooping_vlan(device, vlan):
     """ Disable DHCP snooping on vlan
         Args:
@@ -209,7 +209,7 @@ def disable_dhcp_snooping_option_82(device):
         raise SubCommandFailure(
             "Could not disable DHCP snooping Option 82"
             )
-        
+
 def remove_dhcp_snooping_binding(
     device, vlan
 ):
@@ -302,7 +302,7 @@ def disable_dhcp_snooping(device):
 
 def configure_ip_dhcp_snooping_database(device, image='', write_delay=False, delay_time=10):
 
-    """ Configuring ip dhcp snooping database 
+    """ Configuring ip dhcp snooping database
         Args:
             device ('obj'): device to use
             image ('str',optional): image to use ,defaut is empty string
@@ -424,10 +424,10 @@ def unconfigure_ip_dhcp_snooping_verify(device, verify_type):
             SubCommandFailure: Failed unconfiguring dhcp snooping verify on device
     """
     log.debug("unconfiguring ip dhcp scooping verify on device")
-    
+
     try:
         device.configure(f"no ip dhcp snooping verify {verify_type}")
-        
+
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not unconfigure ip dhcp scooping verify. Error:\n{e}"
@@ -444,10 +444,10 @@ def configure_ip_dhcp_client(device, dhcp_client_type):
             SubCommandFailure : ip dhcp client is not configured
     """
     log.debug("configuring DHCP client on device")
-    
+
     try:
         device.configure(f"ip dhcp-client {dhcp_client_type}")
-        
+
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not configure ip DHCP client. Error:\n{e}"
@@ -462,15 +462,15 @@ def enable_ip_dhcp_auto_broadcast(device):
             SubCommandFailure : Failed enabling ip dhcp auto-broadcast on device
     """
     log.debug("Enabling DHCP auto-broadcast on device")
-    
+
     try:
         device.configure("ip dhcp auto-broadcast")
-    
+
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not enable DHCP auto-broadcast on device. Error:\n{e}"
         )
-        
+
 def disable_ip_dhcp_auto_broadcast(device):
     """ Disable ip dhcp auto-broadcast on device
         Args:
@@ -481,7 +481,7 @@ def disable_ip_dhcp_auto_broadcast(device):
             SubCommandFailure : Failed disabling ip dhcp auto-broadcast on device
     """
     log.debug("Disabling DHCP auto-broadcast on device")
-    
+
     try:
         device.configure("no ip dhcp auto-broadcast")
     except SubCommandFailure as e:
@@ -622,7 +622,7 @@ def unconfigure_dhcp_relay_information(device):
             )
 
 def enable_dhcp_relay_information_option(device, vpn=False):
-    """ Enable DHCP relay information option 
+    """ Enable DHCP relay information option
         Args:
             device ('obj'): device to use
             vpn ('str',optional): vpn option ,defaut is empty string
@@ -646,7 +646,7 @@ def enable_dhcp_relay_information_option(device, vpn=False):
         )
 
 def disable_dhcp_relay_information_option(device, vpn=False):
-    """ Disable DHCP relay information option 
+    """ Disable DHCP relay information option
         Args:
             device ('obj'): device to use
             vpn ('str',optional): vpn option ,defaut is empty string
@@ -674,7 +674,7 @@ def configure_dhcp_relay_short_lease(device, lease_time, interface=False):
         Args:
             device ('obj'): device to use
             lease_time ('int'): dhcp lease time
-            interface ('str',optional): interface name ,defaut is empty string 
+            interface ('str',optional): interface name ,defaut is empty string
         Returns:
             None
         Raises:
@@ -967,7 +967,7 @@ def unconfigure_ip_dhcp_snooping_trust(device, interface):
 
 def configure_ip_dhcp_pool_host(device, pool_name, host, client_identifier=None,
                                 hardware_address=None, client_name=None, **kwargs):
-    """ Configure DHCP host pool 
+    """ Configure DHCP host pool
         Args:
             device ('obj'): device to use
             pool_name ('str'): name of the pool to be configured
@@ -1002,7 +1002,7 @@ def configure_ip_dhcp_pool_host(device, pool_name, host, client_identifier=None,
 
 def unconfigure_ip_dhcp_pool_host(device, pool_name, host, client_identifier=None,
                                 hardware_address=None, client_name=None, **kwargs):
-    """ Unconfigure host from DHCP pool 
+    """ Unconfigure host from DHCP pool
         Args:
             device ('obj'): device to use
             pool_name ('str'): name of the DHCP pool
@@ -1033,3 +1033,98 @@ def unconfigure_ip_dhcp_pool_host(device, pool_name, host, client_identifier=Non
         log.error(e)
         raise SubCommandFailure(
             f"Failed to uniconfigure host from DHCP pool {pool_name}")
+
+def configure_ip_dhcp_exclude_vrf(device, vrf_name, low_ip_address, high_ip_address):
+    """ Configure ip dhcp exclude vrf
+        Args:
+            device ('obj'): device to use
+            vrf_name ('str'): VPN Routing/Forwarding instance name
+            low_ip_address ('str'): Low IP address
+            high_ip_address ('str'): High IP address
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed excluding IP in DHCP config
+    """
+    log.info("configuring ip dhcp exclude vrf")
+    cmd = [f'ip dhcp excluded-address vrf {vrf_name} {low_ip_address} {high_ip_address}']
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not exclude ip in DHCP config. Error:\n{e}".format(
+                error=e
+            )
+        )
+def configure_ip_dhcp_restrict_next_hop(device, interface, restrict_method):
+    """ configure ip dhcp restrict-next-hop on interface
+        Configure 'ip dhcp restrict-next-hop' on interface
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface to configure
+            restrict_method('str'): restrict method 'both|cdp|lldp'
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed configure ip dhcp restrict-next-hop on interface
+    """
+    log.info("configure ip dhcp restrict-next-hop on interface")
+    try:
+        device.configure(
+            [
+             'interface {}'.format(interface),
+             'ip dhcp restrict-next-hop {}'.format(restrict_method),
+            ]
+        )
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not configure ip dhcp restrict-next-hop on interface {}".format(interface)
+        )
+def unconfigure_ip_dhcp_restrict_next_hop(device, interface):
+    """ unconfigure ip dhcp restrict-next-hop on interface
+        unConfigure 'ip dhcp restrict-next-hop' on interface
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed unconfigure ip dhcp restrict-next-hop on interface
+    """
+    log.info("unconfigure ip dhcp restrict-next-hop on interface")
+    try:
+        device.configure(
+            [
+             "interface {}".format(interface),
+	         "no ip dhcp restrict-next-hop",
+            ]
+        )
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not unconfigure ip dhcp restrict-next-hop on interface {interface}".format(
+                interface=interface
+            )
+        )
+def configure_ip_dhcp_snooping_limit(device, interface, rate_limit):
+    """ Configure DHCP snooping limit on interface
+        Configure 'ip dhcp snooping limit' on interface
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface to configure
+            rate_limit('int'): DHCP snooping rate limit
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring DHCP snooping limit rate on interface
+    """
+    log.info("Configure DHCP snooping limit rate on interface")
+    config = [
+             f"interface {interface}",
+             f"ip dhcp snooping limit rate {rate_limit}",
+            ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure DHCP snooping limit on interface {interface}. Error\n{e}"
+            )

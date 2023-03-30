@@ -4,16 +4,18 @@ configure:
       new_state: execute
     line console 0:
       new_state: configure_line
-    net 49.0001.0000.0000.000a.00: "net 49.0001.0000.0000.000a.00\r\n"
+    net 49.0000.0000.0000.aaaa.00: "net 49.0000.0000.0000.aaaa.00\r\n"
     no logging console: ''
-    router isis isis_1: "router isis isis_1\r\n"
-  prompt: mac-gen2(config)#
+    redistribute bgp 1: "redistribute bgp 1\r\n"
+    router isis 101: "router isis 101\r\n"
+    vrf vrf101: "vrf vrf101\r\n"
+  prompt: stack3-nyquist-1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: mac-gen2(config-line)#
+  prompt: stack3-nyquist-1(config-line)#
 connect:
   commands:
     ? ''
@@ -33,4 +35,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: mac-gen2#
+  prompt: stack3-nyquist-1#

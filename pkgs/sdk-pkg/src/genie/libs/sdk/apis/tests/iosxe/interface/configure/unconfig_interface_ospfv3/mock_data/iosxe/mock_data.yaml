@@ -2,18 +2,19 @@ configure:
   commands:
     end:
       new_state: execute
-    interface GigabitEthernet1: "interface GigabitEthernet1\r\n"
+    interface vmi1: "interface vmi1\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''
-    no ospfv3 200 ipv6 area 0: "no ospfv3 200 ipv6 area 0\r\n"
-  prompt: kparames_csr10(config)#
+    no ospfv3 1 ipv6 area 0: "no ospfv3 1 ipv6 area 0\r\n"
+    no ospfv3 1 network manet: "no ospfv3 1 network manet\r\n"
+  prompt: GD-R5(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: kparames_csr10(config-line)#
+  prompt: GD-R5(config-line)#
 connect:
   commands:
     ? ''
@@ -33,4 +34,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: kparames_csr10#
+  prompt: GD-R5#

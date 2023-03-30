@@ -1055,3 +1055,73 @@ def configure_stack_mac_persistent_timer(device, mac_timer):
             "Could not configure mac timer on device. Error:\n{e}".format(e=e)
         )
 
+def configure_ipv6_route_nexthop_vrf(
+    device,
+    ipv6_address,
+    interface,
+    vrf_name
+):
+    """ Configure ipv6 route nexthop vrf
+        Args:
+            device ('obj'): device to use
+            ipv6_address ('str'): Ipv6 address
+            interface ('str'): interface name
+            vrf_name ('str'): vrf name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f"ipv6 route {ipv6_address} {interface} nexthop-vrf {vrf_name}"
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure ipv6 route nexthop vrf. Error:\n{error}".format(error=e)
+        )
+        
+def unconfigure_ipv6_route_nexthop_vrf(
+    device,
+    ipv6_address,
+    interface,
+    vrf_name
+):
+    """ UnConfigure ipv6 route nexthop vrf
+        Args:
+            device ('obj'): device to use
+            ipv6_address ('str'): Ipv6 address
+            interface ('str'): interface name
+            vrf_name ('str'): vrf name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f"no ipv6 route {ipv6_address} {interface} nexthop-vrf {vrf_name}"
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure ipv6 route nexthop vrf. Error:\n{error}".format(error=e)
+        )
+
+def unconfigure_system_mtu(device, size=None):
+    """ Unconfigures system mtu
+        Example : no system mtu 9216
+        Args:
+            device ('obj'): device to use
+            size ('int'): mtu size (eg. 9216)
+        Returns:
+            None
+        Raises: 
+            SubCommandFailure
+    """
+    config = 'no system mtu'
+    if size:
+        config += f' {size}'
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Failed to unconfigure system mtu on device {device.name}. Error:\n{e}')

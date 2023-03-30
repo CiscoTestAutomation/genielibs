@@ -382,3 +382,93 @@ def unconfigure_ptp_8275_holdover_spec_duration(device):
         raise SubCommandFailure(
             "Could not unconfigure PTP 8275 holdover spec-duration"
         )
+
+def configure_ptp_vlan(device, intf, vlan):
+    """ Configure ptp vlan on interface
+        Args:
+            device (`obj`): Device object
+            intf (str): PTP interface
+            vlan(str): vlan number 10
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configure ptp vlan on {device}".format(device=device))
+    configs = []
+    configs.append("interface {intf}".format(intf=intf))
+    configs.append("ptp vlan {vlan}".format(vlan=vlan))
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure ptp vlan on {device}. Error:\n{error}".format(device=device, error=e)
+        )
+
+def unconfigure_ptp_vlan(device, intf, vlan):
+    """ Unconfigure ptp vlan on interface
+        Args:
+            device (`obj`): Device object
+            intf (str): PTP interface
+            vlan(str): vlan number 10
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Unconfigure ptp vlan on {device}".format(device=device))
+    configs = []
+    configs.append("interface {intf}".format(intf=intf))
+    configs.append("no ptp vlan {vlan}".format(vlan=vlan))
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not Unconfigure ptp vlan on {device}. Error:\n{error}".format(device=device, error=e)
+        )
+    
+def configure_ptp_announce_transmit(device, intf):
+    """ Configure ptp announce transmit on interface
+        Args:
+            device (`obj`): Device object
+            intf (str): PTP interface
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configure ptp announce transmit on {device}".format(device=device))
+    configs = []
+    configs.append("interface {intf}".format(intf=intf))
+    configs.append("ptp announce transmit")
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure ptp announce transmit on {device}. Error:\n{error}".format(device=device, error=e)
+        )
+
+def unconfigure_ptp_announce_transmit(device, intf):
+    """ Unconfigure ptp announce transmit on interface
+        Args:
+            device (`obj`): Device object
+            intf (str): PTP interface
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Unconfigure ptp announce transmit on {device}".format(device=device))
+    configs = []
+    configs.append("interface {intf}".format(intf=intf))
+    configs.append("no ptp announce transmit")
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not Unconfigure ptp announce transmit on {device}. Error:\n{error}".format(device=device, error=e)
+        )

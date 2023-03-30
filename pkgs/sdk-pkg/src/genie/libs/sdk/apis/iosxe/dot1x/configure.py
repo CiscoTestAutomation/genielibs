@@ -232,7 +232,7 @@ def configure_access_session_monitor(device):
     else:
         cmd = ''
         cmd += 'access-session monitor\n'
-        
+
     log.info("Configure access-session monitor")
     try:
         device.configure(cmd)
@@ -261,7 +261,7 @@ def configure_access_session_sticky(device, timer):
     else:
         cmd = ''
         cmd += 'access-session interface-template sticky timer {}\n'.format(timer)
-        
+
     log.info("Configure interface-template sticky timer")
     try:
         device.configure(cmd)
@@ -290,7 +290,7 @@ def enable_dot1x_sysauthcontrol(device):
         )
 
 def clear_access_session(device, interface=None):
-    """ executes clear access-sesssion CLI 
+    """ executes clear access-sesssion CLI
         Args:
             device ('obj'): device to use
             interface (`str`): Interface name
@@ -345,8 +345,8 @@ def config_identity_ibns(device, policy_map, interface=None, access=True, port_c
     #For IBNS2.0  access-session is in Open mode (default)
     #dict1['open'] = True
     #For IBNS2.0 default access-session host-mode is in multi-auth (default)
-    dict1['authmod'] ='multi-auth'    
-    
+    dict1['authmod'] ='multi-auth'
+
     cmd = " "
     if interface is not None:
         converted_interface = Common.convert_intf_name(interface)
@@ -371,7 +371,7 @@ def config_identity_ibns(device, policy_map, interface=None, access=True, port_c
     cmd += "authentication periodic\n"
     cmd += "mab\n"
     cmd += "dot1x pae authenticator\n"
-    
+
     for key, value in kwargs.items():
         if type(value) == str:
             dict1[key] = value.lower()
@@ -518,7 +518,7 @@ def disable_dot1x_sysauthcontrol(device):
 
 def unconfigure_dot1x_supplicant(device, profile_name, intf, eap_profile=None):
 
-    """ UnConfigure on dot1x supplicant switch 
+    """ UnConfigure on dot1x supplicant switch
     Args:
         device (`obj`): Device object
         profile_name (`str`): dot1x Credential profile_name
@@ -544,16 +544,16 @@ def unconfigure_dot1x_supplicant(device, profile_name, intf, eap_profile=None):
             'Could not unconfigure dot1x supplicant username {profile_name}\
             on pagent interface {intf}'.format(profile_name=profile_name,intf=intf)
         )
-        
+
 def unconfigure_dot1x_system_auth_control(device):
 
     """UnConfigure dot1x system-auth-control
-    Args: 
+    Args:
         device (`obj`): Device object
     Return:
         None
     Raise:
-        SubCommandFailure: Failed configuring     
+        SubCommandFailure: Failed configuring
     """
     try:
         device.configure([
@@ -572,10 +572,10 @@ def configure_authentication_host_mode(device, mode, intf, style='legacy'):
         mode (`str`): Host mode
         intf (`str`): Interface to configure
         style (`str`, optional): legacy or new (Default is legacy)
-    Return:   
+    Return:
         None
     Raise:
-        SubCommandFailure: Failed configuring  
+        SubCommandFailure: Failed configuring
     """
     cmd = ""
     if style == "new":
@@ -591,7 +591,7 @@ def configure_authentication_host_mode(device, mode, intf, style='legacy'):
         raise SubCommandFailure(
             'Unable to configure host-mode'
     )
-        
+
 def unconfigure_authentication_host_mode(device,mode,intf,style='legacy'):
 
     """UnConfigure legacy cli authentication host-mode multi-auth/multi-domain/multi-host/single-host
@@ -600,10 +600,10 @@ def unconfigure_authentication_host_mode(device,mode,intf,style='legacy'):
         mode (`str`): Host mode
         intf (`str`): Interface to configure
         style (`str`, optional): legacy or new (Default is legacy)
-    Return:   
+    Return:
         None
     Raise:
-        SubCommandFailure: Failed configuring  
+        SubCommandFailure: Failed configuring
     """
     cmd = ""
     if style == "new":
@@ -611,7 +611,7 @@ def unconfigure_authentication_host_mode(device,mode,intf,style='legacy'):
     else:
         cmd = "authentication"
 
-    try:    
+    try:
         device.configure([
             "interface {intf}".format(intf=intf),
             "no {cmd} host-mode {mode}".format(cmd=cmd,mode=mode)
@@ -619,7 +619,7 @@ def unconfigure_authentication_host_mode(device,mode,intf,style='legacy'):
     except SubCommandFailure:
         raise SubCommandFailure(
             'Unable to unconfigure host-mode'
-        )        
+        )
 
 def configure_authentication_order(device,order,intf):
 
@@ -628,10 +628,10 @@ def configure_authentication_order(device,order,intf):
         device (`obj`): Device object
         order (`str`): mab dot1x/dot1x/mab/dot1x mab
         intf (`str`): Interface to configure
-    Return:   
+    Return:
         None
     Raise:
-        SubCommandFailure: Failed configuring  
+        SubCommandFailure: Failed configuring
     """
     try:
         device.configure([
@@ -641,7 +641,7 @@ def configure_authentication_order(device,order,intf):
     except SubCommandFailure:
         raise SubCommandFailure(
             'Unable to configure authentication order'
-        )        
+        )
 
 def unconfigure_authentication_order(device,order,intf):
 
@@ -650,10 +650,10 @@ def unconfigure_authentication_order(device,order,intf):
         device (`obj`): Device object
         order (`str`): mab dot1x/dot1x/mab/dot1x mab
         intf (`str`): Interface to configure
-    Return:   
+    Return:
         None
     Raise:
-        SubCommandFailure: Failed configuring  
+        SubCommandFailure: Failed configuring
     """
     try:
         device.configure([
@@ -672,10 +672,10 @@ def configure_authentication_priority(device,priority,intf):
         device (`obj`): Device object
         priority (`str`): mab dot1x/dot1x/mab/dot1x mab
         intf (`str`): Interface to configure
-    Return:   
+    Return:
         None
     Raise:
-        SubCommandFailure: Failed configuring  
+        SubCommandFailure: Failed configuring
     """
     try:
         device.configure([
@@ -694,10 +694,10 @@ def unconfigure_authentication_priority(device,priority,intf):
         device (`obj`): Device object
         priority (`str`): mab dot1x/dot1x/mab/dot1x mab
         intf (`str`): Interface to configure
-    Return:   
+    Return:
         None
     Raise:
-        SubCommandFailure: Failed configuring  
+        SubCommandFailure: Failed configuring
     """
     try:
         device.configure([
@@ -707,21 +707,21 @@ def unconfigure_authentication_priority(device,priority,intf):
     except SubCommandFailure:
         raise SubCommandFailure(
             'Unable to unconfigure authentication priority'
-        )        
+        )
 
 def configure_authentication_port_control(device,control,intf,style='legacy'):
 
-    """Configure legacy cli 
+    """Configure legacy cli
     authentication port-control auto/force-authorized/force-unauthorized
     Args:
         device (`obj`): Device object
         control (`str`): auto/force-authorized/force-unauthorized
         intf (`str`): Interface to configure
         style (`str`, optional): legacy or new (Default is legacy)
-    Return:   
+    Return:
         None
     Raise:
-        SubCommandFailure: Failed configuring  
+        SubCommandFailure: Failed configuring
     """
 
     cmd = ""
@@ -739,20 +739,20 @@ def configure_authentication_port_control(device,control,intf,style='legacy'):
         raise SubCommandFailure(
             'Unable to configure authentication port-control'
         )
-        
+
 def unconfigure_authentication_port_control(device,control,intf,style='legacy'):
 
-    """UnConfigure legacy cli 
+    """UnConfigure legacy cli
     authentication port-control auto/force-authorized/force-unauthorized
     Args:
         device (`obj`): Device object
         control (`str`): auto/force-authorized/force-unauthorized
         intf (`str`): Interface to configure
         style (`str`, optional): legacy or new (default is legacy)
-    Return:   
+    Return:
         None
     Raise:
-        SubCommandFailure: Failed configuring  
+        SubCommandFailure: Failed configuring
     """
     cmd = ""
     if style == "new":
@@ -771,15 +771,15 @@ def unconfigure_authentication_port_control(device,control,intf,style='legacy'):
 
 def configure_authentication_periodic(device,intf):
 
-    """Configure legacy cli 
+    """Configure legacy cli
         authentication periodic
     Args:
         device (`obj`): Device object
         intf (`str`): Interface to configure
-    Return:   
+    Return:
         None
     Raise:
-        SubCommandFailure: Failed configuring  
+        SubCommandFailure: Failed configuring
     """
     try:
         device.configure([
@@ -789,19 +789,19 @@ def configure_authentication_periodic(device,intf):
     except SubCommandFailure:
         raise SubCommandFailure(
             'Unable to configure authentication periodic'
-)        
+)
 
 def unconfigure_authentication_periodic(device,intf):
 
-    """UnConfigure legacy cli 
+    """UnConfigure legacy cli
     authentication periodic
     Args:
         device (`obj`): Device object
         intf (`str`): Interface to configure
-    Return:   
+    Return:
         None
     Raise:
-        SubCommandFailure: Failed configuring  
+        SubCommandFailure: Failed configuring
     """
     try:
         device.configure([
@@ -811,20 +811,20 @@ def unconfigure_authentication_periodic(device,intf):
     except SubCommandFailure:
         raise SubCommandFailure(
             'Unable to unconfigure authentication periodic'
-)        
+)
 
 def configure_authentication_timer_reauth(device,value,intf):
 
-    """Configure legacy cli 
+    """Configure legacy cli
     authentication timer reauthenticate value/server
     Args:
         device (`obj`): Device object
         value (`str`): authentication timer reauthenticate value/server
         intf (`str`): Interface to configure
-    Return:   
+    Return:
         None
     Raise:
-        SubCommandFailure: Failed configuring  
+        SubCommandFailure: Failed configuring
     """
     try:
         device.configure([
@@ -835,18 +835,18 @@ def configure_authentication_timer_reauth(device,value,intf):
         raise SubCommandFailure(
             'Unable to unconfigure authentication timer reauthenticate'
         )
-        
+
 def unconfigure_authentication_timer_reauth(device,intf):
 
-    """UnConfigure legacy cli 
+    """UnConfigure legacy cli
     authentication timer reauthenticate value/server
     Args:
         device (`obj`): Device object
         intf (`str`): Interface to configure
-    Return:   
+    Return:
         None
     Raise:
-        SubCommandFailure: Failed configuring  
+        SubCommandFailure: Failed configuring
     """
     try:
         device.configure([
@@ -860,16 +860,16 @@ def unconfigure_authentication_timer_reauth(device,intf):
 
 def configure_auth_method(device,value,intf):
 
-    """Configure cli 
+    """Configure cli
     authentication method mab/dot1x pae authenticator
     Args:
         device (`obj`): Device object
         value (`str`): mab/dot1x
         intf (`str`): Interface to configure
-    Return:   
+    Return:
         None
     Raise:
-        SubCommandFailure: Failed configuring  
+        SubCommandFailure: Failed configuring
     """
     cmd = ""
     if value == "dot1x":
@@ -889,16 +889,16 @@ def configure_auth_method(device,value,intf):
 
 def unconfigure_auth_method(device,value,intf):
 
-    """unconfigure legacy cli 
+    """unconfigure legacy cli
     authentication method mab/dot1x pae authenticator
     Args:
         device (`obj`): Device object
         value (`str`): mab/dot1x
         intf (`str`): Interface to configure
-    Return:   
+    Return:
         None
     Raise:
-        SubCommandFailure: Failed configuring  
+        SubCommandFailure: Failed configuring
     """
     cmd = ""
     if value == "dot1x":
@@ -946,7 +946,7 @@ def configure_dot1x_cred_pki(device, profile_name, user_name, pki_trustpoint):
 
 def configure_dot1x_pae(device, intf, mode='both'):
 
-    """Configure 
+    """Configure
     dot1x pae {mode}
 
     Args:
@@ -996,7 +996,7 @@ def unconfigure_dot1x_pae(device, intf, mode='both'):
 
     except SubCommandFailure:
         log.error('Failed configuring dot1x pae command on interface')
-        
+
 
 def configure_service_template_linksec(device, template, session_type):
     """Configure Service template with link security
@@ -1011,7 +1011,7 @@ def configure_service_template_linksec(device, template, session_type):
         Raises:
             SubCommandFailure: Failed to configure Service template with link security
     """
-    
+
     cmd = [
         f'service-template {template}',
         f'linksec policy {session_type}',
@@ -1025,9 +1025,9 @@ def configure_service_template_linksec(device, template, session_type):
         raise SubCommandFailure(
             "Could not configure Service template with link security")
 
-        
+
 def unconfigure_service_template(device, template):
-    """Unconfigure Service template 
+    """Unconfigure Service template
         Args:
             device ('obj'): device to use
             template (`str`): template name
@@ -1036,7 +1036,7 @@ def unconfigure_service_template(device, template):
             None
 
         Raises:
-            SubCommandFailure: Failed to unconfigure Service template 
+            SubCommandFailure: Failed to unconfigure Service template
     """
     cmd = f'no service-template {template}'
 
@@ -1061,7 +1061,7 @@ def configure_service_template_voice(device, template):
         Raises:
             SubCommandFailure: Failed to configure Service template with voice
     """
-    
+
     cmd = [
         f'service-template {template}',
         'voice vlan'
@@ -1076,12 +1076,12 @@ def configure_service_template_voice(device, template):
             "Could not configure Service template with voice")
 
 
-def configure_class_map_subscriber(device, 
-                                   map_name, 
-                                   match_type, 
+def configure_class_map_subscriber(device,
+                                   map_name,
+                                   match_type,
                                    result_type=None,
                                    auth_status=None,
-                                   method_type=None, 
+                                   method_type=None,
                                    dot1x_type=None,
                                    priority_type=None,
                                    priority=None):
@@ -1089,14 +1089,14 @@ def configure_class_map_subscriber(device,
         Args:
             device ('obj'): device to use
             map_name ('str'): map name
-            match_type ('str'): Match type 
+            match_type ('str'): Match type
             result_type ('str', optional): Result type, defaults to None
             auth_status ('str', optional): Authorization status, defaults to None
             method_type ('str', optional): Method type, defaults to None
             dot1x_type ('str', optional): Dot1x type, defaults to None
             priority_type('str', optional): Priority type, defaults to None
             priority ('str', optional): Priorit value, defaults to None
-            
+
         Returns:
             None
 
@@ -1116,7 +1116,7 @@ def configure_class_map_subscriber(device,
        cmd.append (f'match {match_type} {method_type}')
     elif priority_type:
        cmd.append (f'match {match_type} {priority_type} {priority}')
-       
+
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -1144,8 +1144,8 @@ def unconfigure_class_map_subscriber(device, map_name):
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            "Could not Unconfigure Class Map Subscriber") 
-   
+            "Could not Unconfigure Class Map Subscriber")
+
 
 def configure_dot1x_cred_int(device, interface, cred_profile_name=None, eap_profile=None, auth_profile=None):
     """Configure Dot1x credential on interface
@@ -1174,7 +1174,7 @@ def configure_dot1x_cred_int(device, interface, cred_profile_name=None, eap_prof
 
     if auth_profile is not None:
        cmd.append(f'dot1x authenticator eap profile {auth_profile}')
-    
+
 
     log.debug("Configure dot1x credential on interface")
     try:
@@ -1236,13 +1236,13 @@ def configure_radius_server_accounting_system(device,minutes,seconds,privilege_l
         SubCommandFailure: Failed configuring radius-server accounting system host-config
     """
     log.info(f"Configuring radius-server accounting system host-config")
-	
+
     configs=[
         "radius-server accounting system host-config",
         "line console 0",
         f"exec-timeout {minutes} {seconds}",
         f"privilege level {privilege_level}",
-        f"login authentication {auth_list}"    
+        f"login authentication {auth_list}"
 	]
     try:
         device.configure(configs)
@@ -1254,14 +1254,14 @@ def configure_service_template_with_inactivity_timer(device,template_name,timer)
     Args:
         device ('obj'): Device object
         template_name ('str'): Specify a template name
-        timer ('int'): inactivity timer value 
+        timer ('int'): inactivity timer value
     Return:
         None
     Raise:
         SubCommandFailure: Failed configuring service template with inactivity timer
     """
     log.info(f"Configuring service template with inactivity timer")
-	
+
     configs=[
 	    f"service-template {template_name}",
 	    f"inactivity-timer {timer}"
@@ -1283,7 +1283,7 @@ def configure_service_template_with_vlan(device,template_name,vlan_id):
         SubCommandFailure: Failed configuring service template with vlan
     """
     log.info(f"Configuring service template with vlan")
-	
+
     configs=[
 	    f"service-template {template_name}",
 	    f"vlan {vlan_id}"
@@ -1305,7 +1305,7 @@ def configure_service_template_with_access_group(device,template_name,access_grp
         SubCommandFailure: Failed configuring service template with access group
     """
     log.info(f"Configuring service template with access group")
-	
+
     configs=[
 	    f"service-template {template_name}",
 	    f"access-group {access_grp}"
@@ -1327,7 +1327,7 @@ def configure_class_map_type_match_any(device,class_map_name,service_temp_name):
         SubCommandFailure: Failed configuring class-map type control subscriber match-any
     """
     log.info(f"Configuring service template with access group")
-	
+
     configs=[
 	    f"class-map type control subscriber match-any {class_map_name}",
 	    f"match activated-service-template {service_temp_name}"
@@ -1349,7 +1349,7 @@ def configure_class_map_type_match_none(device,class_map_name,service_temp_name)
         SubCommandFailure: Failed configuring class-map type control subscriber match-none
     """
     log.info(f"Configuring service template with access group")
-	
+
     configs=[
 	    f"class-map type control subscriber match-none {class_map_name}",
 	    f"match activated-service-template {service_temp_name}"
@@ -1373,7 +1373,7 @@ def configure_template_methods_for_dot1x(device,template_name,vlan_id,voice_vlan
         SubCommandFailure: Failed configuring template methods for dot1x
     """
     log.info(f"Configuring template methods for dot1x")
-	
+
     configs=[
         f"template {template_name}",
         "dot1x pae authenticator",
@@ -1405,23 +1405,23 @@ def configure_template_methods_using_max_reauth(device,template_name,timeout_per
         SubCommandFailure: Failed configuring template methods using max reauth and timeout
     """
     log.info(f"Configuring template methods for dot1x")
-	
+
     configs=[
         f"template {template_name}",
         f"dot1x timeout tx-period {timeout_period}",
-        f"dot1x max-reauth-req {max_reauth}" 
+        f"dot1x max-reauth-req {max_reauth}"
 	]
     try:
         device.configure(configs)
     except SubCommandFailure as e:
-        raise SubCommandFailure(f"Could not configure template methods using max reauth and timeout. Error:\n{e}")   
+        raise SubCommandFailure(f"Could not configure template methods using max reauth and timeout. Error:\n{e}")
 
 def clear_access_session_mac(device, mac):
     """Clear Access Session MAC
     Args:
         device ('obj'): device to use
         mac (`str`): MAC to be cleared
-        
+
     Returns:
         None
 
@@ -1447,14 +1447,14 @@ def unconfigure_source_template(device, interface, template_name):
         Raises:
             SubCommandFailure: Failed to remove the source template
     """
-	
+
     converted_interface = Common.convert_intf_name(interface)
     cmd = [
                 f"interface {interface}",
-                f"no source template {template_name}"           
-          ]  
+                f"no source template {template_name}"
+          ]
     log.info("Unconfigure source template {tmp} on {intf}".format(tmp=template_name, intf=converted_interface))
-	
+
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -1468,14 +1468,14 @@ def configure_service_policy(device, policy_name):
         Args:
             device ('obj'): device to use
             policy_name (`str`): Policy_name
-            
+
         Returns:
             None
 
         Raises:
             SubCommandFailure: Failed to configure Service policy
     """
-    
+
     cmd = [f'service-policy type control subscriber {policy_name}']
 
     log.debug("Configure Service policy")
@@ -1491,14 +1491,14 @@ def unconfigure_service_policy(device):
     """Unconfigure Service policy
         Args:
             device ('obj'): device to use
-                        
+
         Returns:
             None
 
         Raises:
             SubCommandFailure: Failed to unconfigure Service policy
     """
-    
+
     cmd = ['no service-policy type control subscriber']
 
     log.debug("Unconfigure Service policy")
@@ -1516,14 +1516,14 @@ def configure_access_session_limit(device, session_limit, event_limit):
             device ('obj'): device to use
             session_limit (`int`): Session Limit or max sessions to be logged
             event_limit ('int'): Event Limit per session
-            
+
         Returns:
             None
 
         Raises:
             SubCommandFailure: Failed to configure Access session and event limit
     """
-    
+
     cmd = [f'access-session event-logging enable session-limit {session_limit} event-limit {event_limit}']
 
     log.debug("Configure Access session and event limit")
@@ -1539,14 +1539,14 @@ def unconfigure_access_session_limit(device):
     """Unconfigure Access session and event limit
         Args:
             device ('obj'): device to use
-                        
+
         Returns:
             None
 
         Raises:
             SubCommandFailure: Failed to unconfigure Access session and event limit
     """
-    
+
     cmd = ['no access-session event-logging enable session-limit']
 
     log.debug("Unconfigure Access session and event limit")
@@ -1572,7 +1572,7 @@ def unconfigure_dot1x_template(device, template_name):
     """
     cmd = ''
     cmd += f'no template {template_name}'
-        
+
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -1581,7 +1581,7 @@ def unconfigure_dot1x_template(device, template_name):
         )
 
 
-def configure_parameter_map_subscriber(device, parameter_map_name, map_num, 
+def configure_parameter_map_subscriber(device, parameter_map_name, map_num,
     filter_type, parameter_type, parameter_name, action_num, template_type,
     template_name):
     """Configure parameter map subscriber
@@ -1595,7 +1595,7 @@ def configure_parameter_map_subscriber(device, parameter_map_name, map_num,
             action_num ('int'): Action number to be configure
             template_type ('str'): Template type to be configured
             template_name ('str'): Template name to be configured
-            
+
         Returns:
             None
 
@@ -1630,7 +1630,7 @@ def configure_service_template_with_absolute_timer(device, template_name, timer)
         SubCommandFailure
     """
     log.info(f"Configuring service template with absolute timer")
-	
+
     configs=[
 	    f"service-template {template_name}",
 	    f"absolute-timer {timer}"
@@ -1652,7 +1652,7 @@ def configure_service_template_with_description(device, template_name, desc_line
         SubCommandFailure
     """
     log.info(f"Configuring service template with description")
-	
+
     configs=[
 	    f"service-template {template_name}",
 	    f"description {desc_line}"
@@ -1675,7 +1675,7 @@ def configure_service_template_with_inactivity_timer(device, template_name, time
         SubCommandFailure
     """
     log.info(f"Configuring service template with inactivity timer")
-	
+
     cmd = []
     cmd.append(f"service-template {template_name}")
     if probe:
@@ -1701,7 +1701,7 @@ def configure_service_template_with_redirect_url(device, template_name, url_link
         SubCommandFailure
     """
     log.info(f"Configuring service template with redirect url")
-	
+
     cmd = []
     cmd.append(f"service-template {template_name}")
     if acl_name:
@@ -1728,7 +1728,7 @@ def configure_service_template_with_sgt(device, template_name, sgt_range):
         SubCommandFailure
     """
     log.info(f"Configuring service template with sgt")
-	
+
     configs=[
 	    f"service-template {template_name}",
 	    f"sgt {sgt_range}"
@@ -1750,7 +1750,7 @@ def configure_service_template_with_tag(device, template_name, tag):
         SubCommandFailure
     """
     log.info(f"Configuring service template with tag")
-	
+
     configs=[
 	    f"service-template {template_name}",
 	    f"tag {tag}"
@@ -1762,7 +1762,7 @@ def configure_service_template_with_tag(device, template_name, tag):
 
 def unconfigure_autoconf(device):
     """ Unconfigure autoconf enable
-    
+
     Args:
         device ('obj'): device to use
     Returns:
@@ -1789,7 +1789,7 @@ def configure_service_template_with_command_line(device, template_name, command)
         SubCommandFailure
     """
     log.info(f"Configuring service template with command")
-	
+
     configs=[
 	    f"service-template {template_name}",
 	    f"{command}"
@@ -1798,3 +1798,89 @@ def configure_service_template_with_command_line(device, template_name, command)
         device.configure(configs)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not configure service template with command. Error:\n{e}")
+
+def configure_authentication_control_direction(device, interface, direction):
+
+    """Configure authentication control-direction
+    Args:
+        device ('obj'): Device object
+        interface ('str'): Interface to configure
+        direction ('str'): Control traffic direction (both/in)
+    Return:
+        None
+    Raise:
+        SubCommandFailure
+    """
+
+    cmd = [
+        f'interface {interface}',
+        f'authentication control-direction {direction}'
+        ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure authentication control-direction. Error:\n{e}")
+
+def unconfigure_authentication_control_direction(device, interface, direction):
+
+    """Unconfigure authentication control-direction
+    Args:
+        device ('obj'): Device object
+        interface ('str'): Interface to configure
+        direction ('str'): Control traffic direction (both/in)
+    Return:
+        None
+    Raise:
+        SubCommandFailure
+    """
+
+    cmd = [
+        f'interface {interface}',
+        f'no authentication control-direction {direction}'
+        ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure authentication control-direction. Error:\n{e}")
+
+def configure_authentication_open(device, interface):
+
+    """Configure authentication open
+    Args:
+        device ('obj'): Device object
+        interface ('str'): Interface to configure
+    Return:
+        None
+    Raise:
+        SubCommandFailure
+    """
+
+    cmd = [
+        f'interface {interface}',
+        'authentication open'
+        ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure authentication open. Error:\n{e}")
+
+def unconfigure_authentication_open(device, interface):
+
+    """Unconfigure authentication open
+    Args:
+        device ('obj'): Device object
+        interface ('str'): Interface to configure
+    Return:
+        None
+    Raise:
+        SubCommandFailure
+    """
+
+    cmd = [
+        f'interface {interface}',
+        'no authentication open'
+        ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure authentication open. Error:\n{e}")

@@ -1083,13 +1083,14 @@ def unconfigure_nat64_interface(device, interface):
         log.error(e)
         raise SubCommandFailure("Could not unconfigure nat64 on interface")
         
-def configure_nat64_prefix_stateful(device, prefix, prefix_length, interface = None):
+def configure_nat64_prefix_stateful(device, prefix, prefix_length, interface = None, vrf_name = None):
     """ Configure nat64 prefix stateful 
         Args:
             device ('obj'): device to use
             interface ('str'): interface
             prefix ('str'): prefix
             prefix_lenght ('str'): prefix length
+            vrf_name ('str'): vrf name
         Returns:
             None
         Raises:
@@ -1102,6 +1103,8 @@ def configure_nat64_prefix_stateful(device, prefix, prefix_length, interface = N
                 "interface {}".format(interface),
                 "nat64 prefix stateful {}/{}".format(prefix,prefix_length)           
               ]  
+    elif vrf_name:
+        cmd= f"nat64 prefix stateful {prefix}/{prefix_length} vrf {vrf_name}"
     else:
         cmd = "nat64 prefix stateful {}/{}".format(prefix,prefix_length)
           
@@ -1111,13 +1114,14 @@ def configure_nat64_prefix_stateful(device, prefix, prefix_length, interface = N
         log.error(e)
         raise SubCommandFailure("Could not configure nat64 prefix stateful")
         
-def unconfigure_nat64_prefix_stateful(device, interface=None, prefix=None, prefix_length=None):
+def unconfigure_nat64_prefix_stateful(device, interface=None, prefix=None, prefix_length=None, vrf_name=None):
     """ Unconfigure nat64 prefix stateful 
         Args:
             device ('obj'): device to use
             interface ('str'): interface
             prefix ('str'): prefix
             prefix_lenght ('str'): prefix length
+            vrf_name ('str'): vrf name
         Returns:
             None
         Raises:
@@ -1129,7 +1133,9 @@ def unconfigure_nat64_prefix_stateful(device, interface=None, prefix=None, prefi
         cmd = [
                 "interface {}".format(interface),
                 "no nat64 prefix stateful {}/{}".format(prefix,prefix_length)           
-              ]                  
+              ] 
+    elif vrf_name:
+        cmd= f"no nat64 prefix stateful {prefix}/{prefix_length} vrf {vrf_name}"                 
     elif prefix:
         cmd = ["no nat64 prefix stateful {}/{}".format(prefix,prefix_length)]        
     else:
@@ -1141,18 +1147,26 @@ def unconfigure_nat64_prefix_stateful(device, interface=None, prefix=None, prefi
         log.error(e)
         raise SubCommandFailure("Could not unconfigure nat64 prefix stateful")
         
-def configure_nat64_v6v4_static(device, ipv6_address, ipv4_address):
+def configure_nat64_v6v4_static(device, ipv6_address, ipv4_address, vrf_name=None, match_in_vrf=None):
     """ Configure nat64 v6v4 static 
         Args:
             device ('obj'): device to use
             ipv6_address ('str'): ipv6 address
             ipv4_address ('str'): ipv4 address
+            vrf_name ('str'): vrf name
+            match_in_vrf ('str'): match-in-vrf
         Returns:
             None
         Raises:
             SubCommandFailure: nat64 v6v4 static not configured
     """
-    cmd = ["nat64 v6v4 static {} {}".format(ipv6_address,ipv4_address)]
+    if vrf_name:
+        if match_in_vrf:
+            cmd= f"nat64 v6v4 static {ipv6_address} {ipv4_address} vrf {vrf_name} {match_in_vrf}" 
+        else:
+            cmd= f"nat64 v6v4 static {ipv6_address} {ipv4_address} vrf {vrf_name}" 
+    else:
+        cmd = ["nat64 v6v4 static {} {}".format(ipv6_address,ipv4_address)]
 
     try:
         device.configure(cmd)
@@ -1160,12 +1174,14 @@ def configure_nat64_v6v4_static(device, ipv6_address, ipv4_address):
         log.error(e)
         raise SubCommandFailure("Could not configure nat64 v6v4 static")
         
-def unconfigure_nat64_v6v4_static(device, ipv6_address, ipv4_address):
+def unconfigure_nat64_v6v4_static(device, ipv6_address, ipv4_address, vrf_name=None, match_in_vrf=None):
     """ Unconfigure nat64 v6v4 static 
         Args:
             device ('obj'): device to use
             ipv6_address ('str'): ipv6 address
             ipv4_address ('str'): ipv4 address
+            vrf_name ('str'): vrf name
+            match_in_vrf ('str'): match-in-vrf
         Returns:
             None
         Raises:
@@ -1177,7 +1193,13 @@ def unconfigure_nat64_v6v4_static(device, ipv6_address, ipv4_address):
              action='sendline(yes)',
              loop_continue=True,
              continue_timer=False)])
-    cmd = ["no nat64 v6v4 static {} {}".format(ipv6_address,ipv4_address)]
+    if vrf_name:
+        if match_in_vrf:
+            cmd= f"no nat64 v6v4 static {ipv6_address} {ipv4_address} vrf {vrf_name} {match_in_vrf}" 
+        else:
+            cmd= f"no nat64 v6v4 static {ipv6_address} {ipv4_address} vrf {vrf_name}" 
+    else:
+        cmd = ["no nat64 v6v4 static {} {}".format(ipv6_address,ipv4_address)]
 
     try:
         device.configure(cmd,reply=dialog)
@@ -1296,19 +1318,29 @@ def unconfigure_nat64_v4_pool(
 def configure_nat64_v4_list_pool(
     device, 
     acl_list_number_name, 
-    pool_name
+    pool_name,
+    vrf_name=None,
+    match_in_vrf=None
 ):
     """ Configure nat64 v4 list pool 
         Args:
             device ('obj'): device to use
             acl_list_number_name ('str'): access list number or name
             pool_name ('str'): any pool name
+            vrf_name ('str'): vrf name
+            match_in_vrf ('str'): match-in-vrf
         Returns:
             None
         Raises:
             SubCommandFailure: nat64 v4 list pool not configured
     """
-    cmd = ["nat64 v6v4 list {} pool {}".format(acl_list_number_name,pool_name)]
+    if vrf_name:
+        if match_in_vrf:
+            cmd= f"nat64 v6v4 list {acl_list_number_name} pool {pool_name} vrf {vrf_name} {match_in_vrf}"
+        else:
+            cmd= f"nat64 v6v4 list {acl_list_number_name} pool {pool_name} vrf {vrf_name}" 
+    else:
+        cmd = ["nat64 v6v4 list {} pool {}".format(acl_list_number_name,pool_name)]
 
     try:
         device.configure(cmd)
@@ -1342,19 +1374,29 @@ def unconfigure_nat_pool_overload_rule(
 def unconfigure_nat64_v4_list_pool(
     device, 
     acl_list_number_name, 
-    pool_name
+    pool_name,
+    vrf_name=None,
+    match_in_vrf=None
 ):
     """ Unconfigure nat64 v4 list pool 
         Args:
             device ('obj'): device to use
             acl_list_number_name ('str'): access list number or name
             pool_name ('str'): any pool name
+            vrf_name ('str'): vrf name
+            match_in_vrf ('str'): match-in-vrf
         Returns:
             None
         Raises:
             SubCommandFailure: nat64 v4 list pool not unconfigured
     """
-    cmd = ["no nat64 v6v4 list {} pool {}".format(acl_list_number_name,pool_name)]
+    if vrf_name:
+        if match_in_vrf:
+            cmd= f"no nat64 v6v4 list {acl_list_number_name} pool {pool_name} vrf {vrf_name} {match_in_vrf}"
+        else:
+            cmd= f"no nat64 v6v4 list {acl_list_number_name} pool {pool_name} vrf {vrf_name}"
+    else:
+        cmd = ["no nat64 v6v4 list {} pool {}".format(acl_list_number_name,pool_name)]
 
     try:
         device.configure(cmd)
@@ -1365,19 +1407,29 @@ def unconfigure_nat64_v4_list_pool(
 def configure_nat64_v4_list_pool_overload(
     device, 
     acl_list_number_name, 
-    pool_name
+    pool_name,
+    vrf_name=None,
+    match_in_vrf=None
 ):
     """ Configure nat64 v4 list pool overload
         Args:
             device ('obj'): device to use
             acl_list_number_name ('str'): access list number or name
             pool_name ('str'): any pool name
+            vrf_name ('str'): vrf name
+            match_in_vrf ('str'): match-in-vrf
         Returns:
             None
         Raises:
             SubCommandFailure: nat64 v4 list pool overload not configured
     """
-    cmd = ["nat64 v6v4 list {} pool {} overload".format(acl_list_number_name,pool_name)]
+    if vrf_name:
+        if match_in_vrf:
+            cmd= f"nat64 v6v4 list {acl_list_number_name} pool {pool_name} vrf {vrf_name} overload {match_in_vrf}"
+        else:
+            cmd= f"nat64 v6v4 list {acl_list_number_name} pool {pool_name} vrf {vrf_name} overload"
+    else:
+        cmd = ["nat64 v6v4 list {} pool {} overload".format(acl_list_number_name,pool_name)]
 
     try:
         device.configure(cmd)
@@ -1388,19 +1440,29 @@ def configure_nat64_v4_list_pool_overload(
 def unconfigure_nat64_v4_list_pool_overload(
     device, 
     acl_list_number_name, 
-    pool_name
+    pool_name,
+    vrf_name=None,
+    match_in_vrf=None
 ):
     """ Unconfigure nat64 v4 list pool overload 
         Args:
             device ('obj'): device to use
             acl_list_number_name ('str'): access list number or name
             pool_name ('str'): any pool name
+            vrf_name ('str'): vrf name
+            match_in_vrf ('str'): match-in-vrf
         Returns:
             None
         Raises:
             SubCommandFailure: nat64 v4 list pool overload not unconfigured
     """
-    cmd = ["no nat64 v6v4 list {} pool {} overload".format(acl_list_number_name,pool_name)]
+    if vrf_name:
+        if match_in_vrf:
+            cmd= f"no nat64 v6v4 list {acl_list_number_name} pool {pool_name} vrf {vrf_name} overload {match_in_vrf}"
+        else:
+            cmd= f"no nat64 v6v4 list {acl_list_number_name} pool {pool_name} vrf {vrf_name} overload"
+    else:
+        cmd = ["no nat64 v6v4 list {} pool {} overload".format(acl_list_number_name,pool_name)]
 
     try:
         device.configure(cmd)

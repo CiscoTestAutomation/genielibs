@@ -5,13 +5,13 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-  prompt: Switch-9500(config)#
+  prompt: SecG-A3-9410HA(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: Switch-9500(config-line)#
+  prompt: SecG-A3-9410HA(config-line)#
 connect:
   commands:
     ? ''
@@ -29,10 +29,14 @@ execute:
     config-transaction:
       new_state: configure
     show version: ''
-    telnet 10.106.26.227 /vrf Mgmt-vrf:
+    telnet 10.8.12.26 /vrf Mgmt-vrf:
       response:
-      - ''
+      - 'Username:Password:SecG-A3-9410HA>Password:'
+      response_type: circular
+    telnet 100.8.12.5:
+      response:
+      - 'Username:Password:SecG-A3-9410HA>Password:'
       response_type: circular
     term length 0: ''
     term width 0: ''
-  prompt: Switch-9500#
+  prompt: SecG-A3-9410HA#

@@ -1,3 +1,4 @@
+import os
 import unittest
 from pyats.topology import loader
 from genie.libs.sdk.apis.iosxe.utils import perform_ssh
@@ -7,21 +8,21 @@ class TestPerformSsh(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        testbed = """
+        testbed = f"""
         devices:
-          Switch-9500:
+          pi-infra23:
             connections:
               defaults:
                 class: unicon.Unicon
               a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
+                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
             platform: cat9k
-            type: cat9k
+            type: ios
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Switch-9500']
+        self.device = self.testbed.devices['pi-infra23']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -29,6 +30,6 @@ class TestPerformSsh(unittest.TestCase):
         )
 
     def test_perform_ssh(self):
-        result = perform_ssh(self.device, 'Switch-9500', '10.106.26.212', 'lab', 'lab', 'Mgmt-vrf', 'lab', 60, 22)
+        result = perform_ssh(self.device, 'pi-infra23', '10.104.187.241', 'lab', 'lab', None, 'Infra@12345', 60, 22, 'hmac-sha2-256-etm@openssh.com')
         expected_output = True
         self.assertEqual(result, expected_output)

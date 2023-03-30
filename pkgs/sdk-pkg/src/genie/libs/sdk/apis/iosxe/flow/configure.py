@@ -1014,3 +1014,81 @@ def configure_monitor_capture_match(
                 capture_name=capture_name, error=e,
             )
         )
+
+
+def unconfigure_interface_datalink_flow_monitor(device, interface, protocol, flow_monitor, direction):
+    """ unconfigure_flow_monitor
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Interface Name
+            protocol ('str'): Protocol to unconfigure. Ex: ip, ipv6, datalink
+            flow_monitor ('str'): Flow monitor name.
+            direction ('str'): Direction to apply Flow Monitor on traffic
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed to Configure Monitor Capture
+    """
+
+    cmd = [f'interface {interface}', f'no {protocol} flow monitor {flow_monitor} {direction}']
+    
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure flow monitor . Error:\n{error}"
+                .format(device=device, error=e))
+
+def configure_flow_monitor_on_vlan_configuration(device, vlan_id, monitor_name, direction, sampler_name='', type='datalink'):
+    """ Configure Flow Monitor on vlan configuration
+        Args:
+            device ('obj'): Device object
+            vlan_id ('str'): Vlan id list (eg. 1-10,15)
+            type ('str'): Type of flow monitor (eg. datalink,ip,ipv6)
+            monitor_name ('str'): Flow monitor name
+            sampler_name ('str', Optional): Sampler name
+            direction ('str'): Direction of monitor (input/output)
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed unconfiguring interface with flow monitor
+    """
+    if sampler_name:
+        cmd = [f"vlan configuration {vlan_id}",
+            f"{type} flow monitor {monitor_name} sampler {sampler_name} {direction}"]
+    else:
+        cmd = [f"vlan configuration {vlan_id}",
+            f"{type} flow monitor {monitor_name} {direction}"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to configure {type} flow monitor {monitor_name} on valn configuration {vlan_id}. Error:\n{e}'
+        )
+
+def unconfigure_flow_monitor_on_vlan_configuration(device, vlan_id, monitor_name, direction, sampler_name='', type='datalink'):
+    """ Unconfigure Flow Monitor on vlan configuration
+        Args:
+            device ('obj'): Device object
+            vlan_id ('str'): Vlan id list (eg. 1-10,15)
+            type ('str'): Type of flow monitor (eg. datalink,ip,ipv6) 
+            monitor_name ('str'): Flow monitor name
+            sampler_name ('str', Optional): Sampler name
+            direction ('str'): Direction of monitor (input/output)
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed unconfiguring interface with flow monitor
+    """
+    if sampler_name:
+        cmd = [f"vlan configuration {vlan_id}",
+            f"no {type} flow monitor {monitor_name} sampler {sampler_name} {direction}"]
+    else:
+        cmd = [f"vlan configuration {vlan_id}",
+            f"no {type} flow monitor {monitor_name} {direction}"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to unconfigure {type} flow monitor {monitor_name} on valn configuration {vlan_id}. Error:\n{e}'
+        )
