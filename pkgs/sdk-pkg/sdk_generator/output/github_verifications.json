@@ -7823,7 +7823,7 @@
       "devices": [
         "uut"
       ],
-      "doc": " Parser for: \n        * show lisp service {service} summary\n        * show lisp {lisp_id} service {service} summary\n        * show lisp locator-table {locator_table} service {service} summary\n        * show lisp locator-table vrf {rloc_vrf} service {service} summary\n    ",
+      "doc": " Parser for:\n        * show lisp service {service} summary\n        * show lisp {lisp_id} service {service} summary\n        * show lisp locator-table {locator_table} service {service} summary\n        * show lisp locator-table vrf {rloc_vrf} service {service} summary\n    ",
       "groups": [
         "lisp"
       ],
@@ -7851,7 +7851,7 @@
       "devices": [
         "uut"
       ],
-      "doc": " Parser for: \n        * show lisp service {service} summary\n        * show lisp {lisp_id} service {service} summary\n        * show lisp locator-table {locator_table} service {service} summary\n        * show lisp locator-table vrf {rloc_vrf} service {service} summary\n    ",
+      "doc": " Parser for:\n        * show lisp service {service} summary\n        * show lisp {lisp_id} service {service} summary\n        * show lisp locator-table {locator_table} service {service} summary\n        * show lisp locator-table vrf {rloc_vrf} service {service} summary\n    ",
       "groups": [
         "lisp"
       ],
@@ -7879,7 +7879,7 @@
       "devices": [
         "uut"
       ],
-      "doc": " Parser for: \n        * show lisp service {service} summary\n        * show lisp {lisp_id} service {service} summary\n        * show lisp locator-table {locator_table} service {service} summary\n        * show lisp locator-table vrf {rloc_vrf} service {service} summary\n    ",
+      "doc": " Parser for:\n        * show lisp service {service} summary\n        * show lisp {lisp_id} service {service} summary\n        * show lisp locator-table {locator_table} service {service} summary\n        * show lisp locator-table vrf {rloc_vrf} service {service} summary\n    ",
       "groups": [
         "lisp"
       ],

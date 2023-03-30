@@ -1,0 +1,42 @@
+configure:
+  commands:
+    destination: "destination\r\n"
+    end:
+      new_state: execute
+    erspan-id 1: "erspan-id 1\r\n"
+    exit: "exit\r\n"
+    ip address 4.4.4.2: "ip address 4.4.4.2\r\n"
+    line console 0:
+      new_state: configure_line
+    monitor session 1 type erspan-source: "monitor session 1 type erspan-source\r\n"
+    no logging console: ''
+    no shutdown: "no shutdown\r\n"
+    origin ip address 5.5.5.5: "origin ip address 5.5.5.5\r\n"
+    source interface TwentyFiveGigE2/1/1: "source interface TwentyFiveGigE2/1/1\r\n"
+  prompt: stack3-nyquist-1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: stack3-nyquist-1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: stack3-nyquist-1#

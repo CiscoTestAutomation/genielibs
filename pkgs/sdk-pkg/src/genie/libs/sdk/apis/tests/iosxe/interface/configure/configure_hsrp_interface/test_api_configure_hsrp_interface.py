@@ -10,7 +10,7 @@ class TestConfigureHsrpInterface(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          9300-1:
+          stack3-nyquist-1:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,11 +18,11 @@ class TestConfigureHsrpInterface(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: cat9k
-            type: C9300
+            platform: c9300
+            type: c9300
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['9300-1']
+        self.device = self.testbed.devices['stack3-nyquist-1']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,6 @@ class TestConfigureHsrpInterface(unittest.TestCase):
         )
 
     def test_configure_hsrp_interface(self):
-        result = configure_hsrp_interface(self.device, 'vlan10', 0, '10.1.0.3', None, '0', '1', '4')
+        result = configure_hsrp_interface(self.device, 'Te1/0/15', '2', '10.10.10.11', None, None, None, None, '0', None, None, None, None, None, None, None, None)
         expected_output = None
         self.assertEqual(result, expected_output)

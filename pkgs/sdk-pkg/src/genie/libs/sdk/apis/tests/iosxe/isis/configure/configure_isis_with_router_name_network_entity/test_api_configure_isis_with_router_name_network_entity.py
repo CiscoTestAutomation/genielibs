@@ -10,7 +10,7 @@ class TestConfigureIsisWithRouterNameNetworkEntity(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          mac-gen2:
+          stack3-nyquist-1:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,11 +18,11 @@ class TestConfigureIsisWithRouterNameNetworkEntity(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: cat9k
-            type: C9400
+            platform: c9300
+            type: c9300
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['mac-gen2']
+        self.device = self.testbed.devices['stack3-nyquist-1']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,6 @@ class TestConfigureIsisWithRouterNameNetworkEntity(unittest.TestCase):
         )
 
     def test_configure_isis_with_router_name_network_entity(self):
-        result = configure_isis_with_router_name_network_entity(self.device, 'isis_1', '49.0001.0000.0000.000a.00')
+        result = configure_isis_with_router_name_network_entity(self.device, '101', '49.0000.0000.0000.aaaa.00', 'vrf101', 'bgp', '1')
         expected_output = None
         self.assertEqual(result, expected_output)

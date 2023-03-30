@@ -3949,26 +3949,39 @@ class TestYangExec(unittest.TestCase):
         # Test the result
         self.assertEqual(subscribe_thread.result, True)
 
+
+    def test_proto_decimal_val(self):
+        request = self.make_test_subscribe_request()
+        request['returns'][0]['value'] = 6.0 / (10 ** 30)
+        request['returns'][0]['datatype'] = 'decimal64'
+        response = self.make_test_subscribe_response()
+        path_elem1 = proto.gnmi_pb2.PathElem()
+        path_elem1.name = "System/igmp-items/inst-items/bootupDelay"
+        response.update.update[0].path.elem.pop()
+        response.update.update[0].path.elem.append(path_elem1)
+        value = proto.gnmi_pb2.TypedValue()
+        value.decimal_val.digits = 6
+        value.decimal_val.precision = 30
+        response.update.update[0].val.MergeFrom(value)
+        subscribe_thread = GnmiSubscriptionStream(
+            responses=[response],
+            **request
+        )
+        subscribe_thread.start()
+        subscribe_thread.join()
+        self.assertEqual(subscribe_thread.result, True)
+
     def make_test_subscribe_response(self) -> proto.gnmi_pb2.SubscribeResponse:
         path_elem1 = proto.gnmi_pb2.PathElem()
         path_elem1.KeyEntry.key = ""
         path_elem1.KeyEntry.value = ""
-        path_elem1.name = "System"
+        path_elem1.name = "System/igmp-items/inst-items"
 
         path1 = proto.gnmi_pb2.Path()
         path1.origin = "device"
         path1.elem.append(path_elem1)
 
-        val1 = {
-                'igmp-items': 
-                {
-                    'inst-items': 
-                    {
-                        'bootupDelay': 0,
-                        'upTime': 100
-                    }
-                }
-            }
+        val1 = {'bootupDelay': 0}
         val1 = json.dumps(val1).encode('utf-8')
 
         value1 = proto.gnmi_pb2.TypedValue()
@@ -4001,7 +4014,6 @@ class TestYangExec(unittest.TestCase):
                     'datatype': '',
                     'xpath': 'System/igmp-items/inst-items/bootupDelay',
                     'name': 'bootupDelay',
-                            'value': ''
                 }
             ],
             'negative_test': False,

@@ -1012,6 +1012,43 @@ basic-mode=explicit&also-supported=report-all-tagged']
         result = self.rpcv.process_operational_state(resp, opfields)
         self.assertTrue(result)
 
+    def test_operational_state_any_operator(self):
+        """Check opfields with "any" operator."""
+        oper = self.operstate.replace('5', 'oc-policy-types:L2VPN')
+        oper = oper.replace('330', 'openconfig-policy-types:L2VPN')
+        oper = oper.replace('17', 'L2VPN')
+        oper = oper.replace('16', 'oc-policy-types:L2VPN')
+        opfields = [
+            {'selected': 'true',
+             'name': 'in-unicast-pkts',
+             'xpath': '/interfaces-state/interface/statistics/in-unicast-pkts',
+             'value': 'openconfig-policy-types:L2VPN',
+             'datatype': 'identityref',
+             'op': 'any'},
+            {'selected': 'true',
+             'name': 'in-octets',
+             'xpath': '/interfaces-state/interface/statistics/in-octets',
+             'value': 'oc-policy-types:L2VPN',
+             'datatype': 'identityref',
+             'op': 'any'},
+            {'selected': 'true',
+             'name': 'out-discards',
+             'xpath': '/interfaces-state/interface/statistics/out-discards',
+             'value': 'openconfig-policy-types:L2VPN',
+             'datatype': 'identityref',
+             'op': 'any'},
+            {'selected': 'true',
+             'name': 'out-errors',
+             'xpath': '/interfaces-state/interface/statistics/out-errors',
+             'value': 'L2VPN',
+             'datatype': 'identityref',
+             'op': 'any'}]
+
+        self._base64encode()
+        resp = self.rpcv.process_rpc_reply(oper)
+        result = self.rpcv.process_operational_state(resp, opfields)
+        self.assertTrue(result)
+
     def test_operational_state_multiple_entries(self):
         """Check verifying one entry exists in a list of multiple entries."""
         opfields = [

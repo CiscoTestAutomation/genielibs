@@ -37,7 +37,7 @@ def configure_eap_method(device, server_config):
                      fast_profile_word = "w1",
                      pki_trustpoint = "pki_word",
                      exit_eap_profiles = True,
-                     
+
                     },
     """
     # initialize list variable
@@ -75,7 +75,7 @@ def configure_eap_method(device, server_config):
 
 
 def configure_tacacs_group(device, server_config):
-    """ 
+    """
     Configure aaa tacacs server group
     Args:
         device ('obj'): Device object
@@ -130,7 +130,7 @@ def configure_tacacs_group(device, server_config):
         raise
 
 def configure_radius_group(device, server_config):
-    """ 
+    """
     Configure aaa radius server group
     Args:
         device ('obj'): Device object
@@ -144,6 +144,8 @@ def configure_radius_group(device, server_config):
                 timeout('int'): <1-1000>  Wait time (default 5 seconds)
                 ip_addr ('str'): ISE IP
                 key('str'): Server key
+                dscp_auth (<1-63>): Radius DSCP (Differentiated Services Code Point) marking value for Authentication
+                dscp_acct (<1-63>): Radius DSCP (Differentiated Services Code Point) marking value for Accounting
     Returns:
         configurations list
     Raises:
@@ -158,6 +160,8 @@ def configure_radius_group(device, server_config):
                     timeout = 10,
                     ip_addr = "11.19.99.99",
                     key = "cisco123',
+                    dscp_auth = '20',
+                    dscp_acct = '10'
                 },
     """
     #initialize list variable
@@ -178,7 +182,7 @@ def configure_radius_group(device, server_config):
     # ip radius source-interface GigabitEthernet0/0
     if 'mgmt_intf' in server_config:
         config_list.append("ip radius source-interface {}".format(server_config['mgmt_intf']))
-    
+
     # radius server sname1
     if 'server_name' in server_config:
         config_list.append("radius server {}".format(server_config['server_name']))
@@ -199,12 +203,19 @@ def configure_radius_group(device, server_config):
     if 'timeout' in server_config:
         config_list.append("timeout {}".format(server_config['timeout']))
 
+    # dscp auth 20
+    if 'dscp_auth' in server_config:
+        config_list.append(f"dscp auth {server_config['dscp_auth']}")
+
+    # dscp acct 10
+    if 'dscp_acct' in server_config:
+        config_list.append(f"dscp acct {server_config['dscp_acct']}")
+
     try:
         device.configure(config_list)
         return config_list
-    except SubCommandFailure:
-        logger.error('Failed configuring aaa radius server group')
-        raise
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Failed configuring aaa radius server group. Error:\n{e}')
 
 def configure_coa(device, config_dict):
     """
@@ -257,12 +268,12 @@ def configure_coa(device, config_dict):
                                format(config_dict['hostname'], config_dict['encryption_type'],
                                       config_dict['server_key']))
         elif 'vrf' in config_dict:
-            config_list.append("client {} vrf {} server-key {}".format(config_dict['hostname'], 
-                                                                       config_dict['vrf'], 
+            config_list.append("client {} vrf {} server-key {}".format(config_dict['hostname'],
+                                                                       config_dict['vrf'],
                                                                        config_dict['server_key']))
 
         elif 'server_key' in config_dict:
-            config_list.append("client {} server-key {}".format(config_dict['hostname'], 
+            config_list.append("client {} server-key {}".format(config_dict['hostname'],
                                                                 config_dict['server_key']))
 
     # ignore retransmission
@@ -359,7 +370,7 @@ def configure_radius_attribute_6(device):
     Raise:
         SubCommandFailure: Failed configuring
     """
-    try: 
+    try:
         device.configure([
             "radius-server attribute 6 on-for-login-auth"
         ])
@@ -387,7 +398,7 @@ def unconfigure_radius_attribute_6(device):
         raise SubCommandFailure(
             'Could not unconfigure radius attribute 6 on-for-login-auth'
         )
-        
+
 
 def configure_any_radius_server(device, server_name, addr_type, address, authport, acctport, secret):
 
@@ -415,7 +426,7 @@ def configure_any_radius_server(device, server_name, addr_type, address, authpor
     except SubCommandFailure:
         raise SubCommandFailure(
             'Could not configure radius server {server_name}'.format(server_name=server_name)
-        )    
+        )
 
 def unconfigure_any_radius_server(device, server_name):
 
@@ -435,7 +446,7 @@ def unconfigure_any_radius_server(device, server_name):
     except SubCommandFailure:
         raise SubCommandFailure(
             'Could not unconfigure radius server {server_name}'.format(server_name=server_name)
-        )            
+        )
 
 def configure_radius_server_group(device, servergrp, rad_server):
 
@@ -477,7 +488,7 @@ def unconfigure_radius_server_group(device, servergrp):
     except SubCommandFailure:
         raise SubCommandFailure(
             'Could not configure AAA radius server group {servergrp}'.format(servergrp=servergrp)
-        )   
+        )
 
 def configure_aaa_new_model(device):
 
@@ -554,12 +565,12 @@ def unconfigure_aaa_default_dot1x_methods(device):
     except SubCommandFailure:
         raise SubCommandFailure(
             'Could not unconfigure AAA dot1x default method'
-        )            
+        )
 
 def configure_aaa_login_method_none(device,servergrp):
 
     """ This configure will enable login method none that is applicable for line and vty
-    from getting locked for password 
+    from getting locked for password
     Args:
         device (`obj`): Device object
         servergrp (`str`): Radius Server Grp name
@@ -586,7 +597,7 @@ def configure_aaa_login_method_none(device,servergrp):
 def unconfigure_aaa_login_method_none(device,servergrp):
 
     """ This configure will enable login method none that is applicable for line and vty
-        from getting locked for password 
+        from getting locked for password
     Args:
         device (`obj`): Device object
         servergrp (`str`): Radius Server Grp name
@@ -850,21 +861,21 @@ def unconfigure_radius_interface_vrf(device, interface, vrf):
             "Could not Unconfigure Radius Interface via vrf"
         )
 
-def configure_common_criteria_policy(device, 
-                                     policy_name, 
+def configure_common_criteria_policy(device,
+                                     policy_name,
                                      char_changes=None,
-                                     copy=None, 
-                                     lifetime=None, 
-                                     lower_case=None, 
+                                     copy=None,
+                                     lifetime=None,
+                                     lower_case=None,
                                      upper_case=None,
-                                     max_len=None, 
-                                     min_len=1, 
-                                     no_value=None, 
+                                     max_len=None,
+                                     min_len=1,
+                                     no_value=None,
                                      num_count=None,
 									 char_rep=None,
 									 restrict=False,
                                      special_case=None):
-    
+
     """ Configure aaa common criteria policy
     Args:
         device (`obj`):                 Device object
@@ -895,7 +906,7 @@ def configure_common_criteria_policy(device,
         configs.append("copy {copy_pol}".format(copy_pol=copy))
     if lifetime:
        for key in lifetime:
-           configs.append("lifetime {attr} {val}".format(attr=key, val=lifetime[key])) 
+           configs.append("lifetime {attr} {val}".format(attr=key, val=lifetime[key]))
     if int(lower_case) > 0:
         configs.append("lower-case {low}".format(low=lower_case))
     if int(upper_case) > 0:
@@ -932,9 +943,9 @@ def configure_common_criteria_policy(device,
             )
         )
 
-def unconfigure_common_criteria_policy(device, 
+def unconfigure_common_criteria_policy(device,
                                        policy_name):
-    
+
     """ Unconfigure aaa common criteria policy
     Args:
         device (`obj`):      Device object
@@ -959,11 +970,11 @@ def unconfigure_common_criteria_policy(device,
             )
         )
 
-def configure_enable_policy_password(device, 
-                                     password, 
-                                     policy_name=None, 
+def configure_enable_policy_password(device,
+                                     password,
+                                     policy_name=None,
                                      password_type=None):
-    
+
     """ Configure enable password with policy
     Args:
         device (`obj`):                  Device object
@@ -975,7 +986,7 @@ def configure_enable_policy_password(device,
     Raise:
         SubCommandFailure: Failed configuring
     """
-      
+
     if policy_name:
         config = "enable common-criteria-policy {pol} password {ptype} {pwd}".format(
                             pol=policy_name, ptype=password_type, pwd=password)
@@ -993,12 +1004,12 @@ def configure_enable_policy_password(device,
             "Error: {error}".format(pwd=password, error=e
             )
         )
-        
-def unconfigure_enable_policy_password(device, 
-                                       password, 
-                                       policy_name=None, 
+
+def unconfigure_enable_policy_password(device,
+                                       password,
+                                       policy_name=None,
                                        password_type=None):
-    
+
     """ Unconfigure enable password with policy
     Args:
         device (`obj`):                   Device object
@@ -1038,7 +1049,7 @@ def configure_service_password_encryption(device):
         None
 
     Raises:
-        SubCommandFailure: Failed configuring service password encryption 
+        SubCommandFailure: Failed configuring service password encryption
 
     """
 
@@ -1059,7 +1070,7 @@ def unconfigure_service_password_encryption(device):
         None
 
     Raises:
-        SubCommandFailure: Failed unconfiguring service password encryption 
+        SubCommandFailure: Failed unconfiguring service password encryption
 
     """
 
@@ -1299,7 +1310,7 @@ def unconfigure_aaa_session_id(device, type):
 
 def configure_aaa_auth_cred_download(device):
 
-    """ configure aaa authorization credential-download default local 
+    """ configure aaa authorization credential-download default local
     Args:
         device (`obj`): Device object
 
@@ -1340,7 +1351,7 @@ def unconfigure_aaa_auth_cred_download(device):
         )
 
 def configure_username_aaa_attr_list(device, username, attr_list_name):
-  
+
     """ configure username <username> aaa attribute list <attr_list_name>
     Args:
         device (`obj`): Device object
@@ -1388,14 +1399,14 @@ def configure_aaa_attr_list(device, attr_list_name, attr_type, secure_type):
             'Could not configure Attribute list with type'
         )
 
-        
+
 def unconfigure_aaa_attr_list(device, attr_list_name):
 
     """ Unconfigure Attribute list with type
     Args:
         device (`obj`): Device object
         attr_list_name ('str'): Attribute list name
-        
+
     Return:
         None
 
@@ -1405,7 +1416,7 @@ def unconfigure_aaa_attr_list(device, attr_list_name):
     """
     try:
         device.configure([
-               f"no aaa attribute list {attr_list_name}"               
+               f"no aaa attribute list {attr_list_name}"
                ])
     except SubCommandFailure:
         raise SubCommandFailure(
@@ -1414,7 +1425,7 @@ def unconfigure_aaa_attr_list(device, attr_list_name):
 
 def configure_aaa_local_auth(device):
 
-    """ configure aaa local authentication default authorization default 
+    """ configure aaa local authentication default authorization default
     Args:
         device (`obj`): Device object
 
@@ -1422,7 +1433,7 @@ def configure_aaa_local_auth(device):
         None
 
     Raise:
-        SubCommandFailure: Failed configuring AAA local auth 
+        SubCommandFailure: Failed configuring AAA local auth
     """
     try:
         device.configure([
@@ -1445,7 +1456,7 @@ def unconfigure_aaa_local_auth(device):
         None
 
     Raise:
-        SubCommandFailure: Failed unconfiguring AAA local auth 
+        SubCommandFailure: Failed unconfiguring AAA local auth
     """
     try:
         device.configure([
@@ -1510,7 +1521,7 @@ def enable_aaa_password_restriction(device):
     """
     cmd="aaa password restriction"
     try:
-        device.configure(cmd)      
+        device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f'Could not configure aaa password restriction:\n{e}'
@@ -1528,7 +1539,7 @@ def disable_aaa_password_restriction(device):
     """
     cmd="no aaa password restriction"
     try:
-        device.configure(cmd)           
+        device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f'Could not configure no aaa password restriction:\n{e}'
@@ -1572,9 +1583,9 @@ def disable_login_password_reuse_interval(device):
         raise SubCommandFailure(
             f'Could not configure no login password-reuse-interval:\n{e}'
         )
-        
-        
-        
+
+
+
 def enable_aaa_authentication_login(device,auth_list,auth_db1,auth_db2=None):
 
     """ configure 'aaa authentication login default local tacacs+'
@@ -1583,16 +1594,16 @@ def enable_aaa_authentication_login(device,auth_list,auth_db1,auth_db2=None):
         auth_list('str') : authentication list(default or named)
         auth_db1('str')  : database local or radius or tacacs+
         auth_db2('str')  : fall back database local or radius or tacacs+
-   
+
     Return:
         None
     Raise:
         SubCommandFailure: Failed configuring
     """
-    
+
     cmd = f'aaa authentication login {auth_list} {auth_db1}'
     if auth_db2:
-        cmd += f' {auth_db2}'   
+        cmd += f' {auth_db2}'
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -1600,7 +1611,7 @@ def enable_aaa_authentication_login(device,auth_list,auth_db1,auth_db2=None):
             f'Could not configure aaa authentication login:\n{e}'
         )
 
-        
+
 def disable_aaa_authentication_login(device,auth_list,auth_db1,auth_db2=None):
 
     """ configure 'no aaa authentication login default local tacacs+'
@@ -1609,7 +1620,7 @@ def disable_aaa_authentication_login(device,auth_list,auth_db1,auth_db2=None):
         auth_list('str') : authentication list(default or named)
         auth_db1('str')  : database local or radius or tacacs+
         auth_db2('str')  : fall back database local or radius or tacacs+
-   
+
     Return:
         None
     Raise:
@@ -1619,7 +1630,7 @@ def disable_aaa_authentication_login(device,auth_list,auth_db1,auth_db2=None):
     if auth_db2:
         cmd += f' {auth_db2}'
     try:
-        device.configure(cmd)    
+        device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f'Could not configure no aaa authentication login:\n{e}'
@@ -1631,7 +1642,7 @@ def enable_radius_automate_tester_probe_on(device,server_name,user_name,vrf=None
         device (`obj`): Device object
         server_name ('str'): Radius server name
         user_name ('str'): Identity Username
-        vrf('str'): vrf name 
+        vrf('str'): vrf name
     Return:
         None
     Raise:
@@ -1640,55 +1651,55 @@ def enable_radius_automate_tester_probe_on(device,server_name,user_name,vrf=None
     cmd1=f"radius server {server_name}"
     cmd2=f"automate-tester username {user_name} probe-on"
     if vrf:
-        cmd2+=f" vrf {vrf}"  
+        cmd2+=f" vrf {vrf}"
     try:
-        device.configure([cmd1,cmd2]) 
+        device.configure([cmd1,cmd2])
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not configure radius automate tester probe on:\n{e}"
         )
 
 
-def configure_masked_unmasked_credentials (device, 
+def configure_masked_unmasked_credentials (device,
                                   username,
-                                  password, 
+                                  password,
                                   privilege=None,
-                                  ccp_name=None, 
+                                  ccp_name=None,
                                   algorithm_type=None,
                                   masked=True,
                                   secret=True,):
-    
+
     """ Configure masked or unmasked credentials with privilege,common criteria policy
         and encryption algorithm type.
-        
+
     Args:
         device (`obj`):                   Device object
         username (`str`):                 username
         password (`str`):                 Password
-        privilege('int',optional):        specified privilege num else None 
+        privilege('int',optional):        specified privilege num else None
         ccp_name (`str`, optional):       specified Common Criteria Policy else None
         algorithm_type ('str', optional): specified algorithm type else None
-        masked ('bool'):                  masked secret if True else unmasked.         
-        secret ('bool'):                  secret if True else plain-text 
+        masked ('bool'):                  masked secret if True else unmasked.
+        secret ('bool'):                  secret if True else plain-text
     Return :
         None
     Raise:
         SubCommandFailure: Failed configuring
-    """   
-    cmd=f"username {username}" 
+    """
+    cmd=f"username {username}"
     if privilege :
         cmd+=f" privilege {privilege}"
     if ccp_name :
         cmd+=f" common-criteria-policy {ccp_name}"
     if algorithm_type :
-        cmd+=f" algorithm-type {algorithm_type}"   
+        cmd+=f" algorithm-type {algorithm_type}"
     if masked :
         cmd+=" masked-secret"
-    elif secret :    
+    elif secret :
         cmd+=f" secret {password}"
     else :
-        cmd+=f" password {password}" 
-    
+        cmd+=f" password {password}"
+
     masked_secret_dialog = Dialog(
         [
             Statement(
@@ -1704,8 +1715,8 @@ def configure_masked_unmasked_credentials (device,
                 continue_timer=False,
             ),
         ]
-    )    
-    
+    )
+
     try:
        out=device.configure(cmd,reply=masked_secret_dialog)
        if  re.search(r'[p|P]assword',out) and not(re.search(r'migrate',out)) :
@@ -1714,51 +1725,51 @@ def configure_masked_unmasked_credentials (device,
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not configure credentials for user {usr}"
-            "Error: {error}".format(usr=username,error=e)         
-        ) 
-        
+            "Error: {error}".format(usr=username,error=e)
+        )
 
-def configure_masked_unmasked_enable_secret_password (device, 
-                                  password, 
+
+def configure_masked_unmasked_enable_secret_password (device,
+                                  password,
                                   privilege=None,
-                                  ccp_name=None, 
+                                  ccp_name=None,
                                   algorithm_type=None,
                                   masked=True,
                                   secret=True,):
-    
-    """ Configure masked/unmasked enable password with the given encryption 
+
+    """ Configure masked/unmasked enable password with the given encryption
     algorithm type,privilege level and common criteria policy
-       
-        
+
+
     Args:
         device (`obj`):                   Device object
         password (`str`):                 Password
-        privilege('int',optional):        specified privilege num else None 
+        privilege('int',optional):        specified privilege num else None
         ccp_name (`str`, optional):       specified Common Criteria Policy else None
         algorithm_type ('str', optional): specified algorithm type else None
-        masked ('bool'):                  masked secret if True else unmasked.         
-        secret ('bool'):                  secret if True else plain-text 
+        masked ('bool'):                  masked secret if True else unmasked.
+        secret ('bool'):                  secret if True else plain-text
     Return :
         None
     Raise:
         SubCommandFailure: Failed configuring
-    """   
-    cmd="enable " 
+    """
+    cmd="enable "
     if ccp_name :
-        cmd+=f" common-criteria-policy {ccp_name}"  
+        cmd+=f" common-criteria-policy {ccp_name}"
     if algorithm_type :
-        cmd+=f" algorithm-type {algorithm_type}"   
+        cmd+=f" algorithm-type {algorithm_type}"
     if masked :
         cmd+=" masked-secret"
     elif secret :
         cmd+=" secret"
-    else : 
-        cmd+=" password"    
+    else :
+        cmd+=" password"
     if privilege:
         cmd+=f" level {privilege}"
     if not(masked) :
-        cmd+=f" {password}"  
-          
+        cmd+=f" {password}"
+
     masked_secret_dialog = Dialog(
         [
             Statement(
@@ -1774,8 +1785,8 @@ def configure_masked_unmasked_enable_secret_password (device,
                 continue_timer=False,
             ),
         ]
-    )    
-    
+    )
+
     try:
        out=device.configure(cmd,reply=masked_secret_dialog)
        if  re.search(r'[p|P]assword',out) and not(re.search(r'migrate',out)):
@@ -1784,39 +1795,39 @@ def configure_masked_unmasked_enable_secret_password (device,
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not configure enable password"
-            "Error: {error}".format(error=e)         
-        ) 
-      
-              
+            "Error: {error}".format(error=e)
+        )
+
+
 def unconfigure_enable_password(device,secret=True,privilege=None):
- 
-    """Unconfigures enable password or secret            
-    
+
+    """Unconfigures enable password or secret
+
     Args:
         device (`obj`):                  Device object
         secret (`bool`):                 'secret' if True else 'password'
         privilege ('int'):               specified privilege level else None
-       
+
     Return :
         None
     Raise:
         SubCommandFailure: Failed unconfiguring enable password or secret
-    """ 
+    """
     cmd="no enable"
     if secret :
         cmd+=" secret"
     else :
-        cmd+=" password"    
+        cmd+=" password"
     if privilege :
         cmd+=f" level {privilege}"
-    
+
     try:
-        device.configure(cmd)         
+        device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f'Could not unconfigure enable password or secret:\n{e}'
         )
-        
+
 def configure_aaa_authentication_login(device,auth_list,auth_type):
     """ configure aaa authentication login
         Args:
@@ -1828,9 +1839,9 @@ def configure_aaa_authentication_login(device,auth_list,auth_type):
             SubCommandFailure: Failed configuring aaa authentication login
     """
     logger.info(f"Configuring aaa authentication login")
-	
+
     configs=f"aaa authentication login {auth_list} {auth_type}"
-	
+
     try:
         device.configure(configs)
     except SubCommandFailure as e:
@@ -1841,13 +1852,13 @@ def configure_aaa_default_group_methods(device,server_grp,server_grp_name):
         Args:
             device (`obj`): Device object
             server_grp (`str`): Server-group (i.e group)
-            server_grp_name ('str'): Server-group name 
+            server_grp_name ('str'): Server-group name
             None
         Raise:
             SubCommandFailure: Failed configuring aaa default group methods
     """
     logger.info(f"Configuring aaa default group methods")
-	
+
     configs=[
 	    f"aaa authentication dot1x default {server_grp} {server_grp_name}",
 		f"aaa authorization network default {server_grp} {server_grp_name}",
@@ -1864,13 +1875,13 @@ def configure_aaa_authorization_exec_default(device,auth_type):
     """ configure aaa authorization exec default
         Args:
             device (`obj`): Device object
-            auth_type (`str`): authentication type (i.e group/local/none) 
+            auth_type (`str`): authentication type (i.e group/local/none)
             None
         Raise:
             SubCommandFailure: Failed configuring aaa authentication login
     """
     logger.info(f"Configuring aaa authorization exec default")
-	
+
     configs=f"aaa authorization exec default {auth_type}"
     try:
         device.configure(configs)
@@ -1880,13 +1891,13 @@ def configure_aaa_authorization_exec_default(device,auth_type):
 def configure_aaa_accounting_update_periodic(device,interval):
     """ configure aaa accounting update newinfo periodic
             device (`obj`): Device object
-            interval (`str`): intervals in minutes 
+            interval (`str`): intervals in minutes
             None
         Raise:
             SubCommandFailure: Failed configuring aaa accounting update newinfo periodic
     """
     logger.info(f"Configuring aaa accounting update newinfo periodic")
-	
+
     configs=f"aaa accounting update newinfo periodic {interval}"
     try:
         device.configure(configs)
@@ -1898,13 +1909,13 @@ def configure_aaa_accounting_identity_default_start_stop(device,server_grp,serve
         Args:
             device (`obj`): Device object
             server_grp (`str`): Server-group (i.e group)
-            server_grp_name ('str'): Server-group name 
+            server_grp_name ('str'): Server-group name
             None
         Raise:
             SubCommandFailure: Failed configuring aaa accounting identity default start-stop
     """
     logger.info(f"Configuring acls under ipv6 access-list")
-	
+
     configs=f"aaa accounting identity default start-stop {server_grp} {server_grp_name}"
 
     try:
@@ -1924,9 +1935,9 @@ def configure_radius_attribute_8(device):
         SubCommandFailure: Failed configuring radius-server attribute 8 include-in-access-req
     """
     logger.info(f"Configuring acls under ipv6 access-list")
-    
+
     configs= "radius-server attribute 8 include-in-access-req"
-	
+
     try:
         device.configure(configs)
     except SubCommandFailure as e:
@@ -1944,9 +1955,9 @@ def configure_radius_attribute_25(device):
         SubCommandFailure: Failed configuring radius-server attribute 25 access-request include
     """
     logger.info(f"Configuring radius-server attribute 25 access-request include")
-    
+
     configs= "radius-server attribute 25 access-request include"
-	
+
     try:
         device.configure(configs)
     except SubCommandFailure as e:
@@ -1964,9 +1975,9 @@ def configure_radius_attribute_31_mac_format(device):
         SubCommandFailure: Failed configuring radius-server attribute 31 mac format ietf upper-case
     """
     logger.info(f"Configuring radius-server attribute 31 mac format ietf upper-case")
-    
+
     configs= "radius-server attribute 31 mac format ietf upper-case"
-	
+
     try:
         device.configure(configs)
     except SubCommandFailure as e:
@@ -1984,9 +1995,9 @@ def configure_radius_attribute_31_send_mac(device):
         SubCommandFailure: Failed configuring radius-server attribute 31 send nas-port-detail mac-only
     """
     logger.info(f"Configuring radius-server attribute 31 send nas-port-detail mac-only")
-    
+
     configs= "radius-server attribute 31 send nas-port-detail mac-only"
-	
+
     try:
         device.configure(configs)
     except SubCommandFailure as e:
@@ -2016,16 +2027,16 @@ def configure_aaa_authentication_enable(device, group, group_name, group_action)
             tacacs+  Use TACACS+ authentication.
             <cr>     <cr>
 
-            Example: 
+            Example:
             code: uut.api.configure_aaa_authentication_enable(group="group", group_name="DATANET", group_action="enable")
             Output: aaa authentication enable default group DATANET enable
-   
+
     Return:
         None
     Raise:
         SubCommandFailure: Failed configuring
     """
-    
+
     cmd = f'aaa authentication enable default {group} {group_name} {group_action}'
     try:
         device.configure(cmd)
@@ -2039,16 +2050,16 @@ def unconfigure_aaa_authentication_enable(device):
     """ unconfigure 'aaa authentication enable default'
     Args:
         device (`obj`)   : Device object
-    Example: 
+    Example:
         code: uut.api.unconfigure_aaa_authentication_enable()
         Output: aaa authentication enable default group DATANET enable
-    
+
     Return:
         None
     Raise:
         SubCommandFailure: Failed configuring
     """
-    
+
     cmd = f'no aaa authentication enable default'
     try:
         device.configure(cmd)
@@ -2076,7 +2087,7 @@ def configure_aaa_authorization_commands(device, level, level_name, level_action
             tacacs+           Use TACACS+.
 
         group_name('str): Group name
-            Example: 
+            Example:
             code: uut.api.configure_aaa_authorization_commands(level="15", level_name="test", level_action="local")
             Output: aaa authorization commands 15 test local
             code: uut.api.configure_aaa_authorization_commands(level="15", level_name="default", group_name="Test", level_action="if-authenticated")
@@ -2086,8 +2097,8 @@ def configure_aaa_authorization_commands(device, level, level_name, level_action
     Raise:
         SubCommandFailure: Failed configuring
     """
-    
-    cmd = f'aaa authorization commands {level} {level_name} {level_action}'   
+
+    cmd = f'aaa authorization commands {level} {level_name} {level_action}'
     if group_name:
         cmd = f'aaa authorization commands {level} {level_name} group {group_name} {level_action}'
     try:
@@ -2114,7 +2125,7 @@ def unconfigure_aaa_authorization_commands(device, level,level_name="", level_ac
             radius            Use RADIUS data for authorization
             tacacs+           Use TACACS+.
 
-            Example: 
+            Example:
             code: uut.api.unconfigure_aaa_authorization_commands(level="15", level_name="test", level_action="local")
             Output: no aaa authorization commands 15 test local
             code: uut.api.unconfigure_aaa_authorization_commands(level="15", level_name="default", group_name="Test", level_action="if-authenticated")
@@ -2124,8 +2135,8 @@ def unconfigure_aaa_authorization_commands(device, level,level_name="", level_ac
     Raise:
         SubCommandFailure: Failed configuring
     """
-    
-    cmd = f'no aaa authorization commands {level} {level_name} {level_action}'   
+
+    cmd = f'no aaa authorization commands {level} {level_name} {level_action}'
     if group_name:
         cmd = f'no aaa authorization commands {level} {level_name} group {group_name} {level_action}'
     try:
@@ -2157,7 +2168,7 @@ def configure_aaa_accounting_commands(device, accounting_level, accounting_name,
             logger     Use system logger for Accounting
             tacacs+    Use TACACS+.
         group_name ('str')  :  Server-group name
-            Example: 
+            Example:
             code: uut.api.configure_aaa_accounting_commands(accounting_level="15",accounting_name="test",accounting_action="none")
             Output: aaa accounting commands 15 test none
             code: uut.api.configure_aaa_accounting_commands(accounting_level="1",accounting_name="default",accounting_action="start-stop",group="broadcast",group_name="DATANET")
@@ -2168,8 +2179,8 @@ def configure_aaa_accounting_commands(device, accounting_level, accounting_name,
     Raise:
         SubCommandFailure: Failed configuring
     """
-    
-    cmd = f'aaa accounting commands {accounting_level} {accounting_name} {accounting_action}'   
+
+    cmd = f'aaa accounting commands {accounting_level} {accounting_name} {accounting_action}'
     if accounting_action != "none" and group_name:
         if group == "broadcast" or group == "tacacs+":
             cmd = f'aaa accounting commands {accounting_level} {accounting_name} {accounting_action} {group} group {group_name}'
@@ -2204,7 +2215,7 @@ def unconfigure_aaa_accounting_commands(device,accounting_level,accounting_name=
             logger     Use system logger for Accounting
             tacacs+    Use TACACS+.
         group_name ('str')  :  Server-group name
-            Example: 
+            Example:
             code: uut.api.configure_aaa_accounting_commands(accounting_level="15",accounting_name="test",accounting_action="none")
             Output: aaa accounting commands 15 test none
             code: uut.api.configure_aaa_accounting_commands(accounting_level="1",accounting_name="default",accounting_action="start-stop",group="broadcast",group_name="DATANET")
@@ -2215,8 +2226,8 @@ def unconfigure_aaa_accounting_commands(device,accounting_level,accounting_name=
     Raise:
         SubCommandFailure: Failed configuring
     """
-    
-    cmd = f'no aaa accounting commands {accounting_level} {accounting_name} {accounting_action}'   
+
+    cmd = f'no aaa accounting commands {accounting_level} {accounting_name} {accounting_action}'
     if accounting_action != "none" and group_name:
         if group == "broadcast" or group == "tacacs+":
             cmd = f'no aaa accounting commands {accounting_level} {accounting_name} {accounting_action} {group} group {group_name}'
@@ -2233,14 +2244,14 @@ def unconfigure_tacacs_server(device, server):
     """ unconfigure tacacs server
         Args:
             device ('obj'): Device object
-            server('str'): Name for the tacacs server 
+            server('str'): Name for the tacacs server
         Returns:
             None
         Raises:
-            SubCommandFailure: Failed configuring tacacs server 
+            SubCommandFailure: Failed configuring tacacs server
     """
 
-    cmd = f'no tacacs server {server}'  
+    cmd = f'no tacacs server {server}'
 
     try:
         device.configure(cmd)
@@ -2252,14 +2263,14 @@ def unconfigure_tacacs_group(device, server_group):
     """  Unconfigure aaa tacacs server group
         Args:
             device ('obj'): Device object
-            server_group('str'): Name for the tacacs group 
+            server_group('str'): Name for the tacacs group
         Returns:
             None
         Raises:
-            SubCommandFailure: Failed configuring tacacs server 
+            SubCommandFailure: Failed configuring tacacs server
     """
 
-    cmd = f'no aaa group server tacacs {server_group}'  
+    cmd = f'no aaa group server tacacs {server_group}'
 
     try:
         device.configure(cmd)
@@ -2273,16 +2284,145 @@ def configure_aaa_authorization_network(device, server_grp, server_grp_name):
         Args:
             device ('obj'): Device object
             server_grp ('str'): Server-group (i.e group)
-            server_grp_name ('str'): Server-group name 
+            server_grp_name ('str'): Server-group name
             None
         Raise:
             SubCommandFailure: Failed configuring aaa authorization network
     """
     logger.info(f"Configuring aaa authorization network group")
-    
+
     configs= f"aaa authorization network {server_grp} group {server_grp_name}"
-	
+
     try:
         device.configure(configs)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not configure aaa authorization group methods. Error:\n{e}")
+
+def configure_dscp_global(device, auth=None, acct=None):
+    """ Configure radius dscp values globally
+        Args:
+            device ('obj'): Device object
+            auth ('str', optional): Authentication value (Optional value)
+            acct ('str', optional): Accounting value (Optional value)
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring aaa radius dscp.
+    """
+    config_list = []
+    if auth :
+        config_list.append('radius-server dscp auth {auth}'.format(auth=auth))
+    if acct :
+        config_list.append('radius-server dscp acct {acct}'.format(acct=acct))
+
+    logger.info(f"Configuring dscp global")
+
+    try:
+        device.configure(config_list)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure dscp authentication {auth} and accounting {acct}. Error:\n {e}"
+        )
+
+def unconfigure_dscp_global(device, auth=None, acct=None):
+    """ Unconfigure radius dscp values globally
+        Args:
+            device ('obj'): Device object
+            auth ('str', optional): Authentication value (Optional value)
+            acct ('str', optional): Accounting value (Optional value)
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed unconfiguring aaa radius dscp
+    """
+    config_list = []
+    if auth :
+        config_list.append('no radius-server dscp auth {auth}'.format(auth=auth))
+    if acct :
+        config_list.append('no radius-server dscp acct {acct}'.format(acct=acct))
+
+    logger.info(f"Unconfiguring dscp global")
+
+    try:
+        device.configure(config_list)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure dscp authentication {auth} and accounting {acct}. Error:\n {e}"
+        )
+def configure_aaa_accounting_exec_default_start_stop_group(device, server_grp):
+    """ configure aaa accounting exec default start-stop group
+        Args:
+            device ('obj'): Device object
+            server_grp ('str'): Server-group name
+        Raise:
+            SubCommandFailure: Failed configuring aaa accounting exec default start-stop group
+    """
+
+    cmd=f'aaa accounting exec default start-stop group {server_grp}'
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure aaa accounting exec default start-stop group. Error:\n{e}")
+
+def unconfigure_aaa_accounting_exec_default_start_stop_group(device, server_grp):
+    """ unconfigure aaa accounting exec default start-stop group
+        Args:
+            device ('obj'): Device object
+            server_grp ('str'): Server-group name
+        Raise:
+            SubCommandFailure: Failed unconfiguring aaa accounting exec default start-stop group
+    """
+
+    cmd=f'no aaa accounting exec default start-stop group {server_grp}'
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not unconfigure aaa accounting exec default start-stop group. Error:\n{e}")
+
+def unconfigure_dscp_radius_server(device, server_name, dscp_auth=None, dscp_acct=None):
+    """ Unconfigure Radius Server DSCP Configuration
+    Args:
+        device ('obj'): Device object
+        server_name ('str'): Radius server name
+        dscp_auth (<1-63>, optional): Radius DSCP (Differentiated Services Code Point) marking value for Authentication (Default is None)
+        dscp_acct (<1-63>, optional): Radius DSCP (Differentiated Services Code Point) marking value for Accounting (Default is None)
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed unconfiguring radius server dscp configuration
+    """
+    config = [f'radius server {server_name}']
+    if dscp_auth:
+        config.append(f'no dscp auth {dscp_auth}')
+    if dscp_acct:
+        config.append(f'no dscp acct {dscp_acct}')
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Failed to unconfigure DSCP Authentication {dscp_auth} and Accouting {dscp_acct} in Radius Server {server_name} configuration. Error:\n{e}')
+
+def unconfigure_dscp_radius_server_group(device, server_group, dscp_auth=None, dscp_acct=None):
+    """ Unconfigure AAA Radius Server Group DSCP Configuration
+    Args:
+        device ('obj'): Device object
+        server_group ('str'): AAA Radius Server Group name
+        dscp_auth (<1-63>, optional): Radius DSCP (Differentiated Services Code Point) marking value for Authentication (Default is None)
+        dscp_acct (<1-63>, optional): Radius DSCP (Differentiated Services Code Point) marking value for Accounting (Default is None)
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed unconfiguring aaa radius server group dscp configuration
+    """
+    config = [f'aaa group server radius {server_group}']
+    if dscp_auth:
+        config.append(f'no dscp auth {dscp_auth}')
+    if dscp_acct:
+        config.append(f'no dscp acct {dscp_acct}')
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Failed to unconfigure DSCP Authentication {dscp_auth} and Accouting {dscp_acct} in AAA Radius Server Group {server_group} configuration. Error:\n{e}')

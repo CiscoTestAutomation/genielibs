@@ -1,7 +1,7 @@
 import os
 import unittest
 from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.multicast.configure import unconfigure_ip_igmp_join_group
+from genie.libs.sdk.apis.iosxe.multicast.configure import unconfigure_ip_igmp_join_group_source
 
 
 class TestUnconfigureIpIgmpJoinGroup(unittest.TestCase):
@@ -30,6 +30,6 @@ class TestUnconfigureIpIgmpJoinGroup(unittest.TestCase):
         )
 
     def test_unconfigure_ip_igmp_join_group(self):
-        result = unconfigure_ip_igmp_join_group(self.device, 'te1/0/1', '226.1.1.1', '')
+        result = unconfigure_ip_igmp_join_group_source(self.device, 'te1/0/1', '226.1.1.1', '')
         expected_output = None
         self.assertEqual(result, expected_output)

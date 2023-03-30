@@ -1,10 +1,11 @@
+from typing import List
 import logging
 import re
 import base64
 import json
 import sys
 import pdb
-from copy import copy, deepcopy
+from copy import deepcopy
 from threading import Thread, Event
 import traceback
 from datetime import datetime
@@ -21,7 +22,7 @@ from yang.connector.proto import gnmi_pb2
 from abc import ABC
 from yang.connector.gnmi import Gnmi
 log = logging.getLogger(__name__)
-from typing import List
+
 
 class GnmiMessageException(Exception):
     pass
@@ -302,9 +303,10 @@ class GnmiMessage:
                 if 'int' in datatype:
                     value = int(value)
                 elif ('float' in datatype or
-                      'decimal' in datatype or
                       'double' in datatype):
                     value = float(value)
+                elif 'decimal' in datatype:
+                    value = float(value['digits']) / (10 ** value['precision'])
                 elif 'bytes' in datatype:
                     value = bytes(value, encoding='utf8')
                 elif 'leaflist' in datatype:
@@ -347,8 +349,11 @@ class GnmiMessage:
             for datatype, val in elem.items():
                 if 'int' in datatype:
                     val = int(val)
-                elif 'float' in datatype or 'Decimal64' in datatype:
+                elif ('float' in datatype or
+                      'double' in datatype):
                     val = float(val)
+                elif 'decimal' in datatype:
+                    value = float(value['digits']) / (10 ** value['precision'])
                 elif 'bytes' in datatype:
                     val = bytes(value, encoding='utf8')
                 leaf_list_val.append(val)
@@ -406,8 +411,9 @@ class GnmiMessage:
             raise GnmiMessageException('No update in SubscribeResponse')
         update = notification['update']
         prefix = update.get('prefix')
+        update = update.get('update', update)
         json_dicts.append(GnmiMessage.process_update(
-            update['update'], prefix, namespace, opfields
+            update, prefix, namespace, opfields
         ))
 
         return json_dicts, opfields
@@ -876,15 +882,16 @@ class GnmiMessageConstructor:
             sub_mode = self.cfg.get('sub_mode')
             for subscribe in subscribes:
                 subscription = proto.gnmi_pb2.Subscription()
-                sample_interval = self.cfg.get('sample_interval')
+                sample_poll = self.cfg.get(
+                    'sample_interval', self.cfg.get('sample_poll'))
 
                 if sub_mode:
                     subscription.mode = proto.gnmi_pb2.SubscriptionMode.Value(
                         sub_mode
                     )
-                if sub_mode == 'SAMPLE' and sample_interval:
-                    sample_interval = int(1e9) * int(sample_interval)
-                    subscription.sample_interval = sample_interval
+                if sub_mode == 'SAMPLE' and sample_poll:
+                    sample_poll = int(1e9) * int(sample_poll)
+                    subscription.sample_interval = sample_poll
                 gnmi_path = self.parse_xpath_to_gnmi_path(subscribe)
                 subscription.path.CopyFrom(gnmi_path)
 
@@ -993,9 +1000,9 @@ class GnmiMessageConstructor:
                         # Create a new list of dictionary / new key in dictionary if elem is not present
                         if elem not in jval:
                             if isinstance(jval, list):
-                               if(elem not in jval[ind]):
-                                    if(len(jval) == 0 or {} in jval):
-                                        ind=0
+                                if (elem not in jval[ind]):
+                                    if (len(jval) == 0 or {} in jval):
+                                        ind = 0
                                     jval[ind][elem] = []
                                     jval[ind][elem].append({})
                             else:
@@ -1154,9 +1161,13 @@ class GnmiMessageConstructor:
                         datatype.startswith('uint'):
                     if value:
                         value = int(value)
-                elif datatype in ('decimal64', 'float', 'double'):
+                elif ('float' in datatype or
+                      'double' in datatype):
                     if value:
                         value = float(value)
+                elif 'decimal' in datatype:
+                    if value:
+                        value = float(value['digits']) / (10 ** value['precision'])
 
                 if xpath.startswith('/'):
                     xp = xpath.split('/')[1:]
@@ -1358,7 +1369,8 @@ class GnmiSubscription(ABC, Thread):
                     device.device.credentials.default.get('password', ''))),
             ]
         self.stream_max = request.get('stream_max', 0)
-        self.sample_interval = request.get('sample_interval', 0)
+        self.sample_poll = request.get(
+            'sample_interval',  request.get('sample_poll', 0))
         if self.stream_max:
             self.log.info('Notification MAX timeout {0} seconds.'.format(
                 str(self.stream_max)
@@ -1367,7 +1379,7 @@ class GnmiSubscription(ABC, Thread):
         self.on_change_base = {}
 
     class TransactionTimeExceeded(Exception):
-        def __init__(self, response_time):
+        def __init__(self, response_time: float):
             self.response_time = response_time
 
     @property
@@ -1538,7 +1550,7 @@ class GnmiSubscription(ABC, Thread):
     def iter_subscribe_request(self,
                                payloads: List[gnmi_pb2.SubscribeRequest],
                                delay: int = 0,
-                               sample_interval: int = 0):
+                               sample_poll: int = 0):
         """Generator passed to Subscribe service to handle stream payloads.
 
         Args:
@@ -1548,17 +1560,18 @@ class GnmiSubscription(ABC, Thread):
             if delay:
                 time.sleep(delay)
             if payload.HasField('poll'):
-                time.sleep(sample_interval)
+                time.sleep(sample_poll)
                 log.info('gNMI SUBSCRIBE POLL\n' + '=' * 19 + '\n{0}'.format(
                     str(payload)
                 )
                 )
-            elif sample_interval:
-                log.info('Sample interval ignored for non-poll request')
+            elif sample_poll:
+                log.info('Sample poll ignored for non-poll request')
             yield payload
 
     def cover_exceptions(func):
         """Decorator to catch exceptions, log them and stop the thread."""
+
         def inner(self):
             try:
                 func(self)
@@ -1598,6 +1611,8 @@ class GnmiSubscriptionStream(GnmiSubscription):
                  **request):
         super().__init__(device, **request)
         timeout = request.get('stream_max', 120)
+        self.sample_poll = request.get(
+            'sample_interval',  request.get('sample_poll', 5))
         if responses is not None:
             self.responses = responses
         elif device is not None and payload is not None:
@@ -1612,9 +1627,18 @@ class GnmiSubscriptionStream(GnmiSubscription):
         """Check for inbound notifications."""
         self.log.info('Subscribe notification active')
         t = time.time()
-        for response in self.responses:
-            if self.transaction_time and time.time() - t > self.transaction_time:
-                raise GnmiSubscription.TransactionTimeExceeded(time.time() - t)
+        for (i, response) in enumerate(self.responses):
+            if (i == 0):
+                diff = time.time() - t
+            else:
+                diff = time.time() - t - self.sample_poll
+
+            if self.transaction_time and diff > self.transaction_time:
+                # For stream, substract sample_poll from transaction_time
+                self.results.append(False)
+                self.log.error(banner(
+                    f'Response time: {diff:.3f} seconds exceeded transaction_time {self.transaction_time:.3f}',
+                ))
             if response.HasField('sync_response'):
                 # Don't count sync_response as a response for transaction_time
                 self.log.info("Initial updates received")
@@ -1694,20 +1718,18 @@ class GnmiSubscriptionPoll(GnmiSubscription):
                  **request):
         super().__init__(device, **request)
         timeout = request.get('stream_max', 120)
-        self.sample_interval = request.get('sample_interval', 5)
+        self.sample_poll = request.get(
+            'sample_interval',  request.get('sample_poll', 5))
         if responses is not None:
             self.responses = responses
         elif device is not None and payload is not None:
-            polls_number = request.get(
-                'polls_number', 0)
-            if polls_number == 0:
-                polls_number = timeout // self.sample_interval
+            polls_number = self.stream_max // self.sample_poll
 
             for _ in range(polls_number):
                 payload.append(GnmiMessageConstructor.get_subscribe_poll())
             self.responses = device.gnmi.service.Subscribe(
                 self.iter_subscribe_request(
-                    payload, sample_interval=self.sample_interval),
+                    payload, sample_poll=self.sample_poll),
                 timeout=timeout,
                 metadata=self.metadata
             )
@@ -1721,9 +1743,12 @@ class GnmiSubscriptionPoll(GnmiSubscription):
             if (i == 0):
                 diff = time.time() - t
             else:
-                diff = time.time() - t - self.sample_interval
+                diff = time.time() - t - self.sample_poll
             if (self.transaction_time and t and diff > self.transaction_time):
-                raise GnmiSubscription.TransactionTimeExceeded(diff)
+                self.results.append(False)
+                self.log.error(banner(
+                    f'Response time: {diff:.3f} seconds exceeded transaction_time {self.transaction_time:.3f}',
+                ))
             if response.HasField('sync_response'):
                 self.log.info('Subscribe sync_response')
 

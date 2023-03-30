@@ -215,7 +215,7 @@ def configure_ipv6_eigrp_named_networks(device, eigrp_name, autonomous_system, p
                 eigrp_name=eigrp_name, error=e)
         )
 
-def configure_vrf_ipv6_eigrp_named_networks(device, eigrp_name, af_action, vrf_name, autonomous_system, nsf=''):
+def configure_vrf_ipv6_eigrp_named_networks(device, eigrp_name, af_action, autonomous_system, vrf_name='', nsf=''):
     """ 
     API for the CLI :- 
         router eigrp {eigrp_name}\naddress-family ipv6 {af_action} vrf {vrf_name} autonomous-system {autonomous_system}\n {nsf}
@@ -223,9 +223,9 @@ def configure_vrf_ipv6_eigrp_named_networks(device, eigrp_name, af_action, vrf_n
         Args:
             device ('obj'): Device object
             eigrp_name ('str'): EIGRP named mode name
-            af_action ('str',optional): unicast or multicast (Default is '') 
-            vrf_name ('str', optional): vrf name to configure ( Default is '' )
+            af_action ('str'): unicast or multicast (Default is '')
             autonomous_system ('str'): Autonomous system number
+            vrf_name ('str', optional): vrf name to configure ( Default is '' )
             nsf - optional
         Return:
             None
@@ -388,4 +388,116 @@ def unconfigure_eigrp_router_configs(device, process_id, max_paths=None, auto_su
     except SubCommandFailure as e:
         raise SubCommandFailure(
             'Could not Unconfigure Router EIGRP Configs. Error:\n{error}'.format(error=e)
+        )
+        
+        
+def configure_eigrp_passive_interface(device, process_id, interfaces):
+    """ Configures Eigrp passive interface for IPv4
+        Args:
+            device ('obj'):     device to use
+            process_id ('str'): EIGRP process id
+            interfaces ('list'): interfaces to configure
+            ex.
+                interfaces = ['TenGigabitEthernet0/4/0']
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config_list = [f"router eigrp {process_id}"]
+    
+    for intf in interfaces:
+        config_list.append(
+            f"passive-interface {intf}"
+        )
+
+    try:
+        device.configure(config_list)
+    except SubCommandFailure as error:
+        raise SubCommandFailure(
+            f'Failed in configuring Router EIGRP passive interface. Error:\n{error}'
+        )
+        
+        
+def unconfigure_eigrp_passive_interface(device, process_id, interfaces):
+    """ Unconfigures Eigrp passive interface for IPv4
+        Args:
+            device ('obj'):     device to use
+            process_id ('str'): EIGRP process id
+            interfaces ('list'): interfaces to configure
+            ex.
+                interfaces = ['TenGigabitEthernet0/4/0']
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config_list = [f"router eigrp {process_id}"]
+
+    for intf in interfaces:
+        config_list.append(
+            f"no passive-interface {intf}"
+        )
+
+    try:
+        device.configure(config_list)
+    except SubCommandFailure as error:
+        raise SubCommandFailure(
+            f'Failed in removing Router EIGRP passive interface. Error:\n{error}'
+        )
+        
+        
+def configure_eigrp_passive_interface_v6(device, process_id, interfaces):
+    """ Configures Eigrp passive interface for IPv6
+        Args:
+            device ('obj'):     device to use
+            process_id ('str'): EIGRP process id
+            interfaces ('list'): interfaces to configure
+            ex.
+                interfaces = ['TenGigabitEthernet0/4/0']
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config_list = [f"ipv6 router eigrp {process_id}"]
+
+    for intf in interfaces:
+        config_list.append(
+            f"passive-interface {intf}"
+        )
+
+    try:
+        device.configure(config_list)
+    except SubCommandFailure as error:
+        raise SubCommandFailure(
+            f'Failed in configuring Router EIGRP passive interface. Error:\n{error}'
+        )
+        
+        
+def unconfigure_eigrp_passive_interface_v6(device, process_id, interfaces):
+    """ Unconfigures Eigrp passive interface for IPv6
+        Args:
+            device ('obj'):     device to use
+            process_id ('str'): EIGRP process id
+            interfaces ('list'): interfaces to configure
+            ex.
+                interfaces = ['TenGigabitEthernet0/4/0']
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config_list = [f"ipv6 router eigrp {process_id}"]
+
+    for intf in interfaces:
+        config_list.append(
+            f"no passive-interface {intf}"
+        )
+
+    try:
+        device.configure(config_list)
+    except SubCommandFailure as error:
+        raise SubCommandFailure(
+            f'Failed in removing Router EIGRP passive interface. Error:\n{error}'
         )

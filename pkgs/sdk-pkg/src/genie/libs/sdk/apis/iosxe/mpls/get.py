@@ -204,6 +204,28 @@ def get_mpls_ldp_peer_state(device, interface):
                         return state
 
 
+def get_mpls_forwarding_table(device):
+    """ Gets all fields from the mpls forwarding table
+
+        Args:
+            device (`obj`): Device object
+
+        Returns:
+            The whole table ('dict')
+
+        Raises:
+            N/A
+    """
+
+    try:
+        out = device.parse('show mpls forwarding-table')
+    except SchemaEmptyParserError:
+        log.info("Device output is empty.")
+        return {}
+
+    return out
+
+
 def get_mpls_forwarding_table_key_value_pairs(device, ip):
     """ Gets all key:value pairs from the mpls forwarding table
 

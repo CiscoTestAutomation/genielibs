@@ -85,6 +85,8 @@ def configure_radius_server(device, server_config):
                     key (LINE): Radius server pre shared secret key
                     timeout (<1-1000>): Time to wait (in seconds) for this radius server to reply
                     retransmit (<0-100>): Number of retries to active server (overrides default)
+                    dscp_auth (<1-63>): Radius DSCP (Differentiated Services Code Point) marking value for Authentication
+                    dscp_acct (<1-63>): Radius DSCP (Differentiated Services Code Point) marking value for Accounting
         Returns:
             None
         Raises:
@@ -99,7 +101,9 @@ def configure_radius_server(device, server_config):
                 'key_encryption': '7',
                 'key': 'Cisco',
                 'timeout': '100',
-                'retransmit': '5'
+                'retransmit': '5',
+                'dscp_auth': '20',
+                'dscp_acct': '10'
             }
 
         configures below cli commands:
@@ -107,7 +111,9 @@ def configure_radius_server(device, server_config):
             'address ipv4 11.15.23.213 auth-port 1812 acct-port 1813',
             'key 7 Cisco',
             'timeout 100',
-            'retransmit 5'
+            'retransmit 5',
+            'dscp auth 20',
+            'dscp acct 10'
     """
 
     config_list = []
@@ -151,12 +157,16 @@ def configure_radius_server(device, server_config):
     # retransmit <retransmit>
     if 'retransmit' in server_config:
         config_list.append("retransmit {}".format(server_config['retransmit']))
+    
+    # dscp auth <dscp_auth>
+    if 'dscp_auth' in server_config:
+        config_list.append(f"dscp auth {server_config['dscp_auth']}")
+    
+    # dscp acct <dscp_acct>
+    if 'dscp_acct' in server_config:
+        config_list.append(f"dscp acct {server_config['dscp_acct']}")
 
     try:
         device.configure(config_list)
-    except SubCommandFailure:
-        raise SubCommandFailure(
-            'Could not configure radius server on device {d}'.format(
-                d=device.name
-            )
-        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configure radius server on device {device.name}. Error:\n{e}')

@@ -132,12 +132,15 @@ def unconfig_interface_isis(device, interface,ipv6=False):
             .format(hostname=device.hostname, interface=interface, e=e)
         )
 
-def configure_isis_with_router_name_network_entity(device, router_name, network_entity=None):
+def configure_isis_with_router_name_network_entity(device, router_name, network_entity=None, vrf_name=None, protocol = None, autonomous_number=None):
     """ Configure isis with router name
         Args:
             device('obj'): device to configure on
             router_name ('str'):configure the isis router name
             network_entity('str',optional): network_entity of device
+            vrf_name('str',optional): VRF name
+            protocol('str',optional): protocol to configure
+            autonomous_number('str',optional):  Autonomous system number
         Return:
             N/A
         Raises:
@@ -152,6 +155,10 @@ def configure_isis_with_router_name_network_entity(device, router_name, network_
     config.append('router isis {router_name}'.format(router_name=router_name))
     if network_entity:
         config.append('net {network_entity}'.format(network_entity=network_entity))
+    if vrf_name:
+        config.append('vrf {vrf_name}'.format(vrf_name=vrf_name))
+    if protocol:
+        config.append('redistribute {protocol} {autonomous_number}'.format(protocol=protocol, autonomous_number=autonomous_number))
     try:
         device.configure(config)
     except SubCommandFailure as e:
