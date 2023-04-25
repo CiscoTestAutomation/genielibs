@@ -5,13 +5,13 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-  prompt: Macallan1(config)#
+  prompt: stack3-nyquist-1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: Macallan1(config-line)#
+  prompt: stack3-nyquist-1(config-line)#
 connect:
   commands:
     ? ''
@@ -24,7 +24,7 @@ connect:
   prompt: ''
 execute:
   commands:
-    clear flow exporter eta-exp statistics:
+    clear flow exporter cisco123 statistics:
       response:
       - ''
       response_type: circular
@@ -35,4 +35,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: Macallan1#
+  prompt: stack3-nyquist-1#

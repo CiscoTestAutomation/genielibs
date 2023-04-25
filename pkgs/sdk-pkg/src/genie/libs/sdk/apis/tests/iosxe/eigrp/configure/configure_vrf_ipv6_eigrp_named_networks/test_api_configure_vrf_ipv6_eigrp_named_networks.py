@@ -30,6 +30,6 @@ class TestConfigureVrfIpv6EigrpNamedNetworks(unittest.TestCase):
         )
 
     def test_configure_vrf_ipv6_eigrp_named_networks(self):
-        result = configure_vrf_ipv6_eigrp_named_networks(self.device, 'test', 'unicast', '200', 'eigrp_test', '')
+        result = configure_vrf_ipv6_eigrp_named_networks(self.device, 'test', 'unicast', 200, '', 'nsf')
         expected_output = None
         self.assertEqual(result, expected_output)

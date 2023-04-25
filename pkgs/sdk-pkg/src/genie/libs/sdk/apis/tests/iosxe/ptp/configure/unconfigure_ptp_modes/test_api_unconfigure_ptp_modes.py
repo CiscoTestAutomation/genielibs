@@ -10,7 +10,7 @@ class TestUnconfigurePtpModes(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          centi_48TX_1:
+          stack3-nyquist-1:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,11 +18,11 @@ class TestUnconfigurePtpModes(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: cat9k
+            platform: c9300
             type: c9300
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['centi_48TX_1']
+        self.device = self.testbed.devices['stack3-nyquist-1']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,6 @@ class TestUnconfigurePtpModes(unittest.TestCase):
         )
 
     def test_unconfigure_ptp_modes(self):
-        result = unconfigure_ptp_modes(device=self.device, mode='g8275')
+        result = unconfigure_ptp_modes(self.device, 'bcdelay')
         expected_output = None
         self.assertEqual(result, expected_output)

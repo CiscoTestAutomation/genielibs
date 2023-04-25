@@ -1,0 +1,44 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: PE1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: PE1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show nve interface nve 1 detail:
+      response:
+      - "Interface: nve1, State: Admin Up, Oper Down, Encapsulation: Vxlan,\n\r \
+         BGP host reachability: Enabled, VxLAN dport: 4789\n\r \
+         VNI number: L3CP 30 L2CP 2 L2DP 0\n\r \
+         source-interface: Loopback1 (primary:1.1.1.2 vrf:0)\n\r \
+         tunnel interface: Tunnel0\n\r \
+            Pkts In   Bytes In   Pkts Out  Bytes Out\n\r \
+                  1         11          0          0"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: PE1#

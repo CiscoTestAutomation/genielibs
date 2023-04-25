@@ -2285,7 +2285,7 @@ def configure_bgp_neighbor_filter_description(device, bgp_as, route_map):
                           .format(neighbor_ip=rm["neighbor_ip"]),
             )
         if "description" in rm:
-            config.append("neighbor {neighbor_ip} description session {description}"
+            config.append("neighbor {neighbor_ip} description {description}"
                           .format(neighbor_ip=rm["neighbor_ip"],description=rm["description"]),
             )
         if "mtu_discovery" in rm:
@@ -2323,3 +2323,51 @@ def unconfigure_router_bgp_network_mask(device, autonomous_system, network_ip, n
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not unconfigure network on router bgp. Error:\n{e}")
+
+def configure_bgp_isis_redistribution(device, bgp_as, address_family, isis_processid, isis_level, redistribute_connected=True, neig_id=None, vrf=None):
+    """ configure redistribute connected in bgp
+
+        Args:
+            device ('obj'): device to use
+            bgp_as ('str'): bgp as number
+            address_family ('str'): address family under bgp 
+            neig_id ('str') : Neighbor address for ISIS protocol
+            isis_processid ('str') : ISIS process id to redistribute
+            isis_level ('str') : Specify the ISIS Level
+            redistribute_connected ('Boolean') : Set to False if reditribution not needed
+            vrf ('str'): vrf in address_family default to None
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring redistribute
+                            connected under bgp address_family
+    """
+    log.info(
+        "configure ISIS redistribution under bgp {}".format(bgp_as)
+    )
+    config = ["router bgp {}".format(bgp_as)]
+
+    if address_family:
+        if vrf:
+            config.append(f"address-family {address_family} vrf {vrf}".format(
+                                 address_family=address_family, vrf=vrf))
+        else:
+            config.append(f"address-family {address_family}".format(
+                                 address_family=address_family))
+    if redistribute_connected:
+         config.append("redistribute connected")
+
+    if neig_id:
+        config.append(f"neighbor {neig_id} send-label".format(neig_id=neig_id))
+
+    if isis_processid:
+        config.append(f"redistribute isis {isis_processid} {isis_level}".format(
+                                    isis_processid=isis_processid,isis_level=isis_level))
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure ISIS redistribute connected under bgp {bgp_as}. \n Error: {error}"\
+                .format(bgp_as=bgp_as,error=e)
+        )

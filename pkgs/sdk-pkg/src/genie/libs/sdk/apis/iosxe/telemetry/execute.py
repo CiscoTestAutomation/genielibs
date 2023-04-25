@@ -154,3 +154,51 @@ def execute_show_license_rum_id_telemetry(device):
     except SubCommandFailure as e:
         raise SubCommandFailure("Failed to show license rum id all on Telemetry on {device}. Error:\n{error}".format(device=device, error=e))
     return out
+
+def execute_clear_platform_software_product_analytics_report(device):
+    """ 
+        Args:
+            device ('obj'): device to use  
+        Returns:
+            Return the test command execution output
+        Raises:
+            SubCommandFailure
+    """
+    cmd = "clear platform software product-analytics report"
+    try:
+        out = device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure("Failed to perform clear product analytics report on {device}. Error:\n{error}".format(device=device, error=e))
+    return out
+
+def execute_test_platform_software_product_analytics_tdl_periodic(device):
+    """ 
+        Args:
+            device ('obj'): device to use  
+        Returns:
+            Return the test command execution output
+        Raises:
+            SubCommandFailure
+    """
+    cmd = "test platform software product-analytics tdl periodic"
+    try:
+        out = device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure("Failed to perform test platform software product analytics tdl periodic on {device}. Error:\n{error}".format(device=device, error=e))
+    return out
+
+def execute_test_platform_software_product_analytics_data_proc_sql_periodic(device):
+    """ 
+        Args:
+            device ('obj'): device to use  
+        Returns:
+            Return the test command execution output
+        Raises:
+            SubCommandFailure
+    """
+    cmd = "test platform software product-analytics data-proc sql periodic"
+    try:
+        out = device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure("Failed to perform test platform software product-analytics data-proc sql periodic on {device}. Error:\n{error}".format(device=device, error=e))
+    return out

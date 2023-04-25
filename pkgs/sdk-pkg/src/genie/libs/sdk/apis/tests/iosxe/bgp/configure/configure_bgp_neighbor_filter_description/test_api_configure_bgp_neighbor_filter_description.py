@@ -18,8 +18,8 @@ class TestConfigureBgpNeighborFilterDescription(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: c9300
-            type: c9300
+            platform: cat9k
+            type: router
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['stack3-nyquist-1']
@@ -30,14 +30,14 @@ class TestConfigureBgpNeighborFilterDescription(unittest.TestCase):
         )
 
     def test_configure_bgp_neighbor_filter_description(self):
-        result = configure_bgp_neighbor_filter_description(self.device, 100, [{'as_id': '300',
-  'damping_id': '1',
+        result = configure_bgp_neighbor_filter_description(self.device, 100, [{'as_id': 300,
+  'damping_id': 1,
   'description': 'ibgp vers SWTDATA01',
   'filter_list': 1,
   'filter_routes': 'out',
-  'mtu_discovery': '1',
+  'mtu_discovery': 1,
   'neighbor_ip': '20.20.20.3',
   'neighbor_tag': 'externalpg',
-  'soft_reconfiguration': '1'}])
+  'soft_reconfiguration': 1}])
         expected_output = None
         self.assertEqual(result, expected_output)

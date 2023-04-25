@@ -232,9 +232,13 @@ def configure_vrf_ipv6_eigrp_named_networks(device, eigrp_name, af_action, auton
         Raise:
             SubCommandFailure
     """
-    cmd = [f'router eigrp {eigrp_name}', 
-           f'address-family ipv6 {af_action} vrf {vrf_name} autonomous-system {autonomous_system}',
-           f'{nsf}']
+    cmd = [f'router eigrp {eigrp_name}']	
+    if vrf_name:
+      cmd.append(f'address-family ipv6 {af_action} vrf {vrf_name} autonomous-system {autonomous_system}')
+    else:
+      cmd.append(f'address-family ipv6 {af_action} autonomous-system {autonomous_system}')    
+    cmd.append(f'{nsf}')
+
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -501,3 +505,40 @@ def unconfigure_eigrp_passive_interface_v6(device, process_id, interfaces):
         raise SubCommandFailure(
             f'Failed in removing Router EIGRP passive interface. Error:\n{error}'
         )
+
+def configure_eigrp_networks_redistribute_ospf(device, process_id, 
+    ip_address=None, 
+    netmask=None,
+    bandwidth=None,
+    delay=None,
+    reliability=None,
+    effective_bandwidth=None,
+    mtu=None
+    ):
+    """ Configures eigrp on networks
+        Args:
+            device ('obj'): Device to use
+            process_id ('str'): Process id for eigrp process
+            ip_address ('list'): List of ip_address' to configure
+            netmask ('str'): Netmask to use
+            bandwidth('str', optional): <1-4294967295>  Bandwidth metric in Kbits per second
+            delay('str', optional): <0-4294967295>  EIGRP delay metric, in 10 microsecond units
+            reliability('str', optional): <0-255>  EIGRP reliability metric where 255 is 100% reliable
+            effective_bandwidth('str', optional): <1-255>  EIGRP Effective bandwidth metric (Loading) where 255 is 100% loaded
+            mtu('str', optional):  <1-65535>  EIGRP MTU of the path
+        Returns:
+            N/A
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [f'router eigrp {process_id}']
+    if netmask:
+        cmd.append(f'network {ip_address} {netmask}')
+    else:
+        cmd.append(f'network {ip_address}')
+    cmd.append(f'redistribute ospf {process_id} metric {bandwidth} {delay} {reliability} {effective_bandwidth} {mtu}')
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Failed to add network under eigrp {process_id}. Error:\n{e}')

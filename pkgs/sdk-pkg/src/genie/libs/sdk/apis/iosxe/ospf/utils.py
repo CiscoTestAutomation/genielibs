@@ -40,3 +40,19 @@ def clear_ip_ospf_process(device):
         raise SubCommandFailure(
             f'Failed to clear IP OSPF Process\n{e}'
         )
+
+def clear_ip_ospf_rib(device):
+    """Clear Ip Ospf rib
+       Args:
+            device('obj'): device object
+       Returns:
+            None
+       Raises:
+            SubCommandFailure
+    """
+    try:
+        device.execute("clear ip ospf rib")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to clear IP OSPF RIB\n{e}'
+        )

@@ -1,0 +1,1140 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: iolpe2(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: iolpe2(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show running-config all | section ^interface:
+      response:
+      - "interface Loopback1\r\n mtu 1514\r\n ip address 1.1.1.3 255.255.255.255\r\
+        \n no ip clear-dont-fragment\r\n ip redirects\r\n ip unreachables\r\n ip proxy-arp\r\
+        \n ip mtu 1514\r\n ip router isis sr\r\n ip mfib forwarding input\r\n ip mfib\
+        \ forwarding output\r\n ip mfib cef input\r\n ip mfib cef output\r\n ip pim\
+        \ join-prune-interval 60\r\n ip pim dr-priority 1\r\n ip pim query-interval\
+        \ 30\r\n no ip flowspec\r\n ip cef accounting non-recursive internal\r\n ip\
+        \ load-sharing per-destination\r\n ip route-cache cef\r\n ip route-cache\r\
+        \n ip split-horizon\r\n ip igmp robustness-variable 2\r\n ip igmp last-member-query-interval\
+        \ 1000\r\n ip igmp last-member-query-count 2\r\n ip igmp query-max-response-time\
+        \ 10\r\n ip igmp v3-query-max-response-time 10\r\n ip igmp version 2\r\n ip\
+        \ igmp query-interval 60\r\n ip igmp tcn query count 2\r\n ip igmp tcn query\
+        \ interval 10\r\n logging event link-status\r\n load-interval 300\r\n carrier-delay\
+        \ 2\r\n no shutdown\r\n tx-ring-limit 0\r\n tx-queue-limit 0\r\n ipv6 address\
+        \ 2001::1:1:1:3/128\r\n ipv6 nd reachable-time 0\r\n ipv6 nd ns-interval 0\r\
+        \n ipv6 nd dad loopback detect\r\n ipv6 nd prefix framed-ipv6-prefix\r\n ipv6\
+        \ nd nud igp\r\n no ipv6 nd ra solicited unicast\r\n ipv6 nd ra lifetime 1800\r\
+        \n ipv6 nd ra interval 200\r\n ipv6 redirects\r\n ipv6 unreachables\r\n ipv6\
+        \ mld query-max-response-time 10\r\n ipv6 mld query-timeout 255\r\n ipv6 mld\
+        \ robustness-variable 2\r\n ipv6 mld query-interval 125\r\n ipv6 mld router\r\
+        \n ipv6 mfib forwarding input\r\n ipv6 mfib forwarding output\r\n ipv6 mfib\
+        \ cef input\r\n ipv6 mfib cef output\r\n ipv6 router isis sr\r\n no ipv6 flowspec\r\
+        \n mpls mtu 1514\r\n mpls mldp\r\n snmp trap link-status\r\n no flowspec group\r\
+        \n bfd enable\r\n no arp arpa\r\n arp timeout 0\r\n clns congestion-threshold\
+        \ 4\r\n clns erpdu-interval 10\r\n clns mtu 1514\r\n clns rdpdu-interval 100\r\
+        \n clns route-cache\r\n no clns send-erpdu\r\n no clns send-rdpdu\r\n isis\
+        \ circuit-type level-1-2\r\n isis metric 10 level-1\r\n isis metric 10 level-2\r\
+        \n isis advertise prefix\r\n isis prefix-attributes n-flag-clear level-1\r\
+        \n isis prefix-attributes n-flag-clear level-2\r\n no isis protocol shutdown\r\
+        \n isis ipv6 metric 10 level-1\r\n isis ipv6 metric 10 level-2\r\n isis fast-reroute\
+        \ ti-lfa protection level-1 \r\n isis fast-reroute ti-lfa protection level-2\
+        \ \r\n spanning-tree port-priority 128\r\n spanning-tree cost 0\r\n hold-queue\
+        \ 75 in\r\n hold-queue 0 out\r\n no bgp-policy accounting input\r\n no bgp-policy\
+        \ accounting output\r\n no bgp-policy accounting input source\r\n no bgp-policy\
+        \ accounting output source\r\n no bgp-policy source ip-prec-map\r\n no bgp-policy\
+        \ source ip-qos-map\r\n no bgp-policy destination ip-prec-map\r\n no bgp-policy\
+        \ destination ip-qos-map\r\ninterface Tunnel1\r\n description pe1_pe3_tunnel\r\
+        \n ip address 200.2.0.2 255.255.255.0\r\n no ip clear-dont-fragment\r\n ip\
+        \ redirects\r\n ip unreachables\r\n ip proxy-arp\r\n ip mtu 1456\r\n ip mfib\
+        \ forwarding input\r\n ip mfib forwarding output\r\n ip mfib cef input\r\n\
+        \ ip mfib cef output\r\n ip pim join-prune-interval 60\r\n ip pim dr-priority\
+        \ 1\r\n ip pim query-interval 30\r\n no ip flowspec\r\n ip cef accounting\
+        \ non-recursive internal\r\n ip load-sharing per-destination\r\n ip route-cache\
+        \ cef\r\n ip route-cache\r\n ip split-horizon\r\n ip igmp robustness-variable\
+        \ 2\r\n ip igmp last-member-query-interval 1000\r\n ip igmp last-member-query-count\
+        \ 2\r\n ip igmp query-max-response-time 10\r\n ip igmp v3-query-max-response-time\
+        \ 10\r\n ip igmp version 2\r\n ip igmp query-interval 60\r\n ip igmp tcn query\
+        \ count 2\r\n ip igmp tcn query interval 10\r\n logging event link-status\r\
+        \n load-interval 300\r\n carrier-delay 2\r\n no shutdown\r\n tx-ring-limit\
+        \ 0\r\n tx-queue-limit 0\r\n ipv6 address 2001::200:2:8:2/112\r\n ipv6 nd\
+        \ reachable-time 0\r\n ipv6 nd ns-interval 0\r\n ipv6 nd dad attempts 1\r\n\
+        \ ipv6 nd dad loopback detect\r\n ipv6 nd prefix framed-ipv6-prefix\r\n ipv6\
+        \ nd nud igp\r\n no ipv6 nd ra solicited unicast\r\n ipv6 nd ra lifetime 1800\r\
+        \n ipv6 nd ra interval 200\r\n ipv6 redirects\r\n ipv6 unreachables\r\n ipv6\
+        \ mld query-max-response-time 10\r\n ipv6 mld query-timeout 255\r\n ipv6 mld\
+        \ robustness-variable 2\r\n ipv6 mld query-interval 125\r\n ipv6 mld router\r\
+        \n ipv6 mfib forwarding input\r\n ipv6 mfib forwarding output\r\n ipv6 mfib\
+        \ cef input\r\n ipv6 mfib cef output\r\n ipv6 router isis sr\r\n no ipv6 flowspec\r\
+        \n mpls mtu max\r\n mpls mldp\r\n snmp trap link-status\r\n no flowspec group\r\
+        \n bfd enable\r\n no arp arpa\r\n arp timeout 0\r\n tunnel source 2001::99:2:4:2\r\
+        \n tunnel mode gre ipv6\r\n tunnel destination 2001::99:6:8:8\r\n tunnel ttl\
+        \ 255\r\n tunnel bandwidth transmit 8000\r\n tunnel bandwidth receive 8000\r\
+        \n tunnel protection timeout pending-connection 600\r\n clns congestion-threshold\
+        \ 4\r\n clns erpdu-interval 10\r\n clns mtu 1456\r\n clns rdpdu-interval 100\r\
+        \n clns route-cache\r\n no clns send-erpdu\r\n no clns send-rdpdu\r\n isis\
+        \ circuit-type level-1-2\r\n isis metric 10 level-1\r\n isis metric 10 level-2\r\
+        \n isis te-metric flex-algo 0 level-1\r\n isis te-metric flex-algo 0 level-2\r\
+        \n no isis authentication mode\r\n no isis authentication send-only\r\n isis\
+        \ priority 64 level-1\r\n isis priority 64 level-2\r\n isis hello-multiplier\
+        \ 3\r\n isis hello-interval 10\r\n isis advertise prefix\r\n isis prefix-attributes\
+        \ n-flag-clear level-1\r\n isis prefix-attributes n-flag-clear level-2\r\n\
+        \ isis three-way-handshake ietf\r\n isis hello padding\r\n isis csnp-interval\
+        \ 0 level-1\r\n isis csnp-interval 0 level-2\r\n isis retransmit-throttle-interval\
+        \ 0\r\n isis retransmit-interval 5\r\n isis lsp-interval 33\r\n no isis protocol\
+        \ shutdown\r\n isis ipv6 metric 1 level-1\r\n isis ipv6 metric 1 level-2\r\
+        \n isis fast-reroute protection level-1 \r\n isis fast-reroute protection\
+        \ level-2 \r\n isis fast-reroute candidate level-1 \r\n isis fast-reroute\
+        \ candidate level-2 \r\n no isis fast-reroute tie-break level-1 default\r\n\
+        \ isis fast-reroute tie-break level-1 linecard-disjoint 40\r\n isis fast-reroute\
+        \ tie-break level-1 lowest-backup-path-metric 30\r\n isis fast-reroute tie-break\
+        \ level-1 primary-path 20\r\n no isis fast-reroute tie-break level-2 default\r\
+        \n isis fast-reroute tie-break level-2 linecard-disjoint 40\r\n isis fast-reroute\
+        \ tie-break level-2 lowest-backup-path-metric 30\r\n isis fast-reroute tie-break\
+        \ level-2 primary-path 20\r\n isis fast-reroute remote-lfa protection level-1\
+        \ \r\n isis fast-reroute remote-lfa protection level-2 \r\n isis fast-reroute\
+        \ ti-lfa protection level-1 \r\n isis fast-reroute ti-lfa protection level-2\
+        \ \r\n spanning-tree port-priority 128\r\n spanning-tree cost 0\r\n hold-queue\
+        \ 75 in\r\n hold-queue 0 out\r\n no bgp-policy accounting input\r\n no bgp-policy\
+        \ accounting output\r\n no bgp-policy accounting input source\r\n no bgp-policy\
+        \ accounting output source\r\n no bgp-policy source ip-prec-map\r\n no bgp-policy\
+        \ source ip-qos-map\r\n no bgp-policy destination ip-prec-map\r\n no bgp-policy\
+        \ destination ip-qos-map\r\ninterface Ethernet0/0\r\n mtu 1500\r\n no ip address\r\
+        \n no ip clear-dont-fragment\r\n ip redirects\r\n ip unreachables\r\n ip proxy-arp\r\
+        \n ip mtu 1500\r\n ip mfib forwarding input\r\n ip mfib forwarding output\r\
+        \n ip mfib cef input\r\n ip mfib cef output\r\n ip pim join-prune-interval\
+        \ 60\r\n ip pim dr-priority 1\r\n ip pim query-interval 30\r\n no ip flowspec\r\
+        \n ip cef accounting non-recursive internal\r\n ip load-sharing per-destination\r\
+        \n ip route-cache cef\r\n ip route-cache\r\n ip split-horizon\r\n ip igmp\
+        \ robustness-variable 2\r\n ip igmp last-member-query-interval 1000\r\n ip\
+        \ igmp last-member-query-count 2\r\n ip igmp query-max-response-time 10\r\n\
+        \ ip igmp v3-query-max-response-time 10\r\n ip igmp version 2\r\n ip igmp\
+        \ query-interval 60\r\n ip igmp tcn query count 2\r\n ip igmp tcn query interval\
+        \ 10\r\n logging event link-status\r\n load-interval 300\r\n carrier-delay\
+        \ 2\r\n shutdown\r\n tx-ring-limit 64\r\n tx-queue-limit 64\r\n no medium\
+        \ p2p\r\n cdp log mismatch duplex\r\n cdp tlv location\r\n cdp tlv server-location\
+        \ \r\n cdp tlv app\r\n ipv6 nd reachable-time 0\r\n ipv6 nd ns-interval 0\r\
+        \n ipv6 nd dad attempts 1\r\n ipv6 nd dad loopback detect\r\n ipv6 nd prefix\
+        \ framed-ipv6-prefix\r\n ipv6 nd nud igp\r\n no ipv6 nd ra solicited unicast\r\
+        \n ipv6 nd ra lifetime 1800\r\n ipv6 nd ra interval 200\r\n ipv6 redirects\r\
+        \n ipv6 unreachables\r\n ipv6 mld query-max-response-time 10\r\n ipv6 mld\
+        \ query-timeout 255\r\n ipv6 mld robustness-variable 2\r\n ipv6 mld query-interval\
+        \ 125\r\n ipv6 mld router\r\n ipv6 mfib forwarding input\r\n ipv6 mfib forwarding\
+        \ output\r\n ipv6 mfib cef input\r\n ipv6 mfib cef output\r\n no ipv6 flowspec\r\
+        \n mpls mtu 1500\r\n mpls mldp\r\n snmp trap link-status\r\n no flowspec group\r\
+        \n no mka pre-shared-key\r\n mka default-policy\r\n network-clock wait-to-restore\
+        \ 300\r\n network-clock hold-off 300\r\n network-clock source quality-level\
+        \ - tx\r\n network-clock source quality-level - rx\r\n no synchronous mode\r\
+        \n bfd enable\r\n arp arpa\r\n arp timeout 14400\r\n lldp transmit\r\n lldp\
+        \ receive\r\n lldp tlv-select power-management\r\n lldp tlv-select 4-wire-power-management\r\
+        \n clns route-cache\r\n spanning-tree port-priority 128\r\n spanning-tree\
+        \ cost 0\r\n ethernet oam max-rate 10\r\n ethernet oam min-rate 1 \r\n ethernet\
+        \ oam remote-loopback timeout 2\r\n ethernet oam timeout 5 \r\n hold-queue\
+        \ 75 in\r\n hold-queue 40 out\r\n no bgp-policy accounting input\r\n no bgp-policy\
+        \ accounting output\r\n no bgp-policy accounting input source\r\n no bgp-policy\
+        \ accounting output source\r\n no bgp-policy source ip-prec-map\r\n no bgp-policy\
+        \ source ip-qos-map\r\n no bgp-policy destination ip-prec-map\r\n no bgp-policy\
+        \ destination ip-qos-map\r\ninterface Ethernet0/1\r\n mtu 1500\r\n no ip address\r\
+        \n no ip clear-dont-fragment\r\n ip redirects\r\n ip unreachables\r\n ip proxy-arp\r\
+        \n ip mtu 1500\r\n ip mfib forwarding input\r\n ip mfib forwarding output\r\
+        \n ip mfib cef input\r\n ip mfib cef output\r\n ip pim join-prune-interval\
+        \ 60\r\n ip pim dr-priority 1\r\n ip pim query-interval 30\r\n no ip flowspec\r\
+        \n ip cef accounting non-recursive internal\r\n ip load-sharing per-destination\r\
+        \n ip route-cache cef\r\n ip route-cache\r\n ip split-horizon\r\n ip igmp\
+        \ robustness-variable 2\r\n ip igmp last-member-query-interval 1000\r\n ip\
+        \ igmp last-member-query-count 2\r\n ip igmp query-max-response-time 10\r\n\
+        \ ip igmp v3-query-max-response-time 10\r\n ip igmp version 2\r\n ip igmp\
+        \ query-interval 60\r\n ip igmp tcn query count 2\r\n ip igmp tcn query interval\
+        \ 10\r\n logging event link-status\r\n load-interval 300\r\n carrier-delay\
+        \ 2\r\n shutdown\r\n tx-ring-limit 64\r\n tx-queue-limit 64\r\n no medium\
+        \ p2p\r\n cdp log mismatch duplex\r\n cdp tlv location\r\n cdp tlv server-location\
+        \ \r\n cdp tlv app\r\n ipv6 nd reachable-time 0\r\n ipv6 nd ns-interval 0\r\
+        \n ipv6 nd dad attempts 1\r\n ipv6 nd dad loopback detect\r\n ipv6 nd prefix\
+        \ framed-ipv6-prefix\r\n ipv6 nd nud igp\r\n no ipv6 nd ra solicited unicast\r\
+        \n ipv6 nd ra lifetime 1800\r\n ipv6 nd ra interval 200\r\n ipv6 redirects\r\
+        \n ipv6 unreachables\r\n ipv6 mld query-max-response-time 10\r\n ipv6 mld\
+        \ query-timeout 255\r\n ipv6 mld robustness-variable 2\r\n ipv6 mld query-interval\
+        \ 125\r\n ipv6 mld router\r\n ipv6 mfib forwarding input\r\n ipv6 mfib forwarding\
+        \ output\r\n ipv6 mfib cef input\r\n ipv6 mfib cef output\r\n no ipv6 flowspec\r\
+        \n mpls mtu 1500\r\n mpls mldp\r\n snmp trap link-status\r\n no flowspec group\r\
+        \n no mka pre-shared-key\r\n mka default-policy\r\n network-clock wait-to-restore\
+        \ 300\r\n network-clock hold-off 300\r\n network-clock source quality-level\
+        \ - tx\r\n network-clock source quality-level - rx\r\n no synchronous mode\r\
+        \n bfd enable\r\n arp arpa\r\n arp timeout 14400\r\n lldp transmit\r\n lldp\
+        \ receive\r\n lldp tlv-select power-management\r\n lldp tlv-select 4-wire-power-management\r\
+        \n clns route-cache\r\n spanning-tree port-priority 128\r\n spanning-tree\
+        \ cost 0\r\n ethernet oam max-rate 10\r\n ethernet oam min-rate 1 \r\n ethernet\
+        \ oam remote-loopback timeout 2\r\n ethernet oam timeout 5 \r\n hold-queue\
+        \ 75 in\r\n hold-queue 40 out\r\n no bgp-policy accounting input\r\n no bgp-policy\
+        \ accounting output\r\n no bgp-policy accounting input source\r\n no bgp-policy\
+        \ accounting output source\r\n no bgp-policy source ip-prec-map\r\n no bgp-policy\
+        \ source ip-qos-map\r\n no bgp-policy destination ip-prec-map\r\n no bgp-policy\
+        \ destination ip-qos-map\r\ninterface Ethernet0/2\r\n mtu 1500\r\n no ip address\r\
+        \n no ip clear-dont-fragment\r\n ip redirects\r\n ip unreachables\r\n ip proxy-arp\r\
+        \n ip mtu 1500\r\n ip mfib forwarding input\r\n ip mfib forwarding output\r\
+        \n ip mfib cef input\r\n ip mfib cef output\r\n ip pim join-prune-interval\
+        \ 60\r\n ip pim dr-priority 1\r\n ip pim query-interval 30\r\n no ip flowspec\r\
+        \n ip cef accounting non-recursive internal\r\n ip load-sharing per-destination\r\
+        \n ip route-cache cef\r\n ip route-cache\r\n ip split-horizon\r\n ip igmp\
+        \ robustness-variable 2\r\n ip igmp last-member-query-interval 1000\r\n ip\
+        \ igmp last-member-query-count 2\r\n ip igmp query-max-response-time 10\r\n\
+        \ ip igmp v3-query-max-response-time 10\r\n ip igmp version 2\r\n ip igmp\
+        \ query-interval 60\r\n ip igmp tcn query count 2\r\n ip igmp tcn query interval\
+        \ 10\r\n logging event link-status\r\n load-interval 300\r\n carrier-delay\
+        \ 2\r\n shutdown\r\n tx-ring-limit 64\r\n tx-queue-limit 64\r\n no medium\
+        \ p2p\r\n cdp log mismatch duplex\r\n cdp tlv location\r\n cdp tlv server-location\
+        \ \r\n cdp tlv app\r\n ipv6 nd reachable-time 0\r\n ipv6 nd ns-interval 0\r\
+        \n ipv6 nd dad attempts 1\r\n ipv6 nd dad loopback detect\r\n ipv6 nd prefix\
+        \ framed-ipv6-prefix\r\n ipv6 nd nud igp\r\n no ipv6 nd ra solicited unicast\r\
+        \n ipv6 nd ra lifetime 1800\r\n ipv6 nd ra interval 200\r\n ipv6 redirects\r\
+        \n ipv6 unreachables\r\n ipv6 mld query-max-response-time 10\r\n ipv6 mld\
+        \ query-timeout 255\r\n ipv6 mld robustness-variable 2\r\n ipv6 mld query-interval\
+        \ 125\r\n ipv6 mld router\r\n ipv6 mfib forwarding input\r\n ipv6 mfib forwarding\
+        \ output\r\n ipv6 mfib cef input\r\n ipv6 mfib cef output\r\n no ipv6 flowspec\r\
+        \n mpls mtu 1500\r\n mpls mldp\r\n snmp trap link-status\r\n no flowspec group\r\
+        \n no mka pre-shared-key\r\n mka default-policy\r\n network-clock wait-to-restore\
+        \ 300\r\n network-clock hold-off 300\r\n network-clock source quality-level\
+        \ - tx\r\n network-clock source quality-level - rx\r\n no synchronous mode\r\
+        \n bfd enable\r\n arp arpa\r\n arp timeout 14400\r\n lldp transmit\r\n lldp\
+        \ receive\r\n lldp tlv-select power-management\r\n lldp tlv-select 4-wire-power-management\r\
+        \n clns route-cache\r\n spanning-tree port-priority 128\r\n spanning-tree\
+        \ cost 0\r\n ethernet oam max-rate 10\r\n ethernet oam min-rate 1 \r\n ethernet\
+        \ oam remote-loopback timeout 2\r\n ethernet oam timeout 5 \r\n hold-queue\
+        \ 75 in\r\n hold-queue 40 out\r\n no bgp-policy accounting input\r\n no bgp-policy\
+        \ accounting output\r\n no bgp-policy accounting input source\r\n no bgp-policy\
+        \ accounting output source\r\n no bgp-policy source ip-prec-map\r\n no bgp-policy\
+        \ source ip-qos-map\r\n no bgp-policy destination ip-prec-map\r\n no bgp-policy\
+        \ destination ip-qos-map\r\ninterface Ethernet0/3\r\n mtu 1500\r\n no ip address\r\
+        \n no ip clear-dont-fragment\r\n ip redirects\r\n ip unreachables\r\n ip proxy-arp\r\
+        \n ip mtu 1500\r\n ip mfib forwarding input\r\n ip mfib forwarding output\r\
+        \n ip mfib cef input\r\n ip mfib cef output\r\n ip pim join-prune-interval\
+        \ 60\r\n ip pim dr-priority 1\r\n ip pim query-interval 30\r\n no ip flowspec\r\
+        \n ip cef accounting non-recursive internal\r\n ip load-sharing per-destination\r\
+        \n ip route-cache cef\r\n ip route-cache\r\n ip split-horizon\r\n ip igmp\
+        \ robustness-variable 2\r\n ip igmp last-member-query-interval 1000\r\n ip\
+        \ igmp last-member-query-count 2\r\n ip igmp query-max-response-time 10\r\n\
+        \ ip igmp v3-query-max-response-time 10\r\n ip igmp version 2\r\n ip igmp\
+        \ query-interval 60\r\n ip igmp tcn query count 2\r\n ip igmp tcn query interval\
+        \ 10\r\n logging event link-status\r\n load-interval 300\r\n carrier-delay\
+        \ 2\r\n shutdown\r\n tx-ring-limit 64\r\n tx-queue-limit 64\r\n no medium\
+        \ p2p\r\n cdp log mismatch duplex\r\n cdp tlv location\r\n cdp tlv server-location\
+        \ \r\n cdp tlv app\r\n ipv6 nd reachable-time 0\r\n ipv6 nd ns-interval 0\r\
+        \n ipv6 nd dad attempts 1\r\n ipv6 nd dad loopback detect\r\n ipv6 nd prefix\
+        \ framed-ipv6-prefix\r\n ipv6 nd nud igp\r\n no ipv6 nd ra solicited unicast\r\
+        \n ipv6 nd ra lifetime 1800\r\n ipv6 nd ra interval 200\r\n ipv6 redirects\r\
+        \n ipv6 unreachables\r\n ipv6 mld query-max-response-time 10\r\n ipv6 mld\
+        \ query-timeout 255\r\n ipv6 mld robustness-variable 2\r\n ipv6 mld query-interval\
+        \ 125\r\n ipv6 mld router\r\n ipv6 mfib forwarding input\r\n ipv6 mfib forwarding\
+        \ output\r\n ipv6 mfib cef input\r\n ipv6 mfib cef output\r\n no ipv6 flowspec\r\
+        \n mpls mtu 1500\r\n mpls mldp\r\n snmp trap link-status\r\n no flowspec group\r\
+        \n no mka pre-shared-key\r\n mka default-policy\r\n network-clock wait-to-restore\
+        \ 300\r\n network-clock hold-off 300\r\n network-clock source quality-level\
+        \ - tx\r\n network-clock source quality-level - rx\r\n no synchronous mode\r\
+        \n bfd enable\r\n arp arpa\r\n arp timeout 14400\r\n lldp transmit\r\n lldp\
+        \ receive\r\n lldp tlv-select power-management\r\n lldp tlv-select 4-wire-power-management\r\
+        \n clns route-cache\r\n spanning-tree port-priority 128\r\n spanning-tree\
+        \ cost 0\r\n ethernet oam max-rate 10\r\n ethernet oam min-rate 1 \r\n ethernet\
+        \ oam remote-loopback timeout 2\r\n ethernet oam timeout 5 \r\n hold-queue\
+        \ 75 in\r\n hold-queue 40 out\r\n no bgp-policy accounting input\r\n no bgp-policy\
+        \ accounting output\r\n no bgp-policy accounting input source\r\n no bgp-policy\
+        \ accounting output source\r\n no bgp-policy source ip-prec-map\r\n no bgp-policy\
+        \ source ip-qos-map\r\n no bgp-policy destination ip-prec-map\r\n no bgp-policy\
+        \ destination ip-qos-map\r\ninterface Ethernet1/0\r\n description to iolce1\
+        \ Ethernet2/0\r\n mtu 1500\r\n vrf forwarding ce1\r\n ip address 99.1.3.3\
+        \ 255.255.255.0\r\n no ip clear-dont-fragment\r\n ip redirects\r\n ip unreachables\r\
+        \n ip proxy-arp\r\n ip mtu 1500\r\n ip mfib forwarding input\r\n ip mfib forwarding\
+        \ output\r\n ip mfib cef input\r\n ip mfib cef output\r\n ip pim join-prune-interval\
+        \ 60\r\n ip pim dr-priority 1\r\n ip pim query-interval 30\r\n no ip flowspec\r\
+        \n ip cef accounting non-recursive internal\r\n ip load-sharing per-destination\r\
+        \n ip route-cache cef\r\n ip route-cache\r\n ip split-horizon\r\n ip igmp\
+        \ robustness-variable 2\r\n ip igmp last-member-query-interval 1000\r\n ip\
+        \ igmp last-member-query-count 2\r\n ip igmp query-max-response-time 10\r\n\
+        \ ip igmp v3-query-max-response-time 10\r\n ip igmp version 2\r\n ip igmp\
+        \ query-interval 60\r\n ip igmp tcn query count 2\r\n ip igmp tcn query interval\
+        \ 10\r\n logging event link-status\r\n load-interval 300\r\n carrier-delay\
+        \ 2\r\n no shutdown\r\n tx-ring-limit 64\r\n tx-queue-limit 64\r\n no medium\
+        \ p2p\r\n cdp log mismatch duplex\r\n cdp tlv location\r\n cdp tlv server-location\
+        \ \r\n cdp tlv app\r\n ipv6 address 2001::99:1:3:3/112\r\n ipv6 nd reachable-time\
+        \ 0\r\n ipv6 nd ns-interval 0\r\n ipv6 nd dad attempts 1\r\n ipv6 nd dad loopback\
+        \ detect\r\n ipv6 nd prefix framed-ipv6-prefix\r\n ipv6 nd nud igp\r\n no\
+        \ ipv6 nd ra solicited unicast\r\n ipv6 nd ra lifetime 1800\r\n ipv6 nd ra\
+        \ interval 200\r\n ipv6 redirects\r\n ipv6 unreachables\r\n ipv6 mld query-max-response-time\
+        \ 10\r\n ipv6 mld query-timeout 255\r\n ipv6 mld robustness-variable 2\r\n\
+        \ ipv6 mld query-interval 125\r\n ipv6 mld router\r\n ipv6 mfib forwarding\
+        \ input\r\n ipv6 mfib forwarding output\r\n ipv6 mfib cef input\r\n ipv6 mfib\
+        \ cef output\r\n no ipv6 flowspec\r\n mpls mtu 1500\r\n mpls mldp\r\n snmp\
+        \ trap link-status\r\n no flowspec group\r\n no mka pre-shared-key\r\n mka\
+        \ default-policy\r\n network-clock wait-to-restore 300\r\n network-clock hold-off\
+        \ 300\r\n network-clock source quality-level - tx\r\n network-clock source\
+        \ quality-level - rx\r\n no synchronous mode\r\n bfd enable\r\n arp arpa\r\
+        \n arp timeout 14400\r\n lldp transmit\r\n lldp receive\r\n lldp tlv-select\
+        \ power-management\r\n lldp tlv-select 4-wire-power-management\r\n clns route-cache\r\
+        \n spanning-tree port-priority 128\r\n spanning-tree cost 0\r\n ethernet oam\
+        \ max-rate 10\r\n ethernet oam min-rate 1 \r\n ethernet oam remote-loopback\
+        \ timeout 2\r\n ethernet oam timeout 5 \r\n hold-queue 75 in\r\n hold-queue\
+        \ 40 out\r\n no bgp-policy accounting input\r\n no bgp-policy accounting output\r\
+        \n no bgp-policy accounting input source\r\n no bgp-policy accounting output\
+        \ source\r\n no bgp-policy source ip-prec-map\r\n no bgp-policy source ip-qos-map\r\
+        \n no bgp-policy destination ip-prec-map\r\n no bgp-policy destination ip-qos-map\r\
+        \ninterface Ethernet1/1\r\n description to iolce1 Ethernet2/1\r\n mtu 1500\r\
+        \n vrf forwarding ce1\r\n ip address 100.1.3.3 255.255.255.0\r\n no ip clear-dont-fragment\r\
+        \n ip redirects\r\n ip unreachables\r\n ip proxy-arp\r\n ip mtu 1500\r\n ip\
+        \ mfib forwarding input\r\n ip mfib forwarding output\r\n ip mfib cef input\r\
+        \n ip mfib cef output\r\n ip pim join-prune-interval 60\r\n ip pim dr-priority\
+        \ 1\r\n ip pim query-interval 30\r\n no ip flowspec\r\n ip cef accounting\
+        \ non-recursive internal\r\n ip load-sharing per-destination\r\n ip route-cache\
+        \ cef\r\n ip route-cache\r\n ip split-horizon\r\n ip igmp robustness-variable\
+        \ 2\r\n ip igmp last-member-query-interval 1000\r\n ip igmp last-member-query-count\
+        \ 2\r\n ip igmp query-max-response-time 10\r\n ip igmp v3-query-max-response-time\
+        \ 10\r\n ip igmp version 2\r\n ip igmp query-interval 60\r\n ip igmp tcn query\
+        \ count 2\r\n ip igmp tcn query interval 10\r\n logging event link-status\r\
+        \n load-interval 300\r\n carrier-delay 2\r\n no shutdown\r\n tx-ring-limit\
+        \ 64\r\n tx-queue-limit 64\r\n no medium p2p\r\n cdp log mismatch duplex\r\
+        \n cdp tlv location\r\n cdp tlv server-location \r\n cdp tlv app\r\n ipv6\
+        \ address 2001::100:1:3:3/112\r\n ipv6 nd reachable-time 0\r\n ipv6 nd ns-interval\
+        \ 0\r\n ipv6 nd dad attempts 1\r\n ipv6 nd dad loopback detect\r\n ipv6 nd\
+        \ prefix framed-ipv6-prefix\r\n ipv6 nd nud igp\r\n no ipv6 nd ra solicited\
+        \ unicast\r\n ipv6 nd ra lifetime 1800\r\n ipv6 nd ra interval 200\r\n ipv6\
+        \ redirects\r\n ipv6 unreachables\r\n ipv6 mld query-max-response-time 10\r\
+        \n ipv6 mld query-timeout 255\r\n ipv6 mld robustness-variable 2\r\n ipv6\
+        \ mld query-interval 125\r\n ipv6 mld router\r\n ipv6 mfib forwarding input\r\
+        \n ipv6 mfib forwarding output\r\n ipv6 mfib cef input\r\n ipv6 mfib cef output\r\
+        \n no ipv6 flowspec\r\n mpls mtu 1500\r\n mpls mldp\r\n snmp trap link-status\r\
+        \n no flowspec group\r\n no mka pre-shared-key\r\n mka default-policy\r\n\
+        \ network-clock wait-to-restore 300\r\n network-clock hold-off 300\r\n network-clock\
+        \ source quality-level - tx\r\n network-clock source quality-level - rx\r\n\
+        \ no synchronous mode\r\n bfd enable\r\n arp arpa\r\n arp timeout 14400\r\n\
+        \ lldp transmit\r\n lldp receive\r\n lldp tlv-select power-management\r\n\
+        \ lldp tlv-select 4-wire-power-management\r\n clns route-cache\r\n spanning-tree\
+        \ port-priority 128\r\n spanning-tree cost 0\r\n ethernet oam max-rate 10\r\
+        \n ethernet oam min-rate 1 \r\n ethernet oam remote-loopback timeout 2\r\n\
+        \ ethernet oam timeout 5 \r\n hold-queue 75 in\r\n hold-queue 40 out\r\n no\
+        \ bgp-policy accounting input\r\n no bgp-policy accounting output\r\n no bgp-policy\
+        \ accounting input source\r\n no bgp-policy accounting output source\r\n no\
+        \ bgp-policy source ip-prec-map\r\n no bgp-policy source ip-qos-map\r\n no\
+        \ bgp-policy destination ip-prec-map\r\n no bgp-policy destination ip-qos-map\r\
+        \ninterface Ethernet1/2\r\n mtu 1500\r\n no ip address\r\n no ip clear-dont-fragment\r\
+        \n ip redirects\r\n ip unreachables\r\n ip proxy-arp\r\n ip mtu 1500\r\n ip\
+        \ mfib forwarding input\r\n ip mfib forwarding output\r\n ip mfib cef input\r\
+        \n ip mfib cef output\r\n ip pim join-prune-interval 60\r\n ip pim dr-priority\
+        \ 1\r\n ip pim query-interval 30\r\n no ip flowspec\r\n ip cef accounting\
+        \ non-recursive internal\r\n ip load-sharing per-destination\r\n ip route-cache\
+        \ cef\r\n ip route-cache\r\n ip split-horizon\r\n ip igmp robustness-variable\
+        \ 2\r\n ip igmp last-member-query-interval 1000\r\n ip igmp last-member-query-count\
+        \ 2\r\n ip igmp query-max-response-time 10\r\n ip igmp v3-query-max-response-time\
+        \ 10\r\n ip igmp version 2\r\n ip igmp query-interval 60\r\n ip igmp tcn query\
+        \ count 2\r\n ip igmp tcn query interval 10\r\n logging event link-status\r\
+        \n load-interval 300\r\n carrier-delay 2\r\n shutdown\r\n tx-ring-limit 64\r\
+        \n tx-queue-limit 64\r\n no medium p2p\r\n cdp log mismatch duplex\r\n cdp\
+        \ tlv location\r\n cdp tlv server-location \r\n cdp tlv app\r\n ipv6 nd reachable-time\
+        \ 0\r\n ipv6 nd ns-interval 0\r\n ipv6 nd dad attempts 1\r\n ipv6 nd dad loopback\
+        \ detect\r\n ipv6 nd prefix framed-ipv6-prefix\r\n ipv6 nd nud igp\r\n no\
+        \ ipv6 nd ra solicited unicast\r\n ipv6 nd ra lifetime 1800\r\n ipv6 nd ra\
+        \ interval 200\r\n ipv6 redirects\r\n ipv6 unreachables\r\n ipv6 mld query-max-response-time\
+        \ 10\r\n ipv6 mld query-timeout 255\r\n ipv6 mld robustness-variable 2\r\n\
+        \ ipv6 mld query-interval 125\r\n ipv6 mld router\r\n ipv6 mfib forwarding\
+        \ input\r\n ipv6 mfib forwarding output\r\n ipv6 mfib cef input\r\n ipv6 mfib\
+        \ cef output\r\n no ipv6 flowspec\r\n mpls mtu 1500\r\n mpls mldp\r\n snmp\
+        \ trap link-status\r\n no flowspec group\r\n no mka pre-shared-key\r\n mka\
+        \ default-policy\r\n network-clock wait-to-restore 300\r\n network-clock hold-off\
+        \ 300\r\n network-clock source quality-level - tx\r\n network-clock source\
+        \ quality-level - rx\r\n no synchronous mode\r\n bfd enable\r\n arp arpa\r\
+        \n arp timeout 14400\r\n lldp transmit\r\n lldp receive\r\n lldp tlv-select\
+        \ power-management\r\n lldp tlv-select 4-wire-power-management\r\n clns route-cache\r\
+        \n spanning-tree port-priority 128\r\n spanning-tree cost 0\r\n ethernet oam\
+        \ max-rate 10\r\n ethernet oam min-rate 1 \r\n ethernet oam remote-loopback\
+        \ timeout 2\r\n ethernet oam timeout 5 \r\n hold-queue 75 in\r\n hold-queue\
+        \ 40 out\r\n no bgp-policy accounting input\r\n no bgp-policy accounting output\r\
+        \n no bgp-policy accounting input source\r\n no bgp-policy accounting output\
+        \ source\r\n no bgp-policy source ip-prec-map\r\n no bgp-policy source ip-qos-map\r\
+        \n no bgp-policy destination ip-prec-map\r\n no bgp-policy destination ip-qos-map\r\
+        \ninterface Ethernet1/3\r\n mtu 1500\r\n no ip address\r\n no ip clear-dont-fragment\r\
+        \n ip redirects\r\n ip unreachables\r\n ip proxy-arp\r\n ip mtu 1500\r\n ip\
+        \ mfib forwarding input\r\n ip mfib forwarding output\r\n ip mfib cef input\r\
+        \n ip mfib cef output\r\n ip pim join-prune-interval 60\r\n ip pim dr-priority\
+        \ 1\r\n ip pim query-interval 30\r\n no ip flowspec\r\n ip cef accounting\
+        \ non-recursive internal\r\n ip load-sharing per-destination\r\n ip route-cache\
+        \ cef\r\n ip route-cache\r\n ip split-horizon\r\n ip igmp robustness-variable\
+        \ 2\r\n ip igmp last-member-query-interval 1000\r\n ip igmp last-member-query-count\
+        \ 2\r\n ip igmp query-max-response-time 10\r\n ip igmp v3-query-max-response-time\
+        \ 10\r\n ip igmp version 2\r\n ip igmp query-interval 60\r\n ip igmp tcn query\
+        \ count 2\r\n ip igmp tcn query interval 10\r\n logging event link-status\r\
+        \n load-interval 300\r\n carrier-delay 2\r\n shutdown\r\n tx-ring-limit 64\r\
+        \n tx-queue-limit 64\r\n no medium p2p\r\n cdp log mismatch duplex\r\n cdp\
+        \ tlv location\r\n cdp tlv server-location \r\n cdp tlv app\r\n ipv6 nd reachable-time\
+        \ 0\r\n ipv6 nd ns-interval 0\r\n ipv6 nd dad attempts 1\r\n ipv6 nd dad loopback\
+        \ detect\r\n ipv6 nd prefix framed-ipv6-prefix\r\n ipv6 nd nud igp\r\n no\
+        \ ipv6 nd ra solicited unicast\r\n ipv6 nd ra lifetime 1800\r\n ipv6 nd ra\
+        \ interval 200\r\n ipv6 redirects\r\n ipv6 unreachables\r\n ipv6 mld query-max-response-time\
+        \ 10\r\n ipv6 mld query-timeout 255\r\n ipv6 mld robustness-variable 2\r\n\
+        \ ipv6 mld query-interval 125\r\n ipv6 mld router\r\n ipv6 mfib forwarding\
+        \ input\r\n ipv6 mfib forwarding output\r\n ipv6 mfib cef input\r\n ipv6 mfib\
+        \ cef output\r\n no ipv6 flowspec\r\n mpls mtu 1500\r\n mpls mldp\r\n snmp\
+        \ trap link-status\r\n no flowspec group\r\n no mka pre-shared-key\r\n mka\
+        \ default-policy\r\n network-clock wait-to-restore 300\r\n network-clock hold-off\
+        \ 300\r\n network-clock source quality-level - tx\r\n network-clock source\
+        \ quality-level - rx\r\n no synchronous mode\r\n bfd enable\r\n arp arpa\r\
+        \n arp timeout 14400\r\n lldp transmit\r\n lldp receive\r\n lldp tlv-select\
+        \ power-management\r\n lldp tlv-select 4-wire-power-management\r\n clns route-cache\r\
+        \n spanning-tree port-priority 128\r\n spanning-tree cost 0\r\n ethernet oam\
+        \ max-rate 10\r\n ethernet oam min-rate 1 \r\n ethernet oam remote-loopback\
+        \ timeout 2\r\n ethernet oam timeout 5 \r\n hold-queue 75 in\r\n hold-queue\
+        \ 40 out\r\n no bgp-policy accounting input\r\n no bgp-policy accounting output\r\
+        \n no bgp-policy accounting input source\r\n no bgp-policy accounting output\
+        \ source\r\n no bgp-policy source ip-prec-map\r\n no bgp-policy source ip-qos-map\r\
+        \n no bgp-policy destination ip-prec-map\r\n no bgp-policy destination ip-qos-map\r\
+        \ninterface Ethernet2/0\r\n description to iolpe1 Ethernet2/0\r\n mtu 1500\r\
+        \n ip address 99.2.3.3 255.255.255.0\r\n no ip clear-dont-fragment\r\n ip\
+        \ redirects\r\n ip unreachables\r\n ip proxy-arp\r\n ip mtu 1500\r\n ip router\
+        \ isis sr\r\n ip mfib forwarding input\r\n ip mfib forwarding output\r\n ip\
+        \ mfib cef input\r\n ip mfib cef output\r\n ip pim join-prune-interval 60\r\
+        \n ip pim dr-priority 1\r\n ip pim query-interval 30\r\n no ip flowspec\r\n\
+        \ ip cef accounting non-recursive internal\r\n ip load-sharing per-destination\r\
+        \n ip route-cache cef\r\n ip route-cache\r\n ip split-horizon\r\n ip igmp\
+        \ robustness-variable 2\r\n ip igmp last-member-query-interval 1000\r\n ip\
+        \ igmp last-member-query-count 2\r\n ip igmp query-max-response-time 10\r\n\
+        \ ip igmp v3-query-max-response-time 10\r\n ip igmp version 2\r\n ip igmp\
+        \ query-interval 60\r\n ip igmp tcn query count 2\r\n ip igmp tcn query interval\
+        \ 10\r\n logging event link-status\r\n load-interval 300\r\n carrier-delay\
+        \ 2\r\n no shutdown\r\n tx-ring-limit 64\r\n tx-queue-limit 64\r\n no medium\
+        \ p2p\r\n cdp log mismatch duplex\r\n cdp tlv location\r\n cdp tlv server-location\
+        \ \r\n cdp tlv app\r\n ipv6 address 2001::99:2:3:3/112\r\n ipv6 nd reachable-time\
+        \ 0\r\n ipv6 nd ns-interval 0\r\n ipv6 nd dad attempts 1\r\n ipv6 nd dad loopback\
+        \ detect\r\n ipv6 nd prefix framed-ipv6-prefix\r\n ipv6 nd nud igp\r\n no\
+        \ ipv6 nd ra solicited unicast\r\n ipv6 nd ra lifetime 1800\r\n ipv6 nd ra\
+        \ interval 200\r\n ipv6 redirects\r\n ipv6 unreachables\r\n ipv6 mld query-max-response-time\
+        \ 10\r\n ipv6 mld query-timeout 255\r\n ipv6 mld robustness-variable 2\r\n\
+        \ ipv6 mld query-interval 125\r\n ipv6 mld router\r\n ipv6 mfib forwarding\
+        \ input\r\n ipv6 mfib forwarding output\r\n ipv6 mfib cef input\r\n ipv6 mfib\
+        \ cef output\r\n ipv6 router isis sr\r\n no ipv6 flowspec\r\n mpls ip\r\n\
+        \ mpls mtu 1500\r\n mpls ldp igp autoconfig\r\n mpls ldp igp sync\r\n mpls\
+        \ mldp\r\n mpls traffic-eng tunnels\r\n snmp trap link-status\r\n no flowspec\
+        \ group\r\n no mka pre-shared-key\r\n mka default-policy\r\n network-clock\
+        \ wait-to-restore 300\r\n network-clock hold-off 300\r\n network-clock source\
+        \ quality-level - tx\r\n network-clock source quality-level - rx\r\n no synchronous\
+        \ mode\r\n bfd enable\r\n arp arpa\r\n arp timeout 14400\r\n lldp transmit\r\
+        \n lldp receive\r\n lldp tlv-select power-management\r\n lldp tlv-select 4-wire-power-management\r\
+        \n clns congestion-threshold 4\r\n clns erpdu-interval 10\r\n clns mtu 1497\r\
+        \n clns rdpdu-interval 100\r\n clns route-cache\r\n no clns send-erpdu\r\n\
+        \ no clns send-rdpdu\r\n isis circuit-type level-1-2\r\n isis network point-to-point\
+        \ \r\n isis metric 10 level-1\r\n isis metric 10 level-2\r\n isis te-metric\
+        \ flex-algo 0 level-1\r\n isis te-metric flex-algo 0 level-2\r\n no isis authentication\
+        \ mode\r\n no isis authentication send-only\r\n isis priority 64 level-1\r\
+        \n isis priority 64 level-2\r\n isis hello-multiplier 3\r\n isis hello-interval\
+        \ 10\r\n isis advertise prefix\r\n isis prefix-attributes n-flag-clear level-1\r\
+        \n isis prefix-attributes n-flag-clear level-2\r\n isis three-way-handshake\
+        \ ietf\r\n isis hello padding\r\n isis csnp-interval 0 level-1\r\n isis csnp-interval\
+        \ 0 level-2\r\n isis retransmit-throttle-interval 0\r\n isis retransmit-interval\
+        \ 5\r\n isis lsp-interval 33\r\n no isis protocol shutdown\r\n isis ipv6 metric\
+        \ 10 level-1\r\n isis ipv6 metric 10 level-2\r\n isis fast-reroute protection\
+        \ level-1 \r\n isis fast-reroute protection level-2 \r\n isis fast-reroute\
+        \ candidate level-1 \r\n isis fast-reroute candidate level-2 \r\n no isis\
+        \ fast-reroute tie-break level-1 default\r\n isis fast-reroute tie-break level-1\
+        \ linecard-disjoint 40\r\n isis fast-reroute tie-break level-1 lowest-backup-path-metric\
+        \ 30\r\n isis fast-reroute tie-break level-1 primary-path 20\r\n no isis fast-reroute\
+        \ tie-break level-2 default\r\n isis fast-reroute tie-break level-2 linecard-disjoint\
+        \ 40\r\n isis fast-reroute tie-break level-2 lowest-backup-path-metric 30\r\
+        \n isis fast-reroute tie-break level-2 primary-path 20\r\n isis fast-reroute\
+        \ remote-lfa protection level-1 \r\n isis fast-reroute remote-lfa protection\
+        \ level-2 \r\n isis fast-reroute ti-lfa protection level-1 \r\n isis fast-reroute\
+        \ ti-lfa protection level-2 \r\n spanning-tree port-priority 128\r\n spanning-tree\
+        \ cost 0\r\n ethernet oam max-rate 10\r\n ethernet oam min-rate 1 \r\n ethernet\
+        \ oam remote-loopback timeout 2\r\n ethernet oam timeout 5 \r\n hold-queue\
+        \ 75 in\r\n hold-queue 40 out\r\n ip rsvp bandwidth\r\n ip rsvp signalling\
+        \ fast-local-repair wait-time 0\r\n ip rsvp signalling blockade 4\r\n ip rsvp\
+        \ burst policing 200\r\n no bgp-policy accounting input\r\n no bgp-policy\
+        \ accounting output\r\n no bgp-policy accounting input source\r\n no bgp-policy\
+        \ accounting output source\r\n no bgp-policy source ip-prec-map\r\n no bgp-policy\
+        \ source ip-qos-map\r\n no bgp-policy destination ip-prec-map\r\n no bgp-policy\
+        \ destination ip-qos-map\r\ninterface Ethernet2/1\r\n description to iolpe1\
+        \ Ethernet2/1\r\n mtu 1500\r\n ip address 100.2.3.3 255.255.255.0\r\n no ip\
+        \ clear-dont-fragment\r\n ip redirects\r\n ip unreachables\r\n ip proxy-arp\r\
+        \n ip mtu 1500\r\n ip router isis sr\r\n ip mfib forwarding input\r\n ip mfib\
+        \ forwarding output\r\n ip mfib cef input\r\n ip mfib cef output\r\n ip pim\
+        \ join-prune-interval 60\r\n ip pim dr-priority 1\r\n ip pim query-interval\
+        \ 30\r\n no ip flowspec\r\n ip cef accounting non-recursive internal\r\n ip\
+        \ load-sharing per-destination\r\n ip route-cache cef\r\n ip route-cache\r\
+        \n ip split-horizon\r\n ip igmp robustness-variable 2\r\n ip igmp last-member-query-interval\
+        \ 1000\r\n ip igmp last-member-query-count 2\r\n ip igmp query-max-response-time\
+        \ 10\r\n ip igmp v3-query-max-response-time 10\r\n ip igmp version 2\r\n ip\
+        \ igmp query-interval 60\r\n ip igmp tcn query count 2\r\n ip igmp tcn query\
+        \ interval 10\r\n logging event link-status\r\n load-interval 300\r\n carrier-delay\
+        \ 2\r\n no shutdown\r\n tx-ring-limit 64\r\n tx-queue-limit 64\r\n no medium\
+        \ p2p\r\n cdp log mismatch duplex\r\n cdp tlv location\r\n cdp tlv server-location\
+        \ \r\n cdp tlv app\r\n ipv6 address 2001::100:2:3:3/112\r\n ipv6 nd reachable-time\
+        \ 0\r\n ipv6 nd ns-interval 0\r\n ipv6 nd dad attempts 1\r\n ipv6 nd dad loopback\
+        \ detect\r\n ipv6 nd prefix framed-ipv6-prefix\r\n ipv6 nd nud igp\r\n no\
+        \ ipv6 nd ra solicited unicast\r\n ipv6 nd ra lifetime 1800\r\n ipv6 nd ra\
+        \ interval 200\r\n ipv6 redirects\r\n ipv6 unreachables\r\n ipv6 mld query-max-response-time\
+        \ 10\r\n ipv6 mld query-timeout 255\r\n ipv6 mld robustness-variable 2\r\n\
+        \ ipv6 mld query-interval 125\r\n ipv6 mld router\r\n ipv6 mfib forwarding\
+        \ input\r\n ipv6 mfib forwarding output\r\n ipv6 mfib cef input\r\n ipv6 mfib\
+        \ cef output\r\n ipv6 router isis sr\r\n no ipv6 flowspec\r\n mpls ip\r\n\
+        \ mpls mtu 1500\r\n mpls ldp igp autoconfig\r\n mpls ldp igp sync\r\n mpls\
+        \ mldp\r\n mpls traffic-eng tunnels\r\n snmp trap link-status\r\n no flowspec\
+        \ group\r\n no mka pre-shared-key\r\n mka default-policy\r\n network-clock\
+        \ wait-to-restore 300\r\n network-clock hold-off 300\r\n network-clock source\
+        \ quality-level - tx\r\n network-clock source quality-level - rx\r\n no synchronous\
+        \ mode\r\n bfd enable\r\n arp arpa\r\n arp timeout 14400\r\n lldp transmit\r\
+        \n lldp receive\r\n lldp tlv-select power-management\r\n lldp tlv-select 4-wire-power-management\r\
+        \n clns congestion-threshold 4\r\n clns erpdu-interval 10\r\n clns mtu 1497\r\
+        \n clns rdpdu-interval 100\r\n clns route-cache\r\n no clns send-erpdu\r\n\
+        \ no clns send-rdpdu\r\n isis circuit-type level-1-2\r\n isis network point-to-point\
+        \ \r\n isis metric 10 level-1\r\n isis metric 10 level-2\r\n isis te-metric\
+        \ flex-algo 0 level-1\r\n isis te-metric flex-algo 0 level-2\r\n no isis authentication\
+        \ mode\r\n no isis authentication send-only\r\n isis priority 64 level-1\r\
+        \n isis priority 64 level-2\r\n isis hello-multiplier 3\r\n isis hello-interval\
+        \ 10\r\n isis advertise prefix\r\n isis prefix-attributes n-flag-clear level-1\r\
+        \n isis prefix-attributes n-flag-clear level-2\r\n isis three-way-handshake\
+        \ ietf\r\n isis hello padding\r\n isis csnp-interval 0 level-1\r\n isis csnp-interval\
+        \ 0 level-2\r\n isis retransmit-throttle-interval 0\r\n isis retransmit-interval\
+        \ 5\r\n isis lsp-interval 33\r\n no isis protocol shutdown\r\n isis ipv6 metric\
+        \ 10 level-1\r\n isis ipv6 metric 10 level-2\r\n isis fast-reroute protection\
+        \ level-1 \r\n isis fast-reroute protection level-2 \r\n isis fast-reroute\
+        \ candidate level-1 \r\n isis fast-reroute candidate level-2 \r\n no isis\
+        \ fast-reroute tie-break level-1 default\r\n isis fast-reroute tie-break level-1\
+        \ linecard-disjoint 40\r\n isis fast-reroute tie-break level-1 lowest-backup-path-metric\
+        \ 30\r\n isis fast-reroute tie-break level-1 primary-path 20\r\n no isis fast-reroute\
+        \ tie-break level-2 default\r\n isis fast-reroute tie-break level-2 linecard-disjoint\
+        \ 40\r\n isis fast-reroute tie-break level-2 lowest-backup-path-metric 30\r\
+        \n isis fast-reroute tie-break level-2 primary-path 20\r\n isis fast-reroute\
+        \ remote-lfa protection level-1 \r\n isis fast-reroute remote-lfa protection\
+        \ level-2 \r\n isis fast-reroute ti-lfa protection level-1 \r\n isis fast-reroute\
+        \ ti-lfa protection level-2 \r\n spanning-tree port-priority 128\r\n spanning-tree\
+        \ cost 0\r\n ethernet oam max-rate 10\r\n ethernet oam min-rate 1 \r\n ethernet\
+        \ oam remote-loopback timeout 2\r\n ethernet oam timeout 5 \r\n hold-queue\
+        \ 75 in\r\n hold-queue 40 out\r\n ip rsvp bandwidth\r\n ip rsvp signalling\
+        \ fast-local-repair wait-time 0\r\n ip rsvp signalling blockade 4\r\n ip rsvp\
+        \ burst policing 200\r\n no bgp-policy accounting input\r\n no bgp-policy\
+        \ accounting output\r\n no bgp-policy accounting input source\r\n no bgp-policy\
+        \ accounting output source\r\n no bgp-policy source ip-prec-map\r\n no bgp-policy\
+        \ source ip-qos-map\r\n no bgp-policy destination ip-prec-map\r\n no bgp-policy\
+        \ destination ip-qos-map\r\ninterface Ethernet2/2\r\n mtu 1500\r\n no ip address\r\
+        \n no ip clear-dont-fragment\r\n ip redirects\r\n ip unreachables\r\n ip proxy-arp\r\
+        \n ip mtu 1500\r\n ip mfib forwarding input\r\n ip mfib forwarding output\r\
+        \n ip mfib cef input\r\n ip mfib cef output\r\n ip pim join-prune-interval\
+        \ 60\r\n ip pim dr-priority 1\r\n ip pim query-interval 30\r\n no ip flowspec\r\
+        \n ip cef accounting non-recursive internal\r\n ip load-sharing per-destination\r\
+        \n ip route-cache cef\r\n ip route-cache\r\n ip split-horizon\r\n ip igmp\
+        \ robustness-variable 2\r\n ip igmp last-member-query-interval 1000\r\n ip\
+        \ igmp last-member-query-count 2\r\n ip igmp query-max-response-time 10\r\n\
+        \ ip igmp v3-query-max-response-time 10\r\n ip igmp version 2\r\n ip igmp\
+        \ query-interval 60\r\n ip igmp tcn query count 2\r\n ip igmp tcn query interval\
+        \ 10\r\n logging event link-status\r\n load-interval 300\r\n carrier-delay\
+        \ 2\r\n shutdown\r\n tx-ring-limit 64\r\n tx-queue-limit 64\r\n no medium\
+        \ p2p\r\n cdp log mismatch duplex\r\n cdp tlv location\r\n cdp tlv server-location\
+        \ \r\n cdp tlv app\r\n ipv6 nd reachable-time 0\r\n ipv6 nd ns-interval 0\r\
+        \n ipv6 nd dad attempts 1\r\n ipv6 nd dad loopback detect\r\n ipv6 nd prefix\
+        \ framed-ipv6-prefix\r\n ipv6 nd nud igp\r\n no ipv6 nd ra solicited unicast\r\
+        \n ipv6 nd ra lifetime 1800\r\n ipv6 nd ra interval 200\r\n ipv6 redirects\r\
+        \n ipv6 unreachables\r\n ipv6 mld query-max-response-time 10\r\n ipv6 mld\
+        \ query-timeout 255\r\n ipv6 mld robustness-variable 2\r\n ipv6 mld query-interval\
+        \ 125\r\n ipv6 mld router\r\n ipv6 mfib forwarding input\r\n ipv6 mfib forwarding\
+        \ output\r\n ipv6 mfib cef input\r\n ipv6 mfib cef output\r\n no ipv6 flowspec\r\
+        \n mpls mtu 1500\r\n mpls mldp\r\n snmp trap link-status\r\n no flowspec group\r\
+        \n no mka pre-shared-key\r\n mka default-policy\r\n network-clock wait-to-restore\
+        \ 300\r\n network-clock hold-off 300\r\n network-clock source quality-level\
+        \ - tx\r\n network-clock source quality-level - rx\r\n no synchronous mode\r\
+        \n bfd enable\r\n arp arpa\r\n arp timeout 14400\r\n lldp transmit\r\n lldp\
+        \ receive\r\n lldp tlv-select power-management\r\n lldp tlv-select 4-wire-power-management\r\
+        \n clns route-cache\r\n spanning-tree port-priority 128\r\n spanning-tree\
+        \ cost 0\r\n ethernet oam max-rate 10\r\n ethernet oam min-rate 1 \r\n ethernet\
+        \ oam remote-loopback timeout 2\r\n ethernet oam timeout 5 \r\n hold-queue\
+        \ 75 in\r\n hold-queue 40 out\r\n no bgp-policy accounting input\r\n no bgp-policy\
+        \ accounting output\r\n no bgp-policy accounting input source\r\n no bgp-policy\
+        \ accounting output source\r\n no bgp-policy source ip-prec-map\r\n no bgp-policy\
+        \ source ip-qos-map\r\n no bgp-policy destination ip-prec-map\r\n no bgp-policy\
+        \ destination ip-qos-map\r\ninterface Ethernet2/3\r\n mtu 1500\r\n no ip address\r\
+        \n no ip clear-dont-fragment\r\n ip redirects\r\n ip unreachables\r\n ip proxy-arp\r\
+        \n ip mtu 1500\r\n ip mfib forwarding input\r\n ip mfib forwarding output\r\
+        \n ip mfib cef input\r\n ip mfib cef output\r\n ip pim join-prune-interval\
+        \ 60\r\n ip pim dr-priority 1\r\n ip pim query-interval 30\r\n no ip flowspec\r\
+        \n ip cef accounting non-recursive internal\r\n ip load-sharing per-destination\r\
+        \n ip route-cache cef\r\n ip route-cache\r\n ip split-horizon\r\n ip igmp\
+        \ robustness-variable 2\r\n ip igmp last-member-query-interval 1000\r\n ip\
+        \ igmp last-member-query-count 2\r\n ip igmp query-max-response-time 10\r\n\
+        \ ip igmp v3-query-max-response-time 10\r\n ip igmp version 2\r\n ip igmp\
+        \ query-interval 60\r\n ip igmp tcn query count 2\r\n ip igmp tcn query interval\
+        \ 10\r\n logging event link-status\r\n load-interval 300\r\n carrier-delay\
+        \ 2\r\n shutdown\r\n tx-ring-limit 64\r\n tx-queue-limit 64\r\n no medium\
+        \ p2p\r\n cdp log mismatch duplex\r\n cdp tlv location\r\n cdp tlv server-location\
+        \ \r\n cdp tlv app\r\n ipv6 nd reachable-time 0\r\n ipv6 nd ns-interval 0\r\
+        \n ipv6 nd dad attempts 1\r\n ipv6 nd dad loopback detect\r\n ipv6 nd prefix\
+        \ framed-ipv6-prefix\r\n ipv6 nd nud igp\r\n no ipv6 nd ra solicited unicast\r\
+        \n ipv6 nd ra lifetime 1800\r\n ipv6 nd ra interval 200\r\n ipv6 redirects\r\
+        \n ipv6 unreachables\r\n ipv6 mld query-max-response-time 10\r\n ipv6 mld\
+        \ query-timeout 255\r\n ipv6 mld robustness-variable 2\r\n ipv6 mld query-interval\
+        \ 125\r\n ipv6 mld router\r\n ipv6 mfib forwarding input\r\n ipv6 mfib forwarding\
+        \ output\r\n ipv6 mfib cef input\r\n ipv6 mfib cef output\r\n no ipv6 flowspec\r\
+        \n mpls mtu 1500\r\n mpls mldp\r\n snmp trap link-status\r\n no flowspec group\r\
+        \n no mka pre-shared-key\r\n mka default-policy\r\n network-clock wait-to-restore\
+        \ 300\r\n network-clock hold-off 300\r\n network-clock source quality-level\
+        \ - tx\r\n network-clock source quality-level - rx\r\n no synchronous mode\r\
+        \n bfd enable\r\n arp arpa\r\n arp timeout 14400\r\n lldp transmit\r\n lldp\
+        \ receive\r\n lldp tlv-select power-management\r\n lldp tlv-select 4-wire-power-management\r\
+        \n clns route-cache\r\n spanning-tree port-priority 128\r\n spanning-tree\
+        \ cost 0\r\n ethernet oam max-rate 10\r\n ethernet oam min-rate 1 \r\n ethernet\
+        \ oam remote-loopback timeout 2\r\n ethernet oam timeout 5 \r\n hold-queue\
+        \ 75 in\r\n hold-queue 40 out\r\n no bgp-policy accounting input\r\n no bgp-policy\
+        \ accounting output\r\n no bgp-policy accounting input source\r\n no bgp-policy\
+        \ accounting output source\r\n no bgp-policy source ip-prec-map\r\n no bgp-policy\
+        \ source ip-qos-map\r\n no bgp-policy destination ip-prec-map\r\n no bgp-policy\
+        \ destination ip-qos-map\r\ninterface Ethernet3/0\r\n description to iolp2\
+        \ Ethernet1/0\r\n mtu 1500\r\n ip address 99.3.5.3 255.255.255.0\r\n no ip\
+        \ clear-dont-fragment\r\n ip redirects\r\n ip unreachables\r\n ip proxy-arp\r\
+        \n ip mtu 1500\r\n ip router isis sr\r\n ip mfib forwarding input\r\n ip mfib\
+        \ forwarding output\r\n ip mfib cef input\r\n ip mfib cef output\r\n ip pim\
+        \ join-prune-interval 60\r\n ip pim dr-priority 1\r\n ip pim query-interval\
+        \ 30\r\n no ip flowspec\r\n ip cef accounting non-recursive internal\r\n ip\
+        \ load-sharing per-destination\r\n ip route-cache cef\r\n ip route-cache\r\
+        \n ip split-horizon\r\n ip igmp robustness-variable 2\r\n ip igmp last-member-query-interval\
+        \ 1000\r\n ip igmp last-member-query-count 2\r\n ip igmp query-max-response-time\
+        \ 10\r\n ip igmp v3-query-max-response-time 10\r\n ip igmp version 2\r\n ip\
+        \ igmp query-interval 60\r\n ip igmp tcn query count 2\r\n ip igmp tcn query\
+        \ interval 10\r\n logging event link-status\r\n load-interval 300\r\n carrier-delay\
+        \ 2\r\n no shutdown\r\n tx-ring-limit 64\r\n tx-queue-limit 64\r\n no medium\
+        \ p2p\r\n cdp log mismatch duplex\r\n cdp tlv location\r\n cdp tlv server-location\
+        \ \r\n cdp tlv app\r\n ipv6 address 2001::99:3:5:3/112\r\n ipv6 nd reachable-time\
+        \ 0\r\n ipv6 nd ns-interval 0\r\n ipv6 nd dad attempts 1\r\n ipv6 nd dad loopback\
+        \ detect\r\n ipv6 nd prefix framed-ipv6-prefix\r\n ipv6 nd nud igp\r\n no\
+        \ ipv6 nd ra solicited unicast\r\n ipv6 nd ra lifetime 1800\r\n ipv6 nd ra\
+        \ interval 200\r\n ipv6 redirects\r\n ipv6 unreachables\r\n ipv6 mld query-max-response-time\
+        \ 10\r\n ipv6 mld query-timeout 255\r\n ipv6 mld robustness-variable 2\r\n\
+        \ ipv6 mld query-interval 125\r\n ipv6 mld router\r\n ipv6 mfib forwarding\
+        \ input\r\n ipv6 mfib forwarding output\r\n ipv6 mfib cef input\r\n ipv6 mfib\
+        \ cef output\r\n ipv6 router isis sr\r\n no ipv6 flowspec\r\n mpls ip\r\n\
+        \ mpls mtu 1500\r\n mpls ldp igp autoconfig\r\n mpls ldp igp sync\r\n mpls\
+        \ mldp\r\n mpls traffic-eng tunnels\r\n snmp trap link-status\r\n no flowspec\
+        \ group\r\n no mka pre-shared-key\r\n mka default-policy\r\n network-clock\
+        \ wait-to-restore 300\r\n network-clock hold-off 300\r\n network-clock source\
+        \ quality-level - tx\r\n network-clock source quality-level - rx\r\n no synchronous\
+        \ mode\r\n bfd enable\r\n arp arpa\r\n arp timeout 14400\r\n lldp transmit\r\
+        \n lldp receive\r\n lldp tlv-select power-management\r\n lldp tlv-select 4-wire-power-management\r\
+        \n clns congestion-threshold 4\r\n clns erpdu-interval 10\r\n clns mtu 1497\r\
+        \n clns rdpdu-interval 100\r\n clns route-cache\r\n no clns send-erpdu\r\n\
+        \ no clns send-rdpdu\r\n isis circuit-type level-1-2\r\n isis network point-to-point\
+        \ \r\n isis metric 10 level-1\r\n isis metric 10 level-2\r\n isis te-metric\
+        \ flex-algo 0 level-1\r\n isis te-metric flex-algo 0 level-2\r\n no isis authentication\
+        \ mode\r\n no isis authentication send-only\r\n isis priority 64 level-1\r\
+        \n isis priority 64 level-2\r\n isis hello-multiplier 3\r\n isis hello-interval\
+        \ 10\r\n isis advertise prefix\r\n isis prefix-attributes n-flag-clear level-1\r\
+        \n isis prefix-attributes n-flag-clear level-2\r\n isis three-way-handshake\
+        \ ietf\r\n isis hello padding\r\n isis csnp-interval 0 level-1\r\n isis csnp-interval\
+        \ 0 level-2\r\n isis retransmit-throttle-interval 0\r\n isis retransmit-interval\
+        \ 5\r\n isis lsp-interval 33\r\n no isis protocol shutdown\r\n isis ipv6 metric\
+        \ 10 level-1\r\n isis ipv6 metric 10 level-2\r\n isis fast-reroute protection\
+        \ level-1 \r\n isis fast-reroute protection level-2 \r\n isis fast-reroute\
+        \ candidate level-1 \r\n isis fast-reroute candidate level-2 \r\n no isis\
+        \ fast-reroute tie-break level-1 default\r\n isis fast-reroute tie-break level-1\
+        \ linecard-disjoint 40\r\n isis fast-reroute tie-break level-1 lowest-backup-path-metric\
+        \ 30\r\n isis fast-reroute tie-break level-1 primary-path 20\r\n no isis fast-reroute\
+        \ tie-break level-2 default\r\n isis fast-reroute tie-break level-2 linecard-disjoint\
+        \ 40\r\n isis fast-reroute tie-break level-2 lowest-backup-path-metric 30\r\
+        \n isis fast-reroute tie-break level-2 primary-path 20\r\n isis fast-reroute\
+        \ remote-lfa protection level-1 \r\n isis fast-reroute remote-lfa protection\
+        \ level-2 \r\n isis fast-reroute ti-lfa protection level-1 \r\n isis fast-reroute\
+        \ ti-lfa protection level-2 \r\n spanning-tree port-priority 128\r\n spanning-tree\
+        \ cost 0\r\n ethernet oam max-rate 10\r\n ethernet oam min-rate 1 \r\n ethernet\
+        \ oam remote-loopback timeout 2\r\n ethernet oam timeout 5 \r\n hold-queue\
+        \ 75 in\r\n hold-queue 40 out\r\n ip rsvp bandwidth\r\n ip rsvp signalling\
+        \ fast-local-repair wait-time 0\r\n ip rsvp signalling blockade 4\r\n ip rsvp\
+        \ burst policing 200\r\n no bgp-policy accounting input\r\n no bgp-policy\
+        \ accounting output\r\n no bgp-policy accounting input source\r\n no bgp-policy\
+        \ accounting output source\r\n no bgp-policy source ip-prec-map\r\n no bgp-policy\
+        \ source ip-qos-map\r\n no bgp-policy destination ip-prec-map\r\n no bgp-policy\
+        \ destination ip-qos-map\r\ninterface Ethernet3/1\r\n description to iolp2\
+        \ Ethernet1/1\r\n mtu 1500\r\n ip address 100.3.5.3 255.255.255.0\r\n no ip\
+        \ clear-dont-fragment\r\n ip redirects\r\n ip unreachables\r\n ip proxy-arp\r\
+        \n ip mtu 1500\r\n ip router isis sr\r\n ip mfib forwarding input\r\n ip mfib\
+        \ forwarding output\r\n ip mfib cef input\r\n ip mfib cef output\r\n ip pim\
+        \ join-prune-interval 60\r\n ip pim dr-priority 1\r\n ip pim query-interval\
+        \ 30\r\n no ip flowspec\r\n ip cef accounting non-recursive internal\r\n ip\
+        \ load-sharing per-destination\r\n ip route-cache cef\r\n ip route-cache\r\
+        \n ip split-horizon\r\n ip igmp robustness-variable 2\r\n ip igmp last-member-query-interval\
+        \ 1000\r\n ip igmp last-member-query-count 2\r\n ip igmp query-max-response-time\
+        \ 10\r\n ip igmp v3-query-max-response-time 10\r\n ip igmp version 2\r\n ip\
+        \ igmp query-interval 60\r\n ip igmp tcn query count 2\r\n ip igmp tcn query\
+        \ interval 10\r\n logging event link-status\r\n load-interval 300\r\n carrier-delay\
+        \ 2\r\n no shutdown\r\n tx-ring-limit 64\r\n tx-queue-limit 64\r\n no medium\
+        \ p2p\r\n cdp log mismatch duplex\r\n cdp tlv location\r\n cdp tlv server-location\
+        \ \r\n cdp tlv app\r\n ipv6 address 2001::100:3:5:3/112\r\n ipv6 nd reachable-time\
+        \ 0\r\n ipv6 nd ns-interval 0\r\n ipv6 nd dad attempts 1\r\n ipv6 nd dad loopback\
+        \ detect\r\n ipv6 nd prefix framed-ipv6-prefix\r\n ipv6 nd nud igp\r\n no\
+        \ ipv6 nd ra solicited unicast\r\n ipv6 nd ra lifetime 1800\r\n ipv6 nd ra\
+        \ interval 200\r\n ipv6 redirects\r\n ipv6 unreachables\r\n ipv6 mld query-max-response-time\
+        \ 10\r\n ipv6 mld query-timeout 255\r\n ipv6 mld robustness-variable 2\r\n\
+        \ ipv6 mld query-interval 125\r\n ipv6 mld router\r\n ipv6 mfib forwarding\
+        \ input\r\n ipv6 mfib forwarding output\r\n ipv6 mfib cef input\r\n ipv6 mfib\
+        \ cef output\r\n ipv6 router isis sr\r\n no ipv6 flowspec\r\n mpls ip\r\n\
+        \ mpls mtu 1500\r\n mpls ldp igp autoconfig\r\n mpls ldp igp sync\r\n mpls\
+        \ mldp\r\n mpls traffic-eng tunnels\r\n snmp trap link-status\r\n no flowspec\
+        \ group\r\n no mka pre-shared-key\r\n mka default-policy\r\n network-clock\
+        \ wait-to-restore 300\r\n network-clock hold-off 300\r\n network-clock source\
+        \ quality-level - tx\r\n network-clock source quality-level - rx\r\n no synchronous\
+        \ mode\r\n bfd enable\r\n arp arpa\r\n arp timeout 14400\r\n lldp transmit\r\
+        \n lldp receive\r\n lldp tlv-select power-management\r\n lldp tlv-select 4-wire-power-management\r\
+        \n clns congestion-threshold 4\r\n clns erpdu-interval 10\r\n clns mtu 1497\r\
+        \n clns rdpdu-interval 100\r\n clns route-cache\r\n no clns send-erpdu\r\n\
+        \ no clns send-rdpdu\r\n isis circuit-type level-1-2\r\n isis network point-to-point\
+        \ \r\n isis metric 10 level-1\r\n isis metric 10 level-2\r\n isis te-metric\
+        \ flex-algo 0 level-1\r\n isis te-metric flex-algo 0 level-2\r\n no isis authentication\
+        \ mode\r\n no isis authentication send-only\r\n isis priority 64 level-1\r\
+        \n isis priority 64 level-2\r\n isis hello-multiplier 3\r\n isis hello-interval\
+        \ 10\r\n isis advertise prefix\r\n isis prefix-attributes n-flag-clear level-1\r\
+        \n isis prefix-attributes n-flag-clear level-2\r\n isis three-way-handshake\
+        \ ietf\r\n isis hello padding\r\n isis csnp-interval 0 level-1\r\n isis csnp-interval\
+        \ 0 level-2\r\n isis retransmit-throttle-interval 0\r\n isis retransmit-interval\
+        \ 5\r\n isis lsp-interval 33\r\n no isis protocol shutdown\r\n isis ipv6 metric\
+        \ 10 level-1\r\n isis ipv6 metric 10 level-2\r\n isis fast-reroute protection\
+        \ level-1 \r\n isis fast-reroute protection level-2 \r\n isis fast-reroute\
+        \ candidate level-1 \r\n isis fast-reroute candidate level-2 \r\n no isis\
+        \ fast-reroute tie-break level-1 default\r\n isis fast-reroute tie-break level-1\
+        \ linecard-disjoint 40\r\n isis fast-reroute tie-break level-1 lowest-backup-path-metric\
+        \ 30\r\n isis fast-reroute tie-break level-1 primary-path 20\r\n no isis fast-reroute\
+        \ tie-break level-2 default\r\n isis fast-reroute tie-break level-2 linecard-disjoint\
+        \ 40\r\n isis fast-reroute tie-break level-2 lowest-backup-path-metric 30\r\
+        \n isis fast-reroute tie-break level-2 primary-path 20\r\n isis fast-reroute\
+        \ remote-lfa protection level-1 \r\n isis fast-reroute remote-lfa protection\
+        \ level-2 \r\n isis fast-reroute ti-lfa protection level-1 \r\n isis fast-reroute\
+        \ ti-lfa protection level-2 \r\n spanning-tree port-priority 128\r\n spanning-tree\
+        \ cost 0\r\n ethernet oam max-rate 10\r\n ethernet oam min-rate 1 \r\n ethernet\
+        \ oam remote-loopback timeout 2\r\n ethernet oam timeout 5 \r\n hold-queue\
+        \ 75 in\r\n hold-queue 40 out\r\n ip rsvp bandwidth\r\n ip rsvp signalling\
+        \ fast-local-repair wait-time 0\r\n ip rsvp signalling blockade 4\r\n ip rsvp\
+        \ burst policing 200\r\n no bgp-policy accounting input\r\n no bgp-policy\
+        \ accounting output\r\n no bgp-policy accounting input source\r\n no bgp-policy\
+        \ accounting output source\r\n no bgp-policy source ip-prec-map\r\n no bgp-policy\
+        \ source ip-qos-map\r\n no bgp-policy destination ip-prec-map\r\n no bgp-policy\
+        \ destination ip-qos-map\r\ninterface Ethernet3/2\r\n mtu 1500\r\n no ip address\r\
+        \n no ip clear-dont-fragment\r\n ip redirects\r\n ip unreachables\r\n ip proxy-arp\r\
+        \n ip mtu 1500\r\n ip mfib forwarding input\r\n ip mfib forwarding output\r\
+        \n ip mfib cef input\r\n ip mfib cef output\r\n ip pim join-prune-interval\
+        \ 60\r\n ip pim dr-priority 1\r\n ip pim query-interval 30\r\n no ip flowspec\r\
+        \n ip cef accounting non-recursive internal\r\n ip load-sharing per-destination\r\
+        \n ip route-cache cef\r\n ip route-cache\r\n ip split-horizon\r\n ip igmp\
+        \ robustness-variable 2\r\n ip igmp last-member-query-interval 1000\r\n ip\
+        \ igmp last-member-query-count 2\r\n ip igmp query-max-response-time 10\r\n\
+        \ ip igmp v3-query-max-response-time 10\r\n ip igmp version 2\r\n ip igmp\
+        \ query-interval 60\r\n ip igmp tcn query count 2\r\n ip igmp tcn query interval\
+        \ 10\r\n logging event link-status\r\n load-interval 300\r\n carrier-delay\
+        \ 2\r\n shutdown\r\n tx-ring-limit 64\r\n tx-queue-limit 64\r\n no medium\
+        \ p2p\r\n cdp log mismatch duplex\r\n cdp tlv location\r\n cdp tlv server-location\
+        \ \r\n cdp tlv app\r\n ipv6 nd reachable-time 0\r\n ipv6 nd ns-interval 0\r\
+        \n ipv6 nd dad attempts 1\r\n ipv6 nd dad loopback detect\r\n ipv6 nd prefix\
+        \ framed-ipv6-prefix\r\n ipv6 nd nud igp\r\n no ipv6 nd ra solicited unicast\r\
+        \n ipv6 nd ra lifetime 1800\r\n ipv6 nd ra interval 200\r\n ipv6 redirects\r\
+        \n ipv6 unreachables\r\n ipv6 mld query-max-response-time 10\r\n ipv6 mld\
+        \ query-timeout 255\r\n ipv6 mld robustness-variable 2\r\n ipv6 mld query-interval\
+        \ 125\r\n ipv6 mld router\r\n ipv6 mfib forwarding input\r\n ipv6 mfib forwarding\
+        \ output\r\n ipv6 mfib cef input\r\n ipv6 mfib cef output\r\n no ipv6 flowspec\r\
+        \n mpls mtu 1500\r\n mpls mldp\r\n snmp trap link-status\r\n no flowspec group\r\
+        \n no mka pre-shared-key\r\n mka default-policy\r\n network-clock wait-to-restore\
+        \ 300\r\n network-clock hold-off 300\r\n network-clock source quality-level\
+        \ - tx\r\n network-clock source quality-level - rx\r\n no synchronous mode\r\
+        \n bfd enable\r\n arp arpa\r\n arp timeout 14400\r\n lldp transmit\r\n lldp\
+        \ receive\r\n lldp tlv-select power-management\r\n lldp tlv-select 4-wire-power-management\r\
+        \n clns route-cache\r\n spanning-tree port-priority 128\r\n spanning-tree\
+        \ cost 0\r\n ethernet oam max-rate 10\r\n ethernet oam min-rate 1 \r\n ethernet\
+        \ oam remote-loopback timeout 2\r\n ethernet oam timeout 5 \r\n hold-queue\
+        \ 75 in\r\n hold-queue 40 out\r\n no bgp-policy accounting input\r\n no bgp-policy\
+        \ accounting output\r\n no bgp-policy accounting input source\r\n no bgp-policy\
+        \ accounting output source\r\n no bgp-policy source ip-prec-map\r\n no bgp-policy\
+        \ source ip-qos-map\r\n no bgp-policy destination ip-prec-map\r\n no bgp-policy\
+        \ destination ip-qos-map\r\ninterface Ethernet3/3\r\n mtu 1500\r\n no ip address\r\
+        \n no ip clear-dont-fragment\r\n ip redirects\r\n ip unreachables\r\n ip proxy-arp\r\
+        \n ip mtu 1500\r\n ip mfib forwarding input\r\n ip mfib forwarding output\r\
+        \n ip mfib cef input\r\n ip mfib cef output\r\n ip pim join-prune-interval\
+        \ 60\r\n ip pim dr-priority 1\r\n ip pim query-interval 30\r\n no ip flowspec\r\
+        \n ip cef accounting non-recursive internal\r\n ip load-sharing per-destination\r\
+        \n ip route-cache cef\r\n ip route-cache\r\n ip split-horizon\r\n ip igmp\
+        \ robustness-variable 2\r\n ip igmp last-member-query-interval 1000\r\n ip\
+        \ igmp last-member-query-count 2\r\n ip igmp query-max-response-time 10\r\n\
+        \ ip igmp v3-query-max-response-time 10\r\n ip igmp version 2\r\n ip igmp\
+        \ query-interval 60\r\n ip igmp tcn query count 2\r\n ip igmp tcn query interval\
+        \ 10\r\n logging event link-status\r\n load-interval 300\r\n carrier-delay\
+        \ 2\r\n shutdown\r\n tx-ring-limit 64\r\n tx-queue-limit 64\r\n no medium\
+        \ p2p\r\n cdp log mismatch duplex\r\n cdp tlv location\r\n cdp tlv server-location\
+        \ \r\n cdp tlv app\r\n ipv6 nd reachable-time 0\r\n ipv6 nd ns-interval 0\r\
+        \n ipv6 nd dad attempts 1\r\n ipv6 nd dad loopback detect\r\n ipv6 nd prefix\
+        \ framed-ipv6-prefix\r\n ipv6 nd nud igp\r\n no ipv6 nd ra solicited unicast\r\
+        \n ipv6 nd ra lifetime 1800\r\n ipv6 nd ra interval 200\r\n ipv6 redirects\r\
+        \n ipv6 unreachables\r\n ipv6 mld query-max-response-time 10\r\n ipv6 mld\
+        \ query-timeout 255\r\n ipv6 mld robustness-variable 2\r\n ipv6 mld query-interval\
+        \ 125\r\n ipv6 mld router\r\n ipv6 mfib forwarding input\r\n ipv6 mfib forwarding\
+        \ output\r\n ipv6 mfib cef input\r\n ipv6 mfib cef output\r\n no ipv6 flowspec\r\
+        \n mpls mtu 1500\r\n mpls mldp\r\n snmp trap link-status\r\n no flowspec group\r\
+        \n no mka pre-shared-key\r\n mka default-policy\r\n network-clock wait-to-restore\
+        \ 300\r\n network-clock hold-off 300\r\n network-clock source quality-level\
+        \ - tx\r\n network-clock source quality-level - rx\r\n no synchronous mode\r\
+        \n bfd enable\r\n arp arpa\r\n arp timeout 14400\r\n lldp transmit\r\n lldp\
+        \ receive\r\n lldp tlv-select power-management\r\n lldp tlv-select 4-wire-power-management\r\
+        \n clns route-cache\r\n spanning-tree port-priority 128\r\n spanning-tree\
+        \ cost 0\r\n ethernet oam max-rate 10\r\n ethernet oam min-rate 1 \r\n ethernet\
+        \ oam remote-loopback timeout 2\r\n ethernet oam timeout 5 \r\n hold-queue\
+        \ 75 in\r\n hold-queue 40 out\r\n no bgp-policy accounting input\r\n no bgp-policy\
+        \ accounting output\r\n no bgp-policy accounting input source\r\n no bgp-policy\
+        \ accounting output source\r\n no bgp-policy source ip-prec-map\r\n no bgp-policy\
+        \ source ip-qos-map\r\n no bgp-policy destination ip-prec-map\r\n no bgp-policy\
+        \ destination ip-qos-map\r\ninterface Ethernet4/0\r\n mtu 1500\r\n no ip address\r\
+        \n no ip clear-dont-fragment\r\n ip redirects\r\n ip unreachables\r\n ip proxy-arp\r\
+        \n ip mtu 1500\r\n ip mfib forwarding input\r\n ip mfib forwarding output\r\
+        \n ip mfib cef input\r\n ip mfib cef output\r\n ip pim join-prune-interval\
+        \ 60\r\n ip pim dr-priority 1\r\n ip pim query-interval 30\r\n no ip flowspec\r\
+        \n ip cef accounting non-recursive internal\r\n ip load-sharing per-destination\r\
+        \n ip route-cache cef\r\n ip route-cache\r\n ip split-horizon\r\n ip igmp\
+        \ robustness-variable 2\r\n ip igmp last-member-query-interval 1000\r\n ip\
+        \ igmp last-member-query-count 2\r\n ip igmp query-max-response-time 10\r\n\
+        \ ip igmp v3-query-max-response-time 10\r\n ip igmp version 2\r\n ip igmp\
+        \ query-interval 60\r\n ip igmp tcn query count 2\r\n ip igmp tcn query interval\
+        \ 10\r\n logging event link-status\r\n load-interval 300\r\n carrier-delay\
+        \ 2\r\n shutdown\r\n tx-ring-limit 64\r\n tx-queue-limit 64\r\n no medium\
+        \ p2p\r\n cdp log mismatch duplex\r\n cdp tlv location\r\n cdp tlv server-location\
+        \ \r\n cdp tlv app\r\n ipv6 nd reachable-time 0\r\n ipv6 nd ns-interval 0\r\
+        \n ipv6 nd dad attempts 1\r\n ipv6 nd dad loopback detect\r\n ipv6 nd prefix\
+        \ framed-ipv6-prefix\r\n ipv6 nd nud igp\r\n no ipv6 nd ra solicited unicast\r\
+        \n ipv6 nd ra lifetime 1800\r\n ipv6 nd ra interval 200\r\n ipv6 redirects\r\
+        \n ipv6 unreachables\r\n ipv6 mld query-max-response-time 10\r\n ipv6 mld\
+        \ query-timeout 255\r\n ipv6 mld robustness-variable 2\r\n ipv6 mld query-interval\
+        \ 125\r\n ipv6 mld router\r\n ipv6 mfib forwarding input\r\n ipv6 mfib forwarding\
+        \ output\r\n ipv6 mfib cef input\r\n ipv6 mfib cef output\r\n no ipv6 flowspec\r\
+        \n mpls mtu 1500\r\n mpls mldp\r\n snmp trap link-status\r\n no flowspec group\r\
+        \n no mka pre-shared-key\r\n mka default-policy\r\n network-clock wait-to-restore\
+        \ 300\r\n network-clock hold-off 300\r\n network-clock source quality-level\
+        \ - tx\r\n network-clock source quality-level - rx\r\n no synchronous mode\r\
+        \n bfd enable\r\n arp arpa\r\n arp timeout 14400\r\n lldp transmit\r\n lldp\
+        \ receive\r\n lldp tlv-select power-management\r\n lldp tlv-select 4-wire-power-management\r\
+        \n clns route-cache\r\n spanning-tree port-priority 128\r\n spanning-tree\
+        \ cost 0\r\n ethernet oam max-rate 10\r\n ethernet oam min-rate 1 \r\n ethernet\
+        \ oam remote-loopback timeout 2\r\n ethernet oam timeout 5 \r\n hold-queue\
+        \ 75 in\r\n hold-queue 40 out\r\n no bgp-policy accounting input\r\n no bgp-policy\
+        \ accounting output\r\n no bgp-policy accounting input source\r\n no bgp-policy\
+        \ accounting output source\r\n no bgp-policy source ip-prec-map\r\n no bgp-policy\
+        \ source ip-qos-map\r\n no bgp-policy destination ip-prec-map\r\n no bgp-policy\
+        \ destination ip-qos-map\r\ninterface Ethernet4/1\r\n mtu 1500\r\n no ip address\r\
+        \n no ip clear-dont-fragment\r\n ip redirects\r\n ip unreachables\r\n ip proxy-arp\r\
+        \n ip mtu 1500\r\n ip mfib forwarding input\r\n ip mfib forwarding output\r\
+        \n ip mfib cef input\r\n ip mfib cef output\r\n ip pim join-prune-interval\
+        \ 60\r\n ip pim dr-priority 1\r\n ip pim query-interval 30\r\n no ip flowspec\r\
+        \n ip cef accounting non-recursive internal\r\n ip load-sharing per-destination\r\
+        \n ip route-cache cef\r\n ip route-cache\r\n ip split-horizon\r\n ip igmp\
+        \ robustness-variable 2\r\n ip igmp last-member-query-interval 1000\r\n ip\
+        \ igmp last-member-query-count 2\r\n ip igmp query-max-response-time 10\r\n\
+        \ ip igmp v3-query-max-response-time 10\r\n ip igmp version 2\r\n ip igmp\
+        \ query-interval 60\r\n ip igmp tcn query count 2\r\n ip igmp tcn query interval\
+        \ 10\r\n logging event link-status\r\n load-interval 300\r\n carrier-delay\
+        \ 2\r\n shutdown\r\n tx-ring-limit 64\r\n tx-queue-limit 64\r\n no medium\
+        \ p2p\r\n cdp log mismatch duplex\r\n cdp tlv location\r\n cdp tlv server-location\
+        \ \r\n cdp tlv app\r\n ipv6 nd reachable-time 0\r\n ipv6 nd ns-interval 0\r\
+        \n ipv6 nd dad attempts 1\r\n ipv6 nd dad loopback detect\r\n ipv6 nd prefix\
+        \ framed-ipv6-prefix\r\n ipv6 nd nud igp\r\n no ipv6 nd ra solicited unicast\r\
+        \n ipv6 nd ra lifetime 1800\r\n ipv6 nd ra interval 200\r\n ipv6 redirects\r\
+        \n ipv6 unreachables\r\n ipv6 mld query-max-response-time 10\r\n ipv6 mld\
+        \ query-timeout 255\r\n ipv6 mld robustness-variable 2\r\n ipv6 mld query-interval\
+        \ 125\r\n ipv6 mld router\r\n ipv6 mfib forwarding input\r\n ipv6 mfib forwarding\
+        \ output\r\n ipv6 mfib cef input\r\n ipv6 mfib cef output\r\n no ipv6 flowspec\r\
+        \n mpls mtu 1500\r\n mpls mldp\r\n snmp trap link-status\r\n no flowspec group\r\
+        \n no mka pre-shared-key\r\n mka default-policy\r\n network-clock wait-to-restore\
+        \ 300\r\n network-clock hold-off 300\r\n network-clock source quality-level\
+        \ - tx\r\n network-clock source quality-level - rx\r\n no synchronous mode\r\
+        \n bfd enable\r\n arp arpa\r\n arp timeout 14400\r\n lldp transmit\r\n lldp\
+        \ receive\r\n lldp tlv-select power-management\r\n lldp tlv-select 4-wire-power-management\r\
+        \n clns route-cache\r\n spanning-tree port-priority 128\r\n spanning-tree\
+        \ cost 0\r\n ethernet oam max-rate 10\r\n ethernet oam min-rate 1 \r\n ethernet\
+        \ oam remote-loopback timeout 2\r\n ethernet oam timeout 5 \r\n hold-queue\
+        \ 75 in\r\n hold-queue 40 out\r\n no bgp-policy accounting input\r\n no bgp-policy\
+        \ accounting output\r\n no bgp-policy accounting input source\r\n no bgp-policy\
+        \ accounting output source\r\n no bgp-policy source ip-prec-map\r\n no bgp-policy\
+        \ source ip-qos-map\r\n no bgp-policy destination ip-prec-map\r\n no bgp-policy\
+        \ destination ip-qos-map\r\ninterface Ethernet4/2\r\n mtu 1500\r\n no ip address\r\
+        \n no ip clear-dont-fragment\r\n ip redirects\r\n ip unreachables\r\n ip proxy-arp\r\
+        \n ip mtu 1500\r\n ip mfib forwarding input\r\n ip mfib forwarding output\r\
+        \n ip mfib cef input\r\n ip mfib cef output\r\n ip pim join-prune-interval\
+        \ 60\r\n ip pim dr-priority 1\r\n ip pim query-interval 30\r\n no ip flowspec\r\
+        \n ip cef accounting non-recursive internal\r\n ip load-sharing per-destination\r\
+        \n ip route-cache cef\r\n ip route-cache\r\n ip split-horizon\r\n ip igmp\
+        \ robustness-variable 2\r\n ip igmp last-member-query-interval 1000\r\n ip\
+        \ igmp last-member-query-count 2\r\n ip igmp query-max-response-time 10\r\n\
+        \ ip igmp v3-query-max-response-time 10\r\n ip igmp version 2\r\n ip igmp\
+        \ query-interval 60\r\n ip igmp tcn query count 2\r\n ip igmp tcn query interval\
+        \ 10\r\n logging event link-status\r\n load-interval 300\r\n carrier-delay\
+        \ 2\r\n shutdown\r\n tx-ring-limit 64\r\n tx-queue-limit 64\r\n no medium\
+        \ p2p\r\n cdp log mismatch duplex\r\n cdp tlv location\r\n cdp tlv server-location\
+        \ \r\n cdp tlv app\r\n ipv6 nd reachable-time 0\r\n ipv6 nd ns-interval 0\r\
+        \n ipv6 nd dad attempts 1\r\n ipv6 nd dad loopback detect\r\n ipv6 nd prefix\
+        \ framed-ipv6-prefix\r\n ipv6 nd nud igp\r\n no ipv6 nd ra solicited unicast\r\
+        \n ipv6 nd ra lifetime 1800\r\n ipv6 nd ra interval 200\r\n ipv6 redirects\r\
+        \n ipv6 unreachables\r\n ipv6 mld query-max-response-time 10\r\n ipv6 mld\
+        \ query-timeout 255\r\n ipv6 mld robustness-variable 2\r\n ipv6 mld query-interval\
+        \ 125\r\n ipv6 mld router\r\n ipv6 mfib forwarding input\r\n ipv6 mfib forwarding\
+        \ output\r\n ipv6 mfib cef input\r\n ipv6 mfib cef output\r\n no ipv6 flowspec\r\
+        \n mpls mtu 1500\r\n mpls mldp\r\n snmp trap link-status\r\n no flowspec group\r\
+        \n no mka pre-shared-key\r\n mka default-policy\r\n network-clock wait-to-restore\
+        \ 300\r\n network-clock hold-off 300\r\n network-clock source quality-level\
+        \ - tx\r\n network-clock source quality-level - rx\r\n no synchronous mode\r\
+        \n bfd enable\r\n arp arpa\r\n arp timeout 14400\r\n lldp transmit\r\n lldp\
+        \ receive\r\n lldp tlv-select power-management\r\n lldp tlv-select 4-wire-power-management\r\
+        \n clns route-cache\r\n spanning-tree port-priority 128\r\n spanning-tree\
+        \ cost 0\r\n ethernet oam max-rate 10\r\n ethernet oam min-rate 1 \r\n ethernet\
+        \ oam remote-loopback timeout 2\r\n ethernet oam timeout 5 \r\n hold-queue\
+        \ 75 in\r\n hold-queue 40 out\r\n no bgp-policy accounting input\r\n no bgp-policy\
+        \ accounting output\r\n no bgp-policy accounting input source\r\n no bgp-policy\
+        \ accounting output source\r\n no bgp-policy source ip-prec-map\r\n no bgp-policy\
+        \ source ip-qos-map\r\n no bgp-policy destination ip-prec-map\r\n no bgp-policy\
+        \ destination ip-qos-map\r\ninterface Ethernet4/3\r\n mtu 1500\r\n no ip address\r\
+        \n no ip clear-dont-fragment\r\n ip redirects\r\n ip unreachables\r\n ip proxy-arp\r\
+        \n ip mtu 1500\r\n ip mfib forwarding input\r\n ip mfib forwarding output\r\
+        \n ip mfib cef input\r\n ip mfib cef output\r\n ip pim join-prune-interval\
+        \ 60\r\n ip pim dr-priority 1\r\n ip pim query-interval 30\r\n no ip flowspec\r\
+        \n ip cef accounting non-recursive internal\r\n ip load-sharing per-destination\r\
+        \n ip route-cache cef\r\n ip route-cache\r\n ip split-horizon\r\n ip igmp\
+        \ robustness-variable 2\r\n ip igmp last-member-query-interval 1000\r\n ip\
+        \ igmp last-member-query-count 2\r\n ip igmp query-max-response-time 10\r\n\
+        \ ip igmp v3-query-max-response-time 10\r\n ip igmp version 2\r\n ip igmp\
+        \ query-interval 60\r\n ip igmp tcn query count 2\r\n ip igmp tcn query interval\
+        \ 10\r\n logging event link-status\r\n load-interval 300\r\n carrier-delay\
+        \ 2\r\n shutdown\r\n tx-ring-limit 64\r\n tx-queue-limit 64\r\n no medium\
+        \ p2p\r\n cdp log mismatch duplex\r\n cdp tlv location\r\n cdp tlv server-location\
+        \ \r\n cdp tlv app\r\n ipv6 nd reachable-time 0\r\n ipv6 nd ns-interval 0\r\
+        \n ipv6 nd dad attempts 1\r\n ipv6 nd dad loopback detect\r\n ipv6 nd prefix\
+        \ framed-ipv6-prefix\r\n ipv6 nd nud igp\r\n no ipv6 nd ra solicited unicast\r\
+        \n ipv6 nd ra lifetime 1800\r\n ipv6 nd ra interval 200\r\n ipv6 redirects\r\
+        \n ipv6 unreachables\r\n ipv6 mld query-max-response-time 10\r\n ipv6 mld\
+        \ query-timeout 255\r\n ipv6 mld robustness-variable 2\r\n ipv6 mld query-interval\
+        \ 125\r\n ipv6 mld router\r\n ipv6 mfib forwarding input\r\n ipv6 mfib forwarding\
+        \ output\r\n ipv6 mfib cef input\r\n ipv6 mfib cef output\r\n no ipv6 flowspec\r\
+        \n mpls mtu 1500\r\n mpls mldp\r\n snmp trap link-status\r\n no flowspec group\r\
+        \n no mka pre-shared-key\r\n mka default-policy\r\n network-clock wait-to-restore\
+        \ 300\r\n network-clock hold-off 300\r\n network-clock source quality-level\
+        \ - tx\r\n network-clock source quality-level - rx\r\n no synchronous mode\r\
+        \n bfd enable\r\n arp arpa\r\n arp timeout 14400\r\n lldp transmit\r\n lldp\
+        \ receive\r\n lldp tlv-select power-management\r\n lldp tlv-select 4-wire-power-management\r\
+        \n clns route-cache\r\n spanning-tree port-priority 128\r\n spanning-tree\
+        \ cost 0\r\n ethernet oam max-rate 10\r\n ethernet oam min-rate 1 \r\n ethernet\
+        \ oam remote-loopback timeout 2\r\n ethernet oam timeout 5 \r\n hold-queue\
+        \ 75 in\r\n hold-queue 40 out\r\n no bgp-policy accounting input\r\n no bgp-policy\
+        \ accounting output\r\n no bgp-policy accounting input source\r\n no bgp-policy\
+        \ accounting output source\r\n no bgp-policy source ip-prec-map\r\n no bgp-policy\
+        \ source ip-qos-map\r\n no bgp-policy destination ip-prec-map\r\n no bgp-policy\
+        \ destination ip-qos-map\r\ninterface Ethernet5/0\r\n description to iolp1\
+        \ Ethernet5/0\r\n mtu 1500\r\n ip address 99.3.4.3 255.255.255.0\r\n no ip\
+        \ clear-dont-fragment\r\n ip redirects\r\n ip unreachables\r\n ip proxy-arp\r\
+        \n ip mtu 1500\r\n ip router isis sr\r\n ip mfib forwarding input\r\n ip mfib\
+        \ forwarding output\r\n ip mfib cef input\r\n ip mfib cef output\r\n ip pim\
+        \ join-prune-interval 60\r\n ip pim dr-priority 1\r\n ip pim query-interval\
+        \ 30\r\n no ip flowspec\r\n ip cef accounting non-recursive internal\r\n ip\
+        \ load-sharing per-destination\r\n ip route-cache cef\r\n ip route-cache\r\
+        \n ip split-horizon\r\n ip igmp robustness-variable 2\r\n ip igmp last-member-query-interval\
+        \ 1000\r\n ip igmp last-member-query-count 2\r\n ip igmp query-max-response-time\
+        \ 10\r\n ip igmp v3-query-max-response-time 10\r\n ip igmp version 2\r\n ip\
+        \ igmp query-interval 60\r\n ip igmp tcn query count 2\r\n ip igmp tcn query\
+        \ interval 10\r\n logging event link-status\r\n load-interval 300\r\n carrier-delay\
+        \ 2\r\n no shutdown\r\n tx-ring-limit 64\r\n tx-queue-limit 64\r\n no medium\
+        \ p2p\r\n cdp log mismatch duplex\r\n cdp tlv location\r\n cdp tlv server-location\
+        \ \r\n cdp tlv app\r\n ipv6 address 2001::99:3:4:3/112\r\n ipv6 nd reachable-time\
+        \ 0\r\n ipv6 nd ns-interval 0\r\n ipv6 nd dad attempts 1\r\n ipv6 nd dad loopback\
+        \ detect\r\n ipv6 nd prefix framed-ipv6-prefix\r\n ipv6 nd nud igp\r\n no\
+        \ ipv6 nd ra solicited unicast\r\n ipv6 nd ra lifetime 1800\r\n ipv6 nd ra\
+        \ interval 200\r\n ipv6 redirects\r\n ipv6 unreachables\r\n ipv6 mld query-max-response-time\
+        \ 10\r\n ipv6 mld query-timeout 255\r\n ipv6 mld robustness-variable 2\r\n\
+        \ ipv6 mld query-interval 125\r\n ipv6 mld router\r\n ipv6 mfib forwarding\
+        \ input\r\n ipv6 mfib forwarding output\r\n ipv6 mfib cef input\r\n ipv6 mfib\
+        \ cef output\r\n ipv6 router isis sr\r\n no ipv6 flowspec\r\n mpls ip\r\n\
+        \ mpls mtu 1500\r\n mpls ldp igp autoconfig\r\n mpls ldp igp sync\r\n mpls\
+        \ mldp\r\n mpls traffic-eng tunnels\r\n snmp trap link-status\r\n no flowspec\
+        \ group\r\n no mka pre-shared-key\r\n mka default-policy\r\n network-clock\
+        \ wait-to-restore 300\r\n network-clock hold-off 300\r\n network-clock source\
+        \ quality-level - tx\r\n network-clock source quality-level - rx\r\n no synchronous\
+        \ mode\r\n bfd enable\r\n arp arpa\r\n arp timeout 14400\r\n lldp transmit\r\
+        \n lldp receive\r\n lldp tlv-select power-management\r\n lldp tlv-select 4-wire-power-management\r\
+        \n clns congestion-threshold 4\r\n clns erpdu-interval 10\r\n clns mtu 1497\r\
+        \n clns rdpdu-interval 100\r\n clns route-cache\r\n no clns send-erpdu\r\n\
+        \ no clns send-rdpdu\r\n isis circuit-type level-1-2\r\n isis network point-to-point\
+        \ \r\n isis metric 10 level-1\r\n isis metric 10 level-2\r\n isis te-metric\
+        \ flex-algo 0 level-1\r\n isis te-metric flex-algo 0 level-2\r\n no isis authentication\
+        \ mode\r\n no isis authentication send-only\r\n isis priority 64 level-1\r\
+        \n isis priority 64 level-2\r\n isis hello-multiplier 3\r\n isis hello-interval\
+        \ 10\r\n isis advertise prefix\r\n isis prefix-attributes n-flag-clear level-1\r\
+        \n isis prefix-attributes n-flag-clear level-2\r\n isis three-way-handshake\
+        \ ietf\r\n isis hello padding\r\n isis csnp-interval 0 level-1\r\n isis csnp-interval\
+        \ 0 level-2\r\n isis retransmit-throttle-interval 0\r\n isis retransmit-interval\
+        \ 5\r\n isis lsp-interval 33\r\n no isis protocol shutdown\r\n isis ipv6 metric\
+        \ 10 level-1\r\n isis ipv6 metric 10 level-2\r\n isis fast-reroute protection\
+        \ level-1 \r\n isis fast-reroute protection level-2 \r\n isis fast-reroute\
+        \ candidate level-1 \r\n isis fast-reroute candidate level-2 \r\n no isis\
+        \ fast-reroute tie-break level-1 default\r\n isis fast-reroute tie-break level-1\
+        \ linecard-disjoint 40\r\n isis fast-reroute tie-break level-1 lowest-backup-path-metric\
+        \ 30\r\n isis fast-reroute tie-break level-1 primary-path 20\r\n no isis fast-reroute\
+        \ tie-break level-2 default\r\n isis fast-reroute tie-break level-2 linecard-disjoint\
+        \ 40\r\n isis fast-reroute tie-break level-2 lowest-backup-path-metric 30\r\
+        \n isis fast-reroute tie-break level-2 primary-path 20\r\n isis fast-reroute\
+        \ remote-lfa protection level-1 \r\n isis fast-reroute remote-lfa protection\
+        \ level-2 \r\n isis fast-reroute ti-lfa protection level-1 \r\n isis fast-reroute\
+        \ ti-lfa protection level-2 \r\n spanning-tree port-priority 128\r\n spanning-tree\
+        \ cost 0\r\n ethernet oam max-rate 10\r\n ethernet oam min-rate 1 \r\n ethernet\
+        \ oam remote-loopback timeout 2\r\n ethernet oam timeout 5 \r\n hold-queue\
+        \ 75 in\r\n hold-queue 40 out\r\n ip rsvp bandwidth\r\n ip rsvp signalling\
+        \ fast-local-repair wait-time 0\r\n ip rsvp signalling blockade 4\r\n ip rsvp\
+        \ burst policing 200\r\n no bgp-policy accounting input\r\n no bgp-policy\
+        \ accounting output\r\n no bgp-policy accounting input source\r\n no bgp-policy\
+        \ accounting output source\r\n no bgp-policy source ip-prec-map\r\n no bgp-policy\
+        \ source ip-qos-map\r\n no bgp-policy destination ip-prec-map\r\n no bgp-policy\
+        \ destination ip-qos-map\r\ninterface Ethernet5/1\r\n description to iolp1\
+        \ Ethernet5/1\r\n mtu 1500\r\n ip address 100.3.4.3 255.255.255.0\r\n no ip\
+        \ clear-dont-fragment\r\n ip redirects\r\n ip unreachables\r\n ip proxy-arp\r\
+        \n ip mtu 1500\r\n ip router isis sr\r\n ip mfib forwarding input\r\n ip mfib\
+        \ forwarding output\r\n ip mfib cef input\r\n ip mfib cef output\r\n ip pim\
+        \ join-prune-interval 60\r\n ip pim dr-priority 1\r\n ip pim query-interval\
+        \ 30\r\n no ip flowspec\r\n ip cef accounting non-recursive internal\r\n ip\
+        \ load-sharing per-destination\r\n ip route-cache cef\r\n ip route-cache\r\
+        \n ip split-horizon\r\n ip igmp robustness-variable 2\r\n ip igmp last-member-query-interval\
+        \ 1000\r\n ip igmp last-member-query-count 2\r\n ip igmp query-max-response-time\
+        \ 10\r\n ip igmp v3-query-max-response-time 10\r\n ip igmp version 2\r\n ip\
+        \ igmp query-interval 60\r\n ip igmp tcn query count 2\r\n ip igmp tcn query\
+        \ interval 10\r\n logging event link-status\r\n load-interval 300\r\n carrier-delay\
+        \ 2\r\n no shutdown\r\n tx-ring-limit 64\r\n tx-queue-limit 64\r\n no medium\
+        \ p2p\r\n cdp log mismatch duplex\r\n cdp tlv location\r\n cdp tlv server-location\
+        \ \r\n cdp tlv app\r\n ipv6 address 2001::100:3:4:3/112\r\n ipv6 nd reachable-time\
+        \ 0\r\n ipv6 nd ns-interval 0\r\n ipv6 nd dad attempts 1\r\n ipv6 nd dad loopback\
+        \ detect\r\n ipv6 nd prefix framed-ipv6-prefix\r\n ipv6 nd nud igp\r\n no\
+        \ ipv6 nd ra solicited unicast\r\n ipv6 nd ra lifetime 1800\r\n ipv6 nd ra\
+        \ interval 200\r\n ipv6 redirects\r\n ipv6 unreachables\r\n ipv6 mld query-max-response-time\
+        \ 10\r\n ipv6 mld query-timeout 255\r\n ipv6 mld robustness-variable 2\r\n\
+        \ ipv6 mld query-interval 125\r\n ipv6 mld router\r\n ipv6 mfib forwarding\
+        \ input\r\n ipv6 mfib forwarding output\r\n ipv6 mfib cef input\r\n ipv6 mfib\
+        \ cef output\r\n ipv6 router isis sr\r\n no ipv6 flowspec\r\n mpls ip\r\n\
+        \ mpls mtu 1500\r\n mpls ldp igp autoconfig\r\n mpls ldp igp sync\r\n mpls\
+        \ mldp\r\n mpls traffic-eng tunnels\r\n snmp trap link-status\r\n no flowspec\
+        \ group\r\n no mka pre-shared-key\r\n mka default-policy\r\n network-clock\
+        \ wait-to-restore 300\r\n network-clock hold-off 300\r\n network-clock source\
+        \ quality-level - tx\r\n network-clock source quality-level - rx\r\n no synchronous\
+        \ mode\r\n bfd enable\r\n arp arpa\r\n arp timeout 14400\r\n lldp transmit\r\
+        \n lldp receive\r\n lldp tlv-select power-management\r\n lldp tlv-select 4-wire-power-management\r\
+        \n clns congestion-threshold 4\r\n clns erpdu-interval 10\r\n clns mtu 1497\r\
+        \n clns rdpdu-interval 100\r\n clns route-cache\r\n no clns send-erpdu\r\n\
+        \ no clns send-rdpdu\r\n isis circuit-type level-1-2\r\n isis network point-to-point\
+        \ \r\n isis metric 10 level-1\r\n isis metric 10 level-2\r\n isis te-metric\
+        \ flex-algo 0 level-1\r\n isis te-metric flex-algo 0 level-2\r\n no isis authentication\
+        \ mode\r\n no isis authentication send-only\r\n isis priority 64 level-1\r\
+        \n isis priority 64 level-2\r\n isis hello-multiplier 3\r\n isis hello-interval\
+        \ 10\r\n isis advertise prefix\r\n isis prefix-attributes n-flag-clear level-1\r\
+        \n isis prefix-attributes n-flag-clear level-2\r\n isis three-way-handshake\
+        \ ietf\r\n isis hello padding\r\n isis csnp-interval 0 level-1\r\n isis csnp-interval\
+        \ 0 level-2\r\n isis retransmit-throttle-interval 0\r\n isis retransmit-interval\
+        \ 5\r\n isis lsp-interval 33\r\n no isis protocol shutdown\r\n isis ipv6 metric\
+        \ 10 level-1\r\n isis ipv6 metric 10 level-2\r\n isis fast-reroute protection\
+        \ level-1 \r\n isis fast-reroute protection level-2 \r\n isis fast-reroute\
+        \ candidate level-1 \r\n isis fast-reroute candidate level-2 \r\n no isis\
+        \ fast-reroute tie-break level-1 default\r\n isis fast-reroute tie-break level-1\
+        \ linecard-disjoint 40\r\n isis fast-reroute tie-break level-1 lowest-backup-path-metric\
+        \ 30\r\n isis fast-reroute tie-break level-1 primary-path 20\r\n no isis fast-reroute\
+        \ tie-break level-2 default\r\n isis fast-reroute tie-break level-2 linecard-disjoint\
+        \ 40\r\n isis fast-reroute tie-break level-2 lowest-backup-path-metric 30\r\
+        \n isis fast-reroute tie-break level-2 primary-path 20\r\n isis fast-reroute\
+        \ remote-lfa protection level-1 \r\n isis fast-reroute remote-lfa protection\
+        \ level-2 \r\n isis fast-reroute ti-lfa protection level-1 \r\n isis fast-reroute\
+        \ ti-lfa protection level-2 \r\n spanning-tree port-priority 128\r\n spanning-tree\
+        \ cost 0\r\n ethernet oam max-rate 10\r\n ethernet oam min-rate 1 \r\n ethernet\
+        \ oam remote-loopback timeout 2\r\n ethernet oam timeout 5 \r\n hold-queue\
+        \ 75 in\r\n hold-queue 40 out\r\n ip rsvp bandwidth\r\n ip rsvp signalling\
+        \ fast-local-repair wait-time 0\r\n ip rsvp signalling blockade 4\r\n ip rsvp\
+        \ burst policing 200\r\n no bgp-policy accounting input\r\n no bgp-policy\
+        \ accounting output\r\n no bgp-policy accounting input source\r\n no bgp-policy\
+        \ accounting output source\r\n no bgp-policy source ip-prec-map\r\n no bgp-policy\
+        \ source ip-qos-map\r\n no bgp-policy destination ip-prec-map\r\n no bgp-policy\
+        \ destination ip-qos-map\r\ninterface Ethernet5/2\r\n mtu 1500\r\n no ip address\r\
+        \n no ip clear-dont-fragment\r\n ip redirects\r\n ip unreachables\r\n ip proxy-arp\r\
+        \n ip mtu 1500\r\n ip mfib forwarding input\r\n ip mfib forwarding output\r\
+        \n ip mfib cef input\r\n ip mfib cef output\r\n ip pim join-prune-interval\
+        \ 60\r\n ip pim dr-priority 1\r\n ip pim query-interval 30\r\n no ip flowspec\r\
+        \n ip cef accounting non-recursive internal\r\n ip load-sharing per-destination\r\
+        \n ip route-cache cef\r\n ip route-cache\r\n ip split-horizon\r\n ip igmp\
+        \ robustness-variable 2\r\n ip igmp last-member-query-interval 1000\r\n ip\
+        \ igmp last-member-query-count 2\r\n ip igmp query-max-response-time 10\r\n\
+        \ ip igmp v3-query-max-response-time 10\r\n ip igmp version 2\r\n ip igmp\
+        \ query-interval 60\r\n ip igmp tcn query count 2\r\n ip igmp tcn query interval\
+        \ 10\r\n logging event link-status\r\n load-interval 300\r\n carrier-delay\
+        \ 2\r\n shutdown\r\n tx-ring-limit 64\r\n tx-queue-limit 64\r\n no medium\
+        \ p2p\r\n cdp log mismatch duplex\r\n cdp tlv location\r\n cdp tlv server-location\
+        \ \r\n cdp tlv app\r\n ipv6 nd reachable-time 0\r\n ipv6 nd ns-interval 0\r\
+        \n ipv6 nd dad attempts 1\r\n ipv6 nd dad loopback detect\r\n ipv6 nd prefix\
+        \ framed-ipv6-prefix\r\n ipv6 nd nud igp\r\n no ipv6 nd ra solicited unicast\r\
+        \n ipv6 nd ra lifetime 1800\r\n ipv6 nd ra interval 200\r\n ipv6 redirects\r\
+        \n ipv6 unreachables\r\n ipv6 mld query-max-response-time 10\r\n ipv6 mld\
+        \ query-timeout 255\r\n ipv6 mld robustness-variable 2\r\n ipv6 mld query-interval\
+        \ 125\r\n ipv6 mld router\r\n ipv6 mfib forwarding input\r\n ipv6 mfib forwarding\
+        \ output\r\n ipv6 mfib cef input\r\n ipv6 mfib cef output\r\n no ipv6 flowspec\r\
+        \n mpls mtu 1500\r\n mpls mldp\r\n snmp trap link-status\r\n no flowspec group\r\
+        \n no mka pre-shared-key\r\n mka default-policy\r\n network-clock wait-to-restore\
+        \ 300\r\n network-clock hold-off 300\r\n network-clock source quality-level\
+        \ - tx\r\n network-clock source quality-level - rx\r\n no synchronous mode\r\
+        \n bfd enable\r\n arp arpa\r\n arp timeout 14400\r\n lldp transmit\r\n lldp\
+        \ receive\r\n lldp tlv-select power-management\r\n lldp tlv-select 4-wire-power-management\r\
+        \n clns route-cache\r\n spanning-tree port-priority 128\r\n spanning-tree\
+        \ cost 0\r\n ethernet oam max-rate 10\r\n ethernet oam min-rate 1 \r\n ethernet\
+        \ oam remote-loopback timeout 2\r\n ethernet oam timeout 5 \r\n hold-queue\
+        \ 75 in\r\n hold-queue 40 out\r\n no bgp-policy accounting input\r\n no bgp-policy\
+        \ accounting output\r\n no bgp-policy accounting input source\r\n no bgp-policy\
+        \ accounting output source\r\n no bgp-policy source ip-prec-map\r\n no bgp-policy\
+        \ source ip-qos-map\r\n no bgp-policy destination ip-prec-map\r\n no bgp-policy\
+        \ destination ip-qos-map\r\ninterface Ethernet5/3\r\n mtu 1500\r\n no ip address\r\
+        \n no ip clear-dont-fragment\r\n ip redirects\r\n ip unreachables\r\n ip proxy-arp\r\
+        \n ip mtu 1500\r\n ip mfib forwarding input\r\n ip mfib forwarding output\r\
+        \n ip mfib cef input\r\n ip mfib cef output\r\n ip pim join-prune-interval\
+        \ 60\r\n ip pim dr-priority 1\r\n ip pim query-interval 30\r\n no ip flowspec\r\
+        \n ip cef accounting non-recursive internal\r\n ip load-sharing per-destination\r\
+        \n ip route-cache cef\r\n ip route-cache\r\n ip split-horizon\r\n ip igmp\
+        \ robustness-variable 2\r\n ip igmp last-member-query-interval 1000\r\n ip\
+        \ igmp last-member-query-count 2\r\n ip igmp query-max-response-time 10\r\n\
+        \ ip igmp v3-query-max-response-time 10\r\n ip igmp version 2\r\n ip igmp\
+        \ query-interval 60\r\n ip igmp tcn query count 2\r\n ip igmp tcn query interval\
+        \ 10\r\n logging event link-status\r\n load-interval 300\r\n carrier-delay\
+        \ 2\r\n shutdown\r\n tx-ring-limit 64\r\n tx-queue-limit 64\r\n no medium\
+        \ p2p\r\n cdp log mismatch duplex\r\n cdp tlv location\r\n cdp tlv server-location\
+        \ \r\n cdp tlv app\r\n ipv6 nd reachable-time 0\r\n ipv6 nd ns-interval 0\r\
+        \n ipv6 nd dad attempts 1\r\n ipv6 nd dad loopback detect\r\n ipv6 nd prefix\
+        \ framed-ipv6-prefix\r\n ipv6 nd nud igp\r\n no ipv6 nd ra solicited unicast\r\
+        \n ipv6 nd ra lifetime 1800\r\n ipv6 nd ra interval 200\r\n ipv6 redirects\r\
+        \n ipv6 unreachables\r\n ipv6 mld query-max-response-time 10\r\n ipv6 mld\
+        \ query-timeout 255\r\n ipv6 mld robustness-variable 2\r\n ipv6 mld query-interval\
+        \ 125\r\n ipv6 mld router\r\n ipv6 mfib forwarding input\r\n ipv6 mfib forwarding\
+        \ output\r\n ipv6 mfib cef input\r\n ipv6 mfib cef output\r\n no ipv6 flowspec\r\
+        \n mpls mtu 1500\r\n mpls mldp\r\n snmp trap link-status\r\n no flowspec group\r\
+        \n no mka pre-shared-key\r\n mka default-policy\r\n network-clock wait-to-restore\
+        \ 300\r\n network-clock hold-off 300\r\n network-clock source quality-level\
+        \ - tx\r\n network-clock source quality-level - rx\r\n no synchronous mode\r\
+        \n bfd enable\r\n arp arpa\r\n arp timeout 14400\r\n lldp transmit\r\n lldp\
+        \ receive\r\n lldp tlv-select power-management\r\n lldp tlv-select 4-wire-power-management\r\
+        \n clns route-cache\r\n spanning-tree port-priority 128\r\n spanning-tree\
+        \ cost 0\r\n ethernet oam max-rate 10\r\n ethernet oam min-rate 1 \r\n ethernet\
+        \ oam remote-loopback timeout 2\r\n ethernet oam timeout 5 \r\n hold-queue\
+        \ 75 in\r\n hold-queue 40 out\r\n no bgp-policy accounting input\r\n no bgp-policy\
+        \ accounting output\r\n no bgp-policy accounting input source\r\n no bgp-policy\
+        \ accounting output source\r\n no bgp-policy source ip-prec-map\r\n no bgp-policy\
+        \ source ip-qos-map\r\n no bgp-policy destination ip-prec-map\r\n no bgp-policy\
+        \ destination ip-qos-map"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: iolpe2#

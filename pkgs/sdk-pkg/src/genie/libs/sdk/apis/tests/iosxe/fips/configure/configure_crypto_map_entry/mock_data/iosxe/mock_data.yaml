@@ -1,0 +1,42 @@
+configure:
+  commands:
+    crypto map ikev2-cryptomap 1 ipsec-isakmp: "crypto map ikev2-cryptomap 1 ipsec-isakmp\r\
+      \n"
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    match address 102: "set transform-set aes256-sha1\r\n"
+    no logging console: ''
+    set ikev2-profile ikev2profile: "set peer 172.20.249.12\r\n"
+    set peer 172.20.249.12: "% NOTE: This new crypto map will remain disabled until\
+      \ a peer\r\n"
+    set transform-set aes256-sha1: "\tand a valid access list have been configured.\r\
+      \n"
+  prompt: 9300stack(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: 9300stack(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: 9300stack#

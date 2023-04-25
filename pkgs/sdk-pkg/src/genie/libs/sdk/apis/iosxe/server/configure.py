@@ -170,3 +170,19 @@ def configure_radius_server(device, server_config):
         device.configure(config_list)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not configure radius server on device {device.name}. Error:\n{e}')
+
+def unconfigure_radius_server(device, server_name):
+    """ Unconfigure radius server
+        Args:
+            device ('obj'): Device object
+            server_name('str'): Name for the radius server configuration
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config = f'no radius server {server_name}'
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Failed to unconfigure radius server on device {device.name}. Error:\n{e}')

@@ -1,0 +1,42 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: Switch-9300(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: Switch-9300(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    request platform software package install switch all rollback on-reboot auto-copy:
+      response:
+      - "[1]: rollback package(s) on switch 1\r\n--- Starting local lock acquisition\
+        \ on switch 1 ---\r\nFinished local lock acquisition on switch 1\r\n\r\n---\
+        \ Starting preparation for software rollback ---\r\nFAILED: No rollback file\
+        \ found for /tmp/sw/isos/packages.conf\r\n  FAILED: rollback failed on switch\
+        \ 1"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: Switch-9300#

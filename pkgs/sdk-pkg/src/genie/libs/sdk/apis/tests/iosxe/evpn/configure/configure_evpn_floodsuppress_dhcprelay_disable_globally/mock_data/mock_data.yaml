@@ -1,0 +1,44 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    no service internal: "no service internal\r\n"
+    line console:
+      new_state: configure_line
+    flooding-suppression dhcp-relay disable: "flooding-suppression dhcp-relay disable\r\n"
+    l2vpn evpn: "l2vpn evpn\r\n"
+    line console 0:
+      new_state: configure_line
+    service internal: "service internal\r\n"
+    no logging console: ''
+  prompt: NyqC(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+    line vty: ''
+    terminal width 511: ''
+  prompt: NyqC(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    term width 511: ''
+    terminal session-timeout 0: ''
+  prompt: NyqC#

@@ -1,7 +1,9 @@
-# Ats
+# pyATS
 import logging
 from pyats.log.utils import banner
-from pyats.utils.objects import find, R,NotExists
+from pyats.async_ import pcall
+from pyats.utils.objects import find, R, NotExists
+from pyats.results import (Passed, Failed)
 
 # genie.libs
 from genie.libs import ops
@@ -12,8 +14,9 @@ from genie.libs.sdk.libs.utils.normalize import GroupKeys
 
 log = logging.getLogger(__name__)
 
+
 def check_interface_counters(section, ports, keys, threshold):
-    '''Check interface counters values are as epected
+    '''Check interface counters values are as expected
 
     Can be controlled via sections parameters which is provided by the
     triggers/verification datafile
@@ -32,8 +35,10 @@ def check_interface_counters(section, ports, keys, threshold):
         None
 
     '''
-    log.info(banner('Compare interfaces {i} counters values with given expected values {v}'
-        .format(i=ports, v=threshold)))
+    log.info(
+        banner(
+            'Compare interfaces {i} counters values with given expected values {v}'
+            .format(i=ports, v=threshold)))
 
     def islargerthan(val1, val2):
         assert val1 > val2
@@ -46,13 +51,16 @@ def check_interface_counters(section, ports, keys, threshold):
         # initial msg
         msg = ''
 
-        log.info(banner('Get the counters data on {d} from "show interfaces counter"'
-            .format(d=uut.name)))
+        log.info(
+            banner(
+                'Get the counters data on {d} from "show interfaces counter"'.
+                format(d=uut.name)))
 
         # check counters
         for port in ports:
             try:
-                counter_output = ShowInterfacesCounters(uut).parse(interface=port)
+                counter_output = ShowInterfacesCounters(uut).parse(
+                    interface=port)
             except Exception as e:
                 section.failed('Cannot get counters information')
 
@@ -62,19 +70,28 @@ def check_interface_counters(section, ports, keys, threshold):
                 oper = threshold.split('(')[0]
                 val2 = int(threshold.split('(')[1].split(')')[0])
 
-                log.info(banner('Compare learned value {v1} is {o} expect value {v2}'
-                    .format(v1=ret[0][0], v2=val2, o=oper)))
+                log.info(
+                    banner(
+                        'Compare learned value {v1} is {o} expect value {v2}'.
+                        format(v1=ret[0][0], v2=val2, o=oper)))
                 try:
                     locals()[oper](val1=ret[0][0], val2=val2)
                 except Exception as e:
-                    section.failed('Get {k} value is {v1}, expect {t}'
-                        .format(k=path, v1=ret[0][0], t=threshold), from_exception=e)
-                msg += 'Get {k} value {v1} {t}\n'.format(k=path, v1=ret[0][0], t=threshold)
+                    section.failed('Get {k} value is {v1}, expect {t}'.format(
+                        k=path, v1=ret[0][0], t=threshold),
+                                   from_exception=e)
+                msg += 'Get {k} value {v1} {t}\n'.format(k=path,
+                                                         v1=ret[0][0],
+                                                         t=threshold)
 
         log.info(msg)
 
 
-def learn_routing(device, address_family, paths, ops_container=[], ret_container={}):
+def learn_routing(device,
+                  address_family,
+                  paths,
+                  ops_container=None,
+                  ret_container=None):
     '''Dynamic learn routing information by using the paths that specified,
     and store the data into dictionary.
 
@@ -108,8 +125,11 @@ def learn_routing(device, address_family, paths, ops_container=[], ret_container
         Exception: Routing ops cannot sucessfully learned
 
     '''
-    log.info(banner(
-        "learn routing info on device {}".format(device.name)))
+    if ops_container is None:
+        ops_container = []
+    if ret_container is None:
+        ret_container = {}
+    log.info(banner(f"learn routing info on device {device.name}"))
     # get ip and vrf
     routing_ops = ops.routing.iosxe.routing.Routing(device)
 
@@ -117,35 +137,99 @@ def learn_routing(device, address_family, paths, ops_container=[], ret_container
     try:
         routing_ops.learn()
     except Exception as e:
-        raise Exception('cannot learn routing ops: {}'.format(e))
+        raise Exception(f'cannot learn routing ops: {e}')
 
     ops_container[device.name] = routing_ops
 
-    log.info(banner(
-        "Get routing groups from device {}".format(device.name)))
+    log.info(banner(f"Get routing groups from device {device.name}"))
 
     rs = [R(p) for p in paths]
     ret = find([routing_ops], *rs, filter_=False, all_keys=True)
     if ret:
-        groups = GroupKeys.group_keys(
-                    reqs=paths, ret_num={},source=ret,all_keys=True)
+        groups = GroupKeys.group_keys(reqs=paths,
+                                      ret_num={},
+                                      source=ret,
+                                      all_keys=True)
         if groups:
             # learn interfaces ip
             if 'ipv4' in address_family:
                 ip_out = ShowIpInterfaceBrief(device).parse()
-                
+
             else:
                 ip_out = ShowIpv6Interface(device).parse()
-                
+
             for keys in groups:
                 # find interface ip
-                if 'ipv4' in  address_family:
-                    intf_r = [R(['interface', keys['intf'], 'ip_address', '(?P<ip>.*)'])]
+                if 'ipv4' in address_family:
+                    intf_r = [
+                        R([
+                            'interface', keys['intf'], 'ip_address',
+                            '(?P<ip>.*)'
+                        ])
+                    ]
                 else:
-                    intf_r = [R([keys['intf'], 'ipv6', '(?P<ip_addr>.*)', 'ip', '(?P<ip>.*)']),
-                              R([keys['intf'], 'ipv6', '(?P<ip_addr>.*)', NotExists('origin')])]
+                    intf_r = [
+                        R([
+                            keys['intf'], 'ipv6', '(?P<ip_addr>.*)', 'ip',
+                            '(?P<ip>.*)'
+                        ]),
+                        R([
+                            keys['intf'], 'ipv6', '(?P<ip_addr>.*)',
+                            NotExists('origin')
+                        ])
+                    ]
                 ip = find([ip_out], *intf_r, filter_=False)
                 if ip:
                     ip = ip[0][0]
                     ret_container.setdefault(keys['route'], {}).\
                         setdefault(ip, {}).update({device.name: keys})
+
+
+def check_memory_leaks(section, devices, keywords):
+    '''Check memory leaks by show memory debug leaks command
+
+    Args:
+        devices (`list`): List of device name
+        keywords (`list`): List of keywords
+
+    Returns:
+        None
+
+    Raises:
+        None
+    '''
+
+    def _check_memory_leaks(device, keywords):
+
+        try:
+            out = device.execute('show memory debug leaks')
+        except Exception as e:
+            log.exception(e)
+            out = {}
+
+        for kw in keywords:
+            if kw in out:
+                return False
+
+        return True
+
+    if section and getattr(section, 'parameters', {}):
+        testbed = section.parameters.get('testbed', {})
+        ckwargs = {
+            'keywords': keywords,
+        }
+        ikwargs = []
+        for device in devices:
+            if device in testbed.devices:
+                ikwargs.append({'device': testbed.devices[device]})
+
+        pcall_return = pcall(_check_memory_leaks,
+                             ckwargs=ckwargs,
+                             ikwargs=ikwargs)
+
+        if pcall_return and all(pcall_return):
+            log.info(f"No memory leaks found with keywords {keywords}")
+            section.result += Passed
+        else:
+            log.error(f"Found memory leaks with keywords {keywords}")
+            section.result += Failed

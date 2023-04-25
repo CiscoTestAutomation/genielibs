@@ -507,7 +507,11 @@ def verify_ping(
             timeout.sleep()
             continue
 
-        rate = int(p.search(out).groupdict().get('rate', 0))
+        try:
+            rate = int(p.search(out).groupdict().get('rate', 0))
+        except AttributeError:
+            timeout.sleep()
+            continue
 
         if expected_max_success_rate >= rate >= expected_min_success_rate:
             return True
@@ -1108,7 +1112,7 @@ def verify_tacacs_packet(tacacs_json_dict, verfifydict):
     return final_verify
 
 
-def perform_ssh(device,hostname, ip_address, username, password, vrf=None, enable_pass='lab',timeout=60,port=22, hmac=None):
+def perform_ssh(device,hostname, ip_address, username, password, vrf=None, enable_pass='lab',timeout=60,port=22, hmac=None, algorithm=None):
     """
     Restore config from local file using copy function
         Args:
@@ -1129,7 +1133,7 @@ def perform_ssh(device,hostname, ip_address, username, password, vrf=None, enabl
                             hmac-sha2-256-etm@openssh.com sha2 based HMAC-ETM(256 bits)
                             hmac-sha2-512 sha2 based HMAC(512 bits)
                             hmac-sha2-512-etm@openssh.com sha2 based HMAC-ETM(512 bits)
-
+            algorithm ('str'): enctyption algorithm (eg. 3des, aes128-cbc)
 
         Returns:
             True : When the connection establishment and termination succeeds
@@ -1203,8 +1207,13 @@ def perform_ssh(device,hostname, ip_address, username, password, vrf=None, enabl
 
     if hmac:
         cmd += f' -m {hmac}'
+    
+    if algorithm:
+        cmd += f' -c {algorithm}'
 
     cmd += f' {ip_address}'
+
+    
 
     try:
         device.execute(cmd, reply=dialog, prompt_recovery=True, timeout=timeout)
@@ -1642,3 +1651,43 @@ def copy_file(device, source_path, destination_path, filename):
 
     except SubCommandFailure as e:
         raise SubCommandFailure(log.error("failed to copy file from source to destination""Error:\n{error}".format(error=e)))
+
+
+def request_system_shell(device, switch_type=None, processor_slot=None, uname=False, exit=True):
+    '''
+        Request platform software system shell
+        Args:
+            device ('obj'): Device object
+            switch_type ('str', optional): Switch type. Ex: active, standby, 0. Default is None.
+            processor_slot ('str', optional): Processor slot. Ex: R0. Default is None.
+            uname ('bool', optional): To execute uname -a in shell. Default is False.
+            exit ('bool', optional): To exit from shell prompt. Default is True.
+            
+        Returns:
+            Cli output
+        Raises:
+            SubCommandFailure
+    '''
+    dialog = Dialog([Statement(pattern=r'.*\?\s\[y\/n\].*',
+        action='sendline(y)',
+        loop_continue=False,
+        continue_timer=False)])
+    
+    exit_dialog = Dialog([Statement(pattern=r'.*\#.*',
+        loop_continue=False,
+        continue_timer=False)])
+    
+    cmd = 'request platform software system shell'
+    if switch_type and processor_slot:
+        cmd += f' switch {switch_type} {processor_slot}'
+    
+    output = None
+    try:
+        output = device.execute(cmd, reply=dialog)
+        if uname:
+            output += device.execute('uname -a')
+        if exit:
+            device.execute('exit', reply=exit_dialog)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(log.error(f"failed to enter system shell""Error:\n{e}"))
+    return output

@@ -5,8 +5,9 @@ import logging
 
 # Unicon
 from unicon.core.errors import SubCommandFailure
-
+from unicon.eal.dialogs import Dialog, Statement
 log = logging.getLogger(__name__)
+LOG = log
 
 def clear_ipv6_mfib_vrf_counters(device, vrf_name=''):
     """ clear ipv6 mfib vrf * counters
@@ -70,4 +71,31 @@ def clear_ipv6_pim_topology(device):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not clear ipv6 pim topology on {device}. Error:\n{e}"
+        )
+
+def clear_ipv6_ospf_process(device):
+    """
+        clear ipv6 ospf process
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubcommandFailure: Failed executing command
+    """
+
+    log.debug("Clearing ipv6 ospf process")
+    dialog = Dialog([
+            Statement(
+            pattern=r'.*Reset selected OSPFv3 processes\?\s\[no\]\:', 
+            action="sendline({val})".format(val='yes'),
+            loop_continue=False,
+            continue_timer=False)])
+    try:
+        device.execute("clear ipv6 ospf process", reply=dialog)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not clear ipv6 ospf process on {device}. Error:\n{error}".format(
+                device=device, error=e
+            )
         )

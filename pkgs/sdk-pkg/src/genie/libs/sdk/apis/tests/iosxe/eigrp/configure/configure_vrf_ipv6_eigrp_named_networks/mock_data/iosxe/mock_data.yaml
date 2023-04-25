@@ -1,12 +1,15 @@
 configure:
   commands:
-    address-family ipv6 unicast vrf eigrp_test autonomous-system 200: "address-family\
-      \ ipv6 unicast vrf eigrp_test autonomous-system 200\r\n"
+    address-family ipv6 unicast autonomous-system 200: "address-family ipv6 unicast\
+      \ autonomous-system\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b$ily ipv6 unicast autonomous-system        \
+      \  \b\b\b\b\b\b\b\b\b200\r\n"
     end:
       new_state: execute
     line console 0:
       new_state: configure_line
     no logging console: ''
+    nsf: "nsf\r\n"
     router eigrp test: "router eigrp test\r\n"
   prompt: stack3-nyquist-1(config)#
 configure_line:

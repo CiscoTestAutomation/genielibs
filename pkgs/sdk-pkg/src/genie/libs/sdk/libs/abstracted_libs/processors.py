@@ -64,6 +64,55 @@ def _get_connection_class(section):
                 continue
     return conn_class_name
 
+def verify_ping(section, devices):
+    '''
+    'verify_ping' processor to verity ping result
+
+    arguments:
+      devices('dict'): device name with ping parameters
+
+    example:
+
+    global_processors:
+      pre:
+        verify_ping: verify_ping
+          method: genie.libs.sdk.libs.abstracted_libs.processors.verify_ping
+          parameters:
+            devices:
+              ce1:
+                - address: 1.1.1.10
+                  source: 1.1.1.1
+                  expected_min_success_rate: 100
+                - address: 2001::1:1:1:10
+                  source: 2001::1:1:1:1
+                  expected_min_success_rate: 100
+    '''
+
+    def _verify_ping(device, ping_args):
+        '''
+        Internal function _verify_ping for pcall
+        '''
+        results = []
+        for ping_list in ping_args:
+            res = device.api.verify_ping(**ping_list)
+            results.append(res)
+
+        if len(results) > 0:
+            return all(results)
+        else:
+            return False
+
+    testbed = runtime.testbed
+    ikwargs = []
+    for dev in devices:
+        device = testbed.devices[dev]
+        ikwargs.append({'device': device, 'ping_args': devices[dev]})
+
+    results = pcall(_verify_ping, ikwargs=ikwargs)
+
+    if len(results) > 0:
+        if not all(results):
+            section.failed('Ping failed.')
 
 def sleep_processor(section, sleep=None):
     '''Sleep prepostprocessor
@@ -1050,27 +1099,24 @@ def _get_msdp_device(vrf):
 # processor: restore_running_configuration
 # ==============================================================================
 
-
-def restore_running_configuration(
-        section,
-        devices=None,
-        iteration=10,
-        interval=60,
-        compare=False,
-        compare_exclude=[],
-        reload_timeout=1200):
+def restore_running_configuration(section,
+                                  devices=None,
+                                  iteration=10,
+                                  interval=60,
+                                  compare=False,
+                                  compare_exclude=[],
+                                  reload_timeout=1200,
+                                  no_crypto_pki_trustpoint=False,
+                                  timeout=60):
     '''Trigger Pre-Processor:
         * Restore running configuration from default directory
     '''
 
-    log.info(banner("processor: 'restore_running_configuration'"))
-
-    # Execute on section devices if devices list not specified
-    if not devices:
-        devices = [section.parameters['uut'].name]
-
-    for dev in devices:
-        device = section.parameters['testbed'].devices[dev]
+    def _restore_running_configuration(section, device, iteration, interval,
+                                       compare, compare_exclude, reload_timeout, no_crypto_pki_trustpoint, timeout):
+        '''
+        Internal function _restore_running_configuration for pcall 
+        '''
         # Abstract
         lookup = Lookup.from_device(device, packages={'sdk': sdk})
         restore = lookup.sdk.libs.abstracted_libs.restore.Restore()
@@ -1082,33 +1128,110 @@ def restore_running_configuration(
                            "executed before running processor: "
                            "'restore_running_configuration'")
 
+        # delete crypto pki trustpoint configs
+        if no_crypto_pki_trustpoint:
+            out = device.execute('sh run | i crypto pki trustpoint', timeout=timeout)
+            unconfig = ['no '+line for line in out.splitlines()]
+            if unconfig:
+                device.configure(unconfig)
+
         # Restore configuration from default directory
         try:
-            restore.restore_configuration(
-                device=device,
-                method='config_replace',
-                abstract=lookup,
-                iteration=iteration,
-                interval=interval,
-                compare=compare,
-                compare_exclude=compare_exclude,
-                reload_timeout=reload_timeout)
+            restore.restore_configuration(device=device,
+                                          method='config_replace',
+                                          abstract=lookup,
+                                          iteration=iteration,
+                                          interval=interval,
+                                          compare=compare,
+                                          compare_exclude=compare_exclude,
+                                          reload_timeout=reload_timeout,
+                                          timeout=timeout)
         except Exception as e:
             log.error(e)
-            section.failed(
-                "Unable to restore running-configuration from device")
+            return False
+
         else:
             log.info("Restored running-configuration from device")
+            return True
+
+
+    log.info(banner("processor: 'restore_running_configuration'"))
+
+    # Execute on section devices if devices list not specified
+    if not devices:
+        devices = [section.parameters['uut'].name]
+
+    ikwargs = []
+    for dev in devices:
+        device = section.parameters['testbed'].devices[dev]
+        ikwargs.append({'device': device})
+    ckwargs = {
+        'section': section,
+        'iteration': iteration,
+        'interval': interval,
+        'compare': compare,
+        'compare_exclude': compare_exclude,
+        'reload_timeout': reload_timeout,
+        'no_crypto_pki_trustpoint': no_crypto_pki_trustpoint,
+        'timeout': timeout
+    }
+
+    returns = pcall(_restore_running_configuration,
+                    ckwargs=ckwargs,
+                    ikwargs=ikwargs)
+
+    if returns != [] and not all(returns):
+        section.failed("Unable to restore running-configuration from device")
 
 # ==============================================================================
 # processor: save_running_configuration
 # ==============================================================================
 
-
-def save_running_configuration(section, devices=None, copy_to_standby=False):
+def save_running_configuration(section, devices=None, copy_to_standby=False, no_crypto_pki_trustpoint=False, timeout=60):
     '''Trigger Pre-Processor:
         * Save running configuration to default directory
     '''
+
+    def _save_running_configuration(section, device, copy_to_standby, no_crypto_pki_trustpoint, timeout):
+        '''
+        Internal function _restore_running_configuration for pcall 
+        '''
+
+        # Abstract
+        lookup = Lookup.from_device(device, packages={'sdk': sdk})
+        restore = lookup.sdk.libs.abstracted_libs.restore.Restore()
+
+        # Get default directory
+        save_dir = getattr(section.parent, 'default_file_system', {})
+        if not save_dir or device not in save_dir:
+            section.parent.default_file_system = {}
+            section.parent.default_file_system[
+                device.
+                name] = lookup.sdk.libs.abstracted_libs.subsection.get_default_dir(
+                    device=device)
+            save_dir = section.parent.default_file_system
+
+        # delete crypto pki trustpoint configs
+        if no_crypto_pki_trustpoint:
+            out = device.execute('sh run | i crypto pki trustpoint', timeout=timeout)
+            unconfig = ['no '+line for line in out.splitlines()]
+            if unconfig:
+                device.configure(unconfig)
+
+        # Save configuration to default directory
+        try:
+            location = restore.save_configuration(device=device,
+                                                  method='config_replace',
+                                                  abstract=lookup,
+                                                  default_dir=save_dir,
+                                                  copy_to_standby=copy_to_standby,
+                                                  timeout=timeout)
+        except Exception as e:
+            log.error(e)
+            section.failed("Unable to save running-configuration to device")
+        else:
+            log.info("Saved running-configuration to device")
+            return device.name, location
 
     # Init
     log.info(banner("processor: 'save_running_configuration'"))
@@ -1120,29 +1243,17 @@ def save_running_configuration(section, devices=None, copy_to_standby=False):
     if not devices:
         devices = [section.parameters['uut'].name]
 
+    ikwargs = []
     for dev in devices:
         device = section.parameters['testbed'].devices[dev]
-        # Abstract
-        lookup = Lookup.from_device(device, packages={'sdk': sdk})
-        restore = lookup.sdk.libs.abstracted_libs.restore.Restore()
+        ikwargs.append({'device': device})
+    ckwargs = {'section': section, 'copy_to_standby': copy_to_standby, 'no_crypto_pki_trustpoint': no_crypto_pki_trustpoint, 'timeout': timeout}
 
-        # Get default directory
-        save_dir = getattr(section.parent, 'default_file_system', {})
-        if not save_dir or dev not in save_dir:
-            section.parent.default_file_system = {}
-            section.parent.default_file_system[device.name] = lookup.sdk.libs.abstracted_libs.subsection.get_default_dir(
-                device=device)
-            save_dir = section.parent.default_file_system
-
-        # Save configuration to default directory
-        try:
-            section.trigger_config[device.name] = restore.save_configuration(
-                device=device, method='config_replace', abstract=lookup, default_dir=save_dir, copy_to_standby=copy_to_standby)
-        except Exception as e:
-            log.error(e)
-            section.failed("Unable to save running-configuration to device")
-        else:
-            log.info("Saved running-configuration to device")
+    returns = pcall(_save_running_configuration,
+                    ckwargs=ckwargs,
+                    ikwargs=ikwargs)
+    for ret in returns:
+        section.trigger_config[ret[0]] = ret[1]
 
 # ==============================================================================
 # processor: clear_logging
@@ -2499,10 +2610,10 @@ def disable_clear_traffic(section, clear_stats_time=10):
 
     return
 
-def delete_configuration(section, devices, include_os=None, exclude_os=None, 
-    templates_dir=None, template_name=None, jinja2_parameters=None, 
+def delete_configuration(section, devices, include_os=None, exclude_os=None,
+    templates_dir=None, template_name=None, jinja2_parameters=None,
     exclude_devices=None, include_devices=None, timeout=60):
-    
+
     '''
     Delete configuration on device as processors. 
     Will removing configuration by passing arguments in Jinja2 template
@@ -2561,11 +2672,11 @@ def delete_configuration(section, devices, include_os=None, exclude_os=None,
     if exclude_devices:
         log.info("Excluded devices by exclude_devices: {exclude_devices}".format(
             exclude_devices=exclude_devices))
-    
+
     if include_devices:
         log.info("Included devices by include_devices: {include_devices}".format(
             include_devices=include_devices))
-    
+
     if include_os:
         log.info("Included OS by include_os: {include_os}"
                     .format(include_os=include_os))
@@ -2576,7 +2687,7 @@ def delete_configuration(section, devices, include_os=None, exclude_os=None,
 
     # Initialize testbed object
     testbed = section.parameters['testbed']
-    
+
     device_config = {}
     for name, dev in devices.items():
         if name == 'all':
@@ -2600,13 +2711,13 @@ def delete_configuration(section, devices, include_os=None, exclude_os=None,
             device_dict.update({'template_name': template_name_local})
             device_dict.update({'jinja2_parameters': jinja2_parameters_local})
             device_dict.update({'timeout': timeout_local})
-    
+
     # Loop each devices passed in datafile with it's parameters
     for name, dev in device_config.items():
-        
+
         if exclude_devices and name in exclude_devices:
             continue
-        
+
         if include_devices and name not in include_devices:
             continue
 
@@ -2614,13 +2725,13 @@ def delete_configuration(section, devices, include_os=None, exclude_os=None,
             log.warning("Skipping '{dev}' as it does not exist in the testbed"
                         .format(dev=name))
             continue
-        
+
         # Find device from testbed yaml file based on device name
         device = testbed.devices[name]
 
         if include_os and device.os not in include_os:
             continue
-        
+
         if exclude_os and device.os in exclude_os:
             continue
 
@@ -2629,23 +2740,23 @@ def delete_configuration(section, devices, include_os=None, exclude_os=None,
             log.warning("Skipping '{dev}' as it is not connected"
                         .format(dev=name))
             continue
-        
+
         log.info("Executing 'delete_configuration' processor on '{dev}'"
                  .format(dev=name))
-                 
+
         try:
             # Check if templates_dir and template_name is passed, else fail the section
             templates_dir_local = dev.get('templates_dir', templates_dir)
             template_name_local = dev.get('template_name', template_name)
             timeout_local = dev.get('timeout', timeout)
             log.info("loading config file {}/{}".format(templates_dir_local,template_name_local))
-            
+
             # Initialize Jinja2 parameters
             jinja2_parameters_local = dev.get('jinja2_parameters', {} if not jinja2_parameters else jinja2_parameters).copy()
             jinja2_parameters_local.update({'templates_dir': templates_dir_local})
             jinja2_parameters_local.update({'template_name': template_name_local})
             jinja2_parameters_local.update({'timeout': timeout_local})
-            
+
             # Check if need to learn interfaces from yaml file
             interface_learn_name = jinja2_parameters_local.pop('interface_learn', False)
             if interface_learn_name:
@@ -2655,9 +2766,9 @@ def delete_configuration(section, devices, include_os=None, exclude_os=None,
                 jinja2_parameters_local.update({interface_learn_name: interface_list})
                 log.info('Interfaces found on device {}: {}'.format(
                     device.name, interface_list))
-            
+
             ipv4_management_interface_learn = jinja2_parameters_local.pop('ipv4_management_interface_learn', None)
-            
+
             if ipv4_management_interface_learn:
                 variable_name = ipv4_management_interface_learn.get('variable_name')
                 interface_name = ipv4_management_interface_learn.get('interface_name')
@@ -2677,7 +2788,7 @@ def delete_configuration(section, devices, include_os=None, exclude_os=None,
             section.failed(
                 "Failed to configure the device {} with the error: {}".format(
                     device.name, str(e)))
-    
+
 def configure_replace(section, devices, timeout=60):
     '''
     Configure replace device as processors. Will replace device configuration based on file_name and file_location
@@ -2720,12 +2831,12 @@ def configure_replace(section, devices, timeout=60):
     for name, dev in devices.items():
         log.info("Executing 'configure_replace' processor on '{dev}'"
                  .format(dev=name))
-        
+
         if name not in testbed.devices:
             log.warning("Skipping '{dev}' as it does not exist in the testbed"
                         .format(dev=name))
             continue
-        
+
         # Find device from testbed yaml file based on device name
         device = testbed.devices[name]
 
@@ -2750,19 +2861,19 @@ def configure_replace(section, devices, timeout=60):
                     continue
             if 'file_name' in dev:
                 file_name = dev['file_name']
-            
+
             # Call configure_replace method based on device os
             lookup.sdk.libs.abstracted_libs.subsection.configure_replace(
                 device, file_location, timeout=dev.get(
                     'timeout', timeout), file_name=file_name)
-                    
+
         except Exception as e:
             section.failed("Failed to replace config : {}".format(str(e)))
         log.info("Configure replace is done for device {}".format(name))
 
-def reconnect(section, devices, include_os=None, exclude_os=None, 
+def reconnect(section, devices, include_os=None, exclude_os=None,
     exclude_devices=None, include_devices=None):
-    
+
     '''
     Reconnect devices as processors. 
     Will removing configuration by passing arguments in Jinja2 template
@@ -2820,11 +2931,11 @@ def reconnect(section, devices, include_os=None, exclude_os=None,
     if exclude_devices:
         log.info("Excluded devices by exclude_devices: {exclude_devices}".format(
             exclude_devices=exclude_devices))
-    
+
     if include_devices:
         log.info("Included devices by include_devices: {include_devices}".format(
             include_devices=include_devices))
-    
+
     if include_os:
         log.info("Included OS by include_os: {include_os}"
                     .format(include_os=include_os))
@@ -2835,7 +2946,7 @@ def reconnect(section, devices, include_os=None, exclude_os=None,
 
     # Initialize testbed object
     testbed = section.parameters['testbed']
-    
+
     device_config = {}
     for name, dev in devices.items():
         if name == 'all':
@@ -2851,13 +2962,13 @@ def reconnect(section, devices, include_os=None, exclude_os=None,
             connect_parameters_local = dev.get('connect_parameters', {})
             device_dict.update({'sleep_disconnect': sleep_disconnect_local})
             device_dict.update({'connect_parameters': connect_parameters_local})
-    
+
     # Loop each devices passed in datafile with it's parameters
     for name, dev in device_config.items():
-        
+
         if exclude_devices and name in exclude_devices:
             continue
-        
+
         if include_devices and name not in include_devices:
             continue
 
@@ -2865,13 +2976,13 @@ def reconnect(section, devices, include_os=None, exclude_os=None,
             log.warning("Skipping '{dev}' as it does not exist in the testbed"
                         .format(dev=name))
             continue
-        
+
         # Find device from testbed yaml file based on device name
         device = testbed.devices[name]
 
         if include_os and device.os not in include_os:
             continue
-        
+
         if exclude_os and device.os in exclude_os:
             continue
 
@@ -2880,10 +2991,10 @@ def reconnect(section, devices, include_os=None, exclude_os=None,
             log.warning("Skipping '{dev}' as it is not connected"
                         .format(dev=name))
             continue
-        
+
         log.info("Executing 'reconnect' processor on '{dev}'"
                  .format(dev=name))
-                 
+
         try:
             # Check if templates_dir and template_name is passed, else fail the section
             sleep_disconnect_local = dev.get('sleep_disconnect', None)
@@ -2897,7 +3008,7 @@ def reconnect(section, devices, include_os=None, exclude_os=None,
                 via_local = Dq(device.connections).contains('defaults').get_values('via', 0)
             if via_local:
                 dev['connect_parameters'].update({'via': via_local})
-            
+
             device.connect(**connect_parameters_local)
 
         except Exception as e:

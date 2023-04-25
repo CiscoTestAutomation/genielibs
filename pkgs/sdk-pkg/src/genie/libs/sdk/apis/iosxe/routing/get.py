@@ -28,46 +28,39 @@ def get_routing_ospf_routes(device):
     return get_routes(device, protocol_codes)
 
 
-def get_routes(device, protocol_codes=None):
-    """ Retrieve all routes in specific protocal - show ip route
+def get_routes(device, protocol_codes=None, route=None, vrf='default'):
+    """ Retrieve all routes in specific protocol - show ip route
 
         Args:
             device ('obj'): Device object
             protocol_codes ('str'): Protocol codes
                 If not provided, it will get all protocal routes
+            route ('str'): destination route
+            vrf ('str): VRF name. default to 'default'
         Returns:
             routes ('list'): List of routes
     """
     routes = []
-    cmd = 'show ip route'
-
-    if protocol_codes is None:
-        protocol_codes = '(.*)'
+    af = 'ipv6' if route and ':' in route else 'ip'
+    cmd = f'show {af} route'
+    if vrf != 'default':
+        cmd += f' vrf {vrf}'
+    if route:
+        cmd += f' {route}'
 
     try:
         out = device.parse(cmd)
     except Exception as e:
-        log.error("Failed to parse '{}':\n{}".format(cmd, e))
+        log.error(f"Failed to parse '{cmd}':\n{e}")
         return routes
 
-    reqs = R([
-        'vrf', '(.*)', 'address_family', '(.*)', 'routes', '(?P<route>.*)',
-        'source_protocol_codes', protocol_codes
-    ])
-    found = find([out], reqs, filter_=False, all_keys=True)
-
-    if found:
-        keys = GroupKeys.group_keys(reqs=reqs.args,
-                                    ret_num={},
-                                    source=found,
-                                    all_keys=True)
-        for route in keys:
-            routes.append(route['route'])
+    if route:
+        return out.q.get_values('entry')
+    if protocol_codes:
+        return out.q.contains_key_value(
+            'source_protocol_codes', protocol_codes).get_values('routes')
     else:
-        log.error("Could not find any route with protocol_codes '{}'".\
-            format(protocol_codes))
-
-    return routes
+        return out.q.get_values('routes')
 
 
 def get_routing_outgoing_interface(device,
@@ -408,28 +401,43 @@ def get_routing_route_source_protocol(device, route, output=None):
 
     except Exception as e:
         log.error("An exception has occurred.\n{}".format(e))
-        return None 
+        return None
 
-def get_next_hops(device, route, output=None):
+def get_next_hops(device, route, output=None, vrf=None):
     """
-    Gets the next hops from 'show ip route' parsed output.
+    Gets the next hops from 'show [ip|ipv6] route' parsed output.
 
     Args:
         device (, optional): Device used to run commands
         route ('str'): Route to check for next hops
-        output (dict, optional): 'show ip route' parsed dict output
+        output (dict, optional): 'show [ip|ipv6] route' parsed dict output
+        vrf ('str): VRF name
 
     Returns tuple of next hop addresses; returns None if dne
     """
     try:
+        if ':' in route:
+            af = 'ipv6'
+            af_parsed = 'ipv6'
+        else:
+            af = 'ip'
+            af_parsed = 'ipv4'
+
+        cmd = f'show {af} route'
+        if vrf:
+            cmd += f' vrf {vrf}'
+
         if output is None:
-            output = device.parse('show ip route')
+            output = device.parse(cmd)
         elif device is None and output is None:
-            log.error("Please input a 'show ip route' dict output or a device")
+            log.error("Please input a 'show [ip|ipv6] route' dict output or a device")
             return None
-        
+
+        if not vrf:
+            vrf = 'default'
+
         route_next_hops = tuple()
-        route_dict = output['vrf']['default']['address_family']['ipv4']['routes']
+        route_dict = output['vrf'][vrf]['address_family'][af_parsed]['routes']
         for masked_route in route_dict:
             if route in masked_route:
                 next_hop_list = route_dict[masked_route]['next_hop']['next_hop_list']
@@ -438,10 +446,104 @@ def get_next_hops(device, route, output=None):
                     route_next_hops += (next_hop, )
 
         return None if not route_next_hops else route_next_hops
-                
+
     except Exception as e:
         log.error("An exception has occurred.\n{}".format(e))
         return None
+
+
+def get_next_hops_with_vrf(device, route, output=None, vrf='default'):
+    """
+    Gets the next hops from 'show [ip|ipv6] route' parsed output.
+
+    Args:
+        device (, optional): Device used to run commands
+        route ('str'): Route to check for next hops
+        output ('dict', optional): 'show [ip|ipv6] route' parsed dict output
+        vrf ('str'): VRF name. Default to 'default'
+
+    Returns tuple of next hop addresses with vrf and interface; returns empty tuple if no nexthops
+    [['FC01:101:8:E007::', 'default', None, 'B']]
+    """
+    try:
+        if ':' in route:
+            af = 'ipv6'
+            af_parsed = 'ipv6'
+        else:
+            af = 'ip'
+            af_parsed = 'ipv4'
+
+        cmd = f'show {af} route'
+        if vrf != 'default':
+            cmd += f' vrf {vrf}'
+
+        if output is None:
+            output = device.parse(cmd)
+        elif device is None:
+            log.error(
+                "Please input a 'show [ip|ipv6] route' dict output or a device"
+            )
+            return None
+
+        if not vrf:
+            vrf = 'default'
+
+        route_next_hops = []
+        route_dict = output['vrf'][vrf]['address_family'][af_parsed]['routes']
+        for masked_route in route_dict:
+            if route in masked_route:
+                next_hop_list = route_dict[masked_route]['next_hop'][
+                    'next_hop_list']
+                source_protocol_codes = route_dict[masked_route]['source_protocol_codes']
+                for index in next_hop_list:
+                    next_hop = next_hop_list[index]['next_hop']
+                    if 'vrf' in next_hop_list[index]:
+                        vrf = next_hop_list[index]['vrf'].split(':')[0]
+                    else:
+                        vrf = 'default'
+                    if 'outgoing_interface' in next_hop_list[index]:
+                        out_intf = next_hop_list[index]['outgoing_interface']
+                    else:
+                        out_intf = None
+                    route_next_hops.append([next_hop, vrf, out_intf, source_protocol_codes])
+
+
+        return route_next_hops or []
+
+    except Exception as e:
+        log.error(f"An exception has occurred.\n{e}")
+        return None
+
+def get_outgoing_interface_with_vrf(device, route, vrf='default'):
+    """
+    Gets the outgoing interfaces based on destination route
+
+    Args:
+        device (, optional): Device used to run commands
+        route ('str'): Route to find out outgoing interafces
+        vrf ('str'): VRF name. Default to 'default'
+
+    Returns list of outgoing interfaces with source_protocol_codes
+    ex.) [['FE80::A8BB:CCFF:FE02:A04', 'default', 'Ethernet4/0', 'I2']]
+    """
+
+    interfaces = []
+    def _get_outgoing_interface(route, vrf):
+        prefix = device.api.get_routes(route=route, vrf=vrf)
+        return device.api.get_next_hops_with_vrf(route=prefix[0], vrf=vrf)
+
+    while not interfaces:
+        nexthops = _get_outgoing_interface(route, vrf)
+        for each_nh in nexthops:
+            if each_nh[2] is not None:
+                # append outgoing interface
+                interfaces.append(each_nh)
+            else:
+                route = each_nh[0]
+                vrf = each_nh[1]
+
+    return interfaces
+
 
 def get_ipv6_routes(device):
     """
@@ -481,7 +583,7 @@ def get_ipv6_intf_valid_ip_addresses(device, interface):
         log.error("No interface information found on {}".format(interface))
         log.error("Exception occured\n {}".format(e))
         return None
-    
+
     ipv6_addr = [val for val in output[interface]['ipv6'].values() if type(val) == dict]
 
     return [ip.get('ip') for ip in ipv6_addr if ip.get('ip') is not None and ip.get('status') == 'valid']
@@ -522,7 +624,7 @@ def get_ipv6_linklocal_addr_from_ipv4(device, ipv4_intf, isatap=False):
     # and concatenate with 'FE80::'
     pair1 = (octets[0] + octets[1]).lstrip('0')
     pair2 = (octets[2] + octets[3]).lstrip('0')
-    
+
     ll_addr = 'FE80::'
     if isatap:
         ll_addr += '5EFE:'
@@ -549,7 +651,7 @@ def get_ipv6_intf_tentative_address(device, interface):
         log.error("No interface information found on {}".format(interface))
         log.error("Exception occured\n {}".format(e))
         return None
-    
+
 
 
     # device.parser implementation
@@ -561,7 +663,7 @@ def get_ipv6_intf_tentative_address(device, interface):
     addrs = re.findall(rgx, output)
     addrs = [addr.split(',')[0] for addr in addrs]
 
-    
+
     return addrs
 
 def get_ipv6_local_routes(device):
@@ -652,7 +754,7 @@ def get_ipv6_intf_autocfg_address(device,interface ):
         log.error("No interface information found on {}".format(interface))
         log.error("An Exception occured:\n {}".format(e))
         return None
-    
+
     ipv6_addr = [val for val in output[interface]['ipv6'].values() if type(val) == dict]
 
     auto_cfg_addr = ["{}/{}".format(ip.get('ip'), ip.get("prefix_length")) for ip in ipv6_addr if ip.get('autoconf')]
@@ -701,7 +803,7 @@ def get_route_metric(device):
         return None
 
     output = output['vrf']['default']['address_family']['ipv6']['routes']
-    
+
     route_metric = {}
 
     for key, val in output.items():
@@ -726,7 +828,7 @@ def get_ipv6_interface_ip_and_mask(device, interface):
     try:
         if '.' in interface and interface.split('.')[1] == '0':
             interface = interface.split('.')[0]
-        
+
         out = device.parse('show ipv6 interface {interface}'.format(interface=interface))
     except SchemaEmptyParserError as e:
         log.error('No interface information found for {}: {}'.format(interface, e))
@@ -740,4 +842,3 @@ def get_ipv6_interface_ip_and_mask(device, interface):
             sub_value_keys = list(sub_value.keys())
             if 'origin' not in sub_value_keys and 'ip' in sub_value_keys:
                 return sub_value['ip'], sub_value['prefix_length']
-

@@ -2,18 +2,18 @@ configure:
   commands:
     end:
       new_state: execute
-    interface te1/0/1: "interface te1/0/1\r\n"
+    interface TwentyFiveGigE1/0/2: "interface TwentyFiveGigE1/0/2\r\n"
     line console 0:
       new_state: configure_line
-    no ip pim dense-mode: "no ip pim dense-mode\r\n"
+    no ip pim sparse-mode: "no ip pim sparse-mode\r\n"
     no logging console: ''
-  prompt: stack3-nyquist-1(config)#
+  prompt: core(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: stack3-nyquist-1(config-line)#
+  prompt: core(config-line)#
 connect:
   commands:
     ? ''
@@ -33,4 +33,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: stack3-nyquist-1#
+  prompt: core#

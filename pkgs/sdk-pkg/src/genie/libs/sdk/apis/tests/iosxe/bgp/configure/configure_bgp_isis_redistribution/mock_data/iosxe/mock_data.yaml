@@ -1,0 +1,39 @@
+configure:
+  commands:
+    address-family ipv4: "address-family ipv4\r\n"
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    neighbor 3.3.3.3 send-label: "neighbor 3.3.3.3 send-label\r\n"
+    no logging console: ''
+    redistribute connected: "redistribute connected\r\n"
+    redistribute isis 10 level-1-2: "redistribute isis 10 level-1-2\r\n"
+    router bgp 100: "router bgp 100\r\n"
+  prompt: PE1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: PE1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: PE1#

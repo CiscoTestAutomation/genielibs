@@ -1167,6 +1167,7 @@ basic-mode=explicit&also-supported=report-all-tagged']
         result = self.rpcv.verify_rpc_data_reply(resp, rpc_data)
         self.assertTrue(result)
 
+
     def test_auto_validate_delete_presence_with_children(self):
         """Edit-config of multiple list entries in one RPC."""
         rpc_data = {
@@ -1218,14 +1219,14 @@ basic-mode=explicit&also-supported=report-all-tagged']
                     'datatype': 'uint32', 
                     'nodetype': 'leaf', 
                     'value': '200',
-                    'xpath': '/oc-netinst:network-instances/oc-netinst:network-instance[oc-netinst:name="DEFAULT"]/oc-netinst:protocols/oc-netinst:protocol[oc-netinst:identifier="BGP"][oc-netinst:name="default"]/oc-netinst:bgp/oc-netinst:global/oc-netinst:config/oc-netinst:as'
+                    'xpath': '/oc-netinst:network-instances/oc-netinst:network-instance[oc-netinst:name="DEFAULT"]/oc-netinst:protocols/oc-netinst:protocol[oc-netinst:identifier="oc-pol-types:BGP"][oc-netinst:name="default"]/oc-netinst:bgp/oc-netinst:global/oc-netinst:config/oc-netinst:as'
                 }, 
                 {
                     'datatype': 'boolean', 
                     'edit-op': 'delete', 
                     'nodetype': 'leaf', 
                     'value': 'true', 
-                    'xpath': '/oc-netinst:network-instances/oc-netinst:network-instance[oc-netinst:name="DEFAULT"]/oc-netinst:protocols/oc-netinst:protocol[oc-netinst:identifier="BGP"][oc-netinst:name="default"]/oc-netinst:bgp/oc-netinst:global/oc-netinst:graceful-restart/oc-netinst:config/oc-netinst:enabled'
+                    'xpath': '/oc-netinst:network-instances/oc-netinst:network-instance[oc-netinst:name="DEFAULT"]/oc-netinst:protocols/oc-netinst:protocol[oc-netinst:identifier="oc-pol-types:BGP"][oc-netinst:name="default"]/oc-netinst:bgp/oc-netinst:global/oc-netinst:graceful-restart/oc-netinst:config/oc-netinst:enabled'
                 }
             ],
             'datastore' : 'candidate',

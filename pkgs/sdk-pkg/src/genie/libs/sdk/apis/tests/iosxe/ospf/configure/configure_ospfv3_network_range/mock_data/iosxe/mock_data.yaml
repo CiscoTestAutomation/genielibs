@@ -1,0 +1,39 @@
+configure:
+  commands:
+    'address-family ipv6 unicast': "address-family ipv6 unicast\r\n"
+    'area 0 range 2010::/64': "area 0 range 2010::/64\r\n"
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    log-adjacency-changes: "log-adjacency-changes\r\n"
+    no logging console: ''
+    router ospfv3 100: "router ospfv3 100\r\n"
+    router-id 2.2.2.2: "router-id 2.2.2.2\r\n"
+  prompt: core(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: core(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: core#

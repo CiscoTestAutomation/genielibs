@@ -28,11 +28,12 @@ from genie.libs.sdk.apis.utils import mask_to_int
 
 log = logging.getLogger(__name__)
 
-def configure_ptp_modes(device, mode):
+def configure_ptp_modes(device, mode, interface=None):
     """ PTP global configuration
         Args:
-            device (`obj`): Device object
-            mode (`str`): PTP mode
+            device ('obj'): Device object
+            mode ('str'): PTP mode
+            interface ('str', optional): PTP interface , default is None
         Returns:
             None
         Raises:
@@ -51,6 +52,9 @@ def configure_ptp_modes(device, mode):
         configs.append("ptp mode p2ptransparent")
     elif mode == "g8275bc":
         configs.append("ptp profile 8275.1 clock-mode boundary")
+        if interface:
+            configs.append("interface {interface}".format(interface=interface))
+            configs.append("ptp destination-mac non-forwardable")
     elif mode == "g8275tc":
         configs.append("ptp profile 8275.1 clock-mode transparent")
     else:
@@ -174,10 +178,12 @@ def unconfigure_ptp_modes(device, mode):
             SubCommandFailure
     """
     configs = []
-    if mode == "dot1as":
-        configs.append("no ptp profile")        
-    elif mode == "g8275":
-        configs.append("no ptp profile")        
+    if mode == "dot1as" or mode == "g8275":
+        configs.append("no ptp profile")
+    elif mode == "bcdelay":
+        configs.append("no ptp mode boundary delay-req")
+    elif mode == "g8275bc":
+        configs.append("no ptp profile 8275.1 clock-mode boundary")       
     else:
         configs.append("no ptp mode")
 
@@ -185,19 +191,19 @@ def unconfigure_ptp_modes(device, mode):
         device.configure(configs)
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            "Could not configure PTP modes as per provided argument"
-        )
+            f"Failed to unconfigure PTP modes  on device {device}. Error:\n{e}")
+
 
 def configure_ptp_aes67_rates(device, mode, intf_list, sync=0, delay=0, announce=0, announce_timeout=3):
     """ PTP global configuration
         Args:
-            device (`obj`): Device object
-            mode (`str`): PTP mode
+            device ('obj'): Device object
+            mode ('str'): PTP mode
             intf_list ('list'): PTP interface list
-            sync (`int`): PTP sync interval. Default: 0.
-            delay (`int`): PTP delay-req interval. Default: 0.
-            announce (`int`): PTP announce interval. Default: 0.
-            announce_timeout (`int`): PTP announce timeout. Default: 3.
+            sync ('int'): PTP sync interval. Default: 0.
+            delay ('int'): PTP delay-req interval. Default: 0.
+            announce ('int'): PTP announce interval. Default: 0.
+            announce_timeout ('int'): PTP announce timeout. Default: 3.
         Returns:
             None
         Raises:
@@ -383,52 +389,50 @@ def unconfigure_ptp_8275_holdover_spec_duration(device):
             "Could not unconfigure PTP 8275 holdover spec-duration"
         )
 
-def configure_ptp_vlan(device, intf, vlan):
-    """ Configure ptp vlan on interface
+
+def configure_ptp_vlan(device, interface, vlan):
+    """ PTP vlan configuration
         Args:
-            device (`obj`): Device object
-            intf (str): PTP interface
-            vlan(str): vlan number 10
+            device ('obj'): Device object
+            interface ('str'): PTP interface configuration
+            vlan ('str'): PTP vlan configuration Default: 0
         Returns:
             None
         Raises:
             SubCommandFailure
     """
-    log.debug("Configure ptp vlan on {device}".format(device=device))
-    configs = []
-    configs.append("interface {intf}".format(intf=intf))
-    configs.append("ptp vlan {vlan}".format(vlan=vlan))
-
+    configs = [
+        f"interface {interface}",
+        f"ptp vlan {vlan}"]
     try:
         device.configure(configs)
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            "Could not configure ptp vlan on {device}. Error:\n{error}".format(device=device, error=e)
-        )
+            "Could not configure PTP vlan on {device}. Error:\n{error}"
+            .format(device=device, error=e))
 
-def unconfigure_ptp_vlan(device, intf, vlan):
-    """ Unconfigure ptp vlan on interface
+def unconfigure_ptp_vlan(device, interface, vlan):
+    """ PTP vlan unconfiguration
         Args:
-            device (`obj`): Device object
-            intf (str): PTP interface
-            vlan(str): vlan number 10
+            device ('obj'): Device object
+            interface ('str'): PTP interface configuration
+            vlan ('str'): PTP vlan unconfiguration Default: 0
         Returns:
             None
         Raises:
             SubCommandFailure
     """
-    log.debug("Unconfigure ptp vlan on {device}".format(device=device))
-    configs = []
-    configs.append("interface {intf}".format(intf=intf))
-    configs.append("no ptp vlan {vlan}".format(vlan=vlan))
-
+    configs = [
+        f"interface {interface}",
+        f"no ptp vlan {vlan}"]
     try:
         device.configure(configs)
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            "Could not Unconfigure ptp vlan on {device}. Error:\n{error}".format(device=device, error=e)
-        )
-    
+            "Could not unconfigure PTP vlan on {device}. Error:\n{error}"
+            .format(device=device, error=e))
+
+
 def configure_ptp_announce_transmit(device, intf):
     """ Configure ptp announce transmit on interface
         Args:
@@ -472,3 +476,55 @@ def unconfigure_ptp_announce_transmit(device, intf):
         raise SubCommandFailure(
             "Could not Unconfigure ptp announce transmit on {device}. Error:\n{error}".format(device=device, error=e)
         )
+
+
+def unconfigure_ptp_aes67_rates(device, intf_list, sync=0, delay=0, announce=0, announce_timeout=3):
+    """ PTP global unconfiguration
+        Args:
+            device ('obj'): Device object
+            intf_list ('list'): PTP interface
+            sync ('int' optional): PTP sync interval. Default: 0  unconfiguration.
+            delay ('int' optional): PTP delay-req interval. Default: 0 unconfiguration.
+            announce ('int' optional): PTP announce interval. Default: 0 unconfiguration.
+            announce_timeout ('int' optional): PTP announce timeout. Default: 3 unconfiguration.
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    configs = []
+    for intf in intf_list:
+        configs.append("interface {intf}".format(intf=intf))
+        configs.append("no ptp sync interval {sync}".format(sync=sync))
+        configs.append("no ptp delay-req interval {delay}".format(delay=delay))
+        configs.append("no ptp announce interval {announce}".format(announce=announce))
+        configs.append("no ptp announce timeout {announce_timeout}".format(announce_timeout=announce_timeout))
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure PTP aes67 profile rates on {device}. Error:\n{error}"
+            .format(device=device, error=e))
+
+
+def configure_ptp_source(device, ip_address=None):
+    """ PTP source configuration
+        Args:
+            device ('obj'): Device object
+            ip address ('str'): PTP Ip address , default is None
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    configs = [
+        f"ptp transport ipv4 udp",
+        f"ptp mode p2ptransparent",
+        f"ptp source {ip_address}"]
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure PTP source on {device}. Error:\n{error}"
+            .format(device=device, error=e))

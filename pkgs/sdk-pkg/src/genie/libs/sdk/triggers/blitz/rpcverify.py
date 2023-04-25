@@ -1456,6 +1456,11 @@ class RpcVerify():
             log.info('WITH DEFAULTS - NOT REPORTED')
 
         for node in rpc_data.get('nodes', []):
+            # original xpath with key/value required to validate
+            # key values with multilist entries in response
+            xpath_original = re.sub(self.RE_FIND_PREFIXES, '/', node.get('xpath', ''))
+            xpath_original = re.sub(self.RE_FIND_KEY_PREFIX, '[', xpath_original)
+            # xpath with keys and namespace prefix stripped.
             xpath = re.sub(self.RE_FIND_KEYS, '', node.get('xpath', ''))
             xpath = re.sub(self.RE_FIND_PREFIXES, '/', xpath)
             if del_parent:
@@ -1501,7 +1506,7 @@ class RpcVerify():
                     nodes.append(OperationalFieldsNode(
                         name=xpath.split('/')[-1],
                         value=default,
-                        xpath=xpath,
+                        xpath=xpath_original,
                         selected=True,
                         operator='==',
                         default_value=True,
@@ -1512,7 +1517,7 @@ class RpcVerify():
             nodes.append(OperationalFieldsNode(
                 name=xpath.split('/')[-1],
                 value=value,
-                xpath=xpath,
+                xpath=xpath_original,
                 selected=True,
                 operator='==',
                 default_value=False,

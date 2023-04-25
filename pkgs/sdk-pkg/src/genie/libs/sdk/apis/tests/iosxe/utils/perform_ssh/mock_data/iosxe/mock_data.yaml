@@ -5,13 +5,13 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-  prompt: pi-infra23(config)#
+  prompt: Switch-9300(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: pi-infra23(config-line)#
+  prompt: Switch-9300(config-line)#
 connect:
   commands:
     ? ''
@@ -29,10 +29,10 @@ execute:
     config-transaction:
       new_state: configure
     show version: ''
-    ssh -l lab -p 22 -m hmac-sha2-256-etm@openssh.com 10.104.187.241:
+    ssh -l lab -p 22 -c 3des 10.1.1.1:
       response:
-      - 'Password:pi-infra23>Password:'
+      - '% Connection timed out; remote host not responding'
       response_type: circular
     term length 0: ''
     term width 0: ''
-  prompt: pi-infra23#
+  prompt: Switch-9300#

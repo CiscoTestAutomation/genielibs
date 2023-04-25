@@ -2,25 +2,21 @@ configure:
   commands:
     end:
       new_state: execute
-    interface GigabitEthernet2/0/13: "interface GigabitEthernet2/0/13\r\n"
+    interface te1/0/1: "interface te1/0/1\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''
     switchport port-security: "switchport port-security\r\n"
-    switchport port-security  aging time 5: "switchport port-security  aging time\
-      \ 5\r\n"
-    switchport port-security  aging type inactivity: "switchport port-security  aging\
-      \ type inactivity\r\n"
-    switchport port-security maximum 3: "switchport port-security maximum 3\r\n"
-    switchport port-security violation restrict: "switchport port-security violation\
-      \ restrict\r\n"
-  prompt: VCR(config)#
+    switchport port-security mac-address 70c9.c6b9.abcd: "switchport port-security\
+      \ mac-address 70c9.c6b9.abcd\r\n"
+    switchport port-security maximum 1: "switchport port-security maximum 1\r\n"
+  prompt: n08HA(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: VCR(config-line)#
+  prompt: n08HA(config-line)#
 connect:
   commands:
     ? ''
@@ -40,4 +36,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: VCR#
+  prompt: n08HA#

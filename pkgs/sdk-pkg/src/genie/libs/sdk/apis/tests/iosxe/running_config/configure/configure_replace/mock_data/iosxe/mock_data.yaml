@@ -29,13 +29,17 @@ execute:
     config-transaction:
       new_state: configure
     configure replace flash:new_config:
-      response:
-      - "This will apply all necessary additions and deletions\r\nto replace the current\
-        \ running configuration with the\r\ncontents of the specified configuration\
-        \ file, which is\r\nassumed to be a complete configuration, not a partial\r\
-        \nconfiguration. Enter Y if you are sure you want to proceed. ? [no]:"
-      response_type: circular
+      new_state: proceed
     show version: ''
     term length 0: ''
     term width 0: ''
   prompt: 9300-24UX-1#
+
+proceed:
+  prompt: "This will apply all necessary additions and deletions\r\nto replace the current\
+        \ running configuration with the\r\ncontents of the specified configuration\
+        \ file, which is\r\nassumed to be a complete configuration, not a partial\r\
+        \nconfiguration. Enter Y if you are sure you want to proceed. ? [no]:"
+  commands:
+    "Y":
+      new_state: execute

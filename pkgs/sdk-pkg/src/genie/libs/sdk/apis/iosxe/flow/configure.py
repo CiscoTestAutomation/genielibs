@@ -95,23 +95,22 @@ def config_flow_monitor_on_interface(device, interface, exporter_name):
         )
 
 
-def clear_flow_monitor_statistics(device):
+def clear_flow_monitor_statistics(device, monitor_name, switch=''):
     """ Clears Flow Monitor statistics on device
-
         Args:
-            device (`obj`): Device object
+            device ('obj'): Device object
+            monitor_name ('str'): Specific monitor name
+            switch ('str', optional): Switch (Compatible to 9300)
         Return:
             None
         Raise:
-            SubCommandFailure: Failed configuring interface
+            SubCommandFailure: Failed clearing flow monitor
     """
 
     try:
-        device.execute(["clear flow monitor eta-mon cache",
-                        "clear flow monitor eta-mon statistics",
-                        "clear flow monitor avc cache",
-                        "clear flow monitor avc statistics",
-                        "show platform software fed active fnf clear-et-analytics-stats"])
+        device.execute([f"clear flow monitor {monitor_name} cache",
+                        f"clear flow monitor {monitor_name} statistics",
+                        f"show platform software fed {switch} active fnf clear-et-analytics-stats"])
     except SubCommandFailure:
         raise SubCommandFailure(
             'Could not clear flow monitor statistics'
@@ -652,11 +651,12 @@ def unconfigure_active_timer_under_et_analytics(device, timer):
         ) 
 
 
-def clear_flow_exporter_statistics(device):
+def clear_flow_exporter_statistics(device, exporter_name='eta-exp'):
     """ Clear Flow exporter statistics on device
         
         Args:
             device ('obj'): device to use
+            exporter_name ('str', optional): exporter name, default value is 'eta-exp'
 
         Return:
             None
@@ -664,13 +664,11 @@ def clear_flow_exporter_statistics(device):
         Raise:
             SubCommandFailure: Failed configuring interface
     """
-
+    cmd = f"clear flow exporter {exporter_name} statistics"
     try:
-        device.execute("clear flow exporter eta-exp statistics")
-    except SubCommandFailure:
-        raise SubCommandFailure(
-            'Could not clear flow exporter statistics'
-        )
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not clear flow exporter statistics. Error:\n{e}')
 
 
 def configure_et_analytics(device, dest_ip, udp_port):
@@ -1092,3 +1090,119 @@ def unconfigure_flow_monitor_on_vlan_configuration(device, vlan_id, monitor_name
         raise SubCommandFailure(
             f'Failed to unconfigure {type} flow monitor {monitor_name} on valn configuration {vlan_id}. Error:\n{e}'
         )
+
+
+def configure_flow_record_match_ip(device, record_name, ip_version, field_type, address=False): 
+    """ Config Flow Record with match parameters on Device
+        Args:
+            device ('obj'): Device object
+            record_name ('str'): Flow record name
+            ip_version ('str'): ipv4 or ipv6 version.
+            field_type ('str'): Field type. Ex: source, protocol etc.
+            address ('bool', optional): address to configure. Default is False.
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring Flow Record Match IP on Device
+    """
+    
+    config = [f'flow record {record_name}', f'match {ip_version} {field_type}{" address" if address else ""}']
+ 
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configure flow record {record_name} match ip. Error: {e}')
+
+
+def configure_flow_record_match_collect_interface(device, record_name, direction, match=True, collect=True): 
+    """ Config Flow Record interface parameters on Device
+        Args:
+            device ('obj'): Device object
+            record_name ('str'): Flow record name
+            direction ('str'): ipv4 or ipv6 version.
+            match ('bool', optional): configure match interface. Default is True.
+            collect ('bool', optional): configure collect interface. Default is True.
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring Flow Record interface on Device
+    """
+    
+    config = [f'flow record {record_name}']
+    if match:
+        config.append(f'match interface {direction}')
+    if collect:
+        config.append(f'collect interface {direction}')
+    
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configure flow record {record_name} interface. Error: {e}')
+
+
+def configure_flow_record_match_datalink(device, record_name, field_type, mac_type=None, direction=None): 
+    """ Config Flow Record with match parameters on Device
+        Args:
+            device ('obj'): Device object
+            record_name ('str'): Flow record name
+            field_type ('str'): Field type. Ex: source, protocol etc.
+            mac_type ('str', optional): source or destination mac type. Default is None.
+            direction ('str', optional): input or output direction. Default is None.
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring Flow Record Match datalink on Device
+    """
+    
+    config = [f'flow record {record_name}']
+
+    if mac_type and direction:
+        config.append(f'match datalink {field_type} {mac_type} address {direction}')
+    elif direction:
+        config.append(f'match datalink {field_type} {mac_type} {direction}')
+ 
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configure flow record {record_name} match datalink. Error: {e}')
+
+
+def configure_flow_record_collect_timestamp(device, record_name, packet_time): 
+    """ Config Flow Record collect timestamp parameters on Device
+        Args:
+            device ('obj'): Device object
+            record_name ('str'): Flow record name
+            packet_time ('str'): First or Last packet.
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring Flow Record collect timestamp on Device
+    """
+    
+    config = [f'flow record {record_name}', f'collect timestamp absolute {packet_time}']
+ 
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configure flow record {record_name} collect timestamp. Error: {e}')
+
+
+def configure_flow_record_collect_counter(device, record_name, counter_type, layer2=False): 
+    """ Config Flow Record collect counter parameters on Device
+        Args:
+            device ('obj'): Device object
+            record_name ('str'): Flow record name
+            counter_type ('str'): bytes or packets counter type.
+            layer2 ('bool', optional): Configures layer2 if True. Default is False
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring Flow Record collect counter on Device
+    """
+    
+    config = [f'flow record {record_name}', f'collect counter {counter_type}{" layer2" if layer2 else ""} long']
+ 
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configure flow record {record_name} collect counter. Error: {e}')

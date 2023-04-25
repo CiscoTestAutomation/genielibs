@@ -934,3 +934,39 @@ def configure_vtp_trunk_interface(device, interface):
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not configure VTP trunk interface. Error:\n{e}')
+
+
+def configure_vlan_group_list(device, group_name, vlan):
+    """ Configures vlan group list
+        Args:
+            device ('obj'): device to use
+            group_name ('str'):  Vlan group name
+            vlan ('str'): vlan numbers. Ex: '1', '4-9', '4,19,54'
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f'vlan group {group_name} vlan-list {vlan}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configure vlan group list. Error:\n{e}')
+
+
+def unconfigure_vlan_group_list(device, group_name, vlan):
+    """ Unconfigures vlan group list
+        Args:
+            device ('obj'): device to use
+            group_name ('str'):  Vlan group name
+            vlan ('str'): vlan numbers. Ex: '1', '4-9', '4,19,54'
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f'no vlan group {group_name} vlan-list {vlan}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not unconfigure vlan group list. Error:\n{e}')

@@ -1,0 +1,37 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    interface vlan100: "interface vlan100\r\n"
+    ip dhcp relay information option vpn-id: "ip dhcp relay information option vpn-id\r\
+      \n"
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: Cat9300_DHCP_client(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: Cat9300_DHCP_client(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: Cat9300_DHCP_client#

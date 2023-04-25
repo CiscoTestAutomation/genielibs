@@ -10,7 +10,7 @@ class TestConfigInterfaceIsis(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          mac-gen2:
+          iolpe2:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,11 +18,11 @@ class TestConfigInterfaceIsis(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: cat9k
-            type: C9400
+            platform: iosxe
+            type: iol
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['mac-gen2']
+        self.device = self.testbed.devices['iolpe2']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,6 @@ class TestConfigInterfaceIsis(unittest.TestCase):
         )
 
     def test_config_interface_isis(self):
-        result = config_interface_isis(self.device, 'vlan101', 'False', '1000')
+        result = config_interface_isis(self.device, 'Tunnel1', 'True', None, 'sr', '1')
         expected_output = None
         self.assertEqual(result, expected_output)

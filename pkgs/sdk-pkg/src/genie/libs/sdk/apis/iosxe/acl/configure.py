@@ -1463,10 +1463,10 @@ def configure_mac_access_group_mac_acl_in_out(device, interface_id, acl_name, ac
         )
     )
 
-def configure_mac_acl(device, name, action, source, dest):
+def configure_mac_acl(device, name, action, source, dest, ethertype=''):
     """ Configuring MAC ACL
         Example: mac access-list extended MAC-ACL
-                permit host 001.00a.00a host 001.00b.00b
+                permit host 001.00a.00a host 001.00b.00b etype-6000
 
         Args:
             device ('obj'): device to use
@@ -1474,6 +1474,7 @@ def configure_mac_acl(device, name, action, source, dest):
             action ('str'): (permit | deny) permits or denies Layer 2 traffic
             source ('str'): (src-MAC-addr) defines a source MAC address (e.g. 001.00a.00a)
             dest ('str'): (dst-MAC-addr) defines a destination MAC address (e.g. 001.00b.00b)
+            ethertype ('str'): {optional} ethertype 
 
         Returns:
             None
@@ -1484,13 +1485,14 @@ def configure_mac_acl(device, name, action, source, dest):
     config = [f"mac access-list extended {name}"]
     action = action.strip().lower()
     if action in ('permit', 'deny'):
-        config.append(f"{action} host {source} host {dest}")
+        config.append(f"{action} host {source} host {dest} {ethertype}")
     else:
         raise SubCommandFailure("Invalid action type")
     try:
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure mac acl on the device {device.name}. Error:\n{e}")
+
 
 
 def configure_access_map_match_ip_address_action_forward(device, vlan_access_name):
@@ -1711,3 +1713,55 @@ def unconfigure_as_path_acl(device, acces_list_number=None, action=None, reg_exp
         raise SubCommandFailure(
             "Failed to unconfigure acl on device {dev}. Error:\n{error}".format(
                 dev=device.name, error=e,))
+
+    
+def unconfigure_mac_acl(device, name, action, source, dest, ethertype=None):
+    """ Un configuring MAC ACL
+        Example: mac access-list extended MAC-ACL
+                no permit host 001.00a.00a host 001.00b.00b etype-6000
+
+        Args:
+            device ('obj'): device to use
+            name ('str'): name of the ACL to which the entry belongs
+            action ('str'): (permit | deny) permits or denies Layer 2 traffic
+            source ('str'): (src-MAC-addr) defines a source MAC address (e.g. 001.00a.00a)
+            dest ('str'): (dst-MAC-addr) defines a destination MAC address (e.g. 001.00b.00b)
+            ethertype ('str'): ethertype
+
+        Returns:
+            None
+
+        Raises: 
+            SubCommandFailure
+    """
+    config = [f"mac access-list extended {name}"]
+    action = action.strip().lower()
+    if action in ('permit', 'deny'):
+        config.append(f"no {action} host {source} host {dest} {ethertype}")
+    else:
+        raise SubCommandFailure("Invalid action type")
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to un configure mac acl on the device {device.name}. Error:\n{e}")
+
+def delete_mac_acl(device, name):
+    """ Delete MAC ACL
+        Example: no mac access-list extended MAC-ACL
+
+        Args:
+            device ('obj'): Device object
+            name ('str'): name of the ACL to which the entry belongs
+
+        Returns:
+            None
+
+        Raises: 
+            SubCommandFailure
+    """
+    config = [f"no mac access-list extended {name}"]
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to delete mac acl on the device {device.name}. Error:\n{e}")

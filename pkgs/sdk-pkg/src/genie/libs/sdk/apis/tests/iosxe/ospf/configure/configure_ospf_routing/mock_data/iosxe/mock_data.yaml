@@ -4,17 +4,18 @@ configure:
       new_state: execute
     line console 0:
       new_state: configure_line
+    log-adjacency-changes: "log-adjacency-changes\r\n"
     no logging console: ''
     nsf cisco: "nsf cisco\r\n"
     nsr debug detail: "nsr debug detail\r\n"
     router ospf 200: "router ospf 200\r\n"
-  prompt: kparames_csr10(config)#
+  prompt: stack3-nyquist-1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: kparames_csr10(config-line)#
+  prompt: stack3-nyquist-1(config-line)#
 connect:
   commands:
     ? ''
@@ -34,4 +35,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: kparames_csr10#
+  prompt: stack3-nyquist-1#

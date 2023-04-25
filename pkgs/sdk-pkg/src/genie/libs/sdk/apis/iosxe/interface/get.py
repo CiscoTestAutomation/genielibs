@@ -841,6 +841,7 @@ def get_interface_packet_output_rate(device, interface, seconds=60, field='out_p
 
     try:
 
+        before_time = int(time.time())
         output_before = device.execute(
             "show interfaces {intf}".format(intf=interface)
         )
@@ -848,6 +849,7 @@ def get_interface_packet_output_rate(device, interface, seconds=60, field='out_p
         log.info("Waiting {secs} seconds".format(secs=seconds))
         time.sleep(seconds)
 
+        after_time = int(time.time())
         output_after = device.execute(
             "show interfaces {intf}".format(intf=interface)
         )
@@ -861,9 +863,7 @@ def get_interface_packet_output_rate(device, interface, seconds=60, field='out_p
             output=output_after,
         )
 
-        delta_time = get_delta_time_from_outputs(
-            output_before=output_before, output_after=output_after
-        )
+        delta_time = after_time - before_time
 
         counter_before = get_interface_packet_counter(
             device=device,

@@ -470,6 +470,8 @@ def configure_archive_logging(device):
         "archive",
         "log config",
         "logging enable",
+        "hidekeys",
+        "notify syslog"
     ]
     try:
         device.configure(cmd)
@@ -3818,6 +3820,35 @@ def unconfigure_process_cpu_statistics_limit_entry_percentage_size(device, entry
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure process cpu  statistics limit entry-percentage size on the device {device.name}. Error:\n{e}")
 
+def copy_startup_config_from_flash(device, startup_config, timeout=60):
+    """ Copying startup config from flash memory
+        Args:
+            device ('obj'): Device object
+            startup_config('str'): Config to be copied from flash
+            timeout ('str'): timeout in seconds
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    dialog = Dialog(
+        [
+            Statement(
+                pattern=r".*Destination filename.*",
+                action="sendline()",
+                loop_continue=False,
+                continue_timer=False,
+            )
+        ]
+    )
+    cmd = f"copy flash:{startup_config} startup"
+
+    try:
+        device.execute(cmd, reply=dialog, timeout=timeout)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not copy saved configuration on {device}. Error:\n{e}")
+
 def configure_macro_auto_processing_on_interface(device, interface):
     """ Configure macro auto processing on the device on interface level
 
@@ -4125,3 +4156,237 @@ def unconfigure_device_classifier_operator(device, dc_option="", dc_option_name=
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure classifier on this device. Error:\n{e}")
+
+def configure_ip_source_binding(device, mac_address, vlan_id, ip_address, interface):
+    """ Configure ip source binding
+    Args:
+        device ('obj'): device to use
+        mac_address ('str'): binding MAC address
+        vlan_id ('int'): binding VLAN number (1-4094)
+        ip_address ('str'): binding IP address
+        interface ('str'): interface name (eg: Gi1/0/13)
+        Returns
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f'ip source binding {mac_address} vlan {vlan_id} {ip_address} interface {interface}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure ip source binding. Error:\n{e}")
+
+def unconfigure_ip_source_binding(device, mac_address, vlan_id, ip_address, interface):
+    """ unconfigure ip source binding
+    Args:
+        device ('obj'): device to use
+        mac_address ('str'): binding MAC address
+        vlan_id ('int'): binding VLAN number (1-4094)
+        ip_address ('str'): binding IP address
+        interface ('str'): interface name (eg: Gi1/0/13)
+        Returns
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f'no ip source binding {mac_address} vlan {vlan_id} {ip_address} interface {interface}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure ip source binding. Error:\n{e}")
+
+
+def configure_boot_manual_switch(device, switch_num):
+    """ Configure boot manual switch
+    Args:
+        device ('obj'): device to use
+        switch_num ('int'): Active switch number
+        Returns
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f'boot manual switch {switch_num}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure boot manual switch {switch_num}. Error:\n{e}")
+
+
+def unconfigure_boot_manual_switch(device, switch_num):
+    """ Unconfigure boot manual switch
+    Args:
+        device ('obj'): device to use
+        switch_num ('int'): Active switch number
+        Returns
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f'no boot manual switch {switch_num}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure boot manual switch {switch_num}. Error:\n{e}")
+
+
+def configure_mdix_auto(device, interface):
+    """ configure mdix auto
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f"Configuring the mdix auto on {device} {interface}")
+    cmd = [f"interface {interface}",
+           f"mdix auto"
+           ]
+    try:
+        device.configure(cmd)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure mdix auto on {device} {interface}. Error:\n{e}"
+        )
+
+
+def unconfigure_mdix_auto(device, interface):
+    """ Unconfigure mdix auto
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f"Unconfiguring no mdix auto on {device} {interface}")
+    cmd = [f"interface {interface}",
+           f"no mdix auto"
+           ]
+    try:
+        device.configure(cmd)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure mdix auto on {device} {interface}. Error:\n{e}"
+        )
+
+
+def unconfigure_enable_secret_level(device, level_num):
+    ''' Remove enable secret level for switch
+        Args:
+            device ('obj'): Device object
+            level_num('int'): level number
+            ex.)
+        Raises:
+            SubCommandFailure
+    '''
+    cmd = f"no enable secret level {level_num}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure secrate level number on device {device}. Error:\n{e}")
+
+def unconfigure_stack_power_switch(device, switch_number):
+    """ un configures stack-power switch
+        Example : no stack-power switch 1
+
+        Args:
+            device ('obj'): Device object
+            switch_number ('int'): Switch number (1-16)
+        Returns:
+            None
+        Raises: 
+            SubCommandFailure
+    """
+    log.info(f"Un configuring stack-power switch {switch_number} on {device.name}")
+    config = f'no stack-power switch {switch_number}'
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure stack-power switch on device {device.name}. Error:\n{e}")
+
+def unconfig_banner(device, banner_text):
+    """ Unconfig Day banner
+
+        Args:
+            device (`obj`): Device object
+            banner_text (`str`): Banner text
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed to unconfigure Day banner
+    """
+
+    try:
+        device.configure("no banner motd {banner_text}".format(banner_text=banner_text))
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            'Could not unconfigure banner {banner_text}, Error: {error}'.format(
+                banner_text=banner_text, error=e)
+        )
+
+def configure_logging_buffered_persistent_url(device, filesystem_name=None):
+    """ Configure logging buffered, logging persistent url
+    Args:
+        device ('obj'): device to use
+        filesystem_name ('str'): Filesystem name (bootflash:/crashinfo:/flash:/usbflash0:)
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    config = 'logging buffered\n'
+    if filesystem_name:
+        config += f'logging persistent url {filesystem_name}\n'
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure logging buffered and logging persistent url. Error:\n{e}")
+
+def configure_diagnostic_bootup_level_minimal(device):
+    """ diagonistics bootup level minimal
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """   
+    try:
+        device.configure('diagnostic bootup level minimal')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure diagnostic bootup level minimum on {device}. Error:\n{error}"
+                .format(device=device, error=e)
+        )
+
+def configure_cos(device,priority_value):
+    """ config COS setting on device
+        Args:
+            device ('obj'): Device object
+            priority_value('int'):  Priority number
+            ex:)
+                <0-7>  priority value
+        
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info("Configuring 'COS setting' globally")
+
+    configs = [f"l2protocol-tunnel cos {priority_value}"]
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure 'l2-protocol tunnel cos' globally"
+            'Error:{e}'.format(e=e)
+        )

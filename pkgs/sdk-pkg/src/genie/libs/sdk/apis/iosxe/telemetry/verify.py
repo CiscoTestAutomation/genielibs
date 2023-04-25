@@ -192,3 +192,30 @@ def verify_license_smart_transport_configured(device):
     else:
         log.info("verify_license_smart_transport_configured: No")
     return ret_v
+
+def verify_license_smart_transport_support_telemetry(device):
+    """ Verify license smart transport support telemetry
+        Args:
+            device ('obj'): Device object
+        Returns:
+            result (`bool`): Verified result
+    """
+    out = ''
+    ret_v = False
+    try:
+        out = device.parse("show license all")
+    except SubCommandFailure as e:
+        raise SubCommandFailure("Failed to show license all on {device}. Error:\n{error}".format(device=device, error=e))
+    if out:
+        if out.q.contains('smart_licensing_status').contains('transport').contains('type'):
+            t_type = out['smart_licensing_status']['transport']['type']
+            if t_type == 'Smart' or t_type == 'Transport Off' or t_type == 'cslu':
+                log.info("verify_license_smart_transport_support_telemetry: Yes")
+                ret_v = True
+            else:
+                log.info("verify_license_smart_transport_support_telemetry: No")
+        else:
+           log.info("verify_license_smart_transport_support_telemetry: error, no transport type") 
+    else:
+        log.info("verify_license_smart_transport_support_telemetry: error, no output")
+    return ret_v

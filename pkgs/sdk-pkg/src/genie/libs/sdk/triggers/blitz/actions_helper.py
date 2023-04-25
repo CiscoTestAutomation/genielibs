@@ -5,6 +5,7 @@ import operator
 import xmltodict
 import xml.etree.ElementTree as ET
 import time
+import requests
 from threading import Thread
 
 # from genie
@@ -477,6 +478,7 @@ def rest_handler(device,
     # Calling the http protocol
     try:
         output = getattr(device_alias, method)(**extra_kwargs)
+
     except Exception as e:
         if not expected_failure:
             step.failed("REST method '{}' failed. Error: {}".format(method, e))
@@ -486,6 +488,9 @@ def rest_handler(device,
     # if xml convert it to json
     if output and ET.iselement(output):
         output = xmltodict.parse(output)
+    # To convert the response object to a json
+    if isinstance(output, requests.Response):
+        output = output.json()
 
     log.info(output)
 

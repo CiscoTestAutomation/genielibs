@@ -1,0 +1,41 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: PE1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: PE1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show nve vni:
+      response:
+      - "Interface  VNI        Multicast-group  VNI state  Mode  VLAN  cfg vrf                      \n\r \
+         nve1       50000      FF0E::501        Up         L3CP  500   CLI red                      \n\r \
+         nve1       20000      FF0E::102        Up         L2CP  200   CLI red
+         "
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: PE1#

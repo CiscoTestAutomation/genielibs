@@ -6,6 +6,7 @@ import logging
 import time
 
 # pyATS
+from pyats.async_ import pcall
 from pyats.utils.fileutils import FileUtils
 
 # Genie
@@ -85,11 +86,9 @@ def execute_set_config_register(device, config_register, timeout=300):
         log.info("Set config-register to '{}'".format(config_register))
 
 
-def execute_write_erase(device, timeout=300):
-    ''' Execute 'write erase' on the device
-        Args:
-            device ('obj'): Device object
-            timeout ('int'): Max time to for write erase to complete in seconds
+def _execute_write_erase(device, timeout=300):
+    '''
+    internal function of execute_write_erase for pcall
     '''
 
     log.info("Executing 'write erase' on the device")
@@ -107,11 +106,13 @@ def execute_write_erase(device, timeout=300):
     error_pattern.extend(origin)
 
     try:
-        output = device.execute("write erase", reply=Dialog([write_erase]),
-                                timeout=timeout, error_pattern=error_pattern)
+        output = device.execute("write erase",
+                                reply=Dialog([write_erase]),
+                                timeout=timeout,
+                                error_pattern=error_pattern)
     except Exception as err:
         log.error("Failed to write erase: {err}".format(err=err))
-        raise Exception(err)
+        raise Exception(err) from err
     finally:
         # restore original error pattern
         device.execute.error_pattern = origin
@@ -121,6 +122,28 @@ def execute_write_erase(device, timeout=300):
     else:
         raise Exception("Failed to execute 'write erase'")
 
+
+def execute_write_erase(device, timeout=300, devices=None, exclude_devices=None):
+    ''' Execute 'write erase' on the device
+        Args:
+            device ('obj'): Device object
+            timeout ('int'): Max time to for write erase to complete in seconds
+            devices ('list`): list of device names. default to None
+            exclude_devices ('list'): Exclude device list
+        Usage:
+            device.api.execute_write_erase(devices=['ce1', 'ce2', 'pe1'])
+    '''
+    if exclude_devices is None:
+        exclude_devices = []
+    if devices:
+        device_list = [{
+            'device': device.testbed.devices[dev]
+        } for dev in devices if dev not in exclude_devices]
+        ikwargs = device_list
+        ckwargs = {'timeout': timeout}
+        pcall(_execute_write_erase, ckwargs=ckwargs, ikwargs=ikwargs)
+    else:
+        _execute_write_erase(device=device, timeout=timeout)
 
 def execute_write_memory(device, timeout=300):
     ''' Execute 'write memory' on the device
@@ -391,11 +414,11 @@ def execute_card_OIR(device, card_number, switch_id = None, timeout=60):
         command = f'hw-module switch {switch_id} subslot {card_number} oir power-cycle'
 
     try:
-       output = device.execute(
-                command,
-                reply=dialog,
-                timeout=timeout,
-                append_error_pattern=['.*Command cannot be executed.*'])
+        output = device.execute(
+                 command,
+                 reply=dialog,
+                 timeout=timeout,
+                 append_error_pattern=['.*Command cannot be executed.*'])
     except SubCommandFailure as err:
         log.error(f"Failed to execute {command}': {err}".format(err=err))
         raise
@@ -429,11 +452,11 @@ def execute_card_OIR_remove(device, card_number, switch_id = None, timeout=60):
         command = f'hw-module switch {switch_id} subslot {card_number} oir remove'
 
     try:
-       output = device.execute(
-                command,
-                reply=dialog,
-                timeout=timeout,
-                append_error_pattern=['.*Command cannot be executed.*'])
+        output = device.execute(
+                 command,
+                 reply=dialog,
+                 timeout=timeout,
+                 append_error_pattern=['.*Command cannot be executed.*'])
     except SubCommandFailure as err:
         log.error(f"Failed to execute {command}': {err}".format(err=err))
         raise
@@ -468,11 +491,11 @@ def execute_card_OIR_insert(device, card_number, switch_id = None, timeout=60):
         command = f'hw-module switch {switch_id} subslot {card_number} oir insert'
 
     try:
-       output = device.execute(
-                command,
-                reply=dialog,
-                timeout=timeout,
-                append_error_pattern=['.*Command cannot be executed.*'])
+        output = device.execute(
+                 command,
+                 reply=dialog,
+                 timeout=timeout,
+                 append_error_pattern=['.*Command cannot be executed.*'])
     except SubCommandFailure as err:
         log.error(f"Failed to execute {command}': {err}".format(err=err))
         raise
@@ -544,24 +567,24 @@ def execute_issu_install_package(device, image_dir, image, save_system_config=Tr
     try:
         device.execute(cmd, reply=dialog, timeout=install_timeout,append_error_pattern=append_error_pattern)
     except SubCommandFailure as e:
-         raise SubCommandFailure(
-             "Could not execute on {device}. Error:\n{error}".format(device=device, error=e))
+        raise SubCommandFailure(
+            "Could not execute on {device}. Error:\n{error}".format(device=device, error=e))
 
     time.sleep(100)
     log.info(f"Waiting for {device.hostname} to reload")
 
     timeout = Timeout(reconnect_max_time,reconnect_interval)
     while timeout.iterate():
-                timeout.sleep()
-                device.destroy()
+        timeout.sleep()
+        device.destroy()
 
-                try:
-                    device.connect(learn_hostname=True)
-                except Exception as e:
-                    connect_exception = e
-                    log.info("The device is not ready")
-                else:
-                    return True
+        try:
+            device.connect(learn_hostname=True)
+        except Exception as e:
+            connect_exception = e
+            log.info("The device is not ready")
+        else:
+            return True
 
     log.info("Failed to reload", from_exception=connect_exception)
     return False
@@ -576,7 +599,7 @@ def execute_clear_platform_software_fed_switch_active_cpu_interface(device):
             SubCommandFailure
     """
     try:
-       device.execute("clear platform software fed switch active cpu-interface")
+        device.execute("clear platform software fed switch active cpu-interface")
     except SubCommandFailure as e:
         log.error(e)
         raise SubCommandFailure("Could not clear active cpu-interface on device")
@@ -636,11 +659,11 @@ def execute_switch_card_OIR(device, switch_number, slot, timeout=60):
     command = ["hw-module switch {} subslot {} oir power-cycle".format(switch_number,slot)]
 
     try:
-       output = device.execute(
-                command,
-                reply=dialog,
-                timeout=timeout,
-                append_error_pattern=['.*Command cannot be executed.*'])
+        output = device.execute(
+                 command,
+                 reply=dialog,
+                 timeout=timeout,
+                 append_error_pattern=['.*Command cannot be executed.*'])
     except Exception as err:
         log.error("Failed to execute 'hw-module switch <switch_number> subslot <slot> oir power-cycle': {err}".format(err=err))
         raise Exception(err)
@@ -660,7 +683,7 @@ def execute_clear_platform_software_fed_active_cpu_interface(device):
             SubCommandFailure
     """
     try:
-       device.execute("clear platform software fed active cpu-interface")
+        device.execute("clear platform software fed active cpu-interface")
     except SubCommandFailure as e:
         log.error(e)
         raise SubCommandFailure("Could not clear active cpu-interface on device")
@@ -676,7 +699,7 @@ def execute_clear_platform_hardware_fed_active_qos_statistics_interface(device,i
             SubCommandFailure
     """
     try:
-       device.execute("clear platform hardware fed active qos statistics interface {intf}".format(intf=intf))
+        device.execute("clear platform hardware fed active qos statistics interface {intf}".format(intf=intf))
     except SubCommandFailure as e:
         log.error(e)
         raise SubCommandFailure("Could not clear active cpu-interface on device")
@@ -699,7 +722,7 @@ def execute_diagnostic_start_switch_module_test(device,switch_num,mod_num,includ
     cmd = f"diagnostic start switch {switch_num} module {mod_num} test {include}"
 
     try:
-       device.execute(cmd)
+        device.execute(cmd)
     except SubCommandFailure as e:
         log.error(e)
         raise SubCommandFailure(f"Could not execute diagnostic start switch {switch_num} module {mod_num} test {include} on device")
@@ -721,7 +744,7 @@ def execute_diagnostic_start_module_test(device,mod_num,include):
     cmd = f"diagnostic start module {mod_num} test {include}"
 
     try:
-       device.execute(cmd)
+        device.execute(cmd)
     except SubCommandFailure as e:
         log.error(e)
         raise SubCommandFailure(f"Could not execute diagnostic start module {mod_num} test {include} on device")
@@ -773,7 +796,7 @@ def execute_clear_parser_statistics(device):
             SubCommandFailure
     """
     try:
-       device.execute("clear parser statistics")
+        device.execute("clear parser statistics")
     except SubCommandFailure as e:
         log.error(e)
         raise SubCommandFailure("Could not clear parser statistics on device")
@@ -901,7 +924,7 @@ def show_switch_redirect(device, storage_type, file_name):
     """
     config = f"show switch | redirect {storage_type}:{file_name}"
     try:
-       device.execute(config)
+        device.execute(config)
 
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to redirect to {file_name} on the device {device.name}. Error:\n{e}")
@@ -1080,7 +1103,7 @@ def execute_diagnostic_start_switch_test(device, switch_number, test_id=None, te
     else:
         cmd += f"{test_id}"
     try:
-       device.execute(cmd)
+        device.execute(cmd)
     except SubCommandFailure as e:
         log.error(e)
         raise SubCommandFailure(
@@ -1149,7 +1172,6 @@ def execute_device_dir_path(device, path):
         raise SubCommandFailure(
             f"Could not execute dir {path} on device. Error:\n{e}"
             )
-
 
 def execute_archive_config(device):
     """ execute archive config in switch
@@ -1226,4 +1248,90 @@ def execute_switch_role(device, switch_number, mode):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f'Failed to change the switch {switch_number} mode to {mode} on {device.name}. Error:\n{e}'
+        )
+
+def uninstall_appliance_package(device, name):
+    """ uninstall appliance package
+
+        Args:
+            device (`obj`): Device object
+            name(`str`): appliance package name
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed to uninstall appliance package
+    """
+
+    try:
+        device.execute("virtual-service uninstall name {name}".format(name=name))
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            'Could not uninstall appliance package, Error: {error}'.format(error=e)
+        )
+  
+
+def execute_request_platform_software_package_install_switch_rollback_auto_copy(device, switch='all'):
+    """ Execute request platform software package install switch rollback on-reboot auto-copy
+        Args:
+            device ('obj'): Device object
+            switch('str', optional): Switch id, or 'all' for all switches
+        Returns:
+            Execution output
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f'request platform software package install switch {switch} rollback on-reboot auto-copy'
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to request platform software package install switch rollback on-reboot auto-copy on device {device}. Error:\n{e}"
+            )
+
+
+def request_platform_software_process_core(device, process_type, processor_slot, switch_type=None, chassis_type=None):
+    """ Perform request platform software process core 
+        Args:
+            device ('obj'): Device object
+            process_type ('str'): Proess type. ex: ios, host-manager.
+            processor_slot ('str'): Processor slot.
+            switch_type ('str'): Switch type or number. ex: active, standby, 0.
+            chassis_type ('str'): Chassis type or number. ex: active, standby, 0.
+        Returns:
+            Command output
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = f'request platform software process core {process_type} '
+    if switch_type:
+        cmd += f'switch {switch_type} '
+    
+    if chassis_type:
+        cmd += f'chassis {chassis_type} '
+    
+    cmd += f'{processor_slot}'
+    
+    try:
+        
+        output = device.execute(cmd)
+        return output
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to perform request platform software process core on the device. Error:\n{e}")
+
+def execute_clear_redundancy_history(device):
+    """ clear redundancy history
+    Args:
+        device ('obj'): Device object
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    try:
+        device.execute('clear redundancy history')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not execute clear redundancy history on {device}. Error:\n{error}"
+                .format(device=device, error=e)
         )

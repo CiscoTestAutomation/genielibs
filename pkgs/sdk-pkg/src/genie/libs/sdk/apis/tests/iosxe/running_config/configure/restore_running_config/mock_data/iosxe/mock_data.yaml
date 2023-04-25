@@ -1,0 +1,60 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: iolpe2(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: iolpe2(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    configure replace unix:base.cfg:
+      response:
+      - "This will apply all necessary additions and deletions\r\nto replace the current\
+        \ running configuration with the\r\ncontents of the specified configuration\
+        \ file, which is\r\nassumed to be a complete configuration, not a partial\r\
+        \nconfiguration. Enter Y if you are sure you want to proceed. ? [no]: y\r\n\
+        Total number of passes: 1\r\nRollback Done"
+      response_type: circular
+    delete /force unix:/base.cfg:
+      response:
+      - ''
+      response_type: circular
+    'dir unix:':
+      response:
+      - "Directory of unix:/\r\n\r\n1447593752  -rw-            20480  Apr 11 2023\
+        \ 17:05:40 -08:00  nvram_00323\r\n1500529387  -rw-             7757  Apr 11\
+        \ 2023 16:34:44 -08:00  base.cfg\r\n1447601446  drwx               80   Apr\
+        \ 5 2023 04:55:00 -08:00  pnp-tech\r\n1447593751  drwx               40  \
+        \ Apr 5 2023 04:54:15 -08:00  pnp-info\r\n1447564022  drwx               40\
+        \   Apr 5 2023 04:54:13 -08:00  CRDU\r\n1447579166  -rw-             2506\
+        \   Apr 5 2023 04:54:10 -08:00  NETMAP\r\n1447579167  -rw-             2424\
+        \   Apr 5 2023 04:54:10 -08:00  iourc\r\n1447579168  -rw-              124\
+        \   Apr 5 2023 04:54:10 -08:00  CSCtq91503.cfg\r\n1447593681  -rwx       \
+        \ 291357280   Apr 5 2023 04:53:53 -08:00  x86_64_crb_linux-adventerprisek9-ms\r\
+        \n\r\n2147479552 bytes total (2147479552 bytes free)"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: iolpe2#

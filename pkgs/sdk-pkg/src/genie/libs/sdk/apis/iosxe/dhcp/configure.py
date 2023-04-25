@@ -1128,3 +1128,87 @@ def configure_ip_dhcp_snooping_limit(device, interface, rate_limit):
         raise SubCommandFailure(
             f"Could not configure DHCP snooping limit on interface {interface}. Error\n{e}"
             )
+
+def configure_interface_ip_dhcp_relay_information_option_vpn_id(device, interface):
+    """ Configure ip dhcp relay information option vpn-id on the interface 
+        Args:
+            device ('obj'): device to use
+            interface ('str'): name of the interface to be configured # example  "interface vlan 100" "ip dhcp relay information option vpn-id"
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to ip dhcp relay information option vpn-id
+    """
+    log.info("Configuring ip dhcp relay information option vpn-id on the interface")
+    config =  ["interface {}".format(interface),
+                "ip dhcp relay information option vpn-id"]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure ip dhcp relay information option vpn-id on the interface {interface}. Error\n{e}"
+        )
+
+def unconfigure_interface_ip_dhcp_relay_information_option_vpn_id(device, interface):
+    """ Unconfigure ip dhcp relay information option vpn-id on the interface # example  "interface vlan 100" "ip dhcp relay information option vpn-id"
+        Args:
+            device ('obj'): device to use
+            interface ('str'): name of the interface to be configured # example  "interface vlan 100" "ip dhcp relay information option vpn-id"
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to enable dhcp relay information option
+    """
+    log.info("Unconfiguring ip dhcp relay information option vpn-id on the interface")
+    config =  ["interface {}".format(interface),
+               "no ip dhcp relay information option vpn-id"]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure ip dhcp relay information option vpn-id on the interface {interface}. Error\n{e}"
+        )
+
+def configure_interface_ip_dhcp_relay_source_interface_intf_id(device, interface, intf_id):
+    """ Configure interface ip dhcp relay source interface intf_id 
+        Args:
+            device ('obj'): device to use
+            interface ('str'): name of the interface to be configured # example  "interface vlan 100" "ip dhcp relay source-interface Loopback1"
+            intf_id ('str'): Set source interface for relayed messages for interface ex: Loopback1 interface
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure ip dhcp relay source-interface intf_id
+    """
+    log.info("Configuring ip dhcp relay source-interface intf_id on the interface")
+    config = [
+                "interface {}".format(interface),
+                "ip dhcp relay source-interface {}".format(intf_id)]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure ip dhcp relay source interface intf_id {interface}. Error\n{e}"
+        )
+
+def unconfigure_interface_ip_dhcp_relay_source_interface_intf_id(device, interface, intf_id):
+    """ UnConfigure interface ip dhcp relay source interface intf_id 
+        Args:
+            device ('obj'): device to use
+            interface ('str'): name of the interface to be configured # example  "interface vlan 100" "no ip dhcp relay source-interface Loopback1"
+            intf_id ('str'): Set source interface for relayed messages for interface ex: Loopback1 interface
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to unconfigure ip dhcp relay source-interface intf_id
+    """
+    log.info("Unconfiguring ip dhcp relay source-interface intf_id on the interface")
+    config = [
+                "interface {}".format(interface),
+                "no ip dhcp relay source-interface {}".format(intf_id)]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure ip dhcp relay source interface intf_id {interface}. Error\n{e}"
+        )

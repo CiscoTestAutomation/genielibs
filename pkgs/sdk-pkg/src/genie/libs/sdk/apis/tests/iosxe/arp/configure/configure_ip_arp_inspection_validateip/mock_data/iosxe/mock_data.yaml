@@ -2,17 +2,17 @@ configure:
   commands:
     end:
       new_state: execute
-    ip arp inspection validate ip: "ip arp inspection validate ip\r\n"
+    ip arp inspection validate src-mac: "ip arp inspection validate src-mac\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''
-  prompt: SecG-A3-9410HA(config)#
+  prompt: stack3-nyquist-1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: SecG-A3-9410HA(config-line)#
+  prompt: stack3-nyquist-1(config-line)#
 connect:
   commands:
     ? ''
@@ -32,4 +32,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: SecG-A3-9410HA#
+  prompt: stack3-nyquist-1#

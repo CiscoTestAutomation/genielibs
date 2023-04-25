@@ -295,3 +295,50 @@ def config_replace_to_flash_memory(device, timeout=60):
         raise SubCommandFailure(
             "Could not configure replace to flash on {device}. Error:\n{e}")
 
+def config_policy_map_on_interface(device, interface, map_name):
+    """ configure policy map on interface or portchannel
+        Args:
+            device (`obj`): Device object
+            interface ('str'): interface to configure
+            map_name ('str'): name of qos policy to configure on interface
+        Returns:
+            None
+        Raise:
+            SubCommandFailure: Failed to configure policy map
+    """
+    log.debug("configure policy map on interface")
+    try:
+        device.configure(
+                ["interface {interface}".format(interface=interface),
+                "policy-map {map_name}".format(map_name=map_name)]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure policy map on interface. Error:\n{error}".format(
+                error=e
+            )
+        )
+
+def unconfigure_policy_map_on_interface(device, interface, map_name):
+    """ unconfigure policy map on interface or portchannel
+        Args:
+            device (`obj`): Device object
+            interface ('str'): interface to unconfigure
+            map_name ('str'): name of qos policy to unconfigure on interface
+        Returns:
+            None
+        Raise:
+            SubCommandFailure: Failed to unconfigure policy map
+    """
+    log.debug("unconfigure policy map on interface")
+    try:
+        device.configure(
+                ["interface {interface}".format(interface=interface),
+                "no policy-map {map_name}".format(map_name=map_name)]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure policy map on interface. Error:\n{error}".format(
+                error=e
+            )
+        )

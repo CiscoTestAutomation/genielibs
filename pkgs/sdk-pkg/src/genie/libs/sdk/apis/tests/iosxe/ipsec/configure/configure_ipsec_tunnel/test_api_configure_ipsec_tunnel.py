@@ -10,7 +10,7 @@ class TestConfigureIpsecTunnel(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          Arcade1:
+          iolpe2:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,11 +18,11 @@ class TestConfigureIpsecTunnel(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: cat9k
-            type: c9200
+            platform: iosxe
+            type: iol
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Arcade1']
+        self.device = self.testbed.devices['iolpe2']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,6 @@ class TestConfigureIpsecTunnel(unittest.TestCase):
         )
 
     def test_configure_ipsec_tunnel(self):
-        result = configure_ipsec_tunnel(self.device, 'Tunnel2', '55.55.55.2', '255.255.255.0', '70.70.70.70', 'ipv4', '71.71.71.71', 'nil_ips', True, None, None)
+        result = configure_ipsec_tunnel(self.device, 'Tunnel1', '200.2.0.2', '255.255.255.0', '2001::99:2:4:2', 'ipv6', '2001::99:6:8:8', 'gre_profile', False, None, None, '2001::200:2:8:2/112', 'pe1_pe3_tunnel', 'gre', 'True')
         expected_output = None
         self.assertEqual(result, expected_output)

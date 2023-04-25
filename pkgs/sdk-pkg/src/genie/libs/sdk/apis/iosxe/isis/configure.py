@@ -73,36 +73,41 @@ def remove_isis_configuration(device):
             .format(hostname=device.hostname, e=e)
         )
 
-def config_interface_isis(device, interface,ipv6=False,mtu=None):
+def config_interface_isis(device, interface,ipv6=False,mtu=None, process=None, metric=None):
     """config ISIS on interface
         Args:
             device (`obj`): Device object
             interface (`str`): Interface name
             ipv6 ('boolean',optional): Flag to configure IPv6 (Default False)
             mtu ('str',optional): mtu configuration on interface
+            process ('str', optional): ISIS process name
+            metric ('int', optional): ISIS metric
         Returns:
             None
         Raises:
             SubCommandFailure
     """
     log.info(
-        'Configuring ISIS on interface {interface}\n'.format(interface=interface)
+        f'Configuring ISIS on interface {interface}\n'
     )
-    config = []
-    config.append("interface {interface}".format(interface=interface))
-    if ipv6:
-        config.append("ipv6 router isis")
-    else:
-        config.append("ip router isis")
+    config = [f"interface {interface}"]
+    cmd = "ipv6 router isis" if ipv6 else "ip router isis"
+    if process:
+        cmd += f" {process}"
+    config.append(cmd)
     if mtu:
-        config.append("clns mtu {mtu}".format(mtu=mtu))
+        config.append(f"clns mtu {mtu}")
+    if metric:
+        if ipv6:
+            config.append(f"isis ipv6 metric {metric}")
+        else:
+            config.append(f"isis metric {metric}")
     try:
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            "Could not configure isis on interface {interface} on "
-            .format(hostname=device.hostname, interface=interface, e=e)
-        )
+            f"Could not configure isis on interface {interface} on {device.hostname}: {e}"
+        ) from e
 
 def unconfig_interface_isis(device, interface,ipv6=False):
     """Unconfig ISIS on interface
@@ -681,3 +686,106 @@ def unconfigure_isis_router_configs(device, max_paths=None):
         raise SubCommandFailure(
             'Could not Unconfigure Router ISIS. Error:\n{error}'.format(error=e)
         )
+
+def configure_interface_ipv6_isis_router_name(device, interface, router_name):
+    """config ISIS router name on interface
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+            router_name ('str'):configure the isis router name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        'Configuring IPv6 ISIS router name {router_name} on interface {interface}\n'.format(
+        router_name=router_name,interface=interface)
+    )
+    config = []
+    config.append(f"interface {interface}".format(interface=interface))
+    config.append(f"ipv6 router isis {router_name}".format(router_name=router_name))
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure ipv6 isis router name {router_name} on interface {interface} on {hostname}.\n Error: {error}"
+            .format(hostname=device.hostname, router_name=router_name, interface=interface, error=e)
+        )
+
+def unconfigure_isis_vrf(device, router_name, vrf):
+    """ Unconfigures VRF under ISIS Router
+        Args:
+            device ('obj'):  device to use
+            router_name ('str'):configure the isis router name
+            vrf ('str'):  vrf name to be unconfigured
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config = []
+    config.append(f"router isis {router_name}")
+    config.append(f"no vrf {vrf}")
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            'Could not Unconfigure vrf {vrf} Router ISIS. \n Error:{error}'.format(vrf=vrf,
+            error=e)
+        )
+
+def unconfigure_isis_interface_metric(device, interface, metric, address_family='ipv4', level='level-2'):
+    """ Unonfigure IS-IS interface metric
+        Args:
+            device ('obj'): device to configure on
+            interface ('str'): interface name
+            metric ('int'): metric
+            address_family ('str'): address family. defaults to 'ipv4'
+            level ('str'): ISIS level. Defaults to 'level-2'
+        Return:
+            N/A
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    if address_family == 'ipv4':
+        af_metric = 'metric'
+    elif address_family == 'ipv6':
+        af_metric = 'ipv6 metric'
+    config = [
+                f'interface {interface}',
+                f'no isis {af_metric} {metric} {level}',
+            ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure ISIS interface metric on {interface}:\n{e}")
+
+def configure_isis_interface_metric(device, interface, metric, address_family='ipv4', level='level-2'):
+    """ Configure IS-IS interface metric
+        Args:
+            device ('obj'): device to configure on
+            interface ('str'): interface name
+            metric ('int'): metric
+            address_family ('str'): address family. defaults to 'ipv4'
+            level ('str'): ISIS level. Defaults to 'level-2'
+        Return:
+            N/A
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    if address_family == 'ipv4':
+        af_metric = 'metric'
+    elif address_family == 'ipv6':
+        af_metric = 'ipv6 metric'
+    config = [
+                f'interface {interface}',
+                f'isis {af_metric} {metric} {level}',
+            ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure ISIS interface metric on {interface}:\n{e}")

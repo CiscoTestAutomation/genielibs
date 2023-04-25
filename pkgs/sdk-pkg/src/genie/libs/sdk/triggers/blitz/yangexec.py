@@ -806,7 +806,7 @@ def run_gnmi(operation, device, steps,
             gmc = GnmiMessageConstructor('subscribe', rpc_data, **format)
             payload = gmc.payload
         # Returns subscribe thread and results are handled by caller
-        return GnmiMessage.run_subscribe(device, payload, rpc_data)
+        return GnmiMessage.run_subscribe(device, payload, **rpc_data)
     elif operation == 'capabilities':
         if not returns:
             log.error(banner('No gNMI data to compare to GET'))

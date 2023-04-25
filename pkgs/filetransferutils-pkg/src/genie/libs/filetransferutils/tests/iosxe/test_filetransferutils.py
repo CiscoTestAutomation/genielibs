@@ -241,6 +241,31 @@ class test_filetransferutils(unittest.TestCase):
                 destination='flash:/meraki1.bin',
                 timeout_seconds=300, device=self.device1)
 
+    def copy_to_dir_exec(self, cli, timeout=None, reply=None, prompt_recovery=False, error_pattern=None):
+        self.assertEqual(cli, 'copy flash:/gs_script ftp://myuser:mypw@1.1.1.1//auto/tftp-ssr/')
+        stmts = reply.extract_statements()
+        for stmt in stmts:
+            if stmt.pattern == r'Destination filename.*':
+                self.assertEqual(stmt.args['key'], '')
+        raw = r'''
+            copy flash:/gs_script ftp://1.1.1.1//auto/tftp-ssr/
+            Address or name of remote host [1.1.1.1]?
+            Destination filename [/auto/tftp-ssr/gs_script]?
+            !!
+            27092 bytes copied in 6.764 secs (4005 bytes/sec)
+        '''
+        return raw
+
+    def test_copyfile_to_dir(self):
+
+        self.device.execute = Mock()
+        self.device.execute.side_effect = self.copy_to_dir_exec
+
+        # Call copyfiles
+        self.fu_device.copyfile(source='flash:/gs_script',
+            destination='ftp://1.1.1.1//auto/tftp-ssr/',
+            timeout_seconds='300', device=self.device)
+
 if __name__ == '__main__':
     unittest.main()
 

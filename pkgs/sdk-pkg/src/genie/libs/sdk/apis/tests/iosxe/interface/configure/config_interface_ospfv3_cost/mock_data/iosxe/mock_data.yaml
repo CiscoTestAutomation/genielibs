@@ -1,0 +1,48 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    interface GigabitEthernet0/1/0: "interface GigabitEthernet0/1/0\r\n"
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    ospfv3 1 ipv6 cost dynamic: "ospfv3 1 ipv6 cost dynamic\r\n"
+    ospfv3 1 ipv6 cost dynamic hysteresis percent 100: "ospfv3 1 ipv6 cost dynamic\
+      \ hysteresis percent 100\r\n"
+    ospfv3 1 ipv6 cost dynamic hysteresis threshold 10: "ospfv3 1 ipv6 cost dynamic\
+      \ hysteresis threshold 10\r\n"
+    ospfv3 1 ipv6 cost dynamic weight l2-factor 20: "ospfv3 1 ipv6 cost dynamic weight\
+      \ l2-factor 20\r\n"
+    ospfv3 1 ipv6 cost dynamic weight latency 30: "ospfv3 1 ipv6 cost dynamic weight\
+      \ latency 30\r\n"
+    ospfv3 1 ipv6 cost dynamic weight resources 40: "ospfv3 1 ipv6 cost dynamic weight\
+      \ resources 40\r\n"
+    ospfv3 1 ipv6 cost dynamic weight throughput 50: "ospfv3 1 ipv6 cost dynamic weight\
+      \ throughput 50\r\n"
+  prompt: ASR1013(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: ASR1013(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: ASR1013#

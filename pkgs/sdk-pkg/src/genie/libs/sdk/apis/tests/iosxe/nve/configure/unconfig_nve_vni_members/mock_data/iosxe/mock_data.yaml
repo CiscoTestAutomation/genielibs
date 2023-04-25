@@ -1,0 +1,38 @@
+configure:
+  commands:
+    interface nve 1:
+      new_state: configure_intf
+    end:
+      new_state: execute
+    line console 0:
+    no logging console: ''
+  prompt: Leaf-01(config)#
+configure_intf:
+  commands:
+    no member vni 50000 vrf red: "no member vni 50000 vrf red\r\n"
+    no member vni 30000 ingress-replication: "no member vni 30000 ingress-replication\r\n"
+    no member vni 20000 mcast-group 225.1.1.1: "no member vni 20000 mcast-group 225.1.1.1\r\n"
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: Leaf-01(config-if)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: Leaf-01#

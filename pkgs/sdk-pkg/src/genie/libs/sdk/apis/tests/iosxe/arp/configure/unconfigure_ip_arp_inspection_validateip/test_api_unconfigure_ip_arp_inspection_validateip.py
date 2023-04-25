@@ -1,3 +1,4 @@
+import os
 import unittest
 from pyats.topology import loader
 from genie.libs.sdk.apis.iosxe.arp.configure import unconfigure_ip_arp_inspection_validateip
@@ -7,21 +8,21 @@ class TestUnconfigureIpArpInspectionValidateip(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        testbed = """
+        testbed = f"""
         devices:
-          SecG-A3-9410HA:
+          stack3-nyquist-1:
             connections:
               defaults:
                 class: unicon.Unicon
               a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
+                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
             platform: cat9k
-            type: single_rp
+            type: router
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['SecG-A3-9410HA']
+        self.device = self.testbed.devices['stack3-nyquist-1']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -29,6 +30,6 @@ class TestUnconfigureIpArpInspectionValidateip(unittest.TestCase):
         )
 
     def test_unconfigure_ip_arp_inspection_validateip(self):
-        result = unconfigure_ip_arp_inspection_validateip(self.device)
+        result = unconfigure_ip_arp_inspection_validateip(self.device, 'src-mac')
         expected_output = None
         self.assertEqual(result, expected_output)

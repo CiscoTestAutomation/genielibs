@@ -13,7 +13,7 @@ from unicon.core.errors import SubCommandFailure
 from genie.utils.timeout import Timeout
 
 def configure_spanning_tree(device, vlan_range='1-4093'):
-    ''' 
+    """
     Configures spanning-tree vlan with input vlan or vlan range
     e.g.
     spanning-tree vlan 666
@@ -23,7 +23,7 @@ def configure_spanning_tree(device, vlan_range='1-4093'):
         vlan_range ('str'): vlan or vlan range
     Returns:
         None
-    '''
+    """
 
     try:
         output = device.configure("spanning-tree vlan {vlan}".format(vlan=vlan_range))
@@ -34,7 +34,7 @@ def configure_spanning_tree(device, vlan_range='1-4093'):
         )
 
 def unconfigure_spanning_tree(device, vlan_range='1-4093'):
-    ''' 
+    """ 
     UnConfigures spanning-tree vlan with input vlan or vlan range
     e.g.
     no spanning-tree vlan 666
@@ -44,7 +44,7 @@ def unconfigure_spanning_tree(device, vlan_range='1-4093'):
         vlan_range ('str'): vlan or vlan range
     Returns:
         None
-    '''
+    """
 
     try:
         output = device.configure("no spanning-tree vlan {vlan}".format(vlan=vlan_range))
@@ -56,7 +56,7 @@ def unconfigure_spanning_tree(device, vlan_range='1-4093'):
 
 
 def configure_spanning_tree_priority(device, vlan, priority):
-    '''
+    """
     Configures spanning-tree vlan with priority
     e.g.
     spanning-tree vlan 666 priority 4096
@@ -70,7 +70,7 @@ def configure_spanning_tree_priority(device, vlan, priority):
         
     Raise:
         SubCommandFailure: Failed configuring spanning-tree vlan with priority
-    '''
+    """
 
     try:
         output = device.configure(f"spanning-tree vlan {vlan} priority {priority}")
@@ -82,7 +82,7 @@ def configure_spanning_tree_priority(device, vlan, priority):
 
 
 def unconfigure_spanning_tree_priority(device, vlan, priority=None):
-    '''
+    """
     Unconfigures spanning-tree vlan with priority
     e.g.
     no spanning-tree vlan 666 priority 4096
@@ -96,7 +96,7 @@ def unconfigure_spanning_tree_priority(device, vlan, priority=None):
         
     Raise:
         SubCommandFailure: Failed unconfiguring spanning-tree vlan with priority
-    '''
+    """
     command = f"no spanning-tree vlan {vlan} priority {priority}" if priority else f"no spanning-tree vlan {vlan} priority"
     try:
         output = device.configure(command)
@@ -107,7 +107,8 @@ def unconfigure_spanning_tree_priority(device, vlan, priority=None):
         )
         
 def configure_spanning_tree_mode(device, mode, system_id=None):
-    '''Configures spanning-tree mode
+    """
+    Configures spanning-tree mode
     Args:
         device ('obj') : Device object
         mode ('str'): configure the spanning tree mode
@@ -116,7 +117,7 @@ def configure_spanning_tree_mode(device, mode, system_id=None):
         None
     Raises:
         SubCommandFailure: Failed configuring spanning-tree mode
-    '''
+    """
     config = []
     config.append('spanning-tree mode {mode}'.format(mode=mode))
     if system_id:
@@ -130,14 +131,15 @@ def configure_spanning_tree_mode(device, mode, system_id=None):
         )
         
 def unconfigure_spanning_tree_mode(device):
-    '''Unconfigures spanning-tree mode
+    """
+    Unconfigures spanning-tree mode
     Args:
         device ('obj') : Device object
     Returns:
         None
     Raises:
         SubCommandFailure: Failed unconfigure_spanning_tree mode
-    '''
+    """
     config = 'no spanning-tree mode'
     try:
         device.configure(config)
@@ -148,7 +150,7 @@ def unconfigure_spanning_tree_mode(device):
         )
 
 def configure_spanning_tree_mst_configuration(device, instance, vlan_id, mappedvlan_id=None):
-    '''
+    """
     Configure spanning-tree configuration with vlan mappings
     Args:
         device ('obj') : Device object
@@ -159,7 +161,7 @@ def configure_spanning_tree_mst_configuration(device, instance, vlan_id, mappedv
         None
     Raise:
         SubCommandFailure: Failed to configure the spanning-tree mst configuration
-    '''
+    """
     log.info(
         "configuring the spanning tree mst configuration on {device}".format(device=device)
     )
@@ -178,7 +180,7 @@ def configure_spanning_tree_mst_configuration(device, instance, vlan_id, mappedv
         )
 
 def unconfigure_spanning_tree_mst_configuration(device):
-    '''
+    """
     Unconfigure spanning-tree mst configuration
     Args:
         device ('obj') : Device object
@@ -186,7 +188,7 @@ def unconfigure_spanning_tree_mst_configuration(device):
         None
     Raise:
         SubCommandFailure: Failed to unconfigure the spanning-tree mst configuration
-    '''
+    """
     log.info(
         "unconfiguring the spanning tree mst configuration on {device}".format(device=device)
     )
@@ -490,7 +492,7 @@ def configure_spanning_tree_portfast_default(device):
         )
 
 def configure_spanning_tree_vlan_root(device, vlan_range, mode, diameter=int()):
-    ''' 
+    """ 
     Configures spanning-tree vlan root with input vlan or vlan range
     e.g.
     spanning-tree vlan 666 root primary
@@ -502,7 +504,7 @@ def configure_spanning_tree_vlan_root(device, vlan_range, mode, diameter=int()):
         diameter ('int', optional): Network diameter of this spanning tree. (Default is None)
     Returns:
         None
-    '''
+    """
     config = f"spanning-tree vlan {vlan_range} root {mode}"
     if diameter:
         config += f" diameter {diameter}"
@@ -515,7 +517,7 @@ def configure_spanning_tree_vlan_root(device, vlan_range, mode, diameter=int()):
         )
 
 def unconfigure_spanning_tree_vlan_root(device, vlan_range):
-    ''' 
+    """ 
     Unconfigures spanning-tree vlan root with input vlan or vlan range
     e.g.
     no spanning-tree vlan 666 root
@@ -525,7 +527,7 @@ def unconfigure_spanning_tree_vlan_root(device, vlan_range):
         vlan_range ('str'): vlan or vlan range
     Returns:
         None
-    '''
+    """
 
     try:
         device.configure(f"no spanning-tree vlan {vlan_range} root")
@@ -583,7 +585,7 @@ def configure_spanning_tree_bpdugaurd(device, interface, option):
         )
 
 def configure_spanning_tree_mst_configuration_name(device, name):
-    '''
+    """
     Configure spanning-tree configuration with configuration name
     Args:
         device ('obj') : Device object
@@ -592,7 +594,7 @@ def configure_spanning_tree_mst_configuration_name(device, name):
         None
     Raise:
         SubCommandFailure
-    '''
+    """
     log.info(
         "configuring the spanning tree mst configuration name "
     )
@@ -610,7 +612,7 @@ def configure_spanning_tree_mst_configuration_name(device, name):
 
 def configure_spanning_tree_mst_configuration_revision(device, rev_num):
 
-    '''
+    """
     Configure spanning-tree configuration with revision
     Args:
         device ('obj') : Device object
@@ -619,7 +621,7 @@ def configure_spanning_tree_mst_configuration_revision(device, rev_num):
         None
     Raise:
         SubCommandFailure
-    '''
+    """
     log.info(
         "configuring the spanning tree mst configuration revision "
     )
@@ -675,3 +677,71 @@ def configure_default_spanning_tree(device, spanning_tree, mst="", portfast="", 
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure spanning-tree mode mst on device. Error:\n{e}") 
+
+def configure_spanningtree_sso_block_tcn(device):
+    """ 
+    Configure spanning-tree sso block-tcn
+    Args:
+        device ('obj') : Device object
+    Returns:
+        None
+    """
+    cmd = [f"spanning-tree sso block-tcn"]
+    try:
+        device.configure(cmd) 
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure spanning-tree sso block-tcn on {device}. Error:\n{error}".format(device=device, error=e)
+        )
+
+def configure_spanningtree_cost_on_interface(device, interface, path_cost):
+    """ 
+    Configures spanning-tree cost
+    Args:
+        device ('obj') : Device object
+        interface ('str') : interface name
+        path_cost('str') :  In between 1-200000000
+    Returns:
+        None
+    """
+    cmd = [f"interface {interface}", "spanning-tree cost {path_cost}".format(path_cost=path_cost)]
+    try:
+        device.configure(cmd) 
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure spanning-tree cost on {device}. Error:\n{error}".format(device=device, error=e)
+        )
+
+def unconfigure_spanningtree_cost_on_interface(device, interface, path_cost):
+    """
+    Unconfigures spanning-tree cost
+    Args:
+        device ('obj') : Device object
+        interface ('str') : interface name
+        path_cost('str') : In between 1-200000000
+    Returns:
+        None
+    """
+    cmd = [f"interface {interface}", "no spanning-tree cost {path_cost}".format(path_cost=path_cost)]
+    try:
+        device.configure(cmd) 
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure spanning-tree sso block-tcn on {device}. Error:\n{error}".format(device=device, error=e)
+        )
+
+def unconfigure_spanningtree_sso_block_tcn(device):
+    """ 
+    Unconfigure spanning-tree sso block-tcn
+    Args:
+        device ('obj') : Device object
+    Returns:
+        None
+    """
+    cmd = [f"no spanning-tree sso block-tcn"]
+    try:
+        device.configure(cmd) 
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure spanning-tree cost on {device}. Error:\n{error}".format(device=device, error=e)
+        )

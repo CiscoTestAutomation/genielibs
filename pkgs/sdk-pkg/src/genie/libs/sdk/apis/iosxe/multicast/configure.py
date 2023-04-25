@@ -1756,3 +1756,31 @@ def configure_ipv6_mld_join_group_acl(device, address, interface_id, acl_name):
             "Could not configure ipv6 mld join-group {address} source-list {acl_name}. Error:\n{error}".format(address=address, acl_name=acl_name,error=e)
         )
 
+def unconfigure_ip_pim(device, interface, mode):
+    """ Disables PIM sparse mode on an interface.
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Interface name
+            mode ('str'): specifiy pim mode
+
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring interface
+    """
+    log.info("Unconfiguring pim mode on {interface} on {device}"\
+        .format(interface=interface, device=device.name))
+
+    configs = [f"interface {interface}",
+               f"no ip pim {mode}"]
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfigure ip pim {mode} on interface {interface} on device {dev}. Error:\n{error}".format(
+                mode=mode,
+                interface=interface,
+                dev=device.name,
+                error=e,
+            )
+        )

@@ -2,21 +2,17 @@ configure:
   commands:
     end:
       new_state: execute
-    line console:
-      new_state: configure_line
     line console 0:
       new_state: configure_line
     no logging console: ''
-    no ptp profile: "no ptp profile\r\n"
-  prompt: centi_48TX_1(config)#
+    no ptp mode boundary delay-req: "no ptp mode boundary delay-req\r\n"
+  prompt: stack3-nyquist-1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-    line vty: ''
-    terminal width 511: ''
-  prompt: centi_48TX_1(config-line)#
+  prompt: stack3-nyquist-1(config-line)#
 connect:
   commands:
     ? ''
@@ -36,6 +32,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-    term width 511: ''
-    terminal session-timeout 0: ''
-  prompt: centi_48TX_1#
+  prompt: stack3-nyquist-1#

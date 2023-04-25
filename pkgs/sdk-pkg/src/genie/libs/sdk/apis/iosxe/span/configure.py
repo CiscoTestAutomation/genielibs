@@ -191,3 +191,105 @@ def unconfigure_local_span_filter(device, session_id, access_control_rule, acces
         raise SubCommandFailure(
             f"Could not unconfigure local span filter. Error:\n{e}"
         )
+def config_erspan_monitor_session_shut_unshut(device, session_number, action):
+
+     """ Configure erspan monitor session shutdown
+         Args:
+             device ('obj'): Device object
+             session_number ('int'): session number
+             action ('str'): 'shutdown' or 'no shutdown'
+
+         Returns:
+             None
+         Raises:
+             SubCommandFailure
+     """
+     configs = []
+     configs.append(f"monitor session {session_number} type erspan-source")
+     configs.append(f"{action}")
+
+
+     try:
+         device.configure(configs)
+     except SubCommandFailure as e:
+         raise SubCommandFailure(
+             f"Failed to shut/unshut erspan monitor session :\n{e}"
+         )
+       
+        
+def unconfig_erspan_monitor_session_no_source(device, session_number, interface='', vlan=''):
+
+     """ Configure no source on erspan monitor session 
+         Args:
+             device ('obj'): Device object
+             session_number ('int'): session number
+             interface ('str') :{optional} source interface name, either "interface" or "vlan" is mandatory
+             vlan ('str'): {optional} source vlan number, either "interface" or "vlan" is mandatory         
+
+         Returns:
+             None
+         Raises:
+             SubCommandFailure
+     """
+     configs = []
+     configs.append(f"monitor session {session_number}  type erspan-source")
+     if interface!='':
+        configs.append(f"no source interface {interface}")
+     if vlan!='':
+        configs.append(f"no source vlan {vlan}")
+
+     try:
+         device.configure(configs)
+     except SubCommandFailure as e:
+         raise SubCommandFailure(
+             f"Failed to configure no source on erspan monitor session :\n{e}"
+         )
+    
+
+def unconfig_erspan_monitor_session_no_filter(device, session_number, vlan):
+
+     """ Configure no filter on erspan monitor session 
+         Args:
+             device ('obj'): Device object
+             session_number ('int'): session number
+             vlan ('str'): sorce vlan number         
+
+         Returns:
+             None
+         Raises:
+             SubCommandFailure
+     """
+     configs = []
+     configs.append(f"monitor session {session_number} type erspan-source")
+     configs.append(f"no filter vlan {vlan}")
+
+     try:
+         device.configure(configs)
+     except SubCommandFailure as e:
+         raise SubCommandFailure(
+             f"Failed to configure  no filter on erspan monitor session :\n{e}"
+         )
+
+def config_erspan_monitor_session_filter(device, session_number, vlan):
+
+     """ Configure filter on erspan monitor session 
+         Args:
+             device ('obj'): Device object
+             session_number ('int'): session number
+             vlan ('str'): sorce vlan number         
+
+         Returns:
+             None
+         Raises:
+             SubCommandFailure
+     """
+     configs = []
+     configs.append(f"monitor session {session_number} type erspan-source")
+     configs.append(f"filter vlan {vlan}")
+
+     try:
+         device.configure(configs)
+     except SubCommandFailure as e:
+         raise SubCommandFailure(
+             f"Failed to configure filter on erspan monitor session :\n{e}"
+         )    

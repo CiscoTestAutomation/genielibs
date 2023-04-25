@@ -1,0 +1,135 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: Switch_48U(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: Switch_48U(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show product-analytics kpi report 1680726314:
+      response:
+      - "Product Analytics Engine KPIs\r\n\r\n\r\n Report ID     : 1680726314\r\n\
+        \ Computed at   : 04/05/2023 20:25:14\r\n KPI Name      : nat\r\n KPI Value\
+        \     : [{\"enabled\":\"false\"}]\r\n\r\n Report ID     : 1680726314\r\n Computed\
+        \ at   : 04/05/2023 20:25:14\r\n KPI Name      : ipv6\r\n KPI Value     :\
+        \ [{\"enabled\":\"false\"}]\r\n\r\n Report ID     : 1680726314\r\n Computed\
+        \ at   : 04/05/2023 20:25:14\r\n KPI Name      : LAG_LACP\r\n KPI Value  \
+        \   : []\r\n\r\n Report ID     : 1680726314\r\n Computed at   : 04/05/2023\
+        \ 20:25:14\r\n KPI Name      : ISSU_mode\r\n KPI Value     : [{\"issu\":\"\
+        ISSU_DISABLED\"}]\r\n\r\n Report ID     : 1680726314\r\n Computed at   : 04/05/2023\
+        \ 20:25:14\r\n KPI Name      : install_mode\r\n KPI Value     : [{\"boot_mode\"\
+        :\"INSTALL_BOOT_MODE_INSTALL\"}]\r\n\r\n Report ID     : 1680726314\r\n Computed\
+        \ at   : 04/05/2023 20:25:14\r\n KPI Name      : memory_usage\r\n KPI Value\
+        \     : [{\"Max\":2963508,\"Min\":2960960,\"Avg\":2962234}]\r\n\r\n Report\
+        \ ID     : 1680726314\r\n Computed at   : 04/05/2023 20:25:14\r\n KPI Name\
+        \      : TrustSec_global\r\n KPI Value     : [{\"type\":\"SGACL_enforcement\"\
+        ,\"enabled\":\"false\"},{\"type\":\"SXP\",\"enabled\":\"false\"}]\r\n\r\n\
+        \ Report ID     : 1680726314\r\n Computed at   : 04/05/2023 20:25:14\r\n KPI\
+        \ Name      : enabled_features\r\n KPI Value     : [{\"feature\":\"<cr>\"\
+        },{\"feature\":\"boot system switch all flash:packages.conf\"},{\"feature\"\
+        :\"call-home\"},{\"feature\":\"call-home;contact-email-addr WORD\"},{\"feature\"\
+        :\"call-home;profile WORD\"},{\"feature\":\"call-home;profile WORD;active\"\
+        },{\"feature\":\"call-home;profile WORD;destination transport-method http\"\
+        },{\"feature\":\"class-map match-any WORD\"},{\"feature\":\"class-map match-any\
+        \ WORD;description LINE\"},{\"feature\":\"control-plane\"},{\"feature\":\"\
+        control-plane;service-policy input WORD\"},{\"feature\":\"crypto engine compliance\
+        \ shield disable\"},{\"feature\":\"crypto pki certificate chain WORD\"},{\"\
+        feature\":\"crypto pki certificate chain WORD;certificate ca WORD\"},{\"feature\"\
+        :\"crypto pki certificate chain WORD;certificate self-signed WORD\"},{\"feature\"\
+        :\"crypto pki certificate pool\"},{\"feature\":\"crypto pki trustpoint WORD\"\
+        },{\"feature\":\"crypto pki trustpoint WORD;enrollment selfsigned\"},{\"feature\"\
+        :\"crypto pki trustpoint WORD;enrollment terminal\"},{\"feature\":\"crypto\
+        \ pki trustpoint WORD;hash sha256\"},{\"feature\":\"crypto pki trustpoint\
+        \ WORD;revocation-check crl\"},{\"feature\":\"crypto pki trustpoint WORD;revocation-check\
+        \ none\"},{\"feature\":\"crypto pki trustpoint WORD;rsakeypair WORD\"},{\"\
+        feature\":\"crypto pki trustpoint WORD;subject-name LINE\"},{\"feature\":\"\
+        diagnostic bootup level minimal\"},{\"feature\":\"end\"},{\"feature\":\"hostname\
+        \ WORD\"},{\"feature\":\"hw-module switch <1-16> upoe-plus\"},{\"feature\"\
+        :\"interface AppGigabitEthernet <0-16> <0-1> <0-1>\"},{\"feature\":\"interface\
+        \ FortyGigabitEthernet <0-16> <0-1> <0-2>\"},{\"feature\":\"interface GigabitEthernet\
+        \ <0-16> <0-0>\"},{\"feature\":\"interface GigabitEthernet <0-16> <0-0>;ip\
+        \ address A.B.C.D A.B.C.D\"},{\"feature\":\"interface GigabitEthernet <0-16>\
+        \ <0-0>;negotiation auto\"},{\"feature\":\"interface GigabitEthernet <0-16>\
+        \ <0-0>;vrf forwarding Mgmt-vrf\"},{\"feature\":\"interface GigabitEthernet\
+        \ <0-16> <0-1> <0-48>\"},{\"feature\":\"interface GigabitEthernet <0-16> <0-1>\
+        \ <0-48>;ip address A.B.C.D A.B.C.D\"},{\"feature\":\"interface GigabitEthernet\
+        \ <0-16> <0-1> <0-48>;no switchport\"},{\"feature\":\"interface TenGigabitEthernet\
+        \ <0-16> <0-1> <0-8>\"},{\"feature\":\"interface TwentyFiveGigE <0-16> <0-1>\
+        \ <0-2>\"},{\"feature\":\"interface Vlan <1-4094>\"},{\"feature\":\"interface\
+        \ Vlan <1-4094>;no ip address\"},{\"feature\":\"interface Vlan <1-4094>;shutdown\"\
+        },{\"feature\":\"ip domain name WORD\"},{\"feature\":\"ip forward-protocol\
+        \ nd\"},{\"feature\":\"ip http authentication local\"},{\"feature\":\"ip http\
+        \ secure-server\"},{\"feature\":\"ip http server\"},{\"feature\":\"ip name-server\
+        \ A.B.C.D A.B.C.D A.B.C.D A.B.C.D\"},{\"feature\":\"ip route A.B.C.D A.B.C.D\
+        \ A.B.C.D\"},{\"feature\":\"ip route vrf WORD A.B.C.D A.B.C.D A.B.C.D\"},{\"\
+        feature\":\"ip ssh bulk-mode <131072-1073741824>\"},{\"feature\":\"ip tftp\
+        \ source-interface GigabitEthernet <0-16> <0-0>\"},{\"feature\":\"license\
+        \ boot level network-advantage addon dna-advantage\"},{\"feature\":\"license\
+        \ smart transport smart\"},{\"feature\":\"license smart url WORD\"},{\"feature\"\
+        :\"license smart url smart WORD\"},{\"feature\":\"line console <0-0>\"},{\"\
+        feature\":\"line console <0-0>;exec-timeout <0-35791> <0-2147483>\"},{\"feature\"\
+        :\"line console <0-0>;speed <0-4294967295>\"},{\"feature\":\"line console\
+        \ <0-0>;stopbits 1\"},{\"feature\":\"line vty <0-98> <1-98>\"},{\"feature\"\
+        :\"line vty <0-98> <1-98>;exec-timeout <0-35791> <0-2147483>\"},{\"feature\"\
+        :\"line vty <0-98> <1-98>;length <0-512>\"},{\"feature\":\"line vty <0-98>\
+        \ <1-98>;login\"},{\"feature\":\"line vty <0-98> <1-98>;transport input ssh\"\
+        },{\"feature\":\"line vty <0-98> <6-98>\"},{\"feature\":\"line vty <0-98>\
+        \ <6-98>;login\"},{\"feature\":\"line vty <0-98> <6-98>;transport input ssh\"\
+        },{\"feature\":\"login on-success log\"},{\"feature\":\"memory free low-watermark\
+        \ processor <1-3994575>\"},{\"feature\":\"platform punt-keepalive disable-kernel-core\"\
+        },{\"feature\":\"policy-map WORD\"},{\"feature\":\"quit\"},{\"feature\":\"\
+        redundancy\"},{\"feature\":\"redundancy;mode sso\"},{\"feature\":\"service\
+        \ call-home\"},{\"feature\":\"service internal\"},{\"feature\":\"service timestamps\
+        \ debug datetime msec\"},{\"feature\":\"service timestamps log datetime msec\"\
+        },{\"feature\":\"spanning-tree extend system-id\"},{\"feature\":\"spanning-tree\
+        \ mode rapid-pvst\"},{\"feature\":\"switch <1-16> provision c9300-48uxm c9300-48u\"\
+        },{\"feature\":\"transceiver type all\"},{\"feature\":\"transceiver type all;monitoring\"\
+        },{\"feature\":\"version <1-2147483647> . <1-2147483647>\"},{\"feature\":\"\
+        vlan WORD\"},{\"feature\":\"vrf definition WORD\"},{\"feature\":\"vrf definition\
+        \ WORD;address-family ipv4\"},{\"feature\":\"vrf definition WORD;address-family\
+        \ ipv4;exit-address-family\"},{\"feature\":\"vrf definition WORD;address-family\
+        \ ipv6\"},{\"feature\":\"vrf definition WORD;address-family ipv6;exit-address-family\"\
+        },{\"feature\":\"vtp domain WORD\"},{\"feature\":\"vtp mode transparent\"\
+        }]\r\n\r\n Report ID     : 1680726314\r\n Computed at   : 04/05/2023 20:25:14\r\
+        \n KPI Name      : global_CPU_usage\r\n KPI Value     : [{\"Max\":0,\"Min\"\
+        :0,\"Avg\":0}]\r\n\r\n Report ID     : 1680726314\r\n Computed at   : 04/05/2023\
+        \ 20:25:14\r\n KPI Name      : software_packages\r\n KPI Value     : []\r\n\
+        \r\n Report ID     : 1680726314\r\n Computed at   : 04/05/2023 20:25:14\r\n\
+        \ KPI Name      : TrustSec_interface\r\n KPI Value     : []\r\n\r\n Report\
+        \ ID     : 1680726314\r\n Computed at   : 04/05/2023 20:25:14\r\n KPI Name\
+        \      : app_guestshell_cfg\r\n KPI Value     : [{\"enabled\":\"false\",\"\
+        guestshell\":\"false\"}]\r\n\r\n Report ID     : 1680726314\r\n Computed at\
+        \   : 04/05/2023 20:25:14\r\n KPI Name      : hardware_inventory\r\n KPI Value\
+        \     : [{\"CN\":\"Switch2\",\"SN\":\"FCW2137L0E2\",\"PID\":\"C9300-48U\"\
+        },{\"CN\":\"c93xx Stack\",\"SN\":\"FCW2137L0E2\",\"PID\":\"C9300-48U\"},{\"\
+        CN\":\"PowerSupply2/B\",\"SN\":\"DCA2210G3R5\",\"PID\":\"PWR-C1-715WAC\"}]\r\
+        \n\r\n Report ID     : 1680726314\r\n Computed at   : 04/05/2023 20:25:14\r\
+        \n KPI Name      : hardware_inventory_port_count\r\n KPI Value     : [{\"\
+        PID\":\"C3850-NM-4-10G\",\"COUNT\":1}]"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: Switch_48U#

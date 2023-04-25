@@ -414,7 +414,11 @@ def configure_ipsec_tunnel(device,
                             ipsec_profile_name,
                             v6_overlay=False,
                             vrf=None,
-                            tunnel_vrf=None):
+                            tunnel_vrf=None,
+                            tunnel_ipv6=None,
+                            desc=None,
+                            tunnel_mode_protocol='ipsec',
+                            pmtud=False):
     """ Configures ipsec tunnel interface
         Args:
             device (`obj`): Device object
@@ -428,6 +432,10 @@ def configure_ipsec_tunnel(device,
             v6-overlay ('boolean', optional): True if v6-over-ipv4. Default is False
             vrf ('str',optional): overlay or ivrf of the tunnel, default is None
             tunnel_vrf ('str',optional): underlay or fvrf name, default is None
+            tunnel_ipv6 ('str'): tunnel ipv6 addr with mask eg.) A::1/128
+            desc ('str'): description on tunnel interface
+            tunnel_mode_protocol ('str'): tunnel mode protocol. Defaults to ipsec 
+            pmtud ('bool'): Path MTU Discovery. Defaults to False
 
         Returns:
             None
@@ -439,18 +447,24 @@ def configure_ipsec_tunnel(device,
     )
 
     configs = []
-    configs.append("interface {tunnel_intf}".format(tunnel_intf=tunnel_intf))
+    configs.append(f"interface {tunnel_intf}")
+    if desc:
+        configs.append(f"description {desc}")
     if vrf:
         configs.append("vrf forwarding {vrf}".format(vrf=vrf))
-    configs.append("ip address {tunnel_ip} {tunnel_mask}".format(tunnel_ip=tunnel_ip,tunnel_mask=tunnel_mask))
-    configs.append("tunnel mode ipsec {tunnel_mode}".format(tunnel_mode=tunnel_mode))
-    configs.append("tunnel source {tunnel_src_ip}".format(tunnel_src_ip=tunnel_src_ip))
-    configs.append("tunnel destination {tunnel_dst_ip}".format(tunnel_dst_ip=tunnel_dst_ip))
+    configs.append(f"ip address {tunnel_ip} {tunnel_mask}")
+    if tunnel_ipv6:
+        configs.append(f"ipv6 address {tunnel_ipv6}")
+    configs.append(f"tunnel mode {tunnel_mode_protocol} {tunnel_mode}")
+    configs.append(f"tunnel source {tunnel_src_ip}")
+    configs.append(f"tunnel destination {tunnel_dst_ip}")
     if tunnel_vrf:
-        configs.append("tunnel vrf {tunnel_vrf}".format(tunnel_vrf=tunnel_vrf))
-    configs.append("tunnel protection ipsec profile {ipsec_profile_name}".format(ipsec_profile_name=ipsec_profile_name))
+        configs.append(f"tunnel vrf {tunnel_vrf}")
+    configs.append(f"tunnel protection ipsec profile {ipsec_profile_name}")
     if v6_overlay:
-        configs.append("tunnel mode ipsec {tunnel_mode} v6-overlay".format(tunnel_mode=tunnel_mode))
+        configs.append(f"tunnel mode ipsec {tunnel_mode} v6-overlay")
+    if pmtud:
+        configs.append("tunnel path-mtu-discovery")
 
     try:
         device.configure(configs)
@@ -1110,3 +1124,30 @@ def clear_crypto_ikev2_stats(device):
             "Could not clear crypto ikev2 stats. Error:\n{error}".format(error=e)
         )
         
+def configure_crypto_map(device, tagname, sequence, ip_address, access_list_num, tag):
+    """ configure crypto map
+    Args:
+        device (`obj`): Device object
+        tagname (`str`): Crypto map tag
+        sequence (`str`): Sequence to insert into crypto map entry
+        ip_address (`str`): IP address of peer
+        access_list_num (`str`): IP access-list number
+        tag (`str`: Proposal tag
+        
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed to configure crypto map
+    """
+    try:
+        device.configure([
+            "crypto map {tagname} {sequence} ipsec-isakmp".format(tagname=tagname, sequence=sequence),
+            "set peer {ip_address}".format(ip_address=ip_address),
+            "match address {access_list_num}".format(access_list_num=access_list_num),
+            "set transform-set {tag}".format(tag=tag)
+        ])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure crypto map. Error: {error}".format(error=e)
+        )
+
