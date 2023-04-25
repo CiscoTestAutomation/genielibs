@@ -8,7 +8,7 @@ from unicon.core.errors import SubCommandFailure
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
 # iosxe traceroute
-from genie.libs.parser.iosxe.traceroute import Traceroute
+from genie.libs.parser.iosxe.traceroute import Traceroute, TracerouteIpv6
 
 log = logging.getLogger(__name__)
 
@@ -109,3 +109,52 @@ def get_traceroute_mpls_label_to_prefix(device, prefix, timeout=None):
         )
     )
     return None
+
+def get_traceroute_ipv6(device, addr, source=None, dscp=None, numeric=None, 
+                                 timeout=None, probe=None, minimum_ttl=None, 
+                                 maximum_ttl=None, precedence=None):
+    """ Get parsed output of traceroute command
+        Args:
+            device ('obj'): Device object
+            addr ('str'): Destination address
+            source ('str'): Source address or interface
+            dscp ('int'): DSCP Value
+            numeric ('str'): Numeric display
+            timeout ('int'): Timeout in seconds
+            probe ('int'): Probe count
+            minimum_ttl ('int'): Minimum Time to Live
+            maximum_ttl ('int'): Maximum Time to Live
+            precedence ('str'): specify Precedence (Range: 0 to 7)
+        Returns:
+            Dictionary: Parsed output of traceroute ipv6 command
+        Raises:
+            None
+    """
+    cmd = f'traceroute ipv6 {addr}'
+    if dscp:
+        cmd = cmd + ' dscp '+dscp
+    if numeric:
+        cmd = cmd + ' numeric'
+    if precedence:
+        cmd = cmd + ' precedence '+str(precedence)
+    if probe:
+        cmd = cmd + ' probe '+str(probe)
+    if source:
+        cmd = cmd + ' source '+source
+    if timeout:
+        cmd = cmd + ' timeout '+str(timeout)
+    if minimum_ttl and maximum_ttl:
+        cmd = cmd + ' ttl '+str(minimum_ttl)+' '+str(maximum_ttl)
+    try:
+        output = device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Failed to execute {cmd} on device {device.name}. Error:\n{e}')
+
+    parser_obj = TracerouteIpv6(device=device)
+    try:
+        parsed_ouput = parser_obj.parse(output=output)
+    except SchemaEmptyParserError as e:
+        log.info(f'Could find any traceroute ipv6 information for prefix {addr}')
+        return None
+
+    return parsed_ouput

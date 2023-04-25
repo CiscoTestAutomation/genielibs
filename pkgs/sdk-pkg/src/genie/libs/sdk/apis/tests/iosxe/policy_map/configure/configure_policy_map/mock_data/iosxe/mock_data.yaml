@@ -1,32 +1,22 @@
 configure:
   commands:
-    class class-default: "police burst (bc) is adjusted to 10000000 to fit the interface\
-      \ supported interval\r\n"
-    class test1: "class test1\r\n"
-    class test2: "set cos 5\r\n"
+    class class-default: "class class-default\r\n"
     end:
       new_state: execute
-    line console:
-      new_state: configure_line
     line console 0:
       new_state: configure_line
     no logging console: ''
-    police rate 20000000000: "set cos 2\r\n"
-    policy-map policy1: "policy-map policy1\r\n"
-    set cos 2: "police rate 20000000000\r\n"
-    set cos 5: "set dscp cs2\r\n"
-    set cos cos table table_cos: "class class-default\r\n"
-    set dscp cs2: "police burst (bc) is adjusted to 10000000 to fit the interface\
-      \ supported interval\r\n"
-  prompt: Startek(config)#
+    police rate 2000000000: "police rate 2000000000\r\n"
+    policy-map rar_policer: "policy-map rar_policer\r\n"
+    set cos 5: "set cos 5\r\n"
+    set dscp cs1: "set dscp cs1\r\n"
+  prompt: c8kv-1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-    line vty: ''
-    terminal width 511: ''
-  prompt: Startek(config-line)#
+  prompt: c8kv-1(config-line)#
 connect:
   commands:
     ? ''
@@ -46,6 +36,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-    term width 511: ''
-    terminal session-timeout 0: ''
-  prompt: Startek#
+  prompt: c8kv-1#

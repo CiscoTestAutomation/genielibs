@@ -95,3 +95,22 @@ def get_kpi_value_in_show_kpi_report_id(device, report_id, kpi_name):
         if out.q.contains('report_id').contains(report_id).contains('kpi_name').contains(kpi_name):
             r_list = json.loads(out['report_id'][report_id]['kpi_name'][kpi_name]['kpi_value'])
     return r_list
+
+def get_telemetry_report_all_kpis(device, report_id):
+    """ get all kpi name:value pairs based on report id given
+        Args:
+            device (`obj`): Device object
+            report_id   ('int'): report id
+        Returns:
+            kpi name to value list (`list`): list of kpi name:value dict 
+    """
+    out = None
+    log.info("get_telemetry_report_all_kpis: report_id [%d]", report_id)
+
+    try:
+        out = device.parse('show product-analytics kpi report {}'.format(report_id))
+    except SchemaEmptyParserError:
+        pass
+    if out == None:
+        log.info("cli is not parsed or no reports in system")
+    return out

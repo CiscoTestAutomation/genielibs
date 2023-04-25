@@ -10,7 +10,7 @@ class TestConfigureMacAcl(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          n08HA:
+          Franklin-9300L-Stack:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,11 +18,11 @@ class TestConfigureMacAcl(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: c9500
-            type: c9500
+            platform: cat9k
+            type: router
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['n08HA']
+        self.device = self.testbed.devices['Franklin-9300L-Stack']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,6 @@ class TestConfigureMacAcl(unittest.TestCase):
         )
 
     def test_configure_mac_acl(self):
-        result = configure_mac_acl(self.device, 'MAC-ACL', 'permit', '001.00a.00a', '001.00b.00b')
+        result = configure_mac_acl(self.device, 'test', 'permit', '1111.2222.3333', '2444.2333.2222', 'etype-6000')
         expected_output = None
         self.assertEqual(result, expected_output)

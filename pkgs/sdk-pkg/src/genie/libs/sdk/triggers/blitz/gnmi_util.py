@@ -5,6 +5,7 @@ import base64
 import json
 import sys
 import pdb
+from datetime import datetime
 from copy import deepcopy
 from threading import Thread, Event
 import traceback
@@ -458,14 +459,12 @@ class GnmiMessage:
         return opfields
 
     @classmethod
-    def run_subscribe(self, device, payload, request):
+    def run_subscribe(self, device: Gnmi, payload: proto.gnmi_pb2.SetRequest, **request):
         """Run gNMI subscribe service.
 
         Args:
           device (ysdevice.DeviceProfile): Target device.
-          user (str): YANG Suite username.
           payload (proto.gnmi_pb2.SetRequest): SetRequest.
-          payload (str): JSON representing a SetRequest.
           request (dict): gNMI subscribe settings for thread.
         Returns:
           proto.gnmi_pb2.SubscribeResponse
@@ -1362,12 +1361,16 @@ class GnmiSubscription(ABC, Thread):
         self.processed_returns = []
         self.negative_test = request.get('negative_test')
         self.log.info(banner('GNMI Subscription reciever started'))
+        self.ntp_server = ""
         if device is not None:
             self.metadata = [
                 ("username", device.device.credentials.default.get('username', '')),
                 ("password", to_plaintext(
                     device.device.credentials.default.get('password', ''))),
             ]
+            if self.transaction_time:
+                self.ntp_server = device.device.testbed.servers.get(
+                    'ntp', {}).get('server', {})
         self.stream_max = request.get('stream_max', 0)
         self.sample_poll = request.get(
             'sample_interval',  request.get('sample_poll', 0))
@@ -1382,6 +1385,9 @@ class GnmiSubscription(ABC, Thread):
         def __init__(self, response_time: float):
             self.response_time = response_time
 
+    class NoNtpConfigured(Exception):
+        pass
+
     @property
     def result(self):
         if not self.results:
@@ -1389,7 +1395,7 @@ class GnmiSubscription(ABC, Thread):
         return all(self.results)
 
     def process_opfields(self,
-                          response: gnmi_pb2.SubscribeResponse):
+                          response: proto.gnmi_pb2.SubscribeResponse):
         """Decode response and verify result.
 
         Decoder callback returns desired format of response.
@@ -1610,6 +1616,11 @@ class GnmiSubscriptionStream(GnmiSubscription):
                  responses: List[gnmi_pb2.SubscribeResponse] = None,
                  **request):
         super().__init__(device, **request)
+        # For transaction_time subscribtion NTP servers must be configured
+        if self.transaction_time and not self.ntp_server:
+            self.log.error(
+                banner('For transaction_time to work with STREAM Subscribtions, NTP servers must be configured.'))  # noqa
+            raise self.NoNtpConfigured('NTP servers not configured')
         timeout = request.get('stream_max', 120)
         self.sample_poll = request.get(
             'sample_interval',  request.get('sample_poll', 5))
@@ -1644,21 +1655,31 @@ class GnmiSubscriptionStream(GnmiSubscription):
                 self.log.info("Initial updates received")
                 continue
             if response.HasField('update') and not self.stopped():
+                arrive_time = time.time()
                 json_dicts, opfields = self.decode_response(
-                    response, self.namespace
-                )
-
-                self.log.info(
-                    "gNMI SUBSCRIBE Response\n" + "=" * 23 + "\n{}"
-                        .format(response)
-                )
+                        response, self.namespace
+                    )
+                timestamp = response.update.timestamp / 10 ** 9
+                delta_time = arrive_time - timestamp
+                if delta_time < 0:
+                    timestamp_dt = datetime.fromtimestamp(timestamp)
+                    ntp_dt = datetime.fromtimestamp(arrive_time)
+                    self.log.error(banner(
+                        f"""Device is out of sync with NTP server {self.ntp_server}
+                        Device time: {timestamp_dt.strftime('%m/%d/%Y %H:%M:%S.%f')}
+                        NTP time: {ntp_dt.strftime('%m/%d/%Y %H:%M:%S.%f')}"""))
+                    self.results.append(False)
+                elif self.transaction_time and delta_time > self.transaction_time:
+                    self.results.append(False)
+                    self.log.error(banner(
+                        f'Response time: {delta_time:.3f} seconds exceeded transaction_time {self.transaction_time:.3f}',
+                    ))
                 if self.returns:
                     self.log.info('Processing returns...')
                     self.process_opfields(response)
                 else:
                     # If no returns is provided, then result is True if an update is received.
                     self.results.append(True)
-            t = time.time()
         self.stop()
 
 
@@ -1684,12 +1705,13 @@ class GnmiSubscriptionOnce(GnmiSubscription):
         stop_receiver = False
         t = time.time()
         for response in self.responses:
+            delta_time = time.time() - t
             # Subscribe response ends here
             if response.HasField('sync_response'):
                 self.log.info('Subscribe sync_response')
                 stop_receiver = True
-            elif self.transaction_time and time.time() - t > self.transaction_time:
-                raise GnmiSubscription.TransactionTimeExceeded(time.time() - t)
+            elif self.transaction_time and delta_time > self.transaction_time:
+                raise GnmiSubscription.TransactionTimeExceeded(delta_time)
 
             if response.HasField('update') and not self.stopped():
                 self.log.info(
@@ -1741,13 +1763,13 @@ class GnmiSubscriptionPoll(GnmiSubscription):
         t = time.time()
         for (i, response) in enumerate(self.responses):
             if (i == 0):
-                diff = time.time() - t
+                delta_time = time.time() - t
             else:
-                diff = time.time() - t - self.sample_poll
-            if (self.transaction_time and t and diff > self.transaction_time):
+                delta_time = time.time() - t - self.sample_poll
+            if (self.transaction_time and t and delta_time > self.transaction_time):
                 self.results.append(False)
                 self.log.error(banner(
-                    f'Response time: {diff:.3f} seconds exceeded transaction_time {self.transaction_time:.3f}',
+                    f'Response time: {delta_time:.3f} seconds exceeded transaction_time {self.transaction_time:.3f}',
                 ))
             if response.HasField('sync_response'):
                 self.log.info('Subscribe sync_response')

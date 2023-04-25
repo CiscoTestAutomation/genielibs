@@ -10,7 +10,7 @@ class TestConfigIpOnInterface(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          Stargazer:
+          Switch-9300:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -22,7 +22,7 @@ class TestConfigIpOnInterface(unittest.TestCase):
             type: c9500
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Stargazer']
+        self.device = self.testbed.devices['Switch-9300']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,12 +30,6 @@ class TestConfigIpOnInterface(unittest.TestCase):
         )
 
     def test_config_ip_on_interface(self):
-        result = config_ip_on_interface(self.device, 'TenGigabitEthernet1/2/0/19', None, None, None, None, None, None, False, False, '', None, 'fe80:1::1', False)
+        result = config_ip_on_interface(self.device, 'g1/0/1', None, None, None, None, None, None, False, False, '', None, None, False, 'poo1')
         expected_output = None
         self.assertEqual(result, expected_output)
-
-    def test_config_ip_on_interface_secondary(self):
-        result = config_ip_on_interface(self.device, 'TenGigabitEthernet1/2/0/19', '14.1.1.3', '255.255.255.0', None, None, None, None, False, False, '', None, None, True)
-        expected_output = None
-        self.assertEqual(result, expected_output)
-

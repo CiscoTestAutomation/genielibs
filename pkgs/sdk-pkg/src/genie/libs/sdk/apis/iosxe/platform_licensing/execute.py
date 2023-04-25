@@ -147,3 +147,24 @@ def execute_license_smart_save_usage_unreported_file(device, path):
         raise SubCommandFailure(
             f'Failed to execute license smart save usage unreported file {path} on device {device.name}. Error:\n{e}'
         )
+
+def execute_license_smart_trust_idtoken(device, token_value, device_type):
+    """ Configures license smart trust idtoken
+        Example : license smart trust idtoken test all force
+        Args:
+            device ('obj'): device to use
+            token_value ('str'): Id Token value (e.g. test)
+            device_type ('str'): establish trust on device (e.g. local, all)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f'Configuring license smart trust idtoken on {device.name}')
+    config = f'license smart trust idtoken {token_value} {device_type} force'
+    try:
+        device.execute(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to configure license smart trust idtoken on device {device.name}. Error:\n{e}'
+        )

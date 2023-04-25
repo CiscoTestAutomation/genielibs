@@ -42,22 +42,24 @@ def configure_policy_map(device,
             SubCommandFailure
     """
     log.debug(
-        "Configuring policy_map {policy_name} with {class_map_name} ".format(
+        "Configuring policy_map {policy_name}".format(
             policy_name=policy_name,
-            class_map_name=class_map_list[0]['class_map_name'],
-
         )
     )
+
     cmd = [f"policy-map {policy_name}"]
-    for class_map  in class_map_list:
-        cmd.append(f"class {class_map['class_map_name']}")
-        if 'policer_val' in class_map:
-            cmd.append(f"police rate {class_map['policer_val']}")
-        if class_map.get('match_mode', None)  and class_map.get('matched_value', None):
-            for match_mode, matched_value in zip(class_map['match_mode'], class_map['matched_value']):
-                cmd.append(f"set {match_mode} {matched_value}")
-        if 'table_map_name' in class_map:
-            cmd.append(f"set {class_map['table_map_mode']} {class_map['table_map_mode']} table {class_map['table_map_name']}")
+    for class_map in class_map_list:
+        if isinstance(class_map, dict):
+            cmd.append(f"class {class_map['class_map_name']}")
+            if 'policer_val' in class_map:
+                cmd.append(f"police rate {class_map['policer_val']}")
+            if class_map.get('match_mode', None)  and class_map.get('matched_value', None):
+                for match_mode, matched_value in zip(class_map['match_mode'], class_map['matched_value']):
+                    cmd.append(f"set {match_mode} {matched_value}")
+            if 'table_map_name' in class_map:
+                cmd.append(f"set {class_map['table_map_mode']} {class_map['table_map_mode']} table {class_map['table_map_name']}")
+        else:
+            cmd.append(f"{class_map}")
 
     try:
         device.configure(cmd)
@@ -335,7 +337,7 @@ def configure_policy_map_type_service(device, policy_map_name, pppoe_service_nam
         SubCommandFailure: Failed to configure policy-map service
     """
     log.info("Configuring policy-map type service on device")
-
+    
     cmd = []
     cmd = [f"policy-map type service {policy_map_name}"]
     if pppoe_service_name:
@@ -345,6 +347,27 @@ def configure_policy_map_type_service(device, policy_map_name, pppoe_service_nam
     except SubCommandFailure as e:
                 raise SubCommandFailure(
             f"Failed to configure policy-map service, Error:\n{e}"
+    )
+
+def unconfigure_policy_map_type_service(device, policy_map_name):
+    """ Configure policy-map type service on Device
+    Args:
+        device ('obj'): Device object
+        policy_map_name ('str'): policy-map name to configure
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed to configure policy-map service
+    """
+    log.info("Unconfiguring policy-map type service on device")
+
+    cmd = f"no policy-map type service {policy_map_name}"
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure policy-map service, Error:\n{e}"
     )
 
 def configure_policy_map_with_pps(device, policy_name, class_map_name, police_rate):

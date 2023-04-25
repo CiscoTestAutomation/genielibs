@@ -3040,7 +3040,7 @@ def get_connection(device,
     return terminal
 
 
-def get_devices(testbed,
+def get_devices(testbed=None,
                 os=None,
                 regex=None,
                 regex_key='os',
@@ -3049,7 +3049,7 @@ def get_devices(testbed,
                 with_os=False):
     """ Get devices from testbed object
         Args:
-            testbed (`obj`): testbed object
+            testbed (`obj`): testbed object. Defaults to None
             os (`str`): specify os to choose. Defaults to None
             regex (`str`): regex to chose devices based against regex_key
                            Defaults to None
@@ -3140,6 +3140,9 @@ def get_devices(testbed,
             dev_dict.update({dev: os})
         return dev_dict
 
+    if not testbed:
+        testbed = runtime.testbed
+
     picked_devices = None
     if os:
         if regex and regex_key:
@@ -3186,6 +3189,30 @@ def get_devices(testbed,
         else:
             raise Exception("Couldn't find any device from testbed object.")
 
+
+def get_devices_simple(regex, regex_key='devices'):
+    """ Get devices from runtime testbed object
+        Args:
+            regex (`str`): regex to chose devices based against regex_key
+                           Defaults to None
+            regex_key (`str`): specify key in testbed yaml where use regex
+                               default to `os`
+
+        Returns:
+            picked_devices
+
+    """
+
+    testbed = runtime.testbed
+
+
+    if regex and regex_key:
+        picked_devices = Dq(testbed.raw_config).contains_key_value(
+            regex_key, regex, value_regex=True).get_values('devices')
+    else:
+        picked_devices = []
+
+    return picked_devices
 
 def get_interface_from_yaml(local, remote, value, testbed_topology, **kwargs):
     """ Get interface name from the testbed yaml file

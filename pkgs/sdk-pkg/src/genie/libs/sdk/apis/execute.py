@@ -7,6 +7,9 @@ import time
 import logging
 import json
 
+# pyATS
+from pyats.async_ import pcall
+
 # Genie
 from genie.utils import Dq
 from genie.utils.timeout import Timeout
@@ -205,7 +208,7 @@ def free_up_disk_space(device, destination, required_size, skip_deletion,
     if compact:
         required_size *=.6
 
-    # Parse directory output to check 
+    # Parse directory output to check
     dir_out = dir_output or device.execute('dir {}'.format(destination))
 
     # Get available free space on device
@@ -304,34 +307,85 @@ def free_up_disk_space(device, destination, required_size, skip_deletion,
                   'deleting unprotected files.')
         return False
 
-def execute_reload(device, prompt_recovery, reload_creds, sleep_after_reload=120,
-    timeout=800):
+def execute_reload(device,
+                   prompt_recovery=True,
+                   reload_creds='default',
+                   sleep_after_reload=120,
+                   timeout=800,
+                   reload_command='reload',
+                   error_pattern=None,
+                   devices=None,
+                   exclude_devices=None):
     ''' Reload device
         Args:
             device ('obj'): Device object
-            prompt_recovery ('bool'): Enable/Disable prompt recovery feature
-            reload_creds ('str'): Credential name defined in the testbed yaml file to be used during reload
+            prompt_recovery ('bool'): Enable/Disable prompt recovery feature. default: True
+            reload_creds ('str'): Credential name defined in the testbed yaml file to be used during reload. default: 'default'
             sleep_after_reload ('int'): Time to sleep after reload in seconds, default: 120
             timeout ('int'): reload timeout value, defaults 800 seconds.
+            reload_command ('str'): reload command. default: 'reload'
+            error_pattern ('list'): List of regex strings to check output for errors.
+            devices ('list'): list of device names
+            exclude_devices ('list'): excluded device list
+        Usage:
+            device.api.execute_reload(devices=['ce1', 'ce2', 'pe1'], error_pattern=[], sleep_after_reload=0)
     '''
 
-    log.info("Reloading device '{d}'".format(d=device.name))
+    def _execute_reload(device, prompt_recovery, reload_creds, sleep_after_reload,
+                        timeout, reload_command, error_pattern):
+        '''
+        internal function of execute_reload for pcall
+        '''
+        log.info("Reloading device '{d}'".format(d=device.name))
 
-    credentials = ['default']
+        if device.is_ha and device.type == 'iol':
+            reload_command = 'redundancy reload shelf'
 
-    if reload_creds:
-        credentials.insert(0, reload_creds)
+        try:
+            if isinstance(error_pattern, list):
+                device.reload(prompt_recovery=prompt_recovery,
+                              reload_creds=reload_creds,
+                              timeout=timeout,
+                              reload_command=reload_command,
+                              error_pattern=error_pattern)
+            else:
+                device.reload(prompt_recovery=prompt_recovery,
+                              reload_creds=reload_creds,
+                              timeout=timeout,
+                              reload_command=reload_command)
+        except Exception as e:
+            log.error(f"Error while reloading device {device.name}")
+            raise e
 
-    try:
-        device.reload(prompt_recovery=prompt_recovery, reload_creds=credentials,
-                      timeout=timeout)
-    except Exception as e:
-        log.error("Error while reloading device {}".format(device.name))
-        raise e
+        log.info(f"Waiting '{sleep_after_reload}' seconds after reload ...")
+        time.sleep(sleep_after_reload)
 
-    log.info("Waiting '{}' seconds after reload ...".format(sleep_after_reload))
-    time.sleep(sleep_after_reload)
 
+    if exclude_devices is None:
+        exclude_devices = []
+
+    if devices:
+        device_list = [{
+            'device': device.testbed.devices[dev]
+        } for dev in devices if dev not in exclude_devices]
+        ikwargs = device_list
+        ckwargs = {
+            'prompt_recovery': prompt_recovery,
+            'reload_creds': reload_creds,
+            'sleep_after_reload': sleep_after_reload,
+            'timeout': timeout,
+            'reload_command': reload_command,
+            'error_pattern': error_pattern,
+        }
+        pcall(_execute_reload, ckwargs=ckwargs, ikwargs=ikwargs)
+    else:
+        _execute_reload(device=device,
+                        prompt_recovery=prompt_recovery,
+                        reload_creds=reload_creds,
+                        sleep_after_reload=sleep_after_reload,
+                        timeout=timeout,
+                        reload_command=reload_command,
+                        error_pattern=error_pattern)
 
 def execute_copy_to_running_config(device, file, copy_config_timeout=60):
     ''' Copying file to running-config on device

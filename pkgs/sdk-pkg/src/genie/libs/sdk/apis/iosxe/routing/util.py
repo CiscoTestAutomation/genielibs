@@ -58,7 +58,7 @@ def clear_ip_route_all(device, vrf=None):
 
     try:
         if vrf:
-            device.execute("clear ip route vrf {vrf} *".format(vrf))
+            device.execute(f"clear ip route vrf {vrf} *")
         else:
             device.execute("clear ip route *")
             
@@ -206,7 +206,7 @@ def clear_ipv6_route_all(device, vrf=None):
 
     try:
         if vrf:
-            device.execute("clear ipv6 route vrf {vrf} *".format(vrf))
+            device.execute(f"clear ipv6 route vrf {vrf} *")
         else:
             device.execute("clear ipv6 route *")
             

@@ -5,6 +5,7 @@ import logging
 
 # Unicon
 from unicon.core.errors import SubCommandFailure
+from unicon.eal.dialogs import Dialog, Statement
 
 log = logging.getLogger(__name__)
 
@@ -188,52 +189,214 @@ def unconfigure_ip_arp_inspection_vlan(
             "Failed to unconfig ip arp inspection vlan")
 
 
-def configure_ip_arp_inspection_validateip(
-        device):
+def configure_ip_arp_inspection_validateip(device, address_type='ip'):
 
-    """ Config ip arp inspection validate ip  on device
+    """ Configure ip arp inspection validate {address_type} on device
         Args:
             device ('obj'): Device object
+            address_type ('str', optional): Address type. Default is 'ip'
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [f"ip arp inspection validate {address_type}"]
+    try:
+        device.configure(cmd)
+
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(
+            f"Failed to configure ip arp inspection validate {address_type}.")
+
+
+def unconfigure_ip_arp_inspection_validateip(device, address_type='ip'):
+
+    """ Unconfigure ip arp inspection validate ip  on device
+        Args:
+            device ('obj'): Device object
+            address_type ('str', optional): Address type. Default is 'ip'
         Returns:
             None
         Raises:
             SubCommandFailure
     """
 
+    cmd = [f"ip arp inspection validate {address_type}"]
     try:
-        device.configure(
-            [
-               "ip arp inspection validate ip",
-            ]
-        )
+        device.configure(cmd)
 
     except SubCommandFailure as e:
         log.error(e)
         raise SubCommandFailure(
-            f"Failed to config ip arp inspection validate ip.")
+            f"Failed to unconfigure ip arp inspection validate {address_type}.")
 
-
-def unconfigure_ip_arp_inspection_validateip(
-        device):
-
-    """ Unonfig ip arp inspection validate ip  on device
+def configure_ip_arp_inspection_on_interface(device, interface, type, rate=None):
+    """ Config ip arp inspection on interface
         Args:
             device ('obj'): Device object
+            interface ('str'): interface name
+            type ('str'): interface limit or trust
+            rate ('int', optional): Packets per second
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    if rate:
+        cmd = [f"ip arp inspection {type} rate {rate}"]
+    else:
+        cmd = [f"ip arp inspection {type}"]
+    try:
+        device.configure(["interface {interface}".format(interface=interface), cmd])
+
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(
+            "Failed to config ip arp inspection on interface")
+
+def unconfigure_ip_arp_inspection_on_interface(device, interface, type, rate=None):
+    """ Unconfig ip arp inspection on interface
+        Args:
+            device ('obj'): Device object
+            interface ('str'): interface name
+            type ('str'): interface limit or trust
+            rate ('int', optional): Packets per second
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    if rate:
+        cmd = [f"no ip arp inspection {type} rate {rate}"]
+    else:
+        cmd = [f"no ip arp inspection {type}"]
+    try:
+        device.configure(["interface {interface}".format(interface=interface), cmd])
+
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(
+            "Failed to unconfig ip arp inspection on interface")
+
+
+def configure_ip_arp_inspection_log_buffer(device, buffer_type, entries, interval=None):
+
+    """ Configure ip arp inspection log-buffer {type} {entries} on device
+        Args:
+            device ('obj'): Device object
+            buffer_type ('str'): log-buffer type 'entries' or 'logs'.
+            entries ('int'): Number of entries.
+            interval ('int', optional): Interval in seconds. Default is None.
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f"ip arp inspection log-buffer {buffer_type} {entries}"
+    if interval:
+        cmd += f" interval {interval}"
+    try:
+        device.configure(cmd)
+
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(
+            f"Failed to configure ip arp inspection log-buffer {buffer_type}.")
+
+def unconfigure_ip_arp_inspection_log_buffer(device, buffer_type):
+
+    """ Unconfigure ip arp inspection log-buffer {type} on device
+        Args:
+            device ('obj'): Device object
+            buffer_type ('str'): log-buffer type 'entries' or 'logs'.
         Returns:
             None
         Raises:
             SubCommandFailure
     """
 
+    cmd = [f"no ip arp inspection log-buffer {buffer_type}"]
     try:
-        device.configure(
-            [
-               "no ip arp inspection validate ip",
-            ]
-        )
+        device.configure(cmd)
 
     except SubCommandFailure as e:
         log.error(e)
         raise SubCommandFailure(
-            "Failed to unconfig ip arp inspection validate ip.")
+            f"Failed to unconfigure ip arp inspection log-buffer {buffer_type}.")
 
+def clear_ip_arp_inspection(device, intype):
+    ''' Clears ip arp inspection
+        Args:
+            device (`obj`): Device object
+            intype (`str`): statistics or log
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    '''
+    try:
+        device.execute(f"clear ip arp inspection {intype}")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to clear ip arp inspection  {device} . Error:\n{e}")
+
+def configure_ip_arp_inspection_vlan_logging(device, range, log_config, log_type=None):
+    ''' Configure ip arp inspection vlan logging
+        Args:
+            device ('obj'): Device object
+            range ('str'):   WORD  vlan range, example: 1,3-5,7,9-11
+            log_config ('str'): acl-match --->  matchlog  Log packets on ACE logging configuration
+                                                none      Do not log packets that match ACLs
+                                dhcp-bindings ->  all     Log all packets that match DHCP bindings
+                                                  none    Do not log packets that match DHCP bindings
+                                                  permit  Log DHCP Binding Permitted packets
+                                arp-probe ---->  <cr>  <cr>
+            log_type(optional): acl-match      Logging of packets that match ACLs
+                                arp-probe      Log ARP probe packets with zero sender IP addr
+                                dhcp-bindings  Logging of packet that match DHCP bindings
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    '''
+    
+    cmd = f"ip arp inspection vlan {range}" 
+    if log_type:
+        cmd += f" logging {log_type} {log_config}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(
+            "Failed to configure ip arp inspection vlan logging")
+
+
+def unconfigure_ip_arp_inspection_vlan_logging(device, range, log_config, log_type=None):    
+    ''' Unconfigure ip arp inspection vlan logging
+        Args:
+            device ('obj'): Device object
+            range ('str'):   WORD  vlan range, example: 1,3-5,7,9-11
+            log_config ('str'): acl-match --->  matchlog  Log packets on ACE logging configuration
+                                                none      Do not log packets that match ACLs
+                                dhcp-bindings ->  all     Log all packets that match DHCP bindings
+                                                  none    Do not log packets that match DHCP bindings
+                                                  permit  Log DHCP Binding Permitted packets
+                                arp-probe ---->  <cr>  <cr>
+            log_type(optional): acl-match      Logging of packets that match ACLs
+                                arp-probe      Log ARP probe packets with zero sender IP addr
+                                dhcp-bindings  Logging of packet that match DHCP bindings
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    '''
+    cmd = f"no ip arp inspection vlan {range}" 
+    if log_type:
+        cmd += f" logging {log_type} {log_config}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(
+            "Failed to unconfigure ip arp inspection vlan logging")

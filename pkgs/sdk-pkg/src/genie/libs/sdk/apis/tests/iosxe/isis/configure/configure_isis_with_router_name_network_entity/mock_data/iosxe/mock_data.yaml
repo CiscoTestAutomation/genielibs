@@ -4,18 +4,17 @@ configure:
       new_state: execute
     line console 0:
       new_state: configure_line
-    net 49.0000.0000.0000.aaaa.00: "net 49.0000.0000.0000.aaaa.00\r\n"
     no logging console: ''
-    redistribute bgp 1: "redistribute bgp 1\r\n"
-    router isis 101: "router isis 101\r\n"
-    vrf vrf101: "vrf vrf101\r\n"
-  prompt: stack3-nyquist-1(config)#
+    redistribute bgp 100: "%VRF vrf1 does not exist\r\n"
+    router isis 10: "router isis 10\r\n"
+    vrf vrf1: "vrf vrf1\r\n"
+  prompt: PE1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: stack3-nyquist-1(config-line)#
+  prompt: PE1(config-line)#
 connect:
   commands:
     ? ''
@@ -35,4 +34,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: stack3-nyquist-1#
+  prompt: PE1#

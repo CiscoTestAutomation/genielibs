@@ -683,8 +683,8 @@ def configure_nve_interface_group_based_policy(device, nve_num):
 def unconfigure_nve_interface_group_based_policy(device, nve_num):
     """ Un-configure group-based-policy for nve interface
         Args:
-            device (`obj`): Device object
-            nve_num (`int`): nve interface number
+            device ('obj'): Device object
+            nve_num ('int'): nve interface number
         Returns:
             None
         Raises:
@@ -723,3 +723,236 @@ def clear_bgp_l2vpn_evpn(device):
             "Could not clear bgp l2vpn evpn on {device}. Error:\n{error}".format(device=device, error=e)
         )
 
+def configure_l2vpn_evpn_flooding_suppression(device):
+    """ Configure the flooding-suppression address-resolution disable on l2vpn evpn
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [
+                f"l2vpn evpn",
+                f"flooding-suppression address-resolution disable"           
+          ]  
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not Configure the flooding-suppression address-resolution disable. Error:\n{error}".format(error=e)
+        )
+
+def configure_evpn_instance(device, evi, service_instance, encapsulation_type=None,
+                         replication_type=None):
+    """ Configure l2vpn evpn instance
+        Args:
+            device ('obj'): Device object
+            evi ('int'): instance id
+            service_instance ('str'): service instance type
+                              vlan-based|vlan-bundle|vlan-aware
+            encapsulation_type ('str'): encapsulation type, vxlan|mpls
+            replication_type ('str'): replication type, ingress|static
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    log.info(
+        "Configuring l2vpn evpn instance {evi}".format(evi=evi)
+    )
+    cmd = [
+        "l2vpn evpn instance {evi} {service_instance}".format(
+                evi=evi, service_instance=service_instance
+            )
+    ]
+    if encapsulation_type:
+        cmd.append(
+            [
+                "l2vpn evpn instance {evi}".format(evi=evi),
+                "encapsulation {encap}".format(encap=encapsulation_type),
+            ]
+        )
+    if replication_type:
+        cmd.append(
+            [
+                "l2vpn evpn instance {evi}".format(evi=evi),
+                "replication {replication_type}".format(replication_type=replication_type),
+            ]
+        )
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+                "Failed to configure l2vpn evpn instance {evi}. Error:\n{e}".format(
+                    evi=evi,
+                    e=e
+                )
+            )
+
+def unconfigure_evpn_instance(device, evi):
+    """ Unconfigure l2vpn evpn instance
+        Args:
+            device ('obj'): Device object
+            evi ('int'): instance id
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        "Unconfiguring l2vpn evpn instance {evi}".format(evi=evi)
+    )
+    cmd = "no l2vpn evpn instance {evi}".format(evi=evi)
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfigure l2vpn evpn instance {evi} Error:\n{e}".format(
+                evi=evi,
+                e=e
+            )
+        )
+
+def unconfigure_l2vpn_evpn_flooding_suppression(device):
+    """ Unconfigure the flooding-suppression address-resolution disable on l2vpn evpn
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [
+                f"l2vpn evpn",
+                f"no flooding-suppression address-resolution disable"           
+          ]  
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not Unconfigure the flooding-suppression address-resolution disable. Error:\n{error}".format(error=e)
+        )
+
+
+def configure_evpn_l2_instance_bd_association(device, bd_id,
+                                              evpn_instance, vni_id=None):
+    """ Configure configure VLAN association to EVPN instance
+        Args:
+            device ('obj'): Device object
+            bd_id ('int'): bridge-domain id
+            evpn_instance('int'): EVPN Instance id
+            vni_id('int'): VNI id, default is None
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    configs = ["bridge-domain {bd_id}".format(bd_id=bd_id)]
+    if vni_id:
+        configs.append(
+            "member evpn-instance {evpn_instance} vni {vni_id}".format(
+                evpn_instance=evpn_instance, vni_id=vni_id
+            )
+        )
+    else:
+        configs.append(
+            "member evpn-instance {evpn_instance}".format(
+                evpn_instance=evpn_instance
+            )
+        )
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure VLAN association to EVPN L2 instance on device "
+            'Error:\n{e}'.format(e=e)
+        )
+
+def unconfigure_evpn_l2_instance_bd_association(device, bd_id, evpn_instance):
+    """ Configure configure VLAN association to EVPN instance
+        Args:
+            device ('obj'): Device object
+            bd_id ('int'): bridge-domain id
+            evpn_instance('int'): EVPN Instance id
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    configs = [
+            "bridge-domain {bd_id}".format(bd_id=bd_id),
+            "no member evpn-instance {evpn_instance}".format(
+                evpn_instance=evpn_instance
+            )
+        ]
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure VLAN association to EVPN L2 instance on device "
+            'Error:\n{e}'.format(e=e)
+        )
+
+def configure_evpn_floodsuppress_dhcprelay_disable_globally(device):
+    """ Configure l2vpn evpn flooding suppression dhcp-relay disable globally
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        "Configuring "
+        "'l2vpn evpn flooding suppression dhcp-relay disable' globally"
+    )
+
+    cmd = [
+            "service internal",
+            "l2vpn evpn",
+            "flooding-suppression dhcp-relay disable",
+            "no service internal"
+        ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure "
+            "'l2vpn evpn flooding suppression dhcp-relay disable' globally"
+            'Error:\n{e}'.format(e=e)
+        )
+
+def unconfigure_evpn_floodsuppress_dhcprelay_disable_globally(device):
+    """ Unconfigure l2vpn evpn flooding suppression dhcp-relay disable globally
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        "Unconfiguring "
+        "'l2vpn evpn flooding suppression dhcp-relay disable' globally"
+    )
+    cmd = [
+            "service internal",
+            "l2vpn evpn",
+            "no flooding-suppression dhcp-relay disable",
+            "no service internal"
+        ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfigure "
+            "'l2vpn evpn flooding suppression dhcp-relay disable' globally"
+            'Error:\n{e}'.format(e=e)
+        )

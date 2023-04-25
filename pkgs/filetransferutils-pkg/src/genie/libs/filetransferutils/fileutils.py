@@ -104,7 +104,10 @@ class FileUtils(FileUtilsBase):
             # bootflash:/filename.bin -> /filename.bin
             try:
                 p = urlparse(destination)
-                destination_filename = p.path.replace('//', '/')
+                # if destination ends with a slash, assume it's a directory
+                # rather than a filename
+                if not p.path.endswith('/'):
+                    destination_filename = p.path.replace('//', '/')
             except Exception:
                 pass
 

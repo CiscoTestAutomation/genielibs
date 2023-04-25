@@ -1964,3 +1964,43 @@ def l2vpn_xconnect_context_interface(device, context_name, pseudowire_member, in
             "Could not configure l2vpn xconnect context {context_name}."
             "Error:\n{error}".format(context_name=context_name,error=e)
         ) 
+
+def configure_mpls_te_nsr(device):
+
+    """configure mpls te nsr on device
+        Args:
+            device (`obj`): Device object   
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure(
+            "mpls traffic-eng nsr"
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure mpls te nsr on device. Error: {error} ".format(
+                                    error=e)
+        )
+
+def configure_rsvp_gracefull_restart(device):
+
+    """configure ip rsvp gracefull restart with mode as help-neigbor
+        Args:
+            device (`obj`): Device object   
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure(
+            "ip rsvp signalling hello graceful-restart mode help-neighbor"
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure ip rsvp gracefull restart on device. Error: {error} ".format(
+                                    error=e)
+        )

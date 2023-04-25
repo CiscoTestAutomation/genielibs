@@ -35,5 +35,5 @@ class TestConfigureReplace(unittest.TestCase):
  'to replace the current running configuration with the\r\n'
  'contents of the specified configuration file, which is\r\n'
  'assumed to be a complete configuration, not a partial\r\n'
- 'configuration. Enter Y if you are sure you want to proceed. ? [no]:')
+ 'configuration. Enter Y if you are sure you want to proceed. ? [no]:Y')
         self.assertEqual(result, expected_output)

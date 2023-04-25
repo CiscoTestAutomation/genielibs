@@ -288,6 +288,7 @@ class Installimage(unittest.TestCase):
         # And we want the verify_boot_variable api to be mocked.
         # This simulates the pass case.
         self.device.reload = Mock()
+        self.device.execute = Mock()
 
         # Call the method to be tested (clean step inside class)
         self.cls.install_image(

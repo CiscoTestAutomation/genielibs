@@ -3,7 +3,7 @@ import unittest
 import logging
 import sys
 import json
-
+import time
 from unittest.mock import patch
 from collections import OrderedDict
 import yang
@@ -14,6 +14,7 @@ from google.protobuf import json_format
 from genie.libs.sdk.triggers.blitz.yangexec import run_netconf, run_gnmi, run_restconf
 from genie.libs.sdk.triggers.blitz.yangexec_helper import DictionaryToXML, dict_to_ordereddict
 from genie.libs.sdk.triggers.blitz.gnmi_util import (GnmiMessage,
+                                                     GnmiSubscription,
                                                      GnmiMessageConstructor,
                                                      GnmiSubscriptionOnce,
                                                      GnmiSubscriptionStream,
@@ -46,6 +47,7 @@ class Default:
 
 class Creds:
     credentials = Default()
+    testbed = {}
 
 
 class TestDevice:
@@ -53,6 +55,16 @@ class TestDevice:
 
     def __init__(self, response):
         self.gnmi = Gnmi(response)
+
+
+class TestTestbed:
+    servers = {'ntp': {'server': "1.1.1.1"}}
+
+
+class TestDeviceWithNtp(TestDevice):
+    def __init__(self, response):
+        super().__init__(response)
+        self.device.testbed = TestTestbed()
 
 
 class TestYangExec(unittest.TestCase):
@@ -3089,6 +3101,7 @@ class TestYangExec(unittest.TestCase):
     def test_subscribe_once_transaction_time(self):
         request = self.make_test_subscribe_request()
         request['transaction_time'] = 0.00000001
+        device = TestDeviceWithNtp(self.make_test_subscribe_response())
         subscribe_thread = GnmiSubscriptionOnce(
             responses=[self.make_test_subscribe_response()],
             **request
@@ -3108,8 +3121,10 @@ class TestYangExec(unittest.TestCase):
 
     def test_subscribe_stream_transaction_time(self):
         request = self.make_test_subscribe_request()
+        device = TestDeviceWithNtp(self.make_test_subscribe_response())
         request['transaction_time'] = 0.00000001
         subscribe_thread = GnmiSubscriptionStream(
+            device=device,
             responses=[self.make_test_subscribe_response()],
             **request
         )
@@ -3120,12 +3135,42 @@ class TestYangExec(unittest.TestCase):
         request = self.make_test_subscribe_request()
         request['transaction_time'] = 2
         subscribe_thread = GnmiSubscriptionStream(
+            device=device,
             responses=[self.make_test_subscribe_response()],
             **request
         )
         subscribe_thread.start()
         subscribe_thread.join()
         self.assertEqual(subscribe_thread.result, True)
+
+    def test_subscribe_stream_transaction_time_no_synchronization(self):
+        request = self.make_test_subscribe_request()
+        device = TestDeviceWithNtp(self.make_test_subscribe_response())
+        request['transaction_time'] = 5
+        response = self.make_test_subscribe_response()
+        response.update.timestamp = time.time_ns() + 500000000000
+        
+        subscribe_thread = GnmiSubscriptionStream(
+            device=device,
+            responses=[response],
+            **request
+        )
+        subscribe_thread.start()
+        subscribe_thread.join()
+        self.assertEqual(subscribe_thread.result, False)
+
+    def test_subscribe_stream_transaction_time_no_ntp_server(self):
+        request = self.make_test_subscribe_request()
+        device = TestDeviceWithNtp(self.make_test_subscribe_response())
+        device.device.testbed.servers = {}
+        request['transaction_time'] = 5
+        
+        with self.assertRaises(GnmiSubscription.NoNtpConfigured):
+            GnmiSubscriptionStream(
+                device=device,
+                responses=[self.make_test_subscribe_response()],
+                **request
+            )
 
     def test_run_subscribe_stream_dynamic_values(self):
         """ Test GNMI Subscribe ONCE mode for Subscription List"""
@@ -3992,7 +4037,7 @@ class TestYangExec(unittest.TestCase):
         update1.val.MergeFrom(value1)
 
         notification1 = proto.gnmi_pb2.Notification()
-        notification1.timestamp = 0
+        notification1.timestamp = time.time_ns()
         notification1.prefix.MergeFrom(proto.gnmi_pb2.Path())
         notification1.update.append(update1)
 

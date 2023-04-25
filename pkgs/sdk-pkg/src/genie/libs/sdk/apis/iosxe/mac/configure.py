@@ -406,3 +406,35 @@ def unconfigure_mac_address_table_static(device, mac_address, vlan_number, inter
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Failed to unconfigure mac address table on device {device} . Error:\n{e}")
+
+def configure_mac_address_table_control_packet_learn(device):
+    """ configures mac address-table control-packet-learn
+        Args:
+            device (`obj`): device object 
+        Return:
+            None
+        Raises:
+            SubCommandFailure 
+    """
+    cmd="mac address-table control-packet-learn"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure the mac address-table control-packet-learn on device {device.name}. Error:\n{e}")
+
+def unconfigure_mac_address_table_control_packet_learn(device):
+    """ unconfigures mac address-table control-packet-learn
+        Args:
+            device (`obj`): device object 
+        Return:
+            None
+        Raises:
+            SubCommandFailure 
+    """
+    cmd="no mac address-table control-packet-learn"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure the mac address-table control-packet-learn on device {device.name}. Error:\n{e}")

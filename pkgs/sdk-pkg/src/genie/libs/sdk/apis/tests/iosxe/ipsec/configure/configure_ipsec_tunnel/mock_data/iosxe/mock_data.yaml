@@ -1,25 +1,27 @@
 configure:
   commands:
+    description pe1_pe3_tunnel: "description pe1_pe3_tunnel\r\n"
     end:
       new_state: execute
-    interface Tunnel2: "interface Tunnel2\r\n"
-    ip address 55.55.55.2 255.255.255.0: "ip address 55.55.55.2 255.255.255.0\r\n"
+    interface Tunnel1: "interface Tunnel1\r\n"
+    ip address 200.2.0.2 255.255.255.0: "ip address 200.2.0.2 255.255.255.0\r\n"
+    ipv6 address 2001::200:2:8:2/112: "ipv6 address 2001::200:2:8:2/112\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''
-    tunnel destination 71.71.71.71: "tunnel destination 71.71.71.71\r\n"
-    tunnel mode ipsec ipv4: "tunnel mode ipsec ipv4\r\n"
-    tunnel mode ipsec ipv4 v6-overlay: "tunnel mode ipsec ipv4 v6-overlay\r\n"
-    tunnel protection ipsec profile nil_ips: "tunnel protection ipsec profile nil_ips\r\
-      \n"
-    tunnel source 70.70.70.70: "tunnel source 70.70.70.70\r\n"
-  prompt: ARCADE1(config)#
+    tunnel destination 2001::99:6:8:8: "tunnel destination 2001::99:6:8:8\r\n"
+    tunnel mode gre ipv6: "tunnel mode gre ipv6\r\n"
+    tunnel path-mtu-discovery: "Profile gre_profile is not defined.\r\n"
+    tunnel protection ipsec profile gre_profile: "tunnel protection ipsec profile\
+      \ gre_profile\r\n"
+    tunnel source 2001::99:2:4:2: "tunnel source 2001::99:2:4:2\r\n"
+  prompt: iolpe2(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: ARCADE1(config-line)#
+  prompt: iolpe2(config-line)#
 connect:
   commands:
     ? ''
@@ -39,4 +41,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: ARCADE1#
+  prompt: iolpe2#

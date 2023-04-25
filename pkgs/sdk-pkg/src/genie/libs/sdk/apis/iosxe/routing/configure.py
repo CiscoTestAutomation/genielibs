@@ -85,37 +85,18 @@ def remove_routing_ip_route(
         Raises:
             SubCommandFailure
     """
+    log.info(f'Unconfiguring ip route {ip_address} {mask} on {device.name}')
+    config = f'no ip route {ip_address} {mask}'
     try:
-        if interface and dest_add:
-            device.configure(
-                "no ip route "
-                + ip_address
-                + " "
-                + mask
-                + " "
-                + interface
-                + " "
-                + dest_add
-            )
-        elif interface:
-            device.configure(
-                "no ip route " + ip_address + " " + mask + " " + interface
-            )
-        elif dest_add:
-            device.configure(
-                "no ip route " + ip_address + " " + mask + " " + dest_add
-            )
-        log.info(
-            "Configuration removed for {ip_address} ".format(
-                ip_address=ip_address
-            )
-        )
+        if interface:
+            config += f' {interface}'
+        if dest_add:
+            config += f' {dest_add}'
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            "Configuration failed for {ip_address}. Error:\n{error}".format(
-                ip_address=ip_address, error=e
-            )
+            f"Configuration failed for {ip_address}. Error:\n{e}"
         )
+
 def configure_routing_static_routev6(
     device, routev6, mask, vrf=None, interface=None, destination_addressv6=None
 ):
@@ -1080,7 +1061,7 @@ def configure_ipv6_route_nexthop_vrf(
         raise SubCommandFailure(
             "Could not configure ipv6 route nexthop vrf. Error:\n{error}".format(error=e)
         )
-        
+
 def unconfigure_ipv6_route_nexthop_vrf(
     device,
     ipv6_address,
@@ -1115,7 +1096,7 @@ def unconfigure_system_mtu(device, size=None):
             size ('int'): mtu size (eg. 9216)
         Returns:
             None
-        Raises: 
+        Raises:
             SubCommandFailure
     """
     config = 'no system mtu'
@@ -1125,3 +1106,25 @@ def unconfigure_system_mtu(device, size=None):
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Failed to unconfigure system mtu on device {device.name}. Error:\n{e}')
+
+def unconfigure_stack_mac_persistent_timer(device):
+    """ unconfigure stack-mac persistent timer on device
+
+        Args:
+            device ('str'): Device str
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    log.info('unconfiguring stack-mac persistent timer on device')
+
+    cmd = [f"no stack-mac persistent timer"]
+    try:
+        device.configure(cmd)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure mac timer on device. Error:\n{e}")

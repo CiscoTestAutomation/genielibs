@@ -367,3 +367,83 @@ def configure_license_smart(device, license):
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Failed to license smart {license} on device {device.name}. Error:\n{e}')
+
+def configure_license_smart_transport_callhome(device):
+    """ Configures license smart transport callhome
+        Example : license smart transport callhome
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f'Configuring license smart transport callhome on {device.name}')
+    config = f'license smart transport callhome'
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to configure license smart transport callhome on device {device.name}. Error:\n{e}'
+        )
+
+def configure_license_smart_url(device, surl):
+    """ Configures license smart url smart {url}
+        Example : license smart url smart {url}
+
+        Args:
+            device ('obj'): device to use
+            surl ('str): Set the Smart Transport URL
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f'license smart url smart {surl} on {device.name}')
+    config = (f'license smart url smart {surl}')
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Failed to Set the Smart Transport URL license smart {surl} on device {device.name}. Error:\n{e}')
+
+
+def configure_call_home(device):
+    """ configure to Enter into call-home configuration mode
+    
+    Args:
+        device ('obj'): device to use
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed to Enter call-home configuration mode
+    """
+
+    config = "call-home"
+    try:
+        device.configure(config)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to Enter call-home configuration mode. Error:\n{e}")
+
+def configure_exec_prompt_timestamp(device,fline,lline):
+    """ configure to Exec Prompt Print timestamps for show commands
+    
+    Args:
+        device ('obj'): device to use
+        fline('str'):  vty First Line number
+        lline('str'):  vty Last Line number
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed to Enter call-home configuration mode
+    """
+
+    config = [f"line vty {fline} {lline}",
+              f"exec prompt timestamp"]
+    try:
+        device.configure(config)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure Exec Prompt Print timestamps for show commands. Error:\n{e}")

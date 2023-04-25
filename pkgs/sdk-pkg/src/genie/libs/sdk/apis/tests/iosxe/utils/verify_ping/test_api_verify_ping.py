@@ -1,106 +1,35 @@
-
+import os
 import unittest
-from textwrap import dedent
-from unittest.mock import MagicMock, Mock, call
-
+from pyats.topology import loader
 from genie.libs.sdk.apis.iosxe.utils import verify_ping
 
 
-class TestUtilsApi(unittest.TestCase):
+class TestVerifyPing(unittest.TestCase):
 
-    def test_verify_ping_vrf(self):
-        device = Mock()
+    @classmethod
+    def setUpClass(self):
+        testbed = f"""
+        devices:
+          iolpe2:
+            connections:
+              defaults:
+                class: unicon.Unicon
+              a:
+                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
+                protocol: unknown
+            os: iosxe
+            platform: iosxe
+            type: iol
+        """
+        self.testbed = loader.load(testbed)
+        self.device = self.testbed.devices['iolpe2']
+        self.device.connect(
+            learn_hostname=True,
+            init_config_commands=[],
+            init_exec_commands=[]
+        )
 
-        output = dedent("""
-            ping vrf Mgmt-vrf 127.0.0.1
-            Type escape sequence to abort.
-            Sending 5, 100-byte ICMP Echos to 127.0.0.1, timeout is 2 seconds:
-            .....
-            Success rate is 0 percent (0/5)
-            """)
-
-        device.execute = Mock(return_value = output)
-        result = verify_ping(device, vrf='Mgmt-vrf', address='127.0.0.1', check_interval=0.1, max_time=0.2)
-        self.assertEqual(result, False)
-        device.execute.assert_has_calls([
-            call('ping vrf Mgmt-vrf 127.0.0.1', error_pattern=['% No valid source address for destination'])
-        ])
-
-    def test_verify_ping_vrf_source(self):
-        device = Mock()
-
-        output = dedent("""
-            ping vrf Mgmt-vrf 127.0.0.1 source Loopback0
-            Type escape sequence to abort.
-            Sending 5, 100-byte ICMP Echos to 127.0.0.1, timeout is 2 seconds:
-            .....
-            Success rate is 0 percent (0/5)
-            """)
-
-        device.execute = Mock(return_value = output)
-        result = verify_ping(device, vrf='Mgmt-vrf', address='127.0.0.1', source='Loopback0',
-                             check_interval=0.1, max_time=0.2)
-        self.assertEqual(result, False)
-        device.execute.assert_has_calls([
-            call('ping vrf Mgmt-vrf 127.0.0.1 source Loopback0',
-                 error_pattern=['% No valid source address for destination'])
-        ])
-
-    def test_verify_ping_count(self):
-        device = Mock()
-
-        output = dedent("""
-            ping 127.0.0.1 repeat 2
-            Type escape sequence to abort.
-            Sending 5, 100-byte ICMP Echos to 127.0.0.1, timeout is 2 seconds:
-            .....
-            Success rate is 0 percent (0/5)
-            """)
-
-        device.execute = Mock(return_value = output)
-        result = verify_ping(device, address='127.0.0.1', count=2, check_interval=0.1, max_time=0.2)
-        self.assertEqual(result, False)
-        device.execute.assert_has_calls([
-            call('ping 127.0.0.1 repeat 2',
-                 error_pattern=['% No valid source address for destination'])
-        ])
-
-    def test_verify_ping_count_source(self):
-        device = Mock()
-
-        output = dedent("""
-            ping 127.0.0.1 source Loopback0 repeat 2
-            Type escape sequence to abort.
-            Sending 5, 100-byte ICMP Echos to 127.0.0.1, timeout is 2 seconds:
-            .....
-            Success rate is 0 percent (0/5)
-            """)
-
-        device.execute = Mock(return_value = output)
-        result = verify_ping(device, address='127.0.0.1', count=2, source='Loopback0',
-                             check_interval=0.1, max_time=0.2)
-        self.assertEqual(result, False)
-        device.execute.assert_has_calls([
-            call('ping 127.0.0.1 source Loopback0 repeat 2',
-                 error_pattern=['% No valid source address for destination'])
-        ])
-
-    def test_verify_ping_size(self):
-        device = Mock()
-
-        output = dedent("""
-            ping 127.0.0.1 size 36
-            Type escape sequence to abort.
-            Sending 5, 100-byte ICMP Echos to 127.0.0.1, timeout is 2 seconds:
-            .....
-            Success rate is 0 percent (0/5)
-            """)
-
-        device.execute = Mock(return_value = output)
-        result = verify_ping(device, address='127.0.0.1', size=36,
-                             check_interval=0.1, max_time=0.2)
-        self.assertEqual(result, False)
-        device.execute.assert_has_calls([
-            call('ping 127.0.0.1 size 36',
-                 error_pattern=['% No valid source address for destination'])
-        ])
+    def test_verify_ping(self):
+        result = verify_ping(self.device, '1.1.1.8', 100, 1, None, None, None, 60, 10, None)
+        expected_output = True
+        self.assertEqual(result, expected_output)

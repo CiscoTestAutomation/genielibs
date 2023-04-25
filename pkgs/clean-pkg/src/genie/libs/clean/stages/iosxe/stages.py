@@ -548,6 +548,7 @@ install_image:
         'prompt_recovery': True,
         'append_error_pattern': [r"FAILED:.* ",],
     }
+    ISSU = False
     # ============
     # Stage Schema
     # ============
@@ -556,6 +557,7 @@ install_image:
         Optional('save_system_config'): bool,
         Optional('install_timeout'): int,
         Optional('reload_timeout'): int,
+        Optional('issu'): bool,
         Optional('reload_service_args'): {
             Optional('reload_creds'): str,
             Optional('prompt_recovery'): bool,
@@ -624,7 +626,8 @@ install_image:
     def install_image(self, steps, device, images,
                       save_system_config=SAVE_SYSTEM_CONFIG,
                       install_timeout=INSTALL_TIMEOUT,
-                      reload_service_args=None):
+                      reload_service_args=None,
+                      issu=ISSU):
 
         # Set default reload args
         reload_args = self.RELOAD_SERVICE_ARGS.copy()
@@ -669,9 +672,14 @@ install_image:
                     'timeout': install_timeout,
                     'reply': install_add_one_shot_dialog
                 })
-
-                device.reload('install add file {} activate commit'.format(images[0]),
+                if issu:
+                    device.reload('install add file {} activate issu commit'.format(images[0]),
+                              **reload_args)                    
+                else:
+                    device.reload('install add file {} activate commit'.format(images[0]),
                               **reload_args)
+
+                device.execute('install commit')
 
             except Exception as e:
                 step.failed("Failed to install the image", from_exception=e)
@@ -771,6 +779,8 @@ class Reload(BaseStage):
 Stage Schema
 ------------
 reload:
+    license: (optional)
+        check: (bool, optional): Enable the checking license inconsistency and fix
 
     reload_service_args (optional):
 
@@ -816,6 +826,9 @@ reload:
     # =================
     # Argument Defaults
     # =================
+    LICENSE = {
+        'check': False
+    }
     RELOAD_SERVICE_ARGS = {
         'timeout': 800,
         'reload_creds': 'default',
@@ -833,6 +846,9 @@ reload:
     # Stage Schema
     # ============
     schema = {
+        Optional('license'): {
+            Optional('check'): bool
+        },
         Optional('check_modules'): {
             Optional('check'): bool,
             Optional('timeout'): int,
@@ -853,6 +869,7 @@ reload:
     # ==============================
     exec_order = [
         'reload',
+        'license',
         'disconnect_and_reconnect',
         'check_modules'
     ]
@@ -861,21 +878,42 @@ reload:
 
         if reload_service_args is None:
             # If user provides no custom values, take the defaults
-            reload_service_args = self.RELOAD_SERVICE_ARGS
+            self.reload_service_args = self.RELOAD_SERVICE_ARGS
         else:
             # If user provides custom values, update the default with the user
             # provided. This is needed because if the user only provides 1 of
             # the many optional arguments, we still need to default the others.
             self.RELOAD_SERVICE_ARGS.update(reload_service_args)
-            reload_service_args = self.RELOAD_SERVICE_ARGS
+            self.reload_service_args = self.RELOAD_SERVICE_ARGS
 
         with steps.start(f"Reload {device.name}") as step:
 
             try:
-                device.reload(**reload_service_args)
+                device.reload(**self.reload_service_args)
             except Exception as e:
-                step.failed(f"Failed to reload within {reload_service_args['timeout']} "
+                step.failed(f"Failed to reload within {self.reload_service_args['timeout']} "
                             f"seconds.", from_exception=e)
+
+    def license(self, steps, device, license=None):
+
+        if license is None:
+            license = self.LICENSE
+
+        with steps.start(f"Check license inconsistency on {device.name}") as step:
+
+            if license['check']:
+                out = device.parse('show version')
+                if out.q.get_values('license_level', 0) == out.q.get_values('next_reload_license_level', 0):
+                    step.passed('No license inconsistency.')
+                else:
+                    try:
+                        device.reload(**self.reload_service_args)
+                    except Exception as e:
+                        step.failed(f"Failed to reload within {self.reload_service_args['timeout']} "
+                                    f"seconds.", from_exception=e)
+            else:
+                step.skipped("License check is not enabled.")
+
 
     def disconnect_and_reconnect(self, steps, device, reload_service_args=None,
                                  reconnect_via=RECONNECT_VIA):

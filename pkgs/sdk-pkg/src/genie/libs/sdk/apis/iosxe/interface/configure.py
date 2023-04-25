@@ -593,6 +593,109 @@ def config_interface_ospfv3(device, interface, ospfv3_pid, area, ipv4=False, ipv
             "Could not configure ospfv3 {pid}. Error:\n{error}"
             .format(pid=ospfv3_pid, error=e)
         )
+def configure_interface_split_horizon_eigrp(device, interface, eigrp_value,ipv6 = None):
+    """config split-horizon-eigrp on interface
+
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Interface name
+            ipv6 ('int'): ipv6
+            eigrp_value ('int'): eigrp process id
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f"Configuring split_horizon eigrp on interface {interface}")
+    cmd = [f"interface {interface}"]
+    if ipv6 is None:
+        cmd.append(f"ip split-horizon eigrp {eigrp_value}")
+    else:
+        cmd.append(f"ipv6 split-horizon eigrp {eigrp_value}")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure split-horizon Error:\n{e}")
+            
+def unconfigure_interface_split_horizon_eigrp(device, interface, eigrp_value, ipv6 = None):
+    """unconfig split-horizon-eigrp on interface
+
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Interface name
+            ipv6 ('int'): ipv6
+            eigrp_value ('int'): eigrp process id
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f"Configuring split_horizon eigrp on interface {interface}")
+    cmd = [f"interface {interface}"]
+    if ipv6 is None:
+        cmd.append(f"no ip split-horizon eigrp {eigrp_value}")
+    else :
+        cmd.append(f"no ipv6 split-horizon eigrp {eigrp_value}")
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure split-horizon Error:\n{e}")
+
+
+def config_interface_ospfv3_cost(device, interface, ospfv3_pid, hysteresis_per=None, hysteresis_threshold=None, throughput_val=None,
+                              resources_val=None, latency_val=None, l2_factor_val=None):
+    """config OSPF on interface
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+            ospfv3_pid (`str`): Ospfv3 process id
+            hysteresis_per ('int',optional): hysteresis percentage
+            throughput_val ('int',optional): throughput value
+            hysteresis_threshold ('int',optional): hysteresis threshold
+            resources_val ('int',optional): resources value
+            latency_val ('int',optional): latency value
+            l2_factor_val ('int',optional): l2_factor value
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        "Configuring OSPF on interface {interface}".format(interface=interface)
+    )
+    cmd = []
+    cmd.append("interface {interface}".format(interface=interface))
+    if not any([hysteresis_per, hysteresis_threshold, throughput_val, resources_val, latency_val, l2_factor_val]):
+        cmd.append(f"ospfv3 {ospfv3_pid} ipv6 cost dynamic")
+    if hysteresis_per is not None:
+        cmd.append(f"ospfv3 {ospfv3_pid} ipv6 cost dynamic hysteresis percent {hysteresis_per}")
+    if hysteresis_threshold is not None:
+        cmd.append(f"ospfv3 {ospfv3_pid} ipv6 cost dynamic hysteresis threshold {hysteresis_threshold}") 
+    if throughput_val is not None:
+        cmd.append(f"ospfv3 {ospfv3_pid} ipv6 cost dynamic weight throughput {throughput_val}")
+    if resources_val is not None:
+        cmd.append(f"ospfv3 {ospfv3_pid} ipv6 cost dynamic weight resources {resources_val}")
+    if latency_val is not None:
+        cmd.append(f"ospfv3 {ospfv3_pid} ipv6 cost dynamic weight latency {latency_val}")
+    if l2_factor_val is not None:
+        cmd.append(f"ospfv3 {ospfv3_pid} ipv6 cost dynamic weight l2-factor {l2_factor_val}")         
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure ospfv3 {pid}. Error:\n{error}"
+            .format(pid=ospfv3_pid, error=e)    
+        )
 
 
 def config_interface_ospfv3_network_type(device, interface, process_id, network_type, ip_version):
@@ -795,36 +898,39 @@ def unconfig_interface_ospfv3_flood_reduction(device, interface, process_id, ip_
 
 
 def config_ip_on_interface(
-    device,
-    interface,
-    ip_address=None,
-    mask=None,
-    ipv6_address=None,
-    eth_encap_type=None,
-    eth_encap_val=None,
-    sub_interface=None,
-    disable_switchport=False,
-    dhcpv4=False,
-    dhcp_hostname="",
-    vrf=None,
-    link_local_address=None,
-    secondary=False
-):
+        device,
+        interface,
+        ip_address=None,
+        mask=None,
+        ipv6_address=None,
+        eth_encap_type=None,
+        eth_encap_val=None,
+        sub_interface=None,
+        disable_switchport=False,
+        dhcpv4=False,
+        dhcp_hostname="",
+        vrf=None,
+        link_local_address=None,
+        secondary=False,
+        prefix_name=None):
     """ Configure IP on an interface
 
         Args:
             device (`obj`): Device object
             interface (`str`): Interface to get address
-            ip_address (`str`): IP addressed to be configured on interface
-            mask (`str`): Mask address to be used in configuration
-            ipv6_address (`str`): IPv6 address with subnet mask
-            eth_encap_type (`str`): Encapsulation type
-            eth_encap_val (`str`): Encapsulation value
-            sub_interface (`str`): Subinterface to be added to interface name
-            dhcpv4 ('bool): configure for ipv4 dhcp
-            dhcp_hostname ('str): Optionally configure dhcp hostname as well
-            vrf ('str): vrf for in the interface
-            secondary ('bool): configure as secondary ipv4 address
+            ip_address (`str`, optional): IP addressed to be configured on interface, default value None
+            mask (`str`, optional): Mask address to be used in configuration, default value None
+            ipv6_address (`str`, optional): IPv6 address with subnet mask, default value None
+            eth_encap_type (`str`, optional): Encapsulation type, default value None
+            eth_encap_val (`str`, optional): Encapsulation value, default value None
+            sub_interface (`str`, optional): Subinterface to be added to interface name, default value None
+            disable_switchport (`bool`, optional): Set interface to operate on layer 3, default value False
+            dhcpv4 (`bool`, optional): configure for ipv4 dhcp, default value False
+            dhcp_hostname (`str`, optional): Optionally configure dhcp hostname as well, default value ""
+            vrf (`str`, optional): vrf for in the interface, default value None
+            link_local_address (`str`, optional): Link local address for an ipv6 interface, default value None
+            secondary (`bool`, optional): Configure as secondary ipv4 address, default value False
+            prefix_name (`str`, optional): Prefix name, truncated to 200 characters, default value None
 
         Returns:
             None
@@ -850,14 +956,14 @@ def config_ip_on_interface(
         )
 
     if disable_switchport:
-        cfg_str+="no switchport \n"
-    #configure vrf(vrf needs to configured before ip)
+        cfg_str += "no switchport \n"
+    # configure vrf(vrf needs to configured before ip)
     if vrf:
         cfg_str += "vrf forwarding {vrf}\n".format(vrf=vrf)
-    #configure ip and mask
+    # configure ip and mask
     if ip_address and mask:
         cfg_str += "ip address {ip} {mask}".format(
-             ip=ip_address, mask=mask
+            ip=ip_address, mask=mask
         )
 
         if secondary:
@@ -883,6 +989,9 @@ def config_ip_on_interface(
             cfg_str += "ip address dhcp hostname " + dhcp_hostname + " \n"
         else:
             cfg_str += "ip address dhcp\n"
+    # configure ipv6 dhcp client pd
+    if prefix_name:
+        cfg_str += "ipv6 dhcp client pd {prefix_name}\n".format(prefix_name=prefix_name)
     # Configure device
     try:
         out = device.configure(cfg_str)
@@ -899,6 +1008,7 @@ def config_ip_on_interface(
 
     result = [line for line in out.splitlines() if line.startswith('%')]
     return result if result else None
+
 
 def config_ip_subinterface(
         device,
@@ -2361,14 +2471,14 @@ def attach_dhcpv6_guard_policy_to_interface(device, interface, policy_name):
         )
         raise
 
-def enable_ipv6_dhcp_server(device, interface, pool_name):
+def enable_ipv6_dhcp_server(device, interface, pool_name, rapid_commit=True):
     """ Enable IPv6 DHCP server on an interface
 
         Args:
             device (`obj`): Device object
             interface (`str`): Interface to enable IPv6 DHCP server
             pool_name (`str`): Pool name
-
+            rapid_commit ('bool'): Rapid commit. Default is True
         Returns:
             None
 
@@ -2376,10 +2486,12 @@ def enable_ipv6_dhcp_server(device, interface, pool_name):
             SubCommandFailure
     """
 
-    cmd = ["interface {intf}".format(intf=interface),
-           "ipv6 dhcp server {pool_name} rapid-commit"
-           .format(pool_name=pool_name)]
+    cmd = [f"interface {interface}"]
 
+    if rapid_commit:
+        cmd.append(f"ipv6 dhcp server {pool_name} rapid-commit")
+    else:
+        cmd.append(f"ipv6 dhcp server {pool_name}")
     try:
         device.configure(cmd)
 
@@ -3593,6 +3705,56 @@ def unconfig_interface_ospfv3(device, interface, ospfv3_pid, area, ipv4=False, i
             "Could not unconfigure ospfv3 {pid}. Error:\n{error}"
             .format(pid=ospfv3_pid, error=e)
         )
+        
+def unconfig_interface_ospfv3_cost(device, interface, ospfv3_pid, hysteresis_per=None, hysteresis_threshold=None, throughput_val=None,
+              resources_val=None, latency_val=None, l2_factor_val=None):
+    """config OSPF on interface
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+            ospfv3_pid (`str`): Ospfv3 process id
+            hysteresis_per ('int',optional): hysteresis percentage
+            hysteresis_threshold ('int',optional): hysteresis threshold
+            throughput_val ('int',optional): throughput value
+            resources_val ('int',optional): resources value
+            latency_val ('int',optional): latency value
+            l2_factor_val ('int',optional): l2_factor value
+
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        "Configuring OSPF on interface {interface}".format(interface=interface)
+    )
+    cmd = []
+    cmd.append("interface {interface}".format(interface=interface))
+    if not any([hysteresis_per, hysteresis_threshold, throughput_val, resources_val, latency_val, l2_factor_val]):    
+        cmd.append(f"no ospfv3 {ospfv3_pid} ipv6 cost dynamic")
+    if hysteresis_per is not None:
+        cmd.append(f"no ospfv3 {ospfv3_pid} ipv6 cost dynamic hysteresis percent {hysteresis_per}")
+    if hysteresis_threshold is not None:
+        cmd.append(f"no ospfv3 {ospfv3_pid} ipv6 cost dynamic hysteresis threshold {hysteresis_threshold}")        
+    if throughput_val is not None:
+        cmd.append(f"no ospfv3 {ospfv3_pid} ipv6 cost dynamic weight throughput {throughput_val}")
+    if resources_val is not None:
+        cmd.append(f"no ospfv3 {ospfv3_pid} ipv6 cost dynamic weight resources {resources_val}")
+    if latency_val is not None:
+        cmd.append(f"no ospfv3 {ospfv3_pid} ipv6 cost dynamic weight latency {latency_val}")
+    if l2_factor_val is not None:
+        cmd.append(f"no ospfv3 {ospfv3_pid} ipv6 cost dynamic weight l2-factor {l2_factor_val}")         
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure ospfv3 {pid}. Error:\n{error}"
+            .format(pid=ospfv3_pid, error=e)    
+        ) 
+        
 
 def config_portchannel_range(device, portchannel_start, portchannel_end):
     """ Configure port channel
@@ -3754,6 +3916,7 @@ def config_port_security_on_interface(
     aging_time=None,
     aging_type=None,
     violation_mode=None,
+    mac_address=None,
 ):
     """ Configuring port security on an interface
 
@@ -3764,6 +3927,7 @@ def config_port_security_on_interface(
             aging_time (`str`,optional): aging time for mac address, default value is None
             aging_type (`str`,optional): aging type for mac address, default value is None
             violation_mode (`str`,optional): violation mode, default value is None
+            mac_address ('str' ,optional): mac address mode, default value is None
 
         Returns:
             None
@@ -3792,6 +3956,10 @@ def config_port_security_on_interface(
     if violation_mode:
         cfg_lst.append("switchport port-security violation {violation_mode}".format(
              violation_mode=violation_mode))
+    
+    if mac_address:
+        cfg_lst.append("switchport port-security mac-address {mac_address}".format(
+             mac_address=mac_address))
 
     # Configure device
     try:
@@ -7741,3 +7909,154 @@ def configure_physical_interface_vmi(device, vmi_name, rar_interface_name, mode_
                 "Failed to configure vmi interface, Error:\n{e}"
             )
 
+def unconfigure_power_efficient_ethernet_auto(device, interface):
+    """ Unconfigure power efficient ethernet auto
+	Args:
+        device ('obj'): Device object
+        interface ('str'): interface
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed unconfiguring interface
+    """
+    cmd = [f'interface {interface}',
+           f'no power efficient-ethernet auto']
+    try:
+        device.configure(cmd)                   
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+        f'Could not unconfigure power efficient ethernet auto on {interface}, Error:\n{e}')
+
+
+def configure_ipv6_prefix_name_on_interface(device, interface, prefix_name, ipv6_prefix):
+    """ configure ipv6 address with prefix name on interface
+        Args:
+            device ('obj')    : device to use
+            interface ('str') : interface to configure
+            prefix_name ('str'): Prefix name
+            ipv6_prefix (`str`): IPv6 address with prefix length. Ex: ::1/128.
+        Returns:
+            None
+        Raises:
+            SubCommandFailure    
+    """
+    cmd = [f'interface {interface}', f'ipv6 address {prefix_name} {ipv6_prefix}']
+    try:
+        device.configure(cmd)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure ipv6 address with prefix name on interface:\n{e}")
+
+
+def configure_ipv6_dhcp_client_pd_on_interface(device, interface, prefix_name=None, rapid_commit=False,
+                                               ipv6_prefix=None):
+    """ configure ipv6 dhcp client pd on interface
+        Args:
+            device ('obj')    : device to use
+            interface ('str') : interface to configure
+            prefix_name ('str', optional): Prefix name. Default is None.
+            ipv6_prefix ('str', optional): IPv6 address with prefix length. Ex: ::1/128. Default is None.
+            rapid_commit ('bool', optional): Rapid commit is valid if prefix name is not None. Default is False.
+        Returns:
+            None
+        Raises:
+            SubCommandFailure    
+    """
+    cmd = [f'interface {interface}']
+    if prefix_name:
+        cmd.append(f"ipv6 dhcp client pd {prefix_name}{' rapid-commit' if rapid_commit else ''}")
+    if ipv6_prefix:
+        cmd.append(f'ipv6 dhcp client pd hint {ipv6_prefix}')
+    try:
+        device.configure(cmd)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure ipv6 dhcp client pd on interface:\n{e}")
+
+def configure_interface_ip_verify_source(device, interface, mode=''):
+    """ Configures Ip Verify Source mode
+        Args:
+            device ('obj')    : device to use
+            interface ('str') : interface to configure
+            mode ('str', optional) : Options are mac-chec. Default is '' (i.e no mode)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = [f"interface {interface}", f"ip verify source {mode}"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not configure Ip verify source on Interface'
+        )
+
+
+def unconfigure_interface_ip_verify_source(device, interface):
+    """ Unconfigures Ip Verify Source mode
+        Args:
+            device ('obj')    : device to use
+            interface ('str') : interface to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = [f"interface {interface}", f"no ip verify source"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not configure Ip verify source on Interface'
+        )
+
+def config_load_interval_on_interface(device, interface, interval):
+    """ configure load interval on interface
+        Args:
+            device (`obj`): Device object
+            interface ('str'): Interface to configure
+            interval ('int'):  Load interval delay in seconds
+        Returns:
+            None
+        Raise:
+            SubCommandFailure: Failed to configure load interval on interface
+    """
+    log.debug("configure load interval on interface")
+    try:
+        device.configure([
+                "interface {interface}".format(interface=interface),
+                "load-interval {interval}".format(interval=interval)]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure load interval on interface. Error:\n{error}".format(
+                error=e
+            )
+        )
+
+def unconfig_diagnostic_monitor_threshold(device, switchnum, testid, allowedfailure):
+    """ Unconfgure diagnostics monitor threshold on switch
+
+        Args:
+            device (`obj`): Device object
+            switchnum (`int`): Switch Number
+            testid (`int`): TestId
+            allowedfailure (`int`): Number of allowed failure
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed to unconfgure diagnostics monitor threshold on switch
+    """
+        
+    try:
+        device.configure(f"no diagnostic monitor threshold switch {switchnum} test {testid} failure count {allowedfailure}")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            'Could not unconfgure diagnostics monitor threshold on switch, Error: {error}'.format(error=e)
+        )
+    

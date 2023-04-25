@@ -50,7 +50,8 @@ class Restore(object):
             method,
             abstract,
             default_dir,
-            copy_to_standby=False):
+            copy_to_standby=False,
+            timeout=60):
         if method == 'checkpoint':
             # compose checkpoint name
             self.ckname = self.__class__.__name__ + \
@@ -81,16 +82,18 @@ class Restore(object):
             # Execute copy running-config to location:<filename>
             self.filetransfer.copyconfiguration(source=self.from_url,
                                                 destination=self.to_url,
-                                                device=device)
+                                                device=device,
+                                                timeout_seconds=timeout)
 
-            if copy_to_standby:
+            if copy_to_standby and device.is_ha:
                 self.stby_url = '{dir}{filename}'.format(
                     dir='stby-{}' .format(default_dir[device.name]), filename=self.filename)
 
                 # copy config to stby-bootflash:
                 self.filetransfer.copyconfiguration(source=self.from_url,
                                                     destination=self.stby_url,
-                                                    device=device)
+                                                    device=device,
+                                                    timeout_seconds=timeout)
 
             # Verify location:<filename> exists
             created = self.filetransfer.stat(target=self.to_url, device=device)
@@ -112,7 +115,8 @@ class Restore(object):
             compare=False,
             compare_exclude=[],
             reload_timeout=1200,
-            delete_after_restore=True):
+            delete_after_restore=True,
+            timeout=60):
         if method == 'checkpoint':
             # Enable the feature
             for i in range(1, iteration):
@@ -175,7 +179,8 @@ class Restore(object):
                     'configure replace {}'. format(
                         self.to_url),
                     reply=dialog,
-                    error_pattern=[])
+                    error_pattern=[],
+                    timeout=timeout)
 
                 if out and 'Rollback Done' in out:
                     break

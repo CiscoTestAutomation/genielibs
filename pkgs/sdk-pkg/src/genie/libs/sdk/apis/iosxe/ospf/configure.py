@@ -705,7 +705,7 @@ def configure_ospfv3(device, pid, router_id=None, vrf=None, nsr=None,
 
 def configure_ospf_routing(device, ospf_process_id, router_id=None,
                            router_config=True, nsf=None, nsf_options=None, nsr=None, nsr_options=None,
-                           vrf_name=None, vrf_id=None):
+                           vrf_name=None, vrf_id=None, log_adjacency=False):
     """ Configures ospf and ip routing on device
 
         Args:
@@ -720,6 +720,7 @@ def configure_ospf_routing(device, ospf_process_id, router_id=None,
             nsr_options ('str', optional): nsr params, default value is None
             vrf_name ('str', optional): vrf name, default value is None
             vrf_id ('str', optional): vrf id, default value is None
+            log_adjacency ('bool', optional): log-adjacency-changes, default value is False
 
         Returns:
             N/A
@@ -765,6 +766,9 @@ def configure_ospf_routing(device, ospf_process_id, router_id=None,
                         nsr_options=nsr_options))
         else:
             config.append('nsr')
+
+    if log_adjacency:
+        config.append('log-adjacency-changes')
 
     try:
         device.configure(config)
@@ -1960,3 +1964,93 @@ def configure_ipv6_ospf_router_id(device, process_id, ospf_ip):
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure ipv6 router ospf. Error:\n{e}")
+
+def configure_ospfv3_network_range(device, pid, router_id, address_family=None,
+    traffic_type=None, adjacency=None, area=None, network_range=None):
+    """configure_ospfv3_network_range
+
+        Args:
+            device (`obj`): Device object
+            pid (`str`): Ospfv3 process id
+            router_id (`str`): Router id
+            address_family (`str`, optional): Address family to be configured,
+                                              default value is None
+            traffic_type (`str`, optional): configure the traffic_type
+            adjacency('bool' optional): option to log adjacency changes
+            area ('str',optional): Area to configure under. default value is None
+            network_range ('str',optional) : network_range ip address . default value is None
+
+        Return:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    config = [f'router ospfv3 {pid}',
+              f'router-id {router_id}']
+    if adjacency:
+        config.append("log-adjacency-changes")
+    if address_family and traffic_type:
+        config.append([f'address-family {address_family} {traffic_type}'])
+    elif address_family:
+        config.append([f'address-family {address_family}'])
+    if area and network_range:
+        config.append([f'area {area} range {network_range}'])
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Ospfv3 network range is not configured on device"
+            " {device}, Error: {error}".format(
+               device=device.name, error=e
+            )
+        )
+
+def configure_ospfv3_on_interface(device, interface, pid, area):
+    """confue_ospfv3_on_interface
+        Args:
+            device (`obj`): Device object
+            interface ('str'): interface details
+            pid (`str`): Ospfv3 process id
+            area (int): Area to configure under.
+
+        Return:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    config = [f'interface {interface}',
+              f'ospfv3 {pid} area {area} ipv6']
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Ospfv3 is not configured on interface"
+            " {interface}, Error: {error}".format(
+               interface=interface.name, error=e
+            )
+        )
+def configure_ospf_redistributed_eigrp_metric(device, ospf_process_id, eigrp_as, metric=None):
+    """configuring ospf redistributed eigrp with metric-type
+    Args:
+        device ('obj'): Device object
+        ospf_process_id ('int'): OSPF process id
+        eigrp_as ('str'): <1-65535>  AS number
+        metric('str', optional): Set OSPF External Type 1/ Type 2 metrics
+    Returns:
+        None
+    Raises:
+        SubCommandFailure : Failed to configure redistribute eigrp with metric-type under ospf
+    """
+
+    config=[f'router ospf {ospf_process_id}']
+    if metric:
+       config.append(f'redistribute eigrp {eigrp_as} metric-type {metric} subnets')
+    else:
+       config.append(f'redistribute eigrp {eigrp_as}')
+    
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure redistribute eigrp with metric-type under ospf {ospf_process_id}. Error:\n{e}")

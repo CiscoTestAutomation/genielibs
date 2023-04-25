@@ -721,25 +721,30 @@ def clear_aaa_cache(device, server_grp, profile='all'):
         )
 
 
-def configure_username(device, username, pwd, encryption=0):
+def configure_username(device, username, pwd, encryption=0, privilege=''):
     """ Configure a user with a password
         Args:
-            device (`obj`): Device object
-            username (`str`): User name
+            device ('obj'): Device object
+            username ('str'): User name
             pwd ('str'): Password for the user
             encryption ('int',optional): Encryption level (Default 0 for cleartext)
+            privilege ('int',optional): User privilege level (0-15)
         Return:
             None
         Raise:
             SubCommandFailure: Failed configuring
         Examples:
-            dut1.api.configure_username(username='testUser',pwd='secretPwd')
+            dut1.api.configure_username(username='testUser', pwd='secretPwd')
             -->username testUser password 0 secretPwd
+            dut1.api.configure_username(username='testUser', pwd='secretPwd', privilege='1')
+            -->username testUser privilege 1 password secretPwd
     """
     try:
         # Update str with password encryption level
         if encryption:
             pwd = '{encryption} {pwd}'.format(encryption=encryption,pwd=pwd)
+        if privilege:
+            username = '{username} privilege {privilege}'.format(username=username,privilege=privilege)
         device.configure('username {username} password {pwd}'.format(username=username,pwd=pwd))
     except SubCommandFailure:
         raise SubCommandFailure(
@@ -1828,12 +1833,13 @@ def unconfigure_enable_password(device,secret=True,privilege=None):
             f'Could not unconfigure enable password or secret:\n{e}'
         )
 
-def configure_aaa_authentication_login(device,auth_list,auth_type):
+def configure_aaa_authentication_login(device,auth_list,auth_type, group_name=''):
     """ configure aaa authentication login
         Args:
-            device (`obj`): Device object
-            auth_list (`str`): authentication list (default/Named authentication list)
-            auth_type ('str'): authentication type (none/local)
+            device ('obj'): Device object
+            auth_list ('str'): Authentication list (default/Named authentication list)
+            auth_type ('str'): Authentication type (local/none)
+            group_name ('str',optional): Server-group name
             None
         Raise:
             SubCommandFailure: Failed configuring aaa authentication login
@@ -1841,7 +1847,9 @@ def configure_aaa_authentication_login(device,auth_list,auth_type):
     logger.info(f"Configuring aaa authentication login")
 
     configs=f"aaa authentication login {auth_list} {auth_type}"
-
+	
+    if group_name:
+        configs+=f' group {group_name}'
     try:
         device.configure(configs)
     except SubCommandFailure as e:
@@ -1871,7 +1879,7 @@ def configure_aaa_default_group_methods(device,server_grp,server_grp_name):
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not configure aaa default group methods. Error:\n{e}")
 
-def configure_aaa_authorization_exec_default(device,auth_type):
+def configure_aaa_authorization_exec_default(device,auth_type,group_name=''):
     """ configure aaa authorization exec default
         Args:
             device (`obj`): Device object
@@ -1883,6 +1891,8 @@ def configure_aaa_authorization_exec_default(device,auth_type):
     logger.info(f"Configuring aaa authorization exec default")
 
     configs=f"aaa authorization exec default {auth_type}"
+    if group_name:
+        configs+=f' group {group_name}'
     try:
         device.configure(configs)
     except SubCommandFailure as e:
@@ -2426,3 +2436,33 @@ def unconfigure_dscp_radius_server_group(device, server_group, dscp_auth=None, d
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Failed to unconfigure DSCP Authentication {dscp_auth} and Accouting {dscp_acct} in AAA Radius Server Group {server_group} configuration. Error:\n{e}')
+
+
+def configure_disable_config_key_encryption(device):
+    """
+        removes aes password encryption
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandError
+    """
+    dialog = Dialog(
+        [
+            Statement(
+                pattern=r".*Continue\s*with\s*master\s*key\s*deletion.*",
+                action="sendline(yes)",
+                loop_continue=True,
+                continue_timer=False,
+            )
+        ]
+    )
+    try:
+        device.configure("no key config-key password-encrypt", reply=dialog)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not remove config-key password encryption on {device}.\nError: {e}".format(
+                device=device.name, e=str(e))
+        )
+        

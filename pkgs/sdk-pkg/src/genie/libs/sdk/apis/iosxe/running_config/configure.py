@@ -6,6 +6,7 @@ import logging
 # pyATS
 from pyats.easypy import runtime
 
+from genie.utils.timeout import Timeout
 # Running-Config
 from genie.libs.sdk.apis.iosxe.running_config.get import (
     get_running_config,
@@ -72,7 +73,7 @@ def copy_file_to_running_config(device, path, file, timeout=60):
         )
 
 
-def restore_running_config(device, path, file, timeout=60):
+def restore_running_config(device, path, file, timeout=60, delete_after=False, max_time=300, check_interval=30):
     """ Restore config from local file
 
         Args:
@@ -80,8 +81,13 @@ def restore_running_config(device, path, file, timeout=60):
             path (`str`): directory
             file (`str`): file name
             timeout (`int`): Timeout for applying config
+            delete_after (`bool`): if True, delete the file after restoring
+            max_time ('int', optional): maximum time to wait in seconds,
+                default is 300
+            check_interval ('int', optional): how often to check in seconds,
+                default is 30
         Returns:
-            None
+            boolean
     """
     dialog = Dialog(
         [
@@ -93,17 +99,27 @@ def restore_running_config(device, path, file, timeout=60):
             )
         ]
     )
-    try:
-        device.execute(
-            "configure replace {path}{file}".format(path=path, file=file),
-            reply=dialog,
-            timeout=timeout
-        )
-    except SubCommandFailure as e:
-        raise SubCommandFailure(
-            "Could not replace saved configuration on "
-            "device {device}\nError: {e}".format(device=device.name, e=str(e))
-        )
+
+    tm = Timeout(max_time, check_interval)
+
+    while tm.iterate():
+
+        try:
+            out = device.execute(
+                "configure replace {path}{file}".format(path=path, file=file),
+                reply=dialog,
+                timeout=timeout,
+                error_pattern=[]
+            )
+            if out and 'Rollback Done' in out:
+                device.api.delete_files(locations=[path], filenames=[file])
+                return True
+        except Exception:
+            raise Exception('Could not restore configuration.')
+
+        tm.sleep()
+
+    return False
 
 
 def remove_running_config(device, remove_config):
@@ -251,8 +267,8 @@ def configure_replace(device, path, file, config_replace_options="", timer=1, ti
             Statement(
                 pattern=r".*\[no\].*",
                 action="sendline(Y)",
-                loop_continue=False,
-                continue_timer=False,
+                loop_continue=True,
+                continue_timer=True,
             )
         ]
     )

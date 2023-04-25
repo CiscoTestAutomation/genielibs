@@ -1,20 +1,20 @@
 configure:
   commands:
-    clns mtu 1000: "clns mtu 1000\r\n"
     end:
       new_state: execute
-    interface vlan101: "interface vlan101\r\n"
-    ipv6 router isis: "ipv6 router isis\r\n"
+    interface Tunnel1: "interface Tunnel1\r\n"
+    ipv6 router isis sr: "ipv6 router isis sr\r\n"
+    isis ipv6 metric 1: "isis ipv6 metric 1\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''
-  prompt: mac-gen2(config)#
+  prompt: iolpe2(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: mac-gen2(config-line)#
+  prompt: iolpe2(config-line)#
 connect:
   commands:
     ? ''
@@ -34,4 +34,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: mac-gen2#
+  prompt: iolpe2#

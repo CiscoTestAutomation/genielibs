@@ -1,18 +1,19 @@
 configure:
   commands:
-    aaa authorization exec default none: "aaa authorization exec default none\r\n"
+    aaa authorization exec default local group radius: "aaa authorization exec default\
+      \ local group radius\r\n"
     end:
       new_state: execute
     line console 0:
       new_state: configure_line
     no logging console: ''
-  prompt: stack-12m(config)#
+  prompt: Switch-9300(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: stack-12m(config-line)#
+  prompt: Switch-9300(config-line)#
 connect:
   commands:
     ? ''
@@ -32,4 +33,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: stack-12m#
+  prompt: Switch-9300#

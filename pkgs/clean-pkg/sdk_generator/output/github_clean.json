@@ -334,7 +334,7 @@
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "InstallPackages",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L684"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L692"
     }
   },
   "InstallRemoveInactive": {
@@ -402,11 +402,11 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L1330"
     },
     "iosxe": {
-      "doc": " This stage reloads the device.\n\nStage Schema\n------------\nreload:\n\n    reload_service_args (optional):\n\n        timeout (int, optional): Maximum time in seconds allowed for the reload.\n            Defaults to 800.\n\n        reload_creds (str, optional): The credential to use after the reload is\n            complete. The credential name comes from the testbed yaml file.\n            Defaults to the 'default' credential.\n\n        prompt_recovery (bool, optional): Enable or disable the prompt recovery\n            feature of unicon. Defaults to True.\n\n        <Key>: <Value>\n            Any other arguments that the Unicon reload service supports\n\n    check_modules:\n\n        check (bool, optional): Enable the checking of modules after reload.\n            Defaults to True.\n\n        timeout (int, optional): Maximum time in seconds allowed for verifying\n            the modules are in a stable state. Defaults to 180.\n\n        interval (int, optional): How often to check the module states in\n            seconds. Defaults to 30.\n\n    reconnect_via (str, optional): Specify which connection to use after reloading.\n        Defaults to the 'default' connection in the testbed yaml file.\n\n\nExample\n-------\nreload:\n    reload_service_args:\n        timeout: 600\n        reload_creds: clean_reload_creds\n        prompt_recovery: True\n        reconnect_sleep: 200 (Unicon NXOS reload service argument)\n    check_modules:\n        check: False\n",
+      "doc": " This stage reloads the device.\n\nStage Schema\n------------\nreload:\n    license: (optional)\n        check: (bool, optional): Enable the checking license inconsistency and fix\n\n    reload_service_args (optional):\n\n        timeout (int, optional): Maximum time in seconds allowed for the reload.\n            Defaults to 800.\n\n        reload_creds (str, optional): The credential to use after the reload is\n            complete. The credential name comes from the testbed yaml file.\n            Defaults to the 'default' credential.\n\n        prompt_recovery (bool, optional): Enable or disable the prompt recovery\n            feature of unicon. Defaults to True.\n\n        <Key>: <Value>\n            Any other arguments that the Unicon reload service supports\n\n    check_modules:\n\n        check (bool, optional): Enable the checking of modules after reload.\n            Defaults to True.\n\n        timeout (int, optional): Maximum time in seconds allowed for verifying\n            the modules are in a stable state. Defaults to 180.\n\n        interval (int, optional): How often to check the module states in\n            seconds. Defaults to 30.\n\n    reconnect_via (str, optional): Specify which connection to use after reloading.\n        Defaults to the 'default' connection in the testbed yaml file.\n\n\nExample\n-------\nreload:\n    reload_service_args:\n        timeout: 600\n        reload_creds: clean_reload_creds\n        prompt_recovery: True\n        reconnect_sleep: 200 (Unicon NXOS reload service argument)\n    check_modules:\n        check: False\n",
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "Reload",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L768"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L776"
     }
   },
   "RevertVmSnapshot": {

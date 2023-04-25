@@ -4,17 +4,20 @@ configure:
       new_state: execute
     line console 0:
       new_state: configure_line
-    mac access-list extended MAC-ACL: "mac access-list extended MAC-ACL\r\n"
+    mac access-list extended test: "mac access-list extended test\r\n"
     no logging console: ''
-    permit host 001.00a.00a host 001.00b.00b: "permit host 001.00a.00a host 001.00b.00b\r\
-      \n"
-  prompt: n08HA(config)#
+    permit host 1111.2222.3333 host 2444.2333.2222 etype-6000: "permit host 1111.2222.3333\
+      \ host 2444.23\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b\b$ 1111.2222.3333 host 2444.233         \b\b\b\b\b\b\b\b\b3.2222\
+      \ et\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b.3333 host 2444.2333.2222 ety         \b\b\b\b\b\b\b\b\bpe-6000\r\n"
+  prompt: Franklin-9300L-Stack(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: n08HA(config-line)#
+  prompt: Franklin-9300L-Stack(config-line)#
 connect:
   commands:
     ? ''
@@ -34,4 +37,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: n08HA#
+  prompt: Franklin-9300L-Stack#

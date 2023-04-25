@@ -290,4 +290,80 @@ def configure_logging_buffered_debugging(device):
             "Could not configure logging buffered debugging on {device}. Error:\n{error}"
                 .format(device=device, error=e))
 
+def unconfigure_logging_buffered(device):
+    """ Unconfigure logging buffered
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
 
+    log.debug(f"Unconfigure logging buffered on {device}")
+    
+    try:
+        device.configure('no logging buffered')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure logging console errors on {device}. Error:\n{e}"
+			)
+
+
+def configure_logging_facility(device, facility):
+    """ Configure logging facility
+        Args:
+            device ('obj'): Device object
+            facility ('str'): Name of facility (eg. local7)
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring logging facility
+    """
+    cmd = f'logging facility {facility}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure logging facility on device {device}. Error:\n{e}"
+            )
+
+
+def configure_login_log(device, login_attempt, periodicity_num=''):
+    """ Configure login log on switch
+        Args:
+            device ('obj'): Device object
+            login_attempt ('str'):  Set options for login attempt (eg. on-failure/on-success)
+            periodicity_num ('int'): Periodicity number (1-65535)
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring login log
+    """
+    cmd = f'login {login_attempt} log'
+    if periodicity_num:
+        cmd += f' every {periodicity_num}'        
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure login log on device {device}. Error:\n{e}")
+
+
+def configure_logging_host_transport_tcp_port(device, server_ip, port_num):
+    """ Configure logging host transport tcp port
+        Args:
+            device ('obj'): Device object
+            server_ip ('str'):  IP address of the syslog server
+            port_num ('int'): Port number (1-65535)
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring logging host transport tcp port
+    """	
+    cmd = f'logging host {server_ip} transport tcp port {port_num}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure logging host transport tcp port on device {device}. Error:\n{e}")

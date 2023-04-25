@@ -34,12 +34,12 @@ def get_vrf_vrfs(device):
     return out
 
 
-def get_vrf_route_distinguisher(vrf, device):
+def get_vrf_route_distinguisher(device, vrf):
     """ Get default route distinguisher from show command
 
         Args:
-            vrf ('str')     : VRF value
             device ('obj')  : Device object
+            vrf ('str')     : VRF value
 
         Returns:
             route_distinguisher ('str'): Route distinguisher value
@@ -65,13 +65,7 @@ def get_vrf_route_distinguisher(vrf, device):
             "Could not execute parser command " "'{cmd}'".format(cmd=command)
         )
 
-    route_distinguisher = output["vrf"][vrf].get("route_distinguisher", None)
-
-    if not route_distinguisher:
-        raise Exception(
-            "Parser did not return any results for "
-            "vrf {vrf}".format(vrf=vrf)
-        )
+    route_distinguisher = output["vrf"][vrf].get("route_distinguisher")
 
     log.info(
         "Found route distinguisher {rd} on device {device}".format(

@@ -1,0 +1,40 @@
+configure:
+  commands:
+    class class-default: "class class-default\r\n"
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    police 10000000 conform-action transmit exceed-action drop: "police 10000000 conform-action\
+      \ transmit exceed-action d\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b$0000 conform-action\
+      \ transmit exceed-action dr         \b\b\b\b\b\b\b\b\bop\r\n"
+    policy-map rar_policer: "policy-map rar_policer\r\n"
+  prompt: c8kv-1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: c8kv-1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: c8kv-1#

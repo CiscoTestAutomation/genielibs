@@ -6,7 +6,9 @@ Description: API written for MPTE automation
 
 from pyats.topology import loader
 from yang.connector.gnmi import Gnmi
-    
+from genie.libs.sdk.triggers.blitz.gnmi_util import GnmiMessageConstructor
+from google.protobuf import json_format
+
 def remove_missing_comp(device, namespace, xpath, via, alias, key_list, value_list=None):
     """
     Removes the missing components from the API that are absent in the GNMI query for MPTE automation
@@ -28,9 +30,16 @@ def remove_missing_comp(device, namespace, xpath, via, alias, key_list, value_li
     if type(namespace) == str:
         namespace = namespace.split(":",maxsplit=1)
         namespace = {namespace[0]:namespace[1]}
+
     content = {'namespace': namespace, 'nodes': [{'xpath': xpath}]}
-    resp = device.gnmi.get(cmd=content)
-    key_list_gnmi = resp[0]["decode"]
+
+    gmc = GnmiMessageConstructor('get', content)
+    resp = device.gnmi.get(gmc.payload)
+    resp = json_format.MessageToDict(resp)['notification'][0]['update']
+
+    key_list_gnmi = []
+    for ele in resp: key_list_gnmi.append(ele['path']['elem'][1]['key']['name'])
+
     key_list_edit = []
     value_list_edit = []
 
@@ -41,4 +50,3 @@ def remove_missing_comp(device, namespace, xpath, via, alias, key_list, value_li
                 value_list_edit.append(value_list[index])
 
     return [key_list_edit, value_list_edit]
-

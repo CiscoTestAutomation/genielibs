@@ -5,23 +5,15 @@ configure:
       new_state: execute
     line console 0:
       new_state: configure_line
-    neighbor 20.20.20.3 description session ibgp vers SWTDATA01: "neighbor 20.20.20.3\
-      \ description session ibgp \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b$.20.20.3 description session ibgp v\
-      \         \b\b\b\b\b\b\b\b\bers SWTDA\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\bescription session ibgp vers\
-      \ SWTDAT         \b\b\b\b\b\b\b\b\bA01\r\n"
+    neighbor 20.20.20.3 description ibgp vers SWTDATA01: "neighbor 20.20.20.3 description\
+      \ ibgp vers SWTDATA01\r\n"
     neighbor 20.20.20.3 peer-group externalpg: "neighbor 20.20.20.3 peer-group externalpg\r\
       \n"
     neighbor 20.20.20.3 remote-as 300: "neighbor 20.20.20.3 remote-as 300\r\n"
     neighbor 20.20.20.3 soft-reconfiguration inbound: "neighbor 20.20.20.3 soft-reconfiguration\
-      \ inbo\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b$.20.20.3 soft-reconfiguration inbou         \b\b\b\b\b\b\
-      \b\b\bnd\r\n"
+      \ inbound\r\n"
     neighbor 20.20.20.3 transport path-mtu-discovery: "neighbor 20.20.20.3 transport\
-      \ path-mtu-discov\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b$.20.20.3 transport path-mtu-discove         \b\
-      \b\b\b\b\b\b\b\bry\r\n"
+      \ path-mtu-discovery\r\n"
     neighbor externalpg filter-list 1 out: "neighbor externalpg filter-list 1 out\r\
       \n"
     neighbor externalpg peer-group: "neighbor externalpg peer-group\r\n"

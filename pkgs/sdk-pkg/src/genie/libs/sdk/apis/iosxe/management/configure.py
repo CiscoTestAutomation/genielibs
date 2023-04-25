@@ -3,6 +3,7 @@ import logging
 import ipaddress
 from unicon.eal.dialogs import Dialog
 from genie.utils.timeout import Timeout
+from unicon.core.errors import SubCommandFailure
 from pyats.utils.secret_strings import to_plaintext
 
 log = logging.getLogger(__name__)
@@ -686,3 +687,18 @@ def configure_management(device,
         protocols=protocols
     )
 
+def unconfigure_netconf_yang_polling(device):
+    """ configure unconfigure netconf_yang cisco-odm parameters polling enable
+    Args:
+        device ('obj'): device to use
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed to configure unconfigure netconf_yang cisco-odm parameters polling enable
+    """
+    config = [f"no netconf-yang cisco-odm polling-enable"]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure unconfigure netconf_yang cisco-odm parameters polling enable. Error:\n{e}")
+        

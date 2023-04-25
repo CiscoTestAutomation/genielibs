@@ -3,18 +3,20 @@ configure:
     archive: "archive\r\n"
     end:
       new_state: execute
+    hidekeys: "hidekeys\r\n"
     line console 0:
       new_state: configure_line
     log config: "log config\r\n"
     logging enable: "logging enable\r\n"
     no logging console: ''
-  prompt: 9300-24UX-2(config)#
+    notify syslog: "notify syslog\r\n"
+  prompt: Switch-9300(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: 9300-24UX-2(config-line)#
+  prompt: Switch-9300(config-line)#
 connect:
   commands:
     ? ''
@@ -34,4 +36,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: 9300-24UX-2#
+  prompt: Switch-9300#

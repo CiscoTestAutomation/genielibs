@@ -1,0 +1,36 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    ip source binding 000A.000B.0001 vlan 10 10.1.1.101 interface Gi1/0/13: "ip source\
+      \ binding 000A.000B.0001 vlan 10 10.1.1.101 interface Gi1/0/13\r\n"
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: Switch-9300(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: Switch-9300(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: Switch-9300#
