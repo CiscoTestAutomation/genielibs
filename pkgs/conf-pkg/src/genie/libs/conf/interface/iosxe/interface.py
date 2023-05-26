@@ -812,20 +812,16 @@ class TunnelInterface(VirtualInterface, genie.libs.conf.interface.TunnelInterfac
 
     tunnel_mode = managedattribute(
         name='tunnel_mode',
+        default='gre',
         type=str)
 
     def __new__(cls, *args, **kwargs):
 
         factory_cls = cls
         if cls is TunnelInterface:
-            try:
-                tunnel_mode = kwargs['tunnel_mode']
-            except KeyError:
-                raise TypeError('\'tunnel_mode\' argument missing')
+            tunnel_mode = kwargs.get('tunnel_mode')
             if tunnel_mode == 'mpls traffic-eng':
                 factory_cls = TunnelTeInterface
-            else:
-                raise UnknownInterfaceTypeError  # ('Unsupported tunnel_mode %r' % (tunnel_mode,))
 
         if factory_cls is not cls:
             self = factory_cls.__new__(factory_cls, *args, **kwargs)

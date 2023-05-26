@@ -2,20 +2,16 @@ configure:
   commands:
     end:
       new_state: execute
-    line console:
-      new_state: configure_line
     line console 0:
       new_state: configure_line
     no logging console: ''
-  prompt: 9600_Switch(config)#
+  prompt: mac2-sjc24(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-    line vty: ''
-    terminal width 511: ''
-  prompt: 9600_Switch(config-line)#
+  prompt: mac2-sjc24(config-line)#
 connect:
   commands:
     ? ''
@@ -30,41 +26,64 @@ execute:
   commands:
     config term:
       new_state: configure
-    show firmware version all: "                                         Current \
-      \             Bundled\r\nSlot  Device Name / Model           Firmware Version\
-      \      Firmware Version    Mismatch  \r\n----- -----------------------------\
-      \ --------------------- ------------------- --------- \r\n 3    Supervisor Rommon\
-      \ (Active)    17.8.1r               N/A                 N/A       \r\n -   \
-      \ Eth Lan Spi                   0x800005d3            N/A                 N/A\
-      \       \r\n PS5  Fantray                       18101008              N/A  \
-      \               N/A       \r\n 3    Supervisor CPLD                \r\n    \
-      \    IO FPGA                     21071424              21071424            No\
-      \        \r\n        Flash FPGA                  201221ba              201221ba\
-      \            No        \r\n N/A  No Line Card                  N/A         \
-      \          N/A                 N/A       \r\n\r\nSlot      Device Name / Model\
-      \                     Firmware Version              \r\n--------- ---------------------------------------\
-      \ ----------------------------- \r\n PS1       Power Supply (PS PRI, PS_SEC,\
-      \ PS_I2C)   (61.08.03, 61.02.0, N/A)      \r\n PS2       Power Supply (PS PRI,\
-      \ PS_SEC, PS_I2C)   (61.08.03, 61.02.0, N/A)"
-    show module: "Chassis Type: C9606R\r\n\r\nMod Ports Card Type                \
-      \                   Model          Serial No.\r\n---+-----+--------------------------------------+--------------+--------------\r\
-      \n1   48   48-Port 10GE / 25GE                         C9600-LC-48YL    CAT2431L0MD\r\
-      \n3   0    Supervisor 1 Module                         C9600-SUP-1      FDO24261BQN\r\
-      \n\r\nMod MAC addresses                    Hw   Fw           Sw            \
-      \     Status\r\n---+--------------------------------+----+------------+------------------+--------\r\
-      \n1   E41F.7B6D.F280 to E41F.7B6D.F2FF 1.1  17.8.1r       S2C              \
-      \  power-deny \r\n3   9077.EE4D.9700 to 9077.EE4D.977F 1.1  17.8.1r       S2C\
-      \                ok         \r\n\r\nMod Redundancy Role     Operating Redundancy\
-      \ Mode Configured Redundancy Mode\r\n---+-------------------+-------------------------+---------------------------\r\
-      \n3   Active              non-redundant             sso                    \
-      \   \r\n\r\nChassis MAC address range: 64 addresses from 3c57.31bc.2b80 to 3c57.31bc.2bbf"
+    config-transaction:
+      new_state: configure
+    show firmware version all:
+      response:
+      - "Slot      Device Name / Model                     Firmware Version      \
+        \        \r\n--------- --------------------------------------- -----------------------------\
+        \ \r\n 3         Supervisor Rommon (Active)              17.10.1r        \
+        \              \r\n 4         Supervisor Rommon (Standby)             17.10.1r\
+        \                      \r\n 3         Supervisor CPLD                    \
+        \     18041605                      \r\n 4         Supervisor CPLD       \
+        \                  18041605                      \r\n -         Eth Lan Spi\
+        \                             0x8000065a                    \r\n PS17    \
+        \  Fantray                                 17050302                      \r\
+        \n 1         Line Card / C9400-LC-48T                0x0d (170503)       \
+        \          \r\n 6         Line Card / C9400-LC-24S                0x0d (170503)\
+        \                 \r\n 7         Line Card / C9400-LC-48T                0x0d\
+        \ (170503)                 \r\n PS5       Power Supply (PS PRI, PS_SEC, PS_I2C)\
+        \   (7.3, 7.0, 6.0)               \r\n PS8       Power Supply (PS PRI, PS_SEC,\
+        \ PS_I2C)   (7.3, 7.0, 6.0)               \r\n 1         Line Card / C9400-LC-48T\
+        \                0xae025011                    \r\n 3         SUP / C9400-SUP-1\
+        \                       0x0000521e                    \r\n 4         SUP /\
+        \ C9400-SUP-1                       0x0000521e                    \r\n 7 \
+        \        Line Card / C9400-LC-48T                0xae025011              \
+        \      \r\n 1         Line Card / C9400-LC-48T                0x31       \
+        \         \r\n 6         Line Card / C9400-LC-24S                N/A     \
+        \            \r\n 7         Line Card / C9400-LC-48T                0x32"
+      response_type: circular
+    show module:
+      response:
+      - "Chassis Type: C9407R              \r\n\r\nMod Ports Card Type           \
+        \                        Model          Serial No.\r\n---+-----+--------------------------------------+--------------+--------------\r\
+        \n1   48   48-Port 10/100/1000 (RJ-45)                 C9400-LC-48T     JAE204700Q4\r\
+        \n3   11   Supervisor 1 Module                         C9400-SUP-1      JAE210204A9\r\
+        \n4   11   Supervisor 1 Module                         C9400-SUP-1      JAE2050073X\r\
+        \n6   24   24-Port 1 Gigabit Ethernet (SFP)            C9400-LC-24S     JAE2143016D\r\
+        \n7   48   48-Port 10/100/1000 (RJ-45)                 C9400-LC-48T     JAE213205G9\r\
+        \n\r\nMod MAC addresses                    Hw   Fw           Sw          \
+        \       Status\r\n---+--------------------------------+----+------------+------------------+--------\r\
+        \n1   E4AA.5D54.13BC to E4AA.5D54.13EB 0.5  17.10.1r      S2C            \
+        \    ok         \r\n3   0C75.BD02.37EC to 0C75.BD02.37F6 0.5  17.10.1r   \
+        \   S2C                ok         \r\n4   0C75.BD02.37F6 to 0C75.BD02.3800\
+        \ 0.5  17.10.1r      S2C                ok         \r\n6   6CB2.AE42.C844\
+        \ to 6CB2.AE42.C85B 0.2  17.10.1r      S2C                cfg-shut   \r\n\
+        7   E4AA.5D59.FC98 to E4AA.5D59.FCC7 1.0  17.10.1r      S2C              \
+        \  ok         \r\n\r\nMod Redundancy Role     Operating Mode  Configured Mode\
+        \  Redundancy Status\r\n---+-------------------+---------------+---------------+------------------\r\
+        \n3   Active              sso             sso              Active        \
+        \   \r\n4   Standby             sso             sso              Standby Hot\
+        \      \r\n\r\nChassis MAC address range: 44 addresses from 0c75.bd02.37c0\
+        \ to 0c75.bd02.37eb"
+      response_type: circular
     show version:
       response:
-      - "Cisco IOS XE Software, Version S2C\r\nCisco IOS Software [Cupertino], Catalyst\
-        \ L3 Switch Software (CAT9K_IOSXE), Experimental Version 17.8.20211216:071212\
-        \ [BLD_POLARIS_DEV_S2C_20211216_061759:/nobackup/mcpre/s2c-build-ws 101]\r\
-        \nCopyright (c) 1986-2021 by Cisco Systems, Inc.\r\nCompiled Wed 15-Dec-21\
-        \ 23:12 by mcpre\r\n\r\n\r\nCisco IOS-XE software, Copyright (c) 2005-2021\
+      - "Cisco IOS XE Software, Version S2C\r\nCisco IOS Software [Dublin], Catalyst\
+        \ L3 Switch Software (CAT9K_IOSXE), Experimental Version 17.12.20230405:062507\
+        \ [BLD_POLARIS_DEV_S2C_20230405_060646:/nobackup/mcpre/s2c-build-ws 101]\r\
+        \nCopyright (c) 1986-2023 by Cisco Systems, Inc.\r\nCompiled Tue 04-Apr-23\
+        \ 23:25 by mcpre\r\n\r\n\r\nCisco IOS-XE software, Copyright (c) 2005-2023\
         \ by cisco Systems, Inc.\r\nAll rights reserved.  Certain components of Cisco\
         \ IOS-XE software are\r\nlicensed under the GNU General Public License (\"\
         GPL\") Version 2.0.  The\r\nsoftware code licensed under GPL Version 2.0 is\
@@ -72,11 +91,12 @@ execute:
         \ and/or modify such\r\nGPL code under the terms of GPL Version 2.0.  For\
         \ more details, see the\r\ndocumentation or \"License Notice\" file accompanying\
         \ the IOS-XE software,\r\nor the applicable URL provided on the flyer accompanying\
-        \ the IOS-XE\r\nsoftware.\r\n\r\n\r\nROM: IOS-XE ROMMONBOOTLDR: System Bootstrap,\
-        \ Version 17.8.1r, RELEASE SOFTWARE (P)\r\n\r\n9600_Switch uptime is 10 weeks,\
-        \ 6 days, 21 hours, 2 minutes\r\nUptime for this control processor is 10 weeks,\
-        \ 6 days, 21 hours, 3 minutes\r\nSystem returned to ROM by Reload Command\r\
-        \nSystem image file is \"flash:cat9k_iosxe.S2C.SSA.bin\"\r\nLast reload reason:\
+        \ the IOS-XE\r\nsoftware.\r\n\r\n\r\nROM: IOS-XE ROMMON\r\nBOOTLDR: System\
+        \ Bootstrap, Version 17.10.1r, RELEASE SOFTWARE (P)\r\n\r\nmac2-sjc24 uptime\
+        \ is 20 hours, 52 minutes\r\nUptime for this control processor is 20 hours,\
+        \ 53 minutes\r\nSystem returned to ROM by Reload Command at 10:03:12 UTC Thu\
+        \ Apr 6 2023\r\nSystem restarted at 10:07:53 UTC Thu Apr 6 2023\r\nSystem\
+        \ image file is \"bootflash:cat9k_iosxe.S2C.SSA.bin\"\r\nLast reload reason:\
         \ Reload Command\r\n\r\n\r\n\r\nThis product contains cryptographic features\
         \ and is subject to United\r\nStates and local country laws governing import,\
         \ export, transfer and\r\nuse. Delivery of Cisco cryptographic products does\
@@ -97,20 +117,20 @@ execute:
         \   \r\ndna-advantage       \tSubscription Smart License    \t dna-advantage\
         \                 \r\nAIR License Level: AIR DNA Advantage\r\nNext reload\
         \ AIR license Level: AIR DNA Advantage\r\n\r\n\r\nSmart Licensing Status:\
-        \ Smart Licensing Using Policy\r\n\r\ncisco C9606R (X86) processor (revision\
-        \ V01) with 2883526K/6147K bytes of memory.\r\nProcessor board ID FXS2429Q4HV\r\
-        \n1 Virtual Ethernet interface\r\n48 TwentyFive Gigabit Ethernet interfaces\r\
-        \n32768K bytes of non-volatile configuration memory.\r\n15992196K bytes of\
-        \ physical memory.\r\n11161600K bytes of Bootflash at bootflash:.\r\n1638400K\
-        \ bytes of Crash Files at crashinfo:.\r\n937691463K bytes of SATA hard disk\
-        \ at disk0:.\r\n\r\nBase Ethernet MAC Address          : 3c:57:31:bc:2b:80\r\
-        \nMotherboard Assembly Number        : 4C57\r\nMotherboard Serial Number \
-        \         : FXS242803PJ\r\nModel Revision Number              : V02\r\nMotherboard\
-        \ Revision Number        : 4\r\nModel Number                       : C9606R\r\
-        \nSystem Serial Number               : FXS2429Q4HV"
+        \ Smart Licensing Using Policy\r\n\r\ncisco C9407R (X86) processor (revision\
+        \ V00) with 1825340K/6147K bytes of memory.\r\nProcessor board ID FXS1939Q442\r\
+        \n3 Virtual Ethernet interfaces\r\n96 Gigabit Ethernet interfaces\r\n16 Ten\
+        \ Gigabit Ethernet interfaces\r\n4 Forty Gigabit Ethernet interfaces\r\n32768K\
+        \ bytes of non-volatile configuration memory.\r\n15990900K bytes of physical\
+        \ memory.\r\n11161600K bytes of Bootflash at bootflash:.\r\n1638400K bytes\
+        \ of Crash Files at crashinfo:.\r\n11161600K bytes of Bootflash at bootflash-1-1:.\r\
+        \n1638400K bytes of Crash Files at crashinfo-1-1:.\r\n\r\nBase Ethernet MAC\
+        \ Address          : 0c:75:bd:02:37:c0\r\nMotherboard Assembly Number    \
+        \    : 4855\r\nMotherboard Serial Number          : FXS19380693\r\nModel Revision\
+        \ Number              : V02\r\nMotherboard Revision Number        : 1\r\n\
+        Model Number                       : C9407R              \r\nSystem Serial\
+        \ Number               : FXS1939Q442"
       response_type: circular
     term length 0: ''
     term width 0: ''
-    term width 511: ''
-    terminal session-timeout 0: ''
-  prompt: 9600_Switch#
+  prompt: mac2-sjc24#

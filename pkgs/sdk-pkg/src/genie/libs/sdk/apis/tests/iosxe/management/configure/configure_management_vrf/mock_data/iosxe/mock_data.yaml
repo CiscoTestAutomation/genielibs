@@ -1,0 +1,41 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: ott-c9300-67(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: ott-c9300-67(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    show vrf:
+      response:
+      - "  Name                             Default RD            Protocols   Interfaces\r\
+        \n  Mgmt-vrf                         <not set>             ipv4,ipv6   Gi0/0\r\
+        \n\r\n  Platform iVRF Name               iVRF Id               Interfaces\r\
+        \n  __Platform_iVRF:_ID00_           0                     LI18/2"
+      response_type: circular
+    term length 0: ''
+    term width 0: ''
+  prompt: ott-c9300-67#

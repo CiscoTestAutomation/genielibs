@@ -1,20 +1,17 @@
-''' 
+'''
 Interface Genie Ops Object for IOSXE - CLI.
 '''
 
-import re
 
 # super class
 from genie.libs.ops.interface.interface import Interface as SuperInterface
 
-# iosxe show_interface
-from genie.libs.parser.iosxe.show_interface import ShowInterfaces, \
-                                        ShowIpInterface,  \
-                                        ShowIpv6Interface, \
-                                        ShowInterfacesAccounting
-
-from genie.libs.parser.iosxe.show_vrf import ShowVrf
-
+# commands
+show_vrf = "show vrf"
+show_interfaces = "show interfaces"
+show_ip_interface = "show ip interface"
+show_ipv6_interface = "show ipv6 interface"
+show_interfaces_accounting = "show interfaces accounting"
 
 
 class Interface(SuperInterface):
@@ -35,20 +32,20 @@ class Interface(SuperInterface):
                     '[duplex_mode]', '[medium]', '[delay]']
 
 
-        self.add_leaf(cmd=ShowVrf,
+        self.add_leaf(cmd=show_vrf,
                       src='vrf[(?P<vrf>.*)][interfaces]',
                       dest='info[vrf][(?P<vrf>.*)][interfaces]', vrf=vrf)
         self.make()
         if vrf:
             for intf in self.info['vrf'][vrf]['interfaces']:
                 for key in req_keys:
-                    self.add_leaf(cmd=ShowInterfaces,
+                    self.add_leaf(cmd=show_interfaces,
                                   src=src + '[{}]'.format(key),
                                   dest=dest + '[{}]'.format(key),
                                   interface=intf)
         else:
             for key in req_keys:
-                self.add_leaf(cmd=ShowInterfaces,
+                self.add_leaf(cmd=show_interfaces,
                               src=src + '[{}]'.format(key),
                               dest=dest + '[{}]'.format(key),
                               interface=interface)
@@ -58,7 +55,7 @@ class Interface(SuperInterface):
         # make to write in cache
         self.make()
 
-        # mapping vrf to interface from ShowVrf
+        # mapping vrf to interface from "show vrf"
         if interface:
             if hasattr(self, 'info') and 'vrf' in self.info:
                 for vrf_entry in self.info['vrf']:
@@ -121,7 +118,7 @@ class Interface(SuperInterface):
                             'out_errors', 'last_clear']
 
                 for key in req_keys:
-                    self.add_leaf(cmd=ShowInterfaces,
+                    self.add_leaf(cmd=show_interfaces,
                                   src=src + '[{}]'.format(key),
                                   dest=dest + '[{}]'.format(key),
                                   interface=intf)
@@ -133,7 +130,7 @@ class Interface(SuperInterface):
                 req_keys = ['load_interval', 'in_rate', 'in_rate_pkts',
                             'out_rate', 'out_rate_pkts']
                 for key in req_keys:
-                    self.add_leaf(cmd=ShowInterfaces,
+                    self.add_leaf(cmd=show_interfaces,
                                   src=src + '[{}]'.format(key),
                                   dest=dest + '[{}]'.format(key),
                                   interface=intf)
@@ -149,7 +146,7 @@ class Interface(SuperInterface):
                 req_keys = ['encapsulation', 'first_dot1q', 'second_dot1q']
 
                 for key in req_keys:
-                    self.add_leaf(cmd=ShowInterfaces,
+                    self.add_leaf(cmd=show_interfaces,
                                   src=src + '[{}]'.format(key),
                                   dest=dest + '[{}]'.format(key),
                                   interface=intf)
@@ -162,19 +159,19 @@ class Interface(SuperInterface):
                 src = '[(?P<interface>.*)]'
                 dest = 'info[(?P<interface>.*)]'
 
-                cmd = 'ShowInterfacesAccounting'
+                cmd = show_interfaces_accounting
                 if custom and cmd in custom.keys():
                     if 'intf' in custom[cmd].keys():
-                        self.add_leaf(cmd=ShowInterfacesAccounting,
+                        self.add_leaf(cmd=cmd,
                                       src=src + '[accounting]',
                                       dest=dest + '[accounting]',
                                       interface=custom[cmd]['intf'])
                     else:
-                        self.add_leaf(cmd=ShowInterfacesAccounting,
+                        self.add_leaf(cmd=cmd,
                                       src=src + '[accounting]',
                                       dest=dest + '[accounting]')
 
-                self.add_leaf(cmd=ShowInterfacesAccounting,
+                self.add_leaf(cmd=cmd,
                               src=src + '[accounting]',
                               dest=dest + '[accounting]',
                               interface=intf)
@@ -191,7 +188,7 @@ class Interface(SuperInterface):
                     req_keys = ['ip', 'prefix_length', 'secondary', 'origin']
                     # custom
                     for key in req_keys:
-                        self.add_leaf(cmd=ShowIpInterface,
+                        self.add_leaf(cmd=show_ip_interface,
                                       src=src + '[{}]'.format(key),
                                       dest=dest + '[{}]'.format(key), interface=intf)
 
@@ -200,7 +197,7 @@ class Interface(SuperInterface):
                     # secondary_vrf   --- This is not supported on IOSXE
 
                     # unnumbered
-                    self.add_leaf(cmd=ShowInterfaces,
+                    self.add_leaf(cmd=show_interfaces,
                                   src='[(?P<interface>.*)][ipv4][unnumbered]',
                                   dest='info[(?P<interface>.*)][ipv4][unnumbered]',
                                   interface=intf)
@@ -218,7 +215,7 @@ class Interface(SuperInterface):
                                 'unnumbered']
 
                     for key in req_keys:
-                        self.add_leaf(cmd=ShowIpv6Interface,
+                        self.add_leaf(cmd=show_ipv6_interface,
                                       src=src + '[{}]'.format(key),
                                       dest=dest + '[{}]'.format(key), interface=intf)
         else:
@@ -234,7 +231,7 @@ class Interface(SuperInterface):
 
 
             for key in req_keys:
-                self.add_leaf(cmd=ShowInterfaces,
+                self.add_leaf(cmd=show_interfaces,
                               src=src + '[{}]'.format(key),
                               dest=dest + '[{}]'.format(key),
                               interface=interface)
@@ -247,7 +244,7 @@ class Interface(SuperInterface):
             req_keys = ['load_interval', 'in_rate', 'in_rate_pkts',
                         'out_rate', 'out_rate_pkts']
             for key in req_keys:
-                self.add_leaf(cmd=ShowInterfaces,
+                self.add_leaf(cmd=show_interfaces,
                               src=src + '[{}]'.format(key),
                               dest=dest + '[{}]'.format(key),
                               interface=interface)
@@ -264,7 +261,7 @@ class Interface(SuperInterface):
             req_keys = ['encapsulation', 'first_dot1q', 'second_dot1q']
 
             for key in req_keys:
-                self.add_leaf(cmd=ShowInterfaces,
+                self.add_leaf(cmd=show_interfaces,
                               src=src + '[{}]'.format(key),
                               dest=dest + '[{}]'.format(key),
                               interface=interface)
@@ -277,19 +274,19 @@ class Interface(SuperInterface):
             src = '[(?P<interface>.*)]'
             dest = 'info[(?P<interface>.*)]'
 
-            cmd = 'ShowInterfacesAccounting'
+            cmd = show_interfaces_accounting
             if custom and cmd in custom.keys():
                 if 'intf' in custom[cmd].keys():
-                    self.add_leaf(cmd=ShowInterfacesAccounting,
+                    self.add_leaf(cmd=cmd,
                                   src=src + '[accounting]',
                                   dest=dest + '[accounting]',
                                   interface=custom[cmd]['intf'])
                 else:
-                    self.add_leaf(cmd=ShowInterfacesAccounting,
+                    self.add_leaf(cmd=cmd,
                                   src=src + '[accounting]',
                                   dest=dest + '[accounting]')
 
-            self.add_leaf(cmd=ShowInterfacesAccounting,
+            self.add_leaf(cmd=cmd,
                           src=src + '[accounting]',
                           dest=dest + '[accounting]',
                           interface=interface)
@@ -307,7 +304,7 @@ class Interface(SuperInterface):
                 req_keys = ['ip', 'prefix_length', 'secondary', 'origin']
                 # custom
                 for key in req_keys:
-                    self.add_leaf(cmd=ShowIpInterface,
+                    self.add_leaf(cmd=show_ip_interface,
                                   src=src + '[{}]'.format(key),
                                   dest=dest + '[{}]'.format(key), interface=interface)
 
@@ -317,7 +314,7 @@ class Interface(SuperInterface):
                 # secondary_vrf   --- This is not supported on IOSXE
 
                 # unnumbered
-                self.add_leaf(cmd=ShowInterfaces,
+                self.add_leaf(cmd=show_interfaces,
                               src='[(?P<interface>.*)][ipv4][unnumbered]',
                               dest='info[(?P<interface>.*)][ipv4][unnumbered]',
                               interface=interface)
@@ -336,7 +333,7 @@ class Interface(SuperInterface):
                             'unnumbered']
 
                 for key in req_keys:
-                    self.add_leaf(cmd=ShowIpv6Interface,
+                    self.add_leaf(cmd=show_ipv6_interface,
                                   src=src + '[{}]'.format(key),
                                   dest=dest + '[{}]'.format(key), interface=interface)
 

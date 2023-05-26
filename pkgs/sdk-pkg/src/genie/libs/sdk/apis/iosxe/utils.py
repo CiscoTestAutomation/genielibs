@@ -1652,6 +1652,23 @@ def copy_file(device, source_path, destination_path, filename):
     except SubCommandFailure as e:
         raise SubCommandFailure(log.error("failed to copy file from source to destination""Error:\n{error}".format(error=e)))
 
+def clear_policy_map_counters(device):
+    '''
+        Clear policy-map counters
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    '''
+    cmd = 'clear policy-map counters'
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Could not clear policy-map counters. Error:\n{e}'
+        )
 
 def request_system_shell(device, switch_type=None, processor_slot=None, uname=False, exit=True):
     '''
@@ -1691,3 +1708,20 @@ def request_system_shell(device, switch_type=None, processor_slot=None, uname=Fa
     except SubCommandFailure as e:
         raise SubCommandFailure(log.error(f"failed to enter system shell""Error:\n{e}"))
     return output
+
+
+def clear_lne_ftpse_all(device):
+    '''
+        Clear lne ftpse all
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    '''
+    cmd = 'lne ftpse clear all'
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not clear lne ftpse all. Error:\n{e}')

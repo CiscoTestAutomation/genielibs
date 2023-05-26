@@ -63,7 +63,7 @@ def get_firmware_version(device):
             str_fw_list.append('(N/A, N/A, N/A)')
             continue
         else:
-            fw = dict(output_fw["index"][index]).get('fw','NULL')
+            fw = dict(output_fw["index"][index]).get('fw_version','NULL')
 
         if (fw.strip()).replace('.', '',1).isdigit():
             deci_name_list.append(name)

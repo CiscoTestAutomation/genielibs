@@ -9,6 +9,7 @@ from unicon.core.errors import SubCommandFailure
 # Logger
 log = logging.getLogger(__name__)
 
+
 def configure_license_smart_transport_cslu(device):
     """ Configures the license transport type to cslu
         Example : license smart transport cslu
@@ -28,6 +29,7 @@ def configure_license_smart_transport_cslu(device):
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Failed to configure transport type to cslu on device {device.name}. Error:\n{e}')
+
 
 def unconfigure_license_smart_transport(device):
     """ Unconfigures the license transport type
@@ -49,6 +51,7 @@ def unconfigure_license_smart_transport(device):
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Failed to unconfigure transport type on device {device.name}. Error:\n{e}')
 
+
 def configure_license_smart_url_cslu(device, url):
     """ Configures the url for cslu transport mode
         Example : license smart url cslu http://192.168.0.1:8182/cslu/v1/pi
@@ -69,6 +72,7 @@ def configure_license_smart_url_cslu(device, url):
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Failed to configure license smart url cslu on device {device.name}. Error:\n{e}')
 
+
 def unconfigure_license_smart_url_cslu(device):
     """ Unconfigures the license smart url cslu
         Example : no license smart url cslu
@@ -88,6 +92,7 @@ def unconfigure_license_smart_url_cslu(device):
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Failed to unconfigure license smart url cslu on device {device.name}. Error:\n{e}')
 
+
 def configure_line_console(device, line_number):
     """ Configures line console on a line
         Example : line console 0
@@ -106,7 +111,9 @@ def configure_line_console(device, line_number):
     try:
         device.configure(config)
     except SubCommandFailure as e:
-        raise SubCommandFailure(f'Failed to configure line console on {line_number} on device {device.name}. Error:\n{e}')
+        raise SubCommandFailure(
+            f'Failed to configure line console on {line_number} on device {device.name}. Error:\n{e}')
+
 
 def configure_ip_domain_timeout(device, time):
     """ Configures the IP domain timeout
@@ -129,6 +136,7 @@ def configure_ip_domain_timeout(device, time):
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Failed to configure ip domain timeout {time} on device {device.name}. Error:\n{e}')
 
+
 def unconfigure_ip_domain_timeout(device):
     """ Unconfigures the IP domain timeout
         Example : no ip domain timeout
@@ -148,6 +156,7 @@ def unconfigure_ip_domain_timeout(device):
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Failed to unconfigure ip domain timeout on device {device.name}. Error:\n{e}')
+
 
 def unconfigure_ip_http_server(device):
     """ Unconfigures ip http server
@@ -169,6 +178,7 @@ def unconfigure_ip_http_server(device):
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Failed to unconfigure ip http server on device {device.name}. Error:\n{e}')
 
+
 def configure_ip_http_authentication_local(device):
     """ Configures ip http authentication local
         Example : ip http authentication local
@@ -187,7 +197,9 @@ def configure_ip_http_authentication_local(device):
     try:
         device.configure(config)
     except SubCommandFailure as e:
-        raise SubCommandFailure(f'Failed to configure ip http authentication local on device {device.name}. Error:\n{e}')
+        raise SubCommandFailure(
+            f'Failed to configure ip http authentication local on device {device.name}. Error:\n{e}')
+
 
 def unconfigure_ip_http_authentication_local(device):
     """ Unconfigures ip http authentication local
@@ -209,6 +221,7 @@ def unconfigure_ip_http_authentication_local(device):
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Failed to unconfigure http authentication local on device {device.name}. Error:\n{e}')
 
+
 def configure_ip_http_secure_server(device):
     """ Configures ip http secure-server
         Example : ip http secure-server
@@ -228,6 +241,7 @@ def configure_ip_http_secure_server(device):
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Failed to configure http secure-server on device {device.name}. Error:\n{e}')
+
 
 def unconfigure_ip_http_secure_server(device):
     """ Unconfigures ip http secure-server
@@ -249,6 +263,7 @@ def unconfigure_ip_http_secure_server(device):
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Failed to unconfigure http secure-server on device {device.name}. Error:\n{e}')
 
+
 def unconfigure_call_home(device):
     """ Unconfigures call-home
         Example : no call-home
@@ -266,6 +281,7 @@ def unconfigure_call_home(device):
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Failed to unconfigure call-home on device {device.name}. Error:\n{e}')
+
 
 def configure_license_smart_usage_interval(device, interval):
     """ Configures license smart usage interval
@@ -286,6 +302,7 @@ def configure_license_smart_usage_interval(device, interval):
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Failed to configure license smart usage interval. Error:\n{e}')
 
+
 def unconfigure_http_client_source_interface(device):
     """ Unconfigures ip http client source-interface
         Example : no ip http client source-interface
@@ -302,7 +319,9 @@ def unconfigure_http_client_source_interface(device):
     try:
         device.configure(config)
     except SubCommandFailure as e:
-        raise SubCommandFailure(f'Failed to unconfigure http client source-interface on device {device.name}. Error:\n{e}')
+        raise SubCommandFailure(
+            f'Failed to unconfigure http client source-interface on device {device.name}. Error:\n{e}')
+
 
 def unconfigure_ip_domain_name(device, name, vrf=None):
     """ Unconfigures ip domain name
@@ -326,6 +345,7 @@ def unconfigure_ip_domain_name(device, name, vrf=None):
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Failed to unconfigure ip domain name {name} on device {device.name}. Error:\n{e}')
 
+
 def configure_platform(device, license):
     """ Configures platform with a license
         Example : platform hsec-license-release
@@ -347,6 +367,7 @@ def configure_platform(device, license):
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Failed to configure platform {license} on device {device.name}. Error:\n{e}')
 
+
 def configure_license_smart(device, license):
     """ Configures license smart with a license
         Example : license smart transport smart
@@ -367,6 +388,68 @@ def configure_license_smart(device, license):
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Failed to license smart {license} on device {device.name}. Error:\n{e}')
+
+
+def configure_smart_transport_url(device, url):
+    """ configure smart transport url
+        Args:
+            device ('obj'): Device object
+            url ('str'): Smart Transport URL
+        Returns:
+            None
+        Raise:
+            SubCommandFailure: Failed to configure smart transport URL
+    """
+    log.debug("configure smart transport URL")
+    config = f"license smart url {url}"
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure smart transport URL. Error:\n{error}".format(
+                error=e
+            )
+        )
+
+
+def unconfigure_smart_transport_url(device):
+    """ unconfigure smart transport url
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raise:
+            SubCommandFailure: Failed to un configure smart transport URL
+    """
+    log.debug("unconfigure smart transport URL")
+    try:
+        device.configure("no license smart url")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure smart transport URL. Error:\n{error}".format(
+                error=e
+            )
+        )
+
+
+def unconfigure_license_smart_usage_interval(device):
+    """ Un configures license smart usage interval
+        Example : no license smart usage interval
+
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises: 
+            SubCommandFailure
+    """
+    log.info(f'Unconfiguring license smart usage interval on {device.name}')
+    config = f'no license smart usage interval'
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Failed to unconfigure license smart usage interval. Error:\n{e}')
+
 
 def configure_license_smart_transport_callhome(device):
     """ Configures license smart transport callhome

@@ -2371,3 +2371,33 @@ def configure_bgp_isis_redistribution(device, bgp_as, address_family, isis_proce
             "Could not configure ISIS redistribute connected under bgp {bgp_as}. \n Error: {error}"\
                 .format(bgp_as=bgp_as,error=e)
         )
+
+
+def configure_bgp_vpn_import(device, bgp_as, address_family, address_family_modifier=None, 
+                             import_address_family=None, import_from=None, re_originate=True):
+    """ Configure vpn import under router bgp
+
+        Args:
+            device ('obj')             : Device to be configured
+            bgp_as ('str')             : Bgp Id to be added to configuration
+            address_family ('str')     : Address family to be configured
+            address_family_modifier ('str', optional) : the endpoint provisioning information to be distributed
+                                              to BGP peers. Default is None
+            import_address_family('str', optional) :  import from address family. Ex: l2vpn, vpnv4. Default is None
+            import_from('str', optional) :  import prefixes from. Ex: unicast, evpn. Default is None
+            re_originate('bool', optional) :  imported path with RT re-originate. Default is None
+
+        Returns:
+            N/A
+        Raises:
+            SubCommandFailure: Failed executing configure commands
+
+    """
+    config = [f'router bgp {bgp_as}', 
+              f'address-family {address_family}{f" {address_family_modifier}" if address_family_modifier else ""}']
+    if import_address_family and import_from:
+        config.append(f'import {import_address_family} {import_from}{" re-originate" if re_originate else ""}')
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure router bgp import. Error:{e}")

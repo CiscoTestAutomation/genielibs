@@ -93,11 +93,23 @@ def execute_test_crash(device,num,timeout=500,connect_timeout=400):
         ])     
     log.info(f"Perform test crash {num} on {device.name}")  
     cmd  = f"test crash"
-    try:       
+    try:
         output = device.execute(cmd, reply=dialog, timeout=timeout)
         log.info(f"{cmd} is successful")
-        #time.sleep(100)
     except Exception as e:
         log.error(f"Error while executing {cmd} : {e}")
         return False  
-        
+
+def execute_test_platform_hardware_fantray(device, switch_mode, switch_number):
+    """ 
+        Args:
+            device ('obj'): device to use  
+            switch_mode ('str'): switch mode on/off
+	    switch_number ('int'): switch number 1/2
+    """
+    cmd= f"test platform hardware chassis fantray service-mode {switch_mode} switch {switch_number}"
+    try:
+        out=device.execute(cmd)
+    except Exception as err:
+        log.error("Error while executing {cmd} : err")
+    return out

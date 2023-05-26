@@ -1427,7 +1427,7 @@ class RpcVerify():
 
     # Pattern to detect keys in an xpath
     RE_FIND_KEYS = re.compile(r'\[.*?\]')
-    RE_FIND_PREFIXES = re.compile(r'/.*?:')
+    RE_FIND_PREFIXES = re.compile(r'/[-a-zA-Z0-9]+:')
     # Pattern to detect prefix in the key name
     RE_FIND_KEY_PREFIX = re.compile(r'\[.*?:')
 

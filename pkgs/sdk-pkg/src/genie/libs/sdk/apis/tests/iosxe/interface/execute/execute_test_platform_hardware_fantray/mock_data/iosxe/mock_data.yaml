@@ -1,0 +1,44 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: NG_SVL_AUT1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: NG_SVL_AUT1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    test platform hardware chassis fantray service-mode On switch 2:
+      response:
+      - "Fantray speed(RPM)\r\nRow  Fan1   | Fan2   | Fan3   | Throttle | Interrupt\
+        \ Source\r\n---  ------   ------ ------   --------   ----------------\r\n\
+        1    7950     8010    8040     58%        0               \r\n2    7950  \
+        \   8010    8010     58%        0               \r\n3    8010     8010   \
+        \ 8010     58%        0               \r\nFantray global interrupt source\
+        \ register = 0x8700\r\nFantray global version : 0x18101008\r\nFantray AIRDAM\
+        \ Status : 0x84\r\nFantray beacon LED status: off\r\nFantray status LED: green"
+      response_type: circular
+  prompt: NG_SVL_AUT1#

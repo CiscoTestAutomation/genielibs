@@ -745,3 +745,42 @@ def unconfigure_spanningtree_sso_block_tcn(device):
         raise SubCommandFailure(
             "Could not unconfigure spanning-tree cost on {device}. Error:\n{error}".format(device=device, error=e)
         )
+
+def configure_default_spanning_tree_mode(device):
+    '''Configures default spanning-tree mode
+    Args:
+        device ('obj') : Device object
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed configuring default spanning-tree mode
+    '''
+    config = 'default spanning-tree mode'
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed configuring default spanning-tree mode. Error:\n{e}")
+
+def configure_spanning_tree_portfast_on_interface(device, interface, option=None):
+    """ Configures Spanning Tree Portfast on interface
+        Args:
+            device ('obj'): device to use
+            interface('str'): configure the interface
+            option('str', optional): configure the portfast edge / disable / network /trunk
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config = [f"interface {interface}"]
+    if option:
+        config.append(f'spanning-tree portfast {option}')
+    else:
+        config.append('spanning-tree portfast')
+ 
+    try:
+        device.configure(config)
+    except SubCommandFailure as error:
+        raise SubCommandFailure(
+            f'Could not configure spanning-tree portfast - Error:\n{error}'
+        )

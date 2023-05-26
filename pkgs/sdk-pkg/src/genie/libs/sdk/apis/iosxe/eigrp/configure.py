@@ -3,7 +3,8 @@
 # Unicon
 from unicon.core.errors import SubCommandFailure
 
-def configure_eigrp_networks(device, process_id, ip_address=None, netmask=None, router_id=None, bfd=None):
+def configure_eigrp_networks(device, process_id, ip_address=None, netmask=None,
+    router_id=None, bfd=None, passive_interfaces=None):
     """ Configures eigrp on networks
         Args:
             device ('obj'): Device to use
@@ -12,6 +13,7 @@ def configure_eigrp_networks(device, process_id, ip_address=None, netmask=None, 
             netmask ('str'): Netmask to use
             router_id('str',optional): ospf router id
             bfd ('str', optional) : bfd name, default value is None
+            passive_interfaces ('list', optional) : Passive interfaces
         Returns:
             N/A
         Raises:
@@ -26,6 +28,9 @@ def configure_eigrp_networks(device, process_id, ip_address=None, netmask=None, 
         cmd.append('router-id {router_id}'.format(router_id=router_id))
     if bfd:
         cmd.append("bfd {bfd}".format(bfd=bfd))
+    if passive_interfaces:
+        for passive_interface in passive_interfaces:
+            cmd.append(f'passive-interface {passive_interface}')
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -80,12 +85,54 @@ def unconfigure_interface_eigrp_v6(device,interfaces,process_id):
             'Could not unconfigure IPv6 Eigrp on interface. Error:\n{error}'.format(error=e)
         )
 
+def shutdown_ipv6_eigrp_instance(device, process_id):
+    """ Shutdown an IPv6 EIGRP instance
+        Args:
+            device ('obj') : Device object
+            process_id ('int') : EIGRP process ID
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config_list = [
+        f"ipv6 router eigrp {process_id}",
+        "shutdown"
+    ]
+    try:
+        device.configure(config_list)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not shutdown IPv6 EIGRP instance. Error:\n{e}"
+        )
 
-def enable_ipv6_eigrp_router(device,process_id):
+def unshutdown_ipv6_eigrp_instance(device, process_id):
+    """ Unshutdown an IPv6 EIGRP instance
+        Args:
+            device ('obj') : Device object
+            process_id ('int') : EIGRP process ID
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config_list = [
+        f"ipv6 router eigrp {process_id}",
+        "no shutdown"
+    ]
+    try:
+        device.configure(config_list)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unshutdown IPv6 EIGRP instance. Error:\n{e}"
+        )
+
+def enable_ipv6_eigrp_router(device, process_id, router_id=None):
     """ Configures switchport mode on interface
         Args:
             device ('obj')     device to use
             process_id ('str). EIGRP process id
+            router_id ('str')  Router ID for EIGRP process
         Returns:
             None
         Raises:
@@ -93,6 +140,8 @@ def enable_ipv6_eigrp_router(device,process_id):
     """
     config_list = []
     config_list.append("ipv6 router eigrp {process_id}".format(process_id=process_id))
+    if router_id:
+        config_list.append(f"router-id {router_id}")
     try:
         device.configure(config_list)
     except SubCommandFailure as e:
@@ -542,3 +591,23 @@ def configure_eigrp_networks_redistribute_ospf(device, process_id,
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Failed to add network under eigrp {process_id}. Error:\n{e}')
+
+
+def configure_eigrp_redistribute_bgp(device, process_id, bgp_as, ipv6=False):
+    """ Configures redistribute bgp routes into eigrp
+        Args:
+            device ('obj'): Device to use
+            process_id ('str'): Process id for eigrp process
+            ipv6 ('bool', optional): configures ipv6 router eigrp if True. Default is False
+            bgp_as ('int'): bgp as number
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config = [f"{'ipv6 ' if ipv6 else ''}router eigrp {process_id}", f"redistribute bgp {bgp_as}"]
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configures redistribute bgp routes in eigrp. Error:\n{e}')

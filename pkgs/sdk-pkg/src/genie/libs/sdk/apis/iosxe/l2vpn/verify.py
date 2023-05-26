@@ -2,20 +2,15 @@
 
 # Python
 import logging
-import copy
+import re
 from prettytable import PrettyTable
 
-
-# import Steps
-from pyats.aetest.steps import Steps
-
 # Genie
-from genie.utils.timeout import Timeout
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
-from genie.libs.parser.utils.common import Common
 
 # Common
 from genie.libs.parser.utils.common import Common
+from unicon.core.errors import SubCommandFailure
 
 log = logging.getLogger(__name__)
 
@@ -168,3 +163,39 @@ def is_l2vpn_storm_control_packet_count_increased(
                 "    Current: {}".format(k.title().replace("_", " "), val, v)
             )
     return result
+
+
+def verify_flood_suppress(device, evi):
+    '''
+    verify_flood_suppress
+    Check the output of 'show l2vpn evpn evi {evi} detail | include Flood' to verify if flood suppress is enabled/disbled
+    
+    Args:
+        device ('obj') : Device object
+        evi ('int') : evi_id to check the flood suppress on the l2vpn evpn instance
+    
+    Returns:
+        True
+        False
+    
+    Raises:
+        None
+    '''
+
+    log.info('Verify if the flood suppress is disabled')
+    cmd = f'show l2vpn evpn evi {evi} detail | include Flood'
+
+    try:
+        sh_flood_suppress = device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure('Could not execute CLI on {device}. Error: {error}'.format(device = device, error = e))
+
+    is_disabled = re.search(r'AR\s+Flood\s+Suppress:\s+Disabled', sh_flood_suppress)
+    is_detached = re.search(r'\s+Flood\s+Suppress:\s+Detached', sh_flood_suppress)
+
+    if is_disabled and is_detached:
+        log.info('The Flood Suppress is Disabled on the l2vpn evi {}'.format(evi))
+        return True
+    else:
+        log.info('The Flood Suppress is not Disabled on the l2vpn evi {}'.format(evi))
+        return False

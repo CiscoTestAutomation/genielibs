@@ -400,3 +400,33 @@ def unconfigure_ip_arp_inspection_vlan_logging(device, range, log_config, log_ty
         log.error(e)
         raise SubCommandFailure(
             "Failed to unconfigure ip arp inspection vlan logging")
+
+def configure_arp_access_list_permit_ip_host(
+    device, name, action, ip_address, mac_address, log_match=True):
+    """ Configures arp access-list with ip host
+        Example : arp access-list allowed_acl
+                    permit ip host 10.1.1.1 mac any log
+        Args:
+            device ('obj'): device to use
+            name ('str'): access-list name (eg. allowed_acl)
+            action ('str'): Specify packets to forward or reject (eg. permit, deny)
+            ip_address ('str'): Sender Host IP address (eg. 10.1.1.1)
+            mac_address ('str'): Sender MAC address (eg. any)
+            log_match ('str'): Log on match
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f'Configures arp access-list with ip host on {device.name}')
+    cmd = [f'arp access-list {name}']
+    if log_match:
+        cmd.append(f'{action} ip host {ip_address} mac {mac_address} log')
+    else:
+        cmd.append(f'{action} ip host {ip_address} mac {mac_address}')
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to configure arp access-list with ip host on device {device.name}. Error:\n{e}'
+        )

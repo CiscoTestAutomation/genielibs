@@ -101,20 +101,22 @@ def configure_ptp_domain(device, domain):
             "Could not configure PTP domain as per provided argument"
         )
 
-def configure_ptp_priority(device, priority1, priority2):
+def configure_ptp_priority(device, priority1=None, priority2=None):
     """ PTP global configuration
         Args:
             device (`obj`): Device object
-            priority1 (`str`): PTP priority1
-            priority2 (`str`): PTP priority2
+            priority1 ('str', optional): PTP priority1. Default is None
+            priority2 ('str', optional): PTP priority2. Default is None
         Returns:
             None
         Raises:
             SubCommandFailure
     """
     configs = []
-    configs.append("ptp priority1 {priority1}".format(priority1=priority1))
-    configs.append("ptp priority2 {priority2}".format(priority2=priority2))
+    if priority1:
+        configs.append(f"ptp priority1 {priority1}")
+    if priority2:
+        configs.append(f"ptp priority2 {priority2}")
 
     try:
         device.configure(configs)

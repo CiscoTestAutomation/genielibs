@@ -336,7 +336,7 @@
       "module_name": "interface.interface",
       "package": "genie.libs.ops",
       "uid": "interface",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/interface/iosxe/interface.py#L20"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/interface/iosxe/interface.py#L17"
     },
     "iosxr": {
       "class_name": "Interface",

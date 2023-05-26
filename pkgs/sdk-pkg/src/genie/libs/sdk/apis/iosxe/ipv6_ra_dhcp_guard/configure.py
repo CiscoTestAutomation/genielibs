@@ -58,7 +58,7 @@ def configure_dhcpv6_guard_policy(device, policy_name, device_role):
     )
 
     try:
-       if device_role == 'server':
+       if device_role == 'server' or device_role == 'client' or device_role == 'monitor':
           device.configure(
              [
              "ipv6 dhcp guard policy {policy_name}".format(policy_name=policy_name),

@@ -11,6 +11,10 @@ class TestConfigureManagementNetconf(unittest.TestCase):
         testbed = f"""
         devices:
           vmtb-isr4451:
+            credentials:
+                default:
+                    username: admin
+                    password: admin
             connections:
               defaults:
                 class: unicon.Unicon

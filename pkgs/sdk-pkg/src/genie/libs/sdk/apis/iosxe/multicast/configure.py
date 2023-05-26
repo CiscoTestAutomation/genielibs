@@ -447,6 +447,68 @@ def unconfigure_static_ipv6_pim_rp_address(device,ipv6_address,vrf=None):
         raise SubCommandFailure("Failed to unconfigure rp-address {ipv6_address} on device {dev}. Error:\n{error}".format(ipv6_address=ipv6_address,vrf=vrf,dev=device.name,error=e)
         )
 
+def configure_ip_multicast_routing_distributed(device, no_spd=False, punt_limit=None):
+    """Configure IP multicast routing
+    Args:
+        device (`obj`): Device object
+        no_spd (): If True, turn off selective packet discard. Default False.
+        punt_limit (`str` or `int`): Punt limit. Acceptable values are:
+                                     integer (packets per second)
+                                     default
+                                     disable
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failure while configuring
+    """
+    if punt_limit and not isinstance(punt_limit, int):
+        if punt_limit not in ["default", "disable"]:
+            raise SubCommandFailure(
+                f"Invalid punt limit. Expected: integer/'default'/'disable', got {punt_limit}"
+            )
+    cmd = "ip multicast-routing distributed"
+    if no_spd:
+        cmd += " no-spd"
+    if punt_limit:
+        cmd += f" punt-limit {punt_limit}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure ip multicast routing distributed. Error:\n{e}"
+        )
+
+def unconfigure_ip_multicast_routing_distributed(device, no_spd=False, punt_limit=None):
+    """Unconfigure IP multicast routing
+    Args:
+        device (`obj`): Device object
+        no_spd (): Selective packet discard
+        punt_limit (`str` or `int`): Punt limit. Acceptable values are:
+                                     integer (packets per second)
+                                     default
+                                     disable
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failure while configuring
+    """
+    if punt_limit and not isinstance(punt_limit, int):
+        if punt_limit not in ["default", "disable"]:
+            raise SubCommandFailure(
+                f"Invalid punt limit. Expected: integer/'default'/'disable', got {punt_limit}"
+            )
+    cmd = "no ip multicast-routing distributed"
+    if no_spd:
+        cmd += " no-spd"
+    if punt_limit:
+        cmd += f" punt-limit {punt_limit}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure ip multicast routing distributed. Error:\n{e}"
+        )
+
 def configure_ipv6_multicast_routing(device):
     """ Configure Enable IPv6 multicast routing
     Args:
@@ -1113,30 +1175,6 @@ def configure_ip_igmp_snooping_vlan_mrouter_learn_pim_dvmrp(device, vlan_id):
             "Could not configure ip igmp snooping vlan mrouter learn pim-dvmrp . Error:\n{error}".format(error=e)
         )
 
-def configure_ip_igmp_static_group(device, interface, group_address):
-    """ Configures ip igmp static-group to an interface
-        Example : ip igmp static-group 239.100.100.101
-
-        Args:
-            device ('obj'): device to use
-            interface ('str'): interface or Vlan number (Eg. ten1/0/1 or vlan 10)
-            group_address ('str'): IP group address
-
-        Returns:
-            None
-
-        Raises:
-            SubCommandFailure
-    """
-    log.info(f"Configuring ip igmp static-group on {device.name}")
-    configs = [
-        f"interface {interface}",
-        f"ip igmp static-group {group_address}"
-    ]
-    try:
-        device.configure(configs)
-    except SubCommandFailure as e:
-        raise SubCommandFailure(f"Failed to configure ip igmp static-group on device {device.name}. Error:\n{e}")
 
 def configure_ip_igmp_join_group_source(device, interface, group_address, source_address=""):
     """ Configures ip igmp join-group to an vlan interface
@@ -1783,4 +1821,40 @@ def unconfigure_ip_pim(device, interface, mode):
                 dev=device.name,
                 error=e,
             )
+        )
+
+def configure_ip_forward_protocol_nd(device):
+    """ Configure ip forward-protocol network disk on device.
+        Args:
+            device ('obj'): Device object
+        Return:
+            None
+        Raise:
+        SubCommandFailure: Failed to configure ip forward-protocol network disk on device.
+    """
+    log.info("configuring ip forward-protocol nd on {device}")
+    configs = "ip forward-protocol nd"
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+        f'Failed to configure ip forward-protocol network disk on {device}. Error:\n{e}'
+        )
+
+def unconfigure_ip_forward_protocol_nd(device):
+    """ Unconfigure ip forward-protocol network disk on device.
+        Args:
+            device ('obj'): Device object
+        Return:
+            None
+        Raise:
+        SubCommandFailure: Failed to unconfigure ip forward-protocol network disk on device.
+    """
+    log.info("unconfiguring ip forward-protocol nd on {device}")
+    configs = "no ip forward-protocol nd"
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+        f'Failed to unconfigure ip forward-protocol network disk on {device}. Error:\n{e}'
         )

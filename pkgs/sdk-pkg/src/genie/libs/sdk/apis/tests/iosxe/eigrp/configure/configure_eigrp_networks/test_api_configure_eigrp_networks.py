@@ -30,6 +30,6 @@ class TestConfigureEigrpNetworks(unittest.TestCase):
         )
 
     def test_configure_eigrp_networks(self):
-        result = configure_eigrp_networks(self.device, '10', ['100.100.0.0'], '255.255.0.0', '1.1.1.1', 'all-interfaces')
+        result = configure_eigrp_networks(self.device, '10', ['100.100.0.0'], '255.255.0.0', '1.1.1.1', 'all-interfaces', passive_interfaces=['GigabitEthernet0/0/0', 'GigabitEthernet0/0/1'])
         expected_output = None
         self.assertEqual(result, expected_output)

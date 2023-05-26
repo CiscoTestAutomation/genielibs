@@ -197,3 +197,24 @@ def unconfigure_route_map_permit(
         raise SubCommandFailure(
             "Failed to unconfigure route_map on device{device}. Error:\n{error}"
             .format(device=device, error=e))
+
+
+def configure_route_map_match_length(device, route_map, min_packet_length, max_packet_length):
+    """ Configures route-map match length on device
+        Args:
+            device('obj'): device to configure on
+            route_map('list'): route-map
+            min_packet_length ('str'): minimum packet length
+            max_packet_length ('str'): maximum packet length
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring route map
+    """
+    cmd = [f"route-map {route_map}", f"match length {min_packet_length} {max_packet_length}"]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to execute configuration command on device{device}. Error:\n{e}")

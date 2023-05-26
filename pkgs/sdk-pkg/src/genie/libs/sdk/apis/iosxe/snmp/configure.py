@@ -525,6 +525,7 @@ def unconfigure_snmp_server_manager(device):
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not un configure snmp-server manager . Error:\n{e}")
 
+
 def configure_logging_snmp_trap(device, sev_type):
     """
         Configures the snmp-trap logging
@@ -541,6 +542,8 @@ def configure_logging_snmp_trap(device, sev_type):
         device.configure(f"logging snmp-trap {sev_type}")
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not configure logging snmp-trap . Error:\n{e}")
+
+
 def unconfigure_logging_snmp_trap(device, sev_type):
     """
         Configures the snmp-trap logging
@@ -556,4 +559,21 @@ def unconfigure_logging_snmp_trap(device, sev_type):
         device.configure(f"no logging snmp-trap {sev_type}")
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not configure logging snmp-trap . Error:\n{e}")
-        
+
+
+def unconfigure_snmp_server_engineid(device):
+    """
+        Unconfigures the snmp server engineID
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"Unconfiguring snmp server engineID on {device}")
+    try:
+        device.configure("no snmp-server engineID local")
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not un configure snmp server engineID . Error:\n{e}")

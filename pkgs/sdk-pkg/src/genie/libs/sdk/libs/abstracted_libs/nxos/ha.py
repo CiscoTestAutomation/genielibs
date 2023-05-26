@@ -318,8 +318,10 @@ class HA(HA_main):
                 protocol=device.filetransfer_attributes['protocol'],
                 address=device.filetransfer_attributes['server_address'],
                 upgrade_image=upgrade_image)
+            #File copy operations have the option of running through a different network stack by using the use-kstack option
+            use_kstack = self.parameters.get('use_kstack',False)
             filetransfer.copyfile(source=from_url, destination=disk,
-                                  device=device, vrf='management', timeout_seconds=900)
+                                  device=device, vrf='management',use_kstack=use_kstack,timeout_seconds=900)
 
             # Verify location:<filename> exists
             output = device.execute('dir {disk}{image}'.format(disk=disk,
@@ -425,7 +427,10 @@ class HA(HA_main):
                 image_name = basename(upgrade_image)
                 impact_output = self.device.execute(
                                 "show install all impact nxos bootflash:{} non-disruptive".format(image_name), timeout=600)
-                if "Upgrade will be disruptive" in impact_output and not allow_disruptive:
+                #Parses impact after compatibility check is done
+                compatibility_table = re.findall('(?s)(?<=Compatibility check is done:)(.*?)(?=\r\n\r\n|\n\n)',impact_output)[0]
+                upgrade_will_be_disruptive = True if len(re.findall(r"[^-]disruptive",compatibility_table)) else False
+                if upgrade_will_be_disruptive and not allow_disruptive:
                     step.failed(
                         "Upgrade will be disruptive and disruptive ISSU is not allowed")
             #Allows previous install all instance to complete before proceeding

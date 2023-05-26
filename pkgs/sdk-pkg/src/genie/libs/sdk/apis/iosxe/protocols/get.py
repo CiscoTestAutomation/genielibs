@@ -1,5 +1,5 @@
 """Common get info functions for protocols"""
-
+import re
 import logging
 # pyATS
 from pyats.utils.objects import find, R
@@ -103,9 +103,12 @@ def get_neighbor_count(device, protocol, neighbor, value):
     )
     cmd = f'show {protocol} {neighbor} | count {value}'
     try:
-        device.execute(cmd)
+        output = device.execute(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not executing neighbor count on device".format(protocol=protocol,neighbor=neighbor,value=value, e=e)
         )
+    p = re.compile(r"^Number of lines which match regexp\s*=\s*(?P<count>[\d]+)$")
+    count = int(p.search(output).groupdict().get('count', 0))
+    return count
 

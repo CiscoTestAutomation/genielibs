@@ -3,6 +3,7 @@ configure:
     end:
       new_state: execute
     ipv6 router eigrp 66: "ipv6 router eigrp 66\r\n"
+    router-id 1.1.1.1: "router-id 1.1.1.1\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''

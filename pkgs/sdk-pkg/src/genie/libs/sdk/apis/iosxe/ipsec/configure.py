@@ -35,7 +35,7 @@ def configure_sks_client(device,
     )
  
     configs = []
-    configs.append(f"crypto sks-client {sks_client_config_block_name}")
+    configs.append(f"crypto skip-client {sks_client_config_block_name}")
     configs.append(f"server {ip_mode} {server_ip_address} port {server_port_number}")
     configs.append(f"psk id {psk_identity} key 0 {password_string}")
  
@@ -64,7 +64,7 @@ def unconfigure_sks_client(device,
     )
  
     configs = []
-    configs.append(f"no crypto sks-client {sks_client_config_block_name}") 
+    configs.append(f"no crypto skip-client {sks_client_config_block_name}") 
  
     try:
         device.configure(configs, error_pattern = ["Proposal with ESP is missing cipher"])
@@ -73,6 +73,9 @@ def unconfigure_sks_client(device,
              "Error:\n{error}".format(error=e)
         )
         raise e
+
+
+
 
 def clear_crypto_sa_counters(device):
     """ Clear all the ipsec sa counters
@@ -1151,3 +1154,27 @@ def configure_crypto_map(device, tagname, sequence, ip_address, access_list_num,
             "Could not configure crypto map. Error: {error}".format(error=e)
         )
 
+def unconfigure_ospfv3_authentication_null(device, interface):
+    '''
+    Unconfigure ospfv3 authentication null
+        Args:
+            device (`obj`): Device object
+            inteface ('str'): interface with ospfv3 authenticaiton null.
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    '''
+    log.info(
+        "Unconfiguring ospfv3 authentication null"
+    )
+    configs = []
+    configs.append("interface {intf}".format(intf=interface))
+    configs.append('no ospfv3 authentication null')
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not remove ospfv3 authentication null. Error:\n{error}".format(error=e)
+        )

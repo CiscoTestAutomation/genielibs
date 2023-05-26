@@ -1,0 +1,38 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no ip nat inside source static 192.168.1.10 192.168.21.1 no-alias: "no ip nat\
+      \ inside source static 192.168.1.10 192.168.21.1 no-alias\r\n"
+    no ip nat outside source static 5.5.5.5 3.3.33.3 no-alias add-route: "no ip nat\
+      \ outside source static 5.5.5.5 3.3.33.3 no-alias add-route\r\n"
+    no logging console: ''
+  prompt: stack3-nyq-PE1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: stack3-nyq-PE1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: stack3-nyq-PE1#

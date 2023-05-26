@@ -373,11 +373,13 @@ def _verify_local_file_size_stable(file, max_tries=3, delay_seconds=2):
     return True
 
 
-def verify_current_image(device, images, delimiter_regex=None):
+def verify_current_image(device, images, delimiter_regex=None, ignore_flash=False):
     '''Verify current images on the device
         Args:
             device (`obj`): Device object
             images (`list`): List of images expected on the device
+            delimiter_regex (`regex string`): Regex of delimeters, default ':|\/'
+            ignore_flash (`bool`): Ignore flash directory names. Default: False
         Returns:
             None
     '''
@@ -403,19 +405,33 @@ def verify_current_image(device, images, delimiter_regex=None):
                         "length as the image(s) to be verified '{}'".format(
                             running_images, images))
 
-    # Split images on delimiters to compare them more reliably. 
-    # Example, bootflash:/some/path/to/csr1000v-boot.16.09.01.SPA.pkg becomes 
+    # Split images on delimiters to compare them more reliably.
+    # Example, bootflash:/some/path/to/csr1000v-boot.16.09.01.SPA.pkg becomes
     # ['bootflash', 'some', 'path', 'to', 'csr1000v-boot.16.09.01.SPA.pkg']
-    split_images = \
-        [[x for x in re.split(delimiter_regex, image) if x] 
-            for image in images]
 
-    split_running_images = \
-        [[x for x in re.split(delimiter_regex, running_image) if x] 
-            for running_image in running_images]
+    # For cat9k 'flash' and 'bootflash' are the same directory.
+    # Which means 'flash:image' is the same file as 'bootflash:image'
+    if ignore_flash:
+        log.info("Ignoring flash directories during comparison.")
+
+    expected_images = []
+    for image in images:
+        image_items = [x for x in re.split(delimiter_regex, image) if x]
+        if ignore_flash and 'flash' in image_items[0]:
+            image_items = image_items[1:]
+        expected_images.append(image_items)
+
+    configured_images = []
+    for running_image in running_images:
+        image_items = [x for x in re.split(delimiter_regex, running_image) if x]
+        if ignore_flash and 'flash' in image_items[0]:
+            image_items = image_items[1:]
+        configured_images.append(image_items)
+
+    log.debug(f'Comparing {expected_images} and {configured_images}')
 
     # Compare the (directory, image) tuple sets of images and running images
-    if split_images != split_running_images:
+    if expected_images != configured_images:
         raise Exception("Running images '{}' do not match list of the "
                         "expected images '{}'. \nNote: delimeters have been "
                         "excluded from this comparison based on this regex "

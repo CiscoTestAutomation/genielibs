@@ -24,9 +24,33 @@ connect:
   prompt: ''
 execute:
   commands:
-    clear ip nat translation tcp inside 10.10.10.1 23 192.168.121.20 23 outside 20.20.20.1 8090 192.168.21.20 8090:
+    clear ip nat translation forced:
       response:
-      - $92.168.121.20 23 outside 20.20.20.1 8090 192.168.21.20 8090
+      - ''
+      response_type: circular
+    clear ip nat translation inside 2.2.2.2 1.1.1.1:
+      response:
+      - '%Translation not found'
+      response_type: circular
+    clear ip nat translation inside 2.2.2.2 1.1.1.1 forced:
+      response:
+      - '%Translation not found'
+      response_type: circular
+    clear ip nat translation inside 2.2.2.2 1.1.1.1 outside 3.3.3.3 5.5.5.5:
+      response:
+      - '%Translation not found'
+      response_type: circular
+    clear ip nat translation tcp inside 2.2.2.2 789 1.1.1.1 456:
+      response:
+      - '%Translation not found'
+      response_type: circular
+    clear ip nat translation udp inside 2.2.2.2 789 1.1.1.1 456:
+      response:
+      - '%Translation not found'
+      response_type: circular
+    clear ip nat translation udp inside 2.2.2.2 789 1.1.1.1 456 outside 3.3.3.3 345 5.5.5.5 987:
+      response:
+      - '%Translation not found'
       response_type: circular
     config term:
       new_state: configure

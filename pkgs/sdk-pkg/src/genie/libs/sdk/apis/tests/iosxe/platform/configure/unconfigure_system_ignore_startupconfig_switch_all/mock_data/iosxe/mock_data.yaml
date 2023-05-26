@@ -5,16 +5,14 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-    no system ignore startupconfig switch all: "no system ignore startupconfig switch\
-      \ all\r\nApplying config on Switch 1...[DONE]\r\nApplying config on Switch 2...[DONE]\r\
-      \n"
-  prompt: n10SVL(config)#
+    no system ignore startupconfig: "no system ignore startupconfig\r\n"
+  prompt: 9407R-dut1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: n10SVL(config-line)#
+  prompt: 9407R-dut1(config-line)#
 connect:
   commands:
     ? ''
@@ -34,4 +32,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: n10SVL#
+  prompt: 9407R-dut1#

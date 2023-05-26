@@ -100,84 +100,14 @@ def unconfigure_policy_map(device, policy_name):
             )
         )
 
-
-def configure_hqos_policer_map(device,
-    policy_name,
-    class_map_name,
-    policer_percent_val=None,
-    table_map_name=None,
-    table_map_mode=None,
-    match_mode=None,
-    matched_value=None,
-    child_policy=None,
-    set_table_map=False):
-
-    """ Configures HQos policy_map
-        Args:
-             device ('obj'): device to use
-             policy_name('str) : name of the policy name
-             class_map_name('str') : name of the class
-             policer_percent_val('int',optional): police rate value, default is None
-             table_map_name('str',optional): to set the table name for policy_map, default is None
-             table_map_mode('str',optional) : name of the tablemode,default is None
-             match_mode('list',optional): match mode name for cos, default is None
-             matched_value('list',optional): match mode values for cos traffic_class and dscp, default is None
-             child_policy('str',optional): name of child policy map,default is None
-             set_table_map('boolean'): to configure set table map for HQos, default is False
-
-        example:
-             policy_name:'policy1'
-             class_map_name:'class-default',
-             policer_percent_val:1,
-             table_map_name:'table1'
-             table_map_mode:'dscp'
-             match_mode:['dscp','cos']
-             matched_value:['cs1','5']
-             child_policy: 'child_policy_map'
-             set_table_map:False
-
-
-        Returns:
-            None
-        Raises:
-            SubCommandFailure
-    """
-
-    log.debug(
-        "Configuring HQos_policy_map {policy_name} with {child_policy} ".format(
-            policy_name=policy_name,
-            child_policy=child_policy,
-
-        )
-    )
-    cmd = [f"policy-map {policy_name}",
-           f"class {class_map_name}"]
-    if policer_percent_val:
-        cmd.append(f" police cir percent {policer_percent_val} conform-action transmit exceed-action set-dscp-transmit {table_map_mode} table {table_map_name}")
-    if match_mode and matched_value :
-        for mat_mode, mat_value in zip(match_mode, matched_value):
-                cmd.append(f"set {mat_mode} {mat_value}")
-    if set_table_map:
-        cmd.append(f"set {table_map_mode} {table_map_mode} table {table_map_name}")
-
-    if child_policy:
-        cmd.append(f"service-policy {child_policy}")
-
-    try:
-        device.configure(cmd)
-    except SubCommandFailure as e:
-        raise SubCommandFailure(
-            "Could not configure class_map. Error:\n{error}".format(
-                error=e))
-
 def configure_shape_map(device,
-    queue_name,
-    class_map_list,
-    service_policy='service-policy'):
+                        class_map_list,
+                        service_policy='service-policy',
+                        queue_name=None, 
+                        policy_name=None):
     """ Configures policy_map type queueing
         Args:
              device('obj'): device to use
-             queue_name('str'): name of the queue policy name
              class_map_list('list'): list of dict type hold number of class map
              [
              {
@@ -190,6 +120,8 @@ def configure_shape_map(device,
              }
              ],
              service_policy('str',optional) : service-policy name by default service-policy
+             queue_name('str', optional): name of the queue policy name
+             policy_name('str', optional): name of the queue policy name
 
         example:
              class_map_list=[{'class_map_name':'queue_name',
@@ -209,7 +141,11 @@ def configure_shape_map(device,
             )
         )
 
-    cmd = [f"policy-map type queueing {queue_name}"]
+    cmd = []
+    if queue_name:
+        cmd.append(f"policy-map type queueing {queue_name}")
+    elif policy_name:
+        cmd.append(f"policy-map {policy_name}")
     for class_map in class_map_list:
         cmd.append(f"class {class_map['class_map_name']}")
         if 'priority_level' in class_map:
@@ -233,33 +169,8 @@ def configure_shape_map(device,
                  )
         )
 
-def configure_policy_map_on_device(device, policy_map_name, class_map_name, target_bit_rate):
-    """ Configure policy-map type on Device
-    Args:
-        device (`obj`): Device object
-        policy_map_name ('str'): policy-map name to configure
-        class_map_name ('str'): class map name to configure
-        target_bit_rate ('str'): target bit rate to configure (in bits/sec)
-    Return:
-        None
-    Raise:
-        SubCommandFailure: Failed configuring policy-map on device
-    """
-    log.debug("Configuring policy-map on device")
-
-    try:
-        device.configure(
-            [
-                f"policy-map {policy_map_name}",
-                f"class {class_map_name}",
-                f"shape average {target_bit_rate}",
-            ]
-        )
-    except SubCommandFailure:
-        raise SubCommandFailure("Could not configure policy-map on device")
-
 def configure_bandwidth_remaining_policy_map(device,policy_names,
-                     class_names,bandwidth_list,shape_average):
+                     class_names,bandwidth_list,shape_average,bandwidth_remaining=True):
 
     """ Configures policy_map
         Args:
@@ -268,6 +179,9 @@ def configure_bandwidth_remaining_policy_map(device,policy_names,
              class_names ('list') : list of classes inside policy-map i.e voice, video etc.
              bandwidth_list ('list) : list of bandwidth remainin for each class.
              shape_average ('str') : shaper percentage value for grandparent
+             bandwidth_remaining ('bool') : If true, sets percentage of remaining bandwidth.
+                                            Else, sets percentage of total bandwidth.
+                                            Defaults to True.
         example:
              policy_names=['parent','grandparent']
              class_names = ['voice','data','video','class-default']
@@ -284,7 +198,10 @@ def configure_bandwidth_remaining_policy_map(device,policy_names,
 
     for class_val in class_names:
         cli.append(f"class {class_val}")
-        cli.append(f"bandwidth remaining percent {bandwidth_list[counter]}")
+        if bandwidth_remaining:
+            cli.append(f"bandwidth remaining percent {bandwidth_list[counter]}")
+        else:
+            cli.append(f"bandwidth percent {bandwidth_list[counter]}")
         counter += 1
 
     cli.append(f"policy-map {policy_names[1]}")
@@ -589,3 +506,104 @@ def configure_service_policy_with_queueing_name(device, interface, policy_type, 
         raise SubCommandFailure(
             f"Unable to configure service policy type with {queue_name}. Error:\n{e}")
 
+def configure_policy_map_on_device(device, policy_map_name, class_map_name, 
+                                   target_bit_rate, match_mode=None,match_packets_precedence=None):
+    """ Configure policy-map type on Device
+    Args:
+        device ('obj'): Device object
+        policy_map_name ('str'): policy-map name to configure
+        class_map_name ('str'): class map name to configure
+        target_bit_rate ('str'): target bit rate to configure (in bits/sec)
+        match_mode ('str', optional): match mode name for cos or dscp
+        match_packets_precendence ('str', optional): match packets with dscp
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring policy-map on device
+    """
+    log.debug("Configuring policy-map on device")
+    
+    cmd = [
+        f"policy-map {policy_map_name}",
+        f"class {class_map_name}",
+        f"shape average {target_bit_rate}",
+    ]
+
+    if (match_mode and match_packets_precedence):
+        cmd.append(f"set {match_mode} {match_packets_precedence}")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure class_map. Error:\n{error}".format(
+                error=e))
+
+
+def configure_hqos_policer_map(device,
+    policy_name,
+    class_map_name,
+    policer_percent_val=None,
+    table_map_name=None,
+    table_map_mode=None,
+    match_mode=None,
+    matched_value=None,
+    child_policy=None,
+    set_table_map=False):
+
+    """ Configures HQos policy_map
+        Args:
+             device ('obj'): device to use
+             policy_name('str) : name of the policy name
+             class_map_name('str') : name of the class
+             policer_percent_val('int',optional): police rate value, default is None
+             table_map_name('str',optional): to set the table name for policy_map, default is None
+             table_map_mode('str',optional) : name of the tablemode,default is None
+             match_mode('list',optional): match mode name for cos, default is None
+             matched_value('list',optional): match mode values for cos traffic_class and dscp, default is None
+             child_policy('str',optional): name of child policy map,default is None
+             set_table_map('boolean'): to configure set table map for HQos, default is False
+
+        example:
+             policy_name:'policy1'
+             class_map_name:'class-default',
+             policer_percent_val:1,
+             table_map_name:'table1'
+             table_map_mode:'dscp'
+             match_mode:['dscp','cos']
+             matched_value:['cs1','5']
+             child_policy: 'child_policy_map'
+             set_table_map:False
+
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    log.debug(
+        "Configuring HQos_policy_map {policy_name} with {child_policy} ".format(
+            policy_name=policy_name,
+            child_policy=child_policy,
+
+        )
+    )
+    cmd = [f"policy-map {policy_name}",
+           f"class {class_map_name}"]
+    if (policer_percent_val) and (table_map_mode) and (table_map_name):
+        cmd.append(f"police cir percent {policer_percent_val} conform-action transmit exceed-action set-dscp-transmit {table_map_mode} table {table_map_name}")
+    if policer_percent_val:
+        cmd.append(f"police cir percent {policer_percent_val} conform-action transmit")
+    if match_mode and matched_value :
+        for mat_mode, mat_value in zip(match_mode, matched_value):
+                cmd.append(f"set {mat_mode} {mat_value}")
+    if set_table_map:
+        cmd.append(f"set {table_map_mode} {table_map_mode} table {table_map_name}")
+
+    if child_policy:
+        cmd.append(f"service-policy {child_policy}")
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure policy-map on device. Error:\n{e}")

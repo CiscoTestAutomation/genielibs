@@ -112,7 +112,8 @@ def restore_running_config(device, path, file, timeout=60, delete_after=False, m
                 error_pattern=[]
             )
             if out and 'Rollback Done' in out:
-                device.api.delete_files(locations=[path], filenames=[file])
+                if delete_after:
+                    device.api.delete_files(locations=[path], filenames=[file])
                 return True
         except Exception:
             raise Exception('Could not restore configuration.')

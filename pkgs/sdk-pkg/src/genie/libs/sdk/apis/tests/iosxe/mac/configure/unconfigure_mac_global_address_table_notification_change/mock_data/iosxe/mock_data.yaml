@@ -5,15 +5,15 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-    no mac address-table notification change history-size 10: "no mac address-table\
-      \ notification change history-size 10\r\n"
-  prompt: 9300-24UX-1(config)#
+    no mac address-table notification change history-size: "no mac address-table notification\
+      \ change history-size\r\n"
+  prompt: stack3-nyquist-1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: 9300-24UX-1(config-line)#
+  prompt: stack3-nyquist-1(config-line)#
 connect:
   commands:
     ? ''
@@ -33,4 +33,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: 9300-24UX-1#
+  prompt: stack3-nyquist-1#

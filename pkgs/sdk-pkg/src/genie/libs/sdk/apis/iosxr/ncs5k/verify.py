@@ -2,7 +2,7 @@ import logging
 
 log = logging.getLogger(__name__)
 
-def verify_current_image(device, images):
+def verify_current_image(device, images, **kwargs):
     '''Verify current images on the device
         Args:
             device (`obj`): Device object

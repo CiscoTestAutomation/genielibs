@@ -130,4 +130,21 @@ def configure_rip(device, network):
             "RIP is not unconfigured on device"
             " {device}, Error: {error}".format(
                device=device.name, error=e))
-    
+
+def clear_ipv6_rip(device):
+    """ clear ipv6 rip
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info("clear ipv6 rip on {device}".format(device=device))
+    config = 'clear ipv6 rip'
+    try:
+        device.execute(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not clear ipv6 rip on {device}. Error:\n{error}".format(device=device, error=e)
+        )

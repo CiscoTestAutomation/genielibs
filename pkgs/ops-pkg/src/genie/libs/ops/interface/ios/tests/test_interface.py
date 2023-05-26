@@ -15,8 +15,10 @@ from genie.libs.parser.ios.show_interface import ShowInterfaces, \
                                         ShowIpInterface,  \
                                         ShowIpv6Interface, \
                                         ShowInterfacesAccounting
-                                        
+
 from genie.libs.parser.ios.show_vrf import ShowVrf
+
+from pyats.datastructures import AttrDict
 
 # Set values
 outputs = {}
@@ -41,6 +43,7 @@ class test_interface(unittest.TestCase):
         self.device.os = 'ios'
         self.device.mapping={}
         self.device.mapping['cli']='cli'
+        self.device.custom = AttrDict(abstraction=AttrDict(order=['os', 'platform']))
         self.device.connectionmgr.connections['cli'] = self.device
 
     def test_complete_output(self):

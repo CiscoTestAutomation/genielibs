@@ -87,6 +87,17 @@ class TestFileServer(unittest.TestCase):
             self.assertEqual(fs['path'], '/')
             self.assertEqual(fs['protocol'], 'http')
 
+    def test_http_server_logging(self):
+        with self.assertLogs('genie.libs.filetransferutils.fileserver.server') as cm:
+            with FileServer(protocol='http', subnet='127.0.0.1/32') as fs:
+                self.assertEqual(fs['address'], '127.0.0.1')
+                self.assertIn('port', fs)
+                self.assertEqual(fs['path'], '/')
+                self.assertEqual(fs['protocol'], 'http')
+                port = fs['port']
+                assert 'INFO:genie.libs.filetransferutils.fileserver.server:'
+                f'HTTP File Server started on 127.0.0.1:{port} with path /' in cm.output
+
     def test_http_auth(self):
         with FileServer(protocol='http',
                         subnet='127.0.0.1/32',

@@ -1,9 +1,9 @@
 configure:
   commands:
-    datalink flow monitor: "datalink flow monitor\r\n"
+    datalink flow monitor m2in1 input: "datalink flow monitor m2in1 input\r\n"
     end:
       new_state: execute
-    interface Te3/1/8: "interface Te3/1/8\r\n"
+    interface Gi3/0/2: "interface Gi3/0/2\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''

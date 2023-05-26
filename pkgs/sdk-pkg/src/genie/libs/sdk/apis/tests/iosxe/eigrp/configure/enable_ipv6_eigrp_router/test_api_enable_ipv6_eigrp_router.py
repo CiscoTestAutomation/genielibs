@@ -29,6 +29,6 @@ class TestEnableIpv6EigrpRouter(unittest.TestCase):
         )
 
     def test_enable_ipv6_eigrp_router(self):
-        result = enable_ipv6_eigrp_router(self.device, '66')
+        result = enable_ipv6_eigrp_router(self.device, '66', router_id='1.1.1.1')
         expected_output = None
         self.assertEqual(result, expected_output)

@@ -1,0 +1,52 @@
+configure:
+  commands:
+    app-default-gateway 1.1.1.1 guest-interface 0: "app-default-gateway 1.1.1.1 guest-interface\
+      \ 0\r\n"
+    app-hosting appid 1keyes: "app-hosting appid 1keyes\r\n"
+    app-resource docker: "app-resource docker\r\n"
+    app-vnic AppGigabitEthernet trunk: "app-vnic AppGigabitEthernet trunk\r\n"
+    end:
+      new_state: execute
+    guest-ipaddress 1.1.1.2 netmask 255.255.255.0: "guest-ipaddress 1.1.1.2 netmask\
+      \ 255.255.255.0\r\n"
+    line console 0:
+      new_state: configure_line
+    name-server0 2.2.2.2: "name-server0 2.2.2.2\r\n"
+    no app-hosting appid 1keyes: "no app-hosting appid 1keyes\r\n"
+    no logging console: ''
+    prepend-pkg-opts: "prepend-pkg-opts\r\n"
+    run-opts 1 "-e TEAGENT_ACCOUNT_TOKEN=dsadscasdc325423erwgwe": "run-opts 1 \"-e\
+      \ TEAGENT_ACCOUNT_TOKEN=dsadscasdc325423erwgwe\"\r\n"
+    run-opts 3 "-e TEAGENT_PROXY_TYPE=STATIC": "run-opts 3 \"-e TEAGENT_PROXY_TYPE=STATIC\"\
+      \r\n"
+    run-opts 4 "-e TEAGENT_PROXY_LOCATION=abc.com": "run-opts 4 \"-e TEAGENT_PROXY_LOCATION=abc.com\"\
+      \r\n"
+    start: "start\r\n"
+    vlan 1500 guest-interface 0: "vlan 1500 guest-interface 0\r\n"
+  prompt: dut1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: dut1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: dut1#

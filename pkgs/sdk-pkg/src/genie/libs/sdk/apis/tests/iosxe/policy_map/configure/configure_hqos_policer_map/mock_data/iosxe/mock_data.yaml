@@ -1,29 +1,22 @@
 configure:
   commands:
-    ' police cir percent 1 conform-action transmit exceed-action set-dscp-transmit dscp table table1': " police\
-      \ cir percent 1 conform-action transmit exceed-action set-dscp-transmit dscp\
-      \ table table1\r\n"
-    class class-default: "class class-default\r\n"
+    class c0: "class c0\r\n"
     end:
       new_state: execute
-    line console:
-      new_state: configure_line
     line console 0:
       new_state: configure_line
     no logging console: ''
-    policy-map policy2: "policy-map policy2\r\n"
-    service-policy policy1: "service-policy policy1\r\n"
-    set cos 5: "set cos 5\r\n"
-    set dscp cs1: "set dscp cs1\r\n"
-  prompt: Startek(config)#
+    police cir percent 4 conform-action transmit: "police cir percent 4 conform-action\
+      \ transmit\r\n"
+    policy-map policer: "policy-map policer\r\n"
+    set qos-group 11: "set qos-group 11\r\n"
+  prompt: A1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-    line vty: ''
-    terminal width 511: ''
-  prompt: Startek(config-line)#
+  prompt: A1(config-line)#
 connect:
   commands:
     ? ''
@@ -43,6 +36,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-    term width 511: ''
-    terminal session-timeout 0: ''
-  prompt: Startek#
+  prompt: A1#

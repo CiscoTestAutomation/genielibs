@@ -1,0 +1,40 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    metric-style wide: "metric-style wide\r\n"
+    mpls traffic-eng level-1: "mpls traffic-eng level-1\r\n"
+    mpls traffic-eng router-id Gi1/0/4: "mpls traffic-eng router-id Gi1/0/4\r\n"
+    net 49.1290.0000.0011.00: "net 49.1290.0000.0011.00\r\n"
+    no logging console: ''
+    router isis test: "router isis test\r\n"
+    router-id Gi1/0/4: "router-id Gi1/0/4\r\n"
+  prompt: stack3-nyquist-1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: stack3-nyquist-1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: stack3-nyquist-1#

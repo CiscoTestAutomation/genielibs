@@ -65,3 +65,21 @@ def configure_sdm_prefer_core(device):
         raise SubCommandFailure(
             "Could not configure sdm prefer core. Error:\n{error}".format(error=e)
         )                    
+
+
+def configure_sdm_prefer(device, template):
+    ''' Configure SDM Prefer {template}
+    Args:
+        device ('obj') : Device object
+        template('str') : SDM template
+
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed configuring sdm prefer
+    '''
+    config = f'sdm prefer {template}'
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure sdm prefer. Error:\n{e}")                    

@@ -5,13 +5,13 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-  prompt: core(config)#
+  prompt: P-R1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: core(config-line)#
+  prompt: P-R1(config-line)#
 connect:
   commands:
     ? ''
@@ -35,4 +35,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: core#
+  prompt: P-R1#

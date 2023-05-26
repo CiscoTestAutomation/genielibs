@@ -10,7 +10,7 @@ class TestConfigureSystemIgnoreStartupconfigSwitchAll(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          n08HA:
+          9407R-dut1:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,11 +18,11 @@ class TestConfigureSystemIgnoreStartupconfigSwitchAll(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: c9500
-            type: c9500
+            platform: cat9400
+            type: iosxe
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['n08HA']
+        self.device = self.testbed.devices['9407R-dut1']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,6 @@ class TestConfigureSystemIgnoreStartupconfigSwitchAll(unittest.TestCase):
         )
 
     def test_configure_system_ignore_startupconfig_switch_all(self):
-        result = configure_system_ignore_startupconfig_switch_all(self.device)
+        result = configure_system_ignore_startupconfig_switch_all(self.device, 'False', None)
         expected_output = None
         self.assertEqual(result, expected_output)

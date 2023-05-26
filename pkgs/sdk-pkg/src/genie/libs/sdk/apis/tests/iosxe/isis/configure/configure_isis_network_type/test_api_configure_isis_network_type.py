@@ -10,7 +10,7 @@ class TestConfigureIsisNetworkType(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          mac-gen2:
+          TSN-2:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -19,10 +19,10 @@ class TestConfigureIsisNetworkType(unittest.TestCase):
                 protocol: unknown
             os: iosxe
             platform: cat9k
-            type: C9400
+            type: c9300
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['mac-gen2']
+        self.device = self.testbed.devices['TSN-2']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,6 @@ class TestConfigureIsisNetworkType(unittest.TestCase):
         )
 
     def test_configure_isis_network_type(self):
-        result = configure_isis_network_type(self.device, '49.0000.aaaa.aaaa.aaaa.00', 'level-1', 'all-interfaces', 'log-adjacency-changes')
+        result = configure_isis_network_type(self.device, '49.0000.1720.1604.2222.00', None, None, None, 'ietf', 'wide')
         expected_output = None
         self.assertEqual(result, expected_output)

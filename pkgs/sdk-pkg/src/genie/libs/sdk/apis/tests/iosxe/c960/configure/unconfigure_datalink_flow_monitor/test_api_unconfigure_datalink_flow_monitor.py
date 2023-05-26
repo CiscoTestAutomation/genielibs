@@ -18,8 +18,8 @@ class TestUnconfigureDatalinkFlowMonitor(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: c9300
-            type: c9300
+            platform: cat9k
+            type: router
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['stack3-nyquist-1']
@@ -30,6 +30,6 @@ class TestUnconfigureDatalinkFlowMonitor(unittest.TestCase):
         )
 
     def test_unconfigure_datalink_flow_monitor(self):
-        result = unconfigure_datalink_flow_monitor(self.device, 'Te3/1/8')
+        result = unconfigure_datalink_flow_monitor(self.device, 'Gi3/0/2', 'm2in1', 'input')
         expected_output = None
         self.assertEqual(result, expected_output)

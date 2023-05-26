@@ -290,10 +290,11 @@ def configure_logging_buffered_debugging(device):
             "Could not configure logging buffered debugging on {device}. Error:\n{error}"
                 .format(device=device, error=e))
 
-def unconfigure_logging_buffered(device):
+def unconfigure_logging_buffered(device, log_type=None):
     """ Unconfigure logging buffered
         Args:
             device ('obj'): Device object
+            log_type ('str', optional) : unconfigure log type. Ex: alerts, critical, etc. Default is None. 
         Returns:
             None
         Raises:
@@ -301,13 +302,28 @@ def unconfigure_logging_buffered(device):
     """
 
     log.debug(f"Unconfigure logging buffered on {device}")
-    
+    config = f"no logging buffered {log_type if log_type else ''}"
     try:
-        device.configure('no logging buffered')
+        device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            f"Could not unconfigure logging console errors on {device}. Error:\n{e}"
-			)
+            f"Could not unconfigure logging console errors on {device}. Error:\n{e}")
+
+
+def unconfigure_logging_monitor_debugging(device):
+    """ Unconfigure logging monitor debugging
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config = 'no logging monitor debugging'
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure logging monitor debugging on {device}. Error:\n{e}")
 
 
 def configure_logging_facility(device, facility):
@@ -367,3 +383,39 @@ def configure_logging_host_transport_tcp_port(device, server_ip, port_num):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Failed to configure logging host transport tcp port on device {device}. Error:\n{e}")
+
+
+def configure_logging(device, mode, severity=None):
+    """ Configure logging 
+        Args:
+            device ('obj'): Device object
+            mode ('str'): logging mode. Ex: monitor, history, hostname, on
+            severity ('str', optional): logging severity. Ex: alrets, debugging, critical, 7. Default is None
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config = f'logging {mode}{f" {severity}" if severity else ""}'
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure logging {mode} on {device}. Error:\n{e}")
+
+
+def unconfigure_logging(device, mode, severity=None):
+    """ Unconfigure logging 
+        Args:
+            device ('obj'): Device object
+            mode ('str'): logging mode. Ex: monitor, history, hostname, on
+            severity ('str', optional): logging severity. Ex: alrets, debugging, critical, 7. Default is None
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config = f'no logging {mode}{f" {severity}" if severity else ""}'
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not unconfigure logging {mode} on {device}. Error:\n{e}")

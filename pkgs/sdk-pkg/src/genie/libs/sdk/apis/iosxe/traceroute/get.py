@@ -7,9 +7,6 @@ from unicon.core.errors import SubCommandFailure
 # Genie
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
-# iosxe traceroute
-from genie.libs.parser.iosxe.traceroute import Traceroute, TracerouteIpv6
-
 log = logging.getLogger(__name__)
 
 
@@ -49,9 +46,9 @@ def get_traceroute_parsed_output(device, addr, vrf=None, proto=None, ingress=Non
         log.info("Could not find any traceroute information")
         return False
 
-    parser_obj = Traceroute(device=device)
+    command = kwargs.get('command', 'traceroute')
     try:
-        parsed_ouput = parser_obj.parse(output=output)
+        parsed_ouput = device.parse(command, output=output)
     except SchemaEmptyParserError as e:
         log.info(
             "Could find any traceroute information for prefix {address}".format(
@@ -110,9 +107,9 @@ def get_traceroute_mpls_label_to_prefix(device, prefix, timeout=None):
     )
     return None
 
-def get_traceroute_ipv6(device, addr, source=None, dscp=None, numeric=None, 
-                                 timeout=None, probe=None, minimum_ttl=None, 
-                                 maximum_ttl=None, precedence=None):
+def get_traceroute_ipv6(device, addr, source=None, dscp=None, numeric=None,
+                        timeout=None, probe=None, minimum_ttl=None,
+                        maximum_ttl=None, precedence=None):
     """ Get parsed output of traceroute command
         Args:
             device ('obj'): Device object
@@ -150,9 +147,8 @@ def get_traceroute_ipv6(device, addr, source=None, dscp=None, numeric=None,
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Failed to execute {cmd} on device {device.name}. Error:\n{e}')
 
-    parser_obj = TracerouteIpv6(device=device)
     try:
-        parsed_ouput = parser_obj.parse(output=output)
+        parsed_ouput = device.parse(cmd, output=output)
     except SchemaEmptyParserError as e:
         log.info(f'Could find any traceroute ipv6 information for prefix {addr}')
         return None

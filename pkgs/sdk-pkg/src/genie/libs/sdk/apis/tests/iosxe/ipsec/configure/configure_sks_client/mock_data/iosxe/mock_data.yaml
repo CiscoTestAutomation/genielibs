@@ -1,19 +1,13 @@
 configure:
   commands:
-    crypto sks-client test_block_1: "crypto sks-client test_block_1\r\n"
-    crypto sks-client test_block_2: "crypto sks-client test_block_2\r\n"
+    crypto skip-client sks-client-cfg: "crypto skip-client sks-client-cfg\r\n"
     end:
       new_state: execute
     line console 0:
       new_state: configure_line
     no logging console: ''
-    psk id test_psk_1 key 0 test_password_1: "psk id test_psk_1 key 0 test_password_1\r\
-      \n"
-    psk id test_psk_2 key 0 test_password_2: "psk id test_psk_2 key 0 test_password_2\r\
-      \n"
-    server ipv4 23.45.21.43 port 9675: "server ipv4 23.45.21.43 port 9675\r\n"
-    server ipv6 9e21:953d:1870:c090:4cf3:51a6:cce8:3337 port 4321: "server ipv6 9e21:953d:1870:c090:4cf3:51a6:cce8:3337\
-      \ port 4321\r\n"
+    psk id vedge-sim-1 key 0 cisco123: "psk id vedge-sim-1 key 0 cisco123\r\n"
+    server ipv4 9.43.3.114 port 9901: "server ipv4 9.43.3.114 port 9901\r\n"
   prompt: Hub(config)#
 configure_line:
   commands:
