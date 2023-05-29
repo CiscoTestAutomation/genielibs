@@ -1,20 +1,23 @@
 configure:
   commands:
+    bfd all-interfaces: "bfd all-interfaces\r\n"
     end:
       new_state: execute
     line console 0:
       new_state: configure_line
+    log-adjacency-changes: "log-adjacency-changes\r\n"
+    metric-style wide: "metric-style wide\r\n"
+    net 49.0000.1720.1604.2222.00: "net 49.0000.1720.1604.2222.00\r\n"
     no logging console: ''
-    redistribute bgp 100: "%VRF vrf1 does not exist\r\n"
-    router isis 10: "router isis 10\r\n"
-    vrf vrf1: "vrf vrf1\r\n"
-  prompt: PE1(config)#
+    nsf ietf: "nsf ietf\r\n"
+    router isis tag1: "router isis tag1\r\n"
+  prompt: TSN-2(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: PE1(config-line)#
+  prompt: TSN-2(config-line)#
 connect:
   commands:
     ? ''
@@ -34,4 +37,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: PE1#
+  prompt: TSN-2#

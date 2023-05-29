@@ -2,6 +2,8 @@ configure:
   commands:
     bandwidth remaining percent 10: "bandwidth remaining percent 10\r\n"
     bandwidth remaining percent 20: "bandwidth remaining percent 20\r\n"
+    bandwidth percent 5: "bandwidth percent 5\r\n"
+    bandwidth percent 7: "bandwidth percent 7\r\n"
     class class-default: "class class-default\r\n"
     class data: "class data\r\n"
     class video: "class video\r\n"

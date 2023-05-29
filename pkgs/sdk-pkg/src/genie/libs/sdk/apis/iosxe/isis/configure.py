@@ -137,7 +137,7 @@ def unconfig_interface_isis(device, interface,ipv6=False):
             .format(hostname=device.hostname, interface=interface, e=e)
         )
 
-def configure_isis_with_router_name_network_entity(device, router_name, network_entity=None, vrf_name=None, protocol = None, autonomous_number=None):
+def configure_isis_with_router_name_network_entity(device, router_name, network_entity=None, vrf_name=None, protocol = None, autonomous_number=None, bfd=None, adjacency=None, nsf=None, metric_style=None):
     """ Configure isis with router name
         Args:
             device('obj'): device to configure on
@@ -146,6 +146,10 @@ def configure_isis_with_router_name_network_entity(device, router_name, network_
             vrf_name('str',optional): VRF name
             protocol('str',optional): protocol to configure
             autonomous_number('str',optional):  Autonomous system number
+            bfd ('str', optional) : bfd name, default value is None
+            adjacency ('str', optional) : adjacency details, default value is None
+            nsf ('str', optional) : nsf method, default value is None
+            metric_style ('str', optional) : metric_style name, default value is None
         Return:
             N/A
         Raises:
@@ -164,6 +168,14 @@ def configure_isis_with_router_name_network_entity(device, router_name, network_
         config.append('vrf {vrf_name}'.format(vrf_name=vrf_name))
     if protocol:
         config.append('redistribute {protocol} {autonomous_number}'.format(protocol=protocol, autonomous_number=autonomous_number))
+    if bfd:
+        config.append("bfd {bfd}".format(bfd=bfd))
+    if adjacency:
+        config.append("{adjacency}".format(adjacency=adjacency))
+    if nsf:
+        config.append("nsf {nsf}".format(nsf=nsf))
+    if metric_style:
+        config.append("metric-style {metric_style}".format(metric_style=metric_style))
     try:
         device.configure(config)
     except SubCommandFailure as e:
@@ -573,7 +585,7 @@ def unconfigure_isis_password(device, interface, password):
             )
         )
 
-def configure_isis_network_type(device, network_entity, is_type=None, bfd=None, adjacency=None):
+def configure_isis_network_type(device, network_entity, is_type=None, bfd=None, adjacency=None, nsf=None, metric_style=None):
     """ Configure network_entity on ISIS router
         Args:
             device('obj'): device to configure on
@@ -581,6 +593,8 @@ def configure_isis_network_type(device, network_entity, is_type=None, bfd=None, 
             is_type('str', optional): level-1 (or) Level-2 , by default is None
             bfd ('str', optional) : bfd name, default value is None
             adjacency ('str', optional) : adjacency details, default value is None
+            nsf ('str', optional) : nsf method, default value is None
+            metric_style ('str', optional) : metric_style name, default value is None
         Return:
             N/A
         Raises:
@@ -598,6 +612,10 @@ def configure_isis_network_type(device, network_entity, is_type=None, bfd=None, 
         config.append("bfd {bfd}".format(bfd=bfd))
     if adjacency:
         config.append("{adjacency}".format(adjacency=adjacency))
+    if nsf:
+        config.append("nsf {nsf}".format(nsf=nsf))
+    if metric_style:
+        config.append("metric-style {metric_style}".format(metric_style=metric_style))
     try:
         device.configure(config)
     except SubCommandFailure as e:
@@ -789,3 +807,56 @@ def configure_isis_interface_metric(device, interface, metric, address_family='i
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not configure ISIS interface metric on {interface}:\n{e}")
+
+
+def configure_isis_metric_style(device, metric_style, level=None, passive_interface=None):
+    """ Configure IS-IS metric-style and passive-interface
+        Args:
+            device ('obj'): device to configure on
+            metric_style ('str'): style of TLVs
+            level ('str', optional): ISIS level. Default is None
+            passive_interface ('str', optional): Suppress routing updates on an interface. Default is None
+        Return:
+            N/A
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    config = [f'router isis', f'metric-style {metric_style}{f" {level}" if level else ""}']
+    if passive_interface:
+        config.append(f'passive-interface {passive_interface}')
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure ISIS metric-style:\nError:{e}")
+
+def configure_router_isis(device, router_name, network_entity=None, router_id=None, metric_style=None,
+                           traffic_eng_router_id=None, traffic_eng_level=None):
+    """ Configure router isis with parameters on device
+        Args:
+            device('obj'): device to configure on
+            router_name ('str'): configure the isis router name
+            network_entity('str', optional): network_entity of device. Default is None
+            router_id('str', optional): router id to configure. Default is None
+            metric_style('str', optional): metric-style attribute. Default is None
+            traffic_eng_router_id('str', optional): mpls traffic-eng router id. Default is None
+            traffic_eng_level('str', optional): mpls traffic-eng level. Default is None
+        Return:
+            N/A
+        Raises:
+            SubCommandFailure: Failed to configure router isis with parameters on device
+    """
+    config = [f'router isis {router_name}']
+    if network_entity:
+        config.append(f'net {network_entity}')
+    if router_id:
+        config.append(f'router-id {router_id}')
+    if metric_style:
+        config.append(f'metric-style {metric_style}')
+    if traffic_eng_router_id:
+        config.append(f'mpls traffic-eng router-id {traffic_eng_router_id}')
+    if traffic_eng_level:
+        config.append(f'mpls traffic-eng {traffic_eng_level}')
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure router isis with parameters on device. Error:\n{e}")

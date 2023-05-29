@@ -2,10 +2,10 @@ configure:
   commands:
     end:
       new_state: execute
-    interface Te3/1/8: "interface Te3/1/8\r\n"
+    interface Gi3/0/2: "interface Gi3/0/2\r\n"
     line console 0:
       new_state: configure_line
-    no datalink flow monitor: "no datalink flow monitor\r\n"
+    no datalink flow monitor m2in1 input: "no datalink flow monitor m2in1 input\r\n"
     no logging console: ''
   prompt: stack3-nyquist-1(config)#
 configure_line:

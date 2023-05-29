@@ -5,16 +5,15 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-    no system disable password recovery switch all: "no system disable password recovery\
-      \ switch all\r\nApplying config on Switch 1...[DONE]\r\nApplying config on Switch\
-      \ 2...[DONE]\r\n"
-  prompt: n08HA(config)#
+    no system disable password recovery: "no system disable password recovery\r\n\
+      Applying config on Switch...[DONE]\r\n"
+  prompt: 9407R-dut1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: n08HA(config-line)#
+  prompt: 9407R-dut1(config-line)#
 connect:
   commands:
     ? ''
@@ -34,4 +33,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: n08HA#
+  prompt: 9407R-dut1#

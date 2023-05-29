@@ -4,7 +4,7 @@ configure:
       new_state: execute
     line console 0:
       new_state: configure_line
-    no logging buffered: "no logging buffered\r\n"
+    no logging buffered alerts: "no logging buffered alerts\r\n"
     no logging console: ''
   prompt: stack3-nyquist-1(config)#
 configure_line:

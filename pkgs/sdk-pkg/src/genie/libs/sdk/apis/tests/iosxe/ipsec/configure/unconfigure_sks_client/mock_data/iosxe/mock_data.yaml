@@ -4,8 +4,7 @@ configure:
       new_state: execute
     line console 0:
       new_state: configure_line
-    no crypto sks-client test_block_1: "no crypto sks-client test_block_1\r\n"
-    no crypto sks-client test_block_2: "no crypto sks-client test_block_2\r\n"
+    no crypto skip-client sks-client-cfg: "no crypto skip-client sks-client-cfg\r\n"
     no logging console: ''
   prompt: Hub(config)#
 configure_line:

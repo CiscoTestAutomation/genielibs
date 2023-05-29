@@ -1,0 +1,42 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: stack3-nyq-PE1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: stack3-nyq-PE1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    app-hosting activate appid 12:
+      response:
+      - The process for the command is not responding or is otherwise unavailable
+      response_type: circular
+    app-hosting install appid 9 package flash:test.txt:
+      response:
+      - The process for the command is not responding or is otherwise unavailable
+      response_type: circular
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: stack3-nyq-PE1#

@@ -1,0 +1,59 @@
+configure:
+  commands:
+    3 permit tcp 2.2.2.2 0.0.0.255 4.4.4.4 0.0.255.255: "3 permit tcp 2.2.2.2 0.0.0.255\
+      \ 4.4.4.4 0.0.\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b\b\b$p 2.2.2.2 0.0.0.255 4.4.4.4 0.0.2         \b\b\b\b\b\
+      \b\b\b\b55.255\r\n"
+    3 permit tcp any any: "3 permit tcp any any\r\n"
+    deny udp 2.2.2.2 0.0.0.255 4.4.4.4 0.0.255.255: "deny udp 2.2.2.2 0.0.0.255 4.4.4.4\
+      \ 0.0.255.\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b$2.2.2 0.0.0.255 4.4.4.4 0.0.255.2         \b\b\b\b\b\b\b\
+      \b\b55\r\n"
+    deny udp 2.2.2.2 0.0.0.255 4.4.4.4 0.0.255.255 range 100 500 dscp 40: "deny udp\
+      \ 2.2.2.2 0.0.0.255 4.4.4.4 0.0.255.\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b$2.2.2 0.0.0.255 4.4.4.4 0.0.255.2\
+      \         \b\b\b\b\b\b\b\b\b55 range \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b0.255 4.4.4.4 0.0.255.255 range\
+      \ 1         \b\b\b\b\b\b\b\b\b00 500 ds\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b4.4 0.0.255.255 range 100 500\
+      \ dsc         \b\b\b\b\b\b\b\b\bp 40\r\n"
+    end:
+      new_state: execute
+    ip access-list extended test: "ip access-list extended test\r\n"
+    ip access-list extended test1: "ip access-list extended test1\r\n"
+    ip access-list extended test2: "ip access-list extended test2\r\n"
+    ip access-list extended test3: "ip access-list extended test3\r\n"
+    ip access-list extended test4: "ip access-list extended test4\r\n"
+    ip access-list extended test5: "ip access-list extended test5\r\n"
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    permit icmp any any: "permit icmp any any\r\n"
+    permit icmp any any dscp 10: "permit icmp any any dscp 10\r\n"
+  prompt: stack3-nyquist-1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: stack3-nyquist-1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: stack3-nyquist-1#

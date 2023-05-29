@@ -4,6 +4,7 @@ configure:
       new_state: execute
     interface Vlan200: "interface Vlan200\r\n"
     ip unnumbered Loopback0: "ip unnumbered Loopback0\r\n"
+    ipv6 unnumbered Loopback0: "ipv6 unnumbered Loopback0\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''

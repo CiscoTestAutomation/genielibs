@@ -5,6 +5,7 @@ import logging
 
 # Genie
 from genie.libs.parser.utils.common import Common
+from unicon.eal.dialogs import Dialog, Statement
 
 # Unicon
 from unicon.core.errors import SubCommandFailure
@@ -507,7 +508,8 @@ def unconfigure_ospf_on_device(device, ospf_process_id):
 
 def configure_ospf_message_digest_key(device, interface, message_digest_key,
                                       md5, key=None):
-    """configure ospf message digest key
+    '''
+    configure ospf message digest key
 
         Args:
             device (`obj`): Device object
@@ -523,7 +525,7 @@ def configure_ospf_message_digest_key(device, interface, message_digest_key,
 
         Raises:
             SubCommandFailure
-    """
+    '''
     configs = ["interface {interface}".format(interface=interface)]
     if key:
         configs.append(
@@ -701,6 +703,37 @@ def configure_ospfv3(device, pid, router_id=None, vrf=None, nsr=None,
             " {device}, Error: {error}".format(
                device=device.name, error=e
             )
+        )
+
+def configure_ospfv3_address_family(device, pid, address_family, modifier='',
+    redistribute=None):
+    """
+        Configures address family for an ospfv3 process
+
+        Args:
+            pid ('int') : ospfv3 process id
+            address_family ('str') : Address family (ipv4 or ipv6)
+            modifier ('str', optional) : Address family modifier. Default None.
+            redistribute ('str', optional) : Routing protocol to redistribute
+                                             info from. Default None.
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [
+        f'router ospfv3 {pid}',
+        f'address-family {address_family} {modifier}'
+    ]
+    if redistribute:
+        cmd.append(f'redistribute {redistribute}')
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Could not configure address family. Error:\n{e}'
         )
 
 def configure_ospf_routing(device, ospf_process_id, router_id=None,
@@ -1898,6 +1931,7 @@ def configure_ospf_max_lsa_limit(device, pid, lsa_limit):
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure ospf max lsa limit. Error:\n{e}")
 
+
 def unconfigure_ospf_cost(device, interface, ospf_cost):
     """unconfigure ospf cost in interface
 
@@ -1922,6 +1956,8 @@ def unconfigure_ospf_cost(device, interface, ospf_cost):
                 ospf_cost=ospf_cost, device=device, interface=interface
             )
         ) from e
+
+
 def configure_router_ospf_redistribute_internal_external(device, process_id, redistribute_ospf_route, redistribute_type, redistribute_type_route ):
     """configure router ospf redistribute internal/external
       Args:
@@ -1945,6 +1981,7 @@ def configure_router_ospf_redistribute_internal_external(device, process_id, red
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Failed to configure router redistribute ospf with {redistribute_ospf_route}. Error:\n{e}")
+       
 
 def configure_ipv6_ospf_router_id(device, process_id, ospf_ip):
     """configure router-id under ipv6 ospf process
@@ -1964,6 +2001,513 @@ def configure_ipv6_ospf_router_id(device, process_id, ospf_ip):
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure ipv6 router ospf. Error:\n{e}")
+
+
+def configure_ospfv3_ipsec_ah(device, pid, areaid, spi, method, ah_key, ah_key_type=None):
+    '''
+    configure ospfv3 ipsec authentication
+        Args:
+            device (`obj`): Device object
+            pid (`str`): ospfv3 process id
+            areaid ('str'): Area id to use
+            spi('str'): Security Policy Index  id to use
+            method('str'): authentication alogrightm md5|sh1
+            ah_key('str'): Authentication key
+            ah_key_type('`str`, optional): Authentication key type,default value is None
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    '''
+    config = ["router ospfv3 {pid}".format(pid=pid)]
+    if ah_key_type is None:
+        config.append(
+            "area {area} authentication ipsec spi {spi} {method} {ah_key}".format(area=areaid,
+                                                                                  spi=spi,
+                                                                                  method=method,
+                                                                                  ah_key=ah_key))
+    else:
+        config.append(
+            "area {area} authentication ipsec spi {spi} {method} {ah_key_type} {ah_key}".format(
+                area=areaid, spi=spi, method=method, ah_key_type=ah_key_type, ah_key=ah_key))
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "ospfv3 ipsec authentication is not configured on device"
+            " {device} Error: {error}".format(device=device, error=e)
+        )
+
+
+def configure_ospfv3_ipsec_esp(device, pid, areaid, spi, esp, esp_key, method, ah_key,
+                               bit=128, esp_key_type=None, ah_key_type=None):
+    '''
+    configure ospfv3 ipsec encryption
+        Args:
+            device (`obj`): Device object
+            pid (`str`): ospfv3 process id
+            areaid ('str'): Area id to use
+            spi('str'): Security Policy Index  id to use
+            esp('str'):  encapsulating security payold id
+            esp_key('str') encapsulation key
+            method('str'): authentication alogrightm md5|sh1
+            ah_key('str'): Authentication key
+            bit(int optional): aes-cbc uses bit value ,default value is 128
+            esp_key_type('`str`, optional): Authentication key type,default value is None
+            ah_key_type('`str`, optional): Authentication key type,default value is None
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    '''
+    config = ["router ospfv3 {pid}".format(pid=pid)]
+    if esp == 'null':
+        if ah_key_type is None:
+            config.append(
+                "area {area} encryption ipsec spi {spi} esp null {method} {ah_key}".format(
+                    area=areaid, spi=spi, method=method, ah_key=ah_key))
+        else:
+            config.append(
+                "area {area} encryption ipsec spi {spi} esp null {method} {ah_key_type} {ah_key}".format(
+                    area=areaid, spi=spi, method=method, ah_key_type=ah_key_type, ah_key=ah_key))
+
+    if esp == '3des' or esp == 'des':
+        if ah_key_type is None and esp_key_type is None:
+            config.append(
+                "area {area} encryption ipsec spi {spi} esp {esp} {esp_key} {method} {ah_key}".format(
+                    area=areaid, spi=spi, esp=esp, esp_key=esp_key, method=method, ah_key=ah_key))
+        elif ah_key_type is not None and esp_key_type is None:
+            config.append(
+                "area {area} encryption ipsec spi {spi} esp {esp} {esp_key} {method} {ah_key_type} {ah_key}".format(
+                    area=areaid, spi=spi, esp=esp, esp_key=esp_key, method=method,
+                    ah_key_type=ah_key_type, ah_key=ah_key))
+        elif esp_key_type is not None and ah_key_type is None:
+            config.append(
+                "area {area} encryption ipsec spi {spi} esp {esp} {esp_key_type} {esp_key} {method} {ah_key}".format(
+                    area=areaid, spi=spi, esp=esp, esp_key_type=esp_key_type, esp_key=esp_key,
+                    method=method, ah_key_type=ah_key_type, ah_key=ah_key))
+        elif (esp_key_type and ah_key_type) is not None:
+            config.append(
+                "area {area} encryption ipsec spi {spi} esp {esp} {esp_key_type} {esp_key} {method} {ah_key_type} {ah_key}".format(
+                    area=areaid, spi=spi, esp=esp, esp_key_type=esp_key_type, esp_key=esp_key,
+                    method=method, ah_key_type=ah_key_type, ah_key=ah_key))
+    if esp == 'aes-cbc':
+        if ah_key_type is None and esp_key_type is None:
+            config.append(
+                "area {area} encryption ipsec spi {spi} esp aes-cbc {bit} {esp_key} {method} {ah_key}".format(
+                    area=areaid, spi=spi, bit=bit, esp_key=esp_key, method=method, ah_key=ah_key))
+        elif ah_key_type is not None and esp_key_type is None:
+            config.append(
+                "area {area} encryption ipsec spi {spi} esp aes-cbc {bit} {esp_key} {method} {ah_key_type} {ah_key}".format(
+                    area=areaid, spi=spi, bit=bit, esp_key=esp_key, method=method,
+                    ah_key_type=ah_key_type, ah_key=ah_key))
+        elif esp_key_type is not None and ah_key_type is None:
+            config.append(
+                "area {area} encryption ipsec spi {spi} esp aes-cbc {bit} {esp_key_type} {esp_key} {method} {ah_key}".format(
+                    area=areaid, spi=spi, bit=bit, esp_key_type=esp_key_type, esp_key=esp_key,
+                    method=method, ah_key_type=ah_key_type, ah_key=ah_key))
+        elif (esp_key_type and ah_key_type) is not None:
+            config.append(
+                "area {area} encryption ipsec spi {spi} esp aes-cbc {bit} {esp_key_type} {esp_key} {method} {ah_key_type} {ah_key}".format(
+                    area=areaid, spi=spi, bit=bit, esp_key_type=esp_key_type, esp_key=esp_key,
+                    method=method, ah_key_type=ah_key_type, ah_key=ah_key))
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "ospfv3 ipsec encryption is not configured on device"
+            " {device} Error: {error}".format(device=device, error=e)
+        )
+
+
+def configure_interface_ospfv3_ipsec_ah(device, interface, spi, method, ah_key,
+                                        ah_key_type=None):
+    '''
+    configure ospfv3 ipsec authentication on interface
+        Args:
+            device (`obj`): Device object
+            interface ('str'): Interface to use
+            spi('str'): Security Policy Index  id to use
+            method('str'): authentication alogrightm md5|sh1
+            ah_key('str'): Authentication key
+            ah_key_type('`str`, optional): Authentication key type,default value is None
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    '''
+    config = ["interface {interface}".format(interface=interface)]
+    if ah_key_type is None:
+        config.append(
+            "ospfv3 authentication ipsec spi {spi} {method} {ah_key}".format(spi=spi, method=method,
+                                                                             ah_key=ah_key))
+    else:
+        config.append(
+            "ospfv3 authentication ipsec spi {spi} {method} {ah_key_type} {ah_key}".format(
+                spi=spi, method=method, ah_key_type=ah_key_type, ah_key=ah_key))
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "ospfv3 ipsec authentication is not configured on device"
+            " {device} for interface {interface}, Error: {error}".format(
+                device=device, interface=interface, error=e
+            )
+        )
+
+
+def configure_interface_ospfv3_ipsec_esp(device, interface, spi, esp, esp_key, method, ah_key,
+                                   bit=128, esp_key_type=None, ah_key_type=None):
+    '''
+    configure ospfv3 ipsec encryption on interface
+        Args:
+            device (`obj`): Device object
+            interface ('str'): Interface to use
+            spi('str'): Security Policy Index  id to use
+            esp('str'):  encapsulating security payold id
+            esp_key('str') encapsulation key
+            method('str'): authentication alogrightm md5|sh1
+            ah_key('str'): Authentication key
+            bit(int optional): aes-cbc uses bit value ,default value is 128
+            esp_key_type('`str`, optional): Authentication key type,default value is None
+            ah_key_type('`str`, optional): Authentication key type,default value is None
+        Return:
+            None
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    '''
+    config = ["interface {interface}".format(interface=interface)]
+    if esp == 'null':
+        if ah_key_type is None:
+            config.append(
+                "ospfv3 encryption ipsec spi {spi} esp null {method} {ah_key}".format(spi=spi,
+                                                                                      method=method,
+                                                                                      ah_key=ah_key))
+        else:
+            config.append(
+                "ospfv3 encryption ipsec spi {spi} esp null {method} {ah_key_type} {ah_key}".format(
+                    spi=spi, method=method, ah_key_type=ah_key_type, ah_key=ah_key))
+    if esp == '3des' or esp == 'des':
+        if ah_key_type is None and esp_key_type is None:
+            config.append(
+                "ospfv3 encryption ipsec spi {spi} esp {esp} {esp_key} {method} {ah_key}".format(
+                    spi=spi, esp=esp, esp_key=esp_key, method=method, ah_key=ah_key))
+        elif ah_key_type is not None and esp_key_type is None:
+            config.append(
+                "ospfv3 encryption ipsec spi {spi} esp {esp} {esp_key} {method} {ah_key_type} {ah_key}".format(
+                    spi=spi, esp=esp, esp_key=esp_key, method=method, ah_key_type=ah_key_type,
+                    ah_key=ah_key))
+        elif esp_key_type is not None and ah_key_type is None:
+            config.append(
+                "ospfv3 encryption ipsec spi {spi} esp {esp} {esp_key_type} {esp_key} {method} {ah_key}".format(
+                    spi=spi, esp=esp, esp_key_type=esp_key_type, esp_key=esp_key, method=method,
+                    ah_key_type=ah_key_type, ah_key=ah_key))
+        elif (esp_key_type and ah_key_type) is not None:
+            config.append(
+                "ospfv3 encryption ipsec spi {spi} esp {esp} {esp_key_type} {esp_key} {method} {ah_key_type} {ah_key}".format(
+                    spi=spi, esp=esp, esp_key_type=esp_key_type, esp_key=esp_key, method=method,
+                    ah_key_type=ah_key_type, ah_key=ah_key))
+    if esp == 'aes-cbc':
+        if ah_key_type is None and esp_key_type is None:
+            config.append(
+                "ospfv3 encryption ipsec spi {spi} esp aes-cbc {bit} {esp_key} {method} {ah_key}".format(
+                    spi=spi, bit=bit, esp_key=esp_key, method=method, ah_key=ah_key))
+        elif ah_key_type is not None and esp_key_type is None:
+            config.append(
+                "ospfv3 encryption ipsec spi {spi} esp aes-cbc {bit} {esp_key} {method} {ah_key_type} {ah_key}".format(
+                    spi=spi, bit=bit, esp_key=esp_key, method=method, ah_key_type=ah_key_type,
+                    ah_key=ah_key))
+        elif esp_key_type is not None and ah_key_type is None:
+            config.append(
+                "ospfv3 encryption ipsec spi {spi} esp aes-cbc {bit} {esp_key_type} {esp_key} {method} {ah_key}".format(
+                    spi=spi, bit=bit, esp_key_type=esp_key_type, esp_key=esp_key, method=method,
+                    ah_key_type=ah_key_type, ah_key=ah_key))
+        elif (esp_key_type and ah_key_type) is not None:
+            config.append(
+                "ospfv3 encryption ipsec spi {spi} esp aes-cbc {bit} {esp_key_type} {esp_key} {method} {ah_key_type} {ah_key}".format(
+                    spi=spi, bit=bit, esp_key_type=esp_key_type, esp_key=esp_key, method=method,
+                    ah_key_type=ah_key_type, ah_key=ah_key))
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "ospfv3 ipsec encryption is not configured on device"
+            " {device} for interface {interface}, Error: {error}".format(
+                device=device, interface=interface, error=e
+            )
+        )
+
+
+def unconfigure_ospfv3_ipsec_ah(device, pid, areaid, spi, method, ah_key, ah_key_type=None):
+    '''
+    unconfigure ospfv3 ipsec authentication
+        Args:
+            device (`obj`): Device object
+            pid (`str`): ospfv3 process id
+            areaid ('str'): Area id to use
+            spi('str'): Security Policy Index  id to use
+            method('str'): authentication alogrightm md5|sh1
+            ah_key('str'): Authentication key
+            ah_key_type('`str`, optional): Authentication key type,default value is None
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    '''
+    config = ["router ospfv3 {pid}".format(pid=pid)]
+    if ah_key_type is None:
+        config.append(
+            "no area {area} authentication ipsec spi {spi} {method} {ah_key}".format(area=areaid,
+                                                                                  spi=spi,
+                                                                                  method=method,
+                                                                                  ah_key=ah_key))
+    else:
+        config.append(
+            "no area {area} authentication ipsec spi {spi} {method} {ah_key_type} {ah_key}".format(
+                area=areaid, spi=spi, method=method, ah_key_type=ah_key_type, ah_key=ah_key))
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "ospfv3 ipsec authentication is not configured on device"
+            " {device} Error: {error}".format(device=device, error=e)
+        )
+
+
+def unconfigure_ospfv3_ipsec_esp(device, pid, areaid, spi, esp, esp_key, method, ah_key,
+                               bit=128, esp_key_type=None, ah_key_type=None):
+    '''
+    unconfigure ospfv3 ipsec encryption
+        Args:
+            device (`obj`): Device object
+            pid (`str`): ospfv3 process id
+            areaid ('str'): Area id to use
+            spi('str'): Security Policy Index  id to use
+            esp('str'):  encapsulating security payold id
+            esp_key('str') encapsulation key
+            method('str'): authentication alogrightm md5|sh1
+            ah_key('str'): Authentication key
+            bit(int optional): aes-cbc uses bit value ,default value is 128
+            esp_key_type('`str`, optional): Authentication key type,default value is None
+            ah_key_type('`str`, optional): Authentication key type,default value is None
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    '''
+    config = ["router ospfv3 {pid}".format(pid=pid)]
+    if esp == 'null':
+        if ah_key_type is None:
+            config.append(
+                "no area {area} encryption ipsec spi {spi} esp null {method} {ah_key}".format(
+                    area=areaid, spi=spi, method=method, ah_key=ah_key))
+        else:
+            config.append(
+                "no area {area} encryption ipsec spi {spi} esp null {method} {ah_key_type} {ah_key}".format(
+                    area=areaid, spi=spi, method=method, ah_key_type=ah_key_type, ah_key=ah_key))
+
+    if esp == '3des' or esp == 'des':
+        if ah_key_type is None and esp_key_type is None:
+            config.append(
+                "no area {area} encryption ipsec spi {spi} esp {esp} {esp_key} {method} {ah_key}".format(
+                    area=areaid, spi=spi, esp=esp, esp_key=esp_key, method=method, ah_key=ah_key))
+        elif ah_key_type is not None and esp_key_type is None:
+            config.append(
+                "no area {area} encryption ipsec spi {spi} esp {esp} {esp_key} {method} {ah_key_type} {ah_key}".format(
+                    area=areaid, spi=spi, esp=esp, esp_key=esp_key, method=method,
+                    ah_key_type=ah_key_type, ah_key=ah_key))
+        elif esp_key_type is not None and ah_key_type is None:
+            config.append(
+                "no area {area} encryption ipsec spi {spi} esp {esp} {esp_key_type} {esp_key} {method} {ah_key}".format(
+                    area=areaid, spi=spi, esp=esp, esp_key_type=esp_key_type, esp_key=esp_key,
+                    method=method, ah_key_type=ah_key_type, ah_key=ah_key))
+        elif (esp_key_type and ah_key_type) is not None:
+            config.append(
+                "no area {area} encryption ipsec spi {spi} esp {esp} {esp_key_type} {esp_key} {method} {ah_key_type} {ah_key}".format(
+                    area=areaid, spi=spi, esp=esp, esp_key_type=esp_key_type, esp_key=esp_key,
+                    method=method, ah_key_type=ah_key_type, ah_key=ah_key))
+    if esp == 'aes-cbc':
+        if ah_key_type is None and esp_key_type is None:
+            config.append(
+                "no area {area} encryption ipsec spi {spi} esp aes-cbc {bit} {esp_key} {method} {ah_key}".format(
+                    area=areaid, spi=spi, bit=bit, esp_key=esp_key, method=method, ah_key=ah_key))
+        elif ah_key_type is not None and esp_key_type is None:
+            config.append(
+                "no area {area} encryption ipsec spi {spi} esp aes-cbc {bit} {esp_key} {method} {ah_key_type} {ah_key}".format(
+                    area=areaid, spi=spi, bit=bit, esp_key=esp_key, method=method,
+                    ah_key_type=ah_key_type, ah_key=ah_key))
+        elif esp_key_type is not None and ah_key_type is None:
+            config.append(
+                "no area {area} encryption ipsec spi {spi} esp aes-cbc {bit} {esp_key_type} {esp_key} {method} {ah_key}".format(
+                    area=areaid, spi=spi, bit=bit, esp_key_type=esp_key_type, esp_key=esp_key,
+                    method=method, ah_key_type=ah_key_type, ah_key=ah_key))
+        elif (esp_key_type and ah_key_type) is not None:
+            config.append(
+                "no area {area} encryption ipsec spi {spi} esp aes-cbc {bit} {esp_key_type} {esp_key} {method} {ah_key_type} {ah_key}".format(
+                    area=areaid, spi=spi, bit=bit, esp_key_type=esp_key_type, esp_key=esp_key,
+                    method=method, ah_key_type=ah_key_type, ah_key=ah_key))
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "ospfv3 ipsec encryption is not configured on device"
+            " {device} Error: {error}".format(device=device, error=e)
+        )
+
+
+def unconfigure_interface_ospfv3_ipsec_ah(device, interface, spi, method, ah_key,
+                                        ah_key_type=None):
+    '''
+    unconfigure ospfv3 ipsec authentication on interface
+        Args:
+            device (`obj`): Device object
+            interface ('str'): Interface to use
+            spi('str'): Security Policy Index  id to use
+            method('str'): authentication alogrightm md5|sh1
+            ah_key('str'): Authentication key
+            ah_key_type('`str`, optional): Authentication key type,default value is None
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    '''
+    config = ["interface {interface}".format(interface=interface)]
+    if ah_key_type is None:
+        config.append(
+            "no ospfv3 authentication ipsec spi {spi} {method} {ah_key}".format(spi=spi, method=method,
+                                                                             ah_key=ah_key))
+    else:
+        config.append(
+            "no ospfv3 authentication ipsec spi {spi} {method} {ah_key_type} {ah_key}".format(
+                spi=spi, method=method, ah_key_type=ah_key_type, ah_key=ah_key))
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "no ospfv3 ipsec authentication is not configured on device"
+            " {device} for interface {interface}, Error: {error}".format(
+                device=device, interface=interface, error=e
+            )
+        )
+
+
+def unconfigure_interface_ospfv3_ipsec_esp(device, interface, spi, esp, esp_key, method, ah_key,
+                                   bit=128, esp_key_type=None, ah_key_type=None):
+    '''
+    unconfigure ospfv3 ipsec encryption on interface
+        Args:
+            device (`obj`): Device object
+            interface ('str'): Interface to use
+            spi('str'): Security Policy Index  id to use
+            esp('str'):  encapsulating security payold id
+            esp_key('str') encapsulation key
+            method('str'): authentication alogrightm md5|sh1
+            ah_key('str'): Authentication key
+            bit(int optional): aes-cbc uses bit value ,default value is 128
+            esp_key_type('`str`, optional): Authentication key type,default value is None
+            ah_key_type('`str`, optional): Authentication key type,default value is None
+        Return:
+            None
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    '''
+    config = ["interface {interface}".format(interface=interface)]
+    if esp == 'null':
+        if ah_key_type is None:
+            config.append(
+                "no ospfv3 encryption ipsec spi {spi} esp null {method} {ah_key}".format(spi=spi,
+                                                                                      method=method,
+                                                                                      ah_key=ah_key))
+        else:
+            config.append(
+                "no ospfv3 encryption ipsec spi {spi} esp null {method} {ah_key_type} {ah_key}".format(
+                    spi=spi, method=method, ah_key_type=ah_key_type, ah_key=ah_key))
+    if esp == '3des' or esp == 'des':
+        if ah_key_type is None and esp_key_type is None:
+            config.append(
+                "no ospfv3 encryption ipsec spi {spi} esp {esp} {esp_key} {method} {ah_key}".format(
+                    spi=spi, esp=esp, esp_key=esp_key, method=method, ah_key=ah_key))
+        elif ah_key_type is not None and esp_key_type is None:
+            config.append(
+                "no ospfv3 encryption ipsec spi {spi} esp {esp} {esp_key} {method} {ah_key_type} {ah_key}".format(
+                    spi=spi, esp=esp, esp_key=esp_key, method=method, ah_key_type=ah_key_type,
+                    ah_key=ah_key))
+        elif esp_key_type is not None and ah_key_type is None:
+            config.append(
+                "no ospfv3 encryption ipsec spi {spi} esp {esp} {esp_key_type} {esp_key} {method} {ah_key}".format(
+                    spi=spi, esp=esp, esp_key_type=esp_key_type, esp_key=esp_key, method=method,
+                    ah_key_type=ah_key_type, ah_key=ah_key))
+        elif (esp_key_type and ah_key_type) is not None:
+            config.append(
+                "no ospfv3 encryption ipsec spi {spi} esp {esp} {esp_key_type} {esp_key} {method} {ah_key_type} {ah_key}".format(
+                    spi=spi, esp=esp, esp_key_type=esp_key_type, esp_key=esp_key, method=method,
+                    ah_key_type=ah_key_type, ah_key=ah_key))
+    if esp == 'aes-cbc':
+        if ah_key_type is None and esp_key_type is None:
+            config.append(
+                "no ospfv3 encryption ipsec spi {spi} esp aes-cbc {bit} {esp_key} {method} {ah_key}".format(
+                    spi=spi, bit=bit, esp_key=esp_key, method=method, ah_key=ah_key))
+        elif ah_key_type is not None and esp_key_type is None:
+            config.append(
+                "no ospfv3 encryption ipsec spi {spi} esp aes-cbc {bit} {esp_key} {method} {ah_key_type} {ah_key}".format(
+                    spi=spi, bit=bit, esp_key=esp_key, method=method, ah_key_type=ah_key_type,
+                    ah_key=ah_key))
+        elif esp_key_type is not None and ah_key_type is None:
+            config.append(
+                "no ospfv3 encryption ipsec spi {spi} esp aes-cbc {bit} {esp_key_type} {esp_key} {method} {ah_key}".format(
+                    spi=spi, bit=bit, esp_key_type=esp_key_type, esp_key=esp_key, method=method,
+                    ah_key_type=ah_key_type, ah_key=ah_key))
+        elif (esp_key_type and ah_key_type) is not None:
+            config.append(
+                "no ospfv3 encryption ipsec spi {spi} esp aes-cbc {bit} {esp_key_type} {esp_key} {method} {ah_key_type} {ah_key}".format(
+                    spi=spi, bit=bit, esp_key_type=esp_key_type, esp_key=esp_key, method=method,
+                    ah_key_type=ah_key_type, ah_key=ah_key))
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "ospfv3 ipsec encryption is not configured on device"
+            " {device} for interface {interface}, Error: {error}".format(
+                device=device, interface=interface, error=e
+            )
+        )
+
+
+def clear_ospfv3_process_all(device):
+    '''
+     clear ospfv3 process
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to clear ospfv3 process
+    '''
+    log.info("clear ospfv3 process")
+    ospfv3_res = Statement(
+        pattern=r'Reset selected OSPFv3 processes\? \[no\]\:',
+        action='sendline(y)',
+        loop_continue=True,
+        continue_timer=False)
+    try:
+        device.execute("clear ospfv3 process", reply=Dialog([ospfv3_res]))
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            " Failed to clear ospfv3 process,  Error: {error}".format(error=e)
+        )
+
 
 def configure_ospfv3_network_range(device, pid, router_id, address_family=None,
     traffic_type=None, adjacency=None, area=None, network_range=None):
@@ -2031,6 +2575,8 @@ def configure_ospfv3_on_interface(device, interface, pid, area):
                interface=interface.name, error=e
             )
         )
+
+
 def configure_ospf_redistributed_eigrp_metric(device, ospf_process_id, eigrp_as, metric=None):
     """configuring ospf redistributed eigrp with metric-type
     Args:
@@ -2054,3 +2600,26 @@ def configure_ospf_redistributed_eigrp_metric(device, ospf_process_id, eigrp_as,
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure redistribute eigrp with metric-type under ospf {ospf_process_id}. Error:\n{e}")
+
+
+def configure_snmp_if_index_on_ospfv3_process_id(device, ospf_process_id):
+    """ configure snmp interface index on OSPFv3 process id
+        Args:
+            device ('obj'): Device object
+            ospf_process_id ('str'): Process id for ospfv3 process
+        Returns:
+            None
+        Raise:
+            SubCommandFailure: Failed to configure snmp if index on ospfv3 process id
+    """
+    log.debug("configure snmp interface index on OSPFv3 process id")
+    cmd = [f"ipv6 router ospf {ospf_process_id}", 
+           f"interface-id snmp-if-index"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure snmp interface index on OSPFv3 process id. Error:\n{error}".format(
+                error=e
+            )
+        )

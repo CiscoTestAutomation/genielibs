@@ -10,7 +10,7 @@ class TestConfigureDefaultMacGlobalAddressTableNotificationChange(unittest.TestC
     def setUpClass(self):
         testbed = f"""
         devices:
-          9300-24UX-1:
+          stack3-nyquist-1:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -19,10 +19,10 @@ class TestConfigureDefaultMacGlobalAddressTableNotificationChange(unittest.TestC
                 protocol: unknown
             os: iosxe
             platform: cat9k
-            type: c9300
+            type: router
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['9300-24UX-1']
+        self.device = self.testbed.devices['stack3-nyquist-1']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,6 @@ class TestConfigureDefaultMacGlobalAddressTableNotificationChange(unittest.TestC
         )
 
     def test_configure_default_mac_global_address_table_notification_change(self):
-        result = configure_default_mac_global_address_table_notification_change(self.device, 'history-size', 12, None)
+        result = configure_default_mac_global_address_table_notification_change(self.device, 'history-size', None, None)
         expected_output = None
         self.assertEqual(result, expected_output)

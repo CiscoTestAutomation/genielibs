@@ -6,13 +6,13 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-  prompt: stack-2m-c9k(config)#
+  prompt: Switch(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: stack-2m-c9k(config-line)#
+  prompt: Switch(config-line)#
 connect:
   commands:
     ? ''
@@ -32,4 +32,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: stack-2m-c9k#
+  prompt: Switch#

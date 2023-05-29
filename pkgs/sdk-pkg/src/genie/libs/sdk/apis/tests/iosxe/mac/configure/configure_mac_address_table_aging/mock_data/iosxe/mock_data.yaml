@@ -2,21 +2,18 @@ configure:
   commands:
     end:
       new_state: execute
-    line console:
-      new_state: configure_line
     line console 0:
       new_state: configure_line
-    mac address-table aging-time 1800: "mac address-table aging-time 1800"
+    mac-address-table aging-time 30 vlan 201: "mac-address-table aging-time 30 vlan\
+      \ 201\r\n"
     no logging console: ''
-  prompt: Switch(config)#
+  prompt: T1-9300-SW1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-    line vty: ''
-    terminal width 511: ''
-  prompt: Switch(config-line)#
+  prompt: T1-9300-SW1(config-line)#
 connect:
   commands:
     ? ''
@@ -36,6 +33,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-    term width 511: ''
-    terminal session-timeout 0: ''
-  prompt: Switch#
+  prompt: T1-9300-SW1#

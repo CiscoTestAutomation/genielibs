@@ -45,19 +45,23 @@ def configure_nat_overload_rule(
     device, 
     interface, 
     access_list_name,
+    overload=True
 ):
     """ Configure interface overloaad rule
         Args:
             device ('obj'): device to use
             interface ('str'): Interface which will use for overlad rule
             access_list_name ('str'): Name of extended access list
+            overload ('bool', optional): overload True or False. Default is True
         Returns:
             console output
         Raises:
             SubCommandFailure: Nat overload rule not connfigured
     """
-    cmd = ["ip nat inside source list {} interface {} overload".format(access_list_name,interface)]
-
+    cmd = f'ip nat inside source list {access_list_name} interface {interface}'
+    if overload:
+        cmd += ' overload'
+    out = None
     try:
         out = device.configure(cmd)
     except SubCommandFailure as e:
@@ -122,28 +126,37 @@ def unconfigure_nat_overload_rule(
         )
     return out
 
-def configure_nat_pool(
-    device, 
-    pool_name, 
-    pool_start_ip,
-    pool_end_ip,
-    network_mask
-):
+def configure_nat_pool(device, pool_name, pool_start_ip=None, pool_end_ip=None, network_mask=None,
+        prefix_length=None, pool_type=None, start_ip_address=None, end_ip_address=None):
     """ Configure NAT pool
         Args:
             device ('obj'): device to use
             pool_name ('str'): Name of pool
-            pool_start_ip ('str'): Pool start ip
-            pool_end_ip ('str') : Pool end ip
-            network_mask ('str') : Network mask
+            pool_start_ip ('str', optional): Pool start ip. Default is None
+            pool_end_ip ('str', optional) : Pool end ip. Default is None
+            network_mask ('str', optional) : Network mask. Default is None
+            prefix_length ('str', optional) : Network prefix length. Default is None
+            pool_type ('str', optional) : pool type. ex: match-host. Default is None
+            start_ip_address ('str', optional): address start ip. Default is None
+            end_ip_address ('str', optional) : address end ip. Default is None
         Returns:
             None
         Raises:
             SubCommandFailure: NAT pool not configured
     """
-    cmd = ["ip nat pool {} {} {} netmask {}".format(
-              pool_name,pool_start_ip,pool_end_ip,network_mask)]
-
+    cmd = [f'ip nat pool {pool_name}']
+    if pool_start_ip and pool_end_ip:
+        cmd[0] += f' {pool_start_ip} {pool_end_ip}'
+    if network_mask:
+        cmd[0] += f' netmask {network_mask}'
+        if start_ip_address and end_ip_address:
+            cmd.append(f'address {start_ip_address} {end_ip_address}')
+    elif prefix_length:
+        cmd[0] += f' prefix-length {prefix_length}'
+        if start_ip_address and end_ip_address:
+            cmd.append(f'address {start_ip_address} {end_ip_address}')
+    if pool_type:
+        cmd[0] += f' type {pool_type}'
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -155,22 +168,27 @@ def unconfigure_nat_pool(
     pool_name, 
     pool_start_ip,
     pool_end_ip,
-    network_mask
+    network_mask = None,
+    prefix_length = None
 ):
-    """ UnConfigure NAT pool 
+    """ Configure NAT pool
         Args:
             device ('obj'): device to use
             pool_name ('str'): Name of pool
             pool_start_ip ('str'): Pool start ip
             pool_end_ip ('str') : Pool end ip
-            network_mask ('str') : Network mask
+            network_mask ('str', optional) : Network mask. Default is None
+            prefix_length ('int', optional) : Prefix length. Default is None
         Returns:
             None
         Raises:
-            SubCommandFailure: NAT pool not unconfigured
+            SubCommandFailure: NAT pool not configured
     """
-    cmd = ["no ip nat pool {} {} {} netmask {}".format(
-              pool_name,pool_start_ip,pool_end_ip,network_mask)]
+    cmd = f"no ip nat pool {pool_name} {pool_start_ip} {pool_end_ip}"
+    if network_mask:
+        cmd += f' netmask {network_mask}'
+    elif prefix_length:
+        cmd += f' prefix-length {prefix_length}'
 
     try:
         device.configure(cmd)
@@ -693,23 +711,37 @@ def unconfigure_static_nat_rule(
         log.error(e)
         raise SubCommandFailure("Could not UnConfigure static NAT rule")
         
-def configure_static_nat_outside_rule(
-    device, 
-    outside_global_address, 
-    outside_local_address
-):
+def configure_static_nat_outside_rule(device, outside_global_address, outside_local_address,
+        l4_protocol=None, global_port=None, local_port=None, network=False, network_mask=None,
+        extendable=False, add_route=False):
     """ Configure static NAT outside rule 
         Args:
             device ('obj'): device to use
             outside_global_address ('str'): outside global address
             outside_local_address ('str'): outside local address
+            l4_protocol ('str', optional): tcp ot udp protocol. Default is None
+            global_port ('int', optional): tcp ot udp global port number. Default is None
+            local_port ('int', optional): tcp ot udp local port number. Default is None
+            network ('bool', optional): configures static netwrok. Default is False
+            network_mask ('str', optional): network mask or prefix. Default is None
+            extendable ('bool', optional): extend the translation. Default is False
+            add_route ('bool', optional): add static route. Default is False
         Returns:
             None
         Raises:
             SubCommandFailure: static NAT outside rule not configured
     """
-    cmd = ["ip nat outside source static {} {} add-route".format(
-              outside_global_address,outside_local_address)]
+    cmd = 'ip nat outside source static'
+    if l4_protocol and global_port and local_port:
+        cmd += f' {l4_protocol} {outside_global_address} {global_port} {outside_local_address} {local_port}'
+    elif network and network_mask:
+        cmd += f' network {outside_global_address} {outside_local_address} {network_mask}'
+    else:
+        cmd += f' {outside_global_address} {outside_local_address}'
+    if extendable:
+        cmd += ' extendable'
+    if add_route:
+        cmd += ' add-route'
 
     try:
         device.configure(cmd)
@@ -1705,3 +1737,128 @@ def unconfigure_ip_access_group_in_out(
         raise SubCommandFailure(
             "Could not disable the ip access-group. Error:\n{error}".format(error=e)
         )
+
+
+def unconfigure_outside_static_nat_rule(device, outside_local_address, outside_global_address, l4_protocol = None,
+    global_port = None, local_port = None, network=False, network_mask=None, extendable = False, add_route = False):
+    """ UnConfigure static NAT rule
+        Args:
+            device ('obj'): device to use
+            outside_local_address ('str'): outside local ip
+            outside_global_address ('str'): outside global ip
+            l4_protocol ('str', optional): tcp ot udp protocol. Default is None
+            global_port ('int', optional): tcp ot udp global port number. Default is None
+            local_port ('int', optional): tcp ot udp local port number. Default is None
+            network ('bool', optional): configures static netwrok. Default is False
+            network_mask ('str', optional): network mask or prefix. Default is None
+            extendable ('bool', optional): extend the translation. Default is False
+            add_route ('bool', optional): add static route. Default is False
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: static NAT rule not unconfigured
+    """
+    dialog = Dialog([Statement(
+        pattern=r'\[no\].*',
+        action='sendline(yes)',
+        loop_continue=True,
+        continue_timer=False
+        )])
+    cmd = 'no ip nat outside source static'
+    if l4_protocol and global_port and local_port:
+        cmd += f' {l4_protocol} {outside_global_address} {global_port} {outside_local_address} {local_port}'
+    elif network and network_mask:
+        cmd += f' network {outside_global_address} {outside_local_address} {network_mask}'
+    else:
+        cmd += f' {outside_global_address} {outside_local_address}'
+    if extendable:
+        cmd += ' extendable'
+    if add_route:
+        cmd += ' add-route'
+    try:
+        device.configure(cmd, reply=dialog)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not UnConfigure static NAT rule")
+
+
+def unconfigure_nat_pool_address(device, pool_name, start_ip_address, end_ip_address,
+                                 network_mask=None, prefix_length=None, pool_type=None):
+    """ Unconfigure NAT pool address
+        Args:
+            device ('obj'): device to use
+            pool_name ('str'): Name of pool
+            start_ip_address ('str'): address start ip.
+            end_ip_address ('str') : address end ip.
+            network_mask ('str', optional) : Network mask. Default is None
+            prefix_length ('str', optional) : Network prefix length. Default is None
+            pool_type ('str', optional) : pool type. ex: match-host. Default is None
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Could not Unconfigure NAT pool address
+    """
+    cmd = [f'ip nat pool {pool_name}']
+    if network_mask:
+        cmd[0] += f' netmask {network_mask}'
+        cmd.append(f'no address {start_ip_address} {end_ip_address}')
+    elif prefix_length:
+        cmd[0] += f' prefix-length {prefix_length}'
+        cmd.append(f'no address {start_ip_address} {end_ip_address}')
+    if pool_type:
+        cmd[0] += f' type {pool_type}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not Unconfigure NAT pool address")
+
+
+def configure_static_nat_route_map_no_alias_rule(device, translation, local_ip, global_ip, add_route=False):
+    """ Configure static NAT route-map rule
+        Args:
+            device ('obj'): device to use
+            translation ('str'): inside or outside translation
+            local_ip ('str'): inside/outside local ip
+            global_ip ('str'): inside/outside global ip
+            add_route ('bool', optional) : Add outside route-map. Default is False
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: static NAT route-map rule not configured
+    """
+    config = []
+    if translation == 'inside':
+        config.append(f"ip nat {translation} source static {local_ip} {global_ip} no-alias")
+    elif translation == 'outside':
+        config.append(f"ip nat {translation} source static {global_ip} {local_ip} no-alias{' add-route' if add_route else ''}")
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not Configure static NAT route-map rule")
+
+
+def unconfigure_static_nat_route_map_no_alias_rule(device, translation, local_ip, global_ip, add_route=False):
+    """ Unconfigure static NAT route-map rule
+        Args:
+            device ('obj'): device to use
+            translation ('str'): inside or outside translation
+            local_ip ('str'): inside/outside local ip
+            global_ip ('str'): inside/outside global ip
+            add_route ('bool', optional) : Add outside route-map. Default is False
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: static NAT route-map rule not configured
+    """
+    config = []
+    if translation == 'inside':
+        config.append(f"no ip nat {translation} source static {local_ip} {global_ip} no-alias")
+    elif translation == 'outside':
+        config.append(f"no ip nat {translation} source static {global_ip} {local_ip} no-alias{' add-route' if add_route else ''}")
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not Unconfigure static NAT route-map rule")

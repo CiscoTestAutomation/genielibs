@@ -1,0 +1,52 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: PE1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: PE1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show ipv6 mld groups detail:
+      response:
+      - "Interface:	Tunnel0 \n\r \
+         Group:		FF0E::102 \n\r \
+         Uptime:		00:00:21 \n\r \
+         Router mode:	EXCLUDE (Expires: never) \n\r \
+         Host mode:	EXCLUDE \n\r \
+         Last reporter:	FE80::A8BB:CCFF:FE00:D00 \n\r \
+         Source list is empty \n\r \
+         Interface:	Tunnel0 \n\r \
+         Group:		FF0E::501 \n\r \
+         Uptime:		00:00:21 \n\r \
+         Router mode:	EXCLUDE (Expires: never) \n\r \
+         Host mode:	EXCLUDE \n\r \
+         Last reporter:	FE80::A8BB:CCFF:FE00:D00 \n\r \
+         Source list is empty
+         "
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: PE1#

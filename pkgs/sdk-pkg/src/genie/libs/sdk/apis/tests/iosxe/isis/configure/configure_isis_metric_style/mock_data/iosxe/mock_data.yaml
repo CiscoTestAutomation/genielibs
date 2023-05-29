@@ -1,0 +1,39 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    metric-style transition: "metric-style transition\r\n"
+    metric-style wide: "metric-style wide\r\n"
+    metric-style wide level-1: "metric-style wide level-1\r\n"
+    no logging console: ''
+    passive-interface Gi1/0/6: "passive-interface Gi1/0/6\r\n"
+    router isis: "router isis\r\n"
+  prompt: stack3-nyquist-1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: stack3-nyquist-1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: stack3-nyquist-1#

@@ -33,3 +33,8 @@ class TestConfigurePhysicalInterfaceVmi(unittest.TestCase):
         result = configure_physical_interface_vmi(self.device, 'vmi1', 'GigabitEthernet1', 'bypass')
         expected_output = None
         self.assertEqual(result, expected_output)
+
+    def test_configure_physical_interface_vmi_without_mode(self):
+        result = configure_physical_interface_vmi(self.device, 'vmi1', 'GigabitEthernet1')
+        expected_output = None
+        self.assertEqual(result, expected_output)

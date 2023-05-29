@@ -728,7 +728,7 @@ def run_gnmi(operation, device, steps,
     if 'auto_validate' in format:
         auto_validate = format.get('auto_validate')
     else:
-        auto_validate = True
+        auto_validate = False
 
     transaction_time = format.get('transaction_time', 0)
 

@@ -1,21 +1,19 @@
 configure:
   commands:
-    default mac address-table notification change history-size 12: "default mac address-table\
-      \ notification change history-siz\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b$ address-table\
-      \ notification change history-size         \b\b\b\b\b\b\b\b\b 12\r\n"
+    default mac address-table notification change history-size: "default mac address-table\
+      \ notification change history-size\r\n"
     end:
       new_state: execute
     line console 0:
       new_state: configure_line
     no logging console: ''
-  prompt: 9300-24UX-1(config)#
+  prompt: stack3-nyquist-1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: 9300-24UX-1(config-line)#
+  prompt: stack3-nyquist-1(config-line)#
 connect:
   commands:
     ? ''
@@ -35,4 +33,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: 9300-24UX-1#
+  prompt: stack3-nyquist-1#

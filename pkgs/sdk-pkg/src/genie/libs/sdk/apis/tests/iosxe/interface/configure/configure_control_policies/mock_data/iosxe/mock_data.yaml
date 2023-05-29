@@ -1,25 +1,24 @@
 configure:
   commands:
-    10 authenticate using dot1x retries 2 retry-time 0 priority 10: "10 class always\
-      \ do-until-failure\r\n"
-    10 class always do-until-failure: "event session-started match-all\r\n"
+    10 class always do-until-failure: "event aaa-available match-all\r\n"
+    10 resume reauthentication: "10 class always do-until-failure\r\n"
     end:
       new_state: execute
-    event session-started match-all: "%Warning, modifying policy-map \"DOT1X_POLICY_RADIUS\"\
-      \ may impact sessions hosted on ports for which \"DOT1X_POLICY_RADIUS\" has\
-      \ already been applied.\r\n"
+    event aaa-available match-all: "%Warning, modifying policy-map \"PMAP_DefaultWiredDot1xClosedAuth_1X_MAB\"\
+      \ may impact sessions hosted on ports for which \"PMAP_DefaultWiredDot1xClosedAuth_1X_MAB\"\
+      \ has already been applied.\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''
-    policy-map type control subscriber DOT1X_POLICY_RADIUS: "policy-map type control\
-      \ subscriber DOT1X_POLICY_RADIUS\r\n"
-  prompt: VCR(config)#
+    policy-map type control subscriber PMAP_DefaultWiredDot1xClosedAuth_1X_MAB: "policy-map\
+      \ type control subscriber PMAP_DefaultWiredDot1xClosedAuth_1X_MAB\r\n"
+  prompt: ECR(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: VCR(config-line)#
+  prompt: ECR(config-line)#
 connect:
   commands:
     ? ''
@@ -39,4 +38,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: VCR#
+  prompt: ECR#

@@ -1,3 +1,4 @@
+import os
 import unittest
 from pyats.topology import loader
 from genie.libs.sdk.apis.iosxe.protocols.get import get_neighbor_count
@@ -7,21 +8,21 @@ class TestGetNeighborCount(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        testbed = """
+        testbed = f"""
         devices:
-          core:
+          P-R1:
             connections:
               defaults:
                 class: unicon.Unicon
               a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
+                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
             platform: cat9k
-            type: C9500
+            type: C9400
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['core']
+        self.device = self.testbed.devices['P-R1']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,5 +31,5 @@ class TestGetNeighborCount(unittest.TestCase):
 
     def test_get_neighbor_count(self):
         result = get_neighbor_count(self.device, 'ip ospf', 'neighbor', 'FULL')
-        expected_output = None
+        expected_output = 0
         self.assertEqual(result, expected_output)

@@ -266,6 +266,31 @@ delete_only_one_node_response = """
 </rpc-reply>
 """
 
+list_key_with_forward_slash = """
+<rpc-reply xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0" xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="urn:uuid:bb6fb478-4e27-4826-9fd6-08454515e503">
+    <data>
+        <network-instances xmlns="http://openconfig.net/yang/network-instance">
+            <network-instance>
+                <name>1/0/1</name>
+                <protocols>
+                    <protocol>
+                        <identifier xmlns:idx="http://openconfig.net/yang/policy-types">idx:BGP</identifier>
+                        <name>default</name>
+                        <bgp>
+                            <global>
+                                <config>
+                                    <as>200</as>
+                                </config>
+                            </global>
+                        </bgp>
+                    </protocol>
+                </protocols>
+            </network-instance>
+        </network-instances>
+    </data>
+</rpc-reply>"""
+
+
 class TestRpcVerify(unittest.TestCase):
     """Test cases for the rpcverify.RpcVerify methods."""
 
@@ -1286,6 +1311,24 @@ basic-mode=explicit&also-supported=report-all-tagged']
         resp = self.rpcv.process_rpc_reply(remove_response_fail)
         result = self.rpcv.verify_rpc_data_reply(resp, rpc_data)
         self.assertFalse(result)
+
+    def test_auto_validate_list_key_with_forward_slash(self):
+        """Test key values with forward slash"""
+        rpc_data = {
+            'nodes' : [
+                {
+                    'datatype': 'uint32',
+                    'nodetype': 'leaf',
+                    'value': '200',
+                    'xpath': '/oc-netinst:network-instances/oc-netinst:network-instance[oc-netinst:name="1/0/1"]/oc-netinst:protocols/oc-netinst:protocol[oc-netinst:identifier="oc-pol-types:BGP"][oc-netinst:name="default"]/oc-netinst:bgp/oc-netinst:global/oc-netinst:config/oc-netinst:as'
+                },
+            ],
+            'datastore' : 'candidate',
+            'operation': 'edit-config',
+        }
+        resp = self.rpcv.process_rpc_reply(list_key_with_forward_slash)
+        result = self.rpcv.verify_rpc_data_reply(resp, rpc_data)
+        self.assertTrue(result)
 
 
 class Device:

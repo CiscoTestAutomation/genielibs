@@ -32,3 +32,8 @@ class TestConfigureIpUnnumberedOnInterface(unittest.TestCase):
         result = configure_ip_unnumbered_on_interface(self.device, 'Vlan200', 'Loopback0')
         expected_output = None
         self.assertEqual(result, expected_output)
+
+    def test_configure_ipv6_unnumbered_on_interface(self):
+        result = configure_ip_unnumbered_on_interface(self.device, 'Vlan200', 'Loopback0', ipv6=True)
+        expected_output = None
+        self.assertEqual(result, expected_output)

@@ -188,10 +188,10 @@ def execute_clear_ip_nat_translation(device, tcp=False, udp=False, forced=False,
         cmd += ' tcp'
     elif udp:
         cmd += ' udp'
-    if inside_global_ip:
-        cmd += f' inside {inside_global_ip} {inside_global_port} {inside_local_ip} {inside_local_port}'
-    if outside_local_ip:
-        cmd += f' outside {outside_local_ip} {outside_local_port} {outside_global_ip} {outside_global_port}'
+    if inside_global_ip and inside_local_ip:
+        cmd += f' inside {inside_global_ip}{f" {inside_global_port}" if inside_global_port else ""} {inside_local_ip}{f" {inside_local_port}" if inside_local_port else ""}'
+    if outside_local_ip and outside_global_ip:
+        cmd += f' outside {outside_local_ip}{f" {outside_local_port}" if outside_local_port else ""} {outside_global_ip}{f" {outside_global_port}" if outside_global_port else ""}'
     if forced:
         cmd += ' forced'
     

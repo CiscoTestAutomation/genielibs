@@ -1,3 +1,4 @@
+import os
 import unittest
 from pyats.topology import loader
 from genie.libs.sdk.apis.iosxe.policy_map.configure import configure_hqos_policer_map
@@ -7,21 +8,21 @@ class TestConfigureHqosPolicerMap(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        testbed = """
+        testbed = f"""
         devices:
-          Startek:
+          A1:
             connections:
               defaults:
                 class: unicon.Unicon
               a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
+                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
             platform: cat9k
-            type: router
+            type: single_rp
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Startek']
+        self.device = self.testbed.devices['A1']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -29,6 +30,6 @@ class TestConfigureHqosPolicerMap(unittest.TestCase):
         )
 
     def test_configure_hqos_policer_map(self):
-        result = configure_hqos_policer_map(device=self.device, policy_name='policy2', class_map_name='class-default', policer_percent_val=1, table_map_name='table1', table_map_mode='dscp', child_policy='policy1', match_mode=['dscp', 'cos'], matched_value=['cs1', '5'])
+        result = configure_hqos_policer_map(self.device, 'policer', 'c0', 4, None, None, ['qos-group'], ['11'], None, False)
         expected_output = None
         self.assertEqual(result, expected_output)

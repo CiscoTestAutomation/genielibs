@@ -146,12 +146,13 @@ def  unconfigure_mac_address_table_notification_change(device):
             f"Failed to unconfigure mac-address-table notification change device {device.name}. Error:\n{e}"
             )
 
-def  configure_datalink_flow_monitor(device, interface):
-    """ Config datalink flow monitor m4out input on Device
+def  configure_datalink_flow_monitor(device, interface, flow_name, direction):
+    """ Config datalink flow monitor on Device
         Args:
             device ('obj'): Device object
-            interface('str'): interface
-            modetype('str'): different mode types
+            interface ('str'): interface
+            flow_name ('str'): different flow names.
+            direction ('str'): Input or Output direction.
             ex:)
                 input    Apply Flow Monitor on input traffic
                 output   Apply Flow Monitor on output traffic
@@ -160,23 +161,24 @@ def  configure_datalink_flow_monitor(device, interface):
             None
 
         Raise:
-            SubCommandFailure: Failed configuring datalink flow monitor m4out
+            SubCommandFailure: Failed configuring datalink flow monitor
     """
-    log.info("datalink flow monitor m2in1 input on device")
-    config=[f'interface {interface}',f'datalink flow monitor']
+
+    config = [f'interface {interface}', f'datalink flow monitor {flow_name} {direction}']
+    
     try:
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            f"Failed to configure datalink flow monitor m4out device {device.name}. Error:\n{e}"
-            )
+            f"Failed to configure datalink flow monitor m4out device {device.name}. Error:\n{e}")
 
-def  unconfigure_datalink_flow_monitor(device, interface):
-    """ Config datalink flow monitor m4out input on Device
+def  unconfigure_datalink_flow_monitor(device, interface, flow_name, direction):
+    """ Unconfigure datalink flow monitor on Device
         Args:
             device ('obj'): Device object
             interface('str'): interface
-            modetype('str'): different mode types
+            flow_name ('str'): different flow names.
+            direction ('str'): Input or Output direction.
             ex:)
                 input    Apply Flow Monitor on input traffic
                 output   Apply Flow Monitor on output traffic
@@ -185,15 +187,11 @@ def  unconfigure_datalink_flow_monitor(device, interface):
             None
 
         Raise:
-            SubCommandFailure: Failed configuring datalink flow monitor m4out
+            SubCommandFailure: Failed unconfiguring datalink flow monitor
     """
-    log.info("datalink flow monitor m2in1 input on device")
-    config=[f'interface {interface}',f'no datalink flow monitor']
+    config=[f'interface {interface}', f'no datalink flow monitor {flow_name} {direction}']
     try:
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            f"Failed to unconfigure datalink flow monitor m4out device {device.name}. Error:\n{e}"
-            )
-
-
+            f"Failed to unconfigure datalink flow monitor device {device.name}. Error:\n{e}")

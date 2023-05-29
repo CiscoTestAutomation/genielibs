@@ -811,18 +811,6 @@ def unconfigure_device_classifier(device, dc_option="", dc_option_name=""):
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure classifier on this device. Error:\n{e}")
 
-def unconfigure_system_ignore_startupconfig_switch_all(device):
-    """ Unconfigure no system ignore startupconfig switch all
-
-    Args:
-        device ('obj'): device to use
-
-    """
-    try:
-        device.configure("no system ignore startupconfig switch all")
-    except SubCommandFailure as e:
-        raise SubCommandFailure(f"Failed to unconfigure no system ignore startupconfig switch all on this device. Error:\n{e}")
-
 
 def configure_virtual_service_vnic_gateway_guest_ip_address(device, interface_id, ip, ip_mask, virtual_service, guest_ip):
     """ configure virtual service vnic gateway guest ip address
@@ -1140,12 +1128,14 @@ def configure_clear_logging_onboard_switch_environment(device, switch_number):
             )
         )
 
-def configure_system_ignore_startupconfig_switch_all(device):
+def configure_system_ignore_startupconfig_switch_all(device, switch=True, switch_number=None):
     """ Configures the system ignore startup configuration on the switch
         Example: system ignore startupconfig switch all
 
         Args:
             device('obj'): device to configure on
+            switch('boolean', optional): True for 9300 device, False for 9400 or above
+            switch_number('int', optional): switch member number need to be configured
 
         Return:
             N/A
@@ -1153,20 +1143,29 @@ def configure_system_ignore_startupconfig_switch_all(device):
         Raises:
             SubCommandFailure: Failed executing command
     """
-    log.info(f"Configuring system ignore startup config on {device.name}")
-    config = 'system ignore startupconfig switch all'
+    if switch==True and switch_number==None:
+        log.info(f"Configuring system ignore startup config on {device.name}")
+        config = 'system ignore startupconfig switch all'
+    elif switch==True and switch_number:
+        log.info(f"Configuring system ignore startup config on switch {switch_number} on {device.name}")
+        config = f'system ignore startupconfig switch {switch_number}'
+    else:
+        log.info(f"Configuring system ignore startup config on {device.name}")
+        config = 'system ignore startupconfig'
     try:
         device.configure(config)
     except SubCommandFailure as e:
         log.error(e)
         raise SubCommandFailure(f"Could not configure system ignore startup configuration on device {device.name}. Error:\n{e}")
 
-def unconfigure_system_ignore_startupconfig_switch_all(device):
+def unconfigure_system_ignore_startupconfig_switch_all(device, switch=True, switch_number=None):
     """ Unconfigures the system ignore startup configuration on the switch
         Example: no system ignore startupconfig switch all
 
         Args:
             device('obj'): device to configure on
+            switch('boolean', optional): True for 9300 device, False for 9400 or above
+            switch_number('int', optional): switch member number need to be configured
 
         Return:
             N/A
@@ -1174,8 +1173,15 @@ def unconfigure_system_ignore_startupconfig_switch_all(device):
         Raises:
             SubCommandFailure: Failed executing command
     """
-    log.info(f"Unconfiguring system ignore startup config on {device.name}")
-    config = 'no system ignore startupconfig switch all'
+    if switch==True and switch_number==None:
+        log.info(f"Unconfiguring system ignore startup config on {device.name}")
+        config = 'no system ignore startupconfig switch all'
+    elif switch== True and switch_number:
+        log.info(f"Unconfiguring system ignore startup config on switch {switch_number} on {device.name}")
+        config = f'no system ignore startupconfig switch {switch_number}'
+    else:
+        log.info(f"Unconfiguring system ignore startup config on {device.name}")
+        config = 'no system ignore startupconfig'
     try:
         device.configure(config)
     except SubCommandFailure as e:
@@ -1229,12 +1235,14 @@ def unconfigure_boot_system(device):
         log.error(e)
         raise SubCommandFailure(f"Failed to unconfigure boot system variable on device {device.name}. Error:\n{e}")
 
-def configure_system_disable_password_recovery_switch_all(device):
+def configure_system_disable_password_recovery_switch_all(device, switch=True, switch_number=None):
     """ Disables password recovery on the switch
         Example: system disable password recovery switch all
 
         Args:
             device('obj'): device to configure on
+            switch('boolean', optional): True for 9300 device, False for 9400 or above
+            switch_number('int', optional): switch member number need to be configured
 
         Return:
             N/A
@@ -1242,31 +1250,44 @@ def configure_system_disable_password_recovery_switch_all(device):
         Raises:
             SubCommandFailure: Failed executing command
     """
-
-    log.info(f"Disable password recovery switch all on {device.name}")
-    config = 'system disable password recovery switch all'
+    if switch==True and switch_number==None:
+        log.info(f"Disable password recovery switch all on {device.name}")
+        config = 'system disable password recovery switch all'
+    elif switch==True and switch_number:
+        log.info(f"Disable password recovery switch {switch_number} on {device.name}")
+        config = f'system disable password recovery switch {switch_number}'
+    else:
+        log.info(f"Disable password recovery on {device.name}")
+        config = 'system disable password recovery'
     try:
         device.configure(config)
     except SubCommandFailure as e:
         log.error(e)
         raise SubCommandFailure(f"Could not disable password recovery switch all on device {device.name}. Error:\n{e}")
 
-def unconfigure_system_disable_password_recovery_switch_all(device):
+def unconfigure_system_disable_password_recovery_switch_all(device, switch=True, switch_number=None):
     """ Enables password recovery on the switch
         Example: no system disable password recovery switch all
 
         Args:
             device('obj'): device to configure on
-
+            switch('boolean', optional): True for 9300 device, False for 9400 or above
+            switch_number('int', optional): switch member number need to be configured
         Return:
             N/A
 
         Raises:
             SubCommandFailure: Failed executing command
     """
-
-    log.info(f"Enables password recovery switch all on {device.name}")
-    config = 'no system disable password recovery switch all'
+    if switch==True and switch_number==None:
+        log.info(f"Enables password recovery switch all on {device.name}")
+        config = 'no system disable password recovery switch all'
+    elif switch==True and switch_number:
+        log.info(f"Enable password recovery switch {switch_number} on {device.name}")
+        config = f'no system disable password recovery switch {switch_number}'
+    else:
+        log.info(f"Enable password recovery on {device.name}")
+        config = 'no system disable password recovery'
     try:
         device.configure(config)
     except SubCommandFailure as e:
@@ -4390,3 +4411,41 @@ def configure_cos(device,priority_value):
             "Failed to configure 'l2-protocol tunnel cos' globally"
             'Error:{e}'.format(e=e)
         )
+
+def unconfig_cns_agent_password(device, cns_password=None):
+    """ un configure cns agent password
+        Args:
+            device ('obj'): Device object
+            cns_password ('str', optional): Cns agent password. Default is None
+        Returns:
+            None
+        Raise:
+            SubCommandFailure: Failed to un configure cns agent password
+    """
+    log.debug("un configure cns agent password")
+    try:
+        if cns_password:
+            device.configure("no cns password {cns_password}".format(cns_password=cns_password))
+        else:
+            device.configure("no cns password")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not un configure cns agent password. Error:\n{e}")
+
+
+def configure_boot_system_image_file(device, image_path, switch_number=None):
+    """ Configure boot system image file
+        Args:
+            device ('obj'): Device object
+            image_path ('str'): full image path. Ex: flash:cat9k_17467.SSA.pkg
+            switch_number ('str', optional): switch number or all. Default is None
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = f"boot system{f' switch {switch_number}' if switch_number else ''} {image_path}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure boot system on {device}. Error:\n{e}")

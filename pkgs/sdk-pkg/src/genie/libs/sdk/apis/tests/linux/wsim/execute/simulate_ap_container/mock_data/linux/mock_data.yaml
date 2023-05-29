@@ -5,13 +5,13 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-  prompt: wsim4ca14d90(config)#
+  prompt: vSTA#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: wsim4ca14d90(config-line)#
+  prompt: vSTA#
 connect:
   commands:
     ? ''
@@ -36,4 +36,4 @@ execute:
       response_type: circular
     term length 0: ''
     term width 0: ''
-  prompt: wsim4ca14d90#
+  prompt: vSTA#

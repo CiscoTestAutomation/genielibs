@@ -6,8 +6,9 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-    no ospfv3 1 ipv6 network point-to-point: "no ospfv3 1 ipv6 network point-to-point\r\
-      \n"
+    no ospfv3 1 ipv6 network point-to-point: "no ospfv3 1 ipv6 network point-to-point\r\n"
+    no ospfv3 1 ipv4 network point-to-point: "no ospfv3 1 ipv4 network point-to-point\r\n"
+    no ospfv3 1 network point-to-point: "no ospfv3 1 network point-to-point\r\n"
   prompt: Router(config)#
 configure_line:
   commands:

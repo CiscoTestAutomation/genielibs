@@ -17,7 +17,7 @@ from genie.libs.clean.utils import (
     verify_num_images_provided,
     remove_string_from_image,
     raise_)
-from genie.metaparser.util.schemaengine import Optional, Required, Any, Or
+from genie.metaparser.util.schemaengine import Optional, Required, Any, Or, ListOf
 
 # pyATS
 from pyats.utils.fileutils import FileUtils
@@ -1742,6 +1742,8 @@ verify_running_image:
         If using verify_md5 then this should be the original image location
         from the linux server.
 
+    ignore_flash (bool, optional): Ignore flash directory names. Default False.
+
     verify_md5 (dict, optional): When this dictionary is defined, the image
             verification will by done by comparing the MD5 hashes of the
             running image against the expected image.
@@ -1764,12 +1766,14 @@ verify_running_image:
     # =================
     VERIFY_MD5 = None
     VERIFY_MD5_TIMEOUT = 60
+    IGNORE_FLASH = False
 
     # ============
     # Stage Schema
     # ============
     schema = {
         'images': list,
+        Optional('ignore_flash'): bool,
         Optional('verify_md5'): {
             'hostname': str,
             Optional('timeout'): int
@@ -1783,7 +1787,7 @@ verify_running_image:
         'verify_running_image'
     ]
 
-    def verify_running_image(self, steps, device, images, verify_md5=VERIFY_MD5):
+    def verify_running_image(self, steps, device, images, verify_md5=VERIFY_MD5, ignore_flash=IGNORE_FLASH):
         if verify_md5:
             # Set default if not provided
             timeout = verify_md5.setdefault('timeout', self.VERIFY_MD5_TIMEOUT)
@@ -1876,7 +1880,7 @@ verify_running_image:
             with steps.start("Verify running image on device {}". \
                                      format(device.name)) as step:
                 try:
-                    device.api.verify_current_image(images=images)
+                    device.api.verify_current_image(images=images, ignore_flash=ignore_flash)
                 except Exception as e:
                     step.failed("Unable to verify running image on device {}\n{}". \
                                 format(device.name, str(e)))
@@ -2793,3 +2797,95 @@ copy_run_to_flash:
                 device.copy(source='running-config', dest=file_name, timeout=timeout, overwrite=overwrite)
             except Exception as e:
                 step.failed("Failed to copy running-config to flash:", from_exception=e)
+
+
+class ConfigureManagement(BaseStage):
+    """This stage configures the management IP settings on the device.
+
+Stage Schema
+------------
+configure_management:
+
+        address ('dict', optional):  Address(es) to configure on the device (syntax: address/mask) (optional)
+            ipv4 ('str') or ('list'): ipv4 address
+            ipv6 ('str') or ('list'): ipv6 address
+
+        gateway: (dict, optional) Gateway address(es) for default route
+            ipv4 ('str') or ('list'): ipv4 gateway address
+            ipv6 ('str') or ('list'): ipv6 gateway address
+
+        vrf (str, optional): VRF to use for management interface
+
+        interface (str, optional): Management interface to use
+
+        routes ('dict', optional):
+           ipv4 (list of 'dict'): ipv4 routes
+              - subnet: (str) subnet including mask
+                next_hop: (str) next_hop for this subnet
+           ipv6 (list of 'dict'): ipv6 routes
+              - subnet: (str) subnet including mask
+                next_hop: (str) next_hop for this subnet
+
+        dhcp_timeout ('int', optional): DHCP timeout in seconds (default: 30)
+
+        protocols ('list', optional): [list of protocols]
+
+        set_hostname (bool): Configure device hostname (default: False)
+
+
+Example
+-------
+configure_management:
+    vrf: Mgmt-vrf
+
+"""
+
+    # =================
+    # Argument Defaults
+    # =================
+
+
+    # ============
+    # Stage Schema
+    # ============
+    schema = {
+        Optional('address'): {
+            Optional('ipv4'): Or(str, list),
+            Optional('ipv6'): Or(str, list)
+        },
+        Optional('gateway'): {
+            Optional('ipv4'): Or(str, list),
+            Optional('ipv6'): Or(str, list)
+        },
+        Optional('vrf'): str,
+        Optional('interface'): str,
+        Optional('routes'): {
+           Optional('ipv4'): ListOf({'subnet': str, 'next_hop': str}),
+           Optional('ipv6'):  ListOf({'subnet': str, 'next_hop': str})
+        },
+        Optional('dhcp_timeout'): int,
+        Optional('protocols'): ListOf(str),
+        Optional('set_hostname'): bool
+    }
+
+    # ==============================
+    # Execution order of Stage steps
+    # ==============================
+    exec_order = [
+        'configure_management'
+    ]
+
+    def configure_management(self, steps, device, **kwargs):
+
+        if 'configure_management' not in dir(device.api):
+            self.passx('No support for configure_management API')
+
+        with steps.start("Configuring device management") as step:
+
+            config_kwargs = {k: v for k, v in kwargs.items() if k in \
+                [k.schema for k in self.schema.keys()]}
+
+            if hasattr(device, 'management') and device.management:
+                device.api.configure_management(**config_kwargs)
+            else:
+                step.passx('No management info for device')

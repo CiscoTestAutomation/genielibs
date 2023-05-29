@@ -12,7 +12,7 @@
 #   Jean-Benoit Aubin  (jeaubin@cisco.com)   - CSG
 #
 # Support:
-#    python-core@cisco.com
+#    pyats-core@cisco.com
 #
 # Version:
 #   v2.1
@@ -45,7 +45,7 @@ CYTHON_CMD	  = compileAll
 # Development pkg requirements
 RELATED_PKGS = genie.libs.health genie.libs.clean genie.libs.conf genie.libs.ops genie.libs.robot genie.libs.sdk
 RELATED_PKGS += genie.libs.filetransferutils
-DEPENDENCIES = restview psutil==5.8.0 Sphinx wheel asynctest pysnmp
+DEPENDENCIES = restview psutil==5.9.2 Sphinx wheel asynctest pysnmp
 DEPENDENCIES += sphinx-rtd-theme==1.1.0 pyftpdlib tftpy\<0.8.1 robotframework
 # cisco-distutils requires Cython 0.29.22
 # aiohttp-swagger 1.0.15 requires jinja2==2.11.2 and markupsafe==1.1.1

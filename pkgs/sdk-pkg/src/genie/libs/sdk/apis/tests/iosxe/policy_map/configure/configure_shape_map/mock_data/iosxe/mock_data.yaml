@@ -1,24 +1,20 @@
 configure:
   commands:
-    bandwidth remaining ratio 20: "bandwidth remaining ratio 20\r\n"
-    class tc7: "class tc7\r\n"
+    class c-dscp0: "class c-dscp0\r\n"
     end:
       new_state: execute
     line console 0:
       new_state: configure_line
     no logging console: ''
-    no service-policy queue2: "queue-limit 30 bytes\r\n"
-    policy-map type queueing queue1: "policy-map type queueing queue1\r\n"
+    policy-map PQ: "policy-map PQ\r\n"
     priority level 1: "priority level 1\r\n"
-    queue-limit 30 bytes: "Bandwidth not allowed with priority\r\n"
-    shape average 2000000000: "shape average 2000000000\r\n"
-  prompt: Startek(config)#
+  prompt: A1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: Startek(config-line)#
+  prompt: A1(config-line)#
 connect:
   commands:
     ? ''
@@ -38,4 +34,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: Startek#
+  prompt: A1#

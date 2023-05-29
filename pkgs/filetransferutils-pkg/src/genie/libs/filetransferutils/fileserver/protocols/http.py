@@ -65,6 +65,7 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             server_dir = pathlib.Path(self.server.directory)
             path = pathlib.Path(self.path.lstrip('/'))
             filepath = server_dir / path
+            log.debug(f'Receiving file {path} to location {server_dir}')
             self.length = int(self.headers['Content-Length'])
             if 'multipart' in self.headers.get('Content-Type', ''):
                 self.receive_multipart(filepath)
@@ -88,6 +89,7 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             server_dir = pathlib.Path(self.server.directory)
             path = pathlib.Path(self.path.lstrip('/'))
             filepath = server_dir / path
+            log.debug(f'Receiving file {path} to location {server_dir}')
             self.length = int(self.headers['Content-Length'])
             # Signal to device that we are ready to receive the file data
             if self.headers.get('Expect', '') == '100-continue':
@@ -107,6 +109,7 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 
     def do_GET(self):
         self.directory = self.server.directory
+        log.debug(f'Sending file {self.path} from location {self.directory}')
         if self.server.auth:
             if self.headers.get(
                     "Authorization") != "Basic " + self.server.auth:

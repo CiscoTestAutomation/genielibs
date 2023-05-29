@@ -147,7 +147,7 @@ class GnmiMessage:
                         )
                     )
                     log.error(banner(
-                        f'Response time: {response_time:.3f} seconds exceeded transaction_time {transaction_time:.3f}',
+                        f'Response time: {response_time} seconds exceeded transaction_time {transaction_time}',
                     ))
                     return
             else:
@@ -1593,7 +1593,7 @@ class GnmiSubscription(ABC, Thread):
                     self.log.error("Unknown error: %s", exc)
             except GnmiSubscription.TransactionTimeExceeded as exc:
                 self.log.error(banner(
-                    f'Response time: {exc.response_time:.3f} seconds exceeded transaction_time {self.transaction_time:.3f}',
+                    f'Response time: {exc.response_time} seconds exceeded transaction_time {self.transaction_time}',
                 ))
                 self.stop()
             except Exception as exc:
@@ -1659,21 +1659,22 @@ class GnmiSubscriptionStream(GnmiSubscription):
                 json_dicts, opfields = self.decode_response(
                         response, self.namespace
                     )
-                timestamp = response.update.timestamp / 10 ** 9
-                delta_time = arrive_time - timestamp
-                if delta_time < 0:
-                    timestamp_dt = datetime.fromtimestamp(timestamp)
-                    ntp_dt = datetime.fromtimestamp(arrive_time)
-                    self.log.error(banner(
-                        f"""Device is out of sync with NTP server {self.ntp_server}
-                        Device time: {timestamp_dt.strftime('%m/%d/%Y %H:%M:%S.%f')}
-                        NTP time: {ntp_dt.strftime('%m/%d/%Y %H:%M:%S.%f')}"""))
-                    self.results.append(False)
-                elif self.transaction_time and delta_time > self.transaction_time:
-                    self.results.append(False)
-                    self.log.error(banner(
-                        f'Response time: {delta_time:.3f} seconds exceeded transaction_time {self.transaction_time:.3f}',
-                    ))
+                if self.transaction_time:
+                    timestamp = response.update.timestamp / 10 ** 9
+                    delta_time = arrive_time - timestamp
+                    if delta_time < 0:
+                        timestamp_dt = datetime.fromtimestamp(timestamp)
+                        ntp_dt = datetime.fromtimestamp(arrive_time)
+                        self.log.error(banner(
+                            f"""Device is out of sync with NTP server {self.ntp_server}
+                            Device time: {timestamp_dt.strftime('%m/%d/%Y %H:%M:%S.%f')}
+                            NTP time: {ntp_dt.strftime('%m/%d/%Y %H:%M:%S.%f')}"""))
+                        self.results.append(False)
+                    elif delta_time > self.transaction_time:
+                        self.results.append(False)
+                        self.log.error(banner(
+                            f'Response time: {delta_time} seconds exceeded transaction_time {self.transaction_time}',
+                        ))
                 if self.returns:
                     self.log.info('Processing returns...')
                     self.process_opfields(response)
@@ -1769,7 +1770,7 @@ class GnmiSubscriptionPoll(GnmiSubscription):
             if (self.transaction_time and t and delta_time > self.transaction_time):
                 self.results.append(False)
                 self.log.error(banner(
-                    f'Response time: {delta_time:.3f} seconds exceeded transaction_time {self.transaction_time:.3f}',
+                    f'Response time: {delta_time} seconds exceeded transaction_time {self.transaction_time}',
                 ))
             if response.HasField('sync_response'):
                 self.log.info('Subscribe sync_response')

@@ -413,6 +413,10 @@ class TriggerIssu(IssuTemplate):
         except Exception as e:
             self.failed('Failed to successfully prepare the device for ISSU',
                         from_exception=e, goto=['next_tc'])
+        #Verify results before proceeding with following test
+        for stp in steps.details:
+            if stp.result.name != 'passed':
+                self.failed('Failed to successfully prepare the device for ISSU')
 
     @aetest.test
     def perform_issu(self, uut, abstract, steps):
@@ -437,6 +441,10 @@ class TriggerIssu(IssuTemplate):
         except Exception as e:
             self.failed('Failed to successfully perform ISSU', from_exception=e,
                          goto=['next_tc'])
+        #Verify results before proceeding with following test
+        for stp in steps.details:
+            if stp.result.name != 'passed':
+                self.failed('Failed to successfully perform ISSU')
 
     @aetest.test
     def verify_issu(self, uut, abstract, steps):
@@ -459,7 +467,10 @@ class TriggerIssu(IssuTemplate):
         except Exception as e:
             self.failed('Failed to verify the '
                         "platform", from_exception=e)
-
+        #Verify results before proceeding with following test
+        for stp in steps.details:
+            if stp.result.name != 'passed':
+                self.failed('Failed to verify the platform')
         # Verify uptime
         with steps.start("Verify if system uptime is reset") as step:
             used_time = self.timeout.max_time - (self.timeout.timeout - time.time())

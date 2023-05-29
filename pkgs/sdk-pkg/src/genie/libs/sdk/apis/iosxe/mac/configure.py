@@ -87,6 +87,7 @@ def config_mac_learning(device, bridge_domain):
         )
     except SubCommandFailure:
         raise SubCommandFailure(
+            
             "Could not configure mac learning under bridge domain {bridge_domain}".format(
                 bridge_domain=bridge_domain
             )
@@ -117,22 +118,51 @@ def unconfig_mac_learning(device, bridge_domain):
                 bridge_domain=bridge_domain
             )
         )
-def configure_mac_address_table_aging(device, aging_time):
-    """ Config mac-aging time on device
+
+def configure_mac_address_table_aging(device, aging_time, mac_type=None, vlan_id=None):
+    """ Configure mac-address-table aging-time  on device
         Args:
             device (`obj`): device object
             aging_time (`int`): mac aging-time
+            mac_type('str',optional): vlan or router_mac
+            vlan_id ('int',optional): <1-4094>  VLAN id
         Return:
             None
         Raises:
             SubCommandFailure: Failed configuring device
     """
+    cmd = f"mac-address-table aging-time {aging_time}"
+    if mac_type == "vlan":
+        cmd+=f" vlan {vlan_id}"
+    else:
+        cmd+=f" routed-mac"
     try:
-        device.configure(f'mac address-table aging-time {aging_time}')
-    except SubCommandFailure:
-        raise SubCommandFailure(
-            "Could not configure aging time"
-            ) 
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure("Could not configure mac-address-table aging-time")
+
+def unconfigure_mac_address_table_aging(device, aging_time, mac_type=None,  vlan_id=None):
+    """ Unconfigure mac-address-table aging-time on device
+        Args:
+            device (`obj`): device object
+            aging_time (`int`): mac aging-time
+            mac_type('str',optional): vlan or router_mac
+            vlan_id ('int',optional): <1-4094>  VLAN id
+        Return:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring device
+    """
+    cmd = f"no mac-address-table aging-time {aging_time}"
+    if mac_type == "vlan":
+        cmd+=f" vlan {vlan_id}"
+    else:
+        cmd+=f" routed-mac"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure("Could not unconfigure mac-address-table aging-time")
+       
 
 def configure_mac_global_address_table_static(device, mac, vlan, interface=None):
     """Configure address-table static under global mac on this device
@@ -216,9 +246,15 @@ def unconfigure_mac_global_address_table_notification_change(device, change_opti
     """
 
     if change_option.lower()== "history-size":
-        cmd = f'no mac address-table notification change history-size {size}'
+        if size:
+            cmd = f'no mac address-table notification change history-size {size}'
+        else:
+            cmd = 'no mac address-table notification change history-size'
     elif change_option.lower()== "interval":
-        cmd = f'no mac address-table notification change interval {interval}'
+        if interval:
+            cmd = f'no mac address-table notification change interval {interval}'
+        else:
+            cmd = 'no mac address-table notification change interval'
     else:
         cmd = 'no mac address-table notification change'
     try:
@@ -287,9 +323,15 @@ def configure_default_mac_global_address_table_notification_change(device,change
                 SubCommandFailure
     """
     if change_option.lower()== "history-size":
-        cmd = f'default mac address-table notification change history-size {size}'
+        if size:
+            cmd = f'default mac address-table notification change history-size {size}'
+        else:
+            cmd = 'default mac address-table notification change history-size'
     elif change_option.lower()== "interval":
-        cmd = f'default mac address-table notification change interval {interval}'
+        if interval:
+            cmd = f'default mac address-table notification change interval {interval}'
+        else:
+            cmd = 'default mac address-table notification change interval'
     else:
         cmd = 'default mac address-table notification change'
     try:
@@ -438,3 +480,83 @@ def unconfigure_mac_address_table_control_packet_learn(device):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not unconfigure the mac address-table control-packet-learn on device {device.name}. Error:\n{e}")
+
+def configure_mac_address_change_interval(device, interval_number):
+    """mac-address notification change interval on device
+      Args:
+            device ('obj'): device object
+            interval_number('int'): interval number
+           
+       Return:
+            None
+       Raises:
+            SubCommandFailure
+    """
+
+    cmd=[f"mac-address notification change interval {interval_number}"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure 'mac-address notification change interval"
+            'Error:{e}'.format(e=e) 
+        )
+
+def unconfigure_mac_address_change_interval(device):
+    """no mac-address notification change interval on device
+      Args:
+        device ('obj'): device object
+                 
+      Return:
+        None
+      Raises:
+        SubCommandFailure
+    """
+    cmd=[f"no mac-address notification change interval"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfigure mac address table notification change interval"
+            'Error:{e}'.format(e=e) 
+        )
+
+def unconfigure_mac_address_table_aging_time_vlan(device, time, vlan_id):
+    """no mac address-table aging-time vlan on device
+      Args:
+            device ('obj'): device object
+            time(int): time
+            vlan_id(int): vlan_number
+       Return:
+            None
+       Raises:
+            SubCommandFailure
+    """
+    cmd=[f"no mac-address-table aging-time {time} vlan {vlan_id}"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfigure mac address table agin time vlan"
+            'Error:{e}'.format(e=e) 
+        )
+
+def configure_interface_default_snmp(device, interface ,type):
+    """ Configure static mac address on interface
+    Args:
+        device ('obj'): Device object
+        Interface ('str'): Interface to configure
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    configs = [ f'interface {interface}',
+                f'default snmp trap mac-notification change {type}']
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not configure mac address on interface"
+        )

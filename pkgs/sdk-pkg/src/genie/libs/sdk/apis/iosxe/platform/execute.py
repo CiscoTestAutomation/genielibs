@@ -1335,3 +1335,33 @@ def execute_clear_redundancy_history(device):
             "Could not execute clear redundancy history on {device}. Error:\n{error}"
                 .format(device=device, error=e)
         )
+
+def execute_set_platform_hardware_fed_qos(device, mode, qos_type, interface, switch=None, oq_id=None, counter_set=None):
+    """ Execute Fed qos interface on device
+        Args:
+            device ('obj'): Device object
+            mode('str'): Switch mode. Ex: active, standby, 3
+            qos_type('str'): multicast or port-mirror
+            interface('str'): interface number
+            switch('str', optional): Configure when switch is stack. Default is None
+            oq_id('str', optional): multicast oq id. Default is None
+            counter_set('str', optional): attach or detach counter set. Default is None
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed to execute Fed qos interface on device
+    """
+
+    cmd = f'set platform hardware fed'
+    if switch:
+        cmd += f' switch {mode} qos {qos_type} interface {interface}'
+    else:
+        cmd += f' {mode} qos {qos_type} interface {interface}'
+    if oq_id:
+        cmd += f' oq_id {oq_id}{f" {counter_set}" if counter_set else ""}'
+
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not execute Fed qos interface on device, Error: {e}')
+  

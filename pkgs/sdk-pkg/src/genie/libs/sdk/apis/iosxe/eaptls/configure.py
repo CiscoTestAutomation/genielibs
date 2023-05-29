@@ -305,29 +305,21 @@ def unconfigure_crypto_key(device, label_name):
         Args:
             device ('obj'): device to use
             label_name ('str'): Label name
-
         Returns:
             None
-
         Raises:
             SubCommandFailure
     """
-    logger.debug("Unconfigure Crypto Key on device")
-
     dialog = Dialog([
-    Statement(pattern=r'.*Do you really want to remove these keys\? \[yes/no\]\:.*',
+    Statement(pattern=r'.*Do you really want to remove these keys\? \[yes\/no\]\:.*',
                         action='sendline(y)',
-                        loop_continue=True,
+                        loop_continue=False,
                         continue_timer=False)
     ])
-
     try:
-       device.configure(f"crypto key zeroize rsa {label_name}", reply=dialog, timeout=200)
+        device.configure(f"crypto key zeroize rsa {label_name}", reply=dialog, timeout=200)
     except SubCommandFailure as e:
-        raise SubCommandFailure(
-            "Could not unconfigure Crypto Key from device "
-            "Error: {error}".format(error=e)
-            )
+        raise SubCommandFailure(f"Could not unconfigure Crypto Key from device. Error:\n{e}")
 
 def crypto_pki_server_request(device, server_name, retrive_method, certificate_format, certificate):
     """ Gets grant ID from device

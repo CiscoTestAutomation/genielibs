@@ -18,8 +18,8 @@ class TestUnconfigureLoggingBuffered(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: c9300
-            type: c9300
+            platform: cat9k
+            type: router
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['stack3-nyquist-1']
@@ -30,6 +30,6 @@ class TestUnconfigureLoggingBuffered(unittest.TestCase):
         )
 
     def test_unconfigure_logging_buffered(self):
-        result = unconfigure_logging_buffered(self.device)
+        result = unconfigure_logging_buffered(self.device, 'alerts')
         expected_output = None
         self.assertEqual(result, expected_output)

@@ -1206,3 +1206,90 @@ def configure_flow_record_collect_counter(device, record_name, counter_type, lay
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not configure flow record {record_name} collect counter. Error: {e}')
+
+def configure_ipv6_flow_monitor(device, interface, monitor_name,direction):
+    """ configure ipv6 flow monitor
+        Args:
+            device (`obj`): Device object
+            interface ('str'): interface name to ipv6
+            monitor_name ('str'): monitor name
+            direction('str'):input or output
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [f"interface {interface}".format(interface=interface),
+           f"ipv6 flow monitor {monitor_name} {direction}".format(monitor_name=monitor_name,direction=direction)]
+    
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure ipv6 flow monitor. Error:\n{error}".format(
+                device=device, interface=interface, error=e
+            )
+        )
+
+def unconfigure_ipv6_flow_monitor(device, interface, monitor_name,direction):
+    """ unconfigure ipv6 flow monitor
+        Args:
+            device (`obj`): Device object
+            interface ('str'): interface name to ipv6
+            monitor_name ('str'): monitor name 
+            direction('str'):input or output
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [f"interface {interface}".format(interface=interface),
+           f"ipv6 flow monitor {monitor_name} {direction}".format(monitor_name=monitor_name,direction=direction)]
+    
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfigure ipv6 flow monitor. Error:\n{error}".format(
+                device=device, interface=interface, error=e
+            )
+        )
+
+def configure_flow_exporter(device, exporter_name, dest_ip=None, udp_port=None, dscp=None, 
+    ttl=None, data_timeout=None, table_type=None, table_timeout=None):
+    """ Configure Flow Exporter on Device
+        Args:
+            device ('obj'): Device object
+            exporter_name ('str'): Flow exporter name
+            dest_ip ('str', optional): Destination IP. Default is None
+            udp_port ('str', optional): UDP port. Default is None
+            dscp ('str', optional): dscp value. Default is None
+            ttl ('str', optional): ttl value. Default is None
+            data_timeout ('str', optional): template data timeout value. Default is None
+            table_type ('str', optional): option table type. Default is None
+            table_timeout ('str', optional): option table timeout value. Default is None
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring flow exporter
+    """
+
+    config = [f'flow exporter {exporter_name}']
+    if dest_ip:
+        config.append(f'destination {dest_ip}')
+    if udp_port:
+        config.append(f'transport udp {udp_port}')
+    if dscp:
+        config.append(f'dscp {dscp}')
+    if ttl:
+        config.append(f'ttl {ttl}')
+    if data_timeout:
+        config.append(f'template data timeout {data_timeout}')
+    if table_type:
+        config.append(f'option {table_type}{f" timeout {table_timeout}" if table_timeout else ""}')
+    
+    try:
+        device.configure(config)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configure flow exporter {exporter_name}. Error\n{e}')

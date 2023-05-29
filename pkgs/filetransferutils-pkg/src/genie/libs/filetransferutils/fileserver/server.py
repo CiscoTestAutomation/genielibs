@@ -96,10 +96,13 @@ class FileServer:
         # Log address of server
         address = self.server_info.get('address', '0.0.0.0')
         port = self.server_info.get('port')
+        path = self.server_info.get('path', '/')
         if port:
             address += ':%s' % port
-        logger.info('%s File Server started on %s' %
-                    (self.protocol.upper(), address))
+        logger.info('%s File Server%s started on %s with path %s' %
+                    (self.protocol.upper(),
+                    f' {self.name}' if self.name else '',
+                    address, path))
 
         # Update testbed with new server info
         if self.testbed is not None and self.name:

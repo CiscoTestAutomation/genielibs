@@ -970,3 +970,36 @@ def unconfigure_vlan_group_list(device, group_name, vlan):
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not unconfigure vlan group list. Error:\n{e}')
+
+def configure_default_vtp_version(device):
+    """ Configure default vtp version
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f'default vtp version'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configure default vtp version. Error:\n{e}')
+    
+def configure_vlan_name(device,vlan,name):
+    """ Configure vlan name
+        Args:
+            device ('obj'): device to use
+            vlan ('str): vlan number 
+            name ('str): name of the vlan
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [f'vlan {vlan}',f'name {name}']
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configure the vlan name. Error:\n{e}')
+

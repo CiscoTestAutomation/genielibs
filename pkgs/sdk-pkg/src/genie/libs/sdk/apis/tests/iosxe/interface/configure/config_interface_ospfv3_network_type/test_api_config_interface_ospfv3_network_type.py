@@ -29,7 +29,17 @@ class TestConfigInterfaceOspfv3NetworkType(unittest.TestCase):
             init_exec_commands=[]
         )
 
-    def test_config_interface_ospfv3_network_type(self):
+    def test_config_interface_ospfv3_network_type_ipv6(self):
         result = config_interface_ospfv3_network_type(self.device, 'vmi1', '1', 'point-to-point', 'ipv6')
+        expected_output = None
+        self.assertEqual(result, expected_output)
+
+    def test_config_interface_ospfv3_network_type_ipv4(self):
+        result = config_interface_ospfv3_network_type(self.device, 'vmi1', '1', 'point-to-point', 'ipv4')
+        expected_output = None
+        self.assertEqual(result, expected_output)
+
+    def test_config_interface_ospfv3_network_type_both(self):
+        result = config_interface_ospfv3_network_type(self.device, 'vmi1', '1', 'point-to-point', 'both')
         expected_output = None
         self.assertEqual(result, expected_output)

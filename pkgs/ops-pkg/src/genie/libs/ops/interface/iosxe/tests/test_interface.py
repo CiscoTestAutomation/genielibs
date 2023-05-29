@@ -15,9 +15,11 @@ from genie.libs.parser.iosxe.show_interface import ShowInterfaces, \
                                         ShowIpInterface,  \
                                         ShowIpv6Interface, \
                                         ShowInterfacesAccounting
-                                        
+
 from genie.libs.parser.iosxe.show_vrf import ShowVrf
 from genie.libs.parser.iosxe.show_lag import ShowEtherchannelSummary
+
+from pyats.datastructures import AttrDict
 
 outputs = {}
 outputs['show interfaces GigabitEthernet1/0/1'] = InterfaceOutput.ShowInterfaces_gi1
@@ -40,6 +42,7 @@ class test_interface(unittest.TestCase):
         self.device.os = 'iosxe'
         self.device.mapping={}
         self.device.mapping['cli']='cli'
+        self.device.custom = AttrDict(abstraction=AttrDict(order=['os', 'platform']))
         # Give the device as a connection type
         # This is done in order to call the parser on the output provided
         self.device.connectionmgr.connections['cli'] = self.device
@@ -114,7 +117,7 @@ class test_interface(unittest.TestCase):
         self.device.execute = Mock()
         self.device.execute.side_effect = mapper
         # Learn the feature
-        intf.learn()        
+        intf.learn()
 
         # Check specific attribute values
         # info - vrf
@@ -141,11 +144,11 @@ class test_interface(unittest.TestCase):
         intf.learn(custom=custom)
 
         # Delete missing specific attribute values
-        outputs[
-            'show interfaces accounting'] = InterfaceOutput.ShowInterfacesAccounting_all
+        outputs['show interfaces accounting'] = InterfaceOutput.ShowInterfacesAccounting_all
         outputs['show ip interface'] = InterfaceOutput.ShowIpInterfaces_all
         expect_dict = deepcopy(InterfaceOutput.InterfaceOpsOutput_info)
         del(expect_dict['GigabitEthernet1/0/1']['ipv4'])
+        del(expect_dict['GigabitEthernet1/0/1']['accounting'])
         del(expect_dict['GigabitEthernet1/0/2']['accounting'])
         # Verify Ops was created successfully
         self.assertDictEqual(intf.info, expect_dict)

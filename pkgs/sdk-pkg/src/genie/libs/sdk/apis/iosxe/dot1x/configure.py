@@ -1884,3 +1884,112 @@ def unconfigure_authentication_open(device, interface):
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure authentication open. Error:\n{e}")
+
+
+def configure_access_session_acl_default_passthrough(device):
+    """ Configure access-session acl deafult passthrough
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raise:
+            SubCommandFailure: Failed to configure access-session acl default passthrough on device
+    """
+
+    cmd = ["access-session acl default passthrough"]
+    try:
+        device.configure(cmd)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure access-session acl default passthrough on device. Error:\n{e}"
+        )
+
+def unconfigure_access_session_acl_default_passthrough(device):
+    """ Unconfigures access-session acl default passthrough
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raise:
+            SubCommandFailure: Failed to unconfigure access-session acl default passthrough on device
+    """
+
+    cmd = ["no access-session acl default passthrough"]
+    try:
+        device.configure(cmd)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure access-session acl default passthrough on device. Error:\n{e}"
+        )
+
+def configure_access_session_macmove_deny(device):
+    """Configure access-session mac-move deny
+    Args:
+        device ('obj'): Device object
+    Return:
+        None
+    Raise:
+        SubCommandFailure
+    """
+    cmd = [f'access-session mac-move deny']
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure access-session. Error:\n{e}")
+
+def unconfigure_access_session_macmove_deny(device):
+    """unconfigure access-session mac-move deny
+    Args:
+        device ('obj'): Device object
+    Return:
+        None
+    Raise:
+        SubCommandFailure
+    """
+    cmd = [f'no access-session mac-move deny']
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure access-session. Error:\n{e}")
+
+def configure_access_session_macmove_deny_uncontrolled(device):
+    """Configure access-session mac-move deny-uncontrolled
+    Args:
+        device ('obj'): Device object
+    Return:
+        None
+    Raise:
+        SubCommandFailure
+    """
+    dialog = Dialog(
+        [
+            Statement(
+                pattern=r".*Do you wish to continue\? \[yes\]:",
+                action='sendline(yes)',
+                loop_continue=False,
+                continue_timer=False
+            )
+        ]
+    )
+    cmd = [f'access-session mac-move deny-uncontrolled']
+    try:
+        device.configure(cmd, reply=dialog)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure access-session. Error:\n{e}")
+
+def unconfigure_access_session_macmove_deny_uncontrolled(device):
+    """unconfigure access-session mac-move deny-uncontrolled
+    Args:
+        device ('obj'): Device object
+    Return:
+        None
+    Raise:
+        SubCommandFailure
+    """
+    cmd = [f'no access-session mac-move deny-uncontrolled']
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure access-session. Error:\n{e}")

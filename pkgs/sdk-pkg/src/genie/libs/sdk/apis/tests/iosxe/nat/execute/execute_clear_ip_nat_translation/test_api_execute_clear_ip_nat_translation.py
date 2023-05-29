@@ -30,6 +30,36 @@ class TestExecuteClearIpNatTranslation(unittest.TestCase):
         )
 
     def test_execute_clear_ip_nat_translation(self):
-        result = execute_clear_ip_nat_translation(self.device, 'GigabitEthernet1/0/3', False, False, '192.168.121.20', '10.10.10.1', '23', '23', '20.20.20.1', '192.168.21.20', '8090', '8090')
-        expected_output = '$92.168.121.20 23 outside 20.20.20.1 8090 192.168.21.20 8090'
+        result = execute_clear_ip_nat_translation(self.device, False, False, False, '1.1.1.1', '2.2.2.2', None, None, None, None, None, None)
+        expected_output = '%Translation not found'
+        self.assertEqual(result, expected_output)
+
+    def test_execute_clear_ip_nat_translation_1(self):
+        result = execute_clear_ip_nat_translation(self.device, False, False, True, None, None, None, None, None, None, None, None)
+        expected_output = ''
+        self.assertEqual(result, expected_output)
+
+    def test_execute_clear_ip_nat_translation_2(self):
+        result = execute_clear_ip_nat_translation(self.device, False, False, True, '1.1.1.1', '2.2.2.2', None, None, None, None, None, None)
+        expected_output = '%Translation not found'
+        self.assertEqual(result, expected_output)
+
+    def test_execute_clear_ip_nat_translation_3(self):
+        result = execute_clear_ip_nat_translation(self.device, False, False, False, '1.1.1.1', '2.2.2.2', None, None, '3.3.3.3', '5.5.5.5', None, None)
+        expected_output = '%Translation not found'
+        self.assertEqual(result, expected_output)
+
+    def test_execute_clear_ip_nat_translation_4(self):
+        result = execute_clear_ip_nat_translation(self.device, False, True, False, '1.1.1.1', '2.2.2.2', 456, 789, '3.3.3.3', '5.5.5.5', 345, 987)
+        expected_output = '%Translation not found'
+        self.assertEqual(result, expected_output)
+
+    def test_execute_clear_ip_nat_translation_5(self):
+        result = execute_clear_ip_nat_translation(self.device, True, False, False, '1.1.1.1', '2.2.2.2', 456, 789, None, None, None, None)
+        expected_output = '%Translation not found'
+        self.assertEqual(result, expected_output)
+
+    def test_execute_clear_ip_nat_translation_6(self):
+        result = execute_clear_ip_nat_translation(self.device, False, True, False, '1.1.1.1', '2.2.2.2', 456, 789, None, None, None, None)
+        expected_output = '%Translation not found'
         self.assertEqual(result, expected_output)

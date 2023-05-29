@@ -1,3 +1,4 @@
+import os
 import unittest
 from pyats.topology import loader
 from genie.libs.sdk.apis.iosxe.mac.configure import configure_mac_address_table_aging
@@ -7,21 +8,21 @@ class TestConfigureMacAddressTableAging(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        testbed = """
+        testbed = f"""
         devices:
-          Switch:
+          T1-9300-SW1:
             connections:
               defaults:
                 class: unicon.Unicon
               a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
+                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: cat9k
-            type: c9300
+            platform: c9500
+            type: c9500
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Switch']
+        self.device = self.testbed.devices['T1-9300-SW1']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -29,6 +30,6 @@ class TestConfigureMacAddressTableAging(unittest.TestCase):
         )
 
     def test_configure_mac_address_table_aging(self):
-        result = configure_mac_address_table_aging(device=self.device, aging_time=1800)
+        result = configure_mac_address_table_aging(self.device, 30, 'vlan', 201)
         expected_output = None
         self.assertEqual(result, expected_output)

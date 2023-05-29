@@ -9,6 +9,88 @@ from pyats.utils.secret_strings import to_plaintext
 log = logging.getLogger(__name__)
 
 
+def configure_management_credentials(device, credentials='default', username=None, password=None):
+    ''' Configure management credentials.
+
+    Configures aaa new model with login and exec default to local authentication.
+    Adds username and password based on the credentials specified in the testbed.
+
+    Args:
+        device ('obj'): device object
+        credentials ('str'): name of the credentials from the testbed. Default: 'default'
+        username ('str'): username to configure, overrides username from credentials
+        password ('str'): password to configure, overrides password from credentials
+    '''
+    try:
+        creds = device.credentials
+    except AttributeError:
+        creds = {}
+
+    username = username or creds.get(credentials, {}).get('username')
+    password = password or to_plaintext(creds.get(credentials, {}).get('password', ''))
+
+    config = []
+    if username and password:
+        config.extend([
+            'aaa new-model',
+            'aaa authentication login default local',
+            'aaa authorization exec default local',
+            f'username {username} password {password}'
+        ])
+
+    if config:
+        device.configure(config)
+
+
+def configure_management_vrf(device, vrf=None, protocols=None):
+    ''' Configure management VRF on the device if it does not exist.
+
+    Executes 'show vrf' to check if the VRF exits, if it does not exist,
+    configures the VRF. Configures both ipv4 and ipv6 protocols by default.
+
+    Args:
+        device ('obj'): device object
+        vrf ('str'): VRF name
+        protocols ('list'): List of protocols, default: ['ipv4', 'ipv6']
+
+    Returns:
+        None
+
+    '''
+
+    try:
+        management = device.management
+    except AttributeError:
+        management = {}
+
+    vrf = vrf or management.get('vrf')
+
+    if not vrf:
+        return
+
+    protocols = protocols or ['ipv4', 'ipv6']
+
+    try:
+        vrfs = device.parse('show vrf')
+    except Exception:
+        vrfs = {}
+
+    vrf_config = []
+
+    if vrf not in vrfs.get('vrf', {}):
+        vrf_config.append(f'vrf definition {vrf}')
+
+    for p in protocols:
+        if p not in vrfs.get('vrf', {}).get(vrf, {}).get('protocols', []):
+            vrf_config.extend([
+                f'address-family {p}',
+                'exit-address-family'
+            ])
+
+    if vrf_config:
+        device.configure(vrf_config)
+
+
 def configure_management_ip(device,
                             address=None,
                             interface=None,
@@ -100,6 +182,8 @@ def configure_management_ip(device,
 
     interface = interface or management.get('interface')
     vrf = vrf or management.get('vrf')
+
+    device.api.configure_management_vrf(vrf)
 
     if interface:
         interface_config = [f'interface {interface}']
@@ -406,24 +490,10 @@ def configure_management_ssh(device,
     Returns:
         None
     '''
-
-    try:
-        creds = device.credentials
-    except AttributeError:
-        creds = {}
-
     ssh_config = []
 
-    username = username or creds.get(credentials, {}).get('username')
-    password = password or to_plaintext(creds.get(credentials, {}).get('password', ''))
-
-    if username and password:
-        ssh_config.extend([
-            'aaa new-model',
-            'aaa authentication login default local',
-            'aaa authorization exec default local',
-            f'username {username} password {password}'
-        ])
+    device.api.configure_management_credentials(credentials,
+        username=username, password=password)
 
     if domain_name:
         ssh_config.append(f'ip domain name {domain_name}')
@@ -459,25 +529,8 @@ def configure_management_telnet(device,
     Returns:
         None
     '''
-    try:
-        creds = device.credentials
-    except AttributeError:
-        creds = {}
-
-    telnet_config = []
-
-    username = username or creds.get(credentials, {}).get('username')
-    password = password or to_plaintext(creds.get(credentials, {}).get('password', ''))
-
-    if username and password:
-        telnet_config.extend([
-            'aaa new-model',
-            'aaa authentication login default local',
-            'aaa authorization exec default local',
-            f'username {username} password {password}'
-        ])
-
-    device.configure(telnet_config)
+    device.api.configure_management_credentials(credentials,
+        username=username, password=password)
 
     device.api.configure_management_vty_lines(
         authentication='default',
@@ -549,12 +602,6 @@ def configure_management_netconf(device,
     Returns:
         None
     '''
-
-    try:
-        management = device.management
-    except AttributeError:
-        management = {}
-
     device.api.configure_management_ssh(
         credentials=credentials,
         username=username,
@@ -611,7 +658,8 @@ def configure_management(device,
                          interface=None,
                          routes=None,
                          dhcp_timeout=30,
-                         protocols=None):
+                         protocols=None,
+                         set_hostname=False):
     ''' Configure management connectivity on the device.
 
     Arguments can be provided with the management connectivity information. By default,
@@ -655,8 +703,9 @@ def configure_management(device,
            ipv6 (list of 'dict'): ipv6 routes
               - subnet: (str) subnet including mask
                 next_hop: (str) next_hop for this subnet
-        dchp_timeout ('int', optional): DHCP timeout in seconds (default: 30)
+        dhcp_timeout ('int', optional): DHCP timeout in seconds (default: 30)
         protocols ('list', optional): [list of protocols]
+        set_hostname (bool): Configure hostname on the device (default: False)
     '''
     try:
         management = device.management
@@ -668,6 +717,11 @@ def configure_management(device,
     interface = interface or management.get('interface')
     routes = routes or management.get('routes')
     vrf = vrf or management.get('vrf')
+
+    if set_hostname:
+        device.configure(f'hostname {device.name}')
+
+    device.api.configure_management_vrf(vrf)
 
     device.api.configure_management_ip(
         interface=interface,

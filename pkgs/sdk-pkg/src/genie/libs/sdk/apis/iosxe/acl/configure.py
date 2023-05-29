@@ -1765,3 +1765,183 @@ def delete_mac_acl(device, name):
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to delete mac acl on the device {device.name}. Error:\n{e}")
+
+def unconfigure_mac_access_group_mac_acl_in_out(device, interface_id, acl_name, acl_direction):
+    """ unconfigures mac access group ACL in/out
+        Args:
+            device ('obj'): device to use
+            interface_id ('str'): interface on which mss needs to be configured.
+            acl_name ('str'): define the acl name
+            acl_direction ('str'): acl_direction is (in / out)
+    """
+    cmd = [
+        f"interface {interface_id}",
+        f"no mac access-group {acl_name} {acl_direction}"
+            ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+        "Failed to unconfigure mac access group ACL in/out on the device {dev}. Error:\n{error}".format(
+                dev=device.name,
+                error=e,
+        )
+    )
+
+def configure_ip_acl(device, name, action, source, dest):
+    """ Configuring ip ACL
+        Example: ip access-lists extended ip_acl
+                permit ip host 100.1.1.2 host 150.1.1.2
+        Args:
+            device ('obj'): device to use
+            name ('str'): name of the ACL to which the entry belongs
+            action ('str'): (permit | deny) permits or denies Layer 2 traffic
+            source ('str'): defines a source ip address (e.g. 100.1.1.2)
+            dest ('str'): defines a destination ip address (e.g.150.1.1.2)
+        Returns:
+            None
+        Raises: 
+            SubCommandFailure
+    """
+    action = action.strip().lower()
+    if action not in ('permit', 'deny'):
+        log.info("Invalid action type")
+    config = [f"ip access-list extended {name}",
+              f"{action} ip host {source} host {dest}"]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure ip acl on the device {device.name}. Error:\n{e}")
+
+def delete_configure_ip_acl(device, name, action, source, dest):
+    """ delete Configuring ip ACL
+        Example: ip access-lists extended ip_acl
+                no permit ip host 100.1.1.2 host 150.1.1.2
+        Args:
+            device ('obj'): device to use
+            name ('str'): name of the ACL to which the entry belongs
+            action ('str'): (permit | deny) permits or denies Layer 2 traffic
+            source ('str'): defines a source ip address (e.g. 100.1.1.2)
+            dest ('str'): defines a destination ip address (e.g.150.1.1.2)
+        Returns:
+            None
+        Raises: 
+            SubCommandFailure
+    """
+    action = action.strip().lower()
+    if action not in ('permit', 'deny'):
+        log.info("Invalid action type")
+    config = [f"ip access-list extended {name}",
+              f"no {action} ip host {source} host {dest}"]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to delete configure ip acl on the device {device.name}. Error:\n{e}")
+
+def delete_configure_ipv6_acl(device, name, action, source, dest):
+    """ delete Configuring ip ACL
+        Example: ipv6 access-lists  ip_acl
+                no permit ip host 2001::1 host 3001::1
+        Args:
+            device ('obj'): device to use
+            name ('str'): name of the ACL to which the entry belongs
+            action ('str'): (permit | deny) permits or denies Layer 2 traffic
+            source ('str'): (src-ip-addr) defines a source ip address (e.g. 2001::1)
+            dest ('str'): (dst-ip-addr) defines a destination ip address (e.g.3001::1)
+        Returns:
+            None
+        Raises: 
+            SubCommandFailure
+    """
+    action = action.strip().lower()
+    if action not in ('permit', 'deny'):
+        log.info("Invalid action type")
+    config = [f"ipv6 access-list {name}",
+              f"no {action} ipv6 host {source} host {dest}"]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to delete configure ip acl on the device {device.name}. Error:\n{e}")
+
+def unconfigure_access_map_match_ip_address_action_forward(device, vlan_access_name):
+    """ unconfiguring access map match ip address action forward 
+        Args:
+            device ('obj'): device to use
+            vlan_access_name ('str'): name of vlan to access 
+        Returns:
+            None
+        Raises: 
+            SubCommandFailure
+    """
+    cmd = f"no vlan access-map {vlan_access_name}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure access map match ip address action forward on the device {device.name}. Error:\n{e}"
+        )
+
+def unconfigure_filter_vlan_list(device, vlan_access_name, vlan_id):
+    """ unconfiguring vlan filter vlan-list
+        Args:
+            device ('obj'): device to use
+            vlan_access_name ('str'): name of vlan to access 
+            vlan_id ('str'): vlan id for vlan list 
+        Returns:
+            None
+        Raises: 
+            SubCommandFailure
+    """
+    cmd = f"vlan filter {vlan_access_name} vlan-list {vlan_id}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure vlan filter vlan-list on the device {device.name}. Error:\n{e}"
+        )
+
+
+
+def configure_extended_acl(device, acl_name, permission, protocol, src_ip, dst_ip, sequence_num=None, 
+                           src_wildcard=None, dst_wildcard=None, match=[]):
+    """ Configure extended ACL on device
+        Args:
+            device ('obj'): device object
+            acl_name ('str'): acl name
+            permission ('str'): permit | deny
+            protocol ('str'): protocol name
+            src_ip ('str'): source ip
+            dst_ip ('str'): destination ip
+            sequence_num ('str', optional): specific sequence number. Default value is None
+            src_wildcard ('str', optional): source wildcard, default value is None
+            dst_wildcard ('str', optional): destination wildcard, default value is None
+            match ('list', optional): match list with each dictionary contais match_criteria and value
+                Ex: [
+                    {
+                        'match_criteria': 'range',
+                        'value': '100 500'
+                    },
+                    {
+                        'match_criteria': 'precedence',
+                        'value': '4'
+                    }
+                ]
+        Returns:
+            config
+        Raises:
+            SubCommandFailure: Failed to configure extended access-list
+    """
+
+    config = [f'ip access-list extended {acl_name}']
+
+    cmd = f'{f"{sequence_num} " if sequence_num else ""}{permission} {protocol} {src_ip}'\
+              f'{f" {src_wildcard}" if src_wildcard else ""} {dst_ip}{f" {dst_wildcard}" if dst_wildcard else ""}'
+    try:
+        for each_match in match:
+            if 'match_criteria' in each_match and 'value' in each_match:
+                cmd += f" {each_match['match_criteria']} {each_match['value']}"
+        config.append(cmd)
+        device.configure(config)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure extended access-list. Error:\n{e}")

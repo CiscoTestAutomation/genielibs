@@ -906,6 +906,30 @@ def configure_default_vxlan(device, vrf_name, address_family, multicast_group_ad
         raise SubCommandFailure(
             f'Could not configure mdt default vxlan under vrf definition on device. Error:\n{e}')
 
+
+def unconfigure_default_vxlan(device, vrf_name, address_family, multicast_group_address):
+
+    """ Unconfigure mdt default in vxlan
+        Args:
+            device ('obj'): Device object
+            vrf_name ('str'): name of the vrf
+            address_family ('str'):  mention the address-family.
+            multicast_group_address ('str'): vxlan multicast group address
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring default vxlan
+    """
+    confg = [f'vrf definition {vrf_name}',
+             f'address-family {address_family}',
+             f'no mdt default vxlan  {multicast_group_address}']
+    try:
+        device.configure(confg)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Could not unconfigure mdt default vxlan under vrf definition on device. Error:\n{e}')
+
+
 def configure_mdt_auto_discovery_vxlan(device, vrf_name, address_family, keyword=""):
 
     """ configure mdt auto-discovery vxlan
@@ -931,3 +955,48 @@ def configure_mdt_auto_discovery_vxlan(device, vrf_name, address_family, keyword
         raise SubCommandFailure(
             f"Could not configure mdt auto-discovery vxlan on device vrf {vrf_name} definition. Error:\n{e}"
         )
+
+
+def unconfigure_mdt_auto_discovery_vxlan(device, vrf_name, address_family):
+
+    """ configure mdt auto-discovery vxlan
+        Args:
+            device (`obj`): Device object
+            vrf_name ('str'): name of the vrf
+            address_family ('str'):  mention the address-family.
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring interface
+    """
+    confg = [f"vrf definition {vrf_name}",
+             f"address-family {address_family}",
+              "no mdt auto-discovery vxlan"]
+    try:
+        device.configure(confg)
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not unconfigure "mdt auto-discovery vxlan under vrf definition {vrf_name}" on device'.format(
+                    vrf_name=vrf_name)
+        )
+
+
+def configure_mdt_auto_discovery_inter_as(device, vrf_name, address_family):
+    """ configure mdt auto-discovery inter-as
+        Args:
+            device ('obj'): Device object
+            vrf_name ('str'): name of the vrf
+            address_family ('str'):  mention the address-family.
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring mdt auto-discovery on vrf
+    """
+    config = [f'vrf definition {vrf_name}',
+             f'address-family {address_family}',
+             'mdt auto-discovery interworking vxlan-pim inter-as',
+             'mdt auto-discovery pim inter-as']
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure mdt auto-discovery inter-as on device vrf {vrf_name}. Error:\n{e}")

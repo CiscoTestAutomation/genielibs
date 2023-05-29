@@ -147,7 +147,7 @@ class RommonDialog(TelnetDialog):
             if context['boot_image'] in line:
                 desired_line = index
 
-        if not selected_line or not desired_line:
+        if selected_line is None or desired_line is None:
             raise Exception("Cannot figure out which image to select! "
                             "Debug info:\n"
                             "selected_line: {}\n"
