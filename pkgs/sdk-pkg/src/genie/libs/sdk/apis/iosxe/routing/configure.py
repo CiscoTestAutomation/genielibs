@@ -1128,3 +1128,20 @@ def unconfigure_stack_mac_persistent_timer(device):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not unconfigure mac timer on device. Error:\n{e}")
+
+def remove_static_route_all(device):
+    """ remove ip route 
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubcommandFailure: Failed executing command
+    """
+    log.info(f'removing static route all in {device}')
+    cmd = ('no ip route *')
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Could not remove the static routes on {device}. Error:\n{e}')

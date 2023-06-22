@@ -1,0 +1,38 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    interface hundredGigE 1/0/1: "interface hundredGigE 1/0/1\r\n"
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    no switchport: "no switchport\r\n"
+    queuing mode sub-interface priority-propagation: "queuing mode sub-interface priority-propagation\r\
+      \n"
+  prompt: Prasad_9500X(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: Prasad_9500X(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: Prasad_9500X#

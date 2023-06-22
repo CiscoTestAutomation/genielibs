@@ -138,3 +138,24 @@ def crypto_key_export (device,
              "Error:\n{error}".format(error=e)
         )
         raise
+
+def generate_crypto_key_execute(device, key_type, modulus=''):
+    """ Generate Crypto keys in execute mode
+        Args:
+            device ('obj')    : device to use
+            key_type ('str')  : iosxe routers support rsa and ec keys
+            modulus ('int', optional) : Size of the key that will be generated. <512-4096> 
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    if modulus:
+        cmd = f"crypto key generate {key_type} modulus {modulus}"
+    else:
+        cmd = f"crypto key generate {key_type}"
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        logger.error(e)
+        raise SubCommandFailure("Could not generate keys")

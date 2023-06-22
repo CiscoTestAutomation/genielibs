@@ -1,0 +1,43 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: stack3-nyquist-1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: stack3-nyquist-1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    'show tcp brief | inc .22 |.23 ':
+      response:
+      - "7D5795E60118  192.168.1.6.23             192.168.1.5.60530           ESTAB\r\
+        \n7D57816ACC80  192.168.1.6.23             192.168.1.5.43288           ESTAB\r\
+        \n------------  0.0.0.0.23                 *.*                         LISTEN\r\
+        \n------------  ::.23                      *.*                         LISTEN\r\
+        \n------------  0.0.0.0.22                 *.*                         LISTEN\r\
+        \n------------  ::.22                      *.*                         LISTEN"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: stack3-nyquist-1#

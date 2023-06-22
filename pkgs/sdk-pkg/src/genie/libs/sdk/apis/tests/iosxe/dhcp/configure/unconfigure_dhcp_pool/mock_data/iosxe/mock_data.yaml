@@ -1,0 +1,42 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    ip dhcp pool test: "ip dhcp pool test\r\n"
+    ip dhcp pool test1: "ip dhcp pool test1\r\n"
+    ip dhcp pool test3: "ip dhcp pool test3\r\n"
+    line console 0:
+      new_state: configure_line
+    no default-router 192.168.1.10: "no default-router 192.168.1.10\r\n"
+    no default-router 2.2.2.2: "no default-router 2.2.2.2\r\n"
+    no logging console: ''
+    no network 172.16.1.0 255.255.0.0: "no network 172.16.1.0 255.255.0.0\r\n"
+    no network 192.168.21.1 255.255.255.0: "no network 192.168.21.1 255.255.255.0\r\
+      \n"
+  prompt: stack3-nyquist-1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: stack3-nyquist-1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: stack3-nyquist-1#

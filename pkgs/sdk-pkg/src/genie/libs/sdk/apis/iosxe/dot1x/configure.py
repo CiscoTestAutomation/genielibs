@@ -1885,6 +1885,97 @@ def unconfigure_authentication_open(device, interface):
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure authentication open. Error:\n{e}")
 
+def configure_authentication_event_server(device, interface, action, action_type, vlan_id=None):
+    """Configure authentication event server
+    Args:
+        device ('obj'): Device object
+        interface ('str'): Interface to configure
+        action ('str'): alive  Configure AAA server alive actions
+                        dead   Configure AAA server dead actions 
+        action_type ('str', optional): authorize     Authorize the port
+                                       reinitialize  Reinitialize all client on the port
+        vlan_id ('int'): <1-4094>  Enter a VlanId                        
+    Return:
+        None
+    Raise:
+        SubCommandFailure
+    """
+    cmd = [f"interface {interface}"]
+    if action_type=="reinitialize": 
+        cmd.append("authentication event server {action} action {action_type} vlan {vlan_id}".format(action=action, action_type=action_type, vlan_id=vlan_id))
+    if action_type=="authorize" and action!="alive":
+        cmd.append("authentication event server {action} action {action_type} voice".format(action=action, action_type=action_type))
+    else:
+         raise Exception("Unable to process the request.Please provide correct options")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure authentication {action}. Error:\n{error}"
+            .format(action=action, error=e)
+        )  
+
+def unconfigure_authentication_event_server(device, interface, action, action_type, vlan_id=None):
+    """Unconfigure authentication event server
+    Args:
+        device ('obj'): Device object
+        interface ('str'): Interface to configure
+        action ('str'): alive  Configure AAA server alive actions
+                        dead   Configure AAA server dead actions 
+        action_type ('str', optional): authorize     Authorize the port
+                                       reinitialize  Reinitialize all client on the port
+        vlan_id ('int'): <1-4094>  Enter a VlanId                        
+    Return:
+        None
+    Raise:
+        SubCommandFailure
+    """
+    cmd = [f"interface {interface}"]
+    if action_type=="reinitialize": 
+        cmd.append("no authentication event server {action} action {action_type} vlan {vlan_id}".format(action=action, action_type=action_type, vlan_id=vlan_id))
+    if action_type=="authorize" and action!="alive":
+        cmd.append("no authentication event server {action} action {action_type} voice".format(action=action, action_type=action_type))
+    else:
+        raise Exception("Unable to process the request.Please provide correct options")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure authentication {action}. Error:\n{error}"
+            .format(action=action, error=e)
+        )  
+
+def configure_enable_cisp(device):
+    """ Configure cisp on device
+     Args:
+            device ('obj'): Device object
+     Returns:
+            None
+     Raises:
+            SubCommandFailure
+    """
+    cmd = [f"cisp enable"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not configure cisp on device Error: {error}".format(error=e))
+
+def unconfigure_enable_cisp(device):
+    """ Unconfigure cisp on device
+     Args:
+            device ('obj'): Device object
+     Returns:
+            None
+     Raises:
+            SubCommandFailure
+    """
+    cmd = [f"no cisp enable"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not unconfigure cisp on device Error: {error}".format(error=e))
 
 def configure_access_session_acl_default_passthrough(device):
     """ Configure access-session acl deafult passthrough

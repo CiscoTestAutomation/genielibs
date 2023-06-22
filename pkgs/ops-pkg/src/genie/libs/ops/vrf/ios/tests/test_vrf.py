@@ -17,7 +17,7 @@ outputs = {}
 outputs['show vrf detail VRF2'] = VrfOutput.showVrfDetail_vrf2
 outputs['show vrf detail'] = VrfOutput.showVrfDetail_all
 
-def mapper(key):
+def mapper(key, **kwargs):
     return outputs[key]
 
 

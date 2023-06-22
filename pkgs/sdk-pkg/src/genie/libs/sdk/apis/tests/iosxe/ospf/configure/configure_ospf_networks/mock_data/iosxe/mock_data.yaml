@@ -5,16 +5,21 @@ configure:
       new_state: execute
     line console 0:
       new_state: configure_line
+    network 172.16.70.0 0.0.0.255 area 0: "network 172.16.70.0 0.0.0.255 area 0\r\n"
+    network 172.16.71.0 0.0.0.255 area 0: "network 172.16.71.0 0.0.0.255 area 0\r\n"
+    network 172.16.80.0 0.0.0.255 area 0: "network 172.16.80.0 0.0.0.255 area 0\r\n"
     no logging console: ''
-    router ospf 1: "router ospf 1\r\n"
+    router ospf 10 vrf green: "router ospf 10 vrf green\r\n"
+    router ospf 5 vrf green: "router ospf 5 vrf green\r\n"
+    router ospf 9: "router ospf 9\r\n"
     router-id 1.1.1.1: "router-id 1.1.1.1\r\n"
-  prompt: mac-gen2(config)#
+  prompt: stack3-nyquist-1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: mac-gen2(config-line)#
+  prompt: stack3-nyquist-1(config-line)#
 connect:
   commands:
     ? ''
@@ -34,4 +39,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: mac-gen2#
+  prompt: stack3-nyquist-1#

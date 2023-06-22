@@ -1884,11 +1884,6 @@ def get_bgp_rt5_community_paths_label(device, address_family, eti, ip, ip_len, v
         return {}
 
     for prefix in afs.get('prefixes', {}):
-        pf = prefix.split("/")
-
-        if pf[0] != ip:
-            continue
-
         evpn_rt5_dict = {'vni_labels': [], 'ext_community': [], 'paths': ''}
         paths = afs["prefixes"][prefix].get("paths", '')
         evpn_rt5_dict["paths"] = paths

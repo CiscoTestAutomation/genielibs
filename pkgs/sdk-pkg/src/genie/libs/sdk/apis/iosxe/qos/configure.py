@@ -295,6 +295,7 @@ def config_replace_to_flash_memory(device, timeout=60):
         raise SubCommandFailure(
             "Could not configure replace to flash on {device}. Error:\n{e}")
 
+
 def config_policy_map_on_interface(device, interface, map_name):
     """ configure policy map on interface or portchannel
         Args:
@@ -319,6 +320,7 @@ def config_policy_map_on_interface(device, interface, map_name):
             )
         )
 
+
 def unconfigure_policy_map_on_interface(device, interface, map_name):
     """ unconfigure policy map on interface or portchannel
         Args:
@@ -342,3 +344,23 @@ def unconfigure_policy_map_on_interface(device, interface, map_name):
                 error=e
             )
         )
+
+
+def configure_queue_sub_interface(device, interface):
+    """ configure Queuing mode settings for Sub-Interface priority-propagation
+        Args:
+            device ('obj'): Device object
+            interface ('str'): interface to configure
+            map_name ('str'): name of qos policy to configure on interface
+        Returns:
+            None
+        Raise:
+            SubCommandFailure: Failed to configure Queuing mode
+    """
+    config = [f"interface {interface}",
+                "no switchport",
+                "queuing mode sub-interface priority-propagation"]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure Queuing mode. Error:\n{e}")

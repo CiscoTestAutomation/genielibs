@@ -175,30 +175,32 @@ def configure_mpls_label_mode(device, mode):
             )
         )
 
-def config_no_keepalive_intf(device, interface):
+
+def config_no_keepalive_intf(device, interface, keepalive_period=None, no_switchport=True):
     """ configure no switchport and no keepalive on Interface
 
         Args:
             device (`obj`): Device object
             interface (`str`): Interface on which the edge trunk config to be applied
+            keepalive_period('int', optional): <0-32767>  Keepalive period (default 10 seconds)
+            no_switchport ('bool'): no switchport. Default is True
         Returns:
             None
         Raises:
             SubCommandFailure
     """
+    cmd = [f'interface {interface}']
+    if no_switchport:
+        cmd.append('no switchport')
+    if keepalive_period:
+        cmd.append(f'no keepalive {keepalive_period}')
+    else:
+        cmd.append(f'no keepalive')
     try:
-        device.configure(
-            [
-                "interface {interface}".format(interface=interface),
-                "no switchport",
-                "no keepalive"
-            ]
-        )
+        device.configure(cmd)
     except SubCommandFailure as e:
-        raise SubCommandFailure(
-            "Couldn't configure no keepalive on interface {interface}."
-            "Error:\n{error}".format(interface=interface, error=e)
-        )
+        raise SubCommandFailure('Could not configure no keepalive intf, Error:\n{e}')
+
         
 def config_xconnect_on_interface(device, interface, neighbor, vcid):
     """ configure xconnect neighbor on Interface
@@ -2004,3 +2006,21 @@ def configure_rsvp_gracefull_restart(device):
             "Could not configure ip rsvp gracefull restart on device. Error: {error} ".format(
                                     error=e)
         )
+
+def debug_lfd_label_statistics(device,label_number):
+    """ configure debug lfd label statistics
+        Args:
+            device ('obj'): device to execute on
+            label_number ('int') : label value 
+            
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    """
+   
+    try:
+        device.execute("debug mpls lfd local-label {label_number} statistics-enable".format(label_number=label_number))
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure debug lfd label statistics Error {e}".format(e=e))

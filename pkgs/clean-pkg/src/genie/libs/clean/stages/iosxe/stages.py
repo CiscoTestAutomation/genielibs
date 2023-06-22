@@ -214,7 +214,7 @@ tftp_boot:
     config_reg_timeout (int, optional): Max time to set config-register.
         Defaults to 30.
 
-    image_length_limit(int, optinal): Maximum length of characters for image.
+    image_length_limit(int, optional): Maximum length of characters for image.
         Defaults to 110.
 
     ether_port(int, optional): port to set for tftp boot. Defaults to None.

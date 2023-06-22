@@ -956,3 +956,113 @@ def unconfigure_evpn_floodsuppress_dhcprelay_disable_globally(device):
             "'l2vpn evpn flooding suppression dhcp-relay disable' globally"
             'Error:\n{e}'.format(e=e)
         )
+
+
+def configure_evpn_ethernet_segment(device, segment_value, identifier_type=None, system_mac=None, esi_value=None, redundancy=True):
+    """ Configure l2vpn evpn ethernet segment
+        Args:
+            device ('obj'): Device object
+            segment_value ('obj'): Ethernet segment local discriminator value
+            identifier_type ('obj', optional): Identifier type 0 or 3. Default is None
+            system_mac ('obj', optional): MAC address. Default is None
+            esi_value ('obj', optional): 9-octet ESI value in hex. Default is None
+            redundancy ('bool', optional): Ethernet segment local discriminator value. Default is True
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config = [f'l2vpn evpn ethernet-segment {segment_value}']
+    if identifier_type:
+        cmd = f'identifier type {identifier_type}'
+        if system_mac:
+            cmd += f' system-mac {system_mac}'
+        elif esi_value:
+            cmd += f' {esi_value}'
+        config.append(cmd)
+    if redundancy:
+        config.append('redundancy single-active')
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure l2vpn evpn ethernet segment. Error:\n{e}")
+
+
+def configure_interface_evpn_ethernet_segment(device, interface, segment_value):
+    """ Configure interface evpn ethernet-segment
+        Args:
+            device ('obj'): device to use
+            interface ('str'): Interface Name
+            segment_value ('int'): Ethernet segment local discriminator value
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    config = [f"interface {interface}", f"evpn ethernet-segment {segment_value}"]
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configure interface evpn ethernet-segment. Error: {e}')
+
+
+def configure_pvlan_loadbalancing_ethernetsegment_l2vpn_evpn(device, ethsegmentvalue, 
+    esivalue='',  identifier_type='0', system_mac='', red_single_active='yes'):
+    """ configure per vlan load balncing between PEs on ethernet segment 
+        Args:
+            device ('obj'): Device object
+            ethsegmentvalue ('str'): Ethernet segment local discriminator value
+            identifier_type ('str', optional): Identifier type {type 0 or type 3, default is type 0}
+            esivalue  ('str', optional): 9-octet ESI value in hex {mandatory for type 0  identory type}
+            system_mac  ('str', optional): system mac address{mandatory for type 3  identory type}
+            red_single_active  ('str', optional): redundancy single active (yes or no, default value is "yes")
+            
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info("configure per vlan load balncing between PEs on ethernet segment")
+
+    cmd = [f"l2vpn evpn ethernet-segment {ethsegmentvalue}"]
+    if identifier_type=='0':
+        cmd.append(f"identifier type {identifier_type} {esivalue}")
+    else:
+        cmd.append(f"identifier type {identifier_type} system-mac {system_mac}")
+    if red_single_active=='yes':
+        cmd.append(f"redundancy single-active")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure per vlan load balncing between PEs on ethernet segment {device}. Error:\n{e}"
+        )
+
+
+def unconfigure_mdt_config_on_vrf(device, vrfname, addressfamily, mdtparam1, mdtparam2, mdtparam3=''):
+    """ unconfigure mdt bgp autodiscovery or mdt default group or mdt overlay protocol on VRF
+        Args:
+            device ('obj'): Device object
+            vrfname ('str'): VRF Name            
+            addressfamily ('str'): Address family ipv4 or ipv6
+            mdtparam1  ('str'): "auto-discovery" for BGP auto-discovery for MVPN,
+                                "default" for the default group,"overlay" for MDT Overlay Protocol 
+            mdtparam2  ('str'): "vxlan" for BGP auto-discovery for MVPN and default group,"use-bgp" for MDT Overlay Protocol
+            mdtparam3  ('str', optional): no values needed for BGP auto-discovery for MVPN, 
+                                        "IP address" for default group,"spt-only" for MDT Overlay Protocol
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info("unconfigure mdt bgp autodiscovery or mdt default group or mdt overlay protocol on VRF")
+    cmd = [f"vrf definition {vrfname}", f"address-family {addressfamily}",
+                f"no mdt {mdtparam1} {mdtparam2} {mdtparam3}"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure mdt bgp autodiscovery on VRF {device}. Error:\n{e}"
+        )

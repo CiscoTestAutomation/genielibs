@@ -119,6 +119,9 @@ tftp_boot:
     timeout (int, optional): Max time during which tftp boot must
         complete. Defaults to 1000 seconds.
 
+    image_length_limit(int, optional): Maximum length of characters for image.
+        Defaults to 110.
+
 Example
 -------
 tftp_boot:
@@ -132,6 +135,7 @@ tftp_boot:
     recovery_username: user_123
     save_system_config: False
     timeout: 1000
+    image_length_limit: 90
 
 There is more than one ip address, one for each supervisor.
 """
@@ -144,6 +148,7 @@ There is more than one ip address, one for each supervisor.
     RECOVERY_USERNAME = None
     SAVE_SYSTEM_CONFIG = True
     TIMEOUT = 1000
+    IMAGE_LENGTH_LIMIT = 110
 
 
     # ============
@@ -160,6 +165,7 @@ There is more than one ip address, one for each supervisor.
         Optional('recovery_en_pasword'): str,
         Optional('save_system_config'): bool,
         Optional('timeout'): int,
+        Optional('image_length_limit'): int,
     }
 
     # ==============================
@@ -248,6 +254,7 @@ There is more than one ip address, one for each supervisor.
     # =================
     SAVE_SYSTEM_CONFIG = True
     TIMEOUT = 600
+    ETHER_PORT = 0
 
     # ============
     # Stage Schema
@@ -258,10 +265,11 @@ There is more than one ip address, one for each supervisor.
             'ip_address': list,
             'subnet_mask': str,
             'gateway': str,
-            'tftp_server': str,
+            'tftp_server': str
         },
         Optional('save_system_config'): bool,
         Optional('timeout'): int,
+        Optional('ether_port'): int
     }
 
     # ==============================
@@ -331,7 +339,7 @@ There is more than one ip address, one for each supervisor.
             log.info("Device is reloading")
             device.destroy_all()
 
-    def rommon_boot(self, steps, device, image, tftp=None, timeout=TIMEOUT):
+    def rommon_boot(self, steps, device, image, tftp=None, timeout=TIMEOUT, ether_port=ETHER_PORT):
 
         with steps.start("Boot device from rommon") as step:
 
@@ -357,7 +365,7 @@ There is more than one ip address, one for each supervisor.
             }
 
             if tftp:
-                tftp.update({'image': image})
+                tftp.update({'image': image, 'ether_port': ether_port})
                 common_kwargs.update({'tftp_boot': tftp})
             else:
                 common_kwargs.update({'golden_image': image})

@@ -577,3 +577,37 @@ def unconfigure_snmp_server_engineid(device):
 
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not un configure snmp server engineID . Error:\n{e}")
+
+        
+def enable_ietf_standard_snmp_link_traps(device):
+    """
+        Enable ietf standard snmp link traps
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"Enable ietf standard snmp link traps {device}")
+    try:
+        device.configure("snmp-server trap link ietf")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not enable ietf standard snmp link traps . Error:\n{e}")
+
+
+def disable_ietf_standard_snmp_link_traps(device):
+    """
+        Disable ietf standard snmp link traps
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"Disable ietf standard snmp link traps on {device}")
+    try:
+        device.configure(f"no snmp-server trap link ietf")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not disable ietf standard snmp link traps . Error:\n{e}")

@@ -287,7 +287,7 @@ def configure_pvlan_type(device,vlan,pvlan_type):
             'Could not configure Primary Pvlan'
         )
 
-def config_vlan_range(device, vlanid_start, vlanid_end):
+def config_vlan_range(device, vlanid_start, vlanid_end, timeout=None):
     """ Configures a VLAN on Device
         e.g.
         vlan 1 - 4094
@@ -296,6 +296,7 @@ def config_vlan_range(device, vlanid_start, vlanid_end):
             device (`obj`): Device object
             vlanid_start (`int`): Vlan id start
             vlanid_end (`int`): Vlan id end
+            timeout(int, optional): provide the time out time
 
         Return:
             None
@@ -306,13 +307,16 @@ def config_vlan_range(device, vlanid_start, vlanid_end):
     configs.append(f"vlan {vlanid_start}-{vlanid_end}")
     configs.append("no shutdown")
     try:
-        device.configure(configs)
+        if timeout:
+            device.configure(configs, timeout=timeout)
+        else:
+            device.configure(configs)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not configure vlan on device. Error:\n{e}"
         )
 
-def unconfig_vlan_range(device, vlanid_start, vlanid_end):
+def unconfig_vlan_range(device, vlanid_start, vlanid_end, timeout=None):
     """ Unconfigures a VLAN on Device
         e.g.
         no vlan 1 - 4094
@@ -321,14 +325,20 @@ def unconfig_vlan_range(device, vlanid_start, vlanid_end):
             device (`obj`): Device object
             vlanid_start (`int`): Vlan id start
             vlanid_end (`int`): Vlan id end
+            timeout(int, optional): provide the time out time
 
         Return:
             None
         Raise:
             SubCommandFailure
     """
+    configs = []
+    configs.append(f"no vlan {vlanid_start}-{vlanid_end}")
     try:
-        device.configure(f"no vlan {vlanid_start}-{vlanid_end}")
+        if timeout:
+            device.configure(configs, timeout=timeout)
+        else:
+            device.configure(configs)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not unconfigure vlan on device. Error:\n{e}"
@@ -1003,3 +1013,43 @@ def configure_vlan_name(device,vlan,name):
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not configure the vlan name. Error:\n{e}')
 
+
+def unconfigure_pvlan_primary(device, primary_vlan, secondary_vlan=None):
+    """ Unconfigures Primary Private Vlan
+        Args:
+            device ('obj'): device to use
+            primary_vlan ('str'): Primary private vlan
+            secondary_vlan ('str',optional): Secondary isolated/community vlan
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    config = [f"vlan {primary_vlan}", "no private-vlan primary"]
+    if secondary_vlan:
+        config.append(f"no private-vlan association {secondary_vlan}")
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Could not unconfigure Primary Pvlan. Error:\n{e}'
+        )
+
+def unconfigure_pvlan_type(device, vlan, pvlan_type):
+    """ unconfigures Isolated/community Private Vlan
+        Args:
+            device ('obj'): device to use
+            vlan ('str'): Vlan id
+            pvlan_type ('str'): Private vlan type (i.e isolated, primary, community)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    config = [f"vlan {vlan}", f"no private-vlan {pvlan_type}"]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not unconfigure private-vlan. Error:\n{e}')

@@ -1901,7 +1901,6 @@ def unconfigure_filter_vlan_list(device, vlan_access_name, vlan_id):
         )
 
 
-
 def configure_extended_acl(device, acl_name, permission, protocol, src_ip, dst_ip, sequence_num=None, 
                            src_wildcard=None, dst_wildcard=None, match=[]):
     """ Configure extended ACL on device
@@ -1945,3 +1944,59 @@ def configure_extended_acl(device, acl_name, permission, protocol, src_ip, dst_i
 
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure extended access-list. Error:\n{e}")
+
+
+def configure_acl_with_ip_any(device, acl_name, action):
+    """ configure ACL
+        Args:
+            device (`obj`): Device object
+            acl_name ('str'): ACL name
+            action ('str')Optional: Permit or Deny
+    """
+
+    config = [f"access-list {acl_name} {action} ip any any"]
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure acl with ip any on device {device.name}. Error:\n{e}")
+
+def configure_arp_acl(device, name, action, source, sender_mac='', mac_mask='', sender_host='', log=''):
+    """ Configuring ARP ACL
+
+        Args:
+            device ('obj'): device to use
+            name ('str'): name of the ACL to which the entry belongs
+            action ('str'): (permit | deny) permits or denies Layer 2 traffic
+            source ('str'): defines a sender Host IP address
+            sender_mac ('str'): Sender MAC address
+            mac_mask ('str'): Sender MAC address mask.Mandatory when "sender_mac" field is specified
+            sender_host ('str'): Sender host MAC address
+            log_on_match ('str'): Log on match, mention as "log" if required
+            
+        Returns:
+            None
+
+        Raises: 
+            SubCommandFailure
+    """
+    config = [f"arp access-list {name}"]
+    action = action.strip().lower()
+    if action in ('permit', 'deny') and sender_mac and log:
+        config.append(f"{action} ip host {source} mac {sender_mac} {mac_mask} log")
+    elif action in ('permit', 'deny') and sender_mac:
+        config.append(f"{action} ip host {source} mac {sender_mac} {mac_mask}")
+    elif action in ('permit', 'deny') and sender_host and log:
+        config.append(f"{action} ip host {source} mac host {sender_host} log")
+    elif action in ('permit', 'deny') and sender_host:
+        config.append(f"{action} ip host {source} mac host {sender_host}") 
+    elif action in ('permit', 'deny') and log:
+        config.append(f"{action} ip host {source} mac any log")   
+    elif action in ('permit', 'deny'):
+        config.append(f"{action} ip host {source} mac any")     
+    else:
+        raise SubCommandFailure("Invalid parameters")
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure arp acl on the device {device.name}. Error:\n{e}")

@@ -2,20 +2,19 @@ configure:
   commands:
     end:
       new_state: execute
-    interface te1/0/5: "interface te1/0/5\r\n"
-    ipv6 verify unicast source reachable-via rx allow-default: "ipv6 verify unicast\
-      \ source reachable-via rx allow-default\r\n"
+    interface GigabitEthernet1/0/6: "interface GigabitEthernet1/0/6\r\n"
+    ipv6 verify unicast source reachable-via any: "ipv6 verify unicast source reachable-via\
+      \ any\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''
-    no switchport: "no switchport\r\n"
-  prompt: 9300-24UX-1(config)#
+  prompt: T1-9300-SP1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: 9300-24UX-1(config-line)#
+  prompt: T1-9300-SP1(config-line)#
 connect:
   commands:
     ? ''
@@ -35,4 +34,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: 9300-24UX-1#
+  prompt: T1-9300-SP1#

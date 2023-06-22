@@ -1,0 +1,47 @@
+configure:
+  commands:
+    class test: "class test\r\n"
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    ? no police 200000 pir 60000000 conform-action set-discard-class-transmit 5 exceed-action
+      set-discard-class-transmit 5 violate-action set-dscp-transmit dscp table t1
+    : "no police 200000 pir 60000000 conform-action set-discard-class-transmit 5 exceed-action\
+      \ set-discard-class-transmit 5 violate-action set-dscp-transmit dscp table t1\r\
+      \n"
+    no police cir percent 30 conform-action transmit: "no police cir percent 30 conform-action\
+      \ transmit\r\n"
+    ? no police rate percent 20 conform-action set-discard-class-transmit 5 exceed-action
+      transmit violate-action set-dscp-transmit dscp table t1
+    : "no police rate percent 20 conform-action set-discard-class-transmit 5 exceed-action\
+      \ transmit violate-action set-dscp-transmit dscp table t1\r\n"
+    policy-map test: "policy-map test\r\n"
+  prompt: stack3-nyquist-1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: stack3-nyquist-1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: stack3-nyquist-1#

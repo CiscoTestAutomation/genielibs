@@ -10,7 +10,7 @@ class TestConfigureOspfNetworks(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          mac-gen2:
+          stack3-nyquist-1:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -19,10 +19,10 @@ class TestConfigureOspfNetworks(unittest.TestCase):
                 protocol: unknown
             os: iosxe
             platform: cat9k
-            type: C9400
+            type: router
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['mac-gen2']
+        self.device = self.testbed.devices['stack3-nyquist-1']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,16 @@ class TestConfigureOspfNetworks(unittest.TestCase):
         )
 
     def test_configure_ospf_networks(self):
-        result = configure_ospf_networks(self.device, '1', None, None, None, '1.1.1.1', 'all-interfaces')
+        result = configure_ospf_networks(self.device, 10, ['172.16.70.0', '172.16.71.0', '172.16.80.0'], '0.0.0.255', 0, '1.1.1.1', 'all-interfaces', 'green')
+        expected_output = None
+        self.assertEqual(result, expected_output)
+
+    def test_configure_ospf_networks_1(self):
+        result = configure_ospf_networks(self.device, 9, ['172.16.70.0', '172.16.71.0', '172.16.80.0'], '0.0.0.255', 0, '1.1.1.1', 'all-interfaces', None)
+        expected_output = None
+        self.assertEqual(result, expected_output)
+
+    def test_configure_ospf_networks_2(self):
+        result = configure_ospf_networks(self.device, 5, None, None, None, '1.1.1.1', 'all-interfaces', 'green')
         expected_output = None
         self.assertEqual(result, expected_output)

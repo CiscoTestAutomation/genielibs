@@ -130,6 +130,30 @@ operstate_gnmi = {
     }
 }
 
+gnmi_leaf_list = {
+    "timestamp": 1683062825442372317,
+    "update": {
+        "path": {
+            "origin": "openconfig",
+            "elem": [
+                {
+                "name": "network-instances"
+                },
+                {
+                    "name": "network-instance",
+                    "key": {
+                        "key": "name",
+                        "value": "test10"
+                    }
+                }
+            ]
+        },
+        "val": {
+            "jsonIetfVal": ''
+        }
+    }
+}
+
 multilist = """<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" \
     xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0" \
         message-id="urn:uuid:39eeacc2-821e-4822-ba44-477c502d0242">
@@ -303,7 +327,9 @@ basic-mode=explicit&also-supported=report-all-tagged']
         cls.operstate = operstate
         cls.gnmi = TestGnmi()
         cls.operstate_gnmi = operstate_gnmi
+        cls.gnmi_leaf_list = gnmi_leaf_list
         cls.jsonIetfVal = ""
+        cls.leafListVal = ""
 
     def setUp(self):
         self.jsonIetfVal = """{"statistics": {"in-octets": 330, \
@@ -313,10 +339,18 @@ basic-mode=explicit&also-supported=report-all-tagged']
 "out-unicast-pkts": 12, "out-broadcast-pkts": 13, \
 "out-multicast-pkts": 14, "out-discards": 17, \
 "out-errors": 16}}"""
+        self.leafListVal = """{"name": "test10",
+"inter-instance-policies": {"apply-policy": {"config": {"export-policy": ["policy1"], \
+"import-policy": ["policy1", "policy2"]}}}, "config": {"enabled-address-families": ["openconfig-types:IPV4"], \
+"name": "test10"}, "state": {"name": "test10", "type": "openconfig-network-instance-types:L3VRF", \
+"enabled": true, "enabled-address-families": ["openconfig-types:IPV4", "openconfig-types:IPV6"]}}"""
 
     def _base64encode(self):
         self.operstate_gnmi['update']['val']['jsonIetfVal'] = base64.encodebytes(
             bytes(self.jsonIetfVal, encoding='utf-8')
+        )
+        self.gnmi_leaf_list['update']['val']['jsonIetfVal'] = base64.encodebytes(
+            bytes(self.leafListVal, encoding='utf-8')
         )
 
     def test_operational_state_pass(self):
@@ -1071,6 +1105,35 @@ basic-mode=explicit&also-supported=report-all-tagged']
 
         self._base64encode()
         resp = self.rpcv.process_rpc_reply(oper)
+        result = self.rpcv.process_operational_state(resp, opfields)
+        self.assertTrue(result)
+
+    def test_auto_validate_gnmi_leaf_list(self):
+        """Check leaf list values in get response"""
+        opfields = [
+            {
+                'selected': 'true',
+                'default': '',
+                'name': 'import-policy',
+                'xpath': '/network-instances/network-instance/inter-instance-policies/apply-policy/config/import-policy',
+                'value': 'policy1',
+                'datatype': 'leafref',
+                'nodetype': 'leaf-list',
+                'op': '=='
+            },
+            {
+                'selected': 'true',
+                'default': '',
+                'name': 'import-policy',
+                'xpath': '/network-instances/network-instance/inter-instance-policies/apply-policy/config/import-policy',
+                'value': 'policy2',
+                'datatype': 'leafref',
+                'nodetype': 'leaf-list',
+                'op': '=='
+            }
+        ]
+        self._base64encode()
+        resp = GnmiMessage.decode_opfields(self.gnmi_leaf_list['update'])
         result = self.rpcv.process_operational_state(resp, opfields)
         self.assertTrue(result)
 

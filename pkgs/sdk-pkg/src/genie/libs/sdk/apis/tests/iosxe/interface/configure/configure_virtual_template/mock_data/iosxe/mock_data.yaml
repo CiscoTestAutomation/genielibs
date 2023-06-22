@@ -3,21 +3,19 @@ configure:
     end:
       new_state: execute
     interface Virtual-Template 1: "interface Virtual-Template 1\r\n"
-    ip tcp adjust-mss 1444: "ip tcp adjust-mss 1444\r\n"
-    ip unnumbered vmi1: "ip unnumbered vmi1\r\n"
-    ipv6 mtu 1484: "ipv6 mtu 1484\r\n"
+    ip unnumbered GigabitEthernet0/0/0: "ip unnumbered GigabitEthernet0/0/0\r\n"
     line console 0:
       new_state: configure_line
-    load-interval 30: "load-interval 30\r\n"
     no logging console: ''
-    no peer default ip address: "no peer default ip address\r\n"
-  prompt: c8kv-1(config)#
+    peer default ip address pool ipv4_pool_100: "peer default ip address pool ipv4_pool_100\r\
+      \n"
+  prompt: C1113-8P_pkumarmu(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: c8kv-1(config-line)#
+  prompt: C1113-8P_pkumarmu(config-line)#
 connect:
   commands:
     ? ''
@@ -37,4 +35,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: c8kv-1#
+  prompt: C1113-8P_pkumarmu#

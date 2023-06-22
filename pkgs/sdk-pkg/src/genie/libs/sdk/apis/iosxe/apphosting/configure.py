@@ -162,6 +162,29 @@ def configure_thousand_eyes_application(device, vlan_id, app_ip, app_gateway_ip,
         )    
 
 
+def configure_app_hosting_appid_iperf_from_vlan(device,port_id,vlan_id):
+    """ configure_app_hosting_appid_iperf_from_vlan 
+        Args:
+            device ('obj'): device to execute on
+            port_id(int): port identifier
+            vlan_id('str'): vlan identifier            
+            
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = ["app-hosting appid iperf",
+           "app-vnic AppGigabitEthernet port {port_id} trunk".format(port_id=port_id),
+           "Vlan {vlan_id} guest-interface 0".format(vlan_id=vlan_id),
+           "start"]   
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure_app_hosting_appid_iperf_from_vlan Error {e}".format(e=e)) 
+
+
 def configure_app_hosting_appid_trunk_port(device, appid, app_vnic, app_vnic_port=None, 
                 app_vnic_port_mode=None, app_vnic_guest_interface=None, vlan_id=None, 
                 app_ip=None, app_netmask=None, app_gateway_ip=None, start=False):

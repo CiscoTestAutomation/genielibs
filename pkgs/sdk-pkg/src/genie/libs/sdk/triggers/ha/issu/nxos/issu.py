@@ -31,6 +31,7 @@ platform_exclude_lxc = ['maker', 'rp_uptime', 'sn', 'main_mem',
                         'installed_packages', 'disk_total_space',
                         'version', 'rp_boot_image', 'rp']
 
+
 class TriggerIssuLxc(CommonIssu):
     """Do LXC ISSU on device."""
 
@@ -57,7 +58,9 @@ class TriggerIssuLxc(CommonIssu):
                             default=None,
                             help='URL path of the ISSU upgrade image')
         args, unknown = parser.parse_known_args(argv)
-        self.parameters['upgrade_image'] = args.issu_upgrade_image
+        if 'upgrade_image' not in self.parameters:
+            self.parameters['upgrade_image'] = args.issu_upgrade_image.split(',')[
+                0].strip()
 
     mapping = Mapping(
         requirements={
@@ -103,7 +106,9 @@ class TriggerIssuNative(CommonIssu):
                             default=None,
                             help='URL path of the ISSU upgrade image')
         args, unknown = parser.parse_known_args(argv)
-        self.parameters['upgrade_image'] = args.issu_upgrade_image
+        if 'upgrade_image' not in self.parameters:
+            self.parameters['upgrade_image'] = args.issu_upgrade_image.split(',')[
+                0].strip()
 
     mapping = Mapping(
         requirements={

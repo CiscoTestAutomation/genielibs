@@ -885,6 +885,38 @@ def configure_isakmp_policy(device,
         )
         raise
 
+def configure_crypto_logging_ikev2(device):
+    """ Configure IKEv2 Logging
+        Args:
+            device (`obj`): Device object
+        Returns:
+            NA
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configure IKEv2 Logging")
+
+    try:
+        device.configure(["crypto logging ikev2"])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configure crypto logging ikev2. Error: {e}')
+
+def unconfigure_crypto_logging_ikev2(device):
+    """ Unconfigure IKEv2 Logging
+        Args:
+            device (`obj`): Device object
+        Returns:
+            NA
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Unconfigure IKEv2 Logging")
+    
+    try:
+        device.configure(["no crypto logging ikev2"])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not unconfigure crypto logging ikev2. Error: {e}')
+
 def unconfigure_isakmp_policy(device,
                         policy_number
                         ):

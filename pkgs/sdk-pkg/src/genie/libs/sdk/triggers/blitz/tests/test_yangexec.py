@@ -4,6 +4,7 @@ import logging
 import sys
 import json
 import time
+from pathlib import Path
 from unittest.mock import patch
 from collections import OrderedDict
 import yang
@@ -19,7 +20,8 @@ from genie.libs.sdk.triggers.blitz.gnmi_util import (GnmiMessage,
                                                      GnmiSubscriptionOnce,
                                                      GnmiSubscriptionStream,
                                                      GnmiSubscriptionPoll,)
-from genie.libs.sdk.triggers.blitz.rpcverify import RpcVerify
+from genie.libs.sdk.triggers.blitz.rpcverify import RpcVerify, OptFields
+from genie.libs.sdk.triggers.blitz.verifiers import DefaultVerifier
 
 
 log = logging.getLogger(__name__)
@@ -31,7 +33,10 @@ class Service:
     def __init__(self, response):
         self.response = response
 
-    def Get(self, blah, metadata=None):
+    def Get(self, *args, **kwargs):
+        return self.response
+
+    def Subscribe(self, *args, **kwargs):
         return self.response
 
 
@@ -52,19 +57,20 @@ class Creds:
 
 class TestDevice:
     device = Creds()
+    active_notifications = {}
 
     def __init__(self, response):
         self.gnmi = Gnmi(response)
 
 
-class TestTestbed:
+class TestbedWithNtp:
     servers = {'ntp': {'server': "1.1.1.1"}}
 
 
 class TestDeviceWithNtp(TestDevice):
     def __init__(self, response):
         super().__init__(response)
-        self.device.testbed = TestTestbed()
+        self.device.testbed = TestbedWithNtp()
 
 
 class TestYangExec(unittest.TestCase):
@@ -551,15 +557,14 @@ class TestYangExec(unittest.TestCase):
                             'xpath': '/System/igmp-items/inst-items/syslogThreshold'
                         }
                     ], 
-                    'verifier': rpc_verify.process_operational_state, 
                     'namespace_modules': 
                     {
                         'top': 'Cisco-NX-OS-device'
                     }, 
-                    'decode': GnmiMessage.process_subscribe_response, 
+                     
                     'log': log
                 }
-
+        request['verifier'] = DefaultVerifier(None, request['returns'], log)
         # Response 1
         path_elem1 = proto.gnmi_pb2.PathElem()
         path_elem1.KeyEntry.key = ""
@@ -774,15 +779,14 @@ class TestYangExec(unittest.TestCase):
                             'xpath': '/System/igmp-items/inst-items/heavyTemplate'
                         }
                     ], 
-                    'verifier': rpc_verify.process_operational_state, 
                     'namespace_modules': 
                     {
                         'top': 'Cisco-NX-OS-device'
                     }, 
-                    'decode': GnmiMessage.process_subscribe_response, 
+                     
                     'log': log
                 }
-
+        request['verifier'] = DefaultVerifier(None, request['returns'], log)
         # Response 1
         path_elem1 = proto.gnmi_pb2.PathElem()
         path_elem1.KeyEntry.key = ""
@@ -921,15 +925,14 @@ class TestYangExec(unittest.TestCase):
                             'xpath': '/System/igmp-items/inst-items/flushRoute'
                         }
                     ], 
-                    'verifier': rpc_verify.process_operational_state, 
                     'namespace_modules': 
                     {
                         'top': 'Cisco-NX-OS-device'
                     }, 
-                    'decode': GnmiMessage.process_subscribe_response, 
+                     
                     'log': log
                 }
-
+        request['verifier'] = DefaultVerifier(None, request['returns'], log)
         # Response 1
         path_elem1 = proto.gnmi_pb2.PathElem()
         path_elem1.KeyEntry.key = ""
@@ -1054,15 +1057,14 @@ class TestYangExec(unittest.TestCase):
                                 'xpath': '/System/igmp-items/inst-items/heavyTemplate'
                             }
                         ], 
-                    'verifier': rpc_verify.process_operational_state,
                     'namespace_modules': 
                         {
                             'top': 'Cisco-NX-OS-device'
                         }, 
-                    'decode': GnmiMessage.process_subscribe_response, 
+                     
                     'log': log
                 }
-
+        request['verifier'] = DefaultVerifier(None, request['returns'], log)
         # Response
         response = proto.gnmi_pb2.SubscribeResponse()
         response.sync_response = True
@@ -1133,15 +1135,14 @@ class TestYangExec(unittest.TestCase):
                                 'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/eventHist-items/EventHistory-list[type="intfDebugs"]/size'
                             }
                         ],
-                    'verifier': rpc_verify.process_operational_state,
                     'namespace_modules': 
                         {
                             'top': 'Cisco-NX-OS-device'
                         }, 
-                    'decode': GnmiMessage.process_subscribe_response, 
+                     
                     'log': log
                 }
-
+        request['verifier'] = DefaultVerifier(None, request['returns'], log)
         # Response 1
         path_elem1 = proto.gnmi_pb2.PathElem()
         path_elem1.KeyEntry.key = ""
@@ -1492,15 +1493,14 @@ class TestYangExec(unittest.TestCase):
                                 'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/eventHist-items/EventHistory-list/size'
                             }
                         ], 
-                    'verifier': rpc_verify.process_operational_state, 
                     'namespace_modules': 
                         {
                             'top': 'Cisco-NX-OS-device'
                         }, 
-                    'decode': GnmiMessage.process_subscribe_response, 
+                     
                     'log': log
                 }
-
+        request['verifier'] = DefaultVerifier(None, request['returns'], log)
         # Response 1
         path_elem1 = proto.gnmi_pb2.PathElem()
         path_elem1.KeyEntry.key = ""
@@ -2159,7 +2159,7 @@ class TestYangExec(unittest.TestCase):
     def test_gnmi_leaf_list_proto(self):
         """ Test leaf-list property for proto encoding """
         returns = [{
-            'nodetype': 'leaf',
+            'nodetype': 'leaf-list',
             'value': ['route-target:100:2130052', '8'],
             'op': '==',
             'selected': True,
@@ -2553,7 +2553,7 @@ class TestYangExec(unittest.TestCase):
             }]
         }
         returns = [{
-            'nodetype': 'leaf',
+            'nodetype': 'leaf-list',
             'value': ['10.1.0.31', '10.1.0.32'],
             'op': '==',
             'selected': 'True',
@@ -2659,7 +2659,7 @@ class TestYangExec(unittest.TestCase):
             "advertised-to-peer":["10.1.0.31","10.1.0.32"],
             "bestpath":'true'
         }
-        
+
         update.val.json_ietf_val = json.dumps(json_val).encode('utf-8')
         notif = proto.gnmi_pb2.Notification()
         notif.update.append(update)
@@ -2858,7 +2858,6 @@ class TestYangExec(unittest.TestCase):
         notif.update.append(update)
         response.notification.append(notif)
         device = TestDevice(response)
-
         result = run_gnmi(
             operation, device, steps, datastore, rpc_data, returns, format=format
         )
@@ -2886,15 +2885,14 @@ class TestYangExec(unittest.TestCase):
                     'sub_mode': 'SAMPLE',
                     'negative_test': False,
                     'encoding': 'JSON',              # No returns in request
-                    'verifier': rpc_verify.process_operational_state,
                     'namespace_modules':
                         {
                             'top': 'Cisco-NX-OS-device'
                         },
-                    'decode': GnmiMessage.process_subscribe_response,
+                    
                     'log': log
                 }
-
+        request['verifier'] = DefaultVerifier(None, {}, log)
         # Response 1
         path_elem1 = proto.gnmi_pb2.PathElem()
         path_elem1.KeyEntry.key = ""
@@ -2990,7 +2988,7 @@ class TestYangExec(unittest.TestCase):
                                 'xpath': '/network-instances/network-instance[name=default]/connection-points/connection-point[connection-point-id=nve1]/endpoints/endpoint[endpoint-id=nve1]/vxlan/endpoint-vnis/endpoint-vni[vni=3120400]/state/vni-state'
                             }
                         ],
-                        'verifier': rpc_verify.process_operational_state
+                        'verifier': DefaultVerifier
                     }
 
         format = {'request_mode': 'ONCE', 'negative_test': False, 'sub_mode': 'SAMPLE', 'encoding': 'PROTO'}
@@ -3002,7 +3000,8 @@ class TestYangExec(unittest.TestCase):
     def test_check_opfield(self):
         """ Test check_opfield"""
         value = 'pref:eth1/3'
-        field = {'nodetype': 'leaf', 'value': 'pref:eth1/1', 'op': '==', 'selected': 'True', 'name': 'id', 'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/if-items/If-list/id'}
+        field = OptFields(**{'nodetype': 'leaf', 'value': 'pref:eth1/1', 'op': '==', 'selected': 'True',
+                          'name': 'id', 'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list/if-items/If-list/id'})
         rpc_verify = RpcVerify(log=log, capabilities=[])
         result = rpc_verify.check_opfield(value,field)
         self.assertEqual(result[0], False)
@@ -3071,7 +3070,7 @@ class TestYangExec(unittest.TestCase):
         )
         self.assertEqual(result, False)
 
-        format['transaction_time'] = 2
+        format['transaction_time'] = 5
         result = run_gnmi(
             operation, device, steps, datastore, rpc_data, returns, format=format
         )
@@ -3079,10 +3078,10 @@ class TestYangExec(unittest.TestCase):
 
 
     def test_subscribe_poll_transaction_time(self):
-        request = self.make_test_subscribe_request()
+        request = self.make_test_request()
         request['transaction_time'] = 0.00000001
         subscribe_thread = GnmiSubscriptionPoll(
-            responses=[self.make_test_subscribe_response()],
+            responses=[self.make_test_notification()],
             **request
         )
         subscribe_thread.start()
@@ -3091,7 +3090,7 @@ class TestYangExec(unittest.TestCase):
 
         request['transaction_time'] = 2
         subscribe_thread = GnmiSubscriptionPoll(
-            responses=[self.make_test_subscribe_response()],
+            responses=[self.make_test_notification()],
             **request
         )
         subscribe_thread.start()
@@ -3099,20 +3098,20 @@ class TestYangExec(unittest.TestCase):
         self.assertEqual(subscribe_thread.result, True)
     
     def test_subscribe_once_transaction_time(self):
-        request = self.make_test_subscribe_request()
+        request = self.make_test_request()
         request['transaction_time'] = 0.00000001
-        device = TestDeviceWithNtp(self.make_test_subscribe_response())
+        device = TestDeviceWithNtp(self.make_test_notification())
         subscribe_thread = GnmiSubscriptionOnce(
-            responses=[self.make_test_subscribe_response()],
+            responses=[self.make_test_notification()],
             **request
         )
         subscribe_thread.start()
         subscribe_thread.join()
         self.assertEqual(subscribe_thread.result, False)
 
-        request['transaction_time'] = 2
+        request['transaction_time'] = 5
         subscribe_thread = GnmiSubscriptionOnce(
-            responses=[self.make_test_subscribe_response()],
+            responses=[self.make_test_notification()],
             **request
         )
         subscribe_thread.start()
@@ -3120,23 +3119,23 @@ class TestYangExec(unittest.TestCase):
         self.assertEqual(subscribe_thread.result, True)
 
     def test_subscribe_stream_transaction_time(self):
-        request = self.make_test_subscribe_request()
-        device = TestDeviceWithNtp(self.make_test_subscribe_response())
+        request = self.make_test_request()
+        device = TestDeviceWithNtp(self.make_test_notification())
         request['transaction_time'] = 0.00000001
         subscribe_thread = GnmiSubscriptionStream(
             device=device,
-            responses=[self.make_test_subscribe_response()],
+            responses=[self.make_test_notification()],
             **request
         )
         subscribe_thread.start()
         subscribe_thread.join()
         self.assertEqual(subscribe_thread.result, False)
 
-        request = self.make_test_subscribe_request()
+        request = self.make_test_request()
         request['transaction_time'] = 2
         subscribe_thread = GnmiSubscriptionStream(
             device=device,
-            responses=[self.make_test_subscribe_response()],
+            responses=[self.make_test_notification()],
             **request
         )
         subscribe_thread.start()
@@ -3144,10 +3143,10 @@ class TestYangExec(unittest.TestCase):
         self.assertEqual(subscribe_thread.result, True)
 
     def test_subscribe_stream_transaction_time_no_synchronization(self):
-        request = self.make_test_subscribe_request()
-        device = TestDeviceWithNtp(self.make_test_subscribe_response())
+        request = self.make_test_request()
+        device = TestDeviceWithNtp(self.make_test_notification())
         request['transaction_time'] = 5
-        response = self.make_test_subscribe_response()
+        response = self.make_test_notification()
         response.update.timestamp = time.time_ns() + 500000000000
         
         subscribe_thread = GnmiSubscriptionStream(
@@ -3160,15 +3159,15 @@ class TestYangExec(unittest.TestCase):
         self.assertEqual(subscribe_thread.result, False)
 
     def test_subscribe_stream_transaction_time_no_ntp_server(self):
-        request = self.make_test_subscribe_request()
-        device = TestDeviceWithNtp(self.make_test_subscribe_response())
+        request = self.make_test_request()
+        device = TestDeviceWithNtp(self.make_test_notification())
         device.device.testbed.servers = {}
         request['transaction_time'] = 5
         
         with self.assertRaises(GnmiSubscription.NoNtpConfigured):
             GnmiSubscriptionStream(
                 device=device,
-                responses=[self.make_test_subscribe_response()],
+                responses=[self.make_test_notification()],
                 **request
             )
 
@@ -3210,15 +3209,14 @@ class TestYangExec(unittest.TestCase):
                             'xpath': '/System/igmp-items/inst-items/bootupDelay'
                         }
                     ], 
-                    'verifier': rpc_verify.process_operational_state, 
                     'namespace_modules': 
                     {
                         'top': 'Cisco-NX-OS-device'
                     }, 
-                    'decode': GnmiMessage.process_subscribe_response, 
+                     
                     'log': log
                 }
-
+        request['verifier'] = DefaultVerifier(None, request['returns'], log)
         # Response 1
         path_elem1 = proto.gnmi_pb2.PathElem()
         path_elem1.KeyEntry.key = ""
@@ -3431,7 +3429,9 @@ class TestYangExec(unittest.TestCase):
          device = TestDevice(response)
 
          namespace = rpc_data['namespace']
-         json_dicts, opfields = GnmiMessage.process_get_response(response, namespace)
+         verifier = DefaultVerifier(None, [], log)
+         json_dicts, opfields = verifier.gnmi_decoder(
+             response, namespace, 'get')
          self.assertEqual(json_dicts,['nbm', 'igmpInternal', 'vrf'])
 
     def test_run_subscribe_once_gnmi_list_2(self):
@@ -3487,14 +3487,13 @@ class TestYangExec(unittest.TestCase):
                                 'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list[name="default"]/eventHist-items/EventHistory-list[type="intfDebugs"]/size'
                             }
                         ],
-                    'verifier': rpc_verify.process_operational_state,
                     'namespace_modules':
                         {
                             'top': 'Cisco-NX-OS-device'
                         },
-                    'decode': GnmiMessage.process_subscribe_response,
                     'log': log
                 }
+        request['verifier'] = DefaultVerifier(None, request['returns'], log)
 
         # Response 1
         path_elem1 = proto.gnmi_pb2.PathElem()
@@ -3673,15 +3672,14 @@ class TestYangExec(unittest.TestCase):
                                 'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list[name="default"]/eventHist-items/EventHistory-list[type="intfDebugs"]/size'
                             }
                         ],
-                    'verifier': rpc_verify.process_operational_state,
                     'namespace_modules':
                         {
                             'top': 'Cisco-NX-OS-device'
                         },
-                    'decode': GnmiMessage.process_subscribe_response,
+                    
                     'log': log
                 }
-
+        request['verifier'] = DefaultVerifier(None, request['returns'], log)
         # Response 1
         path_elem1 = proto.gnmi_pb2.PathElem()
         path_elem1.KeyEntry.key = ""
@@ -3860,15 +3858,14 @@ class TestYangExec(unittest.TestCase):
                                 'xpath': '/System/igmp-items/inst-items/dom-items/Dom-list[name="default"]/eventHist-items/EventHistory-list[type="intfDebugs"]/size'
                             }
                         ],
-                    'verifier': rpc_verify.process_operational_state,
                     'namespace_modules':
                         {
                             'top': 'Cisco-NX-OS-device'
                         },
-                    'decode': GnmiMessage.process_subscribe_response,
+                    
                     'log': log
                 }
-
+        request['verifier'] = DefaultVerifier(None, request['returns'], log)
         # Response 1
         path_elem1 = proto.gnmi_pb2.PathElem()
         path_elem1.KeyEntry.key = ""
@@ -3996,10 +3993,11 @@ class TestYangExec(unittest.TestCase):
 
 
     def test_proto_decimal_val(self):
-        request = self.make_test_subscribe_request()
-        request['returns'][0]['value'] = 6.0 / (10 ** 30)
-        request['returns'][0]['datatype'] = 'decimal64'
-        response = self.make_test_subscribe_response()
+        request = self.make_test_request()
+        verifier: DefaultVerifier = request['verifier']
+        verifier.returns[0].value = 6.0 / (10 ** 30)
+        verifier.returns[0].datatype = 'decimal64'
+        response = self.make_test_notification()
         path_elem1 = proto.gnmi_pb2.PathElem()
         path_elem1.name = "System/igmp-items/inst-items/bootupDelay"
         response.update.update[0].path.elem.pop()
@@ -4016,7 +4014,49 @@ class TestYangExec(unittest.TestCase):
         subscribe_thread.join()
         self.assertEqual(subscribe_thread.result, True)
 
-    def make_test_subscribe_response(self) -> proto.gnmi_pb2.SubscribeResponse:
+    def test_custom_verifier(self):
+        # Loading custom verifier for GetResponse
+        rpc_data, returns, format = self.make_test_run_gnmi_data()
+        device = TestDevice(
+            self.make_test_notification(proto.gnmi_pb2.GetResponse))
+        format['verifier'] = {
+            'class': 'genie.libs.sdk.triggers.blitz.tests.test_verifier.CustomVerifier'}
+        get_result = run_gnmi('get', device, '', '', rpc_data, returns, format=format)
+        self.assertTrue(get_result)
+
+        # Loading custom verifier for SubscribeResponse
+        device = TestDevice(
+            self.make_test_notification(proto.gnmi_pb2.SubscribeResponse))
+        subscribe_result = run_gnmi('subscribe', device, '',
+                        '', rpc_data, returns, format=format)
+        subscribe_result.join()
+        self.assertTrue(subscribe_result)
+
+    
+    def test_custom_verifier_extra_args(self):
+        rpc_data, returns, format = self.make_test_run_gnmi_data()
+        device = TestDevice(
+            self.make_test_notification(proto.gnmi_pb2.GetResponse))
+        format['verifier'] = {
+            'class': 'genie.libs.sdk.triggers.blitz.tests.test_verifier.VerifierWithArgs',
+            'my_arg1': 1,
+            'my_arg2': 'test'
+            }
+        get_result = run_gnmi('get', device, '', '',
+                              rpc_data, returns, format=format)
+        self.assertTrue(get_result)
+
+    def test_custom_decoder(self):
+        rpc_data, returns, format = self.make_test_run_gnmi_data()
+        device = TestDevice(
+            self.make_test_notification(proto.gnmi_pb2.GetResponse))
+        format['verifier'] = {
+            'class': 'genie.libs.sdk.triggers.blitz.tests.test_verifier.VerifierWithCustomDecoder'}
+        get_result = run_gnmi('get', device, '', '',
+                            rpc_data, returns, format=format)
+        self.assertTrue(get_result)
+
+    def make_test_notification(self, method = proto.gnmi_pb2.SubscribeResponse) -> proto.gnmi_pb2.SubscribeResponse:
         path_elem1 = proto.gnmi_pb2.PathElem()
         path_elem1.KeyEntry.key = ""
         path_elem1.KeyEntry.value = ""
@@ -4041,13 +4081,16 @@ class TestYangExec(unittest.TestCase):
         notification1.prefix.MergeFrom(proto.gnmi_pb2.Path())
         notification1.update.append(update1)
 
-        response1 = proto.gnmi_pb2.SubscribeResponse()
-        response1.update.MergeFrom(notification1)
+        response1 = method()
+        if method == proto.gnmi_pb2.SubscribeResponse:
+            response1.update.MergeFrom(notification1)
+        elif method == proto.gnmi_pb2.GetResponse:
+            response1.notification.append(notification1)
         return response1
 
-    def make_test_subscribe_request(self) -> dict:
+    def make_test_request(self) -> dict:
         rpc_verify = RpcVerify(log=log, capabilities=[])
-        return {
+        request = {
             'namespace':
             {
                 'top': 'Cisco-NX-OS-device'
@@ -4075,15 +4118,43 @@ class TestYangExec(unittest.TestCase):
                     'xpath': '/System/igmp-items/inst-items/bootupDelay'
                 }
             ],
-            'verifier': rpc_verify.process_operational_state,
             'namespace_modules':
             {
                 'top': 'Cisco-NX-OS-device'
             },
-            'decode': GnmiMessage.process_subscribe_response,
             'log': log
         }
+        request['verifier'] = DefaultVerifier(None, request['returns'], log)
+        return request
+        
+    def make_test_run_gnmi_data(self) -> dict:
+        rpc_data = {
+            'namespace': {
+                'top': 'Cisco-NX-OS-device'
+            },
+            'nodes': [{
+                'nodetype': 'leaf',
+                'datatype': '',
+                'xpath': 'System/igmp-items/inst-items/bootupDelay',
+                'name': 'bootupDelay',
+            }]
+        }
+        returns = [
+                {
+                    'datatype': 'ipmc_BootupDelay',
+                    'nodetype': 'leaf',
+                    'name': 'bootupDelay',
+                    'op': '==',
+                    'selected': 'True',
+                    'value': 0,
+                    'xpath': '/System/igmp-items/inst-items/bootupDelay'
+                }
+            ]
 
+        format = {
+            'encoding': 'JSON',
+        }
+        return rpc_data, returns, format
 
 if __name__ == '__main__':
     unittest.main()

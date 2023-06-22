@@ -5,7 +5,7 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-    no power-priority high 13: "no power-priority high 13\r\n"
+    no power-priority high: "no power-priority high\r\n"
     stack-power switch 1: "stack-power switch 1\r\n"
   prompt: stack3-nyquist-1(config)#
 configure_line:

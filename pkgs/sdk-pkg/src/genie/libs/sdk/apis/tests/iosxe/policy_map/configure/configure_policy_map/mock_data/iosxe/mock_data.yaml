@@ -1,22 +1,28 @@
 configure:
   commands:
-    class class-default: "class class-default\r\n"
+    bandwidth percent 40: "Priority not allowed in conjunction with bandwidth\r\n"
+    bandwidth remaining percent 50: "bandwidth remaining percent 50\r\n"
+    class test: "class test\r\n"
     end:
       new_state: execute
     line console 0:
       new_state: configure_line
     no logging console: ''
-    police rate 2000000000: "police rate 2000000000\r\n"
-    policy-map rar_policer: "policy-map rar_policer\r\n"
+    police rate 2000000000: "bandwidth percent 40\r\n"
+    policy-map policy1: "policy-map policy1\r\n"
+    priority level 2: "priority level 2\r\n"
+    priority level 3: "priority level 3\r\n"
+    police cir percent 30: "police cir percent 30\r\n"
     set cos 5: "set cos 5\r\n"
+    set cos cos table test: "set cos cos table test\r\n"
     set dscp cs1: "set dscp cs1\r\n"
-  prompt: c8kv-1(config)#
+  prompt: stack3-nyquist-1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: c8kv-1(config-line)#
+  prompt: stack3-nyquist-1(config-line)#
 connect:
   commands:
     ? ''
@@ -36,4 +42,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: c8kv-1#
+  prompt: stack3-nyquist-1#

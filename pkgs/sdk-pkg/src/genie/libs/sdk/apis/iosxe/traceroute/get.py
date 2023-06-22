@@ -146,7 +146,8 @@ def get_traceroute_ipv6(device, addr, source=None, dscp=None, numeric=None,
         output = device.execute(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Failed to execute {cmd} on device {device.name}. Error:\n{e}')
-
+    
+    cmd = f'traceroute ipv6 {addr}'
     try:
         parsed_ouput = device.parse(cmd, output=output)
     except SchemaEmptyParserError as e:

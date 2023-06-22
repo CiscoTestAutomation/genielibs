@@ -5,14 +5,17 @@ configure:
     line console 0:
       new_state: configure_line
     no ipv6 multicast-routing: "no ipv6 multicast-routing\r\n"
+    no ipv6 multicast-routing vrf green: "no ipv6 multicast-routing vrf green\r\n\
+      %VPN Routing instance green not enabled for address-family ipv6, or in deleting\
+      \ state.\r\n"
     no logging console: ''
-  prompt: 9300x-A(config)#
+  prompt: stack3-nyquist-1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: 9300x-A(config-line)#
+  prompt: stack3-nyquist-1(config-line)#
 connect:
   commands:
     ? ''
@@ -32,4 +35,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: 9300x-A#
+  prompt: stack3-nyquist-1#

@@ -59,6 +59,7 @@ connect:
     # Argument Defaults
     # =================
     VIA = None
+    ALIAS = None
     TIMEOUT = 200
     RETRY_TIMEOUT = 0
     RETRY_INTERVAL = 0
@@ -68,6 +69,7 @@ connect:
     # ============
     schema = {
         Optional('via', description="Which connection to use from the testbed file. Uses the default connection if not specified."): str,
+        Optional('alias', description="Which connection alias to use."): str,
         Optional('timeout', description=f"The timeout for the connection to complete in seconds. Defaults to {TIMEOUT}.", default=TIMEOUT): Or(str, int),
         Optional('retry_timeout', description=f"Overall timeout for retry mechanism in seconds. Defaults to {RETRY_TIMEOUT} which means no retry.", default=RETRY_TIMEOUT): Or(str, int, float),
         Optional('retry_interval', description=f"Interval for retry mechanism in seconds. Defaults to {RETRY_INTERVAL} which means no retry.", default=RETRY_INTERVAL): Or(str, int, float),
@@ -80,7 +82,7 @@ connect:
         'connect'
     ]
 
-    def connect(self, steps, device, via=VIA, timeout=TIMEOUT,
+    def connect(self, steps, device, via=VIA, alias=ALIAS, timeout=TIMEOUT,
                 retry_timeout=RETRY_TIMEOUT, retry_interval=RETRY_INTERVAL):
 
         with steps.start("Connecting to the device") as step:
@@ -100,10 +102,14 @@ connect:
                 device.instantiate(connection_timeout=timeout,
                                    learn_hostname=True,
                                    prompt_recovery=True,
-                                   via=via)
+                                   via=via,
+                                   alias=alias)
 
                 try:
-                    device.connect()
+                    if alias:
+                        getattr(device, alias).connect()
+                    else:
+                        device.connect()
                 except Exception:
                     log.error("Connection to the device failed", exc_info=True)
                     device.destroy_all()
@@ -498,7 +504,7 @@ copy_to_linux:
 
                     if rename_images:
                         new_filename = rename_images + '_' + str(index) if index else rename_images
-                    
+
                     else:
                         new_filename = None
 
@@ -514,6 +520,7 @@ copy_to_linux:
                             unique_number=unique_number,
                             new_name=new_filename)
                     except Exception as e:
+                        log.exception('Cannot change filename')
                         step.failed(
                             "Can not change file name. Terminating clean:\n{e}".
                             format(e=e))
@@ -733,6 +740,8 @@ copy_to_device:
 
     protocol (str): Protocol used for copy operation.
 
+    connection_alias (str): Connection alias to use
+
     verify_num_images (bool, optional): Verify number of images provided by
         user for clean is correct. Defaults to True.
 
@@ -834,7 +843,8 @@ copy_to_device:
     UNIQUE_NUMBER = None
     RENAME_IMAGES = None
     PROMPT_RECOVERY = False
-
+    PROTOCOL = 'http'
+    CONNECTION_ALIAS = 'default'
 
     # ============
     # Stage Schema
@@ -842,14 +852,15 @@ copy_to_device:
     schema = {
         'origin': {
             Optional('files', description="Image files location on the server."): list,
-            Required('hostname', description="Hostname or address of the server."): str
+            Optional('hostname', description="Hostname or address of the server."): str
         },
         'destination': {
             Required('directory', description="Directory on the device to copy the images to."): str,
             Optional('standby_directory', description="Standby directory on the device to copy the images to"): str,
             Optional('stack_directory', description="Stack directories on the device to copy the images to"): list
         },
-        Required('protocol', description="Protocol used for copy operation."): str,
+        Optional('protocol', description="Protocol used for copy operation.", default=PROTOCOL): str,
+        Optional('connection_alias', description='Connection alias to use', default='default'): str,
         Optional('verify_num_images', description="Verify number of images provided by user for clean is correct.", default=VERIFY_NUM_IMAGES): bool,
         Optional('expected_num_images', description="Number of images expected to be provided by user for clean.", default=EXPECTED_NUM_IMAGES): int,
         Optional('vrf', description="Vrf used to copy. Defaults to an empty string.", default=VRF): str,
@@ -879,7 +890,9 @@ copy_to_device:
         'copy_to_device'
     ]
 
-    def copy_to_device(self, steps, device, origin, destination, protocol,
+    def copy_to_device(self, steps, device, origin, destination,
+                       protocol=PROTOCOL,
+                       connection_alias=CONNECTION_ALIAS,
                        verify_num_images=VERIFY_NUM_IMAGES,
                        expected_num_images=EXPECTED_NUM_IMAGES,
                        vrf=VRF,
@@ -903,384 +916,403 @@ copy_to_device:
                        **kwargs
                        ):
         log.info("Section steps:\n1- Verify correct number of images provided"
-                 "\n2- Get filesize of image files on remote server"
+                 "\n2- Get filesize of image files"
                  "\n3- Check if image files already exist on device"
                  "\n4- (Optional) Verify stability of image files"
                  "\n5- Verify free space on device else delete unprotected files"
                  "\n6- Copy image files to device"
                  "\n7- Verify copied image files are present on device")
 
-        # list of destination directories
-        destinations = []
 
-        # Get args
-        server = origin['hostname']
+        if connection_alias:
+            log.info(f'Using connection alias {connection_alias}')
 
-        # Establish FileUtils session for all FileUtils operations
-        file_utils = FileUtils(testbed=device.testbed)
+        with device.temp_default_alias(connection_alias):
 
-        string_to_remove = file_utils.get_server_block(server).get('path', '')
-        image_files = remove_string_from_image(images=origin['files'],
-                                               string=string_to_remove)
+            # list of destination directories
+            destinations = []
 
-        # Set active node destination directory
-        destination_act = destination['directory']
+            # Establish FileUtils session for all FileUtils operations
+            file_utils = FileUtils(testbed=device.testbed)
 
-        # Set standby node destination directory
-        if 'standby_directory' in destination:
-            destination_stby = destination['standby_directory']
-            destinations = [destination_stby, destination_act]
-        else:
-            destination_stby = None
-            destinations = [destination_act]
+            # Get args
+            server = origin.get('hostname')
 
-        if 'stack_directory' in destination:
-            destination_stack = destination['stack_directory']
-            for member_dir in destination_stack:
-                destinations.append(member_dir)
+            image_files = origin['files']
 
-        # Check remote server info present in testbed YAML
-        if not file_utils.get_server_block(server):
-            self.failed(
-                "Server '{}' was provided in the clean yaml file but "
-                "doesn't exist in the testbed file.\n".format(server))
+            if server:
+                # Check remote server info present in testbed YAML
+                if not file_utils.get_server_block(server):
+                    self.failed(
+                        "Server '{}' was provided in the clean yaml file but "
+                        "doesn't exist in the testbed file.\n".format(server))
 
-        # Check image files provided
-        if verify_num_images:
-            # Verify correct number of images provided
-            with steps.start("Verify correct number of images provided") as step:
-                if not verify_num_images_provided(
-                        image_list=image_files,
-                        expected_images=expected_num_images):
-                    step.failed(
-                        "Incorrect number of images provided. Please "
-                        "provide {} expected image(s) under destination"
-                        ".path in clean yaml file.\n".format(expected_num_images))
-                else:
-                    step.passed("Correct number of images provided")
+                string_to_remove = file_utils.get_server_block(server).get('path', '')
+                image_files = remove_string_from_image(images=origin['files'],
+                                                    string=string_to_remove)
 
-        # Loop over all image files provided by user
-        for index, file in enumerate(image_files):
-            # Init
-            files_to_copy = {}
-            unknown_size = False
+            # Set active node destination directory
+            destination_act = destination['directory']
 
-            # Get filesize of image files on remote server
-            with steps.start("Get filesize of '{}' on remote server '{}'".\
-                            format(file, server)) as step:
-                try:
-                    file_size = device.api.get_file_size_from_server(
-                        server=file_utils.get_hostname(server),
-                        path=file,
-                        protocol=protocol,
-                        timeout=timeout,
-                        fu_session=file_utils)
-                except FileNotFoundError:
-                    step.failed(
-                        "Can not find file {} on server {}. Terminating clean".
-                        format(file, server))
-                except Exception as e:
-                    log.warning(str(e))
-                    # Something went wrong, set file_size to -1
-                    file_size = -1
-                    unknown_size = True
-                    err_msg = "\nUnable to get filesize for file '{}' on "\
-                              "remote server {}".format(file, server)
-                    if overwrite:
-                        err_msg += " - will copy file to device"
-                    step.passx(err_msg)
-                else:
-                    step.passed("Verified filesize of file '{}' to be "
-                                "{} bytes".format(file, file_size))
-            for dest in destinations:
+            # Set standby node destination directory
+            if 'standby_directory' in destination:
+                destination_stby = destination['standby_directory']
+                destinations = [destination_stby, destination_act]
+            else:
+                destination_stby = None
+                destinations = [destination_act]
 
-                # Execute 'dir' before copying image files
-                dir_before = device.execute('dir {}'.format(dest))
+            if 'stack_directory' in destination:
+                destination_stack = destination['stack_directory']
+                for member_dir in destination_stack:
+                    destinations.append(member_dir)
 
-                # Check if file with same name and size exists on device
-                dest_file_path = os.path.join(dest, os.path.basename(file))
-                image_mapping = self.history[
-                    'CopyToDevice'].parameters.setdefault('image_mapping', {})
-                image_mapping.update({origin['files'][index]: dest_file_path})
-                with steps.start("Check if file '{}' exists on device {} {}".\
-                                format(dest_file_path, device.name, dest)) as step:
-                    # Check if file exists
-                    try:
-                        exist = device.api.verify_file_exists(
-                            file=dest_file_path,
-                            size=file_size,
-                            dir_output=dir_before)
-                    except Exception as e:
-                        exist = False
-                        log.warning("Unable to check if image '{}' exists on device {} {}."
-                                    "Error: {}".format(dest_file_path,
-                                                       device.name,
-                                                       dest,
-                                                       str(e)))
-
-                    if (not exist) or (exist and overwrite) or (exist and (unique_file_name or unique_number or rename_images)):
-                        # Update list of files to copy
-                        file_copy_info = {
-                            file: {
-                                'size': file_size,
-                                'dest_path': dest_file_path,
-                                'exist': exist
-                            }
-                        }
-                        files_to_copy.update(file_copy_info)
-                        # Print message to user
-                        step.passed("Proceeding with copying image {} to device {}".\
-                                    format(dest_file_path, device.name))
+            # Check image files provided
+            if verify_num_images:
+                # Verify correct number of images provided
+                with steps.start("Verify correct number of images provided") as step:
+                    if not verify_num_images_provided(
+                            image_list=image_files,
+                            expected_images=expected_num_images):
+                        step.failed(
+                            "Incorrect number of images provided. Please "
+                            "provide {} expected image(s) under destination"
+                            ".path in clean yaml file.\n".format(expected_num_images))
                     else:
-                        step.passed(
-                            "Image '{}' already exists on device {} {}, "
-                            "skipping copy".format(file, device.name, dest))
+                        step.passed("Correct number of images provided")
 
-                # Check if any file copy is in progress
-                if check_file_stability:
-                    for file in files_to_copy:
-                        with steps.start("Verify stability of file '{}'".\
-                                         format(file)) as step:
-                            # Check file stability
-                            try:
-                                stable = device.api.verify_file_size_stable_on_server(
-                                    file=file,
-                                    server=file_utils.get_hostname(server),
-                                    protocol=protocol,
-                                    fu_session=file_utils,
-                                    delay=stability_check_delay,
-                                    max_tries=stability_check_tries)
+            # Loop over all image files provided by user
+            for index, file in enumerate(image_files):
+                # Init
+                files_to_copy = {}
+                unknown_size = False
 
-                                if not stable:
-                                    step.failed(
-                                        "The size of file '{}' on server is not "
-                                        "stable\n".format(file), )
-                                else:
-                                    step.passed(
-                                        "Size of file '{}' is stable".format(file))
-                            except NotImplementedError:
-                                # cannot check using tftp
-                                step.passx(
-                                    "Unable to check file stability over {protocol}"
-                                    .format(protocol=protocol))
-                            except Exception as e:
-                                log.error(str(e))
-                                step.failed(
-                                    "Error while verifying file stability on "
-                                    "server\n")
-
-                # Verify available space on the device is sufficient for image copy, delete
-                # unprotected files if needed, copy file to the device
-                # unless overwrite: False
-                if files_to_copy:
-                    with steps.start(
-                            "Verify sufficient free space on device '{}' '{}' or delete"
-                            " unprotected files".format(device.name,
-                                                        dest)) as step:
-
-                        if unknown_size:
-                            total_size = -1
-                            log.warning("Amount of space required cannot be confirmed, "
-                                        "copying the files on the device '{}' '{}' may fail".\
-                                        format(device.name, dest))
-
-                        if not protected_files:
-                            protected_files = []
-
-                        # Try to free up disk space if skip_deletion is not set to True
-                        if not skip_deletion:
-                            # TODO: add golden images, config to protected files once we have golden section
-                            golden_config = find_clean_variable(
-                                self, 'golden_config')
-                            golden_image = find_clean_variable(
-                                self, 'golden_image')
-
-                            if golden_config:
-                                protected_files.extend(golden_config)
-                            if golden_image:
-                                protected_files.extend(golden_image)
-
-                            # Only calculate size of file being copied
-                            total_size = sum(0 if file_data['exist'] \
-                                             else file_data['size'] for \
-                                             file_data in files_to_copy.values())
-
-                            try:
-                                free_space = device.api.free_up_disk_space(
-                                    destination=dest,
-                                    required_size=total_size,
-                                    skip_deletion=skip_deletion,
-                                    protected_files=protected_files,
-                                    min_free_space_percent=min_free_space_percent,
-                                    dir_output=dir_before,
-                                    allow_deletion_failure=True)
-                                if not free_space:
-                                    step.failed("Unable to create enough space for "
-                                                   "image on device {} {}".\
-                                                   format(device.name, dest))
-                                else:
-                                    step.passed(
-                                        "Device {} {} has sufficient space to "
-                                        "copy images".format(device.name, dest))
-                            except Exception as e:
-                                log.error(str(e))
-                                step.failed("Error while creating free space for "
-                                               "image on device {} {}".\
-                                               format(device.name, dest))
-
-                # Copy the file to the devices
-                for file, file_data in files_to_copy.items():
-                    with steps.start("Copying image file {} to device {} {}".\
-                                     format(file, device.name, dest)) as step:
-
-                        # Copy file unless overwrite is False
-                        if not overwrite and file_data['exist'] and not (unique_file_name or unique_number or rename_images):
-                            step.skipped(
-                                "File with the same name size exists on "
-                                "the device {} {}, skipped copying".format(
-                                    device.name, dest))
-
-                        for i in range(1, copy_attempts + 1):
-                            if unique_file_name or unique_number or rename_images:
-
-                                log.info('renaming files for copying')
-                                if rename_images:
-                                    rename_images = rename_images + '_' + str(index)
-
-                                try:
-                                    new_name = device.api.modify_filename(
-                                        file=os.path.basename(file),
-                                        directory=destination_act,
-                                        server=server,
-                                        protocol=protocol,
-                                        unique_file_name=unique_file_name,
-                                        unique_number=unique_number,
-                                        new_name=rename_images)
-                                except Exception as e:
-                                    step.failed(
-                                        "Can not change file name. Terminating clean:\n{e}".format(e=e))
-
-                                log.info(f'Renamed {os.path.basename(file)} to {new_name}')
-
-                                renamed_local_path = os.path.join(dest, new_name)
-
-                                renamed_file_data = {x: y for x,y in file_data.items()}
-                                renamed_file_data['dest_path'] = renamed_local_path
-
-                                self.history['CopyToDevice'].parameters['image_mapping'][file] = renamed_local_path
-
-                                try:
-                                    device.api.\
-                                        copy_to_device(protocol=protocol,
-                                                       server=file_utils.get_hostname(server),
-                                                       remote_path=file,
-                                                       local_path=renamed_local_path,
-                                                       vrf=vrf,
-                                                       timeout=timeout,
-                                                       compact=compact,
-                                                       use_kstack=use_kstack,
-                                                       interface=interface,
-                                                       overwrite=overwrite,
-                                                       prompt_recovery=prompt_recovery,
-                                                       **kwargs)
-                                except Exception as e:
-                                    # Retry attempt if user specified
-                                    if i < copy_attempts:
-                                        log.warning("Attempt #{}: Unable to copy {} to '{} {}' due to:\n{}".\
-                                                    format(i, file, device.name, dest, e))
-                                        log.info("Sleeping for {} seconds before retrying"
-                                                 .format(copy_attempts_sleep))
-                                        time.sleep(copy_attempts_sleep)
-                                        continue
-                                    else:
-                                        log.error(str(e))
-                                        step.failed(
-                                            "Failed to copy image '{}' to '{}' on device"
-                                            " '{}'\n".format(file, dest,
-                                                             device.name), )
-                            else:
-                                try:
-                                    device.api. \
-                                        copy_to_device(protocol=protocol,
-                                                       server=file_utils.get_hostname(server),
-                                                       remote_path=file,
-                                                       local_path=file_data['dest_path'],
-                                                       vrf=vrf,
-                                                       timeout=timeout,
-                                                       compact=compact,
-                                                       use_kstack=use_kstack,
-                                                       interface=interface,
-                                                       overwrite=overwrite,
-                                                       prompt_recovery=prompt_recovery,
-                                                       **kwargs)
-                                except Exception as e:
-                                    # Retry attempt if user specified
-                                    if i < copy_attempts:
-                                        log.warning("Attempt #{}: Unable to copy {} to '{} {}' due to:\n{}". \
-                                                    format(i, file, device.name, dest, e))
-                                        log.info("Sleeping for {} seconds before retrying"
-                                                 .format(copy_attempts_sleep))
-                                        time.sleep(copy_attempts_sleep)
-                                        continue
-                                    else:
-                                        log.error(str(e))
-                                        step.failed(
-                                            "Failed to copy image '{}' to '{}' on device"
-                                            " '{}'\n".format(file, dest,
-                                                             device.name), )
-
-                            log.info(
-                                "File {} has been copied to {} on device {}"
-                                " successfully".format(file, dest,
-                                                       device.name))
-                            success_copy_ha = True
-                            break
-
-                        # Save the file copied path and size info for future use
-                        history = self.history['CopyToDevice'].parameters.\
-                                            setdefault('files_copied', {})
-
-                        if unique_file_name or unique_number or rename_images:
-                            history.update({file: renamed_file_data})
+                if server:
+                    # Get filesize of image files on remote server
+                    with steps.start("Get filesize of '{}' on remote server '{}'".\
+                                    format(file, server)) as step:
+                        try:
+                            file_size = device.api.get_file_size_from_server(
+                                server=file_utils.get_hostname(server),
+                                path=file,
+                                protocol=protocol,
+                                timeout=timeout,
+                                fu_session=file_utils)
+                        except FileNotFoundError:
+                            step.failed(
+                                "Can not find file {} on server {}. Terminating clean".
+                                format(file, server))
+                        except Exception as e:
+                            log.warning(str(e))
+                            # Something went wrong, set file_size to -1
+                            file_size = -1
+                            unknown_size = True
+                            err_msg = "\nUnable to get filesize for file '{}' on "\
+                                    "remote server {}".format(file, server)
+                            if overwrite:
+                                err_msg += " - will copy file to device"
+                            step.passx(err_msg)
                         else:
-                            history.update({file: file_data})
+                            step.passed("Verified filesize of file '{}' to be "
+                                        "{} bytes".format(file, file_size))
+                else:
+                    with steps.start(f"Get filesize of '{file}'") as step:
+                        file_size = os.stat(file).st_size
+                        log.info(f'Local file has size {file_size}')
 
-                with steps.start("Verify images successfully copied") as step:
-                    # If nothing copied don't need to verify, skip
-                    if 'files_copied' not in self.history[
-                            'CopyToDevice'].parameters:
-                        step.skipped(
-                            "Image files were not copied for {} {} in previous steps, "
-                            "skipping verification steps".format(device.name, dest))
+                for dest in destinations:
 
-                    # Execute 'dir' after copying image files
-                    dir_after = device.execute('dir {}'.format(dest))
+                    # Check if file with same name and size exists on device
+                    dest_file_path = os.path.join(dest, os.path.basename(file))
+                    image_mapping = self.history[
+                        'CopyToDevice'].parameters.setdefault('image_mapping', {})
+                    image_mapping.update({origin['files'][index]: dest_file_path})
+                    with steps.start("Check if file '{}' exists on device {} {}".\
+                                    format(dest_file_path, device.name, dest)) as step:
+                        # Execute 'dir' before copying image files
+                        dir_before = device.execute('dir {}'.format(dest))
 
-                    for name, image_data in self.history['CopyToDevice'].\
-                                                    parameters['files_copied'].items():
-                        with step.start("Verify image '{}' copied to {} on device {}".\
-                                        format(image_data['dest_path'], dest, device.name)) as substep:
-                            # if size is -1 it means it failed to get the size
-                            if not device.api.verify_file_exists(file=image_data['dest_path'],
-                                                                 size=image_data['size'],
-                                                                 dir_output=dir_after):
-                                substep.failed(
-                                    "Either the file failed to copy OR the local file size is different "
-                                    "than the origin file size on the device {}.".format(device.name))
-                            else:
-                                file_name = os.path.basename(file)
-                                if file_name not in protected_files:
-                                    protected_files.append(file_name)
-                                log.info('{file_name} added to protected list'.format(file_name=file_name))
-                                if image_data['size'] != -1:
-                                    substep.passed(
-                                        "File was successfully copied to device {}. "
-                                        "Local file size is the same as the origin file size.".\
-                                        format(device.name))
+                        # Check if file exists
+                        try:
+                            exist = device.api.verify_file_exists(
+                                file=dest_file_path,
+                                size=file_size,
+                                dir_output=dir_before)
+                        except Exception as e:
+                            exist = False
+                            log.warning("Unable to check if image '{}' exists on device {} {}."
+                                        "Error: {}".format(dest_file_path,
+                                                        device.name,
+                                                        dest,
+                                                        str(e)))
+
+                        if (not exist) or (exist and overwrite) or (exist and (unique_file_name or unique_number or rename_images)):
+                            # Update list of files to copy
+                            file_copy_info = {
+                                file: {
+                                    'size': file_size,
+                                    'dest_path': dest_file_path,
+                                    'exist': exist
+                                }
+                            }
+                            files_to_copy.update(file_copy_info)
+                            # Print message to user
+                            step.passed("Proceeding with copying image {} to device {}".\
+                                        format(dest_file_path, device.name))
+                        else:
+                            step.passed(
+                                "Image '{}' already exists on device {} {}, "
+                                "skipping copy".format(file, device.name, dest))
+
+                    # Check if any file copy is in progress
+                    if check_file_stability:
+                        for file in files_to_copy:
+                            with steps.start("Verify stability of file '{}'".\
+                                            format(file)) as step:
+                                # Check file stability
+                                try:
+                                    stable = device.api.verify_file_size_stable_on_server(
+                                        file=file,
+                                        server=file_utils.get_hostname(server),
+                                        protocol=protocol,
+                                        fu_session=file_utils,
+                                        delay=stability_check_delay,
+                                        max_tries=stability_check_tries)
+
+                                    if not stable:
+                                        step.failed(
+                                            "The size of file '{}' on server is not "
+                                            "stable\n".format(file), )
+                                    else:
+                                        step.passed(
+                                            "Size of file '{}' is stable".format(file))
+                                except NotImplementedError:
+                                    # cannot check using tftp
+                                    step.passx(
+                                        "Unable to check file stability over {protocol}"
+                                        .format(protocol=protocol))
+                                except Exception as e:
+                                    log.error(str(e))
+                                    step.failed(
+                                        "Error while verifying file stability on "
+                                        "server\n")
+
+                    # Verify available space on the device is sufficient for image copy, delete
+                    # unprotected files if needed, copy file to the device
+                    # unless overwrite: False
+                    if files_to_copy:
+                        with steps.start(
+                                "Verify sufficient free space on device '{}' '{}' or delete"
+                                " unprotected files".format(device.name,
+                                                            dest)) as step:
+
+                            if unknown_size:
+                                total_size = -1
+                                log.warning("Amount of space required cannot be confirmed, "
+                                            "copying the files on the device '{}' '{}' may fail".\
+                                            format(device.name, dest))
+
+                            if not protected_files:
+                                protected_files = []
+
+                            # Try to free up disk space if skip_deletion is not set to True
+                            if not skip_deletion:
+                                # TODO: add golden images, config to protected files once we have golden section
+                                golden_config = find_clean_variable(
+                                    self, 'golden_config')
+                                golden_image = find_clean_variable(
+                                    self, 'golden_image')
+
+                                if golden_config:
+                                    protected_files.extend(golden_config)
+                                if golden_image:
+                                    protected_files.extend(golden_image)
+
+                                # Only calculate size of file being copied
+                                total_size = sum(0 if file_data['exist'] \
+                                                else file_data['size'] for \
+                                                file_data in files_to_copy.values())
+
+                                try:
+                                    free_space = device.api.free_up_disk_space(
+                                        destination=dest,
+                                        required_size=total_size,
+                                        skip_deletion=skip_deletion,
+                                        protected_files=protected_files,
+                                        min_free_space_percent=min_free_space_percent,
+                                        dir_output=dir_before,
+                                        allow_deletion_failure=True)
+                                    if not free_space:
+                                        step.failed("Unable to create enough space for "
+                                                    "image on device {} {}".\
+                                                    format(device.name, dest))
+                                    else:
+                                        step.passed(
+                                            "Device {} {} has sufficient space to "
+                                            "copy images".format(device.name, dest))
+                                except Exception as e:
+                                    log.error(str(e))
+                                    step.failed("Error while creating free space for "
+                                                "image on device {} {}".\
+                                                format(device.name, dest))
+
+                    # Copy the file to the devices
+                    for file, file_data in files_to_copy.items():
+                        with steps.start("Copying image file {} to device {} {}".\
+                                        format(file, device.name, dest)) as step:
+
+                            # Copy file unless overwrite is False
+                            if not overwrite and file_data['exist'] and not (unique_file_name or unique_number or rename_images):
+                                step.skipped(
+                                    "File with the same name size exists on "
+                                    "the device {} {}, skipped copying".format(
+                                        device.name, dest))
+
+                            for i in range(1, copy_attempts + 1):
+                                if unique_file_name or unique_number or rename_images:
+
+                                    log.info('renaming files for copying')
+                                    if rename_images:
+                                        rename_images = rename_images + '_' + str(index)
+
+                                    try:
+                                        new_name = device.api.modify_filename(
+                                            file=os.path.basename(file),
+                                            directory=destination_act,
+                                            server=server,
+                                            protocol=protocol,
+                                            unique_file_name=unique_file_name,
+                                            unique_number=unique_number,
+                                            new_name=rename_images)
+                                    except Exception as e:
+                                        step.failed(
+                                            "Can not change file name. Terminating clean:\n{e}".format(e=e))
+
+                                    log.info(f'Renamed {os.path.basename(file)} to {new_name}')
+
+                                    renamed_local_path = os.path.join(dest, new_name)
+
+                                    renamed_file_data = {x: y for x,y in file_data.items()}
+                                    renamed_file_data['dest_path'] = renamed_local_path
+
+                                    self.history['CopyToDevice'].parameters['image_mapping'][file] = renamed_local_path
+
+                                    try:
+                                        res = device.api.\
+                                            copy_to_device(protocol=protocol,
+                                                        server=file_utils.get_hostname(server) if server else None,
+                                                        remote_path=file,
+                                                        local_path=renamed_local_path,
+                                                        vrf=vrf,
+                                                        timeout=timeout,
+                                                        compact=compact,
+                                                        use_kstack=use_kstack,
+                                                        interface=interface,
+                                                        overwrite=overwrite,
+                                                        prompt_recovery=prompt_recovery,
+                                                        **kwargs)
+                                        if not res:
+                                            raise Exception('Failed to copy file to device')
+                                    except Exception as e:
+                                        # Retry attempt if user specified
+                                        if i < copy_attempts:
+                                            log.warning("Attempt #{}: Unable to copy {} to '{} {}' due to:\n{}".\
+                                                        format(i, file, device.name, dest, e))
+                                            log.info("Sleeping for {} seconds before retrying"
+                                                    .format(copy_attempts_sleep))
+                                            time.sleep(copy_attempts_sleep)
+                                            continue
+                                        else:
+                                            log.error(str(e))
+                                            step.failed(
+                                                "Failed to copy image '{}' to '{}' on device"
+                                                " '{}'\n".format(file, dest,
+                                                                device.name), )
                                 else:
-                                    substep.skipped(
-                                        "File has been copied to device {}.Cannot verify integrity as "
-                                        "the original file size is unknown.".format(device.name))
+                                    try:
+                                        res = device.api. \
+                                            copy_to_device(protocol=protocol,
+                                                        server=file_utils.get_hostname(server) if server else None,
+                                                        remote_path=file,
+                                                        local_path=file_data['dest_path'],
+                                                        vrf=vrf,
+                                                        timeout=timeout,
+                                                        compact=compact,
+                                                        use_kstack=use_kstack,
+                                                        interface=interface,
+                                                        overwrite=overwrite,
+                                                        prompt_recovery=prompt_recovery,
+                                                        **kwargs)
+                                        if not res:
+                                            raise Exception('Failed to copy file to device')
+                                    except Exception as e:
+                                        # Retry attempt if user specified
+                                        if i < copy_attempts:
+                                            log.warning("Attempt #{}: Unable to copy {} to '{} {}' due to:\n{}". \
+                                                        format(i, file, device.name, dest, e))
+                                            log.info("Sleeping for {} seconds before retrying"
+                                                    .format(copy_attempts_sleep))
+                                            time.sleep(copy_attempts_sleep)
+                                            continue
+                                        else:
+                                            log.error(str(e))
+                                            step.failed(
+                                                "Failed to copy image '{}' to '{}' on device"
+                                                " '{}'\n".format(file, dest,
+                                                                device.name), )
+
+                                log.info(
+                                    "File {} has been copied to {} on device {}"
+                                    " successfully".format(file, dest,
+                                                        device.name))
+                                success_copy_ha = True
+                                break
+
+                            # Save the file copied path and size info for future use
+                            history = self.history['CopyToDevice'].parameters.\
+                                                setdefault('files_copied', {})
+
+                            if unique_file_name or unique_number or rename_images:
+                                history.update({file: renamed_file_data})
+                            else:
+                                history.update({file: file_data})
+
+                    with steps.start("Verify images successfully copied") as step:
+                        # If nothing copied don't need to verify, skip
+                        if 'files_copied' not in self.history[
+                                'CopyToDevice'].parameters:
+                            step.skipped(
+                                "Image files were not copied for {} {} in previous steps, "
+                                "skipping verification steps".format(device.name, dest))
+
+                        # Execute 'dir' after copying image files
+                        dir_after = device.execute('dir {}'.format(dest))
+
+                        for name, image_data in self.history['CopyToDevice'].\
+                                                        parameters['files_copied'].items():
+                            with step.start("Verify image '{}' copied to {} on device {}".\
+                                            format(image_data['dest_path'], dest, device.name)) as substep:
+                                # if size is -1 it means it failed to get the size
+                                if not device.api.verify_file_exists(file=image_data['dest_path'],
+                                                                    size=image_data['size'],
+                                                                    dir_output=dir_after):
+                                    substep.failed(
+                                        "Either the file failed to copy OR the local file size is different "
+                                        "than the origin file size on the device {}.".format(device.name))
+                                else:
+                                    file_name = os.path.basename(file)
+                                    if file_name not in protected_files:
+                                        protected_files.append(file_name)
+                                    log.info('{file_name} added to protected list'.format(file_name=file_name))
+                                    if image_data['size'] != -1:
+                                        substep.passed(
+                                            "File was successfully copied to device {}. "
+                                            "Local file size is the same as the origin file size.".\
+                                            format(device.name))
+                                    else:
+                                        substep.skipped(
+                                            "File has been copied to device {}.Cannot verify integrity as "
+                                            "the original file size is unknown.".format(device.name))
 
 
 class WriteErase(BaseStage):

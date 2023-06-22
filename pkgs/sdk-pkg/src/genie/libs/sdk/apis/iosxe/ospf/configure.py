@@ -323,7 +323,7 @@ def configure_ospf_cost(device, interface, ospf_cost):
 
 
 def configure_ospf_networks(device, ospf_process_id, ip_address=None,\
-                             netmask=None, area=None,router_id=None, bfd=None):
+                             netmask=None, area=None, router_id=None, bfd=None, vrf_name=None):
     """ Configures ospf on networks
 
         Args:
@@ -340,8 +340,7 @@ def configure_ospf_networks(device, ospf_process_id, ip_address=None,\
         Raises:
             SubCommandFailure
     """
-    cmd = ['router ospf {ospf_process_id}'\
-        .format(ospf_process_id=ospf_process_id)]
+    cmd = [f'router ospf {ospf_process_id}{f" vrf {vrf_name}" if vrf_name else ""}']
 
     if ip_address:
         for ip in ip_address:
@@ -673,15 +672,15 @@ def configure_ospfv3(device, pid, router_id=None, vrf=None, nsr=None,
     if nsr:
         config.append("nsr")
     if address_family and traffic_type:
-        config.extend([
-            "address-family {addr} {traffic_type}"
-            .format(addr=address_family,traffic_type=traffic_type),
-            "router-id {id}".format(id=router_id)])
+        config.append(
+            f"address-family {address_family} {traffic_type}")
+        if router_id:
+            config.append(f"router-id {router_id}")
     elif address_family:
-        config.extend([
-            "address-family {addr}"
-            .format(addr=address_family),
-            "router-id {id}".format(id=router_id)])
+        config.append(
+            f"address-family {address_family}")
+        if router_id:
+            config.append(f"router-id {router_id}")
         if bfd:
             config.append("bfd {bfd}".format(bfd=bfd))
     if redistribute and metric and route_method and metric_type:
@@ -2003,6 +2002,26 @@ def configure_ipv6_ospf_router_id(device, process_id, ospf_ip):
         raise SubCommandFailure(f"Failed to configure ipv6 router ospf. Error:\n{e}")
 
 
+def unconfigure_ospf_from_interface(device, interface, ospf_process_id, area_id):
+    """ unconfigure ospf from interface 
+        Args:
+            device (`obj`): device to execute on
+            interface('str'): interface name            
+            ospf_process_id (`int`): In range (1-65535)
+            area_id('int'):In range (0-4294967295)
+    Return:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [f'interface {interface}',
+           f'no ip ospf {ospf_process_id} area {area_id}']   
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure ospf from interface Error:\n{e}")        
+
 def configure_ospfv3_ipsec_ah(device, pid, areaid, spi, method, ah_key, ah_key_type=None):
     '''
     configure ospfv3 ipsec authentication
@@ -2622,4 +2641,53 @@ def configure_snmp_if_index_on_ospfv3_process_id(device, ospf_process_id):
             "Could not configure snmp interface index on OSPFv3 process id. Error:\n{error}".format(
                 error=e
             )
+        )
+
+def redistribute_route_metric_vrf_green(device, ospf_process_id,vrf_name,
+                                                bgp_asn, ospf_metric
+                                                ):
+    """ redistribute_route_metric_vrf_green
+        Args:
+            device ('obj'): Device to use
+            ospf_process_id ('int'): Process id for ospf process
+            vrf_name ('str'): Ospf vrf name
+            bgp_asn('int'): BGP as Autonomous system number
+            ospf_metric ('int'): Metric for redistributed routes
+            
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [f"router ospf {ospf_process_id} vrf {vrf_name}",
+           f"redistribute static metric {ospf_metric}",
+           f"redistribute connected metric {ospf_metric}",
+           f"redistribute bgp {bgp_asn} metric {ospf_metric}"
+           ]    
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to redistribute metric under ospf. Error:\n{e}")        
+
+
+def redistribute_bgp_on_ospfv3(device, pid, type, as_num):
+    """redistribute bgp on ospfv3
+        Args:
+            device (`obj`): Device object
+            pid (`str`): Ospfv3 process id
+            type (`str`): ipv4 or ipv6
+            as_num (`str`): Autonomous system number
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config = [f"router ospfv3 {pid}", f"address-family {type} unicast",
+              f"redistribute bgp {as_num}", "exit-address-family"]
+    try:
+        device.configure(config)
+        
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to redistribute bgp on ospfv3 {device}, Error: {e}"
         )

@@ -9,10 +9,171 @@ import time
 from unicon.eal.dialogs import Statement, Dialog
 from unicon.core.errors import SubCommandFailure
 
+from genie.metaparser.util.exceptions import SchemaMissingKeyError
+
 # Import parser
 from genie.utils.timeout import Timeout
 
 log = logging.getLogger(__name__)
+
+
+def execute_change_installed_application_state(device, app_id, target_state, wait_timer=2):
+    """
+    Api to change the state of installed Application to target state
+        Args:
+            device ('obj') : Device object
+            app_id ('str'): abort timer value
+            target_state ('str') : target state of app_id (UNINSTALLED/DEPLOYED/ACTIVATED/RUNNING/STOPPED)
+            wait_timer ('int', optional'):  interval timer ( default 2)) 
+        Returns:
+            None
+        Raises:
+            SubCommandFailure    
+    """
+
+    target_state = target_state.upper()
+    current_state = ""
+    applist = {}
+
+    try:
+        applist = device.parse('show app-hosting list')
+    except SchemaMissingKeyError:
+        log.error(f"No Application Found. It may not be installed")
+        return False
+
+    if applist:
+        if app_id in applist['app_id']:
+            current_state = applist['app_id'][app_id]['state']
+            log.info(f'{app_id} has a current state {current_state} and target state is {target_state}')
+        else:
+            log.info(f"{app_id} not found in list of running applications")
+            return False
+
+    if target_state == current_state:
+        log.info(f'{app_id} has same current state and target state is: {target_state}')
+        return True
+
+    if current_state == 'UNINSTALLED':
+        # if current state is uninstalled exit
+        log.error(f'{app_id} is not installed to change state')
+        return False
+    elif current_state == 'INSTALLING':
+        log.error(f"Please wait for {app_id} to finish installing...")
+        return False
+
+    # States sequece is maintained based on the sequence of occurrence
+    state_index = ['UNINSTALLED', 'DEPLOYED', 'ACTIVATED', 'RUNNING', 'STOPPED']
+
+    current_state_index = state_index.index(current_state)
+    target_state_index = state_index.index(target_state)
+
+    if current_state == 'STOPPED':
+        # bring the current state to the target state using the IOS commands required
+        try:
+            if target_state == 'DEPLOYED':
+                device.execute('app-hosting deactivate appid %s' % app_id)
+            elif target_state == 'UNINSTALLED':
+                device.execute('app-hosting deactivate appid %s' % app_id)
+                device.execute('app-hosting uninstall appid %s' % app_id)
+                current_state = 'UNINSTALLED'
+            elif target_state == 'ACTIVATED':
+                device.execute('app-hosting activate appid %s' % app_id)
+            elif target_state == 'RUNNING':
+                device.execute('app-hosting start appid %s' % app_id)
+            time.sleep(wait_timer)
+        except SubCommandFailure:
+            raise SubCommandFailure(f"Could not change application state for {app_id}")
+        if current_state == 'UNINSTALLED' and target_state == 'UNINSTALLED':
+            log.info(f'State of {app_id} changed to Target state {target_state}')
+            return True
+    else:
+        # determine order of list traversal
+        if target_state_index > current_state_index:
+            for _ in state_index:
+                if current_state != target_state:
+                    # advance the device to the next application state
+                    try:
+                        if current_state == 'DEPLOYED':
+                            device.execute('app-hosting activate appid %s' % app_id)
+                        elif current_state == 'ACTIVATED':
+                            device.execute('app-hosting start appid %s' % app_id)
+                        elif current_state == 'RUNNING':
+                            device.execute('app-hosting stop appid %s' % app_id)
+                        elif current_state == 'STOPPED':
+                            device.execute('app-hosting deactivate appid %s' % app_id)
+                            time.sleep(wait_timer)
+                    except SubCommandFailure:
+                        raise SubCommandFailure(f"Could not change application state {app_id}")
+
+                    # verify current state
+                    try:
+                        applist = device.parse('show app-hosting list')
+                    except SchemaMissingKeyError as e:
+                        log.error(f"No Application Found \n{e}")
+
+                    if applist:
+                        if app_id in applist['app_id']:
+                            current_state = applist['app_id'][app_id]['state']
+                        else:
+                            log.info(f"{app_id} not found in list of running applications")
+                else:
+                    break
+
+        elif target_state_index < current_state_index:
+            for _ in reversed(state_index):
+                if current_state != target_state:
+                    try:
+                        if current_state == 'ACTIVATED':
+                            device.execute('app-hosting deactivate appid %s' % app_id)
+                        elif current_state == 'RUNNING':
+                            device.execute('app-hosting stop appid %s' % app_id)
+                        elif current_state == 'STOPPED':
+                            device.execute('app-hosting deactivate appid %s' % app_id)
+                        elif current_state == 'DEPLOYED':
+                            device.execute('app-hosting uninstall appid %s' % app_id)
+                            current_state = 'UNINSTALLED'
+                        time.sleep(wait_timer)
+                    except SubCommandFailure:
+                        raise SubCommandFailure(f"Could not change application state {app_id}")
+
+                    if target_state == 'UNINSTALLED' and current_state == 'UNINSTALLED':
+                        log.info(f'State of {app_id} changed to Target state {target_state}')
+                        return True
+                    else:
+                        # verify/update current state
+                        try:
+                            applist = device.parse('show app-hosting list')
+                        except SchemaMissingKeyError as e:
+                            log.error(f"No Application Found \n{e}")
+
+                        if applist:
+                            if app_id in applist['app_id']:
+                                current_state = applist['app_id'][app_id]['state']
+                            else:
+                                log.info(f"{app_id} not found in list of running applications")
+                else:
+                    break
+
+    # verify current state
+    try:
+        applist = device.parse('show app-hosting list')
+    except SchemaMissingKeyError as e:
+        log.error(f"No Application Found \n{e}")
+
+    if applist:
+        if app_id in applist['app_id']:
+            current_state = applist['app_id'][app_id]['state']
+        else:
+            log.info(f"{app_id} not found in list of running applications")
+
+    log.info(f'{app_id} has a current state {current_state} and target state is {target_state}')
+    if current_state == target_state:
+        log.info(f'State of {app_id} changed to Target state {target_state}')
+        return True
+    else:
+        log.error(f'Failed to change the State of {app_id} to Target state {target_state}')
+        return False
+
 
 def execute_install_application_bootflash(device, app_id, package_name, timeout=60, wait_timer=10):
     """
@@ -29,14 +190,14 @@ def execute_install_application_bootflash(device, app_id, package_name, timeout=
             SubCommandFailure
     """
     cmd = f"app-hosting install appid {app_id} "
-    
-    #Package name 
+
+    #Package name
     if package_name :
         cmd += f"package bootflash:{package_name}"
     log.info(f"Performing {cmd} on device {device.name}")
 
-    try:   
-        device.execute(cmd, timeout=timeout)       
+    try:
+        device.execute(cmd, timeout=timeout)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f'Error while executing {cmd} on {device.name}:\n {e}'

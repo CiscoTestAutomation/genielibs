@@ -3,10 +3,125 @@ import re
 import logging
 from six import string_types
 from pyats.log.utils import banner
-
+from dataclasses import dataclass
+from typing import Union, Callable, List, Tuple, Any
+import operator as o
+from copy import deepcopy
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
+
+
+def range_op(range: str, value: Any, datatype: str = '') -> bool:
+    """Check if value is in range."""
+    r1 = r2 = None
+    if len(range.split(',')) == 2:
+        rng = range.split(',')
+        r1 = rng[0]
+        r2 = rng[1]
+    elif len(range.split()) == 2:
+        rng = range.split()
+        r1 = rng[0]
+        r2 = rng[1]
+    elif range.count('-') == 1:
+        rng = range.split('-')
+        r1 = rng[0]
+        r2 = rng[1]
+    elif '-' in range.split():
+        rng = range.split()
+        r1 = rng[0]
+        r2 = rng[2]
+    try:
+        if datatype:
+            if datatype.startswith('int') or \
+                    datatype.startswith('uint'):
+                r1 = int(r1)
+                r2 = int(r2)
+                if r2 < r1:
+                    r1, r2 = (r2, r1)
+                # change value to int type for subsequent compare operation
+                value = int(value)
+            else:
+                r1 = float(r1)
+                r2 = float(r2)
+                if r2 < r1:
+                    r1, r2 = (r2, r1)
+                # change value to float type for subsequent compare operation
+                value = float(value)
+    except TypeError:
+        raise OptFields.InvalidRangeType
+    else:
+        r1 = float(r1)
+        r2 = float(r2)
+        if r2 < r1:
+            r1, r2 = (r2, r1)
+        # change value to float type for subsequent compare operation
+        value = float(value)
+    if value >= r1 and value <= r2:
+        return True
+    return False
+
+
+@dataclass
+class OptFields:
+    """Data class for opfields and metadata default value, edit operation."""
+    name: str = ''
+    value: Union[str, list] = ''
+    xpath: str = ''
+    op: Callable = None
+    default: str = ''
+    selected: bool = True
+    id: str = ''
+    datatype: str = ''
+    sequence: int = 0
+    default_xpath: str = ''
+    nodetype: str = ''
+    key: bool = False
+    _operators = {
+        '==': o.eq,
+        '!=': o.ne,
+        '>': o.gt,
+        '>=': o.ge,
+        '<': o.lt,
+        '<=': o.le,
+        'range': range_op,
+        'any': lambda x, y: True,
+    }
+
+    # def __post_init__(self):
+    #     self.op = self._operators[self.op]
+
+    class OperatorsException(Exception):
+        pass
+
+    class InvalidRangeType(OperatorsException):
+        pass
+
+
+class OperationalFieldsNode:
+    """Data class for opfields and metadata default value, edit operation."""
+
+    def __init__(self, name, value, xpath, selected, operator, default_value, edit_op):
+        """
+        Args:
+            name (str): Name of a node.
+            value (str): Value of a node.
+            xpath (str): Xpath to a node.
+            selected (bool): Select this node to be used in processing operational state.
+            op (str): Logifieldselfcal operator used to compare state.
+        Metadata:
+            default_value (bool): Default node value used.
+            edit_op (str): Edit operation used.
+        """
+        self.opfields = OptFields(
+            name=name,
+            value=value,
+            xpath=xpath,
+            selected=selected,
+            op=operator
+        )
+        self.default_value = default_value
+        self.edit_op = edit_op
 
 
 class EvalDatatype:
@@ -23,7 +138,7 @@ class EvalDatatype:
         'uint64': (0, 18446744073709551615)
     }
 
-    def __init__(self, value, field):
+    def __init__(self, value: Any, field: OptFields):
         """Usage: EvalDatatype(opfield).evalute()"""
         self.min_max_failed = False
         self.bool_failed = False
@@ -52,24 +167,24 @@ class EvalDatatype:
         return self._field
 
     @field.setter
-    def field(self, field):
+    def field(self, field: OptFields):
         self._field = field
-        datatype = field.get('datatype', '')
+        datatype = field.datatype
         self.datatype = datatype
         if datatype.startswith('int') or datatype.startswith('uint'):
-            self.fval = int(field.get('value'))
+            self.fval = int(field.value)
             if datatype not in self.integer_limits:
                 raise TypeError('Invalid datatype')
             self.min, self.max = self.integer_limits[datatype]
             if self.value < self.min or self.value > self.max:
                 self.min_max_failed = True
         elif datatype in ['decimal64', 'float']:
-            self.fval = float(field.get('value'))
+            self.fval = float(field.value)
             self.min, self.max = self.integer_limits['int64']
             if self.value < self.min or self.value > self.max:
                 self.min_max_failed = True
         elif datatype == 'boolean':
-            if field.get('op') not in ['==', '!=', 'any']:
+            if field.op not in ['==', '!=', 'any']:
                 self.bool_failed = True
             if self.value in [1, '1', 'true']:
                 self.value = 'true'
@@ -77,23 +192,23 @@ class EvalDatatype:
                 self.value = 'false'
             else:
                 self.bool_failed = True
-            if str(field.get('value')).lower() in ['1', 'true']:
+            if str(field.value).lower() in ['1', 'true']:
                 self.fval = 'true'
-            elif str(field.get('value')).lower() in ['0', 'false']:
+            elif str(field.value).lower() in ['0', 'false']:
                 self.fval = 'false'
             else:
                 self.bool_failed = True
         elif datatype == 'identityref':
             # TODO: basetype is string so might not get identityref.
             # strip prefix from values
-            val = field.get('value')
+            val = field.value
             self.fval = val[val.find(':') + 1:]
             val = self.value
             self.value = val[val.find(':') + 1:]
         else:
-            self.fval = field.get('value')
-        self.op = field.get('op')
-        self.fname = field.get('name', 'unknown field')
+            self.fval = field.value
+        self.op = field._operators[field.op]
+        self.fname = field.name if field.name else 'unknown field'
 
     def evaluate(self):
         if not self.datatype:
@@ -109,69 +224,17 @@ class EvalDatatype:
             self.value = re.findall(self.fval, self.value)
             if self.value:
                 self.fval = self.value
-        if self.op == 'any':
-            return True
-        if self.op == '==':
-            if isinstance(self.value, string_types):
-                if self.value != self.fval:
-                    # Check if values have prefix
-                    if self.value.count(':') == 1 and \
-                            self.fval.count(':') == 1:
-                        # Strip the prefix from values
-                        self.value = self.value.split(':')[1]
-                        self.fval = self.fval.split(':')[1]
-            return self.value == self.fval
-        elif self.op == '!=':
-            return self.value != self.fval
-        elif self.op == '<':
-            return self.value < self.fval
-        elif self.op == '>':
-            return self.value > self.fval
-        elif self.op == '<=':
-            return self.value <= self.fval
-        elif self.op == '>=':
-            return self.value >= self.fval
-
-
-class OperationalFieldsNode:
-    """Data class for opfields and metadata default value, edit operation."""
-
-    def __init__(self, name, value, xpath, selected, operator, default_value, edit_op):
-        """
-        Args:
-            name (str): Name of a node.
-            value (str): Value of a node.
-            xpath (str): Xpath to a node.
-            selected (bool): Select this node to be used in processing operational state.
-            op (str): Logical operator used to compare state.
-        Metadata:            
-            default_value (bool): Default node value used.
-            edit_op (str): Edit operation used.
-        """
-        self._opfields = dict(
-            name=name,
-            value=value,
-            xpath=xpath,
-            selected=selected,
-            op=operator
-        )
-        self._default_value = default_value
-        self._edit_op = edit_op
-
-    @property
-    def opfields(self):
-        """Dict representing opfields."""
-        return self._opfields
-
-    @property
-    def default_value(self):
-        """Default value used in opfields"""
-        return self._default_value
-
-    @property
-    def edit_op(self):
-        """Edit operation"""
-        return self._edit_op
+        result = self.op(self.value, self.fval)
+        if isinstance(self.value, string_types) and not result:
+            if self.value != self.fval:
+                # Check if values have prefix
+                if self.value.count(':') == 1 and \
+                        self.fval.count(':') == 1:
+                    # Strip the prefix from values
+                    self.value = self.value.split(':')[1]
+                    self.fval = self.fval.split(':')[1]
+            return self.op(self.value, self.fval)
+        return result
 
 
 class RpcVerify():
@@ -415,7 +478,7 @@ class RpcVerify():
         return (result, expected, response)
 
     @classmethod
-    def check_opfield(self, value, field):
+    def check_opfield(self, value: Any, field: OptFields):
         """Reply value is logically evaluated according to user expectations.
 
         User has the flexibility to apply logic to a reply's value.  If the
@@ -444,18 +507,17 @@ class RpcVerify():
         """
         log_msg = 'None'
 
-        if 'default_xpath' in field:
-            xpath = field['default_xpath']
+        if field.default_xpath:
+            xpath = field.default_xpath
         else:
-            xpath = field['xpath']
+            xpath = field.xpath
         try:
             # set this to operation in case we get an exception
-            eval_text = field['op']
+            op_name, op_method = field.op, field._operators[field.op]
+            eval_text = op_name
+            datatype = field.datatype
 
-            datatype = field.get('datatype', None)
-
-            if field['op'] == 'range':
-                r1 = r2 = None
+            if op_name == 'range':
                 try:
                     if not datatype:
                         value = float(value)
@@ -463,69 +525,30 @@ class RpcVerify():
                     log_msg = 'OPERATION VALUE {0}: {1} invalid for range {2}{3}'.format(
                             xpath,
                             str(value),
-                            str(field['value']),
+                            str(field.value),
                             ' FAILED'
                         )
                     return (False, log_msg)
 
-                if len(field['value'].split(',')) == 2:
-                    rng = field['value'].split(',')
-                    r1 = rng[0]
-                    r2 = rng[1]
-                elif len(field['value'].split()) == 2:
-                    rng = field['value'].split()
-                    r1 = rng[0]
-                    r2 = rng[1]
-                elif field['value'].count('-') == 1:
-                    rng = field['value'].split('-')
-                    r1 = rng[0]
-                    r2 = rng[1]
-                elif '-' in field['value'].split():
-                    rng = field['value'].split()
-                    r1 = rng[0]
-                    r2 = rng[2]
-
                 try:
-                    if datatype:
-                        if datatype.startswith('int') or \
-                                datatype.startswith('uint'):
-                            r1 = int(r1)
-                            r2 = int(r2)
-                            if r2 < r1:
-                                r1, r2 = (r2, r1)
-                            # change value to int type for subsequent compare operation
-                            value = int(value)
-                        else:
-                            r1 = float(r1)
-                            r2 = float(r2)
-                            if r2 < r1:
-                                r1, r2 = (r2, r1)
-                            # change value to float type for subsequent compare operation
-                            value = float(value)
-                    else:
-                        r1 = float(r1)
-                        r2 = float(r2)
-                        if r2 < r1:
-                            r1, r2 = (r2, r1)
-                        # change value to float type for subsequent compare operation
-                        value = float(value)
-                except TypeError:
+                    result = op_method(field.value, value, datatype)
+                except OptFields.InvalidRangeType:
                     log_msg = 'OPERATION VALUE {0}: range datatype "{1}" {2}{3}'.format(
                         xpath,
                         datatype,
-                        str(field['value']),
+                        str(field.value),
                         ' FAILED'
                     )
                     return (False, log_msg)
-                if value >= r1 and value <= r2:
+                if result:
                     log_msg = 'OPERATION VALUE {0}: {1} in range {2} SUCCESS'.format(
-                            xpath, str(value), str(field['value'])
+                            xpath, str(value), str(field.value)
                         )
                 else:
                     log_msg = 'OPERATION VALUE {0}: {1} out of range {2}{3}'.format(
                             xpath,
                             str(value),
-                            str(field['value']),
+                            str(field.value),
                             ' FAILED'
                         )
                     return (False, log_msg)
@@ -534,38 +557,42 @@ class RpcVerify():
                     value = str(value)
                     if value.lower() in ['true', 'false']:
                         value = value.lower()
-                    fval = str(field.get('value'))
+                    fval = str(field.value)
                     if fval.lower() in ['true', 'false']:
                         fval = fval.lower()
+
                     if (value.isnumeric() and not fval.isnumeric()) or \
                             (fval.isnumeric() and not value.isnumeric()):
                         # the eval_text will show the issue
-                        eval_text = '"' + value + '" ' + field['op']
+                        eval_text = '"' + value + '" ' + op_name
                         eval_text += ' "' + fval + '"'
                         log_msg = 'OPERATION VALUE {0}: {1} FAILED'.format(
                                 xpath, eval_text
                             )
                         return (False, log_msg)
                     if value.isnumeric():
-                        eval_text = value + ' ' + field['op'] + ' '
+                        result = op_method(value, fval)
+                        eval_text = value + ' ' + op_name + ' '
                         eval_text += fval
                     else:
                         try:
                             # See if we are dealing with floats
                             v1 = float(value)
                             v2 = float(fval)
-                            eval_text = str(v1) + ' ' + field['op'] + ' '
+                            eval_text = str(v1) + ' ' + op_name + ' '
                             eval_text += str(v2)
+                            result = op_method(v1, v2)
                         except (TypeError, ValueError):
                             if value.startswith('"') and value.endswith('"'):
-                                eval_text = value + ' ' + field['op']
+                                eval_text = value + ' ' + op_name
                             else:
-                                eval_text = '"' + value + '" ' + field['op']
+                                eval_text = '"' + value + '" ' + op_name
                             if fval.startswith('"') and fval.endswith('"'):
                                 eval_text += ' ' + fval
                             else:
                                 eval_text += ' "' + fval + '"'
-                    if eval(eval_text):
+                            result = op_method(value, fval)
+                    if result:
                         log_msg = 'OPERATION VALUE {0}: {1} SUCCESS'.format(
                                 xpath, eval_text
                             )
@@ -573,8 +600,8 @@ class RpcVerify():
                     elif value.count(':') == 1 and fval.count(':') == 1:
                         value = value.split(':')[1]
                         fval = fval.split(':')[1]
-                        eval_text = f'"{value}" {field["op"]} "{fval}"'
-                        if eval(eval_text):
+                        eval_text = f'"{value}" {op_name} "{fval}"'
+                        if op_method(value, fval):
                             log_msg = 'OPERATION VALUE {0}: {1} SUCCESS'.format(
                                 xpath, eval_text
                             )
@@ -595,7 +622,7 @@ class RpcVerify():
                     if evaldt.evaluate():
                         log_msg = log_tmp.format(
                                 xpath, str(value),
-                                field['op'], str(field['value']),
+                                op_name, str(field.value),
                                 'SUCCESS'
                             )
                     else:
@@ -607,7 +634,7 @@ class RpcVerify():
                             failed_type = 'BOOLEAN FAILED'
                         log_msg = log_tmp.format(
                                 xpath, str(value),
-                                field['op'], str(field['value']),
+                                op_name, str(field.value),
                                 failed_type
                             )
                         return (False, log_msg)
@@ -620,7 +647,12 @@ class RpcVerify():
 
         return (True, log_msg)
 
-    def process_one_operational_state(self, response, field, key=False, sequence=None, on_change=False):
+    def process_one_operational_state(self,
+                                      response: List[Tuple[Any, str]],
+                                      field: OptFields,
+                                      key=False,
+                                      sequence=None,
+                                      whole_response=False):
         """Check if a response contains an expected result.
 
         Args:
@@ -632,22 +664,22 @@ class RpcVerify():
         Returns:
           bool: True if successful.
         """
-        if 'default_xpath' in field:
-            xpath = field['default_xpath']
+        if field.default_xpath:
+            xpath = field.default_xpath
         else:
-            xpath = field['xpath']
+            xpath = field.xpath
 
-        log_msg = 'ERROR: "{0} value: {1}" Not found.'.format(xpath, str(field.get('value')))
+        log_msg = 'ERROR: "{0} value: {1}" Not found.'.format(xpath, str(field.value))
         datatype = ''
         result = False
 
         for resp in response:
-            datatype = field.get('datatype')
+            datatype = field.datatype
             if datatype == 'ascii':
-                if field['op'] != "==":
+                if field.op != "==":
                     log.error(f"ASCII datatype can be used only with '==' operator not with {field['op']}")
                     break
-                return resp.get("value") == field['value']
+                return resp.get("value") == field.value
             else:
                 for reply, reply_xpath in resp:
                     if self.et.iselement(reply):
@@ -665,11 +697,11 @@ class RpcVerify():
                             else:
                                 value = reply
                         name = reply_xpath[reply_xpath.rfind('/') + 1:]
-                    if 'xpath' in field and field['xpath'] == reply_xpath and \
-                            name == field['name']:
+                    if field.xpath == reply_xpath and \
+                            name == field.name:
 
                         if datatype == 'empty':
-                            field['value'] = 'empty'
+                            field.value = 'empty'
 
                         result, log_msg = self.check_opfield(value, field)
                         # If sequence is applied, then
@@ -680,7 +712,7 @@ class RpcVerify():
                         #    <Prop>v1<Prop> ---> First value found should be the target value.
                         # </List1>
                         if sequence and not result:
-                            if not on_change:
+                            if whole_response:
                                 log.error(log_msg)
                                 return result
                         if result:
@@ -695,12 +727,12 @@ class RpcVerify():
 
         if key:
             log.info('Parent list key "{0} == {1}" not required.'.format(
-                field['name'], field['value']
+                field.name, field.value
             ))
             return True
 
         # Dont log non matched returns for on_change
-        if not on_change:
+        if whole_response:
             if not datatype:
                 log.warning(
                     "{0} has no datatype; default to string".format(
@@ -708,11 +740,13 @@ class RpcVerify():
                     )
                 )
         # Dont log non matched returns for on_change
-        if not on_change:
+        if whole_response:
             log.error(log_msg)
         return result
 
-    def pre_process_keys(self, returns, response):
+    def pre_process_keys(self,
+                         returns: List[OptFields],
+                         response: List[Tuple[Any, str]]) -> List[Tuple[Any, str]]:
         """Check for lists with multiple keys in returns xpaths.
             and store the order of keys.
 
@@ -738,7 +772,7 @@ class RpcVerify():
         """
         key_orders = []
         for field in returns:
-            xpath = field['xpath']
+            xpath = field.xpath
             key_order = []
             prev_start_index = -1
             prev_end_index = -1
@@ -794,8 +828,8 @@ class RpcVerify():
         if key_orders:
             self.find_groups_in_response(key_orders, response)
         return response
-    
-    def pre_process_returns(self, returns):
+
+    def pre_process_returns(self, returns: List[OptFields]) -> List[OptFields]:
         """Check for keys embedded in xpaths and extract them into separate fields.
         Args:
             returns (list): List of fields in returns containing
@@ -842,7 +876,7 @@ class RpcVerify():
         new_returns = []
         sequence_no = 1
         for field in returns:
-            xpath = field['xpath']
+            xpath = field.xpath
             for key in self.RE_FIND_KEYS.findall(xpath):
                 # Extract the key name
                 # Eg: '[Key1=Val1]'
@@ -857,22 +891,20 @@ class RpcVerify():
                 # Eg: /Sys/Cont/Lis[Key1=Val1]
                 # key_path = /Sys/Cont/Lis/Key1
                 key_path = xpath.split(key)[0] + '/' + key_name
-                key_path = re.sub(self.RE_FIND_KEYS, '', key_path)  
+                key_path = re.sub(self.RE_FIND_KEYS, '', key_path)
 
                 # Create returns field for the key found
-                node = {}
-                node['sequence'] = sequence_no
-                node['nodetype'] = 'leaf'
-                node['value'] = key_val
-                node['op'] = '=='
-                node['key'] = True
-                node['selected'] = True
-                node['name'] = key_name
-                node['xpath'] = key_path
-                new_returns.append(node)
-            field['sequence'] = sequence_no
-            field['default_xpath'] = field['xpath']
-            field['xpath'] = re.sub(self.RE_FIND_KEYS, '', field['xpath'])
+                new_returns.append(OptFields(name=key_name,
+                                             xpath=key_path,
+                                             value=key_val,
+                                             op='==',
+                                             selected=True,
+                                             key=True,
+                                             sequence=sequence_no,
+                                             nodetype='leaf'))
+            field.sequence = sequence_no
+            field.default_xpath = field.xpath
+            field.xpath = re.sub(self.RE_FIND_KEYS, '', field.xpath)
             new_returns.append(field)
             sequence_no += 1
         return new_returns
@@ -1001,7 +1033,10 @@ class RpcVerify():
             response[index] = field
             index += 1
 
-    def trim_response(self, response, parent_key_indexes, field):
+    def trim_response(self,
+                      response: List[Tuple[Any, str]],
+                      parent_key_indexes: dict,
+                      field: OptFields):
         """Trims the response for specific list entry
 
         Args:
@@ -1026,7 +1061,7 @@ class RpcVerify():
                         (myContainer/myList1/Val, v1)
                     ]
         """
-        parent_dict = self.get_parent_dict(parent_key_indexes, field['xpath'])
+        parent_dict = self.get_parent_dict(parent_key_indexes, field.xpath)
         parent_key_xpath = list(parent_dict.keys())[0]
         parent_key_index = list(parent_dict.values())[0][0]
         parent_key_value = list(parent_dict.values())[0][1]
@@ -1043,7 +1078,11 @@ class RpcVerify():
 
         return new_response, parent_key_index
 
-    def process_sequencial_operational_state(self, response, returns, key=False, on_change=False):
+    def process_sequencial_operational_state(self,
+                                             response: List[Tuple[Any, str]],
+                                             returns: List[OptFields],
+                                             key=False,
+                                             whole_response=False):
         """Given multiple list entries, pick the specific entry required and validate.
 
         response:
@@ -1086,13 +1125,13 @@ class RpcVerify():
             isKey = False
             key_found = False
             index = 0
-            sequence_no = field['sequence']
-            if 'default_xpath' in field:
-                xpath = field['default_xpath']
+            sequence_no = field.sequence
+            if field.default_xpath:
+                xpath = field.default_xpath
             else:
-                xpath = field['xpath']
+                xpath = field.xpath
             # Determine if current field is a key or not
-            if 'key' in field and str(field['key']).lower() == 'true':
+            if field.key:
                 isKey = True
             # Refresh the parent_key_indexes when new sequence starts
             if not sequence_no == prev_seq_no:
@@ -1101,7 +1140,7 @@ class RpcVerify():
             # If broken then skip all the values in that sequence
             # by logging Not Found.
             if sequence_no == sequence_broke_no:
-                log_msg = 'ERROR: "{0} value: {1}" Not found.'.format(xpath, str(field.get('value')))
+                log_msg = 'ERROR: "{0} value: {1}" Not found.'.format(xpath, str(field.value))
                 log.error(log_msg)
                 results.append(False)
                 continue
@@ -1136,38 +1175,39 @@ class RpcVerify():
                                 value = reply
                         name = reply_xpath[reply_xpath.rfind('/') + 1:]
 
-                    if 'xpath' in field and field['xpath'] == reply_xpath and \
-                            name == field['name']:
+                    if field.xpath == reply_xpath and \
+                            name == field.name:
                         if isKey:
                             result, log_msg = self.check_opfield(value, field)
                             if result:
                                 # Trim the new response from the index where
                                 # current key is found
                                 key_found = True
-                                next_index = self.find_next_index(resp, index, field['xpath'], field['value'])
+                                next_index = self.find_next_index(resp, index, field.xpath, field.value)
                                 new_response = [
                                     resp[
                                         index-1:next_index
                                         ]
                                     ]
                                 # Store current key index
-                                parent_key_indexes[field['xpath']] = [parent_key_index + index, field['value']]
+                                parent_key_indexes[field.xpath] = [
+                                    parent_key_index + index, field.value]
                                 break
 
                 # If a key-value is not found in the entire response
                 # then the sequence is broken
                 if isKey and not key_found:
-                    log_msg = 'ERROR: "{0} value: {1}" Not found.'.format(xpath, str(field.get('value')))
+                    log_msg = 'ERROR: "{0} value: {1}" Not found.'.format(xpath, str(field.value))
                     results.append(False)
                     log.error(log_msg)
                     sequence_broke_no = sequence_no
                 else:
                     if not isKey:
                         # Validation of leaf with the trimmed response
-                        sel = field.get('selected', False)
+                        sel = field.selected
                         if sel is False or str(sel).lower() == 'false':
                             continue
-                        if not self.process_one_operational_state(new_response, field, key, sequence, on_change=on_change):
+                        if not self.process_one_operational_state(new_response, field, key, sequence, whole_response=whole_response):
                             result = False
                             results.append(result)
             prev_seq_no = sequence_no
@@ -1177,7 +1217,11 @@ class RpcVerify():
         else:
             return True
 
-    def process_operational_state(self, response, returns, key=False, sequence=None, on_change=False):
+    def process_operational_state(self,
+                                  response: List[Tuple[Any, str]],
+                                  returns: List[OptFields],
+                                  key: bool = False,
+                                  sequence: Any = None) -> bool:
         """Test NETCONF or GNMI operational state response.
 
         Args:
@@ -1189,13 +1233,14 @@ class RpcVerify():
           bool: True if successful.
         """
         result = True
-        opfields = returns
 
-        if not opfields:
+        if not returns:
             log.error(
                 banner("OPERATIONAL STATE FAILED: No opfields to compare")
             )
             return False
+        if isinstance(returns[0], dict):
+            returns = [OptFields(**opfield) for opfield in returns]
         if not response:
             log.error(
                 banner("OPERATIONAL STATE FAILED: Expected data")
@@ -1217,15 +1262,30 @@ class RpcVerify():
 
         # To process the operational state in a sequence
         if sequence:
-            result = self.process_sequencial_operational_state(new_response, new_returns, key, on_change=on_change)
+            result = self.process_sequencial_operational_state(
+                new_response, new_returns, key)
         else:
+            returns = self.process_returns(returns)
             for field in returns:
-                sel = field.get('selected', False)
+                sel = field.selected
                 if sel is False or str(sel).lower() == 'false':
                     continue
-                if not self.process_one_operational_state(response, field, key, on_change=on_change):
+                if not self.process_one_operational_state(response, field, key):
                     result = False
         return result
+
+    def process_returns(self, returns: List[OptFields]):
+        """Process returns with list values"""
+        returns_processed = []
+        for ret in returns:
+            if isinstance(ret.value, list):
+                for val in ret.value:
+                    ret_new = deepcopy(ret)
+                    ret_new.value = val
+                    returns_processed.append(ret_new)
+            else:
+                returns_processed.append(ret)
+        return returns_processed
 
     def find_next_index(self, response, index, xpath, value):
         """Get next index of the list key in the response
@@ -1255,7 +1315,7 @@ class RpcVerify():
 
         return len(response)
 
-    def check_list_in_returns(self, returns):
+    def check_list_in_returns(self, returns: List[OptFields]) -> bool:
         """Check if there are lists in returns
 
         Args:
@@ -1265,7 +1325,7 @@ class RpcVerify():
           bool: True if List found, else False.
         """
         for field in returns:
-            if "[" in field['xpath']:
+            if "[" in field.xpath:
                 return True
 
         return False
@@ -1313,7 +1373,7 @@ class RpcVerify():
         parent_dict[parent_key_xpath] = [parent_key_index, parent_key_value]
         return parent_dict
 
-    def verify_reply(self, response, expected, opfields):
+    def verify_reply(self, response, expected, opfields: List[OptFields]):
         """Verify values and namespaces are what is expected.
 
         Expected tags and response tags have been checked for names
@@ -1364,17 +1424,17 @@ class RpcVerify():
                 # in sequence, so loop through and see if this is a field we
                 # are interested in.
                 for field in opfields:
-                    if field.get('selected', True) is False:
+                    if field.selected is False:
                         opfields.remove(field)
                         continue
-                    if 'xpath' in field and reply_xpath == field['xpath'] and \
-                            self.et.QName(reply).localname == field['name']:
+                    if 'xpath' in field and reply_xpath == field.xpath and \
+                            self.et.QName(reply).localname == field.name:
                         if not self.check_opfield(value_state['reply_val'],
                                                   field):
                             result = False
                         opfields.remove(field)
                         break
-                    elif value_sequence_number == int(field['id']):
+                    elif value_sequence_number == int(field.id):
                         # Backward compatible - not as reliable
                         # because fields may be out of order
                         if not self.check_opfield(value_state['reply_val'],
@@ -1431,18 +1491,19 @@ class RpcVerify():
     # Pattern to detect prefix in the key name
     RE_FIND_KEY_PREFIX = re.compile(r'\[.*?:')
 
-    def verify_rpc_data_reply(self, response, rpc_data):
+    def verify_rpc_data_reply(self, decoded_response: List[tuple], rpc_data: dict) -> bool:
+        # TODO Move to verifiers.py when netconf is implemented
         """Construct a GET based off an edit message and verify results.
 
         Args:
-          response (tuple): Value, Xpath value is associated with.
+          response (List[tuple]): List of Value, Xpath tuple value is associated with.
           rpc_data (dict): Xpaths and values associated to edit message.
         Returns
           bool: True = passed, False = failed.
         """
         result = True
-        nodes = []
-        list_keys = []
+        nodes: List[OperationalFieldsNode] = []
+        list_keys: List[OptFields] = []
         par_xp = ''
         del_parent = False
         if 'explicit' in self.with_defaults:
@@ -1513,7 +1574,6 @@ class RpcVerify():
                         edit_op=edit_op
                     ))
                     continue
-
             nodes.append(OperationalFieldsNode(
                 name=xpath.split('/')[-1],
                 value=value,
@@ -1524,32 +1584,32 @@ class RpcVerify():
                 edit_op=edit_op
             ))
 
-        if not response and not nodes and \
+        if not decoded_response and not nodes and \
                 edit_op in ['delete', 'remove']:
             log.info('NO DATA RETURNED')
             return True
-        elif response and not nodes and \
+        elif decoded_response and not nodes and \
                 edit_op in ['delete', 'remove']:
             # Check if node is removed in the response
-            if isinstance(response[0], tuple):
-                response = [response]
-                for resp in response:
+            if isinstance(decoded_response[0], tuple):
+                decoded_response = [decoded_response]
+                for resp in decoded_response:
                     for reply, reply_path in resp:
                         if xpath == reply_path:
                             # node xpath still exists in the response
                             log.error("Config not removed. {0} operation failed".format(edit_op))
                             return False
         for node in nodes:
-            if not self.process_operational_state(response, [node.opfields]):
+            if not self.process_operational_state(decoded_response, [node.opfields]):
                 if node.edit_op in ['delete', 'remove'] and not node.default_value:
                     continue
                 result = False
         for node in list_keys:
-            if not self.process_operational_state(response, [node], key=True):
+            if not self.process_operational_state(decoded_response, [node], key=True):
                 result = False
         return result
 
-    def add_key_nodes(self, xpath, nodes):
+    def add_key_nodes(self, xpath: str, nodes: List[OptFields]):
         """Add the List key nodes to the opfields"""
         # Remove the prefixes from the xpath.
         # Ex: convert /ios:foo/ios:foo1[ios:name='val']/ios:foo2 to
@@ -1578,16 +1638,11 @@ class RpcVerify():
              # key value pairs with empty string.
              key_path = re.sub(self.RE_FIND_KEYS, '', key_path)
              for entry in nodes:
-                 if entry['xpath'] == key_path:
+                 if entry.xpath == key_path:
                      break
              else:
-                 nodes.append(
-                     {'name': keyname,
-                      'value': keyval,
-                      'xpath': key_path,
-                      'selected': True,
-                      'op': '=='}
-                 )
+                 nodes.append(OptFields(name=keyname, value=keyval,
+                              xpath=key_path, selected=True, op='=='))
 
     def process_rpc_reply(self, resp):
         """Transform XML into elements with associated xpath.
@@ -1642,7 +1697,7 @@ class RpcVerify():
 
         return response
 
-    def parse_rpc_expected(self, resp_xml, expect_xml, opfields=[]):
+    def parse_rpc_expected(self, resp_xml, expect_xml, opfields: List[OptFields]=[]):
         """Check if values are correct according expected XML.
 
         As an XML message is parsed, some XML tags have values assigned
@@ -1787,129 +1842,3 @@ class RpcVerify():
         if result:
             log.info('OPERATIONAL-VERIFY SUCCESSFUL')
         return result
-
-
-if __name__ == '__main__':
-    test_recurse_reply = """
-<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="101">
-  <data>
-    <top xmlns="http://rpcverify.com">
-      <child1>
-        <child2>child2</child2>
-        <sibling1>sibling1</sibling1>
-        <sibling-recurse>
-          <sibchild>sibchild</sibchild>
-          <sibchild2>sibchild2</sibchild2>
-        </sibling-recurse>
-      </child1>
-    </top>
-  </data>
-</rpc-reply>
-"""
-    received = """
-<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"\
-     message-id="urn:uuid:d177b38c-bbc7-440f-be0d-487b2e3c3861">
-    <data>
-        <System xmlns="http://cisco.com/ns/yang/cisco-nx-os-device">
-            <lldp-items>
-                <name>genericstring</name>
-            </lldp-items>
-        </System>
-    </data>
-</rpc-reply>
-"""
-    expected = """
-<data>
-<System xmlns="http://cisco.com/ns/yang/cisco-nx-os-device">
--  <lldp-items>
--    <name>genericstring</name>
--  </lldp-items>
-</System>
-</data>
-"""
-    xml_deleted = """
-<nc:rpc-reply message-id="urn:uuid:2680d19b-3ed2-4af8-9d39-2e3dfbb2b501" \
-xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0">
-<nc:data>
-  <native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native">
-    <router>
-      <bgp xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-bgp">
-        <id xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'>1</id>
-        <address-family>
-          <no-vrf>
-            <ipv4>
-              <af-name xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'>\
-unicast</af-name>
--              <ipv4-unicast>
--                <aggregate-address>
--                  <ipv4-address xmlns:nc='urn:ietf:params:xml:ns:netconf:\
-base:1.0'>10.0.0.0</ipv4-address>
--                  <ipv4-mask xmlns:nc='urn:ietf:params:xml:ns:netconf:\
-base:1.0'>255.0.0.0</ipv4-mask>
--                  <advertise-map>mergeme</advertise-map>
-                </aggregate-address>
-              </ipv4-unicast>
-            </ipv4>
-          </no-vrf>
-        </address-family>
-      </bgp>
-    </router>
-  </native>
-</nc:data>
-</nc:rpc-reply>
-"""
-    xml_not_missing = """
-<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" \
-message-id="urn:uuid:2680d19b-3ed2-4af8-9d39-2e3dfbb2b501" \
-xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0">
-<data>
-  <native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native">
-    <router>
-      <bgp xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-bgp">
-        <id xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'>1</id>
-        <address-family>
-          <no-vrf>
-            <ipv4>
-              <af-name xmlns:nc='urn:ietf:params:xml:ns:netconf:base:1.0'>\
-unicast</af-name>
-              <ipv4-unicast>
-                <aggregate-address>
-                  <advertise-map>mergeme</advertise-map>
-                </aggregate-address>
-              </ipv4-unicast>
-            </ipv4>
-          </no-vrf>
-        </address-family>
-      </bgp>
-    </router>
-  </native>
-</data>
-</rpc-reply>
-"""
-    log = logging.getLogger("RPC-verfiy")
-    logging.basicConfig(level=logging.DEBUG)
-    rpcv = RpcVerify(log=log)
-    result = rpcv.parse_rpc_expected(test_recurse_reply, test_recurse_reply)
-    if result:
-        print('\n**** RECURSE TEST PASSED ****\n')
-    else:
-        print('\n**** RECURSE TEST FAILED ****\n')
-    rpcv.capabilities = ['urn:ietf:params:netconf:capability:with-defaults:1.0?\
-basic-mode=report-all']
-    result = rpcv.parse_rpc_expected(received, expected)
-    rpcv.capabilities = ['urn:ietf:params:netconf:capability:with-defaults:1.0?\
-basic-mode=explicit&also-supported=report-all-tagged']
-    if not result:
-        print('\n**** GENERICSTRING NOT DELETED TEST PASSED ****\n')
-    else:
-        print('\n**** GENERICSTRING NOT DELETED TEST FAILED ****\n')
-    rpcv.parse_rpc_expected(xml_not_missing, xml_deleted)
-    if not result:
-        print('\n**** MERGEME NOT DELETED TEST PASSED ****\n')
-    else:
-        print('\n**** MERGEME NOT DELETED TEST PASSED ****\n')
-
-    import doctest
-    log = logging.getLogger("RPC-verfiy")
-    logging.basicConfig(level=logging.DEBUG)
-    doctest.testmod()

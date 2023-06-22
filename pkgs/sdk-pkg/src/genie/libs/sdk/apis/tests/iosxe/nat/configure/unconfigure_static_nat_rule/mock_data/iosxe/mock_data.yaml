@@ -4,17 +4,22 @@ configure:
       new_state: execute
     line console 0:
       new_state: configure_line
-    no ip nat inside source static udp 21.21.21.22 500 21.21.21.22 600 extendable: "no\
-      \ ip nat inside source static udp 21.21.21.22 500 21.21.21.22 600 extendable\r\
-      \n"
+    no ip nat inside source static 193.168.0.2 10.10.10.1 vrf VRF2 extendable no-alias: "no\
+      \ ip nat inside source static 193.168.0.2 10.10.10.1 vrf VRF2 extendable no-alias\r\
+      \nNAT-VRF : VRF2 does not exist.\r\n"
+    no ip nat inside source static tcp 193.168.0.2 22 10.10.10.1 22: "no ip nat inside\
+      \ source static tcp 193.168.0.2 22 10.10.10.1 22\r\n"
+    no ip nat inside source static tcp 193.168.0.2 22 10.10.10.1 22 vrf VRF2 extendable no-alias: "no\
+      \ ip nat inside source static tcp 193.168.0.2 22 10.10.10.1 22 vrf VRF2 extendable\
+      \ no-alias\r\nNAT-VRF : VRF2 does not exist.\r\n"
     no logging console: ''
-  prompt: FE2(config)#
+  prompt: stack3-nyquist-1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: FE2(config-line)#
+  prompt: stack3-nyquist-1(config-line)#
 connect:
   commands:
     ? ''
@@ -34,4 +39,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: FE2#
+  prompt: stack3-nyquist-1#

@@ -280,18 +280,22 @@ def configure_ldra_interface(
             SubCommandFailure: Failed to configure ldra on interface
     """
     log.info("Configuring ldra on interface {}".format(interface))
+    
+    cmd = []
+    if interface:
+        cmd.append(f"interface {interface}")
+    if vlan_id:
+        cmd.extend([
+            'switchport',
+            f'switchport access vlan {vlan_id}'
+        ])
+    if policy:
+        cmd.append(f"ipv6 dhcp-ldra attach-policy {policy}")
+    if interface_id:
+        cmd.append(f"ipv6 dhcp-ldra interface-id {interface_id}")
+        
     try:
-        if interface and vlan_id:
-            cmd_list = [
-                "interface {}".format(interface),
-                "switchport",
-                "switchport access vlan {}".format(vlan_id)
-                ]
-            if policy:
-                cmd_list.append("ipv6 dhcp-ldra attach-policy {}".format(policy))
-            if interface_id:
-                cmd_list.append("ipv6 dhcp-ldra interface-id {}".format(interface_id))
-            return device.configure(cmd_list, **kwargs)
+        device.configure(cmd)
 
     except SubCommandFailure as err:
         raise SubCommandFailure(
@@ -420,3 +424,25 @@ def unconfigure_ipv6_dhcp_client_vendor_class(
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Failed to unconfigure ipv6 dhcp vendor-class on {interface}. Error:\n{e}")
+
+
+def configure_dhcp_pool_dns_server(device, ip_version, pool_name, dns_server):
+    """ Configure dns-server under dhcp pool
+        Args:
+            device ('obj'): device to use
+            ip_version ('str'): ip or ipv6 version.
+            pool_name ('str'): name of the pool to be created
+            dns_server ('str'): dns server to configure
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure dns-server under dhcp pool
+    """
+
+    config = [f"{ip_version} dhcp pool {pool_name}", f"dns-server {dns_server}"]
+    try:
+        device.configure(config)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure dns-server {dns_server} under dhcp pool {pool_name}. Error:\n{e}")

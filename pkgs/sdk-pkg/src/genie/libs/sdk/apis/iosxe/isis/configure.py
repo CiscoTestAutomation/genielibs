@@ -860,3 +860,62 @@ def configure_router_isis(device, router_name, network_entity=None, router_id=No
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not configure router isis with parameters on device. Error:\n{e}")
+
+
+def configure_interface_isis_network(device, interface, network_type):
+    """ Configures Interface isis network {type}
+        Args:
+            device ('obj')    : device to use
+            interface ('str') : interface to configure
+            network_type ('str'): Isis network type. Ex: point-to-point
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    config = [f"interface {interface}", f"isis network {network_type}"]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configure Interface isis network. Error: {e}')
+
+
+def configure_isis_nsf_xfsu(device, network_entity, area_tag=None, router_id=None, metric_style=None, nsf_type=None, redistribution_type=None):
+    """ Configure network_entity on ISIS router
+        Args:
+            device('obj'): device to configure on
+            network_entity('str'): network_entity of device
+            area_ta('str',optional):  ISO routing area tag 
+            router_id('str', optional) : Stable IP Address
+            metric_style('str', optional): Use old-style (ISO 10589) or new-style packet formats
+            nsf_type('str', optional) : Non-stop forwarding
+            redistribution_type('str', optional): redistribution type
+        Return:
+            N/A
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    log.info(
+        (f"configure the isis {nsf_type} \n")
+    )
+    config = []
+    if area_tag:
+        config.append(f"router isis {area_tag}")
+    else:
+        config.append("router isis")
+    config.append(f"net {network_entity}")
+    if router_id:
+        config.append(f"router-id {router_id}")
+    if metric_style:
+        config.append(f"metric-style {metric_style}")
+    if nsf_type:
+        config.append(f"nsf {nsf_type}")
+    if redistribution_type:
+        config.append(f"redistribute {redistribution_type}")
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure router ISIS nsf . Error:\n{e}"
+        )

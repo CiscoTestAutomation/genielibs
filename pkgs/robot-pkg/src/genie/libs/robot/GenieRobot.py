@@ -715,15 +715,15 @@ class GenieRobot(object):
             executer.reset()
             if alias:
                 with device_handle.temp_default_alias(alias):
-                    result = cls()
+                    executer.execute(cls)
             else:
-                result = cls()
+                executer.execute(cls)
         except Exception as e:
             # No need, as pyats has already logged the error
             pass
 
         # Maps the result RobotFramework
-        self._convert_result(result, name, ' '.join(tags))
+        self._convert_result(cls.result, name, ' '.join(tags))
 
     def _add_abstraction_datafiles(self, datafile, name, device, context):
         '''Add context abstraction'''

@@ -1,20 +1,39 @@
 configure:
   commands:
-    class c-dscp0: "class c-dscp0\r\n"
+    bandwidth remaining ratio 10: "bandwidth remaining ratio 10\r\n"
+    class tc7: "class tc7\r\n"
     end:
       new_state: execute
     line console 0:
       new_state: configure_line
     no logging console: ''
-    policy-map PQ: "policy-map PQ\r\n"
+    policy-map type queueing test: "policy-map type queueing test\r\n"
     priority level 1: "priority level 1\r\n"
-  prompt: A1(config)#
+    queue-limit 1000000 bytes: "Bandwidth not allowed with priority\r\n"
+    random-detect discard-class 0 percent 25 50: "queue-limit 1000000 bytes\r\n"
+    random-detect discard-class 0 percent 25 50 3: "Bandwidth not allowed with priority\r\
+      \n"
+    random-detect discard-class-based: "class tc7\r\n"
+    service-policy tcy1: "queue-limit 1000000 bytes\r\n"
+    shape average 44444: "shape average 44444\r\n"
+    shape average percent 2: "Must deconfigure priority in this class before issuing\
+      \ this command\r\n"
+    policy-map map1: "policy-map map1\r\n"
+    priority level 2: "priority level 2\r\n"
+    random-detect dscp 0 percent 25 50: "bandwidth remaining ratio 10\r\n"
+    random-detect dscp-based: "Must deconfigure priority in this class before issuing\
+      \ this command\r\n"
+    random-detect precedence 0 percent 25 50: "bandwidth remaining ratio 10\r\n"
+    service-policy tc1: "bandwidth remaining ratio 10\r\n"
+    shape average 4444: "shape average 4444\r\n"
+    shape average percent 3: "random-detect dscp 0 percent 25 50\r\n"
+  prompt: stack3-nyquist-1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: A1(config-line)#
+  prompt: stack3-nyquist-1(config-line)#
 connect:
   commands:
     ? ''
@@ -34,4 +53,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: A1#
+  prompt: stack3-nyquist-1#

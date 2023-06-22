@@ -1000,3 +1000,31 @@ def configure_mdt_auto_discovery_inter_as(device, vrf_name, address_family):
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not configure mdt auto-discovery inter-as on device vrf {vrf_name}. Error:\n{e}")
+
+
+def configure_rd_address_family_vrf(device, vrf_name, rd_name, address_family):
+
+    """ configure rd and address family on vrf
+
+        Args:
+            device (`obj`): Device object
+            vrf_name ('str'): name of the vrf
+            rd_name ('str'):  IP-address:nn or 4BASN:nn  VPN Route Distinguisher
+            address_family ('str'):  mention the address-family ipv4 or ipv6
+            
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed to configure rd and address family on vrf
+    """
+    confg = [
+        "vrf definition {vrf_name}".format(vrf_name=vrf_name),
+        "rd {rd_name}".format(rd_name=rd_name),
+        "address-family {address_family}".format(
+            address_family=address_family)]
+    try:
+        device.configure(confg)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure rd and address family on vrf {vrf_name} on device.Error:\n{e}"
+        )

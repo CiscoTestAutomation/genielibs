@@ -30,6 +30,6 @@ class TestUnconfigureStackPowerSwitchPowerPriority(unittest.TestCase):
         )
 
     def test_unconfigure_stack_power_switch_power_priority(self):
-        result = unconfigure_stack_power_switch_power_priority(self.device, 'switch', 1, 'high', 13)
+        result = unconfigure_stack_power_switch_power_priority(self.device, 1, 'high')
         expected_output = None
         self.assertEqual(result, expected_output)
