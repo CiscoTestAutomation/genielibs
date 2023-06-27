@@ -4,13 +4,17 @@ import xmltodict
 from time import sleep
 from copy import deepcopy
 from six import string_types
-
+from importlib import import_module
+from typing import List, Union
+from threading import Thread
 from pyats.log.utils import banner
 from .rpcbuilder import YSNetconfRPCBuilder
 from .rpcverify import RpcVerify
+from .verifiers import DefaultVerifier, BaseVerifier
 from .requestbuilder import RestconfRequestBuilder, NO_BODY_METHODS, WITH_BODY_METHODS
 from .yangexec_helper import DictionaryToXML
 from .gnmi_util import GnmiMessage, GnmiMessageConstructor
+from yang.connector.gnmi import Gnmi
 from genie.conf.base.utils import QDict
 
 log = logging.getLogger(__name__)
@@ -695,9 +699,56 @@ def run_netconf(operation, device, steps, datastore, rpc_data, returns, **kwargs
     return negative_test != True
 
 
-def run_gnmi(operation, device, steps,
-             datastore, rpc_data, returns, **kwargs):
-    """Form gNMI message and send to testbed."""
+def get_verifier_class(format: dict) -> BaseVerifier:
+    """Read data from format, process it and return a verifier.
+
+    Args:
+        device (yang.connector.gnmi.Gnmi): Device object
+        format (dict): Testcase format section
+        returns (dict): Raw returns passed to init verifier
+
+    Returns:
+        BaseVerifier: Verifier object to use for verification
+    """
+    verifier = format.get('verifier', {})
+    if not verifier:
+        log.info("Using default verifier.")
+        return DefaultVerifier
+
+    verifier_class = verifier.get('class', '')
+    if verifier_class:
+        try:
+            module_name, class_name = verifier_class.rsplit('.', 1)
+            module = import_module(module_name)
+            verifier_class = getattr(module, class_name)
+            log.info(
+                f"Verifier {class_name} loaded from {module_name}")
+            return verifier_class
+        except (ModuleNotFoundError, AttributeError):
+            log.error('Custom verifier class not found.')
+    log.error("Invalid format of custom verifier.")
+    return None
+
+
+def run_gnmi(operation: str,
+             device: Gnmi,
+             steps,
+             datastore,
+             rpc_data: dict,
+             returns: List[dict], **kwargs) -> Union[bool, Thread]:
+    """Form gNMI message and send to testbed.
+
+    Args:
+        operation (str): 'get-config', 'edit-config', 'subscribe'
+        device (Gnmi): GNMI device
+        steps (_type_): _description_
+        datastore (_type_): _description_
+        rpc_data (dict): _description_
+        returns (List[dict]): Expected returns
+
+    Returns:
+        Union[bool, Thread]: For subscribe, returns a thread object for others returns a bool
+    """
     log.debug('gNMI MESSAGE')
     result = True
     payload = None
@@ -708,11 +759,9 @@ def run_gnmi(operation, device, steps,
     if kwargs.get('format', None):
         sequence = kwargs['format'].get('sequence', None)
 
-    if(sequence):
+    if (sequence):
         log_Instructions()
         return False
-
-    rpc_verify = RpcVerify(log=log, capabilities=[])
     format = kwargs.get('format', {})
     if format:
         pause = _validate_pause(format.get('pause', 0))
@@ -731,7 +780,10 @@ def run_gnmi(operation, device, steps,
         auto_validate = False
 
     transaction_time = format.get('transaction_time', 0)
-
+    verifier = get_verifier_class(format)(
+        device, returns, log, format, steps, datastore)
+    if verifier is None:
+        return False
     if operation == 'edit-config':
         if 'rpc' in rpc_data:
             # Assume we have a well-formed dict representing gNMI set
@@ -743,7 +795,8 @@ def run_gnmi(operation, device, steps,
         if not resp:
             result = False
         if 'returns' in rpc_data:
-            if not rpc_verify.process_operational_state(resp, returns, sequence=sequence):
+            verifier.returns = rpc_data['returns']
+            if not verifier.get_config_verify(resp, sequence=sequence):
                 result = False
         else:
             if auto_validate:
@@ -752,7 +805,7 @@ def run_gnmi(operation, device, steps,
                 gmc = GnmiMessageConstructor('get', rpc_data, **format)
                 payload = gmc.payload
                 namespace_modules = gmc.namespace_modules
-                response = GnmiMessage.run_get(
+                response, status = GnmiMessage.run_get(
                     device, payload, namespace_modules
                 )
                 for node in rpc_data.get('nodes'):
@@ -760,8 +813,8 @@ def run_gnmi(operation, device, steps,
                 if not response:
                     result = False
                 else:
-                    result = rpc_verify.verify_rpc_data_reply(response, rpc_data)
-
+                    result = verifier.edit_config_auto_validate(
+                        response, rpc_data, namespace_modules) and status
     elif operation in ['get', 'get-config']:
         if 'rpc' in rpc_data:
             # Assume we have a well-formed dict representing gNMI get
@@ -771,34 +824,17 @@ def run_gnmi(operation, device, steps,
             gmc = GnmiMessageConstructor('get', rpc_data, **format)
             payload = gmc.payload
             namespace_modules = gmc.namespace_modules
-        response = GnmiMessage.run_get(
+        response, status = GnmiMessage.run_get(
             device, payload, namespace_modules,
             transaction_time=transaction_time
         )
-        # Response will be 'None' when some error is received
-        if response is None:
-            result = False
-        # Response will be empty, when no response received,
-        # If returns not provided, set result false.
-        elif not response and not returns:
-            result = False
-        # Response is received, but user don't want to validate returns
-        # set result to True as response is successfully received.
-        elif response and not returns:
-            result = True
-        # Returns is provided by user.
-        else:
-            # No response received, but returns is provided
-            # We need to log all the returns not found
-            # Assign a temporary response
-            if not response:
-                response.append((None, "/"))
-            if not rpc_verify.process_operational_state(response, returns, sequence=sequence):
-                result = False
+        decoded_response = verifier.gnmi_decoder(
+            response, namespace=namespace_modules, method='get')
+        result = verifier.get_config_verify(decoded_response) and status
     elif operation == 'subscribe':
         rpc_data.update(format)
         rpc_data['returns'] = returns
-        rpc_data['verifier'] = rpc_verify.process_operational_state
+        rpc_data['verifier'] = verifier
         if 'rpc' in rpc_data:
             # Assume we have a well-formed dict representing gNMI subscribe
             payload = json.dumps(rpc_data.get('rpc', {}), indent=2)

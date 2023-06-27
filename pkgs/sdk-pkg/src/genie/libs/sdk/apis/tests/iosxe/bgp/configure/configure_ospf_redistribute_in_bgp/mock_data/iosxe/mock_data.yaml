@@ -1,0 +1,42 @@
+configure:
+  commands:
+    address-family ipv6: "address-family ipv6\r\n"
+    end:
+      new_state: execute
+    exit-address-family: "exit-address-family\r\n"
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    redistribute ospf 10 match internal external 1 external 2 metric 6 route-map test: "redistribute\
+      \ ospf 10 match internal external 1 external 2 metric 6 route-map test\r\n"
+    redistribute ospf 10 metric 6 route-map test: "redistribute ospf 10 metric 6 route-map\
+      \ test\r\n"
+    redistribute ospf 10 route-map test: "redistribute ospf 10 route-map test\r\n"
+    router bgp 3: "router bgp 3\r\n"
+  prompt: stack3-nyquist-1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: stack3-nyquist-1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: stack3-nyquist-1#

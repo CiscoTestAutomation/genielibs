@@ -706,3 +706,26 @@ def configure_call_home_profile_reporting(device, profile, reporting):
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure call home reporting on device {device.name}. Error:\n{e}")
+
+
+def configure_call_home_profile(device, dest_add, profile_name="CiscoTAC-1"):
+    """ Configure call home profile
+        Args:
+            device ('obj'): device to use
+            dest_add ('str'): destination address 
+            profile_name ('str', optional): call home profile name, default is CiscoTAC-1
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure call home profile
+    """
+
+    cmd = ["call-home", "no http secure server-identity-check", f"profile {profile_name}", "active", 
+           "destination transport-method http", f"destination address http {dest_add}", 
+           "reporting smart-licensing-data"]
+
+    log.info("Creating call home profile")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure call home profile. Error\n{e}")

@@ -9,6 +9,8 @@ from unicon.core.errors import SubCommandFailure
 from pyats.aetest.steps import Steps
 
 log = logging.getLogger(__name__)
+
+
 def configure_policy_map(device,
     policy_name,
     class_map_list):
@@ -25,6 +27,10 @@ def configure_policy_map(device,
              matched_value('list',optional): match mode values for cos traffic_class and dscp,
              table_map_name('str',optional): to set the table name for policy_map,
              table_map_mode('str',optional : name of the tablemode
+             police_cir_percent(int, optional): police cir percent
+             priority_level('int',optional): value of priority queue for 0 to 7
+             bandwidth_percent(int, optional): bandwidth percent
+             bandwidth_remaining_percent(int, optional): bandwidth remaining percent
              } ]
 
         example:
@@ -51,13 +57,21 @@ def configure_policy_map(device,
     for class_map in class_map_list:
         if isinstance(class_map, dict):
             cmd.append(f"class {class_map['class_map_name']}")
-            if 'policer_val' in class_map:
-                cmd.append(f"police rate {class_map['policer_val']}")
+            if 'priority_level' in class_map:
+                cmd.append(f"priority level {class_map['priority_level']}")
+            if 'bandwidth_percent' in class_map:
+                cmd.append(f"bandwidth percent {class_map['bandwidth_percent']}")
+            if 'bandwidth_remaining_percent' in class_map:
+                cmd.append(f"bandwidth remaining percent {class_map['bandwidth_remaining_percent']}")
             if class_map.get('match_mode', None)  and class_map.get('matched_value', None):
                 for match_mode, matched_value in zip(class_map['match_mode'], class_map['matched_value']):
                     cmd.append(f"set {match_mode} {matched_value}")
             if 'table_map_name' in class_map:
                 cmd.append(f"set {class_map['table_map_mode']} {class_map['table_map_mode']} table {class_map['table_map_name']}")
+            if 'policer_val' in class_map:
+                cmd.append(f"police rate {class_map['policer_val']}")
+            if 'police_cir_percent' in class_map:
+                cmd.append(f"police cir percent {class_map['police_cir_percent']}")
         else:
             cmd.append(f"{class_map}")
 
@@ -100,35 +114,45 @@ def unconfigure_policy_map(device, policy_name):
             )
         )
 
-def configure_shape_map(device,
-                        class_map_list,
-                        service_policy='service-policy',
-                        queue_name=None, 
-                        policy_name=None):
+def configure_shape_map(device, queue_name=None, class_map_list=[], 
+                        service_policy='service-policy', policy_name=None):
     """ Configures policy_map type queueing
         Args:
              device('obj'): device to use
-             class_map_list('list'): list of dict type hold number of class map
+             queue_name('str', optional): name of the queue policy name. Default is None
+             class_map_list('list', optional): list of dict type hold number of class map. Default is empty list
              [
              {
              class_map_name('str'): name of the class
              priority_level('int',optional): value of priority queue for 0 to 7
              shape_average('str',optional): value of the shape average
              bandwidth('int',optional): bandwidth value
+             bandwidth_percent('int',optional): bandwidth percent value
              queue_limit('int',optional): queue_limit value
              child_policy('str',optional): name of the child policy
+             shape_average_percent('str', optional): value of shape average percent
+             random_detect_type('str', optional): random-detect type. For ex: discard-class, discard-class-based
+             discard_class_value('int', optional): discard class value 0 or 1
+             minimum_threshold('int', optional): minumum threshold percentage
+             maximum_threshold('int', optional): maximum threshold percentage
+             mark_probability('int', optional): mark probability denominator
              }
              ],
              service_policy('str',optional) : service-policy name by default service-policy
-             queue_name('str', optional): name of the queue policy name
-             policy_name('str', optional): name of the queue policy name
+             policy_name('str',optional) : name of the policy name
 
         example:
              class_map_list=[{'class_map_name':'queue_name',
              priority_level:7,
-             shape_average:'2000000000' or 'rate 20'
-             bandwidth: 20
-             queue_limit: 10000
+             shape_average:'2000000000' or 'rate 20',
+             bandwidth: 20,
+             queue_limit: 10000,
+             shape_average_percent: 40,
+             random_detect_type: 'discard-calss',
+             discard_class_value: 1,
+             minimum_threshold: 30,
+             maximum_threshold: 70,
+             mark_probability: 4
              }]
 
         Returns:
@@ -136,11 +160,6 @@ def configure_shape_map(device,
         Raises:
             SubCommandFailure
     """
-    log.debug(
-        "Configuring policy_map type {queue_name} with {class_map_name}".format(queue_name=queue_name,class_map_name=class_map_list[0]['class_map_name'],
-            )
-        )
-
     cmd = []
     if queue_name:
         cmd.append(f"policy-map type queueing {queue_name}")
@@ -152,13 +171,23 @@ def configure_shape_map(device,
             cmd.append(f"priority level {class_map['priority_level']}")
         if 'shape_average' in class_map:
             cmd.append(f"shape average {class_map['shape_average']}")
+        elif 'shape_average_percent' in class_map:
+            cmd.append(f"shape average percent {class_map['shape_average_percent']}")
         if 'bandwidth' in class_map:
             cmd.append(f"bandwidth remaining ratio {class_map['bandwidth']}")
+        if 'bandwidth_percent' in class_map:
+            cmd.append(f"bandwidth percent {class_map['bandwidth_percent']}")
         if 'queue_limit' in class_map:
             cmd.append(f"queue-limit {class_map['queue_limit']} bytes")
         if 'child_policy' in class_map:
             cmd.append(f"{service_policy} {class_map['child_policy']}")
-
+        if 'random_detect_type' in class_map:
+            if 'discard_class_value' in class_map:
+                command = f"random-detect {class_map['random_detect_type']} {class_map['discard_class_value']} percent {class_map['minimum_threshold']} {class_map['maximum_threshold']}"
+                command += f" {class_map['mark_probability']}" if 'mark_probability' in class_map else ""
+                cmd.append(command)
+            else:
+                cmd.append(f"random-detect {class_map['random_detect_type']}")
     try:
         device.configure(cmd)
 
@@ -548,6 +577,8 @@ def configure_hqos_policer_map(device,
     match_mode=None,
     matched_value=None,
     child_policy=None,
+    policer_cir_val=None,
+    police_val=None,
     set_table_map=False):
 
     """ Configures HQos policy_map
@@ -561,6 +592,8 @@ def configure_hqos_policer_map(device,
              match_mode('list',optional): match mode name for cos, default is None
              matched_value('list',optional): match mode values for cos traffic_class and dscp, default is None
              child_policy('str',optional): name of child policy map,default is None
+             policer_cir_val('str',optional): policer cir value,default is None
+             police_val('str',optional): police value,default is None
              set_table_map('boolean'): to configure set table map for HQos, default is False
 
         example:
@@ -572,6 +605,8 @@ def configure_hqos_policer_map(device,
              match_mode:['dscp','cos']
              matched_value:['cs1','5']
              child_policy: 'child_policy_map'
+             policer_cir_val: '60'
+             police_val: '600000000'
              set_table_map:False
 
 
@@ -599,11 +634,245 @@ def configure_hqos_policer_map(device,
                 cmd.append(f"set {mat_mode} {mat_value}")
     if set_table_map:
         cmd.append(f"set {table_map_mode} {table_map_mode} table {table_map_name}")
-
     if child_policy:
         cmd.append(f"service-policy {child_policy}")
-
+    if policer_cir_val:
+        cmd.append(f"police cir percent {policer_cir_val}")
+    if police_val:
+        cmd.append(f"police {police_val}")
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not configure policy-map on device. Error:\n{e}")
+
+
+def unconfigure_service_policy_with_queueing_name(device, interface, policy_type, queue_name):
+    """ Unconfigures policy_map type queueing
+        Args:
+             device ('obj'): device to use
+             interface ('str'): interface to configure
+             policy_type ('str'): Configure Queueing Service Policy
+             queue_name ('str'): name of the queue service_policy name
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [f'interface {interface}',
+           f'no service-policy type {policy_type} output {queue_name}']
+	
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Unable to unconfigure service policy type with {queue_name}. Error:\n{e}")
+
+
+def configure_policy_map_class_parameters(
+    device, 
+    policy_name, 
+    class_map_name, 
+    policer_rate=None, 
+    cir_rate=None,
+    cir_percent=None, 
+    rate_value=None, 
+    rate_percent=None,
+    confirm_action=None,
+    confirm_transmit_action=None, 
+    pir_rate=None, 
+    exceed_action=None, 
+    exceed_transmit_action=None, 
+    violate_action=None, 
+    violate_transmit_action=None, 
+    table_map_name=None,
+    traffic_class_mode=None,
+    traffic_class_table=None
+    ):
+
+    """ Configures Policy-map class 
+        Args:
+             device ('obj'): device to use
+             policy_name('str) : name of the policy name
+             class_map_name('str') : name of the class
+             policer_rate('int', optional): police rate value, default is None
+             cir_rate('int', optional): cir rate value, default is None
+             cir_percent('int', optional): cir percentage value, default is None
+             rate_value('int', optional): Rate value, default is None
+             rate_percent('int', optional): rate percentage value, default is None
+             confirm_action('str', optional): Confirm action. ex:'transmit'. Default is None
+             confirm_transmit_action('str', optional): conform transmit action. ex: 'cos', 'dscp', default is None
+             pir_rate('int',optional): pir rate value, default is None
+             exceed_action('str', optional): exceed action. ex: 'drop', 'set-cos-transmit', default is None
+             exceed_transmit_action('str', optional): exceed transmit action. ex: 'cos', 'dscp', default is None
+             violate_action('str', optional): violate action. ex: 'drop', 'set-cos-transmit', default is None
+             violate_transmit_action('str', optional): violate transmit action. ex: 'cos', 'dscp', default is None
+             table_map_name('str', optional): to set the table name for policy_map, default is None
+             traffic_class_mode('str', optional): traffic class mode. ex: 'cos', 'dscp', default is None
+             traffic_class_table('str', optional): table map name, default is None
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = [f'policy-map {policy_name}',
+           f'class {class_map_name}']
+    if traffic_class_mode:
+        command = f'set traffic-class {traffic_class_mode}'
+        if traffic_class_table:
+            command += f' table {traffic_class_table}'
+        cmd.append(command)
+    
+    command = ''
+    if policer_rate:
+        command = f'police {policer_rate}'
+    elif cir_rate:
+        command = f'police cir {cir_rate}'
+    elif cir_percent:
+        command += f'police cir percent {cir_percent}'
+    elif rate_value:
+        command = f'police rate {rate_value}'
+    elif rate_percent:
+        command += f'police rate percent {rate_percent}'
+    if pir_rate:
+        command += f' pir {pir_rate}'
+    if confirm_action:
+        command += f' conform-action {confirm_action}'
+        if confirm_transmit_action:
+            command += f' {confirm_transmit_action}'
+        if exceed_action:
+            command += f' exceed-action {exceed_action}'
+            if exceed_transmit_action:
+                command += f' {exceed_transmit_action}'
+            if violate_action:
+                command += f' violate-action {violate_action}'
+                if violate_transmit_action:
+                    command += f' {violate_transmit_action}'
+        if table_map_name:
+            command += f' table {table_map_name}'
+    if command:
+        cmd.append(command)
+
+    try:
+        device.configure(cmd)
+    
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configures Policy-map class. Error:\n{e}")
+
+
+def unconfigure_policy_map_class_parameters(
+    device, 
+    policy_name, 
+    class_map_name, 
+    policer_rate=None, 
+    cir_rate=None,
+    cir_percent=None, 
+    rate_value=None, 
+    rate_percent=None,
+    confirm_action=None,
+    confirm_transmit_action=None, 
+    pir_rate=None, 
+    exceed_action=None, 
+    exceed_transmit_action=None, 
+    violate_action=None, 
+    violate_transmit_action=None, 
+    table_map_name=None,
+    traffic_class_mode=None,
+    traffic_class_table=None
+    ):
+
+    """ Unconfigures Policy-map class 
+        Args:
+             device ('obj'): device to use
+             policy_name('str) : name of the policy name
+             class_map_name('str') : name of the class
+             policer_rate('int', optional): police rate value, default is None
+             cir_rate('int', optional): cir rate value, default is None
+             cir_percent('int', optional): cir percentage value, default is None
+             rate_value('int', optional): Rate value, default is None
+             rate_percent('int', optional): rate percentage value, default is None
+             confirm_action('str', optional): Confirm action. ex:'transmit'. Default is None
+             confirm_transmit_action('str', optional): conform transmit action. ex: 'cos', 'dscp', default is None
+             pir_rate('int',optional): pir rate value, default is None
+             exceed_action('str', optional): exceed action. ex: 'drop', 'set-cos-transmit', default is None
+             exceed_transmit_action('str', optional): exceed transmit action. ex: 'cos', 'dscp', default is None
+             violate_action('str', optional): violate action. ex: 'drop', 'set-cos-transmit', default is None
+             violate_transmit_action('str', optional): violate transmit action. ex: 'cos', 'dscp', default is None
+             table_map_name('str', optional): to set the table name for policy_map, default is None
+             traffic_class_mode('str', optional): traffic class mode. ex: 'cos', 'dscp', default is None
+             traffic_class_table('str', optional): table map name, default is None
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = [f'policy-map {policy_name}',
+           f'class {class_map_name}']
+    if traffic_class_mode:
+        command = f'no set traffic-class {traffic_class_mode}'
+        if traffic_class_table:
+            command += f' table {traffic_class_table}'
+        cmd.append(command)
+    
+    command = ''
+    if policer_rate:
+        command = f'no police {policer_rate}'
+    elif cir_rate:
+        command = f'no police cir {cir_rate}'
+    elif cir_percent:
+        command += f'no police cir percent {cir_percent}'
+    elif rate_value:
+        command = f'no police rate {rate_value}'
+    elif rate_percent:
+        command += f'no police rate percent {rate_percent}'
+    if pir_rate:
+        command += f' pir {pir_rate}'
+    if confirm_action:
+        command += f' conform-action {confirm_action}'
+        if confirm_transmit_action:
+            command += f' {confirm_transmit_action}'
+        if exceed_action:
+            command += f' exceed-action {exceed_action}'
+            if exceed_transmit_action:
+                command += f' {exceed_transmit_action}'
+            if violate_action:
+                command += f' violate-action {violate_action}'
+                if violate_transmit_action:
+                    command += f' {violate_transmit_action}'
+        if table_map_name:
+            command += f' table {table_map_name}'
+    if command:
+        cmd.append(command)
+
+    try:
+        device.configure(cmd)
+    
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigures Policy-map class. Error:\n{e}")
+
+
+def unconfigure_policy_map_class(device, policy_name, class_map_name, policy_map_type=None):
+    """ Unconfigures Policy-map class 
+        Args:
+             device ('obj'): device to use
+             policy_name ('str): name of the policy name
+             class_map_name ('str'): name of the class
+             policy_map_type ('str'): type of the policy-map. Default is None
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = [f'policy-map{f" type {policy_map_type}" if policy_map_type else ""} {policy_name}', 
+        f'no class {class_map_name}']
+
+    try:
+        device.configure(cmd)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not unconfigure Policy-map. Error:\n{e}')

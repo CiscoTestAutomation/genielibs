@@ -22,18 +22,19 @@ log = logging.getLogger(__name__)
 
 def save_running_config(
     device, source="running-config", destination="startup-config"
-):
+, timeout=60):
     """ Save config
 
         Args:
             device (`obj`): Device object
             source (`str`): source to copy from
             destination (`str`): destination to copy to
+            timeout (`str`, optional): timeout (secs)
         Returns:
             None
     """
     try:
-        device.copy(source=source, dest=destination)
+        device.copy(source=source, dest=destination, timeout=timeout)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             'Failed to save configuration from "{source}" '

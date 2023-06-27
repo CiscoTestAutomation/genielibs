@@ -191,6 +191,77 @@ def unconfigure_local_span_filter(device, session_id, access_control_rule, acces
         raise SubCommandFailure(
             f"Could not unconfigure local span filter. Error:\n{e}"
         )
+
+
+def configure_interface_monitor_session_shutdown_erspan_dest(device, session_name):
+    """ configure monitor session on device by doing shut of the erspan destination interface
+        Args:
+            device ('obj'): Device object
+            session_name ('str'): Session name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    configs = []
+    configs.append(f"monitor session {session_name} type erspan-destination")
+    configs.append(f"shutdown")
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to shut on erspan destination monitor session  :\n{e}"
+        )  
+
+def configure_interface_monitor_session_mtu(device, session_name, mtu):
+    """ configure monitor session on device by setting destination mtu
+        Args:
+            device ('obj'): Device object
+            session_name ('str'): Session name
+            mtu ('str'): mtu size, (196-9000)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    configs = []
+    configs.append(f"monitor session {session_name} type erspan-source")
+    configs.append(f"destination")
+    configs.append(f"mtu {mtu}")
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure mtu on erspan monitor session :\n{e}"
+        ) 
+
+
+def configure_interface_monitor_session_no_mtu(device, session_name, mtu):
+    """ configure monitor session on device by setting destination no mtu
+        Args:
+            device ('obj'): Device object
+            session_name ('str'): Session name
+            mtu ('str'): mtu size, (196-9000)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    configs = []
+    configs.append(f"monitor session {session_name} type erspan-source")
+    configs.append(f"destination")
+    configs.append(f"no mtu {mtu}")
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure no mtu on erspan monitor session :\n{e}"
+        ) 
+
+
 def config_erspan_monitor_session_shut_unshut(device, session_number, action):
 
      """ Configure erspan monitor session shutdown
@@ -293,3 +364,70 @@ def config_erspan_monitor_session_filter(device, session_number, vlan):
          raise SubCommandFailure(
              f"Failed to configure filter on erspan monitor session :\n{e}"
          )    
+def configure_interface_monitor_session_shutdown_erspan_dest(device, session_name):
+    """ configure monitor session on device by doing shut of the erspan destination interface
+        Args:
+            device ('obj'): Device object
+            session_name ('str'): Session name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    configs = []
+    configs.append(f"monitor session {session_name} type erspan-destination")
+    configs.append(f"shutdown")
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to shut on erspan destination monitor session  :\n{e}"
+        )  
+
+def configure_interface_monitor_session_mtu(device, session_name, mtu):
+    """ configure monitor session on device by setting destination mtu
+        Args:
+            device ('obj'): Device object
+            session_name ('str'): Session name
+            mtu ('str'): mtu size, (196-9000)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    configs = []
+    configs.append(f"monitor session {session_name} type erspan-source")
+    configs.append(f"destination")
+    configs.append(f"mtu {mtu}")
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure mtu on erspan monitor session :\n{e}"
+        ) 
+
+
+def configure_interface_monitor_session_no_mtu(device, session_name, mtu):
+    """ configure monitor session on device by setting destination no mtu
+        Args:
+            device ('obj'): Device object
+            session_name ('str'): Session name
+            mtu ('str'): mtu size
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    configs = []
+    configs.append(f"monitor session {session_name} type erspan-source")
+    configs.append(f"destination")
+    configs.append(f"no mtu {mtu}")
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure no mtu on erspan monitor session :\n{e}"
+        ) 

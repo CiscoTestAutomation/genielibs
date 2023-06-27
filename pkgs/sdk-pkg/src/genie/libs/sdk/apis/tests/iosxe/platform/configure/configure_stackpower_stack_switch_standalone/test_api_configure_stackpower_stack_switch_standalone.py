@@ -30,6 +30,6 @@ class TestConfigureStackpowerStackSwitchStandalone(unittest.TestCase):
         )
 
     def test_configure_stackpower_stack_switch_standalone(self):
-        result = configure_stackpower_stack_switch_standalone(self.device, 'Powerstack-Ring', 1, 'Powerstack-Ring', 'vtp')
+        result = configure_stackpower_stack_switch_standalone(self.device, 1, 'Powerstack-Ring-1', False)
         expected_output = None
         self.assertEqual(result, expected_output)

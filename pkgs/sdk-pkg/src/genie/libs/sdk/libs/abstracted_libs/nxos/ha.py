@@ -297,8 +297,8 @@ class HA(HA_main):
         # # Init
         device = self.device
 
+        filetransfer = FileUtils.from_device(self.device)
         if not hasattr(self.device, 'filetransfer_attributes'):
-            filetransfer = FileUtils.from_device(self.device)
             set_filetransfer_attributes(self, self.device, filetransfer)
 
         disk = "bootflash:"
@@ -319,9 +319,9 @@ class HA(HA_main):
                 address=device.filetransfer_attributes['server_address'],
                 upgrade_image=upgrade_image)
             #File copy operations have the option of running through a different network stack by using the use-kstack option
-            use_kstack = self.parameters.get('use_kstack',False)
+            use_kstack = self.parameters.get('use_kstack', False)
             filetransfer.copyfile(source=from_url, destination=disk,
-                                  device=device, vrf='management',use_kstack=use_kstack,timeout_seconds=900)
+                                  device=device, vrf='management', use_kstack=use_kstack, timeout_seconds=1800)
 
             # Verify location:<filename> exists
             output = device.execute('dir {disk}{image}'.format(disk=disk,
@@ -360,12 +360,12 @@ class HA(HA_main):
         dialog = Dialog(statement_list)
         ctrlplane_downtime = self.parameters.get('ctrlplane_downtime')
         user_boot_mode = self.parameters.get('mode')
-        disrupt_flag = self.parameters.get('disrupt_flag',False)
-        allow_disruptive = self.parameters.get('allow_disruptive',True)
+        disrupt_flag = self.parameters.get('disrupt_flag', False)
+        allow_disruptive = self.parameters.get('allow_disruptive', True)
         issu_timeout = self.parameters.get('issu_timeout')
         cfg_transfer = self.parameters.get('cfg_transfer')
         cfg_timeout = self.parameters.get('cfg_timeout')
-        config_ver_exclude = self.parameters.get("config_ver_exclude",[])
+        config_ver_exclude = self.parameters.get("config_ver_exclude", [])
         with steps.start("Check boot mode on {}".format(self.device.hostname)) as step:
             invalid_cmd = False
             out = self.device.execute('show boot mode')
@@ -412,7 +412,8 @@ class HA(HA_main):
                         "file not found.Please check path/content of the file")
                 pre_trig_config = get_config_dict(pre_cfg_str)
             else:
-                out = self.device.execute('show run', timeout=cfg_timeout, reply=dialog)
+                out = self.device.execute(
+                    'show run', timeout=cfg_timeout, reply=dialog)
                 pre_trig_config = get_config_dict(out)
         with steps.start("Perform copy run start on {}".format(self.device.hostname)):
             execute_copy_run_to_start(self.device)
@@ -420,16 +421,18 @@ class HA(HA_main):
             with steps.start("Performing issu on the device {}".format(self.device.hostname)):
                 image_name = basename(upgrade_image)
                 self.device.execute(
-                   'install all nxos bootflash:{}'.format(image_name), timeout=issu_timeout,
-                   reply=dialog)
+                    'install all nxos bootflash:{}'.format(image_name), timeout=issu_timeout,
+                    reply=dialog)
         else:
             with steps.start("Performing ISSU impact only check on the device {}".format(self.device.hostname)) as step:
                 image_name = basename(upgrade_image)
                 impact_output = self.device.execute(
-                                "show install all impact nxos bootflash:{} non-disruptive".format(image_name), timeout=600)
+                    "show install all impact nxos bootflash:{} non-disruptive".format(image_name), timeout=600)
                 #Parses impact after compatibility check is done
-                compatibility_table = re.findall('(?s)(?<=Compatibility check is done:)(.*?)(?=\r\n\r\n|\n\n)',impact_output)[0]
-                upgrade_will_be_disruptive = True if len(re.findall(r"[^-]disruptive",compatibility_table)) else False
+                compatibility_table = re.findall(
+                    '(?s)(?<=Compatibility check is done:)(.*?)(?=\r\n\r\n|\n\n)', impact_output)[0]
+                upgrade_will_be_disruptive = True if len(re.findall(
+                    r"[^-]disruptive", compatibility_table)) else False
                 if upgrade_will_be_disruptive and not allow_disruptive:
                     step.failed(
                         "Upgrade will be disruptive and disruptive ISSU is not allowed")
@@ -438,7 +441,7 @@ class HA(HA_main):
             with steps.start("Performing non disruptive issu on the device {}".format(self.device.hostname)):
                 image_name = basename(upgrade_image)
                 self.device.execute(
-                'install all nxos bootflash:{} non-disruptive'.format(image_name), timeout=issu_timeout, reply=dialog)
+                    'install all nxos bootflash:{} non-disruptive'.format(image_name), timeout=issu_timeout, reply=dialog)
 
         with steps.start("Reconnect back to device {} after ISSU".format(self.device.hostname)):
             reconnect_timeout = Timeout(max_time=1200, interval=120)
@@ -475,11 +478,12 @@ class HA(HA_main):
             with steps.start("Check CP downtime after on {} after ISSU".format(self.device.hostname)) as step:
                 if user_boot_mode.lower() == 'lxc':
                     step.passed(
-                      "show install all time-stats detail unsupported on lxc mode and cp downtime is minimal")
+                        "show install all time-stats detail unsupported on lxc mode and cp downtime is minimal")
                 else:
                     #<show install all time-stats detail> requires a maximum of 60s to fully populate post ISSU
                     time.sleep(60)
-                    out = self.device.execute('show install all time-stats detail')
+                    out = self.device.execute(
+                        'show install all time-stats detail')
                     output_error = False
                     cp_downtime = None
                     for line in out.splitlines():
@@ -490,23 +494,23 @@ class HA(HA_main):
                            output_error = True
                            break
                        p2 = re.compile(
-                          r'^Total\s+.*?:\s(?P<cp_downtime>\d+)\s+seconds$')
+                           r'^Total\s+.*?:\s(?P<cp_downtime>\d+)\s+seconds$')
                        m = p2.match(line)
                        if m:
                           cp_downtime = m.groupdict()['cp_downtime']
                           continue
                     if output_error:
                         step.failed(
-                        "The output shows reset-reason as disruptive. ND ISSU was not performed properly.")
+                            "The output shows reset-reason as disruptive. ND ISSU was not performed properly.")
                     elif cp_downtime is None:
                         step.failed(
-                         "garbled output for show install all time-stats detail so cp_downtime was not calculated properly.")
+                            "garbled output for show install all time-stats detail so cp_downtime was not calculated properly.")
                     elif int(cp_downtime) > int(ctrlplane_downtime):
                         step.failed(
-                        "Control plane was down for {} seconds which is longer than user expected at {} seconds".format(cp_downtime,    ctrlplane_downtime))
+                            "Control plane was down for {} seconds which is longer than user expected at {} seconds".format(cp_downtime,    ctrlplane_downtime))
                     else:
                         step.passed(
-                        "Control plane was down for {} seconds which is within an user acceptable range of {} seconds".format(cp_downtime,    ctrlplane_downtime))
+                            "Control plane was down for {} seconds which is within an user acceptable range of {} seconds".format(cp_downtime,    ctrlplane_downtime))
 
         with steps.start("Compare post-trigger config with pre trigger config snapshot on {}".format(self.device.hostname)) as step:
             if cfg_transfer:
@@ -526,7 +530,8 @@ class HA(HA_main):
                         "file not found. Please check path/content of the file")
                 post_trig_config = get_config_dict(post_cfg_str)
             else:
-                out = self.device.execute('show run', timeout=cfg_timeout, reply=dialog)
+                out = self.device.execute(
+                    'show run', timeout=cfg_timeout, reply=dialog)
                 post_trig_config = get_config_dict(out)
             output = compare_config_dicts(
                 pre_trig_config, post_trig_config, [r'(boot|version)']+config_ver_exclude)

@@ -1,0 +1,40 @@
+configure:
+  commands:
+    address 4.4.4.4: "address 4.4.4.4\r\n"
+    end:
+      new_state: execute
+    interface HundredGigE1/0/4: "interface HundredGigE1/0/4\r\n"
+    line console 0:
+      new_state: configure_line
+    mgmt-traffic control ipv4: "mgmt-traffic control ipv4\r\n"
+    no logging console: ''
+    protocol http: "protocol http\r\n"
+    protocol snmp: "protocol snmp\r\n"
+    protocol ssh: "protocol ssh\r\n"
+  prompt: SKYFOX-DUT3(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: SKYFOX-DUT3(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: SKYFOX-DUT3#

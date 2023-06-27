@@ -1,22 +1,21 @@
 configure:
   commands:
-    class c0: "class c0\r\n"
+    class class-default: "class class-default\r\n"
     end:
       new_state: execute
     line console 0:
       new_state: configure_line
     no logging console: ''
-    police cir percent 4 conform-action transmit: "police cir percent 4 conform-action\
-      \ transmit\r\n"
-    policy-map policer: "policy-map policer\r\n"
-    set qos-group 11: "set qos-group 11\r\n"
-  prompt: A1(config)#
+    police 600000000: "police 600000000\r\n"
+    police cir percent 60: "police cir percent 60\r\n"
+    policy-map cir: "policy-map cir\r\n"
+  prompt: SC_9200-2(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: A1(config-line)#
+  prompt: SC_9200-2(config-line)#
 connect:
   commands:
     ? ''
@@ -36,4 +35,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: A1#
+  prompt: SC_9200-2#

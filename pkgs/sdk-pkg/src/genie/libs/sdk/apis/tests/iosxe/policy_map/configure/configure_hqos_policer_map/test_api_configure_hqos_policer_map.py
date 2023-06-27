@@ -10,7 +10,7 @@ class TestConfigureHqosPolicerMap(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          A1:
+          SC_9200-2:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,11 +18,11 @@ class TestConfigureHqosPolicerMap(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: cat9k
-            type: single_rp
+            platform: c9200
+            type: c9200
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['A1']
+        self.device = self.testbed.devices['SC_9200-2']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,6 @@ class TestConfigureHqosPolicerMap(unittest.TestCase):
         )
 
     def test_configure_hqos_policer_map(self):
-        result = configure_hqos_policer_map(self.device, 'policer', 'c0', 4, None, None, ['qos-group'], ['11'], None, False)
+        result = configure_hqos_policer_map(self.device, 'cir', 'class-default', None, None, None, None, None, None, '60', '600000000', False)
         expected_output = None
         self.assertEqual(result, expected_output)

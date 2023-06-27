@@ -70,6 +70,27 @@ def configure_ip_local_pool(device,name,start,end):
         )
 
 
+def unconfigure_ip_local_pool(device,name):
+    """ ip local pool
+        Args:
+            device ('obj'): Device object
+            name ('str') : pool name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = f'no ip local pool {name}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure local pool on {device}. Error:\n{error}"
+                .format(device=device, error=e)
+        )
+
+
 def configure_dope_wrsp(device, asic, core, idx, hi_value, lo_value):
     """ Configures wrsp parameters in dope shell
         Args:
@@ -3407,28 +3428,29 @@ def unconfigure_diagnostic_schedule_switch(
 
 def configure_stack_power_switch_power_priority(
     device,
-    stack_parameters,
     switch_number,
     power_priority,
-    power_priority_value
+    power_priority_value=None,
+    default=False
     ):
-    """ configure_stack power switch <sw_num> power priority low <priority_value>
+    """ configure_stack power switch <sw_num> power priority
         Example : stack-power switch 1 power priority low 15
         Args:
             device ('obj'): device to use
-            stack_parameters ('str'): stack_parameters (stack/switch)
             switch_number ('int'): Switch number (1-16)
             power_priority('str'): power_priority (low/high/switch)
-            power_priority_value ('int'): priority_values <1-27>
+            power_priority_value ('int', optional): priority_values <1-27>. Default is None
+            default ('bool', optional): default power priority. Default is False
         Returns:
             None
         Raises:
             SubCommandFailure
     """
-    log.info("configuring stack-power switch power priority value")
-    config = [
-        f"stack-power {stack_parameters} {switch_number}",
-        f"power-priority {power_priority} {power_priority_value}"]
+    config = [f"stack-power switch {switch_number}"]
+    if default:
+        config.append(f"default power-priority {power_priority}")
+    elif power_priority_value:
+        config.append(f"power-priority {power_priority} {power_priority_value}")
 
     try:
         device.configure(config)
@@ -3437,10 +3459,8 @@ def configure_stack_power_switch_power_priority(
 
 def unconfigure_stack_power_switch_power_priority(
     device,
-    stack_parameters,
     switch_number,
-    power_priority,
-    power_priority_value
+    power_priority
     ):
     """ unconfigure_stack power switch <sw_num> power priority low <priority_value>
         Example : stack-power switch 1 power priority low 15
@@ -3449,22 +3469,21 @@ def unconfigure_stack_power_switch_power_priority(
             stack_parameters ('str'): stack_parameters (stack/switch)
             switch_number ('int'): Switch number (1-16)
             power_priority('str'): power_priority (low/high/switch)
-            power_priority_value ('int'): priority_values <1-27>
         Returns:
             None
         Raises:
             SubCommandFailure
     """
-    log.info("Unconfiguring stack-power switch power priority value")
-
-    config = [
-        f"stack-power {stack_parameters} {switch_number}",
-        f"no power-priority {power_priority} {power_priority_value}"]
+    
+    config = [ 
+        f"stack-power switch {switch_number}",
+        f"no power-priority {power_priority}"]
 
     try:
         device.configure(config)
     except SubCommandFailure as e:
-        raise SubCommandFailure(f"Failed to unconfigure stack-power stack on device {device.name}. Error:\n{e}")
+        raise SubCommandFailure(f"Failed to unconfigure power priorities stack-power stack on device {device.name}. Error:\n{e}")
+
 
 def configure_default_stack_power_switch_power_priority(
     device,
@@ -3497,65 +3516,60 @@ def configure_default_stack_power_switch_power_priority(
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure default power priority on device {device.name}. Error:\n{e}")
 
-def configure_stackpower_stack_switch_standalone(device,powerstack_name,switch_number,stack_name,mode=None):
-    """ Configures power_shared mode on stack-power stack
 
+def configure_stackpower_stack_switch_standalone(device, switch_number, stack_name=None, standalone=True):
+    """ Configures stack and standalone on stack-power switch
+        
         Args:
             device ('obj'): device to use
-            powerstack_name ('str'): Power stack name - Up to 31 chars
             switch_number ('int'): Switch number (1-16)
-            stack_name ('str'): Power stack name - Up to 31 chars
-            mode('str'): mode- standalone/no standalone
+            stack_name ('str', optional): Power stack name - Up to 31 chars
+            standalone ('bool', optional): standalone. Default is True
         Returns:
             None
         Raises:
             SubCommandFailure
     """
-    log.info(f"Configuring stack power standalone and no standalone {device.name}")
-
-    config = [
-        f'stack-power stack {powerstack_name}',
-        f'stack-power switch {switch_number}',
-        f'stack {stack_name}']
-
-    if mode is None:
-        config.append ('no standalone')
+    
+    config = [f'stack-power switch {switch_number}']
+    if stack_name:
+        config.append(f'stack {stack_name}')
+    if standalone:
+        config.append('standalone')
     else:
-        config.append ('standalone')
+        config.append('no standalone')
     try:
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure stack power switch standalone on device {device.name}. Error:\n{e}")
 
-def unconfigure_stackpower_stack_switch_no_standalone(device,powerstack_name,switch_number,stack_name,mode=None):
-    """ Configures power_shared mode on stack-power stack
-
+def unconfigure_stackpower_stack_switch_standalone(device, switch_number, stack_name=None, standalone=True):
+    """ Unconfigures stack and standalone on stack-power switch
+        
         Args:
             device ('obj'): device to use
-            powerstack_name ('str'): Power stack name - Up to 31 chars
             switch_number ('int'): Switch number (1-16)
-            stack_name ('str'): Power stack name - Up to 31 chars
-            mode('str'): no standalone
+            stack_name ('str', optional): Power stack name - Up to 31 chars
+            standalone ('bool', optional): standalone. Default is True
         Returns:
             None
         Raises:
             SubCommandFailure
     """
-    log.info(f"Configuring stack power standalone and no standalone {device.name}")
+    
+    config = [f'stack-power switch {switch_number}']
 
-    config = [
-        f'no stack-power stack {powerstack_name}',
-        f'stack-power switch {switch_number}',
-        f'no stack {stack_name}']
-
-    if mode is None:
-        config.append ('no standalone')
+    if stack_name:
+        config.append(f'no stack {stack_name}')
+    if standalone:
+        config.append('standalone')
     else:
-        config.append ('standalone')
+        config.append('no standalone')
     try:
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure stack power switch standalone on device {device.name}. Error:\n{e}")
+
 
 def configure_stack_power_switch_standalone(device,switch_number):
     """ configure standalone on stack power switch
@@ -3570,7 +3584,7 @@ def configure_stack_power_switch_standalone(device,switch_number):
     """
     log.info("configuring standalone on stack-power switch")
 
-    config = [
+    config = [ 
         f'stack-power switch {switch_number}',
         'standalone']
 
@@ -3600,6 +3614,7 @@ def configure_stack_power_switch_no_standalone(device,switch_number):
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure no standalone stack-power switch on device {device.name}.Error:\n{e}")
+
 
 def configure_stack_power_mode_power_shared(device, powerstack_name, strict=None):
     """ Configures power_shared mode on stack-power stack
@@ -3908,6 +3923,25 @@ def unconfigure_macro_auto_processing_on_interface(device, interface):
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure macro auto processing on the device interface. Error:\n{e}")
 
+def config_cns_agent_passwd(device, cnspasswd):
+    """ configure cns agent password
+
+        Args:
+            device (`obj`): Device object
+            cnspasswd (`str`): Cns agent password
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed to configure cns agent password
+    """
+
+    try:
+        device.configure("cns password {cnspasswd}".format(cnspasswd=cnspasswd))
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            'Could not configure cns agent password, Error: {error}'.format(error=e)
+        )
+    
 def configure_diagnostic_monitor_syslog(device):
     """ diagnostic monitor syslog
     Args:
@@ -4316,7 +4350,6 @@ def unconfigure_enable_secret_level(device, level_num):
 def unconfigure_stack_power_switch(device, switch_number):
     """ un configures stack-power switch
         Example : no stack-power switch 1
-
         Args:
             device ('obj'): Device object
             switch_number ('int'): Switch number (1-16)
@@ -4331,6 +4364,7 @@ def unconfigure_stack_power_switch(device, switch_number):
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure stack-power switch on device {device.name}. Error:\n{e}")
+
 
 def unconfig_banner(device, banner_text):
     """ Unconfig Day banner
@@ -4369,6 +4403,27 @@ def configure_logging_buffered_persistent_url(device, filesystem_name=None):
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure logging buffered and logging persistent url. Error:\n{e}")
+
+
+def configure_graceful_reload_interval(device, interval_val):
+    """ configure graceful reload interval the XFSU device 
+    
+    Args:
+        device ('obj'): device to use
+        interface ('int'): graceful interval value
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed to configure graceful reload interval the XFSU device
+    """
+
+    config = f"graceful-reload interval {interval_val}"
+    try:
+        device.configure(config)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure graceful reload interval the XFSU device. Error:\n{e}")
+
 
 def configure_diagnostic_bootup_level_minimal(device):
     """ diagonistics bootup level minimal
@@ -4410,7 +4465,142 @@ def configure_cos(device,priority_value):
         raise SubCommandFailure(
             "Failed to configure 'l2-protocol tunnel cos' globally"
             'Error:{e}'.format(e=e)
+        )    
+
+def unconfig_cns_agent_password(device, cns_password=None):
+    """ un configure cns agent password
+        Args:
+            device ('obj'): Device object
+            cns_password ('str', optional): Cns agent password. Default is None
+        Returns:
+            None
+        Raise:
+            SubCommandFailure: Failed to un configure cns agent password
+    """
+    log.debug("un configure cns agent password")
+    try:
+        if cns_password:
+            device.configure("no cns password {cns_password}".format(cns_password=cns_password))
+        else:
+            device.configure("no cns password")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not un configure cns agent password. Error:\n{e}")
+
+
+def configure_boot_system_image_file(device, image_path, switch_number=None):
+    """ Configure boot system image file
+        Args:
+            device ('obj'): Device object
+            image_path ('str'): full image path. Ex: flash:cat9k_17467.SSA.pkg
+            switch_number ('str', optional): switch number or all. Default is None
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = f"boot system{f' switch {switch_number}' if switch_number else ''} {image_path}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure boot system on {device}. Error:\n{e}")
+
+
+def configure_banner(device, banner_text):
+    """ Config Day banner
+        Args:
+            device (`obj`): Device object
+            banner_text (`str`): Banner text
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring Day banner
+    """
+
+    try:
+        device.configure("banner motd {banner_text}".format(banner_text=banner_text))
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            'Could not configure banner {banner_text}, Error: {error}'.format(
+                banner_text=banner_text, error=e)
         )
+
+def unconfigure_snmp_mib_bulkstat(device, object_name, schema_name, transfer_name):
+    
+    """ unconfigure snmp mib bulkstat
+    Args:
+        device ('obj'): device to use
+        object_name ('str'): The name of the object 
+        schema_name ('str'): The name of the schema 
+        transfer_name ('str'): bulkstat transfer name 
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [
+        f"bulkstat profile {transfer_name}",
+        f"no enable",
+        "exit",
+        f"no snmp mib bulkstat object-list {object_name}",
+        f"no snmp mib bulkstat schema {schema_name}",
+        f"no snmp mib bulkstat transfer {transfer_name}",
+ 
+        ]
+        
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure snmp mib bulkstat on this device. Error:\n{e}")
+        
+
+def configure_stackpower_stack(device, powerstack_name, mode=None, strict=False):
+    """ Configures power stack mode on stack-power stack
+        
+        Args:
+            device ('obj'): device to use
+            powerstack_name ('str'): Power stack name - Up to 31 chars
+            mode ('str', optional): Power stack mode. Default is None
+            strict ('bool', optional): Strict mode. Default is False
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    
+    cmd = [f'stack-power stack {powerstack_name}']
+
+    if mode:
+        command = f'mode {mode}'
+        if strict:
+            command += ' strict'
+        cmd.append(command)
+    try:
+        device.configure(cmd)
+    
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure stackpower stack on device {device.name}. Error:\n{e}")
+
+
+def unconfigure_stackpower_stack(device, powerstack_name):
+    """ Configures power stack mode on stack-power stack
+        
+        Args:
+            device ('obj'): device to use
+            powerstack_name ('str'): Power stack name - Up to 31 chars
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+      
+    cmd = [f'no stack-power stack {powerstack_name}']
+
+    try:
+        device.configure(cmd)
+    
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure stackpower stack on device {device.name}. Error:\n{e}")
 
 def unconfig_cns_agent_password(device, cns_password=None):
     """ un configure cns agent password

@@ -1122,7 +1122,7 @@ def configure_bgp_neighbor_send_community(
 
 
 def configure_ospf_internal_external_routes_into_bgp(
-    device, bgp_as, process_id, vrf=None, address_family=None
+    device, bgp_as, process_id, vrf=None, address_family=None, metric=None
 ):
     """ redistributes all(internal and external) OSPF routes into BGP
 
@@ -1132,6 +1132,7 @@ def configure_ospf_internal_external_routes_into_bgp(
             process_id ('int'): ospf process_id
             address_family ('str'): address family to configure under
             vrf ('str'): vrf under which routes to be redistribute
+            metric ('int', optional): metric value. Default is None
         Returns:
             N/A
         Raises:
@@ -1140,13 +1141,13 @@ def configure_ospf_internal_external_routes_into_bgp(
     try:
         confg = ["router bgp {}".format(bgp_as)]
         if not vrf:
-            confg.append("redistribute ospf {process_id} match internal "
-                         "external 1 external 2".format(process_id=process_id))
+            confg.append(f"redistribute ospf {process_id} match internal "
+                         f"external 1 external 2{f' metric {metric}' if metric else ''}")
         else:
             confg.append("address-family {address_family} vrf {vrf}".format(
                 address_family=address_family, vrf=vrf))
-            confg.append("redistribute ospf {process_id} match internal "
-                         "external 1 external 2".format(process_id=process_id))
+            confg.append(f"redistribute ospf {process_id} match internal "
+                         f"external 1 external 2{f' metric {metric}' if metric else ''}")
 
         device.configure(confg)
     except SubCommandFailure as e:
@@ -2401,3 +2402,58 @@ def configure_bgp_vpn_import(device, bgp_as, address_family, address_family_modi
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not configure router bgp import. Error:{e}")
+
+
+def configure_ospf_redistribute_in_bgp(device, bgp_as, address_family, ospf_instance, 
+                                       match_criteria=None, metric=None, route_map=None):
+    """ Configures bgp with ospf redistribuiton
+        Args:
+            device('obj'): device to configure on
+            bgp_as('str'): bgp_as to configure
+            address_family('str'): ipv4 or ipv6 address family
+            ospf_instance('str'): ospf instance id for redistribution
+            match_criteria('str', optional): redistribuiton match criteria. Default is None
+            metric('str', optional): metric for redistributed routes. Default is None
+            route_map('str', optional): route map reference. Default is None
+
+        Return:
+            N/A
+        Raises:
+            SubCommandFailure: Failed to configure bgp with ospf redistribuiton
+    """
+    config = [f"router bgp {bgp_as}", f"address-family {address_family}"]
+    cmd = f"redistribute ospf {ospf_instance}"
+    if match_criteria:
+        cmd += f" match {match_criteria}"
+    if metric:
+        cmd += f" metric {metric}"
+    if  route_map:
+        cmd += f" route-map {route_map}"
+    config.append(cmd)
+    config.append('exit-address-family')
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure bgp with ospf redistribuiton. Error: {e}")
+
+
+def configure_bgp_eigrp_redistribution(device, bgp_as, address_family, vrf=None, eigrp_instance=None):
+    """Configure redistribute eigrp on device.
+        Args:
+            device ('obj'): Device object
+            bgp_as ('int'): bgp as number
+            address_family ('str'): ipv4 or ipv6 address family under bgp
+            vrf('str', optional): vrf name. Default is None
+            eigrp_instance ('int', optional): redistribute eigrp instance number. Default is None
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed to configure redistribute eigrp
+    """
+    config = [f'router bgp {bgp_as}', f'address-family {address_family}{f" vrf {vrf}" if vrf else ""}']
+    if eigrp_instance:
+        config.append(f'redistribute eigrp {eigrp_instance}')
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure redistribute eigrp on device. Error:\n{e}")

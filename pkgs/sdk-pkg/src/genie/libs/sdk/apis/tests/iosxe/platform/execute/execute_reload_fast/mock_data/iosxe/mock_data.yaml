@@ -1,0 +1,50 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: 9300stack(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: 9300stack(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    reload fast:
+      response:
+      - "Reload fast command is being issued on Active unit, this will reload fast\
+        \ the whole stack\r\nProceed with reload fast? [confirm]\r\nNot able to run\
+        \ this command in bundle boot mode\r\nSTACK_GR: Inside xFSU check if switch\
+        \ stack\r\nFast software upgrade is not supported in a half ring stack. Please\
+        \ connect the stack in full ring formation to perform fast software upgrade.\r\
+        \nChecking STP eligibility: Ineligible\r\n:Not met since STP check failed\
+        \ due to Root Switch with forwarding link\r\n[1 2]: Performing xFSU-pre-check\r\
+        \n  PID TTY          TIME CMD\r\n  SUCCESS: xFSU-pre-check finished\r\n[1]:\
+        \ xFSU-pre-check package(s) on switch 1\r\nFAILED: Switch 1 Rommon variable\
+        \ MANUAL_BOOT is set to yes. Please configure MANUAL_BOOT to no before performing\
+        \ fast software upgrade.\r\r\n[1]: Finished xFSU-pre-check failed on switch\
+        \ 1\r\nFAILED: xFSU requirement pre-check\r\nFAILED: Abort xFSU since requirement\
+        \ does not met"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: 9300stack#

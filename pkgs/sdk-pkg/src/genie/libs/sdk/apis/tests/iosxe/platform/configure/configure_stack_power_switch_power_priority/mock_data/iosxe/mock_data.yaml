@@ -1,11 +1,11 @@
 configure:
   commands:
+    default power-priority high: "default power-priority high\r\n"
     end:
       new_state: execute
     line console 0:
       new_state: configure_line
     no logging console: ''
-    power-priority high 13: "power-priority high 13\r\n"
     stack-power switch 1: "stack-power switch 1\r\n"
   prompt: stack3-nyquist-1(config)#
 configure_line:

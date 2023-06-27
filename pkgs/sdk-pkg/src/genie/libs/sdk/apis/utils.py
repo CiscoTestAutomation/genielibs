@@ -1105,7 +1105,7 @@ def copy_from_device(device,
         return
 
     # Try to determine connectivity to device
-    mgmt_ip, mgmt_src_ip_addresses = device.api.get_mgmt_ip_and_mgmt_src_ip_addresses()
+    mgmt_ip, mgmt_src_ip_addresses = device.api.get_mgmt_ip_and_mgmt_src_ip_addresses(mgmt_src_ip=local_ip)
 
     mgmt_interface = device.api.get_mgmt_interface(mgmt_ip=mgmt_ip)
 
@@ -1365,7 +1365,8 @@ def get_longest_server_address(device):
         else:
             addresses.append(addr)
 
-    return max(addresses, key=len)
+    if addresses:
+        return max(addresses, key=len)
 
 
 def delete_file_on_server(testbed,

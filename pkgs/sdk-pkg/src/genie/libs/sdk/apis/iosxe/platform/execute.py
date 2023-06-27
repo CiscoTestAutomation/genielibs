@@ -801,12 +801,13 @@ def execute_clear_parser_statistics(device):
         log.error(e)
         raise SubCommandFailure("Could not clear parser statistics on device")
 
-def execute_format(device, file_sys, timeout=300):
+def execute_format(device, file_sys, timeout=300, file_sys_type=None):
     """ Execute 'format <file-system>' on the device
         Args:
             device ('obj'): Device object
             timeout ('int'): Max time to for format to complete in seconds
-            file_sys ("str"): File system should be formatted
+            file_sys ('str'): File system should be formatted
+            file_sys_type ('str', optinal): File system type. Ex: FAT32, ext2. Default is None
         Returns:
             None
         Raises:
@@ -831,10 +832,10 @@ def execute_format(device, file_sys, timeout=300):
     ])
 
 
-    cmd = "format {dir}".format(dir=file_sys)
+    cmd = f"format {file_sys}{f' {file_sys_type}' if file_sys_type else ''}"
 
     try:
-        output = device.execute(cmd, reply=dialog, timeout=timeout)
+        device.execute(cmd, reply=dialog, timeout=timeout)
 
     except SubCommandFailure as e:
         raise SubCommandFailure(
@@ -1365,3 +1366,65 @@ def execute_set_platform_hardware_fed_qos(device, mode, qos_type, interface, swi
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not execute Fed qos interface on device, Error: {e}')
   
+
+def execute_reload_fast(device, fast_type=None):
+    """ execute Halt and perform a cold restart for XFSU device 
+    
+    Args:
+        device ('obj'): device to use
+        fast_type ('fast_type', Optional): type can be "enhanced" or none based on versio
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed to execute Halt and perform a cold restart for XFSU device
+    """
+    cmd = "reload fast"
+    if fast_type:
+        cmd += f" {fast_type}"
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to execute Halt and perform a cold restart for XFSU device {device}. Error:\n{e}")
+
+
+def config_smart_save_license_usage(device, day, file_name):
+    """ configure smart save license usage
+        Args:
+            device (`obj`): Device object
+            day ('str'): Last days of usage
+            file_name ('str'): Save usage reports to file
+        Returns:
+            None
+        Raise:
+            SubCommandFailure: Failed to configure smart save license usage
+    """
+    log.debug("configure smart save license usage")
+
+    cmd = f"license smart save usage day {day} file {file_name}"
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure smart save license usage. Error:\n{e}")
+        
+def config_smart_authorisation_request(device, feature_name, parameter):
+    """ configure smart authorisation request
+        Args:
+            device ('obj'): Device object
+            feature_name ('str'): Feature name
+            parameter ('str'): all{Get auth code for all device in HA config} or
+                local {Get auth code for all device in local device}
+            
+        Returns:
+            None
+        Raise:
+            SubCommandFailure: Failed to configure smart authorisation request
+    """
+    log.debug("configure smart authorisation request")
+    
+    cmd = f"license smart authorization request add {feature_name} {parameter}"
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure smart authorisation request. Error:\n{e}")

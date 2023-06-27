@@ -2,24 +2,17 @@ configure:
   commands:
     end:
       new_state: execute
-    line console:
-      new_state: configure_line
     line console 0:
       new_state: configure_line
     no logging console: ''
-    no vlan 1-4094: "no vlan 1-4094\r\n%Default VLAN 1 may not be deleted.\r\n%Default\
-      \ VLAN 1002 may not be deleted.\r\n%Default VLAN 1003 may not be deleted.\r\n\
-      %Default VLAN 1004 may not be deleted.\r\n%Default VLAN 1005 may not be deleted.\r\
-      \n"
-  prompt: mac-gen2(config)#
+    no vlan 2-513: "no vlan 2-513\r\n"
+  prompt: P-R1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-    line vty: ''
-    terminal width 511: ''
-  prompt: mac-gen2(config-line)#
+  prompt: P-R1(config-line)#
 connect:
   commands:
     ? ''
@@ -39,6 +32,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-    term width 511: ''
-    terminal session-timeout 0: ''
-  prompt: mac-gen2#
+  prompt: P-R1#

@@ -10,7 +10,7 @@ class TestConfigurePolicyMap(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          c8kv-1:
+          stack3-nyquist-1:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,11 +18,11 @@ class TestConfigurePolicyMap(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: iosxe
-            type: iosxe
+            platform: cat9k
+            type: router
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['c8kv-1']
+        self.device = self.testbed.devices['stack3-nyquist-1']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,9 +30,35 @@ class TestConfigurePolicyMap(unittest.TestCase):
         )
 
     def test_configure_policy_map(self):
-        result = configure_policy_map(self.device, 'rar_policer', [{'class_map_name': 'class-default',
+        result = configure_policy_map(self.device, 'policy1', [{'bandwidth_percent': 40,
+  'bandwidth_remaining_percent': 50,
+  'class_map_name': 'test',
   'match_mode': ['dscp', 'cos'],
-  'matched_value': ['cs1', '5'],
-  'policer_val': 2000000000}])
+  'matched_value': ['cs1', 5],
+  'police_cir_percent': 30,
+  'policer_val': 2000000000,
+  'priority_level': 3,
+  'table_map_mode': 'cos',
+  'table_map_name': 'test'}])
+        expected_output = None
+        self.assertEqual(result, expected_output)
+
+    def test_configure_policy_map_1(self):
+        result = configure_policy_map(self.device, 'policy1', [{'bandwidth_percent': 40,
+  'bandwidth_remaining_percent': 50,
+  'class_map_name': 'test',
+  'police_cir_percent': 30,
+  'policer_val': 2000000000,
+  'priority_level': 2}])
+        expected_output = None
+        self.assertEqual(result, expected_output)
+
+    def test_configure_policy_map_2(self):
+        result = configure_policy_map(self.device, 'policy1', [{'bandwidth_remaining_percent': 50,
+  'class_map_name': 'test',
+  'match_mode': ['dscp', 'cos'],
+  'matched_value': ['cs1', 5],
+  'table_map_mode': 'cos',
+  'table_map_name': 'test'}])
         expected_output = None
         self.assertEqual(result, expected_output)

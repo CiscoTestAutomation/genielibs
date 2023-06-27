@@ -755,4 +755,184 @@ def unconfigure_netconf_yang_polling(device):
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure unconfigure netconf_yang cisco-odm parameters polling enable. Error:\n{e}")
-        
+    
+def configure_mtc(device, version, interface=None, protocol=None, address=None):
+    """ Configure parameters for mtc 
+    Args:
+        device ('obj'): device object
+        version ('str'): protocol version ipv4 or ipv6
+        interface ('str') or ('list'): interface of mtc
+        protocol ('str') or ('list'): protocols of mtc
+        address ('str'): mtc ipv4 or ipv6 address
+    
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    cmd = [f'mgmt-traffic control {version}']
+
+    if interface:
+        if isinstance(interface,str):
+            cmd.append(f'interface {interface}')
+        else:
+            for intf in interface:
+                cmd.append(f'interface {intf}')
+
+    if protocol:
+        if isinstance(protocol,str):
+            cmd.append(f'protocol {protocol}')
+        else:
+            for proto in protocol:
+                cmd.append(f'protocol {proto}')
+
+    if address:
+        cmd.append(f'address {address}')
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configure the parameter under mtc. Error:\n{e}')
+    
+def unconfigure_mtc_parameters(device, version, interface=None, protocol=None):
+    """ Unconfigure parameters for mtc 
+    Args:
+        device ('obj'): device object
+        version ('str'): protocol version ipv4 or ipv6
+        interface ('str') or ('list'): interface under mtc
+        protocol ('str') or ('list'): protocols of mtc
+    
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    cmd = [f'mgmt-traffic control {version}']
+
+    if interface:
+        if isinstance(interface,str):
+            cmd.append(f'no interface {interface}')
+        else:
+            for intf in interface:
+                cmd.append(f'no interface {intf}')
+
+    if protocol:
+        if isinstance(protocol,str):
+            cmd.append(f'no protocol {protocol}')
+        else:
+            for proto in protocol:
+                cmd.append(f'no protocol {proto}')
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not unconfigure the parameter under mtc. Error:\n{e}')
+    
+def unconfigure_mtc(device, version):
+    """ Unconfigure mtc 
+    Args:
+        device ('obj'): device object
+        version ('str'): protocol version ipv4 or ipv6
+    
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    cmd = f'no mgmt-traffic control {version}'
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not unconfigure mtc. Error:\n{e}')
+            
+def configure_netconf_yang_intelligent_sync(device):
+    """ Configure netconf-yang cisco-ia intelligent-sync
+    Args:
+        device ('obj'): device to use
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed to configure netconf-yang cisco-ia intelligent-sync
+    """
+    cmd = "netconf-yang cisco-ia intelligent-sync"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure netconf-yang cisco-ia intelligent-sync. Error:\n{e}")
+
+def unconfigure_netconf_yang_intelligent_sync(device):
+    """ Unconfigure netconf-yang cisco-ia intelligent-sync
+    Args:
+        device ('obj'): device to use
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed to unconfigure netconf-yang cisco-ia intelligent-sync
+    """
+    cmd = "no netconf-yang cisco-ia intelligent-sync"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure netconf-yang cisco-ia intelligent-sync. Error:\n{e}")
+
+def configure_ip_ssh_version(device, version):
+    
+    """ Configure ip ssh version
+        Args:
+            device ('obj'): Device object
+            version('str'): ssh version
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = f'ip ssh version {version}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure ip ssh version on device {device}. Error:\n{e}")
+
+def unconfigure_ip_ssh_version(device, version):
+    
+    """ Unconfigure ip ssh version
+        Args:
+            device ('obj'): Device object
+            version('str'): ssh version
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = f'no ip ssh version {version}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure ip ssh version on device {device}. Error:\n{e}")
+
+def configure_line_vty_needs_enhancement(device,firstline_id,lastline_id,min,sec):
+    """ configure_line_vty_needs_enhancement 
+        Args:
+            device ('obj'): device to execute on
+            firstline_id ('int') : firstline identifier
+            lastline_id ('int') :  lastline identifier   
+            min ('int') : timeout in minutes
+            sec ('int') : timeout in seconds    
+
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = ["line vty {firstline_id} {lastline_id}".format(firstline_id=firstline_id,lastline_id=lastline_id),
+           "transport preferred ssh",
+           "exec-timeout {min} {sec}".format(min=min,sec=sec),
+           "transport input all",
+           "transport output all"]   
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure_line_vty_needs_enhancement Error {e}".format(e=e))

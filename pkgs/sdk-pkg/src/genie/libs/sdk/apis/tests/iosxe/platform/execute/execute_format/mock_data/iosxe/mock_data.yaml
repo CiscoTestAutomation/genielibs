@@ -5,13 +5,13 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-  prompt: stack12-gala-1(config)#
+  prompt: stack3-nyquist-1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: stack12-gala-1(config-line)#
+  prompt: stack3-nyquist-1(config-line)#
 connect:
   commands:
     ? ''
@@ -28,13 +28,19 @@ execute:
       new_state: configure
     config-transaction:
       new_state: configure
-    'format usbflash1:':
+    'format usbflash0:':
       response:
       - "Format operation may take a while. Continue? [confirm]\r\nFormat operation\
-        \ will destroy all data in \"usbflash1:\".  Continue? [confirm]\r\nFormat\
-        \ of usbflash1: complete"
+        \ will destroy all data in \"usbflash0:\".  Continue? [confirm]\r\nFormat\
+        \ of usbflash0: complete\r\nstack3-nyquist-1#"
+      response_type: circular
+    'format usbflash0: FAT32':
+      response:
+      - "Format operation may take a while. Continue? [confirm]\r\nFormat operation\
+        \ will destroy all data in \"usbflash0:\".  Continue? [confirm]\r\nFormat\
+        \ of usbflash0: complete\r\nstack3-nyquist-1#"
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: stack12-gala-1#
+  prompt: stack3-nyquist-1#

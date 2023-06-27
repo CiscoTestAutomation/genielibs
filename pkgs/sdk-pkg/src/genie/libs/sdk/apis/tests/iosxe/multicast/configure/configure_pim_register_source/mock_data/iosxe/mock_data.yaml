@@ -1,0 +1,38 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    ip pim vrf red register-source Loopback101: "ip pim vrf red register-source Loopback101\r\
+      \nWarning: Interface is UP and is not PIM enabled.\r\nTo be used as a register\
+      \ tunnel source, an ip pim \r\nmode must be configured on the interface and\
+      \ the interface must be up.\r\n"
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: SG_HA(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: SG_HA(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: SG_HA#

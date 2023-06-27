@@ -430,36 +430,38 @@ def unconfigure_fnf_monitor_datalink_interface(device, interface, monitor_name, 
 
 
 def configure_flow_monitor_cache_entry(device, monitor_name, record_name,
-                        timeout, cache_entries):
+                        timeout, cache_entries=None, exporter_name=None):
     """ Config Flow Monitor with cache entry on Device
         Args:
             device (`obj`): Device object
             monitor_name (`str`): Flow Monitor name
             record_name (`str`): Flow record name
             timeout ('int'): Timeout
-            cache_entries ('int'): Number of cache entries
-
+            cache_entries ('int', optional): Number of cache entries
+            exporter_name ('str', optional): Flow exporter name
         Return:
             None
 
         Raise:
             SubCommandFailure: Failed configuring flow monitor with cache entry 
     """
-    
+    cmd = [
+        f"flow monitor {monitor_name}",
+        f"cache timeout inactive {timeout}",
+        f"cache timeout active {timeout}",
+        f"record {record_name}",
+    ]
+    if cache_entries:
+        cmd.append(f"cache entries {cache_entries}")
+    if exporter_name:
+        cmd.append(f"exporter {exporter_name}")
         
     try:
-            device.configure([
-                          f"flow monitor {monitor_name}",
-                          f"cache timeout inactive {timeout}",
-                          f"cache timeout active {timeout}",
-                          f"cache entries {cache_entries}",
-                          f"record {record_name}",
-                          ])
+        device.configure(cmd)
 
-    except SubCommandFailure:
-            raise SubCommandFailure(
-               f'Could not configure flow monitor {monitor_name} with cache entry'
-            )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Could not configure flow monitor {monitor_name} with cache entry. Error:\n{e}')
 
 
 def unconfigure_flow_monitor(device, monitor_name):

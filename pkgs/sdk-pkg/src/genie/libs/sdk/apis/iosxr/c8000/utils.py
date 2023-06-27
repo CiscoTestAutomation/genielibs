@@ -22,9 +22,13 @@ def get_mgmt_src_ip_addresses(device):
     return mgmt_src_ip_addresses
 
 
-def get_mgmt_ip_and_mgmt_src_ip_addresses(device):
+def get_mgmt_ip_and_mgmt_src_ip_addresses(device, mgmt_src_ip=None):
     """ Get the management IP address and management source addresses.
-
+    
+    if the mgmt_src_ip is provided, will use that for the lookup. If not, will
+    select the 1st matching IP.
+    Args:
+        mgmt_src_ip: (str) local IP address (optional)
     Returns:
         Tuple of mgmt_ip and list of IP address (mgmt_ip, [mgmt_src_addrs]) or None
     """
@@ -33,8 +37,19 @@ def get_mgmt_ip_and_mgmt_src_ip_addresses(device):
     # tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN      32230/sshd
     # tcp        0      0 1.1.1.161:22        1.1.1.26:60718      ESTABLISHED 24543/sshd: admin [
     mgmt_addresses = re.findall(r'\w+ +(\S+):(?:22|23) +(\S+):\d+ +ESTAB', tcp_output)
+    
+    if mgmt_src_ip:
+        # tcp        0      0 1.1.1.161:22        1.1.1.26:60718      ESTABLISHED 24543/sshd: admin [
+        m = re.search(rf'\w+ +(\S+):(?:22|23) +{mgmt_src_ip}:\d+ +ESTAB', tcp_output)
+    else:
+        # tcp        0      0 1.1.1.161:22        1.1.1.26:60718      ESTABLISHED 24543/sshd: admin [
+        m = re.search(r'\w+ +(\S+):(?:22|23) +(\S+):\d+ +ESTAB', tcp_output)
+    if m:
+        mgmt_ip = m.group(1)
+    else:
+        log.error('Unable to find management session, cannot determine IP address')
+        mgmt_ip = None
     if mgmt_addresses:
-        mgmt_ip = [m[0] for m in mgmt_addresses][0]
         mgmt_src_ip_addresses = set([m[1] for m in mgmt_addresses])
     else:
         log.error('Unable to find management session, cannot determine management IP addresses')

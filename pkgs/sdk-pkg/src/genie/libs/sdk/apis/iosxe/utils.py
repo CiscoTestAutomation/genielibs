@@ -649,9 +649,13 @@ def get_mgmt_ip(device):
     return mgmt_ip
 
 
-def get_mgmt_ip_and_mgmt_src_ip_addresses(device):
+def get_mgmt_ip_and_mgmt_src_ip_addresses(device, mgmt_src_ip=None):
     """ Get the management IP address and management source addresses.
-
+    
+    if the mgmt_src_ip is provided, will use that for the lookup. If not, will
+    select the 1st matching IP.
+    Args:
+        mgmt_src_ip: (str) local IP address (optional)
     Returns:
         Tuple of mgmt_ip and list of IP address (mgmt_ip, [mgmt_src_addrs]) or None
     """
@@ -662,7 +666,10 @@ def get_mgmt_ip_and_mgmt_src_ip_addresses(device):
     if not mgmt_src_ip_addresses:
         log.error('Unable to find management session, cannot determine management IP addresses')
 
-    m = re.search(r'\w+ +(\S+)\.(22|23) +\S+\.\d+ +ESTAB', tcp_output)
+    if mgmt_src_ip:
+        m = re.search(rf'\w+ +(\S+)\.(22|23) +{mgmt_src_ip}\.\d+ +ESTAB', tcp_output)
+    else:
+        m = re.search(r'\w+ +(\S+)\.(22|23) +\S+\.\d+ +ESTAB', tcp_output)
     if m:
         mgmt_ip = m.group(1)
     else:
@@ -1710,6 +1717,47 @@ def request_system_shell(device, switch_type=None, processor_slot=None, uname=Fa
     return output
 
 
+def clear_dlep_client(device, interface, peer_id):
+    """ clears dlep client on interface
+        Args:
+            device ('obj'):     device to use
+            interface ('str'): interface to configure
+            ex.
+                interface = 'TenGigabitEthernet0/4/0'
+            peer_id ('str'): PEER ID
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    
+    log.info(f"clearing dlep client on interface {interface}")
+    cmd = [f"clear dlep client {interface} {peer_id}"]
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"could not clear the dlep client Error:\n{e}")
+            
+def clear_dlep_neighbor(device, interface, session_id):
+    """ clears dlep neighbors on interface
+        Args:
+            device ('obj'):     device to use
+            interface ('str'): interface to configure
+            ex.
+                interface = 'TenGigabitEthernet0/4/0'
+            session_id ('str'): Session ID
+    """
+   
+    log.info(f"clearing dlep neighbor on interface {interface}")
+    cmd = [f"clear dlep neighbor {interface} {session_id}"]
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"could not clear the dlep neighbor Error:\n{e}")
+
+
 def clear_lne_ftpse_all(device):
     '''
         Clear lne ftpse all
@@ -1725,3 +1773,43 @@ def clear_lne_ftpse_all(device):
         device.execute(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not clear lne ftpse all. Error:\n{e}')
+
+
+def clear_ppp_all(device):
+    """ clear ppp all
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info("clear ppp all on {device}".format(device=device))
+
+    dialog = Dialog([Statement(pattern=r'\[confirm\].*', action='sendline(\r)',
+    loop_continue=True,continue_timer=False)])
+
+    try:
+        device.execute("clear ppp all", reply=dialog)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not clear counters on {device}. Error:\n{e}')
+
+
+def clear_pppoe_all(device):
+    """ clear pppoe all
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info("clear pppoe all on {device}".format(device=device))
+
+    dialog = Dialog([Statement(pattern=r'\[confirm\].*', action='sendline(\r)',
+    loop_continue=True,continue_timer=False)])
+
+    try:
+        device.execute("clear pppoe all", reply=dialog)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not clear counters on {device}. Error:\n{e}')

@@ -10,7 +10,7 @@ class TestExecuteFormat(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          stack12-gala-1:
+          stack3-nyquist-1:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,11 +18,11 @@ class TestExecuteFormat(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: c9300
-            type: c9300
+            platform: cat9k
+            type: router
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['stack12-gala-1']
+        self.device = self.testbed.devices['stack3-nyquist-1']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,11 @@ class TestExecuteFormat(unittest.TestCase):
         )
 
     def test_execute_format(self):
-        result = execute_format(self.device, 'usbflash1:', 300)
+        result = execute_format(self.device, 'usbflash0:', 300, None)
+        expected_output = None
+        self.assertEqual(result, expected_output)
+
+    def test_execute_format_1(self):
+        result = execute_format(self.device, 'usbflash0:', 300, 'FAT32')
         expected_output = None
         self.assertEqual(result, expected_output)

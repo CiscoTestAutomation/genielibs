@@ -651,31 +651,39 @@ def configure_static_nat_rule(
     l4_protocol = None,
     inside_port = None,
     outside_port = None,
-    extendable = False
+    extendable = False,
+    vrf=None,
+    no_alias=False
 ):
     """ Configure static NAT rule
         Args:
             device ('obj'): device to use
             inside_local_ip ('str'): inside local ip
             inside_global_ip ('str'): inside global ip
+            l4_protocol ('str', optional): tcp ot udp protocol. Default is None
+            inside_port ('int', optional): tcp ot udp inside port number. Default is None
+            outside_port ('int', optional): tcp ot udp outside port number. Default is None
+            extendable ('bool', optional): extend the translation. Default is False
+            vrf ('str', optional): vrf name. Default is None
+            no_alias ('bool', optional): no alias static route. Default is False
         Returns:
             None
         Raises:
             SubCommandFailure: static NAT rule not configured
     """
-    cmd = ["ip nat inside source static {} {}".format(
-              inside_local_ip,inside_global_ip)]
+    cmd = f"ip nat inside source static {inside_local_ip} {inside_global_ip}"
     if l4_protocol:
-        cmd = "ip nat inside source static {} {} {} {} {}".format(
-            l4_protocol,inside_local_ip,inside_port,inside_global_ip,outside_port)
-        if extendable:
-            cmd = cmd + ' extendable'
-
+        cmd = f"ip nat inside source static {l4_protocol} {inside_local_ip} {inside_port} {inside_global_ip} {outside_port}"
+    if vrf:
+        cmd += f" vrf {vrf}"
+    if extendable:
+        cmd += ' extendable'
+    if no_alias:
+        cmd += " no-alias"
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
-        log.error(e)
-        raise SubCommandFailure("Could not Configure static NAT rule")
+        raise SubCommandFailure(f"Could not Configure static NAT rule. Error:\n{e}")
         
 def unconfigure_static_nat_rule(
     device, 
@@ -684,36 +692,44 @@ def unconfigure_static_nat_rule(
     l4_protocol = None,
     inside_port = None,
     outside_port = None,
-    extendable = False
+    extendable = False,
+    vrf=None,
+    no_alias=False
 ):
     """ UnConfigure static NAT rule
         Args:
             device ('obj'): device to use
             inside_local_ip ('str'): inside local ip
             inside_global_ip ('str'): inside global ip
+            l4_protocol ('str', optional): tcp ot udp protocol. Default is None
+            inside_port ('int', optional): tcp ot udp inside port number. Default is None
+            outside_port ('int', optional): tcp ot udp outside port number. Default is None
+            extendable ('bool', optional): extend the translation. Default is False
+            vrf ('str', optional): vrf name. Default is None
+            no_alias ('bool', optional): no alias static route. Default is False
         Returns:
             None
         Raises:
             SubCommandFailure: static NAT rule not unconfigured
     """
     dialog = Dialog([Statement(pattern=r'\[no\].*', action='sendline(yes)',loop_continue=True,continue_timer=False)])
-    cmd = ["no ip nat inside source static {} {}".format(
-              inside_local_ip,inside_global_ip)]
+    cmd = f"no ip nat inside source static {inside_local_ip} {inside_global_ip}"
     if l4_protocol:
-        cmd = "no ip nat inside source static {} {} {} {} {}".format(
-            l4_protocol,inside_local_ip,inside_port,inside_global_ip,outside_port)
-        if extendable:
-            cmd = cmd + ' extendable'
-
+        cmd = f"no ip nat inside source static {l4_protocol} {inside_local_ip} {inside_port} {inside_global_ip} {outside_port}"
+    if vrf:
+        cmd += f" vrf {vrf}"
+    if extendable:
+        cmd += ' extendable'
+    if no_alias:
+        cmd += " no-alias"
     try:
         device.configure(cmd,reply=dialog)
     except SubCommandFailure as e:
-        log.error(e)
-        raise SubCommandFailure("Could not UnConfigure static NAT rule")
+        raise SubCommandFailure(f"Could not UnConfigure static NAT rule. Error:\n{e}")
         
 def configure_static_nat_outside_rule(device, outside_global_address, outside_local_address,
         l4_protocol=None, global_port=None, local_port=None, network=False, network_mask=None,
-        extendable=False, add_route=False):
+        extendable=False, add_route=False, vrf=None):
     """ Configure static NAT outside rule 
         Args:
             device ('obj'): device to use
@@ -726,6 +742,7 @@ def configure_static_nat_outside_rule(device, outside_global_address, outside_lo
             network_mask ('str', optional): network mask or prefix. Default is None
             extendable ('bool', optional): extend the translation. Default is False
             add_route ('bool', optional): add static route. Default is False
+            vrf ('str', optional): vrf name. Default is None
         Returns:
             None
         Raises:
@@ -738,6 +755,8 @@ def configure_static_nat_outside_rule(device, outside_global_address, outside_lo
         cmd += f' network {outside_global_address} {outside_local_address} {network_mask}'
     else:
         cmd += f' {outside_global_address} {outside_local_address}'
+    if vrf:
+        cmd += f" vrf {vrf}"
     if extendable:
         cmd += ' extendable'
     if add_route:
@@ -749,24 +768,40 @@ def configure_static_nat_outside_rule(device, outside_global_address, outside_lo
         log.error(e)
         raise SubCommandFailure("Could not Configure static NAT outside rule")
         
-def unconfigure_static_nat_outside_rule(
-    device, 
-    outside_global_address, 
-    outside_local_address
-):
+def unconfigure_static_nat_outside_rule(device, outside_global_address, outside_local_address,
+        l4_protocol=None, global_port=None, local_port=None, network=False, network_mask=None,
+        extendable=False, add_route=True, vrf=None):
     """ UnConfigure static NAT outside rule 
         Args:
             device ('obj'): device to use
             outside_global_address ('str'): outside global address
             outside_local_address ('str'): outside local address
+            l4_protocol ('str', optional): tcp ot udp protocol. Default is None
+            global_port ('int', optional): tcp ot udp global port number. Default is None
+            local_port ('int', optional): tcp ot udp local port number. Default is None
+            network ('bool', optional): configures static netwrok. Default is False
+            network_mask ('str', optional): network mask or prefix. Default is None
+            extendable ('bool', optional): extend the translation. Default is False
+            add_route ('bool', optional): add static route. Default is True
+            vrf ('str', optional): vrf name. Default is None
         Returns:
             None
         Raises:
             SubCommandFailure: static NAT outside rule not unconfigured
     """
-    cmd = ["no ip nat outside source static {} {} add-route".format(
-              outside_global_address,outside_local_address)]
-
+    cmd = 'no ip nat outside source static'
+    if l4_protocol and global_port and local_port:
+        cmd += f' {l4_protocol} {outside_global_address} {global_port} {outside_local_address} {local_port}'
+    elif network and network_mask:
+        cmd += f' network {outside_global_address} {outside_local_address} {network_mask}'
+    else:
+        cmd += f' {outside_global_address} {outside_local_address}'
+    if vrf:
+        cmd += f" vrf {vrf}"
+    if extendable:
+        cmd += ' extendable'
+    if add_route:
+        cmd += ' add-route'
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -1862,3 +1897,123 @@ def unconfigure_static_nat_route_map_no_alias_rule(device, translation, local_ip
     except SubCommandFailure as e:
         log.error(e)
         raise SubCommandFailure("Could not Unconfigure static NAT route-map rule")
+
+
+def configure_nat_translation_max_entries(device, entry_type, entry_name='', number_of_entries=''):
+    """ Configure ip nat translation max-entries 
+        Args:
+            device ('obj'): device to use
+            entry_type ('str'): entry type. For ex: vrf, list, host
+            entry_name ('str', optional): entry name if entry type is host/vrf/list. Default is ''
+            number_of_entries ('int', optional): number of entries. Default is ''
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: ip nat translation max-entries not configured
+    """
+    cmd = f"ip nat translation max-entries {entry_type} {entry_name} {number_of_entries}"
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not Configure ip nat translation max-entries. Error:{e}")
+
+
+def configure_static_nat_source_list_rule(device, translation, list_name, pool_name=None, 
+            interface=None, vrf_name=None, overload=None, egress_interface=None, oer=None):
+    """ Configure static NAT source list rule
+        Args:
+            device ('obj'): device to use
+            translation ('str'): inside or outside translation
+            list_name ('str'): Access list name or number
+            pool_name ('str', optional): Name pool of global addresses. Default is None
+            interface ('bool', optional) : Specify interface for global address. Default is None
+            vrf_name ('str', optional): Specify vrf. Default is None
+            overload ('str', optional): Overload an address translation. Default is None
+            egress_interface ('str', optional): Specify egress interface for translated traffic. Default is None
+            oer ('str', optional): Use with vtemplate only. Default is None
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: static NAT source list rule not configured
+    """
+    cmd = f'ip nat {translation} source list {list_name}'
+    if pool_name:
+        cmd += f' pool {pool_name}'
+    elif interface:
+        cmd += f' interface {interface}'
+    if vrf_name:
+        cmd += f' vrf {vrf_name}'
+    elif egress_interface:
+        cmd += f' egress-interface {egress_interface}'
+    if oer:
+        cmd += f' oer'
+    if overload is not None:
+        cmd += f' overload{f" {overload}" if overload else ""}'
+        if overload == 'egress-interface':
+            cmd += f' {egress_interface}'
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not Configure static NAT source list rule. Error:{e}")
+
+
+def unconfigure_nat_translation_max_entries(device, entry_type, entry_name='', number_of_entries=''):
+    """ Unconfigure ip nat translation max-entries 
+        Args:
+            device ('obj'): device to use
+            entry_type ('str'): entry type. For ex: vrf, list, host
+            entry_name ('str', optional): entry name if entry type is host/vrf/list. Default is ''
+            number_of_entries ('int', optional): number of entries. Default is ''
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: ip nat translation max-entries not configured
+    """
+    cmd = f"no ip nat translation max-entries {entry_type} {entry_name} {number_of_entries}"
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not Unconfigure ip nat translation max-entries. Error:{e}")
+
+
+def unconfigure_static_nat_source_list_rule(device, translation, list_name, pool_name=None, 
+            interface=None, vrf_name=None, overload=None, egress_interface=None, oer=None):
+    """ Unconfigure static NAT source list rule
+        Args:
+            device ('obj'): device to use
+            translation ('str'): inside or outside translation
+            list_name ('str'): Access list name or number
+            pool_name ('str', optional): Name pool of global addresses. Default is None
+            interface ('bool', optional) : Specify interface for global address. Default is None
+            vrf_name ('str', optional): Specify vrf. Default is None
+            overload ('str', optional): Overload an address translation. Default is None
+            egress_interface ('str', optional): Specify egress interface for translated traffic. Default is None
+            oer ('str', optional): Use with vtemplate only. Default is None
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: static NAT source list rule not configured
+    """
+    cmd = f'no ip nat {translation} source list {list_name}'
+    if pool_name:
+        cmd += f' pool {pool_name}'
+    elif interface:
+        cmd += f' interface {interface}'
+    if vrf_name:
+        cmd += f' vrf {vrf_name}'
+    elif egress_interface:
+        cmd += f' egress-interface {egress_interface}'
+    if oer:
+        cmd += f' oer'
+    if overload is not None:
+        cmd += f' overload{f" {overload}" if overload else ""}'
+        if overload == 'egress-interface':
+            cmd += f' {egress_interface}'
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not Unconfigure static NAT source list rule. Error:{e}")

@@ -1,22 +1,22 @@
 configure:
   commands:
-    cache entries 2000: "cache entries 2000\r\n"
-    cache timeout active 300: "cache timeout active 300\r\n"
-    cache timeout inactive 300: "cache timeout inactive 300\r\n"
+    cache timeout active 10: "cache timeout active 10\r\n"
+    cache timeout inactive 10: "cache timeout inactive 10\r\n"
     end:
       new_state: execute
-    flow monitor fl_mon_Po: "flow monitor fl_mon_Po\r\n"
+    exporter dnacexporter: "exporter dnacexporter\r\n"
+    flow monitor dnacmonitor: "flow monitor dnacmonitor\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''
-    record flow_Po: "record flow_Po\r\n"
-  prompt: LG-PK(config)#
+    record dnacrecord: "record dnacrecord\r\n"
+  prompt: Starfleet(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: LG-PK(config-line)#
+  prompt: Starfleet(config-line)#
 connect:
   commands:
     ? ''
@@ -36,4 +36,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: LG-PK#
+  prompt: Starfleet#

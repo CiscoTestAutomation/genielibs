@@ -173,11 +173,12 @@ def disable_dhcp_snooping_vlan(device, vlan):
             )
         )
 
-def exclude_ip_dhcp(device, ip):
+def exclude_ip_dhcp(device, ip, high_ip=None):
     """ Exclude IP in DHCP
         Args:
             device ('obj'): device to use
             ip ('str'): ip to exclude
+            high_ip ('str', optional): high ip range. Default is None
         Returns:
             None
         Raises:
@@ -185,7 +186,7 @@ def exclude_ip_dhcp(device, ip):
     """
     log.info("Excluding IP in DHCP")
     try:
-        device.configure(["ip dhcp excluded-address {}".format(ip)])
+        device.configure([f"ip dhcp excluded-address {ip}{f' {high_ip}' if high_ip else ''}"])
     except SubCommandFailure:
         raise SubCommandFailure(
             "Could not exclude {ip} in DHCP config".format(
@@ -1212,3 +1213,189 @@ def unconfigure_interface_ip_dhcp_relay_source_interface_intf_id(device, interfa
         raise SubCommandFailure(
             f"Failed to unconfigure ip dhcp relay source interface intf_id {interface}. Error\n{e}"
         )
+
+def configure_dhcp_pool(device, pool_name, router_id=None, network=None, mask=None):
+    """ Configure DHCP pool
+        Args:
+            device ('obj'): device to use
+            pool_name ('str'): name of the pool to be created
+            router_id ('str', optional): router id to configure default-router. Default is None
+            network ('str', optional): IP of the network pool. Default is None
+            mask ('str', optional): Subnet mask of the network pool. Default is None
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure dhcp pool
+    """
+
+    config = [f'ip dhcp pool {pool_name}']
+    if router_id:
+        config.append(f'default-router {router_id}')
+    if network and mask:
+        config.append(f'network {network} {mask}')
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configure dhcp pool. Error: {e}')
+
+
+def unconfigure_dhcp_pool(device, pool_name, router_id=None, network=None, mask=None):
+    """ Unconfigure DHCP pool
+        Args:
+            device ('obj'): device to use
+            pool_name ('str'): name of the pool to be created
+            router_id ('str', optional): router id to configure default-router. Default is None
+            network ('str', optional): IP of the network pool. Default is None
+            mask ('str', optional): Subnet mask of the network pool. Default is None
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure dhcp pool
+    """
+
+    config = [f'ip dhcp pool {pool_name}']
+    if router_id:
+        config.append(f'no default-router {router_id}')
+    if network and mask:
+        config.append(f'no network {network} {mask}')
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not unconfigure dhcp pool. Error: {e}')
+
+
+def configure_service_dhcp(device):
+    """ Configure DHCP pool
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure service dhcp
+    """
+
+    config = 'service dhcp'
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configure service dhcp. Error: {e}')
+
+
+def unconfigure_service_dhcp(device):
+    """ Unconfigure DHCP pool
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to unconfigure service dhcp
+    """
+
+    config = 'no service dhcp'
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not unconfigure service dhcp. Error: {e}')
+
+
+def unconfigure_exclude_ip_dhcp(device, ip, high_ip=None):
+    """ Unconfigure Exclude IP in DHCP
+        Args:
+            device ('obj'): device to use
+            ip ('str'): ip to exclude
+            high_ip ('str', optional): high ip range. Default is None
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed unconfigure exclude IP in DHCP config
+    """
+    try:
+        device.configure([f"no ip dhcp excluded-address {ip}{f' {high_ip}' if high_ip else ''}"])
+    except SubCommandFailure:
+        raise SubCommandFailure(f"Could not unconfigure exclude {ip} in DHCP config")
+
+def enable_dhcp_compatibility_suboption(device, suboption, value):
+    """ Enable DHCP compatibility suboption
+        Args:
+            device ('obj'): device to use
+            suboption ('str'): Link-Selection or Server-id override suboption
+            value ('str'): cisco or standard value
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    config = f"ip dhcp compatibility suboption {suboption} {value}"
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to enable DHCP compatibility suboption. Error:\n{e}")
+
+def disable_dhcp_compatibility_suboption(device, suboption):
+    """ Disable DHCP compatibility suboption
+        Args:
+            device ('obj'): device to use
+            suboption ('str'): Link-Selection or Server-id override suboption
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    config = f"no ip dhcp compatibility suboption {suboption}"
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to disable DHCP compatibility suboption. Error:\n{e}")
+
+def unconfigure_propagate_sgt(device, interface, type, cts_type):
+    """ UnConfigure propagate sgt
+       Args:
+            device ('obj'): device object
+            interface ('str'): interface to configure (eg. Gig1/0/1, Te1/0/10)
+            type ('str'):  manual      Supply local configuration for CTS parameters
+                           role-based  Role-based Access Control per-port config commands
+            cts_type ('str'): policy     CTS policy for manual mode
+                              propagate  CTS SGT Propagation configuration for manual mode
+                              sap        CTS SAP configuration for manual mode              
+       Return:
+            None
+       Raises:
+            SubCommandFailure
+    """
+    log.info(f"unconfigure propagate sgt on interface")
+    config= [
+              f'interface {interface}',
+              f'cts {type}',
+              f'no {cts_type} sgt'
+            ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to unconfigure propagate sgt {interface} on {device.name}\n{e}'
+        ) 
+
+def unconfigure_cts_role_based_sgt_map_vlan_list(device, Vlan_id, Tag_value):
+    """UnConfigure cts role-based sgt-map vlan-list 300 sgt 300
+       Args:
+            device ('obj'): device object
+            Vlan_list ('int'): <1-4094>  VLAN id
+            Tag_value ('int'): <2-65521>  Security Group Tag value
+       Return:
+            None
+       Raises:
+            SubCommandFailure
+    """
+    log.info(f"UnConfigure cts role-based sgt-map vlan-list 300 sgt 300")
+    config= [
+               f'no cts role-based sgt-map vlan-list {Vlan_id} sgt {Tag_value}'
+             ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to unconfigure cts role-based sgt-map vlan-list 300 sgt 300 on {device.name}\n{e}'
+        ) 

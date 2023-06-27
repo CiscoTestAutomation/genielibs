@@ -509,36 +509,39 @@ def unconfigure_ip_multicast_routing_distributed(device, no_spd=False, punt_limi
             f"Could not unconfigure ip multicast routing distributed. Error:\n{e}"
         )
 
-def configure_ipv6_multicast_routing(device):
+def configure_ipv6_multicast_routing(device, vrf_name=None):
     """ Configure Enable IPv6 multicast routing
     Args:
-        device (`obj`): Device object
+        device ('obj'): Device object
+        vrf_name('str', optional): Name of vrf for which we are enabling multicast-routing
     Return:
         None
     Raise:
         SubCommandFailure: Failed configuring
     """
+    config = f"ipv6 multicast-routing{f' vrf {vrf_name}' if vrf_name else ''}"
+
     try:
-        device.configure([
-            "ipv6 multicast-routing"
-        ])
+        device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not configure ipv6 multicast routing. Error:\n{error}".format(error=e)
         )
 
-def unconfigure_ipv6_multicast_routing(device):
-    """ Configure Enable IPv6 multicast routing
+def unconfigure_ipv6_multicast_routing(device, vrf_name=None):
+    """ Unconfigure IPv6 multicast routing
     Args:
-        device (`obj`): Device object
+        device ('obj'): Device object
+        vrf_name('str', optional): Name of vrf for which we are removing multicast-routing
     Return:
         None
     Raise:
-        SubCommandFailure: Failed configuring
+        SubCommandFailure: Failed unconfiguring
     """
+    config = f"no ipv6 multicast-routing{f' vrf {vrf_name}' if vrf_name else ''}"
 
     try:
-        device.configure("no ipv6 multicast-routing")
+        device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not unconfigure Multicast routing. Error:\n{error}".format(error=e)
@@ -1823,6 +1826,56 @@ def unconfigure_ip_pim(device, interface, mode):
             )
         )
 
+def configure_pim_register_source(device, interface, vrf_name=None, is_ipv6=False):
+    """ Uncnfigure pim register-source interface
+
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Name of interface being used as source
+            vrf_name ('str',optional): Name of vrf for which we are setting pim source.
+            is_ipv6 ('bool',optional): (True | False) 'True' for ipv6 pim configuration. Default is False.
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+
+    """
+    ip_type = 'ipv6' if is_ipv6 else 'ip'
+    vrf_cfg = f'vrf {vrf_name} ' if vrf_name else ''
+    
+    configs = [f"{ip_type} pim {vrf_cfg}register-source {interface}"]
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure register-source for pim on device {device.name}. Error:\n{e}")
+        
+def unconfigure_pim_register_source(device, interface, vrf_name=None, is_ipv6=False):
+    """ Unconfigure pim register-source interface
+
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Name of interface being used as source
+            vrf_name ('str',optional): Name of vrf for which we are setting pim source.
+            is_ipv6 ('bool',optional): (True | False) 'True' for ipv6 pim configuration. Default is False.
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+
+    """
+    ip_type = 'ipv6' if is_ipv6 else 'ip'
+    vrf_cfg = f'vrf {vrf_name} ' if vrf_name else ''
+    
+    configs = [f"no {ip_type} pim {vrf_cfg}register-source {interface}"]
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure register-source for pim on device {device.name}. Error:\n{e}")
+
 def configure_ip_forward_protocol_nd(device):
     """ Configure ip forward-protocol network disk on device.
         Args:
@@ -1858,3 +1911,65 @@ def unconfigure_ip_forward_protocol_nd(device):
         raise SubCommandFailure(
         f'Failed to unconfigure ip forward-protocol network disk on {device}. Error:\n{e}'
         )
+
+
+def configure_ip_msdp_peer(device, hostname, remote_as_number, interface=None):
+    """ Configures ip msdp peer
+        Args:
+            device ('obj')    : device to use
+            hostname ('str')  : hostname or ip address
+            remote_as_number ('str'): remote as number
+            interface ('str', optional) : configires connect-source if defined. Default is None
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = f'ip msdp peer {hostname}'
+    if interface:
+        cmd += f' connect-source {interface}'
+    cmd += f' remote-as {remote_as_number}'
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configures ip msdp peer. Error: {e}')
+
+
+def configure_ip_msdp_cache_sa_state(device):
+    """ Configures ip msdp cache-sa-state
+        Args:
+            device ('obj')    : device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = f'ip msdp cache-sa-state'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configures ip msdp cache-sa-state. Error: {e}')
+
+def configure_mld_version(device, interface_no, version_no):
+    """Configure mld version
+       Args:
+            device ('obj'): device object
+            interface_no ('int'): interface number
+            version_no ('int'): version number
+       Return:
+            None
+       Raises:
+            SubCommandFailure
+    """
+    config= [
+               f'int vlan {interface_no}',
+               f'ipv6 mld version {version_no}'
+            ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to Configure mld version on {device.name}\n{e}')

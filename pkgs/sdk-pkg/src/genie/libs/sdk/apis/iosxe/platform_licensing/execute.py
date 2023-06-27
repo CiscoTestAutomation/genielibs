@@ -168,3 +168,24 @@ def execute_license_smart_trust_idtoken(device, token_value, device_type):
         raise SubCommandFailure(
             f'Failed to configure license smart trust idtoken on device {device.name}. Error:\n{e}'
         )
+
+
+def execute_license_smart_save_usage_rum_id_file(device, rum_id, path):
+    """ Executes license smart save usage rum-Id {rum_id} file {path}
+        Args:
+            device ('obj'): device to use
+            rum_id ('str'): rum id
+            path ('str'): Absolute path to the file, including the filename (eg. bootflash:test.txt)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = f'license smart save usage rum-Id {rum_id} file {path}'
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to execute license smart save usage rum-Id {rum_id} file {path} on device {device.name}. Error:\n{e}'
+        )

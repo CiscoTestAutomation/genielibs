@@ -1,0 +1,38 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    mgmt-traffic control ipv4: "mgmt-traffic control ipv4\r\n"
+    no interface HundredGigE1/0/4: "no interface HundredGigE1/0/4\r\n"
+    no logging console: ''
+    no protocol http: "Last interface in the interface list cannot delete\r\n"
+    no protocol snmp: "no protocol http\r\n"
+  prompt: SKYFOX-DUT3(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: SKYFOX-DUT3(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: SKYFOX-DUT3#

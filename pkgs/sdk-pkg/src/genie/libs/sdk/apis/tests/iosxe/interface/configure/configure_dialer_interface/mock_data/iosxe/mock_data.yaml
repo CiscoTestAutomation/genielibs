@@ -1,0 +1,45 @@
+configure:
+  commands:
+    dialer pool 10: "dialer pool 10\r\n"
+    encapsulation ppp: "encapsulation ppp\r\n"
+    end:
+      new_state: execute
+    interface Dialer1: "interface Dialer1\r\n"
+    ip address negotiated: "ip address negotiated\r\n"
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    no shutdown: "no shutdown\r\n"
+    ppp authentication chap pap callin: "ppp authentication chap pap callin\r\n"
+    ppp chap hostname cisco: "ppp chap hostname cisco\r\n"
+    ppp chap password sisco: "ppp chap password sisco\r\n"
+    ppp ipcp route default: "ppp ipcp route default\r\n"
+    ppp pap sent-username cisco password sisco: "ppp pap sent-username cisco password\
+      \ sisco\r\n"
+  prompt: C1113-8P_pkumarmu(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: C1113-8P_pkumarmu(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: C1113-8P_pkumarmu#

@@ -326,7 +326,7 @@ def unconfigure_ip_arp_inspection_log_buffer(device, buffer_type):
             f"Failed to unconfigure ip arp inspection log-buffer {buffer_type}.")
 
 def clear_ip_arp_inspection(device, intype):
-    ''' Clears ip arp inspection
+    """ Clears ip arp inspection
         Args:
             device (`obj`): Device object
             intype (`str`): statistics or log
@@ -334,7 +334,7 @@ def clear_ip_arp_inspection(device, intype):
             None
         Raises:
             SubCommandFailure
-    '''
+    """
     try:
         device.execute(f"clear ip arp inspection {intype}")
     except SubCommandFailure as e:
@@ -373,7 +373,7 @@ def configure_ip_arp_inspection_vlan_logging(device, range, log_config, log_type
 
 
 def unconfigure_ip_arp_inspection_vlan_logging(device, range, log_config, log_type=None):    
-    ''' Unconfigure ip arp inspection vlan logging
+    '''Unconfigure ip arp inspection vlan logging
         Args:
             device ('obj'): Device object
             range ('str'):   WORD  vlan range, example: 1,3-5,7,9-11
@@ -403,7 +403,7 @@ def unconfigure_ip_arp_inspection_vlan_logging(device, range, log_config, log_ty
 
 def configure_arp_access_list_permit_ip_host(
     device, name, action, ip_address, mac_address, log_match=True):
-    """ Configures arp access-list with ip host
+    '''Configures arp access-list with ip host
         Example : arp access-list allowed_acl
                     permit ip host 10.1.1.1 mac any log
         Args:
@@ -417,7 +417,7 @@ def configure_arp_access_list_permit_ip_host(
             None
         Raises:
             SubCommandFailure
-    """
+    '''
     log.info(f'Configures arp access-list with ip host on {device.name}')
     cmd = [f'arp access-list {name}']
     if log_match:
@@ -430,3 +430,60 @@ def configure_arp_access_list_permit_ip_host(
         raise SubCommandFailure(
             f'Failed to configure arp access-list with ip host on device {device.name}. Error:\n{e}'
         )
+
+def configure_ip_arp_inspection_filter(device, arp_name, vlan_id):
+    ''' Clears ip arp inspection
+        Args:
+            device (`obj`): Device object
+            arp_name (`str`): allowed_acl
+            vlan_id ('str'): vlan id
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    '''
+    cmd=[f"ip arp inspection filter {arp_name} vlan {vlan_id}"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to clear ip arp inspection  {device} . Error:\n{e}"
+            )
+
+def unconfigure_ip_arp_inspection_filter(device, arp_name, vlan_id):
+    ''' configures ip arp inspection filter
+        Args:
+            device (`obj`): Device object
+            arp_name (`str`): allowed_acl
+            vlan_id ('str'): vlan id
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    '''
+    cmd=[f"no ip arp inspection filter {arp_name} vlan {vlan_id}"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to clear ip arp inspection  {device} . Error:\n{e}"
+            )
+    
+def unconfigure_arp_access_list(device, list_type, word):
+    ''' unconfigures arp access-list
+        Args:
+            device (`obj`): Device object
+            list_type (`str`): access-list
+            word ('str'): allowed_acl
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    '''
+    cmd=[f"no arp {list_type} {word}"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to clear ip arp inspection  {device} .Error:\n{e}"
+            )

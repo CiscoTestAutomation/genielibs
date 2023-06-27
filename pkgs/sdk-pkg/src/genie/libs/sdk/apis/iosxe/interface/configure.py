@@ -4399,7 +4399,8 @@ def configure_virtual_template(device,
     mtu='',
     ipv6_mtu='',
     no_ip_redirects=False,
-    no_peer_ip=False):
+    no_peer_ip=False,
+    pool_name=None):
     """ Configure virtual-template interface
 
         Args:
@@ -4415,6 +4416,7 @@ def configure_virtual_template(device,
             load_delay_interval('int', optional): load delay
             no_ip_redirects('bool', optional): no ip redirects option
             no_peer_ip('bool', optional): no peer ip default option
+            pool_name('string', optional): peer default ip address pool <pool_name>
         For the arguments that are optional, the default value is None.
 
         Returns:
@@ -4443,7 +4445,9 @@ def configure_virtual_template(device,
         cli.append("no ip redirects")
     if no_peer_ip:
         cli.append("no peer default ip address")
-
+    if pool_name:
+        cli.append(f"peer default ip address pool {pool_name}")
+    
     try:
         device.configure(cli)
     except SubCommandFailure as e:
@@ -4950,12 +4954,13 @@ def unconfigure_port_channel_standalone_disable(device,port_channel_num):
         )
 
 
-def configure_pppoe_enable_interface(device, interface, name):
+def configure_pppoe_enable_interface(device, interface, name, dial_pool_num=None):
     """ Configure pppoe enable group on interface
         Args:
             device (`obj`): Device object
             interface (`str`): Interface name
             name (`str`): pppoe/bba group name
+            dial_pool_num ('str'): pppoe-client dial-pool-member <dial_pool_num>
         Returns:
             None
         Raises:
@@ -4967,6 +4972,8 @@ def configure_pppoe_enable_interface(device, interface, name):
     cli = []
     cli.append(f"interface {interface}")
     cli.append(f"pppoe enable group {name}")
+    if dial_pool_num:
+        cli.append(f"pppoe-client dial-pool-number {dial_pool_num}")
 
     try:
         device.configure(cli)
@@ -4975,7 +4982,7 @@ def configure_pppoe_enable_interface(device, interface, name):
             f"Could not configure pppoe group on device. Error:\n{str(error)}"
         )
 
-def unconfigure_pppoe_enable_interface(device, interface, name):
+def unconfigure_pppoe_enable_interface(device, interface, name, dial_pool_num=None):
     """ Configure pppone enable group on interface
         Args:
             device (`obj`): Device object
@@ -4993,6 +5000,8 @@ def unconfigure_pppoe_enable_interface(device, interface, name):
     cli = []
     cli.append(f"interface {interface}")
     cli.append(f"no pppoe enable group {name}")
+    if dial_pool_num:
+        cli.append(f"no pppoe-client dial-pool-number {dial_pool_num}")
 
     try:
         device.configure(cli)
@@ -6638,12 +6647,13 @@ def unconfigure_interface_auth_vlan(device, interface):
         raise SubCommandFailure(f"Failed to unconfigure authorize vlan on this interface {interface}. Error:\n{e}")
 
 
-def configure_interface_ipv6_verify_unicast_source(device, interface, reachable_option, suboptions="" ):
+def configure_interface_ipv6_verify_unicast_source(device, interface, reachable_option, suboptions="", no_switchport=True):
     """ configure interface ipv6 verify unicast source
         Args:
             device ('obj'): device to use
             interface ('str') : interface to add configs
             reachable_option ('str') : option for source reachability
+            no_switchport ('bool', optional): no switchport. Default is True
             ex:) 
                 any  Source is reachable via any interface
                 rx   Source is reachable via interface on which packet was received
@@ -6657,9 +6667,9 @@ def configure_interface_ipv6_verify_unicast_source(device, interface, reachable_
         Raises:
             SubCommandFailure
     """
-    cmd = []
-    cmd.append(f'interface {interface}')
-    cmd.append('no switchport')
+    cmd = [f'interface {interface}']
+    if no_switchport:
+        cmd.append('no switchport')
     if suboptions:
         cmd.append(f'ipv6 verify unicast source reachable-via {reachable_option} {suboptions}')
     else:
@@ -8509,6 +8519,57 @@ def unconfigure_interface_duplex_mode(device, interface):
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not unconfigure Interface duplex mode. Error:{e}')
 
+def configure_portchannel_dpi_algorithm(device, tunnel_type=None):
+    """config port-channel load-balance-hash-algo dpi algorithm
+
+        Args:
+            device (`obj`): Device object
+            tunnel_type (`str`): tunnel type
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        "Configuring port-channel load-balance-hash-algo dpi algorithm"
+    )
+    cmd = "port-channel load-balance-hash-algo dpi algorithm"
+    if tunnel_type is not None:
+        cmd += f" {tunnel_type}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure load-balance-hash-algo dpi algorithm. Error:\n{e}"
+        )
+
+def unconfigure_portchannel_dpi_algorithm(device, tunnel_type=None):
+    """config port-channel load-balance-hash-algo dpi algorithm
+
+        Args:
+            device (`obj`): Device object
+            tunnel_type (`str`): tunnel type
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        "Configuring port-channel load-balance-hash-algo dpi algorithm"
+    )
+    cmd = "no port-channel load-balance-hash-algo dpi algorithm"
+    if tunnel_type is not None:
+        cmd += f" {tunnel_type}"    
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure load-balance-hash-algo dpi algorithm. Error:\n{e}"    
+        )
 
 def configure_interface_ip_wccp(device, interface, id_nmber, redirect=None, group_listen=False):
     """ Configure interface ip wccp
@@ -8533,3 +8594,154 @@ def configure_interface_ip_wccp(device, interface, id_nmber, redirect=None, grou
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not configure interface ip wccp. Error: {e}')
+
+
+def unconfigure_port_channel_ip(device, port_channel, ip_version=None, shutdown=True):
+
+    """ Unconfigure port-channel ip address on port-channel interface
+        Args:
+            device ('obj'): Device object
+            port_channel ('str'): Port-channel number for the Port-channel interface
+            ip_version ('str', optional): ip or ipv6 version. Default is None
+            shutdown ('bool', optional): shutdown the port channel. Default is True
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    config = [f"interface Port-channel {port_channel}"]
+    if ip_version:
+        config.append(f"no {ip_version} address")
+    if shutdown:
+        config.append("shutdown")
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure interface Port-channel {port_channel}. Error: {e}")
+
+
+def configure_print_timestamp_for_show_command(device):
+    """ Configure print timestamp for show command
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure print timestamp for show commands
+    """
+    log.info("configuring print timestamp for show commands")
+
+    cmd = ["line console 0", "exec prompt timestamp"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to configure default privilege level, Error:\n{e}'
+        )
+
+
+def configure_console_default_privilege_level(device, level):
+    """ Configure console privilege level
+        Args:
+            device ('obj'): device to use
+            level ('str'): Default privilege level for line
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure default privilege level
+    """
+    log.info("configuring default privilege level")
+
+    cmd = ["line console 0", f"privilege level {level}"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to configure default privilege level, Error:\n{e}')
+
+
+def unconfigure_interface_pvlan_mode_with_submode(device, interface):
+    """ Unconfigures Private Vlan Switchport mode
+        Args:
+            device ('obj')            : device to use
+            interface ('str')         : interface to unconfigure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(
+        f"Unconfiguring switchport pvlan mode with submode on {interface}"
+    )
+    config = [f"interface {interface}", f"no switchport mode"]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure Primary Pvlan Error:\n{e}"
+        )
+
+
+def configure_dialer_interface(device,
+        dialer_intf,
+        encap,
+        auth_type,
+        ip_add=None,
+        pool_num=None,
+        dialer_group=None,
+        chap_hostname=None,
+        chap_pass=None,
+        pap_uname=None,
+        pap_pass=None,
+        ipcp_route=False):
+    """ Configure Dialer interface
+        Args:
+            device (`obj`): Device object
+            dialer_intf ('str'): Dialer interface
+            encap ('str'): ppp encapsulation type
+            ip_add ('str', optional): ip address
+            pool_number ('int'): dialer pool <number>
+            dialer_group ('int', optional): dialer-group <list>
+            auth_type ('str'): ppp authentication type
+            chap_hostname ('str', optional): ppp chap hostname
+            chap_password ('str', optional): ppp chap password
+            pap_username ('str', optional): ppp pap username
+            pap_password ('str', optional): ppp pap password
+            ipcp_route ('boolean' optional): ppp ipcp route
+        For the arguments that are optional, the default value is None.
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    if not device.is_connected():
+        connect_device(device=device)
+
+    cli = []
+    cli.append(f"interface {dialer_intf}")
+    cli.append(f"encapsulation {encap}")
+    cli.append(f"no shutdown")
+    cli.append(f"dialer pool {pool_num}")
+    cli.append(f"ip address {ip_add}")
+    cli.append(f"ppp authentication {auth_type} callin")
+    if dialer_group:
+        cli.append(f"dialer-group {dialer_group}")
+    if chap_hostname:
+        cli.append(f"ppp chap hostname {chap_hostname}")
+        cli.append(f"ppp chap password {chap_pass}")
+    if pap_uname:
+        cli.append(f"ppp pap sent-username {pap_uname} password {pap_pass}")
+    if ipcp_route:
+        cli.append(f"ppp ipcp route default")
+
+    try:
+        device.configure(cli)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure dialer interface on device. Error:\n{e}"
+        )

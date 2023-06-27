@@ -6,6 +6,7 @@ import re
 
 # Unicon
 from unicon.core.errors import SubCommandFailure
+from unicon.eal.dialogs import Statement, Dialog
 
 log = logging.getLogger(__name__)
 
@@ -33,13 +34,13 @@ def configure_sks_client(device,
     log.info(
         "Configuring sks client"
     )
- 
+
     configs = []
     configs.append(f"crypto skip-client {sks_client_config_block_name}")
     configs.append(f"server {ip_mode} {server_ip_address} port {server_port_number}")
     configs.append(f"psk id {psk_identity} key 0 {password_string}")
- 
- 
+
+
     try:
         device.configure(configs, error_pattern = ["Proposal with ESP is missing cipher"])
     except SubCommandFailure as e:
@@ -62,10 +63,10 @@ def unconfigure_sks_client(device,
     log.info(
         "Unconfiguring sks client"
     )
- 
+
     configs = []
-    configs.append(f"no crypto skip-client {sks_client_config_block_name}") 
- 
+    configs.append(f"no crypto sks-client {sks_client_config_block_name}")
+
     try:
         device.configure(configs, error_pattern = ["Proposal with ESP is missing cipher"])
     except SubCommandFailure as e:
@@ -135,10 +136,10 @@ def configure_ipsec_transform_set(device,
 
     if transform_auth is None and transform_bit is not None:
         configs.append(f"crypto ipsec transform-set {transform_set_name} {transform_method} {transform_bit}")
-    
+
     if transform_auth is not None and transform_bit is None:
         configs.append(f"crypto ipsec transform-set {transform_set_name} {transform_auth} {transform_method}")
-    
+
     if transform_auth is not None and transform_bit is not None:
         configs.append(f"crypto ipsec transform-set {transform_set_name} {transform_auth} {transform_method} {transform_bit}")
 
@@ -309,10 +310,10 @@ def configure_ipsec_profile(device,
 
     if ecn_discard:
         configs.append("set security-association ecn discard")
-    
+
     if ecn_propagate:
         configs.append("set security-association ecn propagate")
-    
+
     if idle_time is not None:
         configs.append(f"set security-association idle-time {idle_time}")
 
@@ -321,7 +322,7 @@ def configure_ipsec_profile(device,
 
     if sa_life_days is not None:
         configs.append(f"set security-association lifetime days {sa_life_days}")
-    
+
     if sa_life_kbytes is not None:
         configs.append(f"set security-association lifetime kilobytes {sa_life_kbytes}")
 
@@ -342,10 +343,10 @@ def configure_ipsec_profile(device,
 
     if mixed_mode:
         configs.append("set mixed-mode")
-    
+
     if pfs_group is not None:
         configs.append(f"set pfs {pfs_group}")
-    
+
     if rr_distance is not None:
         configs.append(f"set reverse-route distance {rr_distance}")
 
@@ -366,7 +367,7 @@ def configure_ipsec_profile(device,
 
     if redundancy_name is not None and stateful:
         configs.append(f"redundancy {redundancy_name} stateful")
-    
+
     if redundancy_name is not None and stateful == False:
         configs.append(f"redundancy {redundancy_name}")
 
@@ -530,7 +531,7 @@ def unconfigure_crypto_ikev2_keyring(device,keyring):
 
 def configure_ikev2_profile_pre_share(device, profile_name, auth_local='pre-share', auth_remote='pre-share',
                                     keyring=None, address=None, mask='', protocol='ipv4',
-                                    dpd_interval=None, dpd_retry='2', dpd_type='periodic', 
+                                    dpd_interval=None, dpd_retry='2', dpd_type='periodic',
                                     fvrf=None, lifetime=None):
 
     """ Configure Ikev2 Profile with pre-share option
@@ -561,7 +562,7 @@ def configure_ikev2_profile_pre_share(device, profile_name, auth_local='pre-shar
         config_list.append("match fvrf {fvrf}".format(fvrf=fvrf))
     if address:
         if protocol == 'ipv4':
-                config_list.append("match identity remote address {address} {mask}".format(address=address, mask=mask))
+            config_list.append("match identity remote address {address} {mask}".format(address=address, mask=mask))
         else:
             # IPv6 Match Address
             config_list.append("match identity remote address {address}/{mask}".format(address=address,mask=mask))
@@ -605,9 +606,9 @@ def unconfigure_ikev2_profile_pre_share(device, profile_name):
             'Could not unconfigure Crypto IPsec Profile. Error: {error}'.format(error=e)
         )
 
-def configure_crypto_ikev2_proposal(device, proposal_name, 
-                                    encryption_name=None, 
-                                    integrity_name=None, 
+def configure_crypto_ikev2_proposal(device, proposal_name,
+                                    encryption_name=None,
+                                    integrity_name=None,
                                     group_number=None):
     """ Configure Cryto Ikev2 proposal
     Args:
@@ -694,7 +695,7 @@ def unconfigure_crypto_ipsec_nat_transparency(device):
             f'Could not configure crypto ipsec nat-transparency udp-encapsulation. Error: {e}'
         )
 
-def configure_ipsec_fragmentation(device, 
+def configure_ipsec_fragmentation(device,
                 after_encr=False,
                 before_encr=False):
     """ Configure IPSec Fragmentation
@@ -715,7 +716,7 @@ def configure_ipsec_fragmentation(device,
     config_list = []
     if after_encr:
         config_list.append("crypto ipsec fragmentation after-encryption")
-    
+
     if before_encr:
         config_list.append("crypto ipsec fragmentation before-encryption")
 
@@ -726,7 +727,7 @@ def configure_ipsec_fragmentation(device,
             'Could not configure Crypto IPsec Fragmentation. Error: {error}'.format(error=e)
         )
 
-def configure_ipsec_df_bit(device, 
+def configure_ipsec_df_bit(device,
                 clear=False,
                 copy=False,
                 set=False):
@@ -747,7 +748,7 @@ def configure_ipsec_df_bit(device,
     config_list = []
     if clear:
         config_list.append("crypto ipsec df-bit clear")
-    
+
     if copy:
         config_list.append("crypto ipsec df-bit copy")
 
@@ -797,19 +798,19 @@ def configure_ipsec_sa_global(device,
     )
 
     configs = []
-    
+
     if ecn_discard:
         configs.append("crypto ipsec security-association ecn discard")
-    
+
     if ecn_propagate:
         configs.append("crypto ipsec security-association ecn propagate")
-    
+
     if idle_time is not None:
         configs.append(f"crypto ipsec security-association idle-time {idle_time}")
 
     if sa_life_days:
         configs.append(f"crypto ipsec security-association lifetime days 1")
-    
+
     if sa_life_kbytes is not None:
         configs.append(f"crypto ipsec security-association lifetime kilobytes {sa_life_kbytes}")
 
@@ -836,7 +837,7 @@ def configure_ipsec_sa_global(device,
         )
         raise
 
-def unconfigure_ipsec_fragmentation(device, 
+def unconfigure_ipsec_fragmentation(device,
                 no_after_encr=False,
                 no_before_encr=False):
     """ Configure IPSec Fragmentation
@@ -857,7 +858,7 @@ def unconfigure_ipsec_fragmentation(device,
     config_list = []
     if no_after_encr:
         config_list.append("no crypto ipsec fragmentation after-encryption")
-    
+
     if no_before_encr:
         config_list.append("no crypto ipsec fragmentation before-encryption")
 
@@ -868,7 +869,7 @@ def unconfigure_ipsec_fragmentation(device,
             'Could not unconfigure Crypto IPsec Fragmentation. Error: {error}'.format(error=e)
         )
 
-def unconfigure_ipsec_df_bit(device, 
+def unconfigure_ipsec_df_bit(device,
                 no_clear=False,
                 no_copy=False,
                 no_set=False):
@@ -889,7 +890,7 @@ def unconfigure_ipsec_df_bit(device,
     config_list = []
     if no_clear:
         config_list.append("no crypto ipsec df-bit clear")
-    
+
     if no_copy:
         config_list.append("no crypto ipsec df-bit copy")
 
@@ -935,17 +936,17 @@ def unconfigure_ipsec_sa_global(device,
     )
 
     configs = []
-    
+
     if no_ecn:
         configs.append("no crypto ipsec security-association ecn")
-    
-    
+
+
     if no_idle_time:
         configs.append("no crypto ipsec security-association idle-time")
 
     if no_sa_life_days:
         configs.append("no crypto ipsec security-association lifetime days")
-    
+
     if no_sa_life_kbytes:
         configs.append("no crypto ipsec security-association lifetime kilobytes")
 
@@ -1126,7 +1127,7 @@ def clear_crypto_ikev2_stats(device):
         raise SubCommandFailure(
             "Could not clear crypto ikev2 stats. Error:\n{error}".format(error=e)
         )
-        
+
 def configure_crypto_map(device, tagname, sequence, ip_address, access_list_num, tag):
     """ configure crypto map
     Args:
@@ -1154,6 +1155,68 @@ def configure_crypto_map(device, tagname, sequence, ip_address, access_list_num,
             "Could not configure crypto map. Error: {error}".format(error=e)
         )
 
+
+def configure_generate_self_certificate(
+    device,
+    label='self-cert',
+    modulus=2048,
+    ca_server='self-cert',
+    subject_name='cn=self-cert.cisco.com',
+    revocation_check='none',
+):
+    """ Configure generate self certificate
+    Args:
+        device (`obj`): Device object
+        label (`str`, optional): RSA keypair label. defaults to 'self-cert'
+        ca_server (`str`, optional): size of the key modulus. defaults to 2048
+        subject_name ('str', optional): subject name. Defaults to 'cn=self-cert.cisco.com'
+        revocation_check ('str, optional): revocation check. Defaults to 'none'
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+
+    dialog = Dialog([
+        Statement(
+            pattern=
+            r'.*Include the router serial number in the subject name\? \[yes/no\].*',
+            action='sendline(no)',
+            loop_continue=True,
+            continue_timer=False,
+        ),
+        Statement(
+            pattern=
+            r'.*Include an IP address in the subject name\? \[no\].*',
+            action='sendline(no)',
+            loop_continue=True,
+            continue_timer=False,
+        ),
+        Statement(
+            pattern=
+            r'.*Generate Self Signed Router Certificate\? \[yes/no\].*',
+            action='sendline(yes)',
+            loop_continue=True,
+            continue_timer=False,
+        ),
+    ])
+
+    configs = [
+        f'crypto key generate rsa general-keys label {label} modulus {modulus}',
+        f'crypto pki trustpoint {ca_server}',
+        'enrollment selfsigned',
+        f'subject-name {subject_name}',
+        f'revocation-check {revocation_check}',
+        f'rsakeypair {label}',
+        f'crypto pki enroll {ca_server}'
+    ]
+
+    try:
+        device.configure(command=configs, reply=dialog)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            'Could not generate self certificate. Error: {error}'.format(
+                error=e)) from e
 def unconfigure_ospfv3_authentication_null(device, interface):
     '''
     Unconfigure ospfv3 authentication null
@@ -1178,3 +1241,71 @@ def unconfigure_ospfv3_authentication_null(device, interface):
         raise SubCommandFailure(
             "Could not remove ospfv3 authentication null. Error:\n{error}".format(error=e)
         )
+
+
+def configure_interface_tunnel_mode_ipsec(device, interface):
+    """ Configures Interface tunnel mode ipsec
+        Args:
+            device ('obj')    : device to use
+            interface ('str') : interface to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    config = [f"interface {interface}", "tunnel mode ipsec ipv4"]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configure Interface tunnel mode ipsec. Error: {e}')
+
+
+def unconfigure_interface_tunnel_mode_ipsec(device, interface):
+    """ Unconfigures Interface tunnel mode ipsec
+        Args:
+            device ('obj')    : device to use
+            interface ('str') : interface to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    config = [f"interface {interface}", "no tunnel mode ipsec ipv4"]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not unconfigure Interface tunnel mode ipsec. Error: {e}')
+
+def configure_ipsec_ike_sa_strength_enforcement(device):
+    """ Configure IPsec IKE SA strength enforcement
+        Args:
+            device ('obj')    : device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configure IPsec IKE SA strength enforcement")
+
+    try:
+        device.configure(["crypto ipsec ike sa-strength-enforcement"])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configure IPsec IKE SA strength enforcement. Error: {e}')
+    
+def unconfigure_ipsec_ike_sa_strength_enforcement(device):
+    """ Unconfigure IPsec IKE SA strength enforcement
+        Args:
+            device ('obj')    : device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Unconfigure IPsec IKE SA strength enforcement")
+
+    try:
+        device.configure(["no crypto ipsec ike sa-strength-enforcement"])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not unconfigure IPsec IKE SA strength enforcement. Error: {e}')

@@ -1,0 +1,39 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0 0: "exec-timeout 0 0\r\n"
+    line console 0:
+      new_state: configure_line
+    line vty 0 4: "line vty 0 4\r\n"
+    no logging console: ''
+    transport input all: "transport input all\r\n"
+    transport output all: "transport output all\r\n"
+    transport preferred ssh: "transport preferred ssh\r\n"
+  prompt: T1-9400-Act(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: T1-9400-Act(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: T1-9400-Act#

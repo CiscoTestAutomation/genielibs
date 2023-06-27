@@ -10,7 +10,7 @@ class TestConfigureVirtualTemplate(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          c8kv-1:
+          C1113-8P_pkumarmu:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,11 +18,11 @@ class TestConfigureVirtualTemplate(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: iosxe
+            platform: router
             type: iosxe
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['c8kv-1']
+        self.device = self.testbed.devices['C1113-8P_pkumarmu']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,6 @@ class TestConfigureVirtualTemplate(unittest.TestCase):
         )
 
     def test_configure_virtual_template(self):
-        result = configure_virtual_template(self.device, 1, 'vmi1', False, 'None', True, True, 1444, 30, '', '1484', False, True)
+        result = configure_virtual_template(self.device, '1', 'GigabitEthernet0/0/0', False, None, False, False, 0, 0, '', '', False, False, 'ipv4_pool_100')
         expected_output = None
         self.assertEqual(result, expected_output)

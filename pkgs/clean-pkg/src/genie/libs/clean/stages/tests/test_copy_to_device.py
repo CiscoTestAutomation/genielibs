@@ -51,7 +51,7 @@ class VerifyCopyToDevice(unittest.TestCase):
                                 1940303872 bytes total (1036210176 bytes free)
                     '''
                     ]),
-                    'copy scp://127.0.0.1//path/test.bin bootflash:/test.bin': iter(['']),
+                    'copy scp://127.0.0.1//path/test.bin bootflash:/test.bin': iter(['Copied file']),
                 }
 
             def __call__(self, cmd, *args, **kwargs):
@@ -128,7 +128,7 @@ class VerifyCopyToDevice(unittest.TestCase):
                                 1940303872 bytes total (1036210176 bytes free)
                     '''
                     ]),
-                    'copy scp://127.0.0.1//path/' + filler + 'test.bin bootflash:': iter([''])
+                    'copy scp://127.0.0.1//path/' + filler + 'test.bin bootflash:': iter(['Copied file'])
                 }
 
             def __call__(self, cmd, *args, **kwargs):
@@ -204,7 +204,7 @@ class VerifyCopyToDevice(unittest.TestCase):
                                 1940303872 bytes total (1036210176 bytes free)
                     '''
                     ]),
-                    'copy scp://127.0.0.1//path/' + filler + 'test.bin bootflash:': iter([''])
+                    'copy scp://127.0.0.1//path/' + filler + 'test.bin bootflash:': iter(['Copied file'])
                 }
 
             def __call__(self, cmd, *args, **kwargs):
@@ -282,7 +282,7 @@ class VerifyCopyToDevice(unittest.TestCase):
                     '''
                     ]),
                     'copy scp://127.0.0.1//my/test.bin bootflash:': iter(['']),
-                    'copy scp://127.0.0.1/' + '/path/' + 'a' * 125 + 'test.bin bootflash:/test.bin_0': iter([''])
+                    'copy scp://127.0.0.1/' + '/path/' + 'a' * 125 + 'test.bin bootflash:/test.bin_0': iter(['Copied file'])
                 }
 
             def __call__(self, cmd, *args, **kwargs):

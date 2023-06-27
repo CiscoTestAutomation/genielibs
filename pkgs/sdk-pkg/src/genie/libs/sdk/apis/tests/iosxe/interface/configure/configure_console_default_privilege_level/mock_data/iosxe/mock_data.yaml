@@ -1,0 +1,34 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0: "line console 0\r\n"
+    no logging console: ''
+    privilege level 10: "privilege level 10\r\n"
+  prompt: Startrek(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: Startrek(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: Startrek#
