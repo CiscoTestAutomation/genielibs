@@ -109,7 +109,7 @@ class BaseVerifier(ABC):
         """
         pass
 
-    def edit_config_auto_validate(self, response: any, rpc_data: dict, namespace_modules: dict) -> bool:
+    def edit_config_auto_validate(self, response: Any, rpc_data: dict, namespace_modules: dict) -> bool:
         """Auto-validaton after set-config operation for netconf and gnmi
 
         Args:
@@ -129,7 +129,7 @@ class BaseVerifier(ABC):
             bool: Test result
         """
 
-        def inner(self, response):
+        def inner(self, response, *args, **kwargs):
             # Response will be 'None' when some error is received
             if response is None:
                 return False
@@ -141,7 +141,7 @@ class BaseVerifier(ABC):
             # set result to True as response is successfully received.
             elif response and not self.returns:
                 return True
-            return func(self, response)
+            return func(self, response, *args, **kwargs)
         return inner
 
 
@@ -299,9 +299,9 @@ class DefaultVerifier(BaseVerifier):
             result = False
         return result
 
-    def edit_config_auto_validate(self, response: any, rpc_data: dict, namespace_modules: dict) -> bool:
-        decoded_response = self.gnmi_get_config_decoder(
-            response, namespace=namespace_modules)
+    def edit_config_auto_validate(self, response: Any, rpc_data: dict, namespace_modules: dict) -> bool:
+        decoded_response = self.gnmi_decoder(
+            response, namespace=namespace_modules, method='get')
         result = True
         nodes: List[OperationalFieldsNode] = []
         list_keys: List[OptFields] = []
@@ -405,12 +405,14 @@ class DefaultVerifier(BaseVerifier):
                                 "Config not removed. {0} operation failed".format(edit_op))
                             return False
         for node in nodes:
-            if not self.get_config_verify(decoded_response, [node.opfields]):
+            self.returns = [node.opfields]
+            if not self.get_config_verify(decoded_response):
                 if node.edit_op in ['delete', 'remove'] and not node.default_value:
                     continue
                 result = False
         for node in list_keys:
-            if not self.get_config_verify(decoded_response, [node], key=True):
+            self.returns = [node]
+            if not self.get_config_verify(decoded_response, key=True):
                 result = False
         return result
 

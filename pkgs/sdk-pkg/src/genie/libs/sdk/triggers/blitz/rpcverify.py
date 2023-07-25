@@ -178,7 +178,7 @@ class EvalDatatype:
             self.min, self.max = self.integer_limits[datatype]
             if self.value < self.min or self.value > self.max:
                 self.min_max_failed = True
-        elif datatype in ['decimal64', 'float']:
+        elif datatype in ['float', 'double']:
             self.fval = float(field.value)
             self.min, self.max = self.integer_limits['int64']
             if self.value < self.min or self.value > self.max:

@@ -8,9 +8,24 @@ execute:
       %Error opening tftp://255.255.255.255/switch-confg (Timed out)!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       [OK - 1269880464 bytes]
       1269880464 bytes copied in 103.256 secs (12298370 bytes/sec)
-    
+
     "copy tftp://172.19.1.250//auto/tftp-kmukku/9300m-tb2/meraki1.bin flash:/meraki1.bin": |
         Loading /auto/tftp-kmukku/9300m-tb2/meraki1.bin from 172.19.1.250 (via GigabitEthernet0/0): !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         %Error
         [OK - 1269880464 bytes]
         1269880464 bytes copied in 103.256 secs (12298370 bytes/sec)
+    "copy tftp://127.0.0.1/somefile.bin flash:":
+      new_state: confirm_abort_copy
+
+confirm_abort_copy:
+  preface: |
+    %Warning: File not a valid executable for this system
+  prompt: "Abort Copy? [confirm]"
+  commands:
+    "n":
+      response: |
+        Loading somefile.bin from 127.0.0.1 (via GigabitEthernet0/0): !!
+        [OK - 5581609 bytes]
+      new_state: execute
+    "":
+      new_state: execute

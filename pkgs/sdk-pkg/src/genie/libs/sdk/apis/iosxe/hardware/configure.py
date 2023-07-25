@@ -183,3 +183,76 @@ def unconfigure_hw_module_breakout(device,
                 error=e
             )
         )
+
+def configure_400g_mode_for_port_group_onsvl(device,
+        slot,
+        switch_number,
+        port_group_range = None,
+        port_group = None,
+        ):
+
+    """ enable 400g mode conversion on NG-SVL
+        Args:
+            device (`obj`): Device object
+            slot (`int`): Metaluna slot
+            port_group_range ('str',optional) : range end for port group, default value is None
+            port_group('int') : port group number 
+            switch_number('int') : switch number 1 or 2
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    log.info(f"Configuring hw-module switch {switch_number} slot {slot} port-group {port_group_range} mode 400G ")
+
+    if port_group_range is not None:
+        cmd = [f"hw-module switch {switch_number} slot {slot} port-group range {port_group_range} mode 400G"]
+    else:
+        cmd = [f"hw-module switch {switch_number} slot {slot} port-group {port_group} mode 400G"]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure hw_module switch port-group port_group_range mode 400G. Error:\n{error}".format(
+                error=e
+            )
+        )
+
+def unconfigure_400g_mode_for_port_group_onsvl(device,
+        slot, 
+        switch_number,
+        port_group_range = None,
+        port_group = None,
+        ):
+
+    """ Disable 400g mode conversion on NG-SVL
+        Args:
+            device (`obj`): Device object
+            slot (`int`): Metaluna slot
+            port_group_range ('str', optional) : range end for port group, default value is None
+            port_group('int') : port group number
+            switch_number('int') : switch number 1 or 2
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    log.info(f"Configuring hw-module switch {switch_number} slot {slot} port-group {port_group_range} mode 400G ")
+
+    if port_group_range is not None:
+        cmd = [f"no hw-module switch {switch_number} slot {slot} port-group range {port_group_range} mode 400G"]
+    else:
+        cmd = [f"no hw-module switch {switch_number} slot {slot} port-group {port_group} mode 400G"]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfigure hw_module switch port-group port_group_range mode 400G. Error:\n{error}".format(
+                error=e
+            )
+        )
+

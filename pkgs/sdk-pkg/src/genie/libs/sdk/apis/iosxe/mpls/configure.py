@@ -2024,3 +2024,70 @@ def debug_lfd_label_statistics(device,label_number):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Failed to configure debug lfd label statistics Error {e}".format(e=e))
+
+def configure_template_pseudowire(device, template_type, template_name):
+    """Configure template name
+       Args:
+            device ('obj'): device object
+            template_type ('str'): template type
+            template_name ('str'): template name
+       Return:
+            None
+       Raises:
+            SubCommandFailure
+    """
+    config= [
+               f'template type {template_type} {template_name}',
+               'encapsulation mpls'
+            ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to Configure template pseudowire on {device.name}\n{e}'
+        )
+        
+def configure_member_vfi_on_vlan_configuration(device, vlan_id, vfi_type, vfi_name):
+    """ configure member vfi
+        Args:
+            device ('obj'): Device object
+            vlan_id ('int'): vlan id 
+            vfi_type ('str'): specify access-vfi or vfi
+            vfi_name ('str'): specify member vfi name
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed unconfiguring interface
+    """
+
+    config = [f'vlan configuration {vlan_id}',f'member {vfi_type} {vfi_name}']
+    
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to Configure member vfi on {device.name}\n{e}'
+        )
+    
+def configure_mpls_ldp_sync_under_ospf(device, process_id, router_id):
+    """Configure router ospf mpls
+       Args:
+            device ('obj'): device object
+            process_id ('int'): process id
+            router_id ('str'): OSPF router-id in IP address format
+       Return:
+            None
+       Raises:
+            SubCommandFailure
+    """
+    config= [
+               f'router ospf {process_id}',
+               f'router-id {router_id}',
+               'mpls ldp sync'
+            ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to Configure router ospf mpls on {device.name}\n{e}'
+        )

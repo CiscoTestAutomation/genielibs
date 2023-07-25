@@ -15,7 +15,7 @@ from pyats.utils.fileutils import FileUtils
 
 
 class test_filetransferutils(unittest.TestCase):
-    
+
     testbed = """
     devices:
         csr1000v-1:
@@ -26,7 +26,7 @@ class test_filetransferutils(unittest.TestCase):
             connections:
                 ssh:
                     command: mock_device_cli --os iosxe --mock_data_dir mock_data --state execute
-                    protocol: unknown     
+                    protocol: unknown
     """
 
     # Instantiate tesbed and device objects
@@ -240,6 +240,18 @@ class test_filetransferutils(unittest.TestCase):
                 source='tftp://172.19.1.250//auto/tftp-kmukku/9300m-tb2/meraki1.bin',
                 destination='flash:/meraki1.bin',
                 timeout_seconds=300, device=self.device1)
+
+    def test_abort_copy_n(self):
+        self.device1.connect(mit=True)
+        output = self.fu_device1.copyfile(
+            source='tftp://127.0.0.1/somefile.bin',
+            destination='flash:',
+            timeout_seconds=300, device=self.device1)
+        self.assertEqual(output.replace('\r',''), '''\
+%Warning: File not a valid executable for this system
+Abort Copy? [confirm]n
+Loading somefile.bin from 127.0.0.1 (via GigabitEthernet0/0): !!
+[OK - 5581609 bytes]''')
 
     def copy_to_dir_exec(self, cli, timeout=None, reply=None, prompt_recovery=False, error_pattern=None):
         self.assertEqual(cli, 'copy flash:/gs_script ftp://myuser:mypw@1.1.1.1//auto/tftp-ssr/')

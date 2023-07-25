@@ -2,19 +2,18 @@ configure:
   commands:
     end:
       new_state: execute
-    interface hundredGigE1/0/5: "interface hundredGigE1/0/5\r\n"
+    interface FourHundredGigE1/0/17: "interface FourHundredGigE1/0/17\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''
-    service-policy type queueing output nonllq: "service-policy type queueing output\
-      \ nonllq\r\n"
-  prompt: startrek-1(config)#
+    service-policy type queue output llq: "service-policy type queue output llq\r\n"
+  prompt: Startrek-SVL(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: startrek-1(config-line)#
+  prompt: Startrek-SVL(config-line)#
 connect:
   commands:
     ? ''
@@ -34,4 +33,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: startrek-1#
+  prompt: Startrek-SVL#

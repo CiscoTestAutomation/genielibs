@@ -2,18 +2,17 @@ configure:
   commands:
     end:
       new_state: execute
-    ip arp inspection vlan 10-20 logging acl-match matchlog: "ip arp inspection vlan\
-      \ 10-20 logging acl-match matchlog\r\n"
+    ip arp inspection vlan 10,20: "ip arp inspection vlan 10,20\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''
-  prompt: T1-9300-SW1(config)#
+  prompt: T1-9300-SP1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: T1-9300-SW1(config-line)#
+  prompt: T1-9300-SP1(config-line)#
 connect:
   commands:
     ? ''
@@ -33,4 +32,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: T1-9300-SW1#
+  prompt: T1-9300-SP1#

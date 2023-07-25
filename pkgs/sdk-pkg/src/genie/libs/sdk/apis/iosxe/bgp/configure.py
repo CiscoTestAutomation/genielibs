@@ -392,28 +392,24 @@ def configure_route_map_route_map_to_bgp_neighbor(
         route_map = []
 
     config = []
-    config.append("router bgp {bgp_as}\n".format(bgp_as=bgp_as))
-
-    if address_family:
-        config.append(
-            "address-family {address_family}\n".format(
-                address_family=address_family
-            )
-        )
 
     if route_map:
+
+        config.append("router bgp {bgp_as}\n".format(bgp_as=bgp_as))
+
+        if address_family or vrf_address_family:
+            config.append(
+                "address-family {address_family}{vrf}\n".format(
+                    address_family=address_family or vrf_address_family,
+                    vrf=f" vrf {vrf}" if vrf else "",
+                )
+            )
 
         if not isinstance(route_map, list):
             raise TypeError("route_map must be a list")
 
         for routemap in route_map:
             direction = routemap["direction"]
-            if direction == "in" and vrf and vrf_address_family:
-                config.append(
-                    "address-family {vrf_address_family} vrf {vrf}\n".format(
-                        vrf_address_family=vrf_address_family, vrf=vrf
-                    )
-                )
 
             config.append(
                 "neighbor {neighbor} route-map {route_map_name} "
@@ -430,6 +426,97 @@ def configure_route_map_route_map_to_bgp_neighbor(
             "Failed to configure route map to bgp neighbors"
         )
 
+def unconfigure_route_map_route_map_to_bgp_neighbor(
+    device,
+    bgp_as,
+    address_family="",
+    route_map=None,
+    vrf="",
+    vrf_address_family="",
+):
+    """ unonfigure route map to bgp neighbors
+
+        Args:
+            device ('obj'): Device object
+            bgp_as ('int'): BGP AS number
+            address_family ('str'): address family
+            vrf ('str'): vrf name
+            vrf_address_family ('str'): address family for vrf
+            route_map ('list'): route map list which contains dictionary
+                dictionary contains following 5 keys:
+                    neighbor ('str'): neighbor value
+                    route_map ('str'): route-map name
+                    direction ('str'): direction type
+            ex.)
+                [
+                    {
+                        'neighbor': '192.168.60.10',
+                        'route_map': 'community_test_out',
+                        'direction': 'out'
+                    },
+                    {
+                        'neighbor': '192.168.60.11',
+                        'route_map': 'community_test_out',
+                        'direction': 'out'
+                    },
+                    {
+                        'neighbor': '192.168.6.10',
+                        'route_map': 'community_test_in',
+                        'direction': 'in'
+                    },
+
+       ]
+        Returns:
+            N/A
+        Raises:
+            SubCommandFailure: Failed executing configure commands
+            TypeError: route_map is not a list
+    """
+
+    # router bgp 65109
+    # address-family vpnv4
+    # neighbor 192.168.36.119 route-map community_test_out out
+    # neighbor 192.168.36.120 route-map community_test_out out
+    # address-family ipv4 vrf
+    # neighbor 192.168.10.253 route-map community_test_in in
+
+    if route_map is None:
+        route_map = []
+
+    config = []
+
+    if route_map:
+
+        config.append("router bgp {bgp_as}\n".format(bgp_as=bgp_as))
+
+        if address_family or vrf_address_family:
+            config.append(
+                "address-family {address_family}{vrf}\n".format(
+                    address_family=address_family or vrf_address_family,
+                    vrf=f" vrf {vrf}" if vrf else "",
+                )
+            )
+
+        if not isinstance(route_map, list):
+            raise TypeError("route_map must be a list")
+
+        for routemap in route_map:
+            direction = routemap["direction"]
+
+            config.append(
+                "no neighbor {neighbor} route-map {route_map_name} "
+                "{route_map_direction}\n".format(
+                    neighbor=routemap["neighbor"],
+                    route_map_name=routemap["route_map"],
+                    route_map_direction=direction,
+                )
+            )
+    try:
+        device.configure("".join(config))
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure route map to bgp neighbors"
+        )
 
 def configure_bgp_neighbor_activate(
     device, address_family, bgp_as, neighbor_address, steps=Steps(),
@@ -1683,13 +1770,14 @@ def configure_bgp_router_id_interface(device, bgp_as, interface):
             f"Failed to configure bgp router-id interface on interface {interface}. Error:\n{e}"
         )
 
-def configure_bgp_redistribute_static(device, bgp_as, address_family, vrf=None):
+def configure_bgp_redistribute_static(device, bgp_as, address_family, vrf=None, route_map=None):
     """ configure redistribute static in bgp
         Args:
             device ('obj'): device to use
             bgp_as ('int'): bgp as number
             address_family ('str'): address family under bgp
             vrf ('str'): vrf in address_family
+            route_map ('str', optional): route-map name
         Returns:
             None
         Raises:
@@ -1699,18 +1787,21 @@ def configure_bgp_redistribute_static(device, bgp_as, address_family, vrf=None):
     log.info(
         f"configure redistribute static under bgp {bgp_as}"
     )
-    confg = ["router bgp {}".format(bgp_as)]
+    confg = [f"router bgp {bgp_as}"]
     if vrf:
         confg.append(f"address-family {address_family} vrf {vrf}")
     else:
         confg.append(f"address-family {address_family}")
-    confg.append("redistribute static")
+    if route_map:
+        confg.append(f"redistribute static route-map {route_map}")
+    else:
+        confg.append("redistribute static")
     try:
         device.configure(confg)
-    except SubCommandFailure:
+    except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not configure redistribute static under bgp {bgp_as}"
-        )
+        ) from e
 
 
 def configure_bgp_advertise_l2vpn_evpn(device, bgp_as, address_family, vrf):
@@ -2457,3 +2548,55 @@ def configure_bgp_eigrp_redistribution(device, bgp_as, address_family, vrf=None,
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure redistribute eigrp on device. Error:\n{e}")
+
+def unconfigure_bgp_redistribute_static(device, bgp_as, address_family, vrf=None, route_map=None):
+    """ unconfigure redistribute static in bgp
+        Args:
+            device ('obj'): device to use
+            bgp_as ('int'): bgp as number
+            address_family ('str'): address family under bgp
+            vrf ('str'): vrf in address_family
+            route_map ('str', optional): route-map name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed unconfiguring redistribute
+                            static under bgp address_family
+    """
+    log.debug(
+        f"unconfigure redistribute static under bgp {bgp_as}"
+    )
+    confg = [f"router bgp {bgp_as}"]
+    if vrf:
+        confg.append(f"address-family {address_family} vrf {vrf}")
+    else:
+        confg.append(f"address-family {address_family}")
+    if route_map:
+        confg.append(f"no redistribute static route-map {route_map}")
+    else:
+        confg.append("no redistribute static")
+    try:
+        device.configure(confg)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure redistribute static under bgp {bgp_as}"
+        ) from e
+
+def configure_bgp_best_path_as_path_multipath_relax(device, bgp_as):
+    """ Configures bgp redistribute internal on bgp router
+        Args:
+            device('obj'): device to configure on
+            bgp_as('str'): bgp_as to configure
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config = [
+        f'router bgp {bgp_as}',
+        'bgp bestpath as-path multipath-relax'
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure bgp redistribute internal on device {device}. Error:\n{e}")

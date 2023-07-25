@@ -4560,7 +4560,7 @@
     "ios": {
       "doc": " Parser for \"show ip ospf database external\" ",
       "groups": [],
-      "schema": "{'vrf': {Any  (str) *: {'address_family': {Any  (str) *: {'instance': {Any  (str) *: {Optional  (str) areas: {Any  (str) *: {'database': {'lsa_types': {Any  (str) *: {'lsa_type': <class 'int'>, 'lsas': {Any  (str) *: {'lsa_id': <class 'str'>, 'adv_router': <class 'str'>, 'ospfv2': {'header': {'option': <class 'str'>, 'option_desc': <class 'str'>, 'lsa_id': <class 'str'>, 'age': <class 'int'>, 'type': <class 'int'>, 'adv_router': <class 'str'>, 'seq_num': <class 'str'>, 'checksum': <class 'str'>, 'length': <class 'int'>, Optional  (str) routing_bit_enable: <class 'bool'>}, 'body': {'external': {'network_mask': <class 'str'>, 'topologies': {Any  (str) *: {'mt_id': <class 'int'>, Optional  (str) flags: <class 'str'>, 'metric': <class 'int'>, 'forwarding_address': <class 'str'>, 'external_route_tag': <class 'int'>}}}}}}}}}}}}}}}}}}}",
+      "schema": "{'vrf': {Any  (str) *: {'address_family': {Any  (str) *: {'instance': {Any  (str) *: {Optional  (str) areas: {Any  (str) *: {'database': {'lsa_types': {Any  (str) *: {'lsa_type': <class 'int'>, 'lsas': {Any  (str) *: {'lsa_id': <class 'str'>, 'adv_router': <class 'str'>, 'ospfv2': {'header': {'option': <class 'str'>, 'option_desc': <class 'str'>, 'lsa_id': <class 'str'>, 'age': <class 'int'>, 'type': <class 'int'>, 'adv_router': <class 'str'>, 'seq_num': <class 'str'>, 'checksum': <class 'str'>, 'length': <class 'int'>, Optional  (str) routing_bit_enable: <class 'bool'>}, 'body': {'external': {'network_mask': <class 'str'>, 'topologies': {Any  (str) *: {'mt_id': <class 'int'>, Optional  (str) flags: <class 'str'>, Optional  (str) metric_type: <class 'int'>, 'metric': <class 'int'>, 'forwarding_address': <class 'str'>, 'external_route_tag': <class 'int'>}}}}}}}}}}}}}}}}}}}",
       "source": {
         "class": "genie.harness.base.Template"
       },
@@ -4572,7 +4572,7 @@
       ],
       "doc": " Parser for:\n        * 'show ip ospf database external'\n    ",
       "groups": [],
-      "schema": "{'vrf': {Any  (str) *: {'address_family': {Any  (str) *: {'instance': {Any  (str) *: {Optional  (str) areas: {Any  (str) *: {'database': {'lsa_types': {Any  (str) *: {'lsa_type': <class 'int'>, 'lsas': {Any  (str) *: {'lsa_id': <class 'str'>, 'adv_router': <class 'str'>, 'ospfv2': {'header': {'option': <class 'str'>, 'option_desc': <class 'str'>, 'lsa_id': <class 'str'>, 'age': <class 'int'>, 'type': <class 'int'>, 'adv_router': <class 'str'>, 'seq_num': <class 'str'>, 'checksum': <class 'str'>, 'length': <class 'int'>, Optional  (str) routing_bit_enable: <class 'bool'>}, 'body': {'external': {'network_mask': <class 'str'>, 'topologies': {Any  (str) *: {'mt_id': <class 'int'>, Optional  (str) flags: <class 'str'>, 'metric': <class 'int'>, 'forwarding_address': <class 'str'>, 'external_route_tag': <class 'int'>}}}}}}}}}}}}}}}}}}}",
+      "schema": "{'vrf': {Any  (str) *: {'address_family': {Any  (str) *: {'instance': {Any  (str) *: {Optional  (str) areas: {Any  (str) *: {'database': {'lsa_types': {Any  (str) *: {'lsa_type': <class 'int'>, 'lsas': {Any  (str) *: {'lsa_id': <class 'str'>, 'adv_router': <class 'str'>, 'ospfv2': {'header': {'option': <class 'str'>, 'option_desc': <class 'str'>, 'lsa_id': <class 'str'>, 'age': <class 'int'>, 'type': <class 'int'>, 'adv_router': <class 'str'>, 'seq_num': <class 'str'>, 'checksum': <class 'str'>, 'length': <class 'int'>, Optional  (str) routing_bit_enable: <class 'bool'>}, 'body': {'external': {'network_mask': <class 'str'>, 'topologies': {Any  (str) *: {'mt_id': <class 'int'>, Optional  (str) flags: <class 'str'>, Optional  (str) metric_type: <class 'int'>, 'metric': <class 'int'>, 'forwarding_address': <class 'str'>, 'external_route_tag': <class 'int'>}}}}}}}}}}}}}}}}}}}",
       "source": {
         "class": "genie.harness.base.Template"
       },
@@ -7420,7 +7420,7 @@
     "ios": {
       "doc": "Parser for \"show lisp all instance-id <instance_id> <service> rloc members\"",
       "groups": [],
-      "schema": "{'lisp_router_instances': {Any  (str) *: {'lisp_router_instance_id': <class 'int'>, Optional  (str) service: {Optional  (Any) Any  (str) *: {'instance_id': {Any  (str) *: {Optional  (str) rloc: {'total_entries': <class 'int'>, 'valid_entries': <class 'int'>, 'distribution': <class 'bool'>, 'members': {Any  (str) *: {'origin': <class 'str'>, 'valid': <class 'str'>}}}}}}}}}}",
+      "schema": "{'lisp_router_instances': {Any  (str) *: {'lisp_router_instance_id': <class 'int'>, Optional  (str) service: {Optional  (Any) Any  (str) *: {'instance_id': {Any  (str) *: {Optional  (str) rloc: {'total_entries': <class 'int'>, 'valid_entries': <class 'int'>, 'distribution': <class 'bool'>, Optional  (str) members: {Any  (str) *: {'origin': <class 'str'>, 'valid': <class 'str'>}}}}}}}}}}",
       "source": {
         "class": "genie.harness.base.Template"
       },
@@ -7430,7 +7430,7 @@
       "devices": [
         "uut"
       ],
-      "doc": "Parser for \"show lisp all instance-id <instance_id> <service> rloc members\"",
+      "doc": "Parser for \"show lisp all instance-id <instance_id> <service> server rloc members\"",
       "groups": [
         "lisp"
       ],
@@ -7438,7 +7438,7 @@
         "instance_id": "*",
         "service": "ethernet"
       },
-      "schema": "{'lisp_router_instances': {Any  (str) *: {'lisp_router_instance_id': <class 'int'>, Optional  (str) service: {Optional  (Any) Any  (str) *: {'instance_id': {Any  (str) *: {Optional  (str) rloc: {'total_entries': <class 'int'>, 'valid_entries': <class 'int'>, 'distribution': <class 'bool'>, 'members': {Any  (str) *: {'origin': <class 'str'>, 'valid': <class 'str'>}}}}}}}}}}",
+      "schema": "{'lisp_router_instances': {Any  (str) *: {'lisp_router_instance_id': <class 'int'>, Optional  (str) service: {Optional  (Any) Any  (str) *: {'instance_id': {Any  (str) *: {Optional  (str) rloc: {'total_entries': <class 'int'>, 'valid_entries': <class 'int'>, 'distribution': <class 'bool'>, Optional  (str) members: {Any  (str) *: {'origin': <class 'str'>, 'valid': <class 'str'>}}}}}}}}}}",
       "source": {
         "class": "genie.harness.base.Template"
       },
@@ -7449,7 +7449,7 @@
     "ios": {
       "doc": "Parser for \"show lisp all instance-id <instance_id> <service> rloc members\"",
       "groups": [],
-      "schema": "{'lisp_router_instances': {Any  (str) *: {'lisp_router_instance_id': <class 'int'>, Optional  (str) service: {Optional  (Any) Any  (str) *: {'instance_id': {Any  (str) *: {Optional  (str) rloc: {'total_entries': <class 'int'>, 'valid_entries': <class 'int'>, 'distribution': <class 'bool'>, 'members': {Any  (str) *: {'origin': <class 'str'>, 'valid': <class 'str'>}}}}}}}}}}",
+      "schema": "{'lisp_router_instances': {Any  (str) *: {'lisp_router_instance_id': <class 'int'>, Optional  (str) service: {Optional  (Any) Any  (str) *: {'instance_id': {Any  (str) *: {Optional  (str) rloc: {'total_entries': <class 'int'>, 'valid_entries': <class 'int'>, 'distribution': <class 'bool'>, Optional  (str) members: {Any  (str) *: {'origin': <class 'str'>, 'valid': <class 'str'>}}}}}}}}}}",
       "source": {
         "class": "genie.harness.base.Template"
       },
@@ -7459,7 +7459,7 @@
       "devices": [
         "uut"
       ],
-      "doc": "Parser for \"show lisp all instance-id <instance_id> <service> rloc members\"",
+      "doc": "Parser for \"show lisp all instance-id <instance_id> <service> server rloc members\"",
       "groups": [
         "lisp"
       ],
@@ -7467,7 +7467,7 @@
         "instance_id": "*",
         "service": "ipv4"
       },
-      "schema": "{'lisp_router_instances': {Any  (str) *: {'lisp_router_instance_id': <class 'int'>, Optional  (str) service: {Optional  (Any) Any  (str) *: {'instance_id': {Any  (str) *: {Optional  (str) rloc: {'total_entries': <class 'int'>, 'valid_entries': <class 'int'>, 'distribution': <class 'bool'>, 'members': {Any  (str) *: {'origin': <class 'str'>, 'valid': <class 'str'>}}}}}}}}}}",
+      "schema": "{'lisp_router_instances': {Any  (str) *: {'lisp_router_instance_id': <class 'int'>, Optional  (str) service: {Optional  (Any) Any  (str) *: {'instance_id': {Any  (str) *: {Optional  (str) rloc: {'total_entries': <class 'int'>, 'valid_entries': <class 'int'>, 'distribution': <class 'bool'>, Optional  (str) members: {Any  (str) *: {'origin': <class 'str'>, 'valid': <class 'str'>}}}}}}}}}}",
       "source": {
         "class": "genie.harness.base.Template"
       },
@@ -7478,7 +7478,7 @@
     "ios": {
       "doc": "Parser for \"show lisp all instance-id <instance_id> <service> rloc members\"",
       "groups": [],
-      "schema": "{'lisp_router_instances': {Any  (str) *: {'lisp_router_instance_id': <class 'int'>, Optional  (str) service: {Optional  (Any) Any  (str) *: {'instance_id': {Any  (str) *: {Optional  (str) rloc: {'total_entries': <class 'int'>, 'valid_entries': <class 'int'>, 'distribution': <class 'bool'>, 'members': {Any  (str) *: {'origin': <class 'str'>, 'valid': <class 'str'>}}}}}}}}}}",
+      "schema": "{'lisp_router_instances': {Any  (str) *: {'lisp_router_instance_id': <class 'int'>, Optional  (str) service: {Optional  (Any) Any  (str) *: {'instance_id': {Any  (str) *: {Optional  (str) rloc: {'total_entries': <class 'int'>, 'valid_entries': <class 'int'>, 'distribution': <class 'bool'>, Optional  (str) members: {Any  (str) *: {'origin': <class 'str'>, 'valid': <class 'str'>}}}}}}}}}}",
       "source": {
         "class": "genie.harness.base.Template"
       },
@@ -7488,7 +7488,7 @@
       "devices": [
         "uut"
       ],
-      "doc": "Parser for \"show lisp all instance-id <instance_id> <service> rloc members\"",
+      "doc": "Parser for \"show lisp all instance-id <instance_id> <service> server rloc members\"",
       "groups": [
         "lisp"
       ],
@@ -7496,7 +7496,7 @@
         "instance_id": "*",
         "service": "ipv6"
       },
-      "schema": "{'lisp_router_instances': {Any  (str) *: {'lisp_router_instance_id': <class 'int'>, Optional  (str) service: {Optional  (Any) Any  (str) *: {'instance_id': {Any  (str) *: {Optional  (str) rloc: {'total_entries': <class 'int'>, 'valid_entries': <class 'int'>, 'distribution': <class 'bool'>, 'members': {Any  (str) *: {'origin': <class 'str'>, 'valid': <class 'str'>}}}}}}}}}}",
+      "schema": "{'lisp_router_instances': {Any  (str) *: {'lisp_router_instance_id': <class 'int'>, Optional  (str) service: {Optional  (Any) Any  (str) *: {'instance_id': {Any  (str) *: {Optional  (str) rloc: {'total_entries': <class 'int'>, 'valid_entries': <class 'int'>, 'distribution': <class 'bool'>, Optional  (str) members: {Any  (str) *: {'origin': <class 'str'>, 'valid': <class 'str'>}}}}}}}}}}",
       "source": {
         "class": "genie.harness.base.Template"
       },
@@ -7681,7 +7681,7 @@
     "ios": {
       "doc": "Parser for \"show lisp all instance-id <instance_id> <service> smr\"",
       "groups": [],
-      "schema": "{'lisp_router_instances': {Any  (str) *: {'lisp_router_instance_id': <class 'int'>, Optional  (str) service: {Optional  (Any) Any  (str) *: {'instance_id': {Any  (str) *: {Optional  (str) smr: {'vrf': <class 'str'>, 'entries': <class 'int'>, 'prefixes': {Any  (str) *: {'producer': <class 'str'>}}}}}}}}}}",
+      "schema": "{'lisp_router_instances': {Any  (str) *: {'lisp_router_instance_id': <class 'int'>, Optional  (str) service: {Optional  (Any) Any  (str) *: {'instance_id': {Any  (str) *: {Optional  (str) smr: {'vrf': <class 'str'>, 'entries': <class 'int'>, Optional  (str) prefixes: {Any  (str) *: {'producer': <class 'str'>}}}}}}}}}}",
       "source": {
         "class": "genie.harness.base.Template"
       },
@@ -7699,7 +7699,7 @@
         "instance_id": "*",
         "service": "ethernet"
       },
-      "schema": "{'lisp_router_instances': {Any  (str) *: {'lisp_router_instance_id': <class 'int'>, Optional  (str) service: {Optional  (Any) Any  (str) *: {'instance_id': {Any  (str) *: {Optional  (str) smr: {'vrf': <class 'str'>, 'entries': <class 'int'>, 'prefixes': {Any  (str) *: {'producer': <class 'str'>}}}}}}}}}}",
+      "schema": "{'lisp_router_instances': {Any  (str) *: {'lisp_router_instance_id': <class 'int'>, Optional  (str) service: {Optional  (Any) Any  (str) *: {'instance_id': {Any  (str) *: {Optional  (str) smr: {'vrf': <class 'str'>, 'entries': <class 'int'>, Optional  (str) prefixes: {Any  (str) *: {'producer': <class 'str'>}}}}}}}}}}",
       "source": {
         "class": "genie.harness.base.Template"
       },
@@ -7710,7 +7710,7 @@
     "ios": {
       "doc": "Parser for \"show lisp all instance-id <instance_id> <service> smr\"",
       "groups": [],
-      "schema": "{'lisp_router_instances': {Any  (str) *: {'lisp_router_instance_id': <class 'int'>, Optional  (str) service: {Optional  (Any) Any  (str) *: {'instance_id': {Any  (str) *: {Optional  (str) smr: {'vrf': <class 'str'>, 'entries': <class 'int'>, 'prefixes': {Any  (str) *: {'producer': <class 'str'>}}}}}}}}}}",
+      "schema": "{'lisp_router_instances': {Any  (str) *: {'lisp_router_instance_id': <class 'int'>, Optional  (str) service: {Optional  (Any) Any  (str) *: {'instance_id': {Any  (str) *: {Optional  (str) smr: {'vrf': <class 'str'>, 'entries': <class 'int'>, Optional  (str) prefixes: {Any  (str) *: {'producer': <class 'str'>}}}}}}}}}}",
       "source": {
         "class": "genie.harness.base.Template"
       },
@@ -7728,7 +7728,7 @@
         "instance_id": "*",
         "service": "ipv4"
       },
-      "schema": "{'lisp_router_instances': {Any  (str) *: {'lisp_router_instance_id': <class 'int'>, Optional  (str) service: {Optional  (Any) Any  (str) *: {'instance_id': {Any  (str) *: {Optional  (str) smr: {'vrf': <class 'str'>, 'entries': <class 'int'>, 'prefixes': {Any  (str) *: {'producer': <class 'str'>}}}}}}}}}}",
+      "schema": "{'lisp_router_instances': {Any  (str) *: {'lisp_router_instance_id': <class 'int'>, Optional  (str) service: {Optional  (Any) Any  (str) *: {'instance_id': {Any  (str) *: {Optional  (str) smr: {'vrf': <class 'str'>, 'entries': <class 'int'>, Optional  (str) prefixes: {Any  (str) *: {'producer': <class 'str'>}}}}}}}}}}",
       "source": {
         "class": "genie.harness.base.Template"
       },
@@ -7739,7 +7739,7 @@
     "ios": {
       "doc": "Parser for \"show lisp all instance-id <instance_id> <service> smr\"",
       "groups": [],
-      "schema": "{'lisp_router_instances': {Any  (str) *: {'lisp_router_instance_id': <class 'int'>, Optional  (str) service: {Optional  (Any) Any  (str) *: {'instance_id': {Any  (str) *: {Optional  (str) smr: {'vrf': <class 'str'>, 'entries': <class 'int'>, 'prefixes': {Any  (str) *: {'producer': <class 'str'>}}}}}}}}}}",
+      "schema": "{'lisp_router_instances': {Any  (str) *: {'lisp_router_instance_id': <class 'int'>, Optional  (str) service: {Optional  (Any) Any  (str) *: {'instance_id': {Any  (str) *: {Optional  (str) smr: {'vrf': <class 'str'>, 'entries': <class 'int'>, Optional  (str) prefixes: {Any  (str) *: {'producer': <class 'str'>}}}}}}}}}}",
       "source": {
         "class": "genie.harness.base.Template"
       },
@@ -7757,7 +7757,7 @@
         "instance_id": "*",
         "service": "ipv6"
       },
-      "schema": "{'lisp_router_instances': {Any  (str) *: {'lisp_router_instance_id': <class 'int'>, Optional  (str) service: {Optional  (Any) Any  (str) *: {'instance_id': {Any  (str) *: {Optional  (str) smr: {'vrf': <class 'str'>, 'entries': <class 'int'>, 'prefixes': {Any  (str) *: {'producer': <class 'str'>}}}}}}}}}}",
+      "schema": "{'lisp_router_instances': {Any  (str) *: {'lisp_router_instance_id': <class 'int'>, Optional  (str) service: {Optional  (Any) Any  (str) *: {'instance_id': {Any  (str) *: {Optional  (str) smr: {'vrf': <class 'str'>, 'entries': <class 'int'>, Optional  (str) prefixes: {Any  (str) *: {'producer': <class 'str'>}}}}}}}}}}",
       "source": {
         "class": "genie.harness.base.Template"
       },
@@ -10110,7 +10110,7 @@
       "c9500": {
         "doc": "Parser for show version",
         "groups": [],
-        "schema": "{'version': {Optional  (str) xe_version: <class 'str'>, 'version_short': <class 'str'>, 'os': <class 'str'>, Optional  (str) code_name: <class 'str'>, 'platform': <class 'str'>, 'version': <class 'str'>, Optional  (str) label: <class 'str'>, Optional  (str) build_label: <class 'str'>, 'image_id': <class 'str'>, 'rom': <class 'str'>, 'bootldr_version': <class 'str'>, 'hostname': <class 'str'>, 'uptime': <class 'str'>, 'uptime_this_cp': <class 'str'>, 'returned_to_rom_by': <class 'str'>, 'system_image': <class 'str'>, 'last_reload_reason': <class 'str'>, 'chassis': <class 'str'>, 'processor_type': <class 'str'>, 'main_mem': <class 'str'>, 'processor_board_id': <class 'str'>, Optional  (str) curr_config_register: <class 'str'>, 'compiled_date': <class 'str'>, 'compiled_by': <class 'str'>, 'mac_address': <class 'str'>, 'mb_assembly_num': <class 'str'>, 'mb_sn': <class 'str'>, 'model_rev_num': <class 'str'>, 'mb_rev_num': <class 'str'>, 'model_num': <class 'str'>, Optional  (str) system_sn: <class 'str'>, Optional  (str) mem_size: {Any  (str) *: <class 'str'>}, Optional  (str) license_level: <class 'str'>, Optional  (str) next_reload_license_level: <class 'str'>, 'smart_licensing_status': <class 'str'>, Optional  (str) number_of_intfs: {Any  (str) *: <class 'str'>}, Optional  (str) disks: {Any  (str) *: {'disk_size': <class 'str'>}}}}",
+        "schema": "{'version': {Optional  (str) xe_version: <class 'str'>, 'version_short': <class 'str'>, 'os': <class 'str'>, Optional  (str) code_name: <class 'str'>, 'platform': <class 'str'>, 'version': <class 'str'>, Optional  (str) label: <class 'str'>, Optional  (str) build_label: <class 'str'>, 'image_id': <class 'str'>, 'rom': <class 'str'>, 'bootldr_version': <class 'str'>, 'hostname': <class 'str'>, 'uptime': <class 'str'>, 'uptime_this_cp': <class 'str'>, 'returned_to_rom_by': <class 'str'>, 'system_image': <class 'str'>, 'last_reload_reason': <class 'str'>, 'chassis': <class 'str'>, 'processor_type': <class 'str'>, 'main_mem': <class 'str'>, 'processor_board_id': <class 'str'>, Optional  (str) curr_config_register: <class 'str'>, Optional  (str) revision: <class 'str'>, 'compiled_date': <class 'str'>, 'compiled_by': <class 'str'>, 'mac_address': <class 'str'>, 'mb_assembly_num': <class 'str'>, 'mb_sn': <class 'str'>, 'model_rev_num': <class 'str'>, 'mb_rev_num': <class 'str'>, 'model_num': <class 'str'>, Optional  (str) system_sn: <class 'str'>, Optional  (str) mem_size: {Any  (str) *: <class 'str'>}, Optional  (str) license_level: <class 'str'>, Optional  (str) next_reload_license_level: <class 'str'>, 'smart_licensing_status': <class 'str'>, Optional  (str) number_of_intfs: {Any  (str) *: <class 'str'>}, Optional  (str) disks: {Any  (str) *: {'disk_size': <class 'str'>}}}}",
         "source": {
           "class": "genie.harness.base.Template"
         },

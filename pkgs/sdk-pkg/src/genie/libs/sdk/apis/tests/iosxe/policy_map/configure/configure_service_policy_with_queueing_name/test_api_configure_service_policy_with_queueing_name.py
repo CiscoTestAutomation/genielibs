@@ -10,7 +10,7 @@ class TestConfigureServicePolicyWithQueueingName(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          startrek-1:
+          Startrek-SVL:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,11 +18,11 @@ class TestConfigureServicePolicyWithQueueingName(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: c9300
-            type: c9300
+            platform: cat9k
+            type: router
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['startrek-1']
+        self.device = self.testbed.devices['Startrek-SVL']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,6 @@ class TestConfigureServicePolicyWithQueueingName(unittest.TestCase):
         )
 
     def test_configure_service_policy_with_queueing_name(self):
-        result = configure_service_policy_with_queueing_name(self.device, 'hundredGigE1/0/5', 'queueing', 'nonllq')
-        expected_output = None
+        result = configure_service_policy_with_queueing_name(self.device, 'FourHundredGigE1/0/17', 'queue', 'llq')
+        expected_output = 'interface FourHundredGigE1/0/17\r\ninterface FourHundredGigE1/0/17\r\nservice-policy type queue output llq\r\nservice-policy type queue output llq\r\n'
         self.assertEqual(result, expected_output)

@@ -45,17 +45,17 @@ def reset_interface(device, interface):
             SubCommandFailure
     """
     log.info("Defaulting interface {interface}".format(interface=interface))
-
+    config = f"default interface {interface}"
     try:
-        device.configure(
-            "default interface {interface}".format(interface=interface)
-        )
+        output = device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not default {interface}. Error:\n{error}".format(
                 interface=interface, error=e
             )
         )
+
+    return output
 
 
 def config_enable_ip_routing(device):
@@ -1997,9 +1997,9 @@ def configure_scale_subintfs_via_tftp(
 
     if unconfig:
         for count in range(vlan_id_count):
-            cmds += '''
+            cmds += """
             no interface {interface}.{vlan_id}
-            '''.format(interface=interface,
+            """.format(interface=interface,
                        vlan_id=vlan_id)
 
             vlan_id += vlan_id_step
@@ -2007,13 +2007,13 @@ def configure_scale_subintfs_via_tftp(
         IPaddr = IPv4Address(ip_addr_start)
         for count in range(vlan_id_count):
 
-            cmds += '''
+            cmds += """
             interface {interface}.{vlan_id}
                 encapsulation dot1q {vlan_id}
                 ip address {ip_address} {netmask}
                 {pim}
             exit
-            '''.format(interface=interface,
+            """.format(interface=interface,
                        vlan_id=vlan_id,
                        ip_address=IPaddr,
                        netmask=netmask,
@@ -3004,10 +3004,10 @@ def configure_interface_template(device, interface_list=[], template_name="sampl
     for interface in interface_list:
         try:
             device.configure(
-                '''
+                """
                 interface {interface}
                   source template {template_name}
-                '''.format(interface=interface, template_name=template_name))
+                """.format(interface=interface, template_name=template_name))
 
         except SubCommandFailure as e:
             raise SubCommandFailure(
@@ -3036,10 +3036,10 @@ def unconfigure_interface_template(device, interface_list=[], template_name="tes
     for interface in interface_list:
         try:
             device.configure(
-                '''
+                """
                 interface {interface}
                   no source template {template_name}
-                '''.format(interface=interface, template_name=template_name))
+                """.format(interface=interface, template_name=template_name))
 
         except SubCommandFailure as e:
             raise SubCommandFailure(
@@ -8288,6 +8288,42 @@ def unconfigure_interface_l2protocol_tunnel(device, interface, protocol=None, pt
             f"Failed to Unconfigure interface l2protocol tunnel on this interface {interface}. Error:\n{e}"
         )  
 
+def configure_interface_bandwidth(device, interface, bandwidth):
+    """ Configures vlan group list
+        Args:
+            device ('obj'): device to use
+            interface ('str'):  interface name
+            bandwidth ('str'): bandwidth. Ex: '300000'
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f"Configuring interface bandwidth on {device.name} {interface}")
+    cmd = [f'interface {interface}',f'bandwidth {bandwidth}']
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configure interface bandwidth. Error:\n{e}')
+
+def unconfigure_interface_bandwidth(device, interface, bandwidth):
+    """ unconfigures vlan group list
+        Args:
+            device ('obj'): device to use
+            interface ('str'):  interface name
+            bandwidth ('str'): bandwidth. Ex: '300000'
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f"Unconfiguring interface bandwidth on {device.name} {interface}")
+    cmd = [f'interface {interface}',f'no bandwidth {bandwidth}']
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not unconfigure interface bandwidth. Error:\n{e}')
+    
 def configure_monitor_erspan_source_interface(device, session, interface, traffic=''):
     """ Configures monitor erspan source on interface
         Example : monitor session 1 type erspan-source
@@ -8745,3 +8781,44 @@ def configure_dialer_interface(device,
         raise SubCommandFailure(
             f"Could not configure dialer interface on device. Error:\n{e}"
         )
+
+
+def configure_interface_no_switchport_voice_vlan(device, interface, vlan):
+    """ Configures switchport on interface
+    Args:
+        device ('obj'): device to use
+        interface ('str'): interface to configure
+        vlan ('str'): voice_vlan to configure
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    
+    try:
+        device.configure([ "interface {interface}".format(interface=interface),
+            "no switchport voice vlan {vlan}".format(vlan=vlan)
+            ])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure no switchport trunk vlan. Error:\n{error}".format(
+                error=e
+            )
+        )
+        
+
+def configure_global_interface_template_sticky(device):
+    """ configure global interface-template sticky
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    
+    try:
+        device.configure(["access-session interface-template sticky"])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure global interface-template sticky. Error:\n{e}")
+        

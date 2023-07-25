@@ -30,6 +30,6 @@ class TestUnconfigureIpArpInspectionVlanLogging(unittest.TestCase):
         )
 
     def test_unconfigure_ip_arp_inspection_vlan_logging(self):
-        result = unconfigure_ip_arp_inspection_vlan_logging(self.device, '10-20', 'matchlog', 'acl-match')
+        result = unconfigure_ip_arp_inspection_vlan_logging(self.device, '10,20', 'dhcp-bindings', None)
         expected_output = None
         self.assertEqual(result, expected_output)

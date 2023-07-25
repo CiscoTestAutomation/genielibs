@@ -244,3 +244,44 @@ def execute_app_hosting_appid(device, appid, action, package_path=None):
         device.execute(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not execute app-hosting appid. Error: {e}')
+
+def set_stack_mode(dev, stack_mode, active_sw_number='', standby_sw_number=''):
+    '''Entering to Set stack mode'''
+
+    dialog = Dialog([
+        Statement(pattern=r'.*Do you wish to proceed anyway\? \(y/n\)\s*\[n\]',
+        action='sendline(y)',
+        loop_continue=True,
+        continue_timer=False)
+    ])
+
+    if stack_mode == '1+1':
+        switch_active= f"switch {active_sw_number} role active"
+        switch_standby= f"switch {standby_sw_number} role standby"
+        dev.execute(switch_active, reply=dialog, timeout=5)
+        dev.execute(switch_standby, reply=dialog, timeout=5)
+        dev.api.execute_write_memory()
+        log.info("Going to reload the Switch to change the stack-mode")
+        if dev.reload(prompt_recovery=True):
+            log.info('Reload successful')
+            stack_mode_out = dev.parse("show switch stack-mode")
+            stack_sws =stack_mode_out['switch'].keys()
+            for switch in stack_sws:
+                if stack_mode_out['switch'][switch]['mode'] == '1+1':
+                    log.info('switch is set to 1+1 mode SUCCESSFULL')
+                    return True
+        else:
+            log.info('Reload failed')
+
+    elif stack_mode == 'N+1':
+        log.info("setting Switch to N+1 mode")
+        cmd= f"switch clear stack-mode"
+        dev.execute(cmd, reply=dialog, timeout=5)
+        dev.api.execute_write_memory()
+        log.info("Going to reload the Switch to change the stack-mode")
+        if dev.reload(prompt_recovery=True):
+            log.info('Reload successful')
+            return True
+        else:
+            log.info('Reload failed')
+            return False  

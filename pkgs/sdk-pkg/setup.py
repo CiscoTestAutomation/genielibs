@@ -48,7 +48,8 @@ def version_info(*paths):
 version = find_version('src', 'genie', 'libs', 'sdk', '__init__.py')
 
 install_requires = [
-    'ruamel.yaml', 'yang.connector'
+    'ruamel.yaml', 'yang.connector',
+    'pysnmp==4.4.12', 'pyasn1==0.4.8'
 ]
 
 # launch setup

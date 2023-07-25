@@ -3995,7 +3995,7 @@ class TestYangExec(unittest.TestCase):
     def test_proto_decimal_val(self):
         request = self.make_test_request()
         verifier: DefaultVerifier = request['verifier']
-        verifier.returns[0].value = 6.0 / (10 ** 30)
+        verifier.returns[0].value = {'digits': 6, 'precision': 30}
         verifier.returns[0].datatype = 'decimal64'
         response = self.make_test_notification()
         path_elem1 = proto.gnmi_pb2.PathElem()

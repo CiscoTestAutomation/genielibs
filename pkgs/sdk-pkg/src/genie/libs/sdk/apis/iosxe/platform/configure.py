@@ -4467,64 +4467,6 @@ def configure_cos(device,priority_value):
             'Error:{e}'.format(e=e)
         )    
 
-def unconfig_cns_agent_password(device, cns_password=None):
-    """ un configure cns agent password
-        Args:
-            device ('obj'): Device object
-            cns_password ('str', optional): Cns agent password. Default is None
-        Returns:
-            None
-        Raise:
-            SubCommandFailure: Failed to un configure cns agent password
-    """
-    log.debug("un configure cns agent password")
-    try:
-        if cns_password:
-            device.configure("no cns password {cns_password}".format(cns_password=cns_password))
-        else:
-            device.configure("no cns password")
-    except SubCommandFailure as e:
-        raise SubCommandFailure(f"Could not un configure cns agent password. Error:\n{e}")
-
-
-def configure_boot_system_image_file(device, image_path, switch_number=None):
-    """ Configure boot system image file
-        Args:
-            device ('obj'): Device object
-            image_path ('str'): full image path. Ex: flash:cat9k_17467.SSA.pkg
-            switch_number ('str', optional): switch number or all. Default is None
-        Returns:
-            None
-        Raises:
-            SubCommandFailure
-    """
-
-    cmd = f"boot system{f' switch {switch_number}' if switch_number else ''} {image_path}"
-    try:
-        device.configure(cmd)
-    except SubCommandFailure as e:
-        raise SubCommandFailure(f"Could not configure boot system on {device}. Error:\n{e}")
-
-
-def configure_banner(device, banner_text):
-    """ Config Day banner
-        Args:
-            device (`obj`): Device object
-            banner_text (`str`): Banner text
-        Return:
-            None
-        Raise:
-            SubCommandFailure: Failed configuring Day banner
-    """
-
-    try:
-        device.configure("banner motd {banner_text}".format(banner_text=banner_text))
-    except SubCommandFailure as e:
-        raise SubCommandFailure(
-            'Could not configure banner {banner_text}, Error: {error}'.format(
-                banner_text=banner_text, error=e)
-        )
-
 def unconfigure_snmp_mib_bulkstat(device, object_name, schema_name, transfer_name):
     
     """ unconfigure snmp mib bulkstat
@@ -4639,3 +4581,169 @@ def configure_boot_system_image_file(device, image_path, switch_number=None):
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not configure boot system on {device}. Error:\n{e}")
+
+def configure_banner(device, banner_text):
+    """ Config Day banner
+        Args:
+            device (`obj`): Device object
+            banner_text (`str`): Banner text
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring Day banner
+    """
+
+    try:
+        device.configure("banner motd {banner_text}".format(banner_text=banner_text))
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            'Could not configure banner {banner_text}, Error: {error}'.format(
+                banner_text=banner_text, error=e)
+        )
+
+def unconfigure_snmp_mib_bulkstat(device, object_name, schema_name, transfer_name):
+    
+    """ unconfigure snmp mib bulkstat
+    Args:
+        device ('obj'): device to use
+        object_name ('str'): The name of the object 
+        schema_name ('str'): The name of the schema 
+        transfer_name ('str'): bulkstat transfer name 
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [
+        f"bulkstat profile {transfer_name}",
+        f"no enable",
+        "exit",
+        f"no snmp mib bulkstat object-list {object_name}",
+        f"no snmp mib bulkstat schema {schema_name}",
+        f"no snmp mib bulkstat transfer {transfer_name}",
+ 
+        ]
+        
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure snmp mib bulkstat on this device. Error:\n{e}")
+        
+
+def configure_stackpower_stack(device, powerstack_name, mode=None, strict=False):
+    """ Configures power stack mode on stack-power stack
+        
+        Args:
+            device ('obj'): device to use
+            powerstack_name ('str'): Power stack name - Up to 31 chars
+            mode ('str', optional): Power stack mode. Default is None
+            strict ('bool', optional): Strict mode. Default is False
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    
+    cmd = [f'stack-power stack {powerstack_name}']
+
+    if mode:
+        command = f'mode {mode}'
+        if strict:
+            command += ' strict'
+        cmd.append(command)
+    try:
+        device.configure(cmd)
+    
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure stackpower stack on device {device.name}. Error:\n{e}")
+
+
+def unconfigure_stackpower_stack(device, powerstack_name):
+    """ Configures power stack mode on stack-power stack
+        
+        Args:
+            device ('obj'): device to use
+            powerstack_name ('str'): Power stack name - Up to 31 chars
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+      
+    cmd = [f'no stack-power stack {powerstack_name}']
+
+    try:
+        device.configure(cmd)
+    
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure stackpower stack on device {device.name}. Error:\n{e}")
+
+
+def configure_graceful_reload(device, interval=5):
+    """ Configure graceful-reload
+        Args:
+            device ('obj'): Device object
+            interval('int', optional): <1-900>, Default is 5
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f"graceful-reload interval {interval}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure graceful-reload. Error:\n{e}")   
+
+def unconfig_cns_agent_password(device, cns_password=None):
+    """ un configure cns agent password
+        Args:
+            device ('obj'): Device object
+            cns_password ('str', optional): Cns agent password. Default is None
+        Returns:
+            None
+        Raise:
+            SubCommandFailure: Failed to un configure cns agent password
+    """
+    log.debug("un configure cns agent password")
+    try:
+        if cns_password:
+            device.configure("no cns password {cns_password}".format(cns_password=cns_password))
+        else:
+            device.configure("no cns password")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not un configure cns agent password. Error:\n{e}")
+
+
+def configure_boot_system_image_file(device, image_path, switch_number=None):
+    """ Configure boot system image file
+        Args:
+            device ('obj'): Device object
+            image_path ('str'): full image path. Ex: flash:cat9k_17467.SSA.pkg
+            switch_number ('str', optional): switch number or all. Default is None
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f"boot system{f' switch {switch_number}' if switch_number else ''} {image_path}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure boot system on {device}. Error:\n{e}")
+
+
+def hw_module_beacon_RP_active_standby(device, supervisor, operation):
+    """ ON/OFF beacon supervisor
+        Args:
+            device ('obj'): Device object
+            supervisor('str'): active/standby
+            operation('str'): ON/OFF
+            
+    """
+    
+    cmd = (f"hw-module beacon RP {supervisor} {operation}")
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Failed to turn {operation} the {supervisor} beacon slot. Error:\n{e}')

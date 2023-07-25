@@ -2,8 +2,10 @@
 
 import logging
 import time
+import inspect
 
 log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
 
 # Unicon
 from unicon.core.errors import SubCommandFailure
@@ -320,3 +322,62 @@ def unconfigure_app_hosting_appid(device):
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not unconfigure app-hosting appid. Error: {e}')
+
+def confirm_iox_enabled_requested_storage_media(uut, storage='ssd'):
+    """Confirm iox enabled requested storage media
+    Args:
+        uut('obj'): Device object
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """    
+    log.debug("Entering " + inspect.currentframe().f_code.co_name)
+    local_args = locals()        
+    log.debug("Passed in arguments are")
+    log.debug(local_args)
+    log.debug("Called by function name " + inspect.currentframe().f_back.f_code.co_name)   
+    
+    other_storage = ""
+    
+    if storage == "ssd":
+        req_storage_string = "/vol/usb1"
+        other_storage = "/mnt/sd3"
+
+    elif storage == "alt_hdd":
+        req_storage_string = "/mnt/sd3" 
+        other_storage = "/vol/usb1"
+    else:
+        log.error("Passed in value of storage not supported!")
+        return False
+    
+    result = False
+    
+    output = []
+    for attempt in range(1, 10):
+        try:
+            output = uut.parse('show app-hosting infra')
+            log.debug(output)
+            break
+        except Exception as e:
+            log.info("Wait 10 seconds and try again! With message \n {error}".format(error=e))
+            time.sleep(10)
+            continue
+        except:
+            log.error("Problem with parsing show app-hosting infra CLI")
+            return False
+    
+    if not output:
+        log.error("Failed to parse show app-hosting infra!")
+        return False
+    internal_storage = output['internal_working_directory']
+    
+    if req_storage_string in internal_storage:
+        log.info('IOX brought up on Requested Storage %s \n with location %s successfully!' % (storage, req_storage_string))
+        return True
+    elif other_storage in internal_storage:
+        log.error('IOX brought up on the other Storage Media Instead! - Error!')
+        return False
+    else:
+        log.error('IOX not brought up properly! - Error!')
+        return False

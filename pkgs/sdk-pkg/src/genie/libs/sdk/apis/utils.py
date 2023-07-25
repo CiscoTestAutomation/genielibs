@@ -1414,7 +1414,7 @@ def _delete_file_on_server(server,
         raise Exception("Failed to delete file : {}".format(str(e)))
 
 
-def tftp_config(device, server, cfg_block):
+def tftp_config(device, server, cfg_block, timeout=120):
     """ tftp_config proc
     Args:
         device ('obj'): Device object
@@ -1456,7 +1456,7 @@ def tftp_config(device, server, cfg_block):
             'Merge to running-config on device {0}'.format(
                 device.hostname))
         device.api.copy_file_to_running_config(
-            'bootflash:', FileName, timeout=120)
+            'bootflash:', FileName, timeout=timeout)
 
     except Exception:
         raise Exception(

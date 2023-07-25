@@ -2084,3 +2084,129 @@ def unconfigure_access_session_macmove_deny_uncontrolled(device):
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure access-session. Error:\n{e}")
+
+def configure_default_spanning_tree(device, mode_type):
+    """Configure default spanning-tree
+    Args:
+        device ('obj'): Device object
+        mode_type('str'):  backbonefast  Enable BackboneFast Feature
+                           bridge        STP Bridge Assurance parameters
+                           cca           enable/disable CCA routine
+                           dispute       Enable STP dispute mechanism
+                           etherchannel  Spanning tree etherchannel specific configuration
+                           extend        Spanning Tree 802.1t extensions
+                           logging       Enable Spanning tree logging
+                           loopguard     Spanning tree loopguard options
+                           mode          Spanning tree operating mode
+                           mst           Multiple spanning tree configuration
+                           pathcost      Spanning tree pathcost options
+                           portfast      Spanning tree portfast options
+                           sso           Stateful Switchover
+                           transmit      STP transmit parameters
+                           uplinkfast    Enable UplinkFast Feature
+                           vlan          VLAN Switch Spanning Tree
+    Return:
+        None
+    Raise:
+        SubCommandFailure 
+    """
+    cmd = f"default spanning-tree {mode_type}"
+    if mode_type == "backbonefast":
+        cmd+= f" {mode_type}"
+    elif mode_type == "bridge":
+        cmd+= f" {mode_type} assurance"
+    elif mode_type == "dispute":
+        cmd+= f" {mode_type}"
+    elif mode_type == "etherchannel":
+        cmd+= f" {mode_type} guard"
+    elif mode_type == "logging":
+        cmd+= f" {mode_type}"
+    elif mode_type == "loopguard":
+        cmd+= f" {mode_type} default"
+    elif mode_type == "mode":
+        cmd+= f" {mode_type}"
+    elif mode_type == "pathcost":
+        cmd+= f" {mode_type} method"
+    elif mode_type == "portfast":
+        cmd+= f" {mode_type} default"
+    elif mode_type == "sso":
+        cmd+= f" {mode_type} block-tcn"
+    elif mode_type == "transmit":
+        cmd+= f" {mode_type} hold-count"
+    elif mode_type == "uplinkfast":
+        cmd+= f" {mode_type} max-update-rate"
+    else:
+        cmd+= f" {mode_type} 10"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure default spanning-tree. Error:\n{e}")
+
+def configure_access_session_mac_move(device, access_type, deny_type):
+    """Configure access-session mac-move
+    Args:
+        device ('obj'): Device object
+        access_type('str'): accounting             Accounting Filter List Configuration
+                            acl                    Application of ACLs on access-session
+                            attributes             Attributes Filter List Configuration
+                            authentication         Authentication Filter List Configuration
+                            bridge-mode            bridge-mode
+                            cache                  Set cache configuration
+                            event-logging          Event log Configuration
+                            interface-template     Set the interface-template sticky globally
+                            limit                  Set session limit parameter
+                            mac-move               Set required action when a MAC move is detected
+                            monitor                Apply template to monitor access sessions on the port
+                            passthru-access-group  IP access-list map to FQDN ACL
+                            single-policy          Replace all interface service-policies with single policy
+                            tls-version            Set required TLS version
+                            voice                  voice client auth options
+                            wireless               Wireless
+        deny_type('str'):   deny               DENY MAC moves (clears existing session)
+                            deny-uncontrolled  Deny MAC move to uncontrolled port
+    Return:   
+        None
+    Raise:
+        SubCommandFailure  
+    """
+    cmd = f"access-session {access_type} {deny_type}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure access-session {access_type}. Error:\n{e}")
+            
+def unconfigure_access_session_mac_move(device, access_type, deny_type):
+    """Unconfigure access-session mac-move
+    Args:
+        device ('obj'): Device object
+        access_type('str'): accounting             Accounting Filter List Configuration
+                            acl                    Application of ACLs on access-session
+                            attributes             Attributes Filter List Configuration
+                            authentication         Authentication Filter List Configuration
+                            bridge-mode            bridge-mode
+                            cache                  Set cache configuration
+                            event-logging          Event log Configuration
+                            interface-template     Set the interface-template sticky globally
+                            limit                  Set session limit parameter
+                            mac-move               Set required action when a MAC move is detected
+                            monitor                Apply template to monitor access sessions on the port
+                            passthru-access-group  IP access-list map to FQDN ACL
+                            single-policy          Replace all interface service-policies with single policy
+                            tls-version            Set required TLS version
+                            voice                  voice client auth options
+                            wireless               Wireless
+        deny_type('str'):   deny               DENY MAC moves (clears existing session)
+                            deny-uncontrolled  Deny MAC move to uncontrolled port
+    Return:   
+        None
+    Raise:
+        SubCommandFailure  
+    """
+    cmd = f"no access-session {access_type} {deny_type}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure access-session mac-move. Error:\n{e}")

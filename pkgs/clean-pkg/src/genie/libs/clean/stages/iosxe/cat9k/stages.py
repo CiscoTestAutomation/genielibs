@@ -214,14 +214,23 @@ rommon_boot:
     tftp (optional): If specified boot via tftp otherwise boot using local
         image.
 
-        ip_address (list): Management ip address to configure to reach to the
+        ip_address (list, optional): Management ip address to configure to reach to the
             tftp server
 
-        subnet_mask (str): Management subnet mask
+        subnet_mask (str, optional): Management subnet mask
 
-        gateway (str): Management gateway
+        gateway (str, optional): Management gateway
 
-        tftp_server (str): Tftp server that is reachable with management interface
+        tftp_server (str, optional): Tftp server that is reachable with management interface
+    
+    recovery_password (str): Enable password for device
+        required after bootup. Defaults to None.
+
+    recovery_enable_password (str): Enable password for device
+        required after bootup. Defaults to None.
+
+    recovery_username (str): Enable username for device
+        required after bootup. Defaults to None.
 
     save_system_config (bool, optional): Whether or not to save the
         system config if it was modified. Defaults to True.
@@ -242,16 +251,46 @@ rommon_boot:
         gateway: 10.1.7.1
         subnet_mask: 255.255.255.0
         tftp_server: 11.1.7.251
+    recovery_password: nbv_12345
+    recovery_username: user_12345
+    recovery_enable_password: en
     save_system_config: False
     timeout: 600
     config_reg_timeout: 10
 
 There is more than one ip address, one for each supervisor.
+
+To pass tftp information and tftp server ip from the testbed, refer the example below
+
+
+testbed:
+  name: 
+  passwords: 
+    tacacs: test
+    enable: test
+  servers:
+    tftp:                       
+        address: 10.x.x.x
+        credentials:
+            default:
+                username: user
+                password: 1234
+devices:
+    uut1:
+        management:
+            address:
+                ipv4: '10.1.1.1/16'
+            gateway:
+                ipv4: '10.1.0.1'
+
 """
 
     # =================
     # Argument Defaults
     # =================
+    RECOVERY_PASSWORD = None
+    RECOVERY_ENABLE_PASSWORD = None
+    RECOVERY_USERNAME = None
     SAVE_SYSTEM_CONFIG = True
     TIMEOUT = 600
     ETHER_PORT = 0
@@ -262,12 +301,15 @@ There is more than one ip address, one for each supervisor.
     schema = {
         'image': list,
         Optional('tftp'): {
-            'ip_address': list,
-            'subnet_mask': str,
-            'gateway': str,
-            'tftp_server': str
+            Optional('ip_address'): list,
+            Optional('subnet_mask'): str,
+            Optional('gateway'): str,
+            Optional('tftp_server'): str
         },
         Optional('save_system_config'): bool,
+        Optional('recovery_password'): str,
+        Optional('recovery_username'): str,
+        Optional('recovery_enable_password'): str,
         Optional('timeout'): int,
         Optional('ether_port'): int
     }
@@ -339,10 +381,30 @@ There is more than one ip address, one for each supervisor.
             log.info("Device is reloading")
             device.destroy_all()
 
-    def rommon_boot(self, steps, device, image, tftp=None, timeout=TIMEOUT, ether_port=ETHER_PORT):
+    def rommon_boot(self, steps, device, image, tftp=None, timeout=TIMEOUT, recovery_password=RECOVERY_PASSWORD,
+                  recovery_username=RECOVERY_USERNAME, recovery_enable_password=RECOVERY_ENABLE_PASSWORD, ether_port=ETHER_PORT):
 
         with steps.start("Boot device from rommon") as step:
+            if not tftp:
+                tftp = {}
+            
+            # Check if management attribute in device object, if not set to empty dict
+            if not hasattr(device, 'management'):
+                setattr(device, "management", {})
+            
+            try:
+                # Getting the tftp information, if the info not provided by user, it takes from testbed
+                tftp.setdefault("ip_address", [str(device.management.get('address', '').get('ipv4', '').ip)])
+                tftp.setdefault("subnet_mask", str(device.management.get('address', '').get('ipv4', '').netmask))
+                tftp.setdefault("gateway", str(device.management.get('gateway').get('ipv4')))
+                tftp.setdefault("tftp_server", device.testbed.servers.get('tftp', {}).get('address'))
 
+                log.info("checking if all the tftp information is given by the user")
+                if not all(tftp.values()):
+                    log.warning(f"Some TFTP information is missing: {tftp}")
+            except Exception as e:
+                log.warning(f"Tftp information is missing. Please provide it either from testbed or clean stage {tftp}.")
+                
             # Need to instantiate to get the device.start
             # The device.start only works because of a|b
             device.instantiate(connection_timeout=timeout)
@@ -369,6 +431,13 @@ There is more than one ip address, one for each supervisor.
                 common_kwargs.update({'tftp_boot': tftp})
             else:
                 common_kwargs.update({'golden_image': image})
+
+            # Update recovery username and password
+            common_kwargs.update({
+                 'recovery_username': recovery_username,
+                 'recovery_en_password':recovery_enable_password,
+                 'recovery_password': recovery_password
+            })
 
             try:
                 pcall(

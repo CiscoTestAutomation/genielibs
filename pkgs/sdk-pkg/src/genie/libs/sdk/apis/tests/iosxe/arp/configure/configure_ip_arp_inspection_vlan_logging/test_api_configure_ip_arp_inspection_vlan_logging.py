@@ -30,6 +30,6 @@ class TestConfigureIpArpInspectionVlanLogging(unittest.TestCase):
         )
 
     def test_configure_ip_arp_inspection_vlan_logging(self):
-        result = configure_ip_arp_inspection_vlan_logging(self.device, '10-20', 'matchlog', 'acl-match')
+        result = configure_ip_arp_inspection_vlan_logging(self.device, '10,20', 'acl-match', None)
         expected_output = None
         self.assertEqual(result, expected_output)
