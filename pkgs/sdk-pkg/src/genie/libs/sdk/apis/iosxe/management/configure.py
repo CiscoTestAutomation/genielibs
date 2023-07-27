@@ -331,7 +331,7 @@ def configure_management_gateway(device,
                 default_route_config.append(default_route_cmd)
 
         if existing_config:
-            remove_existing_config = [f'no {line}' for line in existing_config.splitlines()]
+            remove_existing_config = [f'no {line}' for line in existing_config]
             device.configure(remove_existing_config)
 
         if default_route_config:
@@ -405,9 +405,10 @@ def configure_management_routes(device,
             subnet = route.get('subnet')
             next_hop = route.get('next_hop')
             if subnet and next_hop:
-                cmd = f'{protocol} route {subnet} {next_hop}'
                 if vrf:
-                    cmd += f' vrf {vrf}'
+                    cmd = f'{protocol} route vrf {vrf} {subnet} {next_hop}'
+                else:
+                    cmd = f'{protocol} route {subnet} {next_hop}'
                 route_cmds.append(cmd)
         if route_cmds:
             device.configure(route_cmds)

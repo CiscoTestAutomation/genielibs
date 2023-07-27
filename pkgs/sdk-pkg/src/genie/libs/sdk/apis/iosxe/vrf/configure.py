@@ -1001,7 +1001,7 @@ def configure_mdt_auto_discovery_inter_as(device, vrf_name, address_family):
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not configure mdt auto-discovery inter-as on device vrf {vrf_name}. Error:\n{e}")
 
-
+    
 def configure_rd_address_family_vrf(device, vrf_name, rd_name, address_family):
 
     """ configure rd and address family on vrf
@@ -1028,3 +1028,52 @@ def configure_rd_address_family_vrf(device, vrf_name, rd_name, address_family):
         raise SubCommandFailure(
             f"Could not configure rd and address family on vrf {vrf_name} on device.Error:\n{e}"
         )
+    
+def configure_mdt_default(device, vrf_name, address_family, ip_address):
+    """Configure mdt default
+       Args:
+            device ('obj'): device object
+            vrf_name ('str') : vrf name
+            address_family ('str'): address family
+            ip_address ('str'): IP multicast group address
+       Return:
+            None
+       Raises:
+            SubCommandFailure
+    """
+    config= [
+               f'vrf definition {vrf_name}',
+               f'address-family {address_family}',
+               f'mdt default {ip_address}'
+            ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to Configure mdt default on {device.name}\n{e}')
+    
+def configure_mdt_auto_discovery_inter_as_mdt_type(device, vrf_name, address_family, mdt_type=None):
+    """ configure mdt auto-discovery inter-as mdt type
+        Args:
+            device ('obj'): Device object
+            vrf_name ('str'): name of the vrf
+            address_family ('str'): mention the address-family ipv4 or ipv6.
+            mdt_type ('str'): specify the MDT configuration type interworking or pim.
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring mdt auto-discovery on vrf
+    """
+    config = [
+        f'vrf definition {vrf_name}',
+        f'address-family {address_family}']
+    if mdt_type == 'interworking':
+        config.append(f'mdt auto-discovery interworking vxlan-pim inter-as')
+    elif mdt_type == 'pim':
+        config.append(f'mdt auto-discovery pim inter-as')
+    else:
+        raise ValueError(f"Invalid MDT type: {mdt_type}. Must be 'interworking' or 'pim'.")
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure mdt auto-discovery inter-as mdt type on device vrf {vrf_name}. Error:\n{e}")

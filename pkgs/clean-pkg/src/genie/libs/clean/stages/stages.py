@@ -1975,7 +1975,7 @@ backup_file_on_device:
                          "of '{copy_dir}/{copy_file}'") as step:
 
             file_size = device.api.get_file_size(file=f'{copy_dir}/{copy_file}')
-            if not file_size:
+            if file_size is None:
                 step.failed(f"Could not get the size of '{copy_dir}/{copy_file}'")
 
             avail_space = device.api.get_available_space(directory=copy_dir)

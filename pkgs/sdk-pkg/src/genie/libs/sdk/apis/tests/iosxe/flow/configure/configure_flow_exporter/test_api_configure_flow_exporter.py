@@ -10,7 +10,7 @@ class TestConfigureFlowExporter(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          stack3-nyquist-1:
+          VCR:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,11 +18,11 @@ class TestConfigureFlowExporter(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: cat9k
-            type: router
+            platform: c9500
+            type: c9500
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['stack3-nyquist-1']
+        self.device = self.testbed.devices['VCR']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,6 @@ class TestConfigureFlowExporter(unittest.TestCase):
         )
 
     def test_configure_flow_exporter(self):
-        result = configure_flow_exporter(self.device, 'FNF-EXP', '100.1.1.102', 2055, 24, 5, 30, 'application-table', 10)
+        result = configure_flow_exporter(self.device, 'dnacexporter', None, None, None, None, None, None, None, 'GigabitEthernet3/0/15')
         expected_output = None
         self.assertEqual(result, expected_output)

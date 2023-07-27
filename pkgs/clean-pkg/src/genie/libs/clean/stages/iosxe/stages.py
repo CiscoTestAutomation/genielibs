@@ -5,6 +5,8 @@ IOSXE specific clean stages
 # Python
 import logging
 import time
+from ipaddress import IPv4Address, IPv6Address, IPv4Interface, IPv6Interface
+
 # pyATS
 from pyats.async_ import pcall
 
@@ -320,6 +322,14 @@ There is more than one ip address, one for each supervisor.
                           action='sendline()',
                           loop_continue=False,
                           continue_timer=False),
+                Statement(pattern=r".*Continue to reload\? \(yes\/\[no\]\)\:.*",
+                          action='sendline(yes)',
+                          loop_continue=False,
+                          continue_timer=False),
+                Statement(pattern=r".*(Proceed|Continue) (with|to) reload\? (\[confirm\]|\(yes\/\[no\]\)\:).*",
+                          action='sendline()',
+                          loop_continue=False,
+                          continue_timer=False),         
             ])
 
             # Using sendline, as we dont want unicon boot to kick in and send "boot"
@@ -503,6 +513,8 @@ Stage Schema
 install_image:
     images (list): Image to install
 
+    directory (str): directory where packages.conf is created
+    
     save_system_config (bool, optional): Whether or not to save the system
         config if it was modified. Defaults to False.
 
@@ -549,15 +561,18 @@ install_image:
         'append_error_pattern': [r"FAILED:.* ",],
     }
     ISSU = False
+    SKIP_BOOT_VARIABLE = False
     # ============
     # Stage Schema
     # ============
     schema = {
         Optional('images'): list,
+        Optional('directory'): str,
         Optional('save_system_config'): bool,
         Optional('install_timeout'): int,
         Optional('reload_timeout'): int,
         Optional('issu'): bool,
+        Optional('skip_boot_variable'): bool,
         Optional('reload_service_args'): {
             Optional('reload_creds'): str,
             Optional('prompt_recovery'): bool,
@@ -577,35 +592,45 @@ install_image:
         'install_image'
     ]
 
-    def delete_boot_variable(self, steps, device,):
+    def delete_boot_variable(self, steps, device, issu=ISSU, skip_boot_variable=SKIP_BOOT_VARIABLE):
         with steps.start("Delete all boot variables") as step:
-            try:
-                device.configure('no boot system')
-            except Exception as e:
-                step.failed("Failed to delete configured boot variables",
-                            from_exception=e)
+            if issu or skip_boot_variable:
+                step.skipped()
+            else:
+                try:
+                    device.configure('no boot system')
+                except Exception as e:
+                    step.failed("Failed to delete configured boot variables",
+                                from_exception=e)
 
-    def set_boot_variable(self, steps, device):
+    def set_boot_variable(self, steps, device, directory=None, issu=ISSU, skip_boot_variable=SKIP_BOOT_VARIABLE):
         with steps.start("Configure system boot variable for 'install mode'") as step:
-            # Figure out the directory that the image files get unpacked to
-            output = device.parse('dir')
-            directory = output['dir']['dir']
-            files = output.get('dir', {}).get(directory, {}).get('files', {})
+            if issu or skip_boot_variable:
+                step.skipped()
+            else:
+                # Figure out the directory that the image files get unpacked to
+                if not directory:
+                    output = device.parse(f'dir')
+                    directory = output['dir']['dir']
+                    output = device.parse('dir')
+                else:
+                    output = device.parse(f'dir {directory}')
+                files = output.get('dir', {}).get(directory, {}).get('files', {})
 
-            if not files.get('packages.conf'):
-                # create packages.conf, if it does not exist
-                device.tclsh('puts [open "%spackages.conf" w+] {}' % directory)
+                if not files.get('packages.conf'):
+                    # create packages.conf, if it does not exist
+                    device.tclsh('puts [open "%spackages.conf" w+] {}' % directory)
 
-            # packages.conf is hardcoded because install mode boots using an
-            # unpacked packages.conf file
-            self.new_boot_var = directory+'packages.conf'
+                # packages.conf is hardcoded because install mode boots using an
+                # unpacked packages.conf file
+                self.new_boot_var = directory+'packages.conf'
 
-            try:
-                device.api.execute_set_boot_variable(
-                    boot_images=[self.new_boot_var], timeout=60)
-            except Exception as e:
-                step.failed("Failed to configure the boot variable",
-                            from_exception=e)
+                try:
+                    device.api.execute_set_boot_variable(
+                        boot_images=[self.new_boot_var], timeout=60)
+                except Exception as e:
+                    step.failed("Failed to configure the boot variable",
+                                from_exception=e)
 
     def save_running_config(self, steps, device):
         with steps.start("Save the running config to the startup config") as step:
@@ -616,12 +641,15 @@ install_image:
                 step.failed("Failed to save the running config",
                             from_exception=e)
 
-    def verify_boot_variable(self, steps, device):
+    def verify_boot_variable(self, steps, device, issu=ISSU, skip_boot_variable=SKIP_BOOT_VARIABLE):
         # Verify next reload boot variables are correctly set
         with steps.start("Verify next reload boot variables are correctly set") as step:
-            if not device.api.verify_boot_variable(boot_images=[self.new_boot_var]):
-                step.failed(f"Boot variables are not correctly set to "
-                            f"{self.new_boot_var}")
+            if issu or skip_boot_variable:
+                step.skipped()
+            else:
+                if not device.api.verify_boot_variable(boot_images=[self.new_boot_var]):
+                    step.failed(f"Boot variables are not correctly set to "
+                                f"{self.new_boot_var}")
 
     def install_image(self, steps, device, images,
                       save_system_config=SAVE_SYSTEM_CONFIG,
@@ -686,7 +714,8 @@ install_image:
 
             image_mapping = self.history['InstallImage'].parameters.setdefault(
                 'image_mapping', {})
-            image_mapping.update({images[0]: self.new_boot_var})
+            if hasattr(self, 'new_boot_var'):
+                image_mapping.update({images[0]: self.new_boot_var})
 
 
 class InstallPackages(BaseStage):
@@ -886,6 +915,17 @@ reload:
             self.RELOAD_SERVICE_ARGS.update(reload_service_args)
             self.reload_service_args = self.RELOAD_SERVICE_ARGS
 
+        reload_dialog = Dialog([
+          Statement(pattern=r".*Do you wish to proceed with reload anyway\[confirm\].*",
+                    action='sendline(y)',
+                    loop_continue=True,
+                    continue_timer=False),
+                    ])
+        
+        self.reload_service_args.update({
+                    'reply': reload_dialog
+                })
+
         with steps.start(f"Reload {device.name}") as step:
 
             try:
@@ -1005,4 +1045,257 @@ reload:
                 except Exception as e:
                     step.failed("Modules are not in a stable state",
                                 from_exception=e)
+
+
+class RommonBoot(BaseStage):
+    """This stage boots an image onto the device through rommon. Using either
+a local image or one from a tftp server.
+
+Stage Schema
+------------
+rommon_boot:
+
+    image (list): Image to boot with
+
+    tftp (optional): If specified boot via tftp otherwise boot using local
+        image.
+
+        ip_address (list, optional): Management ip address to configure to reach to the
+            tftp server
+
+        subnet_mask (str, optional): Management subnet mask
+
+        gateway (str, optional): Management gateway
+
+        tftp_server (str, optional): Tftp server that is reachable with management interface
+    
+    recovery_password (str): Enable password for device
+        required after bootup. Defaults to None.
+
+    recovery_enable_password (str): Enable password for device
+        required after bootup. Defaults to None.
+
+    recovery_username (str): Enable username for device
+        required after bootup. Defaults to None.
+
+    save_system_config (bool, optional): Whether or not to save the
+        system config if it was modified. Defaults to True.
+
+    timeout (int, optional): Max time allowed for the booting process.
+        Defaults to 600.
+
+    config_reg_timeout (int, optional): Max time to set config-register.
+        Defaults to 30.
+    
+    rommon_timeout (int, optional): Timeout after bringing the device to rommon. Default to 15 sec.
+
+    reconnect_timeout (int, optional): Timeout to reconnect the device after booting. Default to 90 sec.
+
+Example
+-------
+rommon_boot:
+    image:
+      - /auto/some-location/that-this/image/stay-isr-image.bin
+    tftp:
+        ip_address: [10.1.7.126, 10.1.7.127]
+        gateway: 10.1.7.1
+        subnet_mask: 255.255.255.0
+        tftp_server: 11.1.7.251
+    recovery_password: nbv_12345
+    recovery_username: user_12345
+    recovery_enable_password: en
+    save_system_config: False
+    timeout: 600
+    config_reg_timeout: 10
+
+There is more than one ip address, one for each supervisor.
+
+To pass tftp information and tftp server ip from the testbed, refer the example below
+
+
+testbed:
+  name: 
+  passwords:
+    tacacs: test
+    enable: test
+  servers:
+    tftp:                       
+        address: 10.x.x.x
+        credentials:
+            default:
+                username: user
+                password: 1234
+devices:
+    uut1:
+        management:
+            address:
+                ipv4: '10.1.1.1/16'
+            gateway:
+                ipv4: '10.1.0.1'
+
+"""
+
+    # =================
+    # Argument Defaults
+    # =================
+    RECOVERY_PASSWORD = None
+    RECOVERY_ENABLE_PASSWORD = None
+    RECOVERY_USERNAME = None
+    SAVE_SYSTEM_CONFIG = True
+    TIMEOUT = 600
+    ETHER_PORT = 0
+    ROMMON_TIMEOUT = 15
+    RECONNECT_TIMEOUT = 90
+
+
+    # ============
+    # Stage Schema
+    # ============
+    schema = {
+        'image': list,
+        Optional('tftp'): {
+            Optional('ip_address'): list,
+            Optional('subnet_mask'): str,
+            Optional('gateway'): str,
+            Optional('tftp_server'): str
+        },
+        Optional('save_system_config'): bool,
+        Optional('recovery_password'): str,
+        Optional('recovery_username'): str,
+        Optional('recovery_enable_password'): str,
+        Optional('timeout'): int,
+        Optional('ether_port'): int,
+        Optional('rommon_timeout'): int,
+    }
+
+    # ==============================
+    # Execution order of Stage steps
+    # ==============================
+    exec_order = [
+        'delete_boot_variables',
+        'write_memory',
+        'go_to_rommon',
+        'rommon_boot',
+        'reconnect',
+        'enable_device_autoboot'
+    ]
+
+    def delete_boot_variables(self, steps, device):
+        with steps.start("Delete configured boot variables") as step:
+            try:
+                device.configure('no boot system')
+            except Exception as e:
+                step.failed("Failed to delete configured boot variables", from_exception=e)
+
+    def write_memory(self, steps, device):
+        with steps.start("Write memory") as step:
+            try:
+                device.api.execute_write_memory()
+            except Exception as e:
+                step.failed("Failed to write memory", from_exception=e)
+
+    def go_to_rommon(self, steps, device, rommon_timeout=ROMMON_TIMEOUT):
+        with steps.start("Bring device down to rommon mode") as step:
+            try:
+                device.rommon()
+                time.sleep(rommon_timeout)
+            except Exception as e:
+                step.failed("Failed to bring device to rommon!", from_exception=e)
+            
+            log.info("Device is reloading")
+            device.destroy_all()
+
+    def rommon_boot(self, steps, device, image, tftp=None, timeout=TIMEOUT, recovery_password=RECOVERY_PASSWORD,
+                  recovery_username=RECOVERY_USERNAME, recovery_enable_password=RECOVERY_ENABLE_PASSWORD, ether_port=ETHER_PORT):
+        with steps.start("Boot device from rommon") as step:
+            if not tftp:
+                tftp = {}
+            
+            # Check if management attribute in device object, if not set to empty dict
+            if not hasattr(device, 'management'):
+                setattr(device, "management", {})
+            
+            # Getting the tftp information, if the info not provided by user, it takes from testbed
+            address = device.management.get('address', {}).get('ipv4', '')
+            if isinstance(address, IPv4Interface):
+                ip_address = [str(address.ip)]
+                subnet_mask = str(address.netmask)
+            elif isinstance(address, IPv6Interface):
+                ip_address = [str(address.ip)]
+                subnet_mask = str(address.netmask)
+            tftp.setdefault("ip_address", ip_address)
+            tftp.setdefault("subnet_mask", subnet_mask)
+            tftp.setdefault("gateway", str(device.management.get('gateway', {}).get('ipv4')))
+            tftp.setdefault("tftp_server", device.testbed.servers.get('tftp', {}).get('address'))
+
+            log.info("checking if all the tftp information is given by the user")
+            if not all(tftp.values()):
+                log.warning(f"Some TFTP information is missing: {tftp}")
+                # setting tftp empty if ttfp information is missing
+                tftp = {}
+    
+            # Need to instantiate to get the device.start
+            # The device.start only works because of a|b
+            device.instantiate(connection_timeout=timeout)
+
+            try:
+                abstract = Lookup.from_device(device, packages={'clean': clean})
+            except Exception as e:
+                step.failed("Abstraction lookup failed", from_exception=e)
+
+            # device.start only gets filled with single rp devices
+            # for multiple rp devices we need to use subconnections
+            if device.is_ha and hasattr(device, 'subconnections'):
+                start = [i.start[0] for i in device.subconnections]
+            else:
+                start = device.start
+
+            common_kwargs = {
+                'device': device,
+                'timeout': timeout
+            }
+
+            if tftp:
+                tftp.update({'image': image, 'ether_port': ether_port})
+                common_kwargs.update({'tftp_boot': tftp})
+            else:
+                common_kwargs.update({'golden_image': image})
+
+            # Update recovery username and password
+            common_kwargs.update({
+                 'recovery_username': recovery_username,
+                 'recovery_en_password':recovery_enable_password,
+                 'recovery_password': recovery_password
+            })
+
+            try:
+                pcall(
+                    targets=abstract.clean.recovery.recovery.recovery_worker,
+                    start=start,
+                    ikwargs=[{'item': i} for i, _ in enumerate(start)],
+                    ckwargs=common_kwargs
+                )
+            except Exception as e:
+                step.failed("Failed to boot the device from rommon", from_exception=e)
+
+    def reconnect(self, steps, device, reconnect_timeout=RECONNECT_TIMEOUT):
+        with steps.start("Reconnect to device") as step:
+
+            if hasattr(device, 'chassis_type') and device.chassis_type.lower() == 'stack':
+                log.info(f"Sleep for {reconnect_timeout} seconds in order to sync")
+                time.sleep(reconnect_timeout)
+
+            if not _disconnect_reconnect(device):
+                step.failed("Failed to reconnect")
+
+    def enable_device_autoboot(self, steps, device):
+        with steps.start("Enable autoboot after reconnect") as step:
+        
+            if hasattr(device.api, "configure_autoboot"):
+                try:
+                    device.api.configure_autoboot()
+                except Exception as e:
+                    step.failed("Failed to configure autoboot on the device", from_exception=e)
+            else:
+                step.skipped('No autoboot API available')
 

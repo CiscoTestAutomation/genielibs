@@ -1428,3 +1428,29 @@ def config_smart_authorisation_request(device, feature_name, parameter):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not configure smart authorisation request. Error:\n{e}")
+
+
+def execute_dir_file_system(device, file_system, sub_directory=None, timeout=120):
+    """ Execute dir file_system
+        Example: dir flash:
+        Args:
+            device ('obj'): Device object
+            file_system ('str'): specifying filesystems such as bootflash:,usb:, flash:, flash-1:, flash2:/crashinfo:, crashinfo-1: , crashinfo2:
+            sub_directory('str'): specifying the subdirectory inside the filesystem 
+            timeout ('int'): Max time to print dir output
+        Returns:
+            output
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        if sub_directory :
+            output = device.execute(f"dir {file_system}/{sub_directory}",timeout=timeout)
+        else:
+            output = device.execute(f"dir {file_system}",timeout=timeout)
+
+        return output
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not execute dir {file_system} on device. Error:\n{e}"
+            )

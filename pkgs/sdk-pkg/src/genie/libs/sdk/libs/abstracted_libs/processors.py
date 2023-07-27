@@ -1131,9 +1131,10 @@ def restore_running_configuration(section,
         # delete crypto pki trustpoint configs
         if no_crypto_pki_trustpoint:
             out = device.execute('sh run | i crypto pki trustpoint', timeout=timeout)
-            unconfig = ['no '+line for line in out.splitlines()]
-            if unconfig:
-                device.configure(unconfig)
+            if 'crypto pki trustpoint' in out:
+                unconfig = ['no '+line for line in out.splitlines()]
+                if unconfig:
+                    device.configure(unconfig)
 
         # Restore configuration from default directory
         try:

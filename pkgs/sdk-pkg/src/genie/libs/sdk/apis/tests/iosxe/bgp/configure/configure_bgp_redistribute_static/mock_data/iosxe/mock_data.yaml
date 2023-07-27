@@ -1,20 +1,20 @@
 configure:
   commands:
-    address-family ipv4: "address-family ipv4\r\n"
+    address-family vpnv4: "address-family vpnv4\r\n"
     end:
       new_state: execute
     line console 0:
       new_state: configure_line
     no logging console: ''
-    redistribute static: "redistribute static\r\n"
-    router bgp 1: "router bgp 1\r\n"
-  prompt: 9300-1(config)#
+    redistribute static route-map test: "redistribute static route-map test\r\n"
+    router bgp 65000: "router bgp 65000\r\n"
+  prompt: iolpe2(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: 9300-1(config-line)#
+  prompt: iolpe2(config-line)#
 connect:
   commands:
     ? ''
@@ -34,4 +34,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: 9300-1#
+  prompt: iolpe2#

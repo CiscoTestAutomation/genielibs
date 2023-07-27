@@ -19,6 +19,7 @@ import grpc
 from yang.connector import proto
 from yang.connector.proto import gnmi_pb2
 from yang.connector.gnmi import Gnmi
+from copy import deepcopy
 
 log = logging.getLogger(__name__)
 
@@ -251,7 +252,8 @@ class GnmiMessage:
                     'double' in datatype):
                 return float(value)
             elif 'decimal' in datatype:
-                return float(value['digits']) / (10 ** value['precision'])
+                value['digits'] = int(value['digits'])
+                return value
             elif 'bytes' in datatype:
                 return bytes(value, encoding='utf8')
             elif 'leaflist' in datatype:
@@ -294,7 +296,7 @@ class GnmiMessage:
                       'double' in datatype):
                     value = float(value)
                 elif 'decimal' in datatype:
-                    value = float(value['digits']) / (10 ** value['precision'])
+                    value['digits'] = int(value['digits'])
                 elif 'bytes' in datatype:
                     value = bytes(value, encoding='utf8')
                 elif 'leaflist' in datatype:
@@ -346,7 +348,7 @@ class GnmiMessage:
                       'double' in datatype):
                     val = float(val)
                 elif 'decimal' in datatype:
-                    value = float(value['digits']) / (10 ** value['precision'])
+                    value['digits'] = int(value['digits'])
                 elif 'bytes' in datatype:
                     val = bytes(value, encoding='utf8')
                 leaf_list_val.append(val)
@@ -1043,7 +1045,7 @@ class GnmiMessageConstructor:
 
         GnmiMessage.prefix_to_module(self.request)
 
-        nodes = self.request.get("nodes", [])
+        nodes = deepcopy(self.request.get("nodes", []))
         if self.msg_type == 'set':
             # Prune key nodes without edit-op assigned.
             nodes = [n for n in nodes if not (
@@ -1090,7 +1092,7 @@ class GnmiMessageConstructor:
                         value = float(value)
                 elif 'decimal' in datatype:
                     if value:
-                        value = float(value['digits']) / (10 ** value['precision'])
+                        value['digits'] = int(value['digits'])
 
                 if xpath.startswith('/'):
                     xp = xpath.split('/')[1:]
@@ -1377,11 +1379,6 @@ class GnmiSubscription(ABC, Thread):
                     self.log.error("Unknown error: %s", exc)
                     self.result = False
                     self.errors.append(exc)
-            except GnmiSubscription.TransactionTimeExceeded as exc:
-                self.log.error(banner(
-                    f'Response time: {exc.response_time} seconds exceeded transaction_time {self.transaction_time}',
-                ))
-                self.stop()
             except Exception as exc:
                 msg = ''
                 if hasattr(exc, 'details'):
@@ -1432,29 +1429,15 @@ class GnmiSubscriptionStream(GnmiSubscription):
                 continue
             if response.HasField('update') and not self.stopped():
                 arrive_time = time.time()
-                json_dicts, opfields = self.decode_response(
-                        response, self.namespace
-                    )
                 if self.transaction_time:
                     timestamp = response.update.timestamp / 10 ** 9
                     delta_time = arrive_time - timestamp
                     if delta_time < 0:
                         self.errors.append(
                             self.DevieOutOfSyncWithNtp(timestamp, arrive_time, self.ntp_server))
-                        timestamp_dt = datetime.fromtimestamp(timestamp)
-                        ntp_dt = datetime.fromtimestamp(arrive_time)
-                        self.log.error(banner(
-                            f"""Device is out of sync with NTP server {self.ntp_server}
-                            Device time: {timestamp_dt.strftime('%m/%d/%Y %H:%M:%S.%f')}
-                            NTP time: {ntp_dt.strftime('%m/%d/%Y %H:%M:%S.%f')}"""))
-                        self.results.append(False)
                     elif delta_time > self.transaction_time:
                         self.errors.append(self.TransactionTimeExceeded(
                             delta_time, self.transaction_time))
-                        self.results.append(False)
-                        self.log.error(banner(
-                            f'Response time: {delta_time} seconds exceeded transaction_time {self.transaction_time}',
-                        ))
                 if self.returns:
                     self.log.info('Processing returns...')
                     decoded_response = self.verifier.gnmi_decoder(
@@ -1549,10 +1532,6 @@ class GnmiSubscriptionPoll(GnmiSubscription):
             if (self.transaction_time and t and delta_time > self.transaction_time):
                 self.errors.append(self.TransactionTimeExceeded(
                     delta_time, self.transaction_time))
-                self.results.append(False)
-                self.log.error(banner(
-                    f'Response time: {delta_time} seconds exceeded transaction_time {self.transaction_time}',
-                ))
             if response.HasField('sync_response'):
                 self.log.info('Subscribe sync_response')
 

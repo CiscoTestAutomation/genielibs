@@ -1258,7 +1258,7 @@ def unconfigure_ipv6_flow_monitor(device, interface, monitor_name,direction):
         )
 
 def configure_flow_exporter(device, exporter_name, dest_ip=None, udp_port=None, dscp=None, 
-    ttl=None, data_timeout=None, table_type=None, table_timeout=None):
+    ttl=None, data_timeout=None, table_type=None, table_timeout=None, source_int=None):
     """ Configure Flow Exporter on Device
         Args:
             device ('obj'): Device object
@@ -1270,6 +1270,7 @@ def configure_flow_exporter(device, exporter_name, dest_ip=None, udp_port=None, 
             data_timeout ('str', optional): template data timeout value. Default is None
             table_type ('str', optional): option table type. Default is None
             table_timeout ('str', optional): option table timeout value. Default is None
+            source_int ('str', optional): Source interface. Default int None
         Return:
             None
         Raise:
@@ -1289,9 +1290,77 @@ def configure_flow_exporter(device, exporter_name, dest_ip=None, udp_port=None, 
         config.append(f'template data timeout {data_timeout}')
     if table_type:
         config.append(f'option {table_type}{f" timeout {table_timeout}" if table_timeout else ""}')
+    if source_int:
+        config.append(f'source {source_int}')
     
     try:
         device.configure(config)
 
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not configure flow exporter {exporter_name}. Error\n{e}')
+               
+def configure_fnf_flow_record(
+    device,
+    record_name,
+    datalink = False,
+    datalink_type_1 = None,
+    datalink_subtype_1 = None,
+    address_type = None,
+    match_int_field = None,
+    match_ipv4_field = None,
+    collect_counter_bytes = False,
+    collect_counter_packets = False,
+    match_transport_field = None,
+    address_mode = None,
+    tcp_field = False,
+    collect_event = False
+    ):
+    
+    """ Config Flow Record on Device
+        Args:
+            device (`obj`): Device object
+            record_name (`str`): Flow record name
+            datalink ('bool') : Configure datalink fields
+            datalink_type_1 ('str', optional): First Datalink Type to be configured
+            datalink_subtype_1 ('str', optional): First datalink subtype to be configured
+            match_int_field ('str', optional): Interface field to be configured
+            match_ipv4_field ('str', optional): First IPv4 field to be configured
+            collect_counter_bytes ('bool'): Enable counter field bytes
+            collect_counter_packets ('bool'): Enable counter field packets
+            match_transport_field ('str', optional): First transport field to be configured
+            address_mode('str', optional): Address mode to be configured
+            tcp_field('bool'): Configure collect transport tcp flags
+            collect_event('bool'): Configure collect policy firewall event
+        Return:
+            None
+            
+        Raise:
+            SubCommandFailure: Failed configuring Flow Record on Device
+    """
+    
+    configs = [f'flow record {record_name}']
+    if datalink:
+        if datalink_type_1 and datalink_subtype_1 and address_type:
+            configs.extend([f'match datalink {datalink_type_1} {datalink_subtype_1} address {address_type}'])
+    if match_int_field:
+        configs.extend([f'match interface {match_int_field}'])
+    if match_ipv4_field:
+        configs.extend([f'match ipv4 {match_ipv4_field}'])
+    if collect_counter_bytes:
+        configs.extend(['collect counter bytes long'])
+    if collect_counter_packets:
+        configs.extend(['collect counter packets long'])   
+    if match_transport_field:
+        configs.extend([f'match transport {match_transport_field}']) 
+    if address_mode:
+        configs.extend([f'match ipv4 {address_mode} address']) 
+    if tcp_field:
+        configs.extend([f'collect transport tcp flags']) 
+    if collect_event:
+        configs.extend([f'collect policy firewall event'])    
+    
+    try:
+        device.configure(configs)       
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Could not configure flow record. Error:\n{e}')

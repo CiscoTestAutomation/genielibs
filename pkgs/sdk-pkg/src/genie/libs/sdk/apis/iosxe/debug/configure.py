@@ -224,3 +224,30 @@ def enable_debug_ilpower_event(device):
             "Could not execute cli debug ilpower event. Error:\n{error}". format(error=e))
 
 
+def debug_vdsl_controller_slot_dump_internal(device, slot, filename='sfp', timeout=900):
+    """ Debug cli to dump vdsl controller slot internal 			
+			
+    Args:
+        device (obj): Device to execute on
+        slot (str): slot/subslot number 
+        filename (str, optional): filename for dumping the debug in bootflash 
+        timeout (int, optional): Max time in seconds allowed for calculation.
+            Defaults to 900Sec.
+    Returns:
+        True if Debug dump is successful else return False
+    """
+    # debug vdsl controller 0/0/1 dump internal sfp_test.dump
+
+    if filename == 'sfp':
+        msg = f"filename not provided. default name of dump file will be sfp"
+        cmd =f'debug vdsl controller {slot} dump internal sfp.dump'
+    else:
+        msg = f"File name provided"
+        cmd =f'debug vdsl controller {slot} dump internal {filename}'
+
+    log.info(msg)
+    try:
+        device.execute(cmd,timeout=timeout)
+    except Exception as e:
+        log.warning(e)
+  

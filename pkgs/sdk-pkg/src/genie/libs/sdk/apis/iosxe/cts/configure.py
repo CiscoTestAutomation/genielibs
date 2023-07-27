@@ -1072,3 +1072,21 @@ def unconfigure_cts_aaa_methods(device, server_grp, list_name):
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not unconfigure cts aaa methods. Error:\n {e}")
+
+def enable_cts_enforcement_vlan_list(device, vlan):
+    """ enable cts role-based enforcement on given vlan range
+        Args:
+            device ('obj'): device to use
+            vlan ('str'): vlan range to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to enable cts role-based enforcement vlan list
+    """
+    log.debug("Enable CTS enforcement on vlan-list")
+    try:
+        device.configure(["cts role-based enforcement vlan-list {}".format(vlan)])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not enable CTS enforcement on vlan {}.Error:\n{}".format(vlan, str(e))
+        )

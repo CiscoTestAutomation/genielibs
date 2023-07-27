@@ -1013,7 +1013,6 @@ def configure_vlan_name(device,vlan,name):
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not configure the vlan name. Error:\n{e}')
 
-
 def unconfigure_pvlan_primary(device, primary_vlan, secondary_vlan=None):
     """ Unconfigures Primary Private Vlan
         Args:

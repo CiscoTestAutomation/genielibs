@@ -974,7 +974,7 @@ def unconfigure_ip_prefix_list(device, prefix_list_name, seq, ip_address, subnet
         )
 
 
-def configure_route_map(device, route_map_name, permit, prefix_list_name=None, acl_name=None, acl_namev6=None, ip=None, ipv6=None, interface=None):
+def configure_route_map(device, route_map_name, permit, prefix_list_name=None, acl_name=None, acl_namev6=None, ip=None, ipv6=None, interface=None, set_extcommunity=None):
 
     """ configure route map
 
@@ -988,6 +988,7 @@ def configure_route_map(device, route_map_name, permit, prefix_list_name=None, a
             ip ('str',optional): ip address
             ipv6 ('str',optional): ipv6 address
             interface ('str',optional): Interface to be used
+            set_extcommunity ('str', optional): extcommunity value
 
         Return:
             None
@@ -1016,6 +1017,8 @@ def configure_route_map(device, route_map_name, permit, prefix_list_name=None, a
     if ipv6:
         cfg_str +="set ipv6 next-hop {ipv6}\n".format(
                 ipv6=ipv6)
+    if set_extcommunity:
+        cfg_str += f"set extcommunity {set_extcommunity}"
     try:
         device.configure(cfg_str)
 
@@ -1059,14 +1062,14 @@ def configure_ospf_network_point(device, interface):
 
 
 
-def unconfigure_route_map(device, route_map_name, permit):
+def unconfigure_route_map(device, route_map_name, permit=None):
 
     """ unconfigure route map
 
         Args:
             device (`obj`): device to execute on
             route_map_name (`int`): route map name
-            permit (`int`): Sequence to insert to existing route-map entry
+            permit (`int`, optional): Sequence to insert to existing route-map entry
         Return:
             None
 
@@ -1074,10 +1077,10 @@ def unconfigure_route_map(device, route_map_name, permit):
             SubCommandFailure
     """
     try:
-        device.configure([
-            "no route-map {route_map_name} permit {permit}".format(
-                route_map_name=route_map_name, permit=permit)]
-        )
+        if permit:
+            device.configure(f"no route-map {route_map_name} permit {permit}")
+        else:
+            device.configure(f"no route-map {route_map_name}")
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Failed to unconfigure route map {route_map_name}, Error: {error}"\

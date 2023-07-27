@@ -52,3 +52,25 @@ def clear_platform_qos_dscp_cos_counters_interface(device, intf, state=None, swi
         raise SubCommandFailure(
             "Could not clear qos dscp-cos counters on {device}. Error:\n{error}".format(device=device, error=e)
         )
+
+
+def clear_ip_arp(device,ip):
+    """ clear ip arp
+        Args:
+            device ('obj'): device to execute on
+            ip ('int'): A.B.C.D  IP address of dynamic ARP entry
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info("clear ip arp {ip} {device}".format(device=device.name,ip=ip))
+    cmd = "clear ip arp {ip}".format(ip=ip)
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            'Could not clear ip arp {device}, Error: {error}'.format(
+                device=device.name, error=e
+            )
+        )

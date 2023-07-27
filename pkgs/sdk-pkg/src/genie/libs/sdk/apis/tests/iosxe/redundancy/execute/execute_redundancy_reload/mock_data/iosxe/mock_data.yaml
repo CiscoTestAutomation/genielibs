@@ -31,7 +31,7 @@ execute:
     redundancy reload peer:
       response:
       - "Stack is in Half ring setup; Reloading a switch might cause stack split\r\
-        \nReload peer [confirm]\r\nPreparing to reload peer"
+        \nReload peer [confirm]\r\nPreparing to reload peer\n"
       response_type: circular
     show version: ''
     term length 0: ''

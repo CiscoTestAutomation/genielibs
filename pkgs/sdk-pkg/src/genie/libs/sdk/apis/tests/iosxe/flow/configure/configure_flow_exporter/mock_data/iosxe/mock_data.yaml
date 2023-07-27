@@ -1,24 +1,19 @@
 configure:
   commands:
-    destination 100.1.1.102: "destination 100.1.1.102\r\n"
-    dscp 24: "dscp 24\r\n"
     end:
       new_state: execute
-    flow exporter FNF-EXP: "flow exporter FNF-EXP\r\n"
+    flow exporter dnacexporter: "flow exporter dnacexporter\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''
-    option application-table timeout 10: "option application-table timeout 10\r\n"
-    template data timeout 30: "template data timeout 30\r\n"
-    transport udp 2055: "transport udp 2055\r\n"
-    ttl 5: "ttl 5\r\n"
-  prompt: stack3-nyquist-1(config)#
+    source GigabitEthernet3/0/15: "source GigabitEthernet3/0/15\r\n"
+  prompt: VCR(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: stack3-nyquist-1(config-line)#
+  prompt: VCR(config-line)#
 connect:
   commands:
     ? ''
@@ -38,4 +33,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: stack3-nyquist-1#
+  prompt: VCR#

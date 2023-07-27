@@ -1813,3 +1813,80 @@ def clear_pppoe_all(device):
         device.execute("clear pppoe all", reply=dialog)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not clear counters on {device}. Error:\n{e}')
+
+def clear_pdm_steering_policy(device):
+    """ clear pdm steering policy
+        Args:
+            device (`obj`): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    log.debug("clear pdm steering policy on {device}".format(device=device))
+
+    try:
+        device.execute('clear pdm steering policy')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not clear pdm steering policy on {device}. Error:\n{error}".format(device=device, error=e)
+        )
+
+def upgrade_hw_module_subslot_sfp(device, slot , sfp, image=None,timeout=180):
+    """ upgrade the firmware on sfp and retrun True or False.
+
+    Args:
+        device (obj): Device to execute on
+        slot (str): slot/subslot number
+        sfp (str): sfp number 
+        image (str, optional): Image full path for upgrade 
+        timeout (int, optional): Max time in seconds allowed for calculation.
+            Defaults to 180.
+
+    Returns:
+        True if Upgrade is successful else return False
+    """
+    # upgrade hw-module subslot 0/0 sfp 0 bootflash:dsl-sfp-1_62_8548-dev_elixir.bin
+    # upgrade hw-module subslot 0/0 sfp 0
+    
+    dialog = Dialog([Statement(pattern=r'.*Continue(Y/N)?',
+        action='sendline(Y\r)',
+        loop_continue=True,
+        continue_timer=False)])
+      
+    if image is not None:
+        log.info(f"Image path provided")
+        cmd =f'upgrade hw-module subslot {slot} sfp {sfp} {image}'
+        try:
+            output = device.execute(cmd,reply=dialog,timeout=timeout)
+            m = re.search('(firmware update success!!)',output)
+            m1 = re.search('.*(Firmware already up to date)',output)
+            if m:
+                return True
+            elif m1:
+                log.info('Firmware already upgraded')
+                return True                    
+            else:
+                log.error('Upgrade failed')
+        except Exception as e:
+            log.warning(e)
+            return None   
+        
+    else:
+        log.info(f"Image path not provided")
+        cmd =f'upgrade hw-module subslot {slot} sfp {sfp}'
+        try:
+            output = device.execute(cmd,reply=dialog,timeout=timeout)
+            m = re.search('(firmware update success!!)',output)
+            m1 = re.search('.*(Firmware already up to date)',output)
+            if m:
+                return True
+            elif m1:
+                log.info('Firmware already upgraded')
+                return True                    
+            else:
+                log.error('Upgrade failed')
+        except Exception as e:
+            log.warning(e)
+            return None   
