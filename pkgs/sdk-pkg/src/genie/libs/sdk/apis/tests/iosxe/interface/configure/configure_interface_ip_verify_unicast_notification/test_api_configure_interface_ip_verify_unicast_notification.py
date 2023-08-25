@@ -30,6 +30,6 @@ class TestConfigureInterfaceIpVerifyUnicastNotification(unittest.TestCase):
         )
 
     def test_configure_interface_ip_verify_unicast_notification(self):
-        result = configure_interface_ip_verify_unicast_notification(self.device, 'te1/0/5', 1)
+        result = configure_interface_ip_verify_unicast_notification(self.device, 'te1/0/5', 1, True)
         expected_output = None
         self.assertEqual(result, expected_output)

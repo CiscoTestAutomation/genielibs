@@ -30,7 +30,7 @@ class TestRequestSystemShell(unittest.TestCase):
         )
 
     def test_request_system_shell(self):
-        result = request_system_shell(self.device, 'active', 'R0', False, False)
+        result = request_system_shell(self.device, 'active', 'R0', False, False, None)
         expected_output = ('Activity within this shell can jeopardize the functioning of the system.\r\n'
  'Are you sure you want to continue? [y/n]')
         self.assertEqual(result, expected_output)

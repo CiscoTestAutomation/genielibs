@@ -45,7 +45,7 @@ def clear_platform_qos_dscp_cos_counters_interface(device, intf, state=None, swi
         if state:
             device.execute('clear platform hardware fed switch {state} qos dscp-cos counters interface {intf}'.format(state=state,intf=intf))
         elif switch_num:
-            device.execute('clear platform hardware fed switch {switch_num} qos dscp-cos counters interface {intf}'.format(switch_num=switch_num,intf=intf))            
+            device.execute('clear platform hardware fed switch {switch_num} qos dscp-cos counters interface {intf}'.format(switch_num=switch_num,intf=intf))
         else:
             device.execute('clear platform hardware fed active qos dscp-cos counters interface {intf}'.format(intf=intf))
     except SubCommandFailure as e:
@@ -73,4 +73,28 @@ def clear_ip_arp(device,ip):
             'Could not clear ip arp {device}, Error: {error}'.format(
                 device=device.name, error=e
             )
+        )
+
+def platform_software_fed_punt_cpuq_clear(device, state=None):
+    """ show platform software fed active punt cpuq clear
+        Args:
+            device ('obj'): Device object
+            state (str, optional): Switch state active or standby
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("show platform software fed active punt cpuq clear {device}".format(device=device))
+
+    if state:
+        cmd = f'show platform software fed switch {state} punt cpuq clear'
+    else:
+        cmd = 'show platform software fed active punt cpuq clear'
+    try:
+        device.execute(cmd)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not clear cpuq punt counters on {device}. Error:\n{error}".format(device=device, error=e)
         )

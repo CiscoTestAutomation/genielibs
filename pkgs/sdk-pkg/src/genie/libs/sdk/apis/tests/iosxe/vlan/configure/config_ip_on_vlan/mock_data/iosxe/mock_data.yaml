@@ -2,24 +2,19 @@ configure:
   commands:
     end:
       new_state: execute
-    interface vlan 251: "interface vlan 251\r\n"
-    ip address 192.168.1.1 255.255.255.0: "ip address 192.168.1.1 255.255.255.0\r\n"
-    ipv6 address 2001::3/10: "ipv6 address 2001::3/10\r\n"
-    ipv6 enable: "ipv6 enable\r\n"
-    line console:
-      new_state: configure_line
+    interface vlan 101: "interface vlan 101\r\n"
+    ip address 10.230.62.50 255.255.255.0 secondary: "ip address 10.230.62.50 255.255.255.0\
+      \ secondary\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''
-  prompt: Switch(config)#
+  prompt: AMZ-Acc-4(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-    line vty: ''
-    terminal width 511: ''
-  prompt: Switch(config-line)#
+  prompt: AMZ-Acc-4(config-line)#
 connect:
   commands:
     ? ''
@@ -39,6 +34,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-    term width 511: ''
-    terminal session-timeout 0: ''
-  prompt: Switch#
+  prompt: AMZ-Acc-4#

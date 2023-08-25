@@ -133,7 +133,7 @@ def debug_platform_memory_fed_callsite(
         Args:
             device (`obj`): Device object
             action (`str`): action mustbe either start or stop or clear
-            switch_num (`str`): Default value None. stack device switch number 
+            switch_num (`str`): Default value None. stack device switch number
             switch_type (`str`): Default value None. switch type is active or standby
         Returns:
             None
@@ -164,7 +164,7 @@ def debug_platform_memory_fed_backtrace(
         Args:
             device (`obj`): Device object
             action (`str`): action mustbe either start or stop or clear
-            switch_num (`str`): Default value None. stack device switch number 
+            switch_num (`str`): Default value None. stack device switch number
             switch_type (`str`): Default value None. switch type is active or standby
             callsiteid (`str`): Default value None. option to start particular callsiteid in the CLI
             depth(`str`): Default value is 10.
@@ -223,14 +223,67 @@ def enable_debug_ilpower_event(device):
         raise SubCommandFailure(
             "Could not execute cli debug ilpower event. Error:\n{error}". format(error=e))
 
+def enable_debug_pdm(device, parameter, enable):
+    """ Enable debug for the mentioned parameter
+        Args:
+            device ('obj'): device to use
+            parameter ('str'): parameter for which debug has to be enable for core or steering-policy
+            enable ('str'): parameter for which debug has to be enabled
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed enabling debug
+    """
+    log.debug(
+        "Enabling debug for name={parameter} and {enable} "
+        .format(parameter=parameter,enable=enable)
+    )
+
+    try:
+        device.execute(
+            "debug pdm {parameter} {enable}".format(parameter=parameter,enable=enable)
+        )
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not enable debug for {parameter}".format(
+                parameter=parameter
+            )
+        )
+
+def disable_debug_pdm(device, parameter, disable):
+    """ Disable debug for the mentioned parameter
+        Args:
+            device ('obj'): device to use
+            parameter ('str'): parameter for which debug has to be disable for core or steering-policy
+            disable ('str'): parameter for which debug has to be disabled
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed disabling debug
+    """
+    log.debug(
+        "Disabling debug for name={parameter} and {disable} "
+        .format(parameter=parameter,disable=disable)
+    )
+
+    try:
+        device.execute(
+            "no debug pdm {parameter} {disable}".format(parameter=parameter,disable=disable)
+        )
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not disable debug for {parameter}".format(
+                parameter=parameter
+            )
+        )
 
 def debug_vdsl_controller_slot_dump_internal(device, slot, filename='sfp', timeout=900):
-    """ Debug cli to dump vdsl controller slot internal 			
-			
+    """ Debug cli to dump vdsl controller slot internal
+
     Args:
         device (obj): Device to execute on
-        slot (str): slot/subslot number 
-        filename (str, optional): filename for dumping the debug in bootflash 
+        slot (str): slot/subslot number
+        filename (str, optional): filename for dumping the debug in bootflash
         timeout (int, optional): Max time in seconds allowed for calculation.
             Defaults to 900Sec.
     Returns:
@@ -250,4 +303,3 @@ def debug_vdsl_controller_slot_dump_internal(device, slot, filename='sfp', timeo
         device.execute(cmd,timeout=timeout)
     except Exception as e:
         log.warning(e)
-  

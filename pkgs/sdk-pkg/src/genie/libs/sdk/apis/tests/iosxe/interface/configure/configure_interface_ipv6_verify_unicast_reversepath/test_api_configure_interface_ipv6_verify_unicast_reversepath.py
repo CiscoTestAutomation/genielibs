@@ -30,6 +30,6 @@ class TestConfigureInterfaceIpv6VerifyUnicastReversepath(unittest.TestCase):
         )
 
     def test_configure_interface_ipv6_verify_unicast_reversepath(self):
-        result = configure_interface_ipv6_verify_unicast_reversepath(self.device, 'te1/0/5', 'acl_new')
+        result = configure_interface_ipv6_verify_unicast_reversepath(self.device, 'te1/0/5', 'acl_new', True)
         expected_output = None
         self.assertEqual(result, expected_output)

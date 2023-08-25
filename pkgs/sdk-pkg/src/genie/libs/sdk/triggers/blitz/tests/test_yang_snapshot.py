@@ -445,7 +445,6 @@ class TestYangSnapshot(unittest.TestCase):
             device=self.device,
             steps=self.steps,
             section=self.section,
-            **self.kwargs,
         )
 
     def test_snapshot(self):

@@ -321,11 +321,8 @@ def health_logging(device,
                                {
                                    "health_data": {
                                        "num_of_logs": 1,
-                                       "logs": [
-                                           {
-                                               "line": "-Traceback= D667B8 D66F04 41463C 40FFF8 411834 423A6C A6E428 A64EF8 (EEHYP_CS_801-1)",
-                                               "decode": "<decode output>" # Optional
-                                           }
+                                       "lines": [
+                                            "-Traceback= D667B8 D66F04 41463C 40FFF8 411834 423A6C A6E428 A64EF8 (EEHYP_CS_801-1)",
                                        ]
                                    }
                                }
@@ -348,13 +345,27 @@ def health_logging(device,
     logs = parsed.setdefault('logs', [])
 
     if health:
-        health_data = {}
-        health_data.setdefault('health_data', {})
-        health_data['health_data'].setdefault('num_of_logs', len(logs))
-        health_logs = health_data['health_data'].setdefault('logs', [])
-        for item in logs:
-            health_logs.append({'line': item})
-        return health_data
+        if hasattr(runtime, 'health_data') and runtime.health_data is not None:
+            log.debug(f'runtime health data {runtime.health_data}')
+            runtime.health_data.setdefault(device.name, runtime.synchro.dict())
+            runtime.health_data[device.name].setdefault('logging', {})
+            runtime_health_data = runtime.health_data[device.name]['logging']
+        else:
+            runtime_health_data = {}
+
+        existing_log_count = runtime_health_data.get('num_of_logs') or 0
+        log_count = len(logs)
+        new_log_count = log_count - existing_log_count
+        runtime_health_data['num_of_logs'] = new_log_count
+        runtime_health_data.setdefault('lines', logs)
+        if new_log_count:
+            log.warning(f'Found {new_log_count} new log messages')
+
+        if hasattr(runtime, 'health_data'):
+            runtime.health_data[device.name].setdefault('logging', {})
+            runtime.health_data[device.name]['logging'] = runtime_health_data
+            log.debug(f'runtime health data {runtime.health_data}')
+        return {'health_data': runtime_health_data}
 
     if num_of_logs:
         return len(logs)

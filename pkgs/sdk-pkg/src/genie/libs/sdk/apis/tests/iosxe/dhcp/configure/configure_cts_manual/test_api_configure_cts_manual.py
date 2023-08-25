@@ -10,7 +10,7 @@ class TestConfigureCtsManual(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          n10SVL:
+          VCR:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,11 +18,11 @@ class TestConfigureCtsManual(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: c9500
-            type: c9500
+            platform: cat9k
+            type: c9600
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['n10SVL']
+        self.device = self.testbed.devices['VCR']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,6 @@ class TestConfigureCtsManual(unittest.TestCase):
         )
 
     def test_configure_cts_manual(self):
-        result = configure_cts_manual(self.device, 'Gig1/0/1')
+        result = configure_cts_manual(self.device, 'FiftyGigE1/0/1', 'yes', '1234', None, 'yes')
         expected_output = None
         self.assertEqual(result, expected_output)

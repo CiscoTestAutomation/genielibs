@@ -2,18 +2,18 @@ configure:
   commands:
     end:
       new_state: execute
-    interface t1/1/1: "interface t1/1/1\r\n"
+    interface TenGigabitEthernet7/0/4: "interface TenGigabitEthernet7/0/4\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''
-    no switchport vlan mapping 5 499: "no switchport vlan mapping 5 499\r\n"
-  prompt: A1(config)#
+    no switchport vlan mapping 2 1501: "no switchport vlan mapping 2 1501\r\n"
+  prompt: P-R1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: A1(config-line)#
+  prompt: P-R1(config-line)#
 connect:
   commands:
     ? ''
@@ -33,4 +33,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: A1#
+  prompt: P-R1#

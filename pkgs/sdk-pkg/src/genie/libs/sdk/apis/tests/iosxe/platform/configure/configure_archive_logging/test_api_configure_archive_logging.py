@@ -30,6 +30,6 @@ class TestConfigureArchiveLogging(unittest.TestCase):
         )
 
     def test_configure_archive_logging(self):
-        result = configure_archive_logging(self.device)
+        result = configure_archive_logging(self.device, True, True)
         expected_output = None
         self.assertEqual(result, expected_output)

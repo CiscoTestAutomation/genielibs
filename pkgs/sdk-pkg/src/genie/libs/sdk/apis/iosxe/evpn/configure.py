@@ -1066,3 +1066,165 @@ def unconfigure_mdt_config_on_vrf(device, vrfname, addressfamily, mdtparam1, mdt
         raise SubCommandFailure(
             f"Could not unconfigure mdt bgp autodiscovery on VRF {device}. Error:\n{e}"
         )
+
+
+def configure_evpn_instance_evi(device, evi, srv_inst, conf_command_list=None, encap_type=None, mode_type=None):
+    """ Configure evpn instance evi
+        Args:
+            device ('obj'): Device object
+            evi ('int'): evi id
+            srv_inst ('str'): service instance type
+                              vlan-based|vlan-bundle|vlan-aware
+            conf_command_list('list',optional): L2VPN EVPN instance configuration commands, default value is None
+            encap_type ('str',optional): encapsulation, default value is None
+                                         vxlan | mpls 
+            mode_type ('str',optional): ip local-learning, default value is None
+                                        disable | enable                      
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        "Configuring 'evpn instance' on evi {evi}".format(evi=evi) 
+    )
+
+    configs = [f'l2vpn evpn instance {evi} {srv_inst}'.format(evi=evi,srv_inst=srv_inst)]
+    
+    for conf_command in conf_command_list:
+        if srv_inst == "vlan-based":
+            if  conf_command == "encapsulation":
+                configs.append(f"{conf_command} {encap_type}")
+            elif conf_command == "ip":
+                configs.append(f"{conf_command} local-learning {mode_type}")
+            elif conf_command == "auto-route-target":
+                configs.append(f"{conf_command}")
+            elif conf_command == "default":
+                configs.append(f"{conf_command}")
+            elif conf_command == "default-gateway":
+                configs.append(f"{conf_command} advertise")
+            elif conf_command == "exit":
+                configs.append(f"{conf_command}")
+            elif conf_command == "no":
+                configs.append(f"{conf_command} encapsulation")
+            elif conf_command == "rd":
+                configs.append(f"{conf_command}")
+            elif conf_command == "replication-type":
+                configs.append(f"{conf_command} ingress")
+            elif conf_command == "route-target":
+                configs.append(f"{conf_command} import")
+    try:
+        device.configure(configs)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+           f"Failed to configure evpn instance evi. Error:\n{e}"
+        )
+
+
+def unconfigure_evpn_instance_evi(device, evi, srv_inst):
+    """ Unconfigure evpn instance evi
+        Args:
+            device ('obj'): Device object
+            evi ('int'): evi id
+            srv_inst ('str'): service instance type
+                              vlan-based|vlan-bundle|vlan-aware
+                             
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        "Unconfiguring ' evpn instance ' on evi {evi}".format(evi=evi) 
+    )
+
+    configs = [
+        f'no l2vpn evpn instance {evi} {srv_inst}',
+    ]
+
+    try:
+        device.configure(configs)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure evpn instance evi .Error:\n{e}" 
+        )
+
+
+def configure_vfi_context_evpn(device, word, id, ethernet_segment=None, value=None, ip_address=None, vc_id=None, encapsulation=None, mpls=None, temp=None, temp_name=None):
+    """ Configure vfi context evpn
+        Args:
+            device ('obj'): Device object
+            word('str'): Virtual Forwarding Instance (VFI) name
+            id('int'):  VPN id
+            ethernet_segment('str'):  Ethernet segment
+            value('int'): <1-65535>  Ethernet segment local discriminator value
+            ip_address('int',optional): A.B.C.D     IP address of the peer , default value is None
+            vc_id('str',optional): <1-4294967295>  Enter VC ID value , default value is None
+            encapsulation('str',optional): Data encapsulation method , default value is None
+            mpls('str',optional): Use MPLS encapsulation , default value is None
+            temp('str',optional): Template to use for encapsulation and protocol configuration , default value is None
+            temp_name('str',optional): WORD  template name (Max size 32) , default value is None
+                    
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        "Configuring 'l2vpn vfi context evpn' on vfi {word}".format(word=word)
+    )
+
+    configs = [
+                f'l2vpn vfi context {word}',
+                f'vpn id {id}']
+                
+    if ethernet_segment:
+        configs.append(f'evpn {ethernet_segment} {value}')
+    if vc_id:
+        if encapsulation:
+               configs.append(f'member {ip_address} {vc_id} {encapsulation} mpls')
+        if temp:
+               configs.append(f'member {ip_address} {vc_id} {temp} {temp_name}')
+    elif encapsulation:
+        configs.append(f'member {ip_address} {encapsulation} mpls')
+    elif temp:
+        configs.append(f'member {ip_address} {temp} {temp_name}')
+    
+    try:
+        device.configure(configs)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure l2vpn vfi context. Error:\n{e}"
+        )
+
+
+def unconfigure_vfi_context_evpn(device, word):
+    """ Unconfigure vfi context evpn
+        Args:
+            device ('obj'): Device object
+            word('str'): Virtual Forwarding Instance (VFI) name
+                     
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        "Unconfiguring 'l2vpn vfi context evpn' on vfi {word}".format(word=word)
+    )
+    
+    configs = [
+    f'no l2vpn vfi context {word}'
+    ]
+
+    try:
+        device.configure(configs)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+           f"Failed to unconfigure l2vpn vfi context evpn. Error:\n{e}"
+        )
+        

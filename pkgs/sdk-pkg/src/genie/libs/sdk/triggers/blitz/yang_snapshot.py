@@ -1,7 +1,7 @@
 import logging
 from lxml import etree
 from ncclient import xml_
-from genie.libs.sdk.triggers.blitz import yangexec
+from genie.libs.sdk.triggers.blitz import yangexec, rpcverify
 
 
 log = logging.getLogger(__name__)
@@ -22,6 +22,57 @@ class YangSnapshot(object):
         self.namespace = {}
         self.xpath = {}
         self.pre_config = {}
+        self.server_capabilities = {}
+        self.set_datastore(datastore=None, device=device)
+
+    def set_datastore(self, datastore=None, device=None):
+        # Set server_capabilities if a device is given
+        if (
+            device is not None and
+            hasattr(device, 'name') and
+            device.name in self.server_capabilities
+        ):
+            server_capabilities = self.server_capabilities[device.name]
+        else:
+            server_capabilities = []
+
+        if device is not None and hasattr(device, 'server_capabilities'):
+            self.server_capabilities[device.name] = device.server_capabilities
+
+        if isinstance(datastore, dict):
+            self.datastore = {
+                'type': datastore.get('type', 'running'),
+                'lock': datastore.get('lock', True),
+                'retry': datastore.get('retry', 10),
+            }
+        elif (
+            hasattr(self.testbed, 'testbed') and
+            hasattr(self.testbed.testbed, 'custom') and
+            hasattr(self.testbed.testbed.custom, 'datastore')
+        ):
+            self.datastore = self.testbed.testbed.custom.datastore
+        else:
+            self.datastore = {
+                'type': 'running',
+                'lock': True,
+                'retry': 10,
+            }
+        rpc_verify = rpcverify.RpcVerify(
+            log=log,
+            capabilities=server_capabilities,
+        )
+
+        # Update self.datastore by calling get_datastore_state()
+        self.datastore['type'], self.datastore_state = \
+            yangexec.get_datastore_state(
+                target=self.datastore['type'],
+                device=rpc_verify,
+            )
+        if self.datastore['type'] in self.datastore_state:
+            self.datastore['lock'] = 'lock_ok' in self.datastore_state[
+                self.datastore['type']]
+        log.debug("Set datastore = {}".format(self.datastore))
+        log.debug("Set datastore_state = {}".format(self.datastore_state))
 
     def register(self, device, connection, protocol, operation, content):
         '''Register one test case. If there is a Yang action that configures
@@ -60,6 +111,15 @@ class YangSnapshot(object):
             connection and
             content
         ):
+            # Update server_capabilities when this is Netconf
+            connection_obj = getattr(device, connection)
+            if (
+                device.name not in self.server_capabilities and
+                hasattr(connection_obj, 'server_capabilities')
+            ):
+                self.server_capabilities[device.name] = \
+                    list(connection_obj.server_capabilities)
+
             new_xpaths = [
                 n.get('xpath') for n in content['nodes']
                 if n.get('edit-op') in
@@ -70,7 +130,7 @@ class YangSnapshot(object):
             else:
                 self.xpath[device.name] = set(new_xpaths)
 
-    def snapshot(self, testcase, device, steps, section, **kwargs):
+    def snapshot(self, testcase, device, steps, section):
         '''Execute the yang_snapshot action. Often it is at the begining of a
         group, which is consisted with operation of create, delete, merge,
         replace and remove.
@@ -115,7 +175,7 @@ class YangSnapshot(object):
         return self.scan_triggers(device, testcase.uid[:-4], section.uid,
                                   steps.index, testcase.parent.triggers)
 
-    def snapshot_restore(self, device, connection, protocol):
+    def snapshot_restore(self, device, **kwargs):
         '''Execute the yang_snapshot_restore action. It is suggested to put it
         at the end of a group.
 
@@ -141,12 +201,15 @@ class YangSnapshot(object):
             None is returned.
         '''
 
+        connection = kwargs.get('connection')
+        protocol = kwargs.get('protocol')
         if not self.pre_config:
             log.warning("There is no snapshot to restore. Please make sure to "
                         "take a yang_snapshot action before this "
                         "yang_snapshot_restore action.")
             return None
         connection_obj = getattr(device, connection)
+        self.set_datastore(datastore=kwargs.get('datastore'), device=device)
         if device.name not in self.xpath:
             log.warning("There is no Xpath of device {} that has been "
                         "configured by 'yang' action.".format(device.name))
@@ -160,14 +223,54 @@ class YangSnapshot(object):
                      .format("\n".join(sorted(list(xpath_set)))))
             if protocol == 'netconf':
                 args = self.build_rpc(xpath_set)
-                with connection_obj.locked('running'):
-                    reply = connection_obj.edit_config(**args)
+
+                lock_target = self.datastore.get('lock', True)
+                target = self.datastore.get('type', 'running')
+                lock_running = 'lock_running' in self.datastore_state[target] \
+                    if target in self.datastore_state else False
+                target_locked = False
+                if lock_target:
+                    target_locked = yangexec.try_lock(
+                        uut=connection_obj,
+                        target=target,
+                        timer=self.datastore.get('retry', 10),
+                        sleeptime=1,
+                    )
+                    if not target_locked:
+                        return False
+                reply = connection_obj.edit_config(**args)
                 log.info(etree.tostring(
                     reply._root,
                     encoding='unicode',
                     pretty_print=True,
                 ))
-                return reply.ok
+                if lock_target and target_locked:
+                    connection_obj.unlock(target=target)
+                if not reply.ok:
+                    return False
+                if target == 'candidate':
+                    running_locked = False
+                    if lock_running:
+                        running_locked = yangexec.try_lock(
+                            uut=connection_obj,
+                            target='running',
+                            timer=self.datastore.get('retry', 10),
+                            sleeptime=1,
+                        )
+                        if not running_locked:
+                            return False
+                    commit_ret = connection_obj.commit()
+                    log.info(etree.tostring(
+                        commit_ret._root,
+                        encoding='unicode',
+                        pretty_print=True,
+                    ))
+                    if lock_running and running_locked:
+                        connection_obj.unlock(target='running')
+                    if not commit_ret.ok:
+                        connection_obj.discard_changes()
+                        return False
+                return True
         else:
             log.info("No Xpath to remove on device {}.".format(device.name))
             return None
@@ -355,7 +458,7 @@ class YangSnapshot(object):
 
         operation, rpc_args = yangexec.gen_ncclient_rpc(
             rpc_data={
-                'datastore': 'running',
+                'datastore': self.datastore.get('type', 'running'),
                 'operation': 'edit-config',
                 'namespace': self.namespace,
                 'nodes': [

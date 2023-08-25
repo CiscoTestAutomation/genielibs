@@ -966,7 +966,7 @@ def configure_bgp_advertise_additional_paths(device, bgp_as, neighbor):
         )
 
 def configure_bgp_address_advertisement(
-    device, bgp_as, address_family, ip_address, mask
+    device, bgp_as, address_family, ip_address, mask, vrf = None
 ):
     """ Configure address advertisement on router bgp
 
@@ -976,6 +976,7 @@ def configure_bgp_address_advertisement(
             address_family ('str'): address family to configure under
             ip_address ('str'): ip address
             mask ('str'): mask
+            vrf('str',optional): vrf to configure address_family with ( Default is None )
         Returns:
             N/A
         Raises:
@@ -987,9 +988,15 @@ def configure_bgp_address_advertisement(
         )
     )
 
+
     cmd = []
     cmd.append("router bgp {}".format(bgp_as))
-    cmd.append("address-family {}".format(address_family))
+    if vrf:
+        cmd.append("address-family {address_family} vrf {vrf}".format(
+                             address_family=address_family, vrf=vrf))
+    else:
+        cmd.append("address-family {address_family}".format(
+                             address_family=address_family))
     if address_family == 'ipv4':
         cmd.append("network {} mask {}".format(ip_address, mask))
     elif address_family == 'ipv6':

@@ -465,3 +465,56 @@ def clear_logging_onboard_switch(device, switch_number):
         device.execute(config, reply=dialog)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not clear logging onboard switch {switch_number} on {device.name}. Error:\n{e}")
+
+def upgrade_hw_programmable(device, programmable_type, file_system, package_name, slot):
+    """ FPGA/CPLD upgrade
+        Example: upgrade hw-programmable cpld filename bootflash:<pkg> R0
+        
+        Args:
+            device ('obj'): Device object
+            programmable_type ('str'): programmable type. Ex: cpld, fpga. 
+            file_system ('str'): file system type. Ex: bootflash:, harddisk:, usb0:
+            package_name ('str'): programmable package name.
+            slot ('str'): slot name. Ex: F0, R0, 0.
+        
+        Returns:
+            CLI output
+        
+        Raises:
+            SubCommandFailure
+    """
+    dialog = Dialog([
+        Statement(
+            pattern=r'\d+\s+\(Y\)es\/\(N\)o\/\(C\)ontinue\? \[Y\]',
+            action='sendline(y)',
+            loop_continue=True
+        ),
+        Statement(
+            pattern=r'power-cycled\.\s+\(Y\)es\/\(N\)o\/\(C\)ontinue\? \[Y\]',
+            action='sendline(y)',
+            loop_continue=False
+        )
+    ])
+    cmd = f"upgrade hw-programmable {programmable_type} filename {file_system}{package_name} {slot}"
+    try:
+        cmd_output = device.execute(cmd, reply=dialog)
+        return cmd_output
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not execute upgrade hw-programmable on {device.name}. Error:\n{e}")
+
+def clear_controllers_ethernet_controller(device):
+    """ clear controllers ethernet-controller
+        Args:
+            device ('obj'): device to execute on
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info("clear controllers ethernet-controller {device}".format(device=device.name))
+    try:
+        device.execute("clear controllers ethernet-controller")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Could not clear controllers ethernet controller {device}. Error:\n{e}')
+              

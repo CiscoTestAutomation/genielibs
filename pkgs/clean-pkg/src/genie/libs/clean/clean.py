@@ -6,7 +6,7 @@ from collections import OrderedDict
 # pyATS
 from pyats import aetest
 from pyats import results
-from pyats.results import Passed, Passx, Failed, Errored
+from pyats.results import Passed, Passx, Failed, Errored, Skipped
 from pyats.aetest import Testcase
 from pyats.aetest.container import TestContainer
 from pyats.log.utils import banner
@@ -246,7 +246,7 @@ class CleanTestcase(Testcase):
                     new_section.result = Passed
                     break
 
-                if not new_section.result:
+                if new_section.result not in [Passed, Passx, Skipped]:
                     # Dont log this for every remaining stage
                     if not aetest.executer.goto:
                         log.error(banner("*** Terminating Genie Clean ***"))

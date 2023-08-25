@@ -2,23 +2,19 @@ configure:
   commands:
     end:
       new_state: execute
-    ipv6 access-list racl-1: "ipv6 access-list racl-1\r\n"
-    line console:
-      new_state: configure_line
+    ipv6 access-list acl_name: "ipv6 access-list acl_name\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''
-    'sequence 200 permit tcp host 2013:1::20 host 2013:1::10 eq 179 log ': "sequence\
-      \ 200 permit tcp host 2013:1::20 host 2013:1::10 eq 179 log \r\n"
-  prompt: Intrepid-DUT-1(config)#
+    sequence 10 deny ipv6 any any time-range time1: "sequence 10 deny ipv6 any any\
+      \ time-range time1\r\n"
+  prompt: 9300-24UX-1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-    line vty: ''
-    terminal width 511: ''
-  prompt: Intrepid-DUT-1(config-line)#
+  prompt: 9300-24UX-1(config-line)#
 connect:
   commands:
     ? ''
@@ -38,6 +34,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-    term width 511: ''
-    terminal session-timeout 0: ''
-  prompt: Intrepid-DUT-1#
+  prompt: 9300-24UX-1#

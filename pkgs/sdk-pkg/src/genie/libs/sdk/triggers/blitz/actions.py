@@ -1275,7 +1275,7 @@ def yang_snapshot(
     if not hasattr(self.parent, 'yang_snapshot'):
         self.parent.yang_snapshot = YangSnapshot(device)
     result = self.parent.yang_snapshot.snapshot(
-        self, device, steps, section, **kwargs)
+        self, device, steps, section)
     if result:
         steps.passed('Collected a snapshot.')
     else:
@@ -1359,18 +1359,16 @@ def yang_snapshot_restore(
     # related snapshot info.
     if not hasattr(self.parent, 'yang_snapshot'):
         self.parent.yang_snapshot = YangSnapshot(device)
-    connection = kwargs.get('connection')
-    protocol = kwargs.get('protocol')
     result = self.parent.yang_snapshot.snapshot_restore(
-        device, connection, protocol)
+        device, **kwargs)
     if result is None:
         steps.passed('Nothing to remove')
     elif result:
-        steps.passed('RPC edit-config is accepted and the snapshot is '
+        steps.passed('RPC edit-config is successful and the snapshot is '
                      'restored.')
     else:
-        steps.failed('RPC edit-config is not accepted so the snapshot is not '
-                     'restored.')
+        steps.failed('RPC edit-config is not successful so the snapshot is '
+                     'not restored.')
     return result
 
 

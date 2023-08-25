@@ -10,7 +10,7 @@ class TestUnconfigureMacAddressTableAging(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          T1-9300-SW1:
+          T1-9300-SP1:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,11 +18,11 @@ class TestUnconfigureMacAddressTableAging(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: c9500
+            platform: c9300
             type: c9500
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['T1-9300-SW1']
+        self.device = self.testbed.devices['T1-9300-SP1']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],

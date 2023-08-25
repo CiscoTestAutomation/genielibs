@@ -335,13 +335,13 @@ def remove_ldra_interface(
             "Could not remove ldra on interface {}".format(interface)
             )
 
-def configure_dhcp_pool_ipv6_domain_name(device, pool_name,domain_name):
+def configure_dhcp_pool_ipv6_domain_name(device, pool_name, domain_name, dns_server=None):
     """ Configure domain-name under DHCP IPv6 pool
         Args:
             device ('obj'): device to use
             pool_name ('str'): name of the pool to be created
             domain_name ('str'): domain name to configure
-
+            dns_server('str',optional): dns server to configure
         Returns:
             None
         Raises:
@@ -351,15 +351,11 @@ def configure_dhcp_pool_ipv6_domain_name(device, pool_name,domain_name):
         "Configuring domain-name under IPv6 DHCP pool {pool_name} with name={domain_name}".
             format(pool_name=pool_name,domain_name=domain_name)
     )
-
+    cmd = [f'ipv6 dhcp pool {pool_name}', f'domain-name {domain_name}']
+    if dns_server:
+        cmd+= [f'dns-server {dns_server}']
     try:
-        device.configure(
-            [
-                "ipv6 dhcp pool {pool_name}".format(pool_name=pool_name),
-                "domain-name {domain_name}".format(domain_name=domain_name)
-            ]
-        )
-
+        device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not configure domain_name {domain_name} IPv6 DHCP pool {pool_name}.Error:\n{error}".format(

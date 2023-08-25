@@ -1,0 +1,6 @@
+default:
+    arguments:
+        device: 'peer'
+enable_keepalive_on_interface:
+    arguments:
+        interface: 'Virtual-Template1'

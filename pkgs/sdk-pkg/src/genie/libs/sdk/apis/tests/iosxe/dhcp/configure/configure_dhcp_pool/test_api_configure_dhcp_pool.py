@@ -10,7 +10,7 @@ class TestConfigureDhcpPool(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          stack3-nyquist-1:
+          Switch:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,11 +18,11 @@ class TestConfigureDhcpPool(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: cat9k
-            type: router
+            platform: c9500L
+            type: c9500L
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['stack3-nyquist-1']
+        self.device = self.testbed.devices['Switch']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,16 +30,6 @@ class TestConfigureDhcpPool(unittest.TestCase):
         )
 
     def test_configure_dhcp_pool(self):
-        result = configure_dhcp_pool(self.device, 'test', '192.168.1.10', '192.168.21.1', '255.255.255.0')
-        expected_output = None
-        self.assertEqual(result, expected_output)
-
-    def test_configure_dhcp_pool_1(self):
-        result = configure_dhcp_pool(self.device, 'test1', '2.2.2.2', None, None)
-        expected_output = None
-        self.assertEqual(result, expected_output)
-
-    def test_configure_dhcp_pool_2(self):
-        result = configure_dhcp_pool(self.device, 'test3', None, '172.16.1.0', '255.255.0.0')
+        result = configure_dhcp_pool(self.device, 'evpn_pool', '', '192.168.1.0', '255.255.255.0', 'green', '192.168.1.200')
         expected_output = None
         self.assertEqual(result, expected_output)

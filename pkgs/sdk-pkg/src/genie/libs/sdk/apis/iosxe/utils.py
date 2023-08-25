@@ -32,8 +32,22 @@ def delete_local_file(device, path, file):
         Returns:
             None
     """
+    dialog = Dialog([
+                Statement(pattern=r".*\[confirm\]",
+                   action="sendline()",
+                   args=None,
+                   loop_continue=True,
+                   continue_timer=False
+                ),
+                Statement(pattern=r".*Delete filename \[.+\]\?",
+                   action="sendline()",
+                   args=None,
+                   loop_continue=True,
+                   continue_timer=False
+                )
+            ])
     try:
-        device.execute("delete {path}{file}".format(path=path, file=file))
+        device.execute(f"delete {path}{file}", reply=dialog)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not delete file {file} from device "
@@ -651,7 +665,7 @@ def get_mgmt_ip(device):
 
 def get_mgmt_ip_and_mgmt_src_ip_addresses(device, mgmt_src_ip=None):
     """ Get the management IP address and management source addresses.
-    
+
     if the mgmt_src_ip is provided, will use that for the lookup. If not, will
     select the 1st matching IP.
     Args:
@@ -757,10 +771,11 @@ def clear_counters(device):
         )
 
 
-def clear_logging(device):
+def clear_logging(device, timeout=60):
     """ clear logging
         Args:
             device ('obj'): Device object
+            timeout ('int', optional): Timeout in seconds. Default is 60
         Returns:
             output ('str'): Output of execution
         Raises:
@@ -769,7 +784,7 @@ def clear_logging(device):
     dialog = Dialog([Statement(pattern=r'\[confirm\].*', action='sendline(\r)',loop_continue=True,continue_timer=False)])
 
     try:
-        output = device.execute("clear logging", reply=dialog)
+        output = device.execute("clear logging", reply=dialog, timeout=timeout)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not clear logging on {device}. Error:\n{error}".format(device=device, error=e)
@@ -1169,16 +1184,16 @@ def perform_ssh(device,hostname, ip_address, username, password, vrf=None, enabl
             cli_command = '''
                 <rpc message-id="101"
                              xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
-                          <kill-session>  
+                          <kill-session>
                             <target>
                               <running/>
                             </target>
-                          </kill-session> 
+                          </kill-session>
                 </rpc>
             '''
         else:
             # command to exit from the active ssh session from the device prompt itself.
-            cli_command = 'exit'  
+            cli_command = 'exit'
         spawn.sendline(cli_command)
 
     def send_enable(spawn):
@@ -1214,13 +1229,13 @@ def perform_ssh(device,hostname, ip_address, username, password, vrf=None, enabl
 
     if hmac:
         cmd += f' -m {hmac}'
-    
+
     if algorithm:
         cmd += f' -c {algorithm}'
 
     cmd += f' {ip_address}'
 
-    
+
 
     try:
         device.execute(cmd, reply=dialog, prompt_recovery=True, timeout=timeout)
@@ -1424,7 +1439,7 @@ def clear_ip_mroute_all(device):
 
 
 def get_show_output_section(device, command, filter):
-    """ Display the lines which are match from section 
+    """ Display the lines which are match from section
         Args:
             device (`obj`): Device object
             command (`str`): show command
@@ -1485,12 +1500,12 @@ def perform_telnet(device, hostname, ip_address, username, password, vrf=None, e
             timeout (int): Optional timeout value
                            default value 60
             vrf (`str1`) : vrf id if applicable
-            
+
         Returns:
             True : When the connection establishment and termination succeeds
             False : When either the connection establishment or termination or both fail
     """
-    
+
     telnet_dict = {
                 'pass_timeout_expire_flag': False,
                 'telnet_pass_case_flag': False,
@@ -1506,7 +1521,7 @@ def perform_telnet(device, hostname, ip_address, username, password, vrf=None, e
             telnet_dict['enable_pass_flag'] = False
         else:
             spawn.sendline(password)
-    
+
     def send_username(spawn):
         spawn.sendline(username)
 
@@ -1677,7 +1692,7 @@ def clear_policy_map_counters(device):
             f'Could not clear policy-map counters. Error:\n{e}'
         )
 
-def request_system_shell(device, switch_type=None, processor_slot=None, uname=False, exit=True):
+def request_system_shell(device, switch_type=None, processor_slot=None, uname=False, exit=True, command=None):
     '''
         Request platform software system shell
         Args:
@@ -1686,7 +1701,8 @@ def request_system_shell(device, switch_type=None, processor_slot=None, uname=Fa
             processor_slot ('str', optional): Processor slot. Ex: R0. Default is None.
             uname ('bool', optional): To execute uname -a in shell. Default is False.
             exit ('bool', optional): To exit from shell prompt. Default is True.
-            
+            command ('str', optional): command to execute in shell prompt
+
         Returns:
             Cli output
         Raises:
@@ -1696,20 +1712,22 @@ def request_system_shell(device, switch_type=None, processor_slot=None, uname=Fa
         action='sendline(y)',
         loop_continue=False,
         continue_timer=False)])
-    
+
     exit_dialog = Dialog([Statement(pattern=r'.*\#.*',
         loop_continue=False,
         continue_timer=False)])
-    
+
     cmd = 'request platform software system shell'
     if switch_type and processor_slot:
         cmd += f' switch {switch_type} {processor_slot}'
-    
+
     output = None
     try:
         output = device.execute(cmd, reply=dialog)
         if uname:
             output += device.execute('uname -a')
+        if command:
+            output += device.execute(command)
         if exit:
             device.execute('exit', reply=exit_dialog)
     except SubCommandFailure as e:
@@ -1730,7 +1748,7 @@ def clear_dlep_client(device, interface, peer_id):
         Raises:
             SubCommandFailure
     """
-    
+
     log.info(f"clearing dlep client on interface {interface}")
     cmd = [f"clear dlep client {interface} {peer_id}"]
     try:
@@ -1738,7 +1756,7 @@ def clear_dlep_client(device, interface, peer_id):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"could not clear the dlep client Error:\n{e}")
-            
+
 def clear_dlep_neighbor(device, interface, session_id):
     """ clears dlep neighbors on interface
         Args:
@@ -1748,7 +1766,7 @@ def clear_dlep_neighbor(device, interface, session_id):
                 interface = 'TenGigabitEthernet0/4/0'
             session_id ('str'): Session ID
     """
-   
+
     log.info(f"clearing dlep neighbor on interface {interface}")
     cmd = [f"clear dlep neighbor {interface} {session_id}"]
     try:
@@ -1839,8 +1857,8 @@ def upgrade_hw_module_subslot_sfp(device, slot , sfp, image=None,timeout=180):
     Args:
         device (obj): Device to execute on
         slot (str): slot/subslot number
-        sfp (str): sfp number 
-        image (str, optional): Image full path for upgrade 
+        sfp (str): sfp number
+        image (str, optional): Image full path for upgrade
         timeout (int, optional): Max time in seconds allowed for calculation.
             Defaults to 180.
 
@@ -1849,12 +1867,12 @@ def upgrade_hw_module_subslot_sfp(device, slot , sfp, image=None,timeout=180):
     """
     # upgrade hw-module subslot 0/0 sfp 0 bootflash:dsl-sfp-1_62_8548-dev_elixir.bin
     # upgrade hw-module subslot 0/0 sfp 0
-    
+
     dialog = Dialog([Statement(pattern=r'.*Continue(Y/N)?',
         action='sendline(Y\r)',
         loop_continue=True,
         continue_timer=False)])
-      
+
     if image is not None:
         log.info(f"Image path provided")
         cmd =f'upgrade hw-module subslot {slot} sfp {sfp} {image}'
@@ -1866,13 +1884,13 @@ def upgrade_hw_module_subslot_sfp(device, slot , sfp, image=None,timeout=180):
                 return True
             elif m1:
                 log.info('Firmware already upgraded')
-                return True                    
+                return True
             else:
                 log.error('Upgrade failed')
         except Exception as e:
             log.warning(e)
-            return None   
-        
+            return None
+
     else:
         log.info(f"Image path not provided")
         cmd =f'upgrade hw-module subslot {slot} sfp {sfp}'
@@ -1884,9 +1902,34 @@ def upgrade_hw_module_subslot_sfp(device, slot , sfp, image=None,timeout=180):
                 return True
             elif m1:
                 log.info('Firmware already upgraded')
-                return True                    
+                return True
             else:
                 log.error('Upgrade failed')
         except Exception as e:
             log.warning(e)
-            return None   
+            return None
+
+def delete_directory(device, file_system, directory):
+    """ Delete local directory from filesystem
+        Args:
+            device (`obj`): Device object
+            file_system (`str`): file system
+            directory (`str`): directory name
+        Returns:
+            None
+    """
+    dialog = Dialog([
+        Statement(pattern=f'Remove directory filename [{directory}]?',
+                  action='sendline(\r)',
+                  loop_continue=True,
+                  continue_timer=False),
+        Statement(pattern=f'Delete {file_system}/{directory}? [confirm]',
+                  action='sendline(\r)',
+                  loop_continue=True,
+                  continue_timer=False)
+        ])
+    try:
+        log.info('deleting directory from the filesystem')
+        device.execute(f"rmdir {file_system}{directory}", reply=dialog)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not delete directory {directory} from device ")

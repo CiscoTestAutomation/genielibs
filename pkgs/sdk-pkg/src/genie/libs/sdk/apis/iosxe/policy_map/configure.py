@@ -497,7 +497,7 @@ def unconfigure_policy_map_with_type_queue(device, policy_type, queue_name):
         device ('obj'): device to use
         policy_type ('str'): Configure Queueing policy type
         queue_name ('str') : queue name to configure
-			 
+             
     Returns:
         None
     Raises:
@@ -516,7 +516,7 @@ def configure_service_policy_with_queueing_name(device, interface, policy_type, 
     """ Configures policy_map type queueing
         Args:
              device ('obj'): device to use
-			 interface ('str'): interface to configure
+             interface ('str'): interface to configure
              policy_type ('str'): Configure Queueing Service Policy
              queue_name ('str'): name of the queue service_policy name
 
@@ -526,8 +526,8 @@ def configure_service_policy_with_queueing_name(device, interface, policy_type, 
             SubCommandFailure
     """
     cmd = [f'interface {interface}',
-	       f'service-policy type {policy_type} output {queue_name}']
-		   
+           f'service-policy type {policy_type} output {queue_name}']
+           
     try:
         output = device.configure(cmd)
         
@@ -663,7 +663,7 @@ def unconfigure_service_policy_with_queueing_name(device, interface, policy_type
     """
     cmd = [f'interface {interface}',
            f'no service-policy type {policy_type} output {queue_name}']
-	
+    
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -878,3 +878,57 @@ def unconfigure_policy_map_class(device, policy_name, class_map_name, policy_map
 
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not unconfigure Policy-map. Error:\n{e}')
+
+def configure_table_map_on_device(device, table_map_name,from_val,to_val,table_map_value):
+    """ Configures table_map
+        Args:
+             device ('obj'): device to use
+             table_map_name('str') : name of the table map  name
+             from_val ('int') : list of from values
+             to_val ('int') : list of to values 
+             table_map_value('str',optional) : value of the table map (copy/ignore)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configuring table_map on device")
+   
+    cli = [f'table-map {table_map_name}',
+           f'map from {from_val} to {to_val}']
+           
+    if table_map_value:
+        cli.append(f"default {table_map_value}")       
+      
+    try:
+        device.configure(cli)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure table_map with {from_val} to {to_val}. Error:\n{e}")
+            
+def configure_policy_map_class_precedence(device, policy_map_name,class_map_name,precedence_num):
+    """ Configures policy-map with class and precedence
+        Args:
+             device ('obj'): device to use
+             policy_map_name('str') : type of the policy-map
+             class_map_name ('str') : class-map name
+             precedence_num ('int') : Precedence value
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    
+    log.debug("Configuring policy-map with class and precedence on device")
+   
+    cmd = [f'policy-map {policy_map_name}',
+           f'class {class_map_name}',
+           f'set precedence {precedence_num}']   
+      
+    try:
+        device.configure(cmd)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure Configures policy-map with class {class_map_name} and precedence {precedence_num}. Error:\n{e}")

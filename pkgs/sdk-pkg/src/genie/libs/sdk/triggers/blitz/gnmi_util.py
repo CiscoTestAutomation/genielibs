@@ -19,6 +19,7 @@ import grpc
 from yang.connector import proto
 from yang.connector.proto import gnmi_pb2
 from yang.connector.gnmi import Gnmi
+from .rpcverify import DecodedField, DeletedPath
 from copy import deepcopy
 
 log = logging.getLogger(__name__)
@@ -58,7 +59,6 @@ class GnmiMessage:
           device (ysdevice.DeviceProfile): Target device.
           user (str): YANG Suite username.
           payload (proto.gnmi_pb2.SetRequest): SetRequest.
-          payload (str): JSON representing a SetRequest.
         Returns:
           proto.gnmi_pb2.SetResponse
         """
@@ -169,6 +169,7 @@ class GnmiMessage:
                 log.error('ERROR: {0}'.format(exc.details()))
             else:
                 log.error(str(exc))
+            return None, False
 
     @staticmethod
     def get_opfields(val, xpath_str, opfields=[], namespace={}):
@@ -210,10 +211,8 @@ class GnmiMessage:
                     for mod in namespace.values():
                         value = str(value).replace(mod + ':', '')
                     opfields.append((
-                        value,
-                        prefix + '/' + '/'.join(xpath) + '/' + name
-                    ))
-        if(len(xpath)):
+                        value, prefix + '/' + '/'.join(xpath) + '/' + name))
+        if len(xpath):
             return prefix + '/' + '/'.join(xpath)
         else:
             return ''
@@ -252,8 +251,7 @@ class GnmiMessage:
                     'double' in datatype):
                 return float(value)
             elif 'decimal' in datatype:
-                value['digits'] = int(value['digits'])
-                return value
+                return float(value['digits']) / (10 ** value['precision'])
             elif 'bytes' in datatype:
                 return bytes(value, encoding='utf8')
             elif 'leaflist' in datatype:
@@ -296,16 +294,17 @@ class GnmiMessage:
                       'double' in datatype):
                     value = float(value)
                 elif 'decimal' in datatype:
-                    value['digits'] = int(value['digits'])
+                    value = float(
+                        value['digits']) / (10 ** value['precision'])
                 elif 'bytes' in datatype:
                     value = bytes(value, encoding='utf8')
                 elif 'leaflist' in datatype:
                     value = GnmiMessage.process_leaf_list_val(value)
                 if isinstance(value, list):
                     for val in value:
-                        opfields.append((val, xpath))
+                        opfields.append((decoded_val, xpath))
                 else:
-                    opfields.append((value, xpath))
+                    opfields.append((decoded_val, xpath))
             else:
                 opfields.append((decoded_val, xpath))
 
@@ -320,6 +319,26 @@ class GnmiMessage:
                 GnmiMessage.get_opfields(
                     decoded_val, xpath, opfields, namespace)
         return decoded_val
+
+    @staticmethod
+    def process_delete(delete,
+                       prefix: str = None,
+                       namespace: dict = {},
+                       deleted_paths: List[DeletedPath] = []):
+        pre_path = ''
+        if not isinstance(delete, list):
+            delete = [delete]
+        if prefix:
+            pre_path = GnmiMessage.path_elem_to_xpath(
+                prefix, pre_path, namespace, []
+            )
+
+        for del_elem in delete:
+            path_keys = []
+            xpath = GnmiMessage.path_elem_to_xpath(
+                del_elem, pre_path, namespace, path_keys)
+            deleted_paths.append(DeletedPath(
+                xpath, [DecodedField(*field) for field in path_keys]))
 
     @staticmethod
     def process_leaf_list_val(value):
@@ -348,51 +367,12 @@ class GnmiMessage:
                       'double' in datatype):
                     val = float(val)
                 elif 'decimal' in datatype:
-                    value['digits'] = int(value['digits'])
+                  value = float(value['digits']) / (10 ** value['precision'])
                 elif 'bytes' in datatype:
                     val = bytes(value, encoding='utf8')
                 leaf_list_val.append(val)
 
         return leaf_list_val
-
-    @staticmethod
-    def decode_opfields(update=None, namespace=None):
-        if update is None:
-            update = {}
-        if namespace is None:
-            namespace = {}
-        opfields = []
-        xpath_str = GnmiMessage.path_elem_to_xpath(update.get('path', {}),
-                                            namespace=namespace,
-                                            opfields=opfields)
-
-        if not xpath_str:
-            log.error('Xpath not determined from response')
-            return []
-        # TODO: the val depends on the encoding type
-        val = update.get('val', {}).get('jsonIetfVal', '')
-        if not val:
-            val = update.get('val', {}).get('jsonVal', '')
-        if not val:
-            log.error('{0} has no values'.format(xpath_str))
-            return []
-        json_val = base64.b64decode(val).decode('utf-8')
-        update_val = json.loads(json_val)
-        if not isinstance(update_val, (dict, list)):
-            # Just one value returned
-            opfields.append((update_val, xpath_str))
-            return opfields
-        else:
-            # Reset opfields to avoid duplicates
-            opfields = []
-        if isinstance(update_val, dict):
-            opfields = GnmiMessage.get_opfields(update_val, xpath_str, opfields,
-                                         namespace)
-        elif isinstance(update_val, list):
-            for val_dict in update_val:
-                opfields = GnmiMessage.get_opfields(val_dict, xpath_str, opfields,
-                                             namespace)
-        return opfields
 
     @classmethod
     def run_subscribe(self, device: Gnmi, payload: proto.gnmi_pb2.SubscribeRequest, **request) -> Thread:
@@ -1092,7 +1072,8 @@ class GnmiMessageConstructor:
                         value = float(value)
                 elif 'decimal' in datatype:
                     if value:
-                        value['digits'] = int(value['digits'])
+                        value = float(value['digits']) / \
+                            (10 ** value['precision'])
 
                 if xpath.startswith('/'):
                     xp = xpath.split('/')[1:]
@@ -1275,7 +1256,6 @@ class GnmiSubscription(ABC, Thread):
             self.log = logging.getLogger(__name__)
             self.log.setLevel(logging.DEBUG)
         self.request = request
-        self.returns = request.get('returns')
         self.verifier = request.get('verifier')
         self.namespace = request.get('namespace')
         self.sub_mode = request.get('sub_mode')
@@ -1438,11 +1418,10 @@ class GnmiSubscriptionStream(GnmiSubscription):
                     elif delta_time > self.transaction_time:
                         self.errors.append(self.TransactionTimeExceeded(
                             delta_time, self.transaction_time))
-                if self.returns:
+                if self.verifier.validation_on:
                     self.log.info('Processing returns...')
-                    decoded_response = self.verifier.gnmi_decoder(
-                        response, self.namespace, 'subscribe')
-                    self.verifier.subscribe_verify(decoded_response, 'STREAM')
+                    self.verifier.subscribe_verify(
+                        response, 'STREAM', self.namespace)
         self.result = self.verifier.end_subscription(self.errors)
         self.stop()
 
@@ -1483,11 +1462,10 @@ class GnmiSubscriptionOnce(GnmiSubscription):
                     "gNMI SUBSCRIBE Response\n" + "=" * 23 + "\n{}"
                         .format(response)
                 )
-                if self.verifier.returns:
+                if self.verifier.validation_on:
                     self.log.info('Processing returns...')
-                    decoded_response = self.verifier.gnmi_decoder(
-                        response, self.namespace, 'subscribe')
-                    self.verifier.subscribe_verify(decoded_response, 'ONCE')
+                    self.verifier.subscribe_verify(
+                        response, 'ONCE', self.namespace)
 
             if stop_receiver:
                 self.result = self.verifier.end_subscription(self.errors)
@@ -1540,11 +1518,10 @@ class GnmiSubscriptionPoll(GnmiSubscription):
                     "gNMI SUBSCRIBE Response\n" + "=" * 23 + "\n{}"
                         .format(response)
                 )
-                if self.returns:
+                if self.verifier.validation_on:
                     self.log.info('Processing returns...')
-                    decoded_response = self.verifier.gnmi_decoder(
-                        response, self.namespace, 'subscribe')
-                    self.verifier.subscribe_verify(decoded_response, 'POLL')
+                    self.verifier.subscribe_verify(
+                        response, 'POLL', self.namespace)
             t = time.time()
         self.result = self.verifier.end_subscription(self.errors)
         self.stop()

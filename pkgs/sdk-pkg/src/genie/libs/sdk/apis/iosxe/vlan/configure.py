@@ -38,7 +38,7 @@ def config_vlan(device, vlanid):
 
 def config_ip_on_vlan(device, vlan_id, ipv4_address=None,
                       subnetmask=None, ipv6_address=None,
-                      ipv6_prefix_len=None):
+                      ipv6_prefix_len=None, secondary=False):
     """Configure an IPv4/IPv6 address on a vlan
 
         Args:
@@ -48,6 +48,7 @@ def config_ip_on_vlan(device, vlan_id, ipv4_address=None,
             subnetmask (`str`): Subnet mask to be used for IPv4 address
             ipv6_address (`str`): Ipv6 address
             ipv6_prefix_len (`int`): length of IPv6 prefix
+            seconday ('bool'): True/False
         Return:
             None
         Raise:
@@ -56,7 +57,11 @@ def config_ip_on_vlan(device, vlan_id, ipv4_address=None,
 
     try:
         if ipv4_address and subnetmask:
-            device.configure([f'interface vlan {vlan_id}',
+            if secondary:
+                device.configure([f'interface vlan {vlan_id}',
+                            f'ip address {ipv4_address} {subnetmask} secondary'])
+            else:
+                device.configure([f'interface vlan {vlan_id}',
                             f'ip address {ipv4_address} {subnetmask}'])
 
         if ipv6_address and ipv6_prefix_len:
@@ -72,7 +77,7 @@ def config_ip_on_vlan(device, vlan_id, ipv4_address=None,
 
 def unconfig_ip_on_vlan(device, vlan_id, ipv4_address=None,
                       subnetmask=None, ipv6_address=None,
-                      ipv6_prefix_len=None):
+                      ipv6_prefix_len=None,secondary=False):
     """unconfigures an IPv4/IPv6 address on a vlan
 
         Args:
@@ -82,6 +87,7 @@ def unconfig_ip_on_vlan(device, vlan_id, ipv4_address=None,
             subnetmask (`str`): Subnet mask to be used for IPv4 address
             ipv6_address (`str`): Ipv6 address
             ipv6_prefix_len (`int`): length of IPv6 prefix
+            secondary ('bool'): True/False
         Return:
             None
         Raise:
@@ -90,7 +96,11 @@ def unconfig_ip_on_vlan(device, vlan_id, ipv4_address=None,
 
     try:
         if ipv4_address and subnetmask:
-            device.configure([f'interface vlan {vlan_id}',
+            if secondary:
+                device.configure([f'interface vlan {vlan_id}',
+                            f'no ip address {ipv4_address} {subnetmask} secondary'])
+            else:
+                device.configure([f'interface vlan {vlan_id}',
                             f'no ip address {ipv4_address} {subnetmask}'])
 
         if ipv6_address and ipv6_prefix_len:

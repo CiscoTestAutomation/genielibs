@@ -479,10 +479,12 @@ def stack_ports_enable_disable(device, switch_num, stack_port, operation):
     except SubCommandFailure as e:
         raise SubCommandFailure('Failed to {} stack port {} on switch{} :'.format(operation,stack_port,switch_num))
 
-def configure_archive_logging(device):
+def configure_archive_logging(device, hidekeys=True, notify_syslog=True):
     """ Configure archive logging enable for switch
         Args:
             device ('obj'): Device object
+            hidekeys ('bool', optional): enable hidekeys. Default is True
+            notify_syslog ('bool', optional): notify syslog. Default is True
         Raises:
             SubCommandFailure
     """
@@ -490,10 +492,12 @@ def configure_archive_logging(device):
     cmd = [
         "archive",
         "log config",
-        "logging enable",
-        "hidekeys",
-        "notify syslog"
+        "logging enable"
     ]
+    if hidekeys:
+        cmd.append("hidekeys")
+    if notify_syslog:
+        cmd.append("notify syslog")
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -1831,13 +1835,14 @@ def unconfigure_commands_from_template(device, template_name, cmd_to_add):
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure commands from a template on this device. Error:\n{e}")
 
-def request_platform_software_package_clean(device, switch_detail, clean_option, file_path):
+def request_platform_software_package_clean(device, switch_detail, clean_option, file_path, timeout=60):
     """ Perform request platform software package clean switch
         Args:
             device ('obj'): Device object
             switch_detail ('str'): Switch id, or 'all' for all switches
             clean_option ('str'): clean option file/pattern
             file_path ('str'):  file path
+            timeout ('int', optional): Timeout in seconds. Default is 60
         Returns:
                 None
         Raises:
@@ -1856,7 +1861,7 @@ def request_platform_software_package_clean(device, switch_detail, clean_option,
     )
     cmd = f'request platform software package clean switch {switch_detail} {clean_option} {file_path}'
     try:
-        device.execute(cmd,reply=dialog)
+        device.execute(cmd, reply=dialog, timeout=timeout)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to perform request platform software package clean switch on the device. Error:\n{e}")
 
@@ -3474,8 +3479,8 @@ def unconfigure_stack_power_switch_power_priority(
         Raises:
             SubCommandFailure
     """
-    
-    config = [ 
+
+    config = [
         f"stack-power switch {switch_number}",
         f"no power-priority {power_priority}"]
 
@@ -3519,7 +3524,7 @@ def configure_default_stack_power_switch_power_priority(
 
 def configure_stackpower_stack_switch_standalone(device, switch_number, stack_name=None, standalone=True):
     """ Configures stack and standalone on stack-power switch
-        
+
         Args:
             device ('obj'): device to use
             switch_number ('int'): Switch number (1-16)
@@ -3530,7 +3535,7 @@ def configure_stackpower_stack_switch_standalone(device, switch_number, stack_na
         Raises:
             SubCommandFailure
     """
-    
+
     config = [f'stack-power switch {switch_number}']
     if stack_name:
         config.append(f'stack {stack_name}')
@@ -3545,7 +3550,7 @@ def configure_stackpower_stack_switch_standalone(device, switch_number, stack_na
 
 def unconfigure_stackpower_stack_switch_standalone(device, switch_number, stack_name=None, standalone=True):
     """ Unconfigures stack and standalone on stack-power switch
-        
+
         Args:
             device ('obj'): device to use
             switch_number ('int'): Switch number (1-16)
@@ -3556,7 +3561,7 @@ def unconfigure_stackpower_stack_switch_standalone(device, switch_number, stack_
         Raises:
             SubCommandFailure
     """
-    
+
     config = [f'stack-power switch {switch_number}']
 
     if stack_name:
@@ -3584,7 +3589,7 @@ def configure_stack_power_switch_standalone(device,switch_number):
     """
     log.info("configuring standalone on stack-power switch")
 
-    config = [ 
+    config = [
         f'stack-power switch {switch_number}',
         'standalone']
 
@@ -3941,7 +3946,7 @@ def config_cns_agent_passwd(device, cnspasswd):
         raise SubCommandFailure(
             'Could not configure cns agent password, Error: {error}'.format(error=e)
         )
-    
+
 def configure_diagnostic_monitor_syslog(device):
     """ diagnostic monitor syslog
     Args:
@@ -4355,7 +4360,7 @@ def unconfigure_stack_power_switch(device, switch_number):
             switch_number ('int'): Switch number (1-16)
         Returns:
             None
-        Raises: 
+        Raises:
             SubCommandFailure
     """
     log.info(f"Un configuring stack-power switch {switch_number} on {device.name}")
@@ -4406,8 +4411,8 @@ def configure_logging_buffered_persistent_url(device, filesystem_name=None):
 
 
 def configure_graceful_reload_interval(device, interval_val):
-    """ configure graceful reload interval the XFSU device 
-    
+    """ configure graceful reload interval the XFSU device
+
     Args:
         device ('obj'): device to use
         interface ('int'): graceful interval value
@@ -4433,7 +4438,7 @@ def configure_diagnostic_bootup_level_minimal(device):
             None
         Raises:
             SubCommandFailure
-    """   
+    """
     try:
         device.configure('diagnostic bootup level minimal')
     except SubCommandFailure as e:
@@ -4449,7 +4454,7 @@ def configure_cos(device,priority_value):
             priority_value('int'):  Priority number
             ex:)
                 <0-7>  priority value
-        
+
         Returns:
             None
         Raises:
@@ -4465,16 +4470,16 @@ def configure_cos(device,priority_value):
         raise SubCommandFailure(
             "Failed to configure 'l2-protocol tunnel cos' globally"
             'Error:{e}'.format(e=e)
-        )    
+        )
 
 def unconfigure_snmp_mib_bulkstat(device, object_name, schema_name, transfer_name):
-    
+
     """ unconfigure snmp mib bulkstat
     Args:
         device ('obj'): device to use
-        object_name ('str'): The name of the object 
-        schema_name ('str'): The name of the schema 
-        transfer_name ('str'): bulkstat transfer name 
+        object_name ('str'): The name of the object
+        schema_name ('str'): The name of the schema
+        transfer_name ('str'): bulkstat transfer name
         Returns:
             None
         Raises:
@@ -4487,18 +4492,18 @@ def unconfigure_snmp_mib_bulkstat(device, object_name, schema_name, transfer_nam
         f"no snmp mib bulkstat object-list {object_name}",
         f"no snmp mib bulkstat schema {schema_name}",
         f"no snmp mib bulkstat transfer {transfer_name}",
- 
+
         ]
-        
+
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure snmp mib bulkstat on this device. Error:\n{e}")
-        
+
 
 def configure_stackpower_stack(device, powerstack_name, mode=None, strict=False):
     """ Configures power stack mode on stack-power stack
-        
+
         Args:
             device ('obj'): device to use
             powerstack_name ('str'): Power stack name - Up to 31 chars
@@ -4509,7 +4514,7 @@ def configure_stackpower_stack(device, powerstack_name, mode=None, strict=False)
         Raises:
             SubCommandFailure
     """
-    
+
     cmd = [f'stack-power stack {powerstack_name}']
 
     if mode:
@@ -4519,14 +4524,14 @@ def configure_stackpower_stack(device, powerstack_name, mode=None, strict=False)
         cmd.append(command)
     try:
         device.configure(cmd)
-    
+
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure stackpower stack on device {device.name}. Error:\n{e}")
 
 
 def unconfigure_stackpower_stack(device, powerstack_name):
     """ Configures power stack mode on stack-power stack
-        
+
         Args:
             device ('obj'): device to use
             powerstack_name ('str'): Power stack name - Up to 31 chars
@@ -4535,12 +4540,12 @@ def unconfigure_stackpower_stack(device, powerstack_name):
         Raises:
             SubCommandFailure
     """
-      
+
     cmd = [f'no stack-power stack {powerstack_name}']
 
     try:
         device.configure(cmd)
-    
+
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure stackpower stack on device {device.name}. Error:\n{e}")
 
@@ -4602,13 +4607,13 @@ def configure_banner(device, banner_text):
         )
 
 def unconfigure_snmp_mib_bulkstat(device, object_name, schema_name, transfer_name):
-    
+
     """ unconfigure snmp mib bulkstat
     Args:
         device ('obj'): device to use
-        object_name ('str'): The name of the object 
-        schema_name ('str'): The name of the schema 
-        transfer_name ('str'): bulkstat transfer name 
+        object_name ('str'): The name of the object
+        schema_name ('str'): The name of the schema
+        transfer_name ('str'): bulkstat transfer name
         Returns:
             None
         Raises:
@@ -4621,18 +4626,18 @@ def unconfigure_snmp_mib_bulkstat(device, object_name, schema_name, transfer_nam
         f"no snmp mib bulkstat object-list {object_name}",
         f"no snmp mib bulkstat schema {schema_name}",
         f"no snmp mib bulkstat transfer {transfer_name}",
- 
+
         ]
-        
+
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure snmp mib bulkstat on this device. Error:\n{e}")
-        
+
 
 def configure_stackpower_stack(device, powerstack_name, mode=None, strict=False):
     """ Configures power stack mode on stack-power stack
-        
+
         Args:
             device ('obj'): device to use
             powerstack_name ('str'): Power stack name - Up to 31 chars
@@ -4643,7 +4648,7 @@ def configure_stackpower_stack(device, powerstack_name, mode=None, strict=False)
         Raises:
             SubCommandFailure
     """
-    
+
     cmd = [f'stack-power stack {powerstack_name}']
 
     if mode:
@@ -4653,14 +4658,14 @@ def configure_stackpower_stack(device, powerstack_name, mode=None, strict=False)
         cmd.append(command)
     try:
         device.configure(cmd)
-    
+
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure stackpower stack on device {device.name}. Error:\n{e}")
 
 
 def unconfigure_stackpower_stack(device, powerstack_name):
     """ Configures power stack mode on stack-power stack
-        
+
         Args:
             device ('obj'): device to use
             powerstack_name ('str'): Power stack name - Up to 31 chars
@@ -4669,12 +4674,12 @@ def unconfigure_stackpower_stack(device, powerstack_name):
         Raises:
             SubCommandFailure
     """
-      
+
     cmd = [f'no stack-power stack {powerstack_name}']
 
     try:
         device.configure(cmd)
-    
+
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure stackpower stack on device {device.name}. Error:\n{e}")
 
@@ -4693,7 +4698,7 @@ def configure_graceful_reload(device, interval=5):
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
-        raise SubCommandFailure(f"Failed to configure graceful-reload. Error:\n{e}")   
+        raise SubCommandFailure(f"Failed to configure graceful-reload. Error:\n{e}")
 
 def unconfig_cns_agent_password(device, cns_password=None):
     """ un configure cns agent password
@@ -4739,11 +4744,36 @@ def hw_module_beacon_RP_active_standby(device, supervisor, operation):
             device ('obj'): Device object
             supervisor('str'): active/standby
             operation('str'): ON/OFF
-            
+
     """
-    
+
     cmd = (f"hw-module beacon RP {supervisor} {operation}")
     try:
         device.execute(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Failed to turn {operation} the {supervisor} beacon slot. Error:\n{e}')
+
+
+def configure_bba_group_session_auto_cleanup(device,name,session_auto_cleanup):
+    """ bba-group
+        Args:
+            device ('obj'): Device object
+            name ('str'): bba-group name
+            session_auto_cleanup('str')
+        Returns:
+            None
+        Raises:
+            SubCommandFailure:Could not config bba-group on device
+    """
+    cli = [f"bba-group pppoe {name}"]
+    if session_auto_cleanup:
+        cli.append(f"session auto cleanup")
+    else:
+        cli.append(f"no session auto cleanup")
+    try:
+        device.configure(cli)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not config bba-group on {device}. Error:\n{error}"
+                .format(device=device, error=e)
+        )

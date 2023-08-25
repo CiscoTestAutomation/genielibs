@@ -10,7 +10,7 @@ class TestConfigureBgpAddressAdvertisement(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          PE-A:
+          PE-B:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -22,7 +22,7 @@ class TestConfigureBgpAddressAdvertisement(unittest.TestCase):
             type: c9300
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['PE-A']
+        self.device = self.testbed.devices['PE-B']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,6 @@ class TestConfigureBgpAddressAdvertisement(unittest.TestCase):
         )
 
     def test_configure_bgp_address_advertisement(self):
-        result = configure_bgp_address_advertisement(self.device, '65001', 'ipv4', '2.2.2.2', '255.255.255.255')
+        result = configure_bgp_address_advertisement(self.device, '65004', 'ipv4', '1.1.1.1', '255.255.255.255', 'WAN-VRF')
         expected_output = None
         self.assertEqual(result, expected_output)
