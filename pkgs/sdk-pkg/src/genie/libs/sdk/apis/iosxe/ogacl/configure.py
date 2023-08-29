@@ -472,3 +472,316 @@ def unconfigure_ipv6_acl_on_interface(device, interface, acl_name, inbound=True)
                 acl=acl_name, interface=interface, error=e,
             )
         )
+
+def configure_ipv4_object_group_network(device, og_name, description, ipv4_address, netmask):
+    """ Configure ipvv4 object group of network type
+
+        Args:
+            device (`obj`): Device object
+            og_name ('str'): object-group name
+            description ('str'): description name
+            ipv4_address ('str'): IPv6 address
+            netmask ('str'): netmask
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    configs = []
+    configs.append("object-group network {}".format(og_name))
+    configs.append("description {}".format(description))
+    configs.append("{ipv4_address} {netmask}".format(ipv4_address=ipv4_address, netmask=netmask))
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure ipv4 object-group {og_name} on device {dev}. Error:\n{error}".format(
+                og_name=og_name,
+                dev=device.name,
+                error=e,
+            )
+        )
+
+def unconfigure_ipv4_object_group(device, og_name):
+    """ unconfigure ipv4 object-group
+
+        Args:
+            device (`obj`): Device object
+            og_name ('str'): object-group name
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    configs = []
+    configs.append("no object-group network {}".format(og_name))
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfigure entry in ipv4 object-group {og_name} on device {dev}. Error:\n{error}".format(
+                og_name=og_name,
+                dev=device.name,
+                error=e,
+            )
+        )
+
+def configure_ipv4_object_group_service(device, og_name, description, services):
+    """ Configure ipv4 object group of service type
+
+            Args:
+                device (`obj`): Device object
+                og_name ('str'): object-group name
+                description ('str'): description name
+                services ('list'): services provided in list
+
+            Returns:
+                None
+
+            Raises:
+                SubCommandFailure
+        """
+    configs = []
+    configs.append("object-group service {}".format(og_name))
+    configs.append("description {}".format(description))
+    for service in services:
+        configs.append(service)
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure ipv4 object-group  service{og_name} on device {dev}. Error:\n{error}".format(
+                og_name=og_name,
+                dev=device.name,
+                error=e,
+            )
+        )
+
+def unconfigure_ipv4_object_group_service(device, og_name):
+    """ unconfigure ipv4 object-group service
+
+        Args:
+            device (`obj`): Device object
+            og_name ('str'): object-group name
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    configs = "no object-group service {}".format(og_name)
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfigure ipv4 object-group service {og_name} on device {dev}. Error:\n{error}".format(
+                og_name=og_name,
+                dev=device.name,
+                error=e,
+            )
+        )
+
+def configure_ipv4_ogacl_src_dst_nw(device, ogacl_name, rule, src_nw, dst_nw):
+    """ Configure IPv4 ogacl src dst network
+
+        Args:
+            device (`obj`): Device object
+            ogacl_name ('str'): og access-list name
+            rule ('str'): ACL rule permit/deny
+            src_nw ('str'): name of source network object-group or any
+            dst_nw ('str'): name of destination network object-group or any
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    configs = []
+    configs.append("ip access-list extended {}".format(ogacl_name))
+    configs.append("{rule} ip object-group {src_nw} object-group {dst_nw}".format(rule=rule, src_nw=src_nw, dst_nw=dst_nw))
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure IPv4 OG ACL {ogacl} on device {dev}. Error:\n{error}".format(
+                ogacl=ogacl_name,
+                dev=device.name,
+                error=e,
+            )
+        )
+
+def configure_ipv4_ogacl_service(device, ogacl_name, rule, service, src, dst):
+    """ Configure IPv4 OG ACL service
+        Args:
+            device (`obj`): Device object
+            ogacl_name ('str'): og access-list name
+            rule ('str'): ACL rule permit/deny
+            service ('str'): provide service group name
+            src ('str'): name of source  object-group or any
+            dst('str'): name of destination  object-group or any
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    configs = []
+    configs.append("ip access-list extended {}".format(ogacl_name))
+    configs.append("{rule} object-group {service} {src} {dst}".format(rule=rule, service=service, src=src, dst=dst))
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure IPv4 OG ACL service {ogacl} on device {dev}. Error:\n{error}".format(
+                ogacl=ogacl_name,
+                dev=device.name,
+                error=e,
+            )
+        )
+
+def configure_ipv4_ogacl_ip(device, ogacl_name, rule, ip_src, ip_dst):
+    """ Configure IPv4 OG ACL ip
+        Args:
+            device (`obj`): Device object
+            ogacl_name ('str'): og access-list name
+            rule ('str'): ACL rule permit/deny
+            ip_src ('str'): ip address or any
+            ip_dst('str'): ip address or any
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    configs = []
+    configs.append("ip access-list extended {}".format(ogacl_name))
+    configs.append("{rule} ip {ip_src} {ip_dst}".format(rule=rule, ip_src=ip_src, ip_dst=ip_dst))
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure IPv4 OG ACL ip {ogacl} on device {dev}. Error:\n{error}".format(
+                ogacl=ogacl_name,
+                dev=device.name,
+                error=e,
+            )
+        )
+
+def unconfigure_ipv4_ogacl(device, ogacl_name):
+    """ Configure IPv4 OG ACL
+        Args:
+            device (`obj`): Device object
+            ogacl_name ('str'): og access-list name
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    cmd = ("no ip access-list extended {}".format(ogacl_name))
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to un configure IPv4 OG ACL {ogacl} on device {dev}. Error:\n{error}".format(
+                ogacl=ogacl_name,
+                dev=device.name,
+                error=e,
+            )
+        )
+
+def configure_ipv4_ogacl_on_interface(device, interface, ogacl_name, inbound=True):
+    """ Configures IPv4 ogacl on interface
+
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface to configure
+            ogacl_name ('str'): ogacl name to apply
+            inbound ('bool', option): True for inbound acl, False for outbound acl, default value is True
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    if inbound:
+        log.info(
+            "Configure inbound {acl} on {intf}".format(
+                acl=ogacl_name, intf=interface
+            )
+        )
+        direction = "in"
+    else:
+        log.info(
+            "Configure outbound {acl} on {intf}".format(
+                acl=ogacl_name, intf=interface
+            )
+        )
+        direction = "out"
+
+    try:
+        device.configure(
+            "interface {intf}\nip access-group {acl} {direction}".format(
+                intf=interface, acl=ogacl_name, direction=direction
+            )
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure ipv4 ogacl {ogacl} on interface {interface} Error:\n{error}".format(
+                ogacl=ogacl_name, interface=interface, error=e,
+            )
+        )
+
+def unconfigure_ipv4_ogacl_on_interface(device, interface, ogacl_name, inbound=True):
+    """ Unconfigures IPv4 ogacl on interface
+
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface to configure
+            ogacl_name ('str'): ogacl name to apply
+            inbound ('bool', option): True for inbound acl, False for outbound acl, default value is True
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    if inbound:
+        log.info(
+            "Remove inbound {acl} on {intf}".format(
+                acl=ogacl_name, intf=interface
+            )
+        )
+        direction = "in"
+    else:
+        log.info(
+            "Remove outbound {acl} on {intf}".format(
+                acl=ogacl_name, intf=interface
+            )
+        )
+        direction = "out"
+
+    try:
+        device.configure(
+            "interface {intf}\nno ip access-group {acl} {direction}".format(
+                intf=interface, acl=ogacl_name, direction=direction
+            )
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not Unconfigure ipv4 ogacl {ogacl} on interface {interface} Error:\n{error}".format(
+                ogacl=ogacl_name, interface=interface, error=e,
+            )
+        )

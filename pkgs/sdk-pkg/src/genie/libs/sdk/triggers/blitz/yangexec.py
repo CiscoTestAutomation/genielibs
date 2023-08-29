@@ -1,21 +1,20 @@
 import logging
 import json
-import xmltodict
 from time import sleep
-from copy import deepcopy
 from six import string_types
 from importlib import import_module
 from typing import List, Union
 from threading import Thread
 from pyats.log.utils import banner
-from .rpcbuilder import YSNetconfRPCBuilder
+
 from .rpcverify import RpcVerify
-from .verifiers import DefaultVerifier, BaseVerifier
+from .verifiers import NetconfDefaultVerifier, GnmiDefaultVerifier, BaseVerifier
 from .requestbuilder import RestconfRequestBuilder, NO_BODY_METHODS, WITH_BODY_METHODS
 from .yangexec_helper import DictionaryToXML
 from .gnmi_util import GnmiMessage, GnmiMessageConstructor
+from .netconf_util import gen_ncclient_rpc, get_datastore_state, netconf_send
 from yang.connector.gnmi import Gnmi
-from genie.conf.base.utils import QDict
+
 
 log = logging.getLogger(__name__)
 
@@ -27,349 +26,6 @@ try:
     import lxml.etree as et
 except Exception:
     pass
-
-lock_retry_errors = ['lock-denied', 'resource-denied', 'in-use']
-
-
-def try_lock(uut, target, timer=30, sleeptime=1):
-    """Tries to lock the datastore to perform edit-config operation.
-
-    Attempts to acquire the lock on the datastore. If exception thrown,
-    retries the lock on the datastore till the specified timer expires.
-
-    Helper function to :func:`lock_datastore`.
-
-    Args:
-        session (NetconfSession): active session
-        target (str): Datastore to be locked
-        timer: lock retry counter.
-        sleeptime: sleep timer.
-
-    Returns:
-        bool: True if datastore was successfully locked, else False.
-    """
-    for counter in range(1, timer+1):
-        ret = uut.lock(target=target)
-        if ret.ok:
-            return True
-        retry = False
-        if ret.error.tag in lock_retry_errors:
-            retry = True
-        if not retry:
-            log.error(banner('ERROR - CANNOT ACQUIRE LOCK - {0}'.format(
-                ret.error.tag)))
-            break
-        elif counter < timer:
-            log.info("RETRYING LOCK - {0}".format(counter))
-            sleep(sleeptime)
-        else:
-            log.error(
-                banner('ERROR - LOCKING FAILED. RETRY TIMER EXCEEDED!!!')
-            )
-    return False
-
-
-def netconf_send(uut, rpcs, ds_state, lock=True, lock_retry=40, timeout=30):
-    """Handle NETCONF messaging with exceptions caught by pyATS."""
-    # TODO: handle edit-data and get-data
-    # Below is the temp fix for Netconf connection.
-    # Needs to be handled in a better way to check whether the connection is alive
-    uut.connect()
-
-    result = []
-    target_locked = False
-    running_locked = False
-
-    for nc_op, kwargs in rpcs:
-
-        try:
-            ret = ''
-            commit_ret = ''
-            dc_ret = ''
-
-            if nc_op == 'edit-config':
-                # default to running datastore
-                target_state = ds_state.get(
-                    kwargs.get('target', 'running'),
-                    []
-                )
-                if lock and 'lock_ok' in target_state:
-                    target_locked = try_lock(
-                        uut, kwargs['target'],
-                        timer=lock_retry
-                    )
-
-                ret = uut.edit_config(**kwargs)
-                if ret.ok and 'commit' in target_state:
-                    if target_locked and 'lock_running' in target_state:
-                        running_locked = try_lock(
-                            uut, 'running', timer=lock_retry
-                        )
-                    commit_ret = uut.commit()
-                    if not commit_ret.ok:
-                        if commit_ret.error.tag in lock_retry_errors:
-                            # writable-running not advertized but running is locked
-                            running_locked = try_lock(
-                                uut, 'running', timer=lock_retry
-                            )
-                            commit_ret = uut.commit()
-                            if running_locked:
-                                uut.unlock(target='running')
-                                running_locked = False
-                        if not commit_ret.ok:
-                            log.error('COMMIT FAILED\n{0}\n'.format(commit_ret))
-                            dc_ret = uut.discard_changes()
-                            ret = commit_ret
-                            log.info('\n{0}\n'.format(dc_ret))
-                        else:
-                            log.info(commit_ret)
-                    if running_locked:
-                        uut.unlock(target='running')
-                        running_locked = False
-                if target_locked:
-                    uut.unlock(target=kwargs['target'])
-                    target_locked = False
-
-            elif nc_op == 'commit':
-                commit_ret = uut.commit()
-                if not commit_ret.ok:
-                    log.error(
-                            'COMMIT FAILED\n{0}\n'.format(
-                                commit_ret
-                            )
-                        )
-                    ret = commit_ret
-                    dc_ret = uut.discard_changes()
-                    log.info('\n{0}\n'.format(dc_ret))
-                else:
-                    log.info(commit_ret)
-
-            elif nc_op == 'get-config':
-                ret = uut.get_config(**kwargs)
-
-            elif nc_op == 'get':
-                ret = uut.get(**kwargs)
-            elif nc_op == 'subscribe':
-                ret = uut.dispatch(**kwargs)
-            elif nc_op == 'rpc':
-                target = 'running'
-                rpc = kwargs.get('rpc')
-                if 'edit-config' in rpc and lock:
-                    if 'candidate/>' in rpc:
-                        target = 'candidate'
-                    target_locked = try_lock(uut, target, timer=lock_retry)
-
-                # raw return
-                reply = uut.request(rpc)
-
-                if target == 'candidate' and '<rpc-error' not in reply:
-                    commit_ret = uut.commit()
-                    if not commit_ret.ok:
-                        log.error(
-                            'COMMIT FAILED\n{0}\n'.format(
-                                commit_ret
-                            )
-                        )
-                        ret = commit_ret
-                        dc_ret = uut.discard_changes()
-                        log.info('\n{0}\n'.format(dc_ret))
-                    else:
-                        log.info(commit_ret)
-
-                if target_locked:
-                    uut.unlock(target)
-                    target_locked = False
-                result.append((nc_op, reply))
-                continue
-
-            if ret.ok:
-                result.append((nc_op, str(ret)))
-
-            else:
-                log.error("NETCONF Reply with error(s):")
-
-                for rpcerror in ret.errors:
-                    if rpcerror.message:
-                        log.error("ERROR MESSAGE - {0}".format(
-                            rpcerror.message))
-
-                if hasattr(ret, 'xml') and ret.xml is not None:
-                    result.append((nc_op, ret.xml))
-        except Exception as exe:
-            msg = str(exe)
-            e = ''
-            if target_locked:
-                try:
-                    uut.unlock(target=kwargs['target'])
-                except Exception as e:
-                    msg += '\n' + str(e)
-                target_locked = False
-            if running_locked:
-                try:
-                    uut.unlock(target='running')
-                except Exception as e:
-                    msg += '\n' + str(e)
-                running_locked = False
-            result.append(('traceback', msg))
-            continue
-
-    return result
-
-
-def gen_ncclient_rpc(rpc_data, prefix_type="minimal"):
-    """Construct the XML Element(s) needed for the given config dict.
-
-    Helper function to :func:`gen_rpc_api`.
-
-    Creates lxml Element instances specific to what :mod:`ncclient` is looking
-    for per netconf protocol operation.
-
-    .. note::
-       Unlike :func:`gen_raw_rpc`, the XML generated here will NOT be declared
-       to the netconf 1.0 namespace but instead any NETCONF XML elements
-       will be left un-namespaced.
-
-       This is so that :mod:`ncclient` can select the appropriate
-       namespace (1.0, 1.1, etc.) as needed for the session.
-
-    Args:
-       cfgd (dict): Relevant keys - 'proto-op', 'dsstore', 'modules'.
-       prefix_namespaces (str): One of "always" (prefer namespace prefixes) or
-         "minimal" (prefer unprefixed namespaces)
-
-    Returns:
-       list: of lists [protocol operation, kwargs], or None
-
-    Raises:
-       ysnetconf.RpcInputError: if cfgd is invalid;
-         see :meth:`YSNetconfRPCBuilder.get_payload`.
-    """
-    if not rpc_data:
-        log.warning("No configuration sent for RPC generation")
-        return None
-
-    datastore = rpc_data.get('datastore')
-    prt_op = rpc_data['operation']
-    with_defaults = rpc_data.get('with-defaults', '')
-
-    # Add prefixes for all NETCONF containers
-    rpcbuilder = YSNetconfRPCBuilder(prefix_namespaces="always")
-
-    container = None
-
-    if prt_op == 'edit-config':
-        container = rpcbuilder.netconf_element('config')
-    elif prt_op == 'get-config':
-        container = rpcbuilder.netconf_element('filter')
-    elif prt_op == 'get':
-        container = rpcbuilder.netconf_element('filter')
-    elif prt_op == 'action':
-        container = rpcbuilder.yang_element('action')
-    elif prt_op == 'get-data':
-        container = rpcbuilder.get_data('get-data')
-    elif prt_op == 'edit-data':
-        container = rpcbuilder.edit_data('edit-data')
-    else:
-        container = rpcbuilder.netconf_element('TEMPORARY')
-
-    # Now create the builder for the payload
-    rpcbuilder = YSNetconfRPCBuilder(
-        prefix_namespaces=prefix_type,
-        nsmap=rpc_data.get('namespace', {}),
-        netconf_ns=None
-    )
-    # XML so all the values must be string or bytes type
-    nodes = []
-    for node in rpc_data.get('nodes', []):
-        if 'value' in node:
-            node['value'] = str(node.get('value', ''))
-        nodes.append(node)
-
-    rpcbuilder.get_payload(nodes, container)
-
-    kwargs = {}
-
-    if prt_op in ['rpc', 'subscribe']:
-        # The outer container is temporary - the child element(s) created
-        # should be the actual raw RPC(s), which is what we want to return
-        child_elements = [(prt_op, {'rpc_command': elem}) for elem in container]
-        if child_elements:
-            return child_elements[0]
-
-    if prt_op == 'edit-config':
-        kwargs['target'] = datastore
-        if len(container):
-            kwargs['config'] = container
-    elif prt_op == 'get-config':
-        kwargs['source'] = datastore
-        if len(container):
-            kwargs['filter'] = container
-        if with_defaults:
-            kwargs['with_defaults'] = with_defaults
-    elif prt_op == 'get':
-        if len(container):
-            kwargs['filter'] = container
-        if with_defaults:
-            kwargs['with_defaults'] = with_defaults
-    elif prt_op in ['get-data', 'edit-data', 'action']:
-        kwargs['rpc_command'] = container
-
-    return prt_op, kwargs
-
-
-def get_datastore_state(target, device):
-    """Apply datastore rules according to device and desired datastore.
-
-    - If no target is passed in and device has candidate, choose candidate.
-    - If candidate is chosen, allow commit.
-    - If candidate is chosen and writable-running exists, allow lock on running
-      prior to commit.
-    - If running, allow lock, no commit.
-    - If startup, allow lock, no commit.
-    - If intent, no lock, no commit.
-    - If operational, no lock, no commit.
-    - Default: running
-
-    Args:
-      target (str): Target datastore for YANG interaction.
-      device (rpcverify.RpcVerify): Class containing runtime capabilities.
-    Returns:
-      (tuple): Target datastore (str): assigned according to capabilities
-               Datastore state (dict):
-                 commit - can apply a commit to datastore
-                 lock_ok - can apply a lock to datastore
-                 lock_running - apply lock to running datastore prior to commit
-    """
-    target_state = {}
-
-    for store in device.datastore:
-        if store == 'candidate':
-            if not target:
-                target = 'candidate'
-            target_state['candidate'] = ['commit', 'lock_ok']
-            if 'running' in target_state:
-                target_state['candidate'].append('lock_running')
-            continue
-        if store == 'running':
-            if 'candidate' in target_state:
-                target_state['candidate'].append('lock_running')
-            target_state['running'] = ['lock_ok']
-            continue
-        if store == 'startup':
-            target_state['startup'] = ['lock_ok']
-            continue
-        if store == 'intent':
-            # read only
-            target_state['intent'] = []
-            continue
-        if store == 'operational':
-            # read only
-            target_state['operational'] = []
-            continue
-
-    if not target:
-        target = 'running'
-    return target, target_state
 
 
 def in_capabilities(caps, returns={}):
@@ -446,6 +102,7 @@ def _validate_pause(pause):
             log.error('Invalid "pause" type {0}'.format(type(pause)))
     return 0
 
+
 def log_Instructions():
     """Log message for the instruction of returns format to test in sequence"""
 
@@ -456,17 +113,55 @@ def log_Instructions():
 
     log.warning(log_msg)
 
-def run_netconf(operation, device, steps, datastore, rpc_data, returns, **kwargs):
+
+def get_verifier_class(format: dict, protocol: str) -> BaseVerifier:
+    """Read data from format, process it and return a verifier class.
+
+    Args:
+        device (yang.connector.gnmi.Gnmi): Device object
+        format (dict): Testcase format section
+        returns (dict): Raw returns passed to init verifier
+
+    Returns:
+        BaseVerifier: Verifier class to use for verification
+    """
+    PROTOCOLS_DEFAULT_VERIFIERS = {
+        'netconf': NetconfDefaultVerifier,
+        'gnmi': GnmiDefaultVerifier
+    }
+    verifier = format.get('verifier', {})
+    if not verifier:
+        log.info("Using default verifier.")
+        return PROTOCOLS_DEFAULT_VERIFIERS.get(protocol)
+
+    verifier_class = verifier.get('class', '')
+    if verifier_class:
+        try:
+            module_name, class_name = verifier_class.rsplit('.', 1)
+            module = import_module(module_name)
+            verifier_class = getattr(module, class_name)
+            log.info(
+                f"Verifier {class_name} loaded from {module_name}")
+            return verifier_class
+        except (ModuleNotFoundError, AttributeError):
+            log.error('Custom verifier class not found.')
+    log.error("Invalid format of custom verifier.")
+    return None
+
+
+def run_netconf(operation: str,
+                device,
+                steps,
+                datastore,
+                rpc_data: dict,
+                returns: List[dict],
+                **kwargs):
     """Form NETCONF message and send to testbed."""
     log.debug('NETCONF MESSAGE')
     result = True
-    sequence = None
+    format = kwargs.get('format', {})
 
-    # To check the sequence
-    if kwargs.get('format', None):
-        sequence = kwargs['format'].get('sequence', None)
-
-    if(sequence):
+    if format.get('sequence', None):
         log_Instructions()
         return False
 
@@ -481,18 +176,9 @@ def run_netconf(operation, device, steps, datastore, rpc_data, returns, **kwargs
         log.error('The "lxml" library is required for NETCONF testing')
         return False
 
-    format = kwargs.get('format', {})
-    if 'auto_validate' in format:
-        auto_validate = format.get('auto_validate')
-    else:
-        auto_validate = format.get('auto-validate', True)
-    if 'negative_test' in format:
-        negative_test = format.get('negative_test')
-    else:
-        negative_test = format.get('negative-test', False)
-
-    if negative_test:
-        log.info(banner('NEGATIVE TEST'))
+    negative_test = format.get('negative_test', False)
+    verifier: BaseVerifier = get_verifier_class(format, 'netconf')(
+        device, returns, log, format, steps, datastore, rpc_data)
 
     timeout = format.get('timeout', None)
     pause = _validate_pause(format.get('pause', 0))
@@ -587,98 +273,12 @@ def run_netconf(operation, device, steps, datastore, rpc_data, returns, **kwargs
             lock_retry=retry
         )
 
-    for op, reply in result:
-        if op == 'traceback':
-            log.error('Failed to send using NETCONF')
-            break
-
-    # rpc-reply should show up in NETCONF log
-    if not result:
-        log.error(banner('NETCONF rpc-reply NOT RECIEVED'))
-        return False
-
-    errors = []
-    for op, res in result:
-        if '<rpc-error>' in res:
-            log.error(
-                et.tostring(
-                    et.fromstring(
-                        res.encode('utf-8'),
-                        parser=et.XMLParser(
-                            recover=True,
-                            encoding='utf-8')
-                    ),
-                    pretty_print=True
-                 ).decode('utf-8')
-            )
-            errors.append(res)
-        elif op == 'traceback':
-            log.error('TRACEBACK: {0}'.format(str(res)))
-            errors.append(res)
-
-    if errors:
-        # Verify the error message for the negative test
-        if negative_test:
-            if not returns:
-                log.info(banner("No data to compare the error response"))
-                return negative_test != False
-            if len(result) >= 1:
-                op, resp_xml = result[0]
-                if op == 'traceback':
-                    log.error('TRACEBACK: {0}'.format(str(resp_xml)))
-                    return False
-                resp_elem = rpc_verify.process_rpc_reply(resp_xml)
-                verify_res = rpc_verify.process_operational_state(
-                        resp_elem, returns)
-                return verify_res != False
-        else:
-            return negative_test != False
-
-    if rpc_data['operation'] == 'edit-config' and auto_validate:
-        log.info(banner('AUTO-VALIDATION'))
-        # Verify custom rpc's with a follow-up action.
+    if rpc_data['operation'] == 'edit-config':
         if pause:
             sleep(pause)
-        rpc_clone = deepcopy(rpc_data)
-        rpc_clone['operation'] = 'get-config'
-        rpc_clone['datastore'] = 'running'
-
-        for node in rpc_clone.get('nodes'):
-            node.pop('value', '')
-            node.pop('edit-op', '')
-        prt_op, kwargs = gen_ncclient_rpc(rpc_clone)
-        resp_xml = netconf_send(
-            device,
-            [(prt_op, kwargs)],
-            ds_state,
-            lock=False
-        )
-        resp_elements = rpc_verify.process_rpc_reply(resp_xml)
-        result = rpc_verify.verify_rpc_data_reply(resp_elements, rpc_data)
-        return negative_test != result
-
+        return verifier.edit_config_verify(result, ds_state)
     elif rpc_data['operation'] in ['get', 'get-config']:
-        if not returns:
-            # To convert xml to dict
-            if len(result) >= 1:
-                op, resp_xml = result[0]
-                xml_to_dict = QDict(dict(xmltodict.parse(resp_xml)))
-                return xml_to_dict
-            else:
-                log.error(banner('No NETCONF data to compare rpc-reply to.'))
-                return False
-
-        # should be just one result
-        if len(result) >= 1:
-            op, resp_xml = result[0]
-            resp_elements = rpc_verify.process_rpc_reply(resp_xml)
-            verify_result = rpc_verify.process_operational_state(
-                resp_elements, returns, sequence=sequence
-            )
-            return negative_test != verify_result
-        else:
-            log.error(banner('NO XML RESPONSE'))
-            return False
+        return verifier.get_config_verify(result)
     elif rpc_data['operation'] == 'edit-data':
         # TODO: get-data return may not be relevent depending on datastore
         log.debug('Use "get-data" yang action to verify this "edit-data".')
@@ -693,41 +293,19 @@ def run_netconf(operation, device, steps, datastore, rpc_data, returns, **kwargs
 
                 device.subscribe(rpc_data)
                 break
-        else:
-            log.error(banner('SUBSCRIPTION FAILED'))
-            return negative_test != False
-    return negative_test != True
-
-
-def get_verifier_class(format: dict) -> BaseVerifier:
-    """Read data from format, process it and return a verifier.
-
-    Args:
-        device (yang.connector.gnmi.Gnmi): Device object
-        format (dict): Testcase format section
-        returns (dict): Raw returns passed to init verifier
-
-    Returns:
-        BaseVerifier: Verifier object to use for verification
-    """
-    verifier = format.get('verifier', {})
-    if not verifier:
-        log.info("Using default verifier.")
-        return DefaultVerifier
-
-    verifier_class = verifier.get('class', '')
-    if verifier_class:
+            else:
+                log.error(banner('SUBSCRIPTION FAILED'))
+                return negative_test
+    else:
         try:
-            module_name, class_name = verifier_class.rsplit('.', 1)
-            module = import_module(module_name)
-            verifier_class = getattr(module, class_name)
-            log.info(
-                f"Verifier {class_name} loaded from {module_name}")
-            return verifier_class
-        except (ModuleNotFoundError, AttributeError):
-            log.error('Custom verifier class not found.')
-    log.error("Invalid format of custom verifier.")
-    return None
+            # Validate error response
+            # Because it's negative test result will be negated
+            # but in this case we have to negate this negation
+            return not verifier.get_config_verify(result)
+        except Exception:
+            log.error('Wrong operation type')
+            return negative_test
+    return not negative_test
 
 
 def run_gnmi(operation: str,
@@ -752,17 +330,14 @@ def run_gnmi(operation: str,
     log.debug('gNMI MESSAGE')
     result = True
     payload = None
-    sequence = None
     namespace_modules = {}
+    format = kwargs.get('format', {})
 
     # To check the sequence
-    if kwargs.get('format', None):
-        sequence = kwargs['format'].get('sequence', None)
-
-    if (sequence):
+    if format.get('sequence', None):
         log_Instructions()
         return False
-    format = kwargs.get('format', {})
+
     if format:
         pause = _validate_pause(format.get('pause', 0))
         if pause:
@@ -771,19 +346,12 @@ def run_gnmi(operation: str,
     else:
         negative_test = False
 
-    if negative_test:
-        log.info(banner('NEGATIVE TEST'))
-
-    if 'auto_validate' in format:
-        auto_validate = format.get('auto_validate')
-    else:
-        auto_validate = False
-
     transaction_time = format.get('transaction_time', 0)
-    verifier = get_verifier_class(format)(
-        device, returns, log, format, steps, datastore)
+    verifier: BaseVerifier = get_verifier_class(format, 'gnmi')(
+        device, returns, log, format, steps, datastore, rpc_data)
     if verifier is None:
         return False
+
     if operation == 'edit-config':
         if 'rpc' in rpc_data:
             # Assume we have a well-formed dict representing gNMI set
@@ -792,29 +360,7 @@ def run_gnmi(operation: str,
             gmc = GnmiMessageConstructor('set', rpc_data, **format)
             payload = gmc.payload
         resp = GnmiMessage.run_set(device, payload)
-        if not resp:
-            result = False
-        if 'returns' in rpc_data:
-            verifier.returns = rpc_data['returns']
-            if not verifier.get_config_verify(resp, sequence=sequence):
-                result = False
-        else:
-            if auto_validate:
-                log.info(banner('AUTO-VALIDATION'))
-                format['get_type'] = 'CONFIG'
-                gmc = GnmiMessageConstructor('get', rpc_data, **format)
-                payload = gmc.payload
-                namespace_modules = gmc.namespace_modules
-                response, status = GnmiMessage.run_get(
-                    device, payload, namespace_modules
-                )
-                for node in rpc_data.get('nodes'):
-                    node.pop('edit-op', '')
-                if not response:
-                    result = False
-                else:
-                    result = verifier.edit_config_auto_validate(
-                        response, rpc_data, namespace_modules) and status
+        return verifier.edit_config_verify(resp)
     elif operation in ['get', 'get-config']:
         if 'rpc' in rpc_data:
             # Assume we have a well-formed dict representing gNMI get
@@ -828,9 +374,7 @@ def run_gnmi(operation: str,
             device, payload, namespace_modules,
             transaction_time=transaction_time
         )
-        decoded_response = verifier.gnmi_decoder(
-            response, namespace=namespace_modules, method='get')
-        result = verifier.get_config_verify(decoded_response) and status
+        return verifier.get_config_verify(response, namespace_modules) and status
     elif operation == 'subscribe':
         rpc_data.update(format)
         rpc_data['returns'] = returns

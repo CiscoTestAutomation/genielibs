@@ -1236,9 +1236,9 @@ def execute_switch_role(device, switch_number, mode):
     dialog = Dialog(
         [
             Statement(
-                pattern=r".*Do you want to continue\?\s*\[y\/n\]\? \[yes\]:",
+                pattern=r".*Do you want to continue\?\s*\[y\/n\]\? \[yes\]:.*",
                 action='sendline(y)',
-                loop_continue=False,
+                loop_continue=True,
                 continue_timer=False
             )
         ]
@@ -1269,7 +1269,7 @@ def uninstall_appliance_package(device, name):
         raise SubCommandFailure(
             'Could not uninstall appliance package, Error: {error}'.format(error=e)
         )
-  
+
 
 def execute_request_platform_software_package_install_switch_rollback_auto_copy(device, switch='all'):
     """ Execute request platform software package install switch rollback on-reboot auto-copy
@@ -1291,7 +1291,7 @@ def execute_request_platform_software_package_install_switch_rollback_auto_copy(
 
 
 def request_platform_software_process_core(device, process_type, processor_slot, switch_type=None, chassis_type=None):
-    """ Perform request platform software process core 
+    """ Perform request platform software process core
         Args:
             device ('obj'): Device object
             process_type ('str'): Proess type. ex: ios, host-manager.
@@ -1307,14 +1307,14 @@ def request_platform_software_process_core(device, process_type, processor_slot,
     cmd = f'request platform software process core {process_type} '
     if switch_type:
         cmd += f'switch {switch_type} '
-    
+
     if chassis_type:
         cmd += f'chassis {chassis_type} '
-    
+
     cmd += f'{processor_slot}'
-    
+
     try:
-        
+
         output = device.execute(cmd)
         return output
     except SubCommandFailure as e:
@@ -1365,11 +1365,11 @@ def execute_set_platform_hardware_fed_qos(device, mode, qos_type, interface, swi
         device.execute(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not execute Fed qos interface on device, Error: {e}')
-  
+
 
 def execute_reload_fast(device, fast_type=None):
-    """ execute Halt and perform a cold restart for XFSU device 
-    
+    """ execute Halt and perform a cold restart for XFSU device
+
     Args:
         device ('obj'): device to use
         fast_type ('fast_type', Optional): type can be "enhanced" or none based on versio
@@ -1406,7 +1406,7 @@ def config_smart_save_license_usage(device, day, file_name):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not configure smart save license usage. Error:\n{e}")
-        
+
 def config_smart_authorisation_request(device, feature_name, parameter):
     """ configure smart authorisation request
         Args:
@@ -1414,14 +1414,14 @@ def config_smart_authorisation_request(device, feature_name, parameter):
             feature_name ('str'): Feature name
             parameter ('str'): all{Get auth code for all device in HA config} or
                 local {Get auth code for all device in local device}
-            
+
         Returns:
             None
         Raise:
             SubCommandFailure: Failed to configure smart authorisation request
     """
     log.debug("configure smart authorisation request")
-    
+
     cmd = f"license smart authorization request add {feature_name} {parameter}"
     try:
         device.execute(cmd)
@@ -1436,7 +1436,7 @@ def execute_dir_file_system(device, file_system, sub_directory=None, timeout=120
         Args:
             device ('obj'): Device object
             file_system ('str'): specifying filesystems such as bootflash:,usb:, flash:, flash-1:, flash2:/crashinfo:, crashinfo-1: , crashinfo2:
-            sub_directory('str'): specifying the subdirectory inside the filesystem 
+            sub_directory('str'): specifying the subdirectory inside the filesystem
             timeout ('int'): Max time to print dir output
         Returns:
             output
@@ -1454,3 +1454,24 @@ def execute_dir_file_system(device, file_system, sub_directory=None, timeout=120
         raise SubCommandFailure(
             f"Could not execute dir {file_system} on device. Error:\n{e}"
             )
+
+def execute_switch_card_OIR_power_force(device, card_slot, subslot):
+    """ execute oir power force
+    Args:
+        device ('obj'): Device object
+        card_slot('str'): card slot number
+        subslot('str'): subslot number
+    Return:
+        None
+    Raise:
+        SubCommandFailure
+    """
+    log.info(f"Executing hw-module subslot {card_slot}/{subslot} oir power force")
+
+    cmd=f"hw-module subslot {card_slot}/{subslot} oir power force"
+
+    try:
+        device.execute(cmd)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not execute hw-module subslot {card_slot}/{subslot} oir power force. Error:\n{e}")

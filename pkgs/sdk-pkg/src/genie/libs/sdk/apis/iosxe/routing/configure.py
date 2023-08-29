@@ -1145,3 +1145,24 @@ def remove_static_route_all(device):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f'Could not remove the static routes on {device}. Error:\n{e}')
+
+def enable_keepalive_on_interface(device, interface):
+    """ Enables keepalive on interface
+        Args:
+            device ('obj'): Device obj
+            interface ('str'): be keepalive
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        'Enabling keepalive on interface '
+    )
+    cmd = [f"interface {interface}", "keepalive"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not enable  keepalive on interface {interface}. Error:\n{error}".format(interface=interface, error=e)
+        )

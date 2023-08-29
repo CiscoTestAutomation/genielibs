@@ -10,7 +10,7 @@ class TestConfigureSwitchportVlanMapping(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          A1:
+          P-R1:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -19,10 +19,10 @@ class TestConfigureSwitchportVlanMapping(unittest.TestCase):
                 protocol: unknown
             os: iosxe
             platform: cat9k
-            type: single_rp
+            type: C9400
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['A1']
+        self.device = self.testbed.devices['P-R1']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,6 @@ class TestConfigureSwitchportVlanMapping(unittest.TestCase):
         )
 
     def test_configure_switchport_vlan_mapping(self):
-        result = configure_switchport_vlan_mapping(self.device, 't1/1/1', '5 499')
+        result = configure_switchport_vlan_mapping(self.device, 'TenGigabitEthernet7/0/4', 2, 1501)
         expected_output = None
         self.assertEqual(result, expected_output)

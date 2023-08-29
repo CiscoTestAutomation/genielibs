@@ -1,20 +1,20 @@
 configure:
   commands:
-    address-family ipv4: "address-family ipv4\r\n"
+    address-family ipv4 vrf WAN-VRF: "address-family ipv4 vrf WAN-VRF\r\n"
     end:
       new_state: execute
     line console 0:
       new_state: configure_line
-    network 2.2.2.2 mask 255.255.255.255: "network 2.2.2.2 mask 255.255.255.255\r\n"
+    network 1.1.1.1 mask 255.255.255.255: "network 1.1.1.1 mask 255.255.255.255\r\n"
     no logging console: ''
-    router bgp 65001: "router bgp 65001\r\n"
-  prompt: PE-A(config)#
+    router bgp 65004: "router bgp 65004\r\n"
+  prompt: PE-B(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: PE-A(config-line)#
+  prompt: PE-B(config-line)#
 connect:
   commands:
     ? ''
@@ -34,4 +34,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: PE-A#
+  prompt: PE-B#

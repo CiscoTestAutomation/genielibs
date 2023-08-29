@@ -444,16 +444,16 @@ def clear_cts_counters(device):
 def configure_sap_pmk_on_cts(device, interface, key_string, method):
 
     """ Configures sap pmk on cts
-        
+
         Args:
             device ('obj'): device to use
             interface ('str'): interface to use
             key_string ('str'): key chain to configure
             method ('str'): encrption method to configure
-        
+
         Return:
             None
-        
+
         Raise:
             SubCommandFailure
     """
@@ -463,18 +463,18 @@ def configure_sap_pmk_on_cts(device, interface, key_string, method):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not configure sap pmk. Error:\n{error}".format(error=e)
-        ) 
+        )
 
 def unconfigure_cts_manual(device, interface):
     """ unconfigures cts manual
         Args:
             device ('obj'): Device object
             interface ('str'): interface to use
-        
+
         Returns:
-            None 
-        
-        Raises: 
+            None
+
+        Raises:
             SubCommandFailure
     """
     cmd = [f"interface {interface}",  "no cts manual"]
@@ -562,7 +562,7 @@ def configure_ipv6_to_sgt_mapping(device, ipv6, sgt):
             SubCommandFailure: Failed to Configure Ipv6 SGT mapping
     """
     log.info("Configure IP to sgt mapping")
-    cmd = f"cts role-based sgt-map {ipv6} sgt {sgt}"    
+    cmd = f"cts role-based sgt-map {ipv6} sgt {sgt}"
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -580,8 +580,8 @@ def unconfigure_ipv6_to_sgt_mapping(device, ipv6, sgt):
         Raises:
             SubCommandFailure: Failed to unconfigure Ipv6 SGT mapping
     """
-    log.info("Unconfigure IP to sgt mapping")    
-    cmd = f"no cts role-based sgt-map {ipv6} sgt {sgt}"    
+    log.info("Unconfigure IP to sgt mapping")
+    cmd = f"no cts role-based sgt-map {ipv6} sgt {sgt}"
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -600,14 +600,14 @@ def configure_ipv6_subnet_to_sgt_mapping(device, ipv6, subnet, sgt):
         Raises:
             SubCommandFailure: Failed to Configure subnet SGT
     """
-    log.info("Configure subnet to sgt mapping")    
-    cmd = f"cts role-based sgt-map {ipv6}/{subnet} sgt {sgt}"    
+    log.info("Configure subnet to sgt mapping")
+    cmd = f"cts role-based sgt-map {ipv6}/{subnet} sgt {sgt}"
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
         log.error(e)
         raise SubCommandFailure("Could not configure subnet SGT")
-        
+
 def unconfigure_ipv6_subnet_to_sgt_mapping(device, ipv6, subnet, sgt):
     """ Unconfigure subnet SGT
         Args:
@@ -620,8 +620,8 @@ def unconfigure_ipv6_subnet_to_sgt_mapping(device, ipv6, subnet, sgt):
         Raises:
             SubCommandFailure: Failed to unconfigure subnet SGT
     """
-    log.info("Unconfigure subnet to sgt mapping")    
-    cmd = f"no cts role-based sgt-map {ipv6}/{subnet} sgt {sgt}"    
+    log.info("Unconfigure subnet to sgt mapping")
+    cmd = f"no cts role-based sgt-map {ipv6}/{subnet} sgt {sgt}"
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -639,8 +639,8 @@ def configure_host_ip_to_sgt_mapping(device, ip_address, sgt):
         Raises:
             SubCommandFailure: Failed to Configure host ip_address SGT
     """
-    log.info("Configure IP to sgt mapping")    
-    cmd = f"cts role-based sgt-map host {ip_address} sgt {sgt}"    
+    log.info("Configure IP to sgt mapping")
+    cmd = f"cts role-based sgt-map host {ip_address} sgt {sgt}"
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -658,15 +658,15 @@ def unconfigure_host_ip_to_sgt_mapping(device, ip_address, sgt):
         Raises:
             SubCommandFailure: Failed to unconfigure host ip_address SGT
     """
-    log.info("Unconfigure IP to sgt mapping")    
-    cmd = f"no cts role-based sgt-map host {ip_address} sgt {sgt}"    
+    log.info("Unconfigure IP to sgt mapping")
+    cmd = f"no cts role-based sgt-map host {ip_address} sgt {sgt}"
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
         log.error(e)
         raise SubCommandFailure("Could not unconfigure host ip_address SGT")
 
-def configure_ip_to_sgt_mapping_vrf(device, vrf_name, ip_address, sgt): 
+def configure_ip_to_sgt_mapping_vrf(device, vrf_name, ip_address, sgt):
     """ Configure vrf Ip address SGT
         Args:
             device ('obj'): device to use
@@ -678,8 +678,8 @@ def configure_ip_to_sgt_mapping_vrf(device, vrf_name, ip_address, sgt):
         Raises:
             SubCommandFailure: Failed to Configure vrf ip_address SGT
     """
-    log.info("Configure vrf and IP to sgt mapping")    
-    cmd = f"cts role-based sgt-map vrf {vrf_name} {ip_address} sgt {sgt}"    
+    log.info("Configure vrf and IP to sgt mapping")
+    cmd = f"cts role-based sgt-map vrf {vrf_name} {ip_address} sgt {sgt}"
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -698,8 +698,8 @@ def unconfigure_ip_to_sgt_mapping_vrf(device, vrf_name, ip_address, sgt):
         Raises:
             SubCommandFailure: Failed to Unconfigure vrf ip_address SGT
     """
-    log.info("Unconfigure vrf and IP to sgt mapping")    
-    cmd = f"no cts role-based sgt-map vrf {vrf_name} {ip_address} sgt {sgt}"   
+    log.info("Unconfigure vrf and IP to sgt mapping")
+    cmd = f"no cts role-based sgt-map vrf {vrf_name} {ip_address} sgt {sgt}"
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -719,8 +719,8 @@ def configure_ip_subnet_to_sgt_mapping_vrf(device, vrf_name, ip_address, subnet,
         Raises:
             SubCommandFailure: Failed to Configure vrf ip_address subnet SGT
     """
-    log.info("Configure vrf and IP subnet to sgt mapping")    
-    cmd = f"cts role-based sgt-map vrf {vrf_name} {ip_address}/{subnet} sgt {sgt}"    
+    log.info("Configure vrf and IP subnet to sgt mapping")
+    cmd = f"cts role-based sgt-map vrf {vrf_name} {ip_address}/{subnet} sgt {sgt}"
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -740,8 +740,8 @@ def unconfigure_ip_subnet_to_sgt_mapping_vrf(device, vrf_name, ip_address, subne
         Raises:
             SubCommandFailure: Failed to unconfigure vrf ip_address subnet SGT
     """
-    log.info("Unconfigure vrf and IP subnet to sgt mapping")    
-    cmd = f"no cts role-based sgt-map vrf {vrf_name} {ip_address}/{subnet} sgt {sgt}"    
+    log.info("Unconfigure vrf and IP subnet to sgt mapping")
+    cmd = f"no cts role-based sgt-map vrf {vrf_name} {ip_address}/{subnet} sgt {sgt}"
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -761,8 +761,8 @@ def configure_cts_role_based_permission(device, src_sgt, dest_sgt, protocol_vers
         Raises:
             SubCommandFailure: Failed to Configure cts role based permissions
     """
-    log.info("Configure cts role based permissions")    
-    cmd = f"cts role-based permissions from {src_sgt} to {dest_sgt} {protocol_version} {rbacl_name}"    
+    log.info("Configure cts role based permissions")
+    cmd = f"cts role-based permissions from {src_sgt} to {dest_sgt} {protocol_version} {rbacl_name}"
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -781,14 +781,14 @@ def unconfigure_cts_role_based_permission(device, src_sgt, dest_sgt, protocol_ve
         Raises:
             SubCommandFailure: Failed to Unconfigure cts role based permissions
     """
-    log.info("Unconfigure cts role based permissions")        
-    cmd = f"no cts role-based permissions from {src_sgt} to {dest_sgt} {protocol_version}"    
+    log.info("Unconfigure cts role based permissions")
+    cmd = f"no cts role-based permissions from {src_sgt} to {dest_sgt} {protocol_version}"
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
         log.error(e)
         raise SubCommandFailure("Could not unconfigure cts role based permissions")
-        
+
 def configure_cts_role_based_permission_default(device, protocol_version, rbacl_name):
     """ Configure cts role based permissions default
         Args:
@@ -800,8 +800,8 @@ def configure_cts_role_based_permission_default(device, protocol_version, rbacl_
         Raises:
             SubCommandFailure: Failed to Configure cts role based permissions default
     """
-    log.info("Configure cts role based permissions default")    
-    cmd = f"cts role-based permissions default {protocol_version} {rbacl_name}"    
+    log.info("Configure cts role based permissions default")
+    cmd = f"cts role-based permissions default {protocol_version} {rbacl_name}"
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -818,16 +818,16 @@ def unconfigure_cts_role_based_permission_default(device, protocol_version):
         Raises:
             SubCommandFailure: Failed to Unconfigure cts role based permissions default
     """
-    log.info("Unconfigure cts role based permissions default")     
-    cmd = f"no cts role-based permissions default {protocol_version}"    
+    log.info("Unconfigure cts role based permissions default")
+    cmd = f"no cts role-based permissions default {protocol_version}"
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
         log.error(e)
         raise SubCommandFailure("Could not unconfigure cts role based permissions default")
-        
+
 def configure_cts_role_based_monitor(
-    device, default=None, protocol_version=None, 
+    device, default=None, protocol_version=None,
     src_sgt=None,dst_sgt=None
 ):
     """ Configure cts role based monitor
@@ -836,21 +836,21 @@ def configure_cts_role_based_monitor(
             default ('str'): default
             protocol_version ('str'): protocol version to configure (ipv4 or ipv6)
             src_sgt ('str'): Source Group Tag
-            dst_sgt ('str'): Destination Group Tag            
+            dst_sgt ('str'): Destination Group Tag
         Returns:
             None
         Raises:
             SubCommandFailure: Failed to Configure cts role based monitor
     """
-    log.info("Configure cts role based monitor")        
-           
+    log.info("Configure cts role based monitor")
+
     if default:
-        cmd = f"cts role-based monitor permissions {default} {protocol_version}"       
+        cmd = f"cts role-based monitor permissions {default} {protocol_version}"
     elif src_sgt:
         cmd = f"cts role-based monitor permissions from {src_sgt} to {dst_sgt} {protocol_version}"
     else:
         cmd = "cts role-based monitor all"
-          
+
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -858,7 +858,7 @@ def configure_cts_role_based_monitor(
         raise SubCommandFailure("Could not configure cts role based monitor")
 
 def unconfigure_cts_role_based_monitor(
-    device,default=None,protocol_version=None, 
+    device,default=None,protocol_version=None,
     src_sgt=None,dst_sgt=None
 ):
     """ Unconfigure cts role based monitor
@@ -867,27 +867,27 @@ def unconfigure_cts_role_based_monitor(
             default ('str'): default
             protocol_version ('str'): protocol version to configure (ipv4 or ipv6)
             src_sgt ('str'): Source Group Tag
-            dst_sgt ('str'): Destination Group Tag            
+            dst_sgt ('str'): Destination Group Tag
         Returns:
             None
         Raises:
             SubCommandFailure: Failed to Unconfigure cts role based monitor
     """
-    log.info("Unconfigure cts role based monitor")            
+    log.info("Unconfigure cts role based monitor")
     if default:
-        cmd = f"no cts role-based monitor permissions {default} {protocol_version}"       
+        cmd = f"no cts role-based monitor permissions {default} {protocol_version}"
     elif src_sgt:
         cmd = f"no cts role-based monitor permissions from {src_sgt} to {dst_sgt} {protocol_version}"
     else:
-        cmd = "no cts role-based monitor all"          
+        cmd = "no cts role-based monitor all"
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
         log.error(e)
         raise SubCommandFailure("Could not unconfigure cts role based monitor")
-        
+
 def configure_cts_enforcement_interface(device, interface):
-    """ Configure cts role-based enforcement on interface 
+    """ Configure cts role-based enforcement on interface
         Args:
             device ('obj'): device to use
             interface ('str'): interface
@@ -896,8 +896,8 @@ def configure_cts_enforcement_interface(device, interface):
         Raises:
             SubCommandFailure: cts role-based enforcement not configured
     """
-    log.info("Configure cts role-based enforcement on interface")   
-    cmd = [f"interface {interface}",  "cts role-based enforcement"]    
+    log.info("Configure cts role-based enforcement on interface")
+    cmd = [f"interface {interface}",  "cts role-based enforcement"]
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -905,7 +905,7 @@ def configure_cts_enforcement_interface(device, interface):
         raise SubCommandFailure("Could not configure cts role-based enforcement on interface")
 
 def unconfigure_cts_enforcement_interface(device, interface):
-    """ Unconfigure cts role-based enforcement on interface 
+    """ Unconfigure cts role-based enforcement on interface
         Args:
             device ('obj'): device to use
             interface ('str'): interface
@@ -914,14 +914,14 @@ def unconfigure_cts_enforcement_interface(device, interface):
         Raises:
             SubCommandFailure: cts role-based enforcement not unconfigured
     """
-    log.info("Unconfigure cts role-based enforcement on interface")    
-    cmd = [f"interface {interface}",  "no cts role-based enforcement"]    
+    log.info("Unconfigure cts role-based enforcement on interface")
+    cmd = [f"interface {interface}",  "no cts role-based enforcement"]
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
         log.error(e)
         raise SubCommandFailure("Could not unconfigure cts role-based enforcement on interface")
-        
+
 def configure_ip_role_based_acl(
     device,acl_name,ip_type,protocol=None,permission=None,log=None,
     prec_value=None,dscp_value=None,port_type=None,
@@ -938,7 +938,7 @@ def configure_ip_role_based_acl(
             log ('str'): Log matches against this entry
             prec_value ('str'): Precedence value (critical | flash | priority | network)
             dscp_value ('str'): dscp value (afll | af12 | af13)
-            port_type ('str'): src/dst port type  
+            port_type ('str'): src/dst port type
             port_match_condition ('str'): eq/lt/gt on a given port number
             port_match_value ('str'): Port number value
             port_range_start ('str'): Start Port number range
@@ -948,22 +948,22 @@ def configure_ip_role_based_acl(
         Raises:
             SubCommandFailure: Failed to configure role based access-list
     """
-    cmd = []    
-    cmd.append(f"{ip_type} access-list role-based {acl_name}")        
-    sub_cmnd = f'{permission} {protocol}'    
+    cmd = []
+    cmd.append(f"{ip_type} access-list role-based {acl_name}")
+    sub_cmnd = f'{permission} {protocol}'
     if protocol in ['ip', 'ipv6', 'icmp']:
         if log:
             sub_cmnd += f' {log}'
-        elif prec_value:              
+        elif prec_value:
             sub_cmnd += f' precedence {prec_value}'
         elif dscp_value:
-            sub_cmnd += f' dscp {dscp_value}'    
+            sub_cmnd += f' dscp {dscp_value}'
     elif protocol in ['tcp', 'udp']:
         if port_match_condition:
             sub_cmnd += f' {port_type} {port_match_condition} {port_match_value}'
         elif port_range_start:
-            sub_cmnd += f' {port_type} range {port_range_start} {port_range_start}'            
-    cmd.append(sub_cmnd)            
+            sub_cmnd += f' {port_type} range {port_range_start} {port_range_start}'
+    cmd.append(sub_cmnd)
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -981,8 +981,8 @@ def unconfigure_ip_role_based_acl(device, acl_name, protocol):
         Raises:
             SubCommandFailure: Failed to unconfigure ip role based ACL on device
     """
-    log.info("Unconfigure ip role based ACL on device")    
-    cmd = f"no {protocol} access-list role-based {acl_name}"    
+    log.info("Unconfigure ip role based ACL on device")
+    cmd = f"no {protocol} access-list role-based {acl_name}"
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -1000,7 +1000,7 @@ def configure_cts_enforcement_logging(device, log_interval):
             SubCommandFailure: Failed to Configure cts enforcement logging
     """
     log.info("Configure cts enforcement logging")
-    cmd = f"cts role-based enforcement logging-interval {log_interval}"    
+    cmd = f"cts role-based enforcement logging-interval {log_interval}"
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -1017,7 +1017,7 @@ def unconfigure_cts_enforcement_logging(device, log_interval):
             SubCommandFailure: Failed to Unconfigure cts enforcement logging
     """
     log.info("Unconfigure cts enforcement logging")
-    cmd = f"no cts role-based enforcement logging-interval {log_interval}"    
+    cmd = f"no cts role-based enforcement logging-interval {log_interval}"
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -1031,7 +1031,7 @@ def clear_cts_counters_ipv6(device):
             None
         Raises:
             SubCommandFailure: Failed to clear CTS counters ipv6
-    """ 
+    """
     try:
         device.execute('clear cts role-based counters ipv6')
     except SubCommandFailure as e:
@@ -1048,8 +1048,8 @@ def configure_cts_aaa_methods(device, server_grp, list_name):
         Raises:
             SubCommandFailure: Failed to Configure cts aaa methods
     """
-    log.info("Configure cts aaa methods")   
-    cmd = [f"aaa authentication dot1x default group {server_grp}", f"aaa authorization network {list_name} group {server_grp}"]    
+    log.info("Configure cts aaa methods")
+    cmd = [f"aaa authentication dot1x default group {server_grp}", f"aaa authorization network {list_name} group {server_grp}"]
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -1066,12 +1066,26 @@ def unconfigure_cts_aaa_methods(device, server_grp, list_name):
         Raises:
             SubCommandFailure: Failed to Unconfigure cts aaa methods
     """
-    log.info("Unconfigure cts aaa methods")   
-    cmd = [f"no aaa authentication dot1x default group {server_grp}", f"no aaa authorization network {list_name} group {server_grp}"]    
+    log.info("Unconfigure cts aaa methods")
+    cmd = [f"no aaa authentication dot1x default group {server_grp}", f"no aaa authorization network {list_name} group {server_grp}"]
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not unconfigure cts aaa methods. Error:\n {e}")
+
+def clear_cts_counters_ipv4(device):
+    """ Clear CTS counters ipv4
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to clear CTS counters ipv4
+    """
+    try:
+        device.execute('clear cts role-based counters ipv4')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not clear CTS counters ipv4. Error:\n {e}")
 
 def enable_cts_enforcement_vlan_list(device, vlan):
     """ enable cts role-based enforcement on given vlan range

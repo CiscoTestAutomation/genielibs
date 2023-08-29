@@ -916,13 +916,17 @@ def unconfigure_dhcp_channel_group_mode(device, interface, group, mode):
             f'Failed to unconfigure DHCP channel-group mode {mode} on {interface}\n{e}'
         )
 
-def configure_cts_manual(device, interface):
+def configure_cts_manual(device, interface, policy=None, sgt=None, trusted=None, propagate=None):
     """Configures cts manual on the interface
        Example: cts manual
 
        Args:
             device ('obj'): device object
-            interface ('str): interface to configure (eg. Gig1/0/1, Te1/0/10)
+            interface ('str'): interface to configure (eg. Gig1/0/1, Te1/0/10)
+            policy ('str'): configure static policy
+            sgt ('str'): sgt value
+            trusted('str'): configure for trusted policy
+            propagate('str'): to disable propagation
 
        Return:
             None
@@ -933,14 +937,24 @@ def configure_cts_manual(device, interface):
     log.info(f"Configuring cts manual on {interface}")
     config= [
         f'interface {interface}',
-        f'cts manual'
-    ]
+        f'cts manual']
+    
+    if policy:
+        if trusted:
+            config.append(f'policy static sgt {sgt} trusted')
+        else:
+            config.append(f'policy static sgt {sgt}')
+
+    if propagate:
+        config.append(f'no propagate sgt')
+
     try:
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f'Failed to configure cts manual on {interface} on {device.name}\n{e}'
         )
+
 
 def unconfigure_ip_dhcp_snooping_trust(device, interface):
     """Unconfigures ip dhcp snooping trust
@@ -1214,7 +1228,7 @@ def unconfigure_interface_ip_dhcp_relay_source_interface_intf_id(device, interfa
             f"Failed to unconfigure ip dhcp relay source interface intf_id {interface}. Error\n{e}"
         )
 
-def configure_dhcp_pool(device, pool_name, router_id=None, network=None, mask=None):
+def configure_dhcp_pool(device, pool_name, router_id=None, network=None, mask=None, vrf=None, dns_server=None):
     """ Configure DHCP pool
         Args:
             device ('obj'): device to use
@@ -1222,6 +1236,8 @@ def configure_dhcp_pool(device, pool_name, router_id=None, network=None, mask=No
             router_id ('str', optional): router id to configure default-router. Default is None
             network ('str', optional): IP of the network pool. Default is None
             mask ('str', optional): Subnet mask of the network pool. Default is None
+            vrf ('str' , optional): VRF to associate with the DHCP pool. Default is None
+            dns_server ('str', optional): IP address of the DNS server. Default is None
         Returns:
             None
         Raises:
@@ -1233,13 +1249,16 @@ def configure_dhcp_pool(device, pool_name, router_id=None, network=None, mask=No
         config.append(f'default-router {router_id}')
     if network and mask:
         config.append(f'network {network} {mask}')
+    if vrf:
+        config.append(f'vrf {vrf}')
+    if dns_server:
+        config.append(f'dns-server {dns_server}')
     try:
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not configure dhcp pool. Error: {e}')
-
-
-def unconfigure_dhcp_pool(device, pool_name, router_id=None, network=None, mask=None):
+        
+def unconfigure_dhcp_pool(device, pool_name, router_id=None, network=None, mask=None, vrf=None, dns_server=None):
     """ Unconfigure DHCP pool
         Args:
             device ('obj'): device to use
@@ -1247,6 +1266,8 @@ def unconfigure_dhcp_pool(device, pool_name, router_id=None, network=None, mask=
             router_id ('str', optional): router id to configure default-router. Default is None
             network ('str', optional): IP of the network pool. Default is None
             mask ('str', optional): Subnet mask of the network pool. Default is None
+            vrf ('str' , optional): VRF to associate with the DHCP pool. Default is None
+            dns_server ('str', optional): IP address of the DNS server. Default is None
         Returns:
             None
         Raises:
@@ -1258,7 +1279,10 @@ def unconfigure_dhcp_pool(device, pool_name, router_id=None, network=None, mask=
         config.append(f'no default-router {router_id}')
     if network and mask:
         config.append(f'no network {network} {mask}')
-
+    if vrf:
+        config.append(f'no vrf {vrf}')
+    if dns_server:
+        config.append(f'no dns-server {dns_server}')
     try:
         device.configure(config)
     except SubCommandFailure as e:

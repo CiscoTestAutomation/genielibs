@@ -30,6 +30,6 @@ class TestConfigureInterfaceIpVerifyUnicastReversepath(unittest.TestCase):
         )
 
     def test_configure_interface_ip_verify_unicast_reversepath(self):
-        result = configure_interface_ip_verify_unicast_reversepath(self.device, 'te1/0/5', 'allow-self-ping')
+        result = configure_interface_ip_verify_unicast_reversepath(self.device, 'te1/0/5', 'allow-self-ping', True)
         expected_output = None
         self.assertEqual(result, expected_output)

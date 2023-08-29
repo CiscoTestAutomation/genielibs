@@ -65,7 +65,7 @@ def unconfigure_sks_client(device,
     )
 
     configs = []
-    configs.append(f"no crypto sks-client {sks_client_config_block_name}")
+    configs.append(f"no crypto skip-client {sks_client_config_block_name}")
 
     try:
         device.configure(configs, error_pattern = ["Proposal with ESP is missing cipher"])

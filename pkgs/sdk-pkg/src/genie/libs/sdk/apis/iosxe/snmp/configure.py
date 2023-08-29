@@ -472,6 +472,7 @@ def configure_snmp_server_enable_traps_power_ethernet_group(device, number, ip, 
         Args:
             device ('obj'): Device object
             number ('str'): The group number 
+            ip ('str') : ip address
             snmp_v ('str'): snmpv1/v2c community string or snmpv3 user name
             name ('str'): snmp community string
             rw ('str'): read-write/read-only
@@ -481,15 +482,15 @@ def configure_snmp_server_enable_traps_power_ethernet_group(device, number, ip, 
         Raises:
                 SubCommandFailure
     """
-    cmd = [
+    config = [
         f'snmp-server enable traps power-ethernet group {number}',
-        'snmp-server host {ip} {snmpv}',
+        f'snmp-server host {ip} {snmp_v}',
         'snmp-server enable traps power-ethernet police',
-        'snmp-server community {name} {rw}',
+        f'snmp-server community {name} {rw}',
         'snmp-server manager'
     ]
     try:
-        device.execute(cmd)
+        device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure snmp-server enable traps power-ethernet group on the device. Error:\n{e}")
 
@@ -611,3 +612,28 @@ def disable_ietf_standard_snmp_link_traps(device):
         device.configure(f"no snmp-server trap link ietf")
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not disable ietf standard snmp link traps . Error:\n{e}")
+    
+def unconfigure_snmp_server_enable_traps_power_ethernet_group(device, action_type_1, action_type_2, group_number): 
+
+    """unconfigure snmp server enable traps power ethernet group
+       Args:
+            device ('obj'): device object
+            action_type_1 ('str'): logging or traps
+            action_type_2 ('str'): group or police
+            group_number ('int') : The group number (1-9)
+            
+       Return:
+            None
+       Raises:
+            SubCommandFailure
+    """
+    config = [
+        f'no snmp-server enable {action_type_1} power-ethernet {action_type_2} {group_number}'
+    ]
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to unconfigure snmp server enable traps power ethernet group on {device.name}\n{e}'
+        )

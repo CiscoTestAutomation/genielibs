@@ -30,3 +30,16 @@ def set_platform_soft_trace_debug(device, sprocess, snumber, rp, feature_type, d
         device.execute(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not set platform software trace aaa-acct debug {device}. Error:\n{e}")
+
+def show_logging_smd_output_to_file(device, sprocess, file_name):
+    ''' show logging process sprocess start last clear to-file flash:file_name
+        Args:
+            device ('obj'): Device object
+            sprocess ('str'): process for trace logs
+            file_name ('str', optional): name of a file
+    '''
+    cmd = f'show logging process {sprocess} start last clear to-file flash:{file_name}'
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not set platform software trace aaa-acct debug {device}. Error:\n{e}")

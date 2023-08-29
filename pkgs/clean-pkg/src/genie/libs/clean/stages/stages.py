@@ -987,7 +987,16 @@ copy_to_device:
                 files_to_copy = {}
                 unknown_size = False
 
-                if server:
+                file_size = None
+
+                # try to get file size from file directly
+                with steps.start(f"Get filesize of '{file}'") as step:
+                    try:
+                        file_size = os.stat(file).st_size
+                    except Exception:
+                        step.passx('Failed to get file size')
+
+                if not file_size and server:
                     # Get filesize of image files on remote server
                     with steps.start("Get filesize of '{}' on remote server '{}'".\
                                     format(file, server)) as step:
@@ -1016,9 +1025,7 @@ copy_to_device:
                             step.passed("Verified filesize of file '{}' to be "
                                         "{} bytes".format(file, file_size))
                 else:
-                    with steps.start(f"Get filesize of '{file}'") as step:
-                        file_size = os.stat(file).st_size
-                        log.info(f'Local file has size {file_size}')
+                    log.info(f'Local file has size {file_size}')
 
                 for dest in destinations:
 

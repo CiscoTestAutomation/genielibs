@@ -1,0 +1,39 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    glbp 0  ip 10.1.0.3: "glbp 0  ip 10.1.0.3\r\n"
+    glbp 0  preempt delay sync 0: "glbp 0  preempt delay sync 0\r\n"
+    glbp 0  priority 150: "glbp 0  priority 150\r\n"
+    glbp 0 timers 1 4: "glbp 0 timers 1 4\r\n"
+    interface vlan10: "interface vlan10\r\n"
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: P-R1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: P-R1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: P-R1#

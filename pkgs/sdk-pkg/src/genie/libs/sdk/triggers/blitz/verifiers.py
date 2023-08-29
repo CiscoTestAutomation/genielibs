@@ -1,13 +1,28 @@
+import xmltodict
 from logging import Logger
 import logging
-from typing import Any, List, Tuple
+from typing import Any, List, Tuple, Union
 from abc import ABC
 import re
 from pprint import pformat
 import json
+from copy import deepcopy
 from google.protobuf import json_format
-from .rpcverify import RpcVerify, OptFields, OperationalFieldsNode
-from .gnmi_util import GnmiMessage
+from .rpcverify import (RpcVerify,
+                        OptFields,
+                        OperationalFieldsNode,
+                        DecodedResponse,
+                        DecodedField,
+                        DeletedPath)
+from .gnmi_util import GnmiMessage, GnmiMessageConstructor
+from .netconf_util import gen_ncclient_rpc, netconf_send
+from genie.conf.base.utils import QDict
+from pyats.log.utils import banner
+
+try:
+    import lxml.etree as et
+except Exception:
+    pass
 
 
 class BaseVerifier(ABC):
@@ -18,8 +33,10 @@ class BaseVerifier(ABC):
                  format: dict = None,
                  steps=None,
                  datastore=None,
+                 rpc_data=None,
                  **kwargs):
         super().__init__()
+        self.deleted: List = []
         self.returns = returns
         self.steps = steps
         self.datastore = datastore
@@ -27,81 +44,47 @@ class BaseVerifier(ABC):
         self.format = format
         self.kwargs = kwargs
         self.device = device
+        self.rpc_data = rpc_data
+
+    @property
+    def validation_on(self) -> bool:
+        return self.returns or self.deleted
 
     def get_config_verify(self,
-                          decoded_response: Any,
-                          key: bool = False,
-                          sequence: Any = None) -> bool:
+                          raw_response: Any,
+                          *args,
+                          **kwargs) -> bool:
         """
-        Used by GNMI and Netconf Get and Set test cases validation.
-        Called when a GetResponse is received.
+        Used Get and Set test cases validation.
 
         Args:
-            decoded_response (any): Response received from the device and decoded
-            by using the decoder method.
-            key (bool, optional): Indicates if the response is a key. Defaults to False.
+            raw_response (any): Response received from the device.
 
         Returns:
             bool: Indicates if test should pass or fail.
         """
         pass
 
-    def gnmi_decoder(self, response: Any,
-                     namespace: dict = None,
-                     method: str = 'get') -> Any:
+    def subscribe_verify(self,
+                         raw_response: Any,
+                         sub_mode: str = 'SAMPLE',
+                         *args,
+                         **kwargs):
         """
-        Used by GNMI to decode response before passing it to verifier.
-
-        Args:
-            response (gnmi_pb2.GetResponse | gnmi_pb2.SubscribeResponse): Response received from the device.
-            method (str): Gnmi method. Defaults to 'get'.
-        Returns:
-            Any: Decoded response.
-        """
-        pass
-
-    def netconf_decoder(self, response: Any,
-                        namespace: dict = None,
-                        method: str = 'get-config') -> Any:
-        """
-        Used by Netconf to decode response before passing it to verifier.
-
-        Args:
-            response (Any): Response received from the device.
-            method (str): Netconf method. Defaults to 'get-config'.
-        Returns:
-            Any: Decoded response.
-        """
-        pass
-
-    def restconf_decoder(self, response: Any,
-                         namespace: dict = None,
-                         method='') -> Any:
-        """
-        Used by Restconf to decode response before passing it to verifier.
-
-        Args:
-            response (gnmi_pb2.GetResponse | gnmi_pb2.SubscribeResponse): Response received from the device.
-            method (str): Gnmi method. Defaults to 'get'.
-        Returns:
-            Any: Decoded response.
-        """
-        pass
-
-    def subscribe_verify(self, decoded_response: Any, sub_mode: str = 'SAMPLE'):
-        """
-        Used by GNMI Subscription test cases validation.
+        Used for subscription test cases validation.
         Called on every subscription update.
 
         Args:
-            response (gnmi_pb2.SubscribeResponse): Response received from the device.
+            raw_response (Any): Response received from the device.
             sub_mode (str): Gnmi subscription mode. Defaults to 'SAMPLE'.
         """
         pass
 
-    def end_subscription(self, errors: List[Exception]) -> bool:
+    def end_subscription(self,
+                         errors: List[Exception],
+                         *args,
+                         **kwargs) -> bool:
         """
-        Used by GNMI Subscription test cases validation.
         Method called when subscription is ended. State should be evaluated here.
 
         Returns:
@@ -109,18 +92,71 @@ class BaseVerifier(ABC):
         """
         pass
 
-    def edit_config_auto_validate(self, response: Any, rpc_data: dict, namespace_modules: dict) -> bool:
-        """Auto-validaton after set-config operation for netconf and gnmi
+    def edit_config_verify(self,
+                           raw_response: Any,
+                           *args,
+                           **kwargs) -> bool:
+        """Validation after set-config operation.
 
         Args:
-            response (any): _description_
-            rpc_data (dict): _description_
-            namespace_modules (dict): _description_
+            raw_response (any): Raw response from device.
 
         Returns:
-            bool: Validation result
+            bool: Validation result.
         """
         pass
+
+    class DecodeError(Exception):
+        """General decoding error."""
+        pass
+
+    class RequestError(Exception):
+        """General request error."""
+        pass
+
+
+class DefaultBaseVerifier(BaseVerifier):
+    RE_FIND_KEYS = re.compile(r'\[.*?\]')
+    RE_CLEAR_KEYS = re.compile(r'[\"\[\]]+')
+
+    def __init__(self,
+                 device: Any,
+                 returns: dict,
+                 log: Logger,
+                 format: dict = None,
+                 steps=None,
+                 datastore=None,
+                 rpc_data=None,
+                 **kwargs):
+        super().__init__(device, returns, log, format,
+                         steps, datastore, rpc_data, ** kwargs)
+        self.rpc_verify = RpcVerify(log=self.log)
+        if format is None:
+            format = {}
+        self.negative_test = format.get('negative_test', False)
+        if self.negative_test:
+            log.info(banner('NEGATIVE TEST'))
+
+    @property
+    def returns(self) -> List[OptFields]:
+        return self._returns
+
+    @returns.setter
+    def returns(self, returns: Union[List[dict], List[OptFields]]):
+        if returns and isinstance(returns[0], dict):
+            self._returns = [OptFields(**r) for r in returns]
+        elif not returns:
+            self._returns = []
+        else:
+            self._returns = returns
+        # Move 'deleted' returns to separate list
+        returns_no_deletes = []
+        for ret in self._returns:
+            if ret.op == OptFields._operators['deleted']:
+                self.deleted.append(ret)
+            else:
+                returns_no_deletes.append(ret)
+        self._returns = returns_no_deletes
 
     def verify_common_cases(func) -> bool:
         """Decorator to verify common cases
@@ -135,151 +171,65 @@ class BaseVerifier(ABC):
                 return False
             # Response will be empty, when no response received,
             # If returns not provided, set result false.
-            elif not response and not self.returns:
+            elif not response and not (self.returns or self.deleted):
                 return False
             # Response is received, but user don't want to validate returns
             # set result to True as response is successfully received.
-            elif response and not self.returns:
+            elif response and not (self.returns or self.deleted):
                 return True
             return func(self, response, *args, **kwargs)
         return inner
 
+    class EmptyResponse(BaseVerifier.DecodeError):
+        pass
 
-class DefaultVerifier(BaseVerifier):
-    RE_FIND_KEYS = re.compile(r'\[.*?\]')
-    RE_CLEAR_KEYS = re.compile(r'[\"\[\]]+')
 
-    def __init__(self,
-                 device: Any,
-                 returns: dict,
-                 log: Logger,
-                 format: dict = None,
-                 steps=None,
-                 datastore=None,
-                 **kwargs):
-        super().__init__(device, returns, log, format, steps, datastore, **kwargs)
-        self.rpc_verify = RpcVerify(log=self.log)
+class GnmiDefaultVerifier(DefaultBaseVerifier):
 
-    @property
-    def returns(self) -> List[OptFields]:
-        return self._returns
-
-    @returns.setter
-    def returns(self, returns: List[dict]):
-        if returns and isinstance(returns[0], dict):
-            self._returns = [OptFields(**r) for r in returns]
-        elif not returns:
-            self._returns = []
-        else:
-            self._returns = returns
-
-    def gnmi_decoder(self, response: Any,
-                     namespace: dict = None,
-                     method: str = 'get') -> List[OptFields]:
-        """Process get response and convert into dict
-
-        Args:
-          response : raw gNMI get response.
-          namespace (dict): Can be used if verifier is implemented.
-
-        Returns:
-          List[OptFields]: List of OptFields
-        """
-        json_dicts = []
-        opfields = []
-        notification = json_format.MessageToDict(response)
-        if 'notification' not in notification and 'update' not in notification:
-            raise Exception('No notification in Response')
-        if method == 'get':
-            notifications = notification['notification']
-        elif method == 'subscribe':
-            notifications = [notification['update']]
-        for notification in notifications:
-            if 'update' not in notification:
-                raise Exception(f'No update in {method.capitalize()}Response')
-            prefix = notification.get('prefix')
-            for updates in notification['update']:
-                json_dicts.append(GnmiMessage.process_update(
-                    updates,
-                    prefix,
-                    namespace,
-                    opfields
-                ))
-        self.log.info(
-            f'{method.capitalize()}Response JSON value decoded\n' +
-            '=' * 31 + '\n'
-        )
-        if json_dicts:
-            try:
-                for result in json_dicts:
-                    try:
-                        msg = json.dumps(result, indent=2)
-                        self.log.info(msg)
-                    except Exception:
-                        self.log.error(str(result))
-            except TypeError:
-                self.log.error(str(json_dicts))
-        return json_dicts, opfields
-
-    @BaseVerifier.verify_common_cases
     def get_config_verify(self,
-                          decoded_response: Tuple[list, list],
-                          key: bool = False,
-                          sequence: Any = None) -> bool:
-        decoded_response = decoded_response[1]
-        if not decoded_response:
-            decoded_response.append((None, "/"))
-        return self.rpc_verify.process_operational_state(decoded_response, self.returns, key=key, sequence=sequence)
+                          raw_response: DecodedResponse,
+                          namespace: dict = None) -> bool:
+        try:
+            decoded_response = self.decode(raw_response, namespace)
+        except self.DecodeError:
+            return self.negative_test
+        if not decoded_response.updates:
+            decoded_response.updates.append((None, "/"))
+        result = self._deletes_verify(decoded_response.deletes)
+        if self.returns:
+            result = self._validate_get_response(decoded_response) and result
+        return self.negative_test != result
 
-    def subscribe_verify(self, decoded_response: Tuple[list, list], sub_type: str = 'ONCE'):
+    def subscribe_verify(self,
+                         raw_response: DecodedResponse,
+                         sub_type: str = 'ONCE',
+                         namespace: dict = None):
         """Decode response and verify result.
 
         Decoder callback returns desired format of response.
         Verify callback returns verification of expected results.
-
-        Args:
-          response (proto.gnmi_pb2.Notification): Contains updates that
-              have changes since last timestamp.
         """
-        # whole_response = (sub_type == 'ONCE')
         try:
-            opfields = decoded_response[1]
-            # Split returns on the basis of paths,
-            # received in opfields
+            decoded_response = self.decode(
+                raw_response, namespace, 'subscribe')
+            decoded_updates = decoded_response.updates
             returns_found: List[OptFields] = []
-            for field in opfields:
-                field_xp = field[1]
+            for field in decoded_updates:
                 for ret in self.returns:
-                    xp = ret.xpath
-                    if xp == field_xp and ret not in returns_found:
+                    if ((self._find_xpath(ret.xpath, field[1], decoded_updates)) and
+                            (ret not in returns_found)):
                         returns_found.append(ret)
                         break
-                    elif '[' in xp:
-                        # if list keys are found in the returns field['xpath']
-                        # Eg: returns['xpath'] = /Sys/List[key=value]/leaf
-                        # if above xpath with no keys '/Sys/List/leaf'
-                        # is in the opfield that means this might be the
-                        # possible returns to select, but we need check
-                        # keys in opfields as well.
-                        xp_no_keys = re.sub(self.RE_FIND_KEYS, '', xp)
-                        if xp_no_keys == field_xp:
-                            # To make sure that this is the correct returns to select
-                            # we need to check that all the keys mentioned in the xpath
-                            # are in opfield or not.
-                            all_keys_in_opfield = self.find_keys_in_opfield(
-                                xp, opfields)
-                            # If all keys are present in opfield, then take this returns for validation.
-                            if all_keys_in_opfield and ret not in returns_found:
-                                returns_found.append(ret)
-                                break
 
-            if opfields and returns_found:
+            self._deletes_verify(decoded_response.deletes)
+            if decoded_updates and returns_found:
                 if self.log.level == logging.DEBUG:
                     msg = 'Xpath/Value\n' + '=' * 11 + \
-                        '\n' + pformat(opfields)
+                        '\n' + pformat(decoded_updates)
                     self.log.debug(msg)
+
                 result = self.rpc_verify.process_operational_state(
-                    opfields, returns_found)
+                    decoded_updates, returns_found)
                 if result:
                     self.returns = [
                         r for r in self.returns if r not in returns_found]
@@ -289,19 +239,125 @@ class DefaultVerifier(BaseVerifier):
 
     def end_subscription(self, errors: List[Exception]) -> bool:
         if errors:
-            return False
+            return self.negative_test is not False
         result = True
         for ret in self.returns:
-            xp = ret.xpath
-            val = ret.value
+            xp, val = ret.xpath, ret.value
             self.log.error(
                 'ERROR: "{0} value: {1}" Not found.'.format(xp, str(val)))
             result = False
-        return result
+        for delete in self.deleted:
+            self.log.error(f"ERROR: {delete.xpath} not deleted.")
+            result = False
+        return self.negative_test != result
 
-    def edit_config_auto_validate(self, response: Any, rpc_data: dict, namespace_modules: dict) -> bool:
-        decoded_response = self.gnmi_decoder(
-            response, namespace=namespace_modules, method='get')
+    def edit_config_verify(self, response: Any) -> bool:
+        if not response:
+            return self.negative_test
+
+        if 'returns' in self.rpc_data:
+            self.returns = self.rpc_data['returns']
+            return self._validate_get_response(response)
+
+        auto_validate = self.format.get(
+            'auto_validate', self.format.get('auto-validate', True))
+        if auto_validate:
+            self.log.info(banner('AUTO-VALIDATION'))
+            self.format['get_type'] = 'CONFIG'
+            gmc = GnmiMessageConstructor('get', self.rpc_data, **self.format)
+            payload = gmc.payload
+            namespace_modules = gmc.namespace_modules
+            response, status = GnmiMessage.run_get(
+                self.device, payload, namespace_modules
+            )
+            for node in self.rpc_data.get('nodes'):
+                node.pop('edit-op', '')
+            return self.negative_test != self._auto_validation(response, namespace_modules)
+        return True
+
+    def decode(self,
+               response: Any,
+               namespace: dict = None,
+               method: str = 'get') -> DecodedResponse:
+        """Process get response and convert into dict
+
+        Args:
+          response : Raw gNMI get response.
+          namespace (dict): Can be used if verifier is implemented.
+
+        Returns:
+          List[OptFields]: List of OptFields
+        """
+        if response is None:
+            raise self.EmptyResponse()
+        if namespace is None:
+            namespace = {}
+        decoded_response = DecodedResponse()
+        notification = json_format.MessageToDict(response)
+        self.log.info(f"NOTIFICATION: {notification} \n\n")
+
+        if 'notification' not in notification and 'update' not in notification:
+            raise Exception('No notification in Response')
+        if method == 'get':
+            notifications = notification['notification']
+        elif method == 'subscribe':
+            notifications = [notification['update']]
+        else:
+            notifications = []
+
+        for notification in notifications:
+            if 'update' not in notification and 'delete' not in notification:
+                raise Exception(
+                    f'No update or delete in {method.capitalize()}Response')
+            prefix = notification.get('prefix')
+            if 'update' in notification:
+                for updates in notification['update']:
+                    decoded_response.json_dicts.append(GnmiMessage.process_update(
+                        updates,
+                        prefix,
+                        namespace,
+                        decoded_response.updates
+                    ))
+            if 'delete' in notification:
+                for deletes in notification['delete']:
+                    GnmiMessage.process_delete(
+                        deletes,
+                        prefix,
+                        namespace,
+                        decoded_response.deletes)
+
+        self.log.info(
+            f'{method.capitalize()}Response JSON value decoded\n' +
+            '=' * 31 + '\n'
+        )
+        if decoded_response.json_dicts:
+            try:
+                for result in decoded_response.json_dicts:
+                    try:
+                        msg = json.dumps(result, indent=2)
+                        self.log.info(msg)
+                    except Exception:
+                        self.log.error(str(result))
+            except TypeError:
+                self.log.error(str(decoded_response.json_dicts))
+        if decoded_response.deletes:
+            self.log.info(
+                f"Deleted paths: {[str(d) for d in decoded_response.deletes]}")
+        return decoded_response
+
+    @DefaultBaseVerifier.verify_common_cases
+    def _validate_get_response(self,
+                               decoded_response: DecodedResponse,
+                               key: bool = False) -> bool:
+        return self.rpc_verify.process_operational_state(
+            decoded_response.updates, self.returns, key=key)
+
+    def _auto_validation(self, response: Any, namespace_modules: dict) -> bool:
+        try:
+            decoded_response = self.decode(
+                response, namespace=namespace_modules, method='get')
+        except self.EmptyResponse:
+            return False
         result = True
         nodes: List[OperationalFieldsNode] = []
         list_keys: List[OptFields] = []
@@ -317,7 +373,7 @@ class DefaultVerifier(BaseVerifier):
             # RFC 6243 not supported
             self.log.info('WITH DEFAULTS - NOT REPORTED')
 
-        for node in rpc_data.get('nodes', []):
+        for node in self.rpc_data.get('nodes', []):
             # original xpath with key/value required to validate
             # key values with multilist entries in response
             xpath_original = re.sub(
@@ -327,7 +383,8 @@ class DefaultVerifier(BaseVerifier):
             # xpath with keys and namespace prefix stripped.
             xpath = re.sub(self.rpc_verify.RE_FIND_KEYS,
                            '', node.get('xpath', ''))
-            xpath = re.sub(self.rpc_verify.RE_FIND_PREFIXES, '/', xpath)
+            xpath = re.sub(
+                self.rpc_verify.RE_FIND_PREFIXES, '/', xpath)
             if del_parent:
                 # Check to see if parent and child have same xpath,
                 # so "not boundary" will be True hence continue.
@@ -340,8 +397,8 @@ class DefaultVerifier(BaseVerifier):
                         continue
             edit_op = node.get('edit-op')
             default = node.get('default')
-            value = node.get('value', '')
-            if not value:
+            value = node.get('value', None)
+            if value is None:
                 value = 'empty'
 
             if node.get('nodetype', '') == 'list':
@@ -361,7 +418,8 @@ class DefaultVerifier(BaseVerifier):
                     par_xp = xpath
                     del_parent = True
                     continue
-                self.rpc_verify.add_key_nodes(node.get('xpath', ''), list_keys)
+                self.rpc_verify.add_key_nodes(
+                    node.get('xpath', ''), list_keys)
                 continue
 
             if 'explicit' not in self.rpc_verify.with_defaults and \
@@ -387,17 +445,16 @@ class DefaultVerifier(BaseVerifier):
                 default_value=False,
                 edit_op=edit_op
             ))
-
-        if not decoded_response and not nodes and \
+        if not decoded_response.updates and not nodes and \
                 edit_op in ['delete', 'remove']:
             self.log.info('NO DATA RETURNED')
             return True
-        elif decoded_response and not nodes and \
+        elif decoded_response.updates and not nodes and \
                 edit_op in ['delete', 'remove']:
             # Check if node is removed in the response
-            if isinstance(decoded_response[0], tuple):
-                decoded_response = [decoded_response]
-                for resp in decoded_response:
+            if isinstance(decoded_response.updates[0], tuple):
+                decoded_response.updates = [decoded_response.updates]
+                for resp in decoded_response.updates:
                     for reply, reply_path in resp:
                         if xpath == reply_path:
                             # node xpath still exists in the response
@@ -406,24 +463,24 @@ class DefaultVerifier(BaseVerifier):
                             return False
         for node in nodes:
             self.returns = [node.opfields]
-            if not self.get_config_verify(decoded_response):
+            if not self._validate_get_response(decoded_response):
                 if node.edit_op in ['delete', 'remove'] and not node.default_value:
                     continue
                 result = False
         for node in list_keys:
             self.returns = [node]
-            if not self.get_config_verify(decoded_response, key=True):
+            if not self._validate_get_response(decoded_response, key=True):
                 result = False
         return result
 
-    def find_keys_in_opfield(self, xpath, opfields):
+    def _find_keys_in_opfield(self, xpath, opfields):
         """Check if all keys in xpath present in opfields or not
 
         Args:
             xpath (Returns['xpath']): xpath with list keys in it
             xpath = /Sys/List[key=key_value]/leaf
             opfields (Decoded gNMI response): List of tuples(val, xpath)
-        Return true if (key_value, /Sys/List/Key) is in opfield, else False  
+        Return true if (key_value, /Sys/List/Key) is in opfield, else False
         """
         for match in re.finditer(self.RE_FIND_KEYS, xpath):
             key = match.group()
@@ -436,3 +493,182 @@ class DefaultVerifier(BaseVerifier):
             if not (key_val, key_path) in opfields:
                 return False
         return True
+
+    def _find_xpath(self,
+                    ret_xpath: str,
+                    response_xpath: str,
+                    decoded_response: List[Union[Tuple, DecodedField]]) -> bool:
+        """Find xpath from returns in decoded response
+        Args:
+            ret_xpath (str): Xpath from returns
+            response_xpath (str): Xpath from response
+            decoded_response (List[Union[Tuple, DecodedField]]): Decoded response as a list of
+            DecodedField for delete validation or list of tuples for update validation
+
+        Returns:
+            bool: _description_
+        """
+        if ret_xpath == response_xpath:
+            return True
+        if '[' in ret_xpath:
+            # if list keys are found in the returns field['xpath']
+            # Eg: returns['xpath'] = /Sys/List[key=value]/leaf
+            # if above xpath with no keys '/Sys/List/leaf'
+            # is in the opfield that means this might be the
+            # possible returns to select, but we need check
+            # keys in opfields as well.
+            xp_no_keys = re.sub(self.RE_FIND_KEYS,
+                                '', ret_xpath)
+            if xp_no_keys == response_xpath:
+                # To make sure that this is the correct returns to select
+                # we need to check that all the keys mentioned in the xpath
+                # are in opfield or not.
+                all_keys_in_opfield = self._find_keys_in_opfield(
+                    ret_xpath, decoded_response)
+                return all_keys_in_opfield
+        return False
+
+    def _deletes_verify(self, decoded_response: List[DeletedPath]) -> bool:
+        """Verify delete section from response against expected returns deletes
+
+        Args:
+            decoded_response (List[DeletedPath]): Decoded response containing deleted paths
+            Found elements will be removed from self.deleted
+        Returns:
+            bool: Verification result
+        """
+        if not decoded_response:
+            return True
+        for delete_resp in decoded_response:
+            for delete_returns in deepcopy(self.deleted):
+                if self._find_xpath(delete_returns.xpath, delete_resp.xpath, delete_resp.keys):
+                    try:
+                        self.deleted.remove(delete_returns)
+                    finally:
+                        break
+        return not self.deleted
+
+
+class NetconfDefaultVerifier(DefaultBaseVerifier):
+
+    class ErroredResponse(Exception):
+        def __init__(self, response):
+            self.response = response
+
+    def get_config_verify(self,
+                          raw_response: Any) -> bool:
+        """
+        Used by Netconf to verify response.
+
+        Args:
+            response (Any): Response received from the device.
+            method (str): Netconf method. Defaults to 'get-config'.
+        Returns:
+            bool: True if verification passes else False.
+        """
+        try:
+            decoded_response = self.decode(raw_response)
+        except self.DecodeError:
+            return self.negative_test
+
+        if not self.returns:
+            # To convert xml to dict
+            if len(raw_response) >= 1:
+                op, resp_xml = raw_response[0]
+                xml_to_dict = QDict(dict(xmltodict.parse(resp_xml)))
+                return xml_to_dict
+            else:
+                self.log.error(
+                    banner('No NETCONF data to compare rpc-reply to.'))
+                return False
+
+        # should be just one result
+        if len(raw_response) >= 1:
+            return self.negative_test != self.rpc_verify.process_operational_state(
+                decoded_response, self.returns
+            )
+        else:
+            self.log.error(banner('NO XML RESPONSE'))
+            return self.negative_test
+
+    def edit_config_verify(self,
+                           raw_response: Any = None,
+                           ds_state: Any = None):
+        try:
+            decoded_response = self.decode(raw_response)
+        except self.ErroredResponse as e:
+            return self.rpc_verify.process_operational_state(
+                e.response, self.returns)
+        except BaseVerifier.DecodeError:
+            return self.negative_test
+
+        auto_validate = self.format.get(
+            'auto_validate', self.format.get('auto-validate', True))
+        if auto_validate:
+            self.log.info(banner('AUTO-VALIDATION'))
+            rpc_clone = deepcopy(self.rpc_data)
+            rpc_clone['operation'] = 'get-config'
+            rpc_clone['datastore'] = 'running'
+
+            for node in rpc_clone.get('nodes'):
+                node.pop('value', '')
+                node.pop('edit-op', '')
+            prt_op, kwargs = gen_ncclient_rpc(rpc_clone)
+            resp_xml = netconf_send(
+                self.device,
+                [(prt_op, kwargs)],
+                ds_state,
+                lock=False
+            )
+            decoded_response = self.decode(resp_xml)
+            return (self.negative_test !=
+                    self.rpc_verify.verify_rpc_data_reply(decoded_response, self.rpc_data))
+
+        return not self.negative_test
+
+    def decode(self,
+               response: list = None) -> List[Tuple[et._Element, str]]:
+        """
+        Used by Netconf to decode response before passing it to verifier.
+
+        Args:
+            response (Any): Response received from the device.
+            method (str): Netconf method. Defaults to 'get-config'.
+        Returns:
+            Any: Decoded response.
+        """
+        # rpc-reply should show up in NETCONF log
+        if not response:
+            self.log.error(banner('NETCONF rpc-reply NOT RECIEVED'))
+            raise self.EmptyResponse()
+
+        errors = []
+        for op, res in response:
+            if '<rpc-error>' in res:
+                self.log.error(
+                    et.tostring(
+                        et.fromstring(
+                            res.encode('utf-8'),
+                            parser=et.XMLParser(
+                                recover=True,
+                                encoding='utf-8')
+                        ),
+                        pretty_print=True
+                    ).decode('utf-8')
+                )
+                errors.append(res)
+            elif op == 'traceback':
+                self.log.error('TRACEBACK: {0}'.format(str(res)))
+                errors.append(res)
+
+        if errors:
+            if self.negative_test:
+                op, resp_xml = response[0]
+                if op == 'traceback':
+                    self.log.error('TRACEBACK: {0}'.format(str(resp_xml)))
+                    raise self.DecodeError()
+                raise self.ErroredResponse(
+                    self.rpc_verify.process_rpc_reply(response))
+            else:
+                raise self.DecodeError()
+        return self.rpc_verify.process_rpc_reply(response)

@@ -1,0 +1,82 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: T13-C9407-Dual-SUP2(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: T13-C9407-Dual-SUP2(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show logging process smd start last clear to-file flash:vlan_id_attr_log.txt:
+      response:
+      - "Logging display requested on 2023/07/26 13:04:29 (IST) for Hostname: [T13-C9407-Dual-SUP2],\
+        \ Model: [C9407R              ], Version: [17.13.01], SN: [FXS212202PJ], MD_SN:\
+        \ [FXS2124Q59U]\r\n\r\nexecuting cmd on chassis 1 ...\r\nFiles being merged\
+        \ in the background, please check [/bootflash/vlan_id_attr_log.txt] output\
+        \ file\r\nUnified Decoder Library Init .. DONE\r\n\r\nunified trace decoder\
+        \ estimates: [2] number of files, [179680] number of messages\r\n\t that may\
+        \ be processed. Use CTRL+SHIFT+6 to break.\r\nFound 1 UTF Streams\r\n\t 2023-07-26\
+        \ 13:04:29.788504 - unified trace decoder estimate: processed 5%\r\n\t 2023-07-26\
+        \ 13:04:29.969942 - unified trace decoder estimate: processed 10%\r\n\t 2023-07-26\
+        \ 13:04:30.151345 - unified trace decoder estimate: processed 15%\r\n\t 2023-07-26\
+        \ 13:04:30.332773 - unified trace decoder estimate: processed 20%\r\n\t 2023-07-26\
+        \ 13:04:30.514256 - unified trace decoder estimate: processed 25%\r\n\t 2023-07-26\
+        \ 13:04:30.695670 - unified trace decoder estimate: processed 30%\r\n\t 2023-07-26\
+        \ 13:04:30.877013 - unified trace decoder estimate: processed 35%\r\n\t 2023-07-26\
+        \ 13:04:31.058388 - unified trace decoder estimate: processed 40%\r\n\t 2023-07-26\
+        \ 13:04:31.239898 - unified trace decoder estimate: processed 45%\r\n\t 2023-07-26\
+        \ 13:04:31.490039 - unified trace decoder estimate: processed 50%\r\n\t 2023-07-26\
+        \ 13:04:31.724274 - unified trace decoder estimate: processed 55%\r\n\t 2023-07-26\
+        \ 13:04:31.954547 - unified trace decoder estimate: processed 60%\r\n\t 2023-07-26\
+        \ 13:04:32.185182 - unified trace decoder estimate: processed 65%\r\n\t 2023-07-26\
+        \ 13:04:32.416308 - unified trace decoder estimate: processed 70%\r\n\t 2023-07-26\
+        \ 13:04:32.646625 - unified trace decoder estimate: processed 75%\r\n\t 2023-07-26\
+        \ 13:04:32.882466 - unified trace decoder estimate: processed 80%\r\n\t 2023-07-26\
+        \ 13:04:33.113086 - unified trace decoder estimate: processed 85%\r\n\t 2023-07-26\
+        \ 13:04:33.344036 - unified trace decoder estimate: processed 90%\r\n\t 2023-07-26\
+        \ 13:04:33.576200 - unified trace decoder estimate: processed 95%\r\n\t 2023-07-26\
+        \ 13:04:33.801717 - unified trace decoder estimate: processed 100%\r\n\t 2023-07-26\
+        \ 13:04:33.801733 - unified trace decoder : processing complete Result:[Success]\r\
+        \n\r\n===========================================================\r\n=======\
+        \ Unified Trace Decoder Information/Statistics ======\r\n===========================================================\r\
+        \n----------------- Decoder Input Information ---------------\r\n===========================================================\r\
+        \n Num of Unique Streams .. 1\r\n Total UTF To Process ... 2\r\n Total UTM\
+        \ To Process ... 179680\r\n UTM Process Filter ..... smd\r\n MRST Filter Rules\
+        \ ...... 1\r\n===========================================================\r\
+        \n----------------- Decoder Output Information --------------\r\n===========================================================\r\
+        \n First UTM TimeStamp ............... 2023/07/26 07:45:57.065862770\r\n Last\
+        \ UTM TimeStamp ................ 2023/07/26 13:04:27.254888137\r\n UTM [Skipped\
+        \ / Rendered / Total] .. 176270 / 3410 / 179680\r\n UTM [ENCODED] .....................\
+        \ 3410\r\n UTM [PLAIN TEXT] .................. 0\r\n UTM [DYN LIB] .....................\
+        \ 0\r\n UTM [MODULE ID] ................... 0\r\n UTM [TDL TAN] .....................\
+        \ 0\r\n UTM [APP CONTEXT] ................. 0\r\n UTM [MARKER] ......................\
+        \ 0\r\n UTM [PCAP] ........................ 0\r\n UTM [LUID NOT FOUND] ..............\
+        \ 0\r\n UTM Level [EMERGENCY / ALERT / CRITICAL / ERROR] .. 0 / 0 / 0 / 2490\r\
+        \n UTM Level [WARNING / NOTICE / INFO / DEBUG] ....... 0 / 0 / 920 / 0\r\n\
+        \ UTM Level [VERBOSE / NOISE / INVALID] ............. 0 / 0 / 0\r\n==========================================================="
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: T13-C9407-Dual-SUP2#

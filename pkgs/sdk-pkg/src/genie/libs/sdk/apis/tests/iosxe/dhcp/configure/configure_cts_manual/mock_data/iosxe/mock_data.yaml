@@ -3,17 +3,19 @@ configure:
     cts manual: "cts manual\r\n"
     end:
       new_state: execute
-    interface Gig1/0/1: "interface Gig1/0/1\r\n"
+    interface FiftyGigE1/0/1: "interface FiftyGigE1/0/1\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''
-  prompt: n10SVL(config)#
+    no propagate sgt: "no propagate sgt\r\n"
+    policy static sgt 1234: "policy static sgt 1234\r\n"
+  prompt: T6_M_C9600X_SUP_2_HA(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: n10SVL(config-line)#
+  prompt: T6_M_C9600X_SUP_2_HA(config-line)#
 connect:
   commands:
     ? ''
@@ -33,4 +35,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: n10SVL#
+  prompt: T6_M_C9600X_SUP_2_HA#

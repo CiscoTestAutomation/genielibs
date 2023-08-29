@@ -2,24 +2,19 @@ configure:
   commands:
     end:
       new_state: execute
-    interface vlan 10: "interface vlan 10\r\n"
-    line console:
-      new_state: configure_line
+    interface vlan 101: "interface vlan 101\r\n"
     line console 0:
       new_state: configure_line
-    no ip address 192.168.0.4 255.255.255.0: "no ip address 192.168.0.4 255.255.255.0\r\
-      \n"
-    no ipv6 address 3001::30/64: "no ipv6 address 3001::30/64\r\n"
+    no ip address 10.230.62.50 255.255.255.0 secondary: "no ip address 10.230.62.50\
+      \ 255.255.255.0 secondary\r\n"
     no logging console: ''
-  prompt: sisf-c9300-5(config)#
+  prompt: AMZ-Acc-4(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-    line vty: ''
-    terminal width 511: ''
-  prompt: sisf-c9300-5(config-line)#
+  prompt: AMZ-Acc-4(config-line)#
 connect:
   commands:
     ? ''
@@ -39,6 +34,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-    term width 511: ''
-    terminal session-timeout 0: ''
-  prompt: sisf-c9300-5#
+  prompt: AMZ-Acc-4#

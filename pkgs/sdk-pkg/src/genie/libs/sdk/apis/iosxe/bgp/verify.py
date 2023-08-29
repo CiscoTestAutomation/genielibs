@@ -2813,3 +2813,36 @@ def verify_bgp_l2vpn_evpn_rt5_nxthop(
                                 return True
         timeout.sleep()
     return False
+
+def verify_bgp_neighbor_state_vrf(device, address_family, modifier, vrf, neighbor, expected_state_pfxrcd, max_time=90, check_interval=30):
+    """ Verify state/pfxrcd entry in show bgp {vpnv4/vpnv4} {unicast} vrf {vrfid} summary
+        neighbors {neighbor} routes'
+
+        Args:
+            device ('obj'): device to use
+            address_family ('str'): address family
+            modifier ('str'): unicast/multicast/broadcast
+            vrf ('str'): vrf name
+            neighbor ('str'): neighbor ip
+            expected_state_pfxrcd ('str'): Expected State/Pfxrcd
+            max_time ('int', optional): maximum time to wait in seconds,
+                default is 90
+            check_interval ('int', optional): how often to check in seconds,
+                default is 30
+        Returns:
+            result ('bool'): verified result
+        Raises:
+            None
+    """
+    total_prefixes = ""
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            bgp_output = device.parse(f"show bgp {address_family} {modifier} vrf {vrf} summary")
+            total_prefixes = bgp_output['vrf'][vrf]['neighbor'][neighbor]['address_family'][f'{address_family} {modifier}']['state_pfxrcd']
+        except SchemaEmptyParserError as e:
+            return False
+        if total_prefixes == expected_state_pfxrcd:
+            return True
+        timeout.sleep()
+    return False

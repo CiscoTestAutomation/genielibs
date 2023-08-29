@@ -1,11 +1,13 @@
 
 import re
 import unittest
-from unittest.mock import MagicMock, Mock, call
+from unittest.mock import MagicMock, Mock, call, patch
 
 from ats.topology import Device
+
+from genie.libs.clean.stages.tests.utils import create_test_device
 from genie.libs.sdk.apis.utils import (
-    modify_filename, copy_from_device, copy_to_device)
+    modify_filename, copy_from_device, copy_to_device, device_recovery_boot)
 
 
 class TestUtilsApi(unittest.TestCase):
@@ -80,3 +82,16 @@ class TestUtilsApi(unittest.TestCase):
         device.execute = Mock()
         copy_to_device(device, remote_path='/tmp/test.txt')
         assert re.search(r'copy http://\w+:\w+@127.0.0.2:2000/test.txt flash:', str(device.execute.call_args))
+
+    def test_device_recovery_boot(self):
+        device = create_test_device(name='aDevice', os='iosxe')
+        device.destroy = Mock()
+        device.start = 'telnet 127.0.0.1 0000'
+        device.instantiate = Mock()
+        device.is_ha = False
+        device.clean = {'device_recovery':
+                            {'golden_image':'bootflash:packages.conf',
+                            'recovery_password':'lab'}}
+        with patch("genie.libs.sdk.apis.utils.pcall") as pcall_mock:
+            device_recovery_boot(device)
+            pcall_mock.assert_called_once()

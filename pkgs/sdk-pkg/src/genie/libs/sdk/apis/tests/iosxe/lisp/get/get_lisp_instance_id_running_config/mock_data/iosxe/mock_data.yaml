@@ -1,0 +1,40 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: AMZ-9500-Dist3(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: AMZ-9500-Dist3(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show running-config | section instance-id 699:
+      response:
+      - " instance-id 699\r\n  service ethernet\r\n   eid-table vlan 699\r\n   broadcast-underlay\
+        \ 239.0.0.7\r\n   flood arp-nd\r\n   flood unknown-unicast\r\n   database-mapping\
+        \ mac locator-set AMZ-Dist\r\n   exit-service-ethernet\r\n  !\r\n  exit-instance-id"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: AMZ-9500-Dist3#

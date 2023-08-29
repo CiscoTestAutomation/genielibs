@@ -175,3 +175,30 @@ def unconfigure_evpn_instance_vlan_based_flood_suppression(device, instance):
         log.error("Failed to un-configure flooding-suppression address-resolution disable"
             "of instance: {} with exception:\n{}".format(instance, str(e))
         )
+
+def configure_l2vpn_evpn_ethernet_segment(device, segment_value, action_type, mac_address, time):
+    """ Configuring l2vpn evpn ethernet-segment 201
+        Args:
+            device ('obj'): Device object
+            segment_value ('int'):<1-65535>  Ethernet segment local discriminator value
+            action_type ('int'):  0  Type 0 (arbitrary 9-octet ESI value)
+                                  3  Type 3 (MAC-based ESI value)
+            mac_address ('str'):  H.H.H  MAC address
+            time ('int'): <1-10>  Number of seconds to wait before electing a designated forwarder
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config =[ f"l2vpn evpn ethernet-segment {segment_value}",
+              f"identifier type {action_type} system-mac {mac_address}",
+                "redundancy single-active",
+              f"df-election wait-time {time}"
+            ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to configure l2vpn evpn ethernet-segment 201 on {device.name}\n{e}'
+        ) 
+        

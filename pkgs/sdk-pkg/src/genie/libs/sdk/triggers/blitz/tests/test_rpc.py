@@ -2,13 +2,16 @@
 import sys
 import unittest
 import logging
-from time import time
+from time import time, time_ns
 import base64
+from google.protobuf import json_format
 from yang.connector.gnmi import Gnmi
+from yang.connector import proto
 from genie.libs.sdk.triggers.blitz import yangexec
+from genie.libs.sdk.triggers.blitz import netconf_util
 from genie.libs.sdk.triggers.blitz.rpcverify import RpcVerify
 from genie.libs.sdk.triggers.blitz.gnmi_util import GnmiMessage
-
+from genie.libs.sdk.triggers.blitz.tests.device_mocks import TestDevice
 
 # TODO: Needs to be part of genielibs test run
 
@@ -314,6 +317,84 @@ list_key_with_forward_slash = """
     </data>
 </rpc-reply>"""
 
+bgp_community_list_get_config_response = """
+<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="urn:uuid:7e4cfd6b-1435-4a06-bd34-9afa39142f2f">
+  <data>
+    <native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native">
+      <route-map>
+        <name>set-community-list</name>
+        <route-map-seq xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-route-map">
+          <ordering-seq>10</ordering-seq>
+          <operation>permit</operation>
+          <description>set community to neighbor for edge</description>
+          <set>
+            <community>
+              <community-well-known>
+                <community-list>100:6001</community-list>
+              </community-well-known>
+            </community>
+          </set>
+        </route-map-seq>
+      </route-map>
+      <router>
+        <bgp xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-bgp">
+          <id>100</id>
+          <address-family>
+            <with-vrf>
+              <ipv4>
+                <af-name>unicast</af-name>
+                <vrf>
+                  <name>vrf-1</name>
+                  <ipv4-unicast>
+                    <neighbor>
+                      <id>99.5.6.6</id>
+                      <route-map>
+                        <inout>out</inout>
+                        <route-map-name>set-community-list</route-map-name>
+                      </route-map>
+                    </neighbor>
+                  </ipv4-unicast>
+                </vrf>
+              </ipv4>
+            </with-vrf>
+          </address-family>
+        </bgp>
+      </router>
+    </native>
+  </data>
+</rpc-reply>
+"""
+
+bgp_community_list_same_parent_response = """
+<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="urn:uuid:e90cbc88-c5b0-4a14-acdc-793c62ff4370">
+    <data>
+      <native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native">
+        <ip>
+          <as-path>
+            <access-list xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-bgp">
+              <name>100</name>
+                <extended-grouping>
+                  <extended_grouping>
+                    <action>permit</action>
+                    <string>_65001$</string>
+                  </extended_grouping>
+                  <extended_grouping>
+                    <action>permit</action>
+                    <string>_65002$</string>
+                  </extended_grouping>
+                  <extended_grouping>
+                    <action>permit</action>
+                    <string>_65003$</string>
+                  </extended_grouping>
+              </extended-grouping>
+            </access-list>
+          </as-path>
+        </ip>
+      </native>
+    </data>
+</rpc-reply>
+"""
+
 
 class TestRpcVerify(unittest.TestCase):
     """Test cases for the rpcverify.RpcVerify methods."""
@@ -353,6 +434,25 @@ basic-mode=explicit&also-supported=report-all-tagged']
             bytes(self.leafListVal, encoding='utf-8')
         )
 
+    def parse_dict_to_gnmi_msg(self, data: dict):
+        update = proto.gnmi_pb2.Update()
+        update = json_format.ParseDict(data, update)
+        notification = proto.gnmi_pb2.Notification()
+        notification.timestamp = time_ns()
+        notification.prefix.MergeFrom(proto.gnmi_pb2.Path())
+        notification.update.append(update)
+
+        response = proto.gnmi_pb2.GetResponse()
+        response.notification.append(notification)
+        return response
+
+    def make_test_args(self, opfields: list):
+        format = {
+            'encoding': 'JSON',
+        }
+        rpc_data = {'nodes': [{'xpath': val['xpath'] for val in opfields}]}
+        return rpc_data, opfields, format
+
     def test_operational_state_pass(self):
         """Process rpc-reply and check opfields for match."""
         # xpath used for match instead of ID.
@@ -379,8 +479,13 @@ basic-mode=explicit&also-supported=report-all-tagged']
              'op': '=='}]
 
         self._base64encode()
-        resp = GnmiMessage.decode_opfields(self.operstate_gnmi['update'])
-        result = self.rpcv.process_operational_state(resp, opfields)
+        device = TestDevice(self.parse_dict_to_gnmi_msg(
+            self.operstate_gnmi['update']))
+        rpc_data, returns, format = self.make_test_args(opfields)
+
+        result = yangexec.run_gnmi('get-config', device, '', '',
+                                   rpc_data, returns, format=format)
+        # result = self.rpcv.process_operational_state(resp, opfields)
         self.assertTrue(result)
 
         resp = self.rpcv.process_rpc_reply(operstate)
@@ -441,8 +546,11 @@ basic-mode=explicit&also-supported=report-all-tagged']
              'op': '=='}]
 
         self._base64encode()
-        resp = GnmiMessage.decode_opfields(self.operstate_gnmi['update'])
-        result = self.rpcv.process_operational_state(resp, opfields)
+        device = TestDevice(self.parse_dict_to_gnmi_msg(self.operstate_gnmi['update']))
+        rpc_data, returns, format = self.make_test_args(opfields)
+
+        result = yangexec.run_gnmi('get-config', device, '', '',
+                                   rpc_data, returns, format=format)
         self.assertFalse(result)
 
         resp = self.rpcv.process_rpc_reply(self.operstate)
@@ -475,8 +583,11 @@ basic-mode=explicit&also-supported=report-all-tagged']
              'op': '=='}]
 
         self._base64encode()
-        resp = GnmiMessage.decode_opfields(self.operstate_gnmi['update'])
-        result = self.rpcv.process_operational_state(resp, opfields)
+        device = TestDevice(self.parse_dict_to_gnmi_msg(self.operstate_gnmi['update']))
+        rpc_data, returns, format = self.make_test_args(opfields)
+
+        result = yangexec.run_gnmi('get-config', device, '', '',
+                                   rpc_data, returns, format=format)
         self.assertTrue(result)
 
         resp = self.rpcv.process_rpc_reply(operstate)
@@ -510,8 +621,11 @@ basic-mode=explicit&also-supported=report-all-tagged']
              'op': '=='}]
 
         self._base64encode()
-        resp = GnmiMessage.decode_opfields(self.operstate_gnmi['update'])
-        result = self.rpcv.process_operational_state(resp, opfields)
+        device = TestDevice(self.parse_dict_to_gnmi_msg(self.operstate_gnmi['update']))
+        rpc_data, returns, format = self.make_test_args(opfields)
+
+        result = yangexec.run_gnmi('get-config', device, '', '',
+                                   rpc_data, returns, format=format)
         self.assertTrue(result)
 
         resp = self.rpcv.process_rpc_reply(operstate)
@@ -545,8 +659,11 @@ basic-mode=explicit&also-supported=report-all-tagged']
              'op': '=='}]
 
         self._base64encode()
-        resp = GnmiMessage.decode_opfields(self.operstate_gnmi['update'])
-        result = self.rpcv.process_operational_state(resp, opfields)
+        device = TestDevice(self.parse_dict_to_gnmi_msg(self.operstate_gnmi['update']))
+        rpc_data, returns, format = self.make_test_args(opfields)
+
+        result = yangexec.run_gnmi('get-config', device, '', '',
+                                   rpc_data, returns, format=format)
         self.assertFalse(result)
 
         resp = self.rpcv.process_rpc_reply(operstate)
@@ -579,8 +696,11 @@ basic-mode=explicit&also-supported=report-all-tagged']
              'op': '=='}]
 
         self._base64encode()
-        resp = GnmiMessage.decode_opfields(self.operstate_gnmi['update'])
-        result = self.rpcv.process_operational_state(resp, opfields)
+        device = TestDevice(self.parse_dict_to_gnmi_msg(self.operstate_gnmi['update']))
+        rpc_data, returns, format = self.make_test_args(opfields)
+
+        result = yangexec.run_gnmi('get-config', device, '', '',
+                                   rpc_data, returns, format=format)
         self.assertTrue(result)
 
         resp = self.rpcv.process_rpc_reply(operstate)
@@ -616,8 +736,11 @@ basic-mode=explicit&also-supported=report-all-tagged']
         oper_gnmi = self.jsonIetfVal.replace('330', '-330')
         self.jsonIetfVal = oper_gnmi
         self._base64encode()
-        resp = GnmiMessage.decode_opfields(self.operstate_gnmi['update'])
-        result = self.rpcv.process_operational_state(resp, opfields)
+        device = TestDevice(self.parse_dict_to_gnmi_msg(self.operstate_gnmi['update']))
+        rpc_data, returns, format = self.make_test_args(opfields)
+
+        result = yangexec.run_gnmi('get-config', device, '', '',
+                                   rpc_data, returns, format=format)
         self.assertTrue(result)
 
         resp = self.rpcv.process_rpc_reply(oper)
@@ -653,8 +776,11 @@ basic-mode=explicit&also-supported=report-all-tagged']
         oper_gnmi = self.jsonIetfVal.replace('330', '-330')
         self.jsonIetfVal = oper_gnmi
         self._base64encode()
-        resp = GnmiMessage.decode_opfields(self.operstate_gnmi['update'])
-        result = self.rpcv.process_operational_state(resp, opfields)
+        device = TestDevice(self.parse_dict_to_gnmi_msg(self.operstate_gnmi['update']))
+        rpc_data, returns, format = self.make_test_args(opfields)
+
+        result = yangexec.run_gnmi('get-config', device, '', '',
+                                   rpc_data, returns, format=format)
         self.assertTrue(result)
 
         resp = self.rpcv.process_rpc_reply(oper)
@@ -687,8 +813,11 @@ basic-mode=explicit&also-supported=report-all-tagged']
              'op': '=='}]
 
         self._base64encode()
-        resp = GnmiMessage.decode_opfields(self.operstate_gnmi['update'])
-        result = self.rpcv.process_operational_state(resp, opfields)
+        device = TestDevice(self.parse_dict_to_gnmi_msg(self.operstate_gnmi['update']))
+        rpc_data, returns, format = self.make_test_args(opfields)
+
+        result = yangexec.run_gnmi('get-config', device, '', '',
+                                   rpc_data, returns, format=format)
         self.assertFalse(result)
 
         resp = self.rpcv.process_rpc_reply(operstate)
@@ -721,8 +850,11 @@ basic-mode=explicit&also-supported=report-all-tagged']
              'op': '=='}]
 
         self._base64encode()
-        resp = GnmiMessage.decode_opfields(self.operstate_gnmi['update'])
-        result = self.rpcv.process_operational_state(resp, opfields)
+        device = TestDevice(self.parse_dict_to_gnmi_msg(self.operstate_gnmi['update']))
+        rpc_data, returns, format = self.make_test_args(opfields)
+
+        result = yangexec.run_gnmi('get-config', device, '', '',
+                                   rpc_data, returns, format=format)
         self.assertFalse(result)
 
         resp = self.rpcv.process_rpc_reply(operstate)
@@ -758,8 +890,11 @@ basic-mode=explicit&also-supported=report-all-tagged']
              'op': '=='}]
 
         self._base64encode()
-        resp = GnmiMessage.decode_opfields(self.operstate_gnmi['update'])
-        result = self.rpcv.process_operational_state(resp, opfields)
+        device = TestDevice(self.parse_dict_to_gnmi_msg(self.operstate_gnmi['update']))
+        rpc_data, returns, format = self.make_test_args(opfields)
+
+        result = yangexec.run_gnmi('get-config', device, '', '',
+                                   rpc_data, returns, format=format)
         self.assertTrue(result)
 
         resp = self.rpcv.process_rpc_reply(self.operstate)
@@ -803,8 +938,11 @@ basic-mode=explicit&also-supported=report-all-tagged']
         self.jsonIetfVal = oper_gnmi
         self._base64encode()
 
-        resp = GnmiMessage.decode_opfields(self.operstate_gnmi['update'])
-        result = self.rpcv.process_operational_state(resp, opfields)
+        device = TestDevice(self.parse_dict_to_gnmi_msg(self.operstate_gnmi['update']))
+        rpc_data, returns, format = self.make_test_args(opfields)
+
+        result = yangexec.run_gnmi('get-config', device, '', '',
+                                   rpc_data, returns, format=format)
         self.assertTrue(result)
 
         resp = self.rpcv.process_rpc_reply(oper)
@@ -850,8 +988,11 @@ basic-mode=explicit&also-supported=report-all-tagged']
         self.jsonIetfVal = oper_gnmi
         self._base64encode()
 
-        resp = GnmiMessage.decode_opfields(self.operstate_gnmi['update'])
-        result = self.rpcv.process_operational_state(resp, opfields)
+        device = TestDevice(self.parse_dict_to_gnmi_msg(self.operstate_gnmi['update']))
+        rpc_data, returns, format = self.make_test_args(opfields)
+
+        result = yangexec.run_gnmi('get-config', device, '', '',
+                                   rpc_data, returns, format=format)
         self.assertTrue(result)
 
         resp = self.rpcv.process_rpc_reply(oper)
@@ -895,8 +1036,11 @@ basic-mode=explicit&also-supported=report-all-tagged']
         self.jsonIetfVal = oper_gnmi
         self._base64encode()
 
-        resp = GnmiMessage.decode_opfields(self.operstate_gnmi['update'])
-        result = self.rpcv.process_operational_state(resp, opfields)
+        device = TestDevice(self.parse_dict_to_gnmi_msg(self.operstate_gnmi['update']))
+        rpc_data, returns, format = self.make_test_args(opfields)
+
+        result = yangexec.run_gnmi('get-config', device, '', '',
+                                   rpc_data, returns, format=format)
         self.assertTrue(result)
 
         resp = self.rpcv.process_rpc_reply(oper)
@@ -942,8 +1086,11 @@ basic-mode=explicit&also-supported=report-all-tagged']
         self.jsonIetfVal = oper_gnmi
         self._base64encode()
 
-        resp = GnmiMessage.decode_opfields(self.operstate_gnmi['update'])
-        result = self.rpcv.process_operational_state(resp, opfields)
+        device = TestDevice(self.parse_dict_to_gnmi_msg(self.operstate_gnmi['update']))
+        rpc_data, returns, format = self.make_test_args(opfields)
+
+        result = yangexec.run_gnmi('get-config', device, '', '',
+                                   rpc_data, returns, format=format)
         self.assertTrue(result)
 
         resp = self.rpcv.process_rpc_reply(oper)
@@ -989,8 +1136,11 @@ basic-mode=explicit&also-supported=report-all-tagged']
         self.jsonIetfVal = oper_gnmi
         self._base64encode()
 
-        resp = GnmiMessage.decode_opfields(self.operstate_gnmi['update'])
-        result = self.rpcv.process_operational_state(resp, opfields)
+        device = TestDevice(self.parse_dict_to_gnmi_msg(self.operstate_gnmi['update']))
+        rpc_data, returns, format = self.make_test_args(opfields)
+
+        result = yangexec.run_gnmi('get-config', device, '', '',
+                                   rpc_data, returns, format=format)
         self.assertTrue(result)
 
         resp = self.rpcv.process_rpc_reply(oper)
@@ -1133,8 +1283,12 @@ basic-mode=explicit&also-supported=report-all-tagged']
             }
         ]
         self._base64encode()
-        resp = GnmiMessage.decode_opfields(self.gnmi_leaf_list['update'])
-        result = self.rpcv.process_operational_state(resp, opfields)
+        device = TestDevice(self.parse_dict_to_gnmi_msg(
+            self.gnmi_leaf_list['update']))
+        rpc_data, returns, format = self.make_test_args(opfields)
+
+        result = yangexec.run_gnmi('get-config', device, '', '',
+                                   rpc_data, returns, format=format)
         self.assertTrue(result)
 
     def test_operational_state_multiple_entries(self):
@@ -1393,18 +1547,216 @@ basic-mode=explicit&also-supported=report-all-tagged']
         result = self.rpcv.verify_rpc_data_reply(resp, rpc_data)
         self.assertTrue(result)
 
+    def test_auto_validate_without_key_prefix(self):
+        rpc_data = {
+            "namespace": {
+                "ios": "http://cisco.com/ns/yang/Cisco-IOS-XE-native",
+                "ios-bgp": "http://cisco.com/ns/yang/Cisco-IOS-XE-bgp",
+                "ios-route-map": "http://cisco.com/ns/yang/Cisco-IOS-XE-route-map"
+            },
+            "nodes": [
+                {
+                "datatype": "",
+                "default": "",
+                "edit-op": "create",
+                "nodetype": "list",
+                "value": "",
+                "xpath": "/ios:native/ios:route-map[name=\"set-community-list\"]"
+                },
+                {
+                "datatype": "string",
+                "default": "",
+                "edit-op": "",
+                "nodetype": "leaf",
+                "value": "",
+                "xpath": "/ios:native/ios:route-map[name=\"set-community-list\"]/ios-route-map:route-map-seq[ios-route-map:ordering-seq=\"10\"]"
+                }
+            ],
+            "datastore": "running",
+            "operation": "edit-config"
+        }
+        resp = self.rpcv.process_rpc_reply(bgp_community_list_get_config_response)
+        result = self.rpcv.verify_rpc_data_reply(resp, rpc_data)
+        self.assertTrue(result)
+
+
+    def test_auto_validate_with_key_prefix(self):
+        rpc_data = {
+            "namespace": {
+                "ios": "http://cisco.com/ns/yang/Cisco-IOS-XE-native",
+                "ios-bgp": "http://cisco.com/ns/yang/Cisco-IOS-XE-bgp",
+                "ios-route-map": "http://cisco.com/ns/yang/Cisco-IOS-XE-route-map"
+            },
+            "nodes": [
+                {
+                "datatype": "",
+                "default": "",
+                "edit-op": "create",
+                "nodetype": "list",
+                "value": "",
+                "xpath": "/ios:native/ios:route-map[ios:name=\"set-community-list\"]"
+                },
+                {
+                "datatype": "string",
+                "default": "",
+                "edit-op": "",
+                "nodetype": "leaf",
+                "value": "",
+                "xpath": "/ios:native/ios:route-map[ios:name=\"set-community-list\"]/ios-route-map:route-map-seq[ios-route-map:ordering-seq=\"10\"]"
+                }
+            ],
+            "datastore": "running",
+            "operation": "edit-config"
+        }
+        resp = self.rpcv.process_rpc_reply(bgp_community_list_get_config_response)
+        result = self.rpcv.verify_rpc_data_reply(resp, rpc_data)
+        self.assertTrue(result)
+
+    def test_auto_validate_without_space_in_key_content(self):
+        rpc_data = {
+            'namespace': {
+                'ios': 'http://cisco.com/ns/yang/Cisco-IOS-XE-native',
+                'ios-bgp': 'http://cisco.com/ns/yang/Cisco-IOS-XE-bgp',
+                'ios-route-map': 'http://cisco.com/ns/yang/Cisco-IOS-XE-route-map'
+            },
+            'nodes': [
+                {
+                'datatype': '',
+                'default': '',
+                'edit-op': 'create',
+                'nodetype': 'list',
+                'value': '',
+                'xpath': '/ios:native/ios:route-map[ios:name="set-community-list"]'
+                },
+                {
+                'datatype': 'string',
+                'default': '',
+                'edit-op': '',
+                'nodetype': 'leaf',
+                'value': '',
+                'xpath': '/ios:native/ios:route-map[ios:name="set-community-list"]/ios-route-map:route-map-seq[ios-route-map:ordering-seq="10"]'
+                }
+            ],
+            'datastore': 'running',
+            'operation': 'edit-config'
+        }
+        resp = self.rpcv.process_rpc_reply(bgp_community_list_get_config_response)
+        result = self.rpcv.verify_rpc_data_reply(resp, rpc_data)
+        self.assertTrue(result)
+
+    def test_auto_validate_with_space_in_key_content(self):
+        rpc_data = {
+            'namespace': {
+                'ios': 'http://cisco.com/ns/yang/Cisco-IOS-XE-native',
+                'ios-bgp': 'http://cisco.com/ns/yang/Cisco-IOS-XE-bgp',
+                'ios-route-map': 'http://cisco.com/ns/yang/Cisco-IOS-XE-route-map'
+            },
+            'nodes': [
+                {
+                'datatype': '',
+                'default': '',
+                'edit-op': 'create',
+                'nodetype': 'list',
+                'value': '',
+                'xpath': '/ios:native/ios:route-map[ios:name="  set-community-list "]'
+                },
+                {
+                'datatype': 'string',
+                'default': '',
+                'edit-op': '',
+                'nodetype': 'leaf',
+                'value': '',
+                'xpath': '/ios:native/ios:route-map[ios:name=" set-community-list  "]/ios-route-map:route-map-seq[ios-route-map:ordering-seq="  10  "]'
+                }
+            ],
+            'datastore': 'running',
+            'operation': 'edit-config'
+        }
+        resp = self.rpcv.process_rpc_reply(bgp_community_list_get_config_response)
+        result = self.rpcv.verify_rpc_data_reply(resp, rpc_data)
+        self.assertTrue(result)
+
+    def test_auto_validate_with_same_parent_key(self):
+        rpc_data = {
+            'namespace': {
+                'ios': 'http://cisco.com/ns/yang/Cisco-IOS-XE-native',
+                'ios-bgp': 'http://cisco.com/ns/yang/Cisco-IOS-XE-bgp'
+            },
+            'nodes': [
+                {
+                'datatype': 'string',
+                'default': '',
+                'edit-op': '',
+                'nodetype': 'leaf',
+                'value': '',
+                'xpath': '/ios:native/ios:ip/ios:as-path/ios-bgp:access-list[ios-bgp:name=100]/ios-bgp:extended-grouping/ios-bgp:extended_grouping[ios-bgp:action="permit"][ios-bgp:string="_65001$"]'
+                },
+                {
+                'datatype': 'string',
+                'default': '',
+                'edit-op': '',
+                'nodetype': 'leaf',
+                'value': '',
+                'xpath': '/ios:native/ios:ip/ios:as-path/ios-bgp:access-list[ios-bgp:name=100]/ios-bgp:extended-grouping/ios-bgp:extended_grouping[ios-bgp:action="permit"][ios-bgp:string="_65002$"]'
+                },
+                {
+                'datatype': 'string',
+                'default': '',
+                'edit-op': '',
+                'nodetype': 'leaf',
+                'value': '',
+                'xpath': '/ios:native/ios:ip/ios:as-path/ios-bgp:access-list[ios-bgp:name=100]/ios-bgp:extended-grouping/ios-bgp:extended_grouping[ios-bgp:action="permit"][ios-bgp:string="_65003$"]'
+                }
+            ],
+            'datastore': 'running',
+            'operation': 'edit-config'
+        }
+        resp = self.rpcv.process_rpc_reply(bgp_community_list_same_parent_response)
+        result = self.rpcv.verify_rpc_data_reply(resp, rpc_data)
+        self.assertTrue(result)
 
 class Device:
     server_capabilities = []
 
+    def connect(self, *args, **kwargs):
+        pass
 
-def netconf_send(*args, **kwargs):
-    global operstate
-    return [('rpc', operstate)]
+    def get_config(self, *args, **kwargs):
+        return NetconfResponse()
 
-def netconf_error(*args, **kwargs):
-    global rpcerror
-    return [('rpc', rpcerror)]
+    def get(self, *args, **kwargs):
+        return NetconfResponse()
+
+    def edit_config(self, *args, **kwargs):
+        return NetconfResponse()
+
+
+class ErrorDevice(Device):
+
+    def get_config(self, *args, **kwargs):
+        return NetconfErrorResponse()
+
+    def get(self, *args, **kwargs):
+        return NetconfErrorResponse()
+
+    def edit_config(self, *args, **kwargs):
+        return NetconfErrorResponse()
+
+
+class NetconfResponse:
+    def __init__(self):
+        self.ok = True
+
+    def __str__(self) -> str:
+        global operstate
+        return operstate
+
+
+class NetconfErrorResponse(NetconfResponse):
+
+    def __str__(self) -> str:
+        global rpcerror
+        return rpcerror
 
 
 class TestRpcRun(unittest.TestCase):
@@ -1449,28 +1801,26 @@ basic-mode=explicit&also-supported=report-all-tagged']
     def test_auto_validate_off(self):
         """Check if auto_validate False does not try validation."""
         self.format['auto_validate'] = False
-        yangexec.netconf_send = netconf_send
         result = yangexec.run_netconf(
             'edit-config',
             self.device,
             None,  # steps
             {},  # datastore
             self.rpc_data,
-            self.returns[0],
+            self.returns,
             format=self.format
         )
         self.assertTrue(result)
 
     def test_auto_validate_on(self):
         """Check if auto_validate True will try validation."""
-        yangexec.netconf_send = netconf_send
         result = yangexec.run_netconf(
             'edit-config',
             self.device,
             None,  # steps
             {},  # datastore
             self.rpc_data,
-            self.returns[0],
+            self.returns,
             format=self.format
         )
         self.assertFalse(result)
@@ -1478,7 +1828,6 @@ basic-mode=explicit&also-supported=report-all-tagged']
     def test_edit_config_negative_test_on(self):
         """Check if edit-config test will pass with failure."""
         self.format['negative_test'] = True
-        yangexec.netconf_send = netconf_send
         result = yangexec.run_netconf(
             'edit-config',
             self.device,
@@ -1493,7 +1842,6 @@ basic-mode=explicit&also-supported=report-all-tagged']
     def test_get_negative_test_on(self):
         """Check if GET test will pass with failure."""
         self.format['negative_test'] = True
-        yangexec.netconf_send = netconf_send
         result = yangexec.run_netconf(
             'get',
             self.device,
@@ -1509,7 +1857,7 @@ basic-mode=explicit&also-supported=report-all-tagged']
         """Check if edit test returns correct error."""
         self.format['negative_test'] = True
         self.format['auto_validate'] = False
-        yangexec.netconf_send = netconf_error
+        device = ErrorDevice()
         rpc_data = {
             'datastore': 'running',
             'namespace': {'ios': 'http://cisco.com/ns/yang/Cisco-IOS-XE-native',
@@ -1533,7 +1881,7 @@ basic-mode=explicit&also-supported=report-all-tagged']
         }]
         result = yangexec.run_netconf(
             'edit-config',
-            self.device,
+            device,
             None, # steps
             {}, # datastore
             rpc_data,
@@ -1545,7 +1893,7 @@ basic-mode=explicit&also-supported=report-all-tagged']
         """Check for the failed case of error check."""
         self.format['negative_test'] = True
         self.format['auto_validate'] = False
-        yangexec.netconf_send = netconf_error
+        device = ErrorDevice()
         rpc_data = {
             'datastore': 'running',
             'namespace': {'ios': 'http://cisco.com/ns/yang/Cisco-IOS-XE-native',
@@ -1569,7 +1917,7 @@ basic-mode=explicit&also-supported=report-all-tagged']
         }]
         result = yangexec.run_netconf(
             'edit-config',
-            self.device,
+            device,
             None, # steps
             {}, # datastore
             rpc_data,
@@ -1580,7 +1928,6 @@ basic-mode=explicit&also-supported=report-all-tagged']
     def test_pause_on(self):
         """Check if pause 2 seconds operates correctly."""
         self.format['pause'] = 2
-        yangexec.netconf_send = netconf_send
         n1 = time()
         log.info('Pausing 2 seconds before edit-config and 2 seconds after get-config')
         yangexec.run_netconf(
@@ -1589,7 +1936,7 @@ basic-mode=explicit&also-supported=report-all-tagged']
             None,  # steps
             {},  # datastore
             self.rpc_data,
-            self.returns[0],
+            self.returns,
             format=self.format
         )
         self.assertGreater(time() - n1, 3)
@@ -1598,14 +1945,13 @@ basic-mode=explicit&also-supported=report-all-tagged']
         """Send invalid custom RPC and make sure it fails."""
         self.rpc_data['operation'] = 'rpc'
         self.rpc_data['rpc'] = '<top><next>odusrej></next></top>'
-        yangexec.netconf_send = netconf_send
         result = yangexec.run_netconf(
             'edit-config',
             self.device,
             None,  # steps
             {},  # datastore
             self.rpc_data,
-            self.returns[0],
+            self.returns,
             format=self.format
         )
         self.assertFalse(result)

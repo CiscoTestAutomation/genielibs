@@ -30,6 +30,6 @@ class TestConfigureInterfaceIpVerifyUnicastSource(unittest.TestCase):
         )
 
     def test_configure_interface_ip_verify_unicast_source(self):
-        result = configure_interface_ip_verify_unicast_source(self.device, 'te1/0/5', 'any', 'allow-self-ping')
+        result = configure_interface_ip_verify_unicast_source(self.device, 'te1/0/5', 'any', 'allow-self-ping', True)
         expected_output = None
         self.assertEqual(result, expected_output)

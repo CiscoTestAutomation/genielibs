@@ -180,3 +180,21 @@ def unconfigure_udld(device, option):
             f'Could not unconfigure udld on device. Error: {error}'
         )
     
+def configure_udld_recovery(device):
+    """Configure udld recovery
+    Args:
+        device ('obj'): device object
+    Return:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    config = ['udld recovery']
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to configure udld recovery on {device.name}\n{e}'
+        )
+    

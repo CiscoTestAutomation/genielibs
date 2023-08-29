@@ -151,6 +151,30 @@ pyats_health_processors:
                   loop_variable_name: dev
                   parallel: true
                   value: "%VARIABLES{testscript.health_settings.devices}"
+    - logging_pre_check:
+        - run_condition:
+            if: "%VARIABLES{testscript.health_settings.checks[logging]} == True"
+            actions:
+              - loop:
+                  actions:
+                    - api:
+                        arguments:
+                          keywords: "%VARIABLES{testscript.health_settings.show_logging_keywords.%VARIABLES{dev._values}}"
+                          clear_log: "%VARIABLES{testscript.health_settings.clear_logging}"
+                        device: "%VARIABLES{dev._keys}"
+                        function: health_logging
+                        health_tc_sections:
+                          - type:CommonSetup
+                        include:
+                          - value_operator('num_of_logs', '==', 0)
+                        failed_result_status: passx
+                        save:
+                          - variable_name: health_value
+                            filter: get_values('logs')
+                        processor: post
+                  loop_variable_name: dev
+                  parallel: true
+                  value: "%VARIABLES{testscript.health_settings.devices}"
     - core:
         - run_condition:
             if: "%VARIABLES{testscript.health_settings.checks[core]} == True"

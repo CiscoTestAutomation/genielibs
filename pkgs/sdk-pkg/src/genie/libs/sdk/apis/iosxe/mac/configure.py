@@ -134,15 +134,15 @@ def configure_mac_address_table_aging(device, aging_time, mac_type=None, vlan_id
     cmd = f"mac-address-table aging-time {aging_time}"
     if mac_type == "vlan":
         cmd+=f" vlan {vlan_id}"
-    else:
+    elif mac_type == "routed-mac":
         cmd+=f" routed-mac"
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure("Could not configure mac-address-table aging-time")
 
-def unconfigure_mac_address_table_aging(device, aging_time, mac_type=None,  vlan_id=None):
-    """ Unconfigure mac-address-table aging-time on device
+def unconfigure_mac_address_table_aging(device, aging_time, mac_type=None, vlan_id=None):
+    """ Unconfigure mac-address-table aging-time  on device
         Args:
             device (`obj`): device object
             aging_time (`int`): mac aging-time
@@ -156,13 +156,13 @@ def unconfigure_mac_address_table_aging(device, aging_time, mac_type=None,  vlan
     cmd = f"no mac-address-table aging-time {aging_time}"
     if mac_type == "vlan":
         cmd+=f" vlan {vlan_id}"
-    else:
+    elif mac_type == "routed-mac":
         cmd+=f" routed-mac"
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure("Could not unconfigure mac-address-table aging-time")
-       
+
 
 def configure_mac_global_address_table_static(device, mac, vlan, interface=None):
     """Configure address-table static under global mac on this device

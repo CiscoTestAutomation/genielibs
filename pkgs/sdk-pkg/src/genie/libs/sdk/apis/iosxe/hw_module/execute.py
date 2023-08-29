@@ -20,13 +20,14 @@ def hw_module_switch_usbflash_security_password(device, switch_number, action, p
             pwd ('str') : password
 
         Returns:
-            None
+            output
         Raises:
             SubCommandFailure exception
     """
     cmd = f"hw-module switch {switch_number} usbflash1 security {action} password {pwd}"
     try:
-        device.execute(cmd)
+        output = device.execute(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not {action} hw-module on device {device}. Error:\n{e}")
+    return output

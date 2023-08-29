@@ -552,8 +552,9 @@ def configure_management_vty_lines(device,
     Returns:
         None
     '''
-    if not isinstance(transport, list):
-        transport = [transport]
+    transports = []
+    if transport:
+        transports.append(transport)
 
     vty_config = []
 
@@ -565,19 +566,23 @@ def configure_management_vty_lines(device,
     lines_end = lines[-1][1]
     vty_config.append(f'line vty {lines_start} {lines_end}')
 
-    if authentication and f'login authentication {authentication}' not in output:
+    try:
+        creds = device.credentials
+    except AttributeError:
+        creds = {}
+
+    username = creds.get(authentication, {}).get('username')
+    password = to_plaintext(creds.get(authentication, {}).get('password', ''))
+
+    if username and password and f'login authentication {authentication}' not in output:
         vty_config.append(f'login authentication {authentication}')
 
     # find all transports
     all_transports = re.findall(r'transport input (.*)', output)
-    transports = []
     for t in all_transports:
         transports.extend(t.strip().split(' '))
     # remove duplicates and ignore "all"
-    transports = [t for t in set(transports) if t != 'all']
-    for t in transport:
-        if t not in transports:
-            transports.append(t)
+    transports = sorted([t for t in set(transports) if t != 'all'], reverse=True)
 
     transport_config = 'transport input {}'.format(' '.join(transports))
     vty_config.append(transport_config)
@@ -762,7 +767,7 @@ def configure_mtc(device, version, interface=None, protocol=None, address=None):
     Args:
         device ('obj'): device object
         version ('str'): protocol version ipv4 or ipv6
-        interface ('str') or ('list'): interface of mtc
+        interface ('str') or ('list'): interfaces of mtc
         protocol ('str') or ('list'): protocols of mtc
         address ('str'): mtc ipv4 or ipv6 address
     
@@ -937,3 +942,21 @@ def configure_line_vty_needs_enhancement(device,firstline_id,lastline_id,min,sec
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Failed to configure_line_vty_needs_enhancement Error {e}".format(e=e))
+    
+def unconfigure_management_netconf(device):
+    '''
+    Unonfigure device for management via netconf.
+
+    Args:
+        device ('obj'):  device object
+
+    Returns:
+_        None
+    '''
+
+    netconf_config = ['no netconf-yang']
+    try:
+        device.configure(netconf_config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure netconf-yang on device {device}. Error:\n{e}")        
+    

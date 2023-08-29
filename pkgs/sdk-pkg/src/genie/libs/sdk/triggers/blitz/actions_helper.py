@@ -331,6 +331,7 @@ def check_yang_subscribe(device, step, result=None):
         return
     subscribe_thread = None
     hostname = None
+    del_from_active = False
     if hasattr(device, 'name'):
         hostname = device.name
     elif hasattr(device, 'device') and hasattr(device.device, 'name'):
@@ -346,16 +347,14 @@ def check_yang_subscribe(device, step, result=None):
             return
         subscribe_thread = result
     elif hostname in active_subscriptions:
+        del_from_active = True
         # ON_CHANGE thread waiting for change
-        on_change = active_subscriptions[hostname]
-        if not on_change.stopped():
-            if not on_change.result:
-                step.failed('ON_CHANGE subscription failed.')
-        else:
+        subscribe_thread = active_subscriptions[hostname]
+        if subscribe_thread.stopped():
             log.info('ON_CHANGE subscribe terminated...')
-            active_subscriptions[hostname].stop()
+            subscribe_thread.stop()
             del active_subscriptions[hostname]
-        return
+            return
 
     if subscribe_thread is not None:
         # Wait for subscribe thread to finish and return result.
@@ -365,6 +364,8 @@ def check_yang_subscribe(device, step, result=None):
         # set subscribe result
         if not subscribe_thread.result:
             step.failed('subscription failed')
+        if del_from_active:
+            del active_subscriptions[hostname]
 
 
 def _api_device_update(arguments, testbed, step, command, device=None, common_api=None):

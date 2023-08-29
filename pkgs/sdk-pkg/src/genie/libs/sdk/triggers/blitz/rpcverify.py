@@ -3,8 +3,8 @@ import re
 import logging
 from six import string_types
 from pyats.log.utils import banner
-from dataclasses import dataclass
-from typing import Union, Callable, List, Tuple, Any
+from dataclasses import dataclass, field
+from typing import Union, Callable, List, Tuple, Any, ClassVar
 import operator as o
 from copy import deepcopy
 
@@ -68,7 +68,7 @@ class OptFields:
     name: str = ''
     value: Union[str, list] = ''
     xpath: str = ''
-    op: Callable = None
+    op: Union[str, Callable] = '=='
     default: str = ''
     selected: bool = True
     id: str = ''
@@ -77,7 +77,7 @@ class OptFields:
     default_xpath: str = ''
     nodetype: str = ''
     key: bool = False
-    _operators = {
+    _operators: ClassVar[dict] = {
         '==': o.eq,
         '!=': o.ne,
         '>': o.gt,
@@ -86,16 +86,24 @@ class OptFields:
         '<=': o.le,
         'range': range_op,
         'any': lambda x, y: True,
+        'deleted': 'deleted'
     }
 
-    # def __post_init__(self):
-    #     self.op = self._operators[self.op]
+    def __post_init__(self):
+        if 'decimal' in self.datatype:
+            self.value = float(
+                self.value['digits']) / (10 ** self.value['precision'])
 
     class OperatorsException(Exception):
         pass
 
     class InvalidRangeType(OperatorsException):
         pass
+
+    def __eq__(self, other):
+        if self.op != self._operators['deleted']:
+            super().__eq__(other)
+        return self.xpath == other.xpath
 
 
 class OperationalFieldsNode:
@@ -122,6 +130,38 @@ class OperationalFieldsNode:
         )
         self.default_value = default_value
         self.edit_op = edit_op
+
+
+@dataclass
+class DecodedField:
+    """Dataclass to hold decoded field data."""
+    value: any
+    xpath: str
+
+    def __eq__(self, other):
+        if isinstance(other, DecodedField):
+            return self.value == other.value and self.xpath == other.xpath
+        elif isinstance(other, tuple):
+            return self.value == other[0] and self.xpath == other[1]
+
+
+@dataclass
+class DeletedPath:
+    """Dataclass to hold single deleted path."""
+    xpath: str
+    keys: List[DecodedField] = field(default_factory=list)
+
+    def __str__(self) -> str:
+        return self.xpath
+
+
+@dataclass
+class DecodedResponse:
+    """Dataclass to hold decoded response data."""
+    json_dicts: List[dict] = field(default_factory=list)
+    updates: List[DecodedField] = field(default_factory=list)
+    deletes: List[DeletedPath] = field(default_factory=list)
+    errors: List[any] = field(default_factory=list)
 
 
 class EvalDatatype:
@@ -178,7 +218,7 @@ class EvalDatatype:
             self.min, self.max = self.integer_limits[datatype]
             if self.value < self.min or self.value > self.max:
                 self.min_max_failed = True
-        elif datatype in ['float', 'double']:
+        elif datatype in ['float', 'double', 'decimal64']:
             self.fval = float(field.value)
             self.min, self.max = self.integer_limits['int64']
             if self.value < self.min or self.value > self.max:
@@ -207,7 +247,7 @@ class EvalDatatype:
             self.value = val[val.find(':') + 1:]
         else:
             self.fval = field.value
-        self.op = field._operators[field.op]
+        self.op = OptFields._operators[field.op]
         self.fname = field.name if field.name else 'unknown field'
 
     def evaluate(self):
@@ -296,7 +336,7 @@ class RpcVerify():
             self.et = et
         except ImportError as e:
             log.error('Make sure you have lxml installed in your virtual env')
-            raise(e)
+            raise (e)
         self.rpc_reply = rpc_reply
         self.rpc_verify = rpc_verify
         self.capabilities = capabilities
@@ -513,7 +553,7 @@ class RpcVerify():
             xpath = field.xpath
         try:
             # set this to operation in case we get an exception
-            op_name, op_method = field.op, field._operators[field.op]
+            op_name, op_method = field.op, OptFields._operators[field.op]
             eval_text = op_name
             datatype = field.datatype
 
@@ -523,11 +563,11 @@ class RpcVerify():
                         value = float(value)
                 except ValueError:
                     log_msg = 'OPERATION VALUE {0}: {1} invalid for range {2}{3}'.format(
-                            xpath,
-                            str(value),
-                            str(field.value),
-                            ' FAILED'
-                        )
+                        xpath,
+                        str(value),
+                        str(field.value),
+                        ' FAILED'
+                    )
                     return (False, log_msg)
 
                 try:
@@ -542,15 +582,15 @@ class RpcVerify():
                     return (False, log_msg)
                 if result:
                     log_msg = 'OPERATION VALUE {0}: {1} in range {2} SUCCESS'.format(
-                            xpath, str(value), str(field.value)
-                        )
+                        xpath, str(value), str(field.value)
+                    )
                 else:
                     log_msg = 'OPERATION VALUE {0}: {1} out of range {2}{3}'.format(
-                            xpath,
-                            str(value),
-                            str(field.value),
-                            ' FAILED'
-                        )
+                        xpath,
+                        str(value),
+                        str(field.value),
+                        ' FAILED'
+                    )
                     return (False, log_msg)
             else:
                 if not datatype:
@@ -567,8 +607,8 @@ class RpcVerify():
                         eval_text = '"' + value + '" ' + op_name
                         eval_text += ' "' + fval + '"'
                         log_msg = 'OPERATION VALUE {0}: {1} FAILED'.format(
-                                xpath, eval_text
-                            )
+                            xpath, eval_text
+                        )
                         return (False, log_msg)
                     if value.isnumeric():
                         result = op_method(value, fval)
@@ -594,9 +634,9 @@ class RpcVerify():
                             result = op_method(value, fval)
                     if result:
                         log_msg = 'OPERATION VALUE {0}: {1} SUCCESS'.format(
-                                xpath, eval_text
-                            )
-                    #check if values have prefixes
+                            xpath, eval_text
+                        )
+                    # check if values have prefixes
                     elif value.count(':') == 1 and fval.count(':') == 1:
                         value = value.split(':')[1]
                         fval = fval.split(':')[1]
@@ -612,8 +652,8 @@ class RpcVerify():
                             return (False, log_msg)
                     else:
                         log_msg = 'OPERATION VALUE {0}: {1} FAILED'.format(
-                                xpath, eval_text
-                            )
+                            xpath, eval_text
+                        )
                         return (False, log_msg)
                 else:
                     log_tmp = 'OPERATION VALUE {0}: {1} {2} {3} {4}'
@@ -621,10 +661,10 @@ class RpcVerify():
                     evaldt = EvalDatatype(value, field)
                     if evaldt.evaluate():
                         log_msg = log_tmp.format(
-                                xpath, str(value),
-                                op_name, str(field.value),
-                                'SUCCESS'
-                            )
+                            xpath, str(value),
+                            op_name, str(field.value),
+                            'SUCCESS'
+                        )
                     else:
                         if evaldt.min_max_failed:
                             failed_type = '"{0}" MIN-MAX FAILED'.format(
@@ -633,16 +673,16 @@ class RpcVerify():
                         elif evaldt.bool_failed:
                             failed_type = 'BOOLEAN FAILED'
                         log_msg = log_tmp.format(
-                                xpath, str(value),
-                                op_name, str(field.value),
-                                failed_type
-                            )
+                            xpath, str(value),
+                            op_name, str(field.value),
+                            failed_type
+                        )
                         return (False, log_msg)
 
         except Exception as e:
             log_msg = 'OPERATION VALUE {0}: {1} {2} FAILED\n{3}'.format(
-                    xpath, str(value), eval_text, str(e)
-                )
+                xpath, str(value), eval_text, str(e)
+            )
             return (False, log_msg)
 
         return (True, log_msg)
@@ -651,8 +691,7 @@ class RpcVerify():
                                       response: List[Tuple[Any, str]],
                                       field: OptFields,
                                       key=False,
-                                      sequence=None,
-                                      whole_response=False):
+                                      sequence=None):
         """Check if a response contains an expected result.
 
         Args:
@@ -669,7 +708,8 @@ class RpcVerify():
         else:
             xpath = field.xpath
 
-        log_msg = 'ERROR: "{0} value: {1}" Not found.'.format(xpath, str(field.value))
+        log_msg = 'ERROR: "{0} value: {1}" Not found.'.format(
+            xpath, str(field.value))
         datatype = ''
         result = False
 
@@ -677,7 +717,8 @@ class RpcVerify():
             datatype = field.datatype
             if datatype == 'ascii':
                 if field.op != "==":
-                    log.error(f"ASCII datatype can be used only with '==' operator not with {field['op']}")
+                    log.error(
+                        f"ASCII datatype can be used only with '==' operator not with {field['op']}")
                     break
                 return resp.get("value") == field.value
             else:
@@ -712,9 +753,8 @@ class RpcVerify():
                         #    <Prop>v1<Prop> ---> First value found should be the target value.
                         # </List1>
                         if sequence and not result:
-                            if whole_response:
-                                log.error(log_msg)
-                                return result
+                            log.error(log_msg)
+                            return result
                         if result:
                             if not datatype:
                                 log.warning(
@@ -731,17 +771,14 @@ class RpcVerify():
             ))
             return True
 
-        # Dont log non matched returns for on_change
-        if whole_response:
-            if not datatype:
-                log.warning(
-                    "{0} has no datatype; default to string".format(
-                        xpath
-                    )
+        if not datatype:
+            log.warning(
+                "{0} has no datatype; default to string".format(
+                    xpath
                 )
+            )
         # Dont log non matched returns for on_change
-        if whole_response:
-            log.error(log_msg)
+        log.error(log_msg)
         return result
 
     def pre_process_keys(self,
@@ -750,7 +787,7 @@ class RpcVerify():
         """Check for lists with multiple keys in returns xpaths.
             and store the order of keys.
 
-        Args: 
+        Args:
             returns (list): List of fields in returns containing
                             list keys in xpath
             response (list): List of tuples containing
@@ -760,11 +797,11 @@ class RpcVerify():
             Eg: We have a returns field['xpath']:
             field['xpath'] = /Sys/Cont1/List1[key1=val1]/Cont2/List2[key2=val2][key3=val3]
             Since List2 has multiple keys under it we store the order
-            that key2 comes first and key3 comes second, 
+            that key2 comes first and key3 comes second,
             so that we can compare it and correct the order in response.
-            
+
             Store in key_orders = [
-                                    [ 
+                                    [
                                       (val2,/Sys/Cont1/List1/Cont2/List2/key2),
                                       (val3,/Sys/Cont1/List1/Cont2/List2/key3)
                                     ]
@@ -793,7 +830,7 @@ class RpcVerify():
                 # Eg: /Sys/Cont/Lis[Key1=Val1]
                 # key_path = /Sys/Cont/Lis/Key1
                 key_path = xpath.split(key)[0] + '/' + key_name
-                key_path = re.sub(self.RE_FIND_KEYS, '', key_path)        
+                key_path = re.sub(self.RE_FIND_KEYS, '', key_path)
 
                 # We have the start and end index of keys found
                 # to detect if we have multiple keys or not
@@ -810,7 +847,7 @@ class RpcVerify():
                     if len(key_order) > 1:
                         key_orders.append(key_order)
                     key_order = []
-                    
+
                 # Keep track of previous indexes, key_val, key_path.
                 # to match them with current
                 prev_start_index = start_index
@@ -818,7 +855,7 @@ class RpcVerify():
                 prev_key_path = key_path
                 prev_key_val = key_val
 
-            # If multiple keys are found then only store it        
+            # If multiple keys are found then only store it
             if len(key_order) > 1:
                 key_orders.append(key_order)
 
@@ -916,7 +953,7 @@ class RpcVerify():
             Paths:
                 1. /cont/lis[k=v]/cont/lis[key1=val1][key2=val2]
                 2. /cont/lis[k=v]/cont/lis[key3=val3][key4=val4]
-            Eg key_orders: 
+            Eg key_orders:
                 [
                     [(val1, /cont/lis/cont/lis/key1), (val2, /cont/lis/cont/lis/key2)], # For path 1
                     [(val3, /cont/lis/cont/lis/key3), (val4, /cont/lis/cont/lis/key4)]  # For path 2
@@ -933,14 +970,14 @@ class RpcVerify():
                 # Order of keys may be different as shown in this example. (key3 comes second and key4 comes first)
                 (val4, /cont/lis/cont/lis/key4), (val3, /cont/lis/cont/lis/key3)
             ]
-            
+
         # This function finds all the groups of key_orders in response even when they are not in correct order.
         # Group is each key order of N multiple keys.
         # Eg group1 = [(val1, key1_path),(val2, key2_path)], group2 = [(val3, key3_path),(val4 key4_path)]
         # Eg: For group 1 in response key1 comes second and key2 comes first
         # We found key1 and key2 at Index [2,1] in response
         # This index will be sent to reorder_keys_in_opfield() function to correct it as [1,2]
-        """        
+        """
         response = response[0]
         # Iterate over all the groups in key_orders
         for key_order in key_orders:
@@ -956,7 +993,7 @@ class RpcVerify():
             first_key_path = key_order[0][1]
             # Extract the list of first_key_path
             # list_in_key = /cont/lis/cont/lis
-            # Now '/cont/lis/cont/lis' this list path will be 
+            # Now '/cont/lis/cont/lis' this list path will be
             # common for all keys in the group
             # This will help us identify all the list keys in response
             # to check whether they are together or not.
@@ -964,7 +1001,7 @@ class RpcVerify():
             key_len = len(key_order)
             count = 0
             key_indexes = []
-            for index,resp in enumerate(response):
+            for index, resp in enumerate(response):
                 # For every response, we trim the path upto last '/'
                 # To match it with out key list.
                 # Eg: resp = (value, Sys/cont/list/key)
@@ -976,7 +1013,7 @@ class RpcVerify():
                 # This makes sure that the key found in response is in our current group.
                 # For every key found increase the count and check with key_len
                 # key_len is total number of keys for each group.
-                if(list_in_key == list_in_response and resp[0] in values):
+                if (list_in_key == list_in_response and resp[0] in values):
                     count += 1
                     key_indexes.append(index)
                 else:
@@ -984,9 +1021,10 @@ class RpcVerify():
                     key_indexes = []
 
                 # all keys are found and we have store the indexes
-                if(count == key_len):
+                if (count == key_len):
                     # Send those indexes for reordering
-                    self.reorder_keys_in_opfield(response, key_indexes, key_order)
+                    self.reorder_keys_in_opfield(
+                        response, key_indexes, key_order)
                     key_indexes = []
                     count = 0
 
@@ -1015,7 +1053,7 @@ class RpcVerify():
 
                     Store response[2] = key_order[0]
                     Store response[1] = key_order[1]
-                
+
         Return: Response with correct key_order
                 response =
                     [
@@ -1023,7 +1061,7 @@ class RpcVerify():
                         (val1, cont/lis/cont/lis/key1), (val2, cont/lis/cont/lis/key2),
                         (some_val,some_path),(some_val,some_path)
                     ]
-            
+
         """
         index = key_indexes[0]
         for field in key_order:
@@ -1046,10 +1084,12 @@ class RpcVerify():
             Eg:
                 response:
                     [
-                        (myContainer/myList1/key, k1), --> Parent Index
-                        (myContainer/myList1/Val, v1), --> Property to validate
-                        (myContainer/myList2/key, k2), --> Next Index
-                        (myContainer/myList2/Val, v2)
+                        (myContainer/myList1/key, k1),
+                        (myContainer/myList1/Val, v1),
+                        (myContainer/myList2/key, k2), --> Parent Index
+                        (myContainer/myList2/Val, v2), --> Property to validate
+                        (myContainer/myList2/key, k3),
+                        (myContainer/myList2/Val, v3)
                     ]
 
         Returns:
@@ -1057,22 +1097,19 @@ class RpcVerify():
             Eg:
                 response:
                     [
-                        (myContainer/myList1/key, k1),
-                        (myContainer/myList1/Val, v1)
+                        (myContainer/myList1/key, k2),
+                        (myContainer/myList1/Val, v2),
+                        (myContainer/myList2/key, k3),
+                        (myContainer/myList2/Val, v3)
                     ]
         """
         parent_dict = self.get_parent_dict(parent_key_indexes, field.xpath)
-        parent_key_xpath = list(parent_dict.keys())[0]
         parent_key_index = list(parent_dict.values())[0][0]
-        parent_key_value = list(parent_dict.values())[0][1]
-        if not parent_key_index == 0:
-            next_index = self.find_next_index(response[0], parent_key_index+1, parent_key_xpath, parent_key_value)
-        else:
-            next_index = len(response[0])
+
         # Trim the response for specific list entry
         new_response = [
             response[0][
-                parent_key_index:next_index
+                parent_key_index:
                 ]
             ]
 
@@ -1081,8 +1118,7 @@ class RpcVerify():
     def process_sequencial_operational_state(self,
                                              response: List[Tuple[Any, str]],
                                              returns: List[OptFields],
-                                             key=False,
-                                             whole_response=False):
+                                             key=False):
         """Given multiple list entries, pick the specific entry required and validate.
 
         response:
@@ -1140,7 +1176,8 @@ class RpcVerify():
             # If broken then skip all the values in that sequence
             # by logging Not Found.
             if sequence_no == sequence_broke_no:
-                log_msg = 'ERROR: "{0} value: {1}" Not found.'.format(xpath, str(field.value))
+                log_msg = 'ERROR: "{0} value: {1}" Not found.'.format(
+                    xpath, str(field.value))
                 log.error(log_msg)
                 results.append(False)
                 continue
@@ -1148,7 +1185,8 @@ class RpcVerify():
                 sequence_broke_no = 0
             # Get the new response by trimming the actual response
             # to just the list we are looking for
-            new_response, parent_key_index = self.trim_response(response, parent_key_indexes, field)
+            new_response, parent_key_index = self.trim_response(
+                response, parent_key_indexes, field)
             # Start loop from the new_response
             for resp in new_response:
                 for reply, reply_xpath in resp:
@@ -1183,12 +1221,13 @@ class RpcVerify():
                                 # Trim the new response from the index where
                                 # current key is found
                                 key_found = True
-                                next_index = self.find_next_index(resp, index, field.xpath, field.value)
+                                next_index = self.find_next_index(
+                                    resp, index, field.xpath, field.value)
                                 new_response = [
                                     resp[
                                         index-1:next_index
-                                        ]
                                     ]
+                                ]
                                 # Store current key index
                                 parent_key_indexes[field.xpath] = [
                                     parent_key_index + index, field.value]
@@ -1197,7 +1236,8 @@ class RpcVerify():
                 # If a key-value is not found in the entire response
                 # then the sequence is broken
                 if isKey and not key_found:
-                    log_msg = 'ERROR: "{0} value: {1}" Not found.'.format(xpath, str(field.value))
+                    log_msg = 'ERROR: "{0} value: {1}" Not found.'.format(
+                        xpath, str(field.value))
                     results.append(False)
                     log.error(log_msg)
                     sequence_broke_no = sequence_no
@@ -1207,7 +1247,7 @@ class RpcVerify():
                         sel = field.selected
                         if sel is False or str(sel).lower() == 'false':
                             continue
-                        if not self.process_one_operational_state(new_response, field, key, sequence, whole_response=whole_response):
+                        if not self.process_one_operational_state(new_response, field, key, sequence):
                             result = False
                             results.append(result)
             prev_seq_no = sequence_no
@@ -1266,11 +1306,11 @@ class RpcVerify():
                 new_response, new_returns, key)
         else:
             returns = self.process_returns(returns)
-            for field in returns:
-                sel = field.selected
+            for r_field in returns:
+                sel = r_field.selected
                 if sel is False or str(sel).lower() == 'false':
                     continue
-                if not self.process_one_operational_state(response, field, key):
+                if not self.process_one_operational_state(response, r_field, key):
                     result = False
         return result
 
@@ -1309,7 +1349,7 @@ class RpcVerify():
                 <Prop>v2<Prop>
             </List2>
         """
-        for ix,resp in enumerate(response[index:]):
+        for ix, resp in enumerate(response[index:]):
             if resp[1] == xpath and not str(resp[0]) == value:
                 return ix+index
 
@@ -1457,21 +1497,21 @@ class RpcVerify():
         if not result:
             if missing_tags:
                 log.error("{0} Following tags are missing:\n{1}".format(
-                        'OPERATIONAL-VERIFY FAILED',
-                        missing_tags
-                    )
+                    'OPERATIONAL-VERIFY FAILED',
+                    missing_tags
+                )
                 )
             if missing_ns_msg:
                 log.error("{0} Missing namespaces:\n{1}".format(
-                        'OPERATIONAL-VERIFY FAILED',
-                        missing_ns_msg
-                    )
+                    'OPERATIONAL-VERIFY FAILED',
+                    missing_ns_msg
+                )
                 )
             if wrong_values:
                 log.error("{0} Wrong values:\n{1}".format(
-                        'OPERATIONAL-VERIFY FAILED',
-                        wrong_values
-                    )
+                    'OPERATIONAL-VERIFY FAILED',
+                    wrong_values
+                )
                 )
         if len(response) and 'explicit' in self.with_defaults:
             result = False
@@ -1488,8 +1528,20 @@ class RpcVerify():
     # Pattern to detect keys in an xpath
     RE_FIND_KEYS = re.compile(r'\[.*?\]')
     RE_FIND_PREFIXES = re.compile(r'/[-a-zA-Z0-9]+:')
-    # Pattern to detect prefix in the key name
-    RE_FIND_KEY_PREFIX = re.compile(r'\[.*?:')
+
+    # pattern to detect prefix in the key name, prefix is optional
+    # e.g.
+    # /native/route-map[name="set-community-list"]/route-map-seq[ios-route-map:ordering-seq="10"]
+    # becomes (note `name` does not have a prefix, but `ordering-seq` has):
+    # /native/route-map[name="set-community-list"]/route-map-seq[ordering-seq="10"]
+    RE_FIND_KEY_PREFIX = r'\[(?P<prefix>[-\w]+:)?(?P<name>[-\w]+)'
+
+    # Pattern to remove leading and trailing whitespace in the key content
+    # e.g.
+    # /native/router/bgp[id="6"]/neighbor[id=" 100.5.6.6 "]/remote-as
+    # becomes
+    # /native/router/bgp[id="6"]/neighbor[id="100.5.6.6"]/remote-as
+    RE_STRIP_WHITESPACE = r'(\'|\")\s*(?P<content>.*?)\s*(\'|\")'
 
     def verify_rpc_data_reply(self, decoded_response: List[tuple], rpc_data: dict) -> bool:
         # TODO Move to verifiers.py when netconf is implemented
@@ -1520,10 +1572,34 @@ class RpcVerify():
             # original xpath with key/value required to validate
             # key values with multilist entries in response
             xpath_original = re.sub(self.RE_FIND_PREFIXES, '/', node.get('xpath', ''))
-            xpath_original = re.sub(self.RE_FIND_KEY_PREFIX, '[', xpath_original)
+
+            # Find missing prefixes and log warning
+            matches = re.findall(self.RE_FIND_KEY_PREFIX, xpath_original)
+            if matches:
+                for m in matches:
+                    prefix = m[0]
+                    name = m[1]
+                    if not prefix:
+                        log.warning(f'RPC reply key "{name}" is missing prefix in {xpath_original}')
+
+            # remove prefixes from key names (if they exist)
+            # e.g.
+            # /native/route-map[name="set-community-list"]/route-map-seq[ios-route-map:ordering-seq="10"]
+            # becomes (note `name` does not have a prefix, but `ordering-seq` has):
+            # /native/route-map[name="set-community-list"]/route-map-seq[ordering-seq="10"]
+            xpath_original = re.sub(self.RE_FIND_KEY_PREFIX, r'[\g<name>', xpath_original)
+
+            # Remove leading and trailing whitespace in the key content
+            # e.g.
+            # /native/router/bgp[id="6"]/neighbor[id=" 100.5.6.6 "]/remote-ass
+            # becomes
+            # /native/router/bgp[id="6"]/neighbor[id="100.5.6.6"]/remote-as
+            xpath_original = re.sub(self.RE_STRIP_WHITESPACE, r'"\g<content>"', xpath_original)
+
             # xpath with keys and namespace prefix stripped.
             xpath = re.sub(self.RE_FIND_KEYS, '', node.get('xpath', ''))
             xpath = re.sub(self.RE_FIND_PREFIXES, '/', xpath)
+
             if del_parent:
                 # Check to see if parent and child have same xpath,
                 # so "not boundary" will be True hence continue.
@@ -1597,7 +1673,8 @@ class RpcVerify():
                     for reply, reply_path in resp:
                         if xpath == reply_path:
                             # node xpath still exists in the response
-                            log.error("Config not removed. {0} operation failed".format(edit_op))
+                            log.error(
+                                "Config not removed. {0} operation failed".format(edit_op))
                             return False
         for node in nodes:
             if not self.process_operational_state(decoded_response, [node.opfields]):
@@ -1617,32 +1694,32 @@ class RpcVerify():
         xpath = re.sub(self.RE_FIND_PREFIXES, '/', xpath)
         # Loop through all the key/value in the xpath
         for key in self.RE_FIND_KEYS.findall(xpath):
-             # Remove the prefix from list key name,
-             # Ex: changes [ios:foo="val"] to foo="val"]
-             key_no_pfx = re.sub(self.RE_FIND_KEY_PREFIX, '', key)
-             # Split the key/value on "=", get the first entry,
-             # and strip the '[' if present.
-             # Ex: for [foo="val"] the keyname will be 'foo'
-             keyname = key_no_pfx.split('=')[0].strip('[')
-             # Get the value field from [foo="val"]
-             # second entry after spliting on "=" will get the value
-             # strip the ending ']'.
-             # Ex: [foo="val"] will return '"val"' after stripping the ']'
-             keyval = key_no_pfx.split('=')[1].strip(']')
-             # To remove double quotes from the value
-             # Ex: Change '"val"' to 'val'
-             keyval = re.sub('"', '', keyval)
-             # contruct xpath /xpath/list/foo by appending the key name.
-             key_path = xpath.split(key)[0] + '/' + keyname
-             # If there are multiple key/values in xpath, substitute other
-             # key value pairs with empty string.
-             key_path = re.sub(self.RE_FIND_KEYS, '', key_path)
-             for entry in nodes:
-                 if entry.xpath == key_path:
-                     break
-             else:
-                 nodes.append(OptFields(name=keyname, value=keyval,
-                              xpath=key_path, selected=True, op='=='))
+            # Remove the prefix from list key name,
+            # Ex: changes [ios:foo="val"] to foo="val"]
+            key_no_pfx = re.sub(self.RE_FIND_KEY_PREFIX, '', key)
+            # Split the key/value on "=", get the first entry,
+            # and strip the '[' if present.
+            # Ex: for [foo="val"] the keyname will be 'foo'
+            keyname = key_no_pfx.split('=')[0].strip('[')
+            # Get the value field from [foo="val"]
+            # second entry after spliting on "=" will get the value
+            # strip the ending ']'.
+            # Ex: [foo="val"] will return '"val"' after stripping the ']'
+            keyval = key_no_pfx.split('=')[1].strip(']')
+            # To remove double quotes from the value
+            # Ex: Change '"val"' to 'val'
+            keyval = re.sub('"', '', keyval)
+            # contruct xpath /xpath/list/foo by appending the key name.
+            key_path = xpath.split(key)[0] + '/' + keyname
+            # If there are multiple key/values in xpath, substitute other
+            # key value pairs with empty string.
+            key_path = re.sub(self.RE_FIND_KEYS, '', key_path)
+            for entry in nodes:
+                if entry.xpath == key_path:
+                    break
+            else:
+                nodes.append(OptFields(name=keyname, value=keyval,
+                             xpath=key_path, selected=True, op='=='))
 
     def process_rpc_reply(self, resp):
         """Transform XML into elements with associated xpath.
@@ -1667,7 +1744,7 @@ class RpcVerify():
         except self.et.XMLSyntaxError as e:
             log.error(
                 banner('OPERATIONAL-VERIFY FAILED: Response XML:\n{0}'
-                    .format(str(e)))
+                       .format(str(e)))
             )
             return False
 
@@ -1696,149 +1773,3 @@ class RpcVerify():
             xpath = []
 
         return response
-
-    def parse_rpc_expected(self, resp_xml, expect_xml, opfields: List[OptFields]=[]):
-        """Check if values are correct according expected XML.
-
-        As an XML message is parsed, some XML tags have values assigned
-        to them and some are just containers for other tags.  It is possible
-        that the user is expecting one or more XML tags to be missing.  In
-        expected XML, those cases are communicated by a "-" (minus) inserted
-        in front of the XML tag that should be missing.  As the expected XML
-        is parsed, those tags are identified, stored, and checked in response.
-
-        Tags with values are assigned a sequence number according to the order
-        within the expected XML.  The returned XML value should always be in
-        the same order.  If opfields are passed in, they will match the
-        sequence number.
-
-        It is possible that the user is not interested in one or more values.
-        In those cases, the sequence number will not be found in the opfields
-        list and they will be skipped.
-
-        When opfeilds are found, the assigned operation will be performed on
-        the value, and if the operation returns True, the field test passed.
-
-        Args:
-          resp_xml (str): Actual rpc-reply XML.
-          expected_xml (str): Expected rpc-reply XML.
-          opfields (list): Expected values and operations to perform.
-        Return:
-          bool: Pass is True.
-        """
-        result = True
-
-        if not opfields:
-            log.info('EXPECTED XML:\n{0}'.format(expect_xml))
-
-        if not opfields and not expect_xml:
-            log.error(
-                banner("OPERATIONAL-VERIFY FAILED: No XML for verification.")
-            )
-            return False
-
-        if not resp_xml:
-            log.error(
-                banner("OPERATIONAL-VERIFY FAILED: No response to verify.")
-            )
-            return False
-
-        # Preprocess expected XML text for unexpected tags
-        lines = expect_xml.strip().splitlines()
-        oper_expected = ""
-        for line in lines:
-            # lines with "-" (minus) should not show up in reply
-            line = re.sub(r'^- *<([-0-9a-z:A-Z_]+)',
-                          r'<\1 expected="false" ', line)
-            oper_expected += line + "\n"
-
-        try:
-            expect = self.et.fromstring(oper_expected)
-        except self.et.XMLSyntaxError as e:
-            log.error(
-                banner('OPERATIONAL-VERIFY FAILED: Expected XML:\n{0}'
-                    .format(str(e)))
-            )
-            return False
-
-        response = self.process_rpc_reply(resp_xml)
-        if response is False:
-            # Returning an empty list is ok
-            return False
-
-        expected = []
-        xpath = []
-        # Associate xpaths with expected tags
-        for el in expect.iter():
-            if self.et.QName(el).localname == 'rpc-reply':
-                # Don't evaluate rpc-reply tag
-                continue
-            if not expected and self.et.QName(el).localname == 'data':
-                # Don't evaluate rpc-reply/data tag
-                continue
-            xpath.append('/' + self.et.QName(el).localname)
-            parent = el.getparent()
-            while True:
-                if parent is not None:
-                    xpath.append('/' + self.et.QName(parent).localname)
-                    parent = parent.getparent()
-                else:
-                    break
-            expected.append(
-                (
-                    el,
-                    re.sub(
-                        r'^/rpc-reply/data|^/data',
-                        '',
-                        ''.join(reversed(xpath)),
-                    )
-                )
-            )
-            xpath = []
-
-        # Expected XML should have at least one top level tag with one child
-        if 'explicit' in self.with_defaults and len(expected) < 2:
-            expected = []
-
-        # Is any data expected to be returned?
-        if expected and 'explicit' in self.with_defaults:
-            # First element will always be top container so check it's child
-            top_child, child_xpath = expected[1]
-            # Attribute expected=false was added to unexpected elements
-            if 'expected' in top_child.attrib:
-                # Top level child is expected to be gone so we expect no data
-                expected = []
-
-        if expected or opfields:
-            if not response:
-                log.error(
-                    banner("OPERATIONAL-VERIFY FAILED: rpc-reply has no data.")
-                )
-                return False
-
-        if not expected and not opfields and not response:
-            log.error(
-                banner(
-                    "OPERATIONAL-VERIFY SUCCESSFUL: {0}.".format(
-                        'Expected no data in rpc-reply'
-                    )
-                )
-            )
-            return True
-
-        if not expected and not opfields and response:
-            log.error(
-                banner(
-                    "OPERATIONAL-VERIFY FAILED: Expected no data in rpc-reply."
-                )
-            )
-            return False
-
-        result, expected, response = self.process_expect_reply(response,
-                                                               expected)
-        if result and expected and response:
-            result = self.verify_reply(response, expected, opfields)
-
-        if result:
-            log.info('OPERATIONAL-VERIFY SUCCESSFUL')
-        return result

@@ -30,5 +30,5 @@ class TestConfigureInterfaceServicePolicy(unittest.TestCase):
 
     def test_configure_interface_service_policy(self):
         result = configure_interface_service_policy(self.device, 'Te0/1/0', 'grandparent', 'out')
-        expected_output = None
+        expected_output = 'interface Te0/1/0\r\ninterface Te0/1/0\r\nservice-policy out grandparent\r\nservice-policy out grandparent\r\n'
         self.assertEqual(result, expected_output)

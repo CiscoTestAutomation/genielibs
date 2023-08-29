@@ -2466,3 +2466,192 @@ def configure_disable_config_key_encryption(device):
                 device=device.name, e=str(e))
         )
         
+def config_access_session_auth_attr_filter_spec_include_list(device, filter_list_name):
+
+    """ access-session authentication attr filter-spec include list with
+    Args:
+        device (`obj`): Device object
+        filter_list_nam ('str'): Attribute filter-list name
+
+    Return:
+        None
+
+    Raise:
+        SubCommandFailure: Failed unconfiguring Attribute list with type
+
+    """
+    try:
+        device.configure([
+               f"access-session authentication attributes filter-spec include list {filter_list_name}"
+               ])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not unconfigure Attribute list with type'
+        )
+    
+def unconfig_access_session_auth_attr_filter_spec_include_list(device, filter_list_name):
+
+    """ access-session authentication attr filter-spec include list with
+    Args:
+        device (`obj`): Device object
+        filter_list_nam ('str'): Attribute filter-list name
+
+    Return:
+        None
+
+    Raise:
+        SubCommandFailure: Failed unconfiguring Attribute list with type
+
+    """
+    try:
+        device.configure([
+               f"no access-session authentication attributes filter-spec include list {filter_list_name}"
+               ])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not unconfigure Attribute list with type'
+        )
+
+
+def configure_radius_server_source_ports_extended(device):
+    """ configure radius-server source-ports extended
+    Args:
+        device ('obj'): Device object        
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring radius-server source-ports extended
+    """   
+    configs=['radius-server source-ports extended']    
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configure radius-server source-ports extended. Error:\n{e}')
+
+def config_access_session_accnt_attr_filter_spec_include_list(device, filter_list_name):
+
+    """ access-session accounting attr filter-spec include list with
+    Args:
+        device (`obj`): Device object
+        filter_list_nam ('str'): Attribute filter-list name
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed unconfiguring Attribute list with type
+    """
+    try:
+        device.configure([
+               f"access-session accounting attributes filter-spec include list {filter_list_name}"
+               ])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not unconfigure Attribute list with type'
+        )
+
+def unconfig_access_session_accnt_attr_filter_spec_include_list(device, filter_list_name):
+
+    """ access-session accounting attr filter-spec include list with
+    Args:
+        device (`obj`): Device object
+        filter_list_nam ('str'): Attribute filter-list name
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed unconfiguring Attribute list with type
+    """
+    try:
+        device.configure([
+               f"no access-session accounting attributes filter-spec include list {filter_list_name}"
+               ])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not unconfigure Attribute list with type'
+        )
+def configure_access_session_attr_filter_list(device, filter_list_name, vlan_id=None, cdp=None, 
+                                        dhcp=None, lldp=None, dhcpv6=None, http=None):
+    """ Configure access-session filter list
+    Args:
+        device ('obj'): device to use
+        filter_list_name ('str'): Filter list name.
+        vlan-id ('str', optional):  Default is None.
+        cdp ('int', optional):  Default is None.
+        dhcp ('str', optional):  Default is None.
+        lldp ('str', optional):  Default is None.
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed to configure access session filter list
+    """
+
+    cmd = [f'access-session attributes filter-list list {filter_list_name}']
+    if vlan_id:
+        cmd.append(f'{vlan_id}')
+    if cdp:
+        cmd.append(f'{cdp}')
+    if dhcp:
+        cmd.append(f'{dhcp}')
+    if lldp:
+        cmd.append(f'{lldp}')
+    if dhcpv6:
+        cmd.append(f'{dhcpv6}')
+    if http:
+        cmd.append(f'{http}')
+    try:
+        device.configure(cmd)
+    
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure device sensor filter list. Error:\n{e}")
+    
+def unconfigure_access_session_attr_filter_list(device, filter_list_name):
+    """ Unconfigure access-session filter list
+    Args:
+        device ('obj'): device to use
+        filter_list_name ('str'): Filter list name.
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed to configure access session filter list
+    """
+
+    cmd = [f'no access-session attributes filter-list list {filter_list_name}']
+
+    try:
+        device.configure(cmd)
+    
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure device sensor filter list. Error:\n{e}")
+
+def unconfigure_access_session_attr_filter_list_protocol(device, filter_list_name, vlan_id=None, cdp=None, 
+                                        dhcp=None, lldp=None, dhcpv6=None, http=None):
+    """ Configure access-session filter list
+    Args:
+        device ('obj'): device to use
+        filter_list_name ('str'): Filter list name.
+        vlan-id ('str', optional):  Default is None.
+        cdp ('int', optional):  Default is None.
+        dhcp ('str', optional):  Default is None.
+        lldp ('str', optional):  Default is None.
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed to configure access session filter list
+    """
+
+    cmd = [f'access-session attributes filter-list list {filter_list_name}']
+    if vlan_id:
+        cmd.append(f'no {vlan_id}')
+    if cdp:
+        cmd.append(f'no {cdp}')
+    if dhcp:
+        cmd.append(f'no {dhcp}')
+    if lldp:
+        cmd.append(f'no {lldp}')
+    if dhcpv6:
+        cmd.append(f'no {dhcpv6}')
+    if http:
+        cmd.append(f'no {http}')
+    try:
+        device.configure(cmd)
+    
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure device sensor filter list. Error:\n{e}")

@@ -31,5 +31,5 @@ class TestHwModuleSwitchUsbflashSecurityPassword(unittest.TestCase):
 
     def test_hw_module_switch_usbflash_security_password(self):
         result = hw_module_switch_usbflash_security_password(self.device, 1, 'enable', 'password')
-        expected_output = None
+        expected_output = 'Error: USB Not Present in this Switch 1'
         self.assertEqual(result, expected_output)

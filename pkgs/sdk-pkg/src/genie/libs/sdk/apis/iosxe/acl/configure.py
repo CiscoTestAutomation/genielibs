@@ -380,7 +380,8 @@ def configure_ipv6_acl(
         prefix=None,
         dst_port=None,
         log_option=None,
-        sequence_num=None
+        sequence_num=None,
+        time_range=None
 ):
     """ Configure IPv6 ACL
 
@@ -396,6 +397,7 @@ def configure_ipv6_acl(
             dst_port ('str',optional): Acl destination port,default value is None
             log_option ('str',optional): Option to log ACL match,default value is None
             sequence_num ('str',optional): specific sequence number,default value is None
+            time_range ('str',optional): name of the time-range, default value is None
 
         Returns:
             None
@@ -414,7 +416,6 @@ def configure_ipv6_acl(
         cmd += 'any '
     elif host_option:
         cmd += f'host {src_nw} '
-
     else:
         cmd += f'{src_nw}/{prefix} '
 
@@ -430,6 +431,9 @@ def configure_ipv6_acl(
 
     if log_option:
         cmd += f'{log_option} '
+
+    if time_range:
+        cmd += f'time-range {time_range}'
 
     try:
         device.configure(cmd)

@@ -530,3 +530,38 @@ def configure_ptp_source(device, ip_address=None):
         raise SubCommandFailure(
             "Could not configure PTP source on {device}. Error:\n{error}"
             .format(device=device, error=e))
+
+def configure_no_ptp_enable_on_interface(device, interface):
+    """ Configure no ptp enable on interface
+        Args:
+            device (`obj`): Device object
+            interface ('str'): PTP interface name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f"Configuring no ptp enable on {device.name} {interface}")
+    cmd = [f"interface {interface}",f"no ptp enable"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configure no ptp enable on device interface. Error:\n{e}')
+
+def configure_ptp_enable_on_interface(device, interface):
+    """ Configure ptp enable on interface
+        Args:
+            device (`obj`): Device object
+            interface ('str'): PTP interface name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f"Configuring no ptp enable on {device.name} {interface}")
+    cmd = [f"interface {interface}",f"ptp enable"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configure ptp enable on device interface. Error:\n{e}')
+

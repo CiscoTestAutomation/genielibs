@@ -93,7 +93,7 @@ def generate_crypto_key(device,
     error_patterns = ['% Please define a domain-name first.']
 
     try:
-        device.configure(configs, reply=dialog, error_pattern=error_patterns, timeout=30)
+        device.configure(configs, reply=dialog, error_pattern=error_patterns, timeout=timeout)
     except SubCommandFailure as e:
         logger.error(e)
         raise SubCommandFailure("Could not generate keys")
