@@ -10,7 +10,7 @@ class TestConfigureManagementProtocols(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          vmtb-isr4451:
+          ott-c9300-67:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,11 +18,11 @@ class TestConfigureManagementProtocols(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: iosxe
-            type: iosxe
+            platform: cat9k
+            type: cat9k
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['vmtb-isr4451']
+        self.device = self.testbed.devices['ott-c9300-67']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,11 @@ class TestConfigureManagementProtocols(unittest.TestCase):
         )
 
     def test_configure_management_protocols(self):
-        result = configure_management_protocols(self.device)
+        result = configure_management_protocols(self.device, ['ssh', 'telnet', 'netconf', 'gnmi'])
+        expected_output = None
+        self.assertEqual(result, expected_output)
+
+    def test_configure_management_protocols_1(self):
+        result = configure_management_protocols(self.device, ['ssh', 'telnet', 'netconf', {'gnmi': {'enable': True, 'server': True}}])
         expected_output = None
         self.assertEqual(result, expected_output)

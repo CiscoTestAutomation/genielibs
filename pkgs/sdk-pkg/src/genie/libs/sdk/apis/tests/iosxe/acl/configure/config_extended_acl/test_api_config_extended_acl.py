@@ -10,7 +10,7 @@ class TestConfigExtendedAcl(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          stack3-nyquist-1:
+          stack3-nyq-PE1#:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,11 +18,11 @@ class TestConfigExtendedAcl(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: cat9k
-            type: c9300
+            platform: c9500
+            type: c9500
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['stack3-nyquist-1']
+        self.device = self.testbed.devices['stack3-nyq-PE1#']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,6 @@ class TestConfigExtendedAcl(unittest.TestCase):
         )
 
     def test_config_extended_acl(self):
-        result = config_extended_acl(self.device, 'racl', 'permit', 'ip', '20.1.1.0', '0.0.0.1', '0.0.0.1', '10.1.1.1', '0.0.0.1', '0.0.0.1', None, 20, None, None, 'log')
+        result = config_extended_acl(self.device, 'TIME_BASED_ACL_permit', 'permit', 'tcp', 'any', '', '', 'any', '', '', 'telnet', 0, None, 10, '', 'time1', 'eq')
         expected_output = None
         self.assertEqual(result, expected_output)

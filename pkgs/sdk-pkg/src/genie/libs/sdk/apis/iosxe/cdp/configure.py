@@ -8,19 +8,21 @@ from unicon.core.errors import SubCommandFailure
 
 log = logging.getLogger(__name__)
 
-def configure_cdp(device, interfaces=None):
+def configure_cdp(device, interfaces=None, timeout=300):
     """ Enables cdp on target device
         Args:
             device ('obj'): Device object
+            interfaces ('list', optional): List of interfaces. Default is None
+            timeout ('int', optional): Timeout value for show interfaces parser. Default is 300 seconds
         Returns:
             None
     """
     interface_list = {}
     # if no list of interfaces given get list of all interfaces
     if interfaces is None:
-        interface_list = device.parse('show interfaces')
+        interface_list = device.parse('show interfaces', timeout=timeout)
     else:
-        interface_list = device.api.get_interface_information(interface_list)
+        interface_list = device.api.get_interface_information(interfaces)
     skipped_ints = []
 
     # build a list of commands to send, checks if interface is correct type
@@ -38,19 +40,21 @@ def configure_cdp(device, interfaces=None):
         log.info('Skipped interfaces {} due to type incompatability'.format(skipped_ints))
     device.configure(command_list)
 
-def unconfigure_cdp(device, interfaces=None):
+def unconfigure_cdp(device, interfaces=None, timeout=300):
     """ Disable cdp on target device
         Args:
             device ('obj'): Device object
+            interfaces ('list', optional): List of interfaces. Default is None
+            timeout ('int', optional): Timeout value for show interfaces parser. Default is 300 seconds
         Returns:
             None
     """
     interface_list = {}
     # if no list of interfaces given get list of all interfaces
     if interfaces is None:
-        interface_list = device.parse('show interfaces')
+        interface_list = device.parse('show interfaces', timeout=timeout)
     else:
-        interface_list = device.api.get_interface_information(interface_list)
+        interface_list = device.api.get_interface_information(interfaces)
     skipped_ints = []
 
     # build a list of commands to send, checks if interface is correct type

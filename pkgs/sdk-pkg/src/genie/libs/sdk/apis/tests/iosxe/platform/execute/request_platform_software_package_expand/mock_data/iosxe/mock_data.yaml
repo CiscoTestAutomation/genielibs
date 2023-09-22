@@ -1,0 +1,47 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: Sanity-ASR2X(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: Sanity-ASR2X(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    request platform software package expand file bootflash:/test/kp_base.bin:
+      response:
+      - "$tform software package expand file bootflash:/test/kp_base.bin\r\nVerifying\
+        \ parameters\r\nExpanding superpackage bootflash:test/kp_base.bin\r\nValidating\
+        \ package type\r\nCopying package files\r\n  WARNING: asr1002x-hw-programmables.BLD_V176_THROTTLE_LATEST_20230713_110626.SSA.pkg\
+        \ will replace the identical file that already exists in bootflash:test\r\n\
+        \  WARNING: asr1002x-mono-universalk9.BLD_V176_THROTTLE_LATEST_20230713_110626.SSA.pkg\
+        \ will replace the identical file that already exists in bootflash:test\r\n\
+        \  WARNING: asr1002x-rpboot.BLD_V176_THROTTLE_LATEST_20230713_110626.SSA.pkg\
+        \ will replace the identical file that already exists in bootflash:test\r\n\
+        \  WARNING: packages.conf will replace the identical file that already exists\
+        \ in bootflash:test\r\nSUCCESS: Finished expanding all-in-one software package."
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: Sanity-ASR2X#

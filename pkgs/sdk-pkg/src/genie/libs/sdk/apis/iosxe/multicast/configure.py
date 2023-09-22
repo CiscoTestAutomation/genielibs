@@ -1973,3 +1973,86 @@ def configure_mld_version(device, interface_no, version_no):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f'Failed to Configure mld version on {device.name}\n{e}')
+
+
+def config_ip_pim_vrf(device, vrf_num, mode):
+    """ Enables ip pim vrf mode on device.
+
+        Args:
+            device (`obj`): Device object
+            vrf_num (`str`): vrf number
+            mode (`str`): specifiy ip pim vrf mode
+        Return:
+            None
+        Raise:
+            SubCommandFailure 
+    """
+    log.info(f"Configuring ip pim vrf {mode} on {device}")
+
+    cmd = f"ip pim vrf {vrf_num} {mode}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure ip pim vrf Error:\n{e}")
+
+
+def unconfig_ip_pim_vrf(device, vrf_num, mode):
+    """ Enables ip pim vrf mode on device.
+
+        Args:
+            device (`obj`): Device object
+            vrf_num (`str`): vrf number
+            mode (`str`): specifiy ip pim vrf mode
+        Return:
+            None
+        Raise:
+            SubCommandFailure 
+    """
+    log.info(f"Unconfiguring ip pim vrf {mode} on {device}")
+
+    cmd = f"no ip pim vrf {vrf_num} {mode}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure ip pim vrf Error:\n{e}")
+
+
+def config_ip_multicast_routing_vrf_distributed(device, vrf_name):
+
+    """ configure ip multicast-routing vrf distributed on device
+        Example : 
+
+        Args:
+            device (`obj`): Device object
+            vrf_name('str'): name of the vrf 
+        Returns:
+            None
+    """
+    try:
+        device.configure("ip multicast-routing vrf {} distributed".format(vrf_name))
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(
+            "Configure ip multicast-routing vrf vrf_name distributed. Error {e}".format(e=e)
+        )
+
+def unconfig_ip_multicast_routing_vrf_distributed(device, vrf_name):
+
+    """Unconfigure ip multicast-routing vrf distributed on device
+        Example : 
+
+        Args:
+            device (`obj`): Device object
+            vrf_name('str'): name of the vrf 
+        Returns:
+            None
+    """
+    try:
+        device.configure("no ip multicast-routing vrf {} distributed".format(vrf_name))
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(
+            "Unconfigure ip multicast-routing vrf distributed Error {e}".format(e=e)
+        )

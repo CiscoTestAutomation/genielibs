@@ -1,0 +1,48 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: IE-3105-18T2C-uut1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: IE-3105-18T2C-uut1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show interfaces GigabitEthernet1/1 capabilities:
+      response:
+      - "GigabitEthernet1/1\r\n  Model:                 IE-3105-18T2C\r\n  Type: \
+        \                 1000BaseSX\r\n  Speed:                 1000\r\n  Duplex:\
+        \                full\r\n  Trunk encap. type:     802.1Q,ISL\r\n  Trunk mode:\
+        \            on,off,desirable,nonegotiate\r\n  Channel:               yes\r\
+        \n  Broadcast suppression: percentage(0-100)\r\n  Flowcontrol:           rx-(off,on,desired),tx-(none)\r\
+        \n  Fast Start:            yes\r\n  QoS scheduling:        rx-(not configurable\
+        \ on per port basis),\r\n                         tx-(1p8q2t)\r\n  CoS rewrite:\
+        \           yes\r\n  ToS rewrite:           yes\r\n  UDLD:               \
+        \   yes\r\n  Inline power:          no\r\n  SPAN:                  source/destination\r\
+        \n  PortSecure:            yes\r\n  Dot1x:                 yes\r\n  Multiple\
+        \ Media Types:  rj45, sfp, auto-select"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: IE-3105-18T2C-uut1#

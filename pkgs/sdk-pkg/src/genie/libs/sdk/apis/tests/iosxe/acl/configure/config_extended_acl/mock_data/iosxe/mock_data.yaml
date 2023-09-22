@@ -1,98 +1,21 @@
 configure:
   commands:
-    1 permit ip 20.1.1.0 0.0.0.1 10.1.1.1 0.0.0.1 log: "1 permit ip 20.1.1.0 0.0.0.1\
-      \ 10.1.1.1 0.0.0.1 log\r\n"
-    10 permit ip 20.1.1.9 0.0.0.1 10.1.1.10 0.0.0.1 log: "10 permit ip 20.1.1.9 0.0.0.1\
-      \ 10.1.1.10 0.0.0.1 log\r\n"
-    11 permit ip 20.1.1.10 0.0.0.1 10.1.1.11 0.0.0.1 log: "11 permit ip 20.1.1.10\
-      \ 0.0.0.1 10.1.1.11 0.0.0.1 log\r\n"
-    12 permit ip 20.1.1.11 0.0.0.1 10.1.1.12 0.0.0.1 log: "12 permit ip 20.1.1.11\
-      \ 0.0.0.1 10.1.1.12 0.0.0.1 log\r\n"
-    13 permit ip 20.1.1.12 0.0.0.1 10.1.1.13 0.0.0.1 log: "13 permit ip 20.1.1.12\
-      \ 0.0.0.1 10.1.1.13 0.0.0.1 log\r\n"
-    14 permit ip 20.1.1.13 0.0.0.1 10.1.1.14 0.0.0.1 log: "14 permit ip 20.1.1.13\
-      \ 0.0.0.1 10.1.1.14 0.0.0.1 log\r\n"
-    15 permit ip 20.1.1.14 0.0.0.1 10.1.1.15 0.0.0.1 log: "15 permit ip 20.1.1.14\
-      \ 0.0.0.1 10.1.1.15 0.0.0.1 log\r\n"
-    16 permit ip 20.1.1.15 0.0.0.1 10.1.1.16 0.0.0.1 log: "16 permit ip 20.1.1.15\
-      \ 0.0.0.1 10.1.1.16 0.0.0.1 log\r\n"
-    17 permit ip 20.1.1.16 0.0.0.1 10.1.1.17 0.0.0.1 log: "17 permit ip 20.1.1.16\
-      \ 0.0.0.1 10.1.1.17 0.0.0.1 log\r\n"
-    18 permit ip 20.1.1.17 0.0.0.1 10.1.1.18 0.0.0.1 log: "18 permit ip 20.1.1.17\
-      \ 0.0.0.1 10.1.1.18 0.0.0.1 log\r\n"
-    19 permit ip 20.1.1.18 0.0.0.1 10.1.1.19 0.0.0.1 log: "19 permit ip 20.1.1.18\
-      \ 0.0.0.1 10.1.1.19 0.0.0.1 log\r\n"
-    2 permit ip 20.1.1.1 0.0.0.1 10.1.1.2 0.0.0.1 log: "2 permit ip 20.1.1.1 0.0.0.1\
-      \ 10.1.1.2 0.0.0.1 log\r\n"
-    20 permit ip 20.1.1.19 0.0.0.1 10.1.1.20 0.0.0.1 log: "20 permit ip 20.1.1.19\
-      \ 0.0.0.1 10.1.1.20 0.0.0.1 log\r\n"
-    21 permit ip 20.1.1.0 0.0.0.1 host 10.1.1.1 log: "21 permit ip 20.1.1.0 0.0.0.1\
-      \ host 10.1.1.1 log\r\n"
-    22 permit ip 20.1.1.1 0.0.0.1 host 10.1.1.2 log: "22 permit ip 20.1.1.1 0.0.0.1\
-      \ host 10.1.1.2 log\r\n"
-    23 permit ip 20.1.1.2 0.0.0.1 host 10.1.1.3 log: "23 permit ip 20.1.1.2 0.0.0.1\
-      \ host 10.1.1.3 log\r\n"
-    24 permit ip 20.1.1.3 0.0.0.1 host 10.1.1.4 log: "24 permit ip 20.1.1.3 0.0.0.1\
-      \ host 10.1.1.4 log\r\n"
-    25 permit ip 20.1.1.4 0.0.0.1 host 10.1.1.5 log: "25 permit ip 20.1.1.4 0.0.0.1\
-      \ host 10.1.1.5 log\r\n"
-    26 permit ip 20.1.1.5 0.0.0.1 host 10.1.1.6 log: "26 permit ip 20.1.1.5 0.0.0.1\
-      \ host 10.1.1.6 log\r\n"
-    27 permit ip 20.1.1.6 0.0.0.1 host 10.1.1.7 log: "27 permit ip 20.1.1.6 0.0.0.1\
-      \ host 10.1.1.7 log\r\n"
-    28 permit ip 20.1.1.7 0.0.0.1 host 10.1.1.8 log: "28 permit ip 20.1.1.7 0.0.0.1\
-      \ host 10.1.1.8 log\r\n"
-    29 permit ip 20.1.1.8 0.0.0.1 host 10.1.1.9 log: "29 permit ip 20.1.1.8 0.0.0.1\
-      \ host 10.1.1.9 log\r\n"
-    3 permit ip 20.1.1.2 0.0.0.1 10.1.1.3 0.0.0.1 log: "3 permit ip 20.1.1.2 0.0.0.1\
-      \ 10.1.1.3 0.0.0.1 log\r\n"
-    30 permit ip 20.1.1.9 0.0.0.1 host 10.1.1.10 log: "30 permit ip 20.1.1.9 0.0.0.1\
-      \ host 10.1.1.10 log\r\n"
-    31 permit ip 20.1.1.10 0.0.0.1 host 10.1.1.11 log: "31 permit ip 20.1.1.10 0.0.0.1\
-      \ host 10.1.1.11 log\r\n"
-    32 permit ip 20.1.1.11 0.0.0.1 host 10.1.1.12 log: "32 permit ip 20.1.1.11 0.0.0.1\
-      \ host 10.1.1.12 log\r\n"
-    33 permit ip 20.1.1.12 0.0.0.1 host 10.1.1.13 log: "33 permit ip 20.1.1.12 0.0.0.1\
-      \ host 10.1.1.13 log\r\n"
-    34 permit ip 20.1.1.13 0.0.0.1 host 10.1.1.14 log: "34 permit ip 20.1.1.13 0.0.0.1\
-      \ host 10.1.1.14 log\r\n"
-    35 permit ip 20.1.1.14 0.0.0.1 host 10.1.1.15 log: "35 permit ip 20.1.1.14 0.0.0.1\
-      \ host 10.1.1.15 log\r\n"
-    36 permit ip 20.1.1.15 0.0.0.1 host 10.1.1.16 log: "36 permit ip 20.1.1.15 0.0.0.1\
-      \ host 10.1.1.16 log\r\n"
-    37 permit ip 20.1.1.16 0.0.0.1 host 10.1.1.17 log: "37 permit ip 20.1.1.16 0.0.0.1\
-      \ host 10.1.1.17 log\r\n"
-    38 permit ip 20.1.1.17 0.0.0.1 host 10.1.1.18 log: "38 permit ip 20.1.1.17 0.0.0.1\
-      \ host 10.1.1.18 log\r\n"
-    39 permit ip 20.1.1.18 0.0.0.1 host 10.1.1.19 log: "39 permit ip 20.1.1.18 0.0.0.1\
-      \ host 10.1.1.19 log\r\n"
-    4 permit ip 20.1.1.3 0.0.0.1 10.1.1.4 0.0.0.1 log: "4 permit ip 20.1.1.3 0.0.0.1\
-      \ 10.1.1.4 0.0.0.1 log\r\n"
-    40 permit ip 20.1.1.19 0.0.0.1 host 10.1.1.20 log: "40 permit ip 20.1.1.19 0.0.0.1\
-      \ host 10.1.1.20 log\r\n"
-    5 permit ip 20.1.1.4 0.0.0.1 10.1.1.5 0.0.0.1 log: "5 permit ip 20.1.1.4 0.0.0.1\
-      \ 10.1.1.5 0.0.0.1 log\r\n"
-    6 permit ip 20.1.1.5 0.0.0.1 10.1.1.6 0.0.0.1 log: "6 permit ip 20.1.1.5 0.0.0.1\
-      \ 10.1.1.6 0.0.0.1 log\r\n"
-    7 permit ip 20.1.1.6 0.0.0.1 10.1.1.7 0.0.0.1 log: "7 permit ip 20.1.1.6 0.0.0.1\
-      \ 10.1.1.7 0.0.0.1 log\r\n"
-    8 permit ip 20.1.1.7 0.0.0.1 10.1.1.8 0.0.0.1 log: "8 permit ip 20.1.1.7 0.0.0.1\
-      \ 10.1.1.8 0.0.0.1 log\r\n"
-    9 permit ip 20.1.1.8 0.0.0.1 10.1.1.9 0.0.0.1 log: "9 permit ip 20.1.1.8 0.0.0.1\
-      \ 10.1.1.9 0.0.0.1 log\r\n"
+    10 permit tcp any any eq telnet time-range time1: "10 permit tcp any any eq telnet\
+      \ time-range time1\r\n"
     end:
       new_state: execute
-    ip access-list extended racl: "ip access-list extended racl\r\n"
+    ip access-list extended TIME_BASED_ACL_permit: "ip access-list extended TIME_BASED_ACL_permit\r\
+      \n"
     line console 0:
       new_state: configure_line
     no logging console: ''
-  prompt: stack3-nyquist-1(config)#
+  prompt: stack3-nyq-PE1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: stack3-nyquist-1(config-line)#
+  prompt: stack3-nyq-PE1(config-line)#
 connect:
   commands:
     ? ''
@@ -112,4 +35,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: stack3-nyquist-1#
+  prompt: stack3-nyq-PE1#

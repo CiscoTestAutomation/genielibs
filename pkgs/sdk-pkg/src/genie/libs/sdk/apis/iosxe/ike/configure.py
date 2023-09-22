@@ -1266,6 +1266,44 @@ def clear_crypto_session(device,
                 .format(device=device, error=e)
         )
 
+def clear_crypto_call_admission_stats(device):
+    """ clear crypto call admission stats
+        Args:
+            device (`obj`): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(
+        "Clearing crypto ikev1 statistics"
+    )
+
+    try:
+        device.execute(
+            "clear crypto call admission statistics"
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not clear crypto call admission stats. Error:\n{error}".format(error=e)
+        )
+
+def disable_crypto_engine_compliance(device):
+    """ Disable CSDL
+        Args:
+            device ('obj')    : device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Disabling CSDL. write mem and reload device is required ")
+
+    try:
+        device.configure(["crypto engine compliance shield disable"])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not disable. Error: {e}')
+
 def unconfigure_ppk_on_keyring(device,
                             keyring_name,
                             peer_name,

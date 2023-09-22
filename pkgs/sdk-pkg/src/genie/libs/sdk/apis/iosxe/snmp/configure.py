@@ -273,10 +273,12 @@ def configure_snmp_server_user(device,
                                priv_method = None,
                                aes_algorithm = None,
                                aes_password = None,
+                               des_algorithm = None,
+                               des_password = None,
                                priv_password = None,
                                acl_type = None,
                                acl_name = None):
-    """ Configures the snmp user on device
+    """ Configure the snmp user on device
         Args:
             device ('obj'): device to use
             user_name ('str'): Name of the user
@@ -289,6 +291,8 @@ def configure_snmp_server_user(device,
             priv_method ('str'): 3des,aes,des
             aes_algorithm ('str'): 128,192,256
             aes_password ('str'): privacy password for user
+            des_algorithm ('str'): 128,192,256
+            des_password ('str'): privacy password for user
             priv_password ('str'): privacy password for user
             acl_name ('str'): name of the Standerd acl, acl list name, ipv6 named acl
             acl_type ('str'): specify IPv6 Named Access-List
@@ -300,12 +304,16 @@ def configure_snmp_server_user(device,
 
     cli = f"snmp-server user {user_name} {group_name} {version}"
 
-    if auth_type is not None:
-        cli = cli+' auth '+auth_type+' '+auth_algorithm+' '+auth_password 
+    if auth_type is not None and auth_password is not None:
+        cli = f"{cli} auth {auth_type} {auth_password}"
 
     if priv_method  is not None:
         if(priv_method == 'aes'):
-            cli = cli+' priv '+priv_method+' '+aes_algorithm+' '+aes_password
+            if aes_algorithm is not None and aes_password is not None:
+                cli = f"{cli} priv {priv_method} {aes_algorithm} {aes_password}"
+        elif(priv_method == 'des'):
+            if des_algorithm is not None and des_password is not None:
+                cli = f"{cli} priv {priv_method} {des_algorithm} {des_password}"
 
     if acl_name is not None:
         if (acl_type == 'ipv6'):
@@ -612,6 +620,24 @@ def disable_ietf_standard_snmp_link_traps(device):
         device.configure(f"no snmp-server trap link ietf")
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not disable ietf standard snmp link traps . Error:\n{e}")
+
+def configure_snmp_server_host_trap(device, host_name=None, trap_type=None):
+    """ Configures the snmp traps or informs on device
+        Args:
+            device ('obj'): device to use
+            host_name ('str', optional): WORD     IP/IPV6 address of SNMP notification host
+                                         http://<Hostname or A.B.C.D>[:<port number>][/<uri>]  HTTP address of XML notification host
+            trap_type ('str', optional): entity Allow SNMP entity traps
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """    
+
+    try:
+        device.configure(f"snmp-server host {host_name} traps public {trap_type}")
+    except SubCommandFailure as error:
+        raise SubCommandFailure(f"Could not configure host on snmp-server. Error:\n{str(error)}")
     
 def unconfigure_snmp_server_enable_traps_power_ethernet_group(device, action_type_1, action_type_2, group_number): 
 
@@ -636,4 +662,62 @@ def unconfigure_snmp_server_enable_traps_power_ethernet_group(device, action_typ
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f'Failed to unconfigure snmp server enable traps power ethernet group on {device.name}\n{e}'
+        )
+
+
+def configure_object_list_schema_transfer_for_bulkstat(device, type_, object_name=None, schema_name=None, transfer_name=None,
+                                                       oid_value_list=None, poll_interval=None, snmp_interface=None,
+                                                       format_=None, transfer_interval=None,
+                                                       buffer_size=None, primary_url=None, enable=None, logging_on=None):
+    """ Configure object list, schema and transfer for bulkstat
+        Args:
+            device ('obj'): device to use
+            type_('str'): object-list  Configure an Object List
+                          schema       Configure Schema definition
+                          transfer     Configure Transfer Parameters
+            object_name('str', optional): WORD  Name of object list, default value is None
+            schema_name('str', optional): WORD  Name of the schema, default value is None
+            transfer_name('str', optional): WORD  Name of bulk transfer, default value is None
+            oid_value_list:('list', optional): WORD  Object name or OID list, default value is None
+            poll_interval('int', optional): Periodicity for the polling of objects in this schema in 
+                                  Minutes. (Default value is 5 Mins), default value is None
+            snmp_interface('str', optional): Specify instance as ifDescr, default value is None
+            format_('str', optional): An ASCII format containing schema definitions, default value is None
+            transfer_interval('int', optional): Periodicity for the transfer of bulk data in Minutes, default value is None
+            buffer_size('int', optional): Bulkstat data file maximum size(Default size is 2048 bytes), default value is None
+            primary_url('str', optional): WORD  URL of primary destination, default value is None
+            enable('str', optional): Start Data Collection for this Configuration, default value is None 
+            logging_on('str', optional): Modify message logging facilities, default value is None     
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+
+    if type_ == "object-list":
+        cli = [f"snmp mib bulkstat {type_} {object_name}"]
+        for oid_value in oid_value_list:
+            cli.append(f"add {oid_value}")
+
+    elif type_ == "schema":
+        cli =[f"snmp mib bulkstat {type_} {schema_name}",
+        f"object-list {object_name}",
+        f"poll-interval {poll_interval}",
+        f"instance wild interface {snmp_interface}"]
+
+    elif type_ == "transfer":
+        cli =[f"snmp mib bulkstat {type_} {transfer_name}",
+        f"schema {schema_name}",
+        f"format {format_}",
+        f"transfer-interval {transfer_interval}",
+        f"buffer-size {buffer_size}",
+        f"url primary {primary_url}",
+        f"{enable}",
+        f"{logging_on}"]
+    try:
+        device.configure(cli)
+    except SubCommandFailure as error:
+        raise SubCommandFailure(
+            f"Could not  configure Object list Schema Transfer for Bulkstat. Error:\n{error}"
         )

@@ -1,0 +1,45 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no hw-module subslot 0/2 breakout 10g port native_port_8:
+      response: "no hw-module subslot\
+        \ 0/2 breakout 10g port native_port_8\r\nBreakout configuration would reload\
+        \ the EPA in 0/2\r\nPresent configuration of ports on which breakout config\
+        \ change is being applied will be erased and will not be restored!\r\n"
+      new_state: confirm
+    no logging console: ''
+  prompt: GD_F12(config)#
+confirm:
+  prompt: "Do you want to proceed? [confirm]"
+  commands:
+    "":
+      new_state: configure
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: GD_F12(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: GD_F12#

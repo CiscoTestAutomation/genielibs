@@ -1,0 +1,44 @@
+configure:
+  commands:
+    buffer-size 247483647: "transfer-interval 3\r\n"
+    enable: "\r\n"
+    end:
+      new_state: execute
+    format schemaASCII: "Cannot modify an active profile\r\n"
+    line console 0:
+      new_state: configure_line
+    logging on: "buffer-size 247483647\r\n"
+    no logging console: ''
+    schema mySchema: "schema mySchema\r\n"
+    snmp mib bulkstat transfer myTransfer: "snmp mib bulkstat transfer myTransfer\r\
+      \n"
+    transfer-interval 3: "format schemaASCII\r\n"
+    url primary tftp://<202.153.144.2/auto/tftpboot/logsTransfer: "Error in config\r\
+      \n"
+  prompt: T1-9300-SP1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: T1-9300-SP1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: T1-9300-SP1#

@@ -1423,3 +1423,40 @@ def unconfigure_cts_role_based_sgt_map_vlan_list(device, Vlan_id, Tag_value):
         raise SubCommandFailure(
             f'Failed to unconfigure cts role-based sgt-map vlan-list 300 sgt 300 on {device.name}\n{e}'
         ) 
+
+
+def configure_ip_dhcp_snooping_information_option_allow_untrusted_global(device):
+    """ Configure ip dhcp snooping information option allow-untrusted on device
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring dhcp snooping information option allow-untrusted on device
+    """
+    cmd= f'ip dhcp snooping information option allow-untrusted'
+    try:
+        device.configure(cmd)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure ip dhcp snooping information option allow-untrusted. Error:\n{e}"
+        )
+
+
+def unconfigure_ip_dhcp_snooping_information_option_allow_untrusted_global(device):
+    """ Unconfigure ip dhcp snooping information option allow-untrusted on device
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed unconfiguring dhcp snooping information option allow-untrusted on device
+    """
+    cmd= f'no ip dhcp snooping information option allow-untrusted'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure dhcp snooping information option allow-untrusted. Error:\n{e}"
+        )

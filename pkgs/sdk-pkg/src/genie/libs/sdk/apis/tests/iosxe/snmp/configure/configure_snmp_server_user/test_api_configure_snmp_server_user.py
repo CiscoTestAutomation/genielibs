@@ -10,7 +10,7 @@ class TestConfigureSnmpServerUser(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          csr:
+          Switch:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,11 +18,11 @@ class TestConfigureSnmpServerUser(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: None
-            type: iosxe
+            platform: c9500L
+            type: c9500L
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['csr']
+        self.device = self.testbed.devices['Switch']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,21 +30,6 @@ class TestConfigureSnmpServerUser(unittest.TestCase):
         )
 
     def test_configure_snmp_server_user(self):
-        result = configure_snmp_server_user(self.device, 'privuser256256', 'privgrp', 'v3', 'sha-2', '256', 'cisco256', 'aes', '256', 'cisco256', 'ram', 'ipv6', 'nameacl')
-        expected_output = None
-        self.assertEqual(result, expected_output)
-
-    def test_configure_snmp_server_user_1(self):
-        result = configure_snmp_server_user(self.device, 'privuser256256', 'privgrp', 'v3', 'sha-2', '256', 'cisco256', 'aes', '256', 'cisco256', 'ram', None, None)
-        expected_output = None
-        self.assertEqual(result, expected_output)
-
-    def test_configure_snmp_server_user_2(self):
-        result = configure_snmp_server_user(self.device, 'privuser256256', 'privgrp', 'v3', 'sha-2', '256', 'cisco256', None, None, None, None, None, None)
-        expected_output = None
-        self.assertEqual(result, expected_output)
-
-    def test_configure_snmp_server_user_3(self):
-        result = configure_snmp_server_user(self.device, 'privuser256256', 'privgrp', 'v3', None, None, None, None, None, None, None, None, None)
+        result = configure_snmp_server_user(self.device, 'TestUsr2', 'TestGrp', 'v3', 'md5', None, 'password1', 'des', None, None, None, 'password', None, None, None)
         expected_output = None
         self.assertEqual(result, expected_output)

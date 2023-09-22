@@ -1,0 +1,58 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: ott-ads-633(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: ott-ads-633(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    ? '[''openssl req -subj /C=/ST=/L=/O=/CN=ott-ads-633 -new -key /users/lgerrior/test_dir/ecc_private_key
+      -out /users/lgerrior/test_dir/device.csr -passin pass:cisco123'', ''openssl
+      x509 -req -in /users/lgerrior/test_dir/device.csr -CA /users/lgerrior/test_dir/rootCA.pem
+      -CAkey /users/lgerrior/test_dir/rsa_private_key -CAcreateserial -out /users/lgerrior/test_dir/device.crt
+      -sha256 -passin pass:cisco123'']'
+    : response:
+      - ? openssl req -subj /C=/ST=/L=/O=/CN=ott-ads-633 -new -key /users/lgerrior/test_dir/ecc_private_key
+          -out /users/lgerrior/test_dir/device.csr -passin pass:cisco123
+        : "req: No value provided for Subject Attribute C, skipped\r\nreq: No value\
+          \ provided for Subject Attribute ST, skipped\r\nreq: No value provided for\
+          \ Subject Attribute L, skipped\r\nreq: No value provided for Subject Attribute\
+          \ O, skipped"
+        ? openssl x509 -req -in /users/lgerrior/test_dir/device.csr -CA /users/lgerrior/test_dir/rootCA.pem
+          -CAkey /users/lgerrior/test_dir/rsa_private_key -CAcreateserial -out /users/lgerrior/test_dir/device.crt
+          -sha256 -passin pass:cisco123
+        : "openssl x509 -req -in /users/lgerrior/test_dir/device.csr -CA /users/lgerrior/test_dir/rootCA.pem\
+          \ -CAkey /users/lgerrior/test_dir/rsa_private_key -CAcreateserial -out /users/l\r\
+          lgerrior/test_dir/device.crt -sha256 -passin pass:cisco123\r\nSignature\
+          \ ok\r\nsubject=CN = ott-ads-633\r\nGetting CA Private Key"
+      response_type: circular
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    hostname:
+      response:
+      - ott-ads-633
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: ott-ads-633#

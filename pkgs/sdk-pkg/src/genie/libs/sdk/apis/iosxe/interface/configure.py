@@ -9347,3 +9347,182 @@ def configure_glbp_details_on_interface(device, interface, group_number, ip_addr
         raise SubCommandFailure(
             f"Failed to configure glbp details on interface. Error:\n{e}"
      )
+
+
+def configure_service_instance(
+        device,
+        interface,
+        service_num,
+        dot1q_num=None,
+	rewrite_option=None,
+	bridge_dom_num=None):
+
+    """ Configure service instance on an interface
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface to get address
+            service_num (`str`, optional): service instance number to be configured on interface
+            dot1q_num (`str`, optional): dot1q encapsulation number to be configured, default value None
+            rewrite_option (`str`, optional): rewrite option, default value None
+            bridge_dom_num (`str`, optional): bridge-domain number, default value None
+
+        Returns:
+            None
+            Warning messages
+
+        Raises:
+            SubCommandFailure
+    """
+
+    log.info(f"Configuring service instance on interface {interface}")
+
+    cmd = []
+    cmd.append(f"interface {interface}")
+    cmd.append(f"service instance {service_num} ethernet")
+    if dot1q_num:
+        cmd.append(f"encapsulation dot1q {dot1q_num}")
+    if rewrite_option:
+        cmd.append(f"rewrite {rewrite_option}")
+    if bridge_dom_num:
+        cmd.append(f"bridge-domain {bridge_dom_num}")
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure service instance Error:\n{e}")
+
+
+def unconfigure_service_instance(
+        device,
+        interface,
+        service_num):
+
+    """ Unconfigure service instance on an interface
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface to get address
+            service_num (`str`, optional): service instance number to be configured on interface
+
+        Returns:
+            None
+            Warning messages
+
+        Raises:
+            SubCommandFailure
+    """
+
+    log.info(f"Unconfiguring service instance on interface {interface}")
+
+    cmd = []
+    cmd.append(f"interface {interface}")
+    cmd.append(f"no service instance {service_num} ethernet")
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure service instance Error:\n{e}")
+
+
+def configure_interface_ip_nbar(device,interface):
+
+    """ Configure ip nbar on an interface
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface to get address
+
+        Returns:
+            None
+            Warning messages
+
+        Raises:
+            SubCommandFailure
+    """
+
+    log.info(f"Configuring ip nbar on interface {interface}")
+
+    cmd = []
+    cmd.append(f"interface {interface}")
+    cmd.append(f"ip nbar protocol-discovery")
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure ip nbar Error:\n{e}")
+
+
+def unconfigure_interface_ip_nbar(device,interface):
+
+    """ Unconfigure ip nbar on an interface
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface to get address
+
+        Returns:
+            None
+            Warning messages
+
+        Raises:
+            SubCommandFailure
+    """
+
+    log.info(f"Unconfiguring ip nbar on interface {interface}")
+
+    cmd = []
+    cmd.append(f"interface {interface}")
+    cmd.append(f"no ip nbar protocol-discovery")
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure ip nbar Error:\n{e}")
+
+def configure_interface_vlan(device, vlan_id):
+    """ Configures interface vlan id
+        Example : interface vlan 1
+        Args:
+            device ('obj'): device to use
+            vlan_id ('int'): Vlan interface number (Range: 1-4093)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f"Configuring interface vlan {vlan_id} on {device}")
+    config = [
+        f'interface vlan {vlan_id}',
+        'no shutdown'
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure interface vlan {vlan_id} on device {device}. Error:\n{e}")
+
+
+def configure_interface_range_no_switchport(device, start_interface, end_interface):
+    """ Configure interface range no switchport 
+        Args:
+            device ('obj'): device to use
+            start_interface('str'): Starting Interface
+            end_interface('str'): Ending Interface number
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f'Configuring interface range no switchport on {device}')
+    config = [
+        f'interface range {start_interface} - {end_interface}',
+        'no switchport'
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure interface range no switchport on device {device}. Error:\n{e}")

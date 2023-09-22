@@ -384,25 +384,26 @@ def unconfigure_evpn_default_gateway_advertise_global(device):
             'Error:{e}'.format(e=e)
         )
         
-def configure_evpn_l2_instance_vlan_association(device,vlan_id,evpn_instance,vni_id):
+def configure_evpn_l2_instance_vlan_association(device,vlan_id,evpn_instance,vni_id,protected=False):
     """ Configure configure VLAN association to EVPN instance
         Args:
             device (`obj`): Device object
             vlan_id (`int`): Vlan id
             evpn_instance('int'): EVPN Instance id
             vni_id('int'): VNI id
-
+            protected('bool'): protected knob True or False 
         Returns:
             None
 
         Raises:
             SubCommandFailure
-
     """
-
     configs = []
     configs.append("vlan configuration {vlan_id}".format(vlan_id = vlan_id))
-    configs.append("member evpn-instance  {evpn_instance} vni {vni_id}".format(evpn_instance=evpn_instance,vni_id = vni_id))
+    if protected is True:
+        configs.append("member evpn-instance  {evpn_instance} vni {vni_id} protected".format(evpn_instance=evpn_instance,vni_id = vni_id))
+    else:
+        configs.append("member evpn-instance  {evpn_instance} vni {vni_id}".format(evpn_instance=evpn_instance,vni_id = vni_id))        
 
     try:
         device.configure(configs)

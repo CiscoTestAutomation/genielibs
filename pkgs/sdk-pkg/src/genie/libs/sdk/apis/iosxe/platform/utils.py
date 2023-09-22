@@ -517,4 +517,32 @@ def clear_controllers_ethernet_controller(device):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f'Could not clear controllers ethernet controller {device}. Error:\n{e}')
+            
+def erase_startup_config(device):
+    """ erase startup_config
+        Args:
+            device ('obj'): device to execute on
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    # Set 'erase startup-config' dialog
+    erase_dialog = Dialog(
+        [
+            Statement(
+                pattern=r"Erasing the nvram filesystem will "
+                        r"Continue? \[confirm\].*",
+                action="sendline()",
+                loop_continue=True,
+                continue_timer=False,
+            )
+        ]
+    )
+    log.info(f"erase startup config on {device}")
+    try:
+        device.execute("erase startup-config", reply=erase_dialog)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'could not erase startup config on  {device}. Error:\n{e}')    
               

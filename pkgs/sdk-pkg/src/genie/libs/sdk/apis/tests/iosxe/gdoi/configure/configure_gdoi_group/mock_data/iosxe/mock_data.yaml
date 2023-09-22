@@ -1,36 +1,39 @@
 configure:
   commands:
-    address ipv4 192.168.2.1: "address ipv4 192.168.2.1\r\n"
-    crypto gdoi group bw6000: "crypto gdoi group bw6000\r\n"
+    address ipv4 15.15.15.1: "no replay\r\n"
+    client protocol gikev2 IKEV2-PROF1: "% Key server is already configured as local\r\
+      \n"
+    crypto gdoi group SUITEBv4: "crypto gdoi group SUITEBv4\r\n"
     end:
       new_state: execute
-    identity number 6000: "identity number 6000\r\n"
+    gikev2 IKEV2-PROF1: "rekey authentication mypubkey rsa REKEYRSA\r\n"
+    identifier: "no tag\r\n"
+    identity number 9000: "identity number 9000\r\n"
     line console 0:
       new_state: configure_line
-    local priority 245: "local priority 245\r\n"
-    match address ipv4 bw600-crypto-policy: "match address ipv4 bw600-crypto-policy\r\
-      \n"
+    match address ipv4 SUITEBv4acl: "sa ipsec 10\r\n"
     no logging console: ''
-    no replay: "no replay\r\n"
-    peer address ipv4 123.141.2.3: "peer address ipv4 123.141.2.3\r\n"
-    profile bw600: "profile bw600\r\n"
-    redundancy: "redundancy\r\n"
-    rekey algorithm aes 256: "rekey algorithm aes 256\r\n"
-    rekey authentication mypubkey rsa REKEYRSA: "rekey authentication mypubkey rsa\
-      \ REKEYRSA\r\n"
-    rekey lifetime seconds 14000: "rekey lifetime seconds 14000\r\n"
-    rekey retransmit 10 number 3: "rekey retransmit 10 number 3\r\n"
-    rekey transport unicast: "rekey transport unicast\r\n"
-    sa ipsec 10: "sa ipsec 10\r\n"
-    server local: "server local\r\n"
-    tag cts sgt: "tag cts sgt\r\n"
-  prompt: INT1(config)#
+    no replay: "profile SUITEBgcm128\r\n"
+    no tag: "match address ipv4 SUITEBv4acl\r\n"
+    pfs: "rekey retransmit 10 number 3\r\n"
+    profile SUITEBgcm128: "gikev2 IKEV2-PROF1\r\n"
+    rekey address ipv4 121: "rekey algorithm aes 256\r\n"
+    rekey algorithm aes 256: "Group SUITEBv4 is already configured as a Key Server.\
+      \ Cannot Configure 'client protocol ...'\r\n"
+    rekey authentication mypubkey rsa REKEYRSA: "rekey address ipv4 121\r\n"
+    rekey lifetime seconds 14000: "server local\r\n"
+    rekey retransmit 10 number 3: "rekey lifetime seconds 14000\r\n"
+    sa ipsec 10: "pfs\r\n"
+    server address ipv4 15.15.15.1: "server address ipv4 15.15.15.1\r\n"
+    server local: "client protocol gikev2 IKEV2-PROF1\r\n"
+    value 1: "address ipv4 15.15.15.1\r\n"
+  prompt: KS1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: INT1(config-line)#
+  prompt: KS1(config-line)#
 connect:
   commands:
     ? ''
@@ -50,4 +53,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: INT1#
+  prompt: KS1#

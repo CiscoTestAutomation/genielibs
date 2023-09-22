@@ -442,3 +442,161 @@ def configure_dhcp_pool_dns_server(device, ip_version, pool_name, dns_server):
 
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not configure dns-server {dns_server} under dhcp pool {pool_name}. Error:\n{e}")
+
+def configure_ipv6_dhcp_relay_trust(device, interface):
+    """ Configures ipv6 dhcp relay trust
+        Args:
+            device ('obj'): device to use
+            interface ('str'):  interface name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f"Configuring ipv6 dhcp relay trust on {device.name} {interface}")
+    cmd = [f'interface {interface}','ipv6 dhcp relay trust']
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configure ipv6 dhcp relay trust on device interface. Error:\n{e}')
+
+def unconfigure_ipv6_dhcp_relay_trust(device, interface):
+    """ Unconfigures ipv6 dhcp relay trust
+        Args:
+            device ('obj'): device to use
+            interface ('str'):  interface name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f"Unconfiguring ipv6 dhcp relay trust on {device.name} {interface}")
+    cmd = [f'interface {interface}','no ipv6 dhcp relay trust']
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configure ipv6 dhcp relay trust on device interface. Error:\n{e}')
+    
+def configure_ipv6_dhcp_relay_option_vpn(device, interface):
+    """ Configures ipv6 dhcp relay option vpn
+        Args:
+            device ('obj'): device to use
+            interface ('str'):  interface name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f"Configuring ipv6 dhcp relay option vpn on {device.name} {interface}")
+    cmd = [f'interface {interface}','ipv6 dhcp relay option vpn']
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configure ipv6 dhcp relay option vpn on device interface. Error:\n{e}')
+
+def unconfigure_ipv6_dhcp_relay_option_vpn(device, interface):
+    """ Unconfigures ipv6 dhcp relay option vpn
+        Args:
+            device ('obj'): device to use
+            interface ('str'):  interface name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f"Unconfiguring ipv6 dhcp relay option vpn on {device.name} {interface}")
+    cmd = [f'interface {interface}','no ipv6 dhcp relay option vpn']
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not Unconfigure ipv6 dhcp relay option vpn on device interface. Error:\n{e}')
+
+def configure_ipv6_dhcp_relay_source_interface_intf_id(device, interface, intf_id):
+    """ Configure interface ipv6 dhcp relay source interface intf_id 
+        Args:
+            device ('obj'): device to use
+            interface ('str'): name of the interface to be configured # example Vlan100"
+            intf_id ('str'): Set source interface for relayed messages for interface ex: Loopback1 interface
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure ipv6 dhcp relay source-interface intf_id
+    """
+    log.info("Configuring ip dhcp relay source-interface intf_id on the interface")
+    cmd = [f"interface {interface}",f"ipv6 dhcp relay source-interface {intf_id}"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure ipv6 dhcp relay source interface intf_id {interface}. Error\n{e}"
+        )
+
+def unconfigure_ipv6_dhcp_relay_source_interface_intf_id(device, interface, intf_id):
+    """ Unconfigure interface ipv6 dhcp relay source interface intf_id 
+        Args:
+            device ('obj'): device to use
+            interface ('str'): name of the interface # example Vlan100"
+            intf_id ('str'): Set source interface for relayed messages for interface ex: Loopback1 interface
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to unconfigure ipv6 dhcp relay source-interface intf_id
+    """
+    log.info("Configuring ip dhcp relay source-interface intf_id on the interface")
+    cmd = [f"interface {interface}",f"no ipv6 dhcp relay source-interface {intf_id}"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure ipv6 dhcp relay source interface intf_id {interface}. Error\n{e}"
+        )
+
+def configure_ipv6_dhcp_relay_destination_ipv6address(device, interface, ipv6_address,vrf_name=None):
+    """ Configure interface ipv6 dhcp relay destination ipv6 address 
+        Args:
+            device ('obj'): device to use
+            interface ('str'): name of the interface to be configured # example Vlan100"
+            ipv6_address ('str'): IPv6 destination address Ex: 20::1
+            vrf_name ('str',Optional): vrf name Ex: green
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure ipv6 dhcp relay destination ipv6 address
+    """
+    log.info("Configuring ipv6 dhcp relay destination ipv6 address on the interface")
+    cmd = [f"interface {interface}"]
+    if vrf_name:
+        cmd.append(f"ipv6 dhcp relay destination vrf {vrf_name} {ipv6_address}")
+    else:
+        cmd.append(f"ipv6 dhcp relay destination {ipv6_address}")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure ipv6 dhcp relay destination ipv6 address on {interface}. Error\n{e}"
+        )
+
+def unconfigure_ipv6_dhcp_relay_destination_ipv6address(device, interface, ipv6_address,vrf_name=None):
+    """ Unconfigure interface ipv6 dhcp relay destination ipv6 address 
+        Args:
+            device ('obj'): device to use
+            interface ('str'): name of the interface to be configured # example Vlan100"
+            ipv6_address ('str'): IPv6 destination address Ex: 20::1
+            vrf_name ('str',Optional): vrf name Ex: green
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to unconfigure ipv6 dhcp relay destination ipv6 address
+    """
+    log.info("Unconfiguring ipv6 dhcp relay destination ipv6 address on the interface")
+    cmd = [f"interface {interface}"]
+    if vrf_name:
+        cmd.append(f"no ipv6 dhcp relay destination vrf {vrf_name} {ipv6_address}")
+    else:
+        cmd.append(f"no ipv6 dhcp relay destination {ipv6_address}")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure ipv6 dhcp relay destination ipv6 address on {interface}. Error\n{e}"
+        )

@@ -1,0 +1,41 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: Kahuna-Sanity(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: Kahuna-Sanity(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    erase startup-config:
+      response:
+      - "************************************************************************************************************\r\
+        \nErasing Nvram will not clear license trust code.\r\n************************************************************************************************************\r\
+        \nErasing the nvram filesystem will remove all configuration files! Continue?\
+        \ [confirm]\r\n[OK]\r\nErase of nvram: complete"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: Kahuna-Sanity#
