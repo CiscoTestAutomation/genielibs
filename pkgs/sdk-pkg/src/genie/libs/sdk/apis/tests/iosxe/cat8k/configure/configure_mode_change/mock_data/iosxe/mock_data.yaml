@@ -10,6 +10,8 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
+    ? ''
+    : ''
   prompt: GD_F12(config)#
 configure_line:
   commands:
