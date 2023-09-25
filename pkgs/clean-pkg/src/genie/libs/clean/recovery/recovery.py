@@ -213,8 +213,7 @@ def _connectivity(device, console_activity_pattern=None, console_breakboot_char=
         'ip_address': list,
         'subnet_mask': str,
         'gateway': str,
-        'tftp_server': str,
-        Optional('ether_port'): int,
+        'tftp_server': str
     },
     Optional('recovery_password'): str,
     Optional('clear_line'): bool,

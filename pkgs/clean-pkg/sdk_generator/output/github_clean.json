@@ -166,18 +166,13 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L33"
     },
     "iosxe": {
-      "doc": "This stage connects to the device that is being cleaned.\nStage Schema\n------------\nconnect:\n    via (str, optional): Which connection to use from the testbed file. Uses the\n        default connection if not specified.\n    alias (str, optional): Which connection alias to use from the testbed file.\n    timeout (int, optional): The timeout for the connection to complete in seconds.\n        Defaults to 200.\n    retry_timeout (int, optional): Overall timeout for retry mechanism in seconds.\n        Defaults to 0 which means no retry.\n    retry_interval (int, optional): Interval for retry mechanism in seconds. Defaults\n        to 0 which means no retry.\nExample\n-------\nconnect:\n    timeout: 60\n",
-      "module_name": "stages.stages",
-      "package": "genie.libs.clean",
       "sdwan": {
         "doc": "This stage connects to the device that is being cleaned.\n\nStage Schema\n------------\nconnect:\n\n    via (str, optional): Which connection to use from the testbed file. Uses the\n        default connection if not specified.\n\n    timeout (int, optional): The timeout for the connection to complete in seconds.\n        Defaults to 200.\n\n    retry_timeout (int, optional): Overall timeout for retry mechanism in seconds.\n        Defaults to 0 which means no retry.\n\n    retry_interval (int, optional): Interval for retry mechanism in seconds. Defaults\n        to 0 which means no retry.\n\nExample\n-------\nconnect:\n    timeout: 60\n",
         "module_name": "stages.stages",
         "package": "genie.libs.clean",
         "uid": "Connect",
         "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/sdwan/stages.py#L31"
-      },
-      "uid": "Connect",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L2039"
+      }
     },
     "linux": {
       "wsim": {
