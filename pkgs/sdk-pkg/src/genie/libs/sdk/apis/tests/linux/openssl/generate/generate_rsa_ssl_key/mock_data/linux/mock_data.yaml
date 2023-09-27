@@ -1,0 +1,49 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: ott-ads-633(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: ott-ads-633(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    ? '[''openssl genrsa -out /users/lgerrior/test_dir/rsa_private_key 2048'', ''openssl
+      rsa -aes256 -in /users/lgerrior/test_dir/rsa_private_key -out /users/lgerrior/test_dir/rsa_private_key
+      -passout pass:cisco123'']'
+    : response:
+      - openssl genrsa -out /users/lgerrior/test_dir/rsa_private_key 2048: "Generating\
+          \ RSA private key, 2048 bit long modulus (2 primes)\r\n.+++++\r\n....+++++\r\
+          \ne is 65537 (0x010001)"
+        ? openssl rsa -aes256 -in /users/lgerrior/test_dir/rsa_private_key -out /users/lgerrior/test_dir/rsa_private_key
+          -passout pass:cisco123
+        : writing RSA key
+      response_type: circular
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    mkdir -p /users/lgerrior/test_dir:
+      response:
+      - ''
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: ott-ads-633#

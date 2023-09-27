@@ -285,3 +285,53 @@ def set_stack_mode(dev, stack_mode, active_sw_number='', standby_sw_number=''):
         else:
             log.info('Reload failed')
             return False  
+
+def install_wcs_enable_guestshell(device, appid_name, directory, package_name):
+    '''
+        Args:
+            device ('obj'): device to use
+            appid_name('str'): WORD  Name of application
+            directory('str'): flash: Package path
+            package_name('str'): flash:iperf3_signed.tar
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    '''
+    
+    cli= "app-hosting install appid {appid_name} package {directory}:{package_name}".format(directory=directory,package_name=package_name,appid_name=appid_name)
+    if not execute_apphosting_cli(device, cli=cli):
+        log.info("Unable to install wcs_docker app using CLI")        
+    time.sleep(300)
+    try:
+        device.execute("guestshell enable", timeout=300)    
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Unable to execute guestshell. Error {e}")
+
+def execute_apphosting_cli(device, cli="", loops=10, wait_timer=10, unicon_timer=60):
+    ''' 
+    Args:
+            device ('obj'): device to use
+            cli('str'): app-hosting        Application hosting related informations
+                        list               List the appliance
+            loops('int'): time
+            wait_timer('int'): time
+            unicon_timer('int'): time
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    '''
+
+    if not cli:
+        cli = "show app-hosting list"
+
+    for attempt in range (0,loops):
+        output = device.execute(cli, timeout=unicon_timer)
+        if 'The process for the command is not responding or is otherwise unavailable' in output:
+            log.info("Wait 10 seconds and try again!")
+            time.sleep(10)
+        else: 
+            return True
+
+    return False

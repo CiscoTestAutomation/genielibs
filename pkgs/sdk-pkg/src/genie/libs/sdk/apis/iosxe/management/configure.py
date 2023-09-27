@@ -650,11 +650,20 @@ def configure_management_protocols(device,
     protocols = protocols or management.get('protocols', [])
 
     for proto in protocols:
-        if hasattr(device.api, f'configure_management_{proto}'):
-            func = getattr(device.api, f'configure_management_{proto}')
-            func()
-        else:
-            log.warning(f'Protocol {proto} does not have a configure API, ignoring')
+        if isinstance(proto, str):
+            if hasattr(device.api, f'configure_management_{proto}'):
+                func = getattr(device.api, f'configure_management_{proto}')
+                func()
+            else:
+                log.warning(f'Protocol {proto} does not have a configure API, ignoring')
+
+        elif isinstance(proto, dict):
+            for protocol, kwargs in proto.items():
+                if hasattr(device.api, f'configure_management_{protocol}'):
+                    func = getattr(device.api, f'configure_management_{protocol}')
+                    func(**kwargs)
+                else:
+                    log.warning(f'Protocol {protocol} does not have a configure API, ignoring')
 
 
 def configure_management(device,
@@ -951,7 +960,7 @@ def unconfigure_management_netconf(device):
         device ('obj'):  device object
 
     Returns:
-_        None
+        None
     '''
 
     netconf_config = ['no netconf-yang']
@@ -960,3 +969,27 @@ _        None
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure netconf-yang on device {device}. Error:\n{e}")        
     
+def configure_management_gnmi(device, enable=True, server=True, port=None, **kwargs):
+    '''
+    Configure device for management via gnmi.
+
+    Args:
+        device ('obj'):  device object
+        enable ('bool', optional): Enable and start GNxI. Default is True.
+        server ('bool', optional): Enable the GNxI (insecure) server. Default is True.
+        port ('int', optional):  gnxi (insecure) server port. Default is None.
+    Returns:
+        None
+    '''
+
+    try:
+        device.api.configure_gnxi(
+            device=device,
+            enable=enable,
+            server=server,
+            port=port
+            )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure gnmi on device {device}. Error:\n{e}")     
+
+

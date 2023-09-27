@@ -5,30 +5,27 @@ IOSXE specific clean stages
 # Python
 import re
 import time
-import shutil
 import os.path
-import fnmatch
-import ipaddress
-from typing import List
 import logging
-import time
-from ipaddress import IPv4Address, IPv6Address, IPv4Interface, IPv6Interface
+from ipaddress import IPv4Interface, IPv6Interface
 
 # pyATS
 from pyats.async_ import pcall
+from pyats.utils.fileutils import FileUtils
 from pyats.utils.fileutils import FileUtils
 
 # Genie
 from genie.abstract import Lookup
 from genie.libs import clean
 from genie.libs.clean.recovery.recovery import _disconnect_reconnect
+from genie.metaparser.util.schemaengine import Optional, Required, Any
+from genie.utils import Dq
 from genie.metaparser.util.schemaengine import Optional, Required, Any, Or, ListOf
 from genie.utils import Dq
 from genie.utils.timeout import Timeout
 from genie.libs.clean import BaseStage
 from genie.libs.sdk.libs.abstracted_libs.iosxe.subsection import get_default_dir
 from genie.libs.clean.utils import (
-    _apply_configuration,
     find_clean_variable,
     verify_num_images_provided,
     remove_string_from_image,
@@ -36,7 +33,6 @@ from genie.libs.clean.utils import (
 
 # Unicon
 from unicon.eal.dialogs import Statement, Dialog
-from unicon.core.errors import SubCommandFailure
 
 # Logger
 log = logging.getLogger(__name__)
@@ -529,6 +525,7 @@ install_image:
 
     directory (str): directory where packages.conf is created
 
+
     save_system_config (bool, optional): Whether or not to save the system
         config if it was modified. Defaults to False.
 
@@ -537,6 +534,10 @@ install_image:
 
     reload_timeout (int, optional): Maximum time in seconds to wait for reload
         process to finish. Defaults to 800.
+
+    verify_running_image (bool, optional): Compare the image filename with the running
+        image version on device. If a match is found, the stage will be skipped.
+        Defaults to True.
 
     reload_service_args (optional):
 
@@ -576,6 +577,8 @@ install_image:
     }
     ISSU = False
     SKIP_BOOT_VARIABLE = False
+    VERIFY_RUNNING_IMAGE = True
+
     # ============
     # Stage Schema
     # ============
@@ -587,6 +590,7 @@ install_image:
         Optional('reload_timeout'): int,
         Optional('issu'): bool,
         Optional('skip_boot_variable'): bool,
+        Optional('verify_running_image', description="Compare the image filename with the running image version on device. If a match is found, the stage will be skipped", default=VERIFY_RUNNING_IMAGE): bool,
         Optional('reload_service_args'): {
             Optional('reload_creds'): str,
             Optional('prompt_recovery'): bool,
@@ -599,12 +603,37 @@ install_image:
     # Execution order of Stage steps
     # ==============================
     exec_order = [
+        'verify_running_image',
         'delete_boot_variable',
         'set_boot_variable',
         'save_running_config',
         'verify_boot_variable',
         'install_image'
     ]
+
+    def verify_running_image(self, steps, device, images, verify_running_image=VERIFY_RUNNING_IMAGE):
+        # Check the running image
+        if verify_running_image:
+            # Verify the image running in the device
+            with steps.start("Verify the image running in the device") as step:
+                try:
+                    out = device.parse("show version")
+                except Exception as e:
+                    step.failed("Failed to verify the running image")
+
+                # if the device is in bundle mode this step will not be executed.
+                if "BUNDLE" in Dq(out).get_values("mode"):
+                    step.skipped(f"The device is in bundle mode. Skipping the verify running image check.")
+                else:
+                    # To get the image version
+                    image_version = out.get("version", {}).get("xe_version", {})
+                    image_match = re.search(image_version, images[0])
+                    if image_match:
+                        image_mapping = self.history['InstallImage'].parameters.setdefault('image_mapping', {})
+                        system_image = device.api.get_running_image()
+                        image_mapping.update({images[0]: system_image})
+                        self.skipped(f"The image file provided is same as the current running image {image_version} on the device.\n\
+                                    Skipping the install image stage.")
 
     def delete_boot_variable(self, steps, device, issu=ISSU, skip_boot_variable=SKIP_BOOT_VARIABLE):
         with steps.start("Delete all boot variables") as step:
@@ -936,6 +965,7 @@ reload:
                     continue_timer=False),
                     ])
 
+
         self.reload_service_args.update({
                     'reply': reload_dialog
                 })
@@ -1083,6 +1113,7 @@ rommon_boot:
 
         tftp_server (str, optional): Tftp server that is reachable with management interface
 
+
     recovery_password (str): Enable password for device
         required after bootup. Defaults to None.
 
@@ -1100,6 +1131,7 @@ rommon_boot:
 
     config_reg_timeout (int, optional): Max time to set config-register.
         Defaults to 30.
+
 
     rommon_timeout (int, optional): Timeout after bringing the device to rommon. Default to 15 sec.
 
@@ -1129,10 +1161,12 @@ To pass tftp information and tftp server ip from the testbed, refer the example 
 
 testbed:
   name:
+  name:
   passwords:
     tacacs: test
     enable: test
   servers:
+    tftp:
     tftp:
         address: 10.x.x.x
         credentials:
@@ -1216,6 +1250,7 @@ devices:
             except Exception as e:
                 step.failed("Failed to bring device to rommon!", from_exception=e)
 
+
             log.info("Device is reloading")
             device.destroy_all()
 
@@ -1225,9 +1260,11 @@ devices:
             if not tftp:
                 tftp = {}
 
+
             # Check if management attribute in device object, if not set to empty dict
             if not hasattr(device, 'management'):
                 setattr(device, "management", {})
+
 
             # Getting the tftp information, if the info not provided by user, it takes from testbed
             address = device.management.get('address', {}).get('ipv4', '')
@@ -1247,6 +1284,7 @@ devices:
                 log.warning(f"Some TFTP information is missing: {tftp}")
                 # setting tftp empty if ttfp information is missing
                 tftp = {}
+
 
             # Need to instantiate to get the device.start
             # The device.start only works because of a|b
@@ -1304,6 +1342,7 @@ devices:
 
     def enable_device_autoboot(self, steps, device):
         with steps.start("Enable autoboot after reconnect") as step:
+
 
             if hasattr(device.api, "configure_autoboot"):
                 try:
@@ -1604,11 +1643,15 @@ copy_to_device:
                             step.skipped(f"The device is in bundle mode and install_image stage is passed in clean file. Skipping the verify running image check.")
                         else:
                             # To get the image version
-                            image_version = out.get("version", {}).get("xe_version", {})
+                            image_version = out.get("version", {}).get("xe_version", "")
                             image_match = re.search(image_version, file)
                             if image_match:
+                                dest_file_path = out.get("version", {}).get('system_image', "")
+                                if 'packages.conf' not in dest_file_path:
+                                    image_mapping = self.history['CopyToDevice'].parameters.setdefault('image_mapping', {})
+                                    image_mapping.update({origin['files'][index]: dest_file_path})
                                 self.skipped(f"The image file provided is same as the current running image {image_version} on the device.\n\
-                                            Skipping the copy process.")
+                                            Setting the destination image to {dest_file_path}. Skipping the copy process.")
 
                 if server:
                     # Get filesize of image files on remote server
@@ -1937,3 +1980,57 @@ copy_to_device:
                                             "File has been copied to device {}.Cannot verify integrity as "
                                             "the original file size is unknown.".format(device.name))
 
+class ConfigureReplace(BaseStage):
+    """This stage does a configure replace on the device."""
+
+    # =================
+    # Argument Defaults
+    # =================
+    CONFIG_REPLACE_OPTIONS = ""
+    TIMEOUT = 60
+    KNOWN_WARNINGS = None
+
+    # ============
+    # Stage Schema
+    # ============
+    schema = {
+        'path': str,
+        'file': str,
+        Optional('config_replace_options'): str,
+        Optional('known_warnings'): list,
+        Optional('timeout'): int,
+    }
+
+    # ==============================
+    # Execution order of Stage steps
+    # ==============================
+    exec_order = [
+        'configure_replace',
+    ]
+    
+    def configure_replace(self, steps, device, path, file, config_replace_options=CONFIG_REPLACE_OPTIONS, known_warnings=KNOWN_WARNINGS, timeout=TIMEOUT):
+        """This step does a configure replace on the device."""
+
+        if known_warnings is None:
+            known_warnings = []
+
+        with steps.start(f"Configure replace on '{device.name}'") as step:
+            try:
+                output = device.api.configure_replace(path=path, file=file, config_replace_options=config_replace_options, timeout=timeout)
+                pattern = r'\*+\n*!List of Rollback Commands:(?P<rejected_cmds>.*?)end\n\*+'
+                if re.search(pattern, output, re.DOTALL):
+                    rejected_cmds = re.search(pattern, output, re.DOTALL).group('rejected_cmds').strip().split('\n')
+                else:
+                    rejected_cmds = []
+                if rejected_cmds:
+                    if set(rejected_cmds).issubset(set(known_warnings)):
+                        step.passx("Configure replace warnings are expected")
+                    else:
+                        log.warning(f"Rejected commands: {rejected_cmds}")
+                        log.warning(f"Unexpected warnings: {set(rejected_cmds) - set(known_warnings)}")
+                        step.failed("Configure replace warnings are not expected")
+                else:
+                    step.passed("Configure replace passed without rejection")
+
+            except Exception as e:
+                step.failed("Configure replace failed", from_exception=e)

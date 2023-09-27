@@ -16,6 +16,7 @@ import operator
 import psutil
 import pathlib
 import glob
+import threading
 
 from time import strptime
 from datetime import datetime
@@ -35,7 +36,6 @@ from pyats.async_ import pcall
 from pyats.log.utils import banner
 
 # Genie
-from genie.libs import clean
 from genie.abstract import Lookup
 from genie.utils.config import Config
 from genie.utils.diff import Diff
@@ -4320,6 +4320,12 @@ def device_recovery_boot(device, console_activity_pattern=None, console_breakboo
         Raise:
             Exception
             '''
+    if threading.current_thread() != threading.main_thread():
+        raise Exception('This API is not supported with threading. '
+                        'This implementation uses genie.libs.clean '
+                        'which uses the signal library. '
+                        'Signals are not supported with threading.')
+
     log.info(f'Get the recovery details from clean for device {device.name}')
     try:
         recovery_info = device.clean.get('device_recovery')
@@ -4361,6 +4367,7 @@ def device_recovery_boot(device, console_activity_pattern=None, console_breakboo
 
     # For each default connection, start a fork to try to recover the device
     try:
+        from genie.libs import clean
         abstract = Lookup.from_device(device, packages={'clean': clean})
         # Item is needed to be able to know in which parallel child
         # we are

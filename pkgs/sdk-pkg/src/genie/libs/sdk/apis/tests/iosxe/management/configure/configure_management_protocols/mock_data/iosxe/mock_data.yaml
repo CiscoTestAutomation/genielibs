@@ -4,22 +4,27 @@ configure:
       \n"
     aaa authorization exec default local: "aaa authorization exec default local\r\n"
     aaa new-model: "aaa new-model\r\n"
+    crypto key generate rsa: "crypto key generate rsa\r\n"
     end:
       new_state: execute
+    gnxi: "gnxi\r\n"
+    gnxi server: "gnxi server\r\n"
+    ip domain name cisco.com: "ip domain name cisco.com\r\n"
     line console 0:
       new_state: configure_line
-    line vty 0 14: "line vty 0 14\r\n"
+    line vty 0 31: "line vty 0 31\r\n"
     login authentication default: "login authentication default\r\n"
+    netconf-yang: "netconf-yang\r\n"
     no logging console: ''
-    transport input ssh telnet: "transport input ssh telnet\r\n"
-    username admin password admin: "username admin password admin\r\n"
-  prompt: vmtb-isr4451(config)#
+    transport input telnet ssh: "transport input telnet ssh\r\n"
+    username admin password lab: "username admin password lab\r\n"
+  prompt: ott-c9300-67(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: vmtb-isr4451(config-line)#
+  prompt: ott-c9300-67(config-line)#
 connect:
   commands:
     ? ''
@@ -38,10 +43,14 @@ execute:
       new_state: configure
     show running-config | section line vty:
       response:
-      - "line vty 0 4\r\n exec-timeout 0 0\r\n transport input ssh\r\nline vty 5 14\r\
-        \n transport input ssh"
+      - "line vty 0 4\r\n exec-timeout 0 0\r\n password lab\r\n length 0\r\n transport\
+        \ input telnet ssh\r\nline vty 5 31\r\n transport input telnet ssh"
+      - "line vty 0 4\r\n exec-timeout 0 0\r\n password lab\r\n length 0\r\n transport\
+        \ input telnet ssh\r\nline vty 5 31\r\n transport input telnet ssh"
+      - "line vty 0 4\r\n exec-timeout 0 0\r\n password lab\r\n length 0\r\n transport\
+        \ input telnet ssh\r\nline vty 5 31\r\n transport input telnet ssh"
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: vmtb-isr4451#
+  prompt: ott-c9300-67#

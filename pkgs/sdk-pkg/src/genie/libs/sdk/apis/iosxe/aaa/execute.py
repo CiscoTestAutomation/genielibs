@@ -7,6 +7,7 @@ import time
 
 # Unicon
 from unicon.core.errors import SubCommandFailure
+from unicon.eal.dialogs import Statement, Dialog
 
 # Logger
 log = logging.getLogger(__name__)
@@ -43,3 +44,28 @@ def show_logging_smd_output_to_file(device, sprocess, file_name):
         device.execute(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not set platform software trace aaa-acct debug {device}. Error:\n{e}")
+
+def execute_clear_aaa_counters_server(device, server_info='', server_id='all'):
+    """ Execute clear aaa counters for servers
+        Example: clear aaa counters servers all
+        Args:
+            device ('obj'): Device object
+            server_info ('str'): specifying server information (eg. radius)
+            server_id ('str'): server id displayed by show aaa servers(Range 0-2147483647)
+        Returns:
+            output
+        Raises:
+            SubCommandFailure
+    """
+    log.info("Clear aaa counters servers on the device")
+
+    dialog = Statement(
+        pattern=r".*clear aaa counters servers \[confirm\]",
+        action='sendline()',
+        loop_continue=True,
+        continue_timer=False)
+    cmd = f"clear aaa counters servers {server_info} {server_id}"
+    try:
+        device.execute(cmd, reply=Dialog([dialog]))
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not clear aaa counters servers on device. Error:\n{e}")

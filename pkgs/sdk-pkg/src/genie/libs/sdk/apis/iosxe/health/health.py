@@ -355,7 +355,14 @@ def health_logging(device,
 
         existing_log_count = runtime_health_data.get('num_of_logs') or 0
         log_count = len(logs)
-        new_log_count = log_count - existing_log_count
+
+        if log_count > 0 and existing_log_count > log_count:
+            new_log_count = log_count - existing_log_count
+        elif log_count:
+            new_log_count = log_count
+        else:
+            new_log_count = 0
+
         runtime_health_data['num_of_logs'] = new_log_count
         runtime_health_data.setdefault('lines', logs)
         if new_log_count:

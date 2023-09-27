@@ -381,3 +381,61 @@ def confirm_iox_enabled_requested_storage_media(uut, storage='ssd'):
     else:
         log.error('IOX not brought up properly! - Error!')
         return False
+        
+def enable_usb_ssd_verify_exists(device, storage_name="usbflash1:.",time=30):
+    """ configure app-hosting appid
+        Args:
+            device ('obj'): device to use
+            storage_name('str'): storage name eg:flash or bootflash
+            time('int'): time
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    try:
+        out = device.api.get_show_output_include(command='show running-config | include platform usb disable',\
+                                                        filter='platform usb disable')
+        if not out[0]: # if we got False
+            device.api.enable_usb_ssd()
+            time.sleep(time)
+        output = device.parse("show version")
+
+        try:
+            if output['version']['disks'][storage_name]:
+                log.info(output['version']['disks'])
+                return True
+            else:
+                log.info(output['version'])
+                return False
+        except SubCommandFailure as e:
+            log.error("Problem with parsing show version CLI")
+            return False
+    except SubCommandFailure as e:
+        log.error(f"Problem with parsing show version CLI. Error:\n{e}")
+        return False
+ 
+    
+def configure_app_management_networking(device, app_name="guestshell", auto_start=None):
+    ''' 
+    Args:
+            device ('obj'): device to use
+            app_name('str'): WORD  no description
+            auto_start('str'): Application start
+        Returns:
+            None
+        Raises:
+            SubCommandFailure   
+    '''
+
+    log.info("Configuring APP %s with basic Mgmt Interface config - app-vnic management guest-interface 0" % app_name)
+    config = [f'app-hosting appid {app_name}',f'app-vnic management guest-interface 0']
+
+    if auto_start:
+        config.append('start')
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure app_management networking. Error:\n{e}") 

@@ -5,23 +5,17 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-    snmp-server user privuser256256 privgrp v3: "snmp-server user privuser256256 privgrp\
-      \ v3\r\n"
-    snmp-server user privuser256256 privgrp v3 auth sha-2 256 cisco256: "snmp-server\
-      \ user privuser256256 privgrp v3 auth sha-2 256 cisco256\r\n"
-    snmp-server user privuser256256 privgrp v3 auth sha-2 256 cisco256 priv aes 256 cisco256: "snmp-server\
-      \ user privuser256256 privgrp v3 auth sha-2 256 cisco256 priv aes 256 cisco256\r\
-      \n"
-    snmp-server user privuser256256 privgrp v3 auth sha-2 256 cisco256 priv aes 256 cisco256 access ipv6 nameacl nameacl: "snmp-server\
-      \ user privuser256256 privgrp v3 auth sha-2 256 cisco256 priv aes 256 cisco256\
-      \ access ipv6 nameacl nameacl\r\n"
-  prompt: csr(config)#
+    snmp-server user TestUsr2 TestGrp v3 auth md5 password1: "snmp-server user TestUsr2\
+      \ TestGrp v3 auth md5 password\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b$ user TestUsr2\
+      \ TestGrp v3 auth md5 password1         \b\b\b\b\b\b\b\b\b\r\n"
+  prompt: T2-9500-RA_SDG(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: csr(config-line)#
+  prompt: T2-9500-RA_SDG(config-line)#
 connect:
   commands:
     ? ''
@@ -41,4 +35,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: csr#
+  prompt: T2-9500-RA_SDG#

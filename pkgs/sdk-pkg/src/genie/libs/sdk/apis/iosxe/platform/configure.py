@@ -2,7 +2,6 @@
 
 # Python
 import logging
-import time
 
 # Unicon
 from unicon.core.errors import SubCommandFailure
@@ -334,26 +333,6 @@ def configure_no_boot_system_switch_all(device):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not config no boot system on {device}. Error:\n{error}"
-                .format(device=device, error=e)
-        )
-
-def configure_boot_system_switch_all_flash(device, image):
-    """ boot system switch all flash
-        Args:
-            device ('obj'): Device object
-            image ('str'): Image name
-        Returns:
-            None
-        Raises:
-            SubCommandFailure
-    """
-
-    cmd = f"boot system switch all flash:{image}"
-    try:
-        device.configure(cmd)
-    except SubCommandFailure as e:
-        raise SubCommandFailure(
-            "Could not config boot system on {device}. Error:\n{error}"
                 .format(device=device, error=e)
         )
 
@@ -1228,11 +1207,13 @@ def configure_boot_system_switch_all_flash(device, destination):
             SubCommandFailure
     """
     log.info(f"Configuring boot system variable on flash on {device.name}")
-    output = device.execute("show switch")
+    output = device.execute("show switch", error_pattern=[])
+
     if "Invalid input" not in output:
         configs = f"boot system switch all flash:{destination}"
     else:
         configs = f"boot system flash:{destination}"
+
     try:
         device.configure(configs)
     except SubCommandFailure as e:
@@ -1886,25 +1867,6 @@ def configure_macro_global_apply(device, macro_name):
         raise SubCommandFailure(
             f"Failed to configure macro global on device {device}. Error:\n{e}"
             )
-
-def configure_stack_power_switch(device, switch_number):
-    """ Configures stack-power switch
-        Example : stack-power switch 1
-
-        Args:
-            device ('obj'): device to use
-            switch_number ('int'): Switch number (1-16)
-        Returns:
-            None
-        Raises:
-            SubCommandFailure
-    """
-    log.info(f"Configuring stack-power switch {switch_number} on {device.name}")
-    config = f'stack-power switch {switch_number}'
-    try:
-        device.configure(config)
-    except SubCommandFailure as e:
-        raise SubCommandFailure(f"Failed to configure stack-power switch on device {device.name}. Error:\n{e}")
 
 def configure_stack_power_stack(device, powerstack_name):
     """ Configures stack-power stack
@@ -2956,90 +2918,6 @@ def configure_ip_http_client_source_interface(device, interface_name, interface_
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure ip http client source-interface on this device. Error:\n{e}")
-
-def configure_service_performance(device):
-    """ Configures service performance on device
-        Args:
-            device (`obj`): Device object
-        Returns:
-            None
-        Raises:
-            SubCommandFailure
-    """
-    log.info("Configuring service performance on device")
-    cmd = 'service performance'
-    try:
-        device.configure(cmd)
-    except SubCommandFailure as e:
-        raise SubCommandFailure(
-            "Could not configure service performance on {device}. Error:\n{error}"
-                .format(device=device, error=e))
-def unconfigure_service_performance(device):
-    """ Unconfigures service performance on device
-        Args:
-            device (`obj`): Device object
-        Returns:
-            None
-        Raises:
-            SubCommandFailure
-    """
-    log.info("Unconfiguring service performance on device")
-    cmd = 'no service performance'
-    try:
-        device.configure(cmd)
-    except SubCommandFailure as e:
-        raise SubCommandFailure(
-            "Could not unconfigure service performance on {device}. Error:\n{error}"
-                .format(device=device, error=e))
-def configure_key_config_key_password_encrypt(device, password):
-    """ Configure key config-key password encrypt on device
-        Args:
-            device ('obj'): Device object
-            password('str'): password, The config-key
-                Minimum 8 characters not beginning with
-                IOS special character(! # ;)
-        Returns:
-            None
-        Raises:
-            SubCommandFailure
-    """
-    log.info("Configuring key config-key password encrypt on device")
-    cmd = [f'key config-key password encrypt {password}']
-    try:
-        device.configure(cmd)
-    except SubCommandFailure as e:
-        raise SubCommandFailure(
-            "Could not configure key config-key password encrypt on {device}. Error:\n{error}"
-                .format(device=device, error=e))
-def unconfigure_key_config_key_password_encrypt(device, password):
-    """ Unconfigures key config-key password encrypt on device
-        Args:
-            device (`obj`): Device object
-            password('str'): password, The config-key
-                Minimum 8 characters not beginning with
-                IOS special character(! # ;)
-        Returns:
-            None
-        Raises:
-            SubCommandFailure
-    """
-    log.info("Configuring no key config-key password encrypt on device")
-    cmd = [f'no key config-key password encrypt {password}']
-
-    dialog = Dialog([
-        Statement(pattern=r"Continue with master key deletion \? \[yes\/no\]\:\s*$",
-                  action='sendline(yes)',
-                  loop_continue=True,
-                  continue_timer=False)
-        ])
-    try:
-        device.configure(cmd,reply=dialog)
-
-    except SubCommandFailure as e:
-        raise SubCommandFailure(
-            "Could not configure no key config-key password encrypt on {device}. Error:\n{error}"
-                .format(device=device, error=e))
-
 
 def unconfigure_event_manager_applet(device, event):
     """ Unonfigures event manager applet
@@ -4472,121 +4350,6 @@ def configure_cos(device,priority_value):
             'Error:{e}'.format(e=e)
         )
 
-def unconfigure_snmp_mib_bulkstat(device, object_name, schema_name, transfer_name):
-
-    """ unconfigure snmp mib bulkstat
-    Args:
-        device ('obj'): device to use
-        object_name ('str'): The name of the object
-        schema_name ('str'): The name of the schema
-        transfer_name ('str'): bulkstat transfer name
-        Returns:
-            None
-        Raises:
-            SubCommandFailure
-    """
-    cmd = [
-        f"bulkstat profile {transfer_name}",
-        f"no enable",
-        "exit",
-        f"no snmp mib bulkstat object-list {object_name}",
-        f"no snmp mib bulkstat schema {schema_name}",
-        f"no snmp mib bulkstat transfer {transfer_name}",
-
-        ]
-
-    try:
-        device.configure(cmd)
-    except SubCommandFailure as e:
-        raise SubCommandFailure(f"Failed to unconfigure snmp mib bulkstat on this device. Error:\n{e}")
-
-
-def configure_stackpower_stack(device, powerstack_name, mode=None, strict=False):
-    """ Configures power stack mode on stack-power stack
-
-        Args:
-            device ('obj'): device to use
-            powerstack_name ('str'): Power stack name - Up to 31 chars
-            mode ('str', optional): Power stack mode. Default is None
-            strict ('bool', optional): Strict mode. Default is False
-        Returns:
-            None
-        Raises:
-            SubCommandFailure
-    """
-
-    cmd = [f'stack-power stack {powerstack_name}']
-
-    if mode:
-        command = f'mode {mode}'
-        if strict:
-            command += ' strict'
-        cmd.append(command)
-    try:
-        device.configure(cmd)
-
-    except SubCommandFailure as e:
-        raise SubCommandFailure(f"Failed to configure stackpower stack on device {device.name}. Error:\n{e}")
-
-
-def unconfigure_stackpower_stack(device, powerstack_name):
-    """ Configures power stack mode on stack-power stack
-
-        Args:
-            device ('obj'): device to use
-            powerstack_name ('str'): Power stack name - Up to 31 chars
-        Returns:
-            None
-        Raises:
-            SubCommandFailure
-    """
-
-    cmd = [f'no stack-power stack {powerstack_name}']
-
-    try:
-        device.configure(cmd)
-
-    except SubCommandFailure as e:
-        raise SubCommandFailure(f"Failed to configure stackpower stack on device {device.name}. Error:\n{e}")
-
-def unconfig_cns_agent_password(device, cns_password=None):
-    """ un configure cns agent password
-        Args:
-            device ('obj'): Device object
-            cns_password ('str', optional): Cns agent password. Default is None
-        Returns:
-            None
-        Raise:
-            SubCommandFailure: Failed to un configure cns agent password
-    """
-    log.debug("un configure cns agent password")
-    try:
-        if cns_password:
-            device.configure("no cns password {cns_password}".format(cns_password=cns_password))
-        else:
-            device.configure("no cns password")
-    except SubCommandFailure as e:
-        raise SubCommandFailure(f"Could not un configure cns agent password. Error:\n{e}")
-
-
-def configure_boot_system_image_file(device, image_path, switch_number=None):
-    """ Configure boot system image file
-        Args:
-            device ('obj'): Device object
-            image_path ('str'): full image path. Ex: flash:cat9k_17467.SSA.pkg
-            switch_number ('str', optional): switch number or all. Default is None
-        Returns:
-            None
-        Raises:
-            SubCommandFailure
-    """
-
-    cmd = f"boot system{f' switch {switch_number}' if switch_number else ''} {image_path}"
-    try:
-        device.configure(cmd)
-    except SubCommandFailure as e:
-        raise SubCommandFailure(f"Could not configure boot system on {device}. Error:\n{e}")
-
 def configure_banner(device, banner_text):
     """ Config Day banner
         Args:
@@ -4775,5 +4538,49 @@ def configure_bba_group_session_auto_cleanup(device,name,session_auto_cleanup):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not config bba-group on {device}. Error:\n{error}"
+                .format(device=device, error=e)
+        )
+
+
+def configure_bridge_domain(device,domain_number):
+    """ bridge-domain
+        Args:
+            device (`obj`): Device object
+            domain_number (`str`): bridge-domain number
+        Returns:
+            None
+        Raises:
+            SubCommandFailure:Could not config bridge-domain on device
+    """
+
+    cli = []
+    cli.append(f"bridge-domain {domain_number}")
+    try:
+        device.configure(cli)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not config bridge-domain on {device}. Error:\n{error}"
+                .format(device=device, error=e)
+        )
+
+
+def unconfigure_bridge_domain(device,domain_number):
+    """ bridge-domain
+        Args:
+            device (`obj`): Device object
+            domain_number (`str`): bridge-domain number
+        Returns:
+            None
+        Raises:
+            SubCommandFailure:Could not unconfig bridge-domain on device
+    """
+
+    cli = []
+    cli.append(f"no bridge-domain {domain_number}")
+    try:
+        device.configure(cli)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfig bridge-domain on {device}. Error:\n{error}"
                 .format(device=device, error=e)
         )

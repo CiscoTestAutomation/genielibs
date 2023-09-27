@@ -12,7 +12,7 @@ from genie.libs.sdk.apis.utils import tftp_config
 log = logging.getLogger(__name__)
 
 def configure_ip_multicast_routing(device):
-
+    
     """ configure ip multicast routing on device
 
         Args:
@@ -45,6 +45,36 @@ def unconfigure_ip_multicast_routing(device):
             "Unconfigure ip multicast-routing. Error {e}".format(e=e)
         )
 
+def configure_ip_multicast_routing_distributed(device):
+    """ configure ip multicast routing on device
+        Args:
+            device (`obj`): Device object
+        Returns:
+            None
+    """
+    try:
+        device.configure("ip multicast-routing distributed")
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(
+            "Configure ip multicast-routing. Error {e}".format(e=e)
+        )
+        
+def unconfigure_ip_multicast_routing_distributed(device):
+    """Unconfigure ip multicast routing on device
+        Args:
+            device (`obj`): Device object
+        Returns:
+            None
+    """
+    try:
+        device.configure("no ip multicast-routing distributed")
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(
+            "Unconfigure ip multicast-routing. Error {e}".format(e=e)
+        )
+        
 def configure_ip_multicast_vrf_routing(device, vrf_name):
 
     """ configure ip multicast routing vrf on device

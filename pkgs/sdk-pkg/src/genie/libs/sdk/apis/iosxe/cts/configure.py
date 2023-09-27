@@ -1104,3 +1104,21 @@ def enable_cts_enforcement_vlan_list(device, vlan):
         raise SubCommandFailure(
             "Could not enable CTS enforcement on vlan {}.Error:\n{}".format(vlan, str(e))
         )
+
+def disable_cts_enforcement_vlan_list(device, vlan):
+    """ disable cts role-based enforcement on given vlan range
+        Args:
+            device ('obj'): device to use
+            vlan ('str'): vlan range to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to disable cts role-based enforcement vlan list
+    """
+    log.info("Disable CTS enforcement on vlan-list")
+    try:
+        device.configure(["no cts role-based enforcement vlan-list {}".format(vlan)])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not disble CTS enforcement on vlan {}.Error:\n{}".format(vlan, str(e))
+        )

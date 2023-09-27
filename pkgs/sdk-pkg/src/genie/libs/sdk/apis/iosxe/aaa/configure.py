@@ -2567,6 +2567,8 @@ def unconfig_access_session_accnt_attr_filter_spec_include_list(device, filter_l
         raise SubCommandFailure(
             'Could not unconfigure Attribute list with type'
         )
+
+
 def configure_access_session_attr_filter_list(device, filter_list_name, vlan_id=None, cdp=None, 
                                         dhcp=None, lldp=None, dhcpv6=None, http=None):
     """ Configure access-session filter list
@@ -2655,3 +2657,90 @@ def unconfigure_access_session_attr_filter_list_protocol(device, filter_list_nam
     
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure device sensor filter list. Error:\n{e}")
+
+def configure_aaa_accounting_update(device, action_type, periodic_interval):
+    """configure aaa accounting update periodic
+    Args:
+        device (`obj`): Device object
+        action_type('str'): newinfo   Only send accounting update records when we have new acct info.
+                            periodic  Send accounting update records at regular intervals.
+	    periodic_interval('str'): <1-71582>  Periodic intervals to send accounting update records(in minutes)
+    Returns:    
+        None
+    Raise:
+        SubCommandFailure: Failed configure aaa accounting update periodic
+    """
+    config =f"aaa accounting update {action_type} {periodic_interval}"
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure aaa accounting update periodic. Error:\n{e}")
+
+def unconfigure_aaa_accounting_update(device, action_type, periodic_interval):
+    """Unconfigure aaa accounting update periodic
+    Args:
+        device (`obj`): Device object
+        action_type('str'): newinfo   Only send accounting update records when we have new acct info.
+                            periodic  Send accounting update records at regular intervals.
+	    periodic_interval('str'): <1-71582>  Periodic intervals to send accounting update records(in minutes)
+    Returns:    
+        None
+    Raise:
+        SubCommandFailure: Failed unconfigure aaa accounting update periodic
+    """
+    config =f"no aaa accounting update {action_type} {periodic_interval}"
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not unconfigure aaa accounting update periodic. Error:\n{e}")
+
+def unconfigure_aaa_accounting_identity_default_start_stop(device,server_grp,server_grp_name):
+    """Unconfigure aaa accounting identity default start-stop
+    Args:
+        device (`obj`): Device object
+        server_grp (`str`): Server-group (i.e group)
+        server_grp_name ('str'): Server-group name
+    Returns:    
+        None
+    Raise:
+        SubCommandFailure: Failed unconfiguring aaa accounting identity default start-stop
+    """  
+    config = f"no aaa accounting identity default start-stop {server_grp} {server_grp_name}"
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not unconfigure aaa accounting identity default start-stop. Error:\n{e}")
+
+
+def configure_aaa_accounting_update_periodic_interval(device, interval):
+    """Configure aaa accounting update periodic {interval}
+    Args:
+        device ('obj'): Device object
+        interval('int'): <1-71582>  Periodic intervals
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring aaa accounting update periodic
+    """
+    cmd= f'aaa accounting update periodic {interval}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configure aaa accounting update periodic {interval}. Error:\n{e}')
+
+
+def unconfigure_aaa_accounting_update_periodic_interval(device, interval):
+    """Unconfigure aaa accounting update periodic {interval}
+    Args:
+        device ('obj'): Device object
+        interval('int'): <1-71582>  Periodic intervals
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed unconfiguring aaa accounting update periodic
+    """
+    cmd= f'no aaa accounting update periodic {interval}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not unconfigure aaa accounting update periodic {interval}. Error:\n{e}')

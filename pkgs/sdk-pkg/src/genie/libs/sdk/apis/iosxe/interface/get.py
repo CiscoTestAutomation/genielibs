@@ -1475,3 +1475,51 @@ def get_switch_qos_queue_config_on_interface(device, interface, switch_num):
 
     return get_config_dict(output)
 
+def get_interface_media_types(device, interface):
+    """ Get interface media types
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+
+        Returns:
+            None
+            media types (`str`): Example: '10/100/1000BaseTX' , '100/1000/2.5GBaseTX' ,'100/1000/10GBaseTX - interface media 
+                                 type supporting copper connection.
+                                 Example: '1000BaseSX', '1000BaseEX'- interface media type is supporting fiber connection.
+                                 'unknown' - interface type is unknown.
+        Raises:
+            None
+    """
+    try:
+        out = device.parse(
+            "show interfaces {interface}".format(interface=interface)
+        )
+    except SchemaEmptyParserError:
+        return
+
+    return out[interface].get('media_type')
+
+def get_interface_capabilities_multiple_media_types(device, interface):
+    """ Get interface capabilities multiple media types
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+
+        Returns:
+            None
+            multiple media types (`str`): 'rj45 - interface type supporting copper connection.
+                                          'sfp, - interface type supporting fiber connection.
+                                          'rj45 , 'sfp', 'auto-select' - interface type supporting both fiber and copper connection.
+        Raises:
+            None
+    """
+    try:
+        out = device.parse(
+            "show interfaces {interface} capabilities".format(interface=interface)
+        )
+    except SchemaEmptyParserError:
+        return
+
+    return out['interface'][interface].get('multiple_media_types')

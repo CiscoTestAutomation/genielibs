@@ -4,19 +4,22 @@ configure:
       new_state: execute
     line console 0:
       new_state: configure_line
-    no ip nat inside source static 35.0.0.2 135.0.0.2 route-map static_rm: "no ip\
-      \ nat inside source static 35.0.0.2 135.0.0.2 route-map\b\b\b\b\b\b\b\b\b\b\b\
+    no ip nat inside source static 35.0.0.1 135.0.0.1 route-map rm_1 no-alias: "no\
+      \ ip nat inside source static 35.0.0.1 135.0.0.1 route-map\b\b\b\b\b\b\b\b\b\
       \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b$nside source static 35.0.0.2 135.0.0.2 route-map      \
-      \    \b\b\b\b\b\b\b\b\bstatic_rm\r\n"
+      \b\b\b\b\b\b\b\b\b\b\b\b$nside source static 35.0.0.1 135.0.0.1 route-map  \
+      \        \b\b\b\b\b\b\b\b\brm_1 no-a\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      ce static 35.0.0.1 135.0.0.1 route-map rm_1 no-al         \b\b\b\b\b\b\b\b\b\
+      ias\r\n"
     no logging console: ''
-  prompt: Stargazer(config)#
+  prompt: C9500-SVL(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: Stargazer(config-line)#
+  prompt: C9500-SVL(config-line)#
 connect:
   commands:
     ? ''
@@ -36,4 +39,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: Stargazer#
+  prompt: C9500-SVL#

@@ -40,7 +40,11 @@ def configure_gdoi_group(device,
                          server_local_redundancy_peer_addr=None,
                          server_local_identifier=False,
                          server_local_identifier_range=None,
-                         server_local_identifier_val=None):
+                         server_local_identifier_val=None,
+                         gikev2_profile=None,
+                         rekey_address_acl=None,
+                         gikev2_client=None,
+                         pfs=None):
 
     """ Configures Crypto Gdoi Group
         Args:
@@ -69,6 +73,10 @@ def configure_gdoi_group(device,
             server_local_identifier ('bool', optional): Configure identifier. Default is False
             server_local_identifier_range ('str', optional): set server local identifier range
             server_local_identifier_val ('str', optional): set server local identifier value
+            gikev2_profile ('str', optional): Set gikev2 profile
+            rekey_address_acl ('str', optional): Set rekey ipv4 address
+            gikev2_client ('str', optional): Set gikev2 profile for GM
+            pfs ('bool', optional): Set to True to enable PFS
         Returns:
 			True/False
         Raises:
@@ -91,12 +99,16 @@ def configure_gdoi_group(device,
         configs.append(f"identity number {ident_num}")
     if server_ipv4_address is not None:
         configs.append(f"server address ipv4 {server_ipv4_address}")
+    if gikev2_client is not None:
+        configs.append(f"client protocol gikev2 {gikev2_client}")
     if server_local:
         configs.append("server local")
         if rekey_algo is not None :
             configs.append(f"rekey algorithm {rekey_algo}")
         if rekey_lifetime_sec is not None :
             configs.append(f"rekey lifetime seconds {rekey_lifetime_sec}")
+        if rekey_address_acl is not None:
+            configs.append(f"rekey address ipv4 {rekey_address_acl}")
         if rekey_retransmit is not None and rekey_retransmit_number is not None :
             configs.append(f"rekey retransmit {rekey_retransmit} number {rekey_retransmit_number}")
         if rekey_retransmit is not None and rekey_retransmit_number is None :
@@ -105,6 +117,10 @@ def configure_gdoi_group(device,
             configs.append(f"rekey authentication mypubkey rsa {rekey_auth_key}")
         if rekey_transport_unicast:
             configs.append("rekey transport unicast")
+        if pfs is True:
+            configs.append("pfs")
+        if gikev2_profile is not None:
+            configs.append(f"gikev2 {gikev2_profile}")
         if sa_ipsec_seq is not None:
             configs.append(f"sa ipsec {sa_ipsec_seq}")
             if sa_ipsec_profile is not None:
@@ -136,6 +152,7 @@ def configure_gdoi_group(device,
                 configs.append(f"value {server_local_identifier_val}")
             elif server_local_identifier_range is not None :
                 configs.append(f"range {server_local_identifier_range}")
+            
     try:
         device.configure(configs)
     except SubCommandFailure as e:

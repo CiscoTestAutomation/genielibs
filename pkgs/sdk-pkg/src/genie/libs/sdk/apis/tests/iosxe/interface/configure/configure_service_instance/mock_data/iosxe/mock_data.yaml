@@ -1,0 +1,39 @@
+configure:
+  commands:
+    bridge-domain 20: "bridge-domain 20\r\n"
+    encapsulation dot1q 30: "encapsulation dot1q 30\r\n"
+    end:
+      new_state: execute
+    interface GigabitEthernet0/0/0: "interface GigabitEthernet0/0/0\r\n"
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    rewrite ingress tag pop 1 symmetric: "rewrite ingress tag pop 1 symmetric\r\n"
+    service instance 30 ethernet: "service instance 30 ethernet\r\n"
+  prompt: C1113-8P_pkumarmu(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: C1113-8P_pkumarmu(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: C1113-8P_pkumarmu#

@@ -25,7 +25,9 @@ def config_extended_acl(
     entries=None,
     acl_type=None,
     sequence_num=None,
-    log_option=None
+    log_option=None,
+    time_range=None,
+    port_type=None
 ):
     """ Configure extended ACL on device
         Args:
@@ -44,6 +46,8 @@ def config_extended_acl(
             acl_type ('str', optional): type of ACL like with or without host keyword, default value is None
             sequence_num ('str',optional): specific sequence number,default value is None
             log_option ('str',optional): (None | log), Option to log ACL match,default value is None
+            time_range ('str',optional): name of the time-range, default value is None
+            port_type ('str',optional): name of the port_type ex : 'eq', 'gt', 'lt', 'neq', default value is None
         Returns:
             config
         Raises:
@@ -62,7 +66,25 @@ def config_extended_acl(
                 dst_ip=dst_ip)
             if log_option:
                 cmd += log_option
+            if time_range:
+                cmd += f"time-range {time_range}"
             configs.append(cmd)
+        elif acl_type is None and protocol is not None and src_ip=='any' and dst_ip=="any":  
+            if (protocol in ["tcp", "udp"]) and (port_type in ['eq', 'gt', 'lt', 'neq']) and (time_range is not None):
+                configs.append(
+                    "{sequence_num} {permission} {protocol} any any {port_type} {dst_port} time-range {time_range}".format(permission=permission, 
+                    protocol=protocol,
+                    dst_port=dst_port,
+                    port_type=port_type, 
+                    sequence_num=sequence_num,
+                    time_range=time_range))  
+            elif (protocol in ["tcp", "udp"]) and (port_type in ['eq', 'gt', 'lt', 'neq']) and (time_range is None):
+                configs.append(
+                    "{sequence_num} {permission} {protocol} any any {port_type} {dst_port}".format(permission=permission, 
+                    protocol=protocol,
+                    dst_port=dst_port,
+                    port_type=port_type, 
+                    sequence_num=sequence_num,))  
         else:
             if dst_wildcard != "0.0.0.0":
                 if entries > 1:
@@ -85,6 +107,8 @@ def config_extended_acl(
                             cmd += f"{dst_wildcard} "
                         if dst_port:
                             cmd += f"eq {dst_port} "
+                        if time_range:
+                            cmd += f"time-range {time_range}"
                         if log_option:
                             cmd += log_option
                         configs.append(cmd)
@@ -102,6 +126,8 @@ def config_extended_acl(
                         cmd += f"{dst_wildcard} "
                     if dst_port:
                         cmd += f"eq {dst_port} "
+                    if time_range:
+                        cmd += f"time-range {time_range}"
                     if log_option:
                         cmd += log_option
                     configs.append(cmd)
@@ -126,6 +152,8 @@ def config_extended_acl(
                         cmd += f"host {dst_ip_inc} "
                         if dst_port:
                             cmd += f"eq {dst_port} "
+                        if time_range:
+                            cmd += f"time-range {time_range}"
                         if log_option:
                             cmd += log_option
                         configs.append(cmd)
@@ -143,6 +171,8 @@ def config_extended_acl(
                     cmd += f"{dst_ip} "
                     if dst_port:
                         cmd += f"eq {dst_port} "
+                    if time_range:
+                        cmd += f"time-range {time_range}"
                     if log_option:
                         cmd += log_option
                     configs.append(cmd)

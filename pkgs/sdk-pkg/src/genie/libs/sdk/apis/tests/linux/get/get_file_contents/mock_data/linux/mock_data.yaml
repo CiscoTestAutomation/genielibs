@@ -1,0 +1,41 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: ott-ads-633(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: ott-ads-633(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    cat /users/lgerrior/test_dir/device_key:
+      response:
+      - "-----BEGIN EC PRIVATE KEY-----\r\nProc-Type: 4,ENCRYPTED\r\nDEK-Info: AES-256-CBC,D738EC42CBE1D776999970BEAE279176\r\
+        \n\r\nXK9QAj86kgoFuj71zUq8CKNUI9NJqCqbq9WU0PIMT52JWTZZo8J5YcohS2vPqUGP\r\n\
+        FvDmf9SwcAeEmY8wyVlfbv99Cdp0Psuh7OSPy7eleWpcKa8v5VKy6ay5fgRdtBRo\r\neS81Ddy6+vBb2fpG7gt8YLud1UCE7P8TAIMVADqQwrcCRvxxG2iTcsZfZMwy3jdS\r\
+        \n1kBeRyqPMGU1w3b4k41i3QTUZyAhkL10Bnzzis9KcMo=\r\n-----END EC PRIVATE KEY-----"
+      response_type: circular
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: ott-ads-633#

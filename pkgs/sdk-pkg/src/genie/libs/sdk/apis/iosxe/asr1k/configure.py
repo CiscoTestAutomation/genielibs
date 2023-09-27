@@ -2,6 +2,7 @@
 
 # Unicon
 from unicon.core.errors import SubCommandFailure
+from unicon.eal.dialogs import Dialog, Statement
 
 
 def configure_autoboot(device):
@@ -18,4 +19,3 @@ def configure_autoboot(device):
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not configure Autoboot on asr1k device. Error:\n{e}')
-

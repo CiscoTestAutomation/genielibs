@@ -29,9 +29,9 @@ def change_configuration_using_jinja_templates(device, template, **kwargs):
         if timeout:
             log.info('{} timeout value used for device: {}'.format(
                 timeout, device.name))
-            device.configure(out, timeout=timeout)
+            device.configure(out, timeout=timeout, **kwargs)
         else:
-            device.configure(out)
+            device.configure(out, **kwargs)
     except SubCommandFailure as e: 
         raise SubCommandFailure(
             "Failed in applying the following "

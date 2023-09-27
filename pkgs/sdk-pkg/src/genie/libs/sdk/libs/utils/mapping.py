@@ -16,7 +16,8 @@ from genie.conf.base import Base as ConfBase
 from genie.ops.base import Base as OpsBase
 from genie.utils.timeout import Timeout
 
-from genie.libs import ops
+# Unused import required for abstract package lookup
+from genie.libs import ops as abstract_ops
 from genie.libs.sdk.libs.utils.triggeractions import Configure
 from genie.libs.sdk.libs.utils.normalize import GroupKeys, _to_dict, LearnPollDiff
 
@@ -69,6 +70,11 @@ class Mapping(object):
         # Set default arguments
         # Trigger object
         self.parent = parent
+
+        task = self
+        while task.parent:
+            task = task.parent
+
         # The logic change from skip to fail for some scenario, so keep track
         # of it
         self._static = True
@@ -85,17 +91,17 @@ class Mapping(object):
         # name is <key>.<dev>.<counter>
         if name.rsplit('.', 1):
             name = name.rsplit('.', 1)[0]
-        if not hasattr(self.parent.parent, 'triggers'):
+        if not hasattr(task, 'triggers'):
             self._static_learn = True
             self._static = False
             return
 
-        if name not in self.parent.parent.triggers:
+        if name not in task.triggers:
             # Weird corner case
             raise Exception("'{name}' is not defined in the Trigger"
                             "datafile".format(name=name))
 
-        data = self.parent.parent.triggers[name]
+        data = task.triggers[name]
         if 'num_values' in data:
             self.num_values.update(data['num_values'])
 
@@ -352,7 +358,7 @@ class Mapping(object):
                 if kwargs.get('lts', {}).get(base, {}).get(device.name, {}):
                     o = [kwargs['lts'][base][device.name]]
                     # check if can get required value from the lts
-                    # if not, need to learn device again                    
+                    # if not, need to learn device again
                     reqs = self._populate_path(requirements['requirements'],
                                 device, keys=self.keys, device_only=True)
                     all_keys = requirements.get('all_keys', False)
@@ -499,6 +505,10 @@ class Mapping(object):
 
             self.keys = GroupKeys.max_amount(self.keys, self.num_values)
 
+            task = self
+            while task.parent:
+                task = task.parent
+
             # update mapping.keys with static values
             if self._static:
                 uid = self.parent.uid.rsplit('.', 1)[0]
@@ -506,7 +516,7 @@ class Mapping(object):
                 # name is <key>.<dev>.<counter>
                 if uid.rsplit('.', 1):
                     uid = uid.rsplit('.', 1)[0]
-                data = self.parent.parent.triggers[uid]
+                data = task.triggers[uid]
                 for item in self.keys:
                     for k, v in data['static'].items():
                         if not v.startswith('(?P<'):
@@ -853,7 +863,7 @@ class Mapping(object):
                          missing=missing,
                          obj_mod=ops,
                          org_req=requirements)
-            # add to self to provide access for parent 
+            # add to self to provide access for parent
             # that can get information from the learned ops object
             self.verify_ops_object = o
         except Exception as e:
@@ -1042,7 +1052,7 @@ class Mapping(object):
             # trigger action
             return ops_obj
         else:
-            Interface_ops_obj = Lookup.from_device(device).ops.interface.interface.Interface(device)
+            Interface_ops_obj = Lookup.from_device(device).abstract_ops.interface.interface.Interface(device)
             new_dict = {}
             if isinstance(ops_obj, type(Interface_ops_obj)) and \
                 device.management_interface:

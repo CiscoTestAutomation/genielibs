@@ -200,7 +200,8 @@ def configure_static_nat_route_map_rule(
     device, 
     inside_local_ip, 
     inside_global_ip,
-    route_map_name
+    route_map_name,
+    no_alias=False
 ):
     """ Configure static NAT route-map rule
         Args:
@@ -208,13 +209,16 @@ def configure_static_nat_route_map_rule(
             inside_local_ip ('str'): Inside local ip
             inside_global_ip ('str'): Inside global ip
             route_map_name ('str') : Name of route-map
+            no_alias ('bool', optional): no alias static route. Default is False
         Returns:
             None
         Raises:
             SubCommandFailure: static NAT route-map rule not configured
     """
-    cmd = ["ip nat inside source static {} {} route-map {}".format(
-              inside_local_ip,inside_global_ip,route_map_name)]
+    cmd = "ip nat inside source static {} {} route-map {}".format(
+              inside_local_ip,inside_global_ip,route_map_name)
+    if no_alias:
+        cmd += " no-alias"
 
     try:
         device.configure(cmd)
@@ -226,7 +230,8 @@ def unconfigure_static_nat_route_map_rule(
     device, 
     inside_local_ip, 
     inside_global_ip,
-    route_map_name
+    route_map_name,
+    no_alias=False
 ):
     """ UnConfigure static NAT route-map rule
         Args:
@@ -234,14 +239,17 @@ def unconfigure_static_nat_route_map_rule(
             inside_local_ip ('str'): Inside local ip
             inside_global_ip ('str'): Inside global ip
             route_map_name ('str') : Name of route-map
+            no_alias ('bool', optional): no alias static route. Default is False
         Returns:
             None
         Raises:
             SubCommandFailure: static NAT route-map rule not unconfigured
     """
-    cmd = ["no ip nat inside source static {} {} route-map {}".format(
-              inside_local_ip,inside_global_ip,route_map_name)]
-
+    cmd = "no ip nat inside source static {} {} route-map {}".format(
+              inside_local_ip,inside_global_ip,route_map_name)
+    if no_alias:
+        cmd += " no-alias"          
+    
     try:
         device.configure(cmd)
     except SubCommandFailure as e:

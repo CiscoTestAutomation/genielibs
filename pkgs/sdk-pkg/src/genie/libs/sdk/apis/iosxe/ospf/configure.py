@@ -694,6 +694,8 @@ def configure_ospfv3(device, pid, router_id=None, vrf=None, nsr=None,
     if vrf:
         config.append('address-family ipv6 unicast vrf {vrf}'.format(vrf=vrf))
         config.append('redistribute connected')
+        if route_method:
+            config.append('redistribute {route_method}'.format(route_method=route_method))
     try:
         device.configure(config)
     except SubCommandFailure as e:
@@ -1117,23 +1119,25 @@ def configure_ospf_bfd(device, interface):
             )
         )
 
-
-
-def configure_ospf_redistributed_connected(device, ospf_process_id):
+def configure_ospf_redistributed_connected(device, ospf_process_id,vrf=None):
 
     """ configure redistribute connected under ospf
 
         Args:
             device (`obj`): device to execute on
             ospf_process_id (`int`): process id of ospf
+            vrf ('str',optional): VRF name
         Return:
             None
 
         Raises:
             SubCommandFailure
     """
-    config=["router ospf {ospf_process_id}".format(
-                                    ospf_process_id=ospf_process_id)]
+    if vrf:
+        config = ["router ospf {} vrf {}".format(ospf_process_id,vrf)]
+    else:
+        config = ["router ospf {}".format(ospf_process_id)]
+
     config.append("redistribute connected")
     try:
         device.configure(config)
@@ -1145,7 +1149,6 @@ def configure_ospf_redistributed_connected(device, ospf_process_id):
                error=e
             )
         )
-
 
 def unconfigure_ospf_vrf_on_device(
     device, ospf_process_id, vrf=None):
@@ -1159,7 +1162,7 @@ def unconfigure_ospf_vrf_on_device(
         Raises:
             SubCommandFailure: Failed executing configure commands
     """
-
+    
     cmd = "no router ospf {ospf_process_id}".format(
         ospf_process_id=ospf_process_id)
     if vrf:

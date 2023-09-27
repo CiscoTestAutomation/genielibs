@@ -1455,6 +1455,71 @@ def execute_dir_file_system(device, file_system, sub_directory=None, timeout=120
             f"Could not execute dir {file_system} on device. Error:\n{e}"
             )
 
+
+def execute_archive_tar(device, tar_filename, operation_type, src_filesystem, src_filepath=None, dest_filesystem=None, dest_filepath=None, timeout=120):
+    """ Execute archive tar 
+        Example: archive tar /create usb0:usb_files.tar bootflash:/tracelogs
+                 archive tar /xtract usb0:usb_files.tar usb0:new-tar-files
+        Args:
+            device ('obj'): Device object
+            dest_filesystem ('str'): specifying filesystems such as bootflash:,usb:, tftp:
+            tar_filename('str'): tar filename 
+            operation_type('str'): Option can be xtract, table, create
+            src_filesystem ('str'): specifying filesystems such as bootflash:,usb:, tftp:
+            src_filepath ('str',optional): specifying files path which need to be archived,Default is None
+            dest_filepath ('str',optional): specifying destination path of tar file,Default is None
+            timeout ('int',optional): Max time for completion of cli execution,Default is 120 seconds
+        Returns:
+            output
+        Raises:
+            SubCommandFailure
+    """ 
+    if operation_type not in ('create', 'xtract', 'table') :
+        raise ValueError('Operation type must be "xtract", "table" or "create"')
+
+    cmd = f"archive tar /{operation_type} "
+    dest = f" {dest_filesystem}"
+    if dest_filepath:
+        dest += f"{dest_filepath}/"
+    src = f" {src_filesystem}"
+    if src_filepath:
+        src += f"{src_filepath}/"
+    if operation_type == 'create':
+        cmd +=  f"{dest}{tar_filename} {src}"
+    elif operation_type == 'xtract':
+        cmd += f"{src}{tar_filename} {dest}"
+    elif operation_type == 'table':
+        cmd += f"{src}{tar_filename}"
+
+    try:
+        output = device.execute(cmd, timeout=timeout)
+        return output
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not execute archive tar on device. Error:\n{e}"
+            )
+
+
+def clear_ip_mfib_counters(device):
+    """ clear ip mfib counters
+        Args:
+            device (`obj`): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    log.debug(f"Clear ip mfib counters on {device}")
+
+    try:
+        device.execute('clear ip mfib counters')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not clear ip mfib counters on {device}. Error:\n{e}"
+        )
+
+
 def execute_switch_card_OIR_power_force(device, card_slot, subslot):
     """ execute oir power force
     Args:
@@ -1474,4 +1539,79 @@ def execute_switch_card_OIR_power_force(device, card_slot, subslot):
         device.execute(cmd)
 
     except SubCommandFailure as e:
-        raise SubCommandFailure(f"Could not execute hw-module subslot {card_slot}/{subslot} oir power force. Error:\n{e}")
+
+        raise SubCommandFailure(f"Could not execute hw-module subslot {card_slot}/{subslot} oir power force. Error:\n{e}")  
+
+
+def request_platform_software_package_expand(device, file_system, test_image, sub_directory=None,timeout=240):
+    """ Perform request platform software package expand file {file_system}/{sub_directory}/{test_image}
+        Perform request platform software package expand file {file_system}/{test_image}
+        Args:
+            device ('obj'): Device object
+            file_system ('str'): bootflash: , harddisk: , usb0:
+            test_image ('str'): image_name
+            sub_directory ('str',optional):  subdirectory inside the filesystem where the test image is present,Default is None
+            timeout ('int'): Max time 
+        Returns:
+                None
+        Raises:
+                SubCommandFailure
+    """
+    
+    try:
+        if sub_directory:
+            cmd = f'request platform software package expand file {file_system}/{sub_directory}/{test_image}'
+            
+        else :
+            cmd = f'request platform software package expand file {file_system}/{test_image}'
+            
+        device.execute(cmd,timeout=timeout)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to perform request platform software package expand on the device. Error:\n{e}")
+
+
+def execute_clear_ipv6_mld_group(device, interface=None):
+    """ clear ipv6 mld group
+        Args:
+            device (`obj`)           : Device object
+            interface('str',optional): Interface name 
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    log.debug(f"Clear ipv6 mld group on {device}")
+    
+    cmd = "clear ipv6 mld group"
+    if interface:
+        cmd += f" {interface}"
+
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not clear ipv6 mld group on {device}. Error:\n{e}")
+
+
+def execute_clear_ip_igmp_group(device, interface=None):
+    """ clear ipv6 mld group
+        Args:
+            device (`obj`)           : Device object
+            interface('str',optional): Interface name 
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    log.debug(f"clear ip igmp group on {device}")
+    cmd = "clear ip igmp group"
+    if interface:
+        cmd += f" {interface}"
+
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not clear ip igmp group on {device}. Error:\n{e}")
+

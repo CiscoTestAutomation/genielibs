@@ -1,0 +1,48 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    hw-module subslot 0/1 mode 100G:
+      response: "hw-module subslot 0/1 mode 100G\r\nChanging\
+        \ mode of subslot 0/1 to 100G will cause EPA in subslot 0/0 to go offline\r\n\
+        Present configuration of this subslot will be erased and will not be restored.\r\
+        \nCLI will not be available until mode change is complete and EPA returns to\
+        \ OK state."
+      new_state: configure_confirm
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    ? ''
+    : ''
+  prompt: GD_F12(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: GD_F12(config-line)#
+configure_confirm:
+  commands:
+    ? ''
+    : new_state: configure
+  prompt: "Do you want to proceed? [confirm]"
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: GD_F12#
