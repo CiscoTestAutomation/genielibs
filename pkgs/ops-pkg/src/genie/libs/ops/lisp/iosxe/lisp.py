@@ -151,10 +151,10 @@ class Lisp(SuperLisp):
                     #                           eid_record
                     #                           bidirectional
                     for key in ['vni', 'extranets']:
-                        self.add_leaf(cmd='show lisp all extranet {extranet} instance-id {instance_id}'.format(instance_id=instance_id, extranet='ext1'),
+                        self.add_leaf(cmd='show lisp all extranet {extranet_name} instance-id {instance_id}'.format(instance_id=instance_id, extranet_name='ext1'),
                                       src=vni_src+'[{key}]'.format(key=key),
                                       dest=vni_dest+'[{key}]'.format(key=key),
-                                      instance_id=instance_id, extranet='ext1')
+                                      instance_id=instance_id, extranet_name='ext1')
 
                     # map_server
                     #   virtual_network_ids
