@@ -2210,3 +2210,172 @@ def unconfigure_access_session_mac_move(device, access_type, deny_type):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Failed to unconfigure access-session mac-move. Error:\n{e}")
+
+def configure_parameter_map(device,
+        parameter_map_name=False,
+        enable_global=False,
+        banner_file_name=None,
+        banner_text=None,
+        banner_title=None,
+        captive_bypass_portal=False,
+        cisco_logo_disable=False,
+        consent_email=False,
+        custom_page=False,
+        device_failure_file_name=None,
+        login_device_name=None,
+        login_expired_device_name=None,
+        custom_page_success_name=None,
+        logout_window_disabled=False,
+        max_http_conns=None,
+        redirect_command=None,
+        sleeping_client_timeout=None,
+        success_window_disable=False,
+        timeout_seconds=None,
+        type_name=None,
+        http_port=None,
+        intercept_https_enable=False,
+        secure_webauth_disable=False,
+        trustpoint_name=None,
+        virtual_ipv4=None,
+        virtual_ipv6=None,
+        watch_add_ipv4=None,
+        watch_add_ipv6=None,
+        dynamic_expiry_timeout=None,
+        enabled_watch_list=False,
+        webauth_bypass_intercept_name=None,
+        webauth_bypass_intercept=None,
+        webauth_http_enable=False
+        ):
+
+    """ Configuring paramter-map webauth <>
+        Args:
+            device (`obj`): Device object
+            parameter_map_name ('str'): parameter-map name (max 99 char)
+            enable_global('bool'): To enable global mode
+            banner_file_name('str'): Specify name of the banner-file
+            banner_text('str'): c banner-text c, where 'c' is a delimiting character (maximum 200 characters)
+            banner_title('str'): c banner-title-text c, where 'c' is a delimiting character (maximum 127 characters)
+            captive_bypass_portal('bool'): Turn on captive bypass
+            cisco_logo_disable('bool'): Disable Cisco logo on internal html pages
+            consent_email('bool'): Turn-on Consent with Email
+            custom_page('bool'): custom-page - login, expired, success or failure page
+            device_failure_file_name('str') : Specify name of the HTML file
+            login_device_name('str'): Specify file on local storage media,Specify name of the HTML file
+            login_expired_device_name('str'): Expired authentication proxy,Specify name of the HTML file
+            custom_page_success_name('str'):Successful authentication proxy
+            logout_window_disabled('bool'): Webauth logout window disable
+            max_http_conns('int'): Maximum number of HTTP connections per client
+            redirect_command('str'): Specify the redirect command 
+            sleeping_client_timeout('int'): Sleep Timeout in Minute (10-43200)
+            success_window_disable('bool'): Disable Success Window
+            timeout_seconds('int'):timeout for the webauth session in Seconds
+            type_name('str'): type - web-auth, consent or both
+            http_port('int'): Set Webauth http server port (81-65535)
+            intercept_https_enable('bool'): Enable intercept of https traffic
+            secure_webauth_disable('bool'): Disable HTTP secure server for Webauth
+            trustpoint_name('str') : Specify the trustpoint name
+            virtual_ipv4('str'): Virtual IPv4 Address
+            virtual_ipv6('str'): Virtual IPv6 Address
+            watch_add_ipv4('str'): Watch List of webauth clients, IPv4 Watch List Entry
+            watch_add_ipv6('str'): Watch List of webauth clients, IPv6 Watch List Entry
+            dynamic_expiry_timeout('int'):Webauth watch-list expiry timeout in seconds
+            enabled_watch_list('bool'): Enable Watchlist
+            webauth_bypass_intercept_name('str'): Specify the webauth bypass ACL name
+            webauth_http_enable('bool') : Enable HTTP server for Webauth
+
+        Returns:
+            None 
+        Raises: 
+            SubCommandFailure
+    """
+    log.debug(f"Configuring parameter-map type webauth {parameter_map_name}")
+    cmd = []
+    if parameter_map_name:
+        cmd.append("parameter-map type webauth {parameter_map_name}".format(parameter_map_name=parameter_map_name))
+    if enable_global:
+        cmd.append("parameter-map type webauth global")
+        if http_port:
+            cmd.append("http port {http_port}".format(http_port=http_port))
+        if intercept_https_enable:
+            cmd.append("intercept-https-enable")
+        if secure_webauth_disable:
+            cmd.append("secure-webauth-disable")
+        if trustpoint_name:
+            cmd.append("trustpoint {trustpoint_name}".format(trustpoint_name=trustpoint_name))
+        if virtual_ipv4:
+            cmd.append("virtual-ip ipv4 {virtual_ipv4}".format(virtual_ipv4=virtual_ipv4))
+        if virtual_ipv6:
+            cmd.append("virtual-ip ipv6 {virtual_ipv6}".format(virtual_ipv6=virtual_ipv6))
+        if watch_add_ipv4:
+            cmd.append("watch-list add-item ipv4 {watch_add_ipv4}".format(watch_add_ipv4=watch_add_ipv4))
+        if watch_add_ipv6:
+            cmd.append("watch-list add-item ipv6 {watch_add_ipv6}".format(watch_add_ipv6=watch_add_ipv6))
+        if dynamic_expiry_timeout:
+            cmd.append("watch-list dynamic-expiry-timeout {dynamic_expiry_timeout}".format(dynamic_expiry_timeout=dynamic_expiry_timeout))
+        if enabled_watch_list:
+            cmd.append("watch-list enabled")
+        if webauth_bypass_intercept_name:
+            cmd.append("webauth-bypass-intercept {webauth_bypass_intercept}".format(webauth_bypass_intercept=webauth_bypass_intercept))
+        if webauth_http_enable:
+            cmd.append("webauth-http-enable")
+    if banner_file_name:
+        cmd.append("banner file {banner_file_name}".format(banner_file_name=banner_file_name))
+    if banner_text:
+        cmd.append("banner text {banner_text}".format(banner_text=banner_text))
+    if banner_title:
+        cmd.append("banner title {banner_title}".format(banner_title=banner_title))
+    if captive_bypass_portal:
+        cmd.append("captive-bypass-portal")
+    if cisco_logo_disable:
+        cmd.append("cisco-logo-disable")
+    if consent_email:
+        cmd.append("consent email")
+    if custom_page:
+        if device_failure_file_name:
+            cmd.append("custom-page failure device {device_failure_file_name}".format(device_failure_file_name=device_failure_file_name))
+        if login_device_name:
+            cmd.append("custom-page login device {login_device_name}".format(login_device_name=login_device_name))
+        if login_expired_device_name:
+            cmd.append("custom-page login expired device {login_expired_device_name}".format(login_expired_device_name=login_expired_device_name))
+        if custom_page_success_name:
+            cmd.append("custom-page failure device {custom_page_success_name}".format(custom_page_success_name=custom_page_success_name))
+    if logout_window_disabled:
+        cmd.append("logout-window-disabled")
+    if max_http_conns:
+        cmd.append("max-http-conns {max_http_conns}".format(max_http_conns=max_http_conns))
+    if redirect_command:
+        cmd.append("redirect {redirect_command}".format(redirect_command=redirect_command))
+    if sleeping_client_timeout:
+        cmd.append("sleeping-client timeout {sleeping_client_timeout}".format(sleeping_client_timeout=sleeping_client_timeout))
+    if success_window_disable:
+        cmd.append("success-window-disable")
+    if timeout_seconds:
+        cmd.append("timeout init-state sec {timeout_seconds}".format(timeout_seconds=timeout_seconds))
+    if type_name:
+        cmd.append("type {type_name}".format(type_name=type_name))
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as error:
+        raise SubCommandFailure(
+            f"Could not configure class-map on device. Error:\n{error}"
+        )
+
+def unconfigure_parameter_map(device, parameter_map_name):
+    """ unconfigure paramter map
+        Args:
+            device ('obj'): device to use
+            parameter_map_name ('str'): parameter-map name (max 99 char)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to unconfigure interface-template sticky timer
+    """
+    cmd = f'no parameter-map type webauth {parameter_map_name}'
+    log.debug("Unconfigure Parameter map")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure parameter map {parameter_map_name}.Error:\n{e}"
+        )

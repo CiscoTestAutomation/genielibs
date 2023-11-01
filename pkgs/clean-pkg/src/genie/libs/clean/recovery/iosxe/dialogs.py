@@ -54,11 +54,6 @@ class RommonDialog(TelnetDialog):
 
     def __init__(self):
 
-        # Login prompt
-        self.add_statement(Statement(pattern=r'^.*(Username|login): ?$',
-                                     action=print_message,
-                                     args={'message': 'Device reached login prompt before rommon prompt',
-                                           'raise_exception': False}))
 
          # Would you like to enter the initial configuration dialog? [yes/no]:
         self.add_statement(Statement(pattern=r'^.*(initial|basic) configuration dialog *\?.*',
@@ -112,7 +107,17 @@ class RommonDialog(TelnetDialog):
     @statement_decorator(r'^.*[Pp]assword( for )?(\\S+)?: ?$', loop_continue=True)
     def send_password(spawn, session, context):
         # Send password to teh device when prompted
-        spawn.sendline('{}'.format(context['password']))
+        if context['pass_login']:
+            spawn.sendline('{}'.format(context['password']))
+            time.sleep(0.5)
+            context['pass_login'] = 0
+        else:
+            spawn.sendline('{}'.format(context['en_password']))
+
+    @statement_decorator(r'^.*([Uu]sername|[Ll]ogin): ?$', loop_continue=True)
+    def send_username(spawn, session, context):
+        # Send password to teh device when prompted
+        spawn.sendline('{}'.format(context['username']))
         time.sleep(0.5)
 
     # grub>

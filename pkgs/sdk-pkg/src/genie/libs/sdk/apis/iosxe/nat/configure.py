@@ -521,12 +521,14 @@ def unconfigure_standard_access_list(
         log.error(e)
         raise SubCommandFailure("Could not UnConfigure standard access-list")
         
-def configure_enable_nat_scale(device, timeout=60):
+def configure_enable_nat_scale(device, timeout=60, nat_aot=True, nat_scale=True):
 
     """ Configure enable NAT scale
         Args:
             device (`obj`): Device object
             timeout ('int', optional): Max time for enable nat scale.Defaults to 60
+            nat_aot ('boolean', optional): Flag to enable nat aot
+            nat_scale ('boolean', optional): Flag to enable nat scale
         Returns:
             None
         Raises:
@@ -539,10 +541,12 @@ def configure_enable_nat_scale(device, timeout=60):
              action='sendline(yes)',
              loop_continue=False,
              continue_timer=False)])
-    
-    command = [ "no ip nat create flow-entries",
-                "nat scale"]
-
+    command = []       
+    if nat_aot:
+        command.append("no ip nat create flow-entries")
+    if nat_scale:
+        command.append("nat scale")
+        
     try:
        device.configure(
        command,
@@ -994,24 +998,27 @@ def unconfigure_dynamic_nat_outside_rule(
         log.error(e)
         raise SubCommandFailure("Could not UnConfigure dynamic NAT outside rule")
         
-def configure_disable_nat_scale(device):
+def configure_disable_nat_scale(device, nat_aot=True, nat_scale=True):
 
     """ Configure disable NAT scale
         Args:
             device (`obj`): Device object
+            nat_aot ('boolean', optional): Flag to disable nat aot
+            nat_scale ('boolean', optional): Flag to disable nat scale
         Returns:
             None
         Raises:
             SubCommandFailure
     """
     
+    command = []       
+    if nat_aot:
+        command.append("ip nat create flow-entries")
+    if nat_scale:
+        command.append("no nat scale")
+    
     try:
-        device.configure(
-            [
-                "ip nat create flow-entries",
-                "no nat scale"           
-            ]
-        )
+        device.configure(command)
     except SubCommandFailure as e:
         log.error(e)
         raise SubCommandFailure("Could not configure disable NAT scale") 

@@ -746,9 +746,14 @@ def configure_scale_vrf_via_tftp(
         for count in range(vrf_count):
             cmds += '''
             vrf definition {vrf}
+                rd {vrf}:{vrf}
+                !
                 address-family ipv4
+                exit-address-family
+                !
                 address-family ipv6
-            exit
+                exit-address-family
+            !
             '''.format(vrf=vrf_name)
 
             vrf_name += vrf_name_step

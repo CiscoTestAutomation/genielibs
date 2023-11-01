@@ -227,7 +227,7 @@ def get_mgmt_src_ip_addresses(device):
 
 def get_mgmt_ip_and_mgmt_src_ip_addresses(device, mgmt_src_ip=None):
     """ Get the management IP and source IP addresses connected via SSH to the device.
-    
+
     if the mgmt_src_ip is provided, will use that for the lookup. If not, will
     select the 1st matching IP.
     Args:
@@ -241,28 +241,23 @@ def get_mgmt_ip_and_mgmt_src_ip_addresses(device, mgmt_src_ip=None):
     mgmt_addresses = re.findall(
         r'tcp\s+ESTABLISHED\s+0\s+(\S+)\((?:22|23)\).+management +\d+ +(\S+)\(\d+\)',
         show_sockets_output, re.S)
-    
-    if mgmt_src_ip:
-        # tcp      ESTABLISHED  0         5.25.25.5(23)
-        m = re.search(
-        rf'tcp\s+ESTABLISHED\s+0\s+(\S+)\((?:22|23)\).+management +\d+ +({mgmt_src_ip})\(\d+\)',
-        show_sockets_output, re.S)
+
+    mgmt_src_ip_addresses = set([ip[1] for ip in mgmt_addresses if ip[1]])
+    mgmt_ip_addresses = list(set([ip[0] for ip in mgmt_addresses if ip[0]]))
+
+    for ip_pair in mgmt_addresses:
+        if mgmt_src_ip == ip_pair[1]:
+            mgmt_ip = ip_pair[0]
+            break
     else:
-        # tcp      ESTABLISHED  0         5.25.25.5(23)
-        m = re.search(
-        r'tcp\s+ESTABLISHED\s+0\s+(\S+)\((?:22|23)\).+management +\d+ +(\S+)\(\d+\)',
-        show_sockets_output, re.S)
-    if m:
-        mgmt_ip = m.groups(0)
-    else:
+        mgmt_ip = mgmt_ip_addresses[0]
+
+    if not mgmt_ip:
         log.error('Unable to find management session, cannot determine IP address')
         mgmt_ip = None
 
-    if mgmt_addresses:
-        mgmt_src_ip_addresses = set([m[1] for m in mgmt_addresses])
-    else:
-        log.error('Unable to find management session, cannot determine management IP addresses')
-        return []
+    if not mgmt_ip or not mgmt_src_ip_addresses:
+        return None
 
     log.info('Device management IP: {}'.format(mgmt_ip))
     log.info('Device management source IP addresses: {}'.format(mgmt_src_ip_addresses))

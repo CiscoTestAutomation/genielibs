@@ -16,7 +16,7 @@ configure:
     no logging console: ''
     no shutdown: "Bad mask /32 for address 10.29.30.167\r\n"
     transport input ssh telnet: "transport input ssh telnet\r\n"
-    username admin password admin: "username admin password admin\r\n"
+    username admin password 0 admin: "username admin password 0 admin\r\n"
     vrf forwarding Mgmt-intf: "vrf forwarding Mgmt-intf\r\n"
   prompt: vmtb-isr4451(config)#
 configure_line:

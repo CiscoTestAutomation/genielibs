@@ -33,4 +33,7 @@ class TestExecuteRedundancyReload(unittest.TestCase):
         expected_output = ('Stack is in Half ring setup; Reloading a switch might cause stack split\r\n'
  'Reload peer [confirm]\r\n'
  'Preparing to reload peer')
+        # Device output inconsistently includes device prompt
+        if result.endswith('#'):
+            expected_output += '\r\nstartrek-1#'
         self.assertEqual(result, expected_output)

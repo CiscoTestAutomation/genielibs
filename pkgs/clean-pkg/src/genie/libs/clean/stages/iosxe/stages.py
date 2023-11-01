@@ -548,8 +548,8 @@ install_image:
         prompt_recovery (bool, optional): Enable or disable the prompt recovery
             feature of unicon. Defaults to True.
 
-        append_error_pattern (list, optional): List of regex strings to check for,
-            to be appended to the default error pattern list. Default: [r"FAILED:.* ",]
+        error_pattern (list, optional): List of regex strings to check for errors.
+            Default: [r"FAILED:.* ",]
 
         <Key>: <Value>
             Any other arguments that the Unicon reload service supports
@@ -573,7 +573,7 @@ install_image:
     RELOAD_SERVICE_ARGS = {
         'reload_creds': 'default',
         'prompt_recovery': True,
-        'append_error_pattern': [r"FAILED:.* ",],
+        'error_pattern': [r"FAILED:.* ",],
     }
     ISSU = False
     SKIP_BOOT_VARIABLE = False
@@ -594,7 +594,7 @@ install_image:
         Optional('reload_service_args'): {
             Optional('reload_creds'): str,
             Optional('prompt_recovery'): bool,
-            Optional('append_error_pattern'): list,
+            Optional('error_pattern'): list,
             Any(): Any()
         }
     }
@@ -702,6 +702,8 @@ install_image:
 
         # Set default reload args
         reload_args = self.RELOAD_SERVICE_ARGS.copy()
+        # Disable device recovery for reload
+        reload_args.update({'device_recovery': False})
         # If user provides custom values, update the default with the user
         # provided.
         if reload_service_args:
@@ -866,6 +868,7 @@ reload:
         prompt_recovery (bool, optional): Enable or disable the prompt recovery
             feature of unicon. Defaults to True.
 
+
         <Key>: <Value>
             Any other arguments that the Unicon reload service supports
 
@@ -891,7 +894,6 @@ reload:
         timeout: 600
         reload_creds: clean_reload_creds
         prompt_recovery: True
-        reconnect_sleep: 200 (Unicon NXOS reload service argument)
     check_modules:
         check: False
 """
@@ -904,13 +906,13 @@ reload:
     RELOAD_SERVICE_ARGS = {
         'timeout': 800,
         'reload_creds': 'default',
-        'prompt_recovery': True
+        'prompt_recovery': True,
     }
     CHECK_MODULES = {
         'check': True,
         'timeout': 180,
         'interval': 30,
-        'ignore_modules': None
+        'ignore_modules': None,
     }
     RECONNECT_VIA = None
 
@@ -957,7 +959,8 @@ reload:
             # the many optional arguments, we still need to default the others.
             self.RELOAD_SERVICE_ARGS.update(reload_service_args)
             self.reload_service_args = self.RELOAD_SERVICE_ARGS
-
+        # Disable device_recovey for reload in unicon
+        self.reload_service_args.update({'device_recovery':False})
         reload_dialog = Dialog([
           Statement(pattern=r".*Do you wish to proceed with reload anyway\[confirm\].*",
                     action='sendline(y)',
@@ -2007,7 +2010,7 @@ class ConfigureReplace(BaseStage):
     exec_order = [
         'configure_replace',
     ]
-    
+
     def configure_replace(self, steps, device, path, file, config_replace_options=CONFIG_REPLACE_OPTIONS, known_warnings=KNOWN_WARNINGS, timeout=TIMEOUT):
         """This step does a configure replace on the device."""
 

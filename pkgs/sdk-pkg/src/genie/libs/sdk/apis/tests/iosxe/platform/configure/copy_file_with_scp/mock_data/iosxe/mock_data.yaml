@@ -1,0 +1,40 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: T13-C9300-24T(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: T13-C9300-24T(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    copy sh_switch_sftp.txt scp://root:cisco@172.163.128.3/sh_switch_sftp.txt:
+      response:
+      - "Address or name of remote host [172.163.128.3]? \r\nDestination filename\
+        \ [sh_switch_sftp.txt]? \r\nWriting sh_switch_sftp.txt  Sink: C0644 397 sh_switch_sftp.txt\r\
+        \n!\r\n397 bytes copied in 0.200 secs (1985 bytes/sec)"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: T13-C9300-24T#

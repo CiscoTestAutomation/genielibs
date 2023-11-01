@@ -158,13 +158,14 @@ def unconfigure_crypto_pki_server(device, server_name):
 
 def configure_crypto_pki_server(
     device,
-    domain_name,
-    database_level,
-    issuer_name,
-    hash,
-    modulus_size,
-    password,
-    server_name,
+    domain_name=None,
+    database_level=None,
+    issuer_name=None,
+    hash=None,
+    modulus_size=None,
+    password=None,
+    server_name=None,
+    **kwargs
 ):
     """Configures crypto pki server on device
 
@@ -184,6 +185,10 @@ def configure_crypto_pki_server(
     Raise:
         SubCommandFailure: Failed to configure crypto pki server on device
     """
+
+    if kwargs:
+        from genie.libs.sdk.apis.iosxe.pki.configure import configure_crypto_pki_server as pki_configure_crypto_pki_server
+        return pki_configure_crypto_pki_server(device=device, server_name=server_name, database_level=database_level, issuer_name=issuer_name, password=password, **kwargs)
 
     def send_password(spawn, password):
         spawn.sendline(password)

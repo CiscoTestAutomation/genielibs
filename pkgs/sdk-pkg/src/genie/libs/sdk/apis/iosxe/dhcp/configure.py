@@ -938,7 +938,7 @@ def configure_cts_manual(device, interface, policy=None, sgt=None, trusted=None,
     config= [
         f'interface {interface}',
         f'cts manual']
-    
+
     if policy:
         if trusted:
             config.append(f'policy static sgt {sgt} trusted')
@@ -1145,7 +1145,7 @@ def configure_ip_dhcp_snooping_limit(device, interface, rate_limit):
             )
 
 def configure_interface_ip_dhcp_relay_information_option_vpn_id(device, interface):
-    """ Configure ip dhcp relay information option vpn-id on the interface 
+    """ Configure ip dhcp relay information option vpn-id on the interface
         Args:
             device ('obj'): device to use
             interface ('str'): name of the interface to be configured # example  "interface vlan 100" "ip dhcp relay information option vpn-id"
@@ -1185,7 +1185,7 @@ def unconfigure_interface_ip_dhcp_relay_information_option_vpn_id(device, interf
         )
 
 def configure_interface_ip_dhcp_relay_source_interface_intf_id(device, interface, intf_id):
-    """ Configure interface ip dhcp relay source interface intf_id 
+    """ Configure interface ip dhcp relay source interface intf_id
         Args:
             device ('obj'): device to use
             interface ('str'): name of the interface to be configured # example  "interface vlan 100" "ip dhcp relay source-interface Loopback1"
@@ -1207,7 +1207,7 @@ def configure_interface_ip_dhcp_relay_source_interface_intf_id(device, interface
         )
 
 def unconfigure_interface_ip_dhcp_relay_source_interface_intf_id(device, interface, intf_id):
-    """ UnConfigure interface ip dhcp relay source interface intf_id 
+    """ UnConfigure interface ip dhcp relay source interface intf_id
         Args:
             device ('obj'): device to use
             interface ('str'): name of the interface to be configured # example  "interface vlan 100" "no ip dhcp relay source-interface Loopback1"
@@ -1257,7 +1257,7 @@ def configure_dhcp_pool(device, pool_name, router_id=None, network=None, mask=No
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not configure dhcp pool. Error: {e}')
-        
+
 def unconfigure_dhcp_pool(device, pool_name, router_id=None, network=None, mask=None, vrf=None, dns_server=None):
     """ Unconfigure DHCP pool
         Args:
@@ -1383,7 +1383,7 @@ def unconfigure_propagate_sgt(device, interface, type, cts_type):
                            role-based  Role-based Access Control per-port config commands
             cts_type ('str'): policy     CTS policy for manual mode
                               propagate  CTS SGT Propagation configuration for manual mode
-                              sap        CTS SAP configuration for manual mode              
+                              sap        CTS SAP configuration for manual mode
        Return:
             None
        Raises:
@@ -1400,7 +1400,7 @@ def unconfigure_propagate_sgt(device, interface, type, cts_type):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f'Failed to unconfigure propagate sgt {interface} on {device.name}\n{e}'
-        ) 
+        )
 
 def unconfigure_cts_role_based_sgt_map_vlan_list(device, Vlan_id, Tag_value):
     """UnConfigure cts role-based sgt-map vlan-list 300 sgt 300
@@ -1422,7 +1422,7 @@ def unconfigure_cts_role_based_sgt_map_vlan_list(device, Vlan_id, Tag_value):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f'Failed to unconfigure cts role-based sgt-map vlan-list 300 sgt 300 on {device.name}\n{e}'
-        ) 
+        )
 
 
 def configure_ip_dhcp_snooping_information_option_allow_untrusted_global(device):
@@ -1459,4 +1459,62 @@ def unconfigure_ip_dhcp_snooping_information_option_allow_untrusted_global(devic
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not unconfigure dhcp snooping information option allow-untrusted. Error:\n{e}"
+        )
+
+def configure_interface_range_dhcp_channel_group_mode(device, start_interface, end_interface, group, mode):
+    """Configures Ethernet port to an EtherChannel group
+       Example: channel-group 10 mode desirable
+
+       Args:
+            device ('obj'): device object
+            start_interface('str'): Starting Interface
+            end_interface('str'): Ending Interface number
+            group ('int'): Channel group number. The range is 1 to 128
+            mode ('str'): EtherChannel mode (eg. active, passive, auto)
+
+       Return:
+            None
+
+       Raises:
+            SubCommandFailure
+    """
+    log.debug(f"Configuring DHCP EtherChannel group mode {mode}")
+    config= [
+        f'interface range {start_interface} - {end_interface}',
+        f'channel-group {group} mode {mode}'
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to configure DHCP channel-group mode {mode} \n{e}'
+        )
+
+def unconfigure_interface_range_dhcp_channel_group_mode(device, start_interface, end_interface, group, mode):
+    """Unconfigures Ethernet port to an EtherChannel group
+       Example: no channel-group 120 mode active
+
+       Args:
+            device ('obj'): device object
+            start_interface('str'): Starting Interface
+            end_interface('str'): Ending Interface number
+            group ('int'): Channel group number. The range is 1 to 128
+            mode ('str'): EtherChannel mode (eg. active, passive, auto)
+
+       Return:
+            None
+
+       Raises:
+            SubCommandFailure
+    """
+    log.debug(f"Unconfiguring DHCP EtherChannel group mode {mode}")
+    config= [
+        f'interface range {start_interface} - {end_interface}',
+        f'no channel-group {group} mode {mode}'
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to unconfigure DHCP channel-group mode {mode}\n{e}'
         )

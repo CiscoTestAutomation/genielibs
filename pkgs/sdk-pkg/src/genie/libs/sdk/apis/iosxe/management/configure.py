@@ -35,7 +35,8 @@ def configure_management_credentials(device, credentials='default', username=Non
             'aaa new-model',
             'aaa authentication login default local',
             'aaa authorization exec default local',
-            f'username {username} password {password}'
+            f'username {username} password 0 {password}',
+            f'username {username} privilege 15'
         ])
 
     if config:
@@ -58,10 +59,7 @@ def configure_management_vrf(device, vrf=None, protocols=None):
 
     '''
 
-    try:
-        management = device.management
-    except AttributeError:
-        management = {}
+    management = getattr(device, 'management', {})
 
     vrf = vrf or management.get('vrf')
 
@@ -155,10 +153,7 @@ def configure_management_ip(device,
         device.api.configure_management_ip()
     '''
 
-    try:
-        management = device.management
-    except AttributeError:
-        management = {}
+    management = getattr(device, 'management', {})
 
     address_dict = address or management.get('address')
     address = []
@@ -276,10 +271,7 @@ def configure_management_gateway(device,
         device.api.configure_management_gateway(gateway={'ipv4': '1.1.1.254'})
     '''
 
-    try:
-        management = device.management
-    except AttributeError:
-        management = {}
+    management = getattr(device, 'management', {})
 
     gateway_dict = gateway or management.get('gateway')
     gateway = []
@@ -372,10 +364,7 @@ def configure_management_routes(device,
         })
     '''
 
-    try:
-        management = device.management
-    except AttributeError:
-        management = {}
+    management = getattr(device, 'management', {})
 
     routes_dict = routes or management.get('routes')
     if routes_dict is None:
@@ -427,10 +416,7 @@ def configure_management_tftp(device,
         None
     '''
 
-    try:
-        management = device.management
-    except AttributeError:
-        management = {}
+    management = getattr(device, 'management', {})
 
     source_interface = source_interface or management.get('interface')
 
@@ -441,6 +427,36 @@ def configure_management_tftp(device,
 
     if tftp_config:
         device.configure(tftp_config)
+
+
+def configure_management_ntp(device, server_name=None, source_interface=None):
+    '''
+    Configure device for time synchronization via ntp.
+
+    Args:
+        device ('obj'):  device object
+        server_name ('str'): name of the server in the testbed, default: 'ntp'
+        source_interface ('str'): management interface (optional)
+
+    Returns:
+        None
+    '''
+    server_name = server_name or 'ntp'
+    ntp_server = device.testbed.servers.get(server_name, {})
+    ntp_address = ntp_server.get('address')
+    if not ntp_address:
+        log.warning('No NTP server address found, skipping NTP configuration.')
+        return
+
+    ntp_config = [f'ntp server {ntp_address}']
+
+    management = getattr(device, 'management', {})
+
+    source_interface = source_interface or management.get('interface')
+    if source_interface:
+        ntp_config.append(f'ntp source {source_interface}')
+
+    return device.configure(ntp_config)
 
 
 def configure_management_http(device,
@@ -457,10 +473,7 @@ def configure_management_http(device,
         None
     '''
 
-    try:
-        management = device.management
-    except AttributeError:
-        management = {}
+    management = getattr(device, 'management', {})
 
     source_interface = source_interface or management.get('interface')
 
@@ -642,10 +655,7 @@ def configure_management_protocols(device,
 
     '''
 
-    try:
-        management = device.management
-    except AttributeError:
-        management = {}
+    management = getattr(device, 'management', {})
 
     protocols = protocols or management.get('protocols', [])
 
@@ -722,10 +732,7 @@ def configure_management(device,
         protocols ('list', optional): [list of protocols]
         set_hostname (bool): Configure hostname on the device (default: False)
     '''
-    try:
-        management = device.management
-    except AttributeError:
-        management = {}
+    management = getattr(device, 'management', {})
 
     address = address or management.get('address')
     gateway = gateway or management.get('gateway')
@@ -756,6 +763,7 @@ def configure_management(device,
         protocols=protocols
     )
 
+
 def unconfigure_netconf_yang_polling(device):
     """ configure unconfigure netconf_yang cisco-odm parameters polling enable
     Args:
@@ -770,16 +778,17 @@ def unconfigure_netconf_yang_polling(device):
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure unconfigure netconf_yang cisco-odm parameters polling enable. Error:\n{e}")
-    
+
+
 def configure_mtc(device, version, interface=None, protocol=None, address=None):
-    """ Configure parameters for mtc 
+    """ Configure parameters for mtc
     Args:
         device ('obj'): device object
         version ('str'): protocol version ipv4 or ipv6
         interface ('str') or ('list'): interfaces of mtc
         protocol ('str') or ('list'): protocols of mtc
         address ('str'): mtc ipv4 or ipv6 address
-    
+
     Returns:
         None
     Raises:
@@ -808,15 +817,16 @@ def configure_mtc(device, version, interface=None, protocol=None, address=None):
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not configure the parameter under mtc. Error:\n{e}')
-    
+
+
 def unconfigure_mtc_parameters(device, version, interface=None, protocol=None):
-    """ Unconfigure parameters for mtc 
+    """ Unconfigure parameters for mtc
     Args:
         device ('obj'): device object
         version ('str'): protocol version ipv4 or ipv6
         interface ('str') or ('list'): interface under mtc
         protocol ('str') or ('list'): protocols of mtc
-    
+
     Returns:
         None
     Raises:
@@ -842,13 +852,14 @@ def unconfigure_mtc_parameters(device, version, interface=None, protocol=None):
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not unconfigure the parameter under mtc. Error:\n{e}')
-    
+
+
 def unconfigure_mtc(device, version):
-    """ Unconfigure mtc 
+    """ Unconfigure mtc
     Args:
         device ('obj'): device object
         version ('str'): protocol version ipv4 or ipv6
-    
+
     Returns:
         None
     Raises:
@@ -860,7 +871,8 @@ def unconfigure_mtc(device, version):
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not unconfigure mtc. Error:\n{e}')
-            
+
+
 def configure_netconf_yang_intelligent_sync(device):
     """ Configure netconf-yang cisco-ia intelligent-sync
     Args:
@@ -875,6 +887,7 @@ def configure_netconf_yang_intelligent_sync(device):
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure netconf-yang cisco-ia intelligent-sync. Error:\n{e}")
+
 
 def unconfigure_netconf_yang_intelligent_sync(device):
     """ Unconfigure netconf-yang cisco-ia intelligent-sync
@@ -891,8 +904,9 @@ def unconfigure_netconf_yang_intelligent_sync(device):
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure netconf-yang cisco-ia intelligent-sync. Error:\n{e}")
 
+
 def configure_ip_ssh_version(device, version):
-    
+
     """ Configure ip ssh version
         Args:
             device ('obj'): Device object
@@ -909,8 +923,9 @@ def configure_ip_ssh_version(device, version):
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure ip ssh version on device {device}. Error:\n{e}")
 
+
 def unconfigure_ip_ssh_version(device, version):
-    
+
     """ Unconfigure ip ssh version
         Args:
             device ('obj'): Device object
@@ -927,14 +942,15 @@ def unconfigure_ip_ssh_version(device, version):
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure ip ssh version on device {device}. Error:\n{e}")
 
+
 def configure_line_vty_needs_enhancement(device,firstline_id,lastline_id,min,sec):
-    """ configure_line_vty_needs_enhancement 
+    """ configure_line_vty_needs_enhancement
         Args:
             device ('obj'): device to execute on
             firstline_id ('int') : firstline identifier
-            lastline_id ('int') :  lastline identifier   
+            lastline_id ('int') :  lastline identifier
             min ('int') : timeout in minutes
-            sec ('int') : timeout in seconds    
+            sec ('int') : timeout in seconds
 
         Return:
             None
@@ -945,13 +961,14 @@ def configure_line_vty_needs_enhancement(device,firstline_id,lastline_id,min,sec
            "transport preferred ssh",
            "exec-timeout {min} {sec}".format(min=min,sec=sec),
            "transport input all",
-           "transport output all"]   
+           "transport output all"]
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Failed to configure_line_vty_needs_enhancement Error {e}".format(e=e))
-    
+
+
 def unconfigure_management_netconf(device):
     '''
     Unonfigure device for management via netconf.
@@ -967,8 +984,9 @@ def unconfigure_management_netconf(device):
     try:
         device.configure(netconf_config)
     except SubCommandFailure as e:
-        raise SubCommandFailure(f"Failed to unconfigure netconf-yang on device {device}. Error:\n{e}")        
-    
+        raise SubCommandFailure(f"Failed to unconfigure netconf-yang on device {device}. Error:\n{e}")
+
+
 def configure_management_gnmi(device, enable=True, server=True, port=None, **kwargs):
     '''
     Configure device for management via gnmi.
@@ -990,6 +1008,4 @@ def configure_management_gnmi(device, enable=True, server=True, port=None, **kwa
             port=port
             )
     except SubCommandFailure as e:
-        raise SubCommandFailure(f"Failed to configure gnmi on device {device}. Error:\n{e}")     
-
-
+        raise SubCommandFailure(f"Failed to configure gnmi on device {device}. Error:\n{e}")

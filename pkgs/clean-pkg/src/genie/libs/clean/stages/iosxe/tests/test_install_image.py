@@ -331,8 +331,8 @@ class TestInstallImage(unittest.TestCase):
 
         device.reload.assert_has_calls([
             call('install add file sftp://server/image.bin activate commit', reply=ANY,
-                 reload_creds='default', prompt_recovery=True, append_error_pattern=['FAILED:.* '],
-                 timeout=500)
+                 reload_creds='default', prompt_recovery=True, error_pattern=['FAILED:.* '],
+                 timeout=500, device_recovery=False)
         ])
         self.assertEqual(Passed, steps.details[0].result)
 
@@ -358,7 +358,7 @@ class TestInstallImage(unittest.TestCase):
 
         device.reload.assert_has_calls([
             call('install add file sftp://server/image.bin activate commit', reply=ANY,
-                 reload_creds='default', prompt_recovery=True, append_error_pattern=['FAILED:.* '],
-                 grub_boot_image='packages.conf', timeout=500)
+                 reload_creds='default', prompt_recovery=True, error_pattern=['FAILED:.* '],
+                 grub_boot_image='packages.conf', device_recovery=False, timeout=500)
         ])
         self.assertEqual(Passed, steps.details[0].result)

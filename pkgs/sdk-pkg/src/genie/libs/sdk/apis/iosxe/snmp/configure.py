@@ -49,7 +49,7 @@ def configure_snmp_server_view(device, mib_view, family_name, state = 'excluded'
             device ('obj'): device to use
             mib_view ('str'): Name of the view
             family_name ('str'): MIB view family name
-            state ('str'): mib family excluded|included  
+            state ('str'): mib family excluded|included
         Returns:
             None
         Raises:
@@ -221,7 +221,7 @@ def configure_snmp_server_trap(device, intf=None, host_name=None, trap_type=None
     elif trap_type:
         cli = f"snmp-server enable traps {trap_type}"
     else:
-        cli = f"snmp-server enable traps"       
+        cli = f"snmp-server enable traps"
 
     try:
         device.configure(cli)
@@ -255,7 +255,7 @@ def unconfigure_snmp_server_trap(device,  intf=None, host_name=None, trap_type=N
     elif trap_type:
         cli = f"no snmp-server enable traps {trap_type}"
     else:
-        cli = f"no snmp-server enable traps"        
+        cli = f"no snmp-server enable traps"
 
     try:
         device.configure(cli)
@@ -264,7 +264,7 @@ def unconfigure_snmp_server_trap(device,  intf=None, host_name=None, trap_type=N
                 on snmp-server. Error:\n{str(error)}")
 
 def configure_snmp_server_user(device,
-                               user_name,    
+                               user_name,
                                group_name,
                                version,
                                auth_type = None,
@@ -304,8 +304,11 @@ def configure_snmp_server_user(device,
 
     cli = f"snmp-server user {user_name} {group_name} {version}"
 
-    if auth_type is not None and auth_password is not None:
-        cli = f"{cli} auth {auth_type} {auth_password}"
+    if auth_type and auth_password:
+        cli += f" auth {auth_type}"
+        if auth_algorithm:
+            cli += f" {auth_algorithm}"
+        cli += f" {auth_password}"
 
     if priv_method  is not None:
         if(priv_method == 'aes'):
@@ -330,7 +333,7 @@ def configure_snmp_server_user(device,
 
 
 def unconfigure_snmp_server_user(device,
-                               user_name,    
+                               user_name,
                                group_name,
                                version,
                                auth_type = None,
@@ -401,17 +404,17 @@ def configure_snmp_host_version(device,host_name,vrf_id,version_id,community_str
             SubCommandFailure
     """
     log.debug("Configuring snmp host version on device {device}".format(device=device))
-    
+
     if  udp_port == 0:
         cmd = f"snmp-server host {host_name} vrf {vrf_id} version {version_id} {community_string}"
     else:
         cmd = f"snmp-server host {host_name} vrf {vrf_id} version {version_id} {community_string} udp-port {udp_port}"
 
-    try:    
-        device.configure(cmd) 
+    try:
+        device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure("Could not configure snmp host version. Error:\n{error}".format(error=e))
-        
+
 
 def unconfigure_snmp_host_version(device,host_name,vrf_id,version_id,community_string, udp_port = 0):
     """ UnConfigures the snmp-server host 172.21.226.240 vrf Mgmt-vrf version 2c public on device
@@ -428,17 +431,17 @@ def unconfigure_snmp_host_version(device,host_name,vrf_id,version_id,community_s
             SubCommandFailure
     """
     log.debug("Configuring snmp host version on device {device}".format(device=device))
-    
+
     if  udp_port == 0:
         cmd = f"no snmp-server host {host_name} vrf {vrf_id} version {version_id} {community_string}"
     else:
         cmd = f"no snmp-server host {host_name} vrf {vrf_id} version {version_id} {community_string} udp-port {udp_port}"
 
     try:
-        device.configure(cmd) 
+        device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure("Could not configure snmp host version. Error:\n{error}".format(error=e))
-        		
+
 def configure_debug_snmp_packets(device):
     """ enable snmp debugs on device
         Args:
@@ -479,7 +482,7 @@ def configure_snmp_server_enable_traps_power_ethernet_group(device, number, ip, 
     """ Configure snmp-server enable traps power-ethernet group
         Args:
             device ('obj'): Device object
-            number ('str'): The group number 
+            number ('str'): The group number
             ip ('str') : ip address
             snmp_v ('str'): snmpv1/v2c community string or snmpv3 user name
             name ('str'): snmp community string
@@ -587,7 +590,7 @@ def unconfigure_snmp_server_engineid(device):
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not un configure snmp server engineID . Error:\n{e}")
 
-        
+
 def enable_ietf_standard_snmp_link_traps(device):
     """
         Enable ietf standard snmp link traps
@@ -632,14 +635,14 @@ def configure_snmp_server_host_trap(device, host_name=None, trap_type=None):
             None
         Raises:
             SubCommandFailure
-    """    
+    """
 
     try:
         device.configure(f"snmp-server host {host_name} traps public {trap_type}")
     except SubCommandFailure as error:
         raise SubCommandFailure(f"Could not configure host on snmp-server. Error:\n{str(error)}")
-    
-def unconfigure_snmp_server_enable_traps_power_ethernet_group(device, action_type_1, action_type_2, group_number): 
+
+def unconfigure_snmp_server_enable_traps_power_ethernet_group(device, action_type_1, action_type_2, group_number):
 
     """unconfigure snmp server enable traps power ethernet group
        Args:
@@ -647,7 +650,7 @@ def unconfigure_snmp_server_enable_traps_power_ethernet_group(device, action_typ
             action_type_1 ('str'): logging or traps
             action_type_2 ('str'): group or police
             group_number ('int') : The group number (1-9)
-            
+
        Return:
             None
        Raises:
@@ -679,15 +682,15 @@ def configure_object_list_schema_transfer_for_bulkstat(device, type_, object_nam
             schema_name('str', optional): WORD  Name of the schema, default value is None
             transfer_name('str', optional): WORD  Name of bulk transfer, default value is None
             oid_value_list:('list', optional): WORD  Object name or OID list, default value is None
-            poll_interval('int', optional): Periodicity for the polling of objects in this schema in 
+            poll_interval('int', optional): Periodicity for the polling of objects in this schema in
                                   Minutes. (Default value is 5 Mins), default value is None
             snmp_interface('str', optional): Specify instance as ifDescr, default value is None
             format_('str', optional): An ASCII format containing schema definitions, default value is None
             transfer_interval('int', optional): Periodicity for the transfer of bulk data in Minutes, default value is None
             buffer_size('int', optional): Bulkstat data file maximum size(Default size is 2048 bytes), default value is None
             primary_url('str', optional): WORD  URL of primary destination, default value is None
-            enable('str', optional): Start Data Collection for this Configuration, default value is None 
-            logging_on('str', optional): Modify message logging facilities, default value is None     
+            enable('str', optional): Start Data Collection for this Configuration, default value is None
+            logging_on('str', optional): Modify message logging facilities, default value is None
         Returns:
             None
         Raises:

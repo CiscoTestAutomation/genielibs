@@ -496,22 +496,33 @@ def get_next_hops_with_vrf(device, route, output=None, vrf='default'):
                     'next_hop_list']
                 source_protocol_codes = route_dict[masked_route]['source_protocol_codes']
                 for index in next_hop_list:
-                    next_hop = next_hop_list[index]['next_hop']
                     if 'vrf' in next_hop_list[index]:
                         vrf = next_hop_list[index]['vrf'].split(':')[0]
                     else:
                         vrf = 'default'
+                    if 'next_hop' in next_hop_list[index]:
+                        next_hop = next_hop_list[index]['next_hop']
+                    else:
+                        if 'binding_label' in next_hop_list[index]:
+                            binding_label = next_hop_list[index]['binding_label']
+                            out = device.parse(f'show ip cef label-table {binding_label} internal')
+                            next_hop = out.q.get_values('outgoing_address')
+                            out_intf = out.q.get_values('outgoing_interface')
+                            for nh, oi in list(set(zip(next_hop, out_intf))):
+                                route_next_hops.append([nh, vrf, oi, source_protocol_codes])
+                            continue
+                        else:
+                            raise Exception('No next hop or binding label found')
                     if 'outgoing_interface' in next_hop_list[index]:
                         out_intf = next_hop_list[index]['outgoing_interface']
                     else:
                         out_intf = None
                     route_next_hops.append([next_hop, vrf, out_intf, source_protocol_codes])
 
-
         return route_next_hops or []
 
     except Exception as e:
-        log.error(f"An exception has occurred.\n{e}")
+        log.exception(f"An exception has occurred.\n{e}")
         return None
 
 def get_outgoing_interface_with_vrf(device, route, vrf='default'):
@@ -532,15 +543,22 @@ def get_outgoing_interface_with_vrf(device, route, vrf='default'):
         prefix = device.api.get_routes(route=route, vrf=vrf)
         return device.api.get_next_hops_with_vrf(route=prefix[0], vrf=vrf)
 
+    # recursively loop until outgoing interface is found
     while not interfaces:
         nexthops = _get_outgoing_interface(route, vrf)
-        for each_nh in nexthops:
-            if each_nh[2] is not None:
-                # append outgoing interface
-                interfaces.append(each_nh)
-            else:
-                route = each_nh[0]
-                vrf = each_nh[1]
+        if nexthops:
+            for each_nh in nexthops:
+                if each_nh[2] is not None:
+                    # append outgoing interface
+                    interfaces.append(each_nh)
+                else:
+                    # prevent recursive endless loop
+                    if route == each_nh[0] and vrf == each_nh[1]:
+                        log.error('Something went wrong.')
+                        return []
+                    else:
+                        route = each_nh[0]
+                        vrf = each_nh[1]
 
     return interfaces
 

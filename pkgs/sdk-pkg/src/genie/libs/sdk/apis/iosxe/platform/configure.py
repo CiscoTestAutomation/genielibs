@@ -4517,6 +4517,27 @@ def hw_module_beacon_RP_active_standby(device, supervisor, operation):
         raise SubCommandFailure(f'Failed to turn {operation} the {supervisor} beacon slot. Error:\n{e}')
 
 
+def configure_snmp_mib_bulkstat_transfer(device, transfer_name):
+    """ configure snmp mib bulkstat transfer
+    Args:
+        device ('obj'): Device object
+        transfer_name ('str'): Name of bulk transfer
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [
+        f"snmp mib bulkstat transfer {transfer_name}",
+        "no enable"
+    ]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure snmp mib bulkstat transfer on this device. Error:\n{e}")
+
 def configure_bba_group_session_auto_cleanup(device,name,session_auto_cleanup):
     """ bba-group
         Args:
@@ -4541,6 +4562,40 @@ def configure_bba_group_session_auto_cleanup(device,name,session_auto_cleanup):
                 .format(device=device, error=e)
         )
 
+def configure_service_compress_config(device):
+    """ service compress-config
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure('service compress-config')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure dservice compress-config {device}. Error:\n{e}"
+
+        )
+
+def unconfigure_service_compress_config(device):
+    """ service compress-config
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure('no service compress-config')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure dservice compress-config {device}. Error:\n{e}"
+
+        )
+
 
 def configure_bridge_domain(device,domain_number):
     """ bridge-domain
@@ -4563,7 +4618,6 @@ def configure_bridge_domain(device,domain_number):
                 .format(device=device, error=e)
         )
 
-
 def unconfigure_bridge_domain(device,domain_number):
     """ bridge-domain
         Args:
@@ -4584,3 +4638,724 @@ def unconfigure_bridge_domain(device,domain_number):
             "Could not unconfig bridge-domain on {device}. Error:\n{error}"
                 .format(device=device, error=e)
         )
+
+def configure_ip_sftp_username(device, username):
+    """ Configure username for sftp
+        Args:
+            device ('obj'): Device object
+            username ('str'): username
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = f'ip sftp username {username}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure ip sftp username on device {device}. Error:\n{e}"
+            )
+
+def unconfigure_ip_sftp_username(device):
+    """ Unconfigure username for sftp
+        Args:
+            device ('obj'): Device object
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = f'no ip sftp username'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure ip sftp username on device {device}. Error:\n{e}"
+            )
+
+def configure_ip_scp_username(device, username):
+    """ Configure username for scp
+        Args:
+            device ('obj'): Device object
+            username ('str'): username
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = f'ip scp username {username}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure ip scp username on device {device}. Error:\n{e}"
+            )
+
+def unconfigure_ip_scp_username(device):
+    """ Unconfigure username for scp
+        Args:
+            device ('obj'): Device object
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = f'no ip scp username'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure ip scp username on device {device}. Error:\n{e}"
+            )
+def configure_ip_scp_password(device, password):
+    """ Configure password for scp
+        Args:
+            device ('obj'): Device object
+            password ('str'): password
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = f'ip scp password {password}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure ip scp password on device {device}. Error:\n{e}"
+            )
+
+def unconfigure_ip_scp_password(device):
+    """ Unconfigure password for scp
+        Args:
+            device ('obj'): Device object
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = f'no ip scp password'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure ip scp password on device {device}. Error:\n{e}"
+            )
+def configure_ip_sftp_password(device, password):
+    """ Configure password for sftp
+        Args:
+            device ('obj'): Device object
+            password ('str'): password
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = f'ip sftp password {password}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure ip sftp password on device {device}. Error:\n{e}"
+            )
+
+def unconfigure_ip_sftp_password(device):
+    """ Unconfigure password for sftp
+        Args:
+            device ('obj'): Device object
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = f'no ip sftp password'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure ip sftp password on device {device}. Error:\n{e}"
+            )
+
+def configure_rep_admin_vlan(device, vlanId, segment_number):
+    """ configure rep admin vlan
+        Args:
+            device ('obj'): device to use
+            segment ('str') : configure segment <1-1024>  Between 1 and 1024
+            vlanId ('str') : configure vlan ID
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f"rep admin vlan {vlanId} segment {segment_number}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to config admin vlan. Error:\n{e}")
+
+def unconfigure_rep_admin_vlan(device, vlanId, segment_number):
+    """ unconfigure rep admin vlan
+        Args:
+            device ('obj'): device to use
+            segment ('str') : unconfigure segment <1-1024>  Between 1 and 1024
+            vlanId ('str') : configure vlan ID
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f"no rep admin vlan {vlanId} segment {segment_number}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to config admin vlan. Error:\n{e}")
+
+def copy_file_with_sftp(device, host, file, username=None, password=None, path=None, timeout=30):
+    """ Copy files to sftp location
+
+        Args:
+            device ('obj'): Device object to modify configuration
+            host ('str'): sftp host ip address
+            file('str'):  file name
+            username ('str',optional): sftp host VM username
+            password ('str',optional): sftp host vm password
+            path('str',optional): storage file path in the VM
+            ex:)
+                copy file sftp://username:password@host/
+            timeout('int', Optional): timeout in seconds for configuration file load to device(Default is 30 seconds)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    log.debug(f"copy files from dut to sftp server on {host}")
+
+    if (username and password):
+        dialog = Dialog([
+            Statement(pattern=r'.*Address or name of remote host.*',
+                action='sendline()',
+                loop_continue=True,
+                continue_timer=False),
+            Statement(pattern=r'.*Destination filename.*',
+                action='sendline()',
+                loop_continue=True,
+                continue_timer=False)
+            ])
+
+        cmd = f"copy {file} sftp://{username}:{password}@{host}/{file}"
+
+    elif (username == None) and password:
+        dialog = Dialog([
+            Statement(pattern=r'.*Address or name of remote host.*',
+                action='sendline()',
+                loop_continue=True,
+                continue_timer=False),
+            Statement(pattern=r'.*Destination filename.*',
+                action='sendline()',
+                loop_continue=True,
+                continue_timer=False),
+            Statement(pattern=r'.*Password:',
+                action=f'sendline({password})',
+                loop_continue=True,
+                continue_timer=False),
+            ])
+
+        cmd = f"copy {file} sftp://{host}/{file}"
+
+    else:
+        dialog = Dialog([
+            Statement(pattern=r'.*Address or name of remote host.*',
+                action='sendline()',
+                loop_continue=True,
+                continue_timer=False),
+            Statement(pattern=r'.*Destination filename.*',
+                action='sendline()',
+                loop_continue=True,
+                continue_timer=False)
+            ])
+
+        cmd = f"copy {file} sftp://{host}/{file}"
+
+    try:
+        out = device.execute(cmd,reply=dialog, timeout=timeout)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not copy running configuration on sftp. Error:\n{e}")
+
+    return out
+
+def copy_file_with_scp(device, host, file, username=None, password=None, path=None, timeout=30):
+    """ Copy files to sftp location
+
+        Args:
+            device ('obj'): Device object to modify configuration
+            host ('str'): scp host ip address
+            file('str'):  file name
+            username ('str',optional): sftp host VM username
+            password ('str',optional): sftp host vm password
+            path('str',optional): storage file path in the VM
+            ex:)
+                copy file scp://username:password@host/
+            timeout('int', Optional): timeout in seconds for configuration file load to device(Default is 30 seconds)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"copy files from dut to scp server on {host}")
+
+    if (username and password):
+        dialog = Dialog([
+            Statement(pattern=r'.*Address or name of remote host.*',
+                action='sendline()',
+                loop_continue=True,
+                continue_timer=False),
+            Statement(pattern=r'.*Destination filename.*',
+                action='sendline()',
+                loop_continue=True,
+                continue_timer=False)
+            ])
+
+        cmd = f"copy {file} scp://{username}:{password}@{host}/{file}"
+
+    elif (username == None) and password:
+        dialog = Dialog([
+            Statement(pattern=r'.*Address or name of remote host.*',
+                action='sendline()',
+                loop_continue=True,
+                continue_timer=False),
+            Statement(pattern=r'.*Destination filename.*',
+                action='sendline()',
+                loop_continue=True,
+                continue_timer=False),
+            Statement(pattern=r'.*Password:',
+                action=f'sendline({password})',
+                loop_continue=True,
+                continue_timer=False),
+            ])
+
+        cmd = f"copy {file} scp://{host}/{file}"
+
+    else:
+        dialog = Dialog([
+            Statement(pattern=r'.*Address or name of remote host.*',
+                action='sendline()',
+                loop_continue=True,
+                continue_timer=False),
+            Statement(pattern=r'.*Destination filename.*',
+                action='sendline()',
+                loop_continue=True,
+                continue_timer=False)
+            ])
+
+        cmd = f"copy {file} scp://{host}/{file}"
+
+    try:
+        out = device.execute(cmd,reply=dialog, timeout=timeout)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not copy running configuration on scp. Error:\n{e}")
+
+    return out
+
+def configure_periodic_time_range(
+    device,
+    time_range_name,
+    periodicity,
+    start_time,
+    end_time,
+):
+    """Configure periodic time range
+       Args:
+            device ('obj'): device object
+            time_range_name ('str'): time range name
+            periodicity ('str'): The periodicity for the time range ex: daily, weekdays, weekend, friday, monday
+            start_time ('str') : The start time in the format HH:MM
+            end_time ('str') : The end time in the format HH:MM
+       Return:
+            None
+       Raises:
+            SubCommandFailure
+    """
+    config = [
+        f'time-range {time_range_name}',
+        f'periodic {periodicity} {start_time} to {end_time}',
+    ]
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to configure periodic time range on {device.name}\n{e}'
+        )
+
+def unconfigure_periodic_time_range(
+    device,
+    time_range_name,
+    periodicity,
+    start_time,
+    end_time,
+):
+    """Unconfigure periodic time range
+       Args:
+            device ('obj'): device object
+            time_range_name ('str'): time range name
+            periodicity ('str'): The periodicity for the time range ex: daily, weekdays, weekend, friday, monday
+            start_time ('str') : The start time in the format HH:MM
+            end_time ('str') : The end time in the format HH:MM
+       Return:
+            None
+       Raises:
+            SubCommandFailure
+    """
+    config = [
+        f'time-range {time_range_name}',
+        f'no periodic {periodicity} {start_time} to {end_time}',
+    ]
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to unconfigure periodic time range on {device.name}\n{e}'
+        )
+
+def configure_absolute_time_range(
+    device,
+    time_range_name,
+    action_type,
+    time,
+    day,
+    month,
+    year,
+):
+    """Configure absolute time range
+       Args:
+            device ('obj'): device object
+            time_range_name ('str'): time range name
+            action_type ('str') : start time/end time
+            time ('str') : The start time/end time of the time range in the format HH:MM
+            day ('int') : Day of the month (1-31)
+            month ('str') : Month of the year (eg: Jan for January, Jun for June)
+            year ('int') : Year (1993-2035)
+       Return:
+            None
+       Raises:
+            SubCommandFailure
+    """
+    config = [
+        f'time-range {time_range_name}',
+        f'absolute {action_type} {time} {day} {month} {year}',
+    ]
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to configure absolute time range on {device.name}\n{e}'
+        )
+
+def unconfigure_absolute_time_range(
+    device,
+    time_range_name,
+    action_type,
+    time,
+    day,
+    month,
+    year,
+):
+    """Unconfigure absolute time range
+       Args:
+            device ('obj'): device object
+            time_range_name ('str'): time range name
+            action_type ('str') : start time/end time
+            time ('str') : The start time/end time of the time range in the format HH:MM
+            day ('int') : Day of the month (1-31)
+            month ('str') : Month of the year (eg: Jan for January, Jun for June)
+            year ('int') : Year (1993-2035)
+       Return:
+            None
+       Raises:
+            SubCommandFailure
+    """
+    config = [
+        f'time-range {time_range_name}',
+        f'no absolute {action_type} {time} {day} {month} {year}',
+    ]
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to unconfigure absolute time range on {device.name}\n{e}'
+        )
+
+def configure_hw_module_logging_onboard(device, slot):
+    """ Configures OBFL on the specified slot
+        Example : hw-module slot <slot no> logging onboard
+        Args:
+            device ('obj'): device to use
+            slot ('int'): slot number to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f"Configuring OBFL on module {slot} on {device.name}")
+    config = f"hw-module slot {slot} logging onboard"
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure OBFL on module {slot} on device {device.name}. Error:\n{e}")
+
+def unconfigure_hw_module_logging_onboard(device, slot):
+    """ Unconfigures OBFL on the specified slot
+        Example : no hw-module slot <slot no> logging onboard
+        Args:
+            device ('obj'): device to use
+            slot ('int'): slot number to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f"Unconfiguring OBFL on module {slot} on {device.name}")
+    config = f"no hw-module slot {slot} logging onboard"
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure OBFL on module {slot} on device {device.name}. Error:\n{e}")
+
+def configure_hw_module_slot_logging_onboard_voltage(device, slot):
+    """ configures hw-module slot <#> logging onboard voltage
+        Args:
+            device ('obj'): device to use
+            slot ('int'): slot number to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f"hw-module slot {slot} logging onboard voltage"
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure hw-module slot {slot} logging onboard voltage on the device {dev}. Error:\n{error}".format(
+                dev=device.name,
+                slot=slot,
+                error=e,
+            )
+        )
+
+def unconfigure_hw_module_slot_logging_onboard_voltage(device, slot):
+    """ unconfigures hw-module slot <#> logging onboard voltage
+        Args:
+            device ('obj'): device to use
+            slot ('int'): slot number to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f"no hw-module slot {slot} logging onboard voltage"
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfigure hw-module slot {slot} logging onboard voltage on the device {dev}. Error:\n{error}".format(
+                dev=device.name,
+                slot=slot,
+                error=e,
+            )
+        )
+
+def configure_hw_module_slot_logging_onboard_environment(device, slot):
+    """ configures hw-module slot <#> logging onboard environment
+        Args:
+            device ('obj'): device to use
+            slot ('int'): slot number to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f"hw-module slot {slot} logging onboard environment"
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure hw-module slot {slot} logging onboard environment on the device {dev}. Error:\n{error}".format(
+                dev=device.name,
+                slot=slot,
+                error=e,
+            )
+        )
+
+def unconfigure_hw_module_slot_logging_onboard_environment(device, slot):
+    """ unconfigures hw-module slot <#> logging onboard environment
+        Args:
+            device ('obj'): device to use
+            slot ('int'): slot number to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f"no hw-module slot {slot} logging onboard environment"
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfigure hw-module slot {slot} logging onboard environment on the device {dev}. Error:\n{error}".format(
+                dev=device.name,
+                slot=slot,
+                error=e,
+            )
+        )
+
+def configure_hw_module_slot_logging_onboard_temperature(device, slot):
+    """ configures hw-module slot <#> logging onboard temperature
+        Args:
+            device ('obj'): device to use
+            slot ('int'): slot number to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f"hw-module slot {slot} logging onboard temperature"
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure hw-module slot {slot} logging onboard temperature on the device {dev}. Error:\n{error}".format(
+                dev=device.name,
+                slot=slot,
+                error=e,
+            )
+        )
+
+def unconfigure_hw_module_slot_logging_onboard_temperature(device, slot):
+    """ unconfigures hw-module slot <#> logging onboard temperature
+        Args:
+            device ('obj'): device to use
+            slot ('int'): slot number to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f"no hw-module slot {slot} logging onboard temperature"
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfigure hw-module slot {slot} logging onboard temperature on the device {dev}. Error:\n{error}".format(
+                dev=device.name,
+                slot=slot,
+                error=e,
+            )
+        )
+
+def configure_clear_logging_onboard_slot_voltage(device, slot):
+    """ configures clear  logging  onboard  slot  voltage
+        Args:
+            device ('obj'): device to use
+            slot ('int'): slot number to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    dialog = Dialog(
+        [
+            Statement(
+                pattern=r".*Clear logging.*",
+                action="sendline(y)",
+                loop_continue=False,
+                continue_timer=False,
+            )
+        ]
+    )
+    cmd = "clear  logging  onboard  slot {slot} voltage".format(slot=slot)
+    try:
+        device.execute(cmd, reply=dialog)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure clear  logging  onboard  slot {slot} voltage on the device {dev}. Error:\n{error}".format(
+                dev=device.name,
+                slot=slot,
+                error=e,
+            )
+        )
+
+def configure_clear_logging_onboard_slot_environment(device, slot):
+    """ unconfigures clear  logging  onboard  slot  Environment
+        Args:
+            device ('obj'): device to use
+            slot ('int'): slot number to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    dialog = Dialog(
+        [
+            Statement(
+                pattern=r".*Clear logging.*",
+                action="sendline(y)",
+                loop_continue=False,
+                continue_timer=False,
+            )
+        ]
+    )
+    cmd = "clear  logging  onboard  slot {slot} environment".format(slot=slot)
+    try:
+        device.execute(cmd, reply=dialog)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure clear  logging  onboard  slot {slot} environment on the device {dev}. Error:\n{error}".format(
+                dev=device.name,
+                slot=slot,
+                error=e,
+            )
+        )
+
+def configure_clear_logging_onboard_slot_temperature(device, slot):
+    """ unconfigures clear  logging  onboard  slot  temperature
+        Args:
+            device ('obj'): device to use
+            slot ('int'): slot number to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    dialog = Dialog(
+        [
+            Statement(
+                pattern=r".*Clear logging.*",
+                action="sendline(y)",
+                loop_continue=False,
+                continue_timer=False,
+            )
+        ]
+    )
+    cmd = "clear  logging  onboard  slot {slot} temperature".format(slot=slot)
+    try:
+        device.execute(cmd, reply=dialog)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure clear  logging  onboard  slot {slot} temperature on the device {dev}. Error:\n{error}".format(
+                dev=device.name,
+                slot=slot,
+                error=e,
+            )
+        )
+

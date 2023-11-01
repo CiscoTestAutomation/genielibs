@@ -5,14 +5,14 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-    no vtp version: "no vtp version\r\n"
-  prompt: 9300-24UX-2(config)#
+    no vtp version: "no vtp version\r\nVTP version is already in V1.\r\n"
+  prompt: 9500-Core(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: 9300-24UX-2(config-line)#
+  prompt: 9500-Core(config-line)#
 connect:
   commands:
     ? ''
@@ -32,4 +32,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: 9300-24UX-2#
+  prompt: 9500-Core#

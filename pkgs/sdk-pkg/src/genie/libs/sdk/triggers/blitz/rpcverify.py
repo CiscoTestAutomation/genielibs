@@ -3,13 +3,13 @@ import re
 import logging
 from six import string_types
 from pyats.log.utils import banner
+import dataclasses
 from dataclasses import dataclass, field
 from typing import Union, Callable, List, Tuple, Any, ClassVar
 import operator as o
 from copy import deepcopy
 
 log = logging.getLogger(__name__)
-log.setLevel(logging.DEBUG)
 
 
 def range_op(range: str, value: Any, datatype: str = '') -> bool:
@@ -90,9 +90,14 @@ class OptFields:
     }
 
     def __post_init__(self):
-        if 'decimal' in self.datatype:
-            self.value = float(
-                self.value['digits']) / (10 ** self.value['precision'])
+        if not isinstance(self.datatype, str):
+            log.warning(f'Datatype must be a string got: {type(self.datatype).__name__}')
+        elif 'decimal' in self.datatype:
+            try:
+                self.value = float(
+                    self.value['digits']) / (10 ** self.value['precision'])
+            except TypeError:
+                self.value = float(self.value)
 
     class OperatorsException(Exception):
         pass
@@ -104,6 +109,8 @@ class OptFields:
         if self.op != self._operators['deleted']:
             super().__eq__(other)
         return self.xpath == other.xpath
+
+OPTFIELD_ALLOWED_OPTIONS = [f.name for f in dataclasses.fields(OptFields)]
 
 
 class OperationalFieldsNode:
@@ -311,7 +318,24 @@ class RpcVerify():
     """
 
     NETCONF_NAMESPACE = "urn:ietf:params:xml:ns:netconf:base:1.0"
+
+    # Pattern to detect keys in an xpath
     RE_FIND_KEYS = re.compile(r'\[.*?\]')
+    RE_FIND_PREFIXES = re.compile(r'/[-a-zA-Z0-9]+:')
+
+    # pattern to detect prefix in the key name, prefix is optional
+    # e.g.
+    # /native/route-map[name="set-community-list"]/route-map-seq[ios-route-map:ordering-seq="10"]
+    # becomes (note `name` does not have a prefix, but `ordering-seq` has):
+    # /native/route-map[name="set-community-list"]/route-map-seq[ordering-seq="10"]
+    RE_FIND_KEY_PREFIX = r'\[(?P<prefix>[-\w]+:)?(?P<name>[-\w]+)'
+
+    # Pattern to match value and ignore leading and trailing whitespace
+    # e.g. for whitespace:
+    # /native/router/bgp[id="6"]/neighbor[id=" 100.5.6.6 "]/remote-as
+    # becomes
+    # /native/router/bgp[id="6"]/neighbor[id="100.5.6.6"]/remote-as
+    RE_FIND_QUOTED_VALUE = r'[\'"]\s*(?P<value>.*?)\s*[\'"]'
 
     def __init__(self, log=log, rpc_reply=None,
                  rpc_verify=None, capabilities=[]):
@@ -556,6 +580,8 @@ class RpcVerify():
             op_name, op_method = field.op, OptFields._operators[field.op]
             eval_text = op_name
             datatype = field.datatype
+
+            log.debug(f'Checking xpath {xpath} value "{value}" {op_name} "{field.value}"')
 
             if op_name == 'range':
                 try:
@@ -1525,24 +1551,6 @@ class RpcVerify():
 
         return result
 
-    # Pattern to detect keys in an xpath
-    RE_FIND_KEYS = re.compile(r'\[.*?\]')
-    RE_FIND_PREFIXES = re.compile(r'/[-a-zA-Z0-9]+:')
-
-    # pattern to detect prefix in the key name, prefix is optional
-    # e.g.
-    # /native/route-map[name="set-community-list"]/route-map-seq[ios-route-map:ordering-seq="10"]
-    # becomes (note `name` does not have a prefix, but `ordering-seq` has):
-    # /native/route-map[name="set-community-list"]/route-map-seq[ordering-seq="10"]
-    RE_FIND_KEY_PREFIX = r'\[(?P<prefix>[-\w]+:)?(?P<name>[-\w]+)'
-
-    # Pattern to remove leading and trailing whitespace in the key content
-    # e.g.
-    # /native/router/bgp[id="6"]/neighbor[id=" 100.5.6.6 "]/remote-as
-    # becomes
-    # /native/router/bgp[id="6"]/neighbor[id="100.5.6.6"]/remote-as
-    RE_STRIP_WHITESPACE = r'(\'|\")\s*(?P<content>.*?)\s*(\'|\")'
-
     def verify_rpc_data_reply(self, decoded_response: List[tuple], rpc_data: dict) -> bool:
         # TODO Move to verifiers.py when netconf is implemented
         """Construct a GET based off an edit message and verify results.
@@ -1594,7 +1602,7 @@ class RpcVerify():
             # /native/router/bgp[id="6"]/neighbor[id=" 100.5.6.6 "]/remote-ass
             # becomes
             # /native/router/bgp[id="6"]/neighbor[id="100.5.6.6"]/remote-as
-            xpath_original = re.sub(self.RE_STRIP_WHITESPACE, r'"\g<content>"', xpath_original)
+            xpath_original = re.sub(self.RE_FIND_QUOTED_VALUE, r'"\g<value>"', xpath_original)
 
             # xpath with keys and namespace prefix stripped.
             xpath = re.sub(self.RE_FIND_KEYS, '', node.get('xpath', ''))
@@ -1694,21 +1702,20 @@ class RpcVerify():
         xpath = re.sub(self.RE_FIND_PREFIXES, '/', xpath)
         # Loop through all the key/value in the xpath
         for key in self.RE_FIND_KEYS.findall(xpath):
-            # Remove the prefix from list key name,
-            # Ex: changes [ios:foo="val"] to foo="val"]
-            key_no_pfx = re.sub(self.RE_FIND_KEY_PREFIX, '', key)
-            # Split the key/value on "=", get the first entry,
-            # and strip the '[' if present.
             # Ex: for [foo="val"] the keyname will be 'foo'
-            keyname = key_no_pfx.split('=')[0].strip('[')
-            # Get the value field from [foo="val"]
-            # second entry after spliting on "=" will get the value
-            # strip the ending ']'.
-            # Ex: [foo="val"] will return '"val"' after stripping the ']'
-            keyval = key_no_pfx.split('=')[1].strip(']')
-            # To remove double quotes from the value
-            # Ex: Change '"val"' to 'val'
-            keyval = re.sub('"', '', keyval)
+            # Ex: for [prefix:foo="val"] the keyname will be 'foo'
+            m = re.search(self.RE_FIND_KEY_PREFIX, key)
+            if m:
+                keyname = m.groupdict().get('name')
+            else:
+                raise ValueError(f'Unable to find key name in xpath {xpath} for key {key}')
+            # Ex: [foo="val"] will return "val"
+            # Ex: [foo=" val "] will return "val"
+            m = re.search(self.RE_FIND_QUOTED_VALUE, key)
+            if m:
+                keyval = m.groupdict().get('value')
+            else:
+                raise ValueError(f'Unable to find value in xpath {xpath} for key {key}')
             # contruct xpath /xpath/list/foo by appending the key name.
             key_path = xpath.split(key)[0] + '/' + keyname
             # If there are multiple key/values in xpath, substitute other

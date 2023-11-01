@@ -2,18 +2,18 @@ configure:
   commands:
     end:
       new_state: execute
-    interface GigabitEthernet1/0/1: "interface GigabitEthernet1/0/1\r\n"
-    ipv6 flow monitor m6in1 input: "ipv6 flow monitor m6in1 input\r\n"
+    interface GigabitEthernet1/7: "interface GigabitEthernet1/7\r\n"
     line console 0:
       new_state: configure_line
+    no ipv6 flow monitor hr1m input: "no ipv6 flow monitor hr1m input\r\n"
     no logging console: ''
-  prompt: SC_9200-2(config)#
+  prompt: l2sec_petra_2010(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: SC_9200-2(config-line)#
+  prompt: l2sec_petra_2010(config-line)#
 connect:
   commands:
     ? ''
@@ -33,4 +33,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: SC_9200-2#
+  prompt: l2sec_petra_2010#
