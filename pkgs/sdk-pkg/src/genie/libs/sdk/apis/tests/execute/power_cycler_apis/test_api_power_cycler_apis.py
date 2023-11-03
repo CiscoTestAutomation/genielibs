@@ -150,7 +150,7 @@ devices:
     peripherals:
       power_cycler:
           - type: generic-cli
-            host: sjc-ads-5555
+            host: localhost
             connection_type: ssh
             outlets: [6]
             commands:
@@ -161,11 +161,11 @@ devices:
     platform: c9800
     type: c9800
 
-  sjc-ads-5555:
+  localhost:
       os: linux
       connections:
           a:
-              ip: sjc-ads-5555
+              ip: localhost
               protocol: ssh
       credentials:
          default:
@@ -175,7 +175,7 @@ devices:
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices["FW-9800-7"]
-        self.server = self.testbed.devices["sjc-ads-5555"]
+        self.server = self.testbed.devices["localhost"]
 
 
     def test_execute_power_on_device(self):
@@ -215,7 +215,7 @@ devices:
     peripherals:
       power_cycler:
           - type: generic-cli
-            host: sjc-ads-5555
+            host: localhost
             connection_type: ssh
             commands:
                 power_on: "power-tool %{self} on"
@@ -225,11 +225,11 @@ devices:
     platform: c9800
     type: c9800
 
-  sjc-ads-5555:
+  localhost:
       os: linux
       connections:
           a:
-              ip: sjc-ads-5555
+              ip: localhost
               protocol: ssh
       credentials:
          default:
@@ -239,7 +239,7 @@ devices:
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices["FW-9800-7"]
-        self.server = self.testbed.devices["sjc-ads-5555"]
+        self.server = self.testbed.devices["localhost"]
 
 
     def test_execute_power_on_device(self):
@@ -278,7 +278,7 @@ devices:
     peripherals:
       power_cycler:
           - type: Raritan
-            host: sjc-ads-5555
+            host: localhost
             connection_type: telnet
             outlets: [7]
 
@@ -286,11 +286,11 @@ devices:
     platform: c9800
     type: c9800
 
-  sjc-ads-5555:
+  localhost:
       os: linux
       connections:
           a:
-              ip: sjc-ads-5555
+              ip: localhost
               protocol: telnet
       credentials:
          default:
@@ -300,7 +300,7 @@ devices:
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices["FW-9800-7"]
-        self.server = self.testbed.devices["sjc-ads-5555"]
+        self.server = self.testbed.devices["localhost"]
 
 
     def test_execute_power_on_device(self):

@@ -1,29 +1,21 @@
 configure:
   commands:
-    bandwidth remaining percent 10: "bandwidth remaining percent 10\r\n"
-    bandwidth remaining percent 20: "bandwidth remaining percent 20\r\n"
-    bandwidth percent 5: "bandwidth percent 5\r\n"
-    bandwidth percent 7: "bandwidth percent 7\r\n"
     class class-default: "class class-default\r\n"
-    class data: "class data\r\n"
-    class video: "class video\r\n"
-    class voice: "class voice\r\n"
     end:
       new_state: execute
     line console 0:
       new_state: configure_line
     no logging console: ''
-    policy-map grandparent: "policy-map grandparent\r\n"
-    policy-map parent: "policy-map parent\r\n"
+    policy-map PQ: "policy-map PQ\r\n"
     service-policy parent: "service-policy parent\r\n"
-    shape average percent 100: "shape average percent 100\r\n"
-  prompt: BB_2HX(config)#
+    shape average percent 4: "shape average percent 4\r\n"
+  prompt: A1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: BB_2HX(config-line)#
+  prompt: A1(config-line)#
 connect:
   commands:
     ? ''
@@ -43,4 +35,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: BB_2HX#
+  prompt: A1#

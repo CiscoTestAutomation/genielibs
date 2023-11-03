@@ -914,6 +914,58 @@ def unconfigure_vtp_password(device, vtp_password):
         raise SubCommandFailure(
             f"Failed to unconfigure vtp password on device {device}. Error:\n{e}")
 
+def configure_interface_vlan_priority(device, vlan_id, priority):
+    """
+        Args:
+            device ('obj'): Device object
+            vlan_id ('int') : <1-4094>  Vlan interface id
+            priority ('int') : <50-200>  Vlan interface priority
+        Returns:
+            None
+        Raises:
+            SubcommandFailure: Failed executing command
+    """
+
+    log.debug("interface vlan {vlan_id}".format(vlan_id=vlan_id))
+    configs = []
+    configs.append("interface vlan {vlan_id}".format(vlan_id=vlan_id))
+    configs.append("standby {vlan_id} priority {priority}".format(vlan_id=vlan_id, priority=priority))
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not set the vlan {vlan_id} priority {priority} on {device}. Error:\n{error}".format(
+                vlan_id=vlan_id, priority=priority, device=device, error=e
+            )
+        )  
+
+def configure_interface_vlan_range_priority(device, vlan_id_from, vlan_id_to, stby_value, priority):
+    """
+        Args:
+            device ('obj'): Device object
+            vlan_id_from ('int') : <1-4094>  Vlan interface vlan_id_from
+            vlan_id_to ('int') : <1-4094>  Vlan interface vlan_id_to
+            stby_value ('int') : value after stanby (Ex. : 0)
+            priority ('int') : <50-200>  Vlan interface priority
+        Returns:
+            None
+        Raises:
+            SubcommandFailure: Failed executing command
+    """
+
+    log.debug("interface range vlan {vlan_id_from}-{vlan_id_to}".format(vlan_id_from=vlan_id_from,vlan_id_to=vlan_id_to))
+    configs = []
+    configs.append("interface range vlan {vlan_id_from}-{vlan_id_to}".format(vlan_id_from=vlan_id_from, vlan_id_to=vlan_id_to))
+    configs.append("standby {stby_value} priority {priority}".format(stby_value=stby_value, priority=priority))
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not set the vlan range {vlan_id_from}-{vlan_id_to} priority {priority} on {device}. Error:\n{error}".format(
+                vlan_id_from=vlan_id_from, vlan_id_to=vlan_id_to, priority=priority, device=device, error=e
+            )
+        )  
+
 def configure_switchport_trunk_pruning_vlan_except(device, interface, string):
     """Configure switchport trunk pruning vlan except
         Example: interface gigabitEthernet2/0/1
@@ -1062,3 +1114,83 @@ def unconfigure_pvlan_type(device, vlan, pvlan_type):
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not unconfigure private-vlan. Error:\n{e}')
+
+def configure_vtp_pruning(device):
+    """ Configure vtp pruning
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f'vtp pruning'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configure vtp pruning. Error:\n{e}')
+    
+def unconfigure_vtp_pruning(device):
+    """ Unconfigure vtp pruning
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f'no vtp pruning'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configure no vtp pruning. Error:\n{e}')
+        
+def configure_switchport_trunk_pruning_vlan(device, interface, pruning_vlan):
+    """ Configure switchport trunk pruning vlan
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface name
+            pruning_vlan ('str'): pruning vlan
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [f'interface {interface}',f'switchport trunk pruning vlan {pruning_vlan}']
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configure switchport trunk pruning vlan. Error:\n{e}')
+
+def unconfigure_switchport_trunk_pruning_vlan(device, interface, pruning_vlan):
+    """ Unconfigure switchport trunk pruning vlan
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface name
+            pruning_vlan ('str'): pruning vlan            
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [f'interface {interface}',f'no switchport trunk pruning vlan {pruning_vlan}']
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configure no switchport trunk pruning vlan. Error:\n{e}')
+
+def unconfigure_vtp_mode(device, mode):
+    """ Unconfigures global VTP mode
+        Args:
+            device ('obj'): device to use
+            mode ('str'):  VTP mode (i.e transparent, client, server)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f'no vtp mode {mode}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configure no vtp mode. Error:\n{e}')

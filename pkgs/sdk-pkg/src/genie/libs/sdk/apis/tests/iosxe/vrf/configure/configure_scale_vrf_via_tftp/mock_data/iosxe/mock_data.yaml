@@ -5,13 +5,13 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-  prompt: Organ(config)#
+  prompt: Minuet(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: Organ(config-line)#
+  prompt: Minuet(config-line)#
 connect:
   commands:
     ? ''
@@ -31,4 +31,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: Organ#
+  prompt: Minuet#

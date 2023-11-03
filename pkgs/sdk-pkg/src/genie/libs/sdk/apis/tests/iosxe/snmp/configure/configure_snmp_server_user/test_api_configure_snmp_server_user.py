@@ -10,7 +10,7 @@ class TestConfigureSnmpServerUser(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          Switch:
+          C1113-8P_pkumarmu:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,11 +18,11 @@ class TestConfigureSnmpServerUser(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: c9500L
-            type: c9500L
+            platform: router
+            type: iosxe
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Switch']
+        self.device = self.testbed.devices['C1113-8P_pkumarmu']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,6 @@ class TestConfigureSnmpServerUser(unittest.TestCase):
         )
 
     def test_configure_snmp_server_user(self):
-        result = configure_snmp_server_user(self.device, 'TestUsr2', 'TestGrp', 'v3', 'md5', None, 'password1', 'des', None, None, None, 'password', None, None, None)
+        result = configure_snmp_server_user(self.device, 'snmp_user', 'snmp_group', 'v3', 'sha-2', '256', 'cisco123', 'aes', '256', 'cisco123', None, None, None, None, None)
         expected_output = None
         self.assertEqual(result, expected_output)

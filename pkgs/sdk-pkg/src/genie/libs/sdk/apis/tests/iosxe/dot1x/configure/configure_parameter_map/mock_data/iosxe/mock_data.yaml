@@ -1,0 +1,65 @@
+configure:
+  commands:
+    banner file banner: "banner file banner\r\n"
+    banner text c banner-text c: "%Could not get the drive type for the given file\r\
+      \n"
+    banner title c banner-title c: "\r\n"
+    captive-bypass-portal: "banner text c banner-text c\r\n"
+    cisco-logo-disable: "banner title c banner-title c\r\n"
+    consent email: "captive-bypass-portal\r\n"
+    custom-page failure device html: "cisco-logo-disable\r\n"
+    custom-page failure device success: "custom-page failure device html\r\n"
+    custom-page login device logindevice: "consent email\r\n"
+    end:
+      new_state: execute
+    http port 85: "http port 85\r\n"
+    intercept-https-enable: "intercept-https-enable\r\n"
+    line console 0:
+      new_state: configure_line
+    logout-window-disabled: "%Could not get the drive type for the given file\r\n"
+    max-http-conns 10: "\r\n"
+    no logging console: ''
+    parameter-map type webauth global: "parameter-map type webauth global\r\n"
+    redirect append client-mac tag vis: "custom-page login device logindevice\r\n"
+    secure-webauth-disable: "secure-webauth-disable\r\n"
+    sleeping-client timeout 11: "%Could not get the drive type for the given file\r\
+      \n"
+    success-window-disable: "\r\n"
+    timeout init-state sec 60: "custom-page failure device success\r\n"
+    trustpoint vis: "trustpoint vis\r\n"
+    type consent: "%Could not get the drive type for the given file\r\n"
+    virtual-ip ipv4 10.10.10.10: "virtual-ip ipv4 10.10.10.10\r\n"
+    virtual-ip ipv6 10:10:10::1: "virtual-ip ipv6 10:10:10::1\r\n"
+    watch-list add-item ipv4 1.1.1.1: "watch-list add-item ipv4 1.1.1.1\r\n"
+    watch-list add-item ipv6 20:20:20::1: "watch-list add-item ipv6 20:20:20::1\r\n"
+    watch-list dynamic-expiry-timeout 10: "watch-list dynamic-expiry-timeout 10\r\n"
+    watch-list enabled: "watch-list enabled\r\n"
+    webauth-bypass-intercept None: "webauth-bypass-intercept None\r\n"
+    webauth-http-enable: "webauth-http-enable\r\n"
+  prompt: PE1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: PE1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: PE1#

@@ -10,7 +10,7 @@ class TestEnableUsbSsdVerifyExists(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          T1-9300-SP1:
+          javelin-morph-mini1a-c9300-stack:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,11 +18,11 @@ class TestEnableUsbSsdVerifyExists(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: c9300
-            type: c9500
+            platform: cat9k
+            type: c9600
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['T1-9300-SP1']
+        self.device = self.testbed.devices['javelin-morph-mini1a-c9300-stack']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,6 @@ class TestEnableUsbSsdVerifyExists(unittest.TestCase):
         )
 
     def test_enable_usb_ssd_verify_exists(self):
-        result = enable_usb_ssd_verify_exists(self.device, 'flash-1:.', 30)
+        result = enable_usb_ssd_verify_exists(self.device, 'usbflash1:.', 30)
         expected_output = True
         self.assertEqual(result, expected_output)

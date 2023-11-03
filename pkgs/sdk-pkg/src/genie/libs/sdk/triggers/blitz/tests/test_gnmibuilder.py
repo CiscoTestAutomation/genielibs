@@ -132,7 +132,7 @@ json_val_decoded_oc = {
         'name': '100',
         'config':
         {
-          'identifier': 'OSPF',
+          'identifier': 'openconfig-policy-types:OSPF',
           'name': '100'
         },
         'bgp':
@@ -255,7 +255,7 @@ json_val_no_edit_op = {
         'name': '100',
         'config':
         {
-          'identifier': 'OSPF',
+          'identifier': 'openconfig-policy-types:OSPF',
           'name': '100'
         },
         'bgp':
@@ -834,6 +834,128 @@ json_val_decoded_nested_list = {
   ]
 }
 
+request_leaf_list = {
+    'nodes': [
+        {
+            'datatype': 'identityref',
+            'nodetype': 'leaf-list',
+            'value': 'oc-types:IPV4',
+            'xpath': '/oc-netinst:network-instances/\
+              oc-netinst:network-instance[oc-netinst:name="test11"]/\
+              oc-netinst:config/oc-netinst:enabled-address-families'
+        }
+    ],
+    'namespace_modules': {
+      'oc-netinst': 'openconfig-network-instance',
+      'oc-types': 'openconfig-types'
+    },
+    'namespace': {
+      'oc-netinst': 'http://openconfig.net/yang/network-instances',
+      'oc-types': 'http://openconfig.net/yang/openconfig-types'
+    }
+}
+
+set_container_leaf_list = {
+    'nodes': [
+        {
+            'nodetype': 'container',
+            'xpath': '/oc-netinst:network-instances/',
+            'edit-op': 'create',
+            'value': ''
+        },
+        {
+            'datatype': 'leafref',
+            'default': '',
+            'key': True,
+            'leafref_path': '/oc-netinst:network-instances/oc-netinst:network-instance[oc-netinst:name="red11"]/oc-netinst:config/oc-netinst:name', # noqa
+            'nodetype': 'leaf',
+            'value': '',
+            'xpath': '/oc-netinst:network-instances/oc-netinst:network-instance[oc-netinst:name="red11"]' # noqa
+        },
+        {
+            'nodetype': 'leaf',
+            'datatype': 'string',
+            'value': 'red11',
+            'xpath': '/oc-netinst:network-instances/\
+              oc-netinst:network-instance[oc-netinst:name="red11"]/\
+              oc-netinst:config/oc-netinst:name',
+        },
+        {
+            'nodetype': 'leaf-list',
+            'datatype': 'identityref',
+            'value': 'oc-types:IPV4',
+            'xpath': '/oc-netinst:network-instances/\
+              oc-netinst:network-instance[oc-netinst:name="red11"]/\
+              oc-netinst:config/oc-netinst:enabled-address-families',
+        },
+        {
+            'nodetype': 'leaf-list',
+            'datatype': 'identityref',
+            'value': 'oc-types:IPV6',
+            'xpath': '/oc-netinst:network-instances/\
+              oc-netinst:network-instance[oc-netinst:name="red11"]/\
+              oc-netinst:config/oc-netinst:enabled-address-families',
+        }
+    ],
+    'namespace_modules': {
+      'oc-netinst': 'openconfig-network-instance',
+      'oc-types': 'openconfig-types'
+    },
+    'namespace': {
+      'oc-netinst': 'http://openconfig.net/yang/network-instances',
+      'oc-types': 'http://openconfig.net/yang/openconfig-types'
+    }
+}
+
+json_decoded_cont_leaf_list = {
+  "update": [
+    {
+      "path": {
+        "origin": "openconfig",
+        "elem": [
+          {
+            "name": "network-instances"
+          }
+        ]
+      }
+    }
+  ]
+}
+
+json_decoded_leaf_list = {
+  "update": [
+    {
+      "path": {
+        "origin": "openconfig",
+        "elem": [
+          {
+            "name": "network-instances"
+          },
+          {
+            "name": "network-instance",
+            "key": {
+              "name": "test11"
+            }
+          },
+          {
+            "name": "config"
+          },
+          {
+            "name": "enabled-address-families"
+          }
+        ]
+      }
+    }
+  ]
+}
+
+json_ietf_val_leaf_list = ["openconfig-types:IPV4"]
+
+format8 = {
+  'encoding': 'JSON_IETF',
+  'origin': 'openconfig'
+}
+
 json_decoded_multiple_key = {
   'update':
   [
@@ -940,9 +1062,9 @@ json_decoded_multiple_key = {
 }
 
 
-json_val_decoded_1 = 'ethernetCsmacd'
+json_val_decoded_1 = 'iana-if-type:ethernetCsmacd'
 json_val_decoded_2 = 'test multiple'
-json_val_decoded_3 = 'ethernetCsmacd'
+json_val_decoded_3 = 'iana-if-type:ethernetCsmacd'
 json_val_decoded_4 = 'test multiple'
 
 format7 = {
@@ -1160,7 +1282,7 @@ raw_set_dict = {
           },
           "protocols": {
             "protocol": {
-              "identifier": "openconfig-policy-types:OSPF",
+              "identifier": "OSPF",
               "name": "100",
               "config": {
                 "identifier": "openconfig-policy-types:OSPF",
@@ -1421,6 +1543,28 @@ class TestGnmiTestRpc(unittest.TestCase):
       gmc = GnmiMessageConstructor('subscribe', r3, **format9)
       x = json_format.MessageToDict(gmc.payload)
       self.assertTrue(x['subscribe']['updatesOnly'])
+
+    def test_set_leaf_list(self):
+      """Verify the leaf list entry in the SET request"""
+      r7 = deepcopy(request_leaf_list)
+      gmc = GnmiMessageConstructor('set', r7, **format8)
+      jdict = json_format.MessageToDict(gmc.payload)
+      jdict['update'][0].pop('val')
+      self.assertEqual(jdict, json_decoded_leaf_list)
+      self.assertEqual(gmc.json_val, json_ietf_val_leaf_list)
+
+    def test_set_container_leaf_list(self):
+      """Verify the json val with leaf-list entries"""
+      r7 = deepcopy(set_container_leaf_list)
+      gmc = GnmiMessageConstructor('set', r7, **format8)
+      jdict = json_format.MessageToDict(gmc.payload)
+      jdict['update'][0].pop('val')
+      self.assertEqual(jdict, json_decoded_cont_leaf_list)
+      self.assertEqual(
+        gmc.json_val, {'network-instance':
+                        {"name": "red11", "config": {"name": "red11",
+                        "enabled-address-families": ["openconfig-types:IPV4",
+                                                     "openconfig-types:IPV6"]}}})
 
 
 if __name__ == '__main__':

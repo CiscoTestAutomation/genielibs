@@ -2697,3 +2697,64 @@ def redistribute_bgp_on_ospfv3(device, pid, type, as_num):
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to redistribute bgp on ospfv3 {device}, Error: {e}"
         )
+
+def unconfigure_ipv6_router_ospf(device, ospf_process_id):
+
+    """Remove ipv6 ospf on device
+        Args:
+            device (`obj`): Device object
+            ospf_process_id (`int`): OSPF process id
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure(f"no ipv6 router ospf {ospf_process_id}")
+    except SubCommandFailure as e:
+        raise SubCommandFailure("Failed in configuring, Please verify") from e 
+
+def configure_ospfv3_network_type(device, interface, network_type):
+    """Configure OSPFv3 network type on the specified interface
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name (e.g., 'GigabitEthernet1/0/24')
+            network_type (`str`): OSPFv3 network type ('point-to-point', 'broadcast', 'non-broadcast', 'point-to-multipoint')
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        cmd = [
+            f"interface {interface}",
+            f"ospfv3 network {network_type}"
+        ]
+
+        device.configure(cmd)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure OSPFv3 network type as '{network_type}' on interface {interface}. Error:\n{e}"
+        )
+
+def configure_ospfv3_interface(device, interface, process_id):
+    """Configure OSPFv3 settings on the specified interface.
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name (e.g., 'GigabitEthernet1/0/24')
+            process_id (`int`): OSPFv3 Process ID (1-65535)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        cmd = [f"interface {interface}", 
+        f"ospfv3 {process_id}"]
+        device.configure(cmd)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure OSPFv3 on interface {interface}. Error:\n{e}"
+        )

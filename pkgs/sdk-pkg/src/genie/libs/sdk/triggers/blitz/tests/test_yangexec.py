@@ -9,6 +9,8 @@ from collections import OrderedDict
 from yang.connector import proto
 from google.protobuf import json_format
 from copy import deepcopy
+from grpc._channel import _InactiveRpcError, _RPCState
+from grpc import StatusCode
 
 # Genie Libs
 from genie.libs.sdk.triggers.blitz.yangexec import run_netconf, run_gnmi, run_restconf
@@ -22,7 +24,7 @@ from genie.libs.sdk.triggers.blitz.gnmi_util import (GnmiMessage,
 from genie.libs.sdk.triggers.blitz.rpcverify import RpcVerify, OptFields
 from genie.libs.sdk.triggers.blitz.verifiers import GnmiDefaultVerifier
 from genie.libs.sdk.triggers.blitz.tests.device_mocks import TestDevice, TestDeviceWithNtp
-
+from dataclasses import dataclass
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -3042,8 +3044,7 @@ class TestYangExec(unittest.TestCase):
         )
         subscribe_thread.start()
         subscribe_thread.join()
-        # TODO: passes local unittest but fails runALL.
-        #self.assertEqual(subscribe_thread.result, False)
+        self.assertEqual(subscribe_thread.result, False)
 
         request['transaction_time'] = 2
         subscribe_thread = GnmiSubscriptionPoll(
@@ -3064,8 +3065,7 @@ class TestYangExec(unittest.TestCase):
         )
         subscribe_thread.start()
         subscribe_thread.join()
-        # TODO: passes local unittest but fails runALL.
-        #self.assertEqual(subscribe_thread.result, False)
+        self.assertEqual(subscribe_thread.result, False)
 
         request['transaction_time'] = 5
         subscribe_thread = GnmiSubscriptionOnce(
@@ -3074,8 +3074,7 @@ class TestYangExec(unittest.TestCase):
         )
         subscribe_thread.start()
         subscribe_thread.join()
-        # TODO: passes local unittest but fails runALL.
-        #self.assertEqual(subscribe_thread.result, True)
+        self.assertEqual(subscribe_thread.result, True)
 
     def test_subscribe_stream_transaction_time(self):
         request = self.make_test_request()
@@ -4018,7 +4017,7 @@ class TestYangExec(unittest.TestCase):
         device = TestDevice(
             self.make_test_notification(proto.gnmi_pb2.GetResponse))
         format['verifier'] = {
-            'class': 'genie.libs.sdk.triggers.blitz.tests.test_verifier.CustomVerifier'}
+            'class': 'genie.libs.sdk.triggers.blitz.tests.scripts.verifiers.CustomVerifier'}
         get_result = run_gnmi('get', device, '', '', rpc_data, returns, format=format)
         self.assertTrue(get_result)
 
@@ -4036,7 +4035,7 @@ class TestYangExec(unittest.TestCase):
         device = TestDevice(
             self.make_test_notification(proto.gnmi_pb2.GetResponse))
         format['verifier'] = {
-            'class': 'genie.libs.sdk.triggers.blitz.tests.test_verifier.VerifierWithArgs',
+            'class': 'genie.libs.sdk.triggers.blitz.tests.scripts.verifiers.VerifierWithArgs',
             'my_arg1': 1,
             'my_arg2': 'test'
             }
@@ -4049,7 +4048,7 @@ class TestYangExec(unittest.TestCase):
         device = TestDevice(
             self.make_test_notification(proto.gnmi_pb2.GetResponse))
         format['verifier'] = {
-            'class': 'genie.libs.sdk.triggers.blitz.tests.test_verifier.VerifierWithCustomDecoder'}
+            'class': 'genie.libs.sdk.triggers.blitz.tests.scripts.verifiers.VerifierWithCustomDecoder'}
         get_result = run_gnmi('get', device, '', '',
                             rpc_data, returns, format=format)
         self.assertTrue(get_result)
@@ -4110,6 +4109,44 @@ class TestYangExec(unittest.TestCase):
         get_result = run_gnmi('edit-config', device, '', '',
                               rpc_data, returns, format=format)
         self.assertTrue(get_result)
+
+    def test_gnmi_negative_test_wrong_response(self):
+        rpc_data, returns, format = self.make_test_run_gnmi_data()
+        format['negative_test'] = True
+        device = TestDevice(self.gnmi_error_response)
+        get_result = run_gnmi('get-config', device, '', '',
+                        rpc_data, returns, format=format)
+        self.assertTrue(get_result)
+
+    def test_gnmi_negative_subscribe(self):
+        rpc_data, returns, format = self.make_test_run_gnmi_data()
+        returns[0]['xpath'] = '/not/found/xpath'
+        format['negative_test'] = True
+        format['request_mode'] = 'STREAM'
+        format['sub_mode'] = 'SAMPLE'
+        format['stream_max'] = 5
+        
+        device = TestDevice(
+            self.make_test_notification(proto.gnmi_pb2.SubscribeResponse))
+        subscribe_thread = run_gnmi('subscribe', device, '', '',
+                        rpc_data, returns, format=format)
+        subscribe_thread.join()
+        self.assertTrue(subscribe_thread.result)
+
+        rpc_data, returns, format = self.make_test_run_gnmi_data()
+        returns[0]['xpath'] = '/not/found/xpath'
+        format['negative_test'] = False
+        format['request_mode'] = 'STREAM'
+        format['sub_mode'] = 'SAMPLE'
+        format['stream_max'] = 5
+        subscribe_thread = run_gnmi('subscribe', device, '', '',
+                        rpc_data, returns, format=format)
+        subscribe_thread.join()
+        self.assertFalse(subscribe_thread.result)
+
+    @property
+    def gnmi_error_response(self):
+        return _InactiveRpcError(_RPCState({}, {}, {},StatusCode.NOT_FOUND, "Requested element(s) not found: 'config'"))
 
     def make_test_notification_with_delete(self, n: int = 0):
         path_elem1 = proto.gnmi_pb2.PathElem()

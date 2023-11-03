@@ -29,6 +29,20 @@ class GnmiMessageException(Exception):
     pass
 
 
+class LeafListVal:
+    """Class to set a leaf list value"""
+    def __init__(self, val):
+        self.llvalue = val
+
+    @property
+    def llvalue(self):
+        return self._llvalue
+
+    @llvalue.setter
+    def llvalue(self, val):
+        self._llvalue = val
+
+
 class ForkedPdb(pdb.Pdb):
     """A pdb subclass for debugging GnmiNotification.
 
@@ -152,7 +166,7 @@ class GnmiMessage:
                     log.error(banner(
                         f'Response time: {response_time} seconds exceeded transaction_time {transaction_time}',
                     ))
-                    return response, False
+                    return None
             else:
                 response = device.gnmi.service.Get(payload, metadata=self.metadata)
             log.info(
@@ -161,15 +175,15 @@ class GnmiMessage:
                 )
             )
             if isinstance(response, gnmi_pb2.GetResponse):
-                return response, True
-            return None, False
+                return response
+            return None
         except Exception as exc:
             log.error(traceback.format_exc())
             if hasattr(exc, 'details'):
                 log.error('ERROR: {0}'.format(exc.details()))
             else:
                 log.error(str(exc))
-            return None, False
+            return None
 
     @staticmethod
     def get_opfields(val, xpath_str, opfields=[], namespace={}):
@@ -256,6 +270,8 @@ class GnmiMessage:
                 return bytes(value, encoding='utf8')
             elif 'leaflist' in datatype:
                 return GnmiMessage.process_leaf_list_val(value)
+            else:
+                return value
         else:
             log.info('Update has no value')
 
@@ -285,26 +301,9 @@ class GnmiMessage:
                     'datatype': 'ascii',
                     'value': decoded_val,
                 })
-            elif val:
-                datatype = next(iter(val))
-                value = val[datatype]
-                if 'int' in datatype:
-                    value = int(value)
-                elif ('float' in datatype or
-                      'double' in datatype):
-                    value = float(value)
-                elif 'decimal' in datatype:
-                    value = float(
-                        value['digits']) / (10 ** value['precision'])
-                elif 'bytes' in datatype:
-                    value = bytes(value, encoding='utf8')
-                elif 'leaflist' in datatype:
-                    value = GnmiMessage.process_leaf_list_val(value)
-                if isinstance(value, list):
-                    for val in value:
-                        opfields.append((decoded_val, xpath))
-                else:
-                    opfields.append((decoded_val, xpath))
+            elif decoded_val and isinstance(decoded_val, list):
+                for d_val in decoded_val:
+                    opfields.append((d_val, xpath))
             else:
                 opfields.append((decoded_val, xpath))
 
@@ -576,6 +575,13 @@ class GnmiMessageConstructor:
                         ).encode('utf-8')
             updates.append(gnmi_update)
         return updates
+
+    @classmethod
+    def split_value_namespaces(self, value: str) -> list:
+        try:
+            return value.split(':')
+        except Exception:
+            return []
 
     @classmethod
     def json_to_gnmi(self, action, payload, **kwargs):
@@ -879,7 +885,8 @@ class GnmiMessageConstructor:
             if xp.endswith(']'):
                 xp = xp + '/'
             if xp in processed_xp:
-                continue
+                if node['nodetype'] != 'leaf-list':
+                    continue
             jval = json_val
             collect_key = False
             key_elem = None
@@ -894,13 +901,31 @@ class GnmiMessageConstructor:
                     if len(tokenized) == i:
                         # If a node has only one element
                         if len(jval) == 0:
-                            jval[elem] = node['value']
+                            if node.get('nodetype', '') == 'leaf-list':
+                                if jval.get(elem) is None:
+                                    jval[elem] = [LeafListVal(node['value'][0])]
+                                else:
+                                    jval[elem].append(LeafListVal(node['value'][0]))
+                            else:
+                                jval[elem] = node['value']
                         else:
                             # Check if jval is pointing to a list or dict to assign values
                             if isinstance(jval, list):
-                                jval[ind][elem] = node['value']
+                                if node.get('nodetype', '') == 'leaf-list':
+                                    if jval[ind].get(elem) is None:
+                                        jval[ind][elem] = [LeafListVal(node['value'][0])]
+                                    else:
+                                        jval[ind][elem].append(LeafListVal(node['value'][0]))
+                                else:
+                                    jval[ind][elem] = node['value']
                             else:
-                                jval[elem] = node['value']
+                                if node.get('nodetype', '') == 'leaf-list':
+                                    if jval.get(elem) is None:
+                                        jval[elem] = [LeafListVal(node['value'][0])]
+                                    else:
+                                        jval[elem].append(LeafListVal(node['value'][0]))
+                                else:
+                                    jval[elem] = node['value']
                     else:
                         # Create a new list of dictionary / new key in dictionary if elem is not present
                         if elem not in jval:
@@ -965,12 +990,22 @@ class GnmiMessageConstructor:
             return
         for j in json_val:
             if isinstance(json_val[j],list) and len(json_val[j]) == 1:
-                json_val[j] = json_val[j][0]
-                self.format_json_val(json_val[j])
+                if isinstance(json_val[j][0], LeafListVal):
+                    # leaflist value need to enclosed within brackets
+                    # extract the value from Leaflistval object
+                    json_val[j][0] = json_val[j][0].llvalue
+                    self.format_json_val(json_val[j])
+                else:
+                    json_val[j] = json_val[j][0]
+                    self.format_json_val(json_val[j])
             else:
                 if isinstance(json_val[j],list):
-                    for i in json_val[j]:
-                        self.format_json_val(i)
+                    for ind, i in enumerate(json_val[j]):
+                        if isinstance(i, LeafListVal):
+                            json_val[j][ind] = i.llvalue
+                            self.format_json_val(i.llvalue)
+                        else:
+                            self.format_json_val(i)
 
     def _trim_nodes(self, nodes):
         # Prune list nodes if already in other nodes xpath
@@ -1100,14 +1135,20 @@ class GnmiMessageConstructor:
                             self.origin = 'rfc7951'
                         elif 'openconfig' in module:
                             self.origin = 'openconfig'
-
+                value_namespaces = self.split_value_namespaces(value)
+                # For info about namespaces handling refer to
+                # https://datatracker.ietf.org/doc/html/rfc7951#page-5
                 for pfx, mod in self.namespace_modules.items():
-                    if isinstance(value, string_types) and pfx in value:
-                        if mod != module and self.origin == 'rfc7951':
+                    if isinstance(value, string_types) and pfx in value_namespaces:
+                        if mod != module:
                             value = value.replace(pfx + ":", mod + ':')
-                        else:
-                            value = value.replace(pfx + ":", '')
-                    # gNMI prefixes require entire module name.
+                    elif isinstance(value, list):
+                        for ind, i in enumerate(value):
+                            list_value_namespaces = self.split_value_namespaces(i)
+                            if (pfx in list_value_namespaces) and (mod != module):
+                                value[ind] = value[ind].replace(pfx + ":", mod + ":")
+                    # rfc7951 origin requires entire module name in path.
+                    # Module as origin requires entire module name in path.
                     for i, seg in enumerate(xp):
                         if pfx not in xpath:
                             continue
@@ -1129,7 +1170,10 @@ class GnmiMessageConstructor:
                         node['name'] = ''
                     node['xpath'] = '/'.join(xp)
 
-                node['value'] = value
+                if nodetype == 'leaf-list':
+                    node['value'] = [value]
+                else:
+                    node['value'] = value
 
                 if self.msg_type == 'set':
                     if not edit_op:
@@ -1403,6 +1447,7 @@ class GnmiSubscriptionStream(GnmiSubscription):
         """Check for inbound notifications."""
         self.log.info('Subscribe notification active')
         for response in self.responses:
+            self.subscribe_response = True
             if response.HasField('sync_response'):
                 # Don't count sync_response as a response for transaction_time
                 self.log.info("Initial updates received")

@@ -1,0 +1,141 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: 9300-24UX-1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: 9300-24UX-1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    install add file flash:cat9k_iosxe.17.12.01.SPA.bin activate reloadfast commit:
+      response:
+      - "y\r\n\r\n--- Starting Activate ---\r\nPerforming Activate on all members\r\
+        \n  [1] Activate package(s) on switch 1\r\n    --- Starting list of software\
+        \ package changes ---\r\n    Old files list:\r\n      Modified cat9k-cc_srdriver.17.09.03.SPA.pkg\r\
+        \n      Modified cat9k-espbase.17.09.03.SPA.pkg\r\n      Modified cat9k-guestshell.17.09.03.SPA.pkg\r\
+        \n      Modified cat9k-lni.17.09.03.SPA.pkg\r\n      Modified cat9k-rpbase.17.09.03.SPA.pkg\r\
+        \n      Modified cat9k-rpboot.17.09.03.SPA.pkg\r\n      Modified cat9k-sipbase.17.09.03.SPA.pkg\r\
+        \n      Modified cat9k-sipspa.17.09.03.SPA.pkg\r\n      Modified cat9k-srdriver.17.09.03.SPA.pkg\r\
+        \n      Modified cat9k-webui.17.09.03.SPA.pkg\r\n      Modified cat9k-wlc.17.09.03.SPA.pkg\r\
+        \n    New files list:\r\n      Added cat9k-cc_srdriver.17.12.01.SPA.pkg\r\n\
+        \      Added cat9k-espbase.17.12.01.SPA.pkg\r\n      Added cat9k-guestshell.17.12.01.SPA.pkg\r\
+        \n      Added cat9k-lni.17.12.01.SPA.pkg\r\n      Added cat9k-rpbase.17.12.01.SPA.pkg\r\
+        \n      Added cat9k-rpboot.17.12.01.SPA.pkg\r\n      Added cat9k-sipbase.17.12.01.SPA.pkg\r\
+        \n      Added cat9k-sipspa.17.12.01.SPA.pkg\r\n      Added cat9k-srdriver.17.12.01.SPA.pkg\r\
+        \n      Added cat9k-webui.17.12.01.SPA.pkg\r\n      Added cat9k-wlc.17.12.01.SPA.pkg\r\
+        \n    Finished list of software package changes\r\n  [1] Finished Activate\
+        \ on switch 1\r\nChecking status of Activate on [1]\r\nActivate: Passed on\
+        \ [1]\r\nFinished Activate\r\n\r\n--- Starting Commit ---\r\nPerforming Commit\
+        \ on all members\r\n  [1] Commit package(s) on switch 1\r\n  [1] Finished\
+        \ Commit on switch 1\r\nChecking status of Commit on [1]\r\nCommit: Passed\
+        \ on [1]\r\nFinished Commit\r\n\r\nSend model notification for install_add_activate_commit\
+        \ before reload\r\nCheck xFSU support and verification on switch\r\n[1]: xFSU-Verify-Package\
+        \ package(s) on switch 1\r\nFinished preverifying before xFSU\r\nSUCCESS to\
+        \ verify packages\r\nSUCCESS to verify before xFSU\r\n[1]: Finished xFSU-Verify-Package\
+        \ successful on switch 1\r\n   (-2) SUCCESS: Finished xFSU-Verify-Package:\
+        \ Success on [1]\r\n[1]: Performing Upgrade_Service\r\n300+0 records in\r\n\
+        300+0 records out\r\n307200 bytes (307 kB, 300 KiB) copied, 0.196372 s, 1.6\
+        \ MB/s\r\nMM [1] MCU version 228 sw ver 225\nMM [2] MCU version 228 sw ver\
+        \ 225\n\n\nMCU UPGRADE IN PROGRESS... PLEASE DO NOT POWER CYCLE!!\n\nFront-end\
+        \ Microcode IMG MGR: found 4 microcode images for 1 device.\nImage for front-end\
+        \ 0: /tmp/microcode_update/front_end/fe_type_6_0 update needed: no\nImage\
+        \ for front-end 0: /tmp/microcode_update/front_end/fe_type_6_1 update needed:\
+        \ yes\nImage for front-end 0: /tmp/microcode_update/front_end/fe_type_6_2\
+        \ update needed: yes\nImage for front-end 0: /tmp/microcode_update/front_end/fe_type_6_3\
+        \ update needed: no\n\nFront-end Microcode IMG MGR: Preparing to program device\
+        \ microcode...\nFront-end Microcode IMG MGR: Preparing to program device[0],\
+        \ index=0 ...594412 bytes.... Skipped[0].\nFront-end Microcode IMG MGR: Preparing\
+        \ to program device[0], index=1 ...579456 bytes.\nFront-end Microcode IMG\
+        \ MGR: Programming device 0...r-ww-Rrrrrrrw..0%...........................................................................................................10%............................................................................................................20%..........................................................................................................30%.............................................................................................................40%..........................................................................................................50%............................................................................................................60%.............................................................................................................70%..........................................................................................................80%............................................................................................................90%...........................................................................................................100%\n\
+        Front-end Microcode IMG MGR: Preparing to program device[0], index=2 ...24506\
+        \ bytes.\nFront-end Microcode IMG MGR: Programming device 0...rrrrrrw..0%....10%....20%......30%...40%....50%......60%....70%.....80%....90%....100%w\n\
+        Wating for MCU to come up .....Rr!\nFront-end Microcode IMG MGR: Microcode\
+        \ programming complete for device 0.\nFront-end Microcode IMG MGR: Preparing\
+        \ to program device[0], index=3 ...90974 bytes.... Skipped[3].\nFront-end\
+        \ Microcode IMG MGR: Microcode programming complete in 374 seconds\n\n\nMCU\
+        \ UPGRADE COMPLETED!!...  SUCCESS: Upgrade_Service finished\r\n  PID TTY \
+        \         TIME CMD\r\nStarting GR:#\r\ncat: /: Is a directory\r\nWait for\
+        \ ifm backup: Ifm backup is completeSep 20 06:35:21.646: %PMAN-3-RELOAD_SYSTEM:\
+        \ R0/0: pvp: Reloading: Peer switch is not standby ready. System will be reloaded\r\
+        \nSep 20 06:35:22.587: %PMAN-5-EXITACTION: F0/0: pvp: Process manager is exiting:\
+        \ reload fp action requested\r\nSep 20 06:35:28.630: %PMAN-5-EXITACTION: R0/0:\
+        \ pvp: Process manager is exiting: rp processes exit with reload switch code\r\
+        \n\n\r\n\r\nInitializing Hardware......\r\nReload Fast Detected\r\n\0\0\0\0\
+        \r\nSystem Bootstrap, Version 17.12.1r, RELEASE SOFTWARE (P)\r\nCompiled Mon\
+        \ 04/24/2023 22:21:00.36 by rel\r\n\r\nCurrent ROMMON image : Primary\r\n\
+        Last reset cause     : SoftwareReload\r\nC9300-24UX platform with 8388608\
+        \ Kbytes of main memory\r\n\r\nPreparing to autoboot. [Press Ctrl-C to interrupt]\
+        \  0     \r\nboot: attempting to boot from [flash:packages.conf]\r\nboot:\
+        \ reading file packages.conf\r\n#\r\n############################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################\r\
+        \n\r\n\r\n\r\n\r\nBoth links down, not waiting for other switches\r\nSwitch\
+        \ number is 1\r\n\r\n              Restricted Rights Legend\r\n\r\nUse, duplication,\
+        \ or disclosure by the Government is\r\nsubject to restrictions as set forth\
+        \ in subparagraph\r\n(c) of the Commercial Computer Software - Restricted\r\
+        \nRights clause at FAR sec. 52.227-19 and subparagraph\r\n(c) (1) (ii) of\
+        \ the Rights in Technical Data and Computer\r\nSoftware clause at DFARS sec.\
+        \ 252.227-7013.\r\n\r\n           Cisco Systems, Inc.\r\n           170 West\
+        \ Tasman Drive\r\n           San Jose, California 95134-1706\r\n\r\n\r\n\r\
+        \nCisco IOS Software [Dublin], Catalyst L3 Switch Software (CAT9K_IOSXE),\
+        \ Version 17.12.1, RELEASE SOFTWARE (fc1)\r\nTechnical Support: http://www.cisco.com/techsupport\r\
+        \nCopyright (c) 1986-2023 by Cisco Systems, Inc.\r\nCompiled Fri 21-Jul-23\
+        \ 19:50 by mcpre\r\n\r\n\r\nThis software version supports only Smart Licensing\
+        \ as the software licensing mechanism.\r\n\r\n\r\nPLEASE READ THE FOLLOWING\
+        \ TERMS CAREFULLY. INSTALLING THE LICENSE OR\r\nLICENSE KEY PROVIDED FOR ANY\
+        \ CISCO SOFTWARE PRODUCT, PRODUCT FEATURE,\r\nAND/OR SUBSEQUENTLY PROVIDED\
+        \ SOFTWARE FEATURES (COLLECTIVELY, THE\r\n\"SOFTWARE\"), AND/OR USING SUCH\
+        \ SOFTWARE CONSTITUTES YOUR FULL\r\nACCEPTANCE OF THE FOLLOWING TERMS. YOU\
+        \ MUST NOT PROCEED FURTHER IF YOU\r\nARE NOT WILLING TO BE BOUND BY ALL THE\
+        \ TERMS SET FORTH HEREIN.\r\n\r\nYour use of the Software is subject to the\
+        \ Cisco End User License Agreement\r\n(EULA) and any relevant supplemental\
+        \ terms (SEULA) found at\r\nhttp://www.cisco.com/c/en/us/about/legal/cloud-and-software/software-terms.html.\r\
+        \n\r\nYou hereby acknowledge and agree that certain Software and/or features\
+        \ are\r\nlicensed for a particular term, that the license to such Software\
+        \ and/or\r\nfeatures is valid only for the applicable term and that such Software\
+        \ and/or\r\nfeatures may be shut down or otherwise terminated by Cisco after\
+        \ expiration\r\nof the applicable license term (e.g., 90-day trial period).\
+        \ Cisco reserves\r\nthe right to terminate any such Software feature electronically\
+        \ or by any\r\nother means available. While Cisco may provide alerts, it is\
+        \ your sole\r\nresponsibility to monitor your usage of any such term Software\
+        \ feature to\r\nensure that your systems and networks are prepared for a shutdown\
+        \ of the\r\nSoftware feature.\r\n\r\n\r\n\r\nFIPS: Flash Key Check : Key Not\
+        \ Found, FIPS Mode Not Enabled\r\ncisco C9300-24UX (X86) processor with 1302216K/6147K\
+        \ bytes of memory.\r\nProcessor board ID FOC2434L2RA\r\n2048K bytes of non-volatile\
+        \ configuration memory.\r\n8388608K bytes of physical memory.\r\n1638400K\
+        \ bytes of Crash Files at crashinfo:.\r\n11264000K bytes of Flash at flash:.\r\
+        \n\r\nBase Ethernet MAC Address          : f8:6b:d9:67:35:80\r\nMotherboard\
+        \ Assembly Number        : 73-20290-01\r\nMotherboard Serial Number      \
+        \    : FOC24311H14\r\nModel Revision Number              : 06\r\nMotherboard\
+        \ Revision Number        : 05\r\nModel Number                       : C9300-24UX\r\
+        \nSystem Serial Number               : FOC2434L2RA\r\nCLEI Code Number   \
+        \                : INM3Y10BRB\r\n\r\n\r\nCompliance shield is not available\
+        \ for this platform\a\r\n\r\n\r\nPress RETURN to get started!"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    write memory:
+      response:
+      - "Building configuration...\r\n[OK]"
+      response_type: circular
+  prompt: 9300-24UX-1#

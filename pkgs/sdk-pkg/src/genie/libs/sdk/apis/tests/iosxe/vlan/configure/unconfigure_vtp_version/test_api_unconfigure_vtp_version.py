@@ -10,7 +10,7 @@ class TestUnconfigureVtpVersion(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          9300-24UX-2:
+          9500-Core:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -19,10 +19,10 @@ class TestUnconfigureVtpVersion(unittest.TestCase):
                 protocol: unknown
             os: iosxe
             platform: cat9k
-            type: c9300
+            type: single_rp
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['9300-24UX-2']
+        self.device = self.testbed.devices['9500-Core']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],

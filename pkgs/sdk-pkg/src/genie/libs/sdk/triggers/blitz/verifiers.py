@@ -13,16 +13,20 @@ from .rpcverify import (RpcVerify,
                         OperationalFieldsNode,
                         DecodedResponse,
                         DecodedField,
-                        DeletedPath)
+                        DeletedPath,
+                        OPTFIELD_ALLOWED_OPTIONS)
 from .gnmi_util import GnmiMessage, GnmiMessageConstructor
 from .netconf_util import gen_ncclient_rpc, netconf_send
 from genie.conf.base.utils import QDict
 from pyats.log.utils import banner
+from yang.connector import proto
 
 try:
     import lxml.etree as et
 except Exception:
     pass
+
+log = logging.getLogger(__name__)
 
 
 class BaseVerifier(ABC):
@@ -144,7 +148,15 @@ class DefaultBaseVerifier(BaseVerifier):
     @returns.setter
     def returns(self, returns: Union[List[dict], List[OptFields]]):
         if returns and isinstance(returns[0], dict):
-            self._returns = [OptFields(**r) for r in returns]
+            self._returns = []
+            for ret in returns:
+                data = {}
+                for opt_key, opt_value in ret.items():
+                    if opt_key in OPTFIELD_ALLOWED_OPTIONS:
+                        data.update({opt_key: opt_value})
+                    else:
+                        log.warning(f'{opt_key} not allowed as OptField, ignoring')
+                self._returns.append(OptFields(**data))
         elif not returns:
             self._returns = []
         else:
@@ -187,11 +199,11 @@ class DefaultBaseVerifier(BaseVerifier):
 class GnmiDefaultVerifier(DefaultBaseVerifier):
 
     def get_config_verify(self,
-                          raw_response: DecodedResponse,
+                          raw_response: proto.gnmi_pb2.GetResponse,
                           namespace: dict = None) -> bool:
         try:
             decoded_response = self.decode(raw_response, namespace)
-        except self.DecodeError:
+        except (self.DecodeError, self.EmptyResponse):
             return self.negative_test
         if not decoded_response.updates:
             decoded_response.updates.append((None, "/"))
@@ -201,7 +213,7 @@ class GnmiDefaultVerifier(DefaultBaseVerifier):
         return self.negative_test != result
 
     def subscribe_verify(self,
-                         raw_response: DecodedResponse,
+                         raw_response: proto.gnmi_pb2.SubscribeResponse,
                          sub_type: str = 'ONCE',
                          namespace: dict = None):
         """Decode response and verify result.
@@ -249,7 +261,7 @@ class GnmiDefaultVerifier(DefaultBaseVerifier):
         for delete in self.deleted:
             self.log.error(f"ERROR: {delete.xpath} not deleted.")
             result = False
-        return self.negative_test != result
+        return result
 
     def edit_config_verify(self, response: Any) -> bool:
         if not response:
@@ -267,7 +279,7 @@ class GnmiDefaultVerifier(DefaultBaseVerifier):
             gmc = GnmiMessageConstructor('get', self.rpc_data, **self.format)
             payload = gmc.payload
             namespace_modules = gmc.namespace_modules
-            response, status = GnmiMessage.run_get(
+            response = GnmiMessage.run_get(
                 self.device, payload, namespace_modules
             )
             for node in self.rpc_data.get('nodes'):
@@ -378,8 +390,19 @@ class GnmiDefaultVerifier(DefaultBaseVerifier):
             # key values with multilist entries in response
             xpath_original = re.sub(
                 self.rpc_verify.RE_FIND_PREFIXES, '/', node.get('xpath', ''))
+
+            # Find missing prefixes and log warning
+            matches = re.findall(self.rpc_verify.RE_FIND_KEY_PREFIX, xpath_original)
+            if matches:
+                for m in matches:
+                    prefix = m[0]
+                    name = m[1]
+                    if not prefix:
+                        self.log.warning(f'RPC reply key "{name}" is missing prefix in {xpath_original}')
+
             xpath_original = re.sub(
-                self.rpc_verify.RE_FIND_KEY_PREFIX, '[', xpath_original)
+                self.rpc_verify.RE_FIND_KEY_PREFIX, r'[\g<name>', xpath_original)
+
             # xpath with keys and namespace prefix stripped.
             xpath = re.sub(self.rpc_verify.RE_FIND_KEYS,
                            '', node.get('xpath', ''))
@@ -544,6 +567,7 @@ class GnmiDefaultVerifier(DefaultBaseVerifier):
                 if self._find_xpath(delete_returns.xpath, delete_resp.xpath, delete_resp.keys):
                     try:
                         self.deleted.remove(delete_returns)
+                        self.log.info(f"Found deleted path: {delete_returns.xpath}")
                     finally:
                         break
         return not self.deleted

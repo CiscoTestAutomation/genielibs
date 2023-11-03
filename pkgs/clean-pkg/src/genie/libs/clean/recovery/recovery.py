@@ -25,7 +25,6 @@ log = logging.getLogger(__name__)
 
 CONTINUE_RECOVERY = ['Connect']
 
-
 def _disconnect_reconnect(device):
 
     ''' Disconnect and reconnect the device
@@ -34,12 +33,6 @@ def _disconnect_reconnect(device):
         Returns:
             None
     '''
-    try:
-        if device.state_machine.current_state == 'rommon':
-            log.warning("Device is in rommon")
-            return False
-    except AttributeError:
-        pass
 
     # Disconnect from the device
     log.info("Disconnecting from device '{}'".format(device.name))
@@ -65,38 +58,27 @@ def _disconnect_reconnect(device):
         return True
 
 
-def _connectivity(device, console_activity_pattern=None, console_breakboot_char=None,
-                  console_breakboot_telnet_break=None, grub_activity_pattern=None,
-                  grub_breakboot_char=None, break_count=10,
-                  timeout=None, golden_image=None, tftp_boot=None,
-                  recovery_password=None, clear_line=True, powercycler=True,
-                  powercycler_delay=30, section=None, reconnect_delay=60, **kwargs):
+def _recovery_steps(device, clear_line=True, powercycler=True,
+                    powercycler_delay=30, reconnect_delay=60, **kwargs):
 
-    '''Powercycle the device and start the recovery process
-       Args:
-           device ('obj'): Device object
-           console_activity_pattern: <Break pattern on the device for normal boot mode, 'str'>
-           console_breakboot_char: <Character to send when console_activity_pattern is matched, 'str'>
-           console_breakboot_telnet_break: Use telnet `send break` to interrupt boot
-           grub_activity_pattern: <Break pattern on the device for grub boot mode, 'str'>
-           grub_breakboot_char: <Character to send when grub_activity_pattern is matched, 'str'>
-           break_count ('int'): Number of sending break times
-           timeout ('int'): Recovery process timeout
-           golden_image ('dict'): information to load golden image on the device
-           tftp_boot ('dict'): Tftp boot information
-           recovery_password ('str'): Device password after recovery
-           powercycler: <Should powercycler execute, 'bool'> (Default: True)
-           clear_line: <Should clearline execute, 'bool'> (Default: True)
-           powercycler_delay: <Powercycler delay between on/off>, 'int'> (Default: 30)
-           reconnect_delay: <Once device recovered, delay before final reconnect>, 'int'> (Default: 60)
-       Returns:
-           None
+    '''Steps to recover device
+    1. First step clear line
+    2. Second step power cycle the device
+    3. Third step boot the device using golden image or tftp
+
+    Args:
+        device ('obj'): Device object
+        powercycler: <Should powercycler execute, 'bool'> (Default: True)
+        clear_line: <Should clearline execute, 'bool'> (Default: True)
+        powercycler_delay: <Powercycler delay between on/off>, 'int'> (Default: 30)
+        reconnect_delay: <Once device recovered, delay before final reconnect>, 'int'> (Default: 60)
+    Returns:
+        None
     '''
 
     # Step-2: Clear console port line
     if clear_line:
         log.info(banner("Clearing the console port line"))
-
         try:
             device.api.execute_clear_line()
         except Exception as e:
@@ -114,6 +96,8 @@ def _connectivity(device, console_activity_pattern=None, console_breakboot_char=
             else:
                 log.warning("Cannot re-connect to device '{}' after clearing "
                             "console port line".format(device.name))
+    else:
+        log.info('Clear line is not provided!')
 
     # Step-3: Powercycle device
     if powercycler:
@@ -127,61 +111,17 @@ def _connectivity(device, console_activity_pattern=None, console_breakboot_char=
         else:
             log.info("Successfully powercycled device '{}' during recovery".\
                      format(device.name))
-
-    # Step-4: Boot device with given golden image
-    if golden_image:
-        log.info(banner("Booting device '{}' with the Golden images".\
-                        format(device.name)))
-        log.info("Golden image information found:\n{}".format(golden_image))
-    elif tftp_boot:
-        log.info(banner("Booting device '{}' with the Tftp images".\
-                        format(device.name)))
-        log.info("Tftp boot information found:\n{}".format(tftp_boot))
     else:
-        # This case is for the simple boot
-        # Not yet supported
-        raise Exception('Global recovery only support golden image and tftp '
-                         'boot recovery and neither was provided')
+        log.info("powercycle is not provided!")
 
-    # Need to instantiate to get the device.start
-    # The device.start only works because of a|b
-    device.instantiate(connection_timeout=timeout)
-
-    # For each default connection, start a fork to try to recover the device
+    # Step-4: Boot device with given golden image or by tftp boot
     try:
-        abstract = Lookup.from_device(device, packages={'clean': clean})
-        # Item is needed to be able to know in which parallel child
-        # we are
-
-        if device.is_ha and hasattr(device, 'subconnections'):
-            start = [i.start[0] for i in device.subconnections]
-        else:
-            start = device.start
-
-        pcall(
-            abstract.clean.recovery.recovery.recovery_worker,
-            start=start,
-            ikwargs = [{'item': i} for i, _ in enumerate(start)],
-            ckwargs = {
-                'device': device,
-                'console_activity_pattern': console_activity_pattern,
-                'console_breakboot_char': console_breakboot_char,
-                'console_breakboot_telnet_break': console_breakboot_telnet_break,
-                'grub_activity_pattern': grub_activity_pattern,
-                'grub_breakboot_char': grub_breakboot_char,
-                'break_count': break_count,
-                'timeout': timeout,
-                'golden_image': golden_image,
-                'tftp_boot': tftp_boot,
-                'recovery_password': recovery_password}
-        )
+        device.api.device_recovery_boot()
     except Exception as e:
-        log.error(str(e))
-        raise Exception("Failed to recover the device '{}'".\
-                        format(device.name))
+        log.error(e)
+        raise Exception(f"Failed to boot the device {device.name}")
     else:
-        log.info("Successfully recovered the device '{}'".\
-                 format(device.name))
+        log.info(f"successfully booted the device {device.name}")
 
     log.info('Sleeping for {r} before reconnection'.format(r=reconnect_delay))
     time.sleep(reconnect_delay)
@@ -220,6 +160,7 @@ def _connectivity(device, console_activity_pattern=None, console_breakboot_char=
     Optional('powercycler'): bool,
     Optional('powercycler_delay'): int,
     Optional('reconnect_delay'): int,
+    Optional('connection_timeout'):int,
     Optional('post_recovery_configuration'): str,
 })
 def recovery_processor(
@@ -239,6 +180,7 @@ def recovery_processor(
         powercycler_delay=30,
         reconnect_delay=60,
         post_recovery_configuration=None,
+        connection_timeout=45
         ):
 
     '''
@@ -255,11 +197,14 @@ def recovery_processor(
           grub_breakboot_char: <Character to send when grub_activity_pattern is matched, 'str'>
           timeout: <Timeout in seconds to recover the device, 'int'>
           recovery_password: <Device password after coming up, 'str'>
+          recovery_username: <Device username after coming up, 'str'>
+          recovery_en_password: <Device enable password after coming up, 'str'>
           powercycler: <Should powercycler execute, 'bool'> (Default: True)
           powercycler_delay: <Powercycler delay between on/off>, 'int'> (Default: 30)
           reconnect_delay: <Once device recovered, delay before final reconnect>, 'int'> (Default: 60)
           clear_line: <Should clearline execute, 'bool'> (Default: True)
           post_recovery_configuration: <Configuration to apply to the device, 'str'>
+          connection_timeout: <timeout for state machine, 'int'>
           golden_image: <Golden image to boot the device with, 'list' or 'dict' in the format below>
             kickstart: <Golden kickstart image, 'str'>
             system: <Golden system image, 'str'>
@@ -331,15 +276,73 @@ def recovery_processor(
         return
 
     log.info('Starting Device Recovery checks!')
-
     # Get device
     device = section.parameters['device']
+    recovery_is_required = False
+    # check if device is in any known state
+    log.info(f'Check device {device.name} has valid unicon state.')
+    try:
+        if device.is_ha:
+            log.info('Device is HA! checking all the subconnetions.')
+            for index, connection in enumerate(device.subconnections,1):
+                bring_to_any_state(connection, connection_timeout)
+                log.info(f'subconnection {index} is in {connection.state_machine.current_state}')
+        else:
+            bring_to_any_state(device, connection_timeout)
+            log.info(f'Device is in {device.state_machine.current_state}')
 
-    recovery_is_required = True
+    except Exception as e:
+        log.exception(f'Could not bring device to any valid state! Continue with recovery because of {e}.')
+        recovery_is_required = True
+    # Device is in rommon. try to boot the device before continuing with other recovery steps
+    if device.is_ha:
+        if not recovery_is_required and check_all_in_same_state(device, 'enable'):
+            log.info('Device is already connected. No need for device recovery.')
+            return
+        elif not recovery_is_required and check_all_in_same_state(device, 'rommon'):
+            log.info(f'device {device.name} is in rommon, booting the device!')
+            try:
+                device.api.device_recovery_boot()
+            except Exception as e:
+                log.exception('Could not boot device from rommon. Power cycling the device')
+                recovery_is_required = True
+            else:
+                log.info('Successfully booted the device. No need for device recovery.')
+                return
 
-    # Step 1 - Do we have connectivity to the device - Try to reconnect
-    if device.api.verify_connectivity() or _disconnect_reconnect(device):
-        recovery_is_required = False
+        # Device is in valid unicon state but its not rommon or enable will try to disconnect and connect.
+        elif not recovery_is_required and check_any_connection_in_rommon(device):
+            log.info("One of the subconnection's is in rommon.\n"
+                    "device should be recovered.")
+            recovery_is_required = True
+        elif not recovery_is_required:
+            if not _disconnect_reconnect(device):
+                recovery_is_required =True
+            else:
+                log.info('Successfully disconnect and connect to device.\n'
+                        'No Need to recover the device.')
+                return
+    # Single RP devices
+    else:
+        if not recovery_is_required and device.state_machine.current_state == 'rommon':
+            log.info(f'device {device.name} is in rommon booting the device!')
+            try:
+                device.api.device_recovery_boot()
+            except Exception as e:
+                log.info('Could not boot device from rommon. Power cycling the device')
+                recovery_is_required = True
+            else:
+                log.info('Successfully booted the device. No need for device recovery.')
+                return
+
+        # Device is in valid unicon state but its not rommon or enable will try to disconnect and connect.
+        elif not recovery_is_required and device.state_machine.current_state != 'enable':
+            if not _disconnect_reconnect(device):
+                recovery_is_required =True
+            else:
+                log.info('Successfully disconnect and connect to device.\n'
+                        'No Need to recover the device.')
+                return
 
     if recovery_is_required:
         # Not good! Lets attempt recovery
@@ -350,18 +353,14 @@ def recovery_processor(
         log.info(banner('Recovery Processor'))
         log.info('''\
 Recovery Steps:
-1. Attempt to connect to the device - Failed
-2. Disconnect and reconnect from the device - Failed
-3. Clear line if provided
-4. Powercycler the device if provided
-5. From rommon, boot the device with golden image TFTP boot or type boot''')
+1. Attempt to bring device to a valid state - Failed
+2. Clear line if provided
+3. Powercycler the device if provided
+4. From rommon, boot the device with golden image or TFTP boot ''')
 
         try:
-            _connectivity(device, console_activity_pattern, console_breakboot_char,
-                          console_breakboot_telnet_break, grub_activity_pattern,
-                          grub_breakboot_char, break_count, timeout,
-                          golden_image, tftp_boot, recovery_password, clear_line, powercycler,
-                          powercycler_delay, section, reconnect_delay)
+            _recovery_steps(device, clear_line, powercycler,
+                          powercycler_delay, reconnect_delay)
         except Exception as e:
             # Could not recover the device!
             log.error(banner("*** Terminating Genie Clean ***"))
@@ -392,11 +391,33 @@ Recovery Steps:
     if recovery_is_required:
         section.passed("Device has been recovered. Continuing with pyATS Clean.")
     else:
-        log.info(
-            "Device '{}' is still connected. No need to recover the device.".
-            format(device.name))
-
+        log.info(f'Device {device.name} is still connected. No need to recover the device.')
 
 def block_section(section):
     if section.parent.parameters.get('block_section'):
         section.blocked('Recovery has failed to restore the device - Blocking clean')
+
+def bring_to_any_state(connection, connection_timeout):
+    '''Bring connection to any state
+    '''
+    connection.spawn.sendline()
+    connection.state_machine.go_to('any',
+                                  connection.spawn,
+                                  timeout=connection_timeout,
+                                  context=connection.context)
+
+def check_all_in_same_state(device, state):
+    '''Check if all the subconnections are in same state
+    '''
+    for connection in device.subconnections:
+        if connection.state_machine.current_state != state:
+            return False
+    return True
+
+def check_any_connection_in_rommon(device):
+    '''Check if all the subconnections are in same state
+    '''
+    for connection in device.subconnections:
+        if connection.state_machine.current_state == 'rommon':
+            return True
+    return False

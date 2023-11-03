@@ -11,7 +11,7 @@ from unicon.core.errors import SubCommandFailure
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
 def configure_crypto_pki_server(device, 
-                                server_name,
+                                server_name=None,
                                 password=None,
                                 auto_rollover_time=None, 
                                 cdp_url_type=None, 
@@ -42,7 +42,8 @@ def configure_crypto_pki_server(device,
                                 enrollment_path=None,
                                 revoke_chk=None,
                                 key_len=None,
-                                port=80):
+                                port=80,
+                                **kwargs):
 
     ''' 
         Configure crypto pki server
@@ -83,6 +84,11 @@ def configure_crypto_pki_server(device,
         Returns:
             True/False
     '''
+
+    if kwargs:
+        from genie.libs.sdk.apis.iosxe.eaptls.configure import configure_crypto_pki_server as eaptls_configure_crypto_pki_server
+        return eaptls_configure_crypto_pki_server(device=device, server_name=server_name, issuer_name=issuer_name, 
+                                                  password=password, **kwargs)
 
     dialog = Dialog([
                 Statement(pattern=r'.*Password:',

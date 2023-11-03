@@ -12,7 +12,7 @@ configure:
     login authentication default: "login authentication default\r\n"
     no logging console: ''
     transport input telnet ssh: "transport input telnet ssh\r\n"
-    username admin password admin: "username admin password admin\r\n"
+    username admin password 0 admin: "username admin password 0 admin\r\n"
   prompt: vmtb-isr4451(config)#
 configure_line:
   commands:

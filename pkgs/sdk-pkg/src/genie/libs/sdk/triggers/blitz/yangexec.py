@@ -370,11 +370,11 @@ def run_gnmi(operation: str,
             gmc = GnmiMessageConstructor('get', rpc_data, **format)
             payload = gmc.payload
             namespace_modules = gmc.namespace_modules
-        response, status = GnmiMessage.run_get(
+        response = GnmiMessage.run_get(
             device, payload, namespace_modules,
             transaction_time=transaction_time
         )
-        return verifier.get_config_verify(response, namespace_modules) and status
+        return verifier.get_config_verify(response, namespace_modules)
     elif operation == 'subscribe':
         rpc_data.update(format)
         rpc_data['returns'] = returns

@@ -376,11 +376,6 @@ TriggerAddRemoveBgpAggregateAddressIpv6:
       pkg: genie.libs.sdk
       class: triggers.addremove.bgp.addremove.TriggerAddRemoveBgpAggregateAddressIpv6
 
-TriggerAddRemoveBgpNetworkIPv4:
-    source:
-      pkg: genie.libs.sdk
-      class: triggers.addremove.bgp.addremove.TriggerAddRemoveBgpNetworkIPv4
-
 TriggerAddRemoveBgpKeepaliveHoldtime:
     source:
       pkg: genie.libs.sdk
@@ -626,15 +621,6 @@ TriggerUnconfigConfigVlanVnsegment:
     source:
       pkg: genie.libs.sdk
       class: triggers.unconfigconfig.vlan.unconfigconfig.TriggerUnconfigConfigVlanVnsegment
-
-# -----------
-# MODIFY
-# -----------
-
-TriggerModifyVlanVnsegment:
-    source:
-      pkg: genie.libs.sdk
-      class: triggers.modify.vlan.modify.TriggerModifyVlanVnsegment
 
 # -----------
 # SHUT-NOSHUT

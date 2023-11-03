@@ -324,3 +324,48 @@ def unconfigure_ip_igmp_snooping_vlan_static(device, vlan_id, group_ip, interfac
         log.error(e)
         raise SubCommandFailure(f"Could not unconfigure ip igmp snooping vlan id static interface. Error:\n{e}")
 
+def configure_ip_igmp_querier_query_interval(device, query_type, query_interval):
+    """
+    Configure ip igmp snooping querier query-interval 100
+
+    Args:
+        device('obj'): Device object
+        query_type('str'): query-interval     IGMP querier query interval (sec)
+        query_interval('int'): <1-18000>  IGMP querier query interval (sec)
+        
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure
+    """
+    cmd = f"ip igmp snooping querier {query_type} {query_interval}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(f"Could not configure ip igmp snooping querier query-interval. Error:\n{e}")
+
+def configure_ip_igmp_querier_tcn_query_count(device, query_type, action_type, query_count):
+    """
+    Configure ip igmp snooping querier tcn query count 10
+
+    Args:
+        device('obj'): Device object
+        query_type('str'):tcn                IGMP querier TCN related parameters
+        action_type('str'): count     IGMP querier TCN query count
+                            interval  IGMP querier TCN query interval (sec)
+        query_count('int'):<1-10>  IGMP querier TCN query count
+        
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure
+    """
+    cmd = f"ip igmp snooping querier {query_type} query {action_type} {query_count}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(f"Could not configure ip igmp snooping querier tcn query count 10. Error:\n{e}")

@@ -16,6 +16,9 @@ from genie.libs.clean.recovery.iosxe.dialogs import (
     RommonDialog,
     TftpRommonDialog)
 
+#pyats
+from pyats.utils.secret_strings import to_plaintext
+
 # Logger
 log = logging.getLogger(__name__)
 
@@ -113,7 +116,8 @@ def recovery_worker(start, device, console_activity_pattern=None,
     spawn = Spawn(spawn_command=start,
                   settings=device.cli.settings,
                   target=target,
-                  logger=device.log)
+                  logger=device.log,
+                  device=device)
 
     # Stop the device from booting
     break_dialog = BreakBootDialog()
@@ -168,13 +172,17 @@ def device_recovery(spawn, timeout, golden_image, recovery_password=None, **kwar
         Returns:
             None
     """
-
+    device = spawn.device
+    credentials = device.credentials
     dialog = RommonDialog()
     dialog.dialog.process(
         spawn,
         timeout=timeout,
         context={'boot_image': golden_image[0],
-                 'password': recovery_password})
+                 'password': to_plaintext(credentials.get('default',{}).get('password')),
+                 'username': to_plaintext(credentials.get('default',{}).get('username')),
+                 'en_password': to_plaintext(credentials.get('enable',{}).get('password')),
+                 'pass_login':1})
 
 
 def tftp_device_recovery(spawn, timeout, device, tftp_boot, item, recovery_password=None

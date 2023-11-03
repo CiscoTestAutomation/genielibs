@@ -29,3 +29,22 @@ def clear_interface_range(device, interface, interface_range):
         raise SubCommandFailure(
             f"Could not clear interface range on {interface}. Error:\n{e}"
         )
+
+def clear_ip_dhcp_snooping_binding_on_interface(device, interface):
+    """ Clear ip dhcp snooping binding on interface
+        Args:
+            device (`obj`): Device object
+            interface('str'): interface name
+        Return:
+            None
+        Raise:
+            SubCommandFailure
+    """
+    log.debug("Executing clear_ip_dhcp_snooping_binding_on_interface API")
+    cmd = [f'clear ip dhcp snooping binding interface {interface}']
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to clear DHCPv4 server statistics on {interface} \n{e}'
+        )

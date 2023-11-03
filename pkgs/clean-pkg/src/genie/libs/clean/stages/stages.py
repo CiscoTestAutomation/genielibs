@@ -197,7 +197,7 @@ ping_server:
             p2 = r'(?P<transmit>\d+) +packets +transmitted, (?P<recv>\d+) +(packets )?received, (?P<loss>\S+)% +packet +loss'
 
             # Send count=3, Receive count=3
-            # Send count=3, Receive count=3 from 172.25.195.115 
+            # Send count=3, Receive count=3 from 172.25.195.115
             p3 = r'Send count=+(?P<send>\d+), Receive count=+(?P<received>\d+)'
 
             try:
@@ -1385,6 +1385,9 @@ reload:
         prompt_recovery (bool, optional): Enable or disable the prompt recovery
             feature of unicon. Defaults to True.
 
+        error_pattern (list, optional): List of regex patterns to check for errors.
+            Defaults to an empty list (no error checking).
+
         <Key>: <Value>
             Any other arguments that the Unicon reload service supports
 
@@ -1410,7 +1413,6 @@ reload:
         timeout: 600
         reload_creds: clean_reload_creds
         prompt_recovery: True
-        reconnect_sleep: 200 (Unicon NXOS reload service argument)
     check_modules:
         check: False
 """
@@ -1420,7 +1422,8 @@ reload:
     RELOAD_SERVICE_ARGS = {
         'timeout': 800,
         'reload_creds': 'default',
-        'prompt_recovery': True
+        'prompt_recovery': True,
+        'error_pattern': []
     }
     CHECK_MODULES = {
         'check': True,
@@ -1444,6 +1447,7 @@ reload:
             Optional('timeout'): int,
             Optional('reload_creds'): str,
             Optional('prompt_recovery'): bool,
+            Optional('error_pattern'): list,
             Any(): Any()
         },
         Optional('reconnect_via'): str,
@@ -1469,7 +1473,8 @@ reload:
             # the many optional arguments, we still need to default the others.
             self.RELOAD_SERVICE_ARGS.update(reload_service_args)
             reload_service_args = self.RELOAD_SERVICE_ARGS
-
+        # Disable device recovey for unicon service
+        reload_service_args.update({'device_recovery': False})
         with steps.start(f"Reload {device.name}") as step:
 
             try:
@@ -2869,7 +2874,7 @@ configure_management:
 
         protocols ('list', optional): [list of protocols]
 
-        set_hostname (bool): Configure device hostname (default: False)
+        set_hostname (bool): Configure device hostname (default: True)
 
 
 Example
@@ -2882,7 +2887,7 @@ configure_management:
     # =================
     # Argument Defaults
     # =================
-
+    SET_HOSTNAME = True
 
     # ============
     # Stage Schema
@@ -2914,7 +2919,7 @@ configure_management:
         'configure_management'
     ]
 
-    def configure_management(self, steps, device, **kwargs):
+    def configure_management(self, steps, device, set_hostname=SET_HOSTNAME, **kwargs):
 
         if 'configure_management' not in dir(device.api):
             self.passx('No support for configure_management API')
@@ -2923,6 +2928,8 @@ configure_management:
 
             config_kwargs = {k: v for k, v in kwargs.items() if k in \
                 [k.schema for k in self.schema.keys()]}
+
+            config_kwargs['set_hostname'] = set_hostname
 
             if hasattr(device, 'management') and device.management:
                 device.api.configure_management(**config_kwargs)

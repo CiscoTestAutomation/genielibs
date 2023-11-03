@@ -4399,3 +4399,15 @@ def device_recovery_boot(device, console_activity_pattern=None, console_breakboo
         raise Exception(f"Failed to boot the device {device.name}", from_exception=e)
     else:
         log.info(f"Successfully boot the device {device.name}")
+
+def sanitize(s):
+    """
+
+    Wipes out all the whitespace
+
+    """
+
+    ansi_escape = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
+    s = ansi_escape.sub('', s)
+
+    return s.translate(dict.fromkeys(range(32))).strip().replace(' ', '')
