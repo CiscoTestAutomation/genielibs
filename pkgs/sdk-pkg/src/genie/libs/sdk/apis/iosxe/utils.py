@@ -751,7 +751,7 @@ def get_show_output_line_count(device, command, filter, output=None):
 
 
 def clear_counters(device):
-    """ clear logging
+    """ clear counters
         Args:
             device ('obj'): Device object
         Returns:
