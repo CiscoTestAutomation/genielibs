@@ -29,7 +29,12 @@ class TestGetMgmtIpAndMgmtSrcIpAddresses(unittest.TestCase):
             init_exec_commands=[]
         )
 
-    def test_get_mgmt_ip_and_mgmt_src_ip_addresses(self):
+    def test_get_mgmt_ip_and_mgmt_src_ip_addresses_with_source(self):
         result = get_mgmt_ip_and_mgmt_src_ip_addresses(self.device, '192.168.1.5')
+        expected_output = ('192.168.1.6', {'192.168.1.5'})
+        self.assertEqual(result, expected_output)
+
+    def test_get_mgmt_ip_and_mgmt_src_ip_addresses(self):
+        result = get_mgmt_ip_and_mgmt_src_ip_addresses(self.device)
         expected_output = ('192.168.1.6', {'192.168.1.5'})
         self.assertEqual(result, expected_output)

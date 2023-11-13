@@ -12,7 +12,7 @@
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "ApplyConfiguration",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L1607"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L1612"
     },
     "iosxe": {
       "sdwan": {
@@ -61,7 +61,7 @@
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "BackupFileOnDevice",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L1932"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L1937"
     }
   },
   "ChangeBootVariable": {
@@ -130,11 +130,11 @@
   },
   "ConfigureManagement": {
     "com": {
-      "doc": "This stage configures the management IP settings on the device.\n\nStage Schema\n------------\nconfigure_management:\n\n        address ('dict', optional):  Address(es) to configure on the device (syntax: address/mask) (optional)\n            ipv4 ('str') or ('list'): ipv4 address\n            ipv6 ('str') or ('list'): ipv6 address\n\n        gateway: (dict, optional) Gateway address(es) for default route\n            ipv4 ('str') or ('list'): ipv4 gateway address\n            ipv6 ('str') or ('list'): ipv6 gateway address\n\n        vrf (str, optional): VRF to use for management interface\n\n        interface (str, optional): Management interface to use\n\n        routes ('dict', optional):\n           ipv4 (list of 'dict'): ipv4 routes\n              - subnet: (str) subnet including mask\n                next_hop: (str) next_hop for this subnet\n           ipv6 (list of 'dict'): ipv6 routes\n              - subnet: (str) subnet including mask\n                next_hop: (str) next_hop for this subnet\n\n        dhcp_timeout ('int', optional): DHCP timeout in seconds (default: 30)\n\n        protocols ('list', optional): [list of protocols]\n\n        set_hostname (bool): Configure device hostname (default: False)\n\n\nExample\n-------\nconfigure_management:\n    vrf: Mgmt-vrf\n\n",
+      "doc": "This stage configures the management IP settings on the device.\n\nStage Schema\n------------\nconfigure_management:\n\n        address ('dict', optional):  Address(es) to configure on the device (syntax: address/mask) (optional)\n            ipv4 ('str') or ('list'): ipv4 address\n            ipv6 ('str') or ('list'): ipv6 address\n\n        gateway: (dict, optional) Gateway address(es) for default route\n            ipv4 ('str') or ('list'): ipv4 gateway address\n            ipv6 ('str') or ('list'): ipv6 gateway address\n\n        vrf (str, optional): VRF to use for management interface\n\n        interface (str, optional): Management interface to use\n\n        routes ('dict', optional):\n           ipv4 (list of 'dict'): ipv4 routes\n              - subnet: (str) subnet including mask\n                next_hop: (str) next_hop for this subnet\n           ipv6 (list of 'dict'): ipv6 routes\n              - subnet: (str) subnet including mask\n                next_hop: (str) next_hop for this subnet\n\n        dhcp_timeout ('int', optional): DHCP timeout in seconds (default: 30)\n\n        protocols ('list', optional): [list of protocols]\n\n        set_hostname (bool): Configure device hostname (default: True)\n\n\nExample\n-------\nconfigure_management:\n    vrf: Mgmt-vrf\n\n",
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "ConfigureManagement",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L2841"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L2846"
     }
   },
   "ConfigureReplace": {
@@ -143,7 +143,7 @@
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "ConfigureReplace",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1983"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1986"
     }
   },
   "ConfigureRrmDcaChannel": {
@@ -190,7 +190,7 @@
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "CopyRunToFlash",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L2791"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L2796"
     }
   },
   "CopyToDevice": {
@@ -213,7 +213,7 @@
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "CopyToDevice",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1356"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1359"
     }
   },
   "CopyToLinux": {
@@ -231,7 +231,7 @@
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "DeleteBackupFromDevice",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L2027"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L2032"
     }
   },
   "DeleteFiles": {
@@ -240,7 +240,7 @@
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "DeleteFiles",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L2250"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L2255"
     }
   },
   "DeleteFilesFromServer": {
@@ -249,7 +249,7 @@
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "DeleteFilesFromServer",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L2151"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L2156"
     }
   },
   "EraseApConfiguration": {
@@ -269,7 +269,7 @@
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "ExecuteCommand",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L1541"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L1546"
     }
   },
   "ExpandImage": {
@@ -319,7 +319,7 @@
         "uid": "InstallImage",
         "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/cat3k/stages.py#L12"
       },
-      "doc": "This stage installs a provided image onto the device using the install\nCLI. It also handles the automatic reloading of your device after the\ninstall is complete.\n\nStage Schema\n------------\ninstall_image:\n    images (list): Image to install\n\n    directory (str): directory where packages.conf is created\n\n\n    save_system_config (bool, optional): Whether or not to save the system\n        config if it was modified. Defaults to False.\n\n    install_timeout (int, optional): Maximum time in seconds to wait for install\n        process to finish. Defaults to 500.\n\n    reload_timeout (int, optional): Maximum time in seconds to wait for reload\n        process to finish. Defaults to 800.\n\n    verify_running_image (bool, optional): Compare the image filename with the running\n        image version on device. If a match is found, the stage will be skipped.\n        Defaults to True.\n\n    reload_service_args (optional):\n\n        reload_creds (str, optional): The credential to use after the reload is\n            complete. The credential name comes from the testbed yaml file.\n            Defaults to the 'default' credential.\n\n        prompt_recovery (bool, optional): Enable or disable the prompt recovery\n            feature of unicon. Defaults to True.\n\n        append_error_pattern (list, optional): List of regex strings to check for,\n            to be appended to the default error pattern list. Default: [r\"FAILED:.* \",]\n\n        <Key>: <Value>\n            Any other arguments that the Unicon reload service supports\n\nExample\n-------\ninstall_image:\n    images:\n      - /auto/some-location/that-this/image/stay-isr-image.bin\n    save_system_config: True\n    install_timeout: 1000\n    reload_timeout: 1000\n\n",
+      "doc": "This stage installs a provided image onto the device using the install\nCLI. It also handles the automatic reloading of your device after the\ninstall is complete.\n\nStage Schema\n------------\ninstall_image:\n    images (list): Image to install\n\n    directory (str): directory where packages.conf is created\n\n\n    save_system_config (bool, optional): Whether or not to save the system\n        config if it was modified. Defaults to False.\n\n    install_timeout (int, optional): Maximum time in seconds to wait for install\n        process to finish. Defaults to 500.\n\n    reload_timeout (int, optional): Maximum time in seconds to wait for reload\n        process to finish. Defaults to 800.\n\n    verify_running_image (bool, optional): Compare the image filename with the running\n        image version on device. If a match is found, the stage will be skipped.\n        Defaults to True.\n\n    reload_service_args (optional):\n\n        reload_creds (str, optional): The credential to use after the reload is\n            complete. The credential name comes from the testbed yaml file.\n            Defaults to the 'default' credential.\n\n        prompt_recovery (bool, optional): Enable or disable the prompt recovery\n            feature of unicon. Defaults to True.\n\n        error_pattern (list, optional): List of regex strings to check for errors.\n            Default: [r\"FAILED:.* \",]\n\n        <Key>: <Value>\n            Any other arguments that the Unicon reload service supports\n\nExample\n-------\ninstall_image:\n    images:\n      - /auto/some-location/that-this/image/stay-isr-image.bin\n    save_system_config: True\n    install_timeout: 1000\n    reload_timeout: 1000\n\n",
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "InstallImage",
@@ -359,7 +359,7 @@
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "InstallPackages",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L764"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L766"
     }
   },
   "InstallRemoveInactive": {
@@ -404,7 +404,7 @@
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "PowerCycle",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L2687"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L2692"
     }
   },
   "PrimeAp": {
@@ -420,18 +420,18 @@
   },
   "Reload": {
     "com": {
-      "doc": " This stage reloads the device.\n\nStage Schema\n------------\nreload:\n\n    reload_service_args (optional):\n\n        timeout (int, optional): Maximum time in seconds allowed for the reload.\n            Defaults to 800.\n\n        reload_creds (str, optional): The credential to use after the reload is\n            complete. The credential name comes from the testbed yaml file.\n            Defaults to the 'default' credential.\n\n        prompt_recovery (bool, optional): Enable or disable the prompt recovery\n            feature of unicon. Defaults to True.\n\n        <Key>: <Value>\n            Any other arguments that the Unicon reload service supports\n\n    check_modules:\n\n        check (bool, optional): Enable the checking of modules after reload.\n            Defaults to True.\n\n        timeout (int, optional): Maximum time in seconds allowed for verifying\n            the modules are in a stable state. Defaults to 180.\n\n        interval (int, optional): How often to check the module states in\n            seconds. Defaults to 30.\n\n    reconnect_via (str, optional): Specify which connection to use after reloading.\n        Defaults to the 'default' connection in the testbed yaml file.\n\n\nExample\n-------\nreload:\n    reload_service_args:\n        timeout: 600\n        reload_creds: clean_reload_creds\n        prompt_recovery: True\n        reconnect_sleep: 200 (Unicon NXOS reload service argument)\n    check_modules:\n        check: False\n",
+      "doc": " This stage reloads the device.\n\nStage Schema\n------------\nreload:\n\n    reload_service_args (optional):\n\n        timeout (int, optional): Maximum time in seconds allowed for the reload.\n            Defaults to 800.\n\n        reload_creds (str, optional): The credential to use after the reload is\n            complete. The credential name comes from the testbed yaml file.\n            Defaults to the 'default' credential.\n\n        prompt_recovery (bool, optional): Enable or disable the prompt recovery\n            feature of unicon. Defaults to True.\n\n        error_pattern (list, optional): List of regex patterns to check for errors.\n            Defaults to an empty list (no error checking).\n\n        <Key>: <Value>\n            Any other arguments that the Unicon reload service supports\n\n    check_modules:\n\n        check (bool, optional): Enable the checking of modules after reload.\n            Defaults to True.\n\n        timeout (int, optional): Maximum time in seconds allowed for verifying\n            the modules are in a stable state. Defaults to 180.\n\n        interval (int, optional): How often to check the module states in\n            seconds. Defaults to 30.\n\n    reconnect_via (str, optional): Specify which connection to use after reloading.\n        Defaults to the 'default' connection in the testbed yaml file.\n\n\nExample\n-------\nreload:\n    reload_service_args:\n        timeout: 600\n        reload_creds: clean_reload_creds\n        prompt_recovery: True\n    check_modules:\n        check: False\n",
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "Reload",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L1369"
     },
     "iosxe": {
-      "doc": " This stage reloads the device.\n\nStage Schema\n------------\nreload:\n    license: (optional)\n        check: (bool, optional): Enable the checking license inconsistency and fix\n\n    reload_service_args (optional):\n\n        timeout (int, optional): Maximum time in seconds allowed for the reload.\n            Defaults to 800.\n\n        reload_creds (str, optional): The credential to use after the reload is\n            complete. The credential name comes from the testbed yaml file.\n            Defaults to the 'default' credential.\n\n        prompt_recovery (bool, optional): Enable or disable the prompt recovery\n            feature of unicon. Defaults to True.\n\n        <Key>: <Value>\n            Any other arguments that the Unicon reload service supports\n\n    check_modules:\n\n        check (bool, optional): Enable the checking of modules after reload.\n            Defaults to True.\n\n        timeout (int, optional): Maximum time in seconds allowed for verifying\n            the modules are in a stable state. Defaults to 180.\n\n        interval (int, optional): How often to check the module states in\n            seconds. Defaults to 30.\n\n    reconnect_via (str, optional): Specify which connection to use after reloading.\n        Defaults to the 'default' connection in the testbed yaml file.\n\n\nExample\n-------\nreload:\n    reload_service_args:\n        timeout: 600\n        reload_creds: clean_reload_creds\n        prompt_recovery: True\n        reconnect_sleep: 200 (Unicon NXOS reload service argument)\n    check_modules:\n        check: False\n",
+      "doc": " This stage reloads the device.\n\nStage Schema\n------------\nreload:\n    license: (optional)\n        check: (bool, optional): Enable the checking license inconsistency and fix\n\n    reload_service_args (optional):\n\n        timeout (int, optional): Maximum time in seconds allowed for the reload.\n            Defaults to 800.\n\n        reload_creds (str, optional): The credential to use after the reload is\n            complete. The credential name comes from the testbed yaml file.\n            Defaults to the 'default' credential.\n\n        prompt_recovery (bool, optional): Enable or disable the prompt recovery\n            feature of unicon. Defaults to True.\n\n\n        <Key>: <Value>\n            Any other arguments that the Unicon reload service supports\n\n    check_modules:\n\n        check (bool, optional): Enable the checking of modules after reload.\n            Defaults to True.\n\n        timeout (int, optional): Maximum time in seconds allowed for verifying\n            the modules are in a stable state. Defaults to 180.\n\n        interval (int, optional): How often to check the module states in\n            seconds. Defaults to 30.\n\n    reconnect_via (str, optional): Specify which connection to use after reloading.\n        Defaults to the 'default' connection in the testbed yaml file.\n\n\nExample\n-------\nreload:\n    reload_service_args:\n        timeout: 600\n        reload_creds: clean_reload_creds\n        prompt_recovery: True\n    check_modules:\n        check: False\n",
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "Reload",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L848"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L850"
     }
   },
   "RevertVmSnapshot": {
@@ -440,7 +440,7 @@
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "RevertVmSnapshot",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L2320"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L2325"
     }
   },
   "RommonBoot": {
@@ -456,7 +456,7 @@
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "RommonBoot",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1094"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1097"
     }
   },
   "RunConfigure": {
@@ -632,7 +632,7 @@
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "VerifyRunningImage",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L1770"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L1775"
     },
     "iosxe": {
       "cat9k": {

@@ -2,21 +2,19 @@ configure:
   commands:
     end:
       new_state: execute
-    line console:
-      new_state: configure_line
+    interface range vlan 11-20: '% Invalid command at ''^'' marker.'
     line console 0:
       new_state: configure_line
     no logging console: ''
     no vlan dot1q tag native: "no vlan dot1q tag native\r\n"
-  prompt: VCR(config)#
+    standby 0 priority 50: '% Invalid command at ''^'' marker.'
+  prompt: 9500-Core(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-    line vty: ''
-    terminal width 511: ''
-  prompt: VCR(config-line)#
+  prompt: 9500-Core(config-line)#
 connect:
   commands:
     ? ''
@@ -36,6 +34,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-    term width 511: ''
-    terminal session-timeout 0: ''
-  prompt: VCR#
+  prompt: 9500-Core#

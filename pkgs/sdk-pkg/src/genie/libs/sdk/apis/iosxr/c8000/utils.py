@@ -24,7 +24,7 @@ def get_mgmt_src_ip_addresses(device):
 
 def get_mgmt_ip_and_mgmt_src_ip_addresses(device, mgmt_src_ip=None):
     """ Get the management IP address and management source addresses.
-    
+
     if the mgmt_src_ip is provided, will use that for the lookup. If not, will
     select the 1st matching IP.
     Args:
@@ -37,23 +37,23 @@ def get_mgmt_ip_and_mgmt_src_ip_addresses(device, mgmt_src_ip=None):
     # tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN      32230/sshd
     # tcp        0      0 1.1.1.161:22        1.1.1.26:60718      ESTABLISHED 24543/sshd: admin [
     mgmt_addresses = re.findall(r'\w+ +(\S+):(?:22|23) +(\S+):\d+ +ESTAB', tcp_output)
-    
-    if mgmt_src_ip:
-        # tcp        0      0 1.1.1.161:22        1.1.1.26:60718      ESTABLISHED 24543/sshd: admin [
-        m = re.search(rf'\w+ +(\S+):(?:22|23) +{mgmt_src_ip}:\d+ +ESTAB', tcp_output)
+
+    mgmt_src_ip_addresses = set([ip[1] for ip in mgmt_addresses if ip[1]])
+    mgmt_ip_addresses = list(set([ip[0] for ip in mgmt_addresses if ip[0]]))
+
+    for ip_pair in mgmt_addresses:
+        if mgmt_src_ip == ip_pair[1]:
+            mgmt_ip = ip_pair[0]
+            break
     else:
-        # tcp        0      0 1.1.1.161:22        1.1.1.26:60718      ESTABLISHED 24543/sshd: admin [
-        m = re.search(r'\w+ +(\S+):(?:22|23) +(\S+):\d+ +ESTAB', tcp_output)
-    if m:
-        mgmt_ip = m.group(1)
-    else:
+        mgmt_ip = mgmt_ip_addresses[0]
+
+    if not mgmt_ip:
         log.error('Unable to find management session, cannot determine IP address')
         mgmt_ip = None
-    if mgmt_addresses:
-        mgmt_src_ip_addresses = set([m[1] for m in mgmt_addresses])
-    else:
-        log.error('Unable to find management session, cannot determine management IP addresses')
-        return []
+
+    if not mgmt_ip or not mgmt_src_ip_addresses:
+        return None
 
     log.info('Device management IP: {}'.format(mgmt_ip))
     log.info('Device management source IP addresses: {}'.format(mgmt_src_ip_addresses))

@@ -198,24 +198,50 @@ def configure_shape_map(device, queue_name=None, class_map_list=[],
                  )
         )
 
-def configure_bandwidth_remaining_policy_map(device,policy_names,
-                     class_names,bandwidth_list,shape_average,bandwidth_remaining=True):
+def configure_policy_map_on_device(device, policy_map_name, class_map_name, target_bit_rate):
+    """ Configure policy-map type on Device
+    Args:
+        device (`obj`): Device object
+        policy_map_name ('str'): policy-map name to configure
+        class_map_name ('str'): class map name to configure
+        target_bit_rate ('str'): target bit rate to configure (in bits/sec)
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring policy-map on device
+    """
+    log.debug("Configuring policy-map on device")
+
+    try:
+        device.configure(
+            [
+                f"policy-map {policy_map_name}",
+                f"class {class_map_name}",
+                f"shape average {target_bit_rate}",
+            ]
+        )
+    except SubCommandFailure:
+        raise SubCommandFailure("Could not configure policy-map on device")
+
+def configure_bandwidth_remaining_policy_map(device, policy_names, shape_average,
+                                             class_names=None, bandwidth_list=None, 
+                                             bandwidth_remaining=True):
 
     """ Configures policy_map
         Args:
              device ('obj'): device to use
              policy_names('list) : list of policy-maps i.e. parent and grandparent
-             class_names ('list') : list of classes inside policy-map i.e voice, video etc.
-             bandwidth_list ('list) : list of bandwidth remainin for each class.
              shape_average ('str') : shaper percentage value for grandparent
+             class_names ('list', optional) : list of classes inside policy-map i.e voice, video etc.
+             bandwidth_list ('list, optional) : list of bandwidth remainin for each class.
              bandwidth_remaining ('bool') : If true, sets percentage of remaining bandwidth.
                                             Else, sets percentage of total bandwidth.
                                             Defaults to True.
         example:
              policy_names=['parent','grandparent']
+             shape_average = '100'
              class_names = ['voice','data','video','class-default']
              bandwidth_list = [20,10,10,10,30]
-             shape_average = 100
         Returns:
             None
         Raises:
@@ -225,18 +251,19 @@ def configure_bandwidth_remaining_policy_map(device,policy_names,
     counter = 0
     cli = [f"policy-map {policy_names[0]}"]
 
-    for class_val in class_names:
-        cli.append(f"class {class_val}")
-        if bandwidth_remaining:
-            cli.append(f"bandwidth remaining percent {bandwidth_list[counter]}")
-        else:
-            cli.append(f"bandwidth percent {bandwidth_list[counter]}")
-        counter += 1
+    if (class_names) and (bandwidth_list):
+        for class_val in class_names:
+            cli.append(f"class {class_val}")
+            if bandwidth_remaining:
+                cli.append(f"bandwidth remaining percent {bandwidth_list[counter]}")
+            else:
+                cli.append(f"bandwidth percent {bandwidth_list[counter]}")
+            counter += 1
 
-    cli.append(f"policy-map {policy_names[1]}")
+    cli.append(f"policy-map {policy_names[0]}")
     cli.append(f"class class-default")
     cli.append(f"shape average percent {shape_average}")
-    cli.append(f"service-policy {policy_names[0]}")
+    cli.append(f"service-policy {policy_names[1]}")
 
     try:
         device.configure(cli)

@@ -1246,7 +1246,7 @@ def unconfigure_ipv6_flow_monitor(device, interface, monitor_name,direction):
             SubCommandFailure
     """
     cmd = [f"interface {interface}".format(interface=interface),
-           f"ipv6 flow monitor {monitor_name} {direction}".format(monitor_name=monitor_name,direction=direction)]
+           f"no ipv6 flow monitor {monitor_name} {direction}".format(monitor_name=monitor_name,direction=direction)]
 
     try:
         device.configure(cmd)

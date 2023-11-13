@@ -3,8 +3,12 @@ import logging
 import re
 import time
 
+# Genie
+from genie.utils.timeout import Timeout
+
 # Unicon
 from unicon.eal.dialogs import Statement, Dialog
+from unicon.core.errors import SubCommandFailure
 
 log = logging.getLogger(__name__)
 
@@ -907,3 +911,77 @@ def execute_install_rollback(device, rollback_point=None, rollback_id=None, issu
     log.info(f"install rollback operation got {result} on {device.name}")
     return output if not match else match
 
+def execute_install_package_reload_fast(device, image_dir, image, reload_fast=True, timeout=1600, connect_timeout=300):
+    """
+    Install package reloadfast
+    Args:
+        device ("obj"): Device object
+        image_dir ("str"): Directory where the image is located
+        image ("str"): Image filename
+        reload_fast ("bool"): Whether to use reloadfast. Default is True.
+        timeout ("int", optional): Timeout value. Default is 1600 seconds.
+        connect_timeout ("int", optional): Time to wait before sending the prompt
+                                           (when pattern "Press RETURN to get started" matches)
+    Returns:
+        True if install succeeded else False
+    Raises:
+        SubCommandFailure
+    """
+
+    def slow_sendline(spawn):
+        time.sleep(connect_timeout)
+        spawn.sendline('')
+
+    dialog = Dialog([
+        Statement(pattern=r".*\[y/n\]",
+                  action="sendline(y)",
+                  args=None,
+                  loop_continue=True,
+                  continue_timer=False),
+        Statement(pattern=r".*Please confirm you have changed boot config to .*\/packages\.conf \[y/n\]",
+                  action="sendline(y)",
+                  args=None,
+                  loop_continue=True,
+                  continue_timer=False),
+        Statement(pattern=r".*you may save configuration and re-enter the command\. \[y/n/q\]",
+                  action="sendline(y)",
+                  args=None,
+                  loop_continue=True,
+                  continue_timer=False),
+        Statement(pattern=r"%s.*# " % device.name,
+                  action=None,
+                  args=None,
+                  loop_continue=True,
+                  continue_timer=False),
+        Statement(pattern=r".*Press RETURN to get started.*",
+                  action=slow_sendline,
+                  args=None,
+                  loop_continue=False,
+                  continue_timer=False),
+        Statement(pattern = r".*SUCCESS: install_add_activate_commit.*",
+                  action = None,
+                  args = None,
+                  loop_continue = False,
+                  continue_timer = False),
+    ])
+
+    cmd = "install add file {image_dir}{image} activate".format(image_dir=image_dir, image=image)
+    if reload_fast:
+        cmd += " reloadfast"
+
+    cmd += " commit"
+
+    log.info(f"Perform install reloadfast {device.name}")
+
+    try:
+        device.api.execute_write_memory()
+        output = device.execute(cmd, reply=dialog, timeout=timeout)
+        log.info(f"{cmd} is successful on {device.name}")
+    except Exception as e:
+        log.error(f"Error while executing {cmd} on {device.name}: {e}")
+        return False
+
+    match = re.search(r".*SUCCESS: install_add_activate_commit.*", output)
+    result = 'successful' if match else 'failed'
+    log.info(f"install reloadfast {result} on {device.name}")
+    return output if match else match

@@ -9,7 +9,7 @@ from yang.connector.gnmi import Gnmi
 from yang.connector import proto
 from genie.libs.sdk.triggers.blitz import yangexec
 from genie.libs.sdk.triggers.blitz import netconf_util
-from genie.libs.sdk.triggers.blitz.rpcverify import RpcVerify
+from genie.libs.sdk.triggers.blitz.rpcverify import RpcVerify, OptFields
 from genie.libs.sdk.triggers.blitz.gnmi_util import GnmiMessage
 from genie.libs.sdk.triggers.blitz.tests.device_mocks import TestDevice
 
@@ -1306,6 +1306,138 @@ basic-mode=explicit&also-supported=report-all-tagged']
         result = self.rpcv.process_operational_state(resp, opfields)
         self.assertTrue(result)
 
+    def test_add_key_nodes_without_prefix(self):
+        """ Check if we can find the names of the key nodes properly without prefixes """
+        xpath = '/network-instances/network-instance[name="DEFAULT"]/protocols/protocol[identifier="ISIS"][name="1"]/isis/levels/level[level-number="2"]/authentication/config/enabled'
+        nodes = []
+        self.rpcv.add_key_nodes(xpath=xpath, nodes=nodes)
+        expected_nodes = [
+            OptFields(name='name',
+                    value='DEFAULT',
+                    xpath='/network-instances/network-instance/name',
+                    op='==',
+                    default='',
+                    selected=True,
+                    id='',
+                    datatype='',
+                    sequence=0,
+                    default_xpath='',
+                    nodetype='',
+                    key=False),
+            OptFields(name='identifier',
+                    value='ISIS',
+                    xpath='/network-instances/network-instance/protocols/protocol/identifier',
+                    op='==',
+                    default='',
+                    selected=True,
+                    id='',
+                    datatype='',
+                    sequence=0,
+                    default_xpath='',
+                    nodetype='',
+                    key=False),
+            OptFields(name='name',
+                    value='1',
+                    xpath='/network-instances/network-instance/protocols/protocol/name',
+                    op='==',
+                    default='',
+                    selected=True,
+                    id='',
+                    datatype='',
+                    sequence=0,
+                    default_xpath='',
+                    nodetype='',
+                    key=False),
+            OptFields(name='level-number',
+                    value='2',
+                    xpath='/network-instances/network-instance/protocols/protocol/isis/levels/level/level-number',
+                    op='==',
+                    default='',
+                    selected=True,
+                    id='',
+                    datatype='',
+                    sequence=0,
+                    default_xpath='',
+                    nodetype='',
+                    key=False)
+        ]
+        self.assertEqual(nodes, expected_nodes)
+
+    def test_add_key_nodes_with_prefix(self):
+        """ Check if we can find the names of the key nodes properly when prefixed """
+        xpath = '/network-instances/network-instance[prefix1:name="DEFAULT"]/protocols/protocol[prefix2:identifier="ISIS"][prefix3:name="1"]/isis/levels/level[prefix4:level-number="2"]/authentication/config/enabled'
+        nodes = []
+        self.rpcv.add_key_nodes(xpath=xpath, nodes=nodes)
+        expected_nodes = [
+            OptFields(name='name',
+                    value='DEFAULT',
+                    xpath='/network-instances/network-instance/name',
+                    op='==',
+                    default='',
+                    selected=True,
+                    id='',
+                    datatype='',
+                    sequence=0,
+                    default_xpath='',
+                    nodetype='',
+                    key=False),
+            OptFields(name='identifier',
+                    value='ISIS',
+                    xpath='/network-instances/network-instance/protocols/protocol/identifier',
+                    op='==',
+                    default='',
+                    selected=True,
+                    id='',
+                    datatype='',
+                    sequence=0,
+                    default_xpath='',
+                    nodetype='',
+                    key=False),
+            OptFields(name='name',
+                    value='1',
+                    xpath='/network-instances/network-instance/protocols/protocol/name',
+                    op='==',
+                    default='',
+                    selected=True,
+                    id='',
+                    datatype='',
+                    sequence=0,
+                    default_xpath='',
+                    nodetype='',
+                    key=False),
+            OptFields(name='level-number',
+                    value='2',
+                    xpath='/network-instances/network-instance/protocols/protocol/isis/levels/level/level-number',
+                    op='==',
+                    default='',
+                    selected=True,
+                    id='',
+                    datatype='',
+                    sequence=0,
+                    default_xpath='',
+                    nodetype='',
+                    key=False)
+        ]
+        self.assertEqual(nodes, expected_nodes)
+
+    def test_add_key_nodes_invalid_name(self):
+        """ Check if we catch invalid key names in xpath keys """
+        xpath = '/network-instances/network-instance["DEFAULT"]'
+        nodes = []
+        with self.assertRaisesRegex(ValueError,
+                                    r'Unable to find key name in xpath '
+                                    r'/network-instances/network-instance\["DEFAULT"] for key \["DEFAULT"]'):
+            self.rpcv.add_key_nodes(xpath=xpath, nodes=nodes)
+
+    def test_add_key_nodes_invalid_value(self):
+        """ Check if we catch invalid value from the xpath key """
+        xpath = '/network-instances/network-instance[name=]'
+        nodes = []
+        with self.assertRaisesRegex(ValueError,
+                                    r'Unable to find value in xpath '
+                                    r'/network-instances/network-instance\[name=] for key \[name=]'):
+            self.rpcv.add_key_nodes(xpath=xpath, nodes=nodes)
+
     def test_opfields_selected(self):
         """Check "selected" parameter True or False."""
         opfields_in = [
@@ -1409,7 +1541,6 @@ basic-mode=explicit&also-supported=report-all-tagged']
         result = self.rpcv.verify_rpc_data_reply(resp, rpc_data)
         self.assertTrue(result)
 
-
     def test_auto_validate_delete_presence_with_children(self):
         """Edit-config of multiple list entries in one RPC."""
         rpc_data = {
@@ -1494,7 +1625,7 @@ basic-mode=explicit&also-supported=report-all-tagged']
         resp = self.rpcv.process_rpc_reply(no_data_rpc_reply)
         result = self.rpcv.verify_rpc_data_reply(resp, rpc_data)
         self.assertTrue(result)
-    
+
     def test_auto_validate_operation_remove_leaf(self):
         """Test a remove operation on a leaf node with data returned."""
         rpc_data = {
@@ -1578,7 +1709,6 @@ basic-mode=explicit&also-supported=report-all-tagged']
         resp = self.rpcv.process_rpc_reply(bgp_community_list_get_config_response)
         result = self.rpcv.verify_rpc_data_reply(resp, rpc_data)
         self.assertTrue(result)
-
 
     def test_auto_validate_with_key_prefix(self):
         rpc_data = {

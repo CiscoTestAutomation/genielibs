@@ -1,7 +1,6 @@
 import time
 from yang.connector import proto
 
-
 class Service:
     def __init__(self, response):
         self.response = response
@@ -36,6 +35,7 @@ class Creds:
 class TestDevice:
     device = Creds()
     active_notifications = {}
+    name = 'test'
 
     def __init__(self, response):
         self.gnmi = Gnmi(response)

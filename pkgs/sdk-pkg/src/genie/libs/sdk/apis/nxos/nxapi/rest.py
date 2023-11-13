@@ -133,7 +133,10 @@ def nxapi_method_nxapi_rest(device, action, commands='', input_type='cli',
         if isinstance(output, list):
             output = output[-1]
 
-        output = output.get('result', {}).get('msg')
+        if isinstance(output, dict):
+            output = output.get('result', {}).get('msg')
+        else:
+            output = list(output.json())[-1].get("result", {}).get("msg")
 
         # The nxapi returns this at the end of the message.
         # But the GUI strips it - So it gets stripped here too

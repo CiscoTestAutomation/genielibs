@@ -676,17 +676,21 @@ def get_mgmt_ip_and_mgmt_src_ip_addresses(device, mgmt_src_ip=None):
     tcp_output = device.execute('show tcp brief | inc .22 |.23 ')
 
     # 0160C06C  5.25.26.9.22                5.25.24.1.51363             ESTAB
-    mgmt_src_ip_addresses = set(re.findall(r'\w+ +\S+\.(?:22|23) +(\S+)\.\d+ +ESTAB', tcp_output))
-    if not mgmt_src_ip_addresses:
+    mgmt_addresses = list(set(re.findall(r'\w+ +(\S+)\.(?:22|23) +(\S+)\.\d+ +ESTAB', tcp_output)))
+    if not mgmt_addresses:
         log.error('Unable to find management session, cannot determine management IP addresses')
 
-    if mgmt_src_ip:
-        m = re.search(rf'\w+ +(\S+)\.(22|23) +{mgmt_src_ip}\.\d+ +ESTAB', tcp_output)
+    mgmt_src_ip_addresses = set([ip[1] for ip in mgmt_addresses if ip[1]])
+    mgmt_ip_addresses = list(set([ip[0] for ip in mgmt_addresses if ip[0]]))
+
+    for ip_pair in mgmt_addresses:
+        if mgmt_src_ip == ip_pair[1]:
+            mgmt_ip = ip_pair[0]
+            break
     else:
-        m = re.search(r'\w+ +(\S+)\.(22|23) +\S+\.\d+ +ESTAB', tcp_output)
-    if m:
-        mgmt_ip = m.group(1)
-    else:
+        mgmt_ip = mgmt_ip_addresses[0]
+
+    if not mgmt_ip:
         log.error('Unable to find management session, cannot determine IP address')
         mgmt_ip = None
 
@@ -1933,3 +1937,24 @@ def delete_directory(device, file_system, directory):
         device.execute(f"rmdir {file_system}{directory}", reply=dialog)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not delete directory {directory} from device ")
+
+def format_directory(device, directory, timeout=200):
+    """ format directory
+        Args:
+            device ('obj'): Device object
+            directory('str'): Directory name ex:crashinfo: 
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info("format directory on {device}".format(device=device))
+
+    dialog = Dialog([Statement(pattern=r".* Continue\? \[confirm\]", action='sendline(\r)',
+    loop_continue=True,continue_timer=False)])
+
+    cmd = f"format {directory}"
+    try:
+        device.execute(cmd, timeout=timeout, reply=dialog)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not format directory on {device}. Error:\n{e}')

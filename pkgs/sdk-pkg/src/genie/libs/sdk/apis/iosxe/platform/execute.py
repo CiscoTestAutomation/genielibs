@@ -19,7 +19,6 @@ from genie.metaparser.util.exceptions import SchemaEmptyParserError
 from unicon.eal.dialogs import Statement, Dialog
 from unicon.core.errors import StateMachineError,SubCommandFailure
 
-
 # Logger
 log = logging.getLogger(__name__)
 
@@ -1457,13 +1456,13 @@ def execute_dir_file_system(device, file_system, sub_directory=None, timeout=120
 
 
 def execute_archive_tar(device, tar_filename, operation_type, src_filesystem, src_filepath=None, dest_filesystem=None, dest_filepath=None, timeout=120):
-    """ Execute archive tar 
+    """ Execute archive tar
         Example: archive tar /create usb0:usb_files.tar bootflash:/tracelogs
                  archive tar /xtract usb0:usb_files.tar usb0:new-tar-files
         Args:
             device ('obj'): Device object
             dest_filesystem ('str'): specifying filesystems such as bootflash:,usb:, tftp:
-            tar_filename('str'): tar filename 
+            tar_filename('str'): tar filename
             operation_type('str'): Option can be xtract, table, create
             src_filesystem ('str'): specifying filesystems such as bootflash:,usb:, tftp:
             src_filepath ('str',optional): specifying files path which need to be archived,Default is None
@@ -1473,7 +1472,7 @@ def execute_archive_tar(device, tar_filename, operation_type, src_filesystem, sr
             output
         Raises:
             SubCommandFailure
-    """ 
+    """
     if operation_type not in ('create', 'xtract', 'table') :
         raise ValueError('Operation type must be "xtract", "table" or "create"')
 
@@ -1540,7 +1539,7 @@ def execute_switch_card_OIR_power_force(device, card_slot, subslot):
 
     except SubCommandFailure as e:
 
-        raise SubCommandFailure(f"Could not execute hw-module subslot {card_slot}/{subslot} oir power force. Error:\n{e}")  
+        raise SubCommandFailure(f"Could not execute hw-module subslot {card_slot}/{subslot} oir power force. Error:\n{e}")
 
 
 def request_platform_software_package_expand(device, file_system, test_image, sub_directory=None,timeout=240):
@@ -1551,20 +1550,20 @@ def request_platform_software_package_expand(device, file_system, test_image, su
             file_system ('str'): bootflash: , harddisk: , usb0:
             test_image ('str'): image_name
             sub_directory ('str',optional):  subdirectory inside the filesystem where the test image is present,Default is None
-            timeout ('int'): Max time 
+            timeout ('int'): Max time
         Returns:
                 None
         Raises:
                 SubCommandFailure
     """
-    
+
     try:
         if sub_directory:
             cmd = f'request platform software package expand file {file_system}/{sub_directory}/{test_image}'
-            
+
         else :
             cmd = f'request platform software package expand file {file_system}/{test_image}'
-            
+
         device.execute(cmd,timeout=timeout)
 
     except SubCommandFailure as e:
@@ -1575,7 +1574,7 @@ def execute_clear_ipv6_mld_group(device, interface=None):
     """ clear ipv6 mld group
         Args:
             device (`obj`)           : Device object
-            interface('str',optional): Interface name 
+            interface('str',optional): Interface name
         Returns:
             None
         Raises:
@@ -1583,7 +1582,7 @@ def execute_clear_ipv6_mld_group(device, interface=None):
     """
 
     log.debug(f"Clear ipv6 mld group on {device}")
-    
+
     cmd = "clear ipv6 mld group"
     if interface:
         cmd += f" {interface}"
@@ -1598,7 +1597,7 @@ def execute_clear_ip_igmp_group(device, interface=None):
     """ clear ipv6 mld group
         Args:
             device (`obj`)           : Device object
-            interface('str',optional): Interface name 
+            interface('str',optional): Interface name
         Returns:
             None
         Raises:
@@ -1614,4 +1613,56 @@ def execute_clear_ip_igmp_group(device, interface=None):
         device.execute(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not clear ip igmp group on {device}. Error:\n{e}")
+
+def execute_more_file(device, filepath, regex):
+    """ Executes more file <filepath> | inc <regex>
+        Example : more bootflash:test.txt | inc ucode
+        Args:
+            device ('obj'): device to use
+            filepath ('str'): path to the file, including the filename (eg. bootflash:test.txt)
+            regex ('str',optional): regular expression for the inc (eg. ucode)
+        Returns:
+            output
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f'Executing more {filepath} | i {regex} on {device.name}')
+    cmd = f'more {filepath}'
+    if regex:
+        cmd += f' | i {regex}'
+    try:
+        output = device.execute(cmd)
+        return output
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to execute more {filepath} | count {regex} on device {device.name}. Error:\n{e}'
+        )
+
+def execute_platform_virtualization(device, slot_type, slot_status):
+    """ Executes set platform hardware rom-monitor virtualization <slot_type> <slot_status>
+        Example : set platform hardware rom-monitor virtualization rp active
+        Args:
+            device ('obj'): device to use
+            slot_type ('str'): slot type options F0,F1,FP,R0,R1,RP
+            slot_status ('str', optional): options can be active,standby. Applicable only for slot types RP and FP.
+        Returns:
+            output
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f'Executing set platform hardware rom-monitor virtualization {slot_type} {slot_status} on {device.name}')
+    cmd = f'set platform hardware rom-monitor virtualization {slot_type}'
+
+    if slot_status:
+        cmd += f' {slot_status}'
+
+    try:
+        output = device.execute(cmd)
+        return output
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to execute set platform hardware rom-monitor virtualization {slot_type} {slot_status} on device {device.name}. Error:\n{e}'
+        )
+
 

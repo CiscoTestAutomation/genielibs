@@ -2,7 +2,7 @@ import os
 import unittest
 from pyats.topology import loader
 from genie.libs.sdk.apis.iosxe.telemetry.execute import execute_test_telemetry_show_logging
-
+from genie.libs.sdk.apis.utils import sanitize
 
 class TestExecuteTestTelemetryShowLogging(unittest.TestCase):
 
@@ -158,4 +158,4 @@ class TestExecuteTestTelemetryShowLogging(unittest.TestCase):
  'Created report id: 1668403011\r\n'
  '*Nov 13 22:17:28.120 PDT: %SYS-5-CONFIG_I: Configured from console by '
  'console')
-        self.assertEqual(result, expected_output)
+        self.assertEqual(sanitize(result), sanitize(expected_output))

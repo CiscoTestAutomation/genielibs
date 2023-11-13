@@ -784,3 +784,33 @@ def configure_spanning_tree_portfast_on_interface(device, interface, option=None
         raise SubCommandFailure(
             f'Could not configure spanning-tree portfast - Error:\n{error}'
         )
+
+def unconfigure_spanning_tree_etherchannel_misconfig(device):
+    '''Unconfigures spanning tree etherchannel misconfig
+    Args:
+        device ('obj') : Device object
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed to unconfigure spanning tree etherchannel misconfig
+    '''
+    config = 'no spanning-tree etherchannel guard misconfig'
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure("Failed to unconfigure spanning tree etherchannel misconfig.Error:\n{e}")
+
+def configure_spanning_tree_etherchannel_misconfig(device):
+    '''configures spanning tree etherchannel misconfig
+    Args:
+        device ('obj') : Device object
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed to configure spanning tree etherchannel misconfig
+    '''
+    config = 'spanning-tree etherchannel guard misconfig'
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure("Failed to configure spanning tree etherchannel misconfig.Error:\n{e}")

@@ -44,7 +44,6 @@ install_image:
     SAVE_SYSTEM_CONFIG = False
     INSTALL_TIMEOUT = 500
     RELOAD_TIMEOUT = 800
-
     # ============
     # Stage Schema
     # ============
@@ -102,7 +101,7 @@ install_image:
                           action='sendline()',
                           args=None,
                           loop_continue=False,
-                          continue_timer=False),  
+                          continue_timer=False),
                 Statement(pattern=r"FAILED:.* ",
                           action=None,
                           loop_continue=False,
@@ -113,7 +112,8 @@ install_image:
                 device.reload('install add file {} activate commit'.format(images[0]),
                                reply=install_add_one_shot_dialog,
                                append_error_pattern=['FAILED:.* '],
-                               timeout=install_timeout)
+                               timeout=install_timeout,
+                               device_recovery=False)
             except Exception as e:
                 step.failed("Failed to install the image", from_exception=e)
 

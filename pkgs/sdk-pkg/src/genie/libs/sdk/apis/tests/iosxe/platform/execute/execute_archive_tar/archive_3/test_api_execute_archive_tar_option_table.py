@@ -2,7 +2,7 @@ import os
 import unittest
 from pyats.topology import loader
 from genie.libs.sdk.apis.iosxe.platform.execute import execute_archive_tar
-
+from genie.libs.sdk.apis.utils import sanitize
 
 class TestExecuteArchiveTar(unittest.TestCase):
 
@@ -541,4 +541,4 @@ class TestExecuteArchiveTar(unittest.TestCase):
  'hman_pman_R0-0.6058_1.20230914070150.bin.gz (974 bytes)\r\n'
  'btman_rotate_immediate_R0-0.20245_0.20230914070151.bin.gz (9098 bytes)\r\n'
  'cyaninit_R0-0.6101_0.20230914070532.bin.gz (1888 bytes)')
-        self.assertEqual(result, expected_output)
+        self.assertEqual(sanitize(result), sanitize(expected_output))

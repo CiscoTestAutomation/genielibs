@@ -10,7 +10,7 @@ class TestUnconfigureIpv6FlowMonitor(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          SC_9200-2:
+          l2sec_petra_2010:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,11 +18,11 @@ class TestUnconfigureIpv6FlowMonitor(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: c9200
-            type: c9200
+            platform: switch
+            type: switch
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['SC_9200-2']
+        self.device = self.testbed.devices['l2sec_petra_2010']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,6 @@ class TestUnconfigureIpv6FlowMonitor(unittest.TestCase):
         )
 
     def test_unconfigure_ipv6_flow_monitor(self):
-        result = unconfigure_ipv6_flow_monitor(self.device, 'GigabitEthernet1/0/1', 'm6in1', 'input')
+        result = unconfigure_ipv6_flow_monitor(self.device, 'GigabitEthernet1/7', 'hr1m', 'input')
         expected_output = None
         self.assertEqual(result, expected_output)

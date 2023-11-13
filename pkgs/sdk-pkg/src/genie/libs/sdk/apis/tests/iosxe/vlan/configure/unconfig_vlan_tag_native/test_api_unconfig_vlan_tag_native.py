@@ -1,3 +1,4 @@
+import os
 import unittest
 from pyats.topology import loader
 from genie.libs.sdk.apis.iosxe.vlan.configure import unconfig_vlan_tag_native
@@ -7,21 +8,21 @@ class TestUnconfigVlanTagNative(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        testbed = """
+        testbed = f"""
         devices:
-          VCR:
+          9500-Core:
             connections:
               defaults:
                 class: unicon.Unicon
               a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
+                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
             platform: cat9k
-            type: c9200
+            type: single_rp
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['VCR']
+        self.device = self.testbed.devices['9500-Core']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],

@@ -9484,6 +9484,71 @@ def unconfigure_interface_ip_nbar(device,interface):
         raise SubCommandFailure(
             f"Could not unconfigure ip nbar Error:\n{e}")
 
+
+def config_interface_prpchannel(
+        device,
+        interface,
+        prpchannel_num):
+
+    """ Configure prp-channel on an interface
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface to which prp channel is added
+            prpchannel_num (`str`): Prp channel group number
+
+        Returns:
+            None
+            Warning messages
+
+        Raises:
+            SubCommandFailure
+    """
+
+    log.debug(f"Configuring PRP channel on interface {interface}")
+
+    cmd = []
+    cmd.append(f"interface {interface}")
+    cmd.append(f"prp-channel-group {prpchannel_num}")
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure prp channel on interace Error:\n{e}")
+
+
+def unconfig_interface_prpchannel(
+        device,
+        prpchannel_num):
+
+    """ UnConfigure prp-channel on an interface
+
+        Args:
+            device (`obj`): Device object
+            prpchannel_num (`str`): Prp channel group number
+
+        Returns:
+            None
+            Warning messages
+
+        Raises:
+            SubCommandFailure
+    """
+
+    log.debug(f"UnConfiguring PRP channel")
+
+    cmd = []
+    cmd.append(f"no interface prp-channel {prpchannel_num}")
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure prp channel on interace Error:\n{e}")
+
+
+
 def configure_interface_vlan(device, vlan_id):
     """ Configures interface vlan id
         Example : interface vlan 1
@@ -9507,7 +9572,7 @@ def configure_interface_vlan(device, vlan_id):
 
 
 def configure_interface_range_no_switchport(device, start_interface, end_interface):
-    """ Configure interface range no switchport 
+    """ Configure interface range no switchport
         Args:
             device ('obj'): device to use
             start_interface('str'): Starting Interface
