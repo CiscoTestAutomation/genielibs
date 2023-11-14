@@ -1438,8 +1438,8 @@ def configure_interface_interfaces_on_port_channel(
             device (`obj`): Device object
             interface (`str`): Interface to be added to port channel
             mode (`str`): Interface mode under Port channel
-            interfaces(`List`): List of interfaces to configure
             channel_group (`obj`): Channel group
+            interfaces(`List`): List of interfaces to configure
 
         Returns:
             None
