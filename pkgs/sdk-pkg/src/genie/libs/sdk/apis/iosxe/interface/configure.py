@@ -4657,8 +4657,8 @@ def unconfigure_interfaces_on_port_channel(
 
         Args:
             device (`obj`): Device object
-            mode (`str`): Interface mode under Port channel.Default value is None
             interfaces(`List`): List of interfaces to configure.Default value is None
+            mode (`str`): Interface mode under Port channel.Default value is None
             channel_group (`obj`): Channel group.Default value is None
             channel_protocol (`str`,optional): protocol used for port-channel.Default value is False
             disable_switchport(`str`,optional): disable switchport.Default value is False
