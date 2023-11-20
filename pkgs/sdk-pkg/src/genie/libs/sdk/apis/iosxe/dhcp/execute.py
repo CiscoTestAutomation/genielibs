@@ -22,7 +22,7 @@ def clear_ip_dhcp_binding(device):
         device.execute("clear ip dhcp binding *")
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            f'Failed to clear DHCPv4 server statistics\n{e}'
+            f'Failed to clear DHCPv4 server binding\n{e}'
         )
         
 def clear_ip_dhcp_snooping_binding(device):
@@ -39,7 +39,7 @@ def clear_ip_dhcp_snooping_binding(device):
         device.execute("clear ip dhcp snooping binding *")
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            f'Failed to clear DHCPv4 server statistics\n{e}'
+            f'Failed to clear DHCPv4 snooping bindings\n{e}'
         )
 
 def clear_ipv6_dhcp_binding(device):
@@ -56,6 +56,6 @@ def clear_ipv6_dhcp_binding(device):
         device.execute("clear ipv6 dhcp binding *")
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            f'Failed to clear DHCPv6 server statistics\n{e}'
+            f'Failed to clear DHCPv6 server binding\n{e}'
         )
         
