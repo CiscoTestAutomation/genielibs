@@ -42,6 +42,23 @@ def clear_ip_dhcp_snooping_binding(device):
             f'Failed to clear DHCPv4 snooping bindings\n{e}'
         )
 
+def clear_ip_dhcp_snooping_statistics(device):
+    """execute 'clear ip dhcp snooping statistics *' on device
+       Args:
+            device('obj'): device object
+       Returns:
+            None
+       Raises:
+            SubCommandFailure
+    """
+    log.info("Executing clear_ip_dhcp_snooping_statistics API")
+    try:
+        device.execute("clear ip dhcp snooping statistics *")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to clear DHCPv4 snooping statistics\n{e}'
+        )
+
 def clear_ipv6_dhcp_binding(device):
     """execute 'clear ipv6 dhcp binding *' on device
        Args:
