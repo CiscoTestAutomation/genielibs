@@ -1217,6 +1217,7 @@ def configure_interface_switchport_access_vlan(device, interface, vlan,mode=None
 
     config_list = []
     config_list.append("interface {interface}".format(interface=interface))
+    config_list.append("switchport")
     if mode:
         config_list.append("switchport mode {mode}".format(mode=mode))
     config_list.append("switchport access vlan {vlan}".format(vlan=vlan))
