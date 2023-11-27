@@ -21,7 +21,7 @@ log = logging.getLogger(__name__)
 # Which key to exclude for Platform Ops comparison
 platform_exclude = ['maker', 'main_mem', 'switchover_reason', 'issu', 'oc',
                     'sn', 'config_register', 'rp_uptime', 'chassis_sn', 'issu',
-                    'state', 'redundancy_state']
+                    'state', 'redundancy_state', 'name', 'boot_image','chassis','rtr_type']
 
 
 class TriggerSwitchover(CommonSwitchover):

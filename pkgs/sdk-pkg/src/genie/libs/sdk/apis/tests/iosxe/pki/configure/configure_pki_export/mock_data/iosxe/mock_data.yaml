@@ -1,30 +1,32 @@
 configure:
   commands:
-    crypto pki export test pkcs12 bootflash:client_chain.p12 password cisco123:
-      new_state: crypto
+    crypto pki export Self pem terminal aes password cisco123: "crypto pki export\
+      \ Self pem terminal aes password cisco12\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      $export Self pem terminal aes password cisco123         \b\b\b\b\b\b\b\b\b\r\
+      \n% Self-signed CA certificate:\r\n-----BEGIN CERTIFICATE-----\r\nMIIDUjCCAjqgAwIBAgIBAjANBgkqhkiG9w0BAQsFADBCMQ0wCwYDVQQDDARTZWxm\r\
+      \nMRswGQYJKoZIhvcNAQkCDAxTVkxfOTUwMF80MFgxFDASBgNVBAUTC0ZDVzIxNTBB\r\nMVhKMB4XDTIzMTAxMTAwMjEyMloXDTMzMTAxMDAwMjEyMlowQjENMAsGA1UEAwwE\r\
+      \nU2VsZjEbMBkGCSqGSIb3DQEJAgwMU1ZMXzk1MDBfNDBYMRQwEgYDVQQFEwtGQ1cy\r\nMTUwQTFYSjCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAKfgMYcuDiuZ\r\
+      \n6h4HyXeJNsBux0OO5wPHuRpZvjCIK7Yn9Ig9Sj5c2zIyaL+jk1wiurx0bB9sW3Ql\r\nQG0ijG3XvnD6REOPk+ISBSgPpv9azR8yKSuksSC/ovHOrm2VjgMS/SKOKHHY+qMg\r\
+      \nm0AAR19SN5HbEE8/9vFCo+wJXbeX48nmEJNOnOdUfJ1rsXktAs5Dm3jJbyKpcEKO\r\n14oIMV1/6iCnr1X6zB08Ke61pMXp7zMTL2rXYZ7m0ChweXyjhmjYBKGBWrUe/YDk\r\
+      \nmNDopgoPPmGK9ZavLE4e00TClQ0SEchreuxKyQaR7Qhw1vpjuh4aCUANtL23aFZ/\r\nT4Q3DG6T+JMCAwEAAaNTMFEwHQYDVR0OBBYEFDVMkjPHruoGZTyLd0t6XzkIRVzN\r\
+      \nMB8GA1UdIwQYMBaAFDVMkjPHruoGZTyLd0t6XzkIRVzNMA8GA1UdEwEB/wQFMAMB\r\nAf8wDQYJKoZIhvcNAQELBQADggEBABqs6aEa093gosGAgXb9bHXmHLftuKyJm/mx\r\
+      \n4ntevlJV7cherujBPc69TgfjiwgSOrqdKZqDTWIEN1v++aVAzPux+K02o9We8OJf\r\n7DmKEf19gky5YZLK/rHxfR8ZPFx+sdCxA90dNCdMNsjC/MYRAT8lRO1ziWfKzM0D\r\
+      \nCh3Bj5BvRQmB/TVVldfgWEv0jdJA+g7LordqvSY3cLZZbJkIv+452Ifilwuo7q38\r\nStiQ2cbVn8MaECOtaoMaVntVhdObGs4SpyeMNA8gOH/oE585H4iu8WoLpxCvLVou\r\
+      \nvvqEeXT3opWtFAw0ZN1vMpTCeexJ+RBZpMW0qDJgBV0lymELpRY=\r\n-----END CERTIFICATE-----\r\
+      \n% RSA keypair 'Self' is not exportable.\r\n"
     end:
       new_state: execute
     line console 0:
       new_state: configure_line
     no logging console: ''
-  prompt: CSR4(config)#
-crypto:
-  prompt: "Destination filename [client_chain.p12]? "
-  commands:
-    ? ''
-    : new_state: crypto_2
-crypto_2:
-  prompt: "Writing pkcs12 file to bootflash:client_chain.p12\r\
-    \n\r\nCRYPTO_PKI: Exported PKCS12 file successfully.\r\nCSR4(config)#"
-  commands:
-    end:
-      new_state: execute
+  prompt: SVL_9500_40X(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: CSR4(config-line)#
+  prompt: SVL_9500_40X(config-line)#
 connect:
   commands:
     ? ''
@@ -44,4 +46,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: CSR4#
+  prompt: SVL_9500_40X#

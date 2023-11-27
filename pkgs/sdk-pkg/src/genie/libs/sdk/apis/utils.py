@@ -976,9 +976,15 @@ def copy_to_device(device,
         # Check if we are connected via proxy device
         proxy = device.connections[device.via].get('proxy') or \
             device.connections[device.via].get('sshtunnel', {}).get('host')
-        if proxy and isinstance(proxy, str):
+        
+        proxy_dev = None
+        # If we haven't gotten a proxy, check servers for a proxy
+        if not proxy and device.testbed.servers.get('proxy'):
+            proxy_dev = device.api.convert_server_to_linux_device('proxy')
+
+        if proxy and isinstance(proxy, str) or proxy_dev:
             log.info('Setting up port relay via proxy')
-            proxy_dev = device.testbed.devices[proxy]
+            proxy_dev = proxy_dev or device.testbed.devices[proxy]
             proxy_dev.connect()
             proxy_port = proxy_dev.api.socat_relay(remote_ip=local_ip, remote_port=local_port)
 
@@ -1149,9 +1155,15 @@ def copy_from_device(device,
         # Check if we are connected via proxy device
         proxy = device.connections[device.via].get('proxy') or \
             device.connections[device.via].get('sshtunnel', {}).get('host')
-        if proxy and isinstance(proxy, str):
+
+        proxy_dev = None
+        # If we haven't gotten a proxy, check servers for a proxy
+        if not proxy and device.testbed.servers.get('proxy'):
+            proxy_dev = device.api.convert_server_to_linux_device('proxy')
+
+        if proxy and isinstance(proxy, str) or proxy_dev:
             log.info('Setting up port relay via proxy')
-            proxy_dev = device.testbed.devices[proxy]
+            proxy_dev = proxy_dev or device.testbed.devices[proxy]
             proxy_dev.connect()
             proxy_port = proxy_dev.api.socat_relay(remote_ip=local_ip, remote_port=local_port)
 

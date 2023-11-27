@@ -771,12 +771,17 @@ class RpcVerify():
                             field.value = 'empty'
 
                         result, log_msg = self.check_opfield(value, field)
-                        # If sequence is applied, then
-                        # first value found should be the target value
-                        # Since the new_response is already trimmed from the list entry.
+
+                        # new_response contains all responses from the first match,
+                        # hence, not necessarily, first value will be the target value
+                        # any value in the new_response can be the target value
                         # <List1> ---->  Response is trimmed from here
                         #    <Key>K1</Key>
-                        #    <Prop>v1<Prop> ---> First value found should be the target value.
+                        #    <Prop>v1<Prop>
+                        #    <Key>K2</Key>
+                        #    <Prop>v2<Prop>
+                        #    <Key>K3</Key>
+                        #    <Prop>v3<Prop>
                         # </List1>
                         if sequence and not result:
                             log.error(log_msg)
@@ -1176,7 +1181,7 @@ class RpcVerify():
         Returns:
             bool: True if successful.
         """
-        sequence = True
+        sequence = False
         results = []
         index = 0
         parent_key_indexes = {}

@@ -21,6 +21,7 @@ from yang.connector.proto import gnmi_pb2
 from yang.connector.gnmi import Gnmi
 from .rpcverify import DecodedField, DeletedPath
 from copy import deepcopy
+from .subscription import Subscription
 
 log = logging.getLogger(__name__)
 
@@ -879,11 +880,23 @@ class GnmiMessageConstructor:
             return update[0]['value']
         json_val = {}
         processed_xp = []
+        list_nodes = []
         for node in update:
             ind = 0
             xp = node['xpath']
             if xp.endswith(']'):
                 xp = xp + '/'
+            if '[' in xp:
+                # child node of list
+                # get the name of the list node
+                list_xpath = node['xpath']
+                while '[' in list_xpath:
+                    list_xpath = list_xpath[:list_xpath.rfind('[')]
+                    if not list_xpath.endswith(']'):
+                        list_node = list_xpath[list_xpath.rfind('/'):]
+                        list_node = list_node.strip('/')
+                        if not list_node in list_nodes:
+                            list_nodes.append(list_node)
             if xp in processed_xp:
                 if node['nodetype'] != 'leaf-list':
                     continue
@@ -982,7 +995,23 @@ class GnmiMessageConstructor:
             processed_xp.append(xp)
 
         self.format_json_val(json_val)
+        self.format_list_nodes(json_val, list_nodes)
         return json_val
+
+    def format_list_nodes(self, json_val, list_nodes):
+        # Enclose list entries within square brackets.
+        if not isinstance(json_val, dict):
+            if isinstance(json_val, list):
+                for val in json_val:
+                    self.format_list_nodes(val, list_nodes)
+            else:
+                return
+        for val in json_val:
+            if val in list_nodes:
+                json_val[val] = [json_val[val]]
+            if isinstance(val, dict) or isinstance(json_val, list):
+                return
+            self.format_list_nodes(json_val[val], list_nodes)
 
     def format_json_val(self,json_val):
         # Convert List of Dictionaries with only 1 one element to Dictionary
@@ -1288,81 +1317,17 @@ class GnmiMessageConstructor:
         return path
 
 
-class GnmiSubscription(ABC, Thread):
-    RE_FIND_KEYS = re.compile(r'\[.*?\]')
-
-    def __init__(self, device: Gnmi = None, **request):
-        Thread.__init__(self)
-        self.delay = 0
-        self._stop_event = Event()
-        self.log = request.get('log')
-        if self.log is None:
-            self.log = logging.getLogger(__name__)
-            self.log.setLevel(logging.DEBUG)
-        self.request = request
-        self.verifier = request.get('verifier')
-        self.namespace = request.get('namespace')
-        self.sub_mode = request.get('sub_mode')
-        self.encoding = request.get('encoding')
-        self.transaction_time = request.get('transaction_time', 0)
-        self._result = True
-        self.errors: List[Exception] = []
-        self.negative_test = request.get('negative_test', False)
-        self.log.info(banner('GNMI Subscription reciever started'))
-        self.ntp_server = ""
+class GnmiSubscription(Subscription):
+    """Base class for gNMI Subscription."""
+    def __init__(self, device=None, **request):
+        super().__init__(device, **request)
         if device is not None:
             self.metadata = [
                 ("username", device.device.credentials.default.get('username', '')),
                 ("password", to_plaintext(
                     device.device.credentials.default.get('password', ''))),
             ]
-            if self.transaction_time:
-                self.ntp_server = device.device.testbed.servers.get(
-                    'ntp', {}).get('server', {})
-        self.stream_max = request.get('stream_max', 60)
-        self.sample_poll = request.get(
-            'sample_interval',  request.get('sample_poll', 5))
-        if self.stream_max:
-            self.log.info('Notification MAX timeout {0} seconds.'.format(
-                str(self.stream_max)))
-
-    class NoNtpConfigured(Exception):
-        pass
-
-    class DevieOutOfSyncWithNtp(Exception):
-        def __init__(self, response_timestamp: int, arrive_timestamp: int, ntp_server: str, *args: object) -> None:
-            super().__init__(*args)
-            self.response_dt = datetime.fromtimestamp(
-                response_timestamp)
-            self.ntp_dt = datetime.fromtimestamp(arrive_timestamp)
-            self.ntp_server = ntp_server
-            log.error(banner(
-                f"""Device is out of sync with NTP server {self.ntp_server}
-                Device time: {self.ntp_dt.strftime('%m/%d/%Y %H:%M:%S.%f')}
-                NTP time: {self.response_dt.strftime('%m/%d/%Y %H:%M:%S.%f')}"""))
-
-    class TransactionTimeExceeded(Exception):
-        def __init__(self, delta_time: float, transaction_time: float, *args: object) -> None:
-            super().__init__(*args)
-            self.delta_time = delta_time
-            log.error(banner(
-                f'Response time: {delta_time} seconds exceeded transaction_time {transaction_time}',
-            ))
-
-    @property
-    def result(self):
-        return self.negative_test != self._result
-
-    @result.setter
-    def result(self, value):
-        self._result = value
-
-    def stop(self):
-        self.log.info("Stopping notification stream")
-        self._stop_event.set()
-
-    def stopped(self):
-        return self._stop_event.is_set()
+        self.log.info(banner('gNMI Subscription reciever started'))
 
     @classmethod
     def iter_subscribe_request(self,
@@ -1423,16 +1388,11 @@ class GnmiSubscription(ABC, Thread):
 
 class GnmiSubscriptionStream(GnmiSubscription):
     def __init__(self,
-                 device: Gnmi = None,
+                 device=None,
                  payload: List[gnmi_pb2.SubscribeRequest] = None,
                  responses: List[gnmi_pb2.SubscribeResponse] = None,
                  **request):
         super().__init__(device, **request)
-        # For transaction_time subscribtion NTP servers must be configured
-        if self.transaction_time and not self.ntp_server:
-            self.log.error(
-                banner('For transaction_time to work with STREAM Subscribtions, NTP servers must be configured.'))  # noqa
-            raise self.NoNtpConfigured('NTP servers not configured')
         if responses is not None:
             self.responses = responses
         elif device is not None and payload is not None:
@@ -1473,7 +1433,7 @@ class GnmiSubscriptionStream(GnmiSubscription):
 
 class GnmiSubscriptionOnce(GnmiSubscription):
     def __init__(self,
-                 device: Gnmi = None,
+                 device=None,
                  payload: List[gnmi_pb2.SubscribeRequest] = None,
                  responses: List[gnmi_pb2.SubscribeResponse] = None,
                  ** request):
@@ -1523,7 +1483,7 @@ class GnmiSubscriptionOnce(GnmiSubscription):
 
 class GnmiSubscriptionPoll(GnmiSubscription):
     def __init__(self,
-                 device: Gnmi = None,
+                 device=None,
                  payload: List[gnmi_pb2.SubscribeRequest] = None,
                  responses: List[gnmi_pb2.SubscribeResponse] = None,
                  **request):

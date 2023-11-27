@@ -814,3 +814,20 @@ def configure_spanning_tree_etherchannel_misconfig(device):
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure("Failed to configure spanning tree etherchannel misconfig.Error:\n{e}")
+
+def configure_spanning_tree_mst_priority(device, instance_range, priority_id):
+    '''configure spanning-tree mst 0 priority 4096
+    Args:
+        device ('obj') : Device object
+        instance_range('int') : MST instance range, example: 0-3,5,7-9
+        range('int') : <0-61440>  bridge priority in increments of 4096
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed to configures spanning-tree mst 0 priority 4096
+    '''
+    config = [f'spanning-tree mst {instance_range} priority {priority_id}']
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure("Failed to configure configures spanning-tree mst 0 priority 4096.Error:\n{e}")

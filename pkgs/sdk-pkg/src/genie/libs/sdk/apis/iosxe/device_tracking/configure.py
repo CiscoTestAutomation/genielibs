@@ -139,3 +139,45 @@ def configure_source_tracking_on_interface(device, interface, value):
         raise SubCommandFailure(
             f"Could not configure source tracking on {interface}. Error:\n{e}"
         )
+    
+def configure_device_tracking_logging(device, logging_type='drop'):
+    """Configure device tracking logging
+    Args:
+        device (obj): Device object.
+        logging_type (str): Type of logging to configure ex:'packet','theft',or'resolution-veto' (default is 'drop')
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+        ValueError: If an invalid logging_type is provided.
+    """
+    if logging_type=="packet":
+        config = f"device-tracking logging {logging_type} drop"
+    else:
+        config = f"device-tracking logging {logging_type}"
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Failed to configure device tracking logging on {device.name}\n{e}')
+    
+def unconfigure_device_tracking_logging(device, logging_type='drop'):
+    """unconfigure device tracking logging
+    Args:
+        device (obj): Device object.
+        logging_type (str): Type of logging to configure ex:'packet','theft',or'resolution-veto' (default is 'drop')
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+        ValueError: If an invalid logging_type is provided.
+    """
+    if logging_type=="packet":
+        config = f"no device-tracking logging {logging_type} drop"
+    else:
+        config = f"no device-tracking logging {logging_type}"
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Failed to unconfigure device tracking logging on {device.name}\n{e}')

@@ -173,6 +173,12 @@ class Keychains(DeviceFeature):
         default=None,
         type=(None, managedattribute.test_istype(int)),
         doc='Set key lifetime duration')
+    
+    local_timezone = managedattribute(
+        name='local_timezone',
+        default=None,
+        type=(None, managedattribute.test_istype(bool)),
+        doc='Specify time in local timezone or not')
 
     # =========================================================
     #   build_config

@@ -2758,3 +2758,24 @@ def configure_ospfv3_interface(device, interface, process_id):
         raise SubCommandFailure(
             f"Failed to configure OSPFv3 on interface {interface}. Error:\n{e}"
         )
+    
+def configure_ospf_vrf_lite(device, ospf_process_id, vrf_name):
+    """Configure vrf-lite capabilty for OSPF process.
+        Args:
+            device (`obj`): Device object
+            ospf_process_id (`str`): OSPF Process ID (1-65535)
+            vrf_name (`str`): VRF name (Eg : 'vrf1')
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        cmd = [f"router ospf {ospf_process_id} vrf {vrf_name}", 
+        f"capability vrf-lite"]
+        device.configure(cmd)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure vrf-lite capability for OSPF process {ospf_process_id}. Error:\n{e}"
+        )

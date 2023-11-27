@@ -1261,6 +1261,7 @@ def configure_dhcp_pool(device, pool_name, router_id=None, network=None, mask=No
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not configure dhcp pool. Error: {e}')
 
+
 def unconfigure_dhcp_pool(device, pool_name, router_id=None, network=None, mask=None, vrf=None, dns_server=None):
     """ Unconfigure DHCP pool
         Args:
@@ -1386,6 +1387,7 @@ def unconfigure_propagate_sgt(device, interface, type, cts_type):
                            role-based  Role-based Access Control per-port config commands
             cts_type ('str'): policy     CTS policy for manual mode
                               propagate  CTS SGT Propagation configuration for manual mode
+                              sap        CTS SAP configuration for manual mode
                               sap        CTS SAP configuration for manual mode
        Return:
             None
@@ -1521,3 +1523,131 @@ def unconfigure_interface_range_dhcp_channel_group_mode(device, start_interface,
         raise SubCommandFailure(
             f'Failed to unconfigure DHCP channel-group mode {mode}\n{e}'
         )
+
+def unconfigure_ip_dhcp_snooping_limit_rate(device, interface, rate_limit):
+    """ Unconfigure DHCP snooping limit on interface
+        Unconfigure 'no ip dhcp snooping limit' on interface
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface to configure
+            rate_limit('int'): DHCP snooping rate limit
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed unconfiguring DHCP snooping limit rate on interface
+    """
+    log.debug("Unconfigure DHCP snooping limit rate on interface")
+    config = [
+             f"interface {interface}",
+             f"no ip dhcp snooping limit rate {rate_limit}",
+            ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not remove DHCP snooping limit configuration on interface {interface}. Error\n{e}"
+            )
+
+def unconfigure_ip_dhcp_snooping_verify_mac_address(device):
+    """ Unconfigure ip_dhcp_snooping_verify_mac_address
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed unconfiguring DHCP snooping verify mac-address
+    """
+    log.debug("Unconfigure ip_dhcp_snooping_verify_mac_address")
+    try:
+        device.configure('no ip dhcp snooping verify mac-address')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not remove DHCP snooping verify mac-address. Error\n{e}"
+            )
+
+def configure_ip_dhcp_snooping_verify_mac_address(device):
+    """ Configure ip_dhcp_snooping_verify_mac_address
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring DHCP snooping verify mac-address
+    """
+    log.debug("Configure ip_dhcp_snooping_verify_mac_address")
+    try:
+        device.configure('ip dhcp snooping verify mac-address')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure DHCP snooping verify mac-address. Error\n{e}"
+            )
+
+def configure_dhcp_snooping_verify_no_relay_agent_address(device):
+    """ Configure DHCP snooping verify no-relay-agent-address on global
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed Configuring DHCP snooping verify no-relay-agent-address.
+    """
+    log.debug("Configure DHCP snooping verify no-relay-agent-address on global")
+    try:
+        device.configure('ip dhcp snooping verify no-relay-agent-address')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure DHCP snooping verify no-relay-agent-address. Error\n{e}"
+            )
+
+def unconfigure_dhcp_snooping_verify_no_relay_agent_address(device):
+    """ Unconfigure DHCP snooping verify no-relay-agent-address on global
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed unconfiguring DHCP snooping verify no-relay-agent-address
+    """
+    log.debug("Unconfigure DHCP snooping verify no-relay-agent-address on global")
+    try:
+        device.configure('no ip dhcp snooping verify no-relay-agent-address')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not remove DHCP snooping verify no-relay-agent-address. Error\n{e}"
+            )
+
+def configure_dhcp_snooping_track_server_dhcp_acks(device):
+    """ Configure DHCP snooping server track dhcp_acks on global
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed Configuring DHCP snooping server track dhcp_acks
+    """
+    log.debug("Configure DHCP snooping server track dhcp_acks on global")
+    try:
+        device.configure('ip dhcp snooping track server all-dhcp-acks')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure DHCP snooping server track all-dhcp-ack. Error\n{e}"
+            )
+
+def unconfigure_dhcp_snooping_track_server_dhcp_acks(device):
+    """ Unconfigure DHCP snooping server track dhcp_acks on global
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed Unconfiguring DHCP snooping server track dhcp_acks
+    """
+    log.debug("Unconfigure DHCP snooping server track dhcp_acks on global")
+    try:
+        device.configure('no ip dhcp snooping track server all-dhcp-acks')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not remove DHCP snooping server track all-dhcp-ack. Error\n{e}"
+            )
+
+

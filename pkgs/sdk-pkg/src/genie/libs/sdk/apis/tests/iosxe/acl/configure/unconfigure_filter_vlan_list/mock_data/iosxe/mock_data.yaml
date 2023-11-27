@@ -5,15 +5,14 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-    vlan filter vacl1 vlan-list 100: "vlan filter vacl1 vlan-list 100\r\n% Warning.\
-      \ VLAN map vacl1 does not exist yet.\r\n"
-  prompt: mac-gen2(config)#
+    no vlan filter mymap vlan-list 100: "no vlan filter mymap vlan-list 100\r\n"
+  prompt: mac-gen1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: mac-gen2(config-line)#
+  prompt: mac-gen1(config-line)#
 connect:
   commands:
     ? ''
@@ -33,4 +32,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: mac-gen2#
+  prompt: mac-gen1#

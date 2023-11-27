@@ -92,6 +92,10 @@ class test_keychains(TestCase):
             '2'].key_enc_type = 7
         keychains.device_attr[dev1].ms_keychain_attr['1'].key_id_attr[
             '2'].crypto_algo = 'aes-128-cmac'
+        keychains.device_attr[dev1].ms_keychain_attr['1'].key_id_attr[
+            '2'].lifetime_start = '22:10:50 May 10 2023'
+        keychains.device_attr[dev1].ms_keychain_attr['1'].key_id_attr[
+            '2'].lifetime_duration = 60
 
         cfgs = keychains.build_config(apply=False)
         self.assertCountEqual(cfgs.keys(), [dev1.name])
@@ -100,6 +104,7 @@ class test_keychains(TestCase):
             str(cfgs[dev1.name]), '\n'.join([
                 'key chain 1 macsec', ' key 2',
                 '  key-octet-string 7 test cryptographic-algorithm AES_128_CMAC',
+                '  send-lifetime 22:10:50 May 10 2023 duration 60',
                 '  exit', ' exit'
             ]))
 

@@ -31,3 +31,27 @@ def hw_module_switch_usbflash_security_password(device, switch_number, action, p
         raise SubCommandFailure(
             f"Could not {action} hw-module on device {device}. Error:\n{e}")
     return output
+
+
+def hw_module_sub_slot_reload(device, sub_slot):
+    """ hw-module sub-slot {slot} reload force
+        Args:
+            device (`obj`): Device object
+            sub_slot (`str`): sub_slot
+
+        Returns:
+            Shutdown Status
+
+        Raises:
+            SubCommandFailure : Failed configuring device
+    """
+    cmd = 'hw-module subslot {slot} reload force\n'.format(slot=sub_slot)
+    try:
+        return device.execute(cmd)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not reload hw-module slot {slot}. Error:\n{error}"
+                .format(slot=sub_slot, error=e)
+        )
+

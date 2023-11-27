@@ -1,7 +1,8 @@
 import logging
 from lxml import etree
 from ncclient import xml_
-from genie.libs.sdk.triggers.blitz import yangexec, rpcverify
+from genie.libs.sdk.triggers.blitz import yangexec, rpcverify,\
+                                          netconf_util
 
 
 log = logging.getLogger(__name__)
@@ -230,7 +231,7 @@ class YangSnapshot(object):
                     if target in self.datastore_state else False
                 target_locked = False
                 if lock_target:
-                    target_locked = yangexec.try_lock(
+                    target_locked = netconf_util.try_lock(
                         uut=connection_obj,
                         target=target,
                         timer=self.datastore.get('retry', 10),
@@ -251,7 +252,7 @@ class YangSnapshot(object):
                 if target == 'candidate':
                     running_locked = False
                     if lock_running:
-                        running_locked = yangexec.try_lock(
+                        running_locked = netconf_util.try_lock(
                             uut=connection_obj,
                             target='running',
                             timer=self.datastore.get('retry', 10),

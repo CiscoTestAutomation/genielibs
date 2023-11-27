@@ -5359,3 +5359,142 @@ def configure_clear_logging_onboard_slot_temperature(device, slot):
             )
         )
 
+def configure_qfp_drop_threshold(device, threshold, drop_id=None):
+    '''
+    Configure drop warning threshold for the qfp. If drop_id is
+    unspecified, configure the total drop threshold, else
+    configure the per-cause drop threshold.
+    Args:
+        device ('obj'): device object
+        threshold ('int'): threshold value
+        drop_id ('int'): drop cause ID for which to set threshold
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    '''
+    if drop_id is not None:
+        cmd = f'platform qfp drops threshold per-cause {drop_id} {threshold}'
+    else:
+        cmd = f'platform qfp drops threshold total {threshold}'
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Failed to configure qfp drop threshold on device {device.name}')
+
+def unconfigure_qfp_drop_threshold(device, threshold, drop_id=None):
+    '''
+    Unconfigure drop warning threshold for the qfp. If drop_id is
+    unspecified, unconfigure the total drop threshold, else
+    unconfigure the per-cause drop threshold.
+    Args:
+        device ('obj'): device object
+        threshold ('int'): threshold value
+        drop_id ('int'): drop cause ID for which to unset threshold
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    '''
+    if drop_id is not None:
+        cmd = f'no platform qfp drops threshold per-cause {drop_id} {threshold}'
+    else:
+        cmd = f'no platform qfp drops threshold total {threshold}'
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Failed to unconfigure qfp drop threshold on device {device.name}')
+
+def configure_ip_scp_server_enable(device):
+    """ Configure ip scp server enable
+        Args:
+            device ('obj'): Device object
+    """
+
+    cmd = 'ip scp server enable'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure ip scp server enable on device {device}. Error:\n{e}")
+
+def unconfigure_ip_scp_server_enable(device):
+    """ Unconfigure ip scp server enable
+        Args:
+            device ('obj'): Device object
+    """
+
+    cmd = 'no ip scp server enable'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure ip scp server enable on device {device}. Error:\n{e}")
+
+def configure_ip_ssh_source_interface(device, interface):
+    """ Configure ip ssh source-interface {interface}
+        Args:
+            device ('obj'): Device object
+            interface (`str`): Interface name
+    """
+
+    cmd = f'ip ssh source-interface {interface}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure ip ssh source-interface {interface} on device {device}. Error:\n{e}")
+
+def unconfigure_ip_ssh_source_interface(device):
+    """ Unconfigure ip ssh source-interface
+        Args:
+            device ('obj'): Device object
+    """
+ 
+    cmd = 'no ip ssh source-interface'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure ip ssh source-interface on device {device}. Error:\n{e}")
+        
+
+def unconfigure_time_range(device, time_range_name):
+    """Unconfigure time range
+       Args:
+            device ('obj'): device object
+            time_range_name ('str'): time range name
+       Return:
+            None
+       Raises:
+            SubCommandFailure
+    """
+    config = [f'no time-range {time_range_name}']
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to unconfigure time range on {device.name}\n{e}'
+        )
+
+def configure_event_manager(device, event, description,event_run_option, 
+                            event_run_value, action_name,action_option):
+    """ Configures event manager applet
+        Args:
+            device ('obj'): device to use
+            event ('str'): Name of the Event Manager applet
+            description('str'): description is name of event applet name 
+            event_run_option('str'):  event run specific action name (maxrun, ratelimlit, sync ..)
+            event_run_value('str'): event run action values (maxrun: <0-3675744>, sync:<yes, no>...) 
+            action_name('str'): Lable name 
+            action_option('str'): action need to provide to perform system (reload,syslog,track ....)
+    """
+
+    cmd = [
+        f'event manager applet {event}',
+        f'description {description}',
+        f'event none {event_run_option} {event_run_value}',
+        f'action {action_name} {action_option}'
+    ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure event manager applet on device {device.name}. Error:\n{e}")

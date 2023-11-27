@@ -1,66 +1,21 @@
 configure:
   commands:
-    crypto pki enroll test: 
-      response: |
-        %
-        % Start certificate enrollment .. 
-        % Create a challenge password. You will need to verbally provide this
-          password to the CA Administrator in order to revoke your certificate.
-          For security reasons your password will not be saved in the configuration.
-          Please make a note of it.
-      new_state: password
+    crypto pki enroll Self: "crypto pki enroll Self\r\n% Include the router serial\
+      \ number in the subject name? [yes/no]: no\r\n% Include an IP address in the\
+      \ subject name? [no]: no\r\nGenerate Self Signed Router Certificate? [yes/no]:\
+      \ yes\r\n\r\nRouter Self Signed Certificate successfully created\r\n\r\n"
     end:
       new_state: execute
     line console 0:
       new_state: configure_line
     no logging console: ''
-  prompt: CSR4(config)#
-
-password:
-  prompt: "Password: "
-  commands: 
-    "abcd1234":
-      new_state: 
-        reenter_password
-
-reenter_password:
-  prompt: "Re-enter password: "
-  commands: 
-    "abcd1234":
-      response: |
-        % The subject name in the certificate will include: ipsec_reg8_new
-      new_state: 
-        router_serial_confirmation
-
-router_serial_confirmation:
-  prompt: "% Include the router serial number in the subject name? [yes/no]: "
-  commands:
-    "no":
-      new_state: 
-        ip_address_confirmation
-
-ip_address_confirmation:
-  prompt: "% Include an IP address in the subject name? [no]: "
-  commands: 
-    "no":
-      new_state: request_cert_confirmation
-
-request_cert_confirmation:
-  prompt: "Request certificate from CA? [yes/no]: "
-  commands:
-    "yes":
-      response: |
-        % Certificate request sent to Certificate Authority
-        % The 'show crypto pki certificate verbose test' command will show the fingerprint.
-      new_state: 
-        configure
-
+  prompt: SVL_9500_40X(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: CSR4(config-line)#
+  prompt: SVL_9500_40X(config-line)#
 connect:
   commands:
     ? ''
@@ -80,4 +35,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: CSR4#
+  prompt: SVL_9500_40X#

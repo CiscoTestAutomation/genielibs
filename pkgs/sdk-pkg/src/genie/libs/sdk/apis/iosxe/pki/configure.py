@@ -276,6 +276,8 @@ def configure_trustpoint(device,
                       sub_alt_name=None,
                       usage_option=None,
                       vrf=None,
+                      sub_name=None,
+                      ike=None,
                       is_ec_key=None):
     
     '''
@@ -351,7 +353,6 @@ def configure_trustpoint(device,
     logger.debug("configuring crypto pki trustpoint")
     tp_config = []    
     tp_config.append(f"crypto pki trustpoint {tp_name}")
-    tp_config.append("usage ike")
     tp_config.append(f"revocation-check {revoke_check}")
     if is_ec_key:
         tp_config.append(f"eckeypair {tp_name}")
@@ -466,6 +467,10 @@ def configure_trustpoint(device,
         tp_config.append(f"storage {storage_location}")
     if sub_alt_name is not None:
         tp_config.append(f"subject-alt-name {sub_alt_name}")
+    if sub_name is not None:
+        tp_config.append(f"subject-name {sub_name}")
+    if ike is not None:
+        tp_config.append("usage ike")
     if usage_option is not None:
         tp_config.append(f"usage {usage_option}")
     if vrf is not None:
@@ -553,7 +558,8 @@ def unconfigure_trustpoint(device,
 
 def configure_pki_enroll(device,
                         tp_name,
-                        password):
+                        password,
+                        serial_sub_name=False):
     '''
         Configuring crypto pki enroll
         Args:
@@ -565,6 +571,7 @@ def configure_pki_enroll(device,
         Raises:
             SubCommandFailure
     '''
+    serial_sub_name_value = 'yes' if serial_sub_name else 'no'
 
     dialog = Dialog([
                 Statement(pattern=r'.*Do you want to continue with re\-enrollment\? \[yes/no\].*',
@@ -580,7 +587,7 @@ def configure_pki_enroll(device,
                     loop_continue=True,
                     continue_timer=False),
                 Statement(pattern=r'.*Include the router serial number in the subject name\? \[yes/no\].*',
-                    action=f'sendline(no)',
+                    action=f'sendline({serial_sub_name_value})',
                     loop_continue=True,
                     continue_timer=False),
                 Statement(pattern=r'.*Include an IP address in the subject name\? \[no\].*',
@@ -810,7 +817,7 @@ def configure_pki_export(device,
             pem_url ('str'): pem file url
             prvt_key_encry ('str'): Encrypt the private key
         Returns:
-            None
+            certificate
         Raises:
             SubCommandFailure
     '''
@@ -850,12 +857,12 @@ def configure_pki_export(device,
         elif pem_option == 'terminal':
             if prvt_key_encry == 'rollover':
                 export_config = (
-                    f"crypto pki import {tp_name} pem terminal {prvt_key_encry}")
+                    f"crypto pki export {tp_name} pem terminal {prvt_key_encry}")
             else:
                 export_config = (
-                    f"crypto pki import {tp_name} pem terminal {prvt_key_encry} password {file_password}")
+                    f"crypto pki export {tp_name} pem terminal {prvt_key_encry} password {file_password}")
     try:
-        device.configure(export_config, reply=dialog,
+        output = device.configure(export_config, reply=dialog,
                          error_pattern=error_patterns)
 
     except SubCommandFailure as e:
@@ -864,6 +871,8 @@ def configure_pki_export(device,
                          "Error:\n{error}".format(error=e)
                          )
         )
+    # Returns the exported certificate
+    return output
 
 def change_pki_server_state(device,
                             server_name,
@@ -894,3 +903,49 @@ def change_pki_server_state(device,
             )
         )
     return True
+    
+def configure_pki_authenticate_certificate(device, certificate, label_name):
+    """ Pastes certificate on device
+        Args:
+            device (`obj`): Device object
+            certificate ('str'): Certificate to be pasted
+            label_name ('str'): Label name
+        Returns:
+            None
+        Raise:
+            SubCommandFailure: Failed to paste certificate on device
+    """
+    def cert_key_handler(spawn, data):
+        spawn.sendline(data)
+        spawn.sendline('quit')
+    
+    dialog = Dialog(
+                [
+                    Statement(
+                        r"^.*Are you sure you want to do this\? \[yes/no\]\s?.*$",
+                        action="sendline(yes)",
+                        loop_continue=True,
+                    ),
+                    Statement(
+                        r'^.*End with a blank line or the word "quit" on a line by itself\s?.*',
+                        action=cert_key_handler,
+                        args={"data": certificate},
+                        loop_continue=True,
+                        continue_timer=False
+                    ),
+                    Statement(
+                        r".*Do you accept this certificate\? \[yes/no\]:.*", 
+                        action="sendline(yes)", loop_continue=True
+                    ),
+                ]
+            )
+
+    try:
+       device.configure("crypto pki authenticate {label_name}"
+                        .format(label_name=label_name), reply=dialog, timeout=200)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not Paste certificate on device "
+            "Error: {error}".format(error=e)
+            )
+

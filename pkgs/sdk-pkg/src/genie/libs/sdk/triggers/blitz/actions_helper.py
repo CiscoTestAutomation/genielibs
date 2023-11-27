@@ -255,6 +255,11 @@ def api_handler(step,
     # check if device has API attribute, otherwise fallback to device default behavior
     api_function = device if not hasattr(device, 'api') else device.api
 
+    # check if command as device object
+    # tgn action uses device object function
+    if command not in dir(api_function) and command in dir(device):
+        api_function = device
+
     # Skip if API is not available
     if command in dir(api_function):
         try:

@@ -60,11 +60,12 @@ def learn_process_pids(device, search):
 
     return pids
 
-def kill_processes(device, pids):
+def kill_processes(device, pids, sudo=False):
     """ Kills the processes with given PIDs 
         Args:
             pids ('list'): List of PIDs
             ex.) pids = [12, 15, 16]
+            sudo ('bool): Whether or not to use sudo
         Raise:
             None
         Returns:
@@ -73,9 +74,12 @@ def kill_processes(device, pids):
     failed = []
 
     for pid in pids:
-        output = device.execute("kill {}".format(pid))
+        command = f"kill {pid}"
+        if sudo:
+            command = "sudo " + command
+        output = device.execute(command)
         
-        if "No such process" in output: 
+        if "No such process" in output:
             failed.append(pid)
 
     return failed

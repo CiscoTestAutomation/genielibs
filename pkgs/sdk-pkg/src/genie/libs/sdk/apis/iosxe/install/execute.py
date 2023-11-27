@@ -258,7 +258,7 @@ def execute_install_remove(device, file_path=None, timeout=60, connect_timeout=1
 
 
 def execute_install_one_shot(device, file_path=None, prompt=True, issu=False,
-                             negative_test=False, timeout=900, connect_timeout=10, xfsu=False):
+                             negative_test=False, timeout=900, connect_timeout=10, xfsu=False, reloadfast=False):
     """
     Performs install one shot on the device
     Args:
@@ -271,7 +271,8 @@ def execute_install_one_shot(device, file_path=None, prompt=True, issu=False,
         timeout ('int, optional'): Timeout value
         connect_timeout ('int, optional'): Time to wait before sending the prompt
                                             (when pattern "Press RETURN to get 
-                                            started" matches)
+                                            started" matches))
+        reloadfast('bool, optional'):  Force the operation to use reloadfast.
     Returns:
         True if install one shot is successful
         False if install one shot is not successful
@@ -314,6 +315,9 @@ def execute_install_one_shot(device, file_path=None, prompt=True, issu=False,
 
     if xfsu:
         cmd += f" xfsu"
+
+    if reloadfast:
+        cmd += f" reloadfast"
 
     cmd += " commit"
 

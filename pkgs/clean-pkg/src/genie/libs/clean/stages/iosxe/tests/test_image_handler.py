@@ -180,6 +180,12 @@ class ImageOverride(unittest.TestCase):
             'install_packages': {
                 'packages': ['/path/to/my/package.bin']
             },
+            'copy_to_linux': {
+                'origin': {'files': ['/path/to/my/package.bin']}
+            },
+            'copy_to_device': {
+                'origin': {'files': ['/path/to/my/image.bin']}
+            },
         }
 
         images = ['/path/to/image.bin', '/path/to/package.bin']
@@ -222,6 +228,17 @@ class ImageOverride(unittest.TestCase):
         self.image_handler.update_section('install_packages')
         self.assertEqual(self.image_handler.device.clean['install_packages'], {'packages': ['/path/to/package.bin']})
 
+    def test_image_override_copy_to_linux(self):
+        self.image_handler.override_stage_images = True
+        self.image_handler.update_section('copy_to_linux')
+        self.assertEqual(self.image_handler.device.clean['copy_to_linux'], {'origin': {'files': ['/path/to/image.bin', '/path/to/package.bin']}})
+
+    def test_image_override_copy_to_device(self):
+        self.image_handler.override_stage_images = True
+        self.image_handler.update_section('copy_to_device')
+        self.assertEqual(self.image_handler.device.clean['copy_to_device'], {'origin': {'files': ['/path/to/image.bin', '/path/to/package.bin']}})
+
+
 
     def test_image_no_override_tftp_boot(self):
         self.image_handler.override_stage_images = False
@@ -258,6 +275,17 @@ class ImageOverride(unittest.TestCase):
         self.image_handler.override_stage_images = False
         self.image_handler.update_section('install_packages')
         self.assertEqual(self.image_handler.device.clean['install_packages'], {'packages': ['/path/to/my/package.bin']})
+
+    def test_image_no_override_copy_to_linux(self):
+        self.image_handler.override_stage_images = False
+        self.image_handler.update_section('copy_to_linux')
+        self.assertEqual(self.image_handler.device.clean['copy_to_linux'], {'origin': {'files': ['/path/to/my/package.bin']}})
+
+    def test_image_no_override_copy_to_device(self):
+        self.image_handler.override_stage_images = False
+        self.image_handler.update_section('copy_to_device')
+        self.assertEqual(self.image_handler.device.clean['copy_to_device'], {'origin': {'files': ['/path/to/my/image.bin']}})
+
 
 if __name__ == '__main__':
     unittest.main()

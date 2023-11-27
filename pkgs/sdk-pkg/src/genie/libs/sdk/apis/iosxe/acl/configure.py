@@ -1926,7 +1926,7 @@ def unconfigure_filter_vlan_list(device, vlan_access_name, vlan_id):
         Raises: 
             SubCommandFailure
     """
-    cmd = f"vlan filter {vlan_access_name} vlan-list {vlan_id}"
+    cmd = f"no vlan filter {vlan_access_name} vlan-list {vlan_id}"
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -2034,3 +2034,79 @@ def configure_arp_acl(device, name, action, source, sender_mac='', mac_mask='', 
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure arp acl on the device {device.name}. Error:\n{e}")
+
+def configure_access_map_match_ip_mac_address(device, vlan_access_name, value, acl_name, action):
+    """ Configuring access map match ip mac address
+
+        Args:
+            device ('obj'): device to use
+            vlan_access_name ('str'): name of vlan to access 
+            vlaue ('str'): describe mac (or) ip
+            acl_name ('str'): name of acl_name
+            action ('str'): forward (or) drop
+        Returns:
+            None
+
+        Raises: 
+            SubCommandFailure
+    """
+    cmd = [
+        f"vlan access-map {vlan_access_name}",
+        f"match {value} address {acl_name}",
+        f"action {action}",
+    ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure access map match ip mac address on the device {device.name}. Error:\n{e}")
+
+def configure_acl_protocol_port(device, ip_protocol_version, acl_name, acl_action, protocol, port_operation, src_port, dst_port):
+    """ Configure acl protocol port
+
+        Args:
+            device ('obj'): device to use
+            ip_protocol_version ('str'): define ip (or) ipv6
+            acl_name ('str'): name of acl
+            acl_action ('str'): permit (or) deny
+            protocol ('str'): protocol details
+            port_operation ('str'): name of port operation ex: range , eq, gt, lt
+            src_port (int): src port details
+            dst_port (int): dst port details
+        Returns:
+            None
+
+        Raises: 
+            SubCommandFailure
+    """
+    cmd = []
+    if ip_protocol_version == "ip":
+        cmd.append(f"{ip_protocol_version} access-list extended {acl_name}")
+    else:
+        cmd.append(f"{ip_protocol_version} access-list {acl_name}")
+    cmd.append(f"{acl_action} {protocol} any any {port_operation} {src_port} {dst_port}")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure acl protocol port {device.name}. Error:\n{e}")
+
+def configure_ip_acl_with_any(device, acl_name, acl_action):
+    """ Configuring ip ACL with any
+        Example: ip access-lists extended ip_acl
+                permit ip any any
+        Args:
+            device ('obj'): device to use
+            acl_name ('str'): name of the ACL to which the entry belongs
+            acl_action ('str'): (permit | deny) permits or denies Layer 2 traffic
+        Returns:
+            None
+        Raises: 
+            SubCommandFailure
+    """
+    acl_action = acl_action.strip().lower()
+    assert acl_action in ('permit', 'deny'), f"{acl_action} is an invalid action type"
+    config = [f"ip access-list extended {acl_name}",
+              f"{acl_action} ip any any"]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure ip acl  with any on the device {device.name}. Error:\n{e}")

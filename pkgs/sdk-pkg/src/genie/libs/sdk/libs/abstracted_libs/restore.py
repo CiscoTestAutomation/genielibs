@@ -25,21 +25,22 @@ class Restore(object):
         except Exception as e:
             self.failed('Saving the configuration failed', from_exception=e)
 
-    def save_configuration(self, device, method, abstract, default_dir):
+    def save_configuration(self, device, method, abstract, default_dir, timeout=60):
         try:
             self.lib.save_configuration(
-                device, method, self.abstract, default_dir)
+                device, method, self.abstract, default_dir, timeout=timeout)
         except Exception as e:
             self.failed('Saving the configuration failed', from_exception=e)
 
     def restore_configuration(self, device, method, abstract, iteration=10,
-                              interval=60, delete_after_restore=True):
+                              interval=60, delete_after_restore=True, timeout=60):
         try:
             self.lib.restore_configuration(
                 device,
                 method,
                 self.abstract,
-                delete_after_restore=delete_after_restore)
+                delete_after_restore=delete_after_restore,
+                timeout=timeout)
         except Exception as e:
             self.failed('Restoring the configuration failed', from_exception=e)
 

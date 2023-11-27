@@ -5,13 +5,13 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-  prompt: stack3-nyquist-1(config)#
+  prompt: 9350-stack-1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: stack3-nyquist-1(config-line)#
+  prompt: 9350-stack-1(config-line)#
 connect:
   commands:
     ? ''
@@ -28,12 +28,44 @@ execute:
       new_state: configure
     config-transaction:
       new_state: configure
+    exit:
+      response:
+        - "exit\r\nSession log crashinfo:tracelogs/system_shell_R0-0.31502_0.20231010095010.bin\
+        \ closed."
+      response_type: circular
+    ls:
+      response:
+        - "3pa\t\t      dev\t      lib64\t\t sbin\r\nPOE\t\t      disk0\t      lic0\t\
+        \t sdwan-utils\r\napp\t\t      drec0\t      lic1\t\t sys\r\nappstore_flash\t\
+        \      etc\t      lua\t\t tftp\r\nappstore_hd\t      explode\t      misc\t\
+        \t tmp\r\nauto\t\t      explode-common  mnt\t\t ucode0\r\nbin\t\t      firmware\t\
+        \      mount_packages.sh  umount_packages.sh\r\nbless\t\t      flash\t   \
+        \   ngwc_config\t usb0\r\nbootflash\t      guestshell      obfl0\t\t usb1\r\
+        \ncodesign.pubkey       harddisk\t      opt\t\t usr\r\ncodesign.revkey   \
+        \    hugepages.sh    platform-specific  var\r\ncommon\t\t      init\t    \
+        \  proc\t\t verify_packages.sh\r\nconfig\t\t      initrd.image    rmon_vars.sh\t\
+        \ webui\r\ncopy_act2_sr_libs.sh  install\t      rommon_to_env\r\ncpld_util.sh\t\
+        \      issu\t      root\r\ncrashinfo\t      lib\t      run"
+      response_type: circular
     request platform software system shell switch active R0:
       response:
-      - "Activity within this shell can jeopardize the functioning of the system.\r\
-        \nAre you sure you want to continue? [y/n]"
-      response_type: circular
+        - "Activity within this shell can jeopardize the functioning of the system."
+      new_state: confirm_dialog
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: stack3-nyquist-1#
+  prompt: 9350-stack-1#
+confirm_dialog:
+  prompt: "Are you sure you want to continue? [y/n] "
+  commands:
+    "y":
+      response:
+        - "2023/10/10 09:50:10 :\
+        \ Shell access was granted to user <anon>; Trace file: , /crashinfo/tracelogs/system_shell_R0-0.31502_0.20231010095010.bin\r\
+        \n********************************************************************** \r\
+        \nActivity within this shell can jeopardize the functioning \r\nof the system.\r\
+        \nUse this functionality only under supervision of Cisco Support.\r\n\r\n\
+        Session will be logged to:\r\n  crashinfo:tracelogs/system_shell_R0-0.31502_0.20231010095010.bin\r\
+        \n********************************************************************** \r\
+        \nTerminal type 'network' unknown.  Assuming vt100\r\n"
+      new_state: execute

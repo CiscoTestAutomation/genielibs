@@ -1,65 +1,22 @@
 configure:
   commands:
-    authorization password test: "authorization password test\r\n"
-    authorization username alt-subjectname userprinciplename: "authorization username\
-      \ alt-subjectname userprinciplename\r\n"
-    authorization username alt-subjectname userprinciplename secondary: "authorization\
-      \ username alt-subjectname userprinciplename secondary\r\n"
-    authorization username subjectname all: "authorization username subjectname all\r\
-      \n"
-    auto-enroll: "auto-enroll\r\n"
-    auto-enroll 100 regenerate: "auto-enroll 100 regenerate\r\n"
-    auto-enroll regenerate: "auto-enroll regenerate\r\n"
-    auto-trigger: "auto-trigger\r\n"
-    certificate chain bootflash:tp_chain_location_test: "certificate chain bootflash:tp_chain_location_test\r\
-      \n"
-    chain-validation continue True: "chain-validation continue True\r\n"
-    chain-validation stop: "chain-validation stop\r\n"
-    crl cache delete-after 100: "crl cache delete-after 100\r\n"
-    crl cache extend 100: "crl cache extend 100\r\n"
-    crl cache none: "crl cache none \r\n"
-    crypto pki trustpoint test: "crypto pki trustpoint test\r\n"
+    crypto pki trustpoint Self: "crypto pki trustpoint Self\r\n"
     end:
       new_state: execute
-    enrollment mode  ra: "enrollment mode  ra\r\n"
-    enrollment retry count  10: "enrollment retry count  10\r\n"
-    enrollment retry period 10: "enrollment retry period 10\r\n"
-    enrollment url bootflash:test_enroll_url: "enrollment url bootflash:test_enroll_url\r\
-      \n"
-    enrollment url http://10.0.0.1:80: "enrollment url http://10.0.0.1:80 \r\n"
-    exit: " enrollment url bootflash:test_enroll_url\r\n"
-    fqdn none: "fqdn none\r\n"
-    hash sha512: "hash sha512\r\n"
-    http-proxy test 1000: "http-proxy test 1000\r\n"
-    ip-address none: "ip-address none\r\n"
-    ip-extension inherit ipv4: "ip-extension inherit ipv4\r\n"
+    enrollment selfsigned: "enrollment selfsigned\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''
-    no vrf: " enrollment mode ra\r\n"
-    ocsp disable-nonce: "ocsp disable-nonce\r\n"
-    ocsp url http://10.0.0.1:80: "ocsp url http://10.0.0.1:80\r\n"
-    password test: "password test\r\n"
-    primary: "primary\r\n"
-    regenerate: "regenerate\r\n"
-    revocation-check crl: "revocation-check crl\r\n"
-    revocation-check none: "revocation-check none\r\n"
-    root proxy http://10.20.20.2: "root proxy http://10.20.20.2\r\n"
-    rsakeypair test 1024: "rsakeypair test 1024\r\n"
-    rsakeypair test 1024 1024: "rsakeypair test 1024 1024\r\n"
-    serial-number none: "serial-number none\r\n"
-    show: "show\r\n"
-    source interface GigabitEthernet10: " ip-extension inherit ipv4\r\n"
-    subject-name C = IN: "subject-name C = IN\r\n"
-    usage ike: " enrollment retry count 10\r\n"
-    vrf test: " enrollment retry period 10\r\n"
-  prompt: ipsec_reg8_new(config)#
+    revocation-check None: "revocation-check None\r\n"
+    rsakeypair Self 2048: "rsakeypair Self 2048\r\n"
+    subject-name cn=Self: "subject-name cn=Self\r\n"
+  prompt: SVL_9500_40X(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: ipsec_reg8_new(config-line)#
+  prompt: SVL_9500_40X(config-line)#
 connect:
   commands:
     ? ''
@@ -79,4 +36,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: ipsec_reg8_new#
+  prompt: SVL_9500_40X#

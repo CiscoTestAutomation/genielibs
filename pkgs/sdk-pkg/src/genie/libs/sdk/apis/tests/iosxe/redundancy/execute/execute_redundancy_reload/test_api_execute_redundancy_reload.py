@@ -1,6 +1,7 @@
 import unittest
 from pyats.topology import loader
 from genie.libs.sdk.apis.iosxe.redundancy.execute import execute_redundancy_reload
+from genie.libs.sdk.apis.utils import sanitize
 
 
 class TestExecuteRedundancyReload(unittest.TestCase):
@@ -36,4 +37,4 @@ class TestExecuteRedundancyReload(unittest.TestCase):
         # Device output inconsistently includes device prompt
         if result.endswith('#'):
             expected_output += '\r\nstartrek-1#'
-        self.assertEqual(result, expected_output)
+        self.assertEqual(sanitize(result), sanitize(expected_output))

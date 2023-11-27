@@ -9591,3 +9591,48 @@ def configure_interface_range_no_switchport(device, start_interface, end_interfa
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure interface range no switchport on device {device}. Error:\n{e}")
+
+def enable_switchport_protected_on_interface(device, interface):
+    """ Enable switchport protected on interface
+        Args:
+            device ('obj'): Device object
+            interface ('str'): interface name to enable switchport protected
+        Returns:
+            None
+        Raises:
+            SubCommandFailure : Failed to enable switchport protected on interface
+    """
+    log.debug(f"Enable switchport protected on interface {interface}")
+
+    configs = [
+    f"interface {interface}",
+    "switchport protected"
+    ]
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to enable switchport protected under {interface}. Error:\n{e}"
+        )
+
+def unconfigure_interface_speed(device, interface):
+    """ unconfigure speed on interface
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    config = [
+        f'interface {interface}',
+        'no speed'
+    ] 
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not unconfigure speed on {interface}. Error:\n{e}")
+
