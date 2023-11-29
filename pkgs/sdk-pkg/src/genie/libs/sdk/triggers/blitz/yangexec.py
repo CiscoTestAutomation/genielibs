@@ -12,7 +12,12 @@ from .verifiers import NetconfDefaultVerifier, GnmiDefaultVerifier, BaseVerifier
 from .requestbuilder import RestconfRequestBuilder, NO_BODY_METHODS, WITH_BODY_METHODS
 from .yangexec_helper import DictionaryToXML
 from .gnmi_util import GnmiMessage, GnmiMessageConstructor
-from .netconf_util import gen_ncclient_rpc, get_datastore_state, netconf_send
+from .netconf_util import (
+    gen_ncclient_rpc,
+    get_datastore_state,
+    netconf_send,
+    NetconfSubscription
+)
 from yang.connector.gnmi import Gnmi
 
 
@@ -283,19 +288,11 @@ def run_netconf(operation: str,
         # TODO: get-data return may not be relevent depending on datastore
         log.debug('Use "get-data" yang action to verify this "edit-data".')
     elif rpc_data['operation'] == 'subscribe':
-        # check if subscription id exists in rpc reply, subscribe to device if subscription id is found
-        for op, res in result:
-            if '</subscription-id>' in res or 'rpc-reply' in res and '<ok/>' in res:
-                rpc_data['decode'] = rpc_verify.process_rpc_reply
-                rpc_data['verifier'] = rpc_verify.process_operational_state
-                rpc_data['format'] = format
-                rpc_data['returns'] = returns
-
-                device.subscribe(rpc_data)
-                break
-            else:
-                log.error(banner('SUBSCRIPTION FAILED'))
-                return negative_test
+        # Activate subscription thread.
+        rpc_data.update(format)
+        rpc_data['verifier'] = verifier
+        rpc_data['returns'] = returns
+        return NetconfSubscription.run_subscribe(device, result, **rpc_data)
     else:
         try:
             # Validate error response

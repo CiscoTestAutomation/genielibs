@@ -185,13 +185,14 @@ def learn_routing(device,
                         setdefault(ip, {}).update({device.name: keys})
 
 
-def check_memory_leaks(section, devices, keywords):
+def check_memory_leaks(section, devices, keywords, timeout=60):
     '''Check memory leaks by show memory debug leaks command
 
     Args:
         devices (`list`): List of device name
         keywords (`list`): List of keywords
-
+        timeout (`int`): Timeout value. default: 60
+        
     Returns:
         None
 
@@ -202,7 +203,7 @@ def check_memory_leaks(section, devices, keywords):
     def _check_memory_leaks(device, keywords):
 
         try:
-            out = device.execute('show memory debug leaks')
+            out = device.execute('show memory debug leaks', timeout=timeout)
         except Exception as e:
             log.exception(e)
             out = {}

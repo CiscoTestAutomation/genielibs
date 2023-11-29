@@ -7,6 +7,7 @@ import re
 from pprint import pformat
 import json
 from copy import deepcopy
+import traceback
 from google.protobuf import json_format
 from .rpcverify import (RpcVerify,
                         OptFields,
@@ -133,7 +134,7 @@ class DefaultBaseVerifier(BaseVerifier):
                  rpc_data=None,
                  **kwargs):
         super().__init__(device, returns, log, format,
-                         steps, datastore, rpc_data, ** kwargs)
+                         steps, datastore, rpc_data, **kwargs)
         self.rpc_verify = RpcVerify(log=self.log)
         if format is None:
             format = {}
@@ -592,6 +593,12 @@ class NetconfDefaultVerifier(DefaultBaseVerifier):
         """
         try:
             decoded_response = self.decode(raw_response)
+        except self.ErroredResponse as e:
+            if not self.returns:
+                return self.negative_test
+            # Validate expected error
+            return self.rpc_verify.process_operational_state(
+                e.response, self.returns)
         except self.DecodeError:
             return self.negative_test
 
@@ -621,9 +628,12 @@ class NetconfDefaultVerifier(DefaultBaseVerifier):
         try:
             decoded_response = self.decode(raw_response)
         except self.ErroredResponse as e:
+            if not self.returns:
+                return self.negative_test
+                # Validate expected error
             return self.rpc_verify.process_operational_state(
                 e.response, self.returns)
-        except BaseVerifier.DecodeError:
+        except self.DecodeError:
             return self.negative_test
 
         auto_validate = self.format.get(
@@ -696,3 +706,14 @@ class NetconfDefaultVerifier(DefaultBaseVerifier):
             else:
                 raise self.DecodeError()
         return self.rpc_verify.process_rpc_reply(response)
+
+    def end_subscription(self, errors: List[Exception]) -> bool:
+        if errors:
+            for err in errors:
+                self.log.error(traceback.format_exc())
+            return self.negative_test is not False
+        return True
+
+    def subscribe_verify(self, raw_response: Any):
+        result = self.get_config_verify([('subscribe', raw_response)])
+        return result

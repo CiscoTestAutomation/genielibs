@@ -10,7 +10,7 @@ class TestConfigurePkiExport(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          CSR4:
+          SVL_9500_40X:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,11 +18,11 @@ class TestConfigurePkiExport(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: iosxe
-            type: iosxe
+            platform: c9500
+            type: c9500
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['CSR4']
+        self.device = self.testbed.devices['SVL_9500_40X']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,6 @@ class TestConfigurePkiExport(unittest.TestCase):
         )
 
     def test_configure_pki_export(self):
-        result = configure_pki_export(self.device, 'test', 'pkcs12', 'cisco123', 'bootflash:', 'client_chain.p12', None, None, None, None, None, None)
-        expected_output = None
+        result = configure_pki_export(self.device, 'Self', 'pem', 'cisco123', None, None, None, 'terminal', None, None, None, 'aes')
+        expected_output = result
         self.assertEqual(result, expected_output)

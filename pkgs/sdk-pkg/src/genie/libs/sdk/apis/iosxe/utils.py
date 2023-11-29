@@ -1696,7 +1696,7 @@ def clear_policy_map_counters(device):
             f'Could not clear policy-map counters. Error:\n{e}'
         )
 
-def request_system_shell(device, switch_type=None, processor_slot=None, uname=False, exit=True, command=None):
+def request_system_shell(device, switch_type=None, processor_slot=None, uname=False, exit=True, command=None, timeout=None):
     '''
         Request platform software system shell
         Args:
@@ -1706,6 +1706,7 @@ def request_system_shell(device, switch_type=None, processor_slot=None, uname=Fa
             uname ('bool', optional): To execute uname -a in shell. Default is False.
             exit ('bool', optional): To exit from shell prompt. Default is True.
             command ('str', optional): command to execute in shell prompt
+            timeout ('int', optional): Timeout in seconds for waiting for the console. Default is None.
 
         Returns:
             Cli output
@@ -1714,8 +1715,9 @@ def request_system_shell(device, switch_type=None, processor_slot=None, uname=Fa
     '''
     dialog = Dialog([Statement(pattern=r'.*\?\s\[y\/n\].*',
         action='sendline(y)',
-        loop_continue=False,
-        continue_timer=False)])
+        loop_continue=True,
+        continue_timer=False
+        )])    
 
     exit_dialog = Dialog([Statement(pattern=r'.*\#.*',
         loop_continue=False,
@@ -1727,7 +1729,7 @@ def request_system_shell(device, switch_type=None, processor_slot=None, uname=Fa
 
     output = None
     try:
-        output = device.execute(cmd, reply=dialog)
+        output = device.execute(cmd, reply=dialog, allow_state_change=True, timeout=timeout)
         if uname:
             output += device.execute('uname -a')
         if command:
@@ -1735,7 +1737,7 @@ def request_system_shell(device, switch_type=None, processor_slot=None, uname=Fa
         if exit:
             device.execute('exit', reply=exit_dialog)
     except SubCommandFailure as e:
-        raise SubCommandFailure(log.error(f"failed to enter system shell""Error:\n{e}"))
+        raise SubCommandFailure(f"failed to enter system shell""Error:\n{e}")
     return output
 
 

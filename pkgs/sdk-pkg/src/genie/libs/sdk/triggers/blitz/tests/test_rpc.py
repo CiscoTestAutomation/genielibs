@@ -157,6 +157,43 @@ gnmi_leaf_list = {
     }
 }
 
+gnmi_list_entry = {
+    "timestamp": 1694027409978062184,
+    "update": {
+        "path": {
+            "origin": "openconfig",
+            "elem": [
+                {
+                    "name": "sampling"
+                },
+                {
+                    "name": "sflow"
+                }
+            ]
+        },
+        "val": {
+            "jsonIetfVal": ''
+        }
+    }
+}
+
+gnmi_nested_list = {
+    "timestamp": 1694027409978062184,
+    "update": {
+        "path": {
+            "origin": "openconfig",
+            "elem": [
+                {
+                    "name": "network-instances"
+                }
+            ]
+        },
+        "val": {
+            "jsonIetfVal": ''
+        }
+    }
+}
+
 multilist = """<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" \
     xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0" \
         message-id="urn:uuid:39eeacc2-821e-4822-ba44-477c502d0242">
@@ -395,6 +432,37 @@ bgp_community_list_same_parent_response = """
 </rpc-reply>
 """
 
+bgp_community_list_namespace_prefix_response = """
+<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="urn:uuid:ed36dbb6-a0bb-4e24-b5d1-974739ac0ad9">
+    <data>
+      <native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native">
+        <route-map>
+          <name>SET_COMMUNITY</name>
+          <route-map-seq xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-route-map">
+            <ordering-seq>10</ordering-seq>
+            <operation>permit</operation>
+            <description>Setting Community values</description>
+            <set>
+              <community>
+                <community-well-known>
+                  <community-list>100:10</community-list>
+                  <community-list>100:20</community-list>
+                  <community-list>100:30</community-list>
+                  <community-list>100:40</community-list>
+                  <community-list>100:200</community-list>
+                  <community-list>internet</community-list>
+                  <community-list>4465:4000</community-list>
+                  <community-list>3000:2222</community-list>
+                </community-well-known>
+              </community>
+            </set>
+          </route-map-seq>
+        </route-map>
+      </native>
+    </data>
+</rpc-reply>
+"""
+
 
 class TestRpcVerify(unittest.TestCase):
     """Test cases for the rpcverify.RpcVerify methods."""
@@ -409,8 +477,12 @@ basic-mode=explicit&also-supported=report-all-tagged']
         cls.gnmi = TestGnmi()
         cls.operstate_gnmi = operstate_gnmi
         cls.gnmi_leaf_list = gnmi_leaf_list
+        cls.gnmi_list_entry = gnmi_list_entry
+        cls.gnmi_nested_list = gnmi_nested_list
         cls.jsonIetfVal = ""
         cls.leafListVal = ""
+        cls.listEntryVal = ""
+        cls.nestedListEntry = ""
 
     def setUp(self):
         self.jsonIetfVal = """{"statistics": {"in-octets": 330, \
@@ -426,12 +498,26 @@ basic-mode=explicit&also-supported=report-all-tagged']
 "name": "test10"}, "state": {"name": "test10", "type": "openconfig-network-instance-types:L3VRF", \
 "enabled": true, "enabled-address-families": ["openconfig-types:IPV4", "openconfig-types:IPV6"]}}"""
 
+        self.listEntryVal = """{"config": {"enabled": true, "agent-id-ipv4": "4.4.4.4", \
+"agent-id-ipv6": "4::4"}, "collectors": {"collector": [{"address": "6.37.16.200", "port": 2055, \
+"config": {"address": "6.37.16.200", "port": 2055}}]}}"""
+
+        self.nestedListEntry = """{"network-instance": [{"name": "DEFAULT", \
+"protocols": {"protocol": [{"identifier": "BGP", "name": "default", \
+"config": {"identifier": "openconfig-policy-types:BGP", "name": "default"}}]}}]}"""
+
     def _base64encode(self):
         self.operstate_gnmi['update']['val']['jsonIetfVal'] = base64.encodebytes(
             bytes(self.jsonIetfVal, encoding='utf-8')
         )
         self.gnmi_leaf_list['update']['val']['jsonIetfVal'] = base64.encodebytes(
             bytes(self.leafListVal, encoding='utf-8')
+        )
+        self.gnmi_list_entry['update']['val']['jsonIetfVal'] = base64.encodebytes(
+            bytes(self.listEntryVal, encoding='utf-8')
+        )
+        self.gnmi_nested_list['update']['val']['jsonIetfVal'] = base64.encodebytes(
+            bytes(self.nestedListEntry, encoding='utf-8')
         )
 
     def parse_dict_to_gnmi_msg(self, data: dict):
@@ -1844,6 +1930,271 @@ basic-mode=explicit&also-supported=report-all-tagged']
         resp = self.rpcv.process_rpc_reply(bgp_community_list_same_parent_response)
         result = self.rpcv.verify_rpc_data_reply(resp, rpc_data)
         self.assertTrue(result)
+
+    def test_autovalidate_list_entry(self):
+        """check list entry enclosed in [] in response"""
+        opfields = [
+            {
+                'selected': 'true',
+                'default': '',
+                'name': 'address',
+                'xpath': '/sampling/sflow/collectors/collector/config/address',
+                'value': '6.37.16.200',
+                'datatype': 'oc-inet:ip-address',
+                'nodetype': 'leaf',
+                'op': '=='
+            },
+            {
+                'selected': 'true',
+                'default': '',
+                'name': 'port',
+                'xpath': '/sampling/sflow/collectors/collector/config/port',
+                'value': 2055,
+                'datatype': 'oc-inet:port-number',
+                'nodetype': 'leaf',
+                'op': '=='
+            }
+        ]
+        self._base64encode()
+        device = TestDevice(self.parse_dict_to_gnmi_msg(
+            self.gnmi_list_entry['update']))
+        rpc_data, returns, format = self.make_test_args(opfields)
+
+        result = yangexec.run_gnmi('get-config', device, '', '',
+                                   rpc_data, returns, format=format)
+        self.assertTrue(result)
+
+    def test_autovalidate_nested_list(self):
+        """check nested list entry enclosed in brackets"""
+        opfields = [
+            {
+                'selected': 'true',
+                'default': '',
+                'name': 'identifier',
+                'xpath': '/network-instances/network-instance/protocols/protocol/config/identifier',
+                'value': 'oc-pol-types:BGP',
+                'datatype': 'identityref',
+                'nodetype': 'leaf',
+                'op': '=='
+            },
+            {
+                'selected': 'true',
+                'default': '',
+                'name': 'name',
+                'xpath': '/network-instances/network-instance/protocols/protocol/config/name',
+                'value': 'default',
+                'datatype': 'string',
+                'nodetype': 'leaf',
+                'op': '=='
+            }
+        ]
+        self._base64encode()
+        device = TestDevice(self.parse_dict_to_gnmi_msg(
+            self.gnmi_nested_list['update']))
+        rpc_data, returns, format = self.make_test_args(opfields)
+
+        result = yangexec.run_gnmi('get-config', device, '', '',
+                                   rpc_data, returns, format=format)
+        self.assertTrue(result)
+
+    def test_auto_validate_with_namespace_prefix_without_key(self):
+        rpc_data = {
+            'namespace': {
+                'ios': 'http: //cisco.com/ns/yang/Cisco-IOS-XE-native',
+                'ios-bgp': 'http://cisco.com/ns/yang/Cisco-IOS-XE-bgp',
+                'ios-route-map': 'http://cisco.com/ns/yang/Cisco-IOS-XE-route-map'
+            },
+            'nodes': [{
+                'datatype': 'string',
+                'default': '',
+                'edit-op': 'create',
+                'nodetype': 'leaf',
+                'value': '',
+                'xpath': '/ios:native/ios:route-map[name="SET_COMMUNITY"]'
+            }, {
+                'datatype': 'string',
+                'default': '',
+                'edit-op': 'merge',
+                'nodetype': 'leaf',
+                'value': '',
+                'xpath': '/ios:native/ios:route-map[name="SET_COMMUNITY"]/ios-route-map:route-map-seq[ordering-seq="10"]'
+            }, {
+                'datatype': 'enumeration',
+                'default': '',
+                'edit-op': 'merge',
+                'nodetype': 'leaf',
+                'value': 'permit',
+                'xpath': '/ios:native/ios:route-map[name="SET_COMMUNITY"]/ios-route-map:route-map-seq[ordering-seq="10"]/ios-route-map:operation'
+            }, {
+                'datatype': 'string',
+                'default': '',
+                'edit-op': 'merge',
+                'nodetype': 'leaf',
+                'value': 'Setting Community values',
+                'xpath': '/ios:native/ios:route-map[name="SET_COMMUNITY"]/ios-route-map:route-map-seq[ordering-seq="10"]/ios-route-map:description'
+            }, {
+                'datatype': 'string',
+                'default': '',
+                'edit-op': 'merge',
+                'nodetype': 'leaf-list',
+                'value': '100:10',
+                'xpath': '/ios:native/ios:route-map[name="SET_COMMUNITY"]/ios-route-map:route-map-seq[ordering-seq="10"]/ios-route-map:set/ios-route-map:community/ios-route-map:community-well-known/ios-route-map:community-list'
+            }, {
+                'datatype': 'string',
+                'default': '',
+                'edit-op': 'merge',
+                'nodetype': 'leaf-list',
+                'value': '100:20',
+                'xpath': '/ios:native/ios:route-map[name="SET_COMMUNITY"]/ios-route-map:route-map-seq[ordering-seq="10"]/ios-route-map:set/ios-route-map:community/ios-route-map:community-well-known/ios-route-map:community-list'
+            }, {
+                'datatype': 'union',
+                'default': '',
+                'edit-op': 'merge',
+                'nodetype': 'leaf-list',
+                'value': '100:30',
+                'xpath': '/ios:native/ios:route-map[name="SET_COMMUNITY"]/ios-route-map:route-map-seq[ordering-seq="10"]/ios-route-map:set/ios-route-map:community/ios-route-map:community-well-known/ios-route-map:community-list'
+            }, {
+                'datatype': 'union',
+                'default': '',
+                'edit-op': 'merge',
+                'nodetype': 'leaf-list',
+                'value': '100:40',
+                'xpath': '/ios:native/ios:route-map[name="SET_COMMUNITY"]/ios-route-map:route-map-seq[ordering-seq="10"]/ios-route-map:set/ios-route-map:community/ios-route-map:community-well-known/ios-route-map:community-list'
+            }, {
+                'datatype': 'union',
+                'default': '',
+                'edit-op': 'merge',
+                'nodetype': 'leaf-list',
+                'value': '100:200',
+                'xpath': '/ios:native/ios:route-map[name="SET_COMMUNITY"]/ios-route-map:route-map-seq[ordering-seq="10"]/ios-route-map:set/ios-route-map:community/ios-route-map:community-well-known/ios-route-map:community-list'
+            }, {
+                'datatype': 'union',
+                'default': '',
+                'edit-op': 'merge',
+                'nodetype': 'leaf-list',
+                'value': 'internet',
+                'xpath': '/ios:native/ios:route-map[name="SET_COMMUNITY"]/ios-route-map:route-map-seq[ordering-seq="10"]/ios-route-map:set/ios-route-map:community/ios-route-map:community-well-known/ios-route-map:community-list'
+            }, {
+                'datatype': 'union',
+                'default': '',
+                'edit-op': 'merge',
+                'nodetype': 'leaf-list',
+                'value': '4465:4000',
+                'xpath': '/ios:native/ios:route-map[name="SET_COMMUNITY"]/ios-route-map:route-map-seq[ordering-seq="10"]/ios-route-map:set/ios-route-map:community/ios-route-map:community-well-known/ios-route-map:community-list'
+            }, {
+                'datatype': 'union',
+                'default': '',
+                'edit-op': 'merge',
+                'nodetype': 'leaf-list',
+                'value': '3000:2222',
+                'xpath': '/ios:native/ios:route-map[name="SET_COMMUNITY"]/ios-route-map:route-map-seq[ordering-seq="10"]/ios-route-map:set/ios-route-map:community/ios-route-map:community-well-known/ios-route-map:community-list'
+            }],
+            'datastore': 'running',
+            'operation': 'edit-config'
+        }
+        resp = self.rpcv.process_rpc_reply(bgp_community_list_namespace_prefix_response)
+        result = self.rpcv.verify_rpc_data_reply(resp, rpc_data)
+        self.assertTrue(result)
+
+    def test_auto_validate_with_namespace_prefix_with_key(self):
+        rpc_data = {
+            'namespace': {
+                'ios': 'http: //cisco.com/ns/yang/Cisco-IOS-XE-native',
+                'ios-bgp': 'http://cisco.com/ns/yang/Cisco-IOS-XE-bgp',
+                'ios-route-map': 'http://cisco.com/ns/yang/Cisco-IOS-XE-route-map'
+            },
+            'nodes': [{
+                'datatype': 'string',
+                'default': '',
+                'edit-op': 'create',
+                'nodetype': 'leaf',
+                'value': '',
+                'xpath': '/ios:native/ios:route-map[ios:name="SET_COMMUNITY"]'
+            }, {
+                'datatype': 'string',
+                'default': '',
+                'edit-op': 'merge',
+                'nodetype': 'leaf',
+                'value': '',
+                'xpath': '/ios:native/ios:route-map[ios:name="SET_COMMUNITY"]/ios-route-map:route-map-seq[ios-route-map:ordering-seq="10"]'
+            }, {
+                'datatype': 'enumeration',
+                'default': '',
+                'edit-op': 'merge',
+                'nodetype': 'leaf',
+                'value': 'permit',
+                'xpath': '/ios:native/ios:route-map[ios:name="SET_COMMUNITY"]/ios-route-map:route-map-seq[ios-route-map:ordering-seq="10"]/ios-route-map:operation'
+            }, {
+                'datatype': 'string',
+                'default': '',
+                'edit-op': 'merge',
+                'nodetype': 'leaf',
+                'value': 'Setting Community values',
+                'xpath': '/ios:native/ios:route-map[ios:name="SET_COMMUNITY"]/ios-route-map:route-map-seq[ios-route-map:ordering-seq="10"]/ios-route-map:description'
+            }, {
+                'datatype': 'string',
+                'default': '',
+                'edit-op': 'merge',
+                'nodetype': 'leaf-list',
+                'value': '100:10',
+                'xpath': '/ios:native/ios:route-map[ios:name="SET_COMMUNITY"]/ios-route-map:route-map-seq[ios-route-map:ordering-seq="10"]/ios-route-map:set/ios-route-map:community/ios-route-map:community-well-known/ios-route-map:community-list'
+            }, {
+                'datatype': 'string',
+                'default': '',
+                'edit-op': 'merge',
+                'nodetype': 'leaf-list',
+                'value': '100:20',
+                'xpath': '/ios:native/ios:route-map[ios:name="SET_COMMUNITY"]/ios-route-map:route-map-seq[ios-route-map:ordering-seq="10"]/ios-route-map:set/ios-route-map:community/ios-route-map:community-well-known/ios-route-map:community-list'
+            }, {
+                'datatype': 'union',
+                'default': '',
+                'edit-op': 'merge',
+                'nodetype': 'leaf-list',
+                'value': '100:30',
+                'xpath': '/ios:native/ios:route-map[ios:name="SET_COMMUNITY"]/ios-route-map:route-map-seq[ios-route-map:ordering-seq="10"]/ios-route-map:set/ios-route-map:community/ios-route-map:community-well-known/ios-route-map:community-list'
+            }, {
+                'datatype': 'union',
+                'default': '',
+                'edit-op': 'merge',
+                'nodetype': 'leaf-list',
+                'value': '100:40',
+                'xpath': '/ios:native/ios:route-map[ios:name="SET_COMMUNITY"]/ios-route-map:route-map-seq[ios-route-map:ordering-seq="10"]/ios-route-map:set/ios-route-map:community/ios-route-map:community-well-known/ios-route-map:community-list'
+            }, {
+                'datatype': 'union',
+                'default': '',
+                'edit-op': 'merge',
+                'nodetype': 'leaf-list',
+                'value': '100:200',
+                'xpath': '/ios:native/ios:route-map[ios:name="SET_COMMUNITY"]/ios-route-map:route-map-seq[ios-route-map:ordering-seq="10"]/ios-route-map:set/ios-route-map:community/ios-route-map:community-well-known/ios-route-map:community-list'
+            }, {
+                'datatype': 'union',
+                'default': '',
+                'edit-op': 'merge',
+                'nodetype': 'leaf-list',
+                'value': 'internet',
+                'xpath': '/ios:native/ios:route-map[ios:name="SET_COMMUNITY"]/ios-route-map:route-map-seq[ios-route-map:ordering-seq="10"]/ios-route-map:set/ios-route-map:community/ios-route-map:community-well-known/ios-route-map:community-list'
+            }, {
+                'datatype': 'union',
+                'default': '',
+                'edit-op': 'merge',
+                'nodetype': 'leaf-list',
+                'value': '4465:4000',
+                'xpath': '/ios:native/ios:route-map[ios:name="SET_COMMUNITY"]/ios-route-map:route-map-seq[ios-route-map:ordering-seq="10"]/ios-route-map:set/ios-route-map:community/ios-route-map:community-well-known/ios-route-map:community-list'
+            }, {
+                'datatype': 'union',
+                'default': '',
+                'edit-op': 'merge',
+                'nodetype': 'leaf-list',
+                'value': '3000:2222',
+                'xpath': '/ios:native/ios:route-map[ios:name="SET_COMMUNITY"]/ios-route-map:route-map-seq[ios-route-map:ordering-seq="10"]/ios-route-map:set/ios-route-map:community/ios-route-map:community-well-known/ios-route-map:community-list'
+            }],
+            'datastore': 'running',
+            'operation': 'edit-config'
+        }
+        resp = self.rpcv.process_rpc_reply(bgp_community_list_namespace_prefix_response)
+        result = self.rpcv.verify_rpc_data_reply(resp, rpc_data)
+        self.assertTrue(result)
+
 
 class Device:
     server_capabilities = []

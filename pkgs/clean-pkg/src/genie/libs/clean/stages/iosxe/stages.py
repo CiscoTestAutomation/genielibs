@@ -12,16 +12,13 @@ from ipaddress import IPv4Interface, IPv6Interface
 # pyATS
 from pyats.async_ import pcall
 from pyats.utils.fileutils import FileUtils
-from pyats.utils.fileutils import FileUtils
 
 # Genie
 from genie.abstract import Lookup
 from genie.libs import clean
 from genie.libs.clean.recovery.recovery import _disconnect_reconnect
-from genie.metaparser.util.schemaengine import Optional, Required, Any
 from genie.utils import Dq
 from genie.metaparser.util.schemaengine import Optional, Required, Any, Or, ListOf
-from genie.utils import Dq
 from genie.utils.timeout import Timeout
 from genie.libs.clean import BaseStage
 from genie.libs.sdk.libs.abstracted_libs.iosxe.subsection import get_default_dir
@@ -1641,18 +1638,21 @@ copy_to_device:
                         except Exception as e:
                             step.failed("Failed to verify the running image")
 
+                        # To get the system image
+                        dest_file_path = out.get("version", {}).get('system_image', "")
+
                         # if the device is in bundle mode and user passed install_image stage this step will not be executed.
                         if "BUNDLE" in Dq(out).get_values("mode") and "install_image" in device.clean.order:
                             step.skipped(f"The device is in bundle mode and install_image stage is passed in clean file. Skipping the verify running image check.")
+                        elif 'packages.conf' in dest_file_path and any('change_boot_variable' in order_name for order_name in device.clean.order):
+                            step.passed(f"The device is in install mode and change_boot_variable stage is passed in clean file. Continuing with the copy process.")
                         else:
-                            # To get the image version
+                            # To handle the image mapping
                             image_version = out.get("version", {}).get("xe_version", "")
                             image_match = re.search(image_version, file)
                             if image_match:
-                                dest_file_path = out.get("version", {}).get('system_image', "")
-                                if 'packages.conf' not in dest_file_path:
-                                    image_mapping = self.history['CopyToDevice'].parameters.setdefault('image_mapping', {})
-                                    image_mapping.update({origin['files'][index]: dest_file_path})
+                                image_mapping = self.history['CopyToDevice'].parameters.setdefault('image_mapping', {})
+                                image_mapping.update({origin['files'][index]: dest_file_path})
                                 self.skipped(f"The image file provided is same as the current running image {image_version} on the device.\n\
                                             Setting the destination image to {dest_file_path}. Skipping the copy process.")
 

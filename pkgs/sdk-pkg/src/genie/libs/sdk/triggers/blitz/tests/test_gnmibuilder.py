@@ -127,29 +127,33 @@ json_val_decoded_oc = {
     }, 'protocols':
     {
       'protocol':
-      {
-        'identifier': 'OSPF',
-        'name': '100',
-        'config':
+      [
         {
-          'identifier': 'openconfig-policy-types:OSPF',
-          'name': '100'
-        },
-        'bgp':
-        {
-          'neighbors':
+          'identifier': 'OSPF',
+          'name': '100',
+          'config':
           {
-            'neighbor':
+              'identifier': 'openconfig-policy-types:OSPF',
+              'name': '100'
+          },
+          'bgp':
+          {
+            'neighbors':
             {
-              'neighbor-address': '1.1.1.1',
-              'config':
-              {
-                'neighbor-address': '1.1.1.1'
-              }
+              'neighbor':
+              [
+                {
+                  'neighbor-address': '1.1.1.1',
+                  'config':
+                  {
+                    'neighbor-address': '1.1.1.1'
+                  }
+                }
+              ]
             }
           }
         }
-      }
+      ]
     }
   }
 
@@ -250,29 +254,33 @@ json_val_no_edit_op = {
     }, 'protocols':
     {
       'protocol':
-      {
-        'identifier': 'OSPF',
-        'name': '100',
-        'config':
+      [
         {
-          'identifier': 'openconfig-policy-types:OSPF',
-          'name': '100'
-        },
-        'bgp':
-        {
-          'neighbors':
+          'identifier': 'OSPF',
+          'name': '100',
+          'config':
           {
-            'neighbor':
+              'identifier': 'openconfig-policy-types:OSPF',
+              'name': '100'
+          },
+          'bgp':
+          {
+            'neighbors':
             {
-              'neighbor-address': '1.1.1.1',
-              'config':
-              {
-                'neighbor-address': '1.1.1.1'
-              }
+              'neighbor':
+              [
+                {
+                  'neighbor-address': '1.1.1.1',
+                  'config':
+                  {
+                    'neighbor-address': '1.1.1.1'
+                  }
+                }
+              ]
             }
           }
         }
-      }
+      ]
     }
   }
 
@@ -813,22 +821,114 @@ json_decoded_nested_list = {
 json_val_decoded_nested_list = {
   "Dom-list":
   [
-    {
-      "name": "default",
-      "eventHist-items": {
-      "EventHistory-list": {
-        "type": "nbm", "size": 10
+    [
+      {
+        "name": "default",
+        "eventHist-items": {
+        "EventHistory-list": [{
+          "type": "nbm", "size": 10
+          }]
+        }
+      },
+      {
+        "name": "abc",
+        "eventHist-items":
+        {
+          "EventHistory-list":
+          [
+            {
+            "type": "intfDebugs", "size": 10
+            }
+          ]
         }
       }
-    },
-    {
-      "name": "abc",
-      "eventHist-items":
-      {
-        "EventHistory-list":
+    ]
+  ]
+}
+
+request_leaf_list = {
+    'nodes': [
         {
-          "type": "intfDebugs", "size": 10
+            'datatype': 'identityref',
+            'nodetype': 'leaf-list',
+            'value': 'oc-types:IPV4',
+            'xpath': '/oc-netinst:network-instances/\
+              oc-netinst:network-instance[oc-netinst:name="test11"]/\
+              oc-netinst:config/oc-netinst:enabled-address-families'
         }
+    ],
+    'namespace_modules': {
+      'oc-netinst': 'openconfig-network-instance',
+      'oc-types': 'openconfig-types'
+    },
+    'namespace': {
+      'oc-netinst': 'http://openconfig.net/yang/network-instances',
+      'oc-types': 'http://openconfig.net/yang/openconfig-types'
+    }
+}
+
+set_container_leaf_list = {
+    'nodes': [
+        {
+            'nodetype': 'container',
+            'xpath': '/oc-netinst:network-instances/',
+            'edit-op': 'create',
+            'value': ''
+        },
+        {
+            'datatype': 'leafref',
+            'default': '',
+            'key': True,
+            'leafref_path': '/oc-netinst:network-instances/oc-netinst:network-instance[oc-netinst:name="red11"]/oc-netinst:config/oc-netinst:name', # noqa
+            'nodetype': 'leaf',
+            'value': '',
+            'xpath': '/oc-netinst:network-instances/oc-netinst:network-instance[oc-netinst:name="red11"]' # noqa
+        },
+        {
+            'nodetype': 'leaf',
+            'datatype': 'string',
+            'value': 'red11',
+            'xpath': '/oc-netinst:network-instances/\
+              oc-netinst:network-instance[oc-netinst:name="red11"]/\
+              oc-netinst:config/oc-netinst:name',
+        },
+        {
+            'nodetype': 'leaf-list',
+            'datatype': 'identityref',
+            'value': 'oc-types:IPV4',
+            'xpath': '/oc-netinst:network-instances/\
+              oc-netinst:network-instance[oc-netinst:name="red11"]/\
+              oc-netinst:config/oc-netinst:enabled-address-families',
+        },
+        {
+            'nodetype': 'leaf-list',
+            'datatype': 'identityref',
+            'value': 'oc-types:IPV6',
+            'xpath': '/oc-netinst:network-instances/\
+              oc-netinst:network-instance[oc-netinst:name="red11"]/\
+              oc-netinst:config/oc-netinst:enabled-address-families',
+        }
+    ],
+    'namespace_modules': {
+      'oc-netinst': 'openconfig-network-instance',
+      'oc-types': 'openconfig-types'
+    },
+    'namespace': {
+      'oc-netinst': 'http://openconfig.net/yang/network-instances',
+      'oc-types': 'http://openconfig.net/yang/openconfig-types'
+    }
+}
+
+json_decoded_cont_leaf_list = {
+  "update": [
+    {
+      "path": {
+        "origin": "openconfig",
+        "elem": [
+          {
+            "name": "network-instances"
+          }
+        ]
       }
     }
   ]

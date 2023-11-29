@@ -1,10 +1,309 @@
 import logging
-from time import sleep
-from .rpcbuilder import YSNetconfRPCBuilder
+import time
+from typing import List
+from collections import deque
+import lxml.etree as et
 from pyats.log.utils import banner
+from yang.connector import Netconf
+from .rpcbuilder import YSNetconfRPCBuilder
+from .subscription import Subscription
 
 log = logging.getLogger(__name__)
 lock_retry_errors = ['lock-denied', 'resource-denied', 'in-use']
+
+
+class NetconfSubscription(Subscription):
+    """Base Subscription class for all NETCONF notifications."""
+    subscription_queue = {}
+
+    def __init__(self, device, payload, **request):
+        super().__init__(device, **request)
+        op, response = payload[0]
+        self._result = []
+        sub_id = self.get_subscribe_id(response)
+        if not sub_id:
+            log.warning('NO SUBSCRIPTION ID FOUND')
+        self.subscription_id = sub_id
+        self.device = device
+        self.payload = payload
+        if self.sub_mode:
+            self.log.info(f'Subscription sub mode: {self.sub_mode}')
+
+    def cover_exceptions(func):
+        """Decorator to catch exceptions and log them."""
+        def wrapper(self, *args, **kwargs):
+            try:
+                return func(self, *args, **kwargs)
+            except Exception as e:
+                self.errors.append(e)
+                self.result = self.verifier.end_subscription(self.errors)
+                self.stop()
+        return wrapper
+
+    def _trim_xml_header(self, xml):
+        # Trim off encoding (<?xml version="1.0" encoding="UTF-8"?>)
+        if xml and xml.lstrip().startswith('<?xml'):
+            xml = xml[xml.find('>')+1:]
+        return xml.strip()
+
+    def get_subscribe_id(self, payload):
+        """Get the subscription ID from the payload.
+
+        Args:
+            payload (str): The payload to parse.
+        Returns:
+            str: The subscription ID if found in payload or None.
+        """
+        payload = self._trim_xml_header(payload)
+        if payload:
+            xml_ele = et.fromstring(payload)
+            for el in xml_ele.iter():
+                if et.QName(el).localname == 'rpc-error':
+                    self.log.error('SUBSCRIBE FAILED')
+                    self.result = False
+                    return ''
+                if et.QName(el).localname == 'subscription-id':
+                    if el.text:
+                        return el.text.strip()
+                    return None
+        return None
+
+    @classmethod
+    def validate_subscribe_response(cls, payload):
+        """Validate the subscribe response.
+
+        Args:
+            payload (list): Tuple of (operation, response).
+        Returns:
+            bool: True if valid, else False.
+        """
+        _, response = payload[0]
+        payload = cls._trim_xml_header(cls, response)
+        if payload:
+            xml_ele = et.fromstring(payload)
+            for el in xml_ele.iter():
+                if et.QName(el).localname == 'rpc-error':
+                    # Details of error should already be in log.
+                    return False
+            return True
+        return False
+
+    @property
+    def result(self):
+        if not self._result:
+            return False
+        return all(self._result)
+
+    @result.setter
+    def result(self, value):
+        self._result.append(value)
+
+    @classmethod
+    def run_subscribe(cls, device, payload, **request):
+        """Instantiate the correct subscription class.
+
+        Args:
+            device (Netconf): The device to subscribe to.
+            payload (list): Tuple of (operation, response).
+            **request: The request dictionary.
+        Returns:
+            NetconfSubscription: The subscription class.
+        """
+        if cls.validate_subscribe_response(payload) is False:
+            log.error('SUBSCRIBE FAILED')
+            return False
+
+        request['log'] = log
+        request_mode = request.get('request_mode')
+        if not request_mode:
+            log.error('No request_mode specified; setting to "ONCE"')
+            request_mode = 'ONCE'
+        if request_mode == 'ONCE':
+            subscribe_thread = NetconfSubscriptionOnce(
+                device, payload, **request)
+        elif request_mode == 'POLL':
+            subscribe_thread = NetconfSubscriptionPoll(
+                device, payload, **request)
+        elif request_mode == 'STREAM':
+            subscribe_thread = NetconfSubscriptionStream(
+                device, payload, **request)
+        else:
+            log.error(f'Unknown request_mode: {request_mode}')
+            return False
+
+        subscribe_thread.start()
+        log.info(banner('NETCONF Subscription reciever started'))
+        cls.subscription_queue[
+            subscribe_thread.subscription_id] = deque()
+        return subscribe_thread
+
+
+class NetconfSubscriptionStream(NetconfSubscription):
+    """NETCONF Subscription class for STREAM mode."""
+    def __init__(self,
+                 device: Netconf = None,
+                 payload: List = None,
+                 **request):
+        super().__init__(device, payload, **request)
+
+    @NetconfSubscription.cover_exceptions
+    def run(self):
+        """Check for inbound notifications."""
+        self.log.info('Subscribe STREAM notification active')
+        t = time.time()
+        time_delta = 0.0
+        self.log.info(f"Maximum stream time: {self.stream_max} seconds.")
+
+        while time_delta < self.stream_max:
+            time_delta = time.time() - t
+            self.log.info(f"Delta: {time_delta} seconds.")
+            if self.transaction_time and self.ntp_server:
+                if time_delta > self.transaction_time:
+                    self.log.error('Transaction time exceeded')
+                    self.result.append(False)
+                    break
+            if self.stopped():
+                time_delta = self.stream_max
+                self.log.info("Terminating notification early.")
+                break
+            self.log.info('Check for incoming notifications.')
+            notif = self.device.take_notification(timeout=self.stream_max)
+            if hasattr(notif, "notification_xml"):
+                # Add to global queue (this might not be for this subscription)
+                sub_id = self.get_subscribe_id(notif.notification_xml)
+                if sub_id is None:
+                    self.log.warning('NO SUBSCRIPTION ID FOUND')
+                self.log.info(f'Adding notification ID:{sub_id} to queue.')
+                if sub_id not in self.subscription_queue:
+                    self.subscription_queue[sub_id] = deque()
+                self.subscription_queue[sub_id].append(
+                    notif.notification_xml)
+            self.log.info(f'Check queue for ID:{self.subscription_id} notifications.')
+            if self.subscription_id not in self.subscription_queue:
+                self.log.warning(f'No notifications for {self.subscription_id}')
+                continue
+            while len(self.subscription_queue[self.subscription_id]):
+                notif_xml = self.subscription_queue[self.subscription_id].popleft()
+                if notif_xml:
+                    self.log.info(f'Verifying notification {self.subscription_id}')
+                    self.result = self.verifier.subscribe_verify(notif_xml)
+        self.stop()
+
+
+class NetconfSubscriptionOnce(NetconfSubscription):
+    """NETCONF Subscription class for ONCE mode."""
+    def __init__(self,
+                 device: Netconf = None,
+                 payload: List = None,
+                 ** request):
+        super().__init__(device, payload, **request)
+
+    @NetconfSubscription.cover_exceptions
+    def run(self):
+        """Check for inbound notifications."""
+        self.log.info('Subscribe ONCE notification active')
+        t = time.time()
+        time_delta = 0.0
+        self.log.info(f"Maximum stream time: {self.stream_max} seconds.")
+
+        while time_delta < self.stream_max:
+            time_delta = time.time() - t
+            self.log.info(f"Delta: {time_delta} seconds.")
+            if self.transaction_time and self.ntp_server:
+                if time_delta > self.transaction_time:
+                    self.log.error('Transaction time exceeded')
+                    self.result.append(False)
+                    break
+            if self.stopped():
+                time_delta = self.stream_max
+                self.log.info("Terminating notification early.")
+                break
+            self.log.info('Check for incoming notifications.')
+            notif = self.device.take_notification(timeout=self.stream_max)
+            if hasattr(notif, "notification_xml"):
+                # Add to global queue (this might not be for this subscription)
+                sub_id = self.get_subscribe_id(notif.notification_xml)
+                if sub_id is None:
+                    self.log.warning('NO SUBSCRIPTION ID FOUND')
+                self.log.info(f'Adding notification ID:{sub_id} to queue.')
+                if sub_id not in self.subscription_queue:
+                    self.subscription_queue[sub_id] = deque()
+                self.subscription_queue[sub_id].append(
+                    notif.notification_xml)
+            self.log.info(f'Check queue for {self.subscription_id} notifications.')
+            if self.subscription_id not in self.subscription_queue:
+                self.log.warning(f'No notifications for {self.subscription_id}')
+                continue
+            while len(self.subscription_queue[self.subscription_id]):
+                notif_xml = self.subscription_queue[self.subscription_id].popleft()
+                if notif_xml:
+                    self.log.info(f'Verifying notification {self.subscription_id}')
+                    self.result = self.verifier.subscribe_verify(notif_xml)
+                    break
+        self.stop()
+
+
+class NetconfSubscriptionPoll(NetconfSubscription):
+    """NETCONF Subscription class for POLL mode."""
+    def __init__(self,
+                 device: Netconf = None,
+                 payload: List = None,
+                 **request):
+        super().__init__(device, payload, **request)
+
+    @NetconfSubscription.cover_exceptions
+    def run(self):
+        """Check for inbound notifications."""
+        self.log.info('Subscribe POLL notification active')
+        t = time.time()
+        time_delta = 0.0
+        self.log.info(f"Maximum stream time: {self.stream_max} seconds.")
+
+        while time_delta < self.stream_max:
+            time_delta = time.time() - t
+            self.log.info(f"Delta: {time_delta} seconds.")
+            if self.stopped():
+                self.time_delta = self.stream_max
+                self.log.info("Terminating notification early.")
+                break
+            self.log.info('Check for incoming notifications.')
+            notif = self.device.take_notification(timeout=self.stream_max)
+            if hasattr(notif, "notification_xml"):
+                # Add to global queue (this might not be for this subscription)
+                sub_id = self.get_subscribe_id(notif.notification_xml)
+                if sub_id is None:
+                    self.log.warning('NO SUBSCRIPTION ID FOUND')
+                self.log.info(f'Adding {sub_id} notification to queue.')
+                if sub_id not in self.subscription_queue:
+                    self.subscription_queue[sub_id] = deque()
+                self.subscription_queue[sub_id].append(
+                    notif.notification_xml)
+            self.log.info(f'Check queue for {self.subscription_id} notifications.')
+            if self.subscription_id not in self.subscription_queue:
+                self.log.warning(f'No notifications for {self.subscription_id}')
+                continue
+            while len(self.subscription_queue[self.subscription_id]):
+                notif_xml = self.subscription_queue[self.subscription_id].popleft()
+                if notif_xml:
+                    self.log.info(f'Verifying notification {self.subscription_id}')
+                    self.result = self.verifier.subscribe_verify(notif_xml)
+                time.sleep(self.sample_poll)
+            result = netconf_send(
+                self.device,
+                [('rpc', {'rpc': self.request['rpc']})],
+                {},
+                lock='',
+                lock_retry=0
+            )
+            if self.validate_subscribe_response(result) is False:
+                self.result = False
+                break
+            _, response = result[0]
+            sub_id = self.get_subscribe_id(response)
+            if sub_id is None:
+                self.log.error('NO POLL SUBSCRIPTION ID FOUND')
+            self.subscription_id = sub_id
+        self.stop()
 
 
 def gen_ncclient_rpc(rpc_data, prefix_type="minimal"):
@@ -342,7 +641,7 @@ def try_lock(uut, target, timer=30, sleeptime=1):
             break
         elif counter < timer:
             log.info("RETRYING LOCK - {0}".format(counter))
-            sleep(sleeptime)
+            time.sleep(sleeptime)
         else:
             log.error(
                 banner('ERROR - LOCKING FAILED. RETRY TIMER EXCEEDED!!!')

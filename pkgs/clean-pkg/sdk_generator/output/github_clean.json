@@ -98,7 +98,7 @@
         "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/sdwan/stages.py#L969"
       },
       "uid": "ChangeBootVariable",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L41"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L38"
     },
     "nxos": {
       "doc": "This stage configures boot variables of the device using the following steps:\n\n    - Delete existing boot variables.\n    - Configure boot variables using the provided 'images'.\n    - Write memory.\n    - Verify the boot variables are as expected.\n\nStage Schema\n------------\nchange_boot_variable:\n\n    images:\n\n        kickstart (list, optional): The kickstart image file\n\n        system (list): The system image file\n\n    copy_vdc_all (bool, optional): If True copy onto all VDCs. Defaults to False.\n\n    timeout (int, optional): Execute timeout in seconds. Defaults to 300.\n\n    max_time (int, optional): Maximum time in seconds allowed for verifications.\n        Defaults to 300.\n\n    check_interval (int, optional): How often to check verifications in seconds.\n        Defaults to 60.\n\n    standby_copy_max_time (int, optional): Maximum time in seconds allowed for\n        copying to standby RP. Defaults to 300.\n\n    standby_copy_check_interval (int, optional): How often to check if the copy\n        to the standby RP is complete. Defaults to 20.\n\n    current_running_image (bool, optional): Set the boot variable to the currently\n        running image from the show version command instead of the image provided.\n        Defaults to False.\n\nExample\n-------\nchange_boot_variable:\n    images:\n        kickstart: bootflash:/kisckstart.gbin\n        system: bootflash:/system.gbin\n    copy_vdc_all: True\n    timeout: 150\n    max_time: 300\n    check_interval: 20\n    standby_copy_max_time: 100\n    standby_copy_check_interval: 10\n",
@@ -213,7 +213,7 @@
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "CopyToDevice",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1359"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1356"
     }
   },
   "CopyToLinux": {
@@ -323,7 +323,7 @@
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "InstallImage",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L516"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L513"
     },
     "iosxr": {
       "ncs540": {
@@ -359,7 +359,7 @@
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "InstallPackages",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L766"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L763"
     }
   },
   "InstallRemoveInactive": {
@@ -368,7 +368,7 @@
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "InstallRemoveInactive",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L461"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L458"
     }
   },
   "LoadPies": {
@@ -431,7 +431,7 @@
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "Reload",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L850"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L847"
     }
   },
   "RevertVmSnapshot": {
@@ -456,7 +456,7 @@
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "RommonBoot",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1097"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1094"
     }
   },
   "RunConfigure": {
@@ -521,7 +521,7 @@
         "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/sdwan/stages.py#L395"
       },
       "uid": "TftpBoot",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L192"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L189"
     },
     "iosxr": {
       "doc": "This stage boots a new image onto your device using the tftp booting\nmethod.\n\nStage Schema\n------------\ntftp_boot:\n\n    image (list): Image to boot with\n\n    ip_address (list): Management ip address to configure to reach to the\n        tftp server\n\n    subnet_mask (str): Management subnet mask\n\n    gateway (str): Management gateway\n\n    tftp_server (str): Tftp server that is reachable with management interface\n\n    timeout (int, optional): Max time during which tftp boot must\n        complete. Defaults to 600.\n\n    config_reg_timeout (int, optional): Max time to set config-register.\n        Defaults to 30.\n\n    device_reload_sleep (int, optional): Time in seconds to wait after\n        reloading the device. Defaults to 20.\n\n    recovery_username (str, optional): Enable username for device\n        required after bootup. Defaults to None.\n\n    recovery_password (str, optional): Enable password for device\n        required after bootup. Defaults to None.\n\nExample\n-------\ntftp_boot:\n    image:\n        - /auto/some-location/that-this/image/asr9k-mini-px.vm\n    ip_address: [10.1.7.126, 10.1.7.127]\n    gateway: 10.1.7.1\n    subnet_mask: 255.255.255.0\n    tftp_server: 11.1.7.251\n    timeout: 1200\n    config_reg_timeout: 60\n    device_reload_sleep: 300\n    recovery_username: admin\n    recovery_password: nbv_12345\n\nNote: There is more than one ip address, one for each supervisor.\n",

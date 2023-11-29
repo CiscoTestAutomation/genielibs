@@ -187,20 +187,24 @@ class ImageHandler(BaseImageHandler, ImageLoader):
     def update_copy_to_linux(self, number=''):
         '''Update clean section 'copy_to_linux' with image information'''
 
-        files = self.device.clean.setdefault('copy_to_linux' + number, {}). \
-            setdefault('origin', {}).setdefault('files', [])
+        origin = self.device.clean.setdefault('copy_to_linux' + number, {}). \
+            setdefault('origin', {})
 
-        files.clear()
-        files.extend(self.image + self.packages + self.other)
+        if self.override_stage_images:
+            origin.update({'files': self.image + self.packages + self.other})
+        else:
+            origin.setdefault('files', self.image + self.packages + self.other)
 
     def update_copy_to_device(self, number=''):
         '''Update clean stage 'copy_to_device' with image information'''
 
-        files = self.device.clean.setdefault('copy_to_device' + number, {}). \
-            setdefault('origin', {}).setdefault('files', [])
+        origin = self.device.clean.setdefault('copy_to_device' + number, {}). \
+            setdefault('origin', {})
 
-        files.clear()
-        files.extend(self.image + self.packages + self.other)
+        if self.override_stage_images:
+            origin.update({'files': self.image + self.packages + self.other})
+        else:
+            origin.setdefault('files', self.image + self.packages + self.other)
 
     def update_change_boot_variable(self, number=''):
         '''Update clean stage 'change_boot_variable' with image information'''

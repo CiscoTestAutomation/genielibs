@@ -99,3 +99,19 @@ def clear_ipv6_ospf_process(device):
                 device=device, error=e
             )
         )
+
+def clear_ipv6_neighbors(device):
+    """
+        clear ipv6 neighbors
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubcommandFailure: Failed executing command
+    """
+    log.debug("Clearing ipv6 neighbors")
+    try:
+        device.execute("clear ipv6 neighbors")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to clear ipv6 neighbors on {device}. Error:\n{e}")

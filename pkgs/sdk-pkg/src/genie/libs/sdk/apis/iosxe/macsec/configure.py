@@ -664,45 +664,6 @@ def unconfigure_mka_keychain_on_interface(device, interface, key_string, key_cha
             )
         )
 
-def configure_pki_trustpoint(device, key_type, label_name,
-    modulus_size, enrollment_type, subject_line, revocation_check,
-    storage_type):
-    """ Configures Trustpoint related config on device
-
-        Args:
-            device ('obj'): device to use
-            key_type ('str'): Key type to be generated
-            label_name ('str'): Label name
-            modulus_size ('str'): Modulus size to be configured
-            enrollment_type ('str'): Enrollment type to be configured
-            subject_line ('str'): Subject Line to be configured
-            revocation_check ('str'): Revocation check to be configured
-            storage_type ('str'): Storage type to be configured
-
-       Returns:
-            None
-
-        Raises:
-            SubCommandFailure
-    """
-    log.debug("Configure Trustpoint on device")
-
-    configs = [
-            f"crypto key generate {key_type} label {label_name} modulus {modulus_size}",
-            f"crypto pki trustpoint {label_name}",
-            f"enrollment {enrollment_type}",
-            f"subject-name {subject_line}",
-            f"revocation-check {revocation_check}",
-            f"rsakeypair {label_name}",
-            f"storage {storage_type}"]
-
-    try:
-        device.configure(configs)
-    except SubCommandFailure as e:
-        raise SubCommandFailure(
-            "Could not configure Trustpoint related config on device "
-            "Error: {error}".format(error=e)
-            )
 
 def unconfigure_pki_trustpoint(device, label_name):
     """ Unconfigures Trustpoint related config on device
@@ -890,4 +851,49 @@ def unconfigure_disable_sci_dot1q_clear(device,
             "Could not unconfigure MACSec with disable-sci and/or dot1q-in-clear"
             "Error: {error}".format(error=e)
             )
-        
+
+def configure_pki_trustpoint(device, key_type=None, label_name=None,
+    modulus_size=None, enrollment_type=None, subject_line=None, revocation_check=None,
+    storage_type=None):
+    """ Configures Trustpoint related config on device
+
+        Args:
+            device ('obj'): device to use
+            key_type ('str', Optional): Key type to be generated. Defaults to None
+            label_name ('str', Optional): Label name. Defaults to None
+            modulus_size ('str', Optional): Modulus size to be configured. Defaults to None
+            enrollment_type ('str', Optional): Enrollment type to be configured. Defaults to None
+            subject_line ('str', Optional): Subject Line to be configured. Defaults to None
+            revocation_check ('str', Optional): Revocation check to be configured. Defaults to None
+            storage_type ('str', Optional): Storage type to be configured. Defaults to None
+
+       Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configure Trustpoint on device")
+    try:
+        configs = []
+        if key_type and label_name and modulus_size:
+            configs.append(f"crypto key generate {key_type} label {label_name} modulus {modulus_size}")
+        if label_name:
+            configs.append(f"crypto pki trustpoint {label_name}")
+        if enrollment_type:
+            configs.append(f"enrollment {enrollment_type}")
+        if subject_line:
+            configs.append(f"subject-name {subject_line}")
+        if revocation_check:
+            configs.append(f"revocation-check {revocation_check}")
+        if key_type and label_name and modulus_size:
+            configs.append(f"rsakeypair {label_name}")
+        if storage_type:
+            configs.append(f"storage {storage_type}")
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure Trustpoint related config on device "
+            "Error: {error}".format(error=e)
+            )        
+

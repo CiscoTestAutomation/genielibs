@@ -472,6 +472,49 @@ def unconfigure_ipv6_acl_on_interface(device, interface, acl_name, inbound=True)
                 acl=acl_name, interface=interface, error=e,
             )
         )
+    
+def configure_object_group(device, group, object_group_name, protocol=None, option=None, port=None, network_option=None, ip_address_1=None, ip_address_2=None):
+    """Configure object group service name
+       Args:
+            device ('obj'): device object
+            group ('str'): group name
+            object_group_name ('str'): object-group name
+            protocol('str') : eg: tcp,udp,tcp-udp,eigrp
+            option ('str') : eg: lt,eq,gt
+            port ('str') : eg: telnet,ssh
+            network_option ('str') : eg: host,range
+            ip_address_1 ('str') : eg: 1.1.1.1 test
+            ip_address_2 ('str') : eg 2.2.2.2 /24
+       Return:
+            None
+       Raises:
+            SubCommandFailure
+    """
+    config= [
+               f'object-group {group} {object_group_name}' 
+            ]
+    if group=="service" and protocol not in ['udp','tcp','tcp-udp','icmp']:
+        config.append(protocol)
+    elif group=="service" and protocol in ['udp','tcp','tcp-udp','icmp']:
+        if option in ['lt','gt','eq','range']:
+            config.append(f"{protocol} {option} {port}")
+        else :
+            config.append(f"{protocol} {port}")
+    elif group=="network" and network_option=="range":
+        config.append(f"{network_option} {ip_address_1} {ip_address_2}")
+    elif group=="network" and network_option=="host":
+        config.append(f"{network_option} {ip_address_1}")
+    elif group=="network" and network_option==None:
+        config.append(f"{ip_address_1} {ip_address_2}")
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to Configure object group service name on {device.name}\n{e}'
+        )
+    
+
 
 def configure_ipv4_object_group_network(device, og_name, description, ipv4_address, netmask):
     """ Configure ipvv4 object group of network type

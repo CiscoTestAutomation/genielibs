@@ -1,0 +1,38 @@
+configure:
+  commands:
+    action cli reload: "action cli reload\r\n"
+    description RELOAD: "description RELOAD\r\n"
+    end:
+      new_state: execute
+    event manager applet RELOAD: "event manager applet RELOAD\r\n"
+    event none sync yes: "event none sync yes\r\n"
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: MSFT_9500H_SPINE(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: MSFT_9500H_SPINE(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: MSFT_9500H_SPINE#

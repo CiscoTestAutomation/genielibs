@@ -2,6 +2,7 @@ import os
 import unittest
 from pyats.topology import loader
 from genie.libs.sdk.apis.iosxe.platform.configure import copy_file_with_scp
+from genie.libs.sdk.apis.utils import sanitize
 
 
 class TestCopyFileWithScp(unittest.TestCase):
@@ -39,4 +40,4 @@ class TestCopyFileWithScp(unittest.TestCase):
         # Device output inconsistently includes device prompt
         if result.endswith('#'):
             expected_output += '\r\nT13-C9300-24T#'
-        self.assertEqual(result, expected_output)
+        self.assertEqual(sanitize(result), sanitize(expected_output))

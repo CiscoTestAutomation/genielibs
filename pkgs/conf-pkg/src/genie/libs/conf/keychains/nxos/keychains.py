@@ -245,11 +245,37 @@ class Keychains(ABC):
                                         'crypto_algo').value == 'aes-128-cmac':
                                     key_string_str += ' cryptographic-algorithm AES_128_CMAC'
                                 elif attributes.value(
-                                        'crypto_algo').value == 'aes-128-cmac':
+                                        'crypto_algo').value == 'aes-256-cmac':
                                     key_string_str += ' cryptographic-algorithm AES_256_CMAC'
 
                             configurations.append_line(
                                 attributes.format(key_string_str))
+                            
+                        # key chain <key_chain> macsec
+                        #  key <key_id>
+                        #    send-lifetime <lifetime_start> duration <lifetime_duration>
+                        #     or 
+                        #    send-lifetime <lifetime_start> infinite
+                        #     or 
+                        #    send-lifetime local <lifetime_start> infinite
+                        #    or 
+                        #   send-lifetime local <lifetime_start> duration <lifetime_duration>
+                        if attributes.value('lifetime_start'):
+
+                            if attributes.value('local_timezone'):
+                                #send-lifetime local <lifetime_start> duration <lifetime_duration>
+                                lifetime_str = 'send-lifetime local {lifetime_start}'
+                            else:
+                                # send-lifetime <lifetime_start> duration <lifetime_duration>
+                                lifetime_str = 'send-lifetime {lifetime_start}'
+                            
+                            if attributes.value('lifetime_duration'): 
+                                lifetime_str += ' duration {lifetime_duration}'
+                            else: 
+                                lifetime_str += ' infinite'
+
+                            configurations.append_line(
+                                attributes.format(lifetime_str))
 
                     return str(configurations)
 
@@ -344,7 +370,7 @@ class Keychains(ABC):
                                         'crypto_algo').value == 'aes-128-cmac':
                                     key_string_str += ' cryptographic-algorithm AES_128_CMAC'
                                 elif attributes.value(
-                                        'crypto_algo').value == 'aes-128-cmac':
+                                        'crypto_algo').value == 'aes-256-cmac':
                                     key_string_str += ' cryptographic-algorithm AES_256_CMAC'
 
                             configurations.append_line(
@@ -357,8 +383,12 @@ class Keychains(ABC):
                                 'lifetime_start') and attributes.value(
                                     'lifetime_duration'):
 
-                            # send-lifetime <lifetime_start> duration <lifetime_duration>
-                            lifetime_str = 'send-lifetime {lifetime_start} duration {lifetime_duration}'
+                            if attributes.value('local_timezone'):
+                                #send-lifetime local <lifetime_start> duration <lifetime_duration>
+                                lifetime_str = 'send-lifetime local {lifetime_start} duration {lifetime_duration}'
+                            else:
+                                # send-lifetime <lifetime_start> duration <lifetime_duration>
+                                lifetime_str = 'send-lifetime {lifetime_start} duration {lifetime_duration}'
 
                             configurations.append_line(
                                 attributes.format(lifetime_str))

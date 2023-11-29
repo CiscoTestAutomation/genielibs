@@ -10,7 +10,7 @@ class TestExecuteReloadFast(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          9300stack:
+          AMZ-Acc-4:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -19,10 +19,10 @@ class TestExecuteReloadFast(unittest.TestCase):
                 protocol: unknown
             os: iosxe
             platform: cat9k
-            type: router
+            type: c9300
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['9300stack']
+        self.device = self.testbed.devices['AMZ-Acc-4']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,6 @@ class TestExecuteReloadFast(unittest.TestCase):
         )
 
     def test_execute_reload_fast(self):
-        result = execute_reload_fast(self.device, None)
-        expected_output = None
+        result = execute_reload_fast(self.device, None, 'lab', 'lab', 10, 600)
+        expected_output = True
         self.assertEqual(result, expected_output)

@@ -1366,25 +1366,63 @@ def execute_set_platform_hardware_fed_qos(device, mode, qos_type, interface, swi
         raise SubCommandFailure(f'Could not execute Fed qos interface on device, Error: {e}')
 
 
-def execute_reload_fast(device, fast_type=None):
-    """ execute Halt and perform a cold restart for XFSU device
+def execute_reload_fast(device, fast_type=None, username=None, password=None, prompt_wait_time=10, timeout=600):
+    """ Execute Halt and perform a cold restart for XFSU device
 
     Args:
         device ('obj'): device to use
-        fast_type ('fast_type', Optional): type can be "enhanced" or none based on versio
+        fast_type ('fast_type', Optional): type can be "enhanced" or none based on version
+        username ('username', Optional): Console username
+        password ('password', Optional): Console Password
+        timeout ('int, optional'): Timeout value (Default value - 600s)
+        prompt_wait_time ('int, optional'): Time to wait before sending the prompt(Default value - 10s)
     Returns:
-        None
+        True if reload fast is successful
     Raises:
         SubCommandFailure: Failed to execute Halt and perform a cold restart for XFSU device
     """
+    log.debug(f"Performing Reload Fast on {device.name}")
+
+    def slow_sendline(spawn):
+        time.sleep(prompt_wait_time)
+        spawn.sendline('')
+
+    def send_password(spawn):
+        time.sleep(prompt_wait_time)
+        spawn.sendline(password)
+
+    def send_username(spawn):
+        time.sleep(prompt_wait_time)
+        spawn.sendline(username)
+
+    dialog = Dialog([
+        Statement(pattern=r'.*\[y\/n\/q\]',
+                  action='sendline(y)', loop_continue=True, continue_timer=True),
+        Statement(pattern=r'Press RETURN to get started',
+                  action=slow_sendline,
+                  loop_continue=True, continue_timer=True),
+        Statement(pattern=r'Username\:',
+                  action=send_username,
+                  loop_continue=True, continue_timer=True),
+        Statement(pattern=r'Password\:',
+                  action=send_password,
+                  loop_continue=True, continue_timer=False),
+        Statement(pattern=r'%s\>' % device.name,
+                  action="sendline(enable)",
+                  loop_continue=True, continue_timer=True)])
+
     cmd = "reload fast"
     if fast_type:
         cmd += f" {fast_type}"
-    try:
-        device.execute(cmd)
-    except SubCommandFailure as e:
-        raise SubCommandFailure(f"Failed to execute Halt and perform a cold restart for XFSU device {device}. Error:\n{e}")
 
+    try:
+        device.execute(cmd, reply=dialog, timeout=timeout, append_error_pattern=['.*FAILED\:.*'])
+        log.debug(f"Reload Fast successfully executed")
+        return True
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to execute and perform a reload fast for XFSU device {device}. Error:\n{e}")
 
 def config_smart_save_license_usage(device, day, file_name):
     """ configure smart save license usage
@@ -1665,4 +1703,81 @@ def execute_platform_virtualization(device, slot_type, slot_status):
             f'Failed to execute set platform hardware rom-monitor virtualization {slot_type} {slot_status} on device {device.name}. Error:\n{e}'
         )
 
+def clear_ip_pim_rp_mapping(device):
+    """ clear ip pim rp-mapping
+        Args:
+            device (`obj`): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"Clear ip pim rp-mapping on {device}")
 
+    try:
+        device.execute('clear ip pim rp-mapping')
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not clear ip pim rp-mapping on {device}. Error:\n{e}")
+
+
+def execute_event_manager_run_with_reload(device,username,password,
+                                            embedded_event_name="RELOAD",sleep_time=10):
+    """ Execute event manager with Embedded Event Manager policy name  
+        Args:
+            device ('obj'): device to use
+            embedded_event_name ('str'): Embedded Event Manager policy name 
+            username ('str'): username 
+            password ('str'): password 
+            sleep_time : sleep time
+        Returns:
+            True if reload successful else False
+        Raises:
+            SubCommandFailure
+    """
+    def slow_sendline(spawn):
+        time.sleep(sleep_time)
+        spawn.sendline()
+
+    def send_password(spawn):
+        time.sleep(sleep_time)
+        spawn.sendline(password)
+
+    def send_username(spawn):
+        time.sleep(sleep_time)
+        spawn.sendline(username)
+
+    dialog = Dialog ([
+             Statement(pattern=r'.*\[y\/n\/q\]',
+                               action='sendline(y)', loop_continue=True, continue_timer=True),
+
+             Statement(pattern=r'.*Press RETURN to get started.*',
+                               action= slow_sendline,
+                               loop_continue=True, continue_timer=True),
+             Statement(pattern=r'Username\:',
+                               action= send_username,
+                               loop_continue=True, continue_timer=True),
+             Statement(pattern=r'Password\:',
+                               action= send_password,
+                               loop_continue=True, continue_timer=False),
+             Statement(pattern=r'%s\>' % device.name,
+                               action= "sendline(enable)",
+                               loop_continue=True, continue_timer=True),
+             Statement(pattern=r'Password\:',
+                               action= send_password,
+                               loop_continue=True, continue_timer=False),
+             Statement(pattern=r'%s\#' % device.name,
+                               action= None,
+                               loop_continue=False, continue_timer=False)])
+
+    cmd = f'event manager run {embedded_event_name}'
+    try:
+        output = device.execute(cmd, reply=dialog)
+    except Exception as err:
+        log.error("Failed to execute the command: {err}".format(err=err))
+
+    if 'FAILED:' in output:
+        log.debug(f"Reload is failed on {device.name}")
+        return False
+    log.debug(f"Reload is successful on {device.name}")
+    return True

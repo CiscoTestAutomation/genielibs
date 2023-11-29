@@ -60,6 +60,22 @@ class TestUtilsApi(unittest.TestCase):
         copy_from_device(device, local_path='flash:test.txt')
         assert re.search(r'copy flash:test.txt http://\w+:\w+@127.0.0.2:2000/router_test.txt', str(device.execute.call_args))
 
+    def test_copy_from_device_via_testbed_servers_proxy(self):
+        device = MagicMock()
+        device.hostname = 'router'
+        device.os = 'iosxe'
+        device.via = 'cli'
+        device.connections['cli'].get = Mock(return_value={})
+        device.api.get_mgmt_ip_and_mgmt_src_ip_addresses = Mock(return_value=('127.0.0.1', ['127.0.0.2']))
+        device.api.get_local_ip = Mock(return_value='127.0.0.1')
+        server = MagicMock()
+        server.api.socat_relay = Mock(return_value=2000)
+        server.execute = Mock(return_value='inet 127.0.0.2')
+        device.testbed.servers = Mock(return_value=server)
+        device.api.convert_server_to_linux_device = Mock(return_value=server)
+        copy_from_device(device, local_path='flash:test.txt')
+        assert re.search(r'copy flash:test.txt http://\w+:\w+@127.0.0.2:2000/router_test.txt', str(device.execute.call_args))
+
     def test_copy_to_device(self):
         device = MagicMock()
         device.os = 'iosxe'
@@ -80,6 +96,22 @@ class TestUtilsApi(unittest.TestCase):
         device.api.get_mgmt_ip_and_mgmt_src_ip_addresses = Mock(return_value=('127.0.0.1', ['127.0.0.2']))
         device.api.get_local_ip = Mock(return_value='127.0.0.1')
         device.execute = Mock()
+        copy_to_device(device, remote_path='/tmp/test.txt')
+        assert re.search(r'copy http://\w+:\w+@127.0.0.2:2000/test.txt flash:', str(device.execute.call_args))
+
+    def test_copy_to_device_via_testbed_servers_proxy(self):
+        device = MagicMock()
+        device.hostname = 'router'
+        device.os = 'iosxe'
+        device.via = 'cli'
+        device.connections['cli'].get = Mock(return_value={})
+        device.api.get_mgmt_ip_and_mgmt_src_ip_addresses = Mock(return_value=('127.0.0.1', ['127.0.0.2']))
+        device.api.get_local_ip = Mock(return_value='127.0.0.1')
+        server = MagicMock()
+        server.api.socat_relay = Mock(return_value=2000)
+        server.execute = Mock(return_value='inet 127.0.0.2')
+        device.testbed.servers = Mock(return_value=server)
+        device.api.convert_server_to_linux_device = Mock(return_value=server)
         copy_to_device(device, remote_path='/tmp/test.txt')
         assert re.search(r'copy http://\w+:\w+@127.0.0.2:2000/test.txt flash:', str(device.execute.call_args))
 

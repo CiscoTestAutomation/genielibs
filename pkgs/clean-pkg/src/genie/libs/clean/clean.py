@@ -11,7 +11,7 @@ from pyats.aetest import Testcase
 from pyats.aetest.container import TestContainer
 from pyats.log.utils import banner
 from pyats.aetest import processors
-from pyats.kleenex.bases import BaseCleaner
+from pyats.clean.bases import BaseCleaner
 from pyats.aetest.parameters import ParameterDict
 from pyats.aetest.sections import TestSection
 

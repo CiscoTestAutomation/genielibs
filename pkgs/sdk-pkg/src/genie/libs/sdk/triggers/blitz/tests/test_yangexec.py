@@ -1,4 +1,3 @@
-# Python
 import unittest
 import logging
 import sys
@@ -21,9 +20,15 @@ from genie.libs.sdk.triggers.blitz.gnmi_util import (GnmiMessage,
                                                      GnmiSubscriptionOnce,
                                                      GnmiSubscriptionStream,
                                                      GnmiSubscriptionPoll,)
+from genie.libs.sdk.triggers.blitz.netconf_util import (
+    NetconfSubscriptionStream
+)
 from genie.libs.sdk.triggers.blitz.rpcverify import RpcVerify, OptFields
 from genie.libs.sdk.triggers.blitz.verifiers import GnmiDefaultVerifier
-from genie.libs.sdk.triggers.blitz.tests.device_mocks import TestDevice, TestDeviceWithNtp
+from genie.libs.sdk.triggers.blitz.tests.device_mocks import (
+    TestDevice,
+    TestDeviceWithNtp,
+)
 from dataclasses import dataclass
 
 log = logging.getLogger(__name__)
@@ -235,23 +240,25 @@ class TestYangExec(unittest.TestCase):
         }
         netconf_send_mock.return_value = [(
             'subscribe',
-            '''<?xml version="1.0" encoding="UTF-8"?>\n
-            <rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:
-            base:1.0" message-id="urn:uuid:60a40a42-987d-4159-
-            89d6-c67252b20f42" xmlns:nc="urn:ietf:params:xml:
-            ns:netconf:base:1.0"><subscription-result xmlns=\'
-            urn:ietf:params:xml:ns:yang:ietf-event-notificati
-            ons\' xmlns:notif-bis="urn:ietf:params:xml:ns:yang:
-            ietf-event-notifications">notif-bis:ok</subscription
-            -result>\n<subscription-id xmlns=\'urn:ietf:params:
-            xml:ns:yang:ietf-event-notifications\'>2147483760
-            </subscription-id>\n</rpc-reply>\''''
+            '''
+            <?xml version="1.0" encoding="UTF-8"?>
+            <rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="urn:uuid:60a40a42-987d-4159-89d6-c67252b20f42">
+              <subscription-result xmlns="urn:ietf:params:xml:ns:yang:ietf-event-notifications" xmlns:notif-bis="urn:ietf:params:xml:ns:yang:ietf-event-notifications">
+                notif-bis:ok
+              </subscription-result>
+              <subscription-id xmlns="urn:ietf:params:xml:ns:yang:ietf-event-notifications">
+                2147483760
+              </subscription-id>
+            </rpc-reply>'''
         )]
         result = run_netconf(
             operation, self.netconf_device, steps, datastore, rpc_data, returns, format=format
         )
 
-        self.assertEqual(result, True)
+        self.assertIsInstance(result, NetconfSubscriptionStream)
+        result.stop()
+        self.assertEqual(result.subscription_id, '2147483760')
+        self.assertIn('2147483760', result.subscription_queue)
 
     @patch('genie.libs.sdk.triggers.blitz.yangexec.netconf_send')
     def test_run_netconf_subscribe_raw(self, netconf_send_mock):
@@ -313,17 +320,17 @@ class TestYangExec(unittest.TestCase):
         }
         netconf_send_mock.return_value = [(
             'subscribe',
-            '''<?xml version="1.0" encoding="UTF-8"?>\n
-            <rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:
-            base:1.0" message-id="urn:uuid:60a40a42-987d-4159-
-            89d6-c67252b20f42" xmlns:nc="urn:ietf:params:xml:
-            ns:netconf:base:1.0"><subscription-result xmlns=\'
-            urn:ietf:params:xml:ns:yang:ietf-event-notificati
-            ons\' xmlns:notif-bis="urn:ietf:params:xml:ns:yang:
-            ietf-event-notifications">notif-bis:ok</subscription
-            -result>\n<subscription-id xmlns=\'urn:ietf:params:
-            xml:ns:yang:ietf-event-notifications\'>2147483760
-            </subscription-id>\n</rpc-reply>\''''
+            '''
+            <?xml version="1.0" encoding="UTF-8"?>
+            <rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="urn:uuid:60a40a42-987d-4159-89d6-c67252b20f42" xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0">
+              <subscription-result xmlns="urn:ietf:params:xml:ns:yang:ietf-event-notifications" xmlns:notif-bis="urn:ietf:params:xml:ns:yang:ietf-event-notifications">
+                notif-bis:ok
+              </subscription-result>
+              <subscription-id xmlns="urn:ietf:params:xml:ns:yang:ietf-event-notifications">
+                2147483760
+              </subscription-id>
+            </rpc-reply>
+            '''
         )]
         result = run_netconf(
             operation,  # operation
@@ -335,7 +342,10 @@ class TestYangExec(unittest.TestCase):
             format=format  # format
         )
 
-        self.assertEqual(result, True)
+        self.assertIsInstance(result, NetconfSubscriptionStream)
+        result.stop()
+        self.assertEqual(result.subscription_id, '2147483760')
+        self.assertIn('2147483760', result.subscription_queue)
 
     def test_path_elem_to_xpath(self):
         """ Test if path_elem_to_xpath is adding prefix keys in opfields"""
@@ -3021,7 +3031,7 @@ class TestYangExec(unittest.TestCase):
         notif = proto.gnmi_pb2.Notification()
         notif.update.append(update)
         response.notification.append(notif)
-        device = TestDevice(response)
+        device = TestDeviceWithNtp(response)
 
         result = run_gnmi(
             operation, device, steps, datastore, rpc_data, returns, format=format
@@ -3037,8 +3047,10 @@ class TestYangExec(unittest.TestCase):
 
     def test_subscribe_poll_transaction_time(self):
         request = self.make_test_request()
-        request['transaction_time'] = 0.00000001
+        request['transaction_time'] = 0.00000000001
+        device = TestDeviceWithNtp(self.make_test_notification())
         subscribe_thread = GnmiSubscriptionPoll(
+            device=device,
             responses=[self.make_test_notification()],
             **request
         )
@@ -3048,6 +3060,7 @@ class TestYangExec(unittest.TestCase):
 
         request['transaction_time'] = 2
         subscribe_thread = GnmiSubscriptionPoll(
+            device=device,
             responses=[self.make_test_notification()],
             **request
         )
@@ -3057,9 +3070,10 @@ class TestYangExec(unittest.TestCase):
 
     def test_subscribe_once_transaction_time(self):
         request = self.make_test_request()
-        request['transaction_time'] = 0.00000001
+        request['transaction_time'] = 0.00000000001
         device = TestDeviceWithNtp(self.make_test_notification())
         subscribe_thread = GnmiSubscriptionOnce(
+            device=device,
             responses=[self.make_test_notification()],
             **request
         )
@@ -3069,6 +3083,7 @@ class TestYangExec(unittest.TestCase):
 
         request['transaction_time'] = 5
         subscribe_thread = GnmiSubscriptionOnce(
+            device=device,
             responses=[self.make_test_notification()],
             **request
         )
@@ -3079,7 +3094,7 @@ class TestYangExec(unittest.TestCase):
     def test_subscribe_stream_transaction_time(self):
         request = self.make_test_request()
         device = TestDeviceWithNtp(self.make_test_notification())
-        request['transaction_time'] = 0.00000001
+        request['transaction_time'] = 0.00000000001
         subscribe_thread = GnmiSubscriptionStream(
             device=device,
             responses=[self.make_test_notification()],

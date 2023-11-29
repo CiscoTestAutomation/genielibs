@@ -1,0 +1,42 @@
+configure:
+  commands:
+    encoding encode-kvgpb: "encoding encode-kvgpb\r\n"
+    end:
+      new_state: execute
+    filter xpath /process-cpu-ios-xe-oper:cpu-usage/cpu-utilization/five-seconds: "filter\
+      \ xpath /process-cpu-ios-xe-oper:cpu-usage/cpu-utilization/five-seconds\r\n"
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    receiver ip address 192.168.0.11 56789 protocol grpc-tcp: "receiver ip address\
+      \ 192.168.0.11 56789 protocol grpc-tcp\r\n"
+    stream yang-push: "stream yang-push\r\n"
+    telemetry ietf subscription 501: "telemetry ietf subscription 501\r\n"
+    update-policy periodic 500: "update-policy periodic 500\r\n"
+  prompt: ott-isr4k-32(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: ott-isr4k-32(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: ott-isr4k-32#

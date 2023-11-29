@@ -228,7 +228,11 @@ class Platform(SuperPlatform):
                     self.slot['rp'][str(slot_number)]['rp_kickstart_boot_image'] = self.rp_kickstart_boot_image
                 except Exception:
                     pass
-                self.slot['rp'][str(slot_number)]['rp_uptime'] = self.rp_uptime
+                try:
+                    self.slot['rp'][str(slot_number)
+                                    ]['rp_uptime'] = self.rp_uptime
+                except Exception:
+                    pass
 
             if 'lc' in self.slot:
                 delete_dup_lc = []
@@ -247,8 +251,7 @@ class Platform(SuperPlatform):
                                 if self.module['lc'][key][mod_name]['serial_number'] == serial:
                                     linecard_status = self.module['lc'][key][mod_name]['status']
                                     self.slot['lc'][item].update({'state':linecard_status})
-                                    if 'sup' not in self.slot['lc'][item]['name'].lower() and\
-                                       'ethernet' not in self.slot['lc'][item]['name'].lower():
+                                    if not any(x in self.slot['lc'][item]['name'].lower() for x in ['sup', 'ethernet', 'eth']):
                                       self.slot.setdefault('oc',{}).setdefault(item, {}).update(self.slot['lc'][item])
                                       self.slot['oc'][item].update({'state':linecard_status})
 

@@ -811,6 +811,7 @@ def configure_replace(self,
                       health_uids=None,
                       health_groups=None,
                       health_sections=None,
+                      timeout=60,
                       **kwargs):
 
     if 'ret_dict' in kwargs:
@@ -830,6 +831,7 @@ def configure_replace(self,
         iteration=iteration,
         interval=interval,
         delete_after_restore=False,
+        timeout=timeout
     )
     # steps.result will only change to result_status if it is passed.
     if result_status and steps.result.name == "passed":
@@ -854,6 +856,7 @@ def save_config_snapshot(self,
                          health_uids=None,
                          health_groups=None,
                          health_sections=None,
+                         timeout=60,
                          **kwargs):
 
     if 'ret_dict' in kwargs:
@@ -881,7 +884,8 @@ def save_config_snapshot(self,
         device=device,
         abstract=None,
         method='config_replace',
-        default_dir=self.parent.default_file_system)
+        default_dir=self.parent.default_file_system,
+        timeout=timeout)
 
     # To keep track of snapshots (whether they are deleted or not)
     self.restore[device].snapshot_deleted = False
@@ -910,6 +914,7 @@ def restore_config_snapshot(self,
                             health_uids=None,
                             health_groups=None,
                             health_sections=None,
+                            timeout=60,
                             **kwargs):
     if 'ret_dict' in kwargs:
         kwargs.pop('ret_dict')
@@ -930,7 +935,8 @@ def restore_config_snapshot(self,
             device=device,
             abstract=None,
             method='config_replace',
-            delete_after_restore=delete_snapshot)
+            delete_after_restore=delete_snapshot,
+            timeout=timeout)
     except Exception as e:
         steps.failed(str(e))
 

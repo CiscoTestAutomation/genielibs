@@ -10,7 +10,7 @@ class TestUnconfigureFilterVlanList(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          mac-gen2:
+          9300-stack4:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -19,10 +19,10 @@ class TestUnconfigureFilterVlanList(unittest.TestCase):
                 protocol: unknown
             os: iosxe
             platform: cat9k
-            type: C9400
+            type: c9400
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['mac-gen2']
+        self.device = self.testbed.devices['9300-stack4']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,6 @@ class TestUnconfigureFilterVlanList(unittest.TestCase):
         )
 
     def test_unconfigure_filter_vlan_list(self):
-        result = unconfigure_filter_vlan_list(self.device, 'vacl1', '100')
+        result = unconfigure_filter_vlan_list(self.device, 'mymap', '100')
         expected_output = None
         self.assertEqual(result, expected_output)

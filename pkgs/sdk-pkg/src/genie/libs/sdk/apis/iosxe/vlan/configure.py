@@ -925,7 +925,6 @@ def configure_interface_vlan_priority(device, vlan_id, priority):
         Raises:
             SubcommandFailure: Failed executing command
     """
-
     log.debug("interface vlan {vlan_id}".format(vlan_id=vlan_id))
     configs = []
     configs.append("interface vlan {vlan_id}".format(vlan_id=vlan_id))
@@ -1194,3 +1193,53 @@ def unconfigure_vtp_mode(device, mode):
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not configure no vtp mode. Error:\n{e}')
+
+def configure_shutdown_vlan_interface_range(device, vlan_id_from, vlan_id_to):
+    """
+        Args:
+            device ('obj'): Device object
+            vlan_id_from ('int') : <1-4094>  Vlan interface number staring from
+            vlan_id_to ('int') : <1-4094>  Vlan interface number end to
+        Returns:
+            None
+        Raises:
+            SubcommandFailure: Failed executing command
+    """
+
+    log.debug("interface range vlan {vlan_id_from}-{vlan_id_to}".format(vlan_id_from=vlan_id_from, vlan_id_to=vlan_id_to))
+    configs = []
+    configs.append("interface range vlan {vlan_id_from}-{vlan_id_to}".format(vlan_id_from=vlan_id_from, vlan_id_to=vlan_id_to))
+    configs.append("shutdown")
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not shut the vlan range {vlan_id_from}-{vlan_id_to} on {device}. Error:\n{error}".format(
+                vlan_id_from=vlan_id_from,vlan_id_to=vlan_id_to,device=device, error=e
+            )
+        ) 
+
+
+def configure_no_shutdown_vlan_interface_range(device, vlan_id_from, vlan_id_to):
+    """
+        Args:
+            device ('obj'): Device object
+            vlan_id_from ('int') : <1-4094>  Vlan interface number staring from
+            vlan_id_to ('int') : <1-4094>  Vlan interface number end to
+        Returns:
+            None
+        Raises:
+            SubcommandFailure: Failed executing command
+    """
+    log.debug("interface range vlan {vlan_id_from}-{vlan_id_to}".format(vlan_id_from=vlan_id_from, vlan_id_to=vlan_id_to))
+    configs = []
+    configs.append("interface range vlan {vlan_id_from}-{vlan_id_to}".format(vlan_id_from=vlan_id_from, vlan_id_to=vlan_id_to))
+    configs.append("no shutdown")
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not shut the vlan range {vlan_id_from}-{vlan_id_to} on {device}. Error:\n{error}".format(
+                vlan_id_from=vlan_id_from,vlan_id_to=vlan_id_to,device=device, error=e
+            )
+        ) 

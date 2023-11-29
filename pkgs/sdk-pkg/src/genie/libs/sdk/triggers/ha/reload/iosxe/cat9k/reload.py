@@ -22,7 +22,7 @@ log = logging.getLogger(__name__)
 # Which key to exclude for Platform Ops comparison
 platform_exclude = ['maker', 'rp_uptime', 'sn', 'main_mem', 'issu',
                     'switchover_reason', 'config_register', 'chassis_sn',
-                    'sn', 'name', 'state', 'redundancy_state','version','issu_rollback_timer_reason']
+                    'sn', 'name', 'state', 'redundancy_state','version','issu_rollback_timer_reason', 'chassis', 'rtr_type']
 
 
 class TriggerReload(CommonReload):
