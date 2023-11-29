@@ -51,7 +51,8 @@ def clear_ip_dhcp_snooping_statistics(device):
        Raises:
             SubCommandFailure
     """
-    log.info("Executing clear_ip_dhcp_snooping_statistics API")
+    log.debug("Executing clear_ip_dhcp_snooping_statistics API")
+
     try:
         device.execute("clear ip dhcp snooping statistics *")
     except SubCommandFailure as e:
