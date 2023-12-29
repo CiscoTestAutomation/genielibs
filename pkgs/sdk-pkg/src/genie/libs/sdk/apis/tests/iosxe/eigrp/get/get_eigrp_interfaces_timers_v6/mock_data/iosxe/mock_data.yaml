@@ -1,0 +1,77 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: R1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: R1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show ipv6 eigrp interfaces detail:
+      response:
+      - "EIGRP-IPv6 Interfaces for AS(3)\r\n                              Xmit Queue\
+        \   PeerQ        Mean   Pacing Time   Multicast    Pending\r\nInterface  \
+        \            Peers  Un/Reliable  Un/Reliable  SRTT   Un/Reliable   Flow Timer\
+        \   Routes\r\nFa0/0                    2        0/0       0/0         772\
+        \       0/0          832           0\r\n  Hello-interval is 5, Hold-time is\
+        \ 15\r\n  Split-horizon is enabled\r\n  Next xmit serial <none>\r\n  Packetized\
+        \ sent/expedited: 2/0\r\n  Hello's sent/expedited: 361/3\r\n  Un/reliable\
+        \ mcasts: 0/1  Un/reliable ucasts: 4/4\r\n  Mcast exceptions: 1  CR packets:\
+        \ 1  ACKs suppressed: 0\r\n  Retransmissions sent: 0  Out-of-sequence rcvd:\
+        \ 1\r\n  Topology-ids on interface - 0 \r\n  Authentication mode is not set\r\
+        \nEIGRP-IPv6 Interfaces for AS(4)\r\n                              Xmit Queue\
+        \   PeerQ        Mean   Pacing Time   Multicast    Pending\r\nInterface  \
+        \            Peers  Un/Reliable  Un/Reliable  SRTT   Un/Reliable   Flow Timer\
+        \   Routes\r\nFa1/0                    0        0/0       0/0           0\
+        \       0/0            0           0\r\n  Hello-interval is 5, Hold-time is\
+        \ 15\r\n  Split-horizon is enabled\r\n  Next xmit serial <none>\r\n  Packetized\
+        \ sent/expedited: 0/0\r\n  Hello's sent/expedited: 360/1\r\n  Un/reliable\
+        \ mcasts: 0/0  Un/reliable ucasts: 0/0\r\n  Mcast exceptions: 0  CR packets:\
+        \ 0  ACKs suppressed: 0\r\n  Retransmissions sent: 0  Out-of-sequence rcvd:\
+        \ 0\r\n  Topology-ids on interface - 0 \r\n  Authentication mode is not set"
+      - "EIGRP-IPv6 Interfaces for AS(3)\r\n                              Xmit Queue\
+        \   PeerQ        Mean   Pacing Time   Multicast    Pending\r\nInterface  \
+        \            Peers  Un/Reliable  Un/Reliable  SRTT   Un/Reliable   Flow Timer\
+        \   Routes\r\nFa0/0                    2        0/0       0/0         772\
+        \       0/0          832           0\r\n  Hello-interval is 5, Hold-time is\
+        \ 15\r\n  Split-horizon is enabled\r\n  Next xmit serial <none>\r\n  Packetized\
+        \ sent/expedited: 2/0\r\n  Hello's sent/expedited: 362/3\r\n  Un/reliable\
+        \ mcasts: 0/1  Un/reliable ucasts: 4/4\r\n  Mcast exceptions: 1  CR packets:\
+        \ 1  ACKs suppressed: 0\r\n  Retransmissions sent: 0  Out-of-sequence rcvd:\
+        \ 1\r\n  Topology-ids on interface - 0 \r\n  Authentication mode is not set\r\
+        \nEIGRP-IPv6 Interfaces for AS(4)\r\n                              Xmit Queue\
+        \   PeerQ        Mean   Pacing Time   Multicast    Pending\r\nInterface  \
+        \            Peers  Un/Reliable  Un/Reliable  SRTT   Un/Reliable   Flow Timer\
+        \   Routes\r\nFa1/0                    0        0/0       0/0           0\
+        \       0/0            0           0\r\n  Hello-interval is 5, Hold-time is\
+        \ 15\r\n  Split-horizon is enabled\r\n  Next xmit serial <none>\r\n  Packetized\
+        \ sent/expedited: 0/0\r\n  Hello's sent/expedited: 361/1\r\n  Un/reliable\
+        \ mcasts: 0/0  Un/reliable ucasts: 0/0\r\n  Mcast exceptions: 0  CR packets:\
+        \ 0  ACKs suppressed: 0\r\n  Retransmissions sent: 0  Out-of-sequence rcvd:\
+        \ 0\r\n  Topology-ids on interface - 0 \r\n  Authentication mode is not set"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: R1#
