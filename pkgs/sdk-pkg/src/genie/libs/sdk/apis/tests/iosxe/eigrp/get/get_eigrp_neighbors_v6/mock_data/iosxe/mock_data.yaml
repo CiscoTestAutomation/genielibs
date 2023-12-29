@@ -1,0 +1,51 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: R1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: R1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show ipv6 eigrp neighbors:
+      response:
+      - "EIGRP-IPv6 Neighbors for AS(3)\r\nH   Address                 Interface \
+        \             Hold Uptime   SRTT   RTO  Q  Seq\r\n                       \
+        \                            (sec)         (ms)       Cnt Num\r\n1   Link-local\
+        \ address:     Fa0/0                    10 00:27:43 1160  5000  0  4\r\n \
+        \   FE80::C802:4FF:FE2C:0\r\n0   Link-local address:     Fa0/0           \
+        \         11 00:27:44  384  2304  0  3\r\n    FE80::C803:31FF:FE48:0\r\nEIGRP-IPv6\
+        \ Neighbors for AS(4)"
+      - "EIGRP-IPv6 Neighbors for AS(3)\r\nH   Address                 Interface \
+        \             Hold Uptime   SRTT   RTO  Q  Seq\r\n                       \
+        \                            (sec)         (ms)       Cnt Num\r\n1   Link-local\
+        \ address:     Fa0/0                    14 00:27:44 1160  5000  0  4\r\n \
+        \   FE80::C802:4FF:FE2C:0\r\n0   Link-local address:     Fa0/0           \
+        \         10 00:27:44  384  2304  0  3\r\n    FE80::C803:31FF:FE48:0\r\nEIGRP-IPv6\
+        \ Neighbors for AS(4)"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: R1#
