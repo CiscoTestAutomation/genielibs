@@ -1,0 +1,46 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: R1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: R1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show ip eigrp interfaces:
+      response:
+      - "EIGRP-IPv4 Interfaces for AS(1)\r\n                              Xmit Queue\
+        \   PeerQ        Mean   Pacing Time   Multicast    Pending\r\nInterface  \
+        \            Peers  Un/Reliable  Un/Reliable  SRTT   Un/Reliable   Flow Timer\
+        \   Routes\r\nFa0/0                    2        0/0       0/0        1415\
+        \       0/0         3368           0\r\nEIGRP-IPv4 Interfaces for AS(2)\r\n\
+        \                              Xmit Queue   PeerQ        Mean   Pacing Time\
+        \   Multicast    Pending\r\nInterface              Peers  Un/Reliable  Un/Reliable\
+        \  SRTT   Un/Reliable   Flow Timer   Routes\r\nFa1/0                    1\
+        \        0/0       0/0         160       0/0           50           0"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: R1#
