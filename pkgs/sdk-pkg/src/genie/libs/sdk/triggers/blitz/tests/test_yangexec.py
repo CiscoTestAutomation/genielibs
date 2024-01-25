@@ -3002,7 +3002,7 @@ class TestYangExec(unittest.TestCase):
 
         format = {
             'auto-validate': False,
-            'transaction_time': 0.00000001
+            'transaction_time': -0.00000001
         }
         response = proto.gnmi_pb2.GetResponse()
         upd = {

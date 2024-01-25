@@ -10,7 +10,7 @@ class TestGetFirmwareVersion(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          mac2-sjc24:
+          HA-9400-S2:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,11 +18,11 @@ class TestGetFirmwareVersion(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: cat9k
+            platform: iosxe
             type: iosxe
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['mac2-sjc24']
+        self.device = self.testbed.devices['HA-9400-S2']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -31,20 +31,6 @@ class TestGetFirmwareVersion(unittest.TestCase):
 
     def test_get_firmware_version(self):
         result = get_firmware_version(self.device)
-        expected_output = {'firmware_version': [['17050302'],
-                      ['17.10.1r',
-                       '17.10.1r',
-                       '(7.3, 7.0, 6.0)',
-                       '(7.3, 7.0, 6.0)',
-                       '17.10.1r',
-                       '17.10.1r',
-                       '17.10.1r']],
- 'name': [['FanTray'],
-          ['Slot 3 Supervisor',
-           'Slot 4 Supervisor',
-           'PowerSupplyModule5',
-           'PowerSupplyModule8',
-           'Slot 1 Linecard',
-           'Slot 6 Linecard',
-           'Slot 7 Linecard']]}
+        expected_output = {'firmware_version': [['17050302'], ['17.10.1r', '(7.3, 7.0, 6.0)']],
+ 'name': [['Fan2/Tray'], ['Switch 2 Slot 3 Supervisor', 'PowerSupplyModule1']]}
         self.assertEqual(result, expected_output)

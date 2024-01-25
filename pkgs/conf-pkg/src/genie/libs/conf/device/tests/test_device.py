@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, MagicMock, call
 
 from genie.tests.conf import TestCase
 from genie.conf import Genie
@@ -87,6 +87,13 @@ class test_device(TestCase):
             self.assertIsInstance(dev1, TgenDevice)
             self.assertIsInstance(dev1, HltapiDevice)
             self.assertIsInstance(dev1, SpirentDevice)
+
+    def test_htlapi_traffic_control(self):
+        dev = Device(name='ixia', os='hltapi')
+        dev.default = MagicMock()
+        dev.traffic_control(param='value')
+        dev.default.traffic_control.assert_has_calls([call(param='value')])
+
 
 if __name__ == '__main__':
     unittest.main()

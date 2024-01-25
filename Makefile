@@ -48,8 +48,7 @@ RELATED_PKGS += genie.libs.filetransferutils
 # pinning the version of pysnmp and pyasn1 to fix the type error when using execute_power_cycle_device api
 DEPENDENCIES = restview psutil Sphinx wheel asynctest pysnmp-lextudio==5.0.29 pyasn1==0.4.8
 DEPENDENCIES += sphinx-rtd-theme==1.1.0 pyftpdlib tftpy\<0.8.1 robotframework
-# aiohttp-swagger 1.0.15 requires jinja2==2.11.2 and markupsafe==1.1.1
-DEPENDENCIES += Cython==3.0.0 requests ruamel.yaml grpcio protobuf jinja2==2.11.2 markupsafe==2.0.1
+DEPENDENCIES += Cython==3.0.0 requests ruamel.yaml grpcio protobuf jinja2
 # Internal variables.
 # (note - build examples & templates last because it will fail uploading to pypi
 #  due to duplicates, and we'll for now accept that error)

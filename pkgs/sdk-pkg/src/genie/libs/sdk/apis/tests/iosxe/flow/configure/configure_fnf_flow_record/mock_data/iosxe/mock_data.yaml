@@ -1,28 +1,30 @@
 configure:
   commands:
-    collect counter bytes long: "collect counter bytes long\r\n"
-    collect counter packets long: "collect counter packets long\r\n"
-    collect policy firewall event: "collect policy firewall event\r\n"
-    collect transport tcp flags: "collect transport tcp flags\r\n"
+    collect connection client counter packets long: "collect connection client counter\
+      \ packets long\r\n"
+    collect connection initiator: "collect connection initiator\r\n"
+    collect connection new-connections: "collect connection new-connections\r\n"
+    collect flow direction: "collect flow direction\r\n"
+    collect timestamp absolute first: "collect timestamp absolute first\r\n"
     end:
       new_state: execute
-    flow record dnacrecord: "flow record dnacrecord\r\n"
+    flow record dnacrecord_1: "flow record dnacrecord_1\r\n"
     line console 0:
       new_state: configure_line
-    match datalink mac source address input: "match datalink mac source address input\r\
+    match application name: "match application name\r\n"
+    match connection client ipv4 address: "match connection client ipv4 address\r\n"
+    match connection client transport port: "match connection client transport port\r\
       \n"
-    match interface input: "match interface input\r\n"
-    match ipv4 protocol: "match ipv4 protocol\r\n"
-    match ipv4 source address: "match ipv4 source address\r\n"
-    match transport source-port: "match transport source-port\r\n"
+    match flow observation point: "match flow observation point\r\n"
+    match ipv4 version: "match ipv4 version\r\n"
     no logging console: ''
-  prompt: Starfleet(config)#
+  prompt: Switch(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: Starfleet(config-line)#
+  prompt: Switch(config-line)#
 connect:
   commands:
     ? ''
@@ -42,4 +44,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: Starfleet#
+  prompt: Switch#

@@ -1,13 +1,17 @@
 # Python
 import logging
+import re
 from unicon.eal.dialogs import Statement, Dialog
 
 #unicon
 from unicon.core.errors import SubCommandFailure, TimeoutError
 
+
+
 # Logger
 log = logging.getLogger(__name__)
 
+POST_RELOAD_WAIT_TIME=300
 
 def execute_prime_ap(device, controller_ip_address, controller_name):
     try:
@@ -33,4 +37,58 @@ def execute_erase_ap(device):
         return False
     return True
 
+
+def execute_archive_download(device, image_path, max_timeout=300, username=None, password=None, reload=False):
+    """
+        Downloads image via tftp/http/sftp on AP and reloads the device.
+        Args:
+            device(object): device object
+            image_path(str): path of the image in server
+            max_timeout(int): the maximum timeout where device can perform the download
+            username(str): Username of server where image resides
+            password(str): Password of server where image resides
+            reload(bool): Device reload if True else no reload
+        Returns:
+            bool: True/False
+        """
+    dialog = Dialog([
+        Statement(pattern=r'.*Username:\s*$',
+                  action='sendline({})'.format(username),
+                  loop_continue=True,
+                  continue_timer=False),
+        Statement(pattern=r'.*Password:\s*$',
+                  action='sendline({})'.format(password),
+                  loop_continue=True,
+                  continue_timer=False)
+
+    ])
+    reload_dialog = Dialog([
+        Statement(pattern=r'.*\[confirm\]',
+                  action='send(\r)',
+                  loop_continue=True,
+                  continue_timer=False),
+
+    ])
+    boot_part_before_reload = re.search("BOOT path-list:(\s+\w+)", device.execute("show boot | inc BOOT")).group(1).strip()
+    output = device.execute("archive download-sw /no-reload {}".format(image_path), timeout=max_timeout, reply=dialog)
+    if "Successfully setup AP image" not in output and "Image download completed" not in output:
+        log.error("Failed to downloaded the image")
+        return False
+    else:
+        log.info("Successfully downloaded the image")
+    if reload:
+        try:
+            device.reload(timeout=max_timeout, reply=reload_dialog, post_reload_wait_time=POST_RELOAD_WAIT_TIME)
+            device.disconnect()
+            device.connect()
+        except (SubCommandFailure, TimeoutError):
+            log.error("Failed to bring-up device after reload")
+            return False
+        else:
+            boot_part_after_reload = re.search("BOOT path-list:(\s+\w+)", device.execute("show boot | inc BOOT")).group(1).strip()
+            if boot_part_after_reload == boot_part_before_reload:
+                log.error("Same boot part loaded after image downloading")
+                return False 
+
+    return True
 

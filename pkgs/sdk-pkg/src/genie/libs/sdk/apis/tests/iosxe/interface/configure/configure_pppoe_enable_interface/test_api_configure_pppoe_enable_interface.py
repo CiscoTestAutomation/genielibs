@@ -30,6 +30,6 @@ class TestConfigurePppoeEnableInterface(unittest.TestCase):
         )
 
     def test_configure_pppoe_enable_interface(self):
-        result = configure_pppoe_enable_interface(self.device, 'GigabitEthernet0/0/0', 'global', '100')
+        result = configure_pppoe_enable_interface(self.device, 'Ethernet0/2/0', 'global', '100', '1590')
         expected_output = None
         self.assertEqual(result, expected_output)

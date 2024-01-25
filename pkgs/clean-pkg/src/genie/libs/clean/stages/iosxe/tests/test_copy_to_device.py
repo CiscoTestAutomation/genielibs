@@ -376,7 +376,11 @@ class VerifyCopyToDevice(unittest.TestCase):
                 vrf= 'Mgmt-vrf'
             )
 
-    
+        self.assertEqual(self.cls.history['CopyToDevice'].parameters['image_mapping'],
+            {'/path/cat9k_iosxe.TEST_LATEST_IMAGE_20230606.SSA.bin':
+             'bootflash:/cat9k_iosxe.TEST_LATEST_IMAGE_20230606.SSA.bin'})
+
+
     def test_copy_to_device_verify_running_image_2(self):
         """
         To Test if the device is in bundle mode and user passed install_image stage in clean file
@@ -441,12 +445,12 @@ class VerifyCopyToDevice(unittest.TestCase):
         self.device.parse = Mock(return_value={'version': {'xe_version': 'test.bin',\
          'version_short': '17.7'}, 'switch_num': {'1': {'ports': '120', 'sw_image': 'CAT9K_IOSXE', 'mode': 'BUNDLE'}}})
 
-        
+
         # Mock the apis to simulate the scenario
         self.device.api.free_up_disk_space = Mock(return_value=True)
-        
+
         self.device.api.verify_file_exists = Mock(return_value=True)
-        
+
 
         # Call the method to be tested (clean step inside class)
         self.cls.copy_to_device(
@@ -460,9 +464,9 @@ class VerifyCopyToDevice(unittest.TestCase):
             ),
             protocol='tftp',
         )
-        
+
         skipped_reason = 'The device is in bundle mode and install_image stage is passed in clean file. Skipping the verify running image check.'
-        
+
         # Check that the result is expected
         self.assertEqual("Verify the image running in the device", steps.details[1].name)
         self.assertEqual(Skipped, steps.details[1].result)

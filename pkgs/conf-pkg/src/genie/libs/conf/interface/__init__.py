@@ -53,6 +53,8 @@ class L2_type(Option):
     DOT1Q_TUNNEL = 'dot1q-tunnel'
     FEX_FABRIC = 'fex-fabric'
     PRIVATE_VLAN = 'private-vlan'
+    PRIVATE_VLAN_ACCESS = 'private-vlan host'
+    PRIVATE_VLAN_TRUNK = 'private-vlan trunk'
 
 class Medium(Option):
     # Create the same for p2p or broadcast
@@ -440,6 +442,8 @@ class Interface(BaseInterface):
         dot1q_tunnel = 'dot1q-tunnel'
         fex_fabric = 'fex-fabric'
         private_vlan = 'private-vlan'
+        private_vlan_access = 'private-vlan host'
+        private_vlan_trunk = 'private-vlan trunk'
         trunk = 'trunk'
 
     switchport_mode = managedattribute(

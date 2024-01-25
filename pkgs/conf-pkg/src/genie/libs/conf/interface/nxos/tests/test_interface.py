@@ -14,7 +14,7 @@ from genie.libs.conf.interface import TunnelTeInterface
 from genie.libs.conf.base import MAC, IPv4Interface, IPv6Interface, IPv4Address, IPv6Address
 from genie.libs.conf.interface import Layer, L2_type, IPv4Addr, IPv6Addr,NveInterface
 from genie.libs.conf.vrf import Vrf
-from genie.libs.conf.interface.nxos import Interface
+from genie.libs.conf.interface.nxos import Interface, EthernetInterface
 
 class test_interface(TestCase):
 
@@ -1346,6 +1346,27 @@ class test_nx_interface(TestCase):
             ' exit',
         ]))
             
+    def test_ethernet_interface_private_vlan_access(self):
+        testbed = Genie.testbed = Testbed()
+        dev1 = Device(testbed=testbed, name='PE1', os='nxos')
+        intf1 = EthernetInterface(name='Ethernet0/0/1', device=dev1)
+        # Defining attributes section
+        # make intf1 as L2 private-vlan host interface
+        intf1.switchport_enable = True
+        intf1.switchport_mode = L2_type.PRIVATE_VLAN_ACCESS.value
+        intf1.primary_vlan = '10'
+        intf1.secondary_vlan = '100'
+        cfg = intf1.build_config(apply=False)
+        self.assertMultiLineEqual(
+            str(cfg),
+            '\n'.join([
+                'interface Ethernet0/0/1',
+                ' switchport',
+                ' switchport mode private-vlan host',
+                ' switchport private-vlan host-association 10 100',
+                ' exit',
+            ]))
+
 if __name__ == '__main__':
     unittest.main()
 

@@ -75,3 +75,28 @@ def configure_boot_level_licence(device, nw_advantage=False, nw_essentials=False
                 raise SubCommandFailure(
             f"Failed to configure boot level license Error, Error:\n{e}"
         )
+
+def configure_terminal_settings(device, length=24, width=80, **kwargs):
+    '''
+    Configure terminal length/width
+
+    Args:
+        device ('obj'): Device object
+        length ('int'): Terminal length of the device (Default: 24)
+        width ('int'): Terminal width of the device (Default: 80)
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed to configure terminal setting
+    '''
+
+    cmd = [
+        f"terminal length {length}",
+        f"terminal width {width}"
+    ]
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure terminal settings, Error:\n{e}"
+        )

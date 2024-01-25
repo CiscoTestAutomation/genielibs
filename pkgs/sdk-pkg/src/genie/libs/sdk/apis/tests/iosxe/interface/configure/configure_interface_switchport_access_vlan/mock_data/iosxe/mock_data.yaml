@@ -2,22 +2,20 @@ configure:
   commands:
     end:
       new_state: execute
-    interface ten1/1/0/5: "interface ten1/1/0/5\r\n"
-    line console:
-      new_state: configure_line
+    interface TenGigabitEthernet1/0/13: "interface TenGigabitEthernet1/0/13\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''
-    switchport access vlan 150: "switchport access vlan 150\r\n"
-  prompt: m4a(config)#
+    switchport: "switchport\r\n"
+    switchport access vlan 10: "switchport access vlan 10\r\n"
+    switchport mode access: "switchport mode access\r\n"
+  prompt: 9300-24UX-NBR1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-    line vty: ''
-    terminal width 511: ''
-  prompt: m4a(config-line)#
+  prompt: 9300-24UX-NBR1(config-line)#
 connect:
   commands:
     ? ''
@@ -37,6 +35,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-    term width 511: ''
-    terminal session-timeout 0: ''
-  prompt: m4a#
+  prompt: 9300-24UX-NBR1#

@@ -143,7 +143,7 @@
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "ConfigureReplace",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1986"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1990"
     }
   },
   "ConfigureRrmDcaChannel": {
@@ -166,13 +166,18 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L33"
     },
     "iosxe": {
+      "doc": "This stage connects to the device that is being cleaned.\nStage Schema\n------------\nconnect:\n    via (str, optional): Which connection to use from the testbed file. Uses the\n        default connection if not specified.\n    alias (str, optional): Which connection alias to use from the testbed file.\n    timeout (int, optional): The timeout for the connection to complete in seconds.\n        Defaults to 200.\n    retry_timeout (int, optional): Overall timeout for retry mechanism in seconds.\n        Defaults to 0 which means no retry.\n    retry_interval (int, optional): Interval for retry mechanism in seconds. Defaults\n        to 0 which means no retry.\nExample\n-------\nconnect:\n    timeout: 60\n",
+      "module_name": "stages.stages",
+      "package": "genie.libs.clean",
       "sdwan": {
         "doc": "This stage connects to the device that is being cleaned.\n\nStage Schema\n------------\nconnect:\n\n    via (str, optional): Which connection to use from the testbed file. Uses the\n        default connection if not specified.\n\n    timeout (int, optional): The timeout for the connection to complete in seconds.\n        Defaults to 200.\n\n    retry_timeout (int, optional): Overall timeout for retry mechanism in seconds.\n        Defaults to 0 which means no retry.\n\n    retry_interval (int, optional): Interval for retry mechanism in seconds. Defaults\n        to 0 which means no retry.\n\nExample\n-------\nconnect:\n    timeout: 60\n",
         "module_name": "stages.stages",
         "package": "genie.libs.clean",
         "uid": "Connect",
         "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/sdwan/stages.py#L31"
-      }
+      },
+      "uid": "Connect",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L2046"
     },
     "linux": {
       "wsim": {
@@ -259,7 +264,7 @@
         "module_name": "stages.stages",
         "package": "genie.libs.clean",
         "uid": "EraseApConfiguration",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/cheetah/ap/stages.py#L118"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/cheetah/ap/stages.py#L122"
       }
     }
   },
@@ -371,6 +376,17 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L458"
     }
   },
+  "LoadApImage": {
+    "cheetah": {
+      "ap": {
+        "doc": "This stage loads new AP image\n\n           Stage Schema\n           ------------\n           load_ap_image:\n               ap_image_path (str): Absolute path where ap image is located\n\n               server(str): Server alias which has AP image\n\n               protocol(str): protocol through which AP image will be loaded\n\n               max_time (int, optional): Maximum time for which this clean stage will try to clean ap.\n                   Defaults to 1200\n\n\n\n\n           Example\n           -------\n           load_ap_image:\n                ap_image_path: \"/auto/wnbu-groups-builds/FAST_BUNDLING/polaris_dev/6640/ap3g3-k9w8-tar.master-cisco.202309180209\"\n                server: \"tftp\"\n                max_time: \"1200\"\n       ",
+        "module_name": "stages.stages",
+        "package": "genie.libs.clean",
+        "uid": "LoadApImage",
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/cheetah/ap/stages.py#L184"
+      }
+    }
+  },
   "LoadPies": {
     "iosxr": {
       "doc": "This stage installs provided pies onto the device.\n\nStage Schema\n------------\nload_pies:\n\n    files (list): List of XR pies to install\n\n    server (str, optional): Hostname or IP address of server to use for install\n        command. Defaults to None (Looks in the testbed YAML for a TFTP server)\n\n    prompt_level (str, optional): Prompt-level argument for install command.\n        Defaults to 'none'.\n\n    synchronous (bool, optional): Synchronous option for install command.\n        Defaults to None.\n\n    install_timeout (int, optional): Maximum time in seconds allowed for\n        execution of the install command to complete. Defaults to 600.\n\n    max_time (int, optional): Maximum time in seconds to wait while verifying\n        the pies installed. Defaults to 300.\n\n    check_interval (int, optional): Time interval in seconds while verifying\n        the pies installed. Defaults to 30.\n\nExample\n-------\nload_pies:\n    files:\n        - /auto/path/to/image/asr9k-mcast-px.pie-7.3.1.08I\n        - /auto/path/to/image/asr9k-mgbl-px.pie-7.3.1.08I\n        - /auto/path/to/image/asr9k-mpls-px.pie-7.3.1.08I\n    server: 10.1.6.244\n    prompt_level: 'all'\n    synchronous: True\n    timeout: 150\n    max_time: 300\n    check_interval: 20\n",
@@ -414,7 +430,7 @@
         "module_name": "stages.stages",
         "package": "genie.libs.clean",
         "uid": "PrimeAp",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/cheetah/ap/stages.py#L23"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/cheetah/ap/stages.py#L27"
       }
     }
   },

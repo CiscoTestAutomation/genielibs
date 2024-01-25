@@ -66,37 +66,6 @@ def configure_routing_ip_route(
             )
         )
 
-
-def remove_routing_ip_route(
-    device, ip_address, mask, interface=None, dest_add=None
-):
-    """ Remove ip route on device
-
-        Args:
-            device ('obj'): Device obj
-            ip_address ('str'): ip address for interface
-            mask (str): mask the ip address
-            interface ('str'): interface name to configure
-            dest_add('str'): destination address to configure
-
-        Returns:
-            None
-
-        Raises:
-            SubCommandFailure
-    """
-    log.info(f'Unconfiguring ip route {ip_address} {mask} on {device.name}')
-    config = f'no ip route {ip_address} {mask}'
-    try:
-        if interface:
-            config += f' {interface}'
-        if dest_add:
-            config += f' {dest_add}'
-    except SubCommandFailure as e:
-        raise SubCommandFailure(
-            f"Configuration failed for {ip_address}. Error:\n{e}"
-        )
-
 def configure_routing_static_routev6(
     device, routev6, mask, vrf=None, interface=None, destination_addressv6=None
 ):

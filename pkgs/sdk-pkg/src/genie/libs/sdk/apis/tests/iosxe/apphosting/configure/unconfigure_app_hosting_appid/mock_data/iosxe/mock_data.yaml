@@ -4,17 +4,15 @@ configure:
       new_state: execute
     line console 0:
       new_state: configure_line
-    no app-hosting appid: "no app-hosting appid\r\n% Failed to perform variable substitutions\
-      \ for URI '/services;serviceName=im/Apps;name=$name' during URI conversion in\
-      \ config_no_app-hosting_name.\r\n"
+    no app-hosting appid APP: "no app-hosting appid APP\r\n"
     no logging console: ''
-  prompt: stack3-nyq-PE1(config)#
+  prompt: 9300-24UX-NBR1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: stack3-nyq-PE1(config-line)#
+  prompt: 9300-24UX-NBR1(config-line)#
 connect:
   commands:
     ? ''
@@ -34,4 +32,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: stack3-nyq-PE1#
+  prompt: 9300-24UX-NBR1#

@@ -10,7 +10,7 @@ class TestUnconfigureAppHostingAppid(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          stack3-nyq-PE1:
+          9300-24UX-NBR1:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,11 +18,11 @@ class TestUnconfigureAppHostingAppid(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: cat9k
-            type: router
+            platform: c9300
+            type: c9300
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['stack3-nyq-PE1']
+        self.device = self.testbed.devices['9300-24UX-NBR1']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,6 @@ class TestUnconfigureAppHostingAppid(unittest.TestCase):
         )
 
     def test_unconfigure_app_hosting_appid(self):
-        result = unconfigure_app_hosting_appid(self.device)
+        result = unconfigure_app_hosting_appid(self.device, 'APP')
         expected_output = None
         self.assertEqual(result, expected_output)

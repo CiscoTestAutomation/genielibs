@@ -2,7 +2,7 @@ import os
 import unittest
 from pyats.topology import loader
 from genie.libs.sdk.apis.iosxe.platform.configure import copy_file_with_sftp
-
+from genie.libs.sdk.apis.utils import sanitize
 
 class TestCopyFileWithSftp(unittest.TestCase):
 
@@ -30,12 +30,10 @@ class TestCopyFileWithSftp(unittest.TestCase):
         )
 
     def test_copy_file_with_sftp(self):
-        result = copy_file_with_sftp(self.device, '172.163.128.3', 'sh_switch_sftp.txt', 'root', 'cisco', None, 30)
-        expected_output = ('Address or name of remote host [172.163.128.3]? \r\n'
- 'Destination filename [sh_switch_sftp.txt]? \r\n'
- 'SFTP send: Writing to /root/sh_switch_sftp.txt size 397\r\n'
- '!\r\n'
- '397 bytes copied in 0.204 secs (1946 bytes/sec)')
- # '\r\nT13-C9300-24T#')
-        # Running UT on Mac drops the prompt from the device output.
-        self.assertTrue(result.startswith(expected_output))
+        result = copy_file_with_sftp(self.device, '172.163.128.3', 'sh_ver.txt', 'root', 'cisco', '.', 1800)
+        expected_output = ('Destination filename [sh_ver.txt]? \r\n'
+ '%Warning:There is a file already existing with this name \r\n'
+ 'Do you want to over write? [confirm]\r\n'
+ 'Sending file modes: C0644 3698 sh_ver.txt!\r\n'
+ '3698 bytes copied in 0.304 secs (12164 bytes/sec)')
+        self.assertEqual(sanitize(result), sanitize(expected_output))

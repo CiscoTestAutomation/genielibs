@@ -353,7 +353,14 @@ class Device(genie.libs.conf.device.tgen.Device):
         hltkl = self.traffic_control('poll', **kwargs)
         return not tcl.cast_boolean(hltkl.stopped)
 
-    def traffic_control(self, mode, *, ports=None, wait=True, duration=None, clear_on_start=True, stop_counting=True, **kwargs):
+    def traffic_control(self, mode=None, ports=None, wait=True, duration=None, clear_on_start=True, stop_counting=True, **kwargs):
+
+        if mode is None:
+            if ports:
+                return self.default.traffic_control(ports=ports, **kwargs)
+            else:
+                return self.default.traffic_control(**kwargs)
+
         hltkl = None  # Returned value
 
         from genie.libs.conf.device.agilent import Device as AgilentDevice

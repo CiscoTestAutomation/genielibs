@@ -1,3 +1,4 @@
+import os
 import unittest
 from pyats.topology import loader
 from genie.libs.sdk.apis.iosxe.interface.configure import configure_interface_switchport_access_vlan
@@ -7,21 +8,21 @@ class TestConfigureInterfaceSwitchportAccessVlan(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        testbed = """
+        testbed = f"""
         devices:
-          m4a:
+          9300-24UX-NBR1:
             connections:
               defaults:
                 class: unicon.Unicon
               a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
+                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: cat9k
-            type: c9400
+            platform: c9300
+            type: c9300
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['m4a']
+        self.device = self.testbed.devices['9300-24UX-NBR1']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -29,6 +30,6 @@ class TestConfigureInterfaceSwitchportAccessVlan(unittest.TestCase):
         )
 
     def test_configure_interface_switchport_access_vlan(self):
-        result = configure_interface_switchport_access_vlan(device=self.device, interface='ten1/1/0/5', vlan='150')
+        result = configure_interface_switchport_access_vlan(self.device, 'TenGigabitEthernet1/0/13', '10', 'access')
         expected_output = None
         self.assertEqual(result, expected_output)

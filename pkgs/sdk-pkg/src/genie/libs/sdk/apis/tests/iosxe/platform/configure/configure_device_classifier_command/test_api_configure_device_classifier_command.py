@@ -30,6 +30,6 @@ class TestConfigureDeviceClassifierCommand(unittest.TestCase):
         )
 
     def test_configure_device_classifier_command(self):
-        result = configure_device_classifier_command(self.device, 'condition', 'COND_TEST_A', 'no lldp', 'tlv-type 6 value String Cisco', 'no device classifier')
+        result = configure_device_classifier_command(self.device, 'condition', 'COND_TEST_A', 'no lldp', 'tlv-type 6 value String Cisco', 'no device classifier', 60)
         expected_output = None
         self.assertEqual(result, expected_output)

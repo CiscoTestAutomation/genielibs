@@ -42,7 +42,7 @@ class FileUtils(FileUtilsDeviceBase):
 
             Returns
             -------
-                `None`
+                `str` : Output of copy command
 
             Raises
             ------
@@ -119,7 +119,7 @@ class FileUtils(FileUtilsDeviceBase):
         else:
             cmd = 'copy {f} {t}'.format(f=source, t=destination)
 
-        super().copyfile(source=source,
+        return super().copyfile(source=source,
                          destination=destination,
                          timeout_seconds=timeout_seconds,
                          cmd=cmd,

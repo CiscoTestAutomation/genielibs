@@ -5,13 +5,13 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-  prompt: n08HA(config)#
+  prompt: Router(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: n08HA(config-line)#
+  prompt: Router(config-line)#
 connect:
   commands:
     ? ''
@@ -28,7 +28,11 @@ execute:
       new_state: configure
     config-transaction:
       new_state: configure
+    hw-module beacon R0 on:
+      response:
+      - ''
+      response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: n08HA#
+  prompt: Router#

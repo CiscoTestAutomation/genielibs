@@ -1,9 +1,24 @@
+include_serial:
+    prompt: "% Include the router serial number in the subject name? [yes/no]: "
+    commands:
+      "no":
+        new_state: include_ip
+include_ip:
+    prompt: "% Include an IP address in the subject name? [no]: "
+    commands:
+      "no":
+        new_state: generate_self_signed
+generate_self_signed:
+    prompt: "Generate Self Signed Router Certificate? [yes/no]: "
+    commands:
+      "yes":
+        response: |
+            Router Self Signed Certificate successfully created
+        new_state: configure
 configure:
   commands:
-    crypto pki enroll Self: "crypto pki enroll Self\r\n% Include the router serial\
-      \ number in the subject name? [yes/no]: no\r\n% Include an IP address in the\
-      \ subject name? [no]: no\r\nGenerate Self Signed Router Certificate? [yes/no]:\
-      \ yes\r\n\r\nRouter Self Signed Certificate successfully created\r\n\r\n"
+    crypto pki enroll Self:
+        new_state: include_serial
     end:
       new_state: execute
     line console 0:
