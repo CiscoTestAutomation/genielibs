@@ -15,7 +15,7 @@ import functools
 from pyats.easypy import runtime
 from pyats.easypy.plugins.bases import BasePlugin
 from pyats.aetest.processors.decorator import ProcessorDecorator
-from pyats import configuration as cfg
+from pyats.configuration import configuration as cfg
 from pyats.utils import parser as argparse
 from pyats.utils.yaml.dumper import OrderedSafeDumper
 

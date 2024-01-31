@@ -28,6 +28,7 @@ from genie.conf.base.attributes import SubAttributes, SubAttributesDict, \
     AttributesHelper, UnsupportedAttributeWarning
 from genie.conf.base.cli import CliConfigBuilder
 
+
 from genie.libs.conf.base import \
     MAC, \
     IPv4Address, IPv4Interface, \
@@ -153,7 +154,6 @@ class Interface(genie.libs.conf.interface.Interface):
         assert not kwargs, kwargs
         attributes = AttributesHelper(self, attributes)
         configurations = CliConfigBuilder(unconfig=unconfig)
-
         with self._build_config_create_interface_submode_context(\
             configurations):
             self._build_config_interface_submode(\
@@ -291,7 +291,6 @@ class Interface(genie.libs.conf.interface.Interface):
                 configurations.append_line(
                     attributes.format('no switchport'),
                     unconfig_cmd='switchport')
-
 
         # configure switchport realted configurations
         configurations.append_line(
@@ -557,8 +556,12 @@ class EthernetInterface(PhysicalInterface, genie.libs.conf.interface.EthernetInt
         trunk_allowed_vlan = None  # int
         trunk_native_vlan = None  # int
 
+        primary_vlan = None # int
+        secondary_vlan = None # int 
+
         def build_config(self, apply=True, attributes=None, unconfig=False,
                          **kwargs):
+
             assert not apply
             assert not kwargs, kwargs
             attributes = AttributesHelper(self, attributes)
@@ -599,6 +602,7 @@ class EthernetInterface(PhysicalInterface, genie.libs.conf.interface.EthernetInt
 
                     # nxos: interface <intf> / switchport trunk native vlan 1
                     configurations.append_line('switchport trunk native vlan {trunk_native_vlan}')
+
 
                 # nxos: interface <intf> / switchport autostate exclude
                 # nxos: interface <intf> / switchport autostate exclude vlan 1
@@ -740,6 +744,13 @@ class EthernetInterface(PhysicalInterface, genie.libs.conf.interface.EthernetInt
             configurations.append_line(
                 attributes.format(cmd),
                 unconfig_cmd=attributes.format(uncmd))
+
+        # private vlan access port
+        if self.switchport_mode == str(L2_type.PRIVATE_VLAN_ACCESS):
+
+            configurations.append_line(
+                attributes.format('switchport private-vlan host-association {primary_vlan} {secondary_vlan}'),
+                unconfig_cmd='no switchport private-vlan host-association')
 
         # speed auto
         # duplex auto
@@ -995,7 +1006,9 @@ class VlanInterface(VirtualInterface, genie.libs.conf.interface.VlanInterface):
         configurations.append_line(
             attributes.format('mac address-table aging-time {mac_aging}'),
             unconfig_cmd='no mac address-table aging')
-
+        configurations.append_line(
+            attributes.format('private-vlan mapping {private_vlan_mapping}'),
+            unconfig_cmd='no private-vlan mapping')        
         # -- VLAN
         # nxos: interface <intf> / autostate
         # nxos: interface <intf> / carrier-delay <0-60>

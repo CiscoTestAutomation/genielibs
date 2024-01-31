@@ -1789,4 +1789,193 @@ def unconfigure_mdns_trust(device, interface):
 
             "Could not unconfigure mdns_trust {e}"
         )
- 
+        
+def clear_mdns_cache_remote(device):
+    """ Clears mdns remote cache on device
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.execute("clear mdns-sd cache remote")
+        
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not clears mdns remote cache. Error:\n{error}".format(error=e)
+        )
+    
+def configure_mdns_remote_cache_enable(device):
+    """ Enable mDNS(Multicast Domain Name System) remote cache    
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed enabling mdns remote cache
+    """
+    log.debug(" Enabling mdns-sd remote cache")
+
+    try:
+        device.configure([
+            "mdns-sd gateway" ,
+            "remote-cache-enable"
+        ])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not enable mdns remote cache {e}"
+        )
+    
+def unconfigure_mdns_remote_cache_enable(device):
+    """ Disable mDNS(Multicast Domain Name System) remote cache
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed disabling mdns remote cache
+    """
+    log.debug(" Disabling mdns-sd remote cache")
+
+    try:
+        device.configure([
+            "mdns-sd gateway" ,
+            "no remote-cache-enable"
+        ])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not disable mdns remote cache {e}"
+        )
+        
+def configure_mdns_remote_cache_max_limit(device, limit):
+    """ Configure mDNS(Multicast Domain Name System) remote cache max limit
+        Args:
+            device ('obj'): device to use
+            limit ('int'): remote cache maximum service-instance limit
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring mdns remote cache max limit
+    """
+    log.debug(" Configuring mdns-sd remote cache max limit")
+
+    try:
+        device.configure([
+            "mdns-sd gateway" ,
+            "remote-cache-max-limit {}".format(limit)
+        ])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure mdns remote cache max limit {e}"
+        )    
+
+def unconfigure_mdns_remote_cache_max_limit(device):
+    """ Unconfigure mDNS(Multicast Domain Name System) remote cache max limit
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed unconfiguring mdns remote cache max limit
+    """
+    log.debug(" Unconfiguring mdns-sd remote cache max limit")
+
+    try:
+        device.configure([
+            "mdns-sd gateway" ,
+            "no remote-cache-max-limit"
+        ])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure mdns remote cache max limit {e}"
+        )    
+        
+def configure_mdns_remote_purge_timer(device, timer):
+    """ Configure mDNS(Multicast Domain Name System) remote cache purge timer
+        Args:
+            device ('obj'): device to use
+            timer ('int'): remote cache purge timer value
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring mdns remote purge timer 
+    """
+    log.debug(" Configuring mdns-sd remote cache purge timer")
+
+    try:
+        device.configure([
+            "mdns-sd gateway" ,
+            "remote-cache-purge-timer {}".format(timer)
+        ])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure mdns remote cache purge timer {e}"
+        )    
+
+def unconfigure_mdns_remote_purge_timer(device):
+    """ unconfigure mDNS(Multicast Domain Name System) remote cache purge timer
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed unconfiguring mdns remote purge timer 
+    """
+    log.debug(" Unconfiguring mdns-sd remote cache purge timer")
+
+    try:
+        device.configure([
+            "mdns-sd gateway" ,
+            "no remote-cache-purge-timer"
+        ])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure mdns remote cache purge timer {e}"
+        )    
+    
+def configure_mdns_global_service_buffer(device, controllername, mode):
+    """ Configure mDNS(Multicast Domain Name System) global service-buffer
+        Args:
+            device ('obj'): device to use
+            controllername ('str'): controller name
+            mode ('str'): enable/disable
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring mdns global service-buffer 
+    """
+    log.debug(" Configuring mdns-sd global service-buffer")
+
+    try:
+        device.configure([
+            "service-export mdns-sd controller {ctrlName}".format(ctrlName=controllername),
+            "global-service-buffer {mde}".format(mde=mode)
+        ])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure mdns global service-buffer {e}"
+        )    
+    
+def unconfigure_mdns_global_service_buffer(device, controllername):
+    """ unconfigure mDNS(Multicast Domain Name System) global service-buffer
+        Args:
+            device ('obj'): device to use
+            controllername ('str'): controller name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed unconfiguring mdns global service-buffer 
+    """
+    log.debug(" Unonfiguring mdns-sd global service-buffer")
+
+    try:
+        device.configure([
+            "service-export mdns-sd controller {ctrlName}".format(ctrlName=controllername),
+            "no global-service-buffer"
+        ])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure mdns global service-buffer {e}"
+        )    

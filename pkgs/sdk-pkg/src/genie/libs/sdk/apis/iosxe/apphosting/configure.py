@@ -307,17 +307,18 @@ def configure_app_hosting_resource_profile(device, appid, profile_name, cpu=None
         raise SubCommandFailure(f"Could not configure app-hosting appid resource custom profile. Error {e}")
 
 
-def unconfigure_app_hosting_appid(device):
+def unconfigure_app_hosting_appid(device, appid=''):
     """ Unconfigure app-hosting appid
         Args:
             device ('obj'): device to use
+            appid ('str'): app-hosting appid
         Returns:
             None
         Raises:
             SubCommandFailure
     """
 
-    cmd = f"no app-hosting appid"
+    cmd = f"no app-hosting appid {appid}"
     try:
         device.configure(cmd)
     except SubCommandFailure as e:

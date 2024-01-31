@@ -139,6 +139,11 @@ class Macsec(ABC):
                     #   window-size 10000
                     if attributes.value('window_size'):
                         configurations.append_line(attributes.format('window-size {window_size}'))
+                    
+                    #macsec policy <MP1>
+                    #   ppk crypto-qkd-profile QKD1
+                    if attributes.value('ppk_profile_name'):
+                       configurations.append_line(attributes.format('ppk crypto-qkd-profile {ppk_profile_name}'))
 
                 return str(configurations)
 

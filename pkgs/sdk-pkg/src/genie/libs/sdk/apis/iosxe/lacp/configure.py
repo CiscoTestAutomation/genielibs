@@ -188,3 +188,26 @@ def unconfigure_port_channel_mode(device, mode):
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure port channel mode. Error:\n{e}")
+
+
+def clear_lacp_counters(device, channel_group=None):
+    """ clear lacp counters
+
+        Args:
+            device ('obj'): Device object
+            channel_group ('int', optional): Channel group number. Default is None
+
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    if channel_group:
+        cmd = f'clear lacp {channel_group} counters'
+    else:
+        cmd = f'clear lacp counters'
+
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to clear lacp counters. Error:\n{e}")

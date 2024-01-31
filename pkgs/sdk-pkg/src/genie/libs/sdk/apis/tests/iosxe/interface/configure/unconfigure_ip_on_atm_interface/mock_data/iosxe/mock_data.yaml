@@ -1,0 +1,40 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    interface ATM0/2/0.10 point-to-point: "interface ATM0/2/0.10 point-to-point\r\n"
+    line console 0:
+      new_state: configure_line
+    no ip address 10.10.11.11 255.255.255.0: "no ip address 10.10.11.11 255.255.255.0\r\
+      \n"
+    no ipv6 address 5000::1/64: "no ipv6 address 5000::1/64\r\n"
+    no ipv6 enable: "no ipv6 enable\r\n"
+    no logging console: ''
+    no pvc 10/100: "no pvc 10/100\r\n"
+  prompt: C1113-8P_pkumarmu(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: C1113-8P_pkumarmu(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: C1113-8P_pkumarmu#

@@ -2110,3 +2110,44 @@ def configure_ip_acl_with_any(device, acl_name, acl_action):
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure ip acl  with any on the device {device.name}. Error:\n{e}")
+
+def configure_type_access_list_action(device, type, name, action, action_type=None, action_suffix=None):
+    """ Configuring ip/mac access-list with permission
+        Example: Mac access-list extended PACL_MAC_Permit 
+                 no permit any any {logging}
+                 permit any any {logging}
+                 or
+                 ip access-list extended PACL_IP_Deny 
+                 No Deny ip any any {logging}
+                 Deny ip any any {logging}
+        Args:
+            device ('obj'): device to use
+            type ('str'): (ip | mac) which type it belongs to
+            name ('str'): name of the ACL to which the entry belongs
+            action ('str'): (permit | deny) permits or denies traffic
+            action_type ('str')(optional): defines the action/permission type (Ex : ip)
+            action_suffix ('str')(optional): suffix that can ass in the last of the command (Ex : logging)
+        Returns:
+            None
+        Raises: 
+            SubCommandFailure
+    """
+    action = action.strip().lower()
+    if action_type:
+        if action_suffix:
+            config = [f"{type} access-list extended {name}",
+                    f"{action} {action_type} any any {action_suffix}"] 
+        else:
+            config = [f"{type} access-list extended {name}",
+                    f"{action} {action_type} any any"]     
+    else:
+        if action_suffix:
+            config = [f"{type} access-list extended {name}",
+                    f"{action} any any {action_suffix}"]        
+        else:
+            config = [f"{type} access-list extended {name}",
+                    f"{action} any any"]  
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure {type} acl on the device {device.name}. Error:\n{e}")

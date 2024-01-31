@@ -2,12 +2,13 @@ configure:
   commands:
     end:
       new_state: execute
-    interface GigabitEthernet0/0/0: "interface GigabitEthernet0/0/0\r\n"
+    interface Ethernet0/2/0: "interface Ethernet0/2/0\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''
     pppoe enable group global: "pppoe enable group global\r\n"
     pppoe-client dial-pool-number 100: "pppoe-client dial-pool-number 100\r\n"
+    pppoe-client ppp-max-payload 1590: "pppoe-client ppp-max-payload 1590\r\n"
   prompt: C1113-8P_pkumarmu(config)#
 configure_line:
   commands:

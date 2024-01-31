@@ -1,20 +1,21 @@
 configure:
   commands:
-    bba-group pppoe bb-ppp1: "bba-group pppoe bb-ppp1\r\n"
+    bba-group pppoe global_100: "bba-group pppoe global_100\r\n"
     end:
       new_state: execute
     line console 0:
       new_state: configure_line
     no logging console: ''
-    service profile ser_bb: "service profile ser_bb\r\n"
-    virtual-template 1: "virtual-template 1\r\n"
-  prompt: UUT1(config)#
+    tag ppp-max-payload minimum 1500 maximum 1700: "tag ppp-max-payload minimum 1500\
+      \ maximum 1700\r\n"
+    virtual-template 100: "virtual-template 100\r\n"
+  prompt: C1113-8P_pkumarmu(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: UUT1(config-line)#
+  prompt: C1113-8P_pkumarmu(config-line)#
 connect:
   commands:
     ? ''
@@ -34,4 +35,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: UUT1#
+  prompt: C1113-8P_pkumarmu#

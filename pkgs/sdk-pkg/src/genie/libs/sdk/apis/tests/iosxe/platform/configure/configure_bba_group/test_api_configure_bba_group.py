@@ -10,7 +10,7 @@ class TestConfigureBbaGroup(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          UUT1:
+          C1113-8P_pkumarmu:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,11 +18,11 @@ class TestConfigureBbaGroup(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: iosxe
+            platform: router
             type: iosxe
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['UUT1']
+        self.device = self.testbed.devices['C1113-8P_pkumarmu']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,11 +30,6 @@ class TestConfigureBbaGroup(unittest.TestCase):
         )
 
     def test_configure_bba_group(self):
-        result = configure_bba_group(self.device, 'bb-ppp1', '1', 'ser_bb')
-        expected_output = None
-        self.assertEqual(result, expected_output)
-
-    def test_configure_bba_group_1(self):
-        result = configure_bba_group(self.device, 'bb-ppp1', '1', None)
+        result = configure_bba_group(self.device, 'global_100', '100', None, 'minimum 1500 maximum 1700')
         expected_output = None
         self.assertEqual(result, expected_output)

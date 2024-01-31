@@ -1346,7 +1346,17 @@ def configure_fnf_flow_record(
     match_transport_field = None,
     address_mode = None,
     tcp_field = False,
-    collect_event = False
+    collect_event = False,
+    application_name = False,
+    connection_type = None,
+    connection_address_type = None,
+    observation_point = False,
+    collect_timestamp = None,
+    flow_direction = False,
+    initiator = False,
+    new_connections = False,
+    connection_counter = None
+    
     ):
 
     """ Config Flow Record on Device
@@ -1364,6 +1374,15 @@ def configure_fnf_flow_record(
             address_mode('str', optional): Address mode to be configured
             tcp_field('bool'): Configure collect transport tcp flags
             collect_event('bool'): Configure collect policy firewall event
+            application_name('bool'): Configure application name
+            connection_type('str', optional): connection type to be configured
+            connection_address_type('str', optional): connection address type to be configured
+            observation_point('bool'): Configure observation point
+            collect_timestamp('str', optional): timestamp to be configured
+            flow_direction('bool'): Configure flow direction
+            initiator('bool'): Configure initiator
+            new_connections('bool'): Configure new connections
+            connection_counter('str', optional): connection bytes to be configured
         Return:
             None
 
@@ -1391,6 +1410,24 @@ def configure_fnf_flow_record(
         configs.extend([f'collect transport tcp flags'])
     if collect_event:
         configs.extend([f'collect policy firewall event'])
+    if application_name:
+        configs.extend(['match application name'])
+    if connection_type and connection_address_type:
+        configs.extend([f'match connection {connection_type} {connection_address_type} address'])
+    if connection_type:
+        configs.extend([f'match connection {connection_type} transport port'])
+    if observation_point:
+        configs.extend(['match flow observation point'])
+    if collect_timestamp:
+        configs.extend([f'collect timestamp absolute {collect_timestamp}'])
+    if flow_direction:
+        configs.extend(['collect flow direction'])
+    if initiator:
+        configs.extend(['collect connection initiator'])
+    if new_connections:
+        configs.extend(['collect connection new-connections'])
+    if connection_type and connection_counter:
+        configs.extend([f'collect connection {connection_type} counter {connection_counter} long'])
 
     try:
         device.configure(configs)

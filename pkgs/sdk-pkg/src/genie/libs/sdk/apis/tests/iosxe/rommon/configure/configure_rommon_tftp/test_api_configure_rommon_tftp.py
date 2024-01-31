@@ -41,9 +41,7 @@ class TestConfigureRommonTftp(unittest.TestCase):
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['ott-c9300-63']
         self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
+            mit=True
         )
 
     def test_configure_rommon_tftp(self):
