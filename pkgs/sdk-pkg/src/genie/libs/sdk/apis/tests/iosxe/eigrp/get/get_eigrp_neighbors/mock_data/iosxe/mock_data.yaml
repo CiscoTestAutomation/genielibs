@@ -1,0 +1,60 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: R1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: R1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show ip eigrp neighbors:
+      response:
+      - "EIGRP-IPv4 Neighbors for AS(1)\r\nEIGRP-IPv4 Neighbors for AS(2)\r\nH   Address\
+        \                 Interface              Hold Uptime   SRTT   RTO  Q  Seq\r\
+        \n                                                   (sec)         (ms)  \
+        \     Cnt Num\r\n0   192.168.2.2             Fa1/0                    10 00:15:25\
+        \   36   216  0  3"
+      - "EIGRP-IPv4 Neighbors for AS(1)\r\nEIGRP-IPv4 Neighbors for AS(2)\r\nH   Address\
+        \                 Interface              Hold Uptime   SRTT   RTO  Q  Seq\r\
+        \n                                                   (sec)         (ms)  \
+        \     Cnt Num\r\n0   192.168.2.2             Fa1/0                    14 00:15:25\
+        \   36   216  0  3"
+      - "EIGRP-IPv4 Neighbors for AS(1)\r\nEIGRP-IPv4 Neighbors for AS(2)\r\nH   Address\
+        \                 Interface              Hold Uptime   SRTT   RTO  Q  Seq\r\
+        \n                                                   (sec)         (ms)  \
+        \     Cnt Num\r\n0   192.168.2.2             Fa1/0                    14 00:15:26\
+        \   36   216  0  3"
+      response_type: circular
+    show ipv6 eigrp neighbors:
+      response:
+      - "EIGRP-IPv6 Neighbors for AS(3)\r\nEIGRP-IPv6 Neighbors for AS(4)\r\nH   Address\
+        \                 Interface              Hold Uptime   SRTT   RTO  Q  Seq\r\
+        \n                                                   (sec)         (ms)  \
+        \     Cnt Num\r\n0   Link-local address:     Fa1/0                    12 00:15:25\
+        \  180  1620  0  2\r\n    FE80::C804:EFF:FE30:1C"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: R1#
