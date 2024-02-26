@@ -959,3 +959,27 @@ def configure_policy_map_class_precedence(device, policy_map_name,class_map_name
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not configure Configures policy-map with class {class_map_name} and precedence {precedence_num}. Error:\n{e}")
+
+def unconfigure_policy_map_with_pps(device, policy_name, class_map_name, police_rate):
+    """ Unconfigures policy-map with police rate in pps
+        Args:
+             device ('obj'): device to use
+             policy_name ('str'): name of the policy name
+             class_map_name ('str'): class map name information
+             police_rate ('int'): police rate details in pps
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f"unconfigure policy_map {policy_name} with {class_map_name} and {police_rate} in pps")
+    
+    config = [f"policy-map {policy_name}", 
+              f"class {class_map_name}", 
+              f"no police rate {police_rate} pps"]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure policy_map {policy_name} with {class_map_name} and {police_rate} in pps.  Error:\n{e}")
+            

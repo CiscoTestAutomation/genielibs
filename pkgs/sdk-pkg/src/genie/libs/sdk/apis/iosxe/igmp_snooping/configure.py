@@ -369,3 +369,108 @@ def configure_ip_igmp_querier_tcn_query_count(device, query_type, action_type, q
     except SubCommandFailure as e:
         log.error(e)
         raise SubCommandFailure(f"Could not configure ip igmp snooping querier tcn query count 10. Error:\n{e}")
+  
+def unconfigure_ip_igmp_querier_query_interval(device, query_type, query_interval):
+    """
+    Unconfigure ip igmp snooping querier query-interval 100
+
+    Args:
+        device('obj'): Device object
+        query_type('str'): query-interval     IGMP querier query interval (sec)
+        query_interval('int'): <1-18000>  IGMP querier query interval (sec)
+        
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure
+    """
+    cmd = f"no ip igmp snooping querier {query_type} {query_interval}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(f"Could not unconfigure ip igmp snooping querier query-interval. Error:\n{e}")
+    
+def unconfigure_ip_igmp_querier_max_response_time(device, query_type, query_time):
+    """
+    Unconfigure ip igmp snooping querier max response time 25
+
+    Args:
+        device('obj'): Device object
+        query_type('str'): max-response-time     IGMP querier max response time (sec)
+        query_time('int'): <1-500>  IGMP querier query response time (sec)
+        
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure
+    """
+    cmd = f"no ip igmp snooping querier {query_type} {query_time}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(f"Could not unconfigure ip igmp snooping querier max response time 25. Error:\n{e}")
+
+def unconfigure_ip_igmp_querier_tcn_query_count(device, query_type, action_type, query_count):
+    """
+    Unconfigure ip igmp snooping querier tcn query count 10
+    Args:
+        device('obj'): Device object
+        query_type('str'):tcn                IGMP querier TCN related parameters
+        action_type('str'): count     IGMP querier TCN query count
+        query_count('int'):<1-10>  IGMP querier TCN query count
+        
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    cmd = f"no ip igmp snooping querier {query_type} query {action_type} {query_count}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(f"Could not unconfigure ip igmp snooping querier tcn query count 10. Error:\n{e}")
+    
+def unconfigure_ip_igmp_querier_tcn_query_interval(device, query_type, action_type, query_interval):
+    """
+    Unconfigure ip igmp snooping querier tcn query interval 255
+    Args:
+        device('obj'): Device object
+        query_type('str'):tcn              IGMP querier TCN related parameters
+        action_type('str'): interval       IGMP querier TCN query interval
+        query_interval('int'):<1-500>      IGMP querier TCN query count (sec)
+        
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    cmd = f"no ip igmp snooping querier {query_type} query {action_type} {query_interval}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(f"Could not unconfigure ip igmp snooping querier tcn query count 10. Error:\n{e}")
+    
+def unconfigure_ip_igmp_querier_timer_expiry(device, query_time):
+    """
+    Unconfigure ip igmp snooping querier timer expiry 300
+    Args:
+        device('obj'): Device object
+        query_time('int'):<1-500>  IGMP querier timer expiry count (sec)
+        
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    cmd = f"no ip igmp snooping querier timer expiry {query_time}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(f"Could not unconfigure ip igmp snooping querier timer expiry 300. Error:\n{e}")

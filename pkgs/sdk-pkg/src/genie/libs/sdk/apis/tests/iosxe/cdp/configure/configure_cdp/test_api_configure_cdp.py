@@ -33,3 +33,8 @@ class TestConfigureCdp(unittest.TestCase):
         result = configure_cdp(self.device, None, 300)
         expected_output = None
         self.assertEqual(result, expected_output)
+    
+    def test_configure_cdp_1(self):
+        result = configure_cdp(self.device, ['TenGigabitEthernet1/0/19', 'TenGigabitEthernet1/0/20'])
+        expected_output = None
+        self.assertEqual(result, expected_output)

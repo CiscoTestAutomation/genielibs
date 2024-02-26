@@ -102,7 +102,7 @@ install_image:
                           args=None,
                           loop_continue=False,
                           continue_timer=False),
-                Statement(pattern=r"FAILED:.* ",
+                Statement(pattern=r"FAILED:.*?$",
                           action=None,
                           loop_continue=False,
                           continue_timer=False),
@@ -111,7 +111,7 @@ install_image:
             try:
                 device.reload('install add file {} activate commit'.format(images[0]),
                                reply=install_add_one_shot_dialog,
-                               append_error_pattern=['FAILED:.* '],
+                               append_error_pattern=['FAILED:.*$'],
                                timeout=install_timeout,
                                device_recovery=False)
             except Exception as e:

@@ -4401,7 +4401,8 @@ def configure_virtual_template(device,
     ipv6_mtu='',
     no_ip_redirects=False,
     no_peer_ip=False,
-    pool_name=None):
+    pool_name=None,
+    ipv6_pool_name=None):
     """ Configure virtual-template interface
 
         Args:
@@ -4418,6 +4419,7 @@ def configure_virtual_template(device,
             no_ip_redirects('bool', optional): no ip redirects option
             no_peer_ip('bool', optional): no peer ip default option
             pool_name('string', optional): peer default ip address pool <pool_name>
+            ipv6_pool_name('string', optional): peer default ipv6 pool <ipv6_pool_name>
         For the arguments that are optional, the default value is None.
 
         Returns:
@@ -4448,6 +4450,8 @@ def configure_virtual_template(device,
         cli.append("no peer default ip address")
     if pool_name:
         cli.append(f"peer default ip address pool {pool_name}")
+    if ipv6_pool_name:
+        cli.append(f"peer default ipv6 pool {ipv6_pool_name}")
 
     try:
         device.configure(cli)

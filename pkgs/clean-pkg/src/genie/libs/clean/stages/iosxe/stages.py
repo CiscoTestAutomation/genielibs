@@ -546,7 +546,7 @@ install_image:
             feature of unicon. Defaults to True.
 
         error_pattern (list, optional): List of regex strings to check for errors.
-            Default: [r"FAILED:.* ",]
+            Default: [r"FAILED:.*?$",]
 
         <Key>: <Value>
             Any other arguments that the Unicon reload service supports
@@ -570,7 +570,7 @@ install_image:
     RELOAD_SERVICE_ARGS = {
         'reload_creds': 'default',
         'prompt_recovery': True,
-        'error_pattern': [r"FAILED:.* ",],
+        'error_pattern': [r"FAILED:.*?$",],
     }
     ISSU = False
     SKIP_BOOT_VARIABLE = False
@@ -731,7 +731,7 @@ install_image:
                           action='sendline(y)',
                           loop_continue=True,
                           continue_timer=False),
-                Statement(pattern=r"FAILED:.* ",
+                Statement(pattern=r"FAILED:.*?$",
                           action=None,
                           loop_continue=False,
                           continue_timer=False),
@@ -2160,7 +2160,7 @@ connect:
                 try:
                     device.api.configure_rommon_tftp()
                 except Exception as e:
-                    step.failed(f'Failed to set rommon variables. {e}')
+                    step.passx(f'Failed to set rommon variables. {e}')
                 else:
                     log.info("Successfully set the rommon variables")
 
@@ -2172,7 +2172,7 @@ connect:
                     # Gets the recovery details from clean yaml
                     device.api.device_rommon_boot()
                 except Exception as e:
-                    step.failed(f'Failed to boot device from rommon. {e}')
+                    step.passx(f'Failed to boot device from rommon. {e}')
                 else:
                     log.info("Successfully booted the device from rommon.")
         

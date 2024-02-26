@@ -5593,3 +5593,26 @@ def unconfigure_hw_module_switch_number_ecomode_led(device, switch_number='all')
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure hw-module ecomode led on device {device.name}. Error:\n{e}")
+
+
+def configure_ip_http_client_secure_trustpoint(device, trustpoint_name):
+    """ Configures the secure trustpoint
+        Example : ip http client secure-trustpoint {trustpoint_name}
+
+        Args:
+            device ('obj'): device to use
+            license ('str): secure-trustpoint
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = f'ip http client secure-trustpoint {trustpoint_name}'
+    try:
+       device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Failed to ip http client secure-trustpoint {trustpoint_name} on device {device.name}. Error:\n{e}')
+

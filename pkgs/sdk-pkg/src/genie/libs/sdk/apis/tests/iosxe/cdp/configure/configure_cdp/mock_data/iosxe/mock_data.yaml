@@ -74,6 +74,66 @@ execute:
       new_state: configure
     config-transaction:
       new_state: configure
+    show interfaces TenGigabitEthernet1/0/19: |
+      TenGigabitEthernet1/0/19 is administratively down, line protocol is down (disabled)
+      Hardware is Gigabit Ethernet, address is fc58.90a3.d30c (bia fc58.90a3.d30c)
+      MTU 1500 bytes, BW 1000000 Kbit/sec, DLY 10 usec,
+        reliability 255/255, txload 1/255, rxload 3/255
+      Encapsulation ARPA, loopback not set
+      Keepalive set (10 sec)
+      Auto-duplex, Auto-speed, media type is 10/100/1000BaseTX
+      input flow-control is on, output flow-control is unsupported
+      ARP type: ARPA, ARP Timeout 04:00:00
+      Last input 00:01:15, output 00:01:15, output hang never
+      Last clearing of "show interface" counters never
+      Input queue: 0/2000/0/0 (size/max/drops/flushes); Total output drops: 0
+      Queueing strategy: fifo
+      Output queue: 0/40 (size/max)
+      5 minute input rate 12345000 bits/sec, 24104 packets/sec
+      5 minute output rate 0 bits/sec, 0 packets/sec
+        17027741 packets input, 1089787530 bytes, 0 no buffer
+        Received 315 broadcasts (305 multicasts)
+        0 runts, 0 giants, 0 throttles
+        0 input errors, 0 CRC, 0 frame, 0 overrun, 0 ignored
+        0 watchdog, 305 multicast, 0 pause input
+        0 input packets with dribble condition detected
+        79 packets output, 13095 bytes, 0 underruns
+        Output 35 broadcasts (35 multicasts)
+        0 output errors, 0 collisions, 2 interface resets
+        0 unknown protocol drops
+        0 babbles, 0 late collision, 0 deferred
+        0 lost carrier, 0 no carrier, 0 pause output
+        0 output buffer failures, 0 output buffers swapped out
+    show interfaces TenGigabitEthernet1/0/20: |
+      TenGigabitEthernet1/0/20 is administratively down, line protocol is down (disabled)
+      Hardware is Gigabit Ethernet, address is fc58.90a3.d30c (bia fc58.90a3.d30c)
+      MTU 1500 bytes, BW 1000000 Kbit/sec, DLY 10 usec,
+        reliability 255/255, txload 1/255, rxload 3/255
+      Encapsulation ARPA, loopback not set
+      Keepalive set (10 sec)
+      Auto-duplex, Auto-speed, media type is 10/100/1000BaseTX
+      input flow-control is on, output flow-control is unsupported
+      ARP type: ARPA, ARP Timeout 04:00:00
+      Last input 00:01:15, output 00:01:15, output hang never
+      Last clearing of "show interface" counters never
+      Input queue: 0/2000/0/0 (size/max/drops/flushes); Total output drops: 0
+      Queueing strategy: fifo
+      Output queue: 0/40 (size/max)
+      5 minute input rate 12345000 bits/sec, 24104 packets/sec
+      5 minute output rate 0 bits/sec, 0 packets/sec
+        17027741 packets input, 1089787530 bytes, 0 no buffer
+        Received 315 broadcasts (305 multicasts)
+        0 runts, 0 giants, 0 throttles
+        0 input errors, 0 CRC, 0 frame, 0 overrun, 0 ignored
+        0 watchdog, 305 multicast, 0 pause input
+        0 input packets with dribble condition detected
+        79 packets output, 13095 bytes, 0 underruns
+        Output 35 broadcasts (35 multicasts)
+        0 output errors, 0 collisions, 2 interface resets
+        0 unknown protocol drops
+        0 babbles, 0 late collision, 0 deferred
+        0 lost carrier, 0 no carrier, 0 pause output
+        0 output buffer failures, 0 output buffers swapped out
     show interfaces:
       response:
       - "Vlan1 is up, line protocol is up , Autostate Enabled\r\n  Hardware is Ethernet\

@@ -6,19 +6,25 @@ from unicon.core.errors import SubCommandFailure
 log = logging.getLogger(__name__)
 
 
-def generate_rsa_ssl_key(device, private_key_name, key_size=2048, password=None, aes_key_size=256, path_to_file=None):
+def generate_rsa_ssl_key(device, private_key_name, key_size=2048, password=None, aes_key_size=256, path_to_file=None, aes=True):
     """
     Args:
         device('obj'): Device to configure the SSL key on
         private_key_name(`str`): Name of the certificate file
         key_size(`int`, Optional): RSA key bit length, default 2048
         password(`str`, Optional): Password to encrypt the device key, default None
+        aes('bool', Optional): Use AES encryption if True, else use 3DES. default to True.
         aes_key_size(`int`, Optional): AES keysize used to encrypt password if provided. Default 256
         path_to_file(`str`, Optional): Absolute path to the directory where the file should be saved, default None
     Raises:
         SubCommandFailure
     """
 
+    # To handle the encryption, aes encryption is used by default
+    encryption = f'aes{aes_key_size}'
+    if not aes:
+        encryption = 'des3'
+        
     log.info(f"Configuring RSA private key with {key_size} bits")
     if path_to_file:
         try:
@@ -30,25 +36,31 @@ def generate_rsa_ssl_key(device, private_key_name, key_size=2048, password=None,
     cmd = [f"openssl genrsa -out {private_key_name} {key_size}"]
     if password:
         log.info(f"Key will be encrypted to file encrypted_{private_key_name}")
-        cmd.append(f"openssl rsa -aes{aes_key_size} -in {private_key_name} -out {private_key_name} -passout pass:{password}")
+        cmd.append(f"openssl rsa -{encryption} -in {private_key_name} -out {private_key_name} -passout pass:{password}")
 
     try:
         device.execute(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure RSA{key_size} key on the device. Error:\n{e}")
 
-def generate_ecc_ssl_key(device, private_key_name, elliptic_curve, password=None, aes_key_size=256, path_to_file=None):
+def generate_ecc_ssl_key(device, private_key_name, elliptic_curve, password=None, aes_key_size=256, path_to_file=None, aes=True):
     """
     Args:
         device(`obj`): Device to configure the SSL key on
         private_key_name(`str`): Name of the private key file
         elliptic_curve(`str`): Specify which elliptic curve to employ
         password(`str`, Optional): Password to encrypt the private key, default None
+        aes('bool', Optional): Use AES encryption if True, else use 3DES. default to True.
         aes_key_size(`int`, Optional): AES keysize used to encrypt password if provided. Default 256
         path_to_file(`str`, Optional): Absolute path to the directory where the file should be saved, default None
     Raises:
         SubCommandFailure
     """
+
+    # To handle the encryption, aes encryption is used by default
+    encryption = f'aes{aes_key_size}'
+    if not aes:
+        encryption = 'des3'
 
     log.info(f"Configuring ECC private key with {elliptic_curve}")
     if path_to_file:
@@ -61,7 +73,7 @@ def generate_ecc_ssl_key(device, private_key_name, elliptic_curve, password=None
     cmd = [f"openssl ecparam -genkey -name {elliptic_curve} -out {private_key_name}"]
     if password:
         log.info(f"Key will be encrypted to file {private_key_name}")
-        cmd.append(f"openssl ec -aes{aes_key_size} -in {private_key_name} -out {private_key_name} -passout pass:{password}")
+        cmd.append(f"openssl ec -{encryption} -in {private_key_name} -out {private_key_name} -passout pass:{password}")
 
     try:
         device.execute(cmd)
@@ -149,3 +161,30 @@ def generate_ssl_certificate(device, device_key_file, ca_certificate_file, priva
         device.execute(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to generate the ssl certificate. Error:\n{e}")
+
+
+def generate_pkcs12(device, device_key_file, device_cert_file, root_cert_file, output_pkcs12_file,
+                     passin_password=None, passout_password=None):
+    """
+    Args:
+        device('obj'): Device to configure the SSL key on.
+        device_key_file(`str`): Filename or absolute path to a file containing a device key for the certificate.
+        device_cert_file(`str`): Filename or absolute path to a file containing a device certificate.
+        root_cert_file(`str`): Filename or absolute path to a root certificate.
+        output_pkcs12_file(`str`): Filename or absolute path to a output pkcs12 file.
+        passin_password(`str`, Optional): The password for the input private key file, if applicable. Default None.
+        passout_password(`str`, Optional): The password for the output private key file, if applicable. Default None.
+    Raises:
+        SubCommandFailure
+    """
+
+    cmd = f"openssl pkcs12 -export -chain -inkey {device_key_file} -in {device_cert_file} -CAfile {root_cert_file} -out {output_pkcs12_file}"
+    if passin_password:
+        cmd += f" -passin pass:{passin_password}"
+    if passout_password:
+        cmd += f" -passout pass:{passout_password}"
+
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to generate pkcs12 file on the device. Error:\n{e}")

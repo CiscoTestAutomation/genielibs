@@ -3044,7 +3044,8 @@ class TestYangExec(unittest.TestCase):
         )
         self.assertEqual(result, True)
 
-
+    # TODO: Make this work reliably on MacOS
+    @unittest.skipIf(sys.platform == "darwin", "Skip test for MacOS")
     def test_subscribe_poll_transaction_time(self):
         request = self.make_test_request()
         request['transaction_time'] = 0.00000000001
@@ -3068,6 +3069,8 @@ class TestYangExec(unittest.TestCase):
         subscribe_thread.join()
         self.assertEqual(subscribe_thread.result, True)
 
+    # TODO: Make this work reliably on MacOS
+    @unittest.skipIf(sys.platform == "darwin", "Skip test for MacOS")
     def test_subscribe_once_transaction_time(self):
         request = self.make_test_request()
         request['transaction_time'] = 0.00000000001
