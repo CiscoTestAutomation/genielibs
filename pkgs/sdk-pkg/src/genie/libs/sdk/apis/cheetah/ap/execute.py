@@ -71,11 +71,11 @@ def execute_archive_download(device, image_path, max_timeout=300, username=None,
     ])
     boot_part_before_reload = re.search("BOOT path-list:(\s+\w+)", device.execute("show boot | inc BOOT")).group(1).strip()
     output = device.execute("archive download-sw /no-reload {}".format(image_path), timeout=max_timeout, reply=dialog)
-    if "Successfully setup AP image" not in output and "Image download completed" not in output:
+    if "Successfully setup AP image" in output and "Image download completed" in output:
+        log.info("Successfully downloaded the image")
+    else:
         log.error("Failed to downloaded the image")
         return False
-    else:
-        log.info("Successfully downloaded the image")
     if reload:
         try:
             device.reload(timeout=max_timeout, reply=reload_dialog, post_reload_wait_time=POST_RELOAD_WAIT_TIME)

@@ -1,0 +1,40 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: r1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: r1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show running-config:
+      response:
+      - "Building configuration...\r\n\r\nCurrent configuration : 30522 bytes\r\naaa new-model\r\n!\r\n!\r\naaa authentication login default\
+        \ local\r\naaa authorization exec default local \r\n!\r\n!\r\naaa session-id\
+        \ common"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: r1#

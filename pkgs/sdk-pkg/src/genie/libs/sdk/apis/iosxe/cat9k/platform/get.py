@@ -40,6 +40,9 @@ def get_boot_variables(device, boot_var, output=None):
             else:
                 boot_variables = boot_out.get("next_reload_boot_variable")
 
+            if boot_variables is None:
+                boot_variables = boot_out.get("next_reload_boot_variable")
+
         # Trim
         if boot_variables:
             for item in boot_variables.split(';'):

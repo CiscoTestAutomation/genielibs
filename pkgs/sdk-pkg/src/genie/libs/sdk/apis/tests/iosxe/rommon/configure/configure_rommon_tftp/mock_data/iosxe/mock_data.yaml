@@ -26,4 +26,8 @@ execute:
       response:
       - ''
       response_type: circular
+    TFTP_FILE=flash:/test.bin:
+      response:
+      - ''
+      response_type: circular
   prompt: 'switch:'

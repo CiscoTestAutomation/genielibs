@@ -37,7 +37,7 @@ class TestCopyFileWithScp(unittest.TestCase):
  'Do you want to over write? [confirm]\r\n'
  ' Sending file modes: C0644 3698 sh_ver.txt\r\n'
  '!\r\n'
- '397 bytes copied in 0.200 secs (1985 bytes/sec)')
+ '3698 bytes copied in 0.304 secs (12164 bytes/sec)')
         # Device output inconsistently includes device prompt
         if result.endswith('#'):
             expected_output += '\r\nT13-C9300-24T#'

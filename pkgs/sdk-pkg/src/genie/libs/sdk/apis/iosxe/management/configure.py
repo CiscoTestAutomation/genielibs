@@ -1,10 +1,14 @@
 import re
+import uuid
+import atexit
 import logging
 import ipaddress
+import tempfile
 from unicon.eal.dialogs import Dialog
 from genie.utils.timeout import Timeout
 from unicon.core.errors import SubCommandFailure
 from pyats.utils.secret_strings import to_plaintext
+from pyats.topology import loader
 
 log = logging.getLogger(__name__)
 
@@ -986,26 +990,138 @@ def unconfigure_management_netconf(device):
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure netconf-yang on device {device}. Error:\n{e}")
 
-
-def configure_management_gnmi(device, enable=True, server=True, port=None, **kwargs):
+def configure_management_gnmi(device,
+                              enable=True,
+                              server=True,
+                              port=None,
+                              secure_server=False,
+                              secure_client_auth=False,
+                              secure_trustpoint='trustpoint1',
+                              password='',
+                              aes=True,
+                              rsa_key_size=2048,
+                              local_path='flash:/',
+                              **kwargs):
     '''
     Configure device for management via gnmi.
+
+    When secure_server is True, this API will generate keys and certificates using openssl
+    for use on the device and by the gNMI connection class. It will install
+    the key and certificates on the device and update the gnmi connection with
+    the paths to the files generated.
 
     Args:
         device ('obj'):  device object
         enable ('bool', optional): Enable and start GNxI. Default is True.
         server ('bool', optional): Enable the GNxI (insecure) server. Default is True.
         port ('int', optional):  gnxi (insecure) server port. Default is None.
+        secure_server ('bool', optional): Enable the GNxI secure server. Default to False.
+        secure_client_auth ('bool', optional): Enable client authentication. Default to False.
+        secure_trustpoint ('str', optional): Set GNxI server certificate trustpoint. Default to 'trustpoint1'.
+        password ('str', optional): rsa_ssl key generation password Default is ''.
+        aes ('bool', optional): Use AES encryption if True, else use 3DES. Default to True.
+        rsa_key_size ('int', optional): rsa_key_size value to be used for rsakeypair generation. Default to 2048.
+        local_path ('str', optional): Device path where pkcs12 file will be copied. Default to flash:/.
     Returns:
         None
     '''
+
+    if secure_server:
+
+        # connect to the linux server
+        tb = loader.load({
+            'devices': {
+                'linux': {
+                    'os': 'linux',
+                    'credentials': {'default': {'username': ''}},
+                    'connections': {
+                        'cli': {
+                            'command': 'bash'
+                        }
+                    }
+                }
+            }
+        })
+        dev = tb.devices.linux
+        dev.connect(log_buffer=True)
+
+        # To handle password, If not given generate a random password
+        if not password:
+            # make a random UUID
+            password = uuid.uuid4()
+
+        # To create temp dir
+        tmpdir_obj = tempfile.TemporaryDirectory()
+
+        # atexit to cleanup the temp dir when exiting python env
+        atexit.register(tmpdir_obj.cleanup)
+
+        # Move to the temp dir
+        tmpdirname = tmpdir_obj.name
+        dev.execute([f'cd {tmpdirname}'])
+
+        # default subject with the device name for ssl certificates
+        subject = f"/C=/ST=/L=/O=/CN={device.name}"
+
+        # Generate rsa ssl key (rootCA.key)
+        dev.api.generate_rsa_ssl_key(private_key_name='rootCA.key', aes=aes)
+
+        # Generate CA certificate (rootCA.pem)
+        dev.api.generate_ca_certificate(private_key_file='rootCA.key', certificate_name='rootCA.crt')
+
+        # Generate device key (device.key)
+        dev.api.generate_rsa_ssl_key(private_key_name='device.key', password=password, aes=aes)
+
+        # Generate ssl certificate (device.crt and device.csr)
+        dev.api.generate_ssl_certificate(device_key_file='device.key', ca_certificate_file='rootCA.crt', private_key_file='rootCA.key',\
+                                         subject=subject, device_key_password=password, csr_name= 'device.csr', crt_name='device.crt')
+
+        # Generate pkcs12 file (device.p12) with device.key, device.crt and rootCA.crt
+        dev.api.generate_pkcs12(device_key_file='device.key', device_cert_file='device.crt', root_cert_file='rootCA.crt', output_pkcs12_file='device.p12',\
+                                passin_password=password, passout_password=password)
+
+        # Copy pkcs file to the device
+        device.api.copy_to_device(f'{tmpdirname}/device.p12', local_path=local_path)
+
+        # Install certificates on the device through the cli
+        device.api.configure_pki_import(tp_name=secure_trustpoint, file_password=password, pkcs_file='device.p12', import_type='pkcs12')
+
+        # Revocation check
+        device.api.configure_trustpoint(tp_name=secure_trustpoint, revoke_check='none', rsa_key_size=rsa_key_size)
+
+        # gnmi secure connection information
+        gnmi_connection_info_dict = {
+            'root_certificate': f'{tmpdirname}/rootCA.crt',
+            'ssl_name_override': device.name
+        }
+
+        # if secure client authentication is enabled. Then user needs to provide private key and certificate chain
+        if secure_client_auth:
+            # Generate client key (client.key)
+            dev.api.generate_rsa_ssl_key(private_key_name='client.key', aes=aes)
+
+            # Generate client certificate (client.crt and client.csr)
+            dev.api.generate_ssl_certificate(device_key_file='client.key', ca_certificate_file='rootCA.crt', private_key_file='rootCA.key',\
+                                            subject=subject, csr_name='client.csr', crt_name='client.crt')
+
+            gnmi_connection_info_dict.update({
+                'private_key': f'{tmpdirname}/client.key',
+                'certificate_chain': f'{tmpdirname}/client.crt',
+            })
+
+        # update the testbed object gnmi connection with root_certificate, private_key, certificate_chain and ssl_name_override
+        device.connections.gnmi.update(gnmi_connection_info_dict)
 
     try:
         device.api.configure_gnxi(
             device=device,
             enable=enable,
             server=server,
-            port=port
+            port=port,
+            secure_server=secure_server,
+            secure_client_auth=secure_client_auth,
+            secure_trustpoint=secure_trustpoint if secure_server else None
             )
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure gnmi on device {device}. Error:\n{e}")
+

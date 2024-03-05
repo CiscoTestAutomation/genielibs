@@ -55,3 +55,18 @@ def hw_module_sub_slot_reload(device, sub_slot):
                 .format(slot=sub_slot, error=e)
         )
 
+def hw_module_filesystem_security_lock(device, filesystem, operation):
+    """ Enable/Disable Security-lock on filesystem bootflash/harddisk
+        Args:
+            device ('obj'): Device object
+            filesystem('str'): Filesystem (bootflash/harddisk)
+            operation('str'): Enable/Disable
+
+    """
+
+    cmd = f"hw-module {filesystem} security-lock {operation}"
+    try:
+        output = device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to {operation} security-lock on filesystem:{filesystem}. Error:\n{e}")
+    return output

@@ -35,7 +35,9 @@ execute:
         \ EST: %SISF-4-IP_THEFT: IP Theft IP=2001:DB8::105 VLAN=20 MAC=dead.beef.0001\
         \ IF=Twe1/0/1 New(Spoof) MAC=dead.beef.0002 New I/F=Twe1/0/5\r\nFeb 16 17:19:26.873:\
         \ %SISF-4-IP_THEFT: IP Theft IP=2001:DB8::105 VLAN=20 Cand-MAC=dead.beef.0002\
-        \ Cand-I/F=Twe1/0/1 Known MAC dead.beef.0002 Known I/F Twe1/0/1"
+        \ Cand-I/F=Twe1/0/1 Known MAC dead.beef.0002 Known I/F Twe1/0/1\r\n.Feb  5\
+        \ 19:30:20.037: %SISF-4-IP_THEFT: IP Theft IP=20.0.0.254 VLAN=20 MAC=ba25.cdf4.ad38\
+        \ IF=Vl20 New(Spoof) MAC=dead.beef.0002 New IF=Gi1/0/1"
       response_type: circular
     show version: ''
     term length 0: ''

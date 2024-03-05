@@ -187,6 +187,7 @@ def get_ip_theft_syslogs(device):
 
     # *Sep 15 12:53:06.383 EST: %SISF-4-IP_THEFT: IP Theft IP=2001:DB8::101 VLAN=20 MAC=dead.beef.0001 IF=Twe1/0/1 New MAC=dead.beef.0002 New I/F=Twe1/0/1
     # *Dec 17 13:57:09.293 EST: %SISF-4-IP_THEFT: IP Theft IP=192.168.11.103 VLAN=20 MAC=dead.beef.0001 IF=Twe1/0/1 New(Spoof) MAC=dead.beef.0002 New I/F=Twe1/0/5
+    # .Feb  5 19:30:20.037: %SISF-4-IP_THEFT: IP Theft IP=20.0.0.254 VLAN=20 MAC=ba25.cdf4.ad38 IF=Vl20 New(Spoof) MAC=dead.beef.0002 New IF=Gi1/0/1
     theft1 = re.compile(
         timematch +
         r'\s+%SISF-4-IP_THEFT: IP Theft' +
@@ -195,7 +196,7 @@ def get_ip_theft_syslogs(device):
         r'\s+MAC=(?P<mac>([a-fA-F\d]{4}\.){2}[a-fA-F\d]{4})' +
         r'\s+IF=(?P<interface>[\w\/\.\-\:]+)' +
         r'\s+New(\(Spoof\))? MAC=(?P<new_mac>([a-fA-F\d]{4}\.){2}[a-fA-F\d]{4})' +
-        r'\s+New I/F=(?P<new_if>[\w\/\.\-\:]+)'
+        r'\s+New I(/?)F=(?P<new_if>[\w\/\.\-\:]+)'
     )
     # The order of when interface appears varies, so we need a second match
     # *Jan 11 15:57:30.413 EST: %SISF-4-IP_THEFT: IP Theft IP=192.168.11.103 VLAN=20 MAC=dead.beef.0008 New(Spoof) MAC=dead.beef.0002 IF=Vl20 New IF=Twe1/0/1

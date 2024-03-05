@@ -30,7 +30,7 @@ class TestGetFileContents(unittest.TestCase):
         )
 
     def test_get_file_contents(self):
-        result = get_file_contents(self.device, '/users/lgerrior/test_dir/device_key')
+        result = get_file_contents(self.device, '/users/lgerrior/test_dir/device_key', False)
         expected_output = ('-----BEGIN EC PRIVATE KEY-----\r\n'
  'Proc-Type: 4,ENCRYPTED\r\n'
  'DEK-Info: AES-256-CBC,D738EC42CBE1D776999970BEAE279176\r\n'

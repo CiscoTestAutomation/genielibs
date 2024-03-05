@@ -3,12 +3,14 @@ from unicon.core.errors import SubCommandFailure
 
 log = logging.getLogger(__name__)
 
-def configure_sdm_prefer_custom_template(device, attribute):
+def configure_sdm_prefer_custom_template(device, attribute, custom_template=None, entries=None, priority=None):
     """ Configure SDM Prefer Custom Template
         Args:
             device ('obj'): device to use
             attribute ('str'): sdm prefer custom template value (Ex : commit, vlan)
-
+            custom_template ('str'): sdm prefer custom template value (Ex : pbr)
+            entries('int'): number of entries
+            priority('int'): priority number
         Returns:
             None
         Raises:
@@ -17,9 +19,12 @@ def configure_sdm_prefer_custom_template(device, attribute):
     log.info(
         "Configuring SDM Prefer Custom Template with attribute={}".format(attribute)
     )
-
+    config = [f"sdm prefer custom {attribute}"]
+    if custom_template and entries and priority:
+        config.append(f"{custom_template} {entries} priority {priority}")
+    
     try:
-        device.configure(["sdm prefer custom {}".format(attribute),])
+        device.configure(config)
 
     except SubCommandFailure:
         raise SubCommandFailure(
@@ -82,4 +87,4 @@ def configure_sdm_prefer(device, template):
     try:
         device.configure(config)
     except SubCommandFailure as e:
-        raise SubCommandFailure(f"Could not configure sdm prefer. Error:\n{e}")                    
+        raise SubCommandFailure(f"Could not configure sdm prefer. Error:\n{e}")

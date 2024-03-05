@@ -1,0 +1,44 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: sjc-ads-583(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: sjc-ads-583(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    ? openssl pkcs12 -export -chain -inkey /temp/secure/test_cert/device.key
+      -in /temp/secure/test_cert/device.crt -CAfile /temp/secure/test_cert/rootCA.crt
+      -out /temp/secure/test_cert/device.p12 -passin pass:password
+      -passout pass:password
+    : response:
+      - "openssl pkcs12 -export -chain -inkey /temp/secure/test_cert/device.key\
+        \ -in /temp/secure/test_cert/device.crt -CAfile /ws/lsheik\r\
+        kal-sjc/gnmi_tickets/secure/test_cert/rootCA.crt -out /temp/secure/test_cert/device.p12\
+        \ -passin pass:password -passout pass:password"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: sjc-ads-583#

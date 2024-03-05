@@ -45,6 +45,13 @@ def device_rommon_boot(device, golden_image=None, tftp_boot=None, error_pattern=
         golden_image = golden_image[0]
         cmd = f"{golden_image}"
 
+    # To boot using tftp rommon variable
+    # In this case, we assume the rommon variable TFTP_FILE is set already
+    # and booting it using the "boot tftp:" command
+    elif getattr(device.clean, 'images', []):
+        log.warning('Assuming the rommon variable TFTP_FILE is set and boot using "boot tftp:" command')
+        cmd = "tftp:"
+
     # To boot using tftp information
     elif tftp_server and image:
         log.info(banner("Booting device '{}' with the Tftp images".\

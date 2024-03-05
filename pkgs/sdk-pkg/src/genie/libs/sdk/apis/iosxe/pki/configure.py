@@ -710,21 +710,22 @@ def configure_pki_import(device,
             SubCommandFailure
     '''
 
+    
     logger.debug("Configuring crypto pki import")
     dialog = Dialog([
-        Statement(pattern=r'.*Source filename.*',
-                    action='sendline(\r)',
+        Statement(pattern=r'.*Source filename \[.*?\]\?\s*$',
+                    action='sendline()',
                     loop_continue=True,
                     continue_timer=False),
         Statement(pattern=r'.*the hierarchy.*',
                   action=f'sendline({is_hierarchy})',
                   loop_continue=True,
                   continue_timer=False),
-        Statement(pattern=r'.*End with a blank line or the word "quit" on a line by itself.*',
+        Statement(pattern=r'.*End with a blank line or the word "quit" on a line by itself.*?$',
                   action=f'sendline({pem_import_cert})',
                   loop_continue=True,
                   continue_timer=False),
-        Statement(pattern=r'.*% Do you really want to replace them.*',
+        Statement(pattern=r'.*% Do you really want to replace them.*?$',
                   action=f'sendline({is_key_replace})',
                   loop_continue=True,
                   continue_timer=False)
@@ -745,6 +746,10 @@ def configure_pki_import(device,
         elif pkcs_media_type in media_url:
             import_config = (
                 f"crypto pki import {tp_name} pkcs12 {pkcs_media_type}{pkcs_url} password {file_password}")
+        else:
+            import_config = (
+                f"crypto pki import {tp_name} pkcs12 {pkcs_file} password {file_password}")
+
     elif import_type == 'pem':
         if pem_option == 'url':
             if pem_media_type in media_file:
@@ -776,6 +781,7 @@ def configure_pki_import(device,
         elif pem_option == 'terminal':
             import_config = (
                 f"crypto pki import {tp_name} pem terminal password {file_password}")
+    
     try:
         device.configure(import_config, reply=dialog,
                          error_pattern=error_patterns)

@@ -2,12 +2,12 @@ configure:
   commands:
     end:
       new_state: execute
-    interface Virtual-Template 1: "interface Virtual-Template 1\r\n"
-    ip unnumbered GigabitEthernet0/0/0: "ip unnumbered GigabitEthernet0/0/0\r\n"
+    interface Virtual-Template 100: "interface Virtual-Template 100\r\n"
+    ip unnumbered Loopback2: "ip unnumbered Loopback2\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''
-    peer default ip address pool ipv4_pool_100: "peer default ip address pool ipv4_pool_100\r\
+    peer default ipv6 pool ipv6_local_pool: "peer default ipv6 pool ipv6_local_pool\r\
       \n"
   prompt: C1113-8P_pkumarmu(config)#
 configure_line:

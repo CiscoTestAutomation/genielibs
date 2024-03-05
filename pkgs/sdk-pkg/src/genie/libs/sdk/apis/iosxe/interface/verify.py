@@ -1181,6 +1181,8 @@ def verify_interface_config_duplex(device,
         timeout.sleep()
 
     return False
+
+
 def verify_tunnel_protection( device, 
     interface, 
     max_time=5, 
@@ -1225,3 +1227,61 @@ def verify_tunnel_protection( device,
                 return True
         timeout.sleep()
     return False
+
+def verify_interface_capabilities_multiple_media_types(device, interface, expected_multiple_media_types):
+    """Verify interface capabilities multiple_media_types in -  show interfaces capabilities', 'show interfaces {interface} capabilities'
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+            expected_multiple_media_types (`str`): 'rj45 - interface type supporting copper connection.
+                                  'sfp, - interface type supporting fiber connection.
+                                  'rj45 , 'sfp', 'auto-select' - interface type supporting both fiber and copper connection.
+    
+        Returns:
+            result(`bool`): verify result
+    """
+    cmd = f"show interfaces {interface} capabilities"
+    try:
+        out = device.parse(cmd)
+    except Exception as e:
+        log.error(f"Not able to get show interfaces capabilities. Error:\n{e}")
+        
+    media_types = out['interface'][interface]["multiple_media_types"]
+   
+    message = f'Expected interface multiple_media_type not found. Instead, interface is {media_types} configuration found!'
+    if result := media_types == expected_multiple_media_types:
+        if media_types == 'rj45, sfp, auto-select':
+            message = "It's a Combo Interface: Supports both fiber and copper connections"
+        elif media_types == 'sfp':
+            message = "It's SFP Interface: Supports fiber connection and Copper SFP connections"
+        elif media_types == 'rj45':
+            message = "It's a Copper Interface(fixed copper): Supports only copper connection"
+
+    log.debug(message)
+
+    return result
+
+def verify_interfaces_transceiver_supported(
+    device, transceivers_list
+):
+    """Verify if the list of transceivers are supported or not
+
+        Args:
+            device (`obj`): Device object
+            transceivers (`list`): List of transceivers to check 
+            
+        Returns:
+            result(`bool`): True if supported else False
+    """
+    out = device.parse("show interfaces transceiver supported-list")
+    
+    supported_transceivers = {}
+    for transceiver in transceivers_list:
+        if transceiver in out['transceiver_type']:
+            log.debug(f"Transceiver {transceiver} is supported")
+            return True
+        else:
+            log.debug(f"Transceiver {transceiver} is not supported")
+
+    return False
+

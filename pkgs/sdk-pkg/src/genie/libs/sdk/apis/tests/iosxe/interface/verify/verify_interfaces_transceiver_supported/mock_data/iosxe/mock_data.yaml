@@ -1,0 +1,69 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: IE-3300-8P2S-E3(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: IE-3300-8P2S-E3(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show interfaces transceiver supported-list:
+      response:
+      - "Transceiver Type           Cisco p/n min version  \r\n                  \
+        \             supporting DOM     \r\n------------------       -------------------------\r\
+        \n\r\n   GLC-FE-100FX-RGD         ALL                      \r\n   GLC-FE-100LX-RGD\
+        \         ALL                      \r\n   GLC-FE-100FX             ALL   \
+        \                   \r\n   GLC-FE-100LX             ALL                  \
+        \    \r\n   GLC-FE-100EX             ALL                      \r\n   GLC-FE-100ZX\
+        \             ALL                      \r\n   GLC-FE-100BX-U           ALL\
+        \                      \r\n   GLC-FE-100BX-D           ALL               \
+        \       \r\n   GLC-SX-MM-RGD            ALL                      \r\n   GLC-LX-SM-RGD\
+        \            ALL                      \r\n   GLC-ZX-SM-RGD            ALL\
+        \                      \r\n   SFP-GE-S                 ALL               \
+        \       \r\n   SFP-GE-L                 ALL                      \r\n   SFP-GE-Z\
+        \                 ALL                      \r\n   GLC-BX-U               \
+        \  ALL                      \r\n   GLC-BX-D                 ALL          \
+        \            \r\n   GLC-BX-U-I               ALL                      \r\n\
+        \   GLC-BX-D-I               ALL                      \r\n   GLC-SX-MM   \
+        \             NONE                     \r\n   GLC-LH-SM                NONE\
+        \                     \r\n   GLC-ZX-SM                NONE               \
+        \      \r\n   GLC-T                    NONE                     \r\n   GLC-TE\
+        \                   NONE                     \r\n   GLC-T-RGD            \
+        \    NONE                     \r\n   GLC-EX-SMD               ALL        \
+        \              \r\n   GLC-SX-MMD               ALL                      \r\
+        \n   GLC-LH-SMD               ALL                      \r\n   GLC-ZX-SMD \
+        \              ALL                      \r\n   GLC-BX40-D-I             ALL\
+        \                      \r\n   GLC-BX40-DA-I            ALL               \
+        \       \r\n   GLC-BX40-U-I             ALL                      \r\n   GLC-BX80-D-I\
+        \             ALL                      \r\n   GLC-BX80-U-I             ALL\
+        \                      \r\n   SFP-CWDM-1470            ALL               \
+        \       \r\n   SFP-CWDM-1490            ALL                      \r\n   SFP-CWDM-1530\
+        \            ALL                      \r\n   SFP-CWDM-1610            ALL\
+        \                      \r\n   SFP-DWDM-3033            ALL               \
+        \       \r\n   SFP-DWDM-3112            ALL"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: IE-3300-8P2S-E3#
