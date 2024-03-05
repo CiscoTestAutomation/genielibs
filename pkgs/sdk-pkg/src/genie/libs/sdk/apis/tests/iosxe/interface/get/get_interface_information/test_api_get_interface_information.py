@@ -30,7 +30,7 @@ class TestGetInterfaceInformation(unittest.TestCase):
 
     def test_get_interface_information(self):
         result = get_interface_information(self.device, ['GigabitEthernet1'])
-        expected_output = {'GigabitEthernet1': {'GigabitEthernet1': {'arp_timeout': '04:00:00',
+        expected_output = {'GigabitEthernet1': {'arp_timeout': '04:00:00',
                                            'arp_type': 'arpa',
                                            'auto_negotiate': True,
                                            'bandwidth': 1000000,
@@ -103,5 +103,5 @@ class TestGetInterfaceInformation(unittest.TestCase):
                                            'reliability': '255/255',
                                            'rxload': '1/255',
                                            'txload': '1/255',
-                                           'type': 'CSR vNIC'}}}
+                                           'type': 'CSR vNIC'}}
         self.assertEqual(result, expected_output)

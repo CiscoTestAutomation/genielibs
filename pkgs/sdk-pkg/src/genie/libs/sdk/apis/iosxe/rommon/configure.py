@@ -21,6 +21,22 @@ def configure_rommon_tftp(device, ipv6_address=False):
     """
     tftp = {}
 
+    # Get the current device state from the device
+    if device.is_ha and hasattr(device, 'subconnections'):
+        if isinstance(device.subconnections, list):
+            states = list(set([con.state_machine.current_state for con in device.subconnections]))
+            if states == ['rommon']:
+                state = 'rommon'
+            elif 'rommon' in states:
+                raise Exception(f'One of the device connection is in rommon state, need to recover device.')
+    else:
+        state = device.state_machine.current_state
+
+    # check the device is in rommon
+    if state != 'rommon':
+        raise Exception(f'The device is not in rommon state')
+
+
     # Check if management attribute in device object, if not set to empty dict
     if not hasattr(device, 'management'):
         setattr(device, "management", {})
@@ -54,15 +70,25 @@ def configure_rommon_tftp(device, ipv6_address=False):
     tftp.setdefault("DEFAULT_GATEWAY", str(device.management.get('gateway', {}).get(ip, '')))
     tftp.setdefault("TFTP_SERVER", str(device.testbed.servers.get('tftp', {}).get('address', '')))
 
+    # get the image from clean data
+    tftp_image_path = getattr(device.clean, 'images', [])
+    if tftp_image_path:
+        tftp.setdefault("TFTP_FILE", tftp_image_path[0])
+
     log.info("checking if all the tftp information is given by the user")
     if not all(tftp.values()):
         log.warning(f"Some TFTP information is missing: {tftp}")
 
     for set_command, value in tftp.items():
+
         # To set rommon variables
         cmd = f'{set_command}={value}'
         try:
-            device.execute(cmd)
+            # Configure tftp rommon variables in active rp
+            if device.is_ha and hasattr(device, 'subconnections'):
+                device.subconnections[0].execute(cmd)
+            else:
+                device.execute(cmd)
         except Exception as e:
             raise SubCommandFailure(
                 f"Failed to set the rommon variable {set_command}. Error:\n{e}")

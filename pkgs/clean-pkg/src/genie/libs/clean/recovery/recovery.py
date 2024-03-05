@@ -153,7 +153,8 @@ def _recovery_steps(device, clear_line=True, powercycler=True,
         'ip_address': list,
         'subnet_mask': str,
         'gateway': str,
-        'tftp_server': str
+        'tftp_server': str,
+        Optional('ether_port'): int,
     },
     Optional('recovery_password'): str,
     Optional('clear_line'): bool,
@@ -282,8 +283,8 @@ def recovery_processor(
     # check if device is in any known state
     log.info(f'Check device {device.name} has valid unicon state.')
     try:
-        if device.is_ha:
-            log.info('Device is HA! checking all the subconnetions.')
+        if hasattr(device, 'is_ha') and device.is_ha:
+            log.info('Device is HA! checking all the subconnections.')
             for index, connection in enumerate(device.subconnections,1):
                 bring_to_any_state(connection, connection_timeout)
                 log.info(f'subconnection {index} is in {connection.state_machine.current_state}')

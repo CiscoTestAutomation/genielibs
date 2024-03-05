@@ -7,7 +7,7 @@ import random
 
 import netaddr
 import psutil
-from pyats import configuration as cfg
+from pyats.configuration import configuration as cfg
 from pyats.datastructures import AttrDict
 from pyats.utils.dicts import recursive_update
 

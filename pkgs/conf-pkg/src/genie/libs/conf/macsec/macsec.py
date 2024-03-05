@@ -147,6 +147,11 @@ class Macsec(DeviceFeature, LinkFeature):
                                         type=(None, managedattribute.test_istype(bool)),
                                         doc='Enable/disable include-sci')
     
+    ppk_profile_name = managedattribute(name='ppk_profile_name',
+                                        default=None,
+                                        type=(None, managedattribute.test_istype(str)),
+                                        doc='Configure PPK crypto-qkd-profile')
+    
     #macsec interface level attributes
     key_chain = managedattribute(name='key_chain',
                                 default=None,

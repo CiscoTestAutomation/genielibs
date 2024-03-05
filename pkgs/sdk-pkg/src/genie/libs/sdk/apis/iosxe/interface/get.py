@@ -1016,7 +1016,7 @@ def get_interface_information(device, interface_list):
         except SchemaEmptyParserError:
             empty_ints.append(interface)
             data = None
-        results[interface] = data
+        results.update({interface: data[interface]})
     if empty_ints:
         log.error('No interface information found for {}'.format(empty_ints))
 

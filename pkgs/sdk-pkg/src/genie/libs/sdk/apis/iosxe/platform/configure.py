@@ -121,13 +121,15 @@ def configure_dope_wrsp(device, asic, core, idx, hi_value, lo_value):
                         )
 
 
-def configure_bba_group(device,name,vt_number, service_profile_name=None):
+def configure_bba_group(device,name,vt_number, service_profile_name=None,
+                        tag=None):
     """ bba-group
         Args:
             device (`obj`): Device object
             name (`str`): bba-group name
             vt_number (`str`): virtual-template interface number
             service_profile_name('str', optional): service profile name
+            tag ('str', optional): ppp-max-payload
         Returns:
             None
         Raises:
@@ -139,6 +141,8 @@ def configure_bba_group(device,name,vt_number, service_profile_name=None):
     cli.append(f"virtual-template {vt_number}")
     if service_profile_name:
         cli.append(f"service profile {service_profile_name}")
+    if tag:
+        cli.append(f"tag ppp-max-payload {tag}")
     try:
         device.configure(cli)
     except SubCommandFailure as e:
@@ -431,6 +435,53 @@ def hw_module_beacon_slot_on_off(device, slot, operation):
         device.execute(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure('Failed to switch {} the beacon slot :'.format(operation))
+
+def hw_module_beacon_slot_status(device, slot):
+    """ ON/OFF beacon slot
+        Args:
+            device ('obj'): Device object
+            slot('int'): Switch number
+
+    """
+
+    cmd = "hw-module beacon slot {} status".format(slot)
+    try:
+        output = device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure('Failed to fetch status of the beacon slot :')
+    return output
+
+def hw_module_beacon_rp_toggle(device, rp, operation):
+    """ ON/OFF beacon slot
+        Args:
+            device ('obj'): Device object
+            rp('str'): R0 or R1
+            operation('str'): ON/OFF
+
+    """
+
+    cmd = "hw-module beacon {} {}".format(rp, operation)
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure('Failed to switch {} the beacon for {}:'.format(operation,rp))
+
+def hw_module_beacon_rp_status(device, rp):
+    """ ON/OFF beacon slot
+        Args:
+            device ('obj'): Device object
+            rp('str'): R0 or R1
+
+    """
+
+    cmd = "hw-module beacon {} status".format(rp)
+    try:
+        output = device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure('Failed to fetch status of the beacon for {}:'.format(rp))
+    return output
+
+
 
 def stack_ports_enable_disable(device, switch_num, stack_port, operation):
     """ Enable/Disable the stack port
@@ -755,7 +806,7 @@ def unconfigure_macro_auto_sticky(device):
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure macro auto sticky on this device. Error:\n{e}")
 
-def configure_device_classifier(device, dc_option="", dc_option_name=""):
+def configure_device_classifier(device, dc_option="", dc_option_name="", timeout=30):
     """ Configure device classifier on this device
 
     Args:
@@ -765,6 +816,7 @@ def configure_device_classifier(device, dc_option="", dc_option_name=""):
             condition    Define device classifier condition
             device-type  Define device type
         dc_option_name ('str'): Name of device classifier type
+        timeout('int', optional): timeout in seconds. default is 30
         ex:)
             WORD  Condition name
             WORD  Device type name
@@ -781,7 +833,7 @@ def configure_device_classifier(device, dc_option="", dc_option_name=""):
         cmd = 'device classifier'
 
     try:
-        device.configure(cmd)
+        device.configure(cmd, timeout=timeout)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure classifier on this device. Error:\n{e}")
 
@@ -1867,44 +1919,6 @@ def configure_macro_global_apply(device, macro_name):
         raise SubCommandFailure(
             f"Failed to configure macro global on device {device}. Error:\n{e}"
             )
-
-def configure_stack_power_stack(device, powerstack_name):
-    """ Configures stack-power stack
-        Example : stack-power stack test
-
-        Args:
-            device ('obj'): device to use
-            powerstack_name ('str'): Power stack name - Up to 31 chars
-        Returns:
-            None
-        Raises:
-            SubCommandFailure
-    """
-    log.info(f"Configuring stack-power stack {powerstack_name} on {device.name}")
-    config = f'stack-power stack {powerstack_name}'
-    try:
-        device.configure(config)
-    except SubCommandFailure as e:
-        raise SubCommandFailure(f"Failed to configure stack-power stack on device {device.name}. Error:\n{e}")
-
-def unconfigure_stack_power_stack(device, powerstack_name):
-    """ Unconfigures stack-power stack
-        Example : no stack-power stack test
-
-        Args:
-            device ('obj'): device to use
-            powerstack_name ('str'): Power stack name - Up to 31 chars
-        Returns:
-            None
-        Raises:
-            SubCommandFailure
-    """
-    log.info(f"Unconfiguring stack-power stack {powerstack_name} on {device.name}")
-    config = f'no stack-power stack {powerstack_name}'
-    try:
-        device.configure(config)
-    except SubCommandFailure as e:
-        raise SubCommandFailure(f"Failed to unconfigure stack-power stack on device {device.name}. Error:\n{e}")
 
 def configure_stack_power_mode_redundant(device, powerstack_name, strict=None):
     """ Configures redundant mode on stack-power stack
@@ -3964,7 +3978,7 @@ def unconfigure_device_classifier_profile_command(
 
 def configure_device_classifier_command(
         device, dc_option="", dc_option_name="", dc_command="",
-        dc_command_name="", dc_profile_commands=""
+        dc_command_name="", dc_profile_commands="", timeout=30
 ):
     """ configure device classifier on this device
 
@@ -3995,6 +4009,7 @@ def configure_device_classifier_command(
             default    Set a command to its defaults
             exit       Exit from device-classifier dev-type configuration mode
             no         Negate a command or set its defaults
+        timeout('int', optional): timeout in seconds. default is 30
         Returns:
             None
         Raises:
@@ -4005,7 +4020,7 @@ def configure_device_classifier_command(
         f'{dc_command} {dc_command_name}',f'{dc_profile_commands}']
 
     try:
-        device.configure(cmd)
+        device.configure(cmd, timeout=timeout)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure classifier command on this device. Error:\n{e}")
 
@@ -4516,6 +4531,21 @@ def hw_module_beacon_RP_active_standby(device, supervisor, operation):
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Failed to turn {operation} the {supervisor} beacon slot. Error:\n{e}')
 
+def hw_module_beacon_rp_active_standby_status(device, supervisor):
+    """ ON/OFF beacon supervisor
+        Args:
+            device ('obj'): Device object
+            supervisor('str'): active/standby
+
+    """
+
+    cmd = (f"hw-module beacon RP {supervisor} status")
+    try:
+        output = device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Failed to fetch the status for {supervisor} beacon slot. Error:\n{e}')
+    return output
+
 
 def configure_snmp_mib_bulkstat_transfer(device, transfer_name):
     """ configure snmp mib bulkstat transfer
@@ -4806,7 +4836,7 @@ def unconfigure_rep_admin_vlan(device, vlanId, segment_number):
             f"Failed to config admin vlan. Error:\n{e}")
 
 def copy_file_with_sftp(device, host, file, username=None, password=None, path=None, timeout=30):
-    """ Copy files to sftp location
+    """ Copy files with sftp 
 
         Args:
             device ('obj'): Device object to modify configuration
@@ -4814,10 +4844,17 @@ def copy_file_with_sftp(device, host, file, username=None, password=None, path=N
             file('str'):  file name
             username ('str',optional): sftp host VM username
             password ('str',optional): sftp host vm password
-            path('str',optional): storage file path in the VM
-            ex:)
-                copy file sftp://username:password@host/
+            path('str',optional): storage file path in the local directry
             timeout('int', Optional): timeout in seconds for configuration file load to device(Default is 30 seconds)
+            
+            copy files to sftp location from device
+            ex: copy file sftp://username:password@host/
+              : copy test.txt sftp://root:cisco@1.2.3.4/
+            
+            copy files from sftp location to device
+            ex: copy sftp://username:password@host/file path 
+              : copy sftp://root:cisco@1.2.3.4/test.txt flash:/
+
         Returns:
             None
         Raises:
@@ -4837,8 +4874,10 @@ def copy_file_with_sftp(device, host, file, username=None, password=None, path=N
                 loop_continue=True,
                 continue_timer=False)
             ])
-
-        cmd = f"copy {file} sftp://{username}:{password}@{host}/{file}"
+        if path:
+            cmd = f"copy sftp://{username}:{password}@{host}/{file} {path}"
+        else:
+            cmd = f"copy {file} sftp://{username}:{password}@{host}/{file}"
 
     elif (username == None) and password:
         dialog = Dialog([
@@ -4855,8 +4894,10 @@ def copy_file_with_sftp(device, host, file, username=None, password=None, path=N
                 loop_continue=True,
                 continue_timer=False),
             ])
-
-        cmd = f"copy {file} sftp://{host}/{file}"
+        if path:
+            cmd = f"copy sftp://{host}/{file} {path}"
+        else:
+            cmd = f"copy {file} sftp://{host}/{file}"
 
     else:
         dialog = Dialog([
@@ -4869,8 +4910,10 @@ def copy_file_with_sftp(device, host, file, username=None, password=None, path=N
                 loop_continue=True,
                 continue_timer=False)
             ])
-
-        cmd = f"copy {file} sftp://{host}/{file}"
+        if path:
+            cmd = f"copy sftp://{host}/{file} {path}"
+        else:
+            cmd = f"copy {file} sftp://{host}/{file}"
 
     try:
         out = device.execute(cmd,reply=dialog, timeout=timeout)
@@ -4881,70 +4924,84 @@ def copy_file_with_sftp(device, host, file, username=None, password=None, path=N
     return out
 
 def copy_file_with_scp(device, host, file, username=None, password=None, path=None, timeout=30):
-    """ Copy files to sftp location
+    """ Copy files to scp location
 
         Args:
             device ('obj'): Device object to modify configuration
             host ('str'): scp host ip address
             file('str'):  file name
-            username ('str',optional): sftp host VM username
-            password ('str',optional): sftp host vm password
-            path('str',optional): storage file path in the VM
-            ex:)
-                copy file scp://username:password@host/
+            username ('str',optional): scp host VM username
+            password ('str',optional): scp host vm password
+            path('str',optional): storage file path in the local directry
             timeout('int', Optional): timeout in seconds for configuration file load to device(Default is 30 seconds)
+
+            copy files to scp location from device
+            ex: copy file scp://username:password@host/
+              : copy test.txt scp://root:cisco@1.2.3.4/
+            
+            copy files from scp location to device
+            ex: copy scp://username:password@host/file path 
+              : copy scp://root:cisco@1.2.3.4/test.txt flash:/
+
         Returns:
             None
         Raises:
             SubCommandFailure
+            
     """
     log.debug(f"copy files from dut to scp server on {host}")
 
     if (username and password):
         dialog = Dialog([
-            Statement(pattern=r'.*Address or name of remote host.*',
+            Statement(pattern=r'.*Address or name of remote host.*$',
                 action='sendline()',
                 loop_continue=True,
                 continue_timer=False),
-            Statement(pattern=r'.*Destination filename.*',
+            Statement(pattern=r'.*Destination filename.*$',
                 action='sendline()',
                 loop_continue=True,
                 continue_timer=False)
             ])
-
-        cmd = f"copy {file} scp://{username}:{password}@{host}/{file}"
+        if path:
+            cmd = f"copy scp://{username}:{password}@{host}/{file} {path}"
+        else:
+            cmd = f"copy {file} scp://{username}:{password}@{host}/{file}"
 
     elif (username == None) and password:
         dialog = Dialog([
-            Statement(pattern=r'.*Address or name of remote host.*',
+            Statement(pattern=r'.*Address or name of remote host.*$',
                 action='sendline()',
                 loop_continue=True,
                 continue_timer=False),
-            Statement(pattern=r'.*Destination filename.*',
+            Statement(pattern=r'.*Destination filename.*$',
                 action='sendline()',
                 loop_continue=True,
                 continue_timer=False),
-            Statement(pattern=r'.*Password:',
+            Statement(pattern=r'.*Password:\s*$',
                 action=f'sendline({password})',
                 loop_continue=True,
                 continue_timer=False),
             ])
-
-        cmd = f"copy {file} scp://{host}/{file}"
+        if path:
+            cmd = f"copy {file} scp://{host}/{file} {path}"
+        else:
+            cmd = f"copy {file} scp://{host}/{file}"
 
     else:
         dialog = Dialog([
-            Statement(pattern=r'.*Address or name of remote host.*',
+            Statement(pattern=r'.*Address or name of remote host.*$',
                 action='sendline()',
                 loop_continue=True,
                 continue_timer=False),
-            Statement(pattern=r'.*Destination filename.*',
+            Statement(pattern=r'.*Destination filename.*$',
                 action='sendline()',
                 loop_continue=True,
                 continue_timer=False)
             ])
-
-        cmd = f"copy {file} scp://{host}/{file}"
+        if path:
+            cmd = f"copy scp://{host}/{file} {path}"
+        else:
+            cmd = f"copy {file} scp://{host}/{file}"
 
     try:
         out = device.execute(cmd,reply=dialog, timeout=timeout)
@@ -5498,3 +5555,64 @@ def configure_event_manager(device, event, description,event_run_option,
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure event manager applet on device {device.name}. Error:\n{e}")
+
+
+def configure_hw_module_switch_number_ecomode_led(device, switch_number='all'):
+
+    """ configure_hw_module_switch_number_ecomode_led
+        Args:
+            device ('obj'): device to use
+            switch_number ('str'): switch number
+        Returns:
+            None
+        Raises:
+            SubCommandFailure exception
+    """
+
+    cmd = [f"hw-module switch {switch_number} ecomode led"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure hw-module ecomode led on device {device.name}. Error:\n{e}")
+
+
+def unconfigure_hw_module_switch_number_ecomode_led(device, switch_number='all'):
+
+    """ unconfigure_hw_module_switch_number_ecomode_led
+        Args:
+            device ('obj'): device to use
+            switch_number ('str'): switch number
+        Returns:
+            None
+        Raises:
+            SubCommandFailure exception
+    """
+
+    cmd = [f"no hw-module switch {switch_number} ecomode led"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure hw-module ecomode led on device {device.name}. Error:\n{e}")
+
+
+def configure_ip_http_client_secure_trustpoint(device, trustpoint_name):
+    """ Configures the secure trustpoint
+        Example : ip http client secure-trustpoint {trustpoint_name}
+
+        Args:
+            device ('obj'): device to use
+            license ('str): secure-trustpoint
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = f'ip http client secure-trustpoint {trustpoint_name}'
+    try:
+       device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Failed to ip http client secure-trustpoint {trustpoint_name} on device {device.name}. Error:\n{e}')
+

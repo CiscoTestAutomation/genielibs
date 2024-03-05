@@ -2,6 +2,7 @@
 import re
 import logging
 import pathlib
+import ipaddress
 
 # Logger
 log = logging.getLogger(__name__)
@@ -205,3 +206,22 @@ def scp(device,
 
     # return True/False depending on result
     return bool(re.search(r'{}\s*100%'.format(local_filename), out))
+
+def get_valid_ipv4_address(device, ip):
+    """ Validate and convert the input IP address into an IPv4Interface instance.
+            
+        Args:
+            device (`obj`) : Device object (local device)
+            ip_address (`str` or IPv4Interface): IP address to be validated and converted
+        Raise:
+            ipaddress.AddressValueError: If IP address cannot be converted to IPv4Interface
+        Returns:
+            result (`IPv4Address`): The IPv4Address for ip
+    """
+    try:
+        ip = ipaddress.IPv4Interface(ip)
+    except ipaddress.AddressValueError as e:
+        log.error(f'Could not convert {ip} to IPv4Interface address because of {e}')
+        raise e
+    return ip.ip
+

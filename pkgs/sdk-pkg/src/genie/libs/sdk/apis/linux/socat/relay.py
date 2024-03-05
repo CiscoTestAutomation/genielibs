@@ -3,8 +3,10 @@ import re
 import logging
 from time import sleep
 
-log = logging.getLogger(__name__)
+from unicon.eal.dialogs import Dialog
 
+
+log = logging.getLogger(__name__)
 
 def socat_relay(device, remote_ip, remote_port, protocol='TCP4'):
     """ Setup UDP/TCP relay using 'socat' command.
@@ -17,6 +19,23 @@ def socat_relay(device, remote_ip, remote_port, protocol='TCP4'):
 
     Returns:
         proxy_port (int): Proxy port number or False if not able to setup relay
+    """
+    proxy_port, _ = start_socat_relay(device, remote_ip, remote_port, protocol)
+    return proxy_port
+
+
+def start_socat_relay(device, remote_ip, remote_port, protocol='TCP4'):
+    """ Setup UDP/TCP relay using 'socat' command.
+
+    Args:
+        device (obj): Device object (optional)
+        remote_ip (str): remote IP address
+        remote_port (str): remote port
+        protocol (str): portocol (default: TCP4)
+
+    Returns:
+        proxy_port (int): Proxy port number or False if not able to setup relay
+        socat_pid (int): Process ID for the socat process
     """
     try:
         socat_output = device.execute(f'socat {protocol}-LISTEN:0,reuseaddr,fork {protocol}:{remote_ip}:{remote_port} &',
@@ -50,4 +69,16 @@ def socat_relay(device, remote_ip, remote_port, protocol='TCP4'):
         log.error('Could not setup port relay via proxy')
         return
 
-    return proxy_port
+    return proxy_port, socat_pid
+
+
+def stop_socat_relay(device, socat_pid):
+    """  Stop the relay process by killing the PID
+
+    Args:
+        socat_pid (int): Process ID for socat process
+    """
+    dialog = Dialog([
+        [r'.*?\[\d+].\s+Exit.*', 'sendline()', None, True, False]
+    ])
+    device.execute(f'kill {socat_pid}', reply=dialog)

@@ -11,7 +11,7 @@ log = logging.getLogger(__name__)
 
 
 def get_snmp_snmpwalk(
-    device, community, ip_address, oid, version="2c", option=None
+    device, community, ip_address, oid, version="2c", option=None, timeout=60
 ):
     """ Get snmpwalk output from SNMP device
 
@@ -22,6 +22,7 @@ def get_snmp_snmpwalk(
             oid (`str`): Oid code
             version (`str`): SNMP version
             option (`str`): Optional command
+            timeout (`int`): Optional timeout value. Default is 60 seconds.
         Returns:
             out (`str`): Executed output of SNMP command
         Raises:
@@ -43,7 +44,7 @@ def get_snmp_snmpwalk(
             oid=oid,
         )
 
-    return device.execute(cmd)
+    return device.execute(cmd, timeout=timeout)
 
 
 def get_snmp_id_slot_map(device, community, ip_address, oids, version="2c"):

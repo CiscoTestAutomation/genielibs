@@ -98,3 +98,26 @@ def platform_software_fed_punt_cpuq_clear(device, state=None):
         raise SubCommandFailure(
             "Could not clear cpuq punt counters on {device}. Error:\n{error}".format(device=device, error=e)
         )
+
+def clear_active_punt_ios_cause(device, state=None):
+    """ show platform software fed switch active punt ios-cause clear
+        Args:
+            device ('obj'): Device object
+            state (str, optional): Switch state active or standby
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("show platform software fed switch active punt ios-cause clear")
+    
+    if state:
+        cmd = f'show platform software fed switch {state} punt ios-cause clear'
+    else:
+        cmd = 'show platform software fed active punt ios-cause clear'
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            'Could not clear punt ios-cause on {device}. Error:\n{error}'.format(device=device.name, error=e)
+        )

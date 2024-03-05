@@ -7,7 +7,7 @@ import re
 import time
 import os.path
 import logging
-from ipaddress import IPv4Interface, IPv6Interface
+from ipaddress import IPv4Address, IPv6Address, IPv4Interface, IPv6Interface
 
 # pyATS
 from pyats.async_ import pcall
@@ -546,7 +546,7 @@ install_image:
             feature of unicon. Defaults to True.
 
         error_pattern (list, optional): List of regex strings to check for errors.
-            Default: [r"FAILED:.* ",]
+            Default: [r"FAILED:.*?$",]
 
         <Key>: <Value>
             Any other arguments that the Unicon reload service supports
@@ -570,7 +570,7 @@ install_image:
     RELOAD_SERVICE_ARGS = {
         'reload_creds': 'default',
         'prompt_recovery': True,
-        'error_pattern': [r"FAILED:.* ",],
+        'error_pattern': [r"FAILED:.*?$",],
     }
     ISSU = False
     SKIP_BOOT_VARIABLE = False
@@ -731,7 +731,7 @@ install_image:
                           action='sendline(y)',
                           loop_continue=True,
                           continue_timer=False),
-                Statement(pattern=r"FAILED:.* ",
+                Statement(pattern=r"FAILED:.*?$",
                           action=None,
                           loop_continue=False,
                           continue_timer=False),
@@ -1651,10 +1651,14 @@ copy_to_device:
                             image_version = out.get("version", {}).get("xe_version", "")
                             image_match = re.search(image_version, file)
                             if image_match:
-                                image_mapping = self.history['CopyToDevice'].parameters.setdefault('image_mapping', {})
-                                image_mapping.update({origin['files'][index]: dest_file_path})
+                                # update image mapping 'as-if' we had copied the file
+                                for dest in destinations:
+                                    dest_file_path = os.path.join(dest, os.path.basename(file))
+                                    image_mapping = self.history['CopyToDevice'].parameters.setdefault('image_mapping', {})
+                                    image_mapping.update({origin['files'][index]: dest_file_path})
+
                                 self.skipped(f"The image file provided is same as the current running image {image_version} on the device.\n\
-                                            Setting the destination image to {dest_file_path}. Skipping the copy process.")
+                                             Setting the destination image to {dest_file_path}. Skipping the copy process.")
 
                 if server:
                     # Get filesize of image files on remote server
@@ -2037,3 +2041,151 @@ class ConfigureReplace(BaseStage):
 
             except Exception as e:
                 step.failed("Configure replace failed", from_exception=e)
+
+
+class Connect(BaseStage):
+    """This stage connects to the device that is being cleaned.
+Stage Schema
+------------
+connect:
+    via (str, optional): Which connection to use from the testbed file. Uses the
+        default connection if not specified.
+    alias (str, optional): Which connection alias to use from the testbed file.
+    timeout (int, optional): The timeout for the connection to complete in seconds.
+        Defaults to 200.
+    retry_timeout (int, optional): Overall timeout for retry mechanism in seconds.
+        Defaults to 0 which means no retry.
+    retry_interval (int, optional): Interval for retry mechanism in seconds. Defaults
+        to 0 which means no retry.
+Example
+-------
+connect:
+    timeout: 60
+"""
+
+    # =================
+    # Argument Defaults
+    # =================
+    VIA = None
+    ALIAS = None
+    TIMEOUT = 200
+    RETRY_TIMEOUT = 0
+    RETRY_INTERVAL = 0
+
+    # ============
+    # Stage Schema
+    # ============
+    schema = {
+        Optional('via', description="Which connection to use from the testbed file. Uses the default connection if not specified."): str,
+        Optional('alias', description="Which connection alias to use."): str,
+        Optional('timeout', description=f"The timeout for the connection to complete in seconds. Defaults to {TIMEOUT}.", default=TIMEOUT): Or(str, int),
+        Optional('retry_timeout', description=f"Overall timeout for retry mechanism in seconds. Defaults to {RETRY_TIMEOUT} which means no retry.", default=RETRY_TIMEOUT): Or(str, int, float),
+        Optional('retry_interval', description=f"Interval for retry mechanism in seconds. Defaults to {RETRY_INTERVAL} which means no retry.", default=RETRY_INTERVAL): Or(str, int, float),
+    }
+
+    # ==============================
+    # Execution order of Stage steps
+    # ==============================
+    exec_order = [
+        'connect'
+    ]
+
+    def connect(self, steps, device, via=VIA, alias=ALIAS, timeout=TIMEOUT,
+                retry_timeout=RETRY_TIMEOUT, retry_interval=RETRY_INTERVAL):
+
+        with steps.start("Connecting to the device") as step:
+
+            log.info('Checking connection to device: %s' % device.name)
+
+            # Create a timeout that will loop
+            retry_timeout = Timeout(float(retry_timeout), float(retry_interval))
+            retry_timeout.one_more_time = True
+            # Without this we see 'Performing the last attempt' even if retry
+            # is not being used.
+            retry_timeout.disable_log = True
+
+            while retry_timeout.iterate():
+                retry_timeout.disable_log = False
+
+                # mit=True is used to make sure we do not initialize the connection
+                # and we can check if the device is in rommon.
+                device.instantiate(connection_timeout=timeout,
+                                   learn_hostname=True,
+                                   prompt_recovery=True,
+                                   via=via,
+                                   alias=alias,
+                                   mit=True)
+                try:
+                    if alias:
+                        getattr(device, alias).connect()
+                    else:
+                        device.connect()
+                except Exception:
+                    log.error("Connection to the device failed", exc_info=True)
+                    device.destroy_all()
+                    # Loop
+                else:
+                    step.passed("Successfully connected".format(device.name))
+                    # Don't loop
+
+                retry_timeout.sleep()
+
+            step.failed("Could not connect. Scroll up for tracebacks.")
+        
+        with steps.start(f'Checking the current state of the device: {device.name}') as step:
+
+            log.info(f'Checking the current state of the device: {device.name}')
+
+            state = ""
+            try:
+                # To check the state for HA devices
+                if device.is_ha and hasattr(device, 'subconnections'):
+                    # HA recovery is not yet implemented fully.
+                    if isinstance(device.subconnections, list):
+                        states = list(set([con.state_machine.current_state for con in device.subconnections]))
+                        if 'rommon' in states:
+                            step.failed(f'HA device connection is in rommon state, need to recover device.')
+                else:
+                    # To check the state for single rp device
+                    state = device.state_machine.current_state
+            except Exception as e:
+                log.warning(f'There is no connection in device.subconnections: {e}')
+        
+        if state == "rommon":
+
+            with steps.start("Setting the rommon variables") as step:
+
+                log.info('Setting the rommon variables for TFTP boot')
+    
+                try:
+                    device.api.configure_rommon_tftp()
+                except Exception as e:
+                    step.passx(f'Failed to set rommon variables. {e}')
+                else:
+                    log.info("Successfully set the rommon variables")
+
+            with steps.start("Booting the device from rommon") as step:
+
+                log.info('Booting the device from rommon')
+
+                try:
+                    # Gets the recovery details from clean yaml
+                    device.api.device_rommon_boot()
+                except Exception as e:
+                    step.passx(f'Failed to boot device from rommon. {e}')
+                else:
+                    log.info("Successfully booted the device from rommon.")
+        
+        # set mit to False to initialize the connection
+        device.default.mit=False        
+        with steps.start("Initialize the device connection") as step:
+
+            try:
+                device.connection_provider.init_connection()
+            except Exception as e:
+                step.failed(f'Failed to initialize the connection. {e}')
+            else:
+                step.passed("Successfully connected to the device")
+                
+        
+

@@ -23,6 +23,7 @@ from datetime import datetime
 from netaddr import IPAddress
 from ipaddress import IPv4Interface
 from urllib.parse import urlparse
+from functools import wraps
 
 # pyATS
 from pyats.easypy import runtime
@@ -4327,6 +4328,7 @@ def device_recovery_boot(device, console_activity_pattern=None, console_breakboo
                 subnet_mask: <Management subnet mask `str`> (Mandatory)
                 gateway: <Management gateway `str`> (Mandatory)
                 tftp_server: <tftp server is reachable with management interface> (Mandatory)
+                ether_port: <To configure the ether_port> (Optional) (Default to 0)
         Return:
             None
         Raise:
@@ -4351,20 +4353,25 @@ def device_recovery_boot(device, console_activity_pattern=None, console_breakboo
     grub_breakboot_char = grub_breakboot_char or recovery_info.get('grub_breakboot_char') or 'c'
     break_count = break_count or recovery_info.get('break_count') or 15
     timeout = timeout or recovery_info.get('timeout') or 750
+    ether_port = 0
+    tftp_boot = tftp_boot or recovery_info.get('tftp_boot', {})
 
+    
     log.info('Destroy device connection.')
     try:
         device.destroy()
     except Exception:
         log.warning("Failed to destroy the device connection but "
                     "attempting to continue", exc_info=True)
-
+    
     if golden_image or recovery_info.get('golden_image'):
         log.info(banner("Booting device '{}' with the Golden images".\
                         format(device.name)))
         log.info("Golden image information found:\n{}".format(golden_image))
 
-    elif tftp_boot or recovery_info.get('tftp_boot'):
+    elif tftp_boot:
+        # set ether_port to default value 0
+        tftp_boot.setdefault('ether_port', ether_port)
         log.info(banner("Booting device '{}' with the Tftp images".\
                         format(device.name)))
         log.info("Tftp boot information found:\n{}".format(tftp_boot))
@@ -4403,7 +4410,7 @@ def device_recovery_boot(device, console_activity_pattern=None, console_breakboo
                 'break_count': break_count,
                 'timeout': timeout,
                 'golden_image': golden_image or recovery_info.get('golden_image'),
-                'tftp_boot': tftp_boot or recovery_info.get('tftp_boot'),
+                'tftp_boot': tftp_boot,
                 'recovery_password': recovery_password or recovery_info.get('recovery_password')}
         )
     except Exception as e:
@@ -4423,3 +4430,28 @@ def sanitize(s):
     s = ansi_escape.sub('', s)
 
     return s.translate(dict.fromkeys(range(32))).strip().replace(' ', '')
+
+def check_and_wait(expect, max_time, poll_time, call_on_fail_func=None, **call_on_fail_func_args):
+    '''A decorator to check the return value of a function
+       and wait until it matches the expected value or timeout.
+       Args:
+            expect(`bool`): True or False
+            max_time(`int`): Maximum time to keep checking. seconds
+            poll_time(`int`): How often to check. seconds
+    '''
+    def decorator(func):
+        @wraps(func)
+        def inner_func(*args, **kargs):
+            start_time = time.time()
+            result = False
+            while int(time.time() - start_time) < max_time:
+                result = func(*args, **kargs)
+                if isinstance(result, bool) and result == expect:
+                    return result
+                else:
+                    time.sleep(poll_time)
+            if call_on_fail_func is not None:
+                call_on_fail_func(**call_on_fail_func_args)
+            return result
+        return inner_func
+    return decorator

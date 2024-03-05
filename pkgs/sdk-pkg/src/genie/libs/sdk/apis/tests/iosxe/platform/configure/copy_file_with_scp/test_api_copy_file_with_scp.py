@@ -4,7 +4,6 @@ from pyats.topology import loader
 from genie.libs.sdk.apis.iosxe.platform.configure import copy_file_with_scp
 from genie.libs.sdk.apis.utils import sanitize
 
-
 class TestCopyFileWithScp(unittest.TestCase):
 
     @classmethod
@@ -31,12 +30,14 @@ class TestCopyFileWithScp(unittest.TestCase):
         )
 
     def test_copy_file_with_scp(self):
-        result = copy_file_with_scp(self.device, '172.163.128.3', 'sh_switch_sftp.txt', 'root', 'cisco', None, 30)
-        expected_output = ('Address or name of remote host [172.163.128.3]? \r\n'
- 'Destination filename [sh_switch_sftp.txt]? \r\n'
- 'Writing sh_switch_sftp.txt  Sink: C0644 397 sh_switch_sftp.txt\r\n'
+        self.maxDiff = None
+        result = copy_file_with_scp(self.device, '172.163.128.3', 'sh_ver.txt', 'root', 'cisco', '.', 1800)
+        expected_output = ('Destination filename [sh_ver.txt]? \r\n'
+ '%Warning:There is a file already existing with this name \r\n'
+ 'Do you want to over write? [confirm]\r\n'
+ ' Sending file modes: C0644 3698 sh_ver.txt\r\n'
  '!\r\n'
- '397 bytes copied in 0.200 secs (1985 bytes/sec)')
+ '3698 bytes copied in 0.304 secs (12164 bytes/sec)')
         # Device output inconsistently includes device prompt
         if result.endswith('#'):
             expected_output += '\r\nT13-C9300-24T#'

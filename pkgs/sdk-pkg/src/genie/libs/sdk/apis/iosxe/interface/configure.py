@@ -1217,9 +1217,11 @@ def configure_interface_switchport_access_vlan(device, interface, vlan,mode=None
 
     config_list = []
     config_list.append("interface {interface}".format(interface=interface))
+    config_list.append("switchport")
     if mode:
         config_list.append("switchport mode {mode}".format(mode=mode))
     config_list.append("switchport access vlan {vlan}".format(vlan=vlan))
+
 
     try:
         device.configure(config_list)
@@ -1230,7 +1232,6 @@ def configure_interface_switchport_access_vlan(device, interface, vlan,mode=None
                 .format(error=e
             )
         )
-
 
 def unconfigure_interface_switchport_access_vlan(device, interface, vlan):
     """ Unconfigures switchport on interface
@@ -4400,7 +4401,8 @@ def configure_virtual_template(device,
     ipv6_mtu='',
     no_ip_redirects=False,
     no_peer_ip=False,
-    pool_name=None):
+    pool_name=None,
+    ipv6_pool_name=None):
     """ Configure virtual-template interface
 
         Args:
@@ -4417,6 +4419,7 @@ def configure_virtual_template(device,
             no_ip_redirects('bool', optional): no ip redirects option
             no_peer_ip('bool', optional): no peer ip default option
             pool_name('string', optional): peer default ip address pool <pool_name>
+            ipv6_pool_name('string', optional): peer default ipv6 pool <ipv6_pool_name>
         For the arguments that are optional, the default value is None.
 
         Returns:
@@ -4447,6 +4450,8 @@ def configure_virtual_template(device,
         cli.append("no peer default ip address")
     if pool_name:
         cli.append(f"peer default ip address pool {pool_name}")
+    if ipv6_pool_name:
+        cli.append(f"peer default ipv6 pool {ipv6_pool_name}")
 
     try:
         device.configure(cli)
@@ -4952,13 +4957,15 @@ def unconfigure_port_channel_standalone_disable(device,port_channel_num):
         )
 
 
-def configure_pppoe_enable_interface(device, interface, name, dial_pool_num=None):
+def configure_pppoe_enable_interface(device, interface, name, dial_pool_num=None,
+                ppp_max_payload=None):
     """ Configure pppoe enable group on interface
         Args:
             device (`obj`): Device object
             interface (`str`): Interface name
             name (`str`): pppoe/bba group name
             dial_pool_num ('str'): pppoe-client dial-pool-member <dial_pool_num>
+            ppp_max_payload ('str', optional): pppoe-client ppp-max-payload <ppp_max_payload>
         Returns:
             None
         Raises:
@@ -4972,6 +4979,8 @@ def configure_pppoe_enable_interface(device, interface, name, dial_pool_num=None
     cli.append(f"pppoe enable group {name}")
     if dial_pool_num:
         cli.append(f"pppoe-client dial-pool-number {dial_pool_num}")
+    if ppp_max_payload:
+        cli.append(f"pppoe-client ppp-max-payload {ppp_max_payload}")
 
     try:
         device.configure(cli)
@@ -4980,12 +4989,14 @@ def configure_pppoe_enable_interface(device, interface, name, dial_pool_num=None
             f"Could not configure pppoe group on device. Error:\n{str(error)}"
         )
 
-def unconfigure_pppoe_enable_interface(device, interface, name, dial_pool_num=None):
+def unconfigure_pppoe_enable_interface(device, interface, name, dial_pool_num=None,
+                ppp_max_payload=None):
     """ Configure pppone enable group on interface
         Args:
             device (`obj`): Device object
             interface (`str`): Interface name
             name (`str`): pppoe/bba group name
+            ppp_max_payload ('str', optional): no pppoe-client ppp-max-payload <ppp_max_payload>
         Returns:
             None
 
@@ -5000,6 +5011,8 @@ def unconfigure_pppoe_enable_interface(device, interface, name, dial_pool_num=No
     cli.append(f"no pppoe enable group {name}")
     if dial_pool_num:
         cli.append(f"no pppoe-client dial-pool-number {dial_pool_num}")
+    if ppp_max_payload:
+        cli.append(f"no pppoe-client ppp-max-payload {ppp_max_payload}")
 
     try:
         device.configure(cli)
@@ -9635,4 +9648,159 @@ def unconfigure_interface_speed(device, interface):
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not unconfigure speed on {interface}. Error:\n{e}")
+
+def configure_ip_on_atm_interface(
+    device,
+    interface,
+    vpi_vci,
+    vlan_id=None,
+    ip_address=None,
+    mask=None,
+    ipv6_address=None,
+    atm_encap_type=None,
+    protocol=None,
+    dialer_num=None,
+    atm_qos=None,
+    pcr="",
+    scr="",
+    bc=""):
+    """ Configure IP on an atm interface
+    Args:
+        device (`obj`): Device object
+        interface (`str`): Interface to get address
+        vpi_vci ('str'): atm vpi/vci value
+        vlan_id ('str', optional): sub-interface number, eg: interface ATM0/3/0.213 point-to-point
+        ip_address (`str`, optional): IP addressed to be configured on interface, default value None
+        mask (`str`, optional): Mask address to be used in configuration, default value None
+        ipv6_address (`str`, optional): IPv6 address with subnet mask, default value None
+        atm_encap_type (`str`, optional): Encapsulation type, default value None
+        protocol (`str`, optional): atm pvc protocol type, eg: ppp, pppoe-client
+        dialer_num (`str`, optional): dialer pool number, default value None
+        atm_qos ('str', optional): ATM PVC qos eg: vbr-rt, vbr-nrt, cbr
+        pcr ('str', optional): pcr in string; default value ""
+        scr ('str', optional): scr in string; default value ""
+        bc ('str', optional): bc in string; default value ""
+    Returns:
+        None
+        Warning messages
+    Raises:
+        SubCommandFailure
+    """
+
+    # Get interface name
+    if vlan_id:
+        interface_name = f"{interface}.{vlan_id}"
+    else:
+        interface_name = interface
+
+    # Build config list
+    cfg_lst = []
+    cfg_lst.append(f"interface {interface_name} point-to-point")
+
+    if ip_address and mask:
+        cfg_lst.append(f"ip address {ip_address} {mask}")
+
+    if ipv6_address:
+        cfg_lst.append(f"ipv6 enable")
+        cfg_lst.append(f"ipv6 address {ipv6_address}")
+
+    if vpi_vci:
+        cfg_lst.append(f"pvc {vpi_vci}")
+
+    if dialer_num and protocol == 'pppoe-client':
+        if atm_encap_type == 'aal5mux':
+            cfg_lst.append(f"encapsulation {atm_encap_type} pppoe-client")
+            cfg_lst.append(f"dialer pool-member {dialer_num}")
+        if atm_encap_type == 'aal5snap':
+            cfg_lst.append(f"encapsulation {atm_encap_type}")
+            cfg_lst.append(f"pppoe-client dial-pool-number {dialer_num}")
+        else:
+            cfg_lst.append(f"pppoe-client dial-pool-number {dialer_num}")
+
+    if protocol == 'ppp':
+        if atm_encap_type == 'aal5mux':
+            cfg_lst.append("encapsulation aal5mux ppp dialer")
+        elif atm_encap_type == 'aal5snap':
+            cfg_lst.append("encapsulation aal5snap")
+            cfg_lst.append("protocol ppp  dialer")
+        else:
+            cfg_lst.append("protocol ppp dialer")
+        if dialer_num:
+            cfg_lst.append(f"dialer pool-member {dialer_num}")
+
+    if atm_qos and pcr and scr and bc:
+        cfg_lst.append(f"{atm_qos} {pcr} {scr} {bc}")
+    elif atm_qos and pcr:
+        cfg_lst.append(f"{atm_qos} {pcr}")
+
+
+    # Configure device
+    try:
+        out = device.configure(cfg_lst)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure IP address {ip} on interface "
+            "{interface} on device {dev}. Error:\n{error}".format(
+                ip=ip_address,
+                interface=interface_name,
+                dev=device.name,
+                error=e,
+            )
+        )
+
+def unconfigure_ip_on_atm_interface(
+    device,
+    interface,
+    vpi_vci=None,
+    vlan_id=None,
+    ip_address=None,
+    mask=None,
+    ipv6_address=None):
+    """ Unconfigure IP on an atm interface
+    Args:
+        device (`obj`): Device object
+        interface (`str`): Interface to get address
+        vpi_vci ('str'): atm vpi/vci value
+        vlan_id ('str', optional): sub-interface number, eg: interface ATM0/3/0.213 point-to-point
+        ip_address (`str`, optional): IP addressed to be configured on interface, default value None
+        mask (`str`, optional): Mask address to be used in configuration, default value None
+        ipv6_address (`str`, optional): IPv6 address with subnet mask, default value None
+    Raises:
+        SubCommandFailure
+    """
+
+    # Get interface name
+    if vlan_id:
+        interface_name = f"{interface}.{vlan_id}"
+    else:
+        interface_name = interface
+
+    # Build config list
+    cfg_lst = []
+    cfg_lst.append(f"interface {interface_name} point-to-point")
+
+    if ip_address and mask:
+        cfg_lst.append(f"no ip address {ip_address} {mask}")
+
+    if ipv6_address:
+        cfg_lst.append(f"no ipv6 enable")
+        cfg_lst.append(f"no ipv6 address {ipv6_address}")
+
+    if vpi_vci:
+        cfg_lst.append(f"no pvc {vpi_vci}")
+
+
+    # Configure device
+    try:
+        out = device.configure(cfg_lst)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfigure IP address {ip} on interface "
+            "{interface} on device {dev}. Error:\n{error}".format(
+                ip=ip_address,
+                interface=interface_name,
+                dev=device.name,
+                error=e,
+            )
+        )
 

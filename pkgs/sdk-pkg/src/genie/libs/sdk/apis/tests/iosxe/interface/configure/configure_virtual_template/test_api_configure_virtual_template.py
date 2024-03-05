@@ -30,6 +30,6 @@ class TestConfigureVirtualTemplate(unittest.TestCase):
         )
 
     def test_configure_virtual_template(self):
-        result = configure_virtual_template(self.device, '1', 'GigabitEthernet0/0/0', False, None, False, False, 0, 0, '', '', False, False, 'ipv4_pool_100')
+        result = configure_virtual_template(self.device, '100', 'Loopback2', False, None, False, False, 0, 0, '', '', False, False, None, 'ipv6_local_pool')
         expected_output = None
         self.assertEqual(result, expected_output)

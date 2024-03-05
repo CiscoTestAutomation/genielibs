@@ -1,17 +1,3 @@
-configure:
-  commands:
-    end:
-      new_state: execute
-    line console 0:
-      new_state: configure_line
-    no logging console: ''
-  prompt: ott-c9300-63(config)#
-configure_line:
-  commands:
-    end:
-      new_state: execute
-    exec-timeout 0: ''
-  prompt: ott-c9300-63(config-line)#
 connect:
   commands:
     ? ''
@@ -40,11 +26,8 @@ execute:
       response:
       - ''
       response_type: circular
-    config term:
-      new_state: configure
-    config-transaction:
-      new_state: configure
-    show version: ''
-    term length 0: ''
-    term width 0: ''
-  prompt: ott-c9300-63#
+    TFTP_FILE=flash:/test.bin:
+      response:
+      - ''
+      response_type: circular
+  prompt: 'switch:'

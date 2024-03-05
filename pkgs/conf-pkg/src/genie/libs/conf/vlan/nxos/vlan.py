@@ -9,7 +9,6 @@
 
 # Python
 from abc import ABC
-
 # Genie package
 from genie.conf.base.attributes import AttributesHelper
 from genie.conf.base import Interface
@@ -26,7 +25,6 @@ class Vlan(ABC):
             assert not kwargs, kwargs
             attributes = AttributesHelper(self, attributes)
             configurations = CliConfigBuilder(unconfig=unconfig)
-
             # enabled
             if attributes.value('enabled'):
                 configurations.append_line(attributes.format(
@@ -63,6 +61,19 @@ class Vlan(ABC):
                         configurations.append_line('shutdown', unconfig_cmd='no shutdown')
                     else:
                         configurations.append_line('no shutdown', unconfig_cmd='shutdown')
+
+                # private_vlan_attributes
+                if attributes.value('private_vlan_type'):
+                    private_vlan_type = attributes.value('private_vlan_type')
+                    configurations.append_line(
+                        attributes.format('private-vlan {private_vlan_type}'.format(private_vlan_type=private_vlan_type)))
+                    v = attributes.value('private_vlan_association_action')
+                    if v is not None:
+                        association_id = \
+                            attributes.value(
+                                'private_vlan_association_ids', force=True)
+                        if association_id is not None:
+                            configurations.append_line('private-vlan association {} {}'.format(v, association_id))
 
                 # nxos: vlan 1000 / remote-span
                 if attributes.value('remote_span'):
@@ -323,6 +334,19 @@ class Vlan(ABC):
                         state_value = attributes.value('mode').value
                         configurations.append_line(
                             attributes.format('mode {mode.value}'))
+                    # private_vlan_attributes
+                    if attributes.value('private_vlan_type'):
+                        private_vlan_type = attributes.value('private_vlan_type')
+                        configurations.append_line(
+                            attributes.format('private-vlan {private_vlan_type}'.format(private_vlan_type=private_vlan_type)))
+                        v = attributes.value('private_vlan_association_action')
+                        if v is not None:
+                            association_id = \
+                                attributes.value(
+                                    'private_vlan_association_ids', force=True)
+                            if association_id is not None:
+                                configurations.append_line('private-vlan association {} {}'.format(v, association_id))
+
                     # vn_segment_id
                     if attributes.value('vn_segment_id'):
                         configurations.append_line(

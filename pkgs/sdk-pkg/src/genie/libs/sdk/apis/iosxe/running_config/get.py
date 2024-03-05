@@ -32,26 +32,30 @@ def search_running_config(device, option):
     return config
 
 
-def get_running_config_dict(device, option=None):
+def get_running_config_dict(device, option=None, output=None):
     """ Get show running-config output
 
         Args:
             device (`obj`): Device object
             option (`str`): option command
+            output (`str`): output of show running-config
         Returns:
             config_dict (`dict`): dict of show run output
     """
-    if option:
-        cmd = "show running-config {}".format(option)
+    if output:
+        out = output
     else:
-        cmd = "show running-config"
-    try:
-        out = device.execute(cmd)
-    except SubCommandFailure as e:
-        raise SubCommandFailure(
-            "Could not get running-config information "
-            "on device {device}".format(device=device.name)
-        )
+        if option:
+            cmd = "show running-config {}".format(option)
+        else:
+            cmd = "show running-config"
+        try:
+            out = device.execute(cmd)
+        except SubCommandFailure as e:
+            raise SubCommandFailure(
+                "Could not get running-config information "
+                "on device {device}".format(device=device.name)
+            )
 
     config_dict = get_config_dict(out)
     return config_dict

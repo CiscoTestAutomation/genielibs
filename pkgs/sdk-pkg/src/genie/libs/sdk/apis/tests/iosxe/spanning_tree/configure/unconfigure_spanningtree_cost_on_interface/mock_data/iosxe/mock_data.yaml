@@ -2,11 +2,11 @@ configure:
   commands:
     end:
       new_state: execute
-    interface GigabitEthernet1/0/3: "interface GigabitEthernet1/0/3\r\n"
+    interface GigabitEthernet1/0/3: ""
     line console 0:
       new_state: configure_line
     no logging console: ''
-    no spanning-tree cost 100: "SC_9200-2(config-if)#\r\n"
+    no spanning-tree cost 100: ""
   prompt: SC_9200-2(config)#
 configure_line:
   commands:

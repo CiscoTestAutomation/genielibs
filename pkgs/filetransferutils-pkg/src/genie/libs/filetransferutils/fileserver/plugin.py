@@ -1,7 +1,7 @@
 import logging
 import os
 
-from pyats import configuration as cfg
+from pyats.configuration import configuration as cfg
 from pyats.datastructures import AttrDict
 from pyats.easypy.plugins.bases import BasePlugin
 from pyats.utils.dicts import recursive_update

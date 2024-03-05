@@ -5,12 +5,16 @@ cheetah AP specific clean stages
 # Python
 import logging
 import time
+import traceback
 
 # Genie
-from genie.metaparser.util.schemaengine import Optional
+from genie.metaparser.util.schemaengine import Optional, Or
 from genie.utils.timeout import Timeout
 from genie.libs.clean import BaseStage
 from genie.metaparser.util.exceptions import InvalidCommandError
+
+#pyATS
+from pyats.utils.fileutils import FileUtils
 
 
 # Unicon
@@ -175,3 +179,71 @@ class EraseApConfiguration(BaseStage):
                     timeout.sleep()
             else:
                 step.failed("Failed to login to device after erasing the AP configs")
+
+
+class LoadApImage(BaseStage):
+    """This stage loads new AP image
+
+           Stage Schema
+           ------------
+           load_ap_image:
+               ap_image_path (str): Absolute path where ap image is located
+
+               server(str): Server alias which has AP image
+
+               protocol(str): protocol through which AP image will be loaded
+
+               max_time (int, optional): Maximum time for which this clean stage will try to clean ap.
+                   Defaults to 1200
+
+
+
+
+           Example
+           -------
+           load_ap_image:
+                ap_image_path: "/auto/wnbu-groups-builds/FAST_BUNDLING/polaris_dev/6640/ap3g3-k9w8-tar.master-cisco.202309180209"
+                server: "tftp"
+                max_time: "1200"
+       """
+    # =================
+    # Argument Defaults
+    # =================
+    MAX_TIME = 1200
+    PROTOCOL = "http"
+
+    # ============
+    # Stage Schema
+    # ============
+    schema = {
+        "server": str,
+        Optional("ap_image_path"): str,
+        Optional("protocol"): str,
+        Optional('max_time'): int,
+    }
+
+    # ==============================
+    # Execution order of Stage steps
+    # ==============================
+    exec_order = [
+        'load_image'
+    ]
+
+    def load_image(self, device, steps, ap_image_path, server, protocol=PROTOCOL, max_time=MAX_TIME):
+        try:
+            if not hasattr(device.testbed, 'servers'):
+                self.failed("Cannot find any servers in the testbed")
+            fu = FileUtils(testbed=device.testbed)
+            server_ip = fu.get_server_block(server).get('address')
+            username, password = fu.get_auth(server)
+            with steps.start("Load image in to device-{} and verify if its loaded correctly".format(device.name)) as step:
+                if not ap_image_path.startswith("/"):
+                    ap_image_path = "/" + ap_image_path
+                full_image_path = "{}://{}:{}".format(protocol, server_ip, ap_image_path)
+                if not device.api.execute_archive_download(full_image_path, max_time, username, password, reload=True):
+                    step.failed("Failed to load AP image")
+        except Exception as e:
+            log.exception(e)
+            self.failed("Failed to load image on AP")
+
+
