@@ -38,7 +38,7 @@ def verify_eigrp_interfaces(device, vrf='default', AS_N=None, interfaces_list=No
                 interfaces = response.q.contains(vrf).contains_key_value("eigrp_instance", str(AS_N)).contains(ip).get_values('interface')
             return set(interfaces_list).issubset(interfaces)
         timeout.sleep()
-        log.error(f"Please, provide a valide format for AS, interfaces_list, ip and/or vrf!!")
+        log.error(f"Please, provide a valid format for AS, interfaces_list, ip and/or vrf")
         break
 
 def verify_eigrp_neighbors(device, neighbors = None, vrf='default', AS_N=None, ip='ipv4',max_time=60, check_interval=10):
@@ -75,6 +75,6 @@ def verify_eigrp_neighbors(device, neighbors = None, vrf='default', AS_N=None, i
                 eigrp_neighbors = response.q.contains_key_value("eigrp_instance",str(AS_N)).contains(vrf).contains(ip).get_values("eigrp_nbr")
             return set(neighbors).issubset(eigrp_neighbors)
         timeout.sleep()
-        log.error(f"Please, provide a valide format for AS, Neighbors, ip and/or vrf!!!!")
+        log.error(f"Please, provide a valid format for AS, Neighbors, ip and/or vrf")
         break
 
