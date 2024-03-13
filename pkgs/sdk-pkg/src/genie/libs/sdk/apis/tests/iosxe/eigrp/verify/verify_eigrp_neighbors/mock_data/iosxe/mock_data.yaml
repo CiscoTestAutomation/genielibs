@@ -1,0 +1,42 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: R1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: R1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show ip eigrp neighbors:
+      response:
+      - "EIGRP-IPv4 Neighbors for AS(1)\r\nH   Address                 Interface \
+        \             Hold Uptime   SRTT   RTO  Q  Seq\r\n                       \
+        \                            (sec)         (ms)       Cnt Num\r\n0   192.168.1.252\
+        \           Fa0/0                    12 01:29:22   44   264  0  3\r\nEIGRP-IPv4\
+        \ Neighbors for AS(2)"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: R1#
