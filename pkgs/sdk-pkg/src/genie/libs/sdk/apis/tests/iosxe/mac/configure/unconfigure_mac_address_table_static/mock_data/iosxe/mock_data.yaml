@@ -5,13 +5,13 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-    no mac address-table static 0000.6500.1111 vlan 100 interface Te1/0/5: "no mac\
-      \ address-table static 0000.6500.1111 vlan 100 \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b$ess-table\
-      \ static 0000.6500.1111 vlan 100 i         \b\b\b\b\b\b\b\b\bnterface \b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\bstatic 0000.6500.1111 vlan 100 interface T         \b\b\b\
-      \b\b\b\b\b\be1/0/5\r\n"
+    no mac address-table static 0000.6500.1111 vlan 100 interface Te1/0/5: "no mac
+      address-table static 0000.6500.1111 vlan 100 \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b$ess-table
+      static 0000.6500.1111 vlan 100 i         \b\b\b\b\b\b\b\b\bnterface \b\b\b\b
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\bstatic 0000.6500.1111 vlan 100 interface T         \b\b\b\b\
+      \b\b\b\b\be1/0/5\r\n"
   prompt: stack3-nyquist-1(config)#
 configure_line:
   commands:
@@ -21,13 +21,12 @@ configure_line:
   prompt: stack3-nyquist-1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -38,4 +37,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: stack3-nyquist-1#

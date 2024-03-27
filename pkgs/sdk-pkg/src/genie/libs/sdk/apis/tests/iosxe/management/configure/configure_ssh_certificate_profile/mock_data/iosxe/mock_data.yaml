@@ -1,0 +1,39 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    ip ssh server certificate profile: "ip ssh server certificate profile\r\n"
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    server: "server\r\n"
+    trustpoint sign CISCO_IDEVID_SUDI: "trustpoint sign CISCO_IDEVID_SUDI\r\n"
+    trustpoint verify CISCO_IDEVID_SUDI: "trustpoint verify CISCO_IDEVID_SUDI\r\n"
+    user: "user\r\n"
+  prompt: Switch(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: Switch(config-line)#
+connect:
+  commands:
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
+    Connected to mock_device.
+    Escape character is '^]'.
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    show version | include operating mode: ''
+  prompt: Switch#

@@ -6,10 +6,10 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-    police 10000000 conform-action transmit exceed-action drop: "police 10000000 conform-action\
-      \ transmit exceed-action d\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b$0000 conform-action\
-      \ transmit exceed-action dr         \b\b\b\b\b\b\b\b\bop\r\n"
+    police 10000000 conform-action transmit exceed-action drop: "police 10000000 conform-action
+      transmit exceed-action d\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b$0000 conform-action
+      transmit exceed-action dr         \b\b\b\b\b\b\b\b\bop\r\n"
     policy-map rar_policer: "policy-map rar_policer\r\n"
   prompt: c8kv-1(config)#
 configure_line:
@@ -20,13 +20,12 @@ configure_line:
   prompt: c8kv-1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -37,4 +36,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: c8kv-1#

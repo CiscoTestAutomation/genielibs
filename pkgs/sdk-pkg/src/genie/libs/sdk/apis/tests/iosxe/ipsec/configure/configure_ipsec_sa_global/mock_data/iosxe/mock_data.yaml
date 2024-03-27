@@ -1,15 +1,15 @@
 configure:
   commands:
-    crypto ipsec security-association ecn discard: "crypto ipsec security-association\
-      \ ecn discard\r\n"
-    crypto ipsec security-association idle-time 300: "crypto ipsec security-association\
-      \ idle-time 300\r\n"
-    crypto ipsec security-association lifetime days 1: "crypto ipsec security-association\
-      \ lifetime days 1\r\n"
-    crypto ipsec security-association multi-sn: "crypto ipsec security-association\
-      \ multi-sn\r\n"
-    crypto ipsec security-association replay window-size 512: "crypto ipsec security-association\
-      \ replay window-size 512\r\n"
+    crypto ipsec security-association ecn discard: "crypto ipsec security-association
+      ecn discard\r\n"
+    crypto ipsec security-association idle-time 300: "crypto ipsec security-association
+      idle-time 300\r\n"
+    crypto ipsec security-association lifetime days 1: "crypto ipsec security-association
+      lifetime days 1\r\n"
+    crypto ipsec security-association multi-sn: "crypto ipsec security-association
+      multi-sn\r\n"
+    crypto ipsec security-association replay window-size 512: "crypto ipsec security-association
+      replay window-size 512\r\n"
     end:
       new_state: execute
     line console 0:
@@ -24,13 +24,12 @@ configure_line:
   prompt: TLS_Mad1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -41,4 +40,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: TLS_Mad1#

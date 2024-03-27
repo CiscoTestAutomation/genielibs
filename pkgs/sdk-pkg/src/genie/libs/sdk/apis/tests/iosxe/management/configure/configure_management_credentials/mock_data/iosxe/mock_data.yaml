@@ -9,23 +9,26 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-    username admin password lab: "username admin password lab\r\n"
-  prompt: ott-c9300-67(config)#
+    username test-user password 0 cisco@123: "username test-user password 0 cisco@123\r\
+      \n"
+    username test-user privilege 15: " WARNING: Command has been added to the configuration
+      using a type 0 password. However, recommended to migrate to strong type-6 encryption\r\
+      \n"
+  prompt: Switch(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: ott-c9300-67(config-line)#
+  prompt: Switch(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -36,4 +39,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: ott-c9300-67#
+    show version | include operating mode: ''
+  prompt: Switch#

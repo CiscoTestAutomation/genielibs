@@ -227,6 +227,7 @@ class GnmiDefaultVerifier(DefaultBaseVerifier):
                 raw_response, namespace, 'subscribe')
             decoded_updates = decoded_response.updates
             returns_found: List[OptFields] = []
+
             for field in decoded_updates:
                 for ret in self.returns:
                     if ((self._find_xpath(ret.xpath, field[1], decoded_updates)) and
@@ -301,6 +302,7 @@ class GnmiDefaultVerifier(DefaultBaseVerifier):
         Returns:
           List[OptFields]: List of OptFields
         """
+        self.log.info(str(response))
         if response is None:
             raise self.EmptyResponse()
         if namespace is None:
@@ -515,7 +517,15 @@ class GnmiDefaultVerifier(DefaultBaseVerifier):
 
             # create (key_val, key_path) field to check in opfield
             if not (key_val, key_path) in opfields:
-                return False
+                try:
+                    # gNMI opfield values can be integers but Xpath has keys as strings
+                    key_val = int(key_val)
+                except ValueError:
+                    log.error(f'Key "{key_val}" not found at Xpath {key_path}')
+                    return False
+                if not (key_val, key_path) in opfields:
+                    log.error(f'Key "{key_val}" not found at Xpath {key_path}')
+                    return False
         return True
 
     def _find_xpath(self,

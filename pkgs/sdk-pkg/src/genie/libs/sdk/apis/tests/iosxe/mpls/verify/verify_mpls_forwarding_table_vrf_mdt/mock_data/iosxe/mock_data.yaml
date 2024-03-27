@@ -14,13 +14,12 @@ configure_line:
   prompt: PE1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,24 +29,29 @@ execute:
       new_state: configure
     show mpls forwarding-table vrf vrf3001:
       response:
-      - "Local      Outgoing   Prefix           Bytes Label   Outgoing   Next Hop\
-        \    \r\nLabel      Label      or Tunnel Id     Switched      interface  \
-        \            \r\n25         Pop Label  30.0.1.1/32[V]   455600        aggregate/vrf3001\
-        \ \r\n26         No Label   121.1.1.0/24[V]  610           aggregate/vrf3001\
-        \ \r\n27    [T]  No Label   [mdt 3001:1 0][V]   \\\r\n                   \
-        \                    132607929092  aggregate/vrf3001 \r\n\r\n[T]\tForwarding\
-        \ through a LSP tunnel.\r\n\tView additional labelling info with the 'detail'\
-        \ option"
-      - "Local      Outgoing   Prefix           Bytes Label   Outgoing   Next Hop\
-        \    \r\nLabel      Label      or Tunnel Id     Switched      interface  \
-        \            \r\n25         Pop Label  30.0.1.1/32[V]   455810        aggregate/vrf3001\
-        \ \r\n26         No Label   121.1.1.0/24[V]  610           aggregate/vrf3001\
-        \ \r\n27    [T]  No Label   [mdt 3001:1 0][V]   \\\r\n                   \
-        \                    132812582148  aggregate/vrf3001 \r\n\r\n[T]\tForwarding\
-        \ through a LSP tunnel.\r\n\tView additional labelling info with the 'detail'\
-        \ option"
+        - |-
+          Local      Outgoing   Prefix           Bytes Label   Outgoing   Next Hop    
+          Label      Label      or Tunnel Id     Switched      interface              
+          25         Pop Label  30.0.1.1/32[V]   455600        aggregate/vrf3001 
+          26         No Label   121.1.1.0/24[V]  610           aggregate/vrf3001 
+          27    [T]  No Label   [mdt 3001:1 0][V]   \
+                                                 132607929092  aggregate/vrf3001 
+          
+          [T]	Forwarding through a LSP tunnel.
+          	View additional labelling info with the 'detail' option
+        - |-
+          Local      Outgoing   Prefix           Bytes Label   Outgoing   Next Hop    
+          Label      Label      or Tunnel Id     Switched      interface              
+          25         Pop Label  30.0.1.1/32[V]   455810        aggregate/vrf3001 
+          26         No Label   121.1.1.0/24[V]  610           aggregate/vrf3001 
+          27    [T]  No Label   [mdt 3001:1 0][V]   \
+                                                 132812582148  aggregate/vrf3001 
+          
+          [T]	Forwarding through a LSP tunnel.
+          	View additional labelling info with the 'detail' option
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: PE1#

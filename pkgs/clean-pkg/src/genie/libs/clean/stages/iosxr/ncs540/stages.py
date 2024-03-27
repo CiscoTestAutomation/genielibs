@@ -136,14 +136,6 @@ install_image:
                     loop_continue=True,
                     continue_timer=False),
                 Statement(
-                    pattern=r".*Install replace operation(.*)has started.*",
-                    loop_continue=True,
-                    continue_timer=False),
-                 Statement(
-                    pattern=r".*Install operation will continue in the background.*",
-                    loop_continue=True,
-                    continue_timer=False),
-                Statement(
                     pattern=r".*Failed to start replace.*",
                     action=install_replace_failure,
                     loop_continue=True,
@@ -154,17 +146,15 @@ install_image:
             try:
                 if server:
                     install_replace_command = "install replace {protocol}://{server};{vrf}/{image}".format(protocol=protocol,\
-                     server=server, vrf=vrf, image=image[0])
+                                                                                                           server=server, \
+                                                                                                           vrf=vrf, \
+                                                                                                           image=image[0])
                 else:
                     install_replace_command = "install replace {0}".format(image[0])
 
-                device.execute(install_replace_command,
-                               reply=install_replace_dialog,
-                            )
-                # Timeout for install operation
-                log.info("Sleeping for {install_timeout} seconds to wait for the install to run in the background"
-                         .format(install_timeout=str(install_timeout)))
-                time.sleep(install_timeout)
+                device.reload(reload_command=install_replace_command,
+                              reply=install_replace_dialog)
+
             except Exception as e:
                 step.failed("Failed to install the image. Reason: "
                             "{}".format(str(e)))

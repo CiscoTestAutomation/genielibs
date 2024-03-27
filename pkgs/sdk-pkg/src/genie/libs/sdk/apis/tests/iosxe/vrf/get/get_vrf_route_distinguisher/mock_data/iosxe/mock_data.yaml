@@ -14,13 +14,12 @@ configure_line:
   prompt: iolpe2(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -31,10 +30,12 @@ execute:
     show version: ''
     show vrf ce1:
       response:
-      - "  Name                             Default RD            Protocols   Interfaces\r\
-        \n  ce1                              3:3                   ipv4,ipv6   Et1/0\r\
-        \n                                                                     Et1/1"
+        - |2-
+            Name                             Default RD            Protocols   Interfaces
+            ce1                              3:3                   ipv4,ipv6   Et1/0
+                                                                               Et1/1
       response_type: circular
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: iolpe2#

@@ -4,11 +4,11 @@ configure:
       new_state: execute
     line console 0:
       new_state: configure_line
-    nat64 v6v4 list acl_1 pool pool_1 vrf vrf1 overload match-in-vrf: "nat64 v6v4\
-      \ list acl_1 pool pool_1 vrf vrf1 overload match-i\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b$list acl_1 pool pool_1 vrf vrf1 overload match-in         \b\
-      \b\b\b\b\b\b\b\b-vrf\r\n"
+    nat64 v6v4 list acl_1 pool pool_1 vrf vrf1 overload match-in-vrf: "nat64 v6v4
+      list acl_1 pool pool_1 vrf vrf1 overload match-i\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b$list acl_1 pool pool_1 vrf vrf1 overload match-in         \b\b\
+      \b\b\b\b\b\b\b-vrf\r\n"
     no logging console: ''
   prompt: Stargazer(config)#
 configure_line:
@@ -19,13 +19,12 @@ configure_line:
   prompt: Stargazer(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -36,4 +35,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: Stargazer#

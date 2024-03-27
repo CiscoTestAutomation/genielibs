@@ -1,7 +1,7 @@
 configure:
   commands:
-    access-session attributes filter-list list aaa_attr: "access-session attributes\
-      \ filter-list list aaa_attr\r\n"
+    access-session attributes filter-list list aaa_attr: "access-session attributes
+      filter-list list aaa_attr\r\n"
     cdp: "cdp\r\n"
     dhcp: "dhcp\r\n"
     dhcpv6: "dhcpv6\r\n"
@@ -22,13 +22,12 @@ configure_line:
   prompt: T13-C9407-Dual-SUP2(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -39,4 +38,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: T13-C9407-Dual-SUP2#

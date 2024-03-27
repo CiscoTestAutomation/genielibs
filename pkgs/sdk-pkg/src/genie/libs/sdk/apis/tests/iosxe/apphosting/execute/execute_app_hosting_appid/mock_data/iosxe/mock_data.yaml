@@ -14,23 +14,22 @@ configure_line:
   prompt: stack3-nyq-PE1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
     app-hosting activate appid 12:
       response:
-      - The process for the command is not responding or is otherwise unavailable
+        - The process for the command is not responding or is otherwise unavailable
       response_type: circular
     app-hosting install appid 9 package flash:test.txt:
       response:
-      - The process for the command is not responding or is otherwise unavailable
+        - The process for the command is not responding or is otherwise unavailable
       response_type: circular
     config term:
       new_state: configure
@@ -39,4 +38,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: stack3-nyq-PE1#

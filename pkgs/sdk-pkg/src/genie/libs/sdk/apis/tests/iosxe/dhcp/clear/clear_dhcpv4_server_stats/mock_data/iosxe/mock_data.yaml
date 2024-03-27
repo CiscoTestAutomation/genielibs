@@ -16,17 +16,16 @@ configure_line:
   prompt: VCAT9K-LEAF1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
-    'clear ip dhcp server statistics': ''
+    clear ip dhcp server statistics: ''
     config term:
       new_state: configure
     config-transaction:
@@ -36,4 +35,5 @@ execute:
     term width 0: ''
     term width 511: ''
     terminal session-timeout 0: ''
+    show version | include operating mode: ''
   prompt: VCAT9K-LEAF1#

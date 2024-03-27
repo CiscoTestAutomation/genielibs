@@ -14,13 +14,12 @@ configure_line:
   prompt: P1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,13 +29,16 @@ execute:
       new_state: configure
     show interface ten1/0/15 counters:
       response:
-      - "\r\nPort               InOctets    InUcastPkts    InMcastPkts    InBcastPkts\
-        \ \r\nTe1/0/15           15682788              0          64328          \
-        \    0 \r\n\r\nPort              OutOctets   OutUcastPkts   OutMcastPkts \
-        \  OutBcastPkts \r\nTe1/0/15           54944796          44950         459020\
-        \              2"
+        - |-
+          
+          Port               InOctets    InUcastPkts    InMcastPkts    InBcastPkts 
+          Te1/0/15           15682788              0          64328              0 
+          
+          Port              OutOctets   OutUcastPkts   OutMcastPkts   OutBcastPkts 
+          Te1/0/15           54944796          44950         459020              2
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: P1#

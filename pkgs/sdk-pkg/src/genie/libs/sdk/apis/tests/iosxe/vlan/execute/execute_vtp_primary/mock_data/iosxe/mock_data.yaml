@@ -14,13 +14,12 @@ configure_line:
   prompt: stack3-nyquist-1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -33,7 +32,8 @@ execute:
     term width 0: ''
     vtp primary mst:
       response:
-      - System can become primary server for Mst feature only when configured as a
-        server
+        - System can become primary server for Mst feature only when configured as
+          a server
       response_type: circular
+    show version | include operating mode: ''
   prompt: stack3-nyquist-1#

@@ -1,0 +1,144 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: HA-9400-S2(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: HA-9400-S2(config-line)#
+connect:
+  commands:
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
+    Connected to mock_device.
+    Escape character is '^]'.
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show mac address-table:
+      response:
+        - |2-
+                    Mac Address Table
+          -------------------------------------------
+          
+          Vlan    Mac Address       Type        Ports
+          ----    -----------       --------    -----
+           All    0100.0ccc.cccc    STATIC      CPU
+           All    0100.0ccc.cccd    STATIC      CPU
+           All    0180.c200.0000    STATIC      CPU
+           All    0180.c200.0001    STATIC      CPU
+           All    0180.c200.0002    STATIC      CPU
+           All    0180.c200.0003    STATIC      CPU
+           All    0180.c200.0004    STATIC      CPU
+           All    0180.c200.0005    STATIC      CPU
+           All    0180.c200.0006    STATIC      CPU
+           All    0180.c200.0007    STATIC      CPU
+           All    0180.c200.0008    STATIC      CPU
+           All    0180.c200.0009    STATIC      CPU
+           All    0180.c200.000a    STATIC      CPU
+           All    0180.c200.000b    STATIC      CPU
+           All    0180.c200.000c    STATIC      CPU
+           All    0180.c200.000d    STATIC      CPU
+           All    0180.c200.000e    STATIC      CPU
+           All    0180.c200.000f    STATIC      CPU
+           All    0180.c200.0010    STATIC      CPU
+           All    0180.c200.0021    STATIC      CPU
+           All    ffff.ffff.ffff    STATIC      CPU
+             1    0000.0043.0e04    DYNAMIC     Gi2/7/0/23
+             1    0000.048c.1b1b    DYNAMIC     Gi2/7/0/23
+             1    0000.05fa.b534    DYNAMIC     Gi2/7/0/23
+             1    0000.0853.c5ad    DYNAMIC     Gi2/7/0/23
+             1    0000.1991.e7e4    DYNAMIC     Gi2/7/0/23
+             1    0000.19ae.43c7    DYNAMIC     Gi2/7/0/23
+             1    0000.6e4d.1358    DYNAMIC     Gi2/7/0/23
+             1    00a0.c900.0000    DYNAMIC     Gi2/7/0/23
+             1    00ea.bdc3.f071    DYNAMIC     Gi2/7/0/23
+             1    00ea.bdc3.f073    DYNAMIC     Gi2/7/0/23
+             1    188b.45b7.59e6    DYNAMIC     Gi2/7/0/23
+             1    2cab.eb4f.b317    DYNAMIC     Gi2/7/0/23
+             1    2cab.eb4f.b318    DYNAMIC     Gi2/7/0/23
+             1    3412.7856.0100    DYNAMIC     Gi2/7/0/23
+             1    34ed.1b7d.fa91    DYNAMIC     Gi2/7/0/23
+             1    34ed.1b7e.1287    DYNAMIC     Gi2/7/0/23
+             1    34ed.1b7e.1299    DYNAMIC     Gi2/7/0/23
+             1    34ed.1b7e.129a    DYNAMIC     Gi2/7/0/23
+             1    34ed.1b7e.12e4    DYNAMIC     Gi2/7/0/23
+             1    44b6.bed8.d4e2    DYNAMIC     Gi2/7/0/23
+             1    44b6.bed8.d4e3    DYNAMIC     Gi2/7/0/23
+             1    44b6.bed8.d4ec    DYNAMIC     Gi2/7/0/23
+             1    44b6.bed8.d4ff    DYNAMIC     Gi2/7/0/23
+             1    44b6.bed8.d691    DYNAMIC     Gi2/7/0/23
+             1    682c.7b23.8517    DYNAMIC     Gi2/7/0/23
+             1    682c.7b23.8518    DYNAMIC     Gi2/7/0/23
+             1    682c.7b23.852f    DYNAMIC     Gi2/7/0/23
+             1    682c.7b23.8530    DYNAMIC     Gi2/7/0/23
+             1    6c99.899a.068e    DYNAMIC     Gi2/7/0/23
+             1    6cb2.ae43.175e    DYNAMIC     Gi2/7/0/23
+             1    6cb2.ae43.1763    DYNAMIC     Gi2/7/0/23
+             1    707d.b9cf.b01b    STATIC      Vl1 
+             1    a453.0e8f.f3d4    DYNAMIC     Gi2/7/0/23
+             1    a453.0e8f.f3d6    DYNAMIC     Gi2/7/0/23
+             1    ac4a.6704.989f    DYNAMIC     Gi2/7/0/23
+             1    b08b.cf4b.0fcc    DYNAMIC     Gi2/7/0/23
+             1    b08b.cf4b.0fd9    DYNAMIC     Gi2/7/0/23
+             1    b08b.cf4b.0fdd    DYNAMIC     Gi2/7/0/23
+             1    b08b.cf4b.0fe3    DYNAMIC     Gi2/7/0/23
+             1    b08b.cf4b.0feb    DYNAMIC     Gi2/7/0/23
+             1    b08b.cf4b.0fed    DYNAMIC     Gi2/7/0/23
+             1    b08b.cfa1.c659    DYNAMIC     Gi2/7/0/23
+             1    b08b.cfa1.c65a    DYNAMIC     Gi2/7/0/23
+             1    b08b.cfa1.c669    DYNAMIC     Gi2/7/0/23
+             1    b08b.cfa1.c674    DYNAMIC     Gi2/7/0/23
+             1    bcd2.9523.9394    DYNAMIC     Gi2/7/0/23
+             1    d4eb.6817.989d    DYNAMIC     Gi2/7/0/23
+             1    d4eb.6817.98a3    DYNAMIC     Gi2/7/0/23
+             1    d4eb.6817.98a9    DYNAMIC     Gi2/7/0/23
+             1    e4aa.5d59.f3fe    DYNAMIC     Gi2/7/0/23
+             1    e4aa.5d59.f40e    DYNAMIC     Gi2/7/0/23
+             1    e4aa.5d59.f40f    DYNAMIC     Gi2/7/0/23
+             1    e4aa.5d5a.1592    DYNAMIC     Gi2/7/0/23
+             1    e4aa.5d5a.1593    DYNAMIC     Gi2/7/0/23
+             1    f86b.d9a9.5917    DYNAMIC     Gi2/7/0/23
+             1    f86b.d9a9.5918    DYNAMIC     Gi2/7/0/23
+             1    f86b.d9a9.592c    DYNAMIC     Gi2/7/0/23
+             1    f86b.d9a9.592f    DYNAMIC     Gi2/7/0/23
+             1    f87a.414b.5a17    DYNAMIC     Gi2/7/0/23
+             1    f87a.414b.5a56    DYNAMIC     Gi2/7/0/23
+             1    f87a.414b.5a64    DYNAMIC     Gi2/7/0/23
+            10    707d.b9cf.b01a    STATIC      Vl10 
+           300    707d.b9cf.b033    STATIC      Vl300 
+          Total Mac Addresses for this criterion: 84
+      response_type: circular
+    show version: ''
+    show vrf:
+      response:
+        - |2-
+            Name                             Default RD            Protocols   Interfaces
+            Mgmt-vrf                         <not set>             ipv4,ipv6   Gi0/0
+            blue                             2:2                   ipv4,ipv6   Vl201
+                                                                               Vl202
+                                                                               Vl902
+                                                                               Lo12
+                                                                               Vl300
+            vrf_10                           <not set>                         Vl10
+            vrf_11                           <not set>                         Vl11
+          
+            Platform iVRF Name               iVRF Id               Interfaces
+            __Platform_iVRF:_ID00_           0                     LI28/2
+      response_type: circular
+    term length 0: ''
+    term width 0: ''
+    show version | include operating mode: ''
+  prompt: HA-9400-S2#

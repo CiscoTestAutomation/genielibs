@@ -11,8 +11,8 @@ configure:
     no logging console: ''
     nsr: "nsr\r\n"
     redistribute connected: "redistribute connected\r\n"
-    redistribute connected metric 1 metric-type 1: "redistribute connected metric\
-      \ 1 metric-type 1\r\n"
+    redistribute connected metric 1 metric-type 1: "redistribute connected metric
+      1 metric-type 1\r\n"
     router ospfv3 1: "router ospfv3 1\r\n"
     router-id 1.1.1.1: "router-id 1.1.1.1\r\n"
   prompt: UUT1(config)#
@@ -24,13 +24,12 @@ configure_line:
   prompt: UUT1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -41,4 +40,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: UUT1#

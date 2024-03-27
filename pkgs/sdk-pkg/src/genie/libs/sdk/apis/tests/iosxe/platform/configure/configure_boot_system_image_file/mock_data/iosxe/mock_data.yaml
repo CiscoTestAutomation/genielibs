@@ -1,13 +1,12 @@
 configure:
   commands:
-    boot system flash:cat9k-espbase.BLD_POLARIS_DEV_LATEST_20230406_174734.SSA.pkg: "boot\
-      \ system flash:cat9k-espbase.BLD_POLARIS_DEV_LATEST_20230406_174734.SSA.pkg\r\
+    boot system flash:cat9k-espbase.BLD_POLARIS_DEV_LATEST_20230406_174734.SSA.pkg: "boot
+      system flash:cat9k-espbase.BLD_POLARIS_DEV_LATEST_20230406_174734.SSA.pkg\r\n"
+    boot system switch 2 flash:cat9k-espbase.BLD_POLARIS_DEV_LATEST_20230406_174734.SSA.pkg: "boot
+      system switch 2 flash:cat9k-espbase.BLD_POLARIS_DEV_LATEST_20230406_174734.SSA.pkg\r\
       \n"
-    boot system switch 2 flash:cat9k-espbase.BLD_POLARIS_DEV_LATEST_20230406_174734.SSA.pkg: "boot\
-      \ system switch 2 flash:cat9k-espbase.BLD_POLARIS_DEV_LATEST_20230406_174734.SSA.pkg\r\
-      \n"
-    boot system switch all flash:cat9k-espbase.BLD_POLARIS_DEV_LATEST_20230406_174734.SSA.pkg: "boot\
-      \ system switch all flash:cat9k-espbase.BLD_POLARIS_DEV_LATEST_20230406_174734.SSA.pkg\r\
+    boot system switch all flash:cat9k-espbase.BLD_POLARIS_DEV_LATEST_20230406_174734.SSA.pkg: "boot
+      system switch all flash:cat9k-espbase.BLD_POLARIS_DEV_LATEST_20230406_174734.SSA.pkg\r\
       \n"
     end:
       new_state: execute
@@ -23,13 +22,12 @@ configure_line:
   prompt: stack3-nyquist-1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -40,4 +38,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: stack3-nyquist-1#

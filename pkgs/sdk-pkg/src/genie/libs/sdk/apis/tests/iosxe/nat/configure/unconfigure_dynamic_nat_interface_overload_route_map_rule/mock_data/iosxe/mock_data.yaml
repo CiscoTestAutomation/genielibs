@@ -4,14 +4,14 @@ configure:
       new_state: execute
     line console 0:
       new_state: configure_line
-    no ip nat inside source route-map static_rm interface Ten 1/2/0/18 overload: "no\
-      \ ip nat inside source route-map static_rm interface Ten 1\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b$nside source route-map static_rm interface Ten 1/ \
-      \        \b\b\b\b\b\b\b\b\b2/0/18 ov\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      ce route-map static_rm interface Ten 1/2/0/18 ove         \b\b\b\b\b\b\b\b\b\
-      rload\r\n"
+    no ip nat inside source route-map static_rm interface Ten 1/2/0/18 overload: "no
+      ip nat inside source route-map static_rm interface Ten 1\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b\b\b$nside source route-map static_rm interface Ten 1/   \
+      \      \b\b\b\b\b\b\b\b\b2/0/18 ov\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\bce
+      route-map static_rm interface Ten 1/2/0/18 ove         \b\b\b\b\b\b\b\b\brload\r\
+      \n"
     no logging console: ''
   prompt: Stargazer(config)#
 configure_line:
@@ -22,13 +22,12 @@ configure_line:
   prompt: Stargazer(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -39,4 +38,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: Stargazer#

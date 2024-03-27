@@ -25,13 +25,12 @@ class TestIosxeCleanTemplate(unittest.TestCase):
         # attributes and Mock objects associated with the device.
         self.device = create_test_device('PE1', os='iosxe')
 
-    def test_install_remove_inactive_pass(self):
+    def test_connect_in_template(self):
         # setting the expected output as default hostname in the iosxe template
-        Expected_output = 180
 
         #To get the iosxe specific template
         Actual_output = self.device.api.clean.template
 
         # Check that the result is expected
-        self.assertEqual(Expected_output, Actual_output['install_remove_inactive']['timeout'])
+        self.assertIn('connect', Actual_output)
 

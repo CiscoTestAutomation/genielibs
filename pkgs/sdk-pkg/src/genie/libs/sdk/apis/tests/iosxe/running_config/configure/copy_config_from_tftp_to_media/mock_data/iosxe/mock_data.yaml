@@ -14,13 +14,12 @@ configure_line:
   prompt: SPOKE3(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,13 +29,18 @@ execute:
       new_state: configure
     'copy tftp: bootflash:':
       response:
-      - "Address or name of remote host [202.153.144.25]? 202.153.144.25\r\nSource\
-        \ filename [/auto/tftp-blr-users3/ashpa/test.txt]? /auto/tftp-blr-users3/ashpa/test.txt\r\
-        \nDestination filename [test.txt]? test.txt\r\nAccessing tftp://202.153.144.25//auto/tftp-blr-users3/ashpa/test.txt...\r\
-        \nLoading /auto/tftp-blr-users3/ashpa/test.txt from 202.153.144.25 (via GigabitEthernet0/0/0):\
-        \ !\r\n[OK - 0 bytes]\r\n\r\n0 bytes copied in 0.028 secs (0 bytes/sec)"
+        - |-
+          Address or name of remote host [202.153.144.25]? 202.153.144.25
+          Source filename [/auto/tftp-blr-users3/ashpa/test.txt]? /auto/tftp-blr-users3/ashpa/test.txt
+          Destination filename [test.txt]? test.txt
+          Accessing tftp://202.153.144.25//auto/tftp-blr-users3/ashpa/test.txt...
+          Loading /auto/tftp-blr-users3/ashpa/test.txt from 202.153.144.25 (via GigabitEthernet0/0/0): !
+          [OK - 0 bytes]
+          
+          0 bytes copied in 0.028 secs (0 bytes/sec)
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: SPOKE3#

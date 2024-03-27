@@ -2,10 +2,10 @@ configure:
   commands:
     end:
       new_state: execute
-    ip msdp peer 172.16.254.2 connect-source Gi3/0/21 remote-as 65001: "ip msdp peer\
-      \ 172.16.254.2 connect-source Gi3/0/21 remote-as 65001\r\n"
-    ip msdp peer 172.16.254.2 remote-as 65001: "ip msdp peer 172.16.254.2 remote-as\
-      \ 65001\r\n"
+    ip msdp peer 172.16.254.2 connect-source Gi3/0/21 remote-as 65001: "ip msdp peer
+      172.16.254.2 connect-source Gi3/0/21 remote-as 65001\r\n"
+    ip msdp peer 172.16.254.2 remote-as 65001: "ip msdp peer 172.16.254.2 remote-as
+      65001\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''
@@ -18,13 +18,12 @@ configure_line:
   prompt: stack3-nyquist-1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -35,4 +34,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: stack3-nyquist-1#

@@ -14,13 +14,12 @@ configure_line:
   prompt: stack-2m-c9k(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,10 +29,13 @@ execute:
       new_state: configure
     show license tech support | inc Cert:
       response:
-      - "License Certificates\r\nProduction Cert: False\r\nSmartAgentDelayCertValidation:\
-        \ False"
+        - |-
+          License Certificates
+          Production Cert: False
+          SmartAgentDelayCertValidation: False
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: stack-2m-c9k#

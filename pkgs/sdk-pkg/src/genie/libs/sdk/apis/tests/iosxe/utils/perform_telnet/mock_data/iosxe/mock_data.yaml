@@ -14,13 +14,12 @@ configure_line:
   prompt: SecG-A3-9410HA(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -31,12 +30,13 @@ execute:
     show version: ''
     telnet 10.8.12.26 /vrf Mgmt-vrf:
       response:
-      - 'Username:Password:SecG-A3-9410HA>Password:'
+        - 'Username:Password:SecG-A3-9410HA>Password:'
       response_type: circular
     telnet 100.8.12.5:
       response:
-      - 'Username:Password:SecG-A3-9410HA>Password:'
+        - 'Username:Password:SecG-A3-9410HA>Password:'
       response_type: circular
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: SecG-A3-9410HA#

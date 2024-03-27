@@ -14,13 +14,12 @@ configure_line:
   prompt: uut(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,28 +29,46 @@ execute:
       new_state: configure
     show ipv6 route:
       response:
-      - "IPv6 Routing Table - default - 13 entries\r\nCodes: C - Connected, L - Local,\
-        \ S - Static, U - Per-user Static route\r\n       B - BGP, R - RIP, H - NHRP,\
-        \ I1 - ISIS L1\r\n       I2 - ISIS L2, IA - ISIS interarea, IS - ISIS summary,\
-        \ D - EIGRP\r\n       EX - EIGRP external, ND - ND Default, NDp - ND Prefix,\
-        \ DCE - Destination\r\n       NDr - Redirect, O - OSPF Intra, OI - OSPF Inter,\
-        \ OE1 - OSPF ext 1\r\n       OE2 - OSPF ext 2, ON1 - OSPF NSSA ext 1, ON2\
-        \ - OSPF NSSA ext 2\r\n       la - LISP alt, lr - LISP site-registrations,\
-        \ ld - LISP dyn-eid\r\n       lA - LISP away, le - LISP extranet-policy, lp\
-        \ - LISP publications\r\n       ls - LISP destinations-summary, a - Application,\
-        \ m - OMP\r\nC   2001::/64 [0/0]\r\n     via Ethernet0/0, directly connected\r\
-        \nL   2001::1/128 [0/0]\r\n     via Ethernet0/0, receive\r\nC   2001:4::/64\
-        \ [0/0]\r\n     via Serial2/0, directly connected\r\nL   2001:4::201/128 [0/0]\r\
-        \n     via Serial2/0, receive\r\nC   3000:1::/64 [0/0]\r\n     via Ethernet0/1,\
-        \ directly connected\r\nL   3000:1::1/128 [0/0]\r\n     via Ethernet0/1, receive\r\
-        \nC   3000:2::/64 [0/0]\r\n     via Ethernet0/3, directly connected\r\nL \
-        \  3000:2::1/128 [0/0]\r\n     via Ethernet0/3, receive\r\nC   3000:4::/64\
-        \ [0/0]\r\n     via Ethernet1/0, directly connected\r\nL   3000:4::1/128 [0/0]\r\
-        \n     via Ethernet1/0, receive\r\nC   3200:1::/64 [0/0]\r\n     via Ethernet0/2,\
-        \ directly connected\r\nL   3200:1::1/128 [0/0]\r\n     via Ethernet0/2, receive\r\
-        \nL   FF00::/8 [0/0]\r\n     via Null0, receive"
+        - |-
+          IPv6 Routing Table - default - 13 entries
+          Codes: C - Connected, L - Local, S - Static, U - Per-user Static route
+                 B - BGP, R - RIP, H - NHRP, I1 - ISIS L1
+                 I2 - ISIS L2, IA - ISIS interarea, IS - ISIS summary, D - EIGRP
+                 EX - EIGRP external, ND - ND Default, NDp - ND Prefix, DCE - Destination
+                 NDr - Redirect, O - OSPF Intra, OI - OSPF Inter, OE1 - OSPF ext 1
+                 OE2 - OSPF ext 2, ON1 - OSPF NSSA ext 1, ON2 - OSPF NSSA ext 2
+                 la - LISP alt, lr - LISP site-registrations, ld - LISP dyn-eid
+                 lA - LISP away, le - LISP extranet-policy, lp - LISP publications
+                 ls - LISP destinations-summary, a - Application, m - OMP
+          C   2001::/64 [0/0]
+               via Ethernet0/0, directly connected
+          L   2001::1/128 [0/0]
+               via Ethernet0/0, receive
+          C   2001:4::/64 [0/0]
+               via Serial2/0, directly connected
+          L   2001:4::201/128 [0/0]
+               via Serial2/0, receive
+          C   3000:1::/64 [0/0]
+               via Ethernet0/1, directly connected
+          L   3000:1::1/128 [0/0]
+               via Ethernet0/1, receive
+          C   3000:2::/64 [0/0]
+               via Ethernet0/3, directly connected
+          L   3000:2::1/128 [0/0]
+               via Ethernet0/3, receive
+          C   3000:4::/64 [0/0]
+               via Ethernet1/0, directly connected
+          L   3000:4::1/128 [0/0]
+               via Ethernet1/0, receive
+          C   3200:1::/64 [0/0]
+               via Ethernet0/2, directly connected
+          L   3200:1::1/128 [0/0]
+               via Ethernet0/2, receive
+          L   FF00::/8 [0/0]
+               via Null0, receive
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: uut#

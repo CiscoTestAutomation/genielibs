@@ -1523,3 +1523,23 @@ def get_interface_capabilities_multiple_media_types(device, interface):
         return
 
     return out['interface'][interface].get('multiple_media_types')
+
+
+def get_interfaces_transceiver_supported_dom(device, transceivers_list):
+    """Get the corresponding DOM type for the list of transceivers 
+
+        Args:
+            device (`obj`): Device object
+            transceivers_list (`list`): List of transceivers to get the DOM type
+            
+        Returns:
+            dom_value ('dict'): Digital Optical Monitoring value of the supported transceiver
+    """
+    try:
+        out = device.parse("show interfaces transceiver supported-list")
+        dom_value = {t: out['transceiver_type'][t]['cisco_pin_min_version_supporting_dom'] for t in transceivers_list}
+    except Exception as e:
+        log.error(f"Not able to get output for show interfaces transceiver supported-list. Error:\n{e}")
+        return False
+    
+    return dom_value

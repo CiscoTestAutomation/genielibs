@@ -7,18 +7,18 @@ configure:
       new_state: configure_line
     no logging console: ''
     ospfv3 1 ipv6 cost dynamic: "ospfv3 1 ipv6 cost dynamic\r\n"
-    ospfv3 1 ipv6 cost dynamic hysteresis percent 100: "ospfv3 1 ipv6 cost dynamic\
-      \ hysteresis percent 100\r\n"
-    ospfv3 1 ipv6 cost dynamic hysteresis threshold 10: "ospfv3 1 ipv6 cost dynamic\
-      \ hysteresis threshold 10\r\n"
-    ospfv3 1 ipv6 cost dynamic weight l2-factor 20: "ospfv3 1 ipv6 cost dynamic weight\
-      \ l2-factor 20\r\n"
-    ospfv3 1 ipv6 cost dynamic weight latency 30: "ospfv3 1 ipv6 cost dynamic weight\
-      \ latency 30\r\n"
-    ospfv3 1 ipv6 cost dynamic weight resources 40: "ospfv3 1 ipv6 cost dynamic weight\
-      \ resources 40\r\n"
-    ospfv3 1 ipv6 cost dynamic weight throughput 50: "ospfv3 1 ipv6 cost dynamic weight\
-      \ throughput 50\r\n"
+    ospfv3 1 ipv6 cost dynamic hysteresis percent 100: "ospfv3 1 ipv6 cost dynamic
+      hysteresis percent 100\r\n"
+    ospfv3 1 ipv6 cost dynamic hysteresis threshold 10: "ospfv3 1 ipv6 cost dynamic
+      hysteresis threshold 10\r\n"
+    ospfv3 1 ipv6 cost dynamic weight l2-factor 20: "ospfv3 1 ipv6 cost dynamic weight
+      l2-factor 20\r\n"
+    ospfv3 1 ipv6 cost dynamic weight latency 30: "ospfv3 1 ipv6 cost dynamic weight
+      latency 30\r\n"
+    ospfv3 1 ipv6 cost dynamic weight resources 40: "ospfv3 1 ipv6 cost dynamic weight
+      resources 40\r\n"
+    ospfv3 1 ipv6 cost dynamic weight throughput 50: "ospfv3 1 ipv6 cost dynamic weight
+      throughput 50\r\n"
   prompt: ASR1013(config)#
 configure_line:
   commands:
@@ -28,13 +28,12 @@ configure_line:
   prompt: ASR1013(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -45,4 +44,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: ASR1013#

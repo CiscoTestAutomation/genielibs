@@ -14,13 +14,12 @@ configure_line:
   prompt: r1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,11 +29,21 @@ execute:
       new_state: configure
     show running-config:
       response:
-      - "Building configuration...\r\n\r\nCurrent configuration : 30522 bytes\r\naaa new-model\r\n!\r\n!\r\naaa authentication login default\
-        \ local\r\naaa authorization exec default local \r\n!\r\n!\r\naaa session-id\
-        \ common"
+        - |-
+          Building configuration...
+          
+          Current configuration : 30522 bytes
+          aaa new-model
+          !
+          !
+          aaa authentication login default local
+          aaa authorization exec default local 
+          !
+          !
+          aaa session-id common
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: r1#

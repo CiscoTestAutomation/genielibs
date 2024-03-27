@@ -16,13 +16,12 @@ configure_line:
   prompt: n08HA(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -32,15 +31,17 @@ execute:
       new_state: configure
     show switch:
       response:
-      - "Switch/Stack Mac Address : 70c9.c6b9.ab80 - Local Mac Address\r\nMac persistency\
-        \ wait time: Indefinite\r\n                                             H/W\
-        \   Current\r\nSwitch#   Role    Mac Address     Priority Version  State \r\
-        \n-------------------------------------------------------------------------------------\r\
-        \n*1       Active   70c9.c6b9.ab80     1      V02     Ready              \
-        \                 \r\n 2       Standby  70c9.c6d1.e500     1      V02    \
-        \ Ready"
+        - |-
+          Switch/Stack Mac Address : 70c9.c6b9.ab80 - Local Mac Address
+          Mac persistency wait time: Indefinite
+                                                       H/W   Current
+          Switch#   Role    Mac Address     Priority Version  State 
+          -------------------------------------------------------------------------------------
+          *1       Active   70c9.c6b9.ab80     1      V02     Ready                               
+           2       Standby  70c9.c6d1.e500     1      V02     Ready
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: n08HA#

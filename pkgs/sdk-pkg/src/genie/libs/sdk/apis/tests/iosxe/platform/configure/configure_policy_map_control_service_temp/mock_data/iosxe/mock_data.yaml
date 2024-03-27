@@ -1,0 +1,49 @@
+configure:
+  commands:
+    10 activate service-template DEFAULT_LINKSEC_POLICY_MUST_SECURE: "10 class always
+      do-until-failure\r\n"
+    10 authenticate using dot1x aaa authc-list MACSEC-UPLINK authz-list MACSEC-UPLINK both: "10
+      class always do-until-failure\r\n"
+    10 class always do-until-failure: "event authentication-success match-all\r\n"
+    10 terminate dot1x: "10 class always do-until-failure\r\n"
+    20 authentication-restart 10: "10 terminate dot1x\r\n"
+    end:
+      new_state: execute
+    event authentication-failure match-all: "10 authenticate using dot1x aaa authc-list
+      MACSEC-UPLINK authz-list MACSEC-UPLINK both\r\n"
+    event authentication-success match-all: "20 authentication-restart 10\r\n"
+    event session-started match-all: "%Warning, modifying policy-map \"DOT1X-MUST-SECURE-UPLINK\"\
+      \ may impact sessions hosted on ports for which \"DOT1X-MUST-SECURE-UPLINK\"\
+      \ has already been applied.\r\n"
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    policy-map type control subscriber DOT1X-MUST-SECURE-UPLINK: "policy-map type
+      control subscriber DOT1X-MUST-SECURE-UPLINK\r\n"
+  prompt: Switch(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: Switch(config-line)#
+connect:
+  commands:
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
+    Connected to mock_device.
+    Escape character is '^]'.
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    show version | include operating mode: ''
+  prompt: Switch#

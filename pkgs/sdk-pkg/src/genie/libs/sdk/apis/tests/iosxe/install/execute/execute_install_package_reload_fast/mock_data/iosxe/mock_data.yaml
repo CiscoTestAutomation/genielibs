@@ -132,6 +132,7 @@ execute:
         \ for this platform\a\r\n\r\n\r\nPress RETURN to get started!"
       response_type: circular
     show version: ''
+    show version | include operating mode: ''
     term length 0: ''
     term width 0: ''
     write memory:

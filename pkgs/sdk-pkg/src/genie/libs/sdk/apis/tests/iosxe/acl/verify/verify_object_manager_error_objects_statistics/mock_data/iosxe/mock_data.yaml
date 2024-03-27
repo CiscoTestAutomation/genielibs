@@ -18,13 +18,12 @@ configure_line:
   prompt: Intrepid-DUT-1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -32,16 +31,25 @@ execute:
       new_state: configure
     config-transaction:
       new_state: configure
-    show platform software object-manager fp active statistics: "Forwarding Manager\
-      \ Asynchronous Object Manager Statistics\r\n\r\nObject update: Pending-issue:\
-      \ 0, Pending-acknowledgement: 0\r\nBatch begin:   Pending-issue: 0, Pending-acknowledgement:\
-      \ 0\r\nBatch end:     Pending-issue: 0, Pending-acknowledgement: 0\r\nCommand:\
-      \       Pending-acknowledgement: 0\r\nTotal-objects: 9302\r\nStale-objects:\
-      \ 0\r\nResolve-objects: 0\r\nChildless-delete-objects: 1\r\nBackplane-objects:\
-      \ 0\r\nError-objects: 0\r\nNumber of bundles: 0\r\nPaused-types: 0"
+    show platform software object-manager fp active statistics: |-
+      Forwarding Manager Asynchronous Object Manager Statistics
+      
+      Object update: Pending-issue: 0, Pending-acknowledgement: 0
+      Batch begin:   Pending-issue: 0, Pending-acknowledgement: 0
+      Batch end:     Pending-issue: 0, Pending-acknowledgement: 0
+      Command:       Pending-acknowledgement: 0
+      Total-objects: 9302
+      Stale-objects: 0
+      Resolve-objects: 0
+      Childless-delete-objects: 1
+      Backplane-objects: 0
+      Error-objects: 0
+      Number of bundles: 0
+      Paused-types: 0
     show version: ''
     term length 0: ''
     term width 0: ''
     term width 511: ''
     terminal session-timeout 0: ''
+    show version | include operating mode: ''
   prompt: Intrepid-DUT-1#

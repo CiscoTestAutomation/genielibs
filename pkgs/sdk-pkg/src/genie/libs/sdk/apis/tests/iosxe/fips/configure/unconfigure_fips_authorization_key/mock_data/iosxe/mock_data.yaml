@@ -4,11 +4,11 @@ configure:
       new_state: execute
     line console 0:
       new_state: configure_line
-    no fips authorization-key: "no fips authorization-key\r\nFIPS: Authorization-key\
-      \ erased ONLY from the  Crimson DB.\r\nBut the authorization-key is still operational.\
-      \ Use \"reload\" command for complete removal of key and to enter into non fips-mode.\r\
-      \nMake sure to remove fips key from all the members of the stack individually\r\
-      \n"
+    no fips authorization-key: |
+      no fips authorization-key
+      FIPS: Authorization-key erased ONLY from the  Crimson DB.
+      But the authorization-key is still operational. Use "reload" command for complete removal of key and to enter into non fips-mode.
+      Make sure to remove fips key from all the members of the stack individually
     no logging console: ''
   prompt: intrepid-2(config)#
 configure_line:
@@ -19,13 +19,12 @@ configure_line:
   prompt: intrepid-2(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -36,4 +35,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: intrepid-2#

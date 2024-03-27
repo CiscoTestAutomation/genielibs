@@ -14,13 +14,12 @@ configure_line:
   prompt: Switch(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,17 +29,16 @@ execute:
       new_state: configure
     show product-analytics kpi report 1668458555:
       response:
-      - "Product Analytics Engine KPIs\r\n\r\n Report ID     : 1668458555\r\n Computed\
-        \ at   : 11/14/2022 13:42:35\r\n KPI Name      : hardware_inventory\r\n KPI\
-        \ Value     : [{\"cname\":\"Switch2\",\"serial_no\":\"FCW2137L0E2\",\"part_no\"\
-        :\"C9300-48U\"},{\"cname\":\"c93xx Stack\",\"serial_no\":\"FCW2137L0E2\",\"\
-        part_no\":\"C9300-48U\"},{\"cname\":\"StackPort2/1\",\"serial_no\":\"MOC2117A9QX\"\
-        ,\"part_no\":\"STACK-T1-1M\"},{\"cname\":\"StackPort2/2\",\"serial_no\":\"\
-        LCC2109G0LM\",\"part_no\":\"STACK-T1-1M\"},{\"cname\":\"PowerSupply2/B\",\"\
-        serial_no\":\"DCA2210G3R5\",\"part_no\":\"PWR-C1-715WAC\"},{\"cname\":\"FRUUplinkModule2/1\"\
-        ,\"serial_no\":\"FOC19312K2N\",\"part_no\":\"C3850-NM-4-10G\"}]"
+        - |-
+          Product Analytics Engine KPIs
+          
+           Report ID     : 1668458555
+           Computed at   : 11/14/2022 13:42:35
+           KPI Name      : hardware_inventory
+           KPI Value     : [{"cname":"Switch2","serial_no":"FCW2137L0E2","part_no":"C9300-48U"},{"cname":"c93xx Stack","serial_no":"FCW2137L0E2","part_no":"C9300-48U"},{"cname":"StackPort2/1","serial_no":"MOC2117A9QX","part_no":"STACK-T1-1M"},{"cname":"StackPort2/2","serial_no":"LCC2109G0LM","part_no":"STACK-T1-1M"},{"cname":"PowerSupply2/B","serial_no":"DCA2210G3R5","part_no":"PWR-C1-715WAC"},{"cname":"FRUUplinkModule2/1","serial_no":"FOC19312K2N","part_no":"C3850-NM-4-10G"}]
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: Switch#

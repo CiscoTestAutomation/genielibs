@@ -14,13 +14,12 @@ configure_line:
   prompt: stack3-nyquist-1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,14 +29,16 @@ execute:
       new_state: configure
     'show tcp brief | inc .22 |.23 ':
       response:
-      - "7D5795E60118  192.168.1.6.23             192.168.1.5.60530           ESTAB\r\
-        \n7D57816ACC80  192.168.1.6.23             192.168.1.5.43288           ESTAB\r\
-        \n------------  0.0.0.0.23                 *.*                         LISTEN\r\
-        \n------------  ::.23                      *.*                         LISTEN\r\
-        \n------------  0.0.0.0.22                 *.*                         LISTEN\r\
-        \n------------  ::.22                      *.*                         LISTEN"
+        - |-
+          7D5795E60118  192.168.1.6.23             192.168.1.5.60530           ESTAB
+          7D57816ACC80  192.168.1.6.23             192.168.1.5.43288           ESTAB
+          ------------  0.0.0.0.23                 *.*                         LISTEN
+          ------------  ::.23                      *.*                         LISTEN
+          ------------  0.0.0.0.22                 *.*                         LISTEN
+          ------------  ::.22                      *.*                         LISTEN
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: stack3-nyquist-1#

@@ -14,13 +14,12 @@ configure_line:
   prompt: PI-9300-Stack-103(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,19 +29,30 @@ execute:
       new_state: configure
     install commit:
       response:
-      - "install_commit: START Sun Aug 07 09:04:03 UTC 2022\r\n--- Starting Commit\
-        \ ---\r\nPerforming Commit on all members\r\n [1] Commit packages(s) on Switch\
-        \ 1\r\n [2] Commit packages(s) on Switch 2\r\n [3] Commit packages(s) on Switch\
-        \ 3\r\n [2] Finished Commit packages(s) on Switch 2\r\n [1] Finished Commit\
-        \ packages(s) on Switch 1\r\n [3] Finished Commit packages(s) on Switch 3\r\
-        \nChecking status of Commit on [1 2 3]\r\nCommit: Passed on [1 2 3]\r\nFinished\
-        \ Commit operation\r\n\r\nSUCCESS: install_commit"
+        - |-
+          install_commit: START Sun Aug 07 09:04:03 UTC 2022
+          --- Starting Commit ---
+          Performing Commit on all members
+           [1] Commit packages(s) on Switch 1
+           [2] Commit packages(s) on Switch 2
+           [3] Commit packages(s) on Switch 3
+           [2] Finished Commit packages(s) on Switch 2
+           [1] Finished Commit packages(s) on Switch 1
+           [3] Finished Commit packages(s) on Switch 3
+          Checking status of Commit on [1 2 3]
+          Commit: Passed on [1 2 3]
+          Finished Commit operation
+          
+          SUCCESS: install_commit
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
     write memory:
       response:
-      - "Building configuration...\r\n[OK]"
+        - |-
+          Building configuration...
+          [OK]
       response_type: circular
+    show version | include operating mode: ''
   prompt: PI-9300-Stack-103#

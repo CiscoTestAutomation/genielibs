@@ -2,13 +2,9 @@ configure:
   commands:
     end:
       new_state: execute
-    ip dhcp excluded-address vrf vxlan900001 172.16.16.1 172.16.16.9: "ip dhcp excluded-address\
-      \ vrf vxlan900001 172.16.16.1\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b$luded-address vrf vxlan900001\
-      \ 172.16.16.1          \b\b\b\b\b\b\b\b\b172.16.16\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      ess vrf vxlan900001 172.16.16.1 172.16.16.         \b\b\b\b\b\b\b\b\b9\r\nDHCPD:\
-      \ exclusion [172.16.16.1, 172.16.16.9] already exists.\r\n"
+    ip dhcp excluded-address vrf vxlan900001 172.16.16.1 172.16.16.9: |
+      ip dhcp excluded-address vrf vxlan900001 172.16.16.1$luded-address vrf vxlan900001 172.16.16.1          172.16.16ess vrf vxlan900001 172.16.16.1 172.16.16.         9
+      DHCPD: exclusion [172.16.16.1, 172.16.16.9] already exists.
     line console 0:
       new_state: configure_line
     no logging console: ''
@@ -21,13 +17,12 @@ configure_line:
   prompt: stack3-nyquist-1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -38,4 +33,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: stack3-nyquist-1#

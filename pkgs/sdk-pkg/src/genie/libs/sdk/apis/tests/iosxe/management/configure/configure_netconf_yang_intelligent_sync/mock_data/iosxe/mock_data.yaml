@@ -4,9 +4,9 @@ configure:
       new_state: execute
     line console 0:
       new_state: configure_line
-    netconf-yang cisco-ia intelligent-sync: "netconf-yang cisco-ia intelligent-sync\r\
-      \n%The CLI command was designed for internal use only and is no longer supported\
-      \ in this release\r\n"
+    netconf-yang cisco-ia intelligent-sync: |
+      netconf-yang cisco-ia intelligent-sync
+      %The CLI command was designed for internal use only and is no longer supported in this release
     no logging console: ''
   prompt: startrek-1(config)#
 configure_line:
@@ -17,13 +17,12 @@ configure_line:
   prompt: startrek-1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -34,4 +33,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: startrek-1#

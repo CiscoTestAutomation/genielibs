@@ -6,10 +6,10 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-    redistribute ospf 3 match internal external 1 external 2: "redistribute ospf 3\
-      \ match internal external 1 external 2\r\n"
-    redistribute ospf 3 match internal external 1 external 2 metric 10: "redistribute\
-      \ ospf 3 match internal external 1 external 2 metric 10\r\n"
+    redistribute ospf 3 match internal external 1 external 2: "redistribute ospf 3
+      match internal external 1 external 2\r\n"
+    redistribute ospf 3 match internal external 1 external 2 metric 10: "redistribute
+      ospf 3 match internal external 1 external 2 metric 10\r\n"
     router bgp 3: "router bgp 3\r\n"
   prompt: stack3-nyquist-1(config)#
 configure_line:
@@ -20,13 +20,12 @@ configure_line:
   prompt: stack3-nyquist-1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -37,4 +36,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: stack3-nyquist-1#

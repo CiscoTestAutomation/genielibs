@@ -11,9 +11,9 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-    no shut: "% The virtual-service UTD interface configuration has been lost due\
-      \ to address change on virtualportgroup1. Please validate that the virtual-service\
-      \ configuration has the correct network settings.\r\n"
+    no shut: "% The virtual-service UTD interface configuration has been lost due
+      to address change on virtualportgroup1. Please validate that the virtual-service
+      configuration has the correct network settings.\r\n"
     virtual-service enable: "no shut\r\n"
     vnic gateway VirtualPortGroup1: "virtual-service enable\r\n"
   prompt: n08HA(config)#
@@ -25,13 +25,12 @@ configure_line:
   prompt: n08HA(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -42,4 +41,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: n08HA#

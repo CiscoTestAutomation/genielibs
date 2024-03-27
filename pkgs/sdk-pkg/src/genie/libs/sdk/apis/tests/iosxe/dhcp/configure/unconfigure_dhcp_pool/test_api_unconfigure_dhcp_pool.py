@@ -18,8 +18,8 @@ class TestUnconfigureDhcpPool(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: c9500L
-            type: c9500L
+            platform: c9200
+            type: c9200
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['Switch']
@@ -30,6 +30,6 @@ class TestUnconfigureDhcpPool(unittest.TestCase):
         )
 
     def test_unconfigure_dhcp_pool(self):
-        result = unconfigure_dhcp_pool(self.device, 'evpn_pool', 'None', '192.168.1.0', '255.255.255.0', 'green', '192.168.1.200')
+        result = unconfigure_dhcp_pool(self.device, 'vlan501', None, '1.1.1.0', '255.255.255.0', 'Mgmt-vrf', None)
         expected_output = None
         self.assertEqual(result, expected_output)

@@ -14,13 +14,12 @@ configure_line:
   prompt: HA-9400-S2(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,36 +29,49 @@ execute:
       new_state: configure
     show module:
       response:
-      - "Chassis Type: C9407R              \r\n\r\nSwitch Number 1 \r\n\r\nMod Ports\
-        \ Card Type                                   Model          Serial No.\r\n\
-        ---+-----+--------------------------------------+--------------+--------------\r\
-        \n1   48   48-Port UPOE 10/100/1000 (RJ-45)            C9400-LC-48U     JAE2132075Q\r\
-        \n3   11   Supervisor 1 Module                         C9400-SUP-1      JAE2050072Q\r\
-        \n6   48   48-Port UPOE 10/100/1000 (RJ-45)            C9400-LC-48U     JAE21270C22\r\
-        \n\r\nMod MAC addresses                    Hw   Fw           Sw          \
-        \       Status\r\n---+--------------------------------+----+------------+------------------+--------\r\
-        \n1   E4AA.5D5A.1D5C to E4AA.5D5A.1D8B 1.0  16.9.0.1      S2C            \
-        \    ok         \r\n3   0C78.885D.8D6C to 0C78.885D.8D76 0.5  16.9.0.1   \
-        \   S2C                ok         \r\n6   E4AA.5D59.AE2C to E4AA.5D59.AE5B\
-        \ 1.0  16.9.0.1      S2C                ok         \r\n\r\nMod Redundancy\
-        \ Role     Operating Mode  Configured Mode  Redundancy Status\r\n---+-------------------+---------------+---------------+------------------\r\
-        \n3   Standby             sso             sso              Standby Hot   \
-        \   \r\n\r\nSwitch Number 2 \r\n\r\nMod Ports Card Type                  \
-        \                 Model          Serial No.\r\n---+-----+--------------------------------------+--------------+--------------\r\
-        \n3   11   Supervisor 1 Module                         C9400-SUP-1      JAE21390DN9\r\
-        \n7   48   48-Port UPOE 10/100/1000 (RJ-45)            C9400-LC-48U     JAE213102H9\r\
-        \n\r\nMod MAC addresses                    Hw   Fw           Sw          \
-        \       Status\r\n---+--------------------------------+----+------------+------------------+--------\r\
-        \n3   380E.4D5A.992C to 380E.4D5A.9936 1.0  17.10.1r      S2C            \
-        \    ok         \r\n7   E4AA.5D59.DF04 to E4AA.5D59.DF33 1.0  17.10.1r   \
-        \   S2C                ok         \r\n\r\nMod Redundancy Role     Operating\
-        \ Mode  Configured Mode  Redundancy Status\r\n---+-------------------+---------------+---------------+------------------\r\
-        \n3   Active              sso             sso              Active        \
-        \   \r\n\r\nChassis 1 MAC address range: 44 addresses from 0c78.885d.8d40\
-        \ to 0c78.885d.8d6b \r\n\r\nChassis 2 MAC address range: 44 addresses from\
-        \ 380e.4d5a.9900 to 380e.4d5a.992b"
+        - |-
+          Chassis Type: C9407R              
+          
+          Switch Number 1 
+          
+          Mod Ports Card Type                                   Model          Serial No.
+          ---+-----+--------------------------------------+--------------+--------------
+          1   48   48-Port UPOE 10/100/1000 (RJ-45)            C9400-LC-48U     JAE2132075Q
+          3   11   Supervisor 1 Module                         C9400-SUP-1      JAE2050072Q
+          6   48   48-Port UPOE 10/100/1000 (RJ-45)            C9400-LC-48U     JAE21270C22
+          
+          Mod MAC addresses                    Hw   Fw           Sw                 Status
+          ---+--------------------------------+----+------------+------------------+--------
+          1   E4AA.5D5A.1D5C to E4AA.5D5A.1D8B 1.0  16.9.0.1      S2C                ok         
+          3   0C78.885D.8D6C to 0C78.885D.8D76 0.5  16.9.0.1      S2C                ok         
+          6   E4AA.5D59.AE2C to E4AA.5D59.AE5B 1.0  16.9.0.1      S2C                ok         
+          
+          Mod Redundancy Role     Operating Mode  Configured Mode  Redundancy Status
+          ---+-------------------+---------------+---------------+------------------
+          3   Standby             sso             sso              Standby Hot      
+          
+          Switch Number 2 
+          
+          Mod Ports Card Type                                   Model          Serial No.
+          ---+-----+--------------------------------------+--------------+--------------
+          3   11   Supervisor 1 Module                         C9400-SUP-1      JAE21390DN9
+          7   48   48-Port UPOE 10/100/1000 (RJ-45)            C9400-LC-48U     JAE213102H9
+          
+          Mod MAC addresses                    Hw   Fw           Sw                 Status
+          ---+--------------------------------+----+------------+------------------+--------
+          3   380E.4D5A.992C to 380E.4D5A.9936 1.0  17.10.1r      S2C                ok         
+          7   E4AA.5D59.DF04 to E4AA.5D59.DF33 1.0  17.10.1r      S2C                ok         
+          
+          Mod Redundancy Role     Operating Mode  Configured Mode  Redundancy Status
+          ---+-------------------+---------------+---------------+------------------
+          3   Active              sso             sso              Active           
+          
+          Chassis 1 MAC address range: 44 addresses from 0c78.885d.8d40 to 0c78.885d.8d6b 
+          
+          Chassis 2 MAC address range: 44 addresses from 380e.4d5a.9900 to 380e.4d5a.992b
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: HA-9400-S2#

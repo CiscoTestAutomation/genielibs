@@ -4,9 +4,10 @@ configure:
       new_state: execute
     line console 0:
       new_state: configure_line
-    no call-home: "no call-home\r\nAll configuration under call-home mode are set\
-      \ to default value. All profiles except CiscoTAC-1 profile are removed.\r\n\r\
-      \n"
+    no call-home: |
+      no call-home
+      All configuration under call-home mode are set to default value. All profiles except CiscoTAC-1 profile are removed.
+      
     no logging console: ''
   prompt: n10SVL(config)#
 configure_line:
@@ -17,13 +18,12 @@ configure_line:
   prompt: n10SVL(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -34,4 +34,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: n10SVL#

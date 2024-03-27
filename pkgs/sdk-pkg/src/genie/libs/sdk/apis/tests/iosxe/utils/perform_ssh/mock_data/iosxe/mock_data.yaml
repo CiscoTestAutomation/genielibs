@@ -5,22 +5,21 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-  prompt: Switch-9300(config)#
+  prompt: Switch(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: Switch-9300(config-line)#
+  prompt: Switch(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -29,10 +28,11 @@ execute:
     config-transaction:
       new_state: configure
     show version: ''
-    ssh -l lab -p 22 -c 3des 10.1.1.1:
+    ssh -l test-user -p 22 1.1.1.1:
       response:
-      - '% Connection timed out; remote host not responding'
+        - 'Password:Switch>Password:'
       response_type: circular
     term length 0: ''
     term width 0: ''
-  prompt: Switch-9300#
+    show version | include operating mode: ''
+  prompt: Switch#

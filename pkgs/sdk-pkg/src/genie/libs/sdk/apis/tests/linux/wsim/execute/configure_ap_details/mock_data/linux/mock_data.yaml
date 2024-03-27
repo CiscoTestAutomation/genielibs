@@ -14,19 +14,18 @@ configure_line:
   prompt: vSTA#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
     config global setup ap access yes:
       response:
-      - ''
+        - ''
       response_type: circular
     config term:
       new_state: configure
@@ -34,37 +33,39 @@ execute:
       new_state: configure
     configure global ap base_mac 00:e5:64:00:00:00:
       response:
-      - "%% Only the first bytes 00:e5:64: as AP mac prefix\r\n% WARN: OUI 58724 not\
-        \ registered! - 00:e5:64:00:00:00 may trigger invalid mac OUI alarm\r\n% Hint:\
-        \ check registered OUI in http://standards-oui.ieee.org/oui.txt"
+        - |-
+          %% Only the first bytes 00:e5:64: as AP mac prefix
+          % WARN: OUI 58724 not registered! - 00:e5:64:00:00:00 may trigger invalid mac OUI alarm
+          % Hint: check registered OUI in http://standards-oui.ieee.org/oui.txt
       response_type: circular
     configure global ap freq 2.4GHz:
       response:
-      - ''
+        - ''
       response_type: circular
     configure global ap model 9117:
       response:
-      - "%% Hint1: You need to configure AP model supported by the wireless controller!\r\
-        \n%% Hint2: You can assign AP model with Product ID, and Version ID, for example,\
-        \ 9117,C9117AXI-B,V01"
+        - |-
+          %% Hint1: You need to configure AP model supported by the wireless controller!
+          %% Hint2: You can assign AP model with Product ID, and Version ID, for example, 9117,C9117AXI-B,V01
       response_type: circular
     configure global ap name wsim-AP:
       response:
-      - ''
+        - ''
       response_type: circular
     configure global setup ap access vlan 46:
       response:
-      - ''
+        - ''
       response_type: circular
     configure global setup sit yes:
       response:
-      - ''
+        - ''
       response_type: circular
     configure global wlc ap-vlan-ip 9.2.45.15:
       response:
-      - ''
+        - ''
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: vSTA#

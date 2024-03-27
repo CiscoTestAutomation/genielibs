@@ -14,13 +14,12 @@ configure_line:
   prompt: UUT1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,12 +29,17 @@ execute:
       new_state: configure
     ping 50.1.1.2 Extended-data FFFFFFF repeat 5 size 256 timeout 1 dscp af11 df-bit validate:
       response:
-      - "$d-data FFFFFFF repeat 5 size 256 timeout 1 dscp af11 df-bit validate\r\n\
-        Type escape sequence to abort.\r\nSending 5, 256-byte ICMP Echos to 50.1.1.2,\
-        \ timeout is 1 seconds:\r\nPacket sent with the DF bit set\r\nReply data will\
-        \ be validated\r\n.....\r\nSuccess rate is 0 percent (0/5)"
+        - |-
+          $d-data FFFFFFF repeat 5 size 256 timeout 1 dscp af11 df-bit validate
+          Type escape sequence to abort.
+          Sending 5, 256-byte ICMP Echos to 50.1.1.2, timeout is 1 seconds:
+          Packet sent with the DF bit set
+          Reply data will be validated
+          .....
+          Success rate is 0 percent (0/5)
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: UUT1#

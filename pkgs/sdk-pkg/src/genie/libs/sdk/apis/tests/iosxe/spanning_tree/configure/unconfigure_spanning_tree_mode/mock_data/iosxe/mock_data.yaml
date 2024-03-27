@@ -5,9 +5,10 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-    no spanning-tree mode: "no spanning-tree mode\r\nWarning: Changing STP mode can\
-      \ disrupt the traffic and make system unstable\r\nRecommend to change STP mode\
-      \ only during maintenance window\r\n"
+    no spanning-tree mode: |
+      no spanning-tree mode
+      Warning: Changing STP mode can disrupt the traffic and make system unstable
+      Recommend to change STP mode only during maintenance window
   prompt: mac-gen2(config)#
 configure_line:
   commands:
@@ -17,13 +18,12 @@ configure_line:
   prompt: mac-gen2(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -34,4 +34,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: mac-gen2#

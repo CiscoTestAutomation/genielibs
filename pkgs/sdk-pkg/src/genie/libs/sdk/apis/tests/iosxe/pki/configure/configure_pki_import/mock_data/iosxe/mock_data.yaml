@@ -9,13 +9,16 @@ configure:
     no logging console: ''
   prompt: fugazi(config)#
 crypto:
-  prompt: "% Importing pkcs12...\r\
-      \nSource filename [self.p12]? "
+  prompt: |-
+    % Importing pkcs12...
+    Source filename [self.p12]? 
   commands:
-    ? ''
-    : new_state: crypto_2
+    '':
+      new_state: crypto_2
 crypto_2:
-  prompt: "Reading file from bootflash:self.p12\r\nfugazi(config)#"
+  prompt: |-
+    Reading file from bootflash:self.p12
+    fugazi(config)#
   commands:
     end:
       new_state: execute
@@ -27,13 +30,12 @@ configure_line:
   prompt: fugazi(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -44,4 +46,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: fugazi#

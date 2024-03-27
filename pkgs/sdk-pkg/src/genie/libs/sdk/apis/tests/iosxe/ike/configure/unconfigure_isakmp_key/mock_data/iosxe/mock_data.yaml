@@ -4,13 +4,13 @@ configure:
       new_state: execute
     line console 0:
       new_state: configure_line
-    no crypto isakmp key 0 ash123 address 20.18.19.5 255.255.255.0: "no crypto isakmp\
-      \ key 0 ash123 address 20.18.19.5 255.255.255.0\r\n"
-    no crypto isakmp key 0 test123 address ipv6 2007:1::44/112 no-xauth: "no crypto\
-      \ isakmp key 0 test123 address ipv6 2007:1::44/112 no-xa\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b$sakmp key 0 test123 address ipv6 2007:1::44/112\
-      \ no-xau         \b\b\b\b\b\b\b\b\bth\r\n"
+    no crypto isakmp key 0 ash123 address 20.18.19.5 255.255.255.0: "no crypto isakmp
+      key 0 ash123 address 20.18.19.5 255.255.255.0\r\n"
+    no crypto isakmp key 0 test123 address ipv6 2007:1::44/112 no-xauth: "no crypto
+      isakmp key 0 test123 address ipv6 2007:1::44/112 no-xa\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b$sakmp key 0 test123 address ipv6 2007:1::44/112
+      no-xau         \b\b\b\b\b\b\b\b\bth\r\n"
     no logging console: ''
   prompt: INT1(config)#
 configure_line:
@@ -21,13 +21,12 @@ configure_line:
   prompt: INT1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -38,4 +37,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: INT1#

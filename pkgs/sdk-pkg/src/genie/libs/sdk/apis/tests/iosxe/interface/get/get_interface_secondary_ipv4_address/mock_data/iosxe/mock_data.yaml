@@ -18,23 +18,22 @@ configure_line:
   prompt: R1_xe(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
     config term:
       new_state: configure
-    show ip interface GigabitEthernet1:
-      "GigabitEthernet1 is up, line protocol is up\r\
-     \n  Internet address is 172.16.1.211/16\r\
-     \n  Broadcast address is 255.255.255.255\r\
-     \n  Secondary address 172.16.1.212/16"
+    show ip interface GigabitEthernet1: |-
+      GigabitEthernet1 is up, line protocol is up
+        Internet address is 172.16.1.211/16
+        Broadcast address is 255.255.255.255
+        Secondary address 172.16.1.212/16
     config-transaction:
       new_state: configure
     show version: ''
@@ -42,4 +41,5 @@ execute:
     term width 0: ''
     term width 511: ''
     terminal session-timeout 0: ''
+    show version | include operating mode: ''
   prompt: R1_xe#

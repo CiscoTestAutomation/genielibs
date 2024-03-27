@@ -1,6 +1,7 @@
 # Python
 import os
 import logging
+import re
 
 # Genie
 from genie.utils import Dq
@@ -617,3 +618,22 @@ def verify_platform_resources(device, dram_max = "0", tmpfs_max = "0", bootflash
         timeout.sleep()
     return False
 
+def verify_last_reload_reason(device, expected_reason):
+    """ To verify the Last Reload reason
+        
+        Args:
+            device ('obj'): Device object
+            expected_reason('str'): Expected Last reload reason
+        Returns:
+            True/False
+        Raises:
+            None
+    """
+    try:
+        output = device.parse("show version")
+    except SchemaEmptyParserError as e:
+        return 
+    if output['version']['last_reload_reason'] == expected_reason:
+        return True
+    else:
+        return False

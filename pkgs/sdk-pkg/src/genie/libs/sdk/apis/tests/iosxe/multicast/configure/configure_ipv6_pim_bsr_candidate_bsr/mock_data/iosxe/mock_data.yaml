@@ -2,8 +2,8 @@ configure:
   commands:
     end:
       new_state: execute
-    ipv6 pim bsr candidate bsr 61::61 100 priority 10 scope 5 accept-rp-candidate pim_1: "ipv6\
-      \ pim bsr candidate bsr 61::61 100 priority 10 scope 5 accept-rp-candidate pim_1\r\
+    ipv6 pim bsr candidate bsr 61::61 100 priority 10 scope 5 accept-rp-candidate pim_1: "ipv6
+      pim bsr candidate bsr 61::61 100 priority 10 scope 5 accept-rp-candidate pim_1\r\
       \n"
     line console 0:
       new_state: configure_line
@@ -17,13 +17,12 @@ configure_line:
   prompt: UUT1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -34,4 +33,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: UUT1#

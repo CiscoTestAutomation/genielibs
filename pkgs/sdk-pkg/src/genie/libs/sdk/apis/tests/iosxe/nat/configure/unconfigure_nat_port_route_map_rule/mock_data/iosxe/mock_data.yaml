@@ -4,16 +4,16 @@ configure:
       new_state: execute
     line console 0:
       new_state: configure_line
-    no ip nat inside source static tcp 11.12.13.14 23 11.12.14.30 23 route-map static_rm: "no\
-      \ ip nat inside source static tcp 11.12.13.14 23 11.12.14.\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b$nside source static tcp 11.12.13.14 23 11.12.14.3 \
-      \        \b\b\b\b\b\b\b\b\b0 23 rout\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      ce static tcp 11.12.13.14 23 11.12.14.30 23 route         \b\b\b\b\b\b\b\b\b\
-      -map stat\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\btcp 11.12.13.14 23 11.12.14.30\
-      \ 23 route-map stati         \b\b\b\b\b\b\b\b\bc_rm\r\n"
+    no ip nat inside source static tcp 11.12.13.14 23 11.12.14.30 23 route-map static_rm: "no
+      ip nat inside source static tcp 11.12.13.14 23 11.12.14.\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b\b\b$nside source static tcp 11.12.13.14 23 11.12.14.3   \
+      \      \b\b\b\b\b\b\b\b\b0 23 rout\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\bce
+      static tcp 11.12.13.14 23 11.12.14.30 23 route         \b\b\b\b\b\b\b\b\b-map
+      stat\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\btcp 11.12.13.14 23 11.12.14.30 23
+      route-map stati         \b\b\b\b\b\b\b\b\bc_rm\r\n"
     no logging console: ''
   prompt: Stargazer(config)#
 configure_line:
@@ -24,13 +24,12 @@ configure_line:
   prompt: Stargazer(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -41,4 +40,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: Stargazer#

@@ -6,8 +6,9 @@ configure:
       new_state: configure_line
     line console 0:
       new_state: configure_line
-    no ip pim vrf None rp-address 5.5.5.5: "no ip pim vrf None rp-address 5.5.5.5\r\
-      \n% VPN Routing instance None does not exist.\r\n"
+    no ip pim vrf None rp-address 5.5.5.5: |
+      no ip pim vrf None rp-address 5.5.5.5
+      % VPN Routing instance None does not exist.
     no logging console: ''
   prompt: Cat9300_VTEP1(config)#
 configure_line:
@@ -20,13 +21,12 @@ configure_line:
   prompt: Cat9300_VTEP1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -39,4 +39,5 @@ execute:
     term width 0: ''
     term width 511: ''
     terminal session-timeout 0: ''
+    show version | include operating mode: ''
   prompt: Cat9300_VTEP1#

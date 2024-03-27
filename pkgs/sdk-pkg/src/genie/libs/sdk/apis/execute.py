@@ -178,6 +178,11 @@ def change_power_cycler_state(device, powercycler, state, outlets):
     elif state == 'off':
         powercycler.off(*outlets)
 
+    # Disconnect from powercycler.
+    try:
+        powercycler.disconnect()
+    except Exception as e:
+        log.debug(f"Failed to disconnect from powercycler. {e}")
 
 def free_up_disk_space(device, destination, required_size, skip_deletion,
     protected_files, compact=False, min_free_space_percent=None,

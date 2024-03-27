@@ -18,25 +18,29 @@ configure_line:
   prompt: CGW-laas-c9500-5(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
     config term:
       new_state: configure
-    show ip route vrf vrf101 20.101.1.3: "\r\nRouting Table: vrf101\r\nRouting entry\
-      \ for 20.101.1.0/24\r\n  Known via \"connected\", distance 0, metric 0 (connected,\
-      \ via interface)\r\n  Routing Descriptor Blocks:\r\n  * directly connected,\
-      \ via Vlan101\r\n      Route metric is 0, traffic share count is 1"
+    show ip route vrf vrf101 20.101.1.3: |-
+      
+      Routing Table: vrf101
+      Routing entry for 20.101.1.0/24
+        Known via "connected", distance 0, metric 0 (connected, via interface)
+        Routing Descriptor Blocks:
+        * directly connected, via Vlan101
+            Route metric is 0, traffic share count is 1
     show version: ''
     term length 0: ''
     term width 0: ''
     term width 511: ''
     terminal session-timeout 0: ''
+    show version | include operating mode: ''
   prompt: CGW-laas-c9500-5#

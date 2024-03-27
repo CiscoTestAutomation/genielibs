@@ -14,13 +14,12 @@ configure_line:
   prompt: Switch(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,12 +29,18 @@ execute:
       new_state: configure
     show platform sudi pki:
       response:
-      - "\r\n'Cisco Manufacturing CA III' certificate : Enabled\r\n\r\nSUDI Issuer-CN\
-        \                      Validation status\r\n-----------------------------------------------------\r\
-        \nCisco Manufacturing CA              Valid\r\nCisco Manufacturing CA III\
-        \          Valid\r\nCisco Manufacturing CA SHA2         Valid"
+        - |-
+          
+          'Cisco Manufacturing CA III' certificate : Enabled
+          
+          SUDI Issuer-CN                      Validation status
+          -----------------------------------------------------
+          Cisco Manufacturing CA              Valid
+          Cisco Manufacturing CA III          Valid
+          Cisco Manufacturing CA SHA2         Valid
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: Switch#

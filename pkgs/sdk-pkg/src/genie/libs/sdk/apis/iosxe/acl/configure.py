@@ -56,7 +56,7 @@ def config_extended_acl(
     configs = []
     configs.append("ip access-list extended {}".format(acl_name))
     if permission in ['permit', 'deny']:
-        if acl_type:
+        if acl_type and src_ip and dst_ip and dst_wildcard is None:
             # Build config string
             cmd = "{sequence} {permission} {protocol} host {src_ip} host {dst_ip} ".format(
                 sequence=sequence_num,
@@ -69,6 +69,26 @@ def config_extended_acl(
             if time_range:
                 cmd += f"time-range {time_range}"
             configs.append(cmd)
+        elif acl_type and dst_ip is None:
+            cmd = "{sequence} {permission} {protocol} host {src_ip} any ".format(
+                sequence=sequence_num,
+                permission=permission,
+                protocol=protocol,
+                src_ip=src_ip)
+            if log_option:
+                cmd += log_option
+            if time_range:
+                cmd += f"time-range {time_range}"
+            configs.append(cmd)     
+        elif acl_type and src_ip and dst_ip and dst_wildcard:
+            cmd = "{sequence} {permission} {protocol} host {src_ip} {dst_ip} {dst_wildcard}".format(
+                sequence=sequence_num,
+                permission=permission,
+                protocol=protocol,
+                src_ip=src_ip,
+                dst_ip=dst_ip,
+                dst_wildcard=dst_wildcard)
+            configs.append(cmd)                    
         elif acl_type is None and protocol is not None and src_ip=='any' and dst_ip=="any":  
             if (protocol in ["tcp", "udp"]) and (port_type in ['eq', 'gt', 'lt', 'neq']) and (time_range is not None):
                 configs.append(

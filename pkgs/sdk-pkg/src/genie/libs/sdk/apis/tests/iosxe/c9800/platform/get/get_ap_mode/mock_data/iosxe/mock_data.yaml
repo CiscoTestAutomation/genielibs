@@ -14,13 +14,12 @@ configure_line:
   prompt: vidya-ewlc-5(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,117 +29,141 @@ execute:
       new_state: configure
     show ap name AP188B.4500.44C8 config general:
       response:
-      - "\r\nCisco AP Name   : AP188B.4500.44C8\r\n=================================================\r\
-        \n\r\nCisco AP Identifier                             : 188b.4501.7c60\r\n\
-        Country Code                                    : Multiple Countries : IN,US\r\
-        \nRegulatory Domain Allowed by Country            : 802.11bg:-A   802.11a:-ABDN\
-        \   802.11 6GHz:-B\r\nAP Country Code                                 : IN\
-        \  - India\r\nAP Regulatory Domain\r\n  802.11bg                         \
-        \             : -A\r\n  802.11a                                       : -D\r\
-        \nMAC Address                                     : 188b.4500.44c8\r\nIP Address\
-        \ Configuration                        : DHCP\r\nIP Address              \
-        \                        : 9.4.57.224\r\nIP Netmask                      \
-        \                : 255.255.255.0\r\nGateway IP Address                   \
-        \           : 9.4.57.1\r\nFallback IP Address Being Used                 \
-        \ : \r\nDomain                                          : \r\nName Server\
-        \                                     : \r\nCAPWAP Path MTU              \
-        \                   : 1485\r\nCapwap Active Window Size                  \
-        \     : 1\r\nTelnet State                                    : Disabled\r\n\
-        CPU Type                                        :  ARMv7 Processor rev 0 (v7l)\r\
-        \nMemory Type                                     : DDR3\r\nMemory Size  \
-        \                                   : 995328 KB\r\nSSH State             \
-        \                          : Disabled\r\nCisco AP Location               \
-        \                : default location\r\nSite Tag Name                     \
-        \              : default-site-tag\r\nRF Tag Name                         \
-        \            : default-rf-tag\r\nPolicy Tag Name                         \
-        \        : default-policy-tag\r\nAP join Profile                         \
-        \        : default-ap-profile\r\nFlex Profile                            \
-        \        : default-flex-profile\r\nPrimary Cisco Controller Name         \
-        \          : vidya-ewlc-5\r\nPrimary Cisco Controller IP Address         \
-        \    : 9.4.62.51\r\nSecondary Cisco Controller Name                 : Not\
-        \ Configured\r\nSecondary Cisco Controller IP Address           : 0.0.0.0\r\
-        \nTertiary Cisco Controller Name                  : Not Configured\r\nTertiary\
-        \ Cisco Controller IP Address            : 0.0.0.0\r\nAdministrative State\
-        \                            : Enabled\r\nOperation State                \
-        \                 : Registered\r\nNAT External IP Address                \
-        \         : 9.4.57.224\r\nAP Certificate type                            \
-        \ : Manufacturer Installed Certificate\r\nAP Certificate Expiry-time     \
-        \                 : 06/29/2026 19:56:42\r\nAP Certificate issuer common-name\
-        \               : Cisco Manufacturing CA SHA2\r\nAP Certificate Policy   \
-        \                        : Default\r\nAP CAPWAP-DTLS LSC Status\r\n    Certificate\
-        \ status        : Not Available\r\nAP 802.1x LSC Status\r\n    Certificate\
-        \ status        : Not Available\r\nAP LSC authentication state           \
-        \          : CAPWAP-DTLS\r\nAP Mode                                      \
-        \   : Local\r\nAP VLAN tagging state                           : Disabled\r\
-        \nAP VLAN tag                                     : 0\r\nCAPWAP Preferred\
-        \ mode                           : IPv4\r\nCAPWAP UDP-Lite               \
-        \                  : Disabled\r\nAP Submode                              \
-        \        : Not Configured\r\nOffice Extend Mode                          \
-        \    : Disabled\r\nLink-Encryption                                 : Disabled\r\
-        \nDhcp Server                                     : Disabled\r\nRemote AP\
-        \ Debug                                 : Disabled\r\nLogging Trap Severity\
-        \ Level                     : information\r\nLogging Syslog facility     \
-        \                    : kern\r\nSoftware Version                          \
-        \      : 17.7.1.2\r\nBoot Version                                    : 1.1.2.4\r\
-        \nMini IOS Version                                : 0.0.0.0\r\nStats Reporting\
-        \ Period                          : 180\r\nLED State                     \
-        \                  : Enabled\r\nLED Flash State                          \
-        \       : Enabled\r\nLED Flash Timer                                 : 0\r\
-        \nMDNS Group Id                                   : 0\r\nMDNS Rule Name  \
-        \                                : \r\nPoE Pre-Standard Switch           \
-        \              : Disabled\r\nPoE Power Injector MAC Address              \
-        \    : Disabled\r\nPower Type/Mode                                 : PoE/Full\
-        \ Power\r\nNumber of Slots                                 : 2\r\nAP Model\
-        \                                        : AIR-AP1832I-D-K9\r\nIOS Version\
-        \                                     : 17.7.1.2\r\nReset Button         \
-        \                           : Disabled\r\nAP Serial Number               \
-        \                 : KWC2021032E\r\nManagement Frame Validation           \
-        \          : Capable\r\nManagement Frame Protection                     :\
-        \ Not capable\r\nAP User Name                                    : cisco123\r\
-        \nAP 802.1X User Mode                             : Global\r\nAP 802.1X User\
-        \ Name                             : Not Configured\r\nCisco AP System Logging\
-        \ Host                    : 255.255.255.255\r\nCisco AP Secured Logging TLS\
-        \ mode               : Disabled\r\nAP Up Time                            \
-        \          : 14 days 2 hours 38 minutes 1 second \r\nAP CAPWAP Up Time   \
-        \                            : 7 days 19 hours 8 minutes 29 seconds \r\nJoin\
-        \ Date and Time                              : 01/27/2022 09:26:06\r\nJoin\
-        \ Taken Time                                 : 14 seconds \r\nJoin Priority\
-        \                                   : 1\r\nAP Link Latency               \
-        \                  : Disable\r\nAP Lag Configuration Status              \
-        \       : Disabled\r\nLag Support for AP                              : No\r\
-        \nRogue Detection                                 : Enabled\r\nRogue Containment\
-        \ auto-rate                     : Disabled\r\nRogue Containment of standalone\
-        \ flexconnect APs : Disabled\r\nRogue Detection Report Interval          \
-        \       : 10\r\nRogue AP minimum RSSI                           : -90\r\n\
-        Rogue AP minimum transient time                 : 0\r\nAP TCP MSS Adjust \
-        \                              : Enabled\r\nAP TCP MSS Size              \
-        \                   : 1250\r\nAP IPv6 TCP MSS Adjust                     \
-        \     : Enabled\r\nAP IPv6 TCP MSS Size                            : 1250\r\
-        \nHyperlocation Admin Status                      : Disabled\r\nRetransmit\
-        \ count                                : 5\r\nRetransmit interval        \
-        \                     : 3\r\nFabric status                               \
-        \    : Disabled\r\nFIPS status                                     : Disabled\r\
-        \nWLANCC status                                   : Disabled\r\nUSB Module\
-        \ Type                                 : USB Module\r\nUSB Module State  \
-        \                              : Enabled\r\nUSB Operational State        \
-        \                   : Disabled\r\nUSB Operational State Reason           \
-        \         : Not Detected\r\nUSB Override                                 \
-        \   : Disabled\r\nGAS rate limit Admin status                     : Disabled\r\
-        \nWPA3 Capability                                 : Enabled\r\nEWC-AP Capability\
-        \                               : Disabled\r\nAWIPS Capability           \
-        \                     : Enabled\r\nAID Management Capability             \
-        \          : Enabled\r\nProxy Hostname                                  :\
-        \ Not Configured\r\nProxy Port                                      : Not\
-        \ Configured\r\nProxy NO_PROXY list                             : Not Configured\r\
-        \nGRPC server status                              : Disabled\r\nUnencrypted\
-        \ Data Keep Alive                     : Enabled\r\nLocal DHCP Server     \
-        \                          : Disabled\r\nTraffic Distribution Statistics Capability\
-        \      : Enabled\r\nDual DFS Statistics                             : Disabled\r\
-        \nAP Upgrade Out-Of-Band Capability               : Enabled \r\nAP statistics\
-        \                                   : Disabled\r\nAP PMK Propagation Capability\
-        \                   : Enabled"
+        - |-
+          
+          Cisco AP Name   : AP188B.4500.44C8
+          =================================================
+          
+          Cisco AP Identifier                             : 188b.4501.7c60
+          Country Code                                    : Multiple Countries : IN,US
+          Regulatory Domain Allowed by Country            : 802.11bg:-A   802.11a:-ABDN   802.11 6GHz:-B
+          AP Country Code                                 : IN  - India
+          AP Regulatory Domain
+            802.11bg                                      : -A
+            802.11a                                       : -D
+          MAC Address                                     : 188b.4500.44c8
+          IP Address Configuration                        : DHCP
+          IP Address                                      : 9.4.57.224
+          IP Netmask                                      : 255.255.255.0
+          Gateway IP Address                              : 9.4.57.1
+          Fallback IP Address Being Used                  : 
+          Domain                                          : 
+          Name Server                                     : 
+          CAPWAP Path MTU                                 : 1485
+          Capwap Active Window Size                       : 1
+          Telnet State                                    : Disabled
+          CPU Type                                        :  ARMv7 Processor rev 0 (v7l)
+          Memory Type                                     : DDR3
+          Memory Size                                     : 995328 KB
+          SSH State                                       : Disabled
+          Cisco AP Location                               : default location
+          Site Tag Name                                   : default-site-tag
+          RF Tag Name                                     : default-rf-tag
+          Policy Tag Name                                 : default-policy-tag
+          AP join Profile                                 : default-ap-profile
+          Flex Profile                                    : default-flex-profile
+          Primary Cisco Controller Name                   : vidya-ewlc-5
+          Primary Cisco Controller IP Address             : 9.4.62.51
+          Secondary Cisco Controller Name                 : Not Configured
+          Secondary Cisco Controller IP Address           : 0.0.0.0
+          Tertiary Cisco Controller Name                  : Not Configured
+          Tertiary Cisco Controller IP Address            : 0.0.0.0
+          Administrative State                            : Enabled
+          Operation State                                 : Registered
+          NAT External IP Address                         : 9.4.57.224
+          AP Certificate type                             : Manufacturer Installed Certificate
+          AP Certificate Expiry-time                      : 06/29/2026 19:56:42
+          AP Certificate issuer common-name               : Cisco Manufacturing CA SHA2
+          AP Certificate Policy                           : Default
+          AP CAPWAP-DTLS LSC Status
+              Certificate status        : Not Available
+          AP 802.1x LSC Status
+              Certificate status        : Not Available
+          AP LSC authentication state                     : CAPWAP-DTLS
+          AP Mode                                         : Local
+          AP VLAN tagging state                           : Disabled
+          AP VLAN tag                                     : 0
+          CAPWAP Preferred mode                           : IPv4
+          CAPWAP UDP-Lite                                 : Disabled
+          AP Submode                                      : Not Configured
+          Office Extend Mode                              : Disabled
+          Link-Encryption                                 : Disabled
+          Dhcp Server                                     : Disabled
+          Remote AP Debug                                 : Disabled
+          Logging Trap Severity Level                     : information
+          Logging Syslog facility                         : kern
+          Software Version                                : 17.7.1.2
+          Boot Version                                    : 1.1.2.4
+          Mini IOS Version                                : 0.0.0.0
+          Stats Reporting Period                          : 180
+          LED State                                       : Enabled
+          LED Flash State                                 : Enabled
+          LED Flash Timer                                 : 0
+          MDNS Group Id                                   : 0
+          MDNS Rule Name                                  : 
+          PoE Pre-Standard Switch                         : Disabled
+          PoE Power Injector MAC Address                  : Disabled
+          Power Type/Mode                                 : PoE/Full Power
+          Number of Slots                                 : 2
+          AP Model                                        : AIR-AP1832I-D-K9
+          IOS Version                                     : 17.7.1.2
+          Reset Button                                    : Disabled
+          AP Serial Number                                : KWC2021032E
+          Management Frame Validation                     : Capable
+          Management Frame Protection                     : Not capable
+          AP User Name                                    : cisco123
+          AP 802.1X User Mode                             : Global
+          AP 802.1X User Name                             : Not Configured
+          Cisco AP System Logging Host                    : 255.255.255.255
+          Cisco AP Secured Logging TLS mode               : Disabled
+          AP Up Time                                      : 14 days 2 hours 38 minutes 1 second 
+          AP CAPWAP Up Time                               : 7 days 19 hours 8 minutes 29 seconds 
+          Join Date and Time                              : 01/27/2022 09:26:06
+          Join Taken Time                                 : 14 seconds 
+          Join Priority                                   : 1
+          AP Link Latency                                 : Disable
+          AP Lag Configuration Status                     : Disabled
+          Lag Support for AP                              : No
+          Rogue Detection                                 : Enabled
+          Rogue Containment auto-rate                     : Disabled
+          Rogue Containment of standalone flexconnect APs : Disabled
+          Rogue Detection Report Interval                 : 10
+          Rogue AP minimum RSSI                           : -90
+          Rogue AP minimum transient time                 : 0
+          AP TCP MSS Adjust                               : Enabled
+          AP TCP MSS Size                                 : 1250
+          AP IPv6 TCP MSS Adjust                          : Enabled
+          AP IPv6 TCP MSS Size                            : 1250
+          Hyperlocation Admin Status                      : Disabled
+          Retransmit count                                : 5
+          Retransmit interval                             : 3
+          Fabric status                                   : Disabled
+          FIPS status                                     : Disabled
+          WLANCC status                                   : Disabled
+          USB Module Type                                 : USB Module
+          USB Module State                                : Enabled
+          USB Operational State                           : Disabled
+          USB Operational State Reason                    : Not Detected
+          USB Override                                    : Disabled
+          GAS rate limit Admin status                     : Disabled
+          WPA3 Capability                                 : Enabled
+          EWC-AP Capability                               : Disabled
+          AWIPS Capability                                : Enabled
+          AID Management Capability                       : Enabled
+          Proxy Hostname                                  : Not Configured
+          Proxy Port                                      : Not Configured
+          Proxy NO_PROXY list                             : Not Configured
+          GRPC server status                              : Disabled
+          Unencrypted Data Keep Alive                     : Enabled
+          Local DHCP Server                               : Disabled
+          Traffic Distribution Statistics Capability      : Enabled
+          Dual DFS Statistics                             : Disabled
+          AP Upgrade Out-Of-Band Capability               : Enabled 
+          AP statistics                                   : Disabled
+          AP PMK Propagation Capability                   : Enabled
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: vidya-ewlc-5#

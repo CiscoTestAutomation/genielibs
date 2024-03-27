@@ -14,13 +14,12 @@ configure_line:
   prompt: morph-full2(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -31,8 +30,9 @@ execute:
     show version: ''
     snmpgetnext -v 2c -c cisco123 172.20.249.11 1.3.6.1.2.1.47.1.1.1.1.11.1:
       response:
-      - 'SNMPv2-SMI::mib-2.47.1.1.1.1.11.1000 = STRING: "FOC2245Y399"'
+        - 'SNMPv2-SMI::mib-2.47.1.1.1.1.11.1000 = STRING: "FOC2245Y399"'
       response_type: circular
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: morph-full2#

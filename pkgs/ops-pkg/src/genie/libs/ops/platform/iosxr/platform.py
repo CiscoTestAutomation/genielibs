@@ -30,7 +30,7 @@ class Platform(SuperPlatform):
 
         # chassis
         self.add_leaf(cmd=ShowVersion,
-                      src='[chassis_detail]',
+                      src='[device_family]',
                       dest='[chassis]')
 
         # chassis_sn

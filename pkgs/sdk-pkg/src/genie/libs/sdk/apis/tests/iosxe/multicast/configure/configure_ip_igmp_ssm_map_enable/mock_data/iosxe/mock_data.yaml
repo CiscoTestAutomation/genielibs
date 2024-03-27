@@ -2,9 +2,10 @@ configure:
   commands:
     end:
       new_state: execute
-    ip igmp ssm-map enable: "ip igmp ssm-map enable\r\nWarning: No DNS server is configured.\
-      \ DNS-based SSM mapping \r\nshould be disabled if no DNS server is configured.\r\
-      \n"
+    ip igmp ssm-map enable: |
+      ip igmp ssm-map enable
+      Warning: No DNS server is configured. DNS-based SSM mapping 
+      should be disabled if no DNS server is configured.
     line console 0:
       new_state: configure_line
     no logging console: ''
@@ -17,13 +18,12 @@ configure_line:
   prompt: n10SVL(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -34,4 +34,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: n10SVL#

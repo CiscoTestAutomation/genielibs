@@ -4,13 +4,13 @@ configure:
       new_state: execute
     line console 0:
       new_state: configure_line
-    nat64 prefix stateful 2002:0001:0000:0000:0000:0000:0000:0000/96 vrf vrf1: "nat64\
-      \ prefix stateful 2002:0001:0000:0000:0000:0000:0000:00\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b$x stateful 2002:0001:0000:0000:0000:0000:0000:000     \
-      \    \b\b\b\b\b\b\b\b\b0/96 vrf \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b 2002:0001:0000:0000:0000:0000:0000:0000/96\
-      \ vrf v         \b\b\b\b\b\b\b\b\brf1\r\n"
+    nat64 prefix stateful 2002:0001:0000:0000:0000:0000:0000:0000/96 vrf vrf1: "nat64
+      prefix stateful 2002:0001:0000:0000:0000:0000:0000:00\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b$x stateful 2002:0001:0000:0000:0000:0000:0000:000       \
+      \  \b\b\b\b\b\b\b\b\b0/96 vrf \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b 2002:0001:0000:0000:0000:0000:0000:0000/96
+      vrf v         \b\b\b\b\b\b\b\b\brf1\r\n"
     no logging console: ''
   prompt: Stargazer(config)#
 configure_line:
@@ -21,13 +21,12 @@ configure_line:
   prompt: Stargazer(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -38,4 +37,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: Stargazer#

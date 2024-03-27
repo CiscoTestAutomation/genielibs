@@ -14,13 +14,12 @@ configure_line:
   prompt: PE-B(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,28 +29,43 @@ execute:
       new_state: configure
     show interfaces Tunnel10:
       response:
-      - "Tunnel10 is up, line protocol is up \r\n  Hardware is Tunnel\r\n  Internet\
-        \ address is 10.1.1.2/24\r\n  MTU 17814 bytes, BW 100 Kbit/sec, DLY 50000\
-        \ usec, \r\n     reliability 255/255, txload 1/255, rxload 1/255\r\n  Encapsulation\
-        \ TUNNEL, loopback not set\r\n  Keepalive not set\r\n  Tunnel linestate evaluation\
-        \ up\r\n  Tunnel source 101.1.1.2, destination 101.1.1.1\r\n  Tunnel protocol/transport\
-        \ GRE/IP\r\n    Key disabled, sequencing disabled\r\n    Checksumming of packets\
-        \ disabled\r\n  Tunnel TTL 255, Fast tunneling enabled\r\n  Tunnel transport\
-        \ MTU 1422 bytes\r\n  Tunnel transmit bandwidth 8000 (kbps)\r\n  Tunnel receive\
-        \ bandwidth 8000 (kbps)\r\n  Tunnel protection via IPSec (profile \"ipsec_profile_v4_lo\"\
-        )\r\n  Last input 00:00:04, output never, output hang never\r\n  Last clearing\
-        \ of \"show interface\" counters 07:07:06\r\n  Input queue: 0/75/2/0 (size/max/drops/flushes);\
-        \ Total output drops: 0\r\n  Queueing strategy: fifo\r\n  Output queue: 0/0\
-        \ (size/max)\r\n  5 minute input rate 0 bits/sec, 0 packets/sec\r\n  5 minute\
-        \ output rate 0 bits/sec, 0 packets/sec\r\n     244931 packets input, 121387168\
-        \ bytes, 0 no buffer\r\n     Received 0 broadcasts (0 IP multicasts)\r\n \
-        \    0 runts, 0 giants, 0 throttles \r\n     0 input errors, 0 CRC, 0 frame,\
-        \ 0 overrun, 0 ignored, 0 abort\r\n     340 packets output, 31183 bytes, 0\
-        \ underruns\r\n     Output 0 broadcasts (0 IP multicasts)\r\n     0 output\
-        \ errors, 0 collisions, 0 interface resets\r\n     0 unknown protocol drops\r\
-        \n     0 output buffer failures, 0 output buffers swapped out"
+        - |-
+          Tunnel10 is up, line protocol is up 
+            Hardware is Tunnel
+            Internet address is 10.1.1.2/24
+            MTU 17814 bytes, BW 100 Kbit/sec, DLY 50000 usec, 
+               reliability 255/255, txload 1/255, rxload 1/255
+            Encapsulation TUNNEL, loopback not set
+            Keepalive not set
+            Tunnel linestate evaluation up
+            Tunnel source 101.1.1.2, destination 101.1.1.1
+            Tunnel protocol/transport GRE/IP
+              Key disabled, sequencing disabled
+              Checksumming of packets disabled
+            Tunnel TTL 255, Fast tunneling enabled
+            Tunnel transport MTU 1422 bytes
+            Tunnel transmit bandwidth 8000 (kbps)
+            Tunnel receive bandwidth 8000 (kbps)
+            Tunnel protection via IPSec (profile "ipsec_profile_v4_lo")
+            Last input 00:00:04, output never, output hang never
+            Last clearing of "show interface" counters 07:07:06
+            Input queue: 0/75/2/0 (size/max/drops/flushes); Total output drops: 0
+            Queueing strategy: fifo
+            Output queue: 0/0 (size/max)
+            5 minute input rate 0 bits/sec, 0 packets/sec
+            5 minute output rate 0 bits/sec, 0 packets/sec
+               244931 packets input, 121387168 bytes, 0 no buffer
+               Received 0 broadcasts (0 IP multicasts)
+               0 runts, 0 giants, 0 throttles 
+               0 input errors, 0 CRC, 0 frame, 0 overrun, 0 ignored, 0 abort
+               340 packets output, 31183 bytes, 0 underruns
+               Output 0 broadcasts (0 IP multicasts)
+               0 output errors, 0 collisions, 0 interface resets
+               0 unknown protocol drops
+               0 output buffer failures, 0 output buffers swapped out
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: PE-B#

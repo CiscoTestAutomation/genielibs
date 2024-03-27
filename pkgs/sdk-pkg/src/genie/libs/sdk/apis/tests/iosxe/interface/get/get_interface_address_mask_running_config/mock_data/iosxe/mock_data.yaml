@@ -18,25 +18,33 @@ configure_line:
   prompt: R1_xe(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
     config term:
       new_state: configure
-    show running-config interface GigabitEthernet1: "Building configuration...\r\n\
-      \r\nCurrent configuration : 147 bytes\r\n!\r\ninterface GigabitEthernet1\r\n\
-      \ vrf forwarding Mgmt-intf\r\n ip address 172.16.1.211 255.255.255.0\r\n negotiation\
-      \ auto\r\n no mop enabled\r\n no mop sysid\r\nend"
+    show running-config interface GigabitEthernet1: |-
+      Building configuration...
+      
+      Current configuration : 147 bytes
+      !
+      interface GigabitEthernet1
+       vrf forwarding Mgmt-intf
+       ip address 172.16.1.211 255.255.255.0
+       negotiation auto
+       no mop enabled
+       no mop sysid
+      end
     show version: ''
     term length 0: ''
     term width 0: ''
     term width 511: ''
     terminal session-timeout 0: ''
+    show version | include operating mode: ''
   prompt: R1_xe#

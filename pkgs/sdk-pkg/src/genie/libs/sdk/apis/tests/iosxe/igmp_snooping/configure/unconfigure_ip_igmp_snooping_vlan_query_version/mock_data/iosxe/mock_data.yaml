@@ -6,8 +6,8 @@ configure:
       new_state: configure_line
     line console 0:
       new_state: configure_line
-    no ip igmp snooping vlan 100 querier version 2: "no ip igmp snooping vlan 100\
-      \ querier version 2\r\n"
+    no ip igmp snooping vlan 100 querier version 2: "no ip igmp snooping vlan 100
+      querier version 2\r\n"
     no logging console: ''
   prompt: Cat9300_VTEP1(config)#
 configure_line:
@@ -20,13 +20,12 @@ configure_line:
   prompt: Cat9300_VTEP1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -39,4 +38,5 @@ execute:
     term width 0: ''
     term width 511: ''
     terminal session-timeout 0: ''
+    show version | include operating mode: ''
   prompt: Cat9300_VTEP1#

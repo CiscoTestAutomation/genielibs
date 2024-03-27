@@ -14,13 +14,12 @@ configure_line:
   prompt: NGSVL(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,21 +29,43 @@ execute:
       new_state: configure
     show policy-map type queueing interface HundredGigE1/0/13.1 output:
       response:
-      - " HundredGigE1/0/13.1 \r\n\r\n  Service-policy queueing output: hqos\r\n\r\
-        \n    Class-map: class-default (match-any)  \r\n      5017 packets\r\n   \
-        \   Match: any \r\n      Queueing\r\n      queue limit 7500000 bytes\r\n \
-        \     (total drops) 0\r\n      (bytes output) 0\r\n      shape (average) cir\
-        \ 10000000000, bc 40000000, be 40000000\r\n      target shape rate 10000000000\r\
-        \n\r\n      Service-policy queueing : policy2\r\n\r\n        Class-map: tc7\
-        \ (match-all)  \r\n          0 packets\r\n          Match: traffic-class 7\r\
-        \n          Queueing\r\n          queue limit 7500000 bytes\r\n          (total\
-        \ drops) 0\r\n          (bytes output) 0\r\n          shape (average) cir\
-        \ 4000000000, bc 16000000, be 16000000\r\n          target shape rate 4000000000\r\
-        \n\r\n        Class-map: class-default (match-any)  \r\n          5017 packets\r\
-        \n          Match: any \r\n          \r\n          queue limit 7500000 bytes\r\
-        \n          (total drops) 0\r\n          (bytes output) 0"
+        - |2-
+           HundredGigE1/0/13.1 
+          
+            Service-policy queueing output: hqos
+          
+              Class-map: class-default (match-any)  
+                5017 packets
+                Match: any 
+                Queueing
+                queue limit 7500000 bytes
+                (total drops) 0
+                (bytes output) 0
+                shape (average) cir 10000000000, bc 40000000, be 40000000
+                target shape rate 10000000000
+          
+                Service-policy queueing : policy2
+          
+                  Class-map: tc7 (match-all)  
+                    0 packets
+                    Match: traffic-class 7
+                    Queueing
+                    queue limit 7500000 bytes
+                    (total drops) 0
+                    (bytes output) 0
+                    shape (average) cir 4000000000, bc 16000000, be 16000000
+                    target shape rate 4000000000
+          
+                  Class-map: class-default (match-any)  
+                    5017 packets
+                    Match: any 
+                    
+                    queue limit 7500000 bytes
+                    (total drops) 0
+                    (bytes output) 0
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: NGSVL#

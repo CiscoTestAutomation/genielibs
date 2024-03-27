@@ -14,13 +14,12 @@ configure_line:
   prompt: iolpe2(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,11 +29,14 @@ execute:
       new_state: configure
     ping 1.1.1.8:
       response:
-      - "Type escape sequence to abort.\r\nSending 5, 100-byte ICMP Echos to 1.1.1.8,\
-        \ timeout is 2 seconds:\r\n!!!!!\r\nSuccess rate is 100 percent (5/5), round-trip\
-        \ min/avg/max = 1/1/1 ms"
+        - |-
+          Type escape sequence to abort.
+          Sending 5, 100-byte ICMP Echos to 1.1.1.8, timeout is 2 seconds:
+          !!!!!
+          Success rate is 100 percent (5/5), round-trip min/avg/max = 1/1/1 ms
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: iolpe2#

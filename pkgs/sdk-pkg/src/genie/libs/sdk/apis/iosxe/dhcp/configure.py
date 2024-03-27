@@ -4,6 +4,7 @@ import logging
 
 # Unicon
 from unicon.core.errors import SubCommandFailure
+from unicon.eal.dialogs import Dialog, Statement
 
 log = logging.getLogger(__name__)
 
@@ -1246,7 +1247,15 @@ def configure_dhcp_pool(device, pool_name, router_id=None, network=None, mask=No
         Raises:
             SubCommandFailure: Failed to configure dhcp pool
     """
-
+    dialog = Dialog(
+        [
+            Statement(
+                pattern=r'.*Continue\? +\[yes\].*',
+                action='sendline()'
+            )
+        ]
+    )
+    
     config = [f'ip dhcp pool {pool_name}']
     if router_id:
         config.append(f'default-router {router_id}')
@@ -1257,7 +1266,7 @@ def configure_dhcp_pool(device, pool_name, router_id=None, network=None, mask=No
     if dns_server:
         config.append(f'dns-server {dns_server}')
     try:
-        device.configure(config)
+        device.configure(config, reply=dialog)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not configure dhcp pool. Error: {e}')
 
@@ -1277,7 +1286,17 @@ def unconfigure_dhcp_pool(device, pool_name, router_id=None, network=None, mask=
         Raises:
             SubCommandFailure: Failed to configure dhcp pool
     """
-
+    dialog = Dialog(
+        [
+            Statement(
+                pattern=r'.*Continue\? +\[yes\].*',
+                action='sendline()',
+                loop_continue=True,
+                continue_timer=False
+            )
+        ]
+    )
+    
     config = [f'ip dhcp pool {pool_name}']
     if router_id:
         config.append(f'no default-router {router_id}')
@@ -1288,7 +1307,7 @@ def unconfigure_dhcp_pool(device, pool_name, router_id=None, network=None, mask=
     if dns_server:
         config.append(f'no dns-server {dns_server}')
     try:
-        device.configure(config)
+        device.configure(config, reply=dialog)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not unconfigure dhcp pool. Error: {e}')
 
@@ -1327,7 +1346,7 @@ def unconfigure_service_dhcp(device):
         raise SubCommandFailure(f'Could not unconfigure service dhcp. Error: {e}')
 
 
-def unconfigure_exclude_ip_dhcp(device, ip, high_ip=None):
+def unconfigure_exclude_ip_dhcp(device, ip, high_ip=None, vrf=None):
     """ Unconfigure Exclude IP in DHCP
         Args:
             device ('obj'): device to use
@@ -1339,7 +1358,11 @@ def unconfigure_exclude_ip_dhcp(device, ip, high_ip=None):
             SubCommandFailure: Failed unconfigure exclude IP in DHCP config
     """
     try:
-        device.configure([f"no ip dhcp excluded-address {ip}{f' {high_ip}' if high_ip else ''}"])
+        if vrf:
+            device.configure([f"no ip dhcp excluded-address vrf {vrf} {ip}{f' {high_ip}' if high_ip else ''}"])
+        else:
+            device.configure([f"no ip dhcp excluded-address {ip}{f' {high_ip}' if high_ip else ''}"])
+            
     except SubCommandFailure:
         raise SubCommandFailure(f"Could not unconfigure exclude {ip} in DHCP config")
 
@@ -1650,4 +1673,91 @@ def unconfigure_dhcp_snooping_track_server_dhcp_acks(device):
             f"Could not remove DHCP snooping server track all-dhcp-ack. Error\n{e}"
             )
 
+def configure_ip_dhcp_pool_address(device, name, address, client_id):
+    """Configures dhcp pool on device
+       Example: ip dhcp pool POOL_88
 
+       Args:
+            device ('obj'): device object
+            name ('str'): name of the pool (eg. POOL_88, testpool)
+            address ('str'): device object 
+            client_id ('str'): client ID in hex formate
+
+       Return:
+            None
+
+       Raises:
+            SubCommandFailure
+    """
+    log.debug(f"Configuring dhcp address and client_id")
+
+    config_list = [f"ip dhcp pool {name}",
+        f"address {address} client-id {client_id}"]      
+    
+    try:
+        device.configure(config_list)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to configure address and clinet-id on {device.name}\n{e}'
+        )
+
+def configure_dhcp_option43(device, pool, data_type='ascii', ascii_string=None):
+    """ Configure dhcp option 4
+       Args:
+            device ('obj'): device object
+            pool ('str'): pool name to configure
+            data_type ('str'): Data type can be any. Default is ascii
+            ascii_string ('str'):   Data as an NVT ASCII string  to configure    
+       Return:
+            None
+       Raises:
+            SubCommandFailure
+    """
+    log.debug(f"configure option 43")
+    config= [f'ip dhcp pool {pool}']
+    if data_type == 'ascii' and ascii_string is not None:
+        config.append(f'option 43 {data_type} {ascii_string}') 
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to configure dhcp option 43 for pool: {pool} on {device.name}\n{e}'
+        )
+        
+def configure_pnp_startup_vlan(device, vlan):
+    """ Configure pnp startup vlan
+       Args:
+            device ('obj'): device object
+            vlan ('str'): vlan id to be configured
+       Return:
+            None
+       Raises:
+            SubCommandFailure
+    """
+    log.debug(f"configure startup vlan {vlan}")
+    config= f'pnp startup-vlan {vlan}'
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to configure pnp startup-vlan: {vlan} on {device.name}\n{e}'
+        )
+        
+def unconfigure_pnp_startup_vlan(device, vlan):
+    """ Unconfigure pnp startup vlan
+       Args:
+            device ('obj'): device object
+            vlan ('str'): vlan id to be configured
+       Return:
+            None
+       Raises:
+            SubCommandFailure
+    """
+    log.debug(f"Unconfigure startup vlan")
+    config= f'no pnp startup-vlan {vlan}'
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to Unconfigure pnp startup-vlan: {vlan} on {device.name}\n{e}'
+        )

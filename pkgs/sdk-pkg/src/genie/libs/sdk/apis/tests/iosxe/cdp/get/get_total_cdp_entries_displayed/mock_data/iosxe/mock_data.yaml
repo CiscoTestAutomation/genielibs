@@ -14,13 +14,12 @@ configure_line:
   prompt: 1783-CMS20DN(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,152 +29,327 @@ execute:
       new_state: configure
     show cdp neighbors detail:
       response:
-      - "-------------------------\r\nDevice ID: device\r\nEntry address(es): \r\n\
-        Platform: cisco IE-3300-8U2X,  Capabilities: Router Switch IGMP \r\nInterface:\
-        \ GigabitEthernet1/1,  Port ID (outgoing port): TenGigabitEthernet1/1\r\n\
-        Holdtime : 145 sec\r\n\r\nVersion :\r\nCisco IOS Software [Cupertino], IE3x00\
-        \ Switch Software (IE3x00-UNIVERSALK9-M), Experimental Version 17.9.20220411:075757\
-        \ [BLD_POLARIS_DEV_LATEST_20220411_072129:/nobackup/mcpre/s2c-build-ws 101]\r\
-        \nCopyright (c) 1986-2022 by Cisco Systems, Inc.\r\nCompiled Mon 11-Apr-22\
-        \ 00:57 by mcpre\r\n\r\nadvertisement version: 2\r\nPeer Source MAC: b0c5.3c99.0821\r\
-        \nVTP Management Domain: ''\r\nNative VLAN: 1\r\nDuplex: full\r\n\r\n-------------------------\r\
-        \nDevice ID: device\r\nEntry address(es): \r\nPlatform: cisco IE-3300-8U2X,\
-        \  Capabilities: Router Switch IGMP \r\nInterface: GigabitEthernet1/17,  Port\
-        \ ID (outgoing port): GigabitEthernet2/5\r\nHoldtime : 133 sec\r\n\r\nVersion\
-        \ :\r\nCisco IOS Software [Cupertino], IE3x00 Switch Software (IE3x00-UNIVERSALK9-M),\
-        \ Experimental Version 17.9.20220411:075757 [BLD_POLARIS_DEV_LATEST_20220411_072129:/nobackup/mcpre/s2c-build-ws\
-        \ 101]\r\nCopyright (c) 1986-2022 by Cisco Systems, Inc.\r\nCompiled Mon 11-Apr-22\
-        \ 00:57 by mcpre\r\n\r\nadvertisement version: 2\r\nPeer Source MAC: f8b7.e2e5.b0cc\r\
-        \nVTP Management Domain: ''\r\nNative VLAN: 1\r\nDuplex: full\r\n\r\n-------------------------\r\
-        \nDevice ID: device\r\nEntry address(es): \r\nPlatform: cisco IE-3300-8U2X,\
-        \  Capabilities: Router Switch IGMP \r\nInterface: GigabitEthernet1/15,  Port\
-        \ ID (outgoing port): GigabitEthernet1/9\r\nHoldtime : 153 sec\r\n\r\nVersion\
-        \ :\r\nCisco IOS Software [Cupertino], IE3x00 Switch Software (IE3x00-UNIVERSALK9-M),\
-        \ Experimental Version 17.9.20220411:075757 [BLD_POLARIS_DEV_LATEST_20220411_072129:/nobackup/mcpre/s2c-build-ws\
-        \ 101]\r\nCopyright (c) 1986-2022 by Cisco Systems, Inc.\r\nCompiled Mon 11-Apr-22\
-        \ 00:57 by mcpre\r\n\r\nadvertisement version: 2\r\nPeer Source MAC: b0c5.3c99.0829\r\
-        \nVTP Management Domain: ''\r\nNative VLAN: 1\r\nDuplex: full\r\n\r\n-------------------------\r\
-        \nDevice ID: device\r\nEntry address(es): \r\nPlatform: cisco IE-3300-8U2X,\
-        \  Capabilities: Router Switch IGMP \r\nInterface: GigabitEthernet1/12,  Port\
-        \ ID (outgoing port): GigabitEthernet1/8\r\nHoldtime : 137 sec\r\n\r\nVersion\
-        \ :\r\nCisco IOS Software [Cupertino], IE3x00 Switch Software (IE3x00-UNIVERSALK9-M),\
-        \ Experimental Version 17.9.20220411:075757 [BLD_POLARIS_DEV_LATEST_20220411_072129:/nobackup/mcpre/s2c-build-ws\
-        \ 101]\r\nCopyright (c) 1986-2022 by Cisco Systems, Inc.\r\nCompiled Mon 11-Apr-22\
-        \ 00:57 by mcpre\r\n\r\nadvertisement version: 2\r\nPeer Source MAC: b0c5.3c99.0828\r\
-        \nVTP Management Domain: ''\r\nNative VLAN: 1\r\nDuplex: full\r\n\r\n-------------------------\r\
-        \nDevice ID: device\r\nEntry address(es): \r\nPlatform: cisco IE-3300-8U2X,\
-        \  Capabilities: Router Switch IGMP \r\nInterface: GigabitEthernet1/14,  Port\
-        \ ID (outgoing port): GigabitEthernet1/7\r\nHoldtime : 173 sec\r\n\r\nVersion\
-        \ :\r\nCisco IOS Software [Cupertino], IE3x00 Switch Software (IE3x00-UNIVERSALK9-M),\
-        \ Experimental Version 17.9.20220411:075757 [BLD_POLARIS_DEV_LATEST_20220411_072129:/nobackup/mcpre/s2c-build-ws\
-        \ 101]\r\nCopyright (c) 1986-2022 by Cisco Systems, Inc.\r\nCompiled Mon 11-Apr-22\
-        \ 00:57 by mcpre\r\n\r\nadvertisement version: 2\r\nPeer Source MAC: b0c5.3c99.0827\r\
-        \nVTP Management Domain: ''\r\nNative VLAN: 1\r\nDuplex: full\r\n\r\n-------------------------\r\
-        \nDevice ID: device\r\nEntry address(es): \r\nPlatform: cisco IE-3300-8U2X,\
-        \  Capabilities: Router Switch IGMP \r\nInterface: GigabitEthernet1/8,  Port\
-        \ ID (outgoing port): GigabitEthernet1/4\r\nHoldtime : 124 sec\r\n\r\nVersion\
-        \ :\r\nCisco IOS Software [Cupertino], IE3x00 Switch Software (IE3x00-UNIVERSALK9-M),\
-        \ Experimental Version 17.9.20220411:075757 [BLD_POLARIS_DEV_LATEST_20220411_072129:/nobackup/mcpre/s2c-build-ws\
-        \ 101]\r\nCopyright (c) 1986-2022 by Cisco Systems, Inc.\r\nCompiled Mon 11-Apr-22\
-        \ 00:57 by mcpre\r\n\r\nadvertisement version: 2\r\nPeer Source MAC: b0c5.3c99.0824\r\
-        \nVTP Management Domain: ''\r\nNative VLAN: 1\r\nDuplex: full\r\n\r\n-------------------------\r\
-        \nDevice ID: device\r\nEntry address(es): \r\nPlatform: cisco IE-3300-8U2X,\
-        \  Capabilities: Router Switch IGMP \r\nInterface: GigabitEthernet1/13,  Port\
-        \ ID (outgoing port): GigabitEthernet1/6\r\nHoldtime : 157 sec\r\n\r\nVersion\
-        \ :\r\nCisco IOS Software [Cupertino], IE3x00 Switch Software (IE3x00-UNIVERSALK9-M),\
-        \ Experimental Version 17.9.20220411:075757 [BLD_POLARIS_DEV_LATEST_20220411_072129:/nobackup/mcpre/s2c-build-ws\
-        \ 101]\r\nCopyright (c) 1986-2022 by Cisco Systems, Inc.\r\nCompiled Mon 11-Apr-22\
-        \ 00:57 by mcpre\r\n\r\nadvertisement version: 2\r\nPeer Source MAC: b0c5.3c99.0826\r\
-        \nVTP Management Domain: ''\r\nNative VLAN: 1\r\nDuplex: full\r\n\r\n-------------------------\r\
-        \nDevice ID: device\r\nEntry address(es): \r\nPlatform: cisco IE-3300-8U2X,\
-        \  Capabilities: Router Switch IGMP \r\nInterface: GigabitEthernet1/6,  Port\
-        \ ID (outgoing port): GigabitEthernet1/3\r\nHoldtime : 173 sec\r\n\r\nVersion\
-        \ :\r\nCisco IOS Software [Cupertino], IE3x00 Switch Software (IE3x00-UNIVERSALK9-M),\
-        \ Experimental Version 17.9.20220411:075757 [BLD_POLARIS_DEV_LATEST_20220411_072129:/nobackup/mcpre/s2c-build-ws\
-        \ 101]\r\nCopyright (c) 1986-2022 by Cisco Systems, Inc.\r\nCompiled Mon 11-Apr-22\
-        \ 00:57 by mcpre\r\n\r\nadvertisement version: 2\r\nPeer Source MAC: b0c5.3c99.0823\r\
-        \nVTP Management Domain: ''\r\nNative VLAN: 1\r\nDuplex: full\r\n\r\n-------------------------\r\
-        \nDevice ID: device\r\nEntry address(es): \r\nPlatform: cisco IE-3300-8U2X,\
-        \  Capabilities: Router Switch IGMP \r\nInterface: GigabitEthernet1/4,  Port\
-        \ ID (outgoing port): TenGigabitEthernet1/2\r\nHoldtime : 167 sec\r\n\r\n\
-        Version :\r\nCisco IOS Software [Cupertino], IE3x00 Switch Software (IE3x00-UNIVERSALK9-M),\
-        \ Experimental Version 17.9.20220411:075757 [BLD_POLARIS_DEV_LATEST_20220411_072129:/nobackup/mcpre/s2c-build-ws\
-        \ 101]\r\nCopyright (c) 1986-2022 by Cisco Systems, Inc.\r\nCompiled Mon 11-Apr-22\
-        \ 00:57 by mcpre\r\n\r\nadvertisement version: 2\r\nPeer Source MAC: b0c5.3c99.0822\r\
-        \nVTP Management Domain: ''\r\nNative VLAN: 1\r\nDuplex: full\r\n\r\n-------------------------\r\
-        \nDevice ID: device\r\nEntry address(es): \r\nPlatform: cisco IE-3300-8U2X,\
-        \  Capabilities: Router Switch IGMP \r\nInterface: GigabitEthernet1/5,  Port\
-        \ ID (outgoing port): GigabitEthernet2/1\r\nHoldtime : 177 sec\r\n\r\nVersion\
-        \ :\r\nCisco IOS Software [Cupertino], IE3x00 Switch Software (IE3x00-UNIVERSALK9-M),\
-        \ Experimental Version 17.9.20220411:075757 [BLD_POLARIS_DEV_LATEST_20220411_072129:/nobackup/mcpre/s2c-build-ws\
-        \ 101]\r\nCopyright (c) 1986-2022 by Cisco Systems, Inc.\r\nCompiled Mon 11-Apr-22\
-        \ 00:57 by mcpre\r\n\r\nadvertisement version: 2\r\nPeer Source MAC: f8b7.e2e5.b0c8\r\
-        \nVTP Management Domain: ''\r\nNative VLAN: 1\r\nDuplex: full\r\n\r\n-------------------------\r\
-        \nDevice ID: device\r\nEntry address(es): \r\nPlatform: cisco IE-3300-8U2X,\
-        \  Capabilities: Router Switch IGMP \r\nInterface: GigabitEthernet1/19,  Port\
-        \ ID (outgoing port): GigabitEthernet2/8\r\nHoldtime : 143 sec\r\n\r\nVersion\
-        \ :\r\nCisco IOS Software [Cupertino], IE3x00 Switch Software (IE3x00-UNIVERSALK9-M),\
-        \ Experimental Version 17.9.20220411:075757 [BLD_POLARIS_DEV_LATEST_20220411_072129:/nobackup/mcpre/s2c-build-ws\
-        \ 101]\r\nCopyright (c) 1986-2022 by Cisco Systems, Inc.\r\nCompiled Mon 11-Apr-22\
-        \ 00:57 by mcpre\r\n\r\nadvertisement version: 2\r\nPeer Source MAC: f8b7.e2e5.b0cf\r\
-        \nVTP Management Domain: ''\r\nNative VLAN: 1\r\nDuplex: full\r\n\r\n-------------------------\r\
-        \nDevice ID: device\r\nEntry address(es): \r\nPlatform: cisco IE-3300-8U2X,\
-        \  Capabilities: Router Switch IGMP \r\nInterface: GigabitEthernet1/7,  Port\
-        \ ID (outgoing port): GigabitEthernet1/5\r\nHoldtime : 167 sec\r\n\r\nVersion\
-        \ :\r\nCisco IOS Software [Cupertino], IE3x00 Switch Software (IE3x00-UNIVERSALK9-M),\
-        \ Experimental Version 17.9.20220411:075757 [BLD_POLARIS_DEV_LATEST_20220411_072129:/nobackup/mcpre/s2c-build-ws\
-        \ 101]\r\nCopyright (c) 1986-2022 by Cisco Systems, Inc.\r\nCompiled Mon 11-Apr-22\
-        \ 00:57 by mcpre\r\n\r\nadvertisement version: 2\r\nPeer Source MAC: b0c5.3c99.0825\r\
-        \nVTP Management Domain: ''\r\nNative VLAN: 1\r\nDuplex: full\r\n\r\n-------------------------\r\
-        \nDevice ID: device\r\nEntry address(es): \r\nPlatform: cisco IE-3300-8U2X,\
-        \  Capabilities: Router Switch IGMP \r\nInterface: GigabitEthernet1/18,  Port\
-        \ ID (outgoing port): GigabitEthernet2/7\r\nHoldtime : 165 sec\r\n\r\nVersion\
-        \ :\r\nCisco IOS Software [Cupertino], IE3x00 Switch Software (IE3x00-UNIVERSALK9-M),\
-        \ Experimental Version 17.9.20220411:075757 [BLD_POLARIS_DEV_LATEST_20220411_072129:/nobackup/mcpre/s2c-build-ws\
-        \ 101]\r\nCopyright (c) 1986-2022 by Cisco Systems, Inc.\r\nCompiled Mon 11-Apr-22\
-        \ 00:57 by mcpre\r\n\r\nadvertisement version: 2\r\nPeer Source MAC: f8b7.e2e5.b0ce\r\
-        \nVTP Management Domain: ''\r\nNative VLAN: 1\r\nDuplex: full\r\n\r\n-------------------------\r\
-        \nDevice ID: device\r\nEntry address(es): \r\nPlatform: cisco IE-3300-8U2X,\
-        \  Capabilities: Router Switch IGMP \r\nInterface: GigabitEthernet1/16,  Port\
-        \ ID (outgoing port): GigabitEthernet2/6\r\nHoldtime : 161 sec\r\n\r\nVersion\
-        \ :\r\nCisco IOS Software [Cupertino], IE3x00 Switch Software (IE3x00-UNIVERSALK9-M),\
-        \ Experimental Version 17.9.20220411:075757 [BLD_POLARIS_DEV_LATEST_20220411_072129:/nobackup/mcpre/s2c-build-ws\
-        \ 101]\r\nCopyright (c) 1986-2022 by Cisco Systems, Inc.\r\nCompiled Mon 11-Apr-22\
-        \ 00:57 by mcpre\r\n\r\nadvertisement version: 2\r\nPeer Source MAC: f8b7.e2e5.b0cd\r\
-        \nVTP Management Domain: ''\r\nNative VLAN: 1\r\nDuplex: full\r\n\r\n-------------------------\r\
-        \nDevice ID: 1783-CMS10B\r\nEntry address(es): \r\n  IP address: 11.1.18.205\r\
-        \nPlatform: Allen-Bradley 1783-CMS10B,  Capabilities: Router Switch IGMP \r\
-        \nInterface: GigabitEthernet1/3,  Port ID (outgoing port): GigabitEthernet1/1\r\
-        \nHoldtime : 144 sec\r\n\r\nVersion :\r\nCisco IOS Software [Dublin], S5200\
-        \ Switch Software (S5200-UNIVERSALK9-M), Experimental Version 17.10.20220708:150333\
-        \ [BLD_POLARIS_DEV_LATEST_20220708_143608:/nobackup/mcpre/s2c-build-ws 101]\r\
-        \nCopyright (c) 1986-2022 by Cisco Systems, Inc.\r\nCompiled Fri 08-Jul-22\
-        \ 08:03 by mcpre\r\n\r\nadvertisement version: 2\r\nPeer Source MAC: 4006.d5e2.ff21\r\
-        \nVTP Management Domain: ''\r\nNative VLAN: 1\r\nDuplex: full\r\nManagement\
-        \ address(es): \r\n  IP address: 11.1.18.205\r\n\r\n-------------------------\r\
-        \nDevice ID: 1783-CMS20DN\r\nEntry address(es): \r\n  IP address: 11.1.18.201\r\
-        \nPlatform: Allen-Bradley 1783-CMS20DN,  Capabilities: Router Switch IGMP\
-        \ \r\nInterface: GigabitEthernet1/2,  Port ID (outgoing port): GigabitEthernet1/11\r\
-        \nHoldtime : 161 sec\r\n\r\nVersion :\r\nCisco IOS Software [Dublin], S5200\
-        \ Switch Software (S5200-UNIVERSALK9-M), Experimental Version 17.10.20220708:150333\
-        \ [BLD_POLARIS_DEV_LATEST_20220708_143608:/nobackup/mcpre/s2c-build-ws 101]\r\
-        \nCopyright (c) 1986-2022 by Cisco Systems, Inc.\r\nCompiled Fri 08-Jul-22\
-        \ 08:03 by mcpre\r\n\r\nadvertisement version: 2\r\nPeer Source MAC: acbc.d937.9d4b\r\
-        \nVTP Management Domain: ''\r\nNative VLAN: 1\r\nDuplex: full\r\nManagement\
-        \ address(es): \r\n  IP address: 11.1.18.201\r\n\r\n-------------------------\r\
-        \nDevice ID: 1783-CMS20DN\r\nEntry address(es): \r\n  IP address: 11.1.18.201\r\
-        \nPlatform: Allen-Bradley 1783-CMS20DN,  Capabilities: Router Switch IGMP\
-        \ \r\nInterface: GigabitEthernet1/11,  Port ID (outgoing port): GigabitEthernet1/2\r\
-        \nHoldtime : 176 sec\r\n\r\nVersion :\r\nCisco IOS Software [Dublin], S5200\
-        \ Switch Software (S5200-UNIVERSALK9-M), Experimental Version 17.10.20220708:150333\
-        \ [BLD_POLARIS_DEV_LATEST_20220708_143608:/nobackup/mcpre/s2c-build-ws 101]\r\
-        \nCopyright (c) 1986-2022 by Cisco Systems, Inc.\r\nCompiled Fri 08-Jul-22\
-        \ 08:03 by mcpre\r\n\r\nadvertisement version: 2\r\nPeer Source MAC: acbc.d937.9d42\r\
-        \nVTP Management Domain: ''\r\nNative VLAN: 1\r\nDuplex: full\r\nManagement\
-        \ address(es): \r\n  IP address: 11.1.18.201\r\n\r\n\r\nTotal cdp entries\
-        \ displayed : 17"
+        - |-
+          -------------------------
+          Device ID: device
+          Entry address(es): 
+          Platform: cisco IE-3300-8U2X,  Capabilities: Router Switch IGMP 
+          Interface: GigabitEthernet1/1,  Port ID (outgoing port): TenGigabitEthernet1/1
+          Holdtime : 145 sec
+          
+          Version :
+          Cisco IOS Software [Cupertino], IE3x00 Switch Software (IE3x00-UNIVERSALK9-M), Experimental Version 17.9.20220411:075757 [BLD_POLARIS_DEV_LATEST_20220411_072129:/nobackup/mcpre/s2c-build-ws 101]
+          Copyright (c) 1986-2022 by Cisco Systems, Inc.
+          Compiled Mon 11-Apr-22 00:57 by mcpre
+          
+          advertisement version: 2
+          Peer Source MAC: b0c5.3c99.0821
+          VTP Management Domain: ''
+          Native VLAN: 1
+          Duplex: full
+          
+          -------------------------
+          Device ID: device
+          Entry address(es): 
+          Platform: cisco IE-3300-8U2X,  Capabilities: Router Switch IGMP 
+          Interface: GigabitEthernet1/17,  Port ID (outgoing port): GigabitEthernet2/5
+          Holdtime : 133 sec
+          
+          Version :
+          Cisco IOS Software [Cupertino], IE3x00 Switch Software (IE3x00-UNIVERSALK9-M), Experimental Version 17.9.20220411:075757 [BLD_POLARIS_DEV_LATEST_20220411_072129:/nobackup/mcpre/s2c-build-ws 101]
+          Copyright (c) 1986-2022 by Cisco Systems, Inc.
+          Compiled Mon 11-Apr-22 00:57 by mcpre
+          
+          advertisement version: 2
+          Peer Source MAC: f8b7.e2e5.b0cc
+          VTP Management Domain: ''
+          Native VLAN: 1
+          Duplex: full
+          
+          -------------------------
+          Device ID: device
+          Entry address(es): 
+          Platform: cisco IE-3300-8U2X,  Capabilities: Router Switch IGMP 
+          Interface: GigabitEthernet1/15,  Port ID (outgoing port): GigabitEthernet1/9
+          Holdtime : 153 sec
+          
+          Version :
+          Cisco IOS Software [Cupertino], IE3x00 Switch Software (IE3x00-UNIVERSALK9-M), Experimental Version 17.9.20220411:075757 [BLD_POLARIS_DEV_LATEST_20220411_072129:/nobackup/mcpre/s2c-build-ws 101]
+          Copyright (c) 1986-2022 by Cisco Systems, Inc.
+          Compiled Mon 11-Apr-22 00:57 by mcpre
+          
+          advertisement version: 2
+          Peer Source MAC: b0c5.3c99.0829
+          VTP Management Domain: ''
+          Native VLAN: 1
+          Duplex: full
+          
+          -------------------------
+          Device ID: device
+          Entry address(es): 
+          Platform: cisco IE-3300-8U2X,  Capabilities: Router Switch IGMP 
+          Interface: GigabitEthernet1/12,  Port ID (outgoing port): GigabitEthernet1/8
+          Holdtime : 137 sec
+          
+          Version :
+          Cisco IOS Software [Cupertino], IE3x00 Switch Software (IE3x00-UNIVERSALK9-M), Experimental Version 17.9.20220411:075757 [BLD_POLARIS_DEV_LATEST_20220411_072129:/nobackup/mcpre/s2c-build-ws 101]
+          Copyright (c) 1986-2022 by Cisco Systems, Inc.
+          Compiled Mon 11-Apr-22 00:57 by mcpre
+          
+          advertisement version: 2
+          Peer Source MAC: b0c5.3c99.0828
+          VTP Management Domain: ''
+          Native VLAN: 1
+          Duplex: full
+          
+          -------------------------
+          Device ID: device
+          Entry address(es): 
+          Platform: cisco IE-3300-8U2X,  Capabilities: Router Switch IGMP 
+          Interface: GigabitEthernet1/14,  Port ID (outgoing port): GigabitEthernet1/7
+          Holdtime : 173 sec
+          
+          Version :
+          Cisco IOS Software [Cupertino], IE3x00 Switch Software (IE3x00-UNIVERSALK9-M), Experimental Version 17.9.20220411:075757 [BLD_POLARIS_DEV_LATEST_20220411_072129:/nobackup/mcpre/s2c-build-ws 101]
+          Copyright (c) 1986-2022 by Cisco Systems, Inc.
+          Compiled Mon 11-Apr-22 00:57 by mcpre
+          
+          advertisement version: 2
+          Peer Source MAC: b0c5.3c99.0827
+          VTP Management Domain: ''
+          Native VLAN: 1
+          Duplex: full
+          
+          -------------------------
+          Device ID: device
+          Entry address(es): 
+          Platform: cisco IE-3300-8U2X,  Capabilities: Router Switch IGMP 
+          Interface: GigabitEthernet1/8,  Port ID (outgoing port): GigabitEthernet1/4
+          Holdtime : 124 sec
+          
+          Version :
+          Cisco IOS Software [Cupertino], IE3x00 Switch Software (IE3x00-UNIVERSALK9-M), Experimental Version 17.9.20220411:075757 [BLD_POLARIS_DEV_LATEST_20220411_072129:/nobackup/mcpre/s2c-build-ws 101]
+          Copyright (c) 1986-2022 by Cisco Systems, Inc.
+          Compiled Mon 11-Apr-22 00:57 by mcpre
+          
+          advertisement version: 2
+          Peer Source MAC: b0c5.3c99.0824
+          VTP Management Domain: ''
+          Native VLAN: 1
+          Duplex: full
+          
+          -------------------------
+          Device ID: device
+          Entry address(es): 
+          Platform: cisco IE-3300-8U2X,  Capabilities: Router Switch IGMP 
+          Interface: GigabitEthernet1/13,  Port ID (outgoing port): GigabitEthernet1/6
+          Holdtime : 157 sec
+          
+          Version :
+          Cisco IOS Software [Cupertino], IE3x00 Switch Software (IE3x00-UNIVERSALK9-M), Experimental Version 17.9.20220411:075757 [BLD_POLARIS_DEV_LATEST_20220411_072129:/nobackup/mcpre/s2c-build-ws 101]
+          Copyright (c) 1986-2022 by Cisco Systems, Inc.
+          Compiled Mon 11-Apr-22 00:57 by mcpre
+          
+          advertisement version: 2
+          Peer Source MAC: b0c5.3c99.0826
+          VTP Management Domain: ''
+          Native VLAN: 1
+          Duplex: full
+          
+          -------------------------
+          Device ID: device
+          Entry address(es): 
+          Platform: cisco IE-3300-8U2X,  Capabilities: Router Switch IGMP 
+          Interface: GigabitEthernet1/6,  Port ID (outgoing port): GigabitEthernet1/3
+          Holdtime : 173 sec
+          
+          Version :
+          Cisco IOS Software [Cupertino], IE3x00 Switch Software (IE3x00-UNIVERSALK9-M), Experimental Version 17.9.20220411:075757 [BLD_POLARIS_DEV_LATEST_20220411_072129:/nobackup/mcpre/s2c-build-ws 101]
+          Copyright (c) 1986-2022 by Cisco Systems, Inc.
+          Compiled Mon 11-Apr-22 00:57 by mcpre
+          
+          advertisement version: 2
+          Peer Source MAC: b0c5.3c99.0823
+          VTP Management Domain: ''
+          Native VLAN: 1
+          Duplex: full
+          
+          -------------------------
+          Device ID: device
+          Entry address(es): 
+          Platform: cisco IE-3300-8U2X,  Capabilities: Router Switch IGMP 
+          Interface: GigabitEthernet1/4,  Port ID (outgoing port): TenGigabitEthernet1/2
+          Holdtime : 167 sec
+          
+          Version :
+          Cisco IOS Software [Cupertino], IE3x00 Switch Software (IE3x00-UNIVERSALK9-M), Experimental Version 17.9.20220411:075757 [BLD_POLARIS_DEV_LATEST_20220411_072129:/nobackup/mcpre/s2c-build-ws 101]
+          Copyright (c) 1986-2022 by Cisco Systems, Inc.
+          Compiled Mon 11-Apr-22 00:57 by mcpre
+          
+          advertisement version: 2
+          Peer Source MAC: b0c5.3c99.0822
+          VTP Management Domain: ''
+          Native VLAN: 1
+          Duplex: full
+          
+          -------------------------
+          Device ID: device
+          Entry address(es): 
+          Platform: cisco IE-3300-8U2X,  Capabilities: Router Switch IGMP 
+          Interface: GigabitEthernet1/5,  Port ID (outgoing port): GigabitEthernet2/1
+          Holdtime : 177 sec
+          
+          Version :
+          Cisco IOS Software [Cupertino], IE3x00 Switch Software (IE3x00-UNIVERSALK9-M), Experimental Version 17.9.20220411:075757 [BLD_POLARIS_DEV_LATEST_20220411_072129:/nobackup/mcpre/s2c-build-ws 101]
+          Copyright (c) 1986-2022 by Cisco Systems, Inc.
+          Compiled Mon 11-Apr-22 00:57 by mcpre
+          
+          advertisement version: 2
+          Peer Source MAC: f8b7.e2e5.b0c8
+          VTP Management Domain: ''
+          Native VLAN: 1
+          Duplex: full
+          
+          -------------------------
+          Device ID: device
+          Entry address(es): 
+          Platform: cisco IE-3300-8U2X,  Capabilities: Router Switch IGMP 
+          Interface: GigabitEthernet1/19,  Port ID (outgoing port): GigabitEthernet2/8
+          Holdtime : 143 sec
+          
+          Version :
+          Cisco IOS Software [Cupertino], IE3x00 Switch Software (IE3x00-UNIVERSALK9-M), Experimental Version 17.9.20220411:075757 [BLD_POLARIS_DEV_LATEST_20220411_072129:/nobackup/mcpre/s2c-build-ws 101]
+          Copyright (c) 1986-2022 by Cisco Systems, Inc.
+          Compiled Mon 11-Apr-22 00:57 by mcpre
+          
+          advertisement version: 2
+          Peer Source MAC: f8b7.e2e5.b0cf
+          VTP Management Domain: ''
+          Native VLAN: 1
+          Duplex: full
+          
+          -------------------------
+          Device ID: device
+          Entry address(es): 
+          Platform: cisco IE-3300-8U2X,  Capabilities: Router Switch IGMP 
+          Interface: GigabitEthernet1/7,  Port ID (outgoing port): GigabitEthernet1/5
+          Holdtime : 167 sec
+          
+          Version :
+          Cisco IOS Software [Cupertino], IE3x00 Switch Software (IE3x00-UNIVERSALK9-M), Experimental Version 17.9.20220411:075757 [BLD_POLARIS_DEV_LATEST_20220411_072129:/nobackup/mcpre/s2c-build-ws 101]
+          Copyright (c) 1986-2022 by Cisco Systems, Inc.
+          Compiled Mon 11-Apr-22 00:57 by mcpre
+          
+          advertisement version: 2
+          Peer Source MAC: b0c5.3c99.0825
+          VTP Management Domain: ''
+          Native VLAN: 1
+          Duplex: full
+          
+          -------------------------
+          Device ID: device
+          Entry address(es): 
+          Platform: cisco IE-3300-8U2X,  Capabilities: Router Switch IGMP 
+          Interface: GigabitEthernet1/18,  Port ID (outgoing port): GigabitEthernet2/7
+          Holdtime : 165 sec
+          
+          Version :
+          Cisco IOS Software [Cupertino], IE3x00 Switch Software (IE3x00-UNIVERSALK9-M), Experimental Version 17.9.20220411:075757 [BLD_POLARIS_DEV_LATEST_20220411_072129:/nobackup/mcpre/s2c-build-ws 101]
+          Copyright (c) 1986-2022 by Cisco Systems, Inc.
+          Compiled Mon 11-Apr-22 00:57 by mcpre
+          
+          advertisement version: 2
+          Peer Source MAC: f8b7.e2e5.b0ce
+          VTP Management Domain: ''
+          Native VLAN: 1
+          Duplex: full
+          
+          -------------------------
+          Device ID: device
+          Entry address(es): 
+          Platform: cisco IE-3300-8U2X,  Capabilities: Router Switch IGMP 
+          Interface: GigabitEthernet1/16,  Port ID (outgoing port): GigabitEthernet2/6
+          Holdtime : 161 sec
+          
+          Version :
+          Cisco IOS Software [Cupertino], IE3x00 Switch Software (IE3x00-UNIVERSALK9-M), Experimental Version 17.9.20220411:075757 [BLD_POLARIS_DEV_LATEST_20220411_072129:/nobackup/mcpre/s2c-build-ws 101]
+          Copyright (c) 1986-2022 by Cisco Systems, Inc.
+          Compiled Mon 11-Apr-22 00:57 by mcpre
+          
+          advertisement version: 2
+          Peer Source MAC: f8b7.e2e5.b0cd
+          VTP Management Domain: ''
+          Native VLAN: 1
+          Duplex: full
+          
+          -------------------------
+          Device ID: 1783-CMS10B
+          Entry address(es): 
+            IP address: 11.1.18.205
+          Platform: Allen-Bradley 1783-CMS10B,  Capabilities: Router Switch IGMP 
+          Interface: GigabitEthernet1/3,  Port ID (outgoing port): GigabitEthernet1/1
+          Holdtime : 144 sec
+          
+          Version :
+          Cisco IOS Software [Dublin], S5200 Switch Software (S5200-UNIVERSALK9-M), Experimental Version 17.10.20220708:150333 [BLD_POLARIS_DEV_LATEST_20220708_143608:/nobackup/mcpre/s2c-build-ws 101]
+          Copyright (c) 1986-2022 by Cisco Systems, Inc.
+          Compiled Fri 08-Jul-22 08:03 by mcpre
+          
+          advertisement version: 2
+          Peer Source MAC: 4006.d5e2.ff21
+          VTP Management Domain: ''
+          Native VLAN: 1
+          Duplex: full
+          Management address(es): 
+            IP address: 11.1.18.205
+          
+          -------------------------
+          Device ID: 1783-CMS20DN
+          Entry address(es): 
+            IP address: 11.1.18.201
+          Platform: Allen-Bradley 1783-CMS20DN,  Capabilities: Router Switch IGMP 
+          Interface: GigabitEthernet1/2,  Port ID (outgoing port): GigabitEthernet1/11
+          Holdtime : 161 sec
+          
+          Version :
+          Cisco IOS Software [Dublin], S5200 Switch Software (S5200-UNIVERSALK9-M), Experimental Version 17.10.20220708:150333 [BLD_POLARIS_DEV_LATEST_20220708_143608:/nobackup/mcpre/s2c-build-ws 101]
+          Copyright (c) 1986-2022 by Cisco Systems, Inc.
+          Compiled Fri 08-Jul-22 08:03 by mcpre
+          
+          advertisement version: 2
+          Peer Source MAC: acbc.d937.9d4b
+          VTP Management Domain: ''
+          Native VLAN: 1
+          Duplex: full
+          Management address(es): 
+            IP address: 11.1.18.201
+          
+          -------------------------
+          Device ID: 1783-CMS20DN
+          Entry address(es): 
+            IP address: 11.1.18.201
+          Platform: Allen-Bradley 1783-CMS20DN,  Capabilities: Router Switch IGMP 
+          Interface: GigabitEthernet1/11,  Port ID (outgoing port): GigabitEthernet1/2
+          Holdtime : 176 sec
+          
+          Version :
+          Cisco IOS Software [Dublin], S5200 Switch Software (S5200-UNIVERSALK9-M), Experimental Version 17.10.20220708:150333 [BLD_POLARIS_DEV_LATEST_20220708_143608:/nobackup/mcpre/s2c-build-ws 101]
+          Copyright (c) 1986-2022 by Cisco Systems, Inc.
+          Compiled Fri 08-Jul-22 08:03 by mcpre
+          
+          advertisement version: 2
+          Peer Source MAC: acbc.d937.9d42
+          VTP Management Domain: ''
+          Native VLAN: 1
+          Duplex: full
+          Management address(es): 
+            IP address: 11.1.18.201
+          
+          
+          Total cdp entries displayed : 17
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: 1783-CMS20DN#

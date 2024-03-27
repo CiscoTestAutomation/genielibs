@@ -1160,6 +1160,10 @@ def configure_flow_record_match_datalink(device, record_name, field_type, mac_ty
 
     if mac_type and direction:
         config.append(f'match datalink {field_type} {mac_type} address {direction}')
+    elif direction is None and mac_type is None:
+        config.append(f'match datalink {field_type}')
+    elif direction is not None and mac_type is None:
+        config.append(f'match datalink {field_type} {direction}')        
     elif direction:
         config.append(f'match datalink {field_type} {mac_type} {direction}')
 
@@ -1258,7 +1262,7 @@ def unconfigure_ipv6_flow_monitor(device, interface, monitor_name,direction):
         )
 
 def configure_flow_exporter(device, exporter_name, dest_ip=None, udp_port=None, dscp=None,
-    ttl=None, data_timeout=None, table_type=None, table_timeout=None, source_int=None):
+    ttl=None, data_timeout=None, table_type=None, table_timeout=None, source_int=None, export_proto=None):
     """ Configure Flow Exporter on Device
         Args:
             device ('obj'): Device object
@@ -1271,6 +1275,7 @@ def configure_flow_exporter(device, exporter_name, dest_ip=None, udp_port=None, 
             table_type ('str', optional): option table type. Default is None
             table_timeout ('str', optional): option table timeout value. Default is None
             source_int ('str', optional): Source interface. Default int None
+            export_proto ('str', optional): export-protocol. Default is None
         Return:
             None
         Raise:
@@ -1292,7 +1297,9 @@ def configure_flow_exporter(device, exporter_name, dest_ip=None, udp_port=None, 
         config.append(f'option {table_type}{f" timeout {table_timeout}" if table_timeout else ""}')
     if source_int:
         config.append(f'source {source_int}')
-
+    if export_proto:
+        config.append(f'export-protocol {export_proto}')
+    
     try:
         device.configure(config)
 
@@ -1355,8 +1362,11 @@ def configure_fnf_flow_record(
     flow_direction = False,
     initiator = False,
     new_connections = False,
-    connection_counter = None
-    
+    connection_counter = None,
+    collect_type_mask = None,
+    collect_length = None,
+    collect_ipv4_ttl = None,
+    collect_udp_ports = None
     ):
 
     """ Config Flow Record on Device
@@ -1382,7 +1392,11 @@ def configure_fnf_flow_record(
             flow_direction('bool'): Configure flow direction
             initiator('bool'): Configure initiator
             new_connections('bool'): Configure new connections
-            connection_counter('str', optional): connection bytes to be configured
+            connection_counter('str', optional): connection bytes to be configured, default value is None
+            collect_type_mask('str', optional): ipv4 source or destination to be configured, default value is None
+            collect_length('str', optional): configure ipv4 length total or header, default value is None
+            collect_ipv4_ttl('str', optional): ttl value minimum or maximum to be configured, default value is None
+            collect_udp_ports('str', optional): udp source-port or destination port to be configured, default value is None
         Return:
             None
 
@@ -1428,9 +1442,99 @@ def configure_fnf_flow_record(
         configs.extend(['collect connection new-connections'])
     if connection_type and connection_counter:
         configs.extend([f'collect connection {connection_type} counter {connection_counter} long'])
+    if collect_type_mask:
+        configs.extend([f'collect ipv4 {collect_type_mask} mask'])
+    if collect_length:
+        configs.extend([f'collect ipv4 length {collect_length}'])    
+    if collect_ipv4_ttl:
+        configs.extend([f'collect ipv4 ttl {collect_ipv4_ttl}'])
+    if collect_udp_ports:
+        configs.extend([f'collect transport udp {collect_udp_ports}'])    
 
     try:
         device.configure(configs)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f'Could not configure flow record. Error:\n{e}')
+
+def unconfigure_record_configs_from_flow_monitor(
+    device, 
+    monitor_name, 
+    record_name=None,
+    active_timeout=None, 
+    inactive_timeout=None, 
+    cache_entries=None, 
+    exporter_name=None
+    ):
+    """ Unconfig Flow Monitor with cache entry on Device
+        Args:
+            device ('obj'): Device object
+            monitor_name ('str'): Flow Monitor name
+            record_name ('str', optional): Flow record name, default value is None
+            active_timeout ('int', optional): Active timeout, default value is None
+            inactive_timeout ('int', optional): Inactive timeout, default value is None
+            cache_entries ('int', optional): Number of cache entries, default value is None
+            exporter_name ('str', optional): Flow exporter name, default value is None
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring flow monitor with cache entry
+    """
+    cmd = ["flow monitor {monitor_name}".format(monitor_name=monitor_name)]
+    if active_timeout:
+        cmd.append("no cache timeout active {active_timeout}".format(active_timeout=active_timeout))    
+    if inactive_timeout:
+        cmd.append("no cache timeout inactive {inactive_timeout}".format(inactive_timeout=inactive_timeout))
+    if record_name:
+        cmd.append("no record {record_name}".format(record_name=record_name))
+    if cache_entries:
+        cmd.append("no cache entries {cache_entries}".format(cache_entries=cache_entries))
+    if exporter_name:
+        cmd.append("no exporter {exporter_name}".format(exporter_name=exporter_name))
+
+    try:
+        device.configure(cmd)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Could not unconfigure flow monitor {monitor_name} with cache entries. Error:\n{e}')
+
+def unconfigure_flow_exporter(device, exporter_name, dest_ip=None, udp_port=None, dscp=None,
+    ttl=None, data_timeout=None, source_int=None, export_proto=None):
+    """ Unconfigure Flow Exporter on Device
+        Args:
+            device ('obj'): Device object
+            exporter_name ('str'): Flow exporter name
+            dest_ip ('str', optional): Destination IP. Default is None
+            udp_port ('str', optional): UDP port. Default is None
+            dscp ('str', optional): dscp value. Default is None
+            ttl ('str', optional): ttl value. Default is None
+            data_timeout ('str', optional): template data timeout value. Default is None
+            source_int ('str', optional): Source interface. Default int None
+            export_proto ('str', optional): export-protocol. Default is None
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring flow exporter
+    """
+
+    config = ['flow exporter {exporter_name}'.format(exporter_name=exporter_name)]
+    if dest_ip:
+        config.append('no destination {dest_ip}'.format(dest_ip=dest_ip))
+    if udp_port:
+        config.append('no transport udp {udp_port}'.format(udp_port=udp_port))
+    if dscp:
+        config.append('no dscp {dscp}'.format(dscp=dscp))
+    if ttl:
+        config.append('no ttl {ttl}'.format(ttl=ttl))
+    if data_timeout:
+        config.append('no template data timeout {data_timeout}'.format(data_timeout=data_timeout))
+    if source_int:
+        config.append('no source {source_int}'.format(source_int=source_int))
+    if export_proto:
+        config.append('no export-protocol {export_proto}'.format(export_proto=export_proto))
+    
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not Unconfigure flow exporter {exporter_name}. Error\n{e}')

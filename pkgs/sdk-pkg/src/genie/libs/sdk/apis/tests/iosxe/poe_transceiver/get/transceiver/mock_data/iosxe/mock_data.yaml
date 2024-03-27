@@ -14,13 +14,12 @@ configure_line:
   prompt: A2-9300-3M(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,16 +29,20 @@ execute:
       new_state: configure
     show interfaces transceiver:
       response:
-      - "If device is externally calibrated, only calibrated values are printed.\r\
-        \n++ : high alarm, +  : high warning, -  : low warning, -- : low alarm.\r\n\
-        NA or N/A: not applicable, Tx: transmit, Rx: receive.\r\nmA: milliamperes,\
-        \ dBm: decibels (milliwatts).\r\n\r\n                                    \
-        \         Optical   Optical\r\n             Temperature  Voltage  Current\
-        \   Tx Power  Rx Power\r\nPort         (Celsius)    (Volts)  (mA)      (dBm)\
-        \     (dBm)\r\n---------    -----------  -------  --------  --------  --------\r\
-        \nTe3/1/1      23.3       3.33       0.1     -20.3     -40.0"
+        - |-
+          If device is externally calibrated, only calibrated values are printed.
+          ++ : high alarm, +  : high warning, -  : low warning, -- : low alarm.
+          NA or N/A: not applicable, Tx: transmit, Rx: receive.
+          mA: milliamperes, dBm: decibels (milliwatts).
+          
+                                                       Optical   Optical
+                       Temperature  Voltage  Current   Tx Power  Rx Power
+          Port         (Celsius)    (Volts)  (mA)      (dBm)     (dBm)
+          ---------    -----------  -------  --------  --------  --------
+          Te3/1/1      23.3       3.33       0.1     -20.3     -40.0
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: A2-9300-3M#

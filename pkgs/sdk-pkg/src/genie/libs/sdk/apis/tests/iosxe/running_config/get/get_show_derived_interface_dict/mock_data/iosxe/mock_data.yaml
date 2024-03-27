@@ -14,13 +14,12 @@ configure_line:
   prompt: kparames_csr1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,15 +29,26 @@ execute:
       new_state: configure
     show derived-config interface Tunnel1:
       response:
-      - "Building configuration...\r\n\r\nDerived configuration : 385 bytes\r\n!\r\
-        \ninterface Tunnel1\r\n ip address 192.168.1.1 255.255.255.0\r\n ip access-group\
-        \ Tu1-ipsec-ds-ipv4-in in\r\n ip access-group Tu1-ipsec-ds-ipv4-out out\r\n\
-        \ ipv6 enable\r\n ipv6 traffic-filter Tu1-ipsec-ds-ipv6-in in\r\n ipv6 traffic-filter\
-        \ Tu1-ipsec-ds-ipv6-out out\r\n tunnel source GigabitEthernet1\r\n tunnel\
-        \ mode ipsec dual-overlay\r\n tunnel destination 30.30.30.2\r\n tunnel protection\
-        \ ipsec profile prof\r\nend"
+        - |-
+          Building configuration...
+          
+          Derived configuration : 385 bytes
+          !
+          interface Tunnel1
+           ip address 192.168.1.1 255.255.255.0
+           ip access-group Tu1-ipsec-ds-ipv4-in in
+           ip access-group Tu1-ipsec-ds-ipv4-out out
+           ipv6 enable
+           ipv6 traffic-filter Tu1-ipsec-ds-ipv6-in in
+           ipv6 traffic-filter Tu1-ipsec-ds-ipv6-out out
+           tunnel source GigabitEthernet1
+           tunnel mode ipsec dual-overlay
+           tunnel destination 30.30.30.2
+           tunnel protection ipsec profile prof
+          end
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: kparames_csr1#

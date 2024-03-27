@@ -1,9 +1,9 @@
 configure:
   commands:
-    cts role-based monitor permissions from 2900 to 3300 ipv6: "cts role-based monitor\
-      \ permissions from 2900 to 3300 ip\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b$sed monitor\
-      \ permissions from 2900 to 3300 ipv         \b\b\b\b\b\b\b\b\b6\r\n"
+    cts role-based monitor permissions from 2900 to 3300 ipv6: "cts role-based monitor
+      permissions from 2900 to 3300 ip\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b$sed monitor
+      permissions from 2900 to 3300 ipv         \b\b\b\b\b\b\b\b\b6\r\n"
     end:
       new_state: execute
     line console 0:
@@ -18,13 +18,12 @@ configure_line:
   prompt: UUT3-macallan(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -35,4 +34,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: UUT3-macallan#

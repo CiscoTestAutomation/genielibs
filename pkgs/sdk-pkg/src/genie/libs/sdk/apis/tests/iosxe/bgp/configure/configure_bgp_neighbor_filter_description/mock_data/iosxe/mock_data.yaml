@@ -5,15 +5,15 @@ configure:
       new_state: execute
     line console 0:
       new_state: configure_line
-    neighbor 20.20.20.3 description ibgp vers SWTDATA01: "neighbor 20.20.20.3 description\
-      \ ibgp vers SWTDATA01\r\n"
+    neighbor 20.20.20.3 description ibgp vers SWTDATA01: "neighbor 20.20.20.3 description
+      ibgp vers SWTDATA01\r\n"
     neighbor 20.20.20.3 peer-group externalpg: "neighbor 20.20.20.3 peer-group externalpg\r\
       \n"
     neighbor 20.20.20.3 remote-as 300: "neighbor 20.20.20.3 remote-as 300\r\n"
-    neighbor 20.20.20.3 soft-reconfiguration inbound: "neighbor 20.20.20.3 soft-reconfiguration\
-      \ inbound\r\n"
-    neighbor 20.20.20.3 transport path-mtu-discovery: "neighbor 20.20.20.3 transport\
-      \ path-mtu-discovery\r\n"
+    neighbor 20.20.20.3 soft-reconfiguration inbound: "neighbor 20.20.20.3 soft-reconfiguration
+      inbound\r\n"
+    neighbor 20.20.20.3 transport path-mtu-discovery: "neighbor 20.20.20.3 transport
+      path-mtu-discovery\r\n"
     neighbor externalpg filter-list 1 out: "neighbor externalpg filter-list 1 out\r\
       \n"
     neighbor externalpg peer-group: "neighbor externalpg peer-group\r\n"
@@ -28,13 +28,12 @@ configure_line:
   prompt: stack3-nyquist-1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -45,4 +44,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: stack3-nyquist-1#

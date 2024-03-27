@@ -1,10 +1,11 @@
 configure:
   commands:
-    crypto isakmp key 0 ash123 address 20.18.19.5 255.255.255.0: "crypto isakmp key\
-      \ 0 ash123 address 20.18.19.5 255.255.255.0\r\n"
-    crypto isakmp key 0 test123 address ipv6 2007:1::44/112 no-xauth: "crypto isakmp\
-      \ key 0 test123 address ipv6 2007:1::44/112 no-xauth\r\nA pre-shared key for\
-      \ address 2007:1::44/112 already exists!\r\n\r\n"
+    crypto isakmp key 0 ash123 address 20.18.19.5 255.255.255.0: "crypto isakmp key
+      0 ash123 address 20.18.19.5 255.255.255.0\r\n"
+    crypto isakmp key 0 test123 address ipv6 2007:1::44/112 no-xauth: |
+      crypto isakmp key 0 test123 address ipv6 2007:1::44/112 no-xauth
+      A pre-shared key for address 2007:1::44/112 already exists!
+      
     end:
       new_state: execute
     line console 0:
@@ -19,13 +20,12 @@ configure_line:
   prompt: INT1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -36,4 +36,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: INT1#

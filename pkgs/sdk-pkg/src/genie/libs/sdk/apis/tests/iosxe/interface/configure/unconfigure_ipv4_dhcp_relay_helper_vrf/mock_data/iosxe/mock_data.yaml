@@ -5,8 +5,8 @@ configure:
     interface Vlan100: "interface Vlan100\r\n"
     line console 0:
       new_state: configure_line
-    no ip helper-address vrf RAGUARD 101.101.0.2: "no ip helper-address vrf RAGUARD\
-      \ 101.101.0.2\r\n"
+    no ip helper-address vrf RAGUARD 101.101.0.2: "no ip helper-address vrf RAGUARD
+      101.101.0.2\r\n"
     no logging console: ''
   prompt: Intrepid-P1C-PK(config)#
 configure_line:
@@ -17,13 +17,12 @@ configure_line:
   prompt: Intrepid-P1C-PK(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -34,4 +33,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: Intrepid-P1C-PK#

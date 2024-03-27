@@ -14,13 +14,12 @@ configure_line:
   prompt: PI-9300-Stack-103(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,18 +29,26 @@ execute:
       new_state: configure
     'install deactivate file flash:cat9k_iosxe.2022-06-06_12.21_mcpre.24042.CSCvq24042.SSA.smu.bin ':
       response:
-      - "$.2022-06-06_12.21_mcpre.24042.CSCvq24042.SSA.smu.bin \r\ninstall_deactivate:\
-        \ START Sun Aug 07 12:30:18 UTC 2022\r\ninstall_deactivate: Deactivating\r\
-        \n--- Starting SMU Deactivate operation ---\r\nPerforming SMU_DEACTIVATE on\
-        \ all members\r\nChecking status of SMU_DEACTIVATE on [1 2 3]\r\nSMU_DEACTIVATE:\
-        \ Passed on [1 2 3]\r\nFinished SMU Deactivate operation\r\n\r\nSUCCESS: install_deactivate\
-        \ Sun Aug 07 12:30:33 UTC 2022"
+        - |-
+          $.2022-06-06_12.21_mcpre.24042.CSCvq24042.SSA.smu.bin 
+          install_deactivate: START Sun Aug 07 12:30:18 UTC 2022
+          install_deactivate: Deactivating
+          --- Starting SMU Deactivate operation ---
+          Performing SMU_DEACTIVATE on all members
+          Checking status of SMU_DEACTIVATE on [1 2 3]
+          SMU_DEACTIVATE: Passed on [1 2 3]
+          Finished SMU Deactivate operation
+          
+          SUCCESS: install_deactivate Sun Aug 07 12:30:33 UTC 2022
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
     write memory:
       response:
-      - "Building configuration...\r\n[OK]"
+        - |-
+          Building configuration...
+          [OK]
       response_type: circular
+    show version | include operating mode: ''
   prompt: PI-9300-Stack-103#

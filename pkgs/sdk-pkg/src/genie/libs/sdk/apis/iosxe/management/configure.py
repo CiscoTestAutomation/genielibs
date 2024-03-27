@@ -1125,3 +1125,84 @@ def configure_management_gnmi(device,
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure gnmi on device {device}. Error:\n{e}")
 
+def unconfigure_management_credentials(device, credentials='default', username=None, password=None):
+    ''' UnConfigure management credentials.
+
+    Configures aaa new model with login and exec default to local authentication.
+    Adds username and password based on the credentials specified in the testbed.
+
+    Args:
+        device ('obj'): device object
+        credentials ('str'): name of the credentials from the testbed. Default: 'default'
+        username ('str', Optional): username to configure, overrides username from credentials
+        password ('str', Optional): password to configure, overrides password from credentials
+    '''
+    try:
+        creds = device.credentials
+    except AttributeError:
+        creds = {}
+
+    username = username or creds.get(credentials, {}).get('username')
+    password = password or to_plaintext(creds.get(credentials, {}).get('password', ''))
+
+    config = []
+    if username and password:
+        config.extend([
+            'no aaa authentication login default local',
+            'no aaa authorization exec default local',
+            f'no username {username}',
+            'no aaa new-model'
+        ])
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure_management_credentials Error {e}")
+
+def configure_ssh_certificate_profile(device,
+                             trustpoint='CISCO_IDEVID_SUDI',
+                             user=True,
+                             server=True):
+    '''
+    Configure device for ssh certificate server and client profile.
+
+    Args:
+        device ('obj'):  device object
+        trustpoint ('str'): Set PKI trustpoint for sign
+        user ('str'): Set PKI trustpoint for verify
+        server ('str'): Set PKI trustpoint for verify
+
+    Returns:
+        None
+    '''
+    ssh_profile = ['ip ssh server certificate profile']
+
+    if server:
+        ssh_profile.extend(['server', f'trustpoint sign {trustpoint}'])
+    if user:
+        ssh_profile.extend(['user', f'trustpoint verify {trustpoint}'])
+        
+    try:
+        device.configure(ssh_profile)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure_ssh_certificate_profile Error {e}".format(e=e))
+
+def unconfigure_ssh_certificate_profile(device):
+    '''
+    Unconfigure device for ssh server certificate server and client profile.
+
+    Args:
+        device ('obj'):  device object
+
+    Returns:
+        None
+    '''
+    ssh_profile = 'no ip ssh server certificate profile'
+     
+    try:
+        device.configure(ssh_profile)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure_ssh_certificate_profile Error {e}".format(e=e))
+

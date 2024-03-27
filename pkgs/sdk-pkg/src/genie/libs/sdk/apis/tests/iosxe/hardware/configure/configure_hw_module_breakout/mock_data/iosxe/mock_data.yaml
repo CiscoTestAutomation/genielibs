@@ -2,9 +2,11 @@ configure:
   commands:
     end:
       new_state: execute
-    hw-module breakout 29: "hw-module breakout 29\r\nBreakout: Enabling breakout ports\
-      \ on Hu1/0/29 successful.\r\nSubports Created: Hu1/0/29/1 to Hu1/0/29/4\r\n\r\
-      \n"
+    hw-module breakout 29: |
+      hw-module breakout 29
+      Breakout: Enabling breakout ports on Hu1/0/29 successful.
+      Subports Created: Hu1/0/29/1 to Hu1/0/29/4
+      
     line console 0:
       new_state: configure_line
     no logging console: ''
@@ -17,13 +19,12 @@ configure_line:
   prompt: Startek(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -34,4 +35,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: Startek#

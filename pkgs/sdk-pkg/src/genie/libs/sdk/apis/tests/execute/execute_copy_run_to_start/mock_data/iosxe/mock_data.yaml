@@ -14,13 +14,12 @@ configure_line:
   prompt: FW-9800-7(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,20 +29,21 @@ execute:
       new_state: configure
     copy running-config startup-config:
       new_state: send_line
-      
+
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: FW-9800-7#
 send_line:
-  prompt: "Destination filename [startup-config]?"
+  prompt: Destination filename [startup-config]?
   commands:
-    "":
+    '':
       new_state: send_yes
 send_yes:
-  prompt: "Continue? [no]:"
+  prompt: 'Continue? [no]:'
   commands:
-    "y":
+    y:
       response: |
         "Building configuration...
         [OK]"

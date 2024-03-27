@@ -18,13 +18,12 @@ configure_line:
   prompt: Intrepid-DUT-1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -34,22 +33,35 @@ execute:
       new_state: configure
     show ipv6 dhcp pool:
       response:
-      - "DHCPv6 pool: pool20\r\n  Active clients: 0\r\nDHCPv6 pool: pool1\r\n  Address\
-        \ allocation prefix: 2510:1::/64 valid 300 preferred 300 (1 in use, 0 conflicts)\r\
-        \n  Active clients: 1"
-      - "DHCPv6 pool: pool20\r\n  Active clients: 0\r\nDHCPv6 pool: pool1\r\n  Address\
-        \ allocation prefix: 2510:1::/64 valid 300 preferred 300 (1 in use, 0 conflicts)\r\
-        \n  Active clients: 1"
-      - "DHCPv6 pool: pool20\r\n  Active clients: 0\r\nDHCPv6 pool: pool1\r\n  Address\
-        \ allocation prefix: 2510:1::/64 valid 300 preferred 300 (1 in use, 0 conflicts)\r\
-        \n  Active clients: 1"
-      - "DHCPv6 pool: pool20\r\n  Active clients: 0\r\nDHCPv6 pool: pool1\r\n  Address\
-        \ allocation prefix: 2510:1::/64 valid 300 preferred 300 (1 in use, 0 conflicts)\r\
-        \n  Active clients: 1"
+        - |-
+          DHCPv6 pool: pool20
+            Active clients: 0
+          DHCPv6 pool: pool1
+            Address allocation prefix: 2510:1::/64 valid 300 preferred 300 (1 in use, 0 conflicts)
+            Active clients: 1
+        - |-
+          DHCPv6 pool: pool20
+            Active clients: 0
+          DHCPv6 pool: pool1
+            Address allocation prefix: 2510:1::/64 valid 300 preferred 300 (1 in use, 0 conflicts)
+            Active clients: 1
+        - |-
+          DHCPv6 pool: pool20
+            Active clients: 0
+          DHCPv6 pool: pool1
+            Address allocation prefix: 2510:1::/64 valid 300 preferred 300 (1 in use, 0 conflicts)
+            Active clients: 1
+        - |-
+          DHCPv6 pool: pool20
+            Active clients: 0
+          DHCPv6 pool: pool1
+            Address allocation prefix: 2510:1::/64 valid 300 preferred 300 (1 in use, 0 conflicts)
+            Active clients: 1
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
     term width 511: ''
     terminal session-timeout 0: ''
+    show version | include operating mode: ''
   prompt: Intrepid-DUT-1#

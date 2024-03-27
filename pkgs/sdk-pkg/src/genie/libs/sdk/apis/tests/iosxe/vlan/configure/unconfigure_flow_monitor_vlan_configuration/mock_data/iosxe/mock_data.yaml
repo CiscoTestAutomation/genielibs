@@ -4,8 +4,8 @@ configure:
       new_state: execute
     line console 0:
       new_state: configure_line
-    no ip flow monitor fl_mon_Po sampler s4 input: "no ip flow monitor fl_mon_Po sampler\
-      \ s4 input\r\n"
+    no ip flow monitor fl_mon_Po sampler s4 input: "no ip flow monitor fl_mon_Po sampler
+      s4 input\r\n"
     no logging console: ''
     vlan configuration 100: "vlan configuration 100\r\n"
   prompt: STARTREK(config)#
@@ -17,13 +17,12 @@ configure_line:
   prompt: STARTREK(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -34,4 +33,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: STARTREK#

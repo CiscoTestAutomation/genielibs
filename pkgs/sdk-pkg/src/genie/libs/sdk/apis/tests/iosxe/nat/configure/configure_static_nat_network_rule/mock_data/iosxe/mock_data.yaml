@@ -2,11 +2,11 @@ configure:
   commands:
     end:
       new_state: execute
-    ip nat inside source static network 35.0.0.0 81.1.1.0 255.255.255.0: "ip nat inside\
-      \ source static network 35.0.0.0 81.1.1.0 255.\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b$de source static network 35.0.0.0 81.1.1.0 255.2         \b\b\b\b\
-      \b\b\b\b\b55.255.0\r\n"
+    ip nat inside source static network 35.0.0.0 81.1.1.0 255.255.255.0: "ip nat inside
+      source static network 35.0.0.0 81.1.1.0 255.\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b$de source static network 35.0.0.0 81.1.1.0 255.2         \b\b\b\b\b\
+      \b\b\b\b55.255.0\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''
@@ -19,13 +19,12 @@ configure_line:
   prompt: SF-W11-SVL(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -36,4 +35,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: SF-W11-SVL#

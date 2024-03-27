@@ -14,13 +14,12 @@ configure_line:
   prompt: stack3-nyquist-1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,11 +29,14 @@ execute:
       new_state: configure
     show app-hosting list:
       response:
-      - "App id                                   State\r\n---------------------------------------------------------\r\
-        \nguestshell                               DEPLOYED\r\nwcs_docker        \
-        \                       DEPLOYED"
+        - |-
+          App id                                   State
+          ---------------------------------------------------------
+          guestshell                               DEPLOYED
+          wcs_docker                               DEPLOYED
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: stack3-nyquist-1#

@@ -14,13 +14,12 @@ configure_line:
   prompt: C9400-SVL(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,28 +29,51 @@ execute:
       new_state: configure
     show cef uid:
       response:
-      - "CEF UID control message for space global not sent\r\nCEF UID control message\
-        \ for space platform sent: preset repl-plat-32\r\nCEF UID control message\
-        \ for space invalid not sent\r\nCEF Unique IDs Stats: global space\r\nCEF\
-        \ Unique IDs Stats: platform space\r\n  IDs Maximum           : 16777216\r\
-        \n  IDs Free              : 16777210\r\n  IDs Active            : 6\r\n  IDs\
-        \ Pending re-use TO : 0\r\n  IDs Total Generated   : 4272\r\n  IDs Total Reserved\
-        \    : 0\r\n  IDs Total Deleted     : 4266\r\n  Groups Maximum        : 2048\r\
-        \n  Groups Free           : 2047\r\n  Groups Active         : 1\r\nCEF Unique\
-        \ IDs Stats: invalid space\r\nCEF UID Client Key Stats\r\n  Client Key nodes\
-        \     : 6\r\n  UID Table Entries    : 6\r\n  UID Table config size: 16777216"
-      - "CEF UID control message for space global not sent\r\nCEF UID control message\
-        \ for space platform sent: preset repl-plat-32\r\nCEF UID control message\
-        \ for space invalid not sent\r\nCEF Unique IDs Stats: global space\r\nCEF\
-        \ Unique IDs Stats: platform space\r\n  IDs Maximum           : 16777216\r\
-        \n  IDs Free              : 16777210\r\n  IDs Active            : 6\r\n  IDs\
-        \ Pending re-use TO : 0\r\n  IDs Total Generated   : 4272\r\n  IDs Total Reserved\
-        \    : 0\r\n  IDs Total Deleted     : 4266\r\n  Groups Maximum        : 2048\r\
-        \n  Groups Free           : 2047\r\n  Groups Active         : 1\r\nCEF Unique\
-        \ IDs Stats: invalid space\r\nCEF UID Client Key Stats\r\n  Client Key nodes\
-        \     : 6\r\n  UID Table Entries    : 6\r\n  UID Table config size: 16777216"
+        - |-
+          CEF UID control message for space global not sent
+          CEF UID control message for space platform sent: preset repl-plat-32
+          CEF UID control message for space invalid not sent
+          CEF Unique IDs Stats: global space
+          CEF Unique IDs Stats: platform space
+            IDs Maximum           : 16777216
+            IDs Free              : 16777210
+            IDs Active            : 6
+            IDs Pending re-use TO : 0
+            IDs Total Generated   : 4272
+            IDs Total Reserved    : 0
+            IDs Total Deleted     : 4266
+            Groups Maximum        : 2048
+            Groups Free           : 2047
+            Groups Active         : 1
+          CEF Unique IDs Stats: invalid space
+          CEF UID Client Key Stats
+            Client Key nodes     : 6
+            UID Table Entries    : 6
+            UID Table config size: 16777216
+        - |-
+          CEF UID control message for space global not sent
+          CEF UID control message for space platform sent: preset repl-plat-32
+          CEF UID control message for space invalid not sent
+          CEF Unique IDs Stats: global space
+          CEF Unique IDs Stats: platform space
+            IDs Maximum           : 16777216
+            IDs Free              : 16777210
+            IDs Active            : 6
+            IDs Pending re-use TO : 0
+            IDs Total Generated   : 4272
+            IDs Total Reserved    : 0
+            IDs Total Deleted     : 4266
+            Groups Maximum        : 2048
+            Groups Free           : 2047
+            Groups Active         : 1
+          CEF Unique IDs Stats: invalid space
+          CEF UID Client Key Stats
+            Client Key nodes     : 6
+            UID Table Entries    : 6
+            UID Table config size: 16777216
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: C9400-SVL#

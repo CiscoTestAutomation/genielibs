@@ -1,39 +1,30 @@
 configure:
   commands:
-    collect connection client counter packets long: "collect connection client counter\
-      \ packets long\r\n"
-    collect connection initiator: "collect connection initiator\r\n"
-    collect connection new-connections: "collect connection new-connections\r\n"
-    collect flow direction: "collect flow direction\r\n"
-    collect timestamp absolute first: "collect timestamp absolute first\r\n"
+    collect counter bytes long: "collect counter bytes long\r\n"
+    collect counter packets long: "collect counter packets long\r\n"
+    collect ipv4 source mask: "collect ipv4 source mask\r\n"
+    collect transport tcp flags: "collect transport tcp flags\r\n"
     end:
       new_state: execute
     flow record dnacrecord_1: "flow record dnacrecord_1\r\n"
     line console 0:
       new_state: configure_line
-    match application name: "match application name\r\n"
-    match connection client ipv4 address: "match connection client ipv4 address\r\n"
-    match connection client transport port: "match connection client transport port\r\
-      \n"
-    match flow observation point: "match flow observation point\r\n"
-    match ipv4 version: "match ipv4 version\r\n"
     no logging console: ''
-  prompt: Switch(config)#
+  prompt: SG-HA(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: Switch(config-line)#
+  prompt: SG-HA(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -44,4 +35,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: Switch#
+    show version | include operating mode: ''
+  prompt: SG-HA#

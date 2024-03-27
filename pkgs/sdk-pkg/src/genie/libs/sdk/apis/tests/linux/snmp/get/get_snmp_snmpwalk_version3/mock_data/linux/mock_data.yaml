@@ -14,13 +14,12 @@ configure_line:
   prompt: morph-full2(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -31,18 +30,19 @@ execute:
     show version: ''
     snmpwalk -v 3 -u testUsr -A password1 -l authNoPriv -a sha -x des -X password 172.20.249.11 1.3.6.1.4.1.9.9.25.1.1.1.2:
       response:
-      - "SNMPv2-SMI::enterprises.9.9.25.1.1.1.2.1 = STRING: \"CW_BEGIN$-gs-universalk9-m$\"\
-        \r\nSNMPv2-SMI::enterprises.9.9.25.1.1.1.2.2 = STRING: \"CW_IMAGE$CAT9K_IOSXE$\"\
-        \r\nSNMPv2-SMI::enterprises.9.9.25.1.1.1.2.3 = STRING: \"CW_FAMILY$CAT9K_IOSXE$\"\
-        \r\nSNMPv2-SMI::enterprises.9.9.25.1.1.1.2.4 = STRING: \"CW_FEATURE$IP|SLA|IPv6|IS-IS|FIREWALL|PLUS|QoS|HA|NAT|MPLS|VPN|LEGACY\
-        \ PROTOCOLS|3DES|SSH|APPN|IPSEC$\"\r\nSNMPv2-SMI::enterprises.9.9.25.1.1.1.2.5\
-        \ = STRING: \"CW_VERSION$17.13.20230427:005651$\"\r\nSNMPv2-SMI::enterprises.9.9.25.1.1.1.2.6\
-        \ = STRING: \"CW_MEDIA$RAM$\"\r\nSNMPv2-SMI::enterprises.9.9.25.1.1.1.2.7\
-        \ = STRING: \"CW_SYSDESCR$Cisco IOS Software [Dublin], Catalyst L3 Switch\
-        \ Software (CAT9K_IOSXE), Experimental Version 17.13.20230427:005651 [BLD_POLARIS_DEV_LATEST_20230427_003231:/nobackup/mcpre/s2c-build-ws\
-        \ 101]\r\nCopyright (c) 1986-2023 by Cisco Systems, Inc.\r\nCompil+\"\r\n\
-        SNMPv2-SMI::enterprises.9.9.25.1.1.1.2.8 = STRING: \"CW_END$-gs-universalk9-m$\""
+        - |-
+          SNMPv2-SMI::enterprises.9.9.25.1.1.1.2.1 = STRING: "CW_BEGIN$-gs-universalk9-m$"
+          SNMPv2-SMI::enterprises.9.9.25.1.1.1.2.2 = STRING: "CW_IMAGE$CAT9K_IOSXE$"
+          SNMPv2-SMI::enterprises.9.9.25.1.1.1.2.3 = STRING: "CW_FAMILY$CAT9K_IOSXE$"
+          SNMPv2-SMI::enterprises.9.9.25.1.1.1.2.4 = STRING: "CW_FEATURE$IP|SLA|IPv6|IS-IS|FIREWALL|PLUS|QoS|HA|NAT|MPLS|VPN|LEGACY PROTOCOLS|3DES|SSH|APPN|IPSEC$"
+          SNMPv2-SMI::enterprises.9.9.25.1.1.1.2.5 = STRING: "CW_VERSION$17.13.20230427:005651$"
+          SNMPv2-SMI::enterprises.9.9.25.1.1.1.2.6 = STRING: "CW_MEDIA$RAM$"
+          SNMPv2-SMI::enterprises.9.9.25.1.1.1.2.7 = STRING: "CW_SYSDESCR$Cisco IOS Software [Dublin], Catalyst L3 Switch Software (CAT9K_IOSXE), Experimental Version 17.13.20230427:005651 [BLD_POLARIS_DEV_LATEST_20230427_003231:/nobackup/mcpre/s2c-build-ws 101]
+          Copyright (c) 1986-2023 by Cisco Systems, Inc.
+          Compil+"
+          SNMPv2-SMI::enterprises.9.9.25.1.1.1.2.8 = STRING: "CW_END$-gs-universalk9-m$"
       response_type: circular
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: morph-full2#

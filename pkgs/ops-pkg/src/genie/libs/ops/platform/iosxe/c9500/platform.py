@@ -3,7 +3,10 @@ import re
 import copy
 # super class
 from genie.libs.ops.platform.platform import Platform as SuperPlatform
-
+from genie.libs.ops.utils.common import convert_to_bool, \
+                                        convert_to_seconds, \
+                                        convert_to_lower, \
+                                        slot_num
 # Genie Parsers
 from genie.libs.parser.iosxe.show_platform import Dir
 from genie.libs.parser.iosxe.c9500 import show_platform
@@ -41,28 +44,11 @@ class Platform(SuperPlatform):
     #                 type                 N/A
     #                 status               N/A
 
-    # Callables
-    def slot_num(self, item):
-        p = re.compile(r'.*(?P<slot>\d+)')
-        m = p.match(item)
-        if m:
-            item = m.groupdict()['slot']
-        return item
-
-    def convert_to_bool(self, item):
-        if item and 'up' in item.lower():
-            return True
-        else:
-            return False
-
-    def convert_to_lower(self, item):
-        return item.lower()
-
     def learn(self):
         '''Learn Platform object'''
 
         # Global callable
-        self.callables = {'slot_num': self.slot_num}
+        self.callables = {'slot_num': slot_num}
 
         # Place holder to make it more readable
         src_ver = '[version]'
@@ -135,7 +121,7 @@ class Platform(SuperPlatform):
         self.add_leaf(cmd=show_platform.ShowRedundancy,
                       src='[red_sys_info][communications]',
                       dest='redundancy_communication',
-                      action=self.convert_to_bool)
+                      action=convert_to_bool)
 
         # issu_rollback_timer_state
         self.add_leaf(cmd=ShowIssuRollbackTimer,
@@ -205,7 +191,7 @@ class Platform(SuperPlatform):
         self.add_leaf(cmd=show_platform.ShowRedundancy,
                       src='[slot][(?P<slot>{slot_num})][curr_sw_state]',
                       dest='red[(?P<slot>{slot_num})][redundancy_state]',
-                      action=self.convert_to_lower)
+                      action=convert_to_lower)
 
         # rp_uptime
         self.add_leaf(cmd=show_platform.ShowRedundancy,
