@@ -122,3 +122,60 @@ def verify_eigrp_neighbors(
             return set(neighbors).issubset(eigrp_neighbors)
         log.error(f"Please, provide a valid format for AS, Neighbors, ip and/or vrf")
         continue
+
+
+def verify_eigrp_router_id(
+    device,
+    router_id=None,
+    vrf="default",
+    AS_N=None,
+    ip="ipv4",
+    max_time=60,
+    check_interval=10,
+):
+    """verify EIGRP IDs for a given vrf and AS active instance for ipv4 or ipv6
+    Args:
+      device (obj): Device object
+      router_id  (list): List of router ID to check
+      vrf  (str): Name of the vrf by default set to "default"
+      AS_N = None (int): Autonomous System
+      ip = "ipv4" (str): Protocol ip set by default to "ipv4" to change to "ipv6"
+      max_time (`int`): Max time, default: 30
+      check_interval (`int`): Check interval, default: 10
+
+    Returns:
+      True
+      False
+    """
+    assert isinstance(AS_N, int), "AS_N must be int"
+    assert isinstance(vrf, str), "vrf must be str"
+    assert isinstance(router_id, list), "router_id must be list of router IDs"
+    assert AS_N != 0, "AS_N must not be 0"
+    assert ip in ["ipv4", "ipv6"], "ip must be ipv4 or ipv6"
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        if AS_N and router_id:
+            try:
+                response = device.parse(
+                    f"show {'ipv6' if ip!='ipv4' else 'ip'} eigrp topology"
+                )
+            except SchemaEmptyParserError:
+                timeout.sleep()
+                continue
+            eigrp_id = []
+            if (vrf not in response.q.get_values("vrf")) or (
+                str(AS_N) not in response.q.get_values("eigrp_instance")
+            ):
+                log.error(
+                    f"Sorry, no data for the provided for 'AS = {AS_N}' and/or 'vrf = {vrf}'"
+                )
+            else:
+                eigrp_id = (
+                    response.q.contains_key_value("eigrp_instance", str(AS_N))
+                    .contains(vrf)
+                    .contains((ip[0:2]).upper() + ip[2:])
+                    .get_values("eigrp_id")
+                )
+            return set(router_id).issubset(eigrp_id)
+        log.error(f"Please, provid a valid format for AS, router_id, vrf and/or ip")
+        continue
