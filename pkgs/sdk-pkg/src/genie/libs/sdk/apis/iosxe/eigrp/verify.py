@@ -138,8 +138,8 @@ def verify_eigrp_router_id(
       device (obj): Device object
       router_id  (list): List of router ID to check
       vrf  (str): Name of the vrf by default set to "default"
-      AS_N (int) : Autonomous System
-      ip (str): Protocol ip set by default to "ipv4" to change to "ipv6"
+      AS_N = None (int): Autonomous System
+      ip = "ipv4" (str): Protocol ip set by default to "ipv4" to change to "ipv6"
       max_time (`int`): Max time, default: 30
       check_interval (`int`): Check interval, default: 10
 
