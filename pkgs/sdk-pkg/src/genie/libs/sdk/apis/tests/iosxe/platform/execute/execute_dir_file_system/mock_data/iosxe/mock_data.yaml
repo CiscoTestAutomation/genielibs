@@ -14,13 +14,12 @@ configure_line:
   prompt: Sanity-ASR2X(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,10 +29,15 @@ execute:
       new_state: configure
     dir bootflash:/test:
       response:
-      - "Directory of bootflash:/test/\r\n\r\nNo files in directory\r\n\r\n6646632448\
-        \ bytes total (3948212224 bytes free)"
+        - |-
+          Directory of bootflash:/test/
+          
+          No files in directory
+          
+          6646632448 bytes total (3948212224 bytes free)
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: Sanity-ASR2X#

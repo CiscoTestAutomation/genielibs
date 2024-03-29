@@ -1,7 +1,7 @@
 configure:
   commands:
-    'address-family ipv4': " address-family ipv4\r\n"
-    'no mdt auto-discovery vxlan': " no mdt auto-discovery vxlan\r\n"
+    address-family ipv4: " address-family ipv4\r\n"
+    no mdt auto-discovery vxlan: " no mdt auto-discovery vxlan\r\n"
     end:
       new_state: execute
     line console:
@@ -21,13 +21,12 @@ configure_line:
   prompt: P1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -40,4 +39,5 @@ execute:
     term width 0: ''
     term width 511: ''
     terminal session-timeout 0: ''
+    show version | include operating mode: ''
   prompt: P1#

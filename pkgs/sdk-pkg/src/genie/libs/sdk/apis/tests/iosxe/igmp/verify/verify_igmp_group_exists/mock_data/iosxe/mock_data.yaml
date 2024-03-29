@@ -14,13 +14,12 @@ configure_line:
   prompt: PE1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,34 +29,36 @@ execute:
       new_state: configure
     show ip igmp groups detail:
       response:
-      - "Flags: L - Local, U - User, SG - Static Group, VG - Virtual Group, \r\n \
-             SS - Static Source, VS - Virtual Source, \r\n \
-             Ac - Group accounted towards access control limit \r\n \
-          Interface:	Tunnel0 \r\n \
-          Group:		225.2.2.2 \r\n \
-          Flags:		VG \r\n \
-          Uptime:		00:00:27 \r\n \
-          Group mode:	EXCLUDE (Expires: never) \r\n \
-          Last reporter:	0.0.0.0 \r\n \
-          Source list is empty \r\n \
-          \n\r
-          Interface:	Tunnel0 \r\n \
-          Group:		225.1.1.1\r\n \
-          Flags:		VG \r\n \
-          Uptime:		00:00:27\r\n \
-          Group mode:	EXCLUDE (Expires: never)\r\n \
-          Last reporter:	0.0.0.0\r\n \
-          Source list is empty\r\n \
-          \n\r
-          Interface:	Loopback0\r\n \
-          Group:		224.0.1.40\r\n \
-          Flags:          L U \r\n \
-          Uptime:         00:00:27\r\n \
-          Group mode:	EXCLUDE (Expires: 00:02:34)\r\n \
-          Last reporter:	2.2.2.2\r\n \
-          Source list is empty"
+        - |-
+          Flags: L - Local, U - User, SG - Static Group, VG - Virtual Group, 
+           SS - Static Source, VS - Virtual Source, 
+           Ac - Group accounted towards access control limit 
+           Interface:	Tunnel0 
+           Group:		225.2.2.2 
+           Flags:		VG 
+           Uptime:		00:00:27 
+           Group mode:	EXCLUDE (Expires: never) 
+           Last reporter:	0.0.0.0 
+           Source list is empty 
+          
+           Interface:	Tunnel0 
+           Group:		225.1.1.1
+           Flags:		VG 
+           Uptime:		00:00:27
+           Group mode:	EXCLUDE (Expires: never)
+           Last reporter:	0.0.0.0
+           Source list is empty
+          
+           Interface:	Loopback0
+           Group:		224.0.1.40
+           Flags:          L U 
+           Uptime:         00:00:27
+           Group mode:	EXCLUDE (Expires: 00:02:34)
+           Last reporter:	2.2.2.2
+           Source list is empty
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: PE1#

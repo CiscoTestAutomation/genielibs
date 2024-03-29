@@ -302,22 +302,15 @@ class GnmiMessage:
                     'datatype': 'ascii',
                     'value': decoded_val,
                 })
-            elif decoded_val and isinstance(decoded_val, list):
-                for d_val in decoded_val:
-                    opfields.append((d_val, xpath))
+            elif decoded_val and isinstance(decoded_val, (list, dict)):
+                # Walk the list or dict to get the opfields.
+                GnmiMessage.get_opfields(decoded_val, xpath, opfields, namespace)
             else:
                 opfields.append((decoded_val, xpath))
 
         if decoded_val == {}:
             decoded_val = None
 
-        if decoded_val is not None:
-            if not isinstance(decoded_val, (dict, list)):
-                # Just one value returned
-                opfields.append((decoded_val, xpath))
-            else:
-                GnmiMessage.get_opfields(
-                    decoded_val, xpath, opfields, namespace)
         return decoded_val
 
     @staticmethod

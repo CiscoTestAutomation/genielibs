@@ -1,0 +1,98 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: HA-9400-S2(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: HA-9400-S2(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show platform software status control-processor brief:
+      response:
+      - "Load Average\r\n Slot  Status  1-Min  5-Min 15-Min\r\n2-RP0 Healthy   0.37\
+        \   0.27   0.20\r\n\r\nMemory (kB)\r\n Slot  Status    Total     Used (Pct)\
+        \     Free (Pct) Committed (Pct)\r\n2-RP0 Healthy 15988588  5850984 (37%)\
+        \ 10137604 (63%)   7164216 (45%)\r\n\r\nCPU Utilization\r\n Slot  CPU   User\
+        \ System   Nice   Idle    IRQ   SIRQ IOwait\r\n2-RP0    0   2.90   1.00  \
+        \ 0.00  96.09   0.00   0.00   0.00\r\n         1   0.20   0.20   0.00  99.60\
+        \   0.00   0.00   0.00\r\n         2   1.20   0.40   0.00  98.39   0.00  \
+        \ 0.00   0.00\r\n         3   0.79   0.29   0.00  98.90   0.00   0.00   0.00\r\
+        \n         4   2.09   0.59   0.00  97.30   0.00   0.00   0.00\r\n        \
+        \ 5   0.39   0.19   0.00  99.40   0.00   0.00   0.00\r\n         6   0.39\
+        \   0.29   0.00  99.30   0.00   0.00   0.00\r\n         7   0.40   0.40  \
+        \ 0.00  99.20   0.00   0.00   0.00"
+      - "Load Average\r\n Slot  Status  1-Min  5-Min 15-Min\r\n2-RP0 Healthy   0.31\
+        \   0.26   0.20\r\n\r\nMemory (kB)\r\n Slot  Status    Total     Used (Pct)\
+        \     Free (Pct) Committed (Pct)\r\n2-RP0 Healthy 15988588  5850080 (37%)\
+        \ 10138508 (63%)   7164268 (45%)\r\n\r\nCPU Utilization\r\n Slot  CPU   User\
+        \ System   Nice   Idle    IRQ   SIRQ IOwait\r\n2-RP0    0   4.09   1.39  \
+        \ 0.00  94.50   0.00   0.00   0.00\r\n         1   0.80   0.10   0.00  99.10\
+        \   0.00   0.00   0.00\r\n         2   0.60   0.20   0.00  99.20   0.00  \
+        \ 0.00   0.00\r\n         3   1.40   0.50   0.00  98.10   0.00   0.00   0.00\r\
+        \n         4   0.90   0.20   0.00  98.89   0.00   0.00   0.00\r\n        \
+        \ 5   0.40   0.30   0.00  99.29   0.00   0.00   0.00\r\n         6   0.20\
+        \   0.20   0.00  99.60   0.00   0.00   0.00\r\n         7   0.20   0.20  \
+        \ 0.00  99.59   0.00   0.00   0.00"
+      - "Load Average\r\n Slot  Status  1-Min  5-Min 15-Min\r\n2-RP0 Healthy   0.31\
+        \   0.26   0.20\r\n\r\nMemory (kB)\r\n Slot  Status    Total     Used (Pct)\
+        \     Free (Pct) Committed (Pct)\r\n2-RP0 Healthy 15988588  5850080 (37%)\
+        \ 10138508 (63%)   7164268 (45%)\r\n\r\nCPU Utilization\r\n Slot  CPU   User\
+        \ System   Nice   Idle    IRQ   SIRQ IOwait\r\n2-RP0    0   4.09   1.39  \
+        \ 0.00  94.50   0.00   0.00   0.00\r\n         1   0.80   0.10   0.00  99.10\
+        \   0.00   0.00   0.00\r\n         2   0.60   0.20   0.00  99.20   0.00  \
+        \ 0.00   0.00\r\n         3   1.40   0.50   0.00  98.10   0.00   0.00   0.00\r\
+        \n         4   0.90   0.20   0.00  98.89   0.00   0.00   0.00\r\n        \
+        \ 5   0.40   0.30   0.00  99.29   0.00   0.00   0.00\r\n         6   0.20\
+        \   0.20   0.00  99.60   0.00   0.00   0.00\r\n         7   0.20   0.20  \
+        \ 0.00  99.59   0.00   0.00   0.00"
+      - "Load Average\r\n Slot  Status  1-Min  5-Min 15-Min\r\n2-RP0 Healthy   0.34\
+        \   0.27   0.20\r\n\r\nMemory (kB)\r\n Slot  Status    Total     Used (Pct)\
+        \     Free (Pct) Committed (Pct)\r\n2-RP0 Healthy 15988588  5846672 (37%)\
+        \ 10141916 (63%)   7164332 (45%)\r\n\r\nCPU Utilization\r\n Slot  CPU   User\
+        \ System   Nice   Idle    IRQ   SIRQ IOwait\r\n2-RP0    0   1.40   1.50  \
+        \ 0.00  97.09   0.00   0.00   0.00\r\n         1   1.50   2.00   0.00  96.50\
+        \   0.00   0.00   0.00\r\n         2   2.10   1.30   0.00  96.60   0.00  \
+        \ 0.00   0.00\r\n         3   0.90   1.40   0.00  97.69   0.00   0.00   0.00\r\
+        \n         4   0.99   1.39   0.00  97.60   0.00   0.00   0.00\r\n        \
+        \ 5   2.49   1.99   0.00  95.50   0.00   0.00   0.00\r\n         6   1.20\
+        \   1.60   0.00  97.20   0.00   0.00   0.00\r\n         7   2.19   2.39  \
+        \ 0.00  95.40   0.00   0.00   0.00"
+      - "Load Average\r\n Slot  Status  1-Min  5-Min 15-Min\r\n2-RP0 Healthy   0.29\
+        \   0.26   0.20\r\n\r\nMemory (kB)\r\n Slot  Status    Total     Used (Pct)\
+        \     Free (Pct) Committed (Pct)\r\n2-RP0 Healthy 15988588  5848976 (37%)\
+        \ 10139612 (63%)   7164376 (45%)\r\n\r\nCPU Utilization\r\n Slot  CPU   User\
+        \ System   Nice   Idle    IRQ   SIRQ IOwait\r\n2-RP0    0   0.90   0.40  \
+        \ 0.00  98.70   0.00   0.00   0.00\r\n         1   0.80   0.30   0.00  98.90\
+        \   0.00   0.00   0.00\r\n         2   1.40   0.40   0.00  98.20   0.00  \
+        \ 0.00   0.00\r\n         3   0.49   0.29   0.00  99.20   0.00   0.00   0.00\r\
+        \n         4   1.50   0.60   0.00  97.89   0.00   0.00   0.00\r\n        \
+        \ 5   0.70   0.20   0.00  99.09   0.00   0.00   0.00\r\n         6   0.40\
+        \   0.30   0.00  99.29   0.00   0.00   0.00\r\n         7   2.30   0.80  \
+        \ 0.00  96.90   0.00   0.00   0.00"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    show version | include operating mode: ''
+  prompt: HA-9400-S2#

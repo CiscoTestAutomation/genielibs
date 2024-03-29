@@ -73,6 +73,15 @@ class Lisp(SuperLisp):
                           src=service_src+'[service]',
                           dest=service_dest+'[service]',
                           service=service)
+            
+
+            # Get service with the new schema format
+            new_format_src = '[lisp_id][(?P<lisp_id>.*)]'
+            new_format_dest = 'info[lisp_router_instances][(?P<lisp_id>.*)][service][{service}]'.format(service=service)
+            self.add_leaf(cmd='show lisp all service {service}'.format(service=service),
+                          src=new_format_src,
+                          dest=new_format_dest,
+                          service=service)
 
             # lisp_role - N/A
             #   lisp_role_type - N/A
@@ -478,16 +487,22 @@ class Lisp(SuperLisp):
                     # ===
                     # etr
                     # ===
-                    etr_src = service_src + '[etr]'
-                    etr_dest = service_dest + '[etr]'
+                    # info_src = '[lisp_router_instances][(?P<lisp_router_instance>.*)]'
+                    # service_src = info_src + '[service][{service}]'.format(service=service)
+
+                    etr_src = '[lisp_id][(?P<lisp_id>.*)][instance_id][(?P<instance_id>.*)]'
+                    etr_dest = 'info[lisp_router_instances][(?P<lisp_id>.*)][service][{service}]'.format(service=service)
+
+                    legacy_etr_src = service_src + '[etr]'
+                    legacy_etr_dest = service_dest + '[etr]'
 
                     # etr
                     #   enabled
                     #   encapsulation
                     for key in ['enabled', 'encapsulation']:
                         self.add_leaf(cmd='show lisp all instance-id {instance_id} {service}'.format(service=service, instance_id=instance_id),
-                                      src=etr_src+'[{key}]'.format(key=key),
-                                      dest=etr_dest+'[{key}]'.format(key=key),
+                                      src=etr_src+'[etr][{key}]'.format(key=key),
+                                      dest=etr_dest+'[etr][{key}]'.format(key=key),
                                       service=service, instance_id=instance_id)
 
                     # etr
@@ -506,8 +521,8 @@ class Lisp(SuperLisp):
                     #       instance_id
                     #           vni
                     self.add_leaf(cmd='show lisp all instance-id {instance_id} {service} database'.format(service=service, instance_id=instance_id),
-                                  src=etr_src+'[local_eids][(?P<iid>.*)][vni]',
-                                  dest=etr_dest+'[local_eids][(?P<iid>.*)][vni]',
+                                  src=legacy_etr_src+'[local_eids][(?P<iid>.*)][vni]',
+                                  dest=legacy_etr_dest+'[local_eids][(?P<iid>.*)][vni]',
                                   service=service, instance_id=instance_id)
 
                     # etr
@@ -519,8 +534,8 @@ class Lisp(SuperLisp):
                     #                   priority - N/A
                     #                   weight - N/A
                     self.add_leaf(cmd='show lisp all instance-id {instance_id} {service}'.format(service=service, instance_id=instance_id),
-                                  src=etr_src+'[use_petrs]',
-                                  dest=etr_dest+'[local_eids][{iid}][use_petrs]'.format(iid=instance_id),
+                                  src=legacy_etr_src+'[use_petrs]',
+                                  dest=legacy_etr_dest+'[local_eids][{iid}][use_petrs]'.format(iid=instance_id),
                                   service=service, instance_id=instance_id)
 
                     # etr
@@ -552,8 +567,8 @@ class Lisp(SuperLisp):
                         for key in ['id', 'rlocs', 'loopback_address', 'priority',
                                     'weight']:
                             self.add_leaf(cmd='show lisp all instance-id {instance_id} {service} database'.format(service=service, instance_id=instance_id),
-                                      src=etr_src+'[local_eids][(?P<iid>.*)][{etr_type}][(?P<dyn_id>.*)][{key}]'.format(etr_type=etr_type, key=key),
-                                      dest=etr_dest+'[local_eids][(?P<iid>.*)][{etr_type}][(?P<dyn_id>.*)][{key}]'.format(etr_type=etr_type, key=key),
+                                      src=legacy_etr_src+'[local_eids][(?P<iid>.*)][{etr_type}][(?P<dyn_id>.*)][{key}]'.format(etr_type=etr_type, key=key),
+                                      dest=legacy_etr_dest+'[local_eids][(?P<iid>.*)][{etr_type}][(?P<dyn_id>.*)][{key}]'.format(etr_type=etr_type, key=key),
                                       service=service, instance_id=instance_id)
 
                     # etr
@@ -589,8 +604,8 @@ class Lisp(SuperLisp):
                         for key in ['address_type', 'vrf', 'ipv4', 'ipv6',
                                     'ipv4_prefix', 'ipv6_prefix']:
                             self.add_leaf(cmd='show lisp all instance-id {instance_id} {service} database'.format(service=service, instance_id=instance_id),
-                                      src=etr_src+'[local_eids][(?P<iid>.*)][{etr_type}][(?P<dyn_id>.*)][eid_address][{key}]'.format(etr_type=etr_type, key=key),
-                                      dest=etr_dest+'[local_eids][(?P<iid>.*)][{etr_type}][(?P<dyn_id>.*)][eid_address][{key}]'.format(etr_type=etr_type, key=key),
+                                      src=legacy_etr_src+'[local_eids][(?P<iid>.*)][{etr_type}][(?P<dyn_id>.*)][eid_address][{key}]'.format(etr_type=etr_type, key=key),
+                                      dest=legacy_etr_dest+'[local_eids][(?P<iid>.*)][{etr_type}][(?P<dyn_id>.*)][eid_address][{key}]'.format(etr_type=etr_type, key=key),
                                       service=service, instance_id=instance_id)
 
 

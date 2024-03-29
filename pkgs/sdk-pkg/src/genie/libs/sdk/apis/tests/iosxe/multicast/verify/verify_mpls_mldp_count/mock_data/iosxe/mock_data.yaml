@@ -14,13 +14,12 @@ configure_line:
   prompt: C9400-SVL(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,12 +29,20 @@ execute:
       new_state: configure
     show mpls mldp count:
       response:
-      - "MLDP Database Summary:\r\n  Number of MP2MP Entries : 1\r\n  Number of P2MP\
-        \ Entries  : 0\r\n  Total Number of Entries : 1\r\n\r\nMLDP Root Count:\r\n\
-        \  Total Number of MLDP roots: 1\r\n\r\nMLDP Neighbor Count:\r\n  Total Number\
-        \ of MLDP neighbors: 1"
+        - |-
+          MLDP Database Summary:
+            Number of MP2MP Entries : 1
+            Number of P2MP Entries  : 0
+            Total Number of Entries : 1
+          
+          MLDP Root Count:
+            Total Number of MLDP roots: 1
+          
+          MLDP Neighbor Count:
+            Total Number of MLDP neighbors: 1
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: C9400-SVL#

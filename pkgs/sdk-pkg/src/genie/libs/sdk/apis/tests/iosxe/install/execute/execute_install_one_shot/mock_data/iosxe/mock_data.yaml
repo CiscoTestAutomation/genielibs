@@ -14,13 +14,12 @@ configure_line:
   prompt: AMZ-Acc-4(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -28,24 +27,35 @@ execute:
       new_state: configure
     config-transaction:
       new_state: configure
-    ? install add file tftp://172.27.18.5/auto/iconatest/users/byodis/images/cat9k_iosxe.17.10.01.SPA.bin
+    ? install add file 
+      tftp://172.27.18.5/auto/iconatest/users/byodis/images/cat9k_iosxe.17.10.01.SPA.bin
       activate reloadfast commit
     : response:
-      - "$is/images/cat9k_iosxe.17.10.01.SPA.bin activate reloadfast commit\r\ninstall_add_activate_commit:\
-        \ START Thu Nov  9 23:18:39 PDT 2023\r\nSTACK_GR: Inside xFSU check if switch\
-        \ stack\r\nSystem not ready for reload fast, Please run this command later\r\
-        \nFAILED: xFSU requirement pre-check\r\nChecking STP eligibility: Eligible\r\
-        \n\r\n[1]: Performing xFSU-pre-check\r\n300+0 records in\r\n300+0 records\
-        \ out\r\n307200 bytes (307 kB, 300 KiB) copied, 0.195192 s, 1.6 MB/s\r\n \
-        \ SUCCESS: xFSU-pre-check finished\r\n[1]: xFSU-pre-check package(s) on switch\
-        \ 1\r\nFAILED: xFSU requirement pre-check\r\nFAILED: install_add_activate_commit\
-        \ : Abort xFSU install since requirement does not met"
+        - |-
+          $is/images/cat9k_iosxe.17.10.01.SPA.bin activate reloadfast commit
+          install_add_activate_commit: START Thu Nov  9 23:18:39 PDT 2023
+          STACK_GR: Inside xFSU check if switch stack
+          System not ready for reload fast, Please run this command later
+          FAILED: xFSU requirement pre-check
+          Checking STP eligibility: Eligible
+          
+          [1]: Performing xFSU-pre-check
+          300+0 records in
+          300+0 records out
+          307200 bytes (307 kB, 300 KiB) copied, 0.195192 s, 1.6 MB/s
+            SUCCESS: xFSU-pre-check finished
+          [1]: xFSU-pre-check package(s) on switch 1
+          FAILED: xFSU requirement pre-check
+          FAILED: install_add_activate_commit : Abort xFSU install since requirement does not met
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
     write memory:
       response:
-      - "Building configuration...\r\n[OK]"
+        - |-
+          Building configuration...
+          [OK]
       response_type: circular
+    show version | include operating mode: ''
   prompt: AMZ-Acc-4#

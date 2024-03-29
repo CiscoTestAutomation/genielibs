@@ -5,25 +5,24 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-  prompt: "%N(config)#"
+  prompt: '%N(config)#'
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: "%N(config-line)#"
+  prompt: '%N(config-line)#'
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
-  prompt: "%N#"
+  prompt: '%N#'
   commands:
     config term:
       new_state: configure
@@ -35,17 +34,18 @@ execute:
     term length 0: ''
     term width 0: ''
 
+    show version | include operating mode: ''
 destination_filename:
-  prompt: "Destination filename [sh_ver.txt]?"
+  prompt: Destination filename [sh_ver.txt]?
   commands:
-    "":
-      response: "%Warning:There is a file already existing with this name"
+    '':
+      response: '%Warning:There is a file already existing with this name'
       new_state: copy_file_with_scp_overwrite
 
 copy_file_with_scp_overwrite:
-  prompt: "Do you want to over write? [confirm]"
+  prompt: Do you want to over write? [confirm]
   commands:
-    "":
+    '':
       response: |
         Sending file modes: C0644 3698 sh_ver.txt! 
         3698 bytes copied in 0.304 secs (12164 bytes/sec)

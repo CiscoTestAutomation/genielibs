@@ -2,10 +2,12 @@ configure:
   commands:
     end:
       new_state: execute
-    fips authorization-key 12345678901234567890123456789012: "fips authorization-key\
-      \ 12345678901234567890123456789012\r\nFIPS key successfully set.\r\nFIPS and\
-      \ FIPS Stacking will run under fips \r\nmode after the reload. Make sure you\
-      \ set the\r\nsame fips key on all the members of the stack in standalone\r\n"
+    fips authorization-key 12345678901234567890123456789012: |
+      fips authorization-key 12345678901234567890123456789012
+      FIPS key successfully set.
+      FIPS and FIPS Stacking will run under fips 
+      mode after the reload. Make sure you set the
+      same fips key on all the members of the stack in standalone
     line console 0:
       new_state: configure_line
     no logging console: ''
@@ -18,13 +20,12 @@ configure_line:
   prompt: intrepid-2(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -35,4 +36,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: intrepid-2#

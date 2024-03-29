@@ -1,0 +1,107 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: HA-9400-S2(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: HA-9400-S2(config-line)#
+connect:
+  commands:
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
+    Connected to mock_device.
+    Escape character is '^]'.
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show interfaces status:
+      response:
+        - |-
+          
+          Port           Name               Status       Vlan       Duplex  Speed Type
+          Te2/3/0/1                         notconnect   4094         full    10G SFP-10G-ACTIVE-CABLE
+          Te2/3/0/2                         notconnect   1            auto  a-10G unknown
+          Te2/3/0/3                         notconnect   1            auto  a-10G unknown
+          Te2/3/0/4                         notconnect   1            auto  a-10G unknown
+          Te2/3/0/5                         notconnect   1            auto  a-10G unknown
+          Te2/3/0/6                         notconnect   1            auto  a-10G unknown
+          Te2/3/0/7                         notconnect   1            full    10G SFP-10G-ACTIVE-CABLE
+          Te2/3/0/8                         notconnect   1            full    10G SFP-10G-ACTIVE-CABLE
+          Fo2/3/0/9                         inactive     1            auto   auto unknown
+          Fo2/3/0/10                        inactive     1            auto   auto unknown
+          Ap2/3/0/1                         connected    1          a-full a-1000 unknown
+          Gi2/7/0/1                         notconnect   1            auto   auto 10/100/1000BaseTX
+          Gi2/7/0/2                         notconnect   1            auto   auto 10/100/1000BaseTX
+          Gi2/7/0/3                         notconnect   1            auto   auto 10/100/1000BaseTX
+          Gi2/7/0/4                         notconnect   1            auto   auto 10/100/1000BaseTX
+          
+          Port           Name               Status       Vlan       Duplex  Speed Type
+          Gi2/7/0/5                         notconnect   1            auto   auto 10/100/1000BaseTX
+          Gi2/7/0/6                         notconnect   1            auto   auto 10/100/1000BaseTX
+          Gi2/7/0/7                         notconnect   1            auto   auto 10/100/1000BaseTX
+          Gi2/7/0/8                         notconnect   1            auto   auto 10/100/1000BaseTX
+          Gi2/7/0/9                         notconnect   1            auto   auto 10/100/1000BaseTX
+          Gi2/7/0/10                        notconnect   1            auto   auto 10/100/1000BaseTX
+          Gi2/7/0/11                        notconnect   1            auto   auto 10/100/1000BaseTX
+          Gi2/7/0/12                        notconnect   1            auto   auto 10/100/1000BaseTX
+          Gi2/7/0/13                        notconnect   1            auto   auto 10/100/1000BaseTX
+          Gi2/7/0/14                        notconnect   1            auto   auto 10/100/1000BaseTX
+          Gi2/7/0/15                        notconnect   1            auto   auto 10/100/1000BaseTX
+          Gi2/7/0/16                        notconnect   1            auto   auto 10/100/1000BaseTX
+          
+          Port           Name               Status       Vlan       Duplex  Speed Type
+          Gi2/7/0/17                        notconnect   1            auto   auto 10/100/1000BaseTX
+          Gi2/7/0/18                        notconnect   1            auto   auto 10/100/1000BaseTX
+          Gi2/7/0/19                        notconnect   1            auto   auto 10/100/1000BaseTX
+          Gi2/7/0/20                        notconnect   1            auto   auto 10/100/1000BaseTX
+          Gi2/7/0/21                        notconnect   1            auto   auto 10/100/1000BaseTX
+          Gi2/7/0/22                        notconnect   1            auto   auto 10/100/1000BaseTX
+          Gi2/7/0/23                        connected    1          a-full a-1000 10/100/1000BaseTX
+          Gi2/7/0/24                        connected    1          a-full a-1000 10/100/1000BaseTX
+          Gi2/7/0/25                        notconnect   1            auto   auto 10/100/1000BaseTX
+          Gi2/7/0/26                        notconnect   1            auto   auto 10/100/1000BaseTX
+          Gi2/7/0/27                        notconnect   1            auto   auto 10/100/1000BaseTX
+          Gi2/7/0/28                        notconnect   1            auto   auto 10/100/1000BaseTX
+          
+          Port           Name               Status       Vlan       Duplex  Speed Type
+          Gi2/7/0/29                        notconnect   1            auto   auto 10/100/1000BaseTX
+          Gi2/7/0/30                        notconnect   1            auto   auto 10/100/1000BaseTX
+          Gi2/7/0/31                        notconnect   1            auto   auto 10/100/1000BaseTX
+          Gi2/7/0/32                        notconnect   1            auto   auto 10/100/1000BaseTX
+          Gi2/7/0/33                        notconnect   1            auto   auto 10/100/1000BaseTX
+          Gi2/7/0/34                        notconnect   1            auto   auto 10/100/1000BaseTX
+          Gi2/7/0/35                        notconnect   1            auto   auto 10/100/1000BaseTX
+          Gi2/7/0/36                        notconnect   1            auto   auto 10/100/1000BaseTX
+          Gi2/7/0/37                        notconnect   1            auto   auto 10/100/1000BaseTX
+          Gi2/7/0/38                        notconnect   1            auto   auto 10/100/1000BaseTX
+          Gi2/7/0/39                        notconnect   1            auto   auto 10/100/1000BaseTX
+          Gi2/7/0/40                        notconnect   1            auto   auto 10/100/1000BaseTX
+          
+          Port           Name               Status       Vlan       Duplex  Speed Type
+          Gi2/7/0/41                        notconnect   1            auto   auto 10/100/1000BaseTX
+          Gi2/7/0/42                        notconnect   1            auto   auto 10/100/1000BaseTX
+          Gi2/7/0/43                        notconnect   1            auto   auto 10/100/1000BaseTX
+          Gi2/7/0/44                        notconnect   1            auto   auto 10/100/1000BaseTX
+          Gi2/7/0/45                        notconnect   1            auto   auto 10/100/1000BaseTX
+          Gi2/7/0/46                        notconnect   1            auto   auto 10/100/1000BaseTX
+          Gi2/7/0/47                        notconnect   1            auto   auto 10/100/1000BaseTX
+          Gi2/7/0/48                        connected    1          a-full a-1000 10/100/1000BaseTX
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    show version | include operating mode: ''
+  prompt: HA-9400-S2#

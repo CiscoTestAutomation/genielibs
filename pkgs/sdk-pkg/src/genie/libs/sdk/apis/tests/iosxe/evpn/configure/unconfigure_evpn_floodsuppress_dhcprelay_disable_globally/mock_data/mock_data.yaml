@@ -5,7 +5,8 @@ configure:
     no service internal: "no service internal\r\n"
     line console:
       new_state: configure_line
-    no flooding-suppression dhcp-relay disable: "no flooding-suppression dhcp-relay disable\r\n"
+    no flooding-suppression dhcp-relay disable: "no flooding-suppression dhcp-relay
+      disable\r\n"
     l2vpn evpn: "l2vpn evpn\r\n"
     line console 0:
       new_state: configure_line
@@ -22,13 +23,12 @@ configure_line:
   prompt: NyqC(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -41,4 +41,5 @@ execute:
     term width 0: ''
     term width 511: ''
     terminal session-timeout 0: ''
+    show version | include operating mode: ''
   prompt: NyqC#

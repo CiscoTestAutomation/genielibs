@@ -14,13 +14,12 @@ configure_line:
   prompt: CL4-c9500(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,64 +29,109 @@ execute:
       new_state: configure
     show ipv6 interface Vlan1211:
       response:
-      - "Vlan1211 is up, line protocol is up\r\n  IPv6 is enabled, link-local address\
-        \ is FE80::6E8B:D3FF:FEBF:34DF \r\n  No Virtual link-local address(es):\r\n\
-        \  Global unicast address(es):\r\n    100:12:11::1, subnet is 100:12:11::/64\
-        \ \r\n  Joined group address(es):\r\n    FF02::1\r\n    FF02::2\r\n    FF02::1:FF00:1\r\
-        \n    FF02::1:FFBF:34DF\r\n  MTU is 9100 bytes\r\n  VPN Routing/Forwarding\
-        \ \"VRF-1200\"\r\n  ICMP error messages limited to one every 100 milliseconds\r\
-        \n  ICMP redirects are enabled\r\n  ICMP unreachables are sent\r\n  ND DAD\
-        \ is disabled\r\n  ND reachable time is 30000 milliseconds (using 30000)\r\
-        \n  ND advertised reachable time is 0 (unspecified)\r\n  ND advertised retransmit\
-        \ interval is 0 (unspecified)\r\n  ND router advertisements are sent every\
-        \ 200 seconds\r\n  ND router advertisements live for 1800 seconds\r\n  ND\
-        \ advertised default router preference is Medium\r\n  Hosts use stateless\
-        \ autoconfig for addresses."
-      - "Vlan1211 is up, line protocol is up\r\n  IPv6 is enabled, link-local address\
-        \ is FE80::6E8B:D3FF:FEBF:34DF \r\n  No Virtual link-local address(es):\r\n\
-        \  Global unicast address(es):\r\n    100:12:11::1, subnet is 100:12:11::/64\
-        \ \r\n  Joined group address(es):\r\n    FF02::1\r\n    FF02::2\r\n    FF02::1:FF00:1\r\
-        \n    FF02::1:FFBF:34DF\r\n  MTU is 9100 bytes\r\n  VPN Routing/Forwarding\
-        \ \"VRF-1200\"\r\n  ICMP error messages limited to one every 100 milliseconds\r\
-        \n  ICMP redirects are enabled\r\n  ICMP unreachables are sent\r\n  ND DAD\
-        \ is disabled\r\n  ND reachable time is 30000 milliseconds (using 30000)\r\
-        \n  ND advertised reachable time is 0 (unspecified)\r\n  ND advertised retransmit\
-        \ interval is 0 (unspecified)\r\n  ND router advertisements are sent every\
-        \ 200 seconds\r\n  ND router advertisements live for 1800 seconds\r\n  ND\
-        \ advertised default router preference is Medium\r\n  Hosts use stateless\
-        \ autoconfig for addresses."
-      - "Vlan1211 is up, line protocol is up\r\n  IPv6 is enabled, link-local address\
-        \ is FE80::6E8B:D3FF:FEBF:34DF \r\n  No Virtual link-local address(es):\r\n\
-        \  Global unicast address(es):\r\n    100:12:11::1, subnet is 100:12:11::/64\
-        \ \r\n  Joined group address(es):\r\n    FF02::1\r\n    FF02::2\r\n    FF02::1:FF00:1\r\
-        \n    FF02::1:FFBF:34DF\r\n  MTU is 9100 bytes\r\n  VPN Routing/Forwarding\
-        \ \"VRF-1200\"\r\n  ICMP error messages limited to one every 100 milliseconds\r\
-        \n  ICMP redirects are enabled\r\n  ICMP unreachables are sent\r\n  ND DAD\
-        \ is disabled\r\n  ND reachable time is 30000 milliseconds (using 30000)\r\
-        \n  ND advertised reachable time is 0 (unspecified)\r\n  ND advertised retransmit\
-        \ interval is 0 (unspecified)\r\n  ND router advertisements are sent every\
-        \ 200 seconds\r\n  ND router advertisements live for 1800 seconds\r\n  ND\
-        \ advertised default router preference is Medium\r\n  Hosts use stateless\
-        \ autoconfig for addresses."
-      - "Vlan1211 is up, line protocol is up\r\n  IPv6 is enabled, link-local address\
-        \ is FE80::6E8B:D3FF:FEBF:34DF \r\n  No Virtual link-local address(es):\r\n\
-        \  Global unicast address(es):\r\n    100:12:11::1, subnet is 100:12:11::/64\
-        \ \r\n  Joined group address(es):\r\n    FF02::1\r\n    FF02::2\r\n    FF02::1:FF00:1\r\
-        \n    FF02::1:FFBF:34DF\r\n  MTU is 9100 bytes\r\n  VPN Routing/Forwarding\
-        \ \"VRF-1200\"\r\n  ICMP error messages limited to one every 100 milliseconds\r\
-        \n  ICMP redirects are enabled\r\n  ICMP unreachables are sent\r\n  ND DAD\
-        \ is disabled\r\n  ND reachable time is 30000 milliseconds (using 30000)\r\
-        \n  ND advertised reachable time is 0 (unspecified)\r\n  ND advertised retransmit\
-        \ interval is 0 (unspecified)\r\n  ND router advertisements are sent every\
-        \ 200 seconds\r\n  ND router advertisements live for 1800 seconds\r\n  ND\
-        \ advertised default router preference is Medium\r\n  Hosts use stateless\
-        \ autoconfig for addresses."
+        - |-
+          Vlan1211 is up, line protocol is up
+            IPv6 is enabled, link-local address is FE80::6E8B:D3FF:FEBF:34DF 
+            No Virtual link-local address(es):
+            Global unicast address(es):
+              100:12:11::1, subnet is 100:12:11::/64 
+            Joined group address(es):
+              FF02::1
+              FF02::2
+              FF02::1:FF00:1
+              FF02::1:FFBF:34DF
+            MTU is 9100 bytes
+            VPN Routing/Forwarding "VRF-1200"
+            ICMP error messages limited to one every 100 milliseconds
+            ICMP redirects are enabled
+            ICMP unreachables are sent
+            ND DAD is disabled
+            ND reachable time is 30000 milliseconds (using 30000)
+            ND advertised reachable time is 0 (unspecified)
+            ND advertised retransmit interval is 0 (unspecified)
+            ND router advertisements are sent every 200 seconds
+            ND router advertisements live for 1800 seconds
+            ND advertised default router preference is Medium
+            Hosts use stateless autoconfig for addresses.
+        - |-
+          Vlan1211 is up, line protocol is up
+            IPv6 is enabled, link-local address is FE80::6E8B:D3FF:FEBF:34DF 
+            No Virtual link-local address(es):
+            Global unicast address(es):
+              100:12:11::1, subnet is 100:12:11::/64 
+            Joined group address(es):
+              FF02::1
+              FF02::2
+              FF02::1:FF00:1
+              FF02::1:FFBF:34DF
+            MTU is 9100 bytes
+            VPN Routing/Forwarding "VRF-1200"
+            ICMP error messages limited to one every 100 milliseconds
+            ICMP redirects are enabled
+            ICMP unreachables are sent
+            ND DAD is disabled
+            ND reachable time is 30000 milliseconds (using 30000)
+            ND advertised reachable time is 0 (unspecified)
+            ND advertised retransmit interval is 0 (unspecified)
+            ND router advertisements are sent every 200 seconds
+            ND router advertisements live for 1800 seconds
+            ND advertised default router preference is Medium
+            Hosts use stateless autoconfig for addresses.
+        - |-
+          Vlan1211 is up, line protocol is up
+            IPv6 is enabled, link-local address is FE80::6E8B:D3FF:FEBF:34DF 
+            No Virtual link-local address(es):
+            Global unicast address(es):
+              100:12:11::1, subnet is 100:12:11::/64 
+            Joined group address(es):
+              FF02::1
+              FF02::2
+              FF02::1:FF00:1
+              FF02::1:FFBF:34DF
+            MTU is 9100 bytes
+            VPN Routing/Forwarding "VRF-1200"
+            ICMP error messages limited to one every 100 milliseconds
+            ICMP redirects are enabled
+            ICMP unreachables are sent
+            ND DAD is disabled
+            ND reachable time is 30000 milliseconds (using 30000)
+            ND advertised reachable time is 0 (unspecified)
+            ND advertised retransmit interval is 0 (unspecified)
+            ND router advertisements are sent every 200 seconds
+            ND router advertisements live for 1800 seconds
+            ND advertised default router preference is Medium
+            Hosts use stateless autoconfig for addresses.
+        - |-
+          Vlan1211 is up, line protocol is up
+            IPv6 is enabled, link-local address is FE80::6E8B:D3FF:FEBF:34DF 
+            No Virtual link-local address(es):
+            Global unicast address(es):
+              100:12:11::1, subnet is 100:12:11::/64 
+            Joined group address(es):
+              FF02::1
+              FF02::2
+              FF02::1:FF00:1
+              FF02::1:FFBF:34DF
+            MTU is 9100 bytes
+            VPN Routing/Forwarding "VRF-1200"
+            ICMP error messages limited to one every 100 milliseconds
+            ICMP redirects are enabled
+            ICMP unreachables are sent
+            ND DAD is disabled
+            ND reachable time is 30000 milliseconds (using 30000)
+            ND advertised reachable time is 0 (unspecified)
+            ND advertised retransmit interval is 0 (unspecified)
+            ND router advertisements are sent every 200 seconds
+            ND router advertisements live for 1800 seconds
+            ND advertised default router preference is Medium
+            Hosts use stateless autoconfig for addresses.
       response_type: circular
     show ipv6 interface Vlan2000:
       response:
-      - ''
+        - ''
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: CL4-c9500#

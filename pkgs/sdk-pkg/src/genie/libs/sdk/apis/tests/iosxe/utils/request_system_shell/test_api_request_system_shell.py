@@ -62,3 +62,22 @@ class TestRequestSystemShell(unittest.TestCase):
                            'cpld_util.sh\t      issu\t      root\r\n'
                            'crashinfo\t      lib\t      run')
         self.assertEqual(result, expected_output)
+
+    def test_request_system_shell_processor_slot(self):
+        self.maxDiff = None
+        result = request_system_shell(self.device, None, 'F0')
+        expected_output = ('Activity within this shell can jeopardize the functioning of the system.\r\n'
+                           'Are you sure you want to continue? [y/n] y\r\n'
+                           '2024/02/28 11:43:13 : Shell access was granted to user ; Trace file: , '
+                           '/harddisk/tracelogs/system_shell_F0-0.5246_0.20240228114313.bin\r\n'
+                           '** \r\n'
+                           'Activity within this shell can jeopardize the functioning \r\n'
+                           'of the system.\r\n'
+                           'Use this functionality only under supervision of Cisco Support.\r\n'
+                           'Only RP shell access is available for this platform.\r\n'
+                           '\r\n'
+                           'Session will be logged to:\r\n'
+                           'harddisk:tracelogs/system_shell_F0-0.5246_0.20240228114313.bin\r\n'
+                           '**\r\n'
+                           "Terminal type 'network' unknown. Assuming vt100")
+        self.assertEqual(result, expected_output)

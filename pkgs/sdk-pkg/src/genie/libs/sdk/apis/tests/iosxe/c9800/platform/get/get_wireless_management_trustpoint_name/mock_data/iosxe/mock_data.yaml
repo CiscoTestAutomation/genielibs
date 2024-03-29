@@ -14,13 +14,12 @@ configure_line:
   prompt: vidya-ewlc-5(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -31,10 +30,15 @@ execute:
     show version: ''
     show wireless management trustpoint:
       response:
-      - "Trustpoint Name  : vidya-ewlc-5_WLC_TP\r\nCertificate Info : Available\r\n\
-        Certificate Type : SSC\r\nCertificate Hash : f508dc7335c46de2fd17051c9bc4aa9fa13e1730\r\
-        \nPrivate key Info : Available\r\nFIPS suitability : Not Applicable"
+        - |-
+          Trustpoint Name  : vidya-ewlc-5_WLC_TP
+          Certificate Info : Available
+          Certificate Type : SSC
+          Certificate Hash : f508dc7335c46de2fd17051c9bc4aa9fa13e1730
+          Private key Info : Available
+          FIPS suitability : Not Applicable
       response_type: circular
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: vidya-ewlc-5#

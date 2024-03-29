@@ -1,7 +1,7 @@
 configure:
   commands:
-    crypto ikev2 limit max-in-negotation-sa 100: "crypto ikev2 limit max-in-negotation-sa\
-      \ 100\r\n"
+    crypto ikev2 limit max-in-negotation-sa 100: "crypto ikev2 limit max-in-negotation-sa
+      100\r\n"
     crypto ikev2 limit max-sa 4000: "crypto ikev2 limit max-sa 4000\r\n"
     end:
       new_state: execute
@@ -17,13 +17,12 @@ configure_line:
   prompt: TLS_Mad1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -34,4 +33,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: TLS_Mad1#

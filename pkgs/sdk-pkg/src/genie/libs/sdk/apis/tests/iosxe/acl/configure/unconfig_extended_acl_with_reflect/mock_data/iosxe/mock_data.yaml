@@ -5,14 +5,14 @@ configure:
     ip access-list extended test2: "ip access-list extended test2\r\n"
     line console 0:
       new_state: configure_line
-    no 10 permit tcp host 1.1.1.1 host 3.3.3.3 reflect R10000 timeout 120: "no 10\
-      \ permit tcp host 1.1.1.1 host 3.3.3.3 r\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b$t tcp host 1.1.1.1 host\
-      \ 3.3.3.3 re         \b\b\b\b\b\b\b\b\bflect R10\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b 1.1.1.1 host 3.3.3.3\
-      \ reflect R100         \b\b\b\b\b\b\b\b\b00 timeou\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\bost 3.3.3.3 reflect\
-      \ R10000 timeout         \b\b\b\b\b\b\b\b\b 120\r\n"
+    no 10 permit tcp host 1.1.1.1 host 3.3.3.3 reflect R10000 timeout 120: "no 10
+      permit tcp host 1.1.1.1 host 3.3.3.3 r\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b$t tcp host 1.1.1.1 host 3.3.3.3
+      re         \b\b\b\b\b\b\b\b\bflect R10\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b 1.1.1.1 host 3.3.3.3 reflect
+      R100         \b\b\b\b\b\b\b\b\b00 timeou\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\bost 3.3.3.3 reflect R10000
+      timeout         \b\b\b\b\b\b\b\b\b 120\r\n"
     no logging console: ''
   prompt: Cat9600-SVL_CGW(config)#
 configure_line:
@@ -23,13 +23,12 @@ configure_line:
   prompt: Cat9600-SVL_CGW(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -40,4 +39,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: Cat9600-SVL_CGW#

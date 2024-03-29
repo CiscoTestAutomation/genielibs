@@ -14,13 +14,12 @@ configure_line:
   prompt: vSTA#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -31,9 +30,12 @@ execute:
     show version: ''
     start ap id 1 to 1:
       response:
-      - "Starting vAPs at 1/1s\r\nStarting AP wsim-AP-0001..done! [141 ms]\r\n1 vAP\
-        \ started [ 1142 ms] (exec time [ 141 ms])"
+        - |-
+          Starting vAPs at 1/1s
+          Starting AP wsim-AP-0001..done! [141 ms]
+          1 vAP started [ 1142 ms] (exec time [ 141 ms])
       response_type: circular
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: vSTA#

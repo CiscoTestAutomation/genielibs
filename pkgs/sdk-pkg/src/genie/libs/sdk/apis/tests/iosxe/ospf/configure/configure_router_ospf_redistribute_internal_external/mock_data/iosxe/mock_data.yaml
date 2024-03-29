@@ -5,12 +5,12 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-    redistribute ospf 2 match internal external             1 external 2: "redistribute\
-      \ ospf 2 match internal external  \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b$e ospf 2 match internal external\
-      \            \b\b\b\b\b\b\b\b\b         \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+    redistribute ospf 2 match internal external             1 external 2: "redistribute
+      ospf 2 match internal external  \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b$e ospf 2 match internal external\
+      \            \b\b\b\b\b\b\b\b\b         \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
       \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\batch internal external \
-      \                     \b\b\b\b\b\b\b\b\b1 externa\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \                     \b\b\b\b\b\b\b\b\b1 externa\b\b\b\b\b\b\b\b\b\b\b\b\b\b
       \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\bnal external   \
       \          1 external         \b\b\b\b\b\b\b\b\b 2\r\n"
     router ospf 2: "router ospf 2\r\n"
@@ -23,13 +23,12 @@ configure_line:
   prompt: stack3-nyquist-1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -40,4 +39,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: stack3-nyquist-1#

@@ -14,13 +14,12 @@ configure_line:
   prompt: Switch(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,33 +29,39 @@ execute:
       new_state: configure
     show platform:
       response:
-      - "Chassis type: C9606R              \r\n\r\nSlot      Type                State\
-        \                 Insert time (ago) \r\n--------- ------------------- ---------------------\
-        \ ----------------- \r\n1         C9600-LC-24C        ok                 \
-        \   1w6d          \r\n 1/0      C9600-LC-24C        ok                   \
-        \ 1w6d          \r\n2         C9600-LC-40YL4CD    ok                    1w6d\
-        \          \r\n 2/0      C9600-LC-40YL4CD    ok                    1w6d  \
-        \        \r\n3         C9600-SUP-1         ok                    1w6d    \
-        \      \r\n 3/0      C9600-SUP-1         ok                    1w6d      \
-        \    \r\n4         C9600-SUP-1         ok                    1w6d        \
-        \  \r\n 4/0      C9600-SUP-1         ok                    1w6d          \r\
-        \n5         C9600-LC-48YL       ok                    1w6d          \r\n 5/0\
-        \      C9600-LC-48YL       ok                    1w6d          \r\nR0    \
-        \    C9600-SUP-1         ok, active            1w6d          \r\nR1      \
-        \                      unknown               1w6d          \r\nP1        C9600-PWR-2KWAC\
-        \     ps, f0, f1, fail      1w6d          \r\nP2        C9600-PWR-2KWAC  \
-        \   ok                    1w6d          \r\nP3        C9600-PWR-2KWAC    \
-        \ ok                    1w6d          \r\nP4        C9600-PWR-2KWAC     ps,\
-        \ f0, f1, fail      1w6d          \r\nP5        C9606-FAN           ok   \
-        \                 1w6d          \r\n\r\nSlot      CPLD Version        Firmware\
-        \ Version                        \r\n--------- ------------------- ---------------------------------------\
-        \ \r\n1         20121580            17.8.1r                             \r\
-        \n2         21061140            17.8.1r                             \r\n3\
-        \         21071424            17.8.1r                             \r\n4  \
-        \       21071424            N/A                                 \r\n5    \
-        \     20121580            17.8.1r"
+        - |-
+          Chassis type: C9606R              
+          
+          Slot      Type                State                 Insert time (ago) 
+          --------- ------------------- --------------------- ----------------- 
+          1         C9600-LC-24C        ok                    1w6d          
+           1/0      C9600-LC-24C        ok                    1w6d          
+          2         C9600-LC-40YL4CD    ok                    1w6d          
+           2/0      C9600-LC-40YL4CD    ok                    1w6d          
+          3         C9600-SUP-1         ok                    1w6d          
+           3/0      C9600-SUP-1         ok                    1w6d          
+          4         C9600-SUP-1         ok                    1w6d          
+           4/0      C9600-SUP-1         ok                    1w6d          
+          5         C9600-LC-48YL       ok                    1w6d          
+           5/0      C9600-LC-48YL       ok                    1w6d          
+          R0        C9600-SUP-1         ok, active            1w6d          
+          R1                            unknown               1w6d          
+          P1        C9600-PWR-2KWAC     ps, f0, f1, fail      1w6d          
+          P2        C9600-PWR-2KWAC     ok                    1w6d          
+          P3        C9600-PWR-2KWAC     ok                    1w6d          
+          P4        C9600-PWR-2KWAC     ps, f0, f1, fail      1w6d          
+          P5        C9606-FAN           ok                    1w6d          
+          
+          Slot      CPLD Version        Firmware Version                        
+          --------- ------------------- --------------------------------------- 
+          1         20121580            17.8.1r                             
+          2         21061140            17.8.1r                             
+          3         21071424            17.8.1r                             
+          4         21071424            N/A                                 
+          5         20121580            17.8.1r
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: Switch#

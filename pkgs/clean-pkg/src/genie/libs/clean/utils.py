@@ -629,8 +629,19 @@ def deprecate_stage(deprecated_in, removed_in=None, details=None):
 def get_clean_template(device, template='DEFAULT'):
     """API to return the clean template as a loaded dictionary."""
 
-    abstract = Lookup.from_device(device, packages={'clean': clean})
-    return getattr(abstract.clean.templates.templates, template)
+    # Check for other clean packages, if not fall back to generic clean
+    for entrypoint in iter_entry_points(group=CLEAN_PLUGIN_ENTRYPOINT):
+        try:
+            # Load the clean entry point
+            clean_entry = entrypoint.load()
+            if clean_entry:
+                abstract = Lookup.from_device(device, packages={'entry': clean_entry})
+                return getattr(abstract.entry.templates.templates, template)
+        except Exception as e:
+            continue
+    else:
+        abstract = Lookup.from_device(device, packages={'clean': clean})
+        return getattr(abstract.clean.templates.templates, template)
 
 def raise_(ex):
     """ General purpose raiser.

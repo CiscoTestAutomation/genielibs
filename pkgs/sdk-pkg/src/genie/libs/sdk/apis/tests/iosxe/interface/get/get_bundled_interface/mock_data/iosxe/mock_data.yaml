@@ -14,13 +14,12 @@ configure_line:
   prompt: R1_xe(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -28,19 +27,34 @@ execute:
       new_state: configure
     show etherchannel summary:
       response:
-      - "Flags:  D - down        P/bndl - bundled in port-channel\r\n        I - stand-alone\
-        \ s/susp - suspended\r\n        H - Hot-standby (LACP only)\r\n        R -\
-        \ Layer3      S - Layer2\r\n        U - in use      f - failed to allocate\
-        \ aggregator\r\n\r\n        M - not in use, minimum links not met\r\n    \
-        \    u - unsuitable for bundling\r\n        w - waiting to be aggregated\r\
-        \n        d - default port\r\n\r\n\r\nNumber of channel-groups in use: 2\r\
-        \nNumber of aggregators:           2\r\n\r\nGroup  Port-channel  Protocol\
-        \    Ports\r\n------+-------------+-----------+-----------------------------------------------\r\
-        \n12\tPo12(RD)\t\tLACP\t Gi4(susp) Gi5(susp)\r\n13\tPo13(RU)\t\tLACP\t Gi6(bndl)\
-        \ Gi7(bndl)\r\n\r\nRU - L3 port-channel UP State\r\nSU - L2 port-channel UP\
-        \ state\r\nP/bndl -  Bundled\r\nS/susp  - Suspended"
+        - |-
+          Flags:  D - down        P/bndl - bundled in port-channel
+                  I - stand-alone s/susp - suspended
+                  H - Hot-standby (LACP only)
+                  R - Layer3      S - Layer2
+                  U - in use      f - failed to allocate aggregator
+          
+                  M - not in use, minimum links not met
+                  u - unsuitable for bundling
+                  w - waiting to be aggregated
+                  d - default port
+          
+          
+          Number of channel-groups in use: 2
+          Number of aggregators:           2
+          
+          Group  Port-channel  Protocol    Ports
+          ------+-------------+-----------+-----------------------------------------------
+          12	Po12(RD)		LACP	 Gi4(susp) Gi5(susp)
+          13	Po13(RU)		LACP	 Gi6(bndl) Gi7(bndl)
+          
+          RU - L3 port-channel UP State
+          SU - L2 port-channel UP state
+          P/bndl -  Bundled
+          S/susp  - Suspended
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: R1_xe#

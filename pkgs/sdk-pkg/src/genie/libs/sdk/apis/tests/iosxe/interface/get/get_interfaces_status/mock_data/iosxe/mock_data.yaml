@@ -18,61 +18,60 @@ configure_line:
   prompt: R1_xe(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
     config term:
       new_state: configure
-    show ip interface brief: "Interface              IP-Address      OK? Method Status\
-      \                Protocol\r\nGigabitEthernet1       172.16.1.211    YES TFTP\
-      \   up                    up      \r\nGigabitEthernet2       unassigned    \
-      \  YES unset  up                    up      \r\nGigabitEthernet2.90    10.12.90.1\
-      \      YES TFTP   up                    up      \r\nGigabitEthernet2.110   10.12.110.1\
-      \     YES TFTP   up                    up      \r\nGigabitEthernet2.115   10.12.115.1\
-      \     YES TFTP   up                    up      \r\nGigabitEthernet2.120   10.12.120.1\
-      \     YES TFTP   up                    up      \r\nGigabitEthernet2.390   10.12.90.1\
-      \      YES TFTP   up                    up      \r\nGigabitEthernet2.410   10.12.110.1\
-      \     YES TFTP   up                    up      \r\nGigabitEthernet2.415   10.12.115.1\
-      \     YES TFTP   up                    up      \r\nGigabitEthernet2.420   10.12.120.1\
-      \     YES TFTP   up                    up      \r\nGigabitEthernet3       unassigned\
-      \      YES unset  up                    up      \r\nGigabitEthernet3.90    10.13.90.1\
-      \      YES TFTP   up                    up      \r\nGigabitEthernet3.110   10.13.110.1\
-      \     YES TFTP   up                    up      \r\nGigabitEthernet3.115   10.13.115.1\
-      \     YES TFTP   up                    up      \r\nGigabitEthernet3.120   10.13.120.1\
-      \     YES TFTP   up                    up      \r\nGigabitEthernet3.390   10.13.90.1\
-      \      YES TFTP   up                    up      \r\nGigabitEthernet3.410   10.13.110.1\
-      \     YES TFTP   up                    up      \r\nGigabitEthernet3.415   10.13.115.1\
-      \     YES TFTP   up                    up      \r\nGigabitEthernet3.420   10.13.120.1\
-      \     YES TFTP   up                    up      \r\nGigabitEthernet4       unassigned\
-      \      YES unset  up                    up      \r\nGigabitEthernet5       unassigned\
-      \      YES unset  up                    up      \r\nGigabitEthernet6       unassigned\
-      \      YES unset  up                    up      \r\nGigabitEthernet7       unassigned\
-      \      YES unset  up                    up      \r\nLoopback0              1.1.1.1\
-      \         YES TFTP   up                    up      \r\nLoopback300         \
-      \   1.1.1.1         YES TFTP   up                    up      \r\nPort-channel12\
-      \         unassigned      YES unset  down                  down    \r\nPort-channel13\
-      \         unassigned      YES unset  up                    up      \r\nTunnel0\
-      \                unassigned      YES unset  up                    up      \r\
-      \nTunnel1                unassigned      YES unset  up                    up\
-      \      \r\nTunnel2                10.13.110.1     YES unset  up            \
-      \        down    \r\nTunnel3                10.13.110.1     YES unset  up  \
-      \                  down    \r\nTunnel4                1.1.1.1         YES unset\
-      \  up                    up      \r\nTunnel5                1.1.1.1        \
-      \ YES unset  up                    up      \r\nTunnel6                1.1.1.1\
-      \         YES unset  up                    up      \r\nTunnel7             \
-      \   1.1.1.1         YES unset  up                    up      \r\nTunnel8   \
-      \             unassigned      YES unset  up                    down    \r\n\
-      Tunnel9                unassigned      YES unset  up                    down"
+    show ip interface brief: |-
+      Interface              IP-Address      OK? Method Status                Protocol
+      GigabitEthernet1       172.16.1.211    YES TFTP   up                    up      
+      GigabitEthernet2       unassigned      YES unset  up                    up      
+      GigabitEthernet2.90    10.12.90.1      YES TFTP   up                    up      
+      GigabitEthernet2.110   10.12.110.1     YES TFTP   up                    up      
+      GigabitEthernet2.115   10.12.115.1     YES TFTP   up                    up      
+      GigabitEthernet2.120   10.12.120.1     YES TFTP   up                    up      
+      GigabitEthernet2.390   10.12.90.1      YES TFTP   up                    up      
+      GigabitEthernet2.410   10.12.110.1     YES TFTP   up                    up      
+      GigabitEthernet2.415   10.12.115.1     YES TFTP   up                    up      
+      GigabitEthernet2.420   10.12.120.1     YES TFTP   up                    up      
+      GigabitEthernet3       unassigned      YES unset  up                    up      
+      GigabitEthernet3.90    10.13.90.1      YES TFTP   up                    up      
+      GigabitEthernet3.110   10.13.110.1     YES TFTP   up                    up      
+      GigabitEthernet3.115   10.13.115.1     YES TFTP   up                    up      
+      GigabitEthernet3.120   10.13.120.1     YES TFTP   up                    up      
+      GigabitEthernet3.390   10.13.90.1      YES TFTP   up                    up      
+      GigabitEthernet3.410   10.13.110.1     YES TFTP   up                    up      
+      GigabitEthernet3.415   10.13.115.1     YES TFTP   up                    up      
+      GigabitEthernet3.420   10.13.120.1     YES TFTP   up                    up      
+      GigabitEthernet4       unassigned      YES unset  up                    up      
+      GigabitEthernet5       unassigned      YES unset  up                    up      
+      GigabitEthernet6       unassigned      YES unset  up                    up      
+      GigabitEthernet7       unassigned      YES unset  up                    up      
+      Loopback0              1.1.1.1         YES TFTP   up                    up      
+      Loopback300            1.1.1.1         YES TFTP   up                    up      
+      Port-channel12         unassigned      YES unset  down                  down    
+      Port-channel13         unassigned      YES unset  up                    up      
+      Tunnel0                unassigned      YES unset  up                    up      
+      Tunnel1                unassigned      YES unset  up                    up      
+      Tunnel2                10.13.110.1     YES unset  up                    down    
+      Tunnel3                10.13.110.1     YES unset  up                    down    
+      Tunnel4                1.1.1.1         YES unset  up                    up      
+      Tunnel5                1.1.1.1         YES unset  up                    up      
+      Tunnel6                1.1.1.1         YES unset  up                    up      
+      Tunnel7                1.1.1.1         YES unset  up                    up      
+      Tunnel8                unassigned      YES unset  up                    down    
+      Tunnel9                unassigned      YES unset  up                    down
     show version: ''
     term length 0: ''
     term width 0: ''
     term width 511: ''
     terminal session-timeout 0: ''
+    show version | include operating mode: ''
   prompt: R1_xe#

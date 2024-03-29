@@ -14,13 +14,12 @@ configure_line:
   prompt: Switch(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,16 +29,26 @@ execute:
       new_state: configure
     show redundancy states:
       response:
-      - "       my state = 13 -ACTIVE \r\n     peer state = 1  -DISABLED \r\n    \
-        \       Mode = Simplex\r\n           Unit = Primary\r\n        Unit ID = 2\r\
-        \n\r\nRedundancy Mode (Operational) = Non-redundant\r\nRedundancy Mode (Configured)\
-        \  = sso\r\nRedundancy State              = Non Redundant\r\n     Maintenance\
-        \ Mode = Disabled\r\n    Manual Swact = disabled (system is simplex (no peer\
-        \ unit))\r\n Communications = Down      Reason: Simplex mode\r\n\r\n   client\
-        \ count = 121\r\n client_notification_TMR = 30000 milliseconds\r\n       \
-        \    RF debug mask = 0x0"
+        - |2-
+                 my state = 13 -ACTIVE 
+               peer state = 1  -DISABLED 
+                     Mode = Simplex
+                     Unit = Primary
+                  Unit ID = 2
+          
+          Redundancy Mode (Operational) = Non-redundant
+          Redundancy Mode (Configured)  = sso
+          Redundancy State              = Non Redundant
+               Maintenance Mode = Disabled
+              Manual Swact = disabled (system is simplex (no peer unit))
+           Communications = Down      Reason: Simplex mode
+          
+             client count = 121
+           client_notification_TMR = 30000 milliseconds
+                     RF debug mask = 0x0
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: Switch#

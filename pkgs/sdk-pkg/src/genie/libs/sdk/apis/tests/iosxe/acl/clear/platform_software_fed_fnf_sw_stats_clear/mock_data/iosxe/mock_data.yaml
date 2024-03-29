@@ -14,13 +14,12 @@ configure_line:
   prompt: Cat9600-SVL_CGW(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,9 +29,12 @@ execute:
       new_state: configure
     show platform software fed switch active fnf sw-stats-clear:
       response:
-      - "\r\nSoftware Statistics Cleared..."
+        - |-
+          
+          Software Statistics Cleared...
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: Cat9600-SVL_CGW#

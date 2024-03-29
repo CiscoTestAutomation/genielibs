@@ -8,12 +8,12 @@ configure:
       new_state: configure_line
     no enable: "no enable\r\n"
     no logging console: ''
-    no snmp mib bulkstat object-list cleanupObject: "no snmp mib bulkstat object-list\
-      \ cleanupObject\r\n"
+    no snmp mib bulkstat object-list cleanupObject: "no snmp mib bulkstat object-list
+      cleanupObject\r\n"
     no snmp mib bulkstat schema cleanupSchema: "no snmp mib bulkstat schema cleanupSchema\r\
       \n"
-    no snmp mib bulkstat transfer cleanupTransfer: "no snmp mib bulkstat transfer\
-      \ cleanupTransfer\r\n"
+    no snmp mib bulkstat transfer cleanupTransfer: "no snmp mib bulkstat transfer
+      cleanupTransfer\r\n"
   prompt: stack3-nyquist-1(config)#
 configure_line:
   commands:
@@ -23,13 +23,12 @@ configure_line:
   prompt: stack3-nyquist-1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -40,4 +39,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: stack3-nyquist-1#

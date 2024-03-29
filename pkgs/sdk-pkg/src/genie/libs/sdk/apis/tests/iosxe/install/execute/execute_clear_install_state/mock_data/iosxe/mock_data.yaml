@@ -64,4 +64,5 @@ execute:
       response:
       - "Building configuration...\r\n[OK]"
       response_type: circular
+    show version | include operating mode: ''
   prompt: PI-9300-Stack-103#

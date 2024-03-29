@@ -1,5 +1,4 @@
 import os
-import os
 import unittest
 from pyats.topology import loader
 from genie.libs.sdk.apis.iosxe.utils import perform_ssh
@@ -11,7 +10,7 @@ class TestPerformSsh(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          Switch-9300:
+          Switch:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -19,11 +18,11 @@ class TestPerformSsh(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: c9500
-            type: c9500
+            platform: c9200
+            type: c9200
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Switch-9300']
+        self.device = self.testbed.devices['Switch']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -31,6 +30,6 @@ class TestPerformSsh(unittest.TestCase):
         )
 
     def test_perform_ssh(self):
-        result = perform_ssh(self.device, 'cisco', '10.1.1.1', 'lab', 'lab', None, 'lab', 60, 22, None, '3des')
-        expected_output = None
+        result = perform_ssh(self.device, 'Switch', '1.1.1.1', 'test-user', 'cisco@123', None, 'cisco@123', 60, 22, None, None)
+        expected_output = True
         self.assertEqual(result, expected_output)

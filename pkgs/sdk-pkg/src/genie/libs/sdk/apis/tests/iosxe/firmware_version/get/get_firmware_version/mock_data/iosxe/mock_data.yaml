@@ -14,13 +14,12 @@ configure_line:
   prompt: HA-9400-S2(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,139 +29,185 @@ execute:
       new_state: configure
     show firmware version switch 1 all:
       response:
-      - "Slot      Device Name / Model                     Firmware Version      \
-        \        \r\n--------- --------------------------------------- -----------------------------\
-        \ \r\n 3         Supervisor Rommon (Active)              16.9.0.1        \
-        \              \r\n 3         Supervisor CPLD                         18041605\
-        \                      \r\n -         Eth Lan Spi                        \
-        \     0x8000065a                    \r\n PS17      Fantray               \
-        \                  17041002                      \r\n 1         Line Card\
-        \ / C9400-LC-48U                0x0d (170503)                 \r\n 6     \
-        \    Line Card / C9400-LC-48U                0x0d (170503)               \
-        \  \r\n PS3       Power Supply (PS PRI, PS_SEC, PS_I2C)   (3.4, 3.3, 3.2)\
-        \               \r\n PS4       Power Supply (PS PRI, PS_SEC, PS_I2C)   (7.5,\
-        \ 7.0, 6.0)               \r\n 1         Line Card / C9400-LC-48U        \
-        \        0xae025011                    \r\n 3         SUP / C9400-SUP-1  \
-        \                     0x0000521e                    \r\n 6         Line Card\
-        \ / C9400-LC-48U                0xae025011                    \r\n 1     \
-        \    Line Card / C9400-LC-48U                0x32                \r\n 6  \
-        \       Line Card / C9400-LC-48U                0x32"
+        - |-
+          Slot      Device Name / Model                     Firmware Version              
+          --------- --------------------------------------- ----------------------------- 
+           3         Supervisor Rommon (Active)              16.9.0.1                      
+           3         Supervisor CPLD                         18041605                      
+           -         Eth Lan Spi                             0x8000065a                    
+           PS17      Fantray                                 17041002                      
+           1         Line Card / C9400-LC-48U                0x0d (170503)                 
+           6         Line Card / C9400-LC-48U                0x0d (170503)                 
+           PS3       Power Supply (PS PRI, PS_SEC, PS_I2C)   (3.4, 3.3, 3.2)               
+           PS4       Power Supply (PS PRI, PS_SEC, PS_I2C)   (7.5, 7.0, 6.0)               
+           1         Line Card / C9400-LC-48U                0xae025011                    
+           3         SUP / C9400-SUP-1                       0x0000521e                    
+           6         Line Card / C9400-LC-48U                0xae025011                    
+           1         Line Card / C9400-LC-48U                0x32                
+           6         Line Card / C9400-LC-48U                0x32
       response_type: circular
     show firmware version switch 2 all:
       response:
-      - "Slot      Device Name / Model                     Firmware Version      \
-        \        \r\n--------- --------------------------------------- -----------------------------\
-        \ \r\n 3         Supervisor Rommon (Active)              17.10.1r        \
-        \              \r\n 3         Supervisor CPLD                         18041605\
-        \                      \r\n -         Eth Lan Spi                        \
-        \     0x8000065a                    \r\n PS17      Fantray               \
-        \                  17050302                      \r\n 7         Line Card\
-        \ / C9400-LC-48U                0x0d (170503)                 \r\n PS1   \
-        \    Power Supply (PS PRI, PS_SEC, PS_I2C)   (7.3, 7.0, 6.0)             \
-        \  \r\n 3         SUP / C9400-SUP-1                       0x0000521e     \
-        \               \r\n 7         Line Card / C9400-LC-48U                0xae025011\
-        \                    \r\n 7         Line Card / C9400-LC-48U             \
-        \   0x32"
+        - |-
+          Slot      Device Name / Model                     Firmware Version              
+          --------- --------------------------------------- ----------------------------- 
+           3         Supervisor Rommon (Active)              17.10.1r                      
+           3         Supervisor CPLD                         18041605                      
+           -         Eth Lan Spi                             0x8000065a                    
+           PS17      Fantray                                 17050302                      
+           7         Line Card / C9400-LC-48U                0x0d (170503)                 
+           PS1       Power Supply (PS PRI, PS_SEC, PS_I2C)   (7.3, 7.0, 6.0)               
+           3         SUP / C9400-SUP-1                       0x0000521e                    
+           7         Line Card / C9400-LC-48U                0xae025011                    
+           7         Line Card / C9400-LC-48U                0x32
       response_type: circular
     show module:
       response:
-      - "Chassis Type: C9407R              \r\n\r\nSwitch Number 1 \r\n\r\nMod Ports\
-        \ Card Type                                   Model          Serial No.\r\n\
-        ---+-----+--------------------------------------+--------------+--------------\r\
-        \n1   48   48-Port UPOE 10/100/1000 (RJ-45)            C9400-LC-48U     JAE2132075Q\r\
-        \n3   11   Supervisor 1 Module                         C9400-SUP-1      JAE2050072Q\r\
-        \n6   48   48-Port UPOE 10/100/1000 (RJ-45)            C9400-LC-48U     JAE21270C22\r\
-        \n\r\nMod MAC addresses                    Hw   Fw           Sw          \
-        \       Status\r\n---+--------------------------------+----+------------+------------------+--------\r\
-        \n1   E4AA.5D5A.1D5C to E4AA.5D5A.1D8B 1.0  16.9.0.1      S2C            \
-        \    ok         \r\n3   0C78.885D.8D6C to 0C78.885D.8D76 0.5  16.9.0.1   \
-        \   S2C                ok         \r\n6   E4AA.5D59.AE2C to E4AA.5D59.AE5B\
-        \ 1.0  16.9.0.1      S2C                ok         \r\n\r\nMod Redundancy\
-        \ Role     Operating Mode  Configured Mode  Redundancy Status\r\n---+-------------------+---------------+---------------+------------------\r\
-        \n3   Standby             sso             sso              Standby Hot   \
-        \   \r\n\r\nSwitch Number 2 \r\n\r\nMod Ports Card Type                  \
-        \                 Model          Serial No.\r\n---+-----+--------------------------------------+--------------+--------------\r\
-        \n3   11   Supervisor 1 Module                         C9400-SUP-1      JAE21390DN9\r\
-        \n7   48   48-Port UPOE 10/100/1000 (RJ-45)            C9400-LC-48U     JAE213102H9\r\
-        \n\r\nMod MAC addresses                    Hw   Fw           Sw          \
-        \       Status\r\n---+--------------------------------+----+------------+------------------+--------\r\
-        \n3   380E.4D5A.992C to 380E.4D5A.9936 1.0  17.10.1r      S2C            \
-        \    ok         \r\n7   E4AA.5D59.DF04 to E4AA.5D59.DF33 1.0  17.10.1r   \
-        \   S2C                ok         \r\n\r\nMod Redundancy Role     Operating\
-        \ Mode  Configured Mode  Redundancy Status\r\n---+-------------------+---------------+---------------+------------------\r\
-        \n3   Active              sso             sso              Active        \
-        \   \r\n\r\nChassis 1 MAC address range: 44 addresses from 0c78.885d.8d40\
-        \ to 0c78.885d.8d6b \r\n\r\nChassis 2 MAC address range: 44 addresses from\
-        \ 380e.4d5a.9900 to 380e.4d5a.992b"
+        - |-
+          Chassis Type: C9407R              
+          
+          Switch Number 1 
+          
+          Mod Ports Card Type                                   Model          Serial No.
+          ---+-----+--------------------------------------+--------------+--------------
+          1   48   48-Port UPOE 10/100/1000 (RJ-45)            C9400-LC-48U     JAE2132075Q
+          3   11   Supervisor 1 Module                         C9400-SUP-1      JAE2050072Q
+          6   48   48-Port UPOE 10/100/1000 (RJ-45)            C9400-LC-48U     JAE21270C22
+          
+          Mod MAC addresses                    Hw   Fw           Sw                 Status
+          ---+--------------------------------+----+------------+------------------+--------
+          1   E4AA.5D5A.1D5C to E4AA.5D5A.1D8B 1.0  16.9.0.1      S2C                ok         
+          3   0C78.885D.8D6C to 0C78.885D.8D76 0.5  16.9.0.1      S2C                ok         
+          6   E4AA.5D59.AE2C to E4AA.5D59.AE5B 1.0  16.9.0.1      S2C                ok         
+          
+          Mod Redundancy Role     Operating Mode  Configured Mode  Redundancy Status
+          ---+-------------------+---------------+---------------+------------------
+          3   Standby             sso             sso              Standby Hot      
+          
+          Switch Number 2 
+          
+          Mod Ports Card Type                                   Model          Serial No.
+          ---+-----+--------------------------------------+--------------+--------------
+          3   11   Supervisor 1 Module                         C9400-SUP-1      JAE21390DN9
+          7   48   48-Port UPOE 10/100/1000 (RJ-45)            C9400-LC-48U     JAE213102H9
+          
+          Mod MAC addresses                    Hw   Fw           Sw                 Status
+          ---+--------------------------------+----+------------+------------------+--------
+          3   380E.4D5A.992C to 380E.4D5A.9936 1.0  17.10.1r      S2C                ok         
+          7   E4AA.5D59.DF04 to E4AA.5D59.DF33 1.0  17.10.1r      S2C                ok         
+          
+          Mod Redundancy Role     Operating Mode  Configured Mode  Redundancy Status
+          ---+-------------------+---------------+---------------+------------------
+          3   Active              sso             sso              Active           
+          
+          Chassis 1 MAC address range: 44 addresses from 0c78.885d.8d40 to 0c78.885d.8d6b 
+          
+          Chassis 2 MAC address range: 44 addresses from 380e.4d5a.9900 to 380e.4d5a.992b
       response_type: circular
     show switch:
       response:
-      - "Switch/Stack Mac Address : 707d.b9cf.b018 - Local Mac Address\r\nMac persistency\
-        \ wait time: Indefinite\r\n                                             H/W\
-        \   Current\r\nSwitch#   Role    Mac Address     Priority Version  State \r\
-        \n-------------------------------------------------------------------------------------\r\
-        \n 1       Standby  e4aa.5d54.3ab0     1      V02     Ready              \
-        \                 \r\n*2       Active   707d.b9cf.b018     1      V02    \
-        \ Ready"
+        - |-
+          Switch/Stack Mac Address : 707d.b9cf.b018 - Local Mac Address
+          Mac persistency wait time: Indefinite
+                                                       H/W   Current
+          Switch#   Role    Mac Address     Priority Version  State 
+          -------------------------------------------------------------------------------------
+           1       Standby  e4aa.5d54.3ab0     1      V02     Ready                               
+          *2       Active   707d.b9cf.b018     1      V02     Ready
       response_type: circular
     show version:
       response:
-      - "Cisco IOS XE Software, Version S2C\r\nCisco IOS Software [Dublin], Catalyst\
-        \ L3 Switch Software (CAT9K_IOSXE), Experimental Version 17.13.20230823:125613\
-        \ [BLD_POLARIS_DEV_S2C_20230823_122327:/nobackup/mcpre/s2c-build-ws 101]\r\
-        \nCopyright (c) 1986-2023 by Cisco Systems, Inc.\r\nCompiled Wed 23-Aug-23\
-        \ 05:56 by mcpre\r\n\r\n\r\nCisco IOS-XE software, Copyright (c) 2005-2023\
-        \ by cisco Systems, Inc.\r\nAll rights reserved.  Certain components of Cisco\
-        \ IOS-XE software are\r\nlicensed under the GNU General Public License (\"\
-        GPL\") Version 2.0.  The\r\nsoftware code licensed under GPL Version 2.0 is\
-        \ free software that comes\r\nwith ABSOLUTELY NO WARRANTY.  You can redistribute\
-        \ and/or modify such\r\nGPL code under the terms of GPL Version 2.0.  For\
-        \ more details, see the\r\ndocumentation or \"License Notice\" file accompanying\
-        \ the IOS-XE software,\r\nor the applicable URL provided on the flyer accompanying\
-        \ the IOS-XE\r\nsoftware.\r\n\r\n\r\nROM: IOS-XE ROMMON\r\nBOOTLDR: System\
-        \ Bootstrap, Version 17.10.1r, RELEASE SOFTWARE (P)\r\n\r\nHA-9400-S2 uptime\
-        \ is 2 days, 19 hours, 40 minutes\r\nUptime for this control processor is\
-        \ 2 days, 19 hours, 47 minutes\r\nSystem returned to ROM by Reload Command\
-        \ at 03:28:25 PST Thu Sep 14 2023\r\nSystem image file is \"bootflash:cat9k_iosxe.S2C.SSA.bin\"\
-        \r\nLast reload reason: Reload Command\r\n\r\n\r\n\r\nThis product contains\
-        \ cryptographic features and is subject to United\r\nStates and local country\
-        \ laws governing import, export, transfer and\r\nuse. Delivery of Cisco cryptographic\
-        \ products does not imply\r\nthird-party authority to import, export, distribute\
-        \ or use encryption.\r\nImporters, exporters, distributors and users are responsible\
-        \ for\r\ncompliance with U.S. and local country laws. By using this product\
-        \ you\r\nagree to comply with applicable laws and regulations. If you are\
-        \ unable\r\nto comply with U.S. and local laws, return this product immediately.\r\
-        \n\r\nA summary of U.S. laws governing Cisco cryptographic products may be\
-        \ found at:\r\nhttp://www.cisco.com/wwl/export/crypto/tool/stqrg.html\r\n\r\
-        \nIf you require further assistance please contact us by sending email to\r\
-        \nexport@cisco.com.\r\n\r\n\r\nTechnology Package License Information: \r\n\
-        \r\n------------------------------------------------------------------------------\r\
-        \nTechnology-package                                     Technology-package\r\
-        \nCurrent                        Type                       Next reboot  \r\
-        \n------------------------------------------------------------------------------\r\
-        \nnetwork-advantage   \tSmart License                 \t network-advantage\
-        \   \r\ndna-advantage       \tSubscription Smart License    \t dna-advantage\
-        \                 \r\nAIR License Level: AIR DNA Advantage\r\nNext reload\
-        \ AIR license Level: AIR DNA Advantage\r\n\r\n\r\nSmart Licensing Status:\
-        \ Smart Licensing Using Policy\r\n\r\ncisco C9407R (X86) processor (revision\
-        \ V01) with 1825857K/6147K bytes of memory.\r\nProcessor board ID FXS2136Q0E7\r\
-        \n4 Virtual Ethernet interfaces\r\n144 Gigabit Ethernet interfaces\r\n16 Ten\
-        \ Gigabit Ethernet interfaces\r\n4 Forty Gigabit Ethernet interfaces\r\n32768K\
-        \ bytes of non-volatile configuration memory.\r\n15988968K bytes of physical\
-        \ memory.\r\n11161600K bytes of Bootflash at bootflash:.\r\n1638400K bytes\
-        \ of Crash Files at crashinfo:.\r\n11161600K bytes of Bootflash at bootflash-1-0:.\r\
-        \n1638400K bytes of Crash Files at crashinfo-1-0:.\r\n\r\nBase Ethernet MAC\
-        \ Address          : 38:0e:4d:5a:99:00\r\nMotherboard Assembly Number    \
-        \    : 4855\r\nMotherboard Serial Number          : FXS2134006M\r\nModel Revision\
-        \ Number              : V02\r\nMotherboard Revision Number        : 3\r\n\
-        Model Number                       : C9407R              \r\nSystem Serial\
-        \ Number               : FXS2136Q0E7\r\n\r\nSwitch 01\r\n---------\r\nBase\
-        \ Ethernet MAC Address          : 0c:78:88:5d:8d:40\r\nMotherboard Assembly\
-        \ Number        : 4855\r\nMotherboard Serial Number          : FXS193109T2\r\
-        \nModel Revision Number              : V02\r\nMotherboard Revision Number\
-        \        : 1\r\nModel Number                       : C9407R              \r\
-        \nSystem Serial Number               : FXS1932Q207"
+        - |-
+          Cisco IOS XE Software, Version S2C
+          Cisco IOS Software [Dublin], Catalyst L3 Switch Software (CAT9K_IOSXE), Experimental Version 17.13.20230823:125613 [BLD_POLARIS_DEV_S2C_20230823_122327:/nobackup/mcpre/s2c-build-ws 101]
+          Copyright (c) 1986-2023 by Cisco Systems, Inc.
+          Compiled Wed 23-Aug-23 05:56 by mcpre
+          
+          
+          Cisco IOS-XE software, Copyright (c) 2005-2023 by cisco Systems, Inc.
+          All rights reserved.  Certain components of Cisco IOS-XE software are
+          licensed under the GNU General Public License ("GPL") Version 2.0.  The
+          software code licensed under GPL Version 2.0 is free software that comes
+          with ABSOLUTELY NO WARRANTY.  You can redistribute and/or modify such
+          GPL code under the terms of GPL Version 2.0.  For more details, see the
+          documentation or "License Notice" file accompanying the IOS-XE software,
+          or the applicable URL provided on the flyer accompanying the IOS-XE
+          software.
+          
+          
+          ROM: IOS-XE ROMMON
+          BOOTLDR: System Bootstrap, Version 17.10.1r, RELEASE SOFTWARE (P)
+          
+          HA-9400-S2 uptime is 2 days, 19 hours, 40 minutes
+          Uptime for this control processor is 2 days, 19 hours, 47 minutes
+          System returned to ROM by Reload Command at 03:28:25 PST Thu Sep 14 2023
+          System image file is "bootflash:cat9k_iosxe.S2C.SSA.bin"
+          Last reload reason: Reload Command
+          
+          
+          
+          This product contains cryptographic features and is subject to United
+          States and local country laws governing import, export, transfer and
+          use. Delivery of Cisco cryptographic products does not imply
+          third-party authority to import, export, distribute or use encryption.
+          Importers, exporters, distributors and users are responsible for
+          compliance with U.S. and local country laws. By using this product you
+          agree to comply with applicable laws and regulations. If you are unable
+          to comply with U.S. and local laws, return this product immediately.
+          
+          A summary of U.S. laws governing Cisco cryptographic products may be found at:
+          http://www.cisco.com/wwl/export/crypto/tool/stqrg.html
+          
+          If you require further assistance please contact us by sending email to
+          export@cisco.com.
+          
+          
+          Technology Package License Information: 
+          
+          ------------------------------------------------------------------------------
+          Technology-package                                     Technology-package
+          Current                        Type                       Next reboot  
+          ------------------------------------------------------------------------------
+          network-advantage   	Smart License                 	 network-advantage   
+          dna-advantage       	Subscription Smart License    	 dna-advantage                 
+          AIR License Level: AIR DNA Advantage
+          Next reload AIR license Level: AIR DNA Advantage
+          
+          
+          Smart Licensing Status: Smart Licensing Using Policy
+          
+          cisco C9407R (X86) processor (revision V01) with 1825857K/6147K bytes of memory.
+          Processor board ID FXS2136Q0E7
+          4 Virtual Ethernet interfaces
+          144 Gigabit Ethernet interfaces
+          16 Ten Gigabit Ethernet interfaces
+          4 Forty Gigabit Ethernet interfaces
+          32768K bytes of non-volatile configuration memory.
+          15988968K bytes of physical memory.
+          11161600K bytes of Bootflash at bootflash:.
+          1638400K bytes of Crash Files at crashinfo:.
+          11161600K bytes of Bootflash at bootflash-1-0:.
+          1638400K bytes of Crash Files at crashinfo-1-0:.
+          
+          Base Ethernet MAC Address          : 38:0e:4d:5a:99:00
+          Motherboard Assembly Number        : 4855
+          Motherboard Serial Number          : FXS2134006M
+          Model Revision Number              : V02
+          Motherboard Revision Number        : 3
+          Model Number                       : C9407R              
+          System Serial Number               : FXS2136Q0E7
+          
+          Switch 01
+          ---------
+          Base Ethernet MAC Address          : 0c:78:88:5d:8d:40
+          Motherboard Assembly Number        : 4855
+          Motherboard Serial Number          : FXS193109T2
+          Model Revision Number              : V02
+          Motherboard Revision Number        : 1
+          Model Number                       : C9407R              
+          System Serial Number               : FXS1932Q207
       response_type: circular
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: HA-9400-S2#

@@ -4,23 +4,18 @@ import copy
 # super class
 from genie.libs.ops.platform.platform import Platform as SuperPlatform
 from genie.libs.ops.utils.common import convert_to_bool, \
-                                        convert_to_lower
+                                        convert_to_lower, \
+                                        slot_num
 from genie.libs.parser.ios.cat6k import show_platform
 
 
 class Platform(SuperPlatform):
     """Platform Ops Object"""
-    def slot_num(self, item):
-        p = re.compile(r'.*(?P<slot>\d+)')
-        m = p.match(item)
-        if m:
-            item = m.groupdict()['slot']
-        return item
 
     def learn(self):
         """Learn Platform object"""
         # Global callable
-        self.callables = {'slot_num': self.slot_num}
+        self.callables = {'slot_num': slot_num}
 
         # === ShowVersion ===
         # chassis

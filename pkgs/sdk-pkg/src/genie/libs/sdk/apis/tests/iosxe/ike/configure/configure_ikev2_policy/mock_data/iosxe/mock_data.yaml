@@ -5,8 +5,8 @@ configure:
       new_state: execute
     line console 0:
       new_state: configure_line
-    match address local 1.1.1.1: "IKEv2 policy MUST have atleast one complete proposal\
-      \ attached \r\n"
+    match address local 1.1.1.1: "IKEv2 policy MUST have atleast one complete proposal
+      attached \r\n"
     match fvrf 10: "match address local 1.1.1.1\r\n"
     no logging console: ''
     proposal IKEv2_PROPOSAL: "match fvrf 10\r\n"
@@ -19,13 +19,12 @@ configure_line:
   prompt: TLS_Mad2(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -36,4 +35,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: TLS_Mad2#

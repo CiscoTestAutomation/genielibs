@@ -14,13 +14,12 @@ configure_line:
   prompt: Dt-6X(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -33,8 +32,9 @@ execute:
     term width 0: ''
     upgrade hw-programmable fpga filename bootflash:asr1000-hw-programmables.16.08.01.SPA.pkg R1:
       response:
-      - "$lename bootflash:asr1000-hw-programmables.16.08.01.SPA.pkg R1\r\nStart service\
-        \ Upgrade FPGA on Route-Processor 1 from current version 18102401 to 17071402\
-        \  (Y)es/(N)o/(C)ontinue? [Y"
+        - |-
+          $lename bootflash:asr1000-hw-programmables.16.08.01.SPA.pkg R1
+          Start service Upgrade FPGA on Route-Processor 1 from current version 18102401 to 17071402  (Y)es/(N)o/(C)ontinue? [Y
       response_type: circular
+    show version | include operating mode: ''
   prompt: Dt-6X#

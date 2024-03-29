@@ -4,13 +4,13 @@ configure:
       new_state: execute
     line console 0:
       new_state: configure_line
-    no ip nat inside source static network 35.0.0.0 81.1.1.0 255.255.255.0: "no ip\
-      \ nat inside source static network 35.0.0.0 81.1.1.0 2\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b$nside source static network 35.0.0.0 81.1.1.0 25        \
-      \ \b\b\b\b\b\b\b\b\b5.255.255\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\bce static\
-      \ network 35.0.0.0 81.1.1.0 255.255.255.         \b\b\b\b\b\b\b\b\b0\r\n"
+    no ip nat inside source static network 35.0.0.0 81.1.1.0 255.255.255.0: "no ip
+      nat inside source static network 35.0.0.0 81.1.1.0 2\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b$nside source static network 35.0.0.0 81.1.1.0 25         \b
+      \b\b\b\b\b\b\b\b5.255.255\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\bce static network
+      35.0.0.0 81.1.1.0 255.255.255.         \b\b\b\b\b\b\b\b\b0\r\n"
     no logging console: ''
   prompt: SF-W11-SVL(config)#
 configure_line:
@@ -21,13 +21,12 @@ configure_line:
   prompt: SF-W11-SVL(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -38,4 +37,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: SF-W11-SVL#

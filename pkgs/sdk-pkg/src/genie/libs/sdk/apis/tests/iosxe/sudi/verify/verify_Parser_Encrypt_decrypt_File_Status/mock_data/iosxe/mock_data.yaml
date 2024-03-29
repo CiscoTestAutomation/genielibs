@@ -14,13 +14,12 @@ configure_line:
   prompt: Switch(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,10 +29,13 @@ execute:
       new_state: configure
     show parser encrypt file status:
       response:
-      - "Feature:            Enabled\r\nFile Format:        Cipher text\r\nEncryption\
-        \ Version: ver1"
+        - |-
+          Feature:            Enabled
+          File Format:        Cipher text
+          Encryption Version: ver1
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: Switch#

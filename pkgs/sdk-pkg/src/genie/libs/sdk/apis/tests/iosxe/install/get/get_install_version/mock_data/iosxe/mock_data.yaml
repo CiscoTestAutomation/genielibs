@@ -14,13 +14,12 @@ configure_line:
   prompt: CAT9400_HA_IOX(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,14 +29,21 @@ execute:
       new_state: configure
     show install summary:
       response:
-      - "[ R0 R1 ] Installed Package(s) Information:\r\nState (St): I - Inactive,\
-        \ U - Activated & Uncommitted,\r\n            C - Activated & Committed, D\
-        \ - Deactivated & Uncommitted\r\n--------------------------------------------------------------------------------\r\
-        \nType  St   Filename/Version\r\n--------------------------------------------------------------------------------\r\
-        \nIMG   C    17.10.01.0.161496\r\n\r\n--------------------------------------------------------------------------------\r\
-        \nAuto abort timer: inactive\r\n--------------------------------------------------------------------------------"
+        - |-
+          [ R0 R1 ] Installed Package(s) Information:
+          State (St): I - Inactive, U - Activated & Uncommitted,
+                      C - Activated & Committed, D - Deactivated & Uncommitted
+          --------------------------------------------------------------------------------
+          Type  St   Filename/Version
+          --------------------------------------------------------------------------------
+          IMG   C    17.10.01.0.161496
+          
+          --------------------------------------------------------------------------------
+          Auto abort timer: inactive
+          --------------------------------------------------------------------------------
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: CAT9400_HA_IOX#

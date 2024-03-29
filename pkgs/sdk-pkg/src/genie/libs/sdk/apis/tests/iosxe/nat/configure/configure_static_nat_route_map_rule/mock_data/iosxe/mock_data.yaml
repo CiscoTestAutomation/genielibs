@@ -2,13 +2,13 @@ configure:
   commands:
     end:
       new_state: execute
-    ip nat inside source static 35.0.0.1 135.0.0.1 route-map rm_1 no-alias: "ip nat\
-      \ inside source static 35.0.0.1 135.0.0.1 route-map rm\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b$de source static 35.0.0.1 135.0.0.1 route-map rm_     \
-      \    \b\b\b\b\b\b\b\b\b1 no-alia\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\bstatic\
-      \ 35.0.0.1 135.0.0.1 route-map rm_1 no-alias         \b\b\b\b\b\b\b\b\b\r\n"
+    ip nat inside source static 35.0.0.1 135.0.0.1 route-map rm_1 no-alias: "ip nat
+      inside source static 35.0.0.1 135.0.0.1 route-map rm\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b$de source static 35.0.0.1 135.0.0.1 route-map rm_       \
+      \  \b\b\b\b\b\b\b\b\b1 no-alia\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\bstatic
+      35.0.0.1 135.0.0.1 route-map rm_1 no-alias         \b\b\b\b\b\b\b\b\b\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''
@@ -21,13 +21,12 @@ configure_line:
   prompt: C9500-SVL(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -38,4 +37,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: C9500-SVL#

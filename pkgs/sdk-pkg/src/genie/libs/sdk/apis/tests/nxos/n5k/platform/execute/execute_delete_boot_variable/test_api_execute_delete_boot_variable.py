@@ -1,3 +1,4 @@
+import os
 import unittest
 from pyats.topology import loader
 from genie.libs.sdk.apis.nxos.n5k.platform.execute import execute_delete_boot_variable
@@ -7,14 +8,14 @@ class TestExecuteDeleteBootVariable(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        testbed = """
+        testbed = f"""
         devices:
           II23-FCOECORE:
             connections:
               defaults:
                 class: unicon.Unicon
               a:
-                command: mock_device_cli --os nxos --mock_data_dir mock_data --state connect
+                command: mock_device_cli --os nxos --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: nxos
             platform: n5k

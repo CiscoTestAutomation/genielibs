@@ -16,13 +16,12 @@ configure_line:
   prompt: VCAT9K-LEAF1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,70 +29,72 @@ execute:
       new_state: configure
     config-transaction:
       new_state: configure
-    show ip dhcp server statistics: "Memory usage          0\r\n
-                                    \ Address pools        0\r\n
-                                    \ Database agents      0\r\n
-                                    \ Automatic bindings   0\r\n
-                                    \ Manual bindings      0\r\n
-                                    \ Expired bindings     0\r\n
-                                    \ Malformed messages   0\r\n
-                                    \ Secure arp entries   0\r\n
-                                    \ Renew messages       0\r\n
-                                    \ Workspace timeouts   0\r\n
-                                    \ Static routes        0\r\n
-                                    \ Relay bindings       0\r\n
-                                    \ Relay bindings active        0\r\n
-                                    \ Relay bindings terminated    0\r\n
-                                    \ Relay bindings selecting     0\r\n
-                                    \ Message              Received\r\n
-                                    \ BOOTREQUEST          0\r\n
-                                    \ DHCPDISCOVER         2\r\n
-                                    \ DHCPREQUEST          0\r\n
-                                    \   INIT-REBOOT        0\r\n
-                                    \   REQUEST            0\r\n
-                                    \   RENEW              0\r\n
-                                    \   REBIND             0\r\n
-                                    \ DHCPDECLINE          0\r\n
-                                    \ DHCPRELEASE          0\r\n
-                                    \ DHCPINFORM           0\r\n
-                                    \ DHCPVENDOR           0\r\n
-                                    \ BOOTREPLY            0\r\n
-                                    \ DHCPOFFER            0\r\n
-                                    \ DHCPACK              0\r\n
-                                    \ DHCPNAK              0\r\n
-                                    \ Message              Sent\r\n
-                                    \ BOOTREPLY            0\r\n
-                                    \ DHCPOFFER            0\r\n
-                                    \ DHCPACK              0\r\n
-                                    \ DHCPNAK              0\r\n
-                                    \ Message              Forwarded\r\n
-                                    \ BOOTREQUEST          0\r\n
-                                    \ DHCPDISCOVER         0\r\n
-                                    \ DHCPREQUEST          0\r\n
-                                    \   INIT-REBOOT        0\r\n
-                                    \   REQUEST            0\r\n
-                                    \   RENEW              0\r\n
-                                    \   REBIND             0\r\n
-                                    \ DHCPDECLINE          0\r\n
-                                    \ DHCPRELEASE          0\r\n
-                                    \ DHCPINFORM           0\r\n
-                                    \ DHCPVENDOR           0\r\n
-                                    \ BOOTREPLY            0\r\n
-                                    \ DHCPOFFER            0\r\n
-                                    \ DHCPACK              0\r\n
-                                    \ DHCPNAK              0\r\n
-                                    \ DHCP-DPM Statistics\r\n
-                                    \ Offer notifications sent        0\r\n
-                                    \ Offer callbacks received        0\r\n
-                                    \ Classname requests sent         0\r\n
-                                    \ Classname callbacks received    0\r\n
-                                    \ Port Based Allocation Statistics\r\n
-                                    \ Discover MAC change          0\r\n
-                                    \ Request MAC change           0\r\n
-                                    \ Invalid binding in fwd req   0\r\n"
+    show ip dhcp server statistics: |
+      Memory usage          0
+        Address pools        0
+        Database agents      0
+        Automatic bindings   0
+        Manual bindings      0
+        Expired bindings     0
+        Malformed messages   0
+        Secure arp entries   0
+        Renew messages       0
+        Workspace timeouts   0
+        Static routes        0
+        Relay bindings       0
+        Relay bindings active        0
+        Relay bindings terminated    0
+        Relay bindings selecting     0
+        Message              Received
+        BOOTREQUEST          0
+        DHCPDISCOVER         2
+        DHCPREQUEST          0
+          INIT-REBOOT        0
+          REQUEST            0
+          RENEW              0
+          REBIND             0
+        DHCPDECLINE          0
+        DHCPRELEASE          0
+        DHCPINFORM           0
+        DHCPVENDOR           0
+        BOOTREPLY            0
+        DHCPOFFER            0
+        DHCPACK              0
+        DHCPNAK              0
+        Message              Sent
+        BOOTREPLY            0
+        DHCPOFFER            0
+        DHCPACK              0
+        DHCPNAK              0
+        Message              Forwarded
+        BOOTREQUEST          0
+        DHCPDISCOVER         0
+        DHCPREQUEST          0
+          INIT-REBOOT        0
+          REQUEST            0
+          RENEW              0
+          REBIND             0
+        DHCPDECLINE          0
+        DHCPRELEASE          0
+        DHCPINFORM           0
+        DHCPVENDOR           0
+        BOOTREPLY            0
+        DHCPOFFER            0
+        DHCPACK              0
+        DHCPNAK              0
+        DHCP-DPM Statistics
+        Offer notifications sent        0
+        Offer callbacks received        0
+        Classname requests sent         0
+        Classname callbacks received    0
+        Port Based Allocation Statistics
+        Discover MAC change          0
+        Request MAC change           0
+        Invalid binding in fwd req   0
     show version: ''
     term length 0: ''
     term width 0: ''
     term width 511: ''
     terminal session-timeout 0: ''
+    show version | include operating mode: ''
   prompt: VCAT9K-LEAF1#

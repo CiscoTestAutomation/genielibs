@@ -4,12 +4,15 @@ configure:
       new_state: execute
     line console 0:
       new_state: configure_line
-    no bulkstat profile test: "no bulkstat profile test\r\nNo such profile exists\r\
-      \n\r\n"
+    no bulkstat profile test: |
+      no bulkstat profile test
+      No such profile exists
+      
     no logging console: ''
-    no system ignore startupconfig switch all: "no system ignore startupconfig switch\
-      \ all\r\nApplying config on Switch 1...[DONE]\r\nApplying config on Switch 2...[DONE]\r\
-      \n"
+    no system ignore startupconfig switch all: |
+      no system ignore startupconfig switch all
+      Applying config on Switch 1...[DONE]
+      Applying config on Switch 2...[DONE]
   prompt: n10SVL(config)#
 configure_line:
   commands:
@@ -19,13 +22,12 @@ configure_line:
   prompt: n10SVL(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -36,4 +38,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: n10SVL#

@@ -10,7 +10,7 @@ class TestConfigureManagementGnmi(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          ott-c9300-67:
+          Switch:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,11 +18,11 @@ class TestConfigureManagementGnmi(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: cat9k
-            type: cat9k
+            platform: c9200
+            type: c9200
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['ott-c9300-67']
+        self.device = self.testbed.devices['Switch']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,6 @@ class TestConfigureManagementGnmi(unittest.TestCase):
         )
 
     def test_configure_management_gnmi(self):
-        result = configure_management_gnmi(self.device, 'True', 'True', None)
+        result = configure_management_gnmi(self.device)
         expected_output = None
         self.assertEqual(result, expected_output)

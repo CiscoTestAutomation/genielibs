@@ -14,13 +14,12 @@ configure_line:
   prompt: 1783-CMS20DN(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,58 +29,89 @@ execute:
       new_state: configure
     show version:
       response:
-      - "Cisco IOS XE Software, Version BLD_POLARIS_DEV_LATEST_20220708_143608\r\n\
-        Cisco IOS Software [Dublin], S5200 Switch Software (S5200-UNIVERSALK9-M),\
-        \ Experimental Version 17.10.20220708:150333 [BLD_POLARIS_DEV_LATEST_20220708_143608:/nobackup/mcpre/s2c-build-ws\
-        \ 101]\r\nCopyright (c) 1986-2022 by Cisco Systems, Inc.\r\nCompiled Fri 08-Jul-22\
-        \ 08:03 by mcpre\r\n\r\n\r\nCisco IOS-XE software, Copyright (c) 2005-2022\
-        \ by cisco Systems, Inc.\r\nAll rights reserved.  Certain components of Cisco\
-        \ IOS-XE software are\r\nlicensed under the GNU General Public License (\"\
-        GPL\") Version 2.0.  The\r\nsoftware code licensed under GPL Version 2.0 is\
-        \ free software that comes\r\nwith ABSOLUTELY NO WARRANTY.  You can redistribute\
-        \ and/or modify such\r\nGPL code under the terms of GPL Version 2.0.  For\
-        \ more details, see the\r\ndocumentation or \"License Notice\" file accompanying\
-        \ the IOS-XE software,\r\nor the applicable URL provided on the flyer accompanying\
-        \ the IOS-XE\r\nsoftware.\r\n\r\n\r\nROM: IOS-XE ROMMON\r\nBOOTLDR: Version\
-        \ 0.0.16 [DEVELOPMENT SOFTWARE] crashkernel=64M\r\n1783-CMS20DN uptime is\
-        \ 5 weeks, 1 day, 23 hours, 24 minutes\r\nUptime for this control processor\
-        \ is 5 weeks, 1 day, 23 hours, 27 minutes\r\nSystem returned to ROM by power-on\r\
-        \nSystem image file is \"flash:s5200-universalk9.BLD_POLARIS_DEV_LATEST_20220708_143608.SSA.bin\"\
-        \r\nLast reload reason: power-on\r\n\r\n\r\n\r\nThis product contains cryptographic\
-        \ features and is subject to United\r\nStates and local country laws governing\
-        \ import, export, transfer and\r\nuse. Delivery of Cisco cryptographic products\
-        \ does not imply\r\nthird-party authority to import, export, distribute or\
-        \ use encryption.\r\nImporters, exporters, distributors and users are responsible\
-        \ for\r\ncompliance with U.S. and local country laws. By using this product\
-        \ you\r\nagree to comply with applicable laws and regulations. If you are\
-        \ unable\r\nto comply with U.S. and local laws, return this product immediately.\r\
-        \n\r\nA summary of U.S. laws governing Cisco cryptographic products may be\
-        \ found at:\r\nhttp://www.cisco.com/wwl/export/crypto/tool/stqrg.html\r\n\r\
-        \nIf you require further assistance please contact us by sending email to\r\
-        \nexport@cisco.com.\r\n\r\n\r\nTechnology Package License Information: \r\n\
-        \r\n------------------------------------------------------------------------------\r\
-        \nTechnology-package                                     Technology-package\r\
-        \nCurrent                        Type                       Next reboot  \r\
-        \n------------------------------------------------------------------------------\r\
-        \nnetwork-essentials  \tSmart License                 \t None            \
-        \    \r\nNone                \tSubscription Smart License    \t None     \
-        \                     \r\n\r\n\r\nSmart Licensing Status: Smart Licensing\
-        \ Using Policy\r\n\r\nAllen-Bradley 1783-CMS20DN (ARM) processor (revision\
-        \ V00) with 634859K/6147K bytes of memory.\r\nProcessor board ID FDO2607J4SK\r\
-        \n2 Virtual Ethernet interfaces\r\n20 Gigabit Ethernet interfaces\r\n4096K\
-        \ bytes of non-volatile configuration memory.\r\n3491972K bytes of physical\
-        \ memory.\r\n524288K bytes of crashinfo at crashinfo:.\r\n1945600K bytes of\
-        \ Flash at flash:.\r\n3883008K bytes of SD Flash at sdflash:.\r\n\r\nBase\
-        \ Ethernet MAC Address          : ac:bc:d9:37:9d:40\r\nMotherboard Assembly\
-        \ Number        : 73-105757-02\r\nMotherboard Serial Number          : FDO25520GQF\r\
-        \nModel Revision Number              : V00\r\nMotherboard Revision Number\
-        \        : 2\r\nModel Number                       : 1783-CMS20DN\r\nSystem\
-        \ Serial Number               : FDO2607J4SK\r\nTop Assembly Part Number  \
-        \         : 68-103582-02\r\nTop Assembly Revision Number       : 02\r\nSystem\
-        \ FPGA version                : 0.2.9\r\nCIP Serial Number               \
-        \   : 0x09379D40\r\nSKU Brand Name                     : Rockwell\r\n\r\n\r\
-        \nConfiguration register is 0x102"
+        - |-
+          Cisco IOS XE Software, Version BLD_POLARIS_DEV_LATEST_20220708_143608
+          Cisco IOS Software [Dublin], S5200 Switch Software (S5200-UNIVERSALK9-M), Experimental Version 17.10.20220708:150333 [BLD_POLARIS_DEV_LATEST_20220708_143608:/nobackup/mcpre/s2c-build-ws 101]
+          Copyright (c) 1986-2022 by Cisco Systems, Inc.
+          Compiled Fri 08-Jul-22 08:03 by mcpre
+          
+          
+          Cisco IOS-XE software, Copyright (c) 2005-2022 by cisco Systems, Inc.
+          All rights reserved.  Certain components of Cisco IOS-XE software are
+          licensed under the GNU General Public License ("GPL") Version 2.0.  The
+          software code licensed under GPL Version 2.0 is free software that comes
+          with ABSOLUTELY NO WARRANTY.  You can redistribute and/or modify such
+          GPL code under the terms of GPL Version 2.0.  For more details, see the
+          documentation or "License Notice" file accompanying the IOS-XE software,
+          or the applicable URL provided on the flyer accompanying the IOS-XE
+          software.
+          
+          
+          ROM: IOS-XE ROMMON
+          BOOTLDR: Version 0.0.16 [DEVELOPMENT SOFTWARE] crashkernel=64M
+          1783-CMS20DN uptime is 5 weeks, 1 day, 23 hours, 24 minutes
+          Uptime for this control processor is 5 weeks, 1 day, 23 hours, 27 minutes
+          System returned to ROM by power-on
+          System image file is "flash:s5200-universalk9.BLD_POLARIS_DEV_LATEST_20220708_143608.SSA.bin"
+          Last reload reason: power-on
+          
+          
+          
+          This product contains cryptographic features and is subject to United
+          States and local country laws governing import, export, transfer and
+          use. Delivery of Cisco cryptographic products does not imply
+          third-party authority to import, export, distribute or use encryption.
+          Importers, exporters, distributors and users are responsible for
+          compliance with U.S. and local country laws. By using this product you
+          agree to comply with applicable laws and regulations. If you are unable
+          to comply with U.S. and local laws, return this product immediately.
+          
+          A summary of U.S. laws governing Cisco cryptographic products may be found at:
+          http://www.cisco.com/wwl/export/crypto/tool/stqrg.html
+          
+          If you require further assistance please contact us by sending email to
+          export@cisco.com.
+          
+          
+          Technology Package License Information: 
+          
+          ------------------------------------------------------------------------------
+          Technology-package                                     Technology-package
+          Current                        Type                       Next reboot  
+          ------------------------------------------------------------------------------
+          network-essentials  	Smart License                 	 None                
+          None                	Subscription Smart License    	 None                          
+          
+          
+          Smart Licensing Status: Smart Licensing Using Policy
+          
+          Allen-Bradley 1783-CMS20DN (ARM) processor (revision V00) with 634859K/6147K bytes of memory.
+          Processor board ID FDO2607J4SK
+          2 Virtual Ethernet interfaces
+          20 Gigabit Ethernet interfaces
+          4096K bytes of non-volatile configuration memory.
+          3491972K bytes of physical memory.
+          524288K bytes of crashinfo at crashinfo:.
+          1945600K bytes of Flash at flash:.
+          3883008K bytes of SD Flash at sdflash:.
+          
+          Base Ethernet MAC Address          : ac:bc:d9:37:9d:40
+          Motherboard Assembly Number        : 73-105757-02
+          Motherboard Serial Number          : FDO25520GQF
+          Model Revision Number              : V00
+          Motherboard Revision Number        : 2
+          Model Number                       : 1783-CMS20DN
+          System Serial Number               : FDO2607J4SK
+          Top Assembly Part Number           : 68-103582-02
+          Top Assembly Revision Number       : 02
+          System FPGA version                : 0.2.9
+          CIP Serial Number                  : 0x09379D40
+          SKU Brand Name                     : Rockwell
+          
+          
+          Configuration register is 0x102
       response_type: circular
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: 1783-CMS20DN#

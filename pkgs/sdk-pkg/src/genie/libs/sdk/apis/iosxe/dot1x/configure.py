@@ -313,22 +313,20 @@ def clear_access_session(device, interface=None):
             "Failed to execute clear access-sesssion.Error: {}".format(str(e))
         )
 
-
-def config_identity_ibns(device, policy_map, interface=None, access=True, port_control='auto', template_name=None, **kwargs):
+def config_identity_ibns(device, policy_map=None, interface=None, access=True, port_control='auto', template_name=None, dot1x_pae=None, **kwargs):
     """ Configure 802.1x port based authentication for
         IBNS2.0 with service policy under interface/template
     Mandatory args:
             device ('obj'): device to use
             access ('bol'): Set to True, False to configure in Trunk mode
-            policy_map('str'): Name of policy map to be attached.
     Optional args:
+        policy_map('str'): Name of policy map to be attached.
         interface (`str`,optional): Interface name
         data_vlan(`int`): vlan_id for data traffic
         voice_vlan(`int`): vlan_id for voice traffic
         max_req:(`int`) Max No. of Retries
         max_reauth_req(`int`): Max No. of Reauthentication Attempts
         authmod('str'): default(multi-auth), mult-host peer, multi-domain etc
-        closed('bol'):  {False: closed | True: open (default) }
         open('bol'): {False: closed | True: open (default) }
         reauth('str'):  server or numberic range is 1 to 65535 seconds
         ctr('str'): {both | in}
@@ -336,6 +334,7 @@ def config_identity_ibns(device, policy_map, interface=None, access=True, port_c
         port_control ('str'): {auto|force-authorized|force-unauthorized}. Default = 'auto'
         template_name ('str'): Template name to be configured
         txp_sup ('int'): The range is 1 to 65535 seconds
+        dot1x_pae ('Str'): auth mothod 
     Returns:
             None
     Raises:
@@ -343,11 +342,11 @@ def config_identity_ibns(device, policy_map, interface=None, access=True, port_c
     """
     dict1 = {}
     #For IBNS2.0  access-session is in Open mode (default)
-    #dict1['open'] = True
+    dict1['open'] = True
     #For IBNS2.0 default access-session host-mode is in multi-auth (default)
     dict1['authmod'] ='multi-auth'
 
-    cmd = " "
+    cmd = ""
     if interface is not None:
         converted_interface = Common.convert_intf_name(interface)
         cmd += 'interface {}\n'.format(converted_interface)
@@ -370,7 +369,10 @@ def config_identity_ibns(device, policy_map, interface=None, access=True, port_c
     cmd += "access-session port-control {port_control}\n".format(port_control=port_control)
     cmd += "authentication periodic\n"
     cmd += "mab\n"
-    cmd += "dot1x pae authenticator\n"
+    if dot1x_pae is not None:
+        cmd += "dot1x pae {}\n".format(dot1x_pae)
+    else:
+        cmd += "dot1x pae authenticator\n"
 
     for key, value in kwargs.items():
         if type(value) == str:
@@ -399,8 +401,7 @@ def config_identity_ibns(device, policy_map, interface=None, access=True, port_c
     if dict1['authmod'] != 'multi-auth':
         cmd += "access-session host-mode {}\n".format(dict1['authmod'])
 
-    if dict1['open'] == False:
-        cmd += "access-session closed\n"
+    cmd += "access-session closed\n"
 
     if 'ctr' in dict1:
         cmd += "access-session control-direction {}\n".format(dict1['ctr'])
@@ -408,16 +409,16 @@ def config_identity_ibns(device, policy_map, interface=None, access=True, port_c
     if  'reauth' in dict1:
         cmd += "authentication timer reauthenticate {}\n".format(dict1['reauth'])
 
-    cmd += "service-policy type control subscriber {}\n".format(policy_map)
+    if policy_map:
+        cmd += "service-policy type control subscriber {}\n".format(policy_map)
 
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            "Failed to configure 802.1x port based Authentication on {}"
-            "Error: {}".format(converted_interface, str(e))
+            "Failed to configure 802.1x port based Authentication"
+            "Error: {}".format(str(e))
         )
-
 
 def unconfigure_dot1x_cred_profile(device, profile_name):
     """Unconfigure dot1x credentials profile

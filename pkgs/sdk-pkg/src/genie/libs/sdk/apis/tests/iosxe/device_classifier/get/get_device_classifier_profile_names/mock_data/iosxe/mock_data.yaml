@@ -14,13 +14,12 @@ configure_line:
   prompt: E-9300-STACK(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,12 +29,15 @@ execute:
       new_state: configure
     show device classifier attached interface gigabitEthernet4/0/1:
       response:
-      - "Summary:\r\n\r\nMAC_Address     Port_Id    Profile Name               Device\
-        \ Name\r\n==========================================================================\r\
-        \n000c.292a.6c21  GigabitEthernet4/0/1 VMWare-Device                VMWARE,\
-        \ INC."
+        - |-
+          Summary:
+          
+          MAC_Address     Port_Id    Profile Name               Device Name
+          ==========================================================================
+          000c.292a.6c21  GigabitEthernet4/0/1 VMWare-Device                VMWARE, INC.
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: E-9300-STACK#

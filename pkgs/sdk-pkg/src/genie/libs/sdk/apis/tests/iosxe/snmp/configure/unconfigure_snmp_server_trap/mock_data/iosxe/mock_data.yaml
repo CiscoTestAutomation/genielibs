@@ -7,25 +7,25 @@ configure:
     no logging console: ''
     no snmp-server enable traps: "no snmp-server enable traps\r\n"
     no snmp-server enable traps snmp: "no snmp-server enable traps snmp\r\n"
-    no snmp-server engineID remote 70.70.70.2 800000090300005056BE0829: "no snmp-server\
-      \ engineID remote 70.70.70.2 8000000903000050\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b$ver engineID remote 70.70.70.2 80000009030000505         \b\b\b\b\b\
-      \b\b\b\b6BE0829\r\n"
-    no snmp-server host 70.70.70.2 informs version 3 priv privuser256256 config: "no\
-      \ snmp-server host 70.70.70.2 informs version 3 priv priv\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b$ver host 70.70.70.2 informs version 3 priv privu      \
-      \   \b\b\b\b\b\b\b\b\bser256256\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b0.70.70.2\
-      \ informs version 3 priv privuser256256          \b\b\b\b\b\b\b\b\bconfig\r\n"
-    no snmp-server host 70.70.70.2 traps version 3 priv privuser256256 config: "no\
-      \ snmp-server host 70.70.70.2 traps version 3 priv privus\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b$ver host 70.70.70.2 traps version 3 priv privuse      \
-      \   \b\b\b\b\b\b\b\b\br256256 c\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b0.70.70.2\
-      \ traps version 3 priv privuser256256 co         \b\b\b\b\b\b\b\b\bnfig\r\n"
+    no snmp-server engineID remote 70.70.70.2 800000090300005056BE0829: "no snmp-server
+      engineID remote 70.70.70.2 8000000903000050\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b$ver engineID remote 70.70.70.2 80000009030000505         \b\b\b\b\b\b\
+      \b\b\b6BE0829\r\n"
+    no snmp-server host 70.70.70.2 informs version 3 priv privuser256256 config: "no
+      snmp-server host 70.70.70.2 informs version 3 priv priv\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b$ver host 70.70.70.2 informs version 3 priv privu        \
+      \ \b\b\b\b\b\b\b\b\bser256256\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b0.70.70.2
+      informs version 3 priv privuser256256          \b\b\b\b\b\b\b\b\bconfig\r\n"
+    no snmp-server host 70.70.70.2 traps version 3 priv privuser256256 config: "no
+      snmp-server host 70.70.70.2 traps version 3 priv privus\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b$ver host 70.70.70.2 traps version 3 priv privuse        \
+      \ \b\b\b\b\b\b\b\b\br256256 c\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b0.70.70.2
+      traps version 3 priv privuser256256 co         \b\b\b\b\b\b\b\b\bnfig\r\n"
     no snmp-server trap-source HundredGigE1/0/27: "no snmp-server trap-source HundredGigE1/0/27\r\
       \n"
   prompt: startrek-1(config)#
@@ -37,13 +37,12 @@ configure_line:
   prompt: startrek-1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -54,4 +53,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: startrek-1#

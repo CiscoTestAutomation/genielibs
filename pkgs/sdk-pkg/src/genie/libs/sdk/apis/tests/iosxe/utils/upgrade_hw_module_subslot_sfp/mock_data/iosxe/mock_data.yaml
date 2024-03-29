@@ -14,13 +14,12 @@ configure_line:
   prompt: Elixir_01(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -33,8 +32,10 @@ execute:
     term width 0: ''
     upgrade hw-module subslot 0/0 sfp 0 bootflash:dsl-sfp-1_62_8548-dev_elixir.bin:
       response:
-      - "$slot 0/0 sfp 0 bootflash:dsl-sfp-1_62_8548-dev_elixir.bin\r\nDigital signature\
-        \ successfully verified in file bootflash:dsl-sfp-1_62_8548-dev_elixir.bin\r\
-        \n%Firmware already up to date"
+        - |-
+          $slot 0/0 sfp 0 bootflash:dsl-sfp-1_62_8548-dev_elixir.bin
+          Digital signature successfully verified in file bootflash:dsl-sfp-1_62_8548-dev_elixir.bin
+          %Firmware already up to date
       response_type: circular
+    show version | include operating mode: ''
   prompt: Elixir_01#

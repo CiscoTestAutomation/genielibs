@@ -7,13 +7,13 @@ configure:
     line console 0:
       new_state: configure_line
     no device classifier: "no device classifier\r\n"
-    no device classifier condition CDP_RULE_TLV_1: "no device classifier con\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b$lassifier cond         \b\b\b\b\b\
+    no device classifier condition CDP_RULE_TLV_1: "no device classifier con\b\b\b
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b$lassifier cond         \b\b\b\b\b
       \b\b\b\bition CDP\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\bcondition CDP_\
       \         \b\b\b\b\b\b\b\b\bRULE_TLV_\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
       \b\b\bCDP_RULE_TLV_1         \b\b\b\b\b\b\b\b\b\r\n"
-    no lldp tlv-type 6 value String Cisco: "no lldp tlv-type 6 value\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b$-type 6 value          \b\b\b\b\b\b\b\b\b\
+    no lldp tlv-type 6 value String Cisco: "no lldp tlv-type 6 value\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b$-type 6 value          \b\b\b\b\b\b\b\b\b
       String Ci\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\blue String Cis      \
       \   \b\b\b\b\b\b\b\b\bco\r\n"
     no logging console: ''
@@ -26,13 +26,12 @@ configure_line:
   prompt: stack3-nyquist-1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -43,4 +42,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: stack3-nyquist-1#

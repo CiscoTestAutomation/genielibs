@@ -14,13 +14,12 @@ configure_line:
   prompt: PI-9300-Stack-103(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,15 +29,26 @@ execute:
       new_state: configure
     show redundancy states:
       response:
-      - "       my state = 13 -ACTIVE \r\n     peer state = 8  -STANDBY HOT \r\n \
-        \          Mode = Duplex\r\n           Unit = Primary\r\n        Unit ID =\
-        \ 1\r\n\r\nRedundancy Mode (Operational) = sso\r\nRedundancy Mode (Configured)\
-        \  = sso\r\nRedundancy State              = sso\r\n     Maintenance Mode =\
-        \ Disabled\r\n    Manual Swact = enabled\r\n Communications = Up\r\n\r\n \
-        \  client count = 122\r\n client_notification_TMR = 30000 milliseconds\r\n\
-        \           RF debug mask = 0x0"
+        - |2-
+                 my state = 13 -ACTIVE 
+               peer state = 8  -STANDBY HOT 
+                     Mode = Duplex
+                     Unit = Primary
+                  Unit ID = 1
+          
+          Redundancy Mode (Operational) = sso
+          Redundancy Mode (Configured)  = sso
+          Redundancy State              = sso
+               Maintenance Mode = Disabled
+              Manual Swact = enabled
+           Communications = Up
+          
+             client count = 122
+           client_notification_TMR = 30000 milliseconds
+                     RF debug mask = 0x0
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: PI-9300-Stack-103#

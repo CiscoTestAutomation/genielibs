@@ -1,0 +1,63 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console:
+      new_state: configure_line
+  prompt: Mando-7(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+    line vty: ''
+    terminal width 511: ''
+  prompt: Mando-7(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    show module:
+      response:
+      - "Mod Ports                  Module-Type                            Model \
+        \        \r\n  Status\r\n--- ----- ------------------------------------------------\
+        \ ---------------------\r\n --------\r\n4    48   34x100G QSFP28 + 14x400G\
+        \ QSFP56-DD Eth Module    N9K-X98900CD-A       \r\n ok        \r\n27   0 \
+        \   Supervisor Module                                N9K-C9800-SUP-A     \
+        \ \r\n active *  \r\n28   0    Supervisor Module                         \
+        \       N9K-C9800-SUP-A      \r\n ha-standby\r\n\r\nMod  Sw              \
+        \         Hw    Slot\r\n---  ----------------------- ------ ----\r\n4    10.4(2)IMG9(0.83)\
+        \        1.0    LC4 \r\n27   10.4(2)IMG9(0.83)        1.0    SUP1\r\n28  \
+        \ 10.4(2)IMG9(0.83)        1.0    SUP2\r\n\r\n\r\nMod  MAC-Address(es)   \
+        \                      Serial-Num\r\n---  --------------------------------------\
+        \  ----------\r\n4    38-fd-f8-ef-dd-00 to 38-fd-f8-ef-dd-ff  FOC2646NENM\r\
+        \n27   98-a2-c0-31-8a-08 to 98-a2-c0-31-8a-0f  FOC2632NK3P\r\n28   d0-09-c8-96-77-80\
+        \ to d0-09-c8-96-77-87  FOC2648NKW2\r\n\r\r\r\nMod  Online Diag Status\r\n\
+        ---  ------------------\r\n4    Pass\r\n27   Pass\r\n28   Pass\r\nLFM Ports\
+        \                  Module-Type                            Model         \r\
+        \n  Status\r\n--- ----- ------------------------------------------------ ---------------------\r\
+        \n --------\r\n19   0    4-slot Fabric Module                            \
+        \ N9K-C9804-FM-A       \r\n ok        \r\n26   0    4-slot Fabric Module \
+        \                            N9K-C9804-FM-A       \r\n ok        \r\n\r\n\
+        Mod  Sw                       Hw    Slot\r\n---  ----------------------- ------\
+        \ ----\r\n19   NA                       1.0    FM1 \r\n26   NA           \
+        \            1.0    FM8 \r\n\r\nLFM MAC-Address(es)                      \
+        \   Serial-Num\r\n---  --------------------------------------  ----------\r\
+        \n19   NA                                      FOC2646NEUB\r\n\r26   NA  \
+        \                                    FOC2646NESJ\r\n\r\nLFM  Online Diag Status\r\
+        \n---  ------------------\r\n19   Pass\r\n26   Pass"
+      response_type: circular
+    term length 0: ''
+    term width 511: ''
+    terminal session-timeout 0: ''
+  prompt: Mando-7#

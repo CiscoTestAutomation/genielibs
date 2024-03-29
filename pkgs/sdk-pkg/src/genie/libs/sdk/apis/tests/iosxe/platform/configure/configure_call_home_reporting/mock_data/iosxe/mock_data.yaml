@@ -1,10 +1,8 @@
 configure:
   commands:
-    call-home reporting contact-email-addr test@test.com: "call-home reporting contact-email-addr\
-      \ test@test.com\r\nThe command failed because it is only valid if there is no\
-      \ active user profile under call-home mode. Please change the configurations\
-      \ directly under call-home mode. To enable smart call home, please check http://www.cisco.com/go/smartcallhome\
-      \ for more information.\r\n"
+    call-home reporting contact-email-addr test@test.com: |
+      call-home reporting contact-email-addr test@test.com
+      The command failed because it is only valid if there is no active user profile under call-home mode. Please change the configurations directly under call-home mode. To enable smart call home, please check http://www.cisco.com/go/smartcallhome for more information.
     end:
       new_state: execute
     line console 0:
@@ -19,13 +17,12 @@ configure_line:
   prompt: n10SVL(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -36,4 +33,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: n10SVL#

@@ -5,8 +5,8 @@ configure:
       new_state: execute
     line console 0:
       new_state: configure_line
-    match address ipv4 ks-max-acl-replace(permit-any): "Profile cust-ipsec is not\
-      \ defined.\r\n"
+    match address ipv4 ks-max-acl-replace(permit-any): "Profile cust-ipsec is not
+      defined.\r\n"
     no logging console: ''
     no tag: "replay time window-size 20\r\n"
     profile cust-ipsec: "profile cust-ipsec\r\n"
@@ -23,13 +23,12 @@ configure_line:
   prompt: GD(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -40,4 +39,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: GD#

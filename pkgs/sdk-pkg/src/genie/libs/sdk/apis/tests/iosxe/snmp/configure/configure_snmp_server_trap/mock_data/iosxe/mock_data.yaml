@@ -5,28 +5,30 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-    snmp-server enable traps: "\r\n*Aug 19 11:48:17.719: %SYS-5-CONFIG_I: Configured\
-      \ from console by console\r\nstartrek-1(config)#snmp-server enable traps\r\n"
+    snmp-server enable traps: |
+      
+      *Aug 19 11:48:17.719: %SYS-5-CONFIG_I: Configured from console by console
+      startrek-1(config)#snmp-server enable traps
     snmp-server enable traps snmp: "snmp-server enable traps snmp\r\n"
-    snmp-server engineID remote 70.70.70.2 800000090300005056BE0829: "snmp-server\
-      \ engineID remote 70.70.70.2 800000090300005056B\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b$ engineID remote 70.70.70.2 800000090300005056BE         \b\b\b\
-      \b\b\b\b\b\b0829\r\n"
-    snmp-server host 70.70.70.2 informs version 3 priv privuser256256 config: "snmp-server\
-      \ host 70.70.70.2 informs version 3 priv privuse\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b$ host 70.70.70.2 informs version 3 priv privuser         \b\b\b\
-      \b\b\b\b\b\b256256 co\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b0.70.2 informs version\
-      \ 3 priv privuser256256 con         \b\b\b\b\b\b\b\b\bfig\r\n"
-    snmp-server host 70.70.70.2 traps version 3 priv privuser256256 config: "snmp-server\
-      \ host 70.70.70.2 traps version 3 priv privuser2\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b$ host 70.70.70.2 traps version 3 priv privuser25         \b\b\b\
-      \b\b\b\b\b\b6256 conf\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b0.70.2 traps version\
-      \ 3 priv privuser256256 confi         \b\b\b\b\b\b\b\b\bg\r\n"
+    snmp-server engineID remote 70.70.70.2 800000090300005056BE0829: "snmp-server
+      engineID remote 70.70.70.2 800000090300005056B\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b$ engineID remote 70.70.70.2 800000090300005056BE         \b\b\b\b\
+      \b\b\b\b\b0829\r\n"
+    snmp-server host 70.70.70.2 informs version 3 priv privuser256256 config: "snmp-server
+      host 70.70.70.2 informs version 3 priv privuse\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b$ host 70.70.70.2 informs version 3 priv privuser         \b\b\b\b
+      \b\b\b\b\b256256 co\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b0.70.2 informs version
+      3 priv privuser256256 con         \b\b\b\b\b\b\b\b\bfig\r\n"
+    snmp-server host 70.70.70.2 traps version 3 priv privuser256256 config: "snmp-server
+      host 70.70.70.2 traps version 3 priv privuser2\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b$ host 70.70.70.2 traps version 3 priv privuser25         \b\b\b\b
+      \b\b\b\b\b6256 conf\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b0.70.2 traps version
+      3 priv privuser256256 confi         \b\b\b\b\b\b\b\b\bg\r\n"
     snmp-server trap-source HundredGigE1/0/27: "snmp-server trap-source HundredGigE1/0/27\r\
       \n"
   prompt: startrek-1(config)#
@@ -38,13 +40,12 @@ configure_line:
   prompt: startrek-1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -55,4 +56,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: startrek-1#

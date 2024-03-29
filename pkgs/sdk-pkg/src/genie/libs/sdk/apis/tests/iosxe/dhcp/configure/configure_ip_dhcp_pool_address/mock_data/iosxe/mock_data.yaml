@@ -1,0 +1,38 @@
+configure:
+  commands:
+    address 1.1.1.1 client-id 0063.6973.636f.2d30.3062.362e.3730.3337.2e39.6630.302d.4769.302f.30: "address
+      1.1.1.1 client-id 0063.6973.636f.2d30.3062.362e.3730.3337.2e39.6630.302d.4769.302f.30\r\
+      \n"
+    end:
+      new_state: execute
+    ip dhcp pool vlan501: "ip dhcp pool vlan501\r\n"
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: Switch(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: Switch(config-line)#
+connect:
+  commands:
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
+    Connected to mock_device.
+    Escape character is '^]'.
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    show version | include operating mode: ''
+  prompt: Switch#

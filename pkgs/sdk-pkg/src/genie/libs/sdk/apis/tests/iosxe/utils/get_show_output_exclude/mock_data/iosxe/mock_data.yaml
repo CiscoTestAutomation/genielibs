@@ -14,13 +14,12 @@ configure_line:
   prompt: stack3-nyquist-1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,11 +29,14 @@ execute:
       new_state: configure
     show process memory | exclude 0:
       response:
-      - " lsmpi_io Pool Total:    6295128 Used:    6294296 Free:        832\r\n\r\n\
-        \ PID TTY  Allocated      Freed    Holding    Getbufs    Retbufs Process\r\
-        \n                                326858784 Total"
+        - |2-
+           lsmpi_io Pool Total:    6295128 Used:    6294296 Free:        832
+          
+           PID TTY  Allocated      Freed    Holding    Getbufs    Retbufs Process
+                                          326858784 Total
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: stack3-nyquist-1#

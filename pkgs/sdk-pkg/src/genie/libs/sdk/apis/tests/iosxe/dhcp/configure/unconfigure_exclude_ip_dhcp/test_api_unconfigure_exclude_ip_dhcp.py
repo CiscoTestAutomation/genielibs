@@ -10,7 +10,7 @@ class TestUnconfigureExcludeIpDhcp(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          stack3-nyquist-1:
+          Switch:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,11 +18,11 @@ class TestUnconfigureExcludeIpDhcp(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: cat9k
-            type: router
+            platform: c9200
+            type: c9200
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['stack3-nyquist-1']
+        self.device = self.testbed.devices['Switch']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,11 +30,6 @@ class TestUnconfigureExcludeIpDhcp(unittest.TestCase):
         )
 
     def test_unconfigure_exclude_ip_dhcp(self):
-        result = unconfigure_exclude_ip_dhcp(self.device, '6.6.6.0', None)
-        expected_output = None
-        self.assertEqual(result, expected_output)
-
-    def test_unconfigure_exclude_ip_dhcp_1(self):
-        result = unconfigure_exclude_ip_dhcp(self.device, '4.4.4.4', '5.5.5.5')
+        result = unconfigure_exclude_ip_dhcp(self.device, '1.1.1.1', '1.1.1.2', 'Mgmt-vrf')
         expected_output = None
         self.assertEqual(result, expected_output)

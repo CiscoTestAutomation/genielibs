@@ -18,20 +18,19 @@ configure_line:
   prompt: sisf-c9500-21-8-26-2(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
-    'clear device-tracking counters': ''
-    'clear device-tracking counters interface Ethernet1/0': ''
-    'clear device-tracking counters vlan 200': ''
-    'clear device-tracking counters bdi 200': ''
+    clear device-tracking counters: ''
+    clear device-tracking counters interface Ethernet1/0: ''
+    clear device-tracking counters vlan 200: ''
+    clear device-tracking counters bdi 200: ''
     config term:
       new_state: configure
     config-transaction:
@@ -41,4 +40,5 @@ execute:
     term width 0: ''
     term width 511: ''
     terminal session-timeout 0: ''
+    show version | include operating mode: ''
   prompt: sisf-c9500-21-8-26-2#

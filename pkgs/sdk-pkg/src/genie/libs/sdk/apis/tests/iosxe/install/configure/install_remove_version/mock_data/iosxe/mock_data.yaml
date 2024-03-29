@@ -14,13 +14,12 @@ configure_line:
   prompt: isr-cl2(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,31 +29,37 @@ execute:
       new_state: configure
     install remove version 17.10.01.0.162943:
       response:
-      - "install_remove: START Wed Jul 13 11:39:04 IST 2022\r\ninstall_remove: Removing\
-        \ IMG\r\nPreparing packages list to remove ...\r\n\r\nThe following files\
-        \ will be deleted:\r\n    [R0]: /bootflash/isr4400-rpboot.BLD_POLARIS_DEV_LATEST_20220712_143729.SSA.pkg\r\
-        \n    [R0]: /bootflash/isr4400-universalk9.BLD_POLARIS_DEV_LATEST_20220712_143729.SSA.bin\r\
-        \n    [R0]: /bootflash/isr4400-firmware_nim_ge.BLD_POLARIS_DEV_LATEST_20220712_143729.SSA.pkg\r\
-        \n    [R0]: /bootflash/isr4400-firmware_prince.BLD_POLARIS_DEV_LATEST_20220712_143729.SSA.pkg\r\
-        \n    [R0]: /bootflash/isr4400-firmware_sm_10g.BLD_POLARIS_DEV_LATEST_20220712_143729.SSA.pkg\r\
-        \n    [R0]: /bootflash/isr4400-firmware_nim_ssd.BLD_POLARIS_DEV_LATEST_20220712_143729.SSA.pkg\r\
-        \n    [R0]: /bootflash/isr4400-mono-universalk9.BLD_POLARIS_DEV_LATEST_20220712_143729.SSA.pkg\r\
-        \n    [R0]: /bootflash/isr4400-firmware_nim_cwan.BLD_POLARIS_DEV_LATEST_20220712_143729.SSA.pkg\r\
-        \n    [R0]: /bootflash/isr4400-firmware_nim_xdsl.BLD_POLARIS_DEV_LATEST_20220712_143729.SSA.pkg\r\
-        \n    [R0]: /bootflash/isr4400-firmware_sm_1t3e3.BLD_POLARIS_DEV_LATEST_20220712_143729.SSA.pkg\r\
-        \n    [R0]: /bootflash/isr4400-firmware_sm_async.BLD_POLARIS_DEV_LATEST_20220712_143729.SSA.pkg\r\
-        \n    [R0]: /bootflash/isr4400-firmware_nim_async.BLD_POLARIS_DEV_LATEST_20220712_143729.SSA.pkg\r\
-        \n    [R0]: /bootflash/isr4400-firmware_nim_shdsl.BLD_POLARIS_DEV_LATEST_20220712_143729.SSA.pkg\r\
-        \n    [R0]: /bootflash/isr4400-firmware_dreamliner.BLD_POLARIS_DEV_LATEST_20220712_143729.SSA.pkg\r\
-        \n    [R0]: /bootflash/isr4400-firmware_dsp_sp2700.BLD_POLARIS_DEV_LATEST_20220712_143729.SSA.pkg\r\
-        \n    [R0]: /bootflash/isr4400-firmware_dsp_tilegx.BLD_POLARIS_DEV_LATEST_20220712_143729.SSA.pkg\r\
-        \n    [R0]: /bootflash/isr4400-firmware_ngwic_t1e1.BLD_POLARIS_DEV_LATEST_20220712_143729.SSA.pkg\r\
-        \n    [R0]: /bootflash/isr4400-firmware_dsp_analogbri.BLD_POLARIS_DEV_LATEST_20220712_143729.SSA.pkg\r\
-        \n    [R0]: /bootflash/isr4400-firmware_nim_bri_st_fw.BLD_POLARIS_DEV_LATEST_20220712_143729.SSA.pkg\r\
-        \n    [R0]: /bootflash/isr4400-firmware_sm_dsp_sp2700.BLD_POLARIS_DEV_LATEST_20220712_143729.SSA.pkg\r\
-        \n\r\nDo you want to remove the above files? [y/n]"
+        - |-
+          install_remove: START Wed Jul 13 11:39:04 IST 2022
+          install_remove: Removing IMG
+          Preparing packages list to remove ...
+          
+          The following files will be deleted:
+              [R0]: /bootflash/isr4400-rpboot.BLD_POLARIS_DEV_LATEST_20220712_143729.SSA.pkg
+              [R0]: /bootflash/isr4400-universalk9.BLD_POLARIS_DEV_LATEST_20220712_143729.SSA.bin
+              [R0]: /bootflash/isr4400-firmware_nim_ge.BLD_POLARIS_DEV_LATEST_20220712_143729.SSA.pkg
+              [R0]: /bootflash/isr4400-firmware_prince.BLD_POLARIS_DEV_LATEST_20220712_143729.SSA.pkg
+              [R0]: /bootflash/isr4400-firmware_sm_10g.BLD_POLARIS_DEV_LATEST_20220712_143729.SSA.pkg
+              [R0]: /bootflash/isr4400-firmware_nim_ssd.BLD_POLARIS_DEV_LATEST_20220712_143729.SSA.pkg
+              [R0]: /bootflash/isr4400-mono-universalk9.BLD_POLARIS_DEV_LATEST_20220712_143729.SSA.pkg
+              [R0]: /bootflash/isr4400-firmware_nim_cwan.BLD_POLARIS_DEV_LATEST_20220712_143729.SSA.pkg
+              [R0]: /bootflash/isr4400-firmware_nim_xdsl.BLD_POLARIS_DEV_LATEST_20220712_143729.SSA.pkg
+              [R0]: /bootflash/isr4400-firmware_sm_1t3e3.BLD_POLARIS_DEV_LATEST_20220712_143729.SSA.pkg
+              [R0]: /bootflash/isr4400-firmware_sm_async.BLD_POLARIS_DEV_LATEST_20220712_143729.SSA.pkg
+              [R0]: /bootflash/isr4400-firmware_nim_async.BLD_POLARIS_DEV_LATEST_20220712_143729.SSA.pkg
+              [R0]: /bootflash/isr4400-firmware_nim_shdsl.BLD_POLARIS_DEV_LATEST_20220712_143729.SSA.pkg
+              [R0]: /bootflash/isr4400-firmware_dreamliner.BLD_POLARIS_DEV_LATEST_20220712_143729.SSA.pkg
+              [R0]: /bootflash/isr4400-firmware_dsp_sp2700.BLD_POLARIS_DEV_LATEST_20220712_143729.SSA.pkg
+              [R0]: /bootflash/isr4400-firmware_dsp_tilegx.BLD_POLARIS_DEV_LATEST_20220712_143729.SSA.pkg
+              [R0]: /bootflash/isr4400-firmware_ngwic_t1e1.BLD_POLARIS_DEV_LATEST_20220712_143729.SSA.pkg
+              [R0]: /bootflash/isr4400-firmware_dsp_analogbri.BLD_POLARIS_DEV_LATEST_20220712_143729.SSA.pkg
+              [R0]: /bootflash/isr4400-firmware_nim_bri_st_fw.BLD_POLARIS_DEV_LATEST_20220712_143729.SSA.pkg
+              [R0]: /bootflash/isr4400-firmware_sm_dsp_sp2700.BLD_POLARIS_DEV_LATEST_20220712_143729.SSA.pkg
+          
+          Do you want to remove the above files? [y/n]
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: isr-cl2#

@@ -14,13 +14,12 @@ configure_line:
   prompt: Switch_G48(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,10 +29,12 @@ execute:
       new_state: configure
     diagnostic start module 1 test all:
       response:
-      - "Diagnostic[module 1]: Running test(s) 4 may disrupt normal system operation\
-        \ and requires reload\r\nDo you want to continue? [no]: yes"
+        - |-
+          Diagnostic[module 1]: Running test(s) 4 may disrupt normal system operation and requires reload
+          Do you want to continue? [no]: yes
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: Switch_G48#

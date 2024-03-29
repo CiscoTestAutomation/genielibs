@@ -2,10 +2,10 @@ configure:
   commands:
     end:
       new_state: execute
-    ip nat pool inside_pool1 netmask 255.0.0.0 type match-host: "ip nat pool inside_pool1\
-      \ netmask 255.0.0.0 type match-host\r\n"
-    ip nat pool inside_pool2 prefix-length 8: "ip nat pool inside_pool2 prefix-length\
-      \ 8\r\n"
+    ip nat pool inside_pool1 netmask 255.0.0.0 type match-host: "ip nat pool inside_pool1
+      netmask 255.0.0.0 type match-host\r\n"
+    ip nat pool inside_pool2 prefix-length 8: "ip nat pool inside_pool2 prefix-length
+      8\r\n"
     line console 0:
       new_state: configure_line
     no address 1.1.1.1 1.2.2.2: "no address 1.1.1.1 1.2.2.2\r\n"
@@ -19,13 +19,12 @@ configure_line:
   prompt: stack3-nyquist-1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -36,4 +35,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: stack3-nyquist-1#

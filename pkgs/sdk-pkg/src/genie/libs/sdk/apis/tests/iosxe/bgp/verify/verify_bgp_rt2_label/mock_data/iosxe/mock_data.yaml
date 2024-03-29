@@ -18,33 +18,40 @@ configure_line:
   prompt: CGW-laas-c9500-5(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
     config term:
       new_state: configure
-    show ip bgp l2vpn evpn route-type 2 0 000011112222 20.101.1.254: "BGP routing\
-      \ table entry for [2][30.0.1.11:101][0][48][000011112222][32][20.101.1.254]/24,\
-      \ version 23\r\nPaths: (1 available, best #1, table evi_101)\r\n  Advertised\
-      \ to update-groups:\r\n     1         \r\n  Refresh Epoch 1\r\n  Local\r\n \
-      \   :: (via default) from 0.0.0.0 (30.1.1.11)\r\n      Origin incomplete, localpref\
-      \ 100, weight 32768, valid, sourced, local, best\r\n      EVPN ESI: 00000000000000000000,\
-      \ Label1 2000101\r\n      Extended Community: RT:300:2000101 RT:300:3000101\
-      \ ENCAP:8 \r\n        EVPN DEF GW:0:0 Router MAC:7035.09CC.F1F8\r\n      Local\
-      \ irb vxlan vtep:\r\n        vrf:vrf101, l3-vni:3000101\r\n        local router\
-      \ mac:7035.09CC.F1F8\r\n        core-irb interface:Vlan2101\r\n        vtep-ip:30.0.1.11\r\
-      \n      rx pathid: 0, tx pathid: 0x0\r\n      Updated on Oct 20 2021 06:43:54\
-      \ UTC"
+    show ip bgp l2vpn evpn route-type 2 0 000011112222 20.101.1.254: |-
+      BGP routing table entry for [2][30.0.1.11:101][0][48][000011112222][32][20.101.1.254]/24, version 23
+      Paths: (1 available, best #1, table evi_101)
+        Advertised to update-groups:
+           1         
+        Refresh Epoch 1
+        Local
+          :: (via default) from 0.0.0.0 (30.1.1.11)
+            Origin incomplete, localpref 100, weight 32768, valid, sourced, local, best
+            EVPN ESI: 00000000000000000000, Label1 2000101
+            Extended Community: RT:300:2000101 RT:300:3000101 ENCAP:8 
+              EVPN DEF GW:0:0 Router MAC:7035.09CC.F1F8
+            Local irb vxlan vtep:
+              vrf:vrf101, l3-vni:3000101
+              local router mac:7035.09CC.F1F8
+              core-irb interface:Vlan2101
+              vtep-ip:30.0.1.11
+            rx pathid: 0, tx pathid: 0x0
+            Updated on Oct 20 2021 06:43:54 UTC
     show version: ''
     term length 0: ''
     term width 0: ''
     term width 511: ''
     terminal session-timeout 0: ''
+    show version | include operating mode: ''
   prompt: CGW-laas-c9500-5#

@@ -14,13 +14,12 @@ configure_line:
   prompt: ott-ads-633(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,12 +29,15 @@ execute:
       new_state: configure
     openssl ecparam -list_curves:
       response:
-      - "  secp224r1 : NIST/SECG curve over a 224 bit prime field\r\n  secp256k1 :\
-        \ SECG curve over a 256 bit prime field\r\n  secp384r1 : NIST/SECG curve over\
-        \ a 384 bit prime field\r\n  secp521r1 : NIST/SECG curve over a 521 bit prime\
-        \ field\r\n  prime256v1: X9.62/SECG curve over a 256 bit prime field"
+        - |2-
+            secp224r1 : NIST/SECG curve over a 224 bit prime field
+            secp256k1 : SECG curve over a 256 bit prime field
+            secp384r1 : NIST/SECG curve over a 384 bit prime field
+            secp521r1 : NIST/SECG curve over a 521 bit prime field
+            prime256v1: X9.62/SECG curve over a 256 bit prime field
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: ott-ads-633#

@@ -14,13 +14,12 @@ configure_line:
   prompt: MSFT_9500H_SPINE(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -33,6 +32,7 @@ execute:
     term width 0: ''
     test opssl nonblockingsession client tls1.2 192.168.1.1 9001 1 10 2048 0 client client:
       response:
-      - $lient tls1.2 192.168.1.1 9001 1 10 2048 0 client client
+        - $lient tls1.2 192.168.1.1 9001 1 10 2048 0 client client
       response_type: circular
+    show version | include operating mode: ''
   prompt: MSFT_9500H_SPINE#

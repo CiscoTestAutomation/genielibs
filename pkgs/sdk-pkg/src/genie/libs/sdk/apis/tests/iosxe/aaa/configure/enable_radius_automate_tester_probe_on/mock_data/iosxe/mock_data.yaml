@@ -1,8 +1,8 @@
 configure:
   commands:
-    automate-tester username user1 probe-on vrf red: "automate-tester username user1\
-      \ probe-\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b$ster username user1 probe-o         \b\b\b\b\b\b\b\b\bn vrf red\r\n"
+    automate-tester username user1 probe-on vrf red: "automate-tester username user1
+      probe-\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b$ster username user1 probe-o         \b\b\b\b\b\b\b\b\bn vrf red\r\n"
     end:
       new_state: execute
     line console 0:
@@ -18,13 +18,12 @@ configure_line:
   prompt: 9500H_SVL_SSN_V07(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -35,4 +34,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: 9500H_SVL_SSN_V07#

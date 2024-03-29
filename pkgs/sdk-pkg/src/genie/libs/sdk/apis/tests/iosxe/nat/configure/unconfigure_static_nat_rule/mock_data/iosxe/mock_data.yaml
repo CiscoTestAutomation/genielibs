@@ -4,14 +4,14 @@ configure:
       new_state: execute
     line console 0:
       new_state: configure_line
-    no ip nat inside source static 193.168.0.2 10.10.10.1 vrf VRF2 extendable no-alias: "no\
-      \ ip nat inside source static 193.168.0.2 10.10.10.1 vrf VRF2 extendable no-alias\r\
-      \nNAT-VRF : VRF2 does not exist.\r\n"
-    no ip nat inside source static tcp 193.168.0.2 22 10.10.10.1 22: "no ip nat inside\
-      \ source static tcp 193.168.0.2 22 10.10.10.1 22\r\n"
-    no ip nat inside source static tcp 193.168.0.2 22 10.10.10.1 22 vrf VRF2 extendable no-alias: "no\
-      \ ip nat inside source static tcp 193.168.0.2 22 10.10.10.1 22 vrf VRF2 extendable\
-      \ no-alias\r\nNAT-VRF : VRF2 does not exist.\r\n"
+    no ip nat inside source static 193.168.0.2 10.10.10.1 vrf VRF2 extendable no-alias: |
+      no ip nat inside source static 193.168.0.2 10.10.10.1 vrf VRF2 extendable no-alias
+      NAT-VRF : VRF2 does not exist.
+    no ip nat inside source static tcp 193.168.0.2 22 10.10.10.1 22: "no ip nat inside
+      source static tcp 193.168.0.2 22 10.10.10.1 22\r\n"
+    no ip nat inside source static tcp 193.168.0.2 22 10.10.10.1 22 vrf VRF2 extendable no-alias: |
+      no ip nat inside source static tcp 193.168.0.2 22 10.10.10.1 22 vrf VRF2 extendable no-alias
+      NAT-VRF : VRF2 does not exist.
     no logging console: ''
   prompt: stack3-nyquist-1(config)#
 configure_line:
@@ -22,13 +22,12 @@ configure_line:
   prompt: stack3-nyquist-1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -39,4 +38,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: stack3-nyquist-1#

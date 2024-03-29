@@ -58,7 +58,7 @@ class test_platform(unittest.TestCase):
         p.learn()
 
         # Check all match
-        self.assertEqual(p.chassis, 'ASR 9006 4 Line Card Slot Chassis with V2 AC PEM')
+        self.assertEqual(p.chassis, 'ASR9K')
         self.assertEqual(p.chassis_sn, 'FOX1810G8LR')
         self.assertEqual(p.config_register, '0x1922')
         dir_value = {

@@ -2,8 +2,9 @@ configure:
   commands:
     end:
       new_state: execute
-    hw-module slot 2 port-group 2 mode 400G: "hw-module slot 2 port-group 2 mode 400G\r\
-      \n% 400G mode is already enabled on slot 2 port-group 2\r\n"
+    hw-module slot 2 port-group 2 mode 400G: |
+      hw-module slot 2 port-group 2 mode 400G
+      % 400G mode is already enabled on slot 2 port-group 2
     line console 0:
       new_state: configure_line
     no logging console: ''
@@ -16,13 +17,12 @@ configure_line:
   prompt: Switch(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -33,4 +33,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: Switch#

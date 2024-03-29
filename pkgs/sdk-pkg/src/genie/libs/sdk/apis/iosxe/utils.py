@@ -1724,8 +1724,11 @@ def request_system_shell(device, switch_type=None, processor_slot=None, uname=Fa
         continue_timer=False)])
 
     cmd = 'request platform software system shell'
-    if switch_type and processor_slot:
-        cmd += f' switch {switch_type} {processor_slot}'
+    if switch_type:
+        cmd += f' switch {switch_type}'
+        
+    if processor_slot:
+        cmd += f' {processor_slot}'
 
     output = None
     try:
@@ -1960,3 +1963,39 @@ def format_directory(device, directory, timeout=200):
         device.execute(cmd, timeout=timeout, reply=dialog)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not format directory on {device}. Error:\n{e}')
+
+def upgrade_rom_monitor_capsule_golden(device, switch_type, rp, timeout=420):
+    """ upgrade rom-monitor capsule golden switch active R0 and retrun True or False.
+
+    Args:
+        device (obj): Device to execute on
+        switch_type (str): active/standby
+        rp (str): R0/R1
+        timeout (int, optional): Max time in seconds allowed for calculation.
+            Defaults to 420.
+
+    Returns:
+        True if Upgrade is successful else return False
+    """
+    # upgrade rom-monitor capsule golden switch active R0
+
+    dialog = Dialog([Statement(pattern=r'This operation will reload the switch .* [confirm]', action='sendline(y\r)',
+    loop_continue=True,continue_timer=False)])
+
+    log.info(f"upgrade rom-monitor capsule golden switch {switch_type} {rp}")
+
+    cmd = f'upgrade rom-monitor capsule golden switch {switch_type} {rp}'
+    try:
+        output = device.execute(cmd,reply=dialog,timeout=timeout)
+    except Exception as e:
+        log.warning(e)
+        return None
+    else:
+        if re.search('.*([DONE])',output):
+            return True
+        if re.search('.*(Golden Upgrade not supported)',output):
+            log.info('Golden Upgrade not supported!')
+            return True
+        if re.search('.*(Press RETURN to get started.)',output):
+            log.info('Golden Upgrade is Successful!')
+            return True

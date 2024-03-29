@@ -14,13 +14,12 @@ configure_line:
   prompt: Sanity-ASR2X(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,10 +29,13 @@ execute:
       new_state: configure
     rmdir bootflash:test:
       response:
-      - "Remove directory filename [test]? \r\nDelete bootflash:test? [confirm]\r\n\
-        %Error Removing dir bootflash:test (Directory not empty)"
+        - |-
+          Remove directory filename [test]? 
+          Delete bootflash:test? [confirm]
+          %Error Removing dir bootflash:test (Directory not empty)
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: Sanity-ASR2X#

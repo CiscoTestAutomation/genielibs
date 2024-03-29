@@ -6,8 +6,10 @@ configure:
       new_state: configure_line
     line console 0:
       new_state: configure_line
-    no boot kickstart: "\rno boot kickstart\r\r\n"
-    no boot system: "no boot system\r\r\n"
+    no boot kickstart: |
+      no boot kickstart
+    no boot system: |
+      no boot system
     no logging console: ''
   prompt: II23-FCOECORE(config)#
 configure_line:
@@ -20,13 +22,12 @@ configure_line:
   prompt: II23-FCOECORE(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -34,13 +35,24 @@ execute:
       new_state: configure
     config-transaction:
       new_state: configure
-    show boot: "Current Boot Variables:\r\n\r\n\r\nkickstart variable not set\r\n\
-      system variable not set\r\nBoot POAP Disabled\r\n\r\nBoot Variables on next\
-      \ reload:\r\n\r\n\r\nkickstart variable = bootflash:/n6000-uk9-kickstart.7.3.9.N1.1.bin\r\
-      \nsystem variable = bootflash:/n6000-uk9.7.3.9.N1.1.bin\r\nBoot POAP Disabled"
+    show boot: |-
+      Current Boot Variables:
+      
+      
+      kickstart variable not set
+      system variable not set
+      Boot POAP Disabled
+      
+      Boot Variables on next reload:
+      
+      
+      kickstart variable = bootflash:/n6000-uk9-kickstart.7.3.9.N1.1.bin
+      system variable = bootflash:/n6000-uk9.7.3.9.N1.1.bin
+      Boot POAP Disabled
     show version: ''
     term length 0: ''
     term width 0: ''
     term width 511: ''
     terminal session-timeout 0: ''
+    show version | include operating mode: ''
   prompt: II23-FCOECORE#

@@ -14,13 +14,12 @@ configure_line:
   prompt: SF1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,15 +29,28 @@ execute:
       new_state: configure
     show platform software fed active ipv6 mld snooping vlan 10:
       response:
-      - "Vlan 10\r\n---------\r\n\tMLDSN  Enabled  : On\r\n\tPIMSN Enabled   : Off\r\
-        \n\tFlood Mode      : On\r\n\tOper State      : Up\r\n\tSTP TCN Flood   :\
-        \ Off\r\n\tRouting Enabled : Off\r\n\tPIM Enabled     : Off\r\n\tPVLAN   \
-        \        : No\r\n\tIn Retry        : 0x0\r\n\tCCK Epoch       : 0xa1\r\n\t\
-        IOSD Flood Mode : On\r\n\tEVPN Proxy Enabled : Off\r\n\tL3mcast Adj      :\
-        \ \r\n\tMrouter PortQ   : \r\n\tFlood PortQ     : \r\n\tREP RI handle   :\
-        \ 0x0"
+        - |-
+          Vlan 10
+          ---------
+          	MLDSN  Enabled  : On
+          	PIMSN Enabled   : Off
+          	Flood Mode      : On
+          	Oper State      : Up
+          	STP TCN Flood   : Off
+          	Routing Enabled : Off
+          	PIM Enabled     : Off
+          	PVLAN           : No
+          	In Retry        : 0x0
+          	CCK Epoch       : 0xa1
+          	IOSD Flood Mode : On
+          	EVPN Proxy Enabled : Off
+          	L3mcast Adj      : 
+          	Mrouter PortQ   : 
+          	Flood PortQ     : 
+          	REP RI handle   : 0x0
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: SF1#

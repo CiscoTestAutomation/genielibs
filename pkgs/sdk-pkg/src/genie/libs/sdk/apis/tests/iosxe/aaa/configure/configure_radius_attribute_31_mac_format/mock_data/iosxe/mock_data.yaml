@@ -5,8 +5,8 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-    radius-server attribute 31 mac format ietf upper-case: "radius-server attribute\
-      \ 31 mac format ietf upper-case\r\n"
+    radius-server attribute 31 mac format ietf upper-case: "radius-server attribute
+      31 mac format ietf upper-case\r\n"
   prompt: stack-12m(config)#
 configure_line:
   commands:
@@ -16,13 +16,12 @@ configure_line:
   prompt: stack-12m(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -33,4 +32,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: stack-12m#

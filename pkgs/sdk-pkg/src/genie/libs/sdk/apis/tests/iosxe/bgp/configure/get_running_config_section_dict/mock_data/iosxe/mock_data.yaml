@@ -14,13 +14,12 @@ configure_line:
   prompt: iolpe2(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,137 +29,482 @@ execute:
       new_state: configure
     show run:
       response:
-      - "Building configuration...\r\n\r\nCurrent configuration : 8337 bytes\r\n!\r\
-        \n! Last configuration change at 15:10:04 PST Mon Jul 10 2023\r\n!\r\nversion\
-        \ 17.13\r\nservice tcp-keepalives-in\r\nservice tcp-keepalives-out\r\nservice\
-        \ timestamps debug datetime msec\r\nservice timestamps log datetime msec\r\
-        \nservice internal\r\nservice compress-config\r\n!\r\nhostname iolpe2\r\n\
-        !\r\nboot-start-marker\r\nboot-end-marker\r\n!\r\n!\r\nvrf definition ce1\r\
-        \n rd 3:3\r\n !\r\n address-family ipv4\r\n  route-target export 1:1\r\n \
-        \ route-target import 1:1\r\n exit-address-family\r\n !\r\n address-family\
-        \ ipv6\r\n  route-target export 1:1\r\n  route-target import 1:1\r\n exit-address-family\r\
-        \n!\r\nlogging buffered 4000000\r\nno logging console\r\nno aaa new-model\r\
-        \n!\r\n!\r\n!\r\nclock timezone PST -8 0\r\n!\r\n!\r\n!\r\n!\r\n!\r\n!\r\n\
-        !\r\n!\r\n!\r\n!\r\n!\r\n!\r\nno ip domain lookup\r\nip cef\r\nlogin on-success\
-        \ log\r\nipv6 unicast-routing\r\nipv6 cef\r\n!\r\n!\r\n!\r\n!\r\n!\r\n!\r\n\
-        !\r\n!\r\nmpls traffic-eng tunnels\r\n!\r\n!\r\n!\r\n!\r\n!\r\nmemory free\
-        \ low-watermark processor 54960\r\n!\r\n!\r\nspanning-tree mode rapid-pvst\r\
-        \n!\r\n!\r\n!\r\n!\r\n!\r\n!\r\n!\r\n! \r\n!\r\n!\r\n!\r\n!\r\n!\r\n!\r\n\
-        !\r\n!\r\n!\r\n!\r\n!\r\n!\r\n!\r\n!\r\n!\r\ninterface Loopback1\r\n ip address\
-        \ 1.1.1.3 255.255.255.255\r\n ip router isis sr\r\n ipv6 address 2001::1:1:1:3/128\r\
-        \n ipv6 router isis sr\r\n!\r\ninterface Ethernet0/0\r\n no ip address\r\n\
-        \ shutdown\r\n!\r\ninterface Ethernet0/1\r\n no ip address\r\n shutdown\r\n\
-        !\r\ninterface Ethernet0/2\r\n no ip address\r\n shutdown\r\n!\r\ninterface\
-        \ Ethernet0/3\r\n no ip address\r\n shutdown\r\n!\r\ninterface Ethernet1/0\r\
-        \n description to iolce1 Ethernet2/0\r\n vrf forwarding ce1\r\n ip address\
-        \ 99.1.3.3 255.255.255.0\r\n ipv6 address 2001::99:1:3:3/112\r\n!\r\ninterface\
-        \ Ethernet1/1\r\n description to iolce1 Ethernet2/1\r\n vrf forwarding ce1\r\
-        \n ip address 100.1.3.3 255.255.255.0\r\n ipv6 address 2001::100:1:3:3/112\r\
-        \n!\r\ninterface Ethernet1/2\r\n no ip address\r\n shutdown\r\n!\r\ninterface\
-        \ Ethernet1/3\r\n no ip address\r\n shutdown\r\n!\r\ninterface Ethernet2/0\r\
-        \n description to iolpe1 Ethernet2/0\r\n ip address 99.2.3.3 255.255.255.0\r\
-        \n ip router isis sr\r\n ipv6 address 2001::99:2:3:3/112\r\n ipv6 router isis\
-        \ sr\r\n mpls ip\r\n mpls traffic-eng tunnels\r\n isis network point-to-point\
-        \ \r\n ip rsvp bandwidth\r\n!\r\ninterface Ethernet2/1\r\n description to\
-        \ iolpe1 Ethernet2/1\r\n ip address 100.2.3.3 255.255.255.0\r\n ip router\
-        \ isis sr\r\n ipv6 address 2001::100:2:3:3/112\r\n ipv6 router isis sr\r\n\
-        \ mpls ip\r\n mpls traffic-eng tunnels\r\n isis network point-to-point \r\n\
-        \ ip rsvp bandwidth\r\n!\r\ninterface Ethernet2/2\r\n no ip address\r\n shutdown\r\
-        \n!\r\ninterface Ethernet2/3\r\n no ip address\r\n shutdown\r\n!\r\ninterface\
-        \ Ethernet3/0\r\n description to iolp2 Ethernet1/0\r\n ip address 99.3.5.3\
-        \ 255.255.255.0\r\n ip router isis sr\r\n ipv6 address 2001::99:3:5:3/112\r\
-        \n ipv6 router isis sr\r\n mpls ip\r\n mpls traffic-eng tunnels\r\n isis network\
-        \ point-to-point \r\n ip rsvp bandwidth\r\n!\r\ninterface Ethernet3/1\r\n\
-        \ description to iolp2 Ethernet1/1\r\n ip address 100.3.5.3 255.255.255.0\r\
-        \n ip router isis sr\r\n ipv6 address 2001::100:3:5:3/112\r\n ipv6 router\
-        \ isis sr\r\n mpls ip\r\n mpls traffic-eng tunnels\r\n isis network point-to-point\
-        \ \r\n ip rsvp bandwidth\r\n!\r\ninterface Ethernet3/2\r\n no ip address\r\
-        \n shutdown\r\n!\r\ninterface Ethernet3/3\r\n no ip address\r\n shutdown\r\
-        \n!\r\ninterface Ethernet4/0\r\n no ip address\r\n shutdown\r\n!\r\ninterface\
-        \ Ethernet4/1\r\n no ip address\r\n shutdown\r\n!\r\ninterface Ethernet4/2\r\
-        \n no ip address\r\n shutdown\r\n!\r\ninterface Ethernet4/3\r\n no ip address\r\
-        \n shutdown\r\n!\r\ninterface Ethernet5/0\r\n description to iolp1 Ethernet5/0\r\
-        \n ip address 99.3.4.3 255.255.255.0\r\n ip router isis sr\r\n ipv6 address\
-        \ 2001::99:3:4:3/112\r\n ipv6 router isis sr\r\n mpls ip\r\n mpls traffic-eng\
-        \ tunnels\r\n isis network point-to-point \r\n ip rsvp bandwidth\r\n!\r\n\
-        interface Ethernet5/1\r\n description to iolp1 Ethernet5/1\r\n ip address\
-        \ 100.3.4.3 255.255.255.0\r\n ip router isis sr\r\n ipv6 address 2001::100:3:4:3/112\r\
-        \n ipv6 router isis sr\r\n mpls ip\r\n mpls traffic-eng tunnels\r\n isis network\
-        \ point-to-point \r\n ip rsvp bandwidth\r\n!\r\ninterface Ethernet5/2\r\n\
-        \ no ip address\r\n shutdown\r\n!\r\ninterface Ethernet5/3\r\n no ip address\r\
-        \n shutdown\r\n!\r\n!\r\nsegment-routing mpls\r\n !\r\n set-attributes\r\n\
-        \  address-family ipv4\r\n   sr-label-preferred\r\n  exit-address-family\r\
-        \n !\r\n global-block 16000 23999\r\n local-block 30000 39999\r\n !\r\n connected-prefix-sid-map\r\
-        \n  address-family ipv4\r\n   1.1.1.3/32 index 3 range 1 \r\n  exit-address-family\r\
-        \n !\r\n!\r\nsegment-routing traffic-eng\r\n !\r\n on-demand color 10\r\n\
-        \  authorize\r\n  candidate-paths\r\n   preference 1\r\n    constraints\r\n\
-        \     segments\r\n      dataplane srv6\r\n     !\r\n    !\r\n    dynamic\r\
-        \n    !\r\n   !\r\n  !\r\n !\r\n!\r\nsegment-routing srv6\r\n locators\r\n\
-        \  locator loc1\r\n   prefix FC01:101:3::/48\r\n   format usid-f3216\r\n!\r\
-        \nrouter isis sr\r\n net 49.0000.0000.0003.00\r\n is-type level-2-only\r\n\
-        \ metric-style wide\r\n distribute link-state\r\n segment-routing mpls\r\n\
-        \ !\r\n address-family ipv6\r\n  multi-topology\r\n  router-id Loopback1\r\
-        \n  segment-routing srv6\r\n   locator loc1\r\n    level-2\r\n exit-address-family\r\
-        \n mpls traffic-eng router-id Loopback1\r\n mpls traffic-eng level-2\r\n!\r\
-        \nrouter bgp 65000\r\n !\r\n segment-routing srv6\r\n  locator loc1\r\n exit-srv6\r\
-        \n !\r\n bgp router-id interface Loopback1\r\n bgp log-neighbor-changes\r\n\
-        \ bgp graceful-restart all\r\n no bgp default ipv4-unicast\r\n neighbor 1.1.1.4\
-        \ remote-as 65000\r\n neighbor 1.1.1.4 update-source Loopback1\r\n neighbor\
-        \ 1.1.1.6 remote-as 65000\r\n neighbor 1.1.1.6 update-source Loopback1\r\n\
-        \ neighbor 2001::1:1:1:4 remote-as 65000\r\n neighbor 2001::1:1:1:4 update-source\
-        \ Loopback1\r\n neighbor 2001::1:1:1:6 remote-as 65000\r\n neighbor 2001::1:1:1:6\
-        \ update-source Loopback1\r\n !\r\n address-family ipv4\r\n  redistribute\
-        \ static route-map test\r\n exit-address-family\r\n !\r\n address-family vpnv4\r\
-        \n  !\r\n  segment-routing srv6\r\n   locator loc1\r\n   alloc-mode per-vrf\r\
-        \n  exit-srv6\r\n  !\r\n  neighbor 1.1.1.4 activate\r\n  neighbor 1.1.1.4\
-        \ send-community extended\r\n  neighbor 1.1.1.4 next-hop-self\r\n  neighbor\
-        \ 1.1.1.4 route-map test in\r\n  neighbor 1.1.1.4 route-map pe2 out\r\n  neighbor\
-        \ 1.1.1.6 activate\r\n  neighbor 1.1.1.6 send-community extended\r\n  neighbor\
-        \ 1.1.1.6 next-hop-self\r\n  neighbor 1.1.1.6 route-map odn in\r\n  neighbor\
-        \ 1.1.1.6 route-map pe2 out\r\n  neighbor 2001::1:1:1:4 activate\r\n  neighbor\
-        \ 2001::1:1:1:4 send-community both\r\n  neighbor 2001::1:1:1:4 next-hop-self\r\
-        \n  neighbor 2001::1:1:1:4 route-map odn in\r\n  neighbor 2001::1:1:1:4 route-map\
-        \ pe2 out\r\n  neighbor 2001::1:1:1:6 activate\r\n  neighbor 2001::1:1:1:6\
-        \ send-community both\r\n  neighbor 2001::1:1:1:6 next-hop-self\r\n  neighbor\
-        \ 2001::1:1:1:6 route-map odn in\r\n  neighbor 2001::1:1:1:6 route-map pe2\
-        \ out\r\n exit-address-family\r\n !\r\n address-family ipv6\r\n exit-address-family\r\
-        \n !\r\n address-family vpnv6\r\n  !\r\n  segment-routing srv6\r\n   locator\
-        \ loc1\r\n   alloc-mode per-vrf\r\n  exit-srv6\r\n  !\r\n  neighbor 1.1.1.4\
-        \ activate\r\n  neighbor 1.1.1.4 send-community extended\r\n  neighbor 1.1.1.4\
-        \ next-hop-self\r\n  neighbor 1.1.1.4 route-map odn in\r\n  neighbor 1.1.1.4\
-        \ route-map pe2 out\r\n  neighbor 1.1.1.6 activate\r\n  neighbor 1.1.1.6 send-community\
-        \ extended\r\n  neighbor 1.1.1.6 next-hop-self\r\n  neighbor 1.1.1.6 route-map\
-        \ odn in\r\n  neighbor 1.1.1.6 route-map pe2 out\r\n  neighbor 2001::1:1:1:4\
-        \ activate\r\n  neighbor 2001::1:1:1:4 send-community both\r\n  neighbor 2001::1:1:1:4\
-        \ next-hop-self\r\n  neighbor 2001::1:1:1:4 route-map odn in\r\n  neighbor\
-        \ 2001::1:1:1:4 route-map pe2 out\r\n  neighbor 2001::1:1:1:6 activate\r\n\
-        \  neighbor 2001::1:1:1:6 send-community both\r\n  neighbor 2001::1:1:1:6\
-        \ next-hop-self\r\n  neighbor 2001::1:1:1:6 route-map odn in\r\n  neighbor\
-        \ 2001::1:1:1:6 route-map pe2 out\r\n exit-address-family\r\n !\r\n address-family\
-        \ ipv4 vrf ce1\r\n  neighbor 99.1.3.1 remote-as 65001\r\n  neighbor 99.1.3.1\
-        \ activate\r\n  neighbor 99.1.3.1 send-community extended\r\n  neighbor 100.1.3.1\
-        \ remote-as 65001\r\n  neighbor 100.1.3.1 activate\r\n  neighbor 100.1.3.1\
-        \ send-community extended\r\n exit-address-family\r\n !\r\n address-family\
-        \ ipv6 vrf ce1\r\n  neighbor 2001::99:1:3:1 remote-as 65001\r\n  neighbor\
-        \ 2001::99:1:3:1 activate\r\n  neighbor 2001::99:1:3:1 send-community extended\r\
-        \n  neighbor 2001::100:1:3:1 remote-as 65001\r\n  neighbor 2001::100:1:3:1\
-        \ activate\r\n  neighbor 2001::100:1:3:1 send-community extended\r\n exit-address-family\r\
-        \n!\r\nip forward-protocol nd\r\n!\r\n!\r\nip http server\r\nip http secure-server\r\
-        \nip ssh bulk-mode 131072\r\n!\r\nno logging btrace\r\n!\r\nroute-map odn\
-        \ permit 10 \r\n set extcommunity color 10\r\n!\r\nroute-map pe2 permit 10\
-        \ \r\n set local-preference 30\r\n!\r\n!\r\n!\r\nperformance-measurement\r\
-        \n interface Ethernet2/0\r\n  delay-measurement\r\n   advertise-delay 10\r\
-        \n  !\r\n !\r\n interface Ethernet2/1\r\n  delay-measurement\r\n   advertise-delay\
-        \ 10\r\n  !\r\n !\r\n interface Ethernet3/0\r\n  delay-measurement\r\n   advertise-delay\
-        \ 10\r\n  !\r\n !\r\n interface Ethernet3/1\r\n  delay-measurement\r\n   advertise-delay\
-        \ 10\r\n  !\r\n !\r\n interface Ethernet5/0\r\n  delay-measurement\r\n   advertise-delay\
-        \ 10\r\n  !\r\n !\r\n interface Ethernet5/1\r\n  delay-measurement\r\n   advertise-delay\
-        \ 10\r\n  !\r\n !\r\n!\r\n!\r\ncontrol-plane\r\n!\r\n!\r\n!\r\nline con 0\r\
-        \n exec-timeout 0 0\r\n logging synchronous\r\nline aux 0\r\nline vty 0 4\r\
-        \n exec-timeout 0 0\r\n login\r\n transport input ssh\r\n!\r\n!\r\n!\r\n!\r\
-        \nend"
+        - |-
+          Building configuration...
+          
+          Current configuration : 8337 bytes
+          !
+          ! Last configuration change at 15:10:04 PST Mon Jul 10 2023
+          !
+          version 17.13
+          service tcp-keepalives-in
+          service tcp-keepalives-out
+          service timestamps debug datetime msec
+          service timestamps log datetime msec
+          service internal
+          service compress-config
+          !
+          hostname iolpe2
+          !
+          boot-start-marker
+          boot-end-marker
+          !
+          !
+          vrf definition ce1
+           rd 3:3
+           !
+           address-family ipv4
+            route-target export 1:1
+            route-target import 1:1
+           exit-address-family
+           !
+           address-family ipv6
+            route-target export 1:1
+            route-target import 1:1
+           exit-address-family
+          !
+          logging buffered 4000000
+          no logging console
+          no aaa new-model
+          !
+          !
+          !
+          clock timezone PST -8 0
+          !
+          !
+          !
+          !
+          !
+          !
+          !
+          !
+          !
+          !
+          !
+          !
+          no ip domain lookup
+          ip cef
+          login on-success log
+          ipv6 unicast-routing
+          ipv6 cef
+          !
+          !
+          !
+          !
+          !
+          !
+          !
+          !
+          mpls traffic-eng tunnels
+          !
+          !
+          !
+          !
+          !
+          memory free low-watermark processor 54960
+          !
+          !
+          spanning-tree mode rapid-pvst
+          !
+          !
+          !
+          !
+          !
+          !
+          !
+          ! 
+          !
+          !
+          !
+          !
+          !
+          !
+          !
+          !
+          !
+          !
+          !
+          !
+          !
+          !
+          !
+          interface Loopback1
+           ip address 1.1.1.3 255.255.255.255
+           ip router isis sr
+           ipv6 address 2001::1:1:1:3/128
+           ipv6 router isis sr
+          !
+          interface Ethernet0/0
+           no ip address
+           shutdown
+          !
+          interface Ethernet0/1
+           no ip address
+           shutdown
+          !
+          interface Ethernet0/2
+           no ip address
+           shutdown
+          !
+          interface Ethernet0/3
+           no ip address
+           shutdown
+          !
+          interface Ethernet1/0
+           description to iolce1 Ethernet2/0
+           vrf forwarding ce1
+           ip address 99.1.3.3 255.255.255.0
+           ipv6 address 2001::99:1:3:3/112
+          !
+          interface Ethernet1/1
+           description to iolce1 Ethernet2/1
+           vrf forwarding ce1
+           ip address 100.1.3.3 255.255.255.0
+           ipv6 address 2001::100:1:3:3/112
+          !
+          interface Ethernet1/2
+           no ip address
+           shutdown
+          !
+          interface Ethernet1/3
+           no ip address
+           shutdown
+          !
+          interface Ethernet2/0
+           description to iolpe1 Ethernet2/0
+           ip address 99.2.3.3 255.255.255.0
+           ip router isis sr
+           ipv6 address 2001::99:2:3:3/112
+           ipv6 router isis sr
+           mpls ip
+           mpls traffic-eng tunnels
+           isis network point-to-point 
+           ip rsvp bandwidth
+          !
+          interface Ethernet2/1
+           description to iolpe1 Ethernet2/1
+           ip address 100.2.3.3 255.255.255.0
+           ip router isis sr
+           ipv6 address 2001::100:2:3:3/112
+           ipv6 router isis sr
+           mpls ip
+           mpls traffic-eng tunnels
+           isis network point-to-point 
+           ip rsvp bandwidth
+          !
+          interface Ethernet2/2
+           no ip address
+           shutdown
+          !
+          interface Ethernet2/3
+           no ip address
+           shutdown
+          !
+          interface Ethernet3/0
+           description to iolp2 Ethernet1/0
+           ip address 99.3.5.3 255.255.255.0
+           ip router isis sr
+           ipv6 address 2001::99:3:5:3/112
+           ipv6 router isis sr
+           mpls ip
+           mpls traffic-eng tunnels
+           isis network point-to-point 
+           ip rsvp bandwidth
+          !
+          interface Ethernet3/1
+           description to iolp2 Ethernet1/1
+           ip address 100.3.5.3 255.255.255.0
+           ip router isis sr
+           ipv6 address 2001::100:3:5:3/112
+           ipv6 router isis sr
+           mpls ip
+           mpls traffic-eng tunnels
+           isis network point-to-point 
+           ip rsvp bandwidth
+          !
+          interface Ethernet3/2
+           no ip address
+           shutdown
+          !
+          interface Ethernet3/3
+           no ip address
+           shutdown
+          !
+          interface Ethernet4/0
+           no ip address
+           shutdown
+          !
+          interface Ethernet4/1
+           no ip address
+           shutdown
+          !
+          interface Ethernet4/2
+           no ip address
+           shutdown
+          !
+          interface Ethernet4/3
+           no ip address
+           shutdown
+          !
+          interface Ethernet5/0
+           description to iolp1 Ethernet5/0
+           ip address 99.3.4.3 255.255.255.0
+           ip router isis sr
+           ipv6 address 2001::99:3:4:3/112
+           ipv6 router isis sr
+           mpls ip
+           mpls traffic-eng tunnels
+           isis network point-to-point 
+           ip rsvp bandwidth
+          !
+          interface Ethernet5/1
+           description to iolp1 Ethernet5/1
+           ip address 100.3.4.3 255.255.255.0
+           ip router isis sr
+           ipv6 address 2001::100:3:4:3/112
+           ipv6 router isis sr
+           mpls ip
+           mpls traffic-eng tunnels
+           isis network point-to-point 
+           ip rsvp bandwidth
+          !
+          interface Ethernet5/2
+           no ip address
+           shutdown
+          !
+          interface Ethernet5/3
+           no ip address
+           shutdown
+          !
+          !
+          segment-routing mpls
+           !
+           set-attributes
+            address-family ipv4
+             sr-label-preferred
+            exit-address-family
+           !
+           global-block 16000 23999
+           local-block 30000 39999
+           !
+           connected-prefix-sid-map
+            address-family ipv4
+             1.1.1.3/32 index 3 range 1 
+            exit-address-family
+           !
+          !
+          segment-routing traffic-eng
+           !
+           on-demand color 10
+            authorize
+            candidate-paths
+             preference 1
+              constraints
+               segments
+                dataplane srv6
+               !
+              !
+              dynamic
+              !
+             !
+            !
+           !
+          !
+          segment-routing srv6
+           locators
+            locator loc1
+             prefix FC01:101:3::/48
+             format usid-f3216
+          !
+          router isis sr
+           net 49.0000.0000.0003.00
+           is-type level-2-only
+           metric-style wide
+           distribute link-state
+           segment-routing mpls
+           !
+           address-family ipv6
+            multi-topology
+            router-id Loopback1
+            segment-routing srv6
+             locator loc1
+              level-2
+           exit-address-family
+           mpls traffic-eng router-id Loopback1
+           mpls traffic-eng level-2
+          !
+          router bgp 65000
+           !
+           segment-routing srv6
+            locator loc1
+           exit-srv6
+           !
+           bgp router-id interface Loopback1
+           bgp log-neighbor-changes
+           bgp graceful-restart all
+           no bgp default ipv4-unicast
+           neighbor 1.1.1.4 remote-as 65000
+           neighbor 1.1.1.4 update-source Loopback1
+           neighbor 1.1.1.6 remote-as 65000
+           neighbor 1.1.1.6 update-source Loopback1
+           neighbor 2001::1:1:1:4 remote-as 65000
+           neighbor 2001::1:1:1:4 update-source Loopback1
+           neighbor 2001::1:1:1:6 remote-as 65000
+           neighbor 2001::1:1:1:6 update-source Loopback1
+           !
+           address-family ipv4
+            redistribute static route-map test
+           exit-address-family
+           !
+           address-family vpnv4
+            !
+            segment-routing srv6
+             locator loc1
+             alloc-mode per-vrf
+            exit-srv6
+            !
+            neighbor 1.1.1.4 activate
+            neighbor 1.1.1.4 send-community extended
+            neighbor 1.1.1.4 next-hop-self
+            neighbor 1.1.1.4 route-map test in
+            neighbor 1.1.1.4 route-map pe2 out
+            neighbor 1.1.1.6 activate
+            neighbor 1.1.1.6 send-community extended
+            neighbor 1.1.1.6 next-hop-self
+            neighbor 1.1.1.6 route-map odn in
+            neighbor 1.1.1.6 route-map pe2 out
+            neighbor 2001::1:1:1:4 activate
+            neighbor 2001::1:1:1:4 send-community both
+            neighbor 2001::1:1:1:4 next-hop-self
+            neighbor 2001::1:1:1:4 route-map odn in
+            neighbor 2001::1:1:1:4 route-map pe2 out
+            neighbor 2001::1:1:1:6 activate
+            neighbor 2001::1:1:1:6 send-community both
+            neighbor 2001::1:1:1:6 next-hop-self
+            neighbor 2001::1:1:1:6 route-map odn in
+            neighbor 2001::1:1:1:6 route-map pe2 out
+           exit-address-family
+           !
+           address-family ipv6
+           exit-address-family
+           !
+           address-family vpnv6
+            !
+            segment-routing srv6
+             locator loc1
+             alloc-mode per-vrf
+            exit-srv6
+            !
+            neighbor 1.1.1.4 activate
+            neighbor 1.1.1.4 send-community extended
+            neighbor 1.1.1.4 next-hop-self
+            neighbor 1.1.1.4 route-map odn in
+            neighbor 1.1.1.4 route-map pe2 out
+            neighbor 1.1.1.6 activate
+            neighbor 1.1.1.6 send-community extended
+            neighbor 1.1.1.6 next-hop-self
+            neighbor 1.1.1.6 route-map odn in
+            neighbor 1.1.1.6 route-map pe2 out
+            neighbor 2001::1:1:1:4 activate
+            neighbor 2001::1:1:1:4 send-community both
+            neighbor 2001::1:1:1:4 next-hop-self
+            neighbor 2001::1:1:1:4 route-map odn in
+            neighbor 2001::1:1:1:4 route-map pe2 out
+            neighbor 2001::1:1:1:6 activate
+            neighbor 2001::1:1:1:6 send-community both
+            neighbor 2001::1:1:1:6 next-hop-self
+            neighbor 2001::1:1:1:6 route-map odn in
+            neighbor 2001::1:1:1:6 route-map pe2 out
+           exit-address-family
+           !
+           address-family ipv4 vrf ce1
+            neighbor 99.1.3.1 remote-as 65001
+            neighbor 99.1.3.1 activate
+            neighbor 99.1.3.1 send-community extended
+            neighbor 100.1.3.1 remote-as 65001
+            neighbor 100.1.3.1 activate
+            neighbor 100.1.3.1 send-community extended
+           exit-address-family
+           !
+           address-family ipv6 vrf ce1
+            neighbor 2001::99:1:3:1 remote-as 65001
+            neighbor 2001::99:1:3:1 activate
+            neighbor 2001::99:1:3:1 send-community extended
+            neighbor 2001::100:1:3:1 remote-as 65001
+            neighbor 2001::100:1:3:1 activate
+            neighbor 2001::100:1:3:1 send-community extended
+           exit-address-family
+          !
+          ip forward-protocol nd
+          !
+          !
+          ip http server
+          ip http secure-server
+          ip ssh bulk-mode 131072
+          !
+          no logging btrace
+          !
+          route-map odn permit 10 
+           set extcommunity color 10
+          !
+          route-map pe2 permit 10 
+           set local-preference 30
+          !
+          !
+          !
+          performance-measurement
+           interface Ethernet2/0
+            delay-measurement
+             advertise-delay 10
+            !
+           !
+           interface Ethernet2/1
+            delay-measurement
+             advertise-delay 10
+            !
+           !
+           interface Ethernet3/0
+            delay-measurement
+             advertise-delay 10
+            !
+           !
+           interface Ethernet3/1
+            delay-measurement
+             advertise-delay 10
+            !
+           !
+           interface Ethernet5/0
+            delay-measurement
+             advertise-delay 10
+            !
+           !
+           interface Ethernet5/1
+            delay-measurement
+             advertise-delay 10
+            !
+           !
+          !
+          !
+          control-plane
+          !
+          !
+          !
+          line con 0
+           exec-timeout 0 0
+           logging synchronous
+          line aux 0
+          line vty 0 4
+           exec-timeout 0 0
+           login
+           transport input ssh
+          !
+          !
+          !
+          !
+          end
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: iolpe2#

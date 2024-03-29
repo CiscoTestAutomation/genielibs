@@ -14,13 +14,12 @@ configure_line:
   prompt: P-R1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,21 +29,26 @@ execute:
       new_state: configure
     show bgp vpnv4 unicast vrf client1-vrf summary:
       response:
-      - "BGP router identifier 1.1.1.1, local AS number 65001\r\nBGP table version\
-        \ is 9, main routing table version 9\r\n4 network entries using 1056 bytes\
-        \ of memory\r\n4 path entries using 544 bytes of memory\r\n5/4 BGP path/bestpath\
-        \ attribute entries using 1560 bytes of memory\r\n1 BGP AS-PATH entries using\
-        \ 24 bytes of memory\r\n2 BGP extended community entries using 48 bytes of\
-        \ memory\r\n0 BGP route-map cache entries using 0 bytes of memory\r\n0 BGP\
-        \ filter-list cache entries using 0 bytes of memory\r\nBGP using 3232 total\
-        \ bytes of memory\r\nBGP activity 16/0 prefixes, 16/0 paths, scan interval\
-        \ 60 secs\r\n8 networks peaked at 23:25:09 Aug 11 2023 UTC (00:07:29.780 ago)\r\
-        \n\r\nNeighbor        V           AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down\
-        \  State/PfxRcd\r\n10.1.1.2        4        65002      13      10        9\
-        \    0    0 00:07:33        2\r\n30.1.1.2        4        65002       0  \
-        \     0        1    0    0 never    Idle"
+        - |-
+          BGP router identifier 1.1.1.1, local AS number 65001
+          BGP table version is 9, main routing table version 9
+          4 network entries using 1056 bytes of memory
+          4 path entries using 544 bytes of memory
+          5/4 BGP path/bestpath attribute entries using 1560 bytes of memory
+          1 BGP AS-PATH entries using 24 bytes of memory
+          2 BGP extended community entries using 48 bytes of memory
+          0 BGP route-map cache entries using 0 bytes of memory
+          0 BGP filter-list cache entries using 0 bytes of memory
+          BGP using 3232 total bytes of memory
+          BGP activity 16/0 prefixes, 16/0 paths, scan interval 60 secs
+          8 networks peaked at 23:25:09 Aug 11 2023 UTC (00:07:29.780 ago)
+          
+          Neighbor        V           AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
+          10.1.1.2        4        65002      13      10        9    0    0 00:07:33        2
+          30.1.1.2        4        65002       0       0        1    0    0 never    Idle
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: P-R1#

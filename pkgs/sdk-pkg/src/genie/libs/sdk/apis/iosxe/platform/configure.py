@@ -3102,16 +3102,20 @@ def unconfigure_key_config_key_password_encrypt(device, password):
         raise SubCommandFailure(
             "Could not configure no key config-key password encrypt on {device}. Error:\n{error}"
                 .format(device=device, error=e))
-def configure_enable_secret_password(device, enable_secret):
+def configure_enable_secret_password(device, enable_secret, level=None):
     ''' Apply enable secret password for switch
         Args:
             device ('obj'): Device object
             enable_secret('str'): password
+            level('str', Optional): HASHED secret                                       
             ex.)
         Raises:
             SubCommandFailure
     '''
-    cmd = [f"enable secret password  {enable_secret}"]
+    if level:
+        cmd = [f"enable secret level {level} {enable_secret}"]
+    else:
+        cmd = [f"enable secret password {enable_secret}"]
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -3145,16 +3149,20 @@ def configure_call_home_reporting(device, address="", proxy_server="", email="",
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure call home reporting on device {device.name}. Error:\n{e}")
 
-def unconfigure_enable_secret_password(device, enable_secret):
+def unconfigure_enable_secret_password(device, enable_secret, level=0):
     ''' Apply enable secret password for switch
         Args:
             device ('obj'): Device object
             enable password('str'):password
+            level('int'): HASHED secret
             ex.)
         Raises:
             SubCommandFailure
     '''
-    cmd = [f"no enable secret password  {enable_secret}"]
+    if level:
+        cmd = [f"no enable secret level {level}"]
+    else:
+        cmd = [f"no enable secret password  {enable_secret}"]
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -5594,7 +5602,6 @@ def unconfigure_hw_module_switch_number_ecomode_led(device, switch_number='all')
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure hw-module ecomode led on device {device.name}. Error:\n{e}")
 
-
 def configure_ip_http_client_secure_trustpoint(device, trustpoint_name):
     """ Configures the secure trustpoint
         Example : ip http client secure-trustpoint {trustpoint_name}
@@ -5616,3 +5623,72 @@ def configure_ip_http_client_secure_trustpoint(device, trustpoint_name):
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Failed to ip http client secure-trustpoint {trustpoint_name} on device {device.name}. Error:\n{e}')
 
+def configure_policy_map_control_service_temp(device,policy_map,service_template,method_name,eap_profile):
+    """ Configures policy-map type control
+            Example : policy-map type control subscriber DOT1X-MUST-SECURE-UPLINK
+                          event session-started match-all 
+                            10 class always do-until-failure
+                              10 authenticate using dot1x aaa authc-list MACSEC-UPLINK authz-list MACSEC-UPLINK both 
+                          event authentication-failure match-all
+                            10 class always do-until-failure
+                              10 terminate dot1x
+                              20 authentication-restart 10
+                          event authentication-success match-all
+                            10 class always do-until-failure
+                              10 activate service-template DEFAULT_LINKSEC_POLICY_MUST_SECURE
+        Args:
+            device ('obj'): device to use
+            subscriber ('str'): name of identity policy-map
+            class_number ('int'): class number (Range: 1-254)
+            action_number ('int'): action number (Range 1-254)
+            template_name ('str'): name of an interface template
+            match_type ('str'): match classes to evaluate (Eg. match-all, match-first)
+            action ('str'): execute action (Eg. do-all, do-until-failure, do-until-success)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    dialog = Dialog(
+        [
+            Statement(
+                pattern=r'.*Do you want to continue\?\s\[yes\].*',
+                action='sendline()',
+                loop_continue=True,
+                continue_timer=False
+            )
+        ]
+    )
+    log.debug(f"Configuring policy-map type control on {device.name}")
+    config = [f'policy-map type control subscriber {policy_map}',
+        f'event session-started match-all',
+        f'10 class always do-until-failure',
+        f'10 authenticate using dot1x aaa authc-list {method_name} authz-list {method_name} both',
+        f'event authentication-failure match-all',
+        f'10 class always do-until-failure',
+        f'10 terminate dot1x',
+        f'20 authentication-restart 10',
+        f'event authentication-success match-all',
+        f'10 class always do-until-failure',
+        f'10 activate service-template {service_template}'
+    ]
+    
+    try:
+        device.configure(config, reply=dialog)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure policy-map type control on device {device.name}. Error:\n{e}")
+
+
+def unconfigure_policy_map_control_service_temp(device,policy_map):
+    '''Unconfigures policy-map type control
+            Example : no policy-map type control subscriber DOT1X-MUST-SECURE-UPLINK
+        Args:
+            device ('obj'): device to use
+            subscriber ('str'): name of identity policy-map
+	'''
+    log.debug(f"Unconfiguring policy-map type control on {device.name}")
+    config = f'no policy-map type control subscriber {policy_map}'
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure policy-map type control on device {device.name}. Error:\n{e}")

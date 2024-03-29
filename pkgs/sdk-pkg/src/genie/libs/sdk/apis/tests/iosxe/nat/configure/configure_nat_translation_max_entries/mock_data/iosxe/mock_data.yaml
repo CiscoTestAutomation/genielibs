@@ -4,10 +4,11 @@ configure:
       new_state: execute
     ip nat translation max-entries all-vrf  5: "ip nat translation max-entries all-vrf\
       \  5\r\n"
-    ip nat translation max-entries list test1 4: "ip nat translation max-entries list\
-      \ test1 4\r\n"
-    ip nat translation max-entries vrf test 5: "ip nat translation max-entries vrf\
-      \ test 5\r\nNAT-VRF : test does not exist.\r\n"
+    ip nat translation max-entries list test1 4: "ip nat translation max-entries list
+      test1 4\r\n"
+    ip nat translation max-entries vrf test 5: |
+      ip nat translation max-entries vrf test 5
+      NAT-VRF : test does not exist.
     line console 0:
       new_state: configure_line
     no logging console: ''
@@ -20,13 +21,12 @@ configure_line:
   prompt: stack3-nyquist-1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -37,4 +37,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: stack3-nyquist-1#

@@ -14,13 +14,12 @@ configure_line:
   prompt: 9300-24UX-2(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -31,9 +30,10 @@ execute:
     show version: ''
     switch 1 stack port 2 enable:
       response:
-      - 'WARNING: Enabling the switch port may result in a configuration change for
-        the stack. Do you want to continue?[y/n]? [yes]: yes'
+        - 'WARNING: Enabling the switch port may result in a configuration change
+          for the stack. Do you want to continue?[y/n]? [yes]: yes'
       response_type: circular
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: 9300-24UX-2#

@@ -1504,7 +1504,7 @@ def convert_server_to_linux_device(device, server):
 
     return Device(name=server,
                   os='linux',
-                  credentials=server_block.credentials,
+                  credentials=server_block.get('credentials'),
                   connections={'linux': {
                       'ip': hostname,
                       'protocol': 'ssh'
@@ -2070,6 +2070,7 @@ def get_power_cyclers(device):
     for power_cycler in power_cyclers:
         # Cyberswitching based powercyclers require the testbed object
         power_cycler['testbed'] = device.testbed
+        power_cycler['device'] = device
         outlets = power_cycler.get('outlets', [])
         if not outlets:
             log.warning(
@@ -4084,6 +4085,33 @@ def get_local_ip(device, alias=None):
         return local_ip
     else:
         log.warning('Unable to determine local IP address')
+
+
+def get_remote_ip(device, alias=None):
+    ''' Get the remote IP address that is used to connect to devices.
+
+    Looks up the IP address via the spawn process ID.
+
+    Args:
+        device (Device): device object
+        alias (str): alias name of the connection
+
+    Returns:
+        IP address (str)
+    '''
+    if alias:
+        conn = getattr(device, alias)
+    else:
+        conn = device
+    p = psutil.Process(conn.spawn.pid)
+    conns = p.connections()
+    if conns:
+        conn = conns[0]
+        remote_ip = conn.raddr[0]
+        log.info('Remote IP: {}'.format(remote_ip))
+        return remote_ip
+    else:
+        log.warning('Unable to determine remote IP address')
 
 
 def get_bool(value=None):

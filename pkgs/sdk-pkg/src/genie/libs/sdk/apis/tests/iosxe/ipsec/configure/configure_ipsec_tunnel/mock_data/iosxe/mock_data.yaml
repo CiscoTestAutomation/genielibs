@@ -12,8 +12,8 @@ configure:
     tunnel destination 2001::99:6:8:8: "tunnel destination 2001::99:6:8:8\r\n"
     tunnel mode gre ipv6: "tunnel mode gre ipv6\r\n"
     tunnel path-mtu-discovery: "Profile gre_profile is not defined.\r\n"
-    tunnel protection ipsec profile gre_profile: "tunnel protection ipsec profile\
-      \ gre_profile\r\n"
+    tunnel protection ipsec profile gre_profile: "tunnel protection ipsec profile
+      gre_profile\r\n"
     tunnel source 2001::99:2:4:2: "tunnel source 2001::99:2:4:2\r\n"
   prompt: iolpe2(config)#
 configure_line:
@@ -24,13 +24,12 @@ configure_line:
   prompt: iolpe2(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -41,4 +40,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: iolpe2#

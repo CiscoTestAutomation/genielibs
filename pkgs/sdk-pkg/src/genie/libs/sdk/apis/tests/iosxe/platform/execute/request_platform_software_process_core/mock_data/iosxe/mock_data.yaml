@@ -14,13 +14,12 @@ configure_line:
   prompt: stack3-nyquist-1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,10 +29,12 @@ execute:
       new_state: configure
     request platform software process core host-manager switch 3 R0:
       response:
-      - "$tform software process core host-manager switch 3 R0\r\nSUCCESS: Core file\
-        \ generated."
+        - |-
+          $tform software process core host-manager switch 3 R0
+          SUCCESS: Core file generated.
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: stack3-nyquist-1#

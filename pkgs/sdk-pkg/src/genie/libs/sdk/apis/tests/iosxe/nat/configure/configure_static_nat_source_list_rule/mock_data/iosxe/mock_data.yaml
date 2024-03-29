@@ -2,17 +2,20 @@ configure:
   commands:
     end:
       new_state: execute
-    ip nat inside source list list_in_VRF2 pool pool_in_VRF2 vrf vrf_1 overload: "ip\
-      \ nat inside source list list_in_VRF2 pool pool_in_VRF2 vrf vrf_1 overload\r\
-      \n%Pool pool_in_VRF2 not configured \r\n\r\n"
-    ip nat inside source list test interface Tw1/0/4 vrf vrf_1 overload: "ip nat inside\
-      \ source list test interface Tw1/0/4 vrf vrf_1 overload\r\n"
-    ip nat inside source list test pool test1 vrf vrf_1 oer overload egress-interface Tw1/0/8: "ip\
-      \ nat inside source list test pool test1 vrf vrf_1 oer overload egress-interface\
-      \ Tw1/0/8\r\n%Pool test1 not configured \r\n\r\n"
-    ip nat inside source list test pool test1 vrf vrf_1 oer overload pap: "ip nat\
-      \ inside source list test pool test1 vrf vrf_1 oer overload pap\r\n%Pool test1\
-      \ not configured \r\n\r\n"
+    ip nat inside source list list_in_VRF2 pool pool_in_VRF2 vrf vrf_1 overload: |
+      ip nat inside source list list_in_VRF2 pool pool_in_VRF2 vrf vrf_1 overload
+      %Pool pool_in_VRF2 not configured 
+      
+    ip nat inside source list test interface Tw1/0/4 vrf vrf_1 overload: "ip nat inside
+      source list test interface Tw1/0/4 vrf vrf_1 overload\r\n"
+    ip nat inside source list test pool test1 vrf vrf_1 oer overload egress-interface Tw1/0/8: |
+      ip nat inside source list test pool test1 vrf vrf_1 oer overload egress-interface Tw1/0/8
+      %Pool test1 not configured 
+      
+    ip nat inside source list test pool test1 vrf vrf_1 oer overload pap: |
+      ip nat inside source list test pool test1 vrf vrf_1 oer overload pap
+      %Pool test1 not configured 
+      
     line console 0:
       new_state: configure_line
     no logging console: ''
@@ -25,13 +28,12 @@ configure_line:
   prompt: stack3-nyquist-1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -42,4 +44,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: stack3-nyquist-1#

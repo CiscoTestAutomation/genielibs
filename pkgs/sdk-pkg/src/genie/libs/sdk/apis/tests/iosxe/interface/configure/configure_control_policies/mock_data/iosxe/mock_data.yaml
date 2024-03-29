@@ -10,8 +10,8 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-    policy-map type control subscriber PMAP_DefaultWiredDot1xClosedAuth_1X_MAB: "policy-map\
-      \ type control subscriber PMAP_DefaultWiredDot1xClosedAuth_1X_MAB\r\n"
+    policy-map type control subscriber PMAP_DefaultWiredDot1xClosedAuth_1X_MAB: "policy-map
+      type control subscriber PMAP_DefaultWiredDot1xClosedAuth_1X_MAB\r\n"
   prompt: ECR(config)#
 configure_line:
   commands:
@@ -21,13 +21,12 @@ configure_line:
   prompt: ECR(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -38,4 +37,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: ECR#

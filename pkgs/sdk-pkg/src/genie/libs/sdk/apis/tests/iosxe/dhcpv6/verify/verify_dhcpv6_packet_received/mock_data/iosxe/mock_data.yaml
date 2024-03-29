@@ -16,13 +16,12 @@ configure_line:
   prompt: VCAT9K-LEAF1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,20 +29,22 @@ execute:
       new_state: configure
     config-transaction:
       new_state: configure
-    show ipv6 dhcp statistics: "Messages received                16\r\n
-                                Messages sent                    13\r\n
-                                Messages discarded               3\r\n
-                                Messages could not be sent       0\r\n
-                                Messages                         Received\r\n
-                                SOLICIT                          8\r\n
-                                REQUEST                          5\r\n
-                                RELEASE                          3\r\n
-                                Messages                         Sent\r\n
-                                ADVERTISE                        5\r\n
-                                REPLY                            8\r\n"
+    show ipv6 dhcp statistics: |
+      Messages received                16
+       Messages sent                    13
+       Messages discarded               3
+       Messages could not be sent       0
+       Messages                         Received
+       SOLICIT                          8
+       REQUEST                          5
+       RELEASE                          3
+       Messages                         Sent
+       ADVERTISE                        5
+       REPLY                            8
     show version: ''
     term length 0: ''
     term width 0: ''
     term width 511: ''
     terminal session-timeout 0: ''
+    show version | include operating mode: ''
   prompt: VCAT9K-LEAF1#

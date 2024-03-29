@@ -4,12 +4,12 @@ configure:
       new_state: execute
     line console 0:
       new_state: configure_line
-    match ip address v4pbr_acl: '% Invalid command at ''^'' marker.'
+    match ip address v4pbr_acl: "% Invalid command at '^' marker."
     no logging console: ''
     no route-map rm_v4pbr_nexthop1: "no route-map rm_v4pbr_nexthop1\r\n"
-    route-map rm_v4pbr_nexthop1 permit 10: '% Invalid command at ''^'' marker.'
-    set extcommunity rt 400:1: '% Invalid command at ''^'' marker.'
-    set interface tunnel20: '% Invalid command at ''^'' marker.'
+    route-map rm_v4pbr_nexthop1 permit 10: "% Invalid command at '^' marker."
+    set extcommunity rt 400:1: "% Invalid command at '^' marker."
+    set interface tunnel20: "% Invalid command at '^' marker."
   prompt: iolpe2(config)#
 configure_line:
   commands:
@@ -19,13 +19,12 @@ configure_line:
   prompt: iolpe2(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -36,4 +35,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: iolpe2#

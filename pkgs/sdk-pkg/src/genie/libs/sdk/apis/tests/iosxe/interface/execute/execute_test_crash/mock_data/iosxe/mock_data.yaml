@@ -132,4 +132,5 @@ execute:
         \n\r\n\r\nCurrent ROMMON image : Primary\r\nLast reset cause     : Critical\
         \ software exception, check bootflash:"
       response_type: circular
+    show version | include operating mode: ''
   prompt: startrek-1#

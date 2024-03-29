@@ -10,8 +10,8 @@ configure:
       new_state: configure_line
     no logging console: ''
     prepend-pkg-opts: "prepend-pkg-opts\r\n"
-    run-opts 3 "-e TEAGENT_ACCOUNT_TOKEN=r3d29srpebr4j845lvnamwhswlori2xs": "run-opts\
-      \ 3 \"-e TEAGENT_ACCOUNT_TOKEN=r3d29srpebr4j845lvnamwhswlori2xs\"\r\n"
+    run-opts 3 "-e TEAGENT_ACCOUNT_TOKEN=r3d29srpebr4j845lvnamwhswlori2xs": "run-opts
+      3 \"-e TEAGENT_ACCOUNT_TOKEN=r3d29srpebr4j845lvnamwhswlori2xs\"\r\n"
     run-opts 5 "-e TEAGENT_PROXY_TYPE=STATIC": "run-opts 5 \"-e TEAGENT_PROXY_TYPE=STATIC\"\
       \r\n"
     run-opts 7 "-e TEAGENT_PROXY_BYPASS_LIST=*.cisco.com": "run-opts 7 \"-e TEAGENT_PROXY_BYPASS_LIST=*.cisco.com\"\
@@ -25,13 +25,12 @@ configure_line:
   prompt: stack3-nyquist-1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -42,4 +41,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: stack3-nyquist-1#

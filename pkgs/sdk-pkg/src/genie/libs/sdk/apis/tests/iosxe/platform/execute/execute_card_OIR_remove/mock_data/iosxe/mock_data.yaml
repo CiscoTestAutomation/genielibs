@@ -14,13 +14,12 @@ configure_line:
   prompt: intrepid-1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,14 +29,16 @@ execute:
       new_state: configure
     hw-module switch 1 subslot 1/0 oir remove:
       response:
-      - "WARNING: You are power cycling one or more SVL line card.\r\n     If all\
-        \ SVL line cards are down, connectivity between active\r\n     and standby\
-        \ switch (if present) will be lost and would also result\r\n     in two active\
-        \ switches. Traffic disruption will occur, and possible\r\n     configuration\
-        \ mismatch between the switches can happen.\r\nProceed with removal of module?\
-        \ [confirm]"
+        - |-
+          WARNING: You are power cycling one or more SVL line card.
+               If all SVL line cards are down, connectivity between active
+               and standby switch (if present) will be lost and would also result
+               in two active switches. Traffic disruption will occur, and possible
+               configuration mismatch between the switches can happen.
+          Proceed with removal of module? [confirm]
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: intrepid-1#

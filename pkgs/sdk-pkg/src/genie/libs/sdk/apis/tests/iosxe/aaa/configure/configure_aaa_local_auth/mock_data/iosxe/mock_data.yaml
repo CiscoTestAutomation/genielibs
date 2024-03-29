@@ -1,32 +1,33 @@
 configure:
   commands:
-    aaa authentication dot1x default local: "aaa authentication dot1x default local\r\
-      \n"
-    aaa authorization network default local: "aaa authorization network default local\r\
-      \n"
-    aaa local authentication default authorization default: "aaa local authentication\
-      \ default authorization default\r\n"
+    aaa authentication dot1x MACSEC-UPLINK local: "aaa authentication dot1x MACSEC-UPLINK
+      local\r\n"
+    aaa authorization credential-download MACSEC-UPLINK local: "aaa authorization
+      credential-download MACSEC-UPLINK local\r\n"
+    aaa authorization network MACSEC-UPLINK local: "aaa authorization network MACSEC-UPLINK
+      local\r\n"
+    aaa local authentication MACSEC-UPLINK authorization MACSEC-UPLINK: "aaa local
+      authentication MACSEC-UPLINK authorization MACSEC-UPLINK\r\n"
     end:
       new_state: execute
     line console 0:
       new_state: configure_line
     no logging console: ''
-  prompt: LG-PK(config)#
+  prompt: Switch(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: LG-PK(config-line)#
+  prompt: Switch(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -37,4 +38,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: LG-PK#
+    show version | include operating mode: ''
+  prompt: Switch#

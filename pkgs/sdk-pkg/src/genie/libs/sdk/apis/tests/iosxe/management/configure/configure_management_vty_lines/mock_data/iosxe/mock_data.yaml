@@ -21,13 +21,12 @@ configure_line:
   prompt: vmtb-isr4451(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -37,10 +36,15 @@ execute:
       new_state: configure
     show running-config | section line vty:
       response:
-      - "line vty 0 4\r\n exec-timeout 0 0\r\n transport input telnet ssh\r\nline\
-        \ vty 5 14\r\n transport input telnet ssh"
+        - |-
+          line vty 0 4
+           exec-timeout 0 0
+           transport input telnet ssh
+          line vty 5 14
+           transport input telnet ssh
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: vmtb-isr4451#

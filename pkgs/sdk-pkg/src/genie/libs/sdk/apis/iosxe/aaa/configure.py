@@ -1428,11 +1428,13 @@ def unconfigure_aaa_attr_list(device, attr_list_name):
             'Could not unconfigure Attribute list with type'
         )
 
-def configure_aaa_local_auth(device):
+def configure_aaa_local_auth(device, method=None, credential_download=None):
 
     """ configure aaa local authentication default authorization default
     Args:
         device (`obj`): Device object
+        method ('str', optional): Method list name to be configured
+        credential_download ('str or Obj', optional): Set flag to configure credential-download using the given method name
 
     Return:
         None
@@ -1440,16 +1442,25 @@ def configure_aaa_local_auth(device):
     Raise:
         SubCommandFailure: Failed configuring AAA local auth
     """
-    try:
-        device.configure([
+    if method is not None:
+        cmd = [
+            "aaa authentication dot1x {method} local".format(method=method),
+            "aaa local authentication {method} authorization {method}".format(method=method),
+            "aaa authorization network {method} local".format(method=method)
+        ]
+        if credential_download is not None: #Flag to enable or disable
+            cmd.append("aaa authorization credential-download {method} local".format(method=method))
+    else:
+        cmd = [
             "aaa authentication dot1x default local",
             "aaa local authentication default authorization default",
             "aaa authorization network default local"
-        ])
-    except SubCommandFailure:
-        raise SubCommandFailure(
-            'Could not configure AAA local auth'
-        )
+        ] 
+    
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not unconfigure aaa on device. Error:\n{e}")
 
 def unconfigure_aaa_local_auth(device):
 

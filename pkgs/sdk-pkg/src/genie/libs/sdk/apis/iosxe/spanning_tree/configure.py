@@ -831,3 +831,30 @@ def configure_spanning_tree_mst_priority(device, instance_range, priority_id):
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure("Failed to configure configures spanning-tree mst 0 priority 4096.Error:\n{e}")
+
+
+def unconfigure_spanning_tree_portfast_on_interface(device, interface, option=None):
+    """ UnConfigures Spanning Tree Portfast on interface
+        Args:
+            device ('obj'): device to use
+            interface('str'): Unconfigure on the interface
+            option('str', optional): configure the portfast edge / disable / network /trunk
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config = [f"interface {interface}"]
+    if option:
+        config.append(f'no spanning-tree portfast {option}')
+    else:
+        config.append('no spanning-tree portfast')
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as error:
+        raise SubCommandFailure(
+            f'Could not unconfigure spanning-tree portfast - Error:\n{error}'
+        )
+
+

@@ -2,6 +2,7 @@
 import os
 import re
 import logging
+import time
 
 # pyATS
 from pyats.easypy import runtime
@@ -14,6 +15,7 @@ from genie.utils.timeout import Timeout
 from genie.metaparser.util.exceptions import (SchemaEmptyParserError,
                                               SchemaMissingKeyError)
 from genie.libs.parser.iosxe.show_logging import ShowLogging
+from datetime import datetime, timedelta, timezone
 
 # Unicon
 from unicon.core.errors import SubCommandFailure
@@ -895,3 +897,265 @@ def get_dscp_cos_qos_queue_stats(
         return heading,cos_frames,cos_bytes
     else:
         return None
+
+def get_boot_time(device):
+    """
+    Extracts the boot time of the device.
+
+    Args:
+        device (`obj`): Device object.
+
+    Returns:
+        tuple: Boot time in Unix timestamp format and its range.
+    """
+    try:
+        # Parse the 'show version' command output
+        out_ver = device.parse('show version')
+        
+        # Extract the compiled date and uptime string
+        compiled_date_str = out_ver['version']['compiled_date']
+        uptime_str = out_ver['version']['uptime']
+
+        # Parse the 'show clock' command output to get the timezone
+        out_clock = device.parse('show clock')
+        timezone_str = out_clock.get('timezone')
+
+        # Define the format of the date string
+        date_format = '%a %d-%b-%y %H:%M'
+
+        # Parse the compiled date string
+        parsed_compiled_date = datetime.strptime(compiled_date_str, date_format)
+
+        # Define timezone offset dictionary
+        timezone_offsets = {
+            'PST': -8, 'IST': 5.5, 'UTC': 0,  # Fill in more timezones as needed
+            'PDT': -7, 'MST': -7, 'MDT': -6,
+            'CST': -6, 'CDT': -5, 'EST': -5,
+            'EDT': -4
+        }
+
+        # Get timezone offset from dictionary
+        timezone_offset = timezone_offsets.get(timezone_str)
+
+        if timezone_offset is None:
+            raise ValueError(f"Unsupported timezone: {timezone_str}")
+
+        # Create timezone object
+        boot_timezone = timezone(timedelta(hours=timezone_offset))
+
+        # Adjust the datetime object based on the timezone
+        parsed_compiled_date = parsed_compiled_date.replace(tzinfo=boot_timezone)
+
+        # Extract hours and minutes from the uptime string
+        uptime_parts = uptime_str.split(', ')
+        hours_minutes = [part.split(' ')[0] for part in uptime_parts]
+
+        # Check if hours exist, if not, default to 0
+        hours = int(hours_minutes[0]) if hours_minutes[0].isdigit() else 0
+        minutes = int(hours_minutes[1])
+
+        # Convert uptime to seconds
+        uptime_seconds = hours * 3600 + minutes * 60
+
+        # Calculate boot time
+        boot_time = parsed_compiled_date - timedelta(seconds=uptime_seconds)
+        boot_time_timeticks = int(boot_time.timestamp())
+
+        # Define boot time range (e.g., +/- 100000 seconds)
+        range_seconds = 1000000
+        
+        return boot_time_timeticks, (boot_time_timeticks - range_seconds, boot_time_timeticks + range_seconds)
+    
+    except Exception as e:
+        log.error("Error parsing command output: {e}".format(e=e))
+        return None
+
+def get_memory_utilization_status(device):
+    """
+    Gets the memory utilization status of processes based on parsed outputs of 'show process memory'
+    and 'show platform software status control-processor brief' commands.
+
+    Args:
+        device (obj): Device object
+
+    Returns:
+        dict: Dictionary containing PID and memory utilization status
+    """
+    try:
+        # Execute 'show process memory' command
+        process_memory_output = device.parse("show process memory")
+
+        # Execute 'show platform software status control-processor brief' command
+        control_processor_output = device.parse("show platform software status control-processor brief")
+        
+        # Get the total memory from 'show platform software status control-processor brief'
+        total_memory = None
+        for slot in control_processor_output['slot'].values():
+            total_memory = slot['memory']['total'] * 1024
+            break
+        
+        if total_memory is None:
+            raise ValueError("Failed to retrieve total memory")
+
+        # Get PID and memory utilization status
+        pid_list = []
+        utilization_status_list = []
+
+        for pid, details in process_memory_output['pid'].items():
+            if pid != 0:
+                # Find the index dynamically
+                index = next(iter(details['index'].keys()))
+                holding_memory = details['index'][index]['holding']
+                utilization = (holding_memory / total_memory) * 100
+                status = 1 if utilization > 0.5 else 0
+                pid_list.append(pid)
+                utilization_status_list.append(status)
+
+        return {'pid': pid_list, 'memory_utilization_status': utilization_status_list}
+
+    except Exception as e:
+        # Handle any exceptions and log errors
+        log.error(f"Failed to retrieve memory utilization status: {e}")
+        return {}
+
+def get_port_speed_info(device):
+    """
+    Extracts port speed information from the parsed output of 'show interfaces status'.
+
+    Args:
+        device (`obj`): Device object.
+
+    Returns:
+        dict: A dictionary containing lists of interfaces and their corresponding port speeds.
+    """
+    # Define the OpenConfig prefix
+    OPENCONFIG_PREFIX = 'openconfig-if-ethernet:'
+    
+    try:
+        # Parse the command output
+        out = device.parse('show interfaces status')
+    except SchemaEmptyParserError as e:
+        log.error(f"Command 'show interfaces status' did not return any results: {e}")
+        return None
+
+    interfaces = out.get('interfaces', {})
+    interface_list = []
+    port_speed_list = []
+
+    # Extracting port speed information from the parser output
+    for interface, details in interfaces.items():
+        # Exclude interfaces starting with 'Ap'
+        if not interface.startswith('Ap'):
+            port_speed = details.get('port_speed')
+            openconfig_speed = None
+
+            # Handling port speed mappings
+            if port_speed == '1000' or port_speed == 'a-1000':
+                openconfig_speed = 'SPEED_1GB'
+            elif port_speed == 'auto':
+                openconfig_speed = 'SPEED_UNKNOWN'
+            elif port_speed.startswith('a-'):
+                openconfig_speed = f'SPEED_{port_speed[2:-1]}GB'
+            elif port_speed.endswith('G'):
+                openconfig_speed = f'SPEED_{port_speed[:-1]}GB'
+            elif port_speed.isdigit():
+                if port_speed == '5000':
+                    openconfig_speed = 'SPEED_5GB'
+                else:
+                    openconfig_speed = f'SPEED_{port_speed}MB'
+            
+            if openconfig_speed:
+                interface_list.append(interface)
+                port_speed_list.append(OPENCONFIG_PREFIX + openconfig_speed)
+
+    return {'interface': interface_list, 'port_speed': port_speed_list}
+
+def get_cpu_instant_interval(device):
+    """
+    Extracts summary information from the platform status parser output.
+    Args:
+        device (`obj`): Device object.
+    Returns:
+        dict: A dictionary containing slot information including CPU utilization
+        instant and interval.
+    """
+    try:
+        # Parse the command output
+        out = device.parse('show platform software status control-processor brief')
+    except SchemaEmptyParserError as e:
+        log.error("Command 'show platform software status control-processor brief' did not return any results: {e}".format(e=e))
+        return None
+
+    slot_info = {
+        'slot': [],
+        'instant': [],
+        'interval': []
+    }
+
+    # Extracting slot information from the parser output
+    slots = out.get('slot', {})
+    total_cpus = 0
+    total_idle = 0
+
+    for slot, details in slots.items():
+        # Adjust slot name format
+        if '-' in slot:
+            adjusted_slot = "Switch" + slot.split('-')[0]
+        elif slot.startswith("rp"):
+            adjusted_slot = "slot R" + slot[2:]
+        else:
+            adjusted_slot = slot
+
+        # Extracting CPU details for each slot
+        cpu_info = details.get('cpu', {})
+        for cpu, stats in cpu_info.items():
+            total_cpus += 1
+            total_idle += stats.get('idle')
+
+        # Calculate instant CPU utilization
+        instant = ((total_cpus * 100) - total_idle) / total_cpus
+
+        # Round off the instant value to the nearest integer
+        instant = int(round(instant))
+
+        # Default interval
+        interval = 300000000000
+
+        # Append values to corresponding lists in slot_info dictionary
+        slot_info['slot'].append(adjusted_slot)
+        slot_info['instant'].append(instant)
+        slot_info['interval'].append(interval)
+
+    return slot_info
+
+def get_cpu_min_max_avg(device):
+    """
+    Extracts minimum, maximum, and average CPU utilization values.
+    Args:
+        device (`obj`): Device object.
+    Returns:
+        dict: A dictionary containing minimum, maximum, and average CPU utilization values.
+    """
+    instant_values = []
+    slot_info = None
+    for _ in range(5):
+        try:
+            platform_cpu_status = get_cpu_instant_interval(device)
+            instant_values.extend(platform_cpu_status['instant'])  # Extend the list instead of appending
+            if slot_info is None:
+                slot_info = platform_cpu_status
+        except Exception as e:
+            log.error("Error getting CPU instant interval: {e}".format(e=e))
+        time.sleep(5)  # Sleep for 5 seconds before the next iteration
+
+    # Calculate minimum, maximum, and average based on 5 sets of instant values
+    cpu_min = [min(instant_values)]
+    cpu_max = [max(instant_values)]
+    cpu_avg = [sum(instant_values) / len(instant_values)]
+
+    # Append slot information to the result dictionary
+    result = {'min': cpu_min, 'max': cpu_max, 'avg': cpu_avg}
+    if slot_info:
+        result['slot'] = slot_info['slot']
+
+    return result

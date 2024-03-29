@@ -182,3 +182,41 @@ def configure_ntp_server(device, ntp_config, vrf=None):
             "on device {device}, "
             "Error: {e}".format(device=device.name, e=str(e))
         ) from e
+
+
+def unconfigure_ntp_server(device, ntp_config, vrf=None):
+    """ Unconfigures ntp server
+
+        Args:
+            device ('obj'): device to configure on
+            ntp_config ('list'): List containing server ip address
+            vrf ('str'): Optional VRF to be used during configuration
+                ex.)
+                   ntp_config = [ 
+                        '192.168.1.1',
+                        '192.168.1.2'
+                    ]
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    if not isinstance(ntp_config, list):
+        raise SubCommandFailure("ntp_config must be a list")
+
+    config = []
+    for ip in ntp_config:
+        if vrf == None:
+            config.append("no ntp server {}".format(ip))
+        else:
+            config.append("no ntp server vrf {} {}".format(vrf, ip))
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed in unconfiguring ntp server "
+            "on device {device}, "
+            "Error: {e}".format(device=device.name, e=str(e))
+        ) from e

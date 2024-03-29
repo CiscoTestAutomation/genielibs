@@ -1,0 +1,41 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console:
+      new_state: configure_line
+  prompt: Mando-7(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+    line vty: ''
+    terminal width 511: ''
+  prompt: Mando-7(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    show boot:
+      response:
+      - "Current Boot Variables:\r\nsup-1\r\nNXOS variable = bootflash:/nxos64-cs.10.4.2.IMG9.0.99.F.bin\r\
+        \nsup-2\r\nNXOS variable = bootflash:/nxos64-cs.10.4.2.IMG9.0.99.F.bin\r\n\
+        Boot POAP Disabled\r\n\r\nBoot Variables on next reload:\r\nsup-1\r\nNXOS\
+        \ variable = bootflash:/nxos64-cs.10.4.2.IMG9.0.99.F.bin\r\nsup-2\r\nNXOS\
+        \ variable = bootflash:/nxos64-cs.10.4.2.IMG9.0.99.F.bin\r\nBoot POAP Disabled"
+      response_type: circular
+    term length 0: ''
+    term width 511: ''
+    terminal session-timeout 0: ''
+  prompt: Mando-7#

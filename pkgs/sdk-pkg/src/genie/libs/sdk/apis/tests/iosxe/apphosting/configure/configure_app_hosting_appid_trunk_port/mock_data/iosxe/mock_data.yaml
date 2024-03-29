@@ -1,18 +1,18 @@
 configure:
   commands:
-    app-default-gateway 172.15.0.255 guest-interface 0: "app-default-gateway 172.15.0.255\
-      \ guest-interface 0\r\n"
+    app-default-gateway 172.15.0.255 guest-interface 0: "app-default-gateway 172.15.0.255
+      guest-interface 0\r\n"
     app-hosting appid 1key: "app-hosting appid 1key\r\n"
     app-hosting appid 1key1: "app-hosting appid 1key1\r\n"
     app-hosting appid 1key2: "app-hosting appid 1key2\r\n"
-    app-vnic AppGigabitEthernet port 2 trunk: "app-vnic AppGigabitEthernet port 2\
-      \ trunk\r\n"
+    app-vnic AppGigabitEthernet port 2 trunk: "app-vnic AppGigabitEthernet port 2
+      trunk\r\n"
     app-vnic management guest-interface 0: "app-vnic management guest-interface 0\r\
       \n"
     end:
       new_state: execute
-    guest-ipaddress 172.15.0.1 netmask 255.255.255.0: "guest-ipaddress 172.15.0.1\
-      \ netmask 255.255.255.0\r\n"
+    guest-ipaddress 172.15.0.1 netmask 255.255.255.0: "guest-ipaddress 172.15.0.1
+      netmask 255.255.255.0\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''
@@ -27,13 +27,12 @@ configure_line:
   prompt: stack3-nyquist-1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -44,4 +43,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: stack3-nyquist-1#

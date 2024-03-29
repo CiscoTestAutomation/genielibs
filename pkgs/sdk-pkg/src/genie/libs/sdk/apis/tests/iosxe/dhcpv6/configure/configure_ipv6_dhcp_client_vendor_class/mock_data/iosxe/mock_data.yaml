@@ -3,12 +3,12 @@ configure:
     end:
       new_state: execute
     interface GigabitEthernet0/0/1: "interface GigabitEthernet0/0/1\r\n"
-    ipv6 dhcp client vendor-class ascii abcDEF123: "ipv6 dhcp client vendor-class\
-      \ ascii abcDEF123\r\n"
+    ipv6 dhcp client vendor-class ascii abcDEF123: "ipv6 dhcp client vendor-class
+      ascii abcDEF123\r\n"
     ipv6 dhcp client vendor-class disable: "ipv6 dhcp client vendor-class disable\r\
       \n"
-    ipv6 dhcp client vendor-class hex 0102030a0b0c: "ipv6 dhcp client vendor-class\
-      \ hex 0102030a0b0c\r\n"
+    ipv6 dhcp client vendor-class hex 0102030a0b0c: "ipv6 dhcp client vendor-class
+      hex 0102030a0b0c\r\n"
     ipv6 dhcp client vendor-class mac-address: "ipv6 dhcp client vendor-class mac-address\r\
       \n"
     line console 0:
@@ -23,13 +23,12 @@ configure_line:
   prompt: Fei-Elixir2(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -40,4 +39,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: Fei-Elixir2#

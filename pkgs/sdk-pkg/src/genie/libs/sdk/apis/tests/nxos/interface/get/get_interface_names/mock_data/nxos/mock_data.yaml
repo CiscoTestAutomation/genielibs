@@ -18,185 +18,189 @@ configure_line:
   prompt: R3_nx(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
     config term:
       new_state: configure
-    show interface brief: "\r\n--------------------------------------------------------------------------------\r\
-      \nPort   VRF          Status IP Address                              Speed \
-      \   MTU\r\n--------------------------------------------------------------------------------\r\
-      \nmgmt0  --           up     172.16.1.213                            1000  \
-      \   1500\r\n\r\n--------------------------------------------------------------------------------\r\
-      \nEthernet      VLAN    Type Mode   Status  Reason                   Speed \
-      \    Port\r\nInterface                                                     \
-      \               Ch #\r\n--------------------------------------------------------------------------------\r\
-      \nEth1/1        --      eth  routed up      none                       1000(D)\
-      \ --\r\nEth1/1.90     90      eth  routed up      none                     \
-      \  1000(D) --\r\nEth1/1.110    110     eth  routed up      none            \
-      \           1000(D) --\r\nEth1/1.115    115     eth  routed up      none   \
-      \                    1000(D) --\r\nEth1/1.120    120     eth  routed up    \
-      \  none                       1000(D) --\r\nEth1/1.390    390     eth  routed\
-      \ up      none                       1000(D) --\r\nEth1/1.410    410     eth\
-      \  routed up      none                       1000(D) --\r\nEth1/1.415    415\
-      \     eth  routed up      none                       1000(D) --\r\nEth1/1.420\
-      \    420     eth  routed up      none                       1000(D) --\r\nEth1/2\
-      \        --      eth  routed up      none                       1000(D) --\r\
-      \nEth1/2.90     90      eth  routed up      none                       1000(D)\
-      \ --\r\nEth1/2.110    110     eth  routed up      none                     \
-      \  1000(D) --\r\nEth1/2.115    115     eth  routed up      none            \
-      \           1000(D) --\r\nEth1/2.120    120     eth  routed up      none   \
-      \                    1000(D) --\r\nEth1/2.390    390     eth  routed up    \
-      \  none                       1000(D) --\r\nEth1/2.410    410     eth  routed\
-      \ up      none                       1000(D) --\r\nEth1/2.415    415     eth\
-      \  routed up      none                       1000(D) --\r\nEth1/2.420    420\
-      \     eth  routed up      none                       1000(D) --\r\nEth1/3  \
-      \      1       eth  access up      none                       1000(D) 23\r\n\
-      Eth1/4        1       eth  access up      none                       1000(D)\
-      \ 23\r\nEth1/5        1       eth  access up      none                     \
-      \  1000(D) 13\r\nEth1/6        1       eth  access up      none            \
-      \           1000(D) 13\r\nEth1/7        1       eth  access down    Link not\
-      \ connected         auto(D) --\r\nEth1/8        1       eth  access down   \
-      \ Link not connected         auto(D) --\r\nEth1/9        1       eth  access\
-      \ down    Link not connected         auto(D) --\r\nEth1/10       1       eth\
-      \  access down    Link not connected         auto(D) --\r\nEth1/11       1 \
-      \      eth  access down    Link not connected         auto(D) --\r\nEth1/12\
-      \       1       eth  access down    Link not connected         auto(D) --\r\n\
-      Eth1/13       1       eth  access down    Link not connected         auto(D)\
-      \ --\r\nEth1/14       1       eth  access down    Link not connected       \
-      \  auto(D) --\r\nEth1/15       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/16       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/17       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/18       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/19       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/20       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/21       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/22       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/23       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/24       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/25       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/26       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/27       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/28       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/29       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/30       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/31       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/32       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/33       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/34       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/35       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/36       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/37       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/38       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/39       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/40       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/41       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/42       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/43       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/44       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/45       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/46       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/47       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/48       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/49       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/50       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/51       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/52       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/53       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/54       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/55       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/56       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/57       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/58       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/59       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/60       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/61       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/62       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/63       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/64       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/65       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/66       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/67       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/68       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/69       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/70       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/71       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/72       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/73       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/74       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/75       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/76       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/77       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/78       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/79       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/80       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/81       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/82       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/83       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/84       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/85       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/86       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/87       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/88       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/89       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/90       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/91       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/92       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/93       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/94       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/95       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/96       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/97       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/98       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/99       1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/100      1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/101      1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/102      1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/103      1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/104      1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/105      1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/106      1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/107      1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/108      1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/109      1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/110      1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/111      1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/112      1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/113      1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/114      1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/115      1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/116      1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/117      1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/118      1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/119      1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/120      1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/121      1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/122      1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/123      1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/124      1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/125      1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/126      1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/127      1       eth  access down    Link not connected\
-      \         auto(D) --\r\nEth1/128      1       eth  access down    Link not connected\
-      \         auto(D) --\r\n\r\n------------------------------------------------------------------------------------------\r\
-      \nPort-channel VLAN    Type Mode   Status  Reason                          \
-      \    Speed   Protocol\r\nInterface                                         \
-      \                                   \r\n------------------------------------------------------------------------------------------\r\
-      \nPo13         1       eth  access up      none                            \
-      \    a-1000(D)  lacp\r\nPo23         1       eth  access up      none      \
-      \                          a-1000(D)  lacp\r\n\r\n--------------------------------------------------------------------------------\r\
-      \nInterface     Status     Description\r\n--------------------------------------------------------------------------------\r\
-      \nLo0           up         --\r\nLo300         up         --"
+    show interface brief: |-
+      
+      --------------------------------------------------------------------------------
+      Port   VRF          Status IP Address                              Speed    MTU
+      --------------------------------------------------------------------------------
+      mgmt0  --           up     172.16.1.213                            1000     1500
+      
+      --------------------------------------------------------------------------------
+      Ethernet      VLAN    Type Mode   Status  Reason                   Speed     Port
+      Interface                                                                    Ch #
+      --------------------------------------------------------------------------------
+      Eth1/1        --      eth  routed up      none                       1000(D) --
+      Eth1/1.90     90      eth  routed up      none                       1000(D) --
+      Eth1/1.110    110     eth  routed up      none                       1000(D) --
+      Eth1/1.115    115     eth  routed up      none                       1000(D) --
+      Eth1/1.120    120     eth  routed up      none                       1000(D) --
+      Eth1/1.390    390     eth  routed up      none                       1000(D) --
+      Eth1/1.410    410     eth  routed up      none                       1000(D) --
+      Eth1/1.415    415     eth  routed up      none                       1000(D) --
+      Eth1/1.420    420     eth  routed up      none                       1000(D) --
+      Eth1/2        --      eth  routed up      none                       1000(D) --
+      Eth1/2.90     90      eth  routed up      none                       1000(D) --
+      Eth1/2.110    110     eth  routed up      none                       1000(D) --
+      Eth1/2.115    115     eth  routed up      none                       1000(D) --
+      Eth1/2.120    120     eth  routed up      none                       1000(D) --
+      Eth1/2.390    390     eth  routed up      none                       1000(D) --
+      Eth1/2.410    410     eth  routed up      none                       1000(D) --
+      Eth1/2.415    415     eth  routed up      none                       1000(D) --
+      Eth1/2.420    420     eth  routed up      none                       1000(D) --
+      Eth1/3        1       eth  access up      none                       1000(D) 23
+      Eth1/4        1       eth  access up      none                       1000(D) 23
+      Eth1/5        1       eth  access up      none                       1000(D) 13
+      Eth1/6        1       eth  access up      none                       1000(D) 13
+      Eth1/7        1       eth  access down    Link not connected         auto(D) --
+      Eth1/8        1       eth  access down    Link not connected         auto(D) --
+      Eth1/9        1       eth  access down    Link not connected         auto(D) --
+      Eth1/10       1       eth  access down    Link not connected         auto(D) --
+      Eth1/11       1       eth  access down    Link not connected         auto(D) --
+      Eth1/12       1       eth  access down    Link not connected         auto(D) --
+      Eth1/13       1       eth  access down    Link not connected         auto(D) --
+      Eth1/14       1       eth  access down    Link not connected         auto(D) --
+      Eth1/15       1       eth  access down    Link not connected         auto(D) --
+      Eth1/16       1       eth  access down    Link not connected         auto(D) --
+      Eth1/17       1       eth  access down    Link not connected         auto(D) --
+      Eth1/18       1       eth  access down    Link not connected         auto(D) --
+      Eth1/19       1       eth  access down    Link not connected         auto(D) --
+      Eth1/20       1       eth  access down    Link not connected         auto(D) --
+      Eth1/21       1       eth  access down    Link not connected         auto(D) --
+      Eth1/22       1       eth  access down    Link not connected         auto(D) --
+      Eth1/23       1       eth  access down    Link not connected         auto(D) --
+      Eth1/24       1       eth  access down    Link not connected         auto(D) --
+      Eth1/25       1       eth  access down    Link not connected         auto(D) --
+      Eth1/26       1       eth  access down    Link not connected         auto(D) --
+      Eth1/27       1       eth  access down    Link not connected         auto(D) --
+      Eth1/28       1       eth  access down    Link not connected         auto(D) --
+      Eth1/29       1       eth  access down    Link not connected         auto(D) --
+      Eth1/30       1       eth  access down    Link not connected         auto(D) --
+      Eth1/31       1       eth  access down    Link not connected         auto(D) --
+      Eth1/32       1       eth  access down    Link not connected         auto(D) --
+      Eth1/33       1       eth  access down    Link not connected         auto(D) --
+      Eth1/34       1       eth  access down    Link not connected         auto(D) --
+      Eth1/35       1       eth  access down    Link not connected         auto(D) --
+      Eth1/36       1       eth  access down    Link not connected         auto(D) --
+      Eth1/37       1       eth  access down    Link not connected         auto(D) --
+      Eth1/38       1       eth  access down    Link not connected         auto(D) --
+      Eth1/39       1       eth  access down    Link not connected         auto(D) --
+      Eth1/40       1       eth  access down    Link not connected         auto(D) --
+      Eth1/41       1       eth  access down    Link not connected         auto(D) --
+      Eth1/42       1       eth  access down    Link not connected         auto(D) --
+      Eth1/43       1       eth  access down    Link not connected         auto(D) --
+      Eth1/44       1       eth  access down    Link not connected         auto(D) --
+      Eth1/45       1       eth  access down    Link not connected         auto(D) --
+      Eth1/46       1       eth  access down    Link not connected         auto(D) --
+      Eth1/47       1       eth  access down    Link not connected         auto(D) --
+      Eth1/48       1       eth  access down    Link not connected         auto(D) --
+      Eth1/49       1       eth  access down    Link not connected         auto(D) --
+      Eth1/50       1       eth  access down    Link not connected         auto(D) --
+      Eth1/51       1       eth  access down    Link not connected         auto(D) --
+      Eth1/52       1       eth  access down    Link not connected         auto(D) --
+      Eth1/53       1       eth  access down    Link not connected         auto(D) --
+      Eth1/54       1       eth  access down    Link not connected         auto(D) --
+      Eth1/55       1       eth  access down    Link not connected         auto(D) --
+      Eth1/56       1       eth  access down    Link not connected         auto(D) --
+      Eth1/57       1       eth  access down    Link not connected         auto(D) --
+      Eth1/58       1       eth  access down    Link not connected         auto(D) --
+      Eth1/59       1       eth  access down    Link not connected         auto(D) --
+      Eth1/60       1       eth  access down    Link not connected         auto(D) --
+      Eth1/61       1       eth  access down    Link not connected         auto(D) --
+      Eth1/62       1       eth  access down    Link not connected         auto(D) --
+      Eth1/63       1       eth  access down    Link not connected         auto(D) --
+      Eth1/64       1       eth  access down    Link not connected         auto(D) --
+      Eth1/65       1       eth  access down    Link not connected         auto(D) --
+      Eth1/66       1       eth  access down    Link not connected         auto(D) --
+      Eth1/67       1       eth  access down    Link not connected         auto(D) --
+      Eth1/68       1       eth  access down    Link not connected         auto(D) --
+      Eth1/69       1       eth  access down    Link not connected         auto(D) --
+      Eth1/70       1       eth  access down    Link not connected         auto(D) --
+      Eth1/71       1       eth  access down    Link not connected         auto(D) --
+      Eth1/72       1       eth  access down    Link not connected         auto(D) --
+      Eth1/73       1       eth  access down    Link not connected         auto(D) --
+      Eth1/74       1       eth  access down    Link not connected         auto(D) --
+      Eth1/75       1       eth  access down    Link not connected         auto(D) --
+      Eth1/76       1       eth  access down    Link not connected         auto(D) --
+      Eth1/77       1       eth  access down    Link not connected         auto(D) --
+      Eth1/78       1       eth  access down    Link not connected         auto(D) --
+      Eth1/79       1       eth  access down    Link not connected         auto(D) --
+      Eth1/80       1       eth  access down    Link not connected         auto(D) --
+      Eth1/81       1       eth  access down    Link not connected         auto(D) --
+      Eth1/82       1       eth  access down    Link not connected         auto(D) --
+      Eth1/83       1       eth  access down    Link not connected         auto(D) --
+      Eth1/84       1       eth  access down    Link not connected         auto(D) --
+      Eth1/85       1       eth  access down    Link not connected         auto(D) --
+      Eth1/86       1       eth  access down    Link not connected         auto(D) --
+      Eth1/87       1       eth  access down    Link not connected         auto(D) --
+      Eth1/88       1       eth  access down    Link not connected         auto(D) --
+      Eth1/89       1       eth  access down    Link not connected         auto(D) --
+      Eth1/90       1       eth  access down    Link not connected         auto(D) --
+      Eth1/91       1       eth  access down    Link not connected         auto(D) --
+      Eth1/92       1       eth  access down    Link not connected         auto(D) --
+      Eth1/93       1       eth  access down    Link not connected         auto(D) --
+      Eth1/94       1       eth  access down    Link not connected         auto(D) --
+      Eth1/95       1       eth  access down    Link not connected         auto(D) --
+      Eth1/96       1       eth  access down    Link not connected         auto(D) --
+      Eth1/97       1       eth  access down    Link not connected         auto(D) --
+      Eth1/98       1       eth  access down    Link not connected         auto(D) --
+      Eth1/99       1       eth  access down    Link not connected         auto(D) --
+      Eth1/100      1       eth  access down    Link not connected         auto(D) --
+      Eth1/101      1       eth  access down    Link not connected         auto(D) --
+      Eth1/102      1       eth  access down    Link not connected         auto(D) --
+      Eth1/103      1       eth  access down    Link not connected         auto(D) --
+      Eth1/104      1       eth  access down    Link not connected         auto(D) --
+      Eth1/105      1       eth  access down    Link not connected         auto(D) --
+      Eth1/106      1       eth  access down    Link not connected         auto(D) --
+      Eth1/107      1       eth  access down    Link not connected         auto(D) --
+      Eth1/108      1       eth  access down    Link not connected         auto(D) --
+      Eth1/109      1       eth  access down    Link not connected         auto(D) --
+      Eth1/110      1       eth  access down    Link not connected         auto(D) --
+      Eth1/111      1       eth  access down    Link not connected         auto(D) --
+      Eth1/112      1       eth  access down    Link not connected         auto(D) --
+      Eth1/113      1       eth  access down    Link not connected         auto(D) --
+      Eth1/114      1       eth  access down    Link not connected         auto(D) --
+      Eth1/115      1       eth  access down    Link not connected         auto(D) --
+      Eth1/116      1       eth  access down    Link not connected         auto(D) --
+      Eth1/117      1       eth  access down    Link not connected         auto(D) --
+      Eth1/118      1       eth  access down    Link not connected         auto(D) --
+      Eth1/119      1       eth  access down    Link not connected         auto(D) --
+      Eth1/120      1       eth  access down    Link not connected         auto(D) --
+      Eth1/121      1       eth  access down    Link not connected         auto(D) --
+      Eth1/122      1       eth  access down    Link not connected         auto(D) --
+      Eth1/123      1       eth  access down    Link not connected         auto(D) --
+      Eth1/124      1       eth  access down    Link not connected         auto(D) --
+      Eth1/125      1       eth  access down    Link not connected         auto(D) --
+      Eth1/126      1       eth  access down    Link not connected         auto(D) --
+      Eth1/127      1       eth  access down    Link not connected         auto(D) --
+      Eth1/128      1       eth  access down    Link not connected         auto(D) --
+      
+      ------------------------------------------------------------------------------------------
+      Port-channel VLAN    Type Mode   Status  Reason                              Speed   Protocol
+      Interface                                                                            
+      ------------------------------------------------------------------------------------------
+      Po13         1       eth  access up      none                                a-1000(D)  lacp
+      Po23         1       eth  access up      none                                a-1000(D)  lacp
+      
+      --------------------------------------------------------------------------------
+      Interface     Status     Description
+      --------------------------------------------------------------------------------
+      Lo0           up         --
+      Lo300         up         --
     show version: ''
     term length 0: ''
     term width 0: ''
     term width 511: ''
     terminal session-timeout 0: ''
+    show version | include operating mode: ''
   prompt: R3_nx#
