@@ -14,13 +14,12 @@ configure_line:
   prompt: AMZ-Acc-4(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,10 +29,11 @@ execute:
       new_state: configure
     reload fast:
       response:
-      - 'Press RETURN to get started'
-      - 'Username:Password:AMZ-Acc-4>Password:'
+        - Press RETURN to get started
+        - 'Username:Password:AMZ-Acc-4>Password:'
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: AMZ-Acc-4#

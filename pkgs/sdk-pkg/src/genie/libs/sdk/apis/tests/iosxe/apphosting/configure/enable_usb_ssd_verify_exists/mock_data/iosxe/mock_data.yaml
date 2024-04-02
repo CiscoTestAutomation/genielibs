@@ -5,7 +5,9 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-    no platform usb disable: "no platform usb disable\r\njavelin-morph-mini1a(config)#"
+    no platform usb disable: |-
+      no platform usb disable
+      javelin-morph-mini1a(config)#
   prompt: javelin-morph-mini1a-c9300-stack(config)#
 configure_line:
   commands:
@@ -15,13 +17,12 @@ configure_line:
   prompt: javelin-morph-mini1a-c9300-stack(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -31,87 +32,138 @@ execute:
       new_state: configure
     show running-config | include platform usb disable | include platform usb disable:
       response:
-      - ''
+        - ''
       response_type: circular
     show version:
       response:
-      - "Cisco IOS XE Software, Version BLD_POLARIS_DEV_LATEST_20221121_153510\r\n\
-        Cisco IOS Software [Dublin], Catalyst L3 Switch Software (CAT9K_IOSXE), Experimental\
-        \ Version 17.11.20221121:160300 [BLD_POLARIS_DEV_LATEST_20221121_153510:/nobackup/mcpre/s2c-build-ws\
-        \ 101]\r\nCopyright (c) 1986-2022 by Cisco Systems, Inc.\r\nCompiled Mon 21-Nov-22\
-        \ 08:03 by mcpre\r\n\r\n\r\nCisco IOS-XE software, Copyright (c) 2005-2022\
-        \ by cisco Systems, Inc.\r\nAll rights reserved.  Certain components of Cisco\
-        \ IOS-XE software are\r\nlicensed under the GNU General Public License (\"\
-        GPL\") Version 2.0.  The\r\nsoftware code licensed under GPL Version 2.0 is\
-        \ free software that comes\r\nwith ABSOLUTELY NO WARRANTY.  You can redistribute\
-        \ and/or modify such\r\nGPL code under the terms of GPL Version 2.0.  For\
-        \ more details, see the\r\ndocumentation or \"License Notice\" file accompanying\
-        \ the IOS-XE software,\r\nor the applicable URL provided on the flyer accompanying\
-        \ the IOS-XE\r\nsoftware.\r\n\r\n\r\nROM: IOS-XE ROMMON\r\nBOOTLDR: System\
-        \ Bootstrap, Version 17.12.1r, RELEASE SOFTWARE (P)\r\n\r\njavelin-morph-mini1a-c9300-stack\
-        \ uptime is 1 day, 14 hours, 22 minutes\r\nUptime for this control processor\
-        \ is 1 day, 14 hours, 24 minutes\r\nSystem returned to ROM by Admin reload\
-        \ CLI\r\nSystem image file is \"flash:packages.conf\"\r\nLast reload reason:\
-        \ Admin reload CLI\r\n\r\n\r\n\r\nThis product contains cryptographic features\
-        \ and is subject to United\r\nStates and local country laws governing import,\
-        \ export, transfer and\r\nuse. Delivery of Cisco cryptographic products does\
-        \ not imply\r\nthird-party authority to import, export, distribute or use\
-        \ encryption.\r\nImporters, exporters, distributors and users are responsible\
-        \ for\r\ncompliance with U.S. and local country laws. By using this product\
-        \ you\r\nagree to comply with applicable laws and regulations. If you are\
-        \ unable\r\nto comply with U.S. and local laws, return this product immediately.\r\
-        \n\r\nA summary of U.S. laws governing Cisco cryptographic products may be\
-        \ found at:\r\nhttp://www.cisco.com/wwl/export/crypto/tool/stqrg.html\r\n\r\
-        \nIf you require further assistance please contact us by sending email to\r\
-        \nexport@cisco.com.\r\n\r\n\r\nTechnology Package License Information: \r\n\
-        \r\n------------------------------------------------------------------------------\r\
-        \nTechnology-package                                     Technology-package\r\
-        \nCurrent                        Type                       Next reboot  \r\
-        \n------------------------------------------------------------------------------\r\
-        \nnetwork-essentials  \tSmart License                 \t network-essentials\
-        \  \r\nNone                \tSubscription Smart License    \t None       \
-        \                   \r\nAIR License Level: AIR DNA Advantage\r\nNext reload\
-        \ AIR license Level: AIR DNA Advantage\r\n\r\n\r\nSmart Licensing Status:\
-        \ Smart Licensing Using Policy\r\n\r\ncisco C9300-48UXM (X86) processor with\
-        \ 1311315K/6147K bytes of memory.\r\nProcessor board ID FHH2335P005\r\n1 Virtual\
-        \ Ethernet interface\r\n12 Gigabit Ethernet interfaces\r\n72 2.5 Gigabit Ethernet\
-        \ interfaces\r\n72 Ten Gigabit Ethernet interfaces\r\n6 TwentyFive Gigabit\
-        \ Ethernet interfaces\r\n6 Forty Gigabit Ethernet interfaces\r\n2048K bytes\
-        \ of non-volatile configuration memory.\r\n8388608K bytes of physical memory.\r\
-        \n1638400K bytes of Crash Files at crashinfo:.\r\n1638400K bytes of Crash\
-        \ Files at crashinfo-2:.\r\n1638400K bytes of Crash Files at crashinfo-3:.\r\
-        \n11264000K bytes of Flash at flash:.\r\n11264000K bytes of Flash at flash-2:.\r\
-        \n11264000K bytes of Flash at flash-3:.\r\n117219783K bytes of USB Flash at\
-        \ usbflash1:.\r\n16789568K bytes of USB Flash at usbflash0:.\r\n117219783K\
-        \ bytes of USB Flash at usbflash1-2:.\r\n16789568K bytes of USB Flash at usbflash0-2:.\r\
-        \n16789568K bytes of USB Flash at usbflash0-3:.\r\n117219783K bytes of USB\
-        \ Flash at usbflash1-3:.\r\n\r\nBase Ethernet MAC Address          : fc:58:9a:00:d5:00\r\
-        \nMotherboard Assembly Number        : 73-19920-01\r\nMotherboard Serial Number\
-        \          : FHH23350005\r\nModel Revision Number              : 01\r\nMotherboard\
-        \ Revision Number        : 01\r\nModel Number                       : C9300-48UXM\r\
-        \nSystem Serial Number               : FHH2335P005\r\nCLEI Code Number   \
-        \                : 0123456789\r\n\r\n\r\nSwitch Ports Model              SW\
-        \ Version        SW Image              Mode   \r\n------ ----- -----     \
-        \         ----------        ----------            ----   \r\n*    1 65   \
-        \ C9300-48UXM        17.11.01          CAT9K_IOSXE           INSTALL\r\n \
-        \    2 65    C9300-48UXM        17.11.01          CAT9K_IOSXE           INSTALL\r\
-        \n     3 41    C9300-24UX         17.11.01          CAT9K_IOSXE          \
-        \ INSTALL\r\n\r\n\r\nSwitch 02\r\n---------\r\nSwitch uptime             \
-        \         : 1 day, 14 hours, 24 minutes \r\n\r\nBase Ethernet MAC Address\
-        \          : 70:6b:b9:28:e7:00\r\nMotherboard Assembly Number        : 73-17959-06\r\
-        \nMotherboard Serial Number          : FOC21260XVP\r\nModel Revision Number\
-        \              : 46\r\nMotherboard Revision Number        : 05\r\nModel Number\
-        \                       : C9300-48UXM\r\nSystem Serial Number            \
-        \   : FCW2128L03N\r\nLast reload reason                 : Admin reload CLI\r\
-        \nCLEI Code Number                   : ABCDEFGHIJ\r\n\r\nSwitch 03\r\n---------\r\
-        \nSwitch uptime                      : 1 day, 14 hours, 24 minutes \r\n\r\n\
-        Base Ethernet MAC Address          : dc:f7:19:01:b2:00\r\nMotherboard Assembly\
-        \ Number        : 73-17958-06\r\nMotherboard Serial Number          : FOC222502CV\r\
-        \nModel Revision Number              : E0\r\nMotherboard Revision Number \
-        \       : B0\r\nModel Number                       : C9300-24UX\r\nSystem\
-        \ Serial Number               : FCW2226G0QW\r\nLast reload reason        \
-        \         : Admin reload CLI\r\nCLEI Code Number                   : INM3Y10BRA"
+        - |-
+          Cisco IOS XE Software, Version BLD_POLARIS_DEV_LATEST_20221121_153510
+          Cisco IOS Software [Dublin], Catalyst L3 Switch Software (CAT9K_IOSXE), Experimental Version 17.11.20221121:160300 [BLD_POLARIS_DEV_LATEST_20221121_153510:/nobackup/mcpre/s2c-build-ws 101]
+          Copyright (c) 1986-2022 by Cisco Systems, Inc.
+          Compiled Mon 21-Nov-22 08:03 by mcpre
+          
+          
+          Cisco IOS-XE software, Copyright (c) 2005-2022 by cisco Systems, Inc.
+          All rights reserved.  Certain components of Cisco IOS-XE software are
+          licensed under the GNU General Public License ("GPL") Version 2.0.  The
+          software code licensed under GPL Version 2.0 is free software that comes
+          with ABSOLUTELY NO WARRANTY.  You can redistribute and/or modify such
+          GPL code under the terms of GPL Version 2.0.  For more details, see the
+          documentation or "License Notice" file accompanying the IOS-XE software,
+          or the applicable URL provided on the flyer accompanying the IOS-XE
+          software.
+          
+          
+          ROM: IOS-XE ROMMON
+          BOOTLDR: System Bootstrap, Version 17.12.1r, RELEASE SOFTWARE (P)
+          
+          javelin-morph-mini1a-c9300-stack uptime is 1 day, 14 hours, 22 minutes
+          Uptime for this control processor is 1 day, 14 hours, 24 minutes
+          System returned to ROM by Admin reload CLI
+          System image file is "flash:packages.conf"
+          Last reload reason: Admin reload CLI
+          
+          
+          
+          This product contains cryptographic features and is subject to United
+          States and local country laws governing import, export, transfer and
+          use. Delivery of Cisco cryptographic products does not imply
+          third-party authority to import, export, distribute or use encryption.
+          Importers, exporters, distributors and users are responsible for
+          compliance with U.S. and local country laws. By using this product you
+          agree to comply with applicable laws and regulations. If you are unable
+          to comply with U.S. and local laws, return this product immediately.
+          
+          A summary of U.S. laws governing Cisco cryptographic products may be found at:
+          http://www.cisco.com/wwl/export/crypto/tool/stqrg.html
+          
+          If you require further assistance please contact us by sending email to
+          export@cisco.com.
+          
+          
+          Technology Package License Information: 
+          
+          ------------------------------------------------------------------------------
+          Technology-package                                     Technology-package
+          Current                        Type                       Next reboot  
+          ------------------------------------------------------------------------------
+          network-essentials  	Smart License                 	 network-essentials  
+          None                	Subscription Smart License    	 None                          
+          AIR License Level: AIR DNA Advantage
+          Next reload AIR license Level: AIR DNA Advantage
+          
+          
+          Smart Licensing Status: Smart Licensing Using Policy
+          
+          cisco C9300-48UXM (X86) processor with 1311315K/6147K bytes of memory.
+          Processor board ID FHH2335P005
+          1 Virtual Ethernet interface
+          12 Gigabit Ethernet interfaces
+          72 2.5 Gigabit Ethernet interfaces
+          72 Ten Gigabit Ethernet interfaces
+          6 TwentyFive Gigabit Ethernet interfaces
+          6 Forty Gigabit Ethernet interfaces
+          2048K bytes of non-volatile configuration memory.
+          8388608K bytes of physical memory.
+          1638400K bytes of Crash Files at crashinfo:.
+          1638400K bytes of Crash Files at crashinfo-2:.
+          1638400K bytes of Crash Files at crashinfo-3:.
+          11264000K bytes of Flash at flash:.
+          11264000K bytes of Flash at flash-2:.
+          11264000K bytes of Flash at flash-3:.
+          117219783K bytes of USB Flash at usbflash1:.
+          16789568K bytes of USB Flash at usbflash0:.
+          117219783K bytes of USB Flash at usbflash1-2:.
+          16789568K bytes of USB Flash at usbflash0-2:.
+          16789568K bytes of USB Flash at usbflash0-3:.
+          117219783K bytes of USB Flash at usbflash1-3:.
+          
+          Base Ethernet MAC Address          : fc:58:9a:00:d5:00
+          Motherboard Assembly Number        : 73-19920-01
+          Motherboard Serial Number          : FHH23350005
+          Model Revision Number              : 01
+          Motherboard Revision Number        : 01
+          Model Number                       : C9300-48UXM
+          System Serial Number               : FHH2335P005
+          CLEI Code Number                   : 0123456789
+          
+          
+          Switch Ports Model              SW Version        SW Image              Mode   
+          ------ ----- -----              ----------        ----------            ----   
+          *    1 65    C9300-48UXM        17.11.01          CAT9K_IOSXE           INSTALL
+               2 65    C9300-48UXM        17.11.01          CAT9K_IOSXE           INSTALL
+               3 41    C9300-24UX         17.11.01          CAT9K_IOSXE           INSTALL
+          
+          
+          Switch 02
+          ---------
+          Switch uptime                      : 1 day, 14 hours, 24 minutes 
+          
+          Base Ethernet MAC Address          : 70:6b:b9:28:e7:00
+          Motherboard Assembly Number        : 73-17959-06
+          Motherboard Serial Number          : FOC21260XVP
+          Model Revision Number              : 46
+          Motherboard Revision Number        : 05
+          Model Number                       : C9300-48UXM
+          System Serial Number               : FCW2128L03N
+          Last reload reason                 : Admin reload CLI
+          CLEI Code Number                   : ABCDEFGHIJ
+          
+          Switch 03
+          ---------
+          Switch uptime                      : 1 day, 14 hours, 24 minutes 
+          
+          Base Ethernet MAC Address          : dc:f7:19:01:b2:00
+          Motherboard Assembly Number        : 73-17958-06
+          Motherboard Serial Number          : FOC222502CV
+          Model Revision Number              : E0
+          Motherboard Revision Number        : B0
+          Model Number                       : C9300-24UX
+          System Serial Number               : FCW2226G0QW
+          Last reload reason                 : Admin reload CLI
+          CLEI Code Number                   : INM3Y10BRA
       response_type: circular
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: javelin-morph-mini1a-c9300-stack#

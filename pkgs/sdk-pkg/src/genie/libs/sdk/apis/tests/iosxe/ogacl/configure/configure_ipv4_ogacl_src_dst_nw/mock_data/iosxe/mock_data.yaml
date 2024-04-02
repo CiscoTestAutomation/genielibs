@@ -7,8 +7,8 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-    permit ip object-group ogacl_network_P2 object-group ogacl_network_P1: "permit\
-      \ ip object-group ogacl_network_P2 object-group ogacl_network_P1\r\n"
+    permit ip object-group ogacl_network_P2 object-group ogacl_network_P1: "permit
+      ip object-group ogacl_network_P2 object-group ogacl_network_P1\r\n"
   prompt: P-R1(config)#
 configure_line:
   commands:
@@ -18,13 +18,12 @@ configure_line:
   prompt: P-R1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -35,4 +34,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: P-R1#

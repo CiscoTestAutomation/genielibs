@@ -14,13 +14,12 @@ configure_line:
   prompt: mac2-sjc24(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,149 +29,237 @@ execute:
       new_state: configure
     show inventory raw:
       response:
-      - "NAME: \"Chassis\", DESCR: \"Cisco Catalyst 9400 Series 7 Slot Chassis\"\r\
-        \nPID: C9407R            , VID: V00  , SN: FXS1939Q442\r\n\r\nNAME: \"Backplane\"\
-        , DESCR: \"Cisco Catalyst 9400 Series 7 Slot Chassis Backplane\"\r\nPID: \
-        \                  , VID:      , SN:            \r\n\r\nNAME: \"slot 1\",\
-        \ DESCR: \"Cisco Catalyst 9400 Series Carrier Card Module Container\"\r\n\
-        PID:                   , VID:      , SN:            \r\n\r\nNAME: \"Slot 1\
-        \ Linecard\", DESCR: \"Cisco Catalyst 9400 Series 48-Port 10/100/1000 (RJ-45)\"\
-        \r\nPID: C9400-LC-48T      , VID: V00  , SN: JAE204700Q4\r\n\r\nNAME: \"slot\
-        \ 2\", DESCR: \"Cisco Catalyst 9400 Series Carrier Card Module Container\"\
-        \r\nPID:                   , VID:      , SN:            \r\n\r\nNAME: \"slot\
-        \ 3\", DESCR: \"Cisco Catalyst 9400 Series Carrier Card Module Container\"\
-        \r\nPID:                   , VID:      , SN:            \r\n\r\nNAME: \"slot\
-        \ 4\", DESCR: \"Cisco Catalyst 9400 Series Carrier Card Module Container\"\
-        \r\nPID:                   , VID:      , SN:            \r\n\r\nNAME: \"slot\
-        \ 5\", DESCR: \"Cisco Catalyst 9400 Series Carrier Card Module Container\"\
-        \r\nPID:                   , VID:      , SN:            \r\n\r\nNAME: \"slot\
-        \ 6\", DESCR: \"Cisco Catalyst 9400 Series Carrier Card Module Container\"\
-        \r\nPID:                   , VID:      , SN:            \r\n\r\nNAME: \"slot\
-        \ 7\", DESCR: \"Cisco Catalyst 9400 Series Carrier Card Module Container\"\
-        \r\nPID:                   , VID:      , SN:            \r\n\r\nNAME: \"Slot\
-        \ 7 Linecard\", DESCR: \"Cisco Catalyst 9400 Series 48-Port 10/100/1000 (RJ-45)\"\
-        \r\nPID: C9400-LC-48T      , VID: V01  , SN: JAE213205G9\r\n\r\nNAME: \"slot\
-        \ R0\", DESCR: \"Cisco Catalyst 9400 Series Routing Processor Module Container\"\
-        \r\nPID:                   , VID:      , SN:            \r\n\r\nNAME: \"Slot\
-        \ 3 Supervisor\", DESCR: \"Cisco Catalyst 9400 Series Supervisor 1 Module\"\
-        \r\nPID: C9400-SUP-1       , VID: V00  , SN: JAE210204A9\r\n\r\nNAME: \"Slot\
-        \ 3 USB Container\", DESCR: \"USB Container\"\r\nPID:                   ,\
-        \ VID:      , SN:            \r\n\r\nNAME: \"Slot 3 SATA Container\", DESCR:\
-        \ \"SATA Container\"\r\nPID:                   , VID:      , SN:         \
-        \   \r\n\r\nNAME: \"Te3/0/1 Container\", DESCR: \"TenGigabitEthernet3/0/1\
-        \ Container\"\r\nPID:                   , VID:      , SN:            \r\n\r\
-        \nNAME: \"Te3/0/2 Container\", DESCR: \"TenGigabitEthernet3/0/2 Container\"\
-        \r\nPID:                   , VID:      , SN:            \r\n\r\nNAME: \"Te3/0/3\
-        \ Container\", DESCR: \"TenGigabitEthernet3/0/3 Container\"\r\nPID:      \
-        \             , VID:      , SN:            \r\n\r\nNAME: \"Te3/0/4 Container\"\
-        , DESCR: \"TenGigabitEthernet3/0/4 Container\"\r\nPID:                   ,\
-        \ VID:      , SN:            \r\n\r\nNAME: \"Te3/0/5 Container\", DESCR: \"\
-        TenGigabitEthernet3/0/5 Container\"\r\nPID:                   , VID:     \
-        \ , SN:            \r\n\r\nNAME: \"Te3/0/6 Container\", DESCR: \"TenGigabitEthernet3/0/6\
-        \ Container\"\r\nPID:                   , VID:      , SN:            \r\n\r\
-        \nNAME: \"Te3/0/7 Container\", DESCR: \"TenGigabitEthernet3/0/7 Container\"\
-        \r\nPID:                   , VID:      , SN:            \r\n\r\nNAME: \"Te3/0/8\
-        \ Container\", DESCR: \"TenGigabitEthernet3/0/8 Container\"\r\nPID:      \
-        \             , VID:      , SN:            \r\n\r\nNAME: \"Fo3/0/9 Container\"\
-        , DESCR: \"FortyGigabitEthernet3/0/9 Container\"\r\nPID:                 \
-        \  , VID:      , SN:            \r\n\r\nNAME: \"Fo3/0/10 Container\", DESCR:\
-        \ \"FortyGigabitEthernet3/0/10 Container\"\r\nPID:                   , VID:\
-        \      , SN:            \r\n\r\nNAME: \"Ap3/0/1 Container\", DESCR: \"AppGigabitEthernet3/0/1\
-        \ Container\"\r\nPID:                   , VID:      , SN:            \r\n\r\
-        \nNAME: \"Slot 3 CPU\", DESCR: \"CPU\"\r\nPID:                   , VID:  \
-        \    , SN:            \r\n\r\nNAME: \"slot R1\", DESCR: \"Cisco Catalyst 9400\
-        \ Series Routing Processor Module Container\"\r\nPID:                   ,\
-        \ VID:      , SN:            \r\n\r\nNAME: \"Slot 4 Supervisor\", DESCR: \"\
-        Cisco Catalyst 9400 Series Supervisor 1 Module\"\r\nPID: C9400-SUP-1     \
-        \  , VID: V00  , SN: JAE2050073X\r\n\r\nNAME: \"Slot 4 USB Container\", DESCR:\
-        \ \"USB Container\"\r\nPID:                   , VID:      , SN:          \
-        \  \r\n\r\nNAME: \"Slot 4 SATA Container\", DESCR: \"SATA Container\"\r\n\
-        PID:                   , VID:      , SN:            \r\n\r\nNAME: \"Te4/0/1\
-        \ Container\", DESCR: \"TenGigabitEthernet4/0/1 Container\"\r\nPID:      \
-        \             , VID:      , SN:            \r\n\r\nNAME: \"Te4/0/2 Container\"\
-        , DESCR: \"TenGigabitEthernet4/0/2 Container\"\r\nPID:                   ,\
-        \ VID:      , SN:            \r\n\r\nNAME: \"Te4/0/3 Container\", DESCR: \"\
-        TenGigabitEthernet4/0/3 Container\"\r\nPID:                   , VID:     \
-        \ , SN:            \r\n\r\nNAME: \"Te4/0/4 Container\", DESCR: \"TenGigabitEthernet4/0/4\
-        \ Container\"\r\nPID:                   , VID:      , SN:            \r\n\r\
-        \nNAME: \"Te4/0/5 Container\", DESCR: \"TenGigabitEthernet4/0/5 Container\"\
-        \r\nPID:                   , VID:      , SN:            \r\n\r\nNAME: \"Te4/0/6\
-        \ Container\", DESCR: \"TenGigabitEthernet4/0/6 Container\"\r\nPID:      \
-        \             , VID:      , SN:            \r\n\r\nNAME: \"Te4/0/7 Container\"\
-        , DESCR: \"TenGigabitEthernet4/0/7 Container\"\r\nPID:                   ,\
-        \ VID:      , SN:            \r\n\r\nNAME: \"Te4/0/8 Container\", DESCR: \"\
-        TenGigabitEthernet4/0/8 Container\"\r\nPID:                   , VID:     \
-        \ , SN:            \r\n\r\nNAME: \"Fo4/0/9 Container\", DESCR: \"FortyGigabitEthernet4/0/9\
-        \ Container\"\r\nPID:                   , VID:      , SN:            \r\n\r\
-        \nNAME: \"Fo4/0/10 Container\", DESCR: \"FortyGigabitEthernet4/0/10 Container\"\
-        \r\nPID:                   , VID:      , SN:            \r\n\r\nNAME: \"Ap4/0/1\
-        \ Container\", DESCR: \"AppGigabitEthernet4/0/1 Container\"\r\nPID:      \
-        \             , VID:      , SN:            \r\n\r\nNAME: \"Slot 4 CPU\", DESCR:\
-        \ \"CPU\"\r\nPID:                   , VID:      , SN:            \r\n\r\n\
-        NAME: \"slot F0\", DESCR: \"Cisco Catalyst 9400 Series Slot\"\r\nPID:    \
-        \               , VID:      , SN:            \r\n\r\nNAME: \"slot F1\", DESCR:\
-        \ \"Cisco Catalyst 9400 Series Slot\"\r\nPID:                   , VID:   \
-        \   , SN:            \r\n\r\nNAME: \"Power Supply Bay 1\", DESCR: \"Cisco\
-        \ Catalyst 9400 Series Power Supply Bay Module Container\"\r\nPID:       \
-        \            , VID:      , SN:            \r\n\r\nNAME: \"Power Supply Bay\
-        \ 2\", DESCR: \"Cisco Catalyst 9400 Series Power Supply Bay Module Container\"\
-        \r\nPID:                   , VID:      , SN:            \r\n\r\nNAME: \"Power\
-        \ Supply Bay 3\", DESCR: \"Cisco Catalyst 9400 Series Power Supply Bay Module\
-        \ Container\"\r\nPID:                   , VID:      , SN:            \r\n\r\
-        \nNAME: \"Power Supply Bay 4\", DESCR: \"Cisco Catalyst 9400 Series Power\
-        \ Supply Bay Module Container\"\r\nPID:                   , VID:      , SN:\
-        \            \r\n\r\nNAME: \"Power Supply Bay 5\", DESCR: \"Cisco Catalyst\
-        \ 9400 Series Power Supply Bay Module Container\"\r\nPID:                \
-        \   , VID:      , SN:            \r\n\r\nNAME: \"Power Supply Module 5\",\
-        \ DESCR: \"Cisco Catalyst 9400 Series 3200W AC Power Supply\"\r\nPID: C9400-PWR-3200AC\
-        \  , VID: V00  , SN: DTM1942035L\r\n\r\nNAME: \"Power Supply 5\", DESCR: \"\
-        Cisco Catalyst 9400 Series Power Supply\"\r\nPID:                   , VID:\
-        \      , SN:            \r\n\r\nNAME: \"Fan 5/1\", DESCR: \"Cisco Catalyst\
-        \ 9400 Series Fan\"\r\nPID:                   , VID:      , SN:          \
-        \  \r\n\r\nNAME: \"Fan 5/2\", DESCR: \"Cisco Catalyst 9400 Series Fan\"\r\n\
-        PID:                   , VID:      , SN:            \r\n\r\nNAME: \"Power\
-        \ Supply Bay 6\", DESCR: \"Cisco Catalyst 9400 Series Power Supply Bay Module\
-        \ Container\"\r\nPID:                   , VID:      , SN:            \r\n\r\
-        \nNAME: \"Power Supply Bay 7\", DESCR: \"Cisco Catalyst 9400 Series Power\
-        \ Supply Bay Module Container\"\r\nPID:                   , VID:      , SN:\
-        \            \r\n\r\nNAME: \"Power Supply Bay 8\", DESCR: \"Cisco Catalyst\
-        \ 9400 Series Power Supply Bay Module Container\"\r\nPID:                \
-        \   , VID:      , SN:            \r\n\r\nNAME: \"Power Supply Module 8\",\
-        \ DESCR: \"Cisco Catalyst 9400 Series 3200W AC Power Supply\"\r\nPID: C9400-PWR-3200AC\
-        \  , VID: V00  , SN: DTM200602P8\r\n\r\nNAME: \"Power Supply 8\", DESCR: \"\
-        Cisco Catalyst 9400 Series Power Supply\"\r\nPID:                   , VID:\
-        \      , SN:            \r\n\r\nNAME: \"Fan 8/1\", DESCR: \"Cisco Catalyst\
-        \ 9400 Series Fan\"\r\nPID:                   , VID:      , SN:          \
-        \  \r\n\r\nNAME: \"Fan 8/2\", DESCR: \"Cisco Catalyst 9400 Series Fan\"\r\n\
-        PID:                   , VID:      , SN:            \r\n\r\nNAME: \"Fan Tray\
-        \ Bay\", DESCR: \"Cisco Catalyst 9400 Series Fan Tray Bay Module Container\"\
-        \r\nPID:                   , VID:      , SN:            \r\n\r\nNAME: \"Fan\
-        \ Tray\", DESCR: \"Cisco Catalyst 9400 Series 7 Slot Chassis Fan Tray\"\r\n\
-        PID: C9407-FAN         , VID: V00  , SN: FXS1939Q442\r\n\r\nNAME: \"Fan 17/1\"\
-        , DESCR: \"Cisco Catalyst 9400 Series Fan\"\r\nPID:                   , VID:\
-        \      , SN:            \r\n\r\nNAME: \"Fan 17/2\", DESCR: \"Cisco Catalyst\
-        \ 9400 Series Fan\"\r\nPID:                   , VID:      , SN:          \
-        \  \r\n\r\nNAME: \"Fan 17/3\", DESCR: \"Cisco Catalyst 9400 Series Fan\"\r\
-        \nPID:                   , VID:      , SN:            \r\n\r\nNAME: \"Fan\
-        \ 17/4\", DESCR: \"Cisco Catalyst 9400 Series Fan\"\r\nPID:              \
-        \     , VID:      , SN:            \r\n\r\nNAME: \"Fan 17/5\", DESCR: \"Cisco\
-        \ Catalyst 9400 Series Fan\"\r\nPID:                   , VID:      , SN: \
-        \           \r\n\r\nNAME: \"Fan 17/6\", DESCR: \"Cisco Catalyst 9400 Series\
-        \ Fan\"\r\nPID:                   , VID:      , SN:            \r\n\r\nNAME:\
-        \ \"Fan 17/7\", DESCR: \"Cisco Catalyst 9400 Series Fan\"\r\nPID:        \
-        \           , VID:      , SN:            \r\n\r\nNAME: \"Fan 17/8\", DESCR:\
-        \ \"Cisco Catalyst 9400 Series Fan\"\r\nPID:                   , VID:    \
-        \  , SN:            \r\n\r\nNAME: \"Fan 17/9\", DESCR: \"Cisco Catalyst 9400\
-        \ Series Fan\"\r\nPID:                   , VID:      , SN:            \r\n\
-        \r\nNAME: \"Fan 17/10\", DESCR: \"Cisco Catalyst 9400 Series Fan\"\r\nPID:\
-        \                   , VID:      , SN:            \r\n\r\nNAME: \"Fan 17/11\"\
-        , DESCR: \"Cisco Catalyst 9400 Series Fan\"\r\nPID:                   , VID:\
-        \      , SN:            \r\n\r\nNAME: \"Fan 17/12\", DESCR: \"Cisco Catalyst\
-        \ 9400 Series Fan\"\r\nPID:                   , VID:      , SN:          \
-        \  \r\n\r\nNAME: \"Internal POE Bay\", DESCR: \"Cisco Catalyst 9400 Series\
-        \ Slot\"\r\nPID:                   , VID:      , SN:"
+        - |-
+          NAME: "Chassis", DESCR: "Cisco Catalyst 9400 Series 7 Slot Chassis"
+          PID: C9407R            , VID: V00  , SN: FXS1939Q442
+          
+          NAME: "Backplane", DESCR: "Cisco Catalyst 9400 Series 7 Slot Chassis Backplane"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "slot 1", DESCR: "Cisco Catalyst 9400 Series Carrier Card Module Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Slot 1 Linecard", DESCR: "Cisco Catalyst 9400 Series 48-Port 10/100/1000 (RJ-45)"
+          PID: C9400-LC-48T      , VID: V00  , SN: JAE204700Q4
+          
+          NAME: "slot 2", DESCR: "Cisco Catalyst 9400 Series Carrier Card Module Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "slot 3", DESCR: "Cisco Catalyst 9400 Series Carrier Card Module Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "slot 4", DESCR: "Cisco Catalyst 9400 Series Carrier Card Module Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "slot 5", DESCR: "Cisco Catalyst 9400 Series Carrier Card Module Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "slot 6", DESCR: "Cisco Catalyst 9400 Series Carrier Card Module Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "slot 7", DESCR: "Cisco Catalyst 9400 Series Carrier Card Module Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Slot 7 Linecard", DESCR: "Cisco Catalyst 9400 Series 48-Port 10/100/1000 (RJ-45)"
+          PID: C9400-LC-48T      , VID: V01  , SN: JAE213205G9
+          
+          NAME: "slot R0", DESCR: "Cisco Catalyst 9400 Series Routing Processor Module Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Slot 3 Supervisor", DESCR: "Cisco Catalyst 9400 Series Supervisor 1 Module"
+          PID: C9400-SUP-1       , VID: V00  , SN: JAE210204A9
+          
+          NAME: "Slot 3 USB Container", DESCR: "USB Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Slot 3 SATA Container", DESCR: "SATA Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Te3/0/1 Container", DESCR: "TenGigabitEthernet3/0/1 Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Te3/0/2 Container", DESCR: "TenGigabitEthernet3/0/2 Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Te3/0/3 Container", DESCR: "TenGigabitEthernet3/0/3 Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Te3/0/4 Container", DESCR: "TenGigabitEthernet3/0/4 Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Te3/0/5 Container", DESCR: "TenGigabitEthernet3/0/5 Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Te3/0/6 Container", DESCR: "TenGigabitEthernet3/0/6 Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Te3/0/7 Container", DESCR: "TenGigabitEthernet3/0/7 Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Te3/0/8 Container", DESCR: "TenGigabitEthernet3/0/8 Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Fo3/0/9 Container", DESCR: "FortyGigabitEthernet3/0/9 Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Fo3/0/10 Container", DESCR: "FortyGigabitEthernet3/0/10 Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Ap3/0/1 Container", DESCR: "AppGigabitEthernet3/0/1 Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Slot 3 CPU", DESCR: "CPU"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "slot R1", DESCR: "Cisco Catalyst 9400 Series Routing Processor Module Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Slot 4 Supervisor", DESCR: "Cisco Catalyst 9400 Series Supervisor 1 Module"
+          PID: C9400-SUP-1       , VID: V00  , SN: JAE2050073X
+          
+          NAME: "Slot 4 USB Container", DESCR: "USB Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Slot 4 SATA Container", DESCR: "SATA Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Te4/0/1 Container", DESCR: "TenGigabitEthernet4/0/1 Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Te4/0/2 Container", DESCR: "TenGigabitEthernet4/0/2 Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Te4/0/3 Container", DESCR: "TenGigabitEthernet4/0/3 Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Te4/0/4 Container", DESCR: "TenGigabitEthernet4/0/4 Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Te4/0/5 Container", DESCR: "TenGigabitEthernet4/0/5 Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Te4/0/6 Container", DESCR: "TenGigabitEthernet4/0/6 Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Te4/0/7 Container", DESCR: "TenGigabitEthernet4/0/7 Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Te4/0/8 Container", DESCR: "TenGigabitEthernet4/0/8 Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Fo4/0/9 Container", DESCR: "FortyGigabitEthernet4/0/9 Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Fo4/0/10 Container", DESCR: "FortyGigabitEthernet4/0/10 Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Ap4/0/1 Container", DESCR: "AppGigabitEthernet4/0/1 Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Slot 4 CPU", DESCR: "CPU"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "slot F0", DESCR: "Cisco Catalyst 9400 Series Slot"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "slot F1", DESCR: "Cisco Catalyst 9400 Series Slot"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Power Supply Bay 1", DESCR: "Cisco Catalyst 9400 Series Power Supply Bay Module Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Power Supply Bay 2", DESCR: "Cisco Catalyst 9400 Series Power Supply Bay Module Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Power Supply Bay 3", DESCR: "Cisco Catalyst 9400 Series Power Supply Bay Module Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Power Supply Bay 4", DESCR: "Cisco Catalyst 9400 Series Power Supply Bay Module Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Power Supply Bay 5", DESCR: "Cisco Catalyst 9400 Series Power Supply Bay Module Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Power Supply Module 5", DESCR: "Cisco Catalyst 9400 Series 3200W AC Power Supply"
+          PID: C9400-PWR-3200AC  , VID: V00  , SN: DTM1942035L
+          
+          NAME: "Power Supply 5", DESCR: "Cisco Catalyst 9400 Series Power Supply"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Fan 5/1", DESCR: "Cisco Catalyst 9400 Series Fan"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Fan 5/2", DESCR: "Cisco Catalyst 9400 Series Fan"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Power Supply Bay 6", DESCR: "Cisco Catalyst 9400 Series Power Supply Bay Module Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Power Supply Bay 7", DESCR: "Cisco Catalyst 9400 Series Power Supply Bay Module Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Power Supply Bay 8", DESCR: "Cisco Catalyst 9400 Series Power Supply Bay Module Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Power Supply Module 8", DESCR: "Cisco Catalyst 9400 Series 3200W AC Power Supply"
+          PID: C9400-PWR-3200AC  , VID: V00  , SN: DTM200602P8
+          
+          NAME: "Power Supply 8", DESCR: "Cisco Catalyst 9400 Series Power Supply"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Fan 8/1", DESCR: "Cisco Catalyst 9400 Series Fan"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Fan 8/2", DESCR: "Cisco Catalyst 9400 Series Fan"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Fan Tray Bay", DESCR: "Cisco Catalyst 9400 Series Fan Tray Bay Module Container"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Fan Tray", DESCR: "Cisco Catalyst 9400 Series 7 Slot Chassis Fan Tray"
+          PID: C9407-FAN         , VID: V00  , SN: FXS1939Q442
+          
+          NAME: "Fan 17/1", DESCR: "Cisco Catalyst 9400 Series Fan"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Fan 17/2", DESCR: "Cisco Catalyst 9400 Series Fan"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Fan 17/3", DESCR: "Cisco Catalyst 9400 Series Fan"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Fan 17/4", DESCR: "Cisco Catalyst 9400 Series Fan"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Fan 17/5", DESCR: "Cisco Catalyst 9400 Series Fan"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Fan 17/6", DESCR: "Cisco Catalyst 9400 Series Fan"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Fan 17/7", DESCR: "Cisco Catalyst 9400 Series Fan"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Fan 17/8", DESCR: "Cisco Catalyst 9400 Series Fan"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Fan 17/9", DESCR: "Cisco Catalyst 9400 Series Fan"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Fan 17/10", DESCR: "Cisco Catalyst 9400 Series Fan"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Fan 17/11", DESCR: "Cisco Catalyst 9400 Series Fan"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Fan 17/12", DESCR: "Cisco Catalyst 9400 Series Fan"
+          PID:                   , VID:      , SN:            
+          
+          NAME: "Internal POE Bay", DESCR: "Cisco Catalyst 9400 Series Slot"
+          PID:                   , VID:      , SN:
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: mac2-sjc24#

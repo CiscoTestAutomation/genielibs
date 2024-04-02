@@ -18,13 +18,12 @@ configure_line:
   prompt: c2_core_sf(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -32,30 +31,63 @@ execute:
       new_state: configure
     config-transaction:
       new_state: configure
-    show run | section ospf: "key chain ospf-1\r\n key 1\r\n  key-string ospf\r\n\
-      \   cryptographic-algorithm hmac-sha-512\r\n ip ospf 100 area 0\r\n ipv6 ospf\
-      \ 100 area 0\r\n ipv6 ospf 100 area 0\r\n ip ospf bfd\r\n ipv6 ospf 100 area\
-      \ 0\r\n ipv6 ospf bfd\r\n ipv6 ospf 100 area 0\r\n ipv6 ospf 100 area 0\r\n\
-      \ ip ospf bfd\r\n ip ospf 100 area 0\r\n ipv6 ospf 100 area 0\r\n ipv6 ospf\
-      \ bfd\r\n ospfv3 41 ipv6 area 41\r\nrouter ospfv3 100\r\n nsr\r\n graceful-restart\r\
-      \n !\r\n address-family ipv6 unicast\r\n exit-address-family\r\nrouter ospfv3\
-      \ 41\r\n !\r\n address-family ipv6 unicast\r\n  nsr\r\n exit-address-family\r\
-      \nrouter ospf 100\r\n router-id 1.1.1.20\r\n priority 126\r\n nsr\r\n nsf\r\n\
-      \ redistribute connected\r\n network 80.80.80.20 0.0.0.0 area 0\r\n network\
-      \ 192.168.21.0 0.0.0.255 area 0\r\n network 192.168.22.0 0.0.0.255 area 0\r\n\
-      \ network 192.168.23.0 0.0.0.255 area 0\r\n network 192.168.24.0 0.0.0.255 area\
-      \ 0\r\n network 192.168.32.0 0.0.0.255 area 0\r\nsnmp-server enable traps ospf\
-      \ state-change\r\nsnmp-server enable traps ospf errors\r\nsnmp-server enable\
-      \ traps ospf retransmit\r\nsnmp-server enable traps ospf lsa\r\nsnmp-server\
-      \ enable traps ospf cisco-specific state-change nssa-trans-change\r\nsnmp-server\
-      \ enable traps ospf cisco-specific state-change shamlink interface\r\nsnmp-server\
-      \ enable traps ospf cisco-specific state-change shamlink neighbor\r\nsnmp-server\
-      \ enable traps ospf cisco-specific errors\r\nsnmp-server enable traps ospf cisco-specific\
-      \ retransmit\r\nsnmp-server enable traps ospf cisco-specific lsa\r\nsnmp-server\
-      \ enable traps ospfv3 state-change\r\nsnmp-server enable traps ospfv3 errors"
+    show run | section ospf: |-
+      key chain ospf-1
+       key 1
+        key-string ospf
+         cryptographic-algorithm hmac-sha-512
+       ip ospf 100 area 0
+       ipv6 ospf 100 area 0
+       ipv6 ospf 100 area 0
+       ip ospf bfd
+       ipv6 ospf 100 area 0
+       ipv6 ospf bfd
+       ipv6 ospf 100 area 0
+       ipv6 ospf 100 area 0
+       ip ospf bfd
+       ip ospf 100 area 0
+       ipv6 ospf 100 area 0
+       ipv6 ospf bfd
+       ospfv3 41 ipv6 area 41
+      router ospfv3 100
+       nsr
+       graceful-restart
+       !
+       address-family ipv6 unicast
+       exit-address-family
+      router ospfv3 41
+       !
+       address-family ipv6 unicast
+        nsr
+       exit-address-family
+      router ospf 100
+       router-id 1.1.1.20
+       priority 126
+       nsr
+       nsf
+       redistribute connected
+       network 80.80.80.20 0.0.0.0 area 0
+       network 192.168.21.0 0.0.0.255 area 0
+       network 192.168.22.0 0.0.0.255 area 0
+       network 192.168.23.0 0.0.0.255 area 0
+       network 192.168.24.0 0.0.0.255 area 0
+       network 192.168.32.0 0.0.0.255 area 0
+      snmp-server enable traps ospf state-change
+      snmp-server enable traps ospf errors
+      snmp-server enable traps ospf retransmit
+      snmp-server enable traps ospf lsa
+      snmp-server enable traps ospf cisco-specific state-change nssa-trans-change
+      snmp-server enable traps ospf cisco-specific state-change shamlink interface
+      snmp-server enable traps ospf cisco-specific state-change shamlink neighbor
+      snmp-server enable traps ospf cisco-specific errors
+      snmp-server enable traps ospf cisco-specific retransmit
+      snmp-server enable traps ospf cisco-specific lsa
+      snmp-server enable traps ospfv3 state-change
+      snmp-server enable traps ospfv3 errors
     show version: ''
     term length 0: ''
     term width 0: ''
     term width 511: ''
     terminal session-timeout 0: ''
+    show version | include operating mode: ''
   prompt: c2_core_sf#

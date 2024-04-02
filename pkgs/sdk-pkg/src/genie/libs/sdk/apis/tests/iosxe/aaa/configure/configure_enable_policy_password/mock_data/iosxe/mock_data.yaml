@@ -1,10 +1,8 @@
 configure:
   commands:
-    enable common-criteria-policy enable_test password 0 Test12: "enable common-criteria-policy\
-      \ enable_test password 0 Test12\r\n WARNING: Configured enable password CLI\
-      \ with weak encryption type 0 will be deprecated in future. Hence please migrate\
-      \ to enable secret CLI which accomplishes same functionality as enable password\
-      \ CLI and which also supports strong irreversible encryption type 9\r\n"
+    enable common-criteria-policy enable_test password 0 Test12: |
+      enable common-criteria-policy enable_test password 0 Test12
+       WARNING: Configured enable password CLI with weak encryption type 0 will be deprecated in future. Hence please migrate to enable secret CLI which accomplishes same functionality as enable password CLI and which also supports strong irreversible encryption type 9
     end:
       new_state: execute
     line console:
@@ -23,13 +21,12 @@ configure_line:
   prompt: HCR_pk(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -42,4 +39,5 @@ execute:
     term width 0: ''
     term width 511: ''
     terminal session-timeout 0: ''
+    show version | include operating mode: ''
   prompt: HCR_pk#

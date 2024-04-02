@@ -18,13 +18,12 @@ configure_line:
   prompt: sisf-c9500-21-8-26-2(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -32,15 +31,23 @@ execute:
       new_state: configure
     config-transaction:
       new_state: configure
-    show interfaces trunk: "\r\nPort           Mode             Encapsulation  Status\
-      \        Native vlan  \r\nTe1/0/1        on               802.1q         trunking\
-      \      1\r\n\r\nPort           Vlans allowed on trunk\r\nTe1/0/1        1-4094\r\
-      \n\r\nPort           Vlans allowed and active in management domain\r\nTe1/0/1\
-      \        1\r\n\r\nPort           Vlans in spanning tree forwarding state and\
-      \ not pruned\r\nTe1/0/1        1"
+    show interfaces trunk: |-
+      
+      Port           Mode             Encapsulation  Status        Native vlan  
+      Te1/0/1        on               802.1q         trunking      1
+      
+      Port           Vlans allowed on trunk
+      Te1/0/1        1-4094
+      
+      Port           Vlans allowed and active in management domain
+      Te1/0/1        1
+      
+      Port           Vlans in spanning tree forwarding state and not pruned
+      Te1/0/1        1
     show version: ''
     term length 0: ''
     term width 0: ''
     term width 511: ''
     terminal session-timeout 0: ''
+    show version | include operating mode: ''
   prompt: sisf-c9500-21-8-26-2#

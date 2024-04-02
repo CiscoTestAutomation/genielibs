@@ -6,13 +6,13 @@ configure:
       new_state: configure_line
     mac access-list extended test: "mac access-list extended test\r\n"
     no logging console: ''
-    no permit host 1111.2222.3333 host 2444.2333.2222 etype-6000: "no permit host\
-      \ 1111.2222.3333 host 2444\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b$ost 1111.2222.3333 host 2444.         \b\b\b\b\b\
-      \b\b\b\b2333.2222\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b222.3333 host 2444.2333.2222          \b\b\b\b\b\b\b\b\betype-600\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\bost\
-      \ 2444.2333.2222 etype-6000         \b\b\b\b\b\b\b\b\b\r\n"
+    no permit host 1111.2222.3333 host 2444.2333.2222 etype-6000: "no permit host
+      1111.2222.3333 host 2444\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b\b\b\b\b$ost 1111.2222.3333 host 2444.         \b\b\b\b\b\b
+      \b\b\b2333.2222\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b222.3333 host 2444.2333.2222          \b\b\b\b\b\b\b\b\betype-600\b
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\bost
+      2444.2333.2222 etype-6000         \b\b\b\b\b\b\b\b\b\r\n"
   prompt: Franklin-9300L-Stack(config)#
 configure_line:
   commands:
@@ -22,13 +22,12 @@ configure_line:
   prompt: Franklin-9300L-Stack(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -39,4 +38,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: Franklin-9300L-Stack#

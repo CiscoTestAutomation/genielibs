@@ -1,7 +1,7 @@
 configure:
   commands:
-    10 permit tcp any any eq telnet time-range time1: "10 permit tcp any any eq telnet\
-      \ time-range time1\r\n"
+    10 permit tcp any any eq telnet time-range time1: "10 permit tcp any any eq telnet
+      time-range time1\r\n"
     end:
       new_state: execute
     ip access-list extended TIME_BASED_ACL_permit: "ip access-list extended TIME_BASED_ACL_permit\r\
@@ -18,13 +18,12 @@ configure_line:
   prompt: stack3-nyq-PE1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -35,4 +34,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: stack3-nyq-PE1#

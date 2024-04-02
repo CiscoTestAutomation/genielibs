@@ -568,5 +568,7 @@ def clear_logging_onboard_rp_active_standby(device, rp_active_standby):
     try:
         device.execute(config, reply=dialog)
     except SubCommandFailure as e:
-        raise SubCommandFailure(f"Could not clear logging onboard rp {rp_active_standby} on {device.name}. Error:\n{e}") 
+        raise SubCommandFailure(
+            f"Could not clear logging onboard rp {rp_active_standby} on {device.name}. Error:\n{e}"
+        )
         

@@ -7,9 +7,9 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-    sap pmk 0000000000000000000000000000000000000000000000000000000012345678 mode-list gcm-encrypt null gmac no-encap: "sap\
-      \ pmk 0000000000000000000000000000000000000000000000000000000012345678 mode-list\
-      \ gcm-encrypt null gmac no-encap\r\n"
+    sap pmk 0000000000000000000000000000000000000000000000000000000012345678 mode-list gcm-encrypt null gmac no-encap: "sap
+      pmk 0000000000000000000000000000000000000000000000000000000012345678 mode-list
+      gcm-encrypt null gmac no-encap\r\n"
   prompt: 9500H_SVL_W0607(config)#
 configure_line:
   commands:
@@ -19,13 +19,12 @@ configure_line:
   prompt: 9500H_SVL_W0607(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -36,4 +35,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: 9500H_SVL_W0607#

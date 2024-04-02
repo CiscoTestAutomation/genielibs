@@ -14,20 +14,20 @@ configure_line:
   prompt: 9300_UUT1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
     clear aaa counters servers  all:
       response:
-      - "clear aaa counters servers [confirm]\r\nThe process for the command is not\
-        \ responding or is otherwise unavailable"
+        - |-
+          clear aaa counters servers [confirm]
+          The process for the command is not responding or is otherwise unavailable
       response_type: circular
     config term:
       new_state: configure
@@ -36,4 +36,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: 9300_UUT1#

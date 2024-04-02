@@ -4,9 +4,12 @@ configure:
       new_state: execute
     line console 0:
       new_state: configure_line
-    no hw-module slot 2 shutdown: "no hw-module slot 2 shutdown\r\n%No shutdown Command\
-      \ is being executed for slot 2\r\n\r\n%Please wait for few seconds before doing\
-      \ any further operations on this card\r\n\r\n"
+    no hw-module slot 2 shutdown: |
+      no hw-module slot 2 shutdown
+      %No shutdown Command is being executed for slot 2
+      
+      %Please wait for few seconds before doing any further operations on this card
+
     no logging console: ''
   prompt: CR-Vulcan-L25(config)#
 configure_line:
@@ -17,13 +20,12 @@ configure_line:
   prompt: CR-Vulcan-L25(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -34,4 +36,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: CR-Vulcan-L25#

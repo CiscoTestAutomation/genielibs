@@ -2,9 +2,11 @@ configure:
   commands:
     end:
       new_state: execute
-    ip domain name vrf mgmt-vrf test: "ip domain name vrf mgmt-vrf test\r\n%DNS: Warning:\
-      \ VRF mgmt-vrf not configured\r\n%IOSXE_DNS: VRF mgmt-vrf not configured\r\n\
-      \r\n"
+    ip domain name vrf mgmt-vrf test: |
+      ip domain name vrf mgmt-vrf test
+      %DNS: Warning: VRF mgmt-vrf not configured
+      %IOSXE_DNS: VRF mgmt-vrf not configured
+      
     line console 0:
       new_state: configure_line
     no logging console: ''
@@ -17,13 +19,12 @@ configure_line:
   prompt: n10SVL(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -34,4 +35,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: n10SVL#

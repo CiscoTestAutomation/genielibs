@@ -14,13 +14,12 @@ configure_line:
   prompt: vidya-ewlc-5(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,23 +29,18 @@ execute:
       new_state: configure
     show ap summary:
       response:
-      - "Number of APs: 4\r\n\r\nAP Name                            Slots    AP Model\
-        \              Ethernet MAC    Radio MAC       Location                  \
-        \        Country     IP Address                                 State    \
-        \     \r\n-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\r\
-        \nAP002C.C862.E708                     2      AIR-AP1815I-A-K9      002c.c862.e708\
-        \  002c.c88a.fd20  default location                  US          9.4.57.165\
-        \                                 Registered    \r\nAP188B.4500.44C8     \
-        \                2      AIR-AP1832I-D-K9      188b.4500.44c8  188b.4501.7c60\
-        \  default location                  IN          9.4.57.164              \
-        \                   Registered    \r\nAP188B.4500.5EE8                   \
-        \  2      AIR-AP1852I-D-K9      188b.4500.5ee8  188b.4501.e4e0  default location\
-        \                  IN          9.4.57.167                                \
-        \ Registered    \r\nAPCC16.7EDB.4168                     2      AIR-AP2802I-D-K9\
-        \      cc16.7edb.4168  a0e0.af91.9e60  default location                  IN\
-        \          9.4.57.166                                 Registered"
+        - |-
+          Number of APs: 4
+          
+          AP Name                            Slots    AP Model              Ethernet MAC    Radio MAC       Location                          Country     IP Address                                 State         
+          -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+          AP002C.C862.E708                     2      AIR-AP1815I-A-K9      002c.c862.e708  002c.c88a.fd20  default location                  US          9.4.57.165                                 Registered    
+          AP188B.4500.44C8                     2      AIR-AP1832I-D-K9      188b.4500.44c8  188b.4501.7c60  default location                  IN          9.4.57.164                                 Registered    
+          AP188B.4500.5EE8                     2      AIR-AP1852I-D-K9      188b.4500.5ee8  188b.4501.e4e0  default location                  IN          9.4.57.167                                 Registered    
+          APCC16.7EDB.4168                     2      AIR-AP2802I-D-K9      cc16.7edb.4168  a0e0.af91.9e60  default location                  IN          9.4.57.166                                 Registered
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: vidya-ewlc-5#

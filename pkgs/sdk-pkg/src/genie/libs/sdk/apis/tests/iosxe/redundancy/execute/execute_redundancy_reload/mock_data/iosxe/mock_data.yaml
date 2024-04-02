@@ -14,13 +14,12 @@ configure_line:
   prompt: startrek-1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,10 +29,13 @@ execute:
       new_state: configure
     redundancy reload peer:
       response:
-      - "Stack is in Half ring setup; Reloading a switch might cause stack split\r\
-        \nReload peer [confirm]\r\nPreparing to reload peer\n"
+        - |
+          Stack is in Half ring setup; Reloading a switch might cause stack split
+          Reload peer [confirm]
+          Preparing to reload peer
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: startrek-1#

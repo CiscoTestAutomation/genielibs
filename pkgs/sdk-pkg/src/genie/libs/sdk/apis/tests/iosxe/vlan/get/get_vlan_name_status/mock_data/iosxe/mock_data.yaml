@@ -1,0 +1,125 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: HA-9400-S2(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: HA-9400-S2(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    show vlan:
+      response:
+      - "\r\nVLAN Name                             Status    Ports\r\n---- --------------------------------\
+        \ --------- -------------------------------\r\n1    default              \
+        \            active    Te2/3/0/2, Te2/3/0/3, Te2/3/0/4\r\n               \
+        \                                 Te2/3/0/5, Te2/3/0/6, Te2/3/0/7\r\n    \
+        \                                            Te2/3/0/8, Fo2/3/0/9, Fo2/3/0/10\r\
+        \n                                                Ap2/3/0/1, Gi2/7/0/1, Gi2/7/0/2\r\
+        \n                                                Gi2/7/0/3, Gi2/7/0/4, Gi2/7/0/5\r\
+        \n                                                Gi2/7/0/6, Gi2/7/0/7, Gi2/7/0/8\r\
+        \n                                                Gi2/7/0/9, Gi2/7/0/10\r\n\
+        \                                                Gi2/7/0/11, Gi2/7/0/12\r\n\
+        \                                                Gi2/7/0/13, Gi2/7/0/14\r\n\
+        \                                                Gi2/7/0/15, Gi2/7/0/16\r\n\
+        \                                                Gi2/7/0/17, Gi2/7/0/18\r\n\
+        \                                                Gi2/7/0/19, Gi2/7/0/20\r\n\
+        \                                                Gi2/7/0/21, Gi2/7/0/22\r\n\
+        \                                                Gi2/7/0/23, Gi2/7/0/24\r\n\
+        \                                                Gi2/7/0/25, Gi2/7/0/26\r\n\
+        \                                                Gi2/7/0/27, Gi2/7/0/28\r\n\
+        \                                                Gi2/7/0/29, Gi2/7/0/30\r\n\
+        \                                                Gi2/7/0/31, Gi2/7/0/32\r\n\
+        \                                                Gi2/7/0/33, Gi2/7/0/34\r\n\
+        \                                                Gi2/7/0/35, Gi2/7/0/36\r\n\
+        \r\nVLAN Name                             Status    Ports\r\n---- --------------------------------\
+        \ --------- -------------------------------\r\n                          \
+        \                      Gi2/7/0/37, Gi2/7/0/38\r\n                        \
+        \                        Gi2/7/0/39, Gi2/7/0/40\r\n                      \
+        \                          Gi2/7/0/41, Gi2/7/0/42\r\n                    \
+        \                            Gi2/7/0/43, Gi2/7/0/44\r\n                  \
+        \                              Gi2/7/0/45, Gi2/7/0/46\r\n                \
+        \                                Gi2/7/0/47, Gi2/7/0/48\r\n2    VLAN0002 \
+        \                        active    \r\n4    VLAN0004                     \
+        \    active    \r\n5    VLAN0005                         active    \r\n10\
+        \   VLAN0010                         active    \r\n12   VLAN0012         \
+        \                active    \r\n20   VLAN0020                         active\
+        \    \r\n30   VLAN0030                         active    \r\n40   VLAN0040\
+        \                         active    \r\n55   VLAN0055                    \
+        \     active    \r\n68   VLAN0068                         active    \r\n100\
+        \  VLAN0100                         active    \r\n101  VLAN0101          \
+        \               active    \r\n200  VLAN0200                         active\
+        \    \r\n300  VLAN0300                         active    \r\n1002 fddi-default\
+        \                     act/unsup \r\n1003 trcrf-default                   \
+        \ act/unsup \r\n1004 fddinet-default                  act/unsup \r\n\r\nVLAN\
+        \ Name                             Status    Ports\r\n---- --------------------------------\
+        \ --------- -------------------------------\r\n1005 trbrf-default        \
+        \            act/unsup \r\n\r\nVLAN Type  SAID       MTU   Parent RingNo BridgeNo\
+        \ Stp  BrdgMode Trans1 Trans2\r\n---- ----- ---------- ----- ------ ------\
+        \ -------- ---- -------- ------ ------\r\n1    enet  100001     1500  -  \
+        \    -      -        -    -        0      0   \r\n2    enet  100002     1500\
+        \  -      -      -        -    -        0      0   \r\n4    enet  100004 \
+        \    1500  -      -      -        -    -        0      0   \r\n5    enet \
+        \ 100005     1500  -      -      -        -    -        0      0   \r\n10\
+        \   enet  100010     1500  -      -      -        -    -        0      0 \
+        \  \r\n12   enet  100012     1500  -      -      -        -    -        0\
+        \      0   \r\n20   enet  100020     1500  -      -      -        -    - \
+        \       0      0   \r\n30   enet  100030     1500  -      -      -       \
+        \ -    -        0      0   \r\n40   enet  100040     1500  -      -      -\
+        \        -    -        0      0   \r\n55   enet  100055     1500  -      -\
+        \      -        -    -        0      0   \r\n68   enet  100068     1500  -\
+        \      -      -        -    -        0      0   \r\n100  enet  100100    \
+        \ 1500  -      -      -        -    -        0      0   \r\n101  enet  100101\
+        \     1500  -      -      -        -    -        0      0   \r\n200  enet\
+        \  100200     1500  -      -      -        -    -        0      0   \r\n300\
+        \  enet  100300     1500  -      -      -        -    -        0      0  \
+        \ \r\n1002 fddi  101002     1500  -      -      -        -    -        0 \
+        \     0   \r\n1003 trcrf 101003     4472  1005   3276   -        -    srb\
+        \      0      0   \r\n1004 fdnet 101004     1500  -      -      -        ieee\
+        \ -        0      0   \r\n1005 trbrf 101005     4472  -      -      15   \
+        \    ibm  -        0      0   \r\n\r\nVLAN Name                          \
+        \   Status    Ports\r\n---- -------------------------------- --------- -------------------------------\r\
+        \n\r\n\r\nVLAN AREHops STEHops Backup CRF\r\n---- ------- ------- ----------\r\
+        \n1003 7       7       off\r\n\r\nRemote SPAN VLANs\r\n------------------------------------------------------------------------------\r\
+        \n\r\n\r\nPrimary Secondary Type              Ports\r\n------- --------- -----------------\
+        \ ------------------------------------------"
+      response_type: circular
+    show vrf:
+      response:
+      - "  Name                             Default RD            Protocols   Interfaces\r\
+        \n  Mgmt-vrf                         <not set>             ipv4,ipv6   Gi0/0\r\
+        \n  blue                             2:2                   ipv4,ipv6   Vl201\r\
+        \n                                                                     Vl202\r\
+        \n                                                                     Vl902\r\
+        \n                                                                     Lo12\r\
+        \n                                                                     Vl300\r\
+        \n  vrf_10                           <not set>                         Vl10\r\
+        \n  vrf_11                           <not set>                         Vl11\r\
+        \n\r\n  Platform iVRF Name               iVRF Id               Interfaces\r\
+        \n  __Platform_iVRF:_ID00_           0                     LI28/2"
+      response_type: circular
+    term length 0: ''
+    term width 0: ''
+    show version | include operating mode: ''
+  prompt: HA-9400-S2#

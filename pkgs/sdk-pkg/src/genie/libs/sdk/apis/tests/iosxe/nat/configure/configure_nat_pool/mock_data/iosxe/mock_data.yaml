@@ -3,10 +3,10 @@ configure:
     address 2.2.2.1 2.2.2.10: "address 2.2.2.1 2.2.2.10\r\n"
     end:
       new_state: execute
-    ip nat pool outside_pool 4.4.4.4 4.5.5.5 netmask 255.0.0.0: "ip nat pool outside_pool\
-      \ 4.4.4.4 4.5.5.5 netmask 255.0.0.0\r\n"
-    ip nat pool outside_pool1 4.4.4.4 4.5.5.5 prefix-length 8: "ip nat pool outside_pool1\
-      \ 4.4.4.4 4.5.5.5 prefix-length 8\r\n"
+    ip nat pool outside_pool 4.4.4.4 4.5.5.5 netmask 255.0.0.0: "ip nat pool outside_pool
+      4.4.4.4 4.5.5.5 netmask 255.0.0.0\r\n"
+    ip nat pool outside_pool1 4.4.4.4 4.5.5.5 prefix-length 8: "ip nat pool outside_pool1
+      4.4.4.4 4.5.5.5 prefix-length 8\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''
@@ -19,13 +19,12 @@ configure_line:
   prompt: stack3-nyquist-1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -36,4 +35,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: stack3-nyquist-1#

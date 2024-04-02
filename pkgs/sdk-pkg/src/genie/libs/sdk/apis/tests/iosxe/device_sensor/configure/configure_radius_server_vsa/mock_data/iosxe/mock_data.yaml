@@ -5,10 +5,10 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-    radius-server vsa send accounting nas-port protocol pppoa vsa1: "radius-server\
-      \ vsa send accounting nas-port protocol p\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b$er vsa\
-      \ send accounting nas-port protocol pp         \b\b\b\b\b\b\b\b\bpoa vsa1\r\n"
+    radius-server vsa send accounting nas-port protocol pppoa vsa1: "radius-server
+      vsa send accounting nas-port protocol p\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b$er vsa
+      send accounting nas-port protocol pp         \b\b\b\b\b\b\b\b\bpoa vsa1\r\n"
   prompt: 9500H_SVL_W0607(config)#
 configure_line:
   commands:
@@ -18,13 +18,12 @@ configure_line:
   prompt: 9500H_SVL_W0607(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -35,4 +34,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: 9500H_SVL_W0607#

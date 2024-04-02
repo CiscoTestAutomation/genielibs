@@ -14,13 +14,12 @@ configure_line:
   prompt: PE2(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,10 +29,14 @@ execute:
       new_state: configure
     show platform software fed switch active mpls summary | include LSPA:
       response:
-      - "    MAX LSPA entries: 8192\r\n    Num of LSPA entries allocated: 1/8192\r\
-        \n    LSPA out-of-resource errors: 0\r\n    LSPA general errors: 0"
+        - |2-
+              MAX LSPA entries: 8192
+              Num of LSPA entries allocated: 1/8192
+              LSPA out-of-resource errors: 0
+              LSPA general errors: 0
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: PE2#

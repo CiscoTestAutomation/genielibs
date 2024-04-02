@@ -4,12 +4,12 @@ configure:
       new_state: execute
     line console 0:
       new_state: configure_line
-    no diagnostic monitor threshold switch 2 test 6 failure count 4: "no diagnostic\
-      \ monitor threshold switch 2 test 6 fa\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b$ic monitor threshold\
-      \ switch 2 test 6 fai         \b\b\b\b\b\b\b\b\blure coun\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b threshold switch 2 test 6 failure count         \b\b\b\b\b\b\b\b\b 4\r\n"
+    no diagnostic monitor threshold switch 2 test 6 failure count 4: "no diagnostic
+      monitor threshold switch 2 test 6 fa\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b$ic monitor threshold
+      switch 2 test 6 fai         \b\b\b\b\b\b\b\b\blure coun\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      threshold switch 2 test 6 failure count         \b\b\b\b\b\b\b\b\b 4\r\n"
     no logging console: ''
   prompt: Nyquist-9300-Stack(config)#
 configure_line:
@@ -20,13 +20,12 @@ configure_line:
   prompt: Nyquist-9300-Stack(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -37,4 +36,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: Nyquist-9300-Stack#

@@ -505,3 +505,172 @@ def get_software_version(device, return_tuple:bool=False):
         return tuple(ver)
     else:
         return ver
+
+def get_standby_supervisor_slot(device):
+    """Gets the standby supervisor slot number
+    Args:
+        device (obj): Device object
+    Returns:
+        int: standby supervisor slot number if present and in ha-standby state, 0 otherwise 
+    """
+    try:
+        out = device.parse('show module')
+    except SubCommandFailure as e:
+        log.info('Failed to get slot model: {e}'.format(e=e))
+        return None
+ 
+    return out.q.contains('.*Supervisor Module', 
+                          regex=True).\
+                    contains_key_value('status', 
+                                       'ha-standby', 
+                                       value_regex=True).\
+                    get_values('rp')
+
+
+def get_active_supervisor_slot(device):
+    """Gets the active supervisor slot number
+    Args:
+        device (obj): Device object
+    Returns:
+        int: active supervisor slot number 
+    """
+
+    try:
+        out = device.parse('show module')
+    except SubCommandFailure as e:
+        log.info('Failed to get slot model: {e}'.format(e=e))
+        return None
+ 
+    return out.q.contains('.*Supervisor Module', 
+                          regex=True).\
+                    contains_key_value('status', 
+                                       'active', 
+                                       value_regex=True).\
+                    get_values('rp')
+
+
+def get_slots_by_state(device, status='ok|active|ha-standby'):
+    """Gets the module list which match the given state/status
+    Args:
+        device (obj): Device object
+        status (str): Module status to get the slot/module number. Default to ok|active|ha-standby state
+    Returns:
+        dict: Dictionary mapped with slot number to state/status
+    """
+        
+    try:
+        out = device.parse('show module')
+    except SubCommandFailure as e:
+        log.info('Failed to get slot model: {e}'.format(e=e))
+        return None
+    
+    slots = Dq(out).contains('status').\
+                            contains_key_value('status',
+                                                   status,
+                                                   value_regex=True).\
+                            get_values('lc')
+    
+    slots.extend(Dq(out).contains('status').\
+                            contains_key_value('status',
+                                                   status,
+                                                   value_regex=True).\
+                            get_values('rp'))
+    
+    slots.extend(Dq(out).contains('status').\
+                            contains_key_value('status',
+                                                   status,
+                                                   value_regex=True).\
+                            get_values('lem'))
+    
+    return slots 
+    
+
+def get_fm_slots(device, status='ok'):
+    """Gets the list of fabric slot which are in given state
+    Args:
+        device (obj): Device object
+        status (str): FM status to get the fm list. Default to 'ok'
+    Returns:
+        list: Fabric Module list which matches the given state/status
+    """
+
+    try:
+        out = device.parse('show module')
+    except SubCommandFailure as e:
+        log.info('Failed to get slot model: {e}'.format(e=e))
+        return None
+    
+    return out.q.contains('.* Fabric Module', 
+                          regex=True, level=-1).\
+                    contains_key_value('status', 
+                                   status,
+                                   value_regex=True).\
+                    get_values('lc')
+
+
+def get_lc_slots(device, status='ok'):
+    """Gets the list of line card slots (but not Fabric/Supervisor/controller) which are in given state
+    Args:
+        device (obj): Device object
+        status (str): Linde card state to retrive. Default to 'ok'
+    Returns:
+        list: Line Module list which matches the given state/status
+    """
+    slots = []
+    try:
+        out = device.parse('show module')
+    except SubCommandFailure as e:
+        log.info('Failed to get slot model: {e}'.format(e=e))
+        return None
+ 
+    slots = out.q.not_contains('.* Fabric Module', 
+                          regex=True, level=2).\
+                    contains_key_value('status', 
+                                   status,
+                                   value_regex=True).\
+                    get_values('lc')
+    
+    slots.extend(Dq(out).contains('status').\
+                            contains_key_value('status',
+                                               status,value_regex=True).\
+                            get_values('lem')) 
+
+
+    return slots 
+
+
+def get_current_boot_image(device):
+    """Gets the current boot image name from show boot cli
+    Args:
+        device (obj): Device object
+        
+    Returns:
+        str: current boot image name or empty
+    """
+    try:
+        out = device.parse('show boot')
+    except SubCommandFailure as e:
+        log.info('Failed to get slot model: {e}'.format(e=e))
+        return None
+ 
+    image = out.q.contains('current_boot_variable').get_values('system_variable')[0]
+    
+    return image.strip('bootflash:/') if image else ''
+
+def get_next_reload_boot_image(device):
+    """Gets the next reload boot image from show boot cli
+    Args:
+        device (obj): Device object
+        
+    Returns:
+        str: next reload boot image or empty
+    """
+    try:
+        out = device.parse('show boot')
+    except SubCommandFailure as e:
+        log.info('Failed to get slot model: {e}'.format(e=e))
+        return None
+ 
+    image = out.q.contains('next_reload_boot_variable').get_values('system_variable')[0]
+    
+    return image.strip('bootflash:/') if image else ''

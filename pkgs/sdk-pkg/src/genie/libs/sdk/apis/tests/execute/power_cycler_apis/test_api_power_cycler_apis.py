@@ -323,3 +323,68 @@ devices:
                 call('power outlets 7 off', reply=ANY),
             ]
             self.assertEqual(self.server.execute.call_args_list, expected_calls)
+
+
+class TestExecutePowerCyclerApis__6(unittest.TestCase):
+    @classmethod
+    def setUpClass(self):
+        testbed = """
+devices:
+  FW-9800-7:
+    connections:
+      defaults:
+        class: unicon.Unicon
+      a:
+        command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
+        protocol: unknown
+    peripherals:
+      power_cycler:
+        - type: raritan-px2
+          connection_type: snmp
+          read_community: public
+          write_community: private
+          host: 127.0.0.1
+          outlets: [11]
+          proxy: proxy
+    os: iosxe
+    platform: c9800
+    type: c9800
+  proxy:
+      os: linux
+      connections:
+          a:
+              command: mock_device_cli --os linux --mock_data_dir mock_data --state connect
+              protocol: telnet
+      credentials:
+         default:
+             username: test
+             password: test
+testbed:
+  servers:
+    proxy:
+      address: 10.1.1.1
+      credentials:
+        default:
+          password: test
+          username: test
+        enable:
+          password: ''
+      path: /
+      protocol: scp
+        """
+        self.testbed = loader.load(testbed)
+        self.device = self.testbed.devices["FW-9800-7"]
+
+    def test_execute_power_cycle_device(self):
+        with patch(
+            "genie.libs.sdk.powercycler.snmp_client.SNMPClient.snmp_set"
+        ) as set_mock, patch("time.sleep"):
+            with patch(
+            "genie.libs.sdk.apis.utils.get_remote_ip"
+        ) as set_mock_1, patch("time.sleep"):
+                self.device.api.execute_power_cycle_device()
+                expected_calls = [
+                    call(oid='1.3.6.1.4.1.13742.6.4.1.2.1.2.1.11', value=0, type='Integer'),
+                    call(oid='1.3.6.1.4.1.13742.6.4.1.2.1.2.1.11', value=1, type='Integer')
+                ]
+                self.assertEqual(set_mock.call_args_list, expected_calls)

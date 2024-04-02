@@ -14,13 +14,12 @@ configure_line:
   prompt: PI-9300-Stack-103(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,16 +29,24 @@ execute:
       new_state: configure
     install label 1 description "base_label_description":
       response:
-      - "install_add_label: START Sun Aug  7 12:37:55 UTC 2022\r\n--- Starting install_add_label\
-        \ ---\r\nPerforming install_add_label on all members\r\n  [1] install_add_label\
-        \ package(s) on switch 1\r\n  [1] Finished install_add_label on switch 1\r\
-        \n  [2] install_add_label package(s) on switch 2\r\n  [2] Finished install_add_label\
-        \ on switch 2\r\n  [3] install_add_label package(s) on switch 3\r\n  [3] Finished\
-        \ install_add_label on switch 3\r\nChecking status of install_add_label on\
-        \ [1 2 3]\r\ninstall_add_label: Passed on [1 2 3]\r\nFinished install_add_label\r\
-        \n\r\nSUCCESS: install_add_label  Sun Aug  7 12:38:00 UTC 2022"
+        - |-
+          install_add_label: START Sun Aug  7 12:37:55 UTC 2022
+          --- Starting install_add_label ---
+          Performing install_add_label on all members
+            [1] install_add_label package(s) on switch 1
+            [1] Finished install_add_label on switch 1
+            [2] install_add_label package(s) on switch 2
+            [2] Finished install_add_label on switch 2
+            [3] install_add_label package(s) on switch 3
+            [3] Finished install_add_label on switch 3
+          Checking status of install_add_label on [1 2 3]
+          install_add_label: Passed on [1 2 3]
+          Finished install_add_label
+          
+          SUCCESS: install_add_label  Sun Aug  7 12:38:00 UTC 2022
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: PI-9300-Stack-103#

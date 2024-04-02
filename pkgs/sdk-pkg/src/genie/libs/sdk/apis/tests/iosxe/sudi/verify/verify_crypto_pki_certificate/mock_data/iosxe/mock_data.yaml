@@ -14,13 +14,12 @@ configure_line:
   prompt: Switch(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,42 +29,84 @@ execute:
       new_state: configure
     show crypto pki certificates CISCO_IDEVID_SUDI:
       response:
-      - "Certificate\r\n  Status: Available\r\n  Certificate Serial Number (hex):\
-        \ 01261621585811131420\r\n  Certificate Usage: General Purpose\r\n  Issuer:\
-        \ \r\n    cn=Cisco Manufacturing CA III\r\n    o=Cisco\r\n  Subject:\r\n \
-        \   Name: C9600-SUP-1-70b3171eae00\r\n    Serial Number: PID:C9600-SUP-1 SN:CAT2239L08K\r\
-        \n    serialNumber=PID:C9600-SUP-1 SN:CAT2239L08K\r\n    cn=C9600-SUP-1-70b3171eae00\r\
-        \n  CRL Distribution Points: \r\n    http://www.cisco.com/security/pki/crl/cmca3.crl\r\
-        \n  Validity Date: \r\n    start date: 10:03:50 UTC Sep 22 2021\r\n    end\
-        \   date: 19:19:27 UTC May 26 2099\r\n  Associated Trustpoints: CISCO_IDEVID_SUDI\
-        \ \r\n\r\nCA Certificate\r\n  Status: Available\r\n  Certificate Serial Number\
-        \ (hex): 04302A0B364CE2DA93\r\n  Certificate Usage: Signature\r\n  Issuer:\
-        \ \r\n    cn=Cisco Basic Assurance Root CA 2099\r\n    o=Cisco\r\n  Subject:\
-        \ \r\n    cn=Cisco Manufacturing CA III\r\n    o=Cisco\r\n  CRL Distribution\
-        \ Points: \r\n    http://www.cisco.com/security/pki/crl/cbarc2099.crl\r\n\
-        \  Validity Date: \r\n    start date: 19:28:06 UTC Jul 5 2017\r\n    end \
-        \  date: 19:19:28 UTC May 26 2099\r\n  Associated Trustpoints: CISCO_IDEVID_SUDI\
-        \ Trustpool"
+        - |-
+          Certificate
+            Status: Available
+            Certificate Serial Number (hex): 01261621585811131420
+            Certificate Usage: General Purpose
+            Issuer: 
+              cn=Cisco Manufacturing CA III
+              o=Cisco
+            Subject:
+              Name: C9600-SUP-1-70b3171eae00
+              Serial Number: PID:C9600-SUP-1 SN:CAT2239L08K
+              serialNumber=PID:C9600-SUP-1 SN:CAT2239L08K
+              cn=C9600-SUP-1-70b3171eae00
+            CRL Distribution Points: 
+              http://www.cisco.com/security/pki/crl/cmca3.crl
+            Validity Date: 
+              start date: 10:03:50 UTC Sep 22 2021
+              end   date: 19:19:27 UTC May 26 2099
+            Associated Trustpoints: CISCO_IDEVID_SUDI 
+          
+          CA Certificate
+            Status: Available
+            Certificate Serial Number (hex): 04302A0B364CE2DA93
+            Certificate Usage: Signature
+            Issuer: 
+              cn=Cisco Basic Assurance Root CA 2099
+              o=Cisco
+            Subject: 
+              cn=Cisco Manufacturing CA III
+              o=Cisco
+            CRL Distribution Points: 
+              http://www.cisco.com/security/pki/crl/cbarc2099.crl
+            Validity Date: 
+              start date: 19:28:06 UTC Jul 5 2017
+              end   date: 19:19:28 UTC May 26 2099
+            Associated Trustpoints: CISCO_IDEVID_SUDI Trustpool
       response_type: circular
     show crypto pki certificates CISCO_IDEVID_SUDI_LEGACY:
       response:
-      - "Certificate\r\n  Status: Available\r\n  Certificate Serial Number (hex):\
-        \ 14A9E4240000001CECE8\r\n  Certificate Usage: General Purpose\r\n  Issuer:\
-        \ \r\n    cn=Cisco Manufacturing CA SHA2\r\n    o=Cisco\r\n  Subject:\r\n\
-        \    Name: C9600-SUP-1-70b3171eae00\r\n    Serial Number: PID:C9600-SUP-1\
-        \ SN:CAT2239L08K\r\n    cn=C9600-SUP-1-70b3171eae00\r\n    serialNumber=PID:C9600-SUP-1\
-        \ SN:CAT2239L08K\r\n  CRL Distribution Points: \r\n    http://www.cisco.com/security/pki/crl/cmca2.crl\r\
-        \n  Validity Date: \r\n    start date: 09:01:49 UTC Sep 22 2021\r\n    end\
-        \   date: 13:00:17 UTC Nov 12 2037\r\n  Associated Trustpoints: CISCO_IDEVID_SUDI_LEGACY\
-        \ \r\n\r\nCA Certificate\r\n  Status: Available\r\n  Certificate Serial Number\
-        \ (hex): 02\r\n  Certificate Usage: Signature\r\n  Issuer: \r\n    cn=Cisco\
-        \ Root CA M2\r\n    o=Cisco\r\n  Subject: \r\n    cn=Cisco Manufacturing CA\
-        \ SHA2\r\n    o=Cisco\r\n  CRL Distribution Points: \r\n    http://www.cisco.com/security/pki/crl/crcam2.crl\r\
-        \n  Validity Date: \r\n    start date: 13:50:58 UTC Nov 12 2012\r\n    end\
-        \   date: 13:00:17 UTC Nov 12 2037\r\n  Associated Trustpoints: CISCO_IDEVID_SUDI_LEGACY\
-        \ Trustpool"
+        - |-
+          Certificate
+            Status: Available
+            Certificate Serial Number (hex): 14A9E4240000001CECE8
+            Certificate Usage: General Purpose
+            Issuer: 
+              cn=Cisco Manufacturing CA SHA2
+              o=Cisco
+            Subject:
+              Name: C9600-SUP-1-70b3171eae00
+              Serial Number: PID:C9600-SUP-1 SN:CAT2239L08K
+              cn=C9600-SUP-1-70b3171eae00
+              serialNumber=PID:C9600-SUP-1 SN:CAT2239L08K
+            CRL Distribution Points: 
+              http://www.cisco.com/security/pki/crl/cmca2.crl
+            Validity Date: 
+              start date: 09:01:49 UTC Sep 22 2021
+              end   date: 13:00:17 UTC Nov 12 2037
+            Associated Trustpoints: CISCO_IDEVID_SUDI_LEGACY 
+          
+          CA Certificate
+            Status: Available
+            Certificate Serial Number (hex): 02
+            Certificate Usage: Signature
+            Issuer: 
+              cn=Cisco Root CA M2
+              o=Cisco
+            Subject: 
+              cn=Cisco Manufacturing CA SHA2
+              o=Cisco
+            CRL Distribution Points: 
+              http://www.cisco.com/security/pki/crl/crcam2.crl
+            Validity Date: 
+              start date: 13:50:58 UTC Nov 12 2012
+              end   date: 13:00:17 UTC Nov 12 2037
+            Associated Trustpoints: CISCO_IDEVID_SUDI_LEGACY Trustpool
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: Switch#

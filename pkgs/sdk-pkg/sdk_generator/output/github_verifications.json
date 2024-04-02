@@ -10073,6 +10073,15 @@
       },
       "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/apic/show_platform.py"
     },
+    "cheetah": {
+      "doc": "\n    Parser for\n        * show version\n    ",
+      "groups": [],
+      "schema": "{'version': {'model_number': <class 'str'>, 'top_assembly_serial_number': <class 'str'>, Optional  (str) radio_driver_version: <class 'str'>, 'radio_fw_version': <class 'str'>, 'ap_running_image': <class 'str'>, 'primary_boot_image': <class 'str'>, 'backup_boot_image': <class 'str'>, 'chassis': <class 'str'>, 'main_mem': <class 'str'>, 'os': <class 'str'>, 'processor_type': <class 'str'>, Optional  (str) bootloader_version: <class 'str'>, Optional  (str) bootloader_timestamp: <class 'str'>, 'multigigabit_eth_intf': <class 'int'>, Optional  (str) gigabit_eth_intf: <class 'int'>, '80211_radios': <class 'int'>, Optional  (str) uptime: <class 'str'>, Optional  (str) last_reload_time: <class 'str'>, Optional  (str) last_reload_reason: <class 'str'>, 'nss_fw_version': <class 'str'>, 'primary_boot_image_hash': <class 'str'>, 'backup_boot_image_hash': <class 'str'>, 'base_ethernet_mac': <class 'str'>, 'part_number': <class 'str'>, 'pcb_serial_number': <class 'str'>, 'top_assembly_part_number': <class 'str'>, 'top_revision_number': <class 'str'>, 'processor_board_id': <class 'str'>}}",
+      "source": {
+        "class": "genie.harness.base.Template"
+      },
+      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/cheetah/show_platform.py"
+    },
     "generic": {
       "doc": "Parser for show version",
       "groups": [],
@@ -10997,6 +11006,7 @@
     "c9500",
     "cat4k",
     "cat6k",
+    "cheetah",
     "gaia",
     "generic",
     "ios",

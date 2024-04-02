@@ -530,3 +530,136 @@ def configure_exec_prompt_timestamp(device,fline,lline):
 
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure Exec Prompt Print timestamps for show commands. Error:\n{e}")
+
+def configure_http_client_secure_trustpoint(device, trustpoint):
+    """ Configures ip http client secure-trustpoint SLA-TrustPoint
+        Example : ip http client secure-trustpoint SLA-TrustPoint
+
+        Args:
+            device ('obj'): device to use
+            trustpoint ('str') : trustpoint to configure
+        Returns:
+            None
+        Raises: 
+            SubCommandFailure
+    """
+    log.debug(f'Configuring ip http client secure-trustpoint {trustpoint} on {device.name}')
+    config = f'ip http client secure-trustpoint {trustpoint}'
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to configure ip http client secure-trustpoint  {trustpoint} on device {device.name}. Error:\n{e}')
+
+
+def unconfigure_http_client_secure_trustpoint(device, trustpoint):
+    """ Configures no ip http client secure-trustpoint SLA-TrustPoint
+        Example : no ip http client secure-trustpoint SLA-TrustPoint
+
+        Args:
+            device ('obj'): device to use
+            trustpoint ('str'): trustpoint to configure
+        Returns:
+            None
+        Raises: 
+            SubCommandFailure
+    """
+    log.debug(f'Unconfiguring ip http client secure-trustpoint {trustpoint} on  {device.name}')
+    config = f'no ip http client secure-trustpoint {trustpoint}'
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to unconfigure ip http client secure-trustpoint  {trustpoint} on device {device.name}. Error:\n{e}')
+
+def configure_license_smart_proxy(device, proxy_ip, proxy_port):
+    """ Configures proxy address and port
+        Example : license smart proxy address <proxy_ip>
+                  license smart proxy port <proxy_port>
+
+        Args:
+            device ('obj'): device to use
+            proxy_ip ('str'): proxy ip address to configure
+            proxy_port (int): proxy port to configure
+        Returns:
+            None
+        Raises: 
+            SubCommandFailure
+    """
+    log.debug(f'Unconfiguring license smart proxy address {proxy_ip} and {proxy_port} on  {device.name}')
+    config = [
+        f'license smart proxy address {proxy_ip}',
+        f'license smart proxy port {proxy_port}'
+    ]
+    
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to configure license smart proxy address {proxy_ip} and port {proxy_port} on device {device.name}. Error:\n{e}')
+
+def unconfigure_license_smart_proxy(device, proxy_ip, proxy_port):
+    """ Unconfigures proxy address and port
+        Example : no license smart proxy address <proxy_ip>
+                  no license smart proxy port <proxy_port>
+
+        Args:
+            device ('obj'): device to use
+            proxy_ip ('str'): proxy ip address to configure
+            proxy_port (int): proxy port to configure
+        Returns:
+            None
+        Raises: 
+            SubCommandFailure
+    """
+    log.debug(f'unconfiguring license smart proxy address {proxy_ip} and {proxy_port} on  {device.name}')
+    config = [
+        f'no license smart proxy address {proxy_ip}',
+        f'no license smart proxy port {proxy_port}'
+    ]
+    
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to unconfigure license smart proxy address {proxy_ip} and port {proxy_port} on device {device.name}. Error:\n{e}')
+
+def configure_http_secure_trustpoint(device, trustpoint):
+    """ Configures ip http secure-trustpoint
+        Example : ip http secure-trustpoint <trustpoint>
+
+        Args:
+            device ('obj'): device to use
+            trustpoint ('str'): trustpoint to configure
+        Returns:
+            None
+        Raises: 
+            SubCommandFailure
+    """
+    log.debug(f'Configures http secure-trustpoint {trustpoint} on  {device.name}')
+    config = f'ip http secure-trustpoint {trustpoint}'
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to configure ip http secure-trustpoint {trustpoint} on device {device.name}. Error:\n{e}')
+
+def unconfigure_http_secure_trustpoint(device, trustpoint):
+    """ Unconfigures ip http secure-trustpoint
+        Example : no ip http secure-trustpoint <trustpoint>
+
+        Args:
+            device ('obj'): device to use
+            trustpoint ('str'): trustpoint to configure
+        Returns:
+            None
+        Raises: 
+            SubCommandFailure
+    """
+    log.debug(f'Unconfigures http secure-trustpoint {trustpoint} on  {device.name}')
+    config = f'no ip http secure-trustpoint {trustpoint}'
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to unconfigure ip http secure-trustpoint {trustpoint} on device {device.name}. Error:\n{e}')

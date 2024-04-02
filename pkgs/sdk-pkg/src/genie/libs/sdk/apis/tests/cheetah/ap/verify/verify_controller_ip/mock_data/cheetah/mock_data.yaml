@@ -14,13 +14,12 @@ configure_line:
   prompt: AP188B.4500.5EE8(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,29 +29,42 @@ execute:
       new_state: configure
     show capwap client rcb:
       response:
-      - "AdminState                         : ADMIN_ENABLED\r\nOperationState    \
-        \                 : UP\r\nName                               : AP188B.4500.5EE8\r\
-        \nSwVer                              : 17.7.1.2\r\nHwVer                 \
-        \             : 1.0.0.0\r\nMwarApMgrIp                        : 9.4.62.51\r\
-        \nMwarName                           : vidya-ewlc-5\r\nMwarHwVer         \
-        \                 : 0.0.0.0\r\nLocation                           : default\
-        \ location\r\nApMode                             : Local\r\nApSubMode    \
-        \                      : Not Configured\r\nCAPWAP Path MTU               \
-        \     : 1485\r\nSoftware Initiated Reload Reason   : Controller Reload command\r\
-        \nCAPWAP Sliding Window\r\nActive Window Size                 : 1\r\nOOB Image\
-        \ Download                 : Enabled\r\nCAPWAP UDP-Lite                  \
-        \  : Enabled\r\nIP Prefer-mode                     : IPv4\r\nAP Link DTLS\
-        \ Encryption            : OFF\r\nAP TCP MSS Adjust                  : Enabled\r\
-        \nAP TCP MSS size                    : 1250\r\nLinkAuditing              \
-        \         : disabled\r\nAP Group Name                      : default-group\r\
-        \nCAPWAP Disconnect Reason:\r\n    Controller Last Sent: No value set\r\n\
-        Cisco Trustsec Config\r\n  AP Inline Tagging Mode            : Disabled\r\n\
-        \  AP Sgacl Enforcement              : Disabled\r\n  AP Override Status  \
-        \              : Disabled\r\nTotal Flash Writes Since Boot      : 631\r\n\
-        BLE Module Admin State             : Disabled\r\nHyperlocation Admin State\
-        \          : Disabled"
+        - |-
+          AdminState                         : ADMIN_ENABLED
+          OperationState                     : UP
+          Name                               : AP188B.4500.5EE8
+          SwVer                              : 17.7.1.2
+          HwVer                              : 1.0.0.0
+          MwarApMgrIp                        : 9.4.62.51
+          MwarName                           : vidya-ewlc-5
+          MwarHwVer                          : 0.0.0.0
+          Location                           : default location
+          ApMode                             : Local
+          ApSubMode                          : Not Configured
+          CAPWAP Path MTU                    : 1485
+          Software Initiated Reload Reason   : Controller Reload command
+          CAPWAP Sliding Window
+          Active Window Size                 : 1
+          OOB Image Download                 : Enabled
+          CAPWAP UDP-Lite                    : Enabled
+          IP Prefer-mode                     : IPv4
+          AP Link DTLS Encryption            : OFF
+          AP TCP MSS Adjust                  : Enabled
+          AP TCP MSS size                    : 1250
+          LinkAuditing                       : disabled
+          AP Group Name                      : default-group
+          CAPWAP Disconnect Reason:
+              Controller Last Sent: No value set
+          Cisco Trustsec Config
+            AP Inline Tagging Mode            : Disabled
+            AP Sgacl Enforcement              : Disabled
+            AP Override Status                : Disabled
+          Total Flash Writes Since Boot      : 631
+          BLE Module Admin State             : Disabled
+          Hyperlocation Admin State          : Disabled
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: AP188B.4500.5EE8#

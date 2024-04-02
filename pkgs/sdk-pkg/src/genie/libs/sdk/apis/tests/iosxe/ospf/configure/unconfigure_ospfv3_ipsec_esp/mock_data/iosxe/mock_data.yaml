@@ -4,9 +4,9 @@ configure:
       new_state: execute
     line console 0:
       new_state: configure_line
-    no area 0 encryption ipsec spi 25606 esp aes-cbc 128 1AAAA2BBBB3CCCC4DDDD5EEEE6FFFF78 md5 1AAAA2BBBB3CCCC4DDDD5EEEE6FFFF78: "no\
-      \ area 0 encryption ipsec spi 25606 esp aes-cbc 128 1AAAA2BBBB3CCCC4DDDD5EEEE6FFFF78\
-      \ md5 1AAAA2BBBB3CCCC4DDDD5EEEE6FFFF78\r\n"
+    no area 0 encryption ipsec spi 25606 esp aes-cbc 128 1AAAA2BBBB3CCCC4DDDD5EEEE6FFFF78 md5 1AAAA2BBBB3CCCC4DDDD5EEEE6FFFF78: "no
+      area 0 encryption ipsec spi 25606 esp aes-cbc 128 1AAAA2BBBB3CCCC4DDDD5EEEE6FFFF78
+      md5 1AAAA2BBBB3CCCC4DDDD5EEEE6FFFF78\r\n"
     no logging console: ''
     router ospfv3 1: "router ospfv3 1\r\n"
   prompt: PE-B(config)#
@@ -18,13 +18,12 @@ configure_line:
   prompt: PE-B(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -35,4 +34,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: PE-B#

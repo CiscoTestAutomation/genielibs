@@ -14,13 +14,12 @@ configure_line:
   prompt: R1_xe(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,51 +29,47 @@ execute:
       new_state: configure
     show processes cpu sorted | exclude 0.00%:
       response:
-      - "CPU utilization for five seconds: 14%/0%; one minute: 11%; five minutes:\
-        \ 12%\r\n PID Runtime(ms)     Invoked      uSecs   5Sec   1Min   5Min TTY\
-        \ Process \r\n 678   442307317  2173328658          0  4.71%  4.17%  4.26%\
-        \   0 IP SLAs XOS Even \r\n 742     6123522      181465      33745  0.87%\
-        \  0.09%  0.05%   0 BGP Scanner      \r\n 682    67752210   453203915    \
-        \    149  0.71%  0.59%  0.60%   0 MFIB_mrib_write  \r\n 133    72209857  \
-        \ 556237539        129  0.63%  0.66%  0.66%   0 L2 LISP Punt Pro \r\n 203\
-        \    19531883    95532769        204  0.55%  0.22%  0.21%   0 IGMP Input \
-        \      \r\n 687    45493344   206743551        220  0.47%  0.41%  0.45%  \
-        \ 0 PIM Process      \r\n 224    36442081   284285445        128  0.47%  0.34%\
-        \  0.34%   0 IP ARP Retry Age \r\n 727    15708919    16187332        970\
-        \  0.31%  0.18%  0.16%   0 EIGRP-IPv6 Hello \r\n 728    15893193    16185985\
-        \        981  0.31%  0.17%  0.16%   0 EIGRP-IPv6 Hello \r\n 452    25999869\
-        \   146047290        178  0.31%  0.27%  0.26%   0 MMA DB TIMER     \r\n  84\
-        \    16399599     9783302       1676  0.31%  0.16%  0.16%   0 IOSD ipc task\
-        \    \r\n 221    38346198   284285673        134  0.31%  0.30%  0.33%   0\
-        \ IPAM Manager     \r\n 688    14255458    93941867        151  0.23%  0.13%\
-        \  0.13%   0 Mwheel Process   \r\n 670    16003796    46715522        342\
-        \  0.23%  0.15%  0.16%   0 ONEP Network Ele \r\n 212    26225006   146050368\
-        \        179  0.23%  0.24%  0.26%   0 VRRS Main thread \r\n 225     8528856\
-        \    11952555        713  0.15%  0.09%  0.08%   0 IP Input         \r\n 713\
-        \     9929659     8584878       1156  0.15%  0.10%  0.10%   0 LDP Hello  \
-        \      \r\n  94     5804673     4701659       1234  0.15%  0.07%  0.08%  \
-        \ 0 PuntInject Keepa \r\n 735     4658824     6100097        763  0.07%  0.05%\
-        \  0.05%   0 RIP Send         \r\n 748     2859116    10111967        282\
-        \  0.07%  0.02%  0.01%   0 MSDP Process     \r\n 723     3835863     4068732\
-        \        942  0.07%  0.04%  0.05%   0 EIGRP-IPv4 Hello \r\n 736     5235555\
-        \     7040423        743  0.07%  0.05%  0.05%   0 RIP Timers       \r\n 676\
-        \    15995058    47194375        338  0.07%  0.15%  0.15%   0 PIM IPv6   \
-        \      \r\n 660     4592525    18767239        244  0.07%  0.04%  0.05%  \
-        \ 0 SBC main process \r\n 245     5225383    36762708        142  0.07%  0.05%\
-        \  0.05%   0 SSS Feature Time \r\n 725     3837857     4068360        943\
-        \  0.07%  0.04%  0.05%   0 EIGRP-IPv4 Hello \r\n 731     4765819     4301071\
-        \       1108  0.07%  0.05%  0.05%   0 ISIS Adj test1   \r\n 669     4104366\
-        \     3758577       1091  0.07%  0.04%  0.05%   0 DiagCard1/-1     \r\n 532\
-        \     7772484     7488904       1037  0.07%  0.09%  0.09%   0 LLDP Protocol\
-        \    \r\n 107    13243789    93893068        141  0.07%  0.14%  0.14%   0\
-        \ 100ms check      \r\n 388     1857408     6557668        283  0.07%  0.02%\
-        \  0.01%   0 NTP              \r\n 729     4748581     4301008       1104\
-        \  0.07%  0.05%  0.06%   0 ISIS Adj test    \r\n 254     9925226    72782223\
-        \        136  0.07%  0.08%  0.07%   0 Tunnel BGP       \r\n  77     4878971\
-        \     8208778        594  0.07%  0.05%  0.03%   0 Net Background   \r\n 675\
-        \     9941128    37888892        262  0.07%  0.10%  0.08%   0 MLD"
+        - |-
+          CPU utilization for five seconds: 14%/0%; one minute: 11%; five minutes: 12%
+           PID Runtime(ms)     Invoked      uSecs   5Sec   1Min   5Min TTY Process 
+           678   442307317  2173328658          0  4.71%  4.17%  4.26%   0 IP SLAs XOS Even 
+           742     6123522      181465      33745  0.87%  0.09%  0.05%   0 BGP Scanner      
+           682    67752210   453203915        149  0.71%  0.59%  0.60%   0 MFIB_mrib_write  
+           133    72209857   556237539        129  0.63%  0.66%  0.66%   0 L2 LISP Punt Pro 
+           203    19531883    95532769        204  0.55%  0.22%  0.21%   0 IGMP Input       
+           687    45493344   206743551        220  0.47%  0.41%  0.45%   0 PIM Process      
+           224    36442081   284285445        128  0.47%  0.34%  0.34%   0 IP ARP Retry Age 
+           727    15708919    16187332        970  0.31%  0.18%  0.16%   0 EIGRP-IPv6 Hello 
+           728    15893193    16185985        981  0.31%  0.17%  0.16%   0 EIGRP-IPv6 Hello 
+           452    25999869   146047290        178  0.31%  0.27%  0.26%   0 MMA DB TIMER     
+            84    16399599     9783302       1676  0.31%  0.16%  0.16%   0 IOSD ipc task    
+           221    38346198   284285673        134  0.31%  0.30%  0.33%   0 IPAM Manager     
+           688    14255458    93941867        151  0.23%  0.13%  0.13%   0 Mwheel Process   
+           670    16003796    46715522        342  0.23%  0.15%  0.16%   0 ONEP Network Ele 
+           212    26225006   146050368        179  0.23%  0.24%  0.26%   0 VRRS Main thread 
+           225     8528856    11952555        713  0.15%  0.09%  0.08%   0 IP Input         
+           713     9929659     8584878       1156  0.15%  0.10%  0.10%   0 LDP Hello        
+            94     5804673     4701659       1234  0.15%  0.07%  0.08%   0 PuntInject Keepa 
+           735     4658824     6100097        763  0.07%  0.05%  0.05%   0 RIP Send         
+           748     2859116    10111967        282  0.07%  0.02%  0.01%   0 MSDP Process     
+           723     3835863     4068732        942  0.07%  0.04%  0.05%   0 EIGRP-IPv4 Hello 
+           736     5235555     7040423        743  0.07%  0.05%  0.05%   0 RIP Timers       
+           676    15995058    47194375        338  0.07%  0.15%  0.15%   0 PIM IPv6         
+           660     4592525    18767239        244  0.07%  0.04%  0.05%   0 SBC main process 
+           245     5225383    36762708        142  0.07%  0.05%  0.05%   0 SSS Feature Time 
+           725     3837857     4068360        943  0.07%  0.04%  0.05%   0 EIGRP-IPv4 Hello 
+           731     4765819     4301071       1108  0.07%  0.05%  0.05%   0 ISIS Adj test1   
+           669     4104366     3758577       1091  0.07%  0.04%  0.05%   0 DiagCard1/-1     
+           532     7772484     7488904       1037  0.07%  0.09%  0.09%   0 LLDP Protocol    
+           107    13243789    93893068        141  0.07%  0.14%  0.14%   0 100ms check      
+           388     1857408     6557668        283  0.07%  0.02%  0.01%   0 NTP              
+           729     4748581     4301008       1104  0.07%  0.05%  0.06%   0 ISIS Adj test    
+           254     9925226    72782223        136  0.07%  0.08%  0.07%   0 Tunnel BGP       
+            77     4878971     8208778        594  0.07%  0.05%  0.03%   0 Net Background   
+           675     9941128    37888892        262  0.07%  0.10%  0.08%   0 MLD
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: R1_xe#

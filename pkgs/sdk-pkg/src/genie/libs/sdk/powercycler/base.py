@@ -60,13 +60,32 @@ class PowerCycler(metaclass=PowerCyclerMeta):
         return super().__new__(cls)
 
     def __init__(self, host, type, connection_type, pc_delay=0.5,
-                 log=log, *args, **kwargs):
+                 log=log, testbed=None, device=None, proxy=None, *args, **kwargs):
+        """
+        Constructs all the necessary attributes for the powercycler object.
+
+        Parameters
+        ----------
+            host ('str'): powercycler ip.
+            type ('str'): type of powercycler.
+            proxy ('str'): proxy to be used for connection.
+            pc_delay(int): powercycler delay. Default to 0.5.
+            log('obj'): log object.
+            testbed('obj'): testbed object.
+            device('obj'): device object.
+        """
 
         self.host = host
         self.type = type
+        self.proxy = proxy
         self.connection_type = connection_type
         self.pc_delay = pc_delay
         self.log = log
+        self.testbed = testbed
+        self.device = device
+        self.proxy_dev = None
+        self.proxy_port = None
+        self.socat_pid = None
 
     def connect(self):
         raise NotImplementedError
@@ -79,6 +98,32 @@ class PowerCycler(metaclass=PowerCyclerMeta):
 
     def get_state(self, *outlets):
         raise NotImplementedError
+
+    def disconnect(self):
+        """
+        Disconnect from pc and socat
+        """
+        if self.proxy_dev and self.socat_pid:
+            # Stop the socat relay process
+            self.proxy_dev.api.stop_socat_relay(self.socat_pid)
+            # disconnect from pc
+            self.proxy_dev.disconnect()
+
+    def proxy_connect(self):
+        """
+        To connect via proxy
+        """
+        self.proxy_dev = self.testbed.devices.get(self.proxy) or \
+            self.device.api.convert_server_to_linux_device(self.proxy) \
+                if self.testbed.servers.get(self.proxy) else None
+        if self.proxy_dev:
+            self.proxy_dev.connect()
+            self.proxy_port, self.socat_pid = self.proxy_dev.api.start_socat_relay(self.host, self.port, protocol='UDP4')
+            host = self.proxy_dev.api.get_remote_ip()
+            port = self.proxy_port
+            return host, port
+        else:
+            raise ValueError(f'Invalid proxy {self.proxy} for powercycler {self}')
 
 
 class BaseSNMPPowerCycler(PowerCycler):
@@ -101,10 +146,16 @@ class BaseSNMPPowerCycler(PowerCycler):
     def connect(self):
         """ Connect not required for PC
         """
-        self.snmp_client = SNMPClient(host=self.host,
+        # To handle the proxy connection
+        if self.proxy:
+            host, port = self.proxy_connect()
+        else:
+            host = self.host
+            port = self.port
+        self.snmp_client = SNMPClient(host=host,
                                       read_community=self.read_community,
                                       write_community=self.write_community,
-                                      port=self.port,
+                                      port=port,
                                       version=self.version,
                                       log=self.log)
 
@@ -154,10 +205,12 @@ class BaseSNMPv3PowerCycler(PowerCycler):
 
     def __init__(self,
                  snmp_port=161,
+                 snmp_version='3',
                  **kwargs):
 
         super().__init__(**kwargs)
         self.port = snmp_port
+        self.version = snmp_version
         self.snmp_client = None
         self.connect(**kwargs)
 
@@ -265,12 +318,18 @@ class BaseSNMPv3PowerCycler(PowerCycler):
     def connect(self, **kwargs):
         """ To connect the snmpv3 client
         """
+        # To handle the proxy connection
+        if self.proxy:
+            host, port = self.proxy_connect()
+        else:
+            host = self.host
+            port = self.port
 
         # To get the usm user data for authentication
         self.auth = self.get_usm_user_data(**kwargs)
 
-        self.snmp_client = SNMPv3Client(host=self.host,
-                                        port=self.port,
+        self.snmp_client = SNMPv3Client(host=host,
+                                        port=port,
                                         auth=self.auth,
                                         log=self.log)
 
@@ -324,9 +383,8 @@ class BaseSNMPv3PowerCycler(PowerCycler):
 
 class BaseCyberSwitchingPowerCycler(PowerCycler):
 
-    def __init__(self, testbed, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.testbed = testbed
         self.connect()
 
     def connect(self):

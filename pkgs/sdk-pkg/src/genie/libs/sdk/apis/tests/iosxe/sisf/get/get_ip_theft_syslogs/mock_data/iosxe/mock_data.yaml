@@ -14,13 +14,12 @@ configure_line:
   prompt: sisf-c9500-11(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,16 +29,14 @@ execute:
       new_state: configure
     show logging | include %SISF-4-IP_THEFT:
       response:
-      - "*Dec 17 12:17:46.892 EST: %SISF-4-IP_THEFT: IP Theft IP=2001:DB8::105 VLAN=20\
-        \ MAC=dead.beef.0001 IF=Twe1/0/1 New I/F over fabric\r\n*Dec 17 12:18:09.749\
-        \ EST: %SISF-4-IP_THEFT: IP Theft IP=2001:DB8::105 VLAN=20 MAC=dead.beef.0001\
-        \ IF=Twe1/0/1 New(Spoof) MAC=dead.beef.0002 New I/F=Twe1/0/5\r\nFeb 16 17:19:26.873:\
-        \ %SISF-4-IP_THEFT: IP Theft IP=2001:DB8::105 VLAN=20 Cand-MAC=dead.beef.0002\
-        \ Cand-I/F=Twe1/0/1 Known MAC dead.beef.0002 Known I/F Twe1/0/1\r\n.Feb  5\
-        \ 19:30:20.037: %SISF-4-IP_THEFT: IP Theft IP=20.0.0.254 VLAN=20 MAC=ba25.cdf4.ad38\
-        \ IF=Vl20 New(Spoof) MAC=dead.beef.0002 New IF=Gi1/0/1"
+        - |-
+          *Dec 17 12:17:46.892 EST: %SISF-4-IP_THEFT: IP Theft IP=2001:DB8::105 VLAN=20 MAC=dead.beef.0001 IF=Twe1/0/1 New I/F over fabric
+          *Dec 17 12:18:09.749 EST: %SISF-4-IP_THEFT: IP Theft IP=2001:DB8::105 VLAN=20 MAC=dead.beef.0001 IF=Twe1/0/1 New(Spoof) MAC=dead.beef.0002 New I/F=Twe1/0/5
+          Feb 16 17:19:26.873: %SISF-4-IP_THEFT: IP Theft IP=2001:DB8::105 VLAN=20 Cand-MAC=dead.beef.0002 Cand-I/F=Twe1/0/1 Known MAC dead.beef.0002 Known I/F Twe1/0/1
+          .Feb  5 19:30:20.037: %SISF-4-IP_THEFT: IP Theft IP=20.0.0.254 VLAN=20 MAC=ba25.cdf4.ad38 IF=Vl20 New(Spoof) MAC=dead.beef.0002 New IF=Gi1/0/1
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: sisf-c9500-11#

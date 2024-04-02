@@ -1,0 +1,41 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: IE-3300-8P2S-E3(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: IE-3300-8P2S-E3(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    show version | include operating mode: ''
+    term length 0: ''
+    term width 0: ''
+    test cable-diagnostics tdr interface GigabitEthernet1/4:
+      response:
+      - "TDR test started on interface Gi1/4\r\nA TDR test can take a few seconds\
+        \ to run on an interface\r\nUse 'show cable-diagnostics tdr' to read the TDR\
+        \ results."
+      response_type: circular
+  prompt: IE-3300-8P2S-E3#

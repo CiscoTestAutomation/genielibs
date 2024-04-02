@@ -1,30 +1,28 @@
 configure:
   commands:
-    dns-server 192.168.1.200: "dns-server 192.168.1.200\r\n"
     end:
       new_state: execute
-    ip dhcp pool evpn_pool: "ip dhcp pool evpn_pool\r\n"
+    ip dhcp pool vlan501: "ip dhcp pool vlan501\r\n"
     line console 0:
       new_state: configure_line
-    network 192.168.1.0 255.255.255.0: "network 192.168.1.0 255.255.255.0\r\n"
+    network 1.1.1.0 255.255.255.0: "network 1.1.1.0 255.255.255.0\r\n"
     no logging console: ''
-    vrf green: "vrf green\r\n"
-  prompt: T2-9500-RA_SDG(config)#
+    vrf Mgmt-vrf: "vrf Mgmt-vrf\r\n"
+  prompt: Switch(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: T2-9500-RA_SDG(config-line)#
+  prompt: Switch(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -35,4 +33,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: T2-9500-RA_SDG#
+    show version | include operating mode: ''
+  prompt: Switch#

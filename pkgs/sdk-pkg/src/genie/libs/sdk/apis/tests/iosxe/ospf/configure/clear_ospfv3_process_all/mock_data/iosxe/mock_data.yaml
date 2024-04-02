@@ -14,13 +14,12 @@ configure_line:
   prompt: PE-B(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -33,10 +32,11 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: PE-B#
 send_line:
-  prompt: "Reset selected OSPFv3 processes? [no]:"
+  prompt: 'Reset selected OSPFv3 processes? [no]:'
   commands:
-    "y":
+    y:
       new_state: execute
-    
+

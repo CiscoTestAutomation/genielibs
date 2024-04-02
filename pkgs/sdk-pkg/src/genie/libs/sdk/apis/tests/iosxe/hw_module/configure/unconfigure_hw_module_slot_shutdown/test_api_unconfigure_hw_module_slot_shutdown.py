@@ -33,5 +33,5 @@ class TestUnconfigureHwModuleSlotShutdown(unittest.TestCase):
         expected_output = 'no hw-module slot 2 shutdown\r\n' \
                           'no hw-module slot 2 shutdown\r\n' \
                           '%No shutdown Command is being executed for slot 2\r\n\r\n' \
-                          '%Please wait for few seconds before doing any further operations on this card\r\n\r\n'
+                          '%Please wait for few seconds before doing any further operations on this card\r\n'
         self.assertEqual(result, expected_output)

@@ -14,13 +14,12 @@ configure_line:
   prompt: vSTA#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,65 +29,110 @@ execute:
       new_state: configure
     configure client number total 1 ap 1:
       response:
-      - "Creating wireless client id 1 to 1\r\nWaiting... it may take minutes to clean\
-        \ up!\r\n initializing the setup\r\n00000000 reset system...\r\n00000603 stopped\
-        \ all clients\r\n00002621 stopped all virtual APs\r\n00003875 Stopped mac80211\r\
-        \nReset done. [3875ms]\r\ninitial setup [clean up]  elapsed: 11821 ms\r\n\
-        initial setup [load mac80211_hwsim]  elapsed: 168 ms\r\ninitial setup [interface]\
-        \ elapsed: 134 ms\r\nsetup containerized AP...\r\nSet bridge WSIMCPfae5a47e\
-        \ uplink to ens_wmedium 00:0c:29:a6:27:7a\r\nStart initializing WSIMCPfae5a47e\r\
-        \nCreating a session - fae5a47e\r\nWSIM internal bridge Setup [ 2.511s ]\r\
-        \nAp start id 1, AP Count is 1\r\nwsim-AP-0001 created! bf828167fd9886b2f188f8219db2d0cff097dfce9312f2998f5448ff5963965e:\
-        \ PID:670541 [ 1.695s ]\r\nstarting vAP setup\r\nvAP radio interface setup\
-        \ [ 0.155s ]\r\nwsim-AP-0001 VLAN: 46 set, which requires the external switch\
-        \ port in TRUNK mode with vlan 46 allowed\r\nvAP cleanup/creation [16180 ms]\r\
-        \n00000000 Configuring wireless client id 1 to 1...\r\n00000017 created wireless\
-        \ client interfaces.\r\n00000031 wireless client interfaces are available.\r\
-        \n00000045 Wireless client interfaces are link-down.\r\n00000085 Wireless\
-        \ client mac and mtu set.\r\n00000094 Wireless client interfaces are link-up.\r\
-        \n00000122 Wireless client interface IPv6 disabled.\r\n00000126 Wireless client\
-        \ id 1 to 1 are ready. \r\nStart wpa_supplicant daemons...\r\nDone. [19ms]\r\
-        \nStart WebAutth daemon...\r\nDone. [16ms]\r\nstarting dhclient daemon...WSIM\
-        \ DHCP client (PID: 671082) started!\r\nDone [ 7 ms]\r\nstarting dhclient\
-        \ IPv6 daemon...WSIM DHCP client (PID: 671086) started!\r\nDone [ 8 ms]\r\n\
-        00000178 Wireless clients' daemons started.\r\nWireless client setup completed!\
-        \ [186ms]\r\n[29255 ms]"
+        - |-
+          Creating wireless client id 1 to 1
+          Waiting... it may take minutes to clean up!
+           initializing the setup
+          00000000 reset system...
+          00000603 stopped all clients
+          00002621 stopped all virtual APs
+          00003875 Stopped mac80211
+          Reset done. [3875ms]
+          initial setup [clean up]  elapsed: 11821 ms
+          initial setup [load mac80211_hwsim]  elapsed: 168 ms
+          initial setup [interface] elapsed: 134 ms
+          setup containerized AP...
+          Set bridge WSIMCPfae5a47e uplink to ens_wmedium 00:0c:29:a6:27:7a
+          Start initializing WSIMCPfae5a47e
+          Creating a session - fae5a47e
+          WSIM internal bridge Setup [ 2.511s ]
+          Ap start id 1, AP Count is 1
+          wsim-AP-0001 created! bf828167fd9886b2f188f8219db2d0cff097dfce9312f2998f5448ff5963965e: PID:670541 [ 1.695s ]
+          starting vAP setup
+          vAP radio interface setup [ 0.155s ]
+          wsim-AP-0001 VLAN: 46 set, which requires the external switch port in TRUNK mode with vlan 46 allowed
+          vAP cleanup/creation [16180 ms]
+          00000000 Configuring wireless client id 1 to 1...
+          00000017 created wireless client interfaces.
+          00000031 wireless client interfaces are available.
+          00000045 Wireless client interfaces are link-down.
+          00000085 Wireless client mac and mtu set.
+          00000094 Wireless client interfaces are link-up.
+          00000122 Wireless client interface IPv6 disabled.
+          00000126 Wireless client id 1 to 1 are ready. 
+          Start wpa_supplicant daemons...
+          Done. [19ms]
+          Start WebAutth daemon...
+          Done. [16ms]
+          starting dhclient daemon...WSIM DHCP client (PID: 671082) started!
+          Done [ 7 ms]
+          starting dhclient IPv6 daemon...WSIM DHCP client (PID: 671086) started!
+          Done [ 8 ms]
+          00000178 Wireless clients' daemons started.
+          Wireless client setup completed! [186ms]
+          [29255 ms]
       response_type: circular
     run wlc apply certs:
       response:
-      - "Applying WLC certificate...\r\n...Connecting to ssh://9.2.45.15:22 (logfile\
-        \ is /tmp/wlc_ssh_session.log)...\r\n\r\n% Enter PEM-formatted CA certificate.\r\
-        \r\n% End with a blank line or \"quit\" on a line by itself.\r\r\n...Sending\
-        \ CA certificate...\r\n% Enter PEM-formatted encrypted private General Purpose\
-        \ key.\r\r\n% End with \"quit\" on a line by itself.\r\r\n...Sending private\
-        \ General Purpose key...\r\n% Enter PEM-formatted General Purpose certificate.\r\
-        \r\n% End with a blank line or \"quit\" on a line by itself.\r\r\n...Sending\
-        \ private General Purpose certificate...\r\n% PEM files import succeeded.\r\
-        \r\n\r\newlc_2#show wireless management trustpoint\r\n\r\nTrustpoint Name\
-        \  : manual_certs\r\nCertificate Info : Available\r\nCertificate Type : SSC\r\
-        \nCertificate Hash : 79df56bf1dc160ed44a83966e9b08e258a9b6c21\r\nPrivate key\
-        \ Info : Available\r\nFIPS suitability : Not Applicable\r\n\r\newlc_2#write\r\
-        \nBuilding configuration...\r\n[OK]"
+        - |-
+          Applying WLC certificate...
+          ...Connecting to ssh://9.2.45.15:22 (logfile is /tmp/wlc_ssh_session.log)...
+          
+          % Enter PEM-formatted CA certificate.
+          % End with a blank line or "quit" on a line by itself.
+          ...Sending CA certificate...
+          % Enter PEM-formatted encrypted private General Purpose key.
+          % End with "quit" on a line by itself.
+          ...Sending private General Purpose key...
+          % Enter PEM-formatted General Purpose certificate.
+          % End with a blank line or "quit" on a line by itself.
+          ...Sending private General Purpose certificate...
+          % PEM files import succeeded.
+          
+          ewlc_2#show wireless management trustpoint
+          
+          Trustpoint Name  : manual_certs
+          Certificate Info : Available
+          Certificate Type : SSC
+          Certificate Hash : 79df56bf1dc160ed44a83966e9b08e258a9b6c21
+          Private key Info : Available
+          FIPS suitability : Not Applicable
+          
+          ewlc_2#write
+          Building configuration...
+          [OK]
       response_type: circular
     run wlc get capwap:
       response:
-      - "...Connecting to ssh://9.2.45.15:22 (logfile is /tmp/wlc_ssh_session.log)...\r\
-        \n\r\nGot capwap 17.9.2.52 from \"show ap image file summary\"\r\nCAPWAP version\
-        \ is set to 17.9.2.52"
+        - |-
+          ...Connecting to ssh://9.2.45.15:22 (logfile is /tmp/wlc_ssh_session.log)...
+          
+          Got capwap 17.9.2.52 from "show ap image file summary"
+          CAPWAP version is set to 17.9.2.52
       response_type: circular
     run wlc remove certs:
       response:
-      - "Removing WLC certificate...\r\n...Connecting to ssh://9.2.45.15:22 (logfile\
-        \ is /tmp/wlc_ssh_session.log)...\r\n\r\newlc_2(config)#no crypto pki trustpoint\
-        \ manual_certs\r\n\r\n% Removing an enrolled trustpoint will destroy all certificates\r\
-        \n received from the related Certificate Authority.\r\n\r\nAre you sure you\
-        \ want to do this? [yes/no]: y\r\ny\r\n\r\n% Be sure to ask the CA administrator\
-        \ to revoke your certificates.\r\n\r\newlc_2(config)#crypto key zeroize rsa\
-        \ manual_certs\r\n% Keys to be removed are named 'manual_certs'.\r\n% All\
-        \ router certs issued using these keys will also be removed.\r\nDo you really\
-        \ want to remove these keys? [yes/no]: y"
+        - |-
+          Removing WLC certificate...
+          ...Connecting to ssh://9.2.45.15:22 (logfile is /tmp/wlc_ssh_session.log)...
+          
+          ewlc_2(config)#no crypto pki trustpoint manual_certs
+          
+          % Removing an enrolled trustpoint will destroy all certificates
+           received from the related Certificate Authority.
+          
+          Are you sure you want to do this? [yes/no]: y
+          y
+          
+          % Be sure to ask the CA administrator to revoke your certificates.
+          
+          ewlc_2(config)#crypto key zeroize rsa manual_certs
+          % Keys to be removed are named 'manual_certs'.
+          % All router certs issued using these keys will also be removed.
+          Do you really want to remove these keys? [yes/no]: y
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: vSTA#

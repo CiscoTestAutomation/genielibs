@@ -14,13 +14,12 @@ configure_line:
   prompt: leaf1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,26 +29,33 @@ execute:
       new_state: configure
     show ip bgp ipv6 mvpn all:
       response:
-      - "BGP table version is 1197, local router ID is 1.1.1.1\r\nStatus codes: s\
-        \ suppressed, d damped, h history, * valid, > best, i - internal, \r\n   \
-        \           r RIB-failure, S Stale, m multipath, b backup-path, f RT-Filter,\
-        \ \r\n              x best-external, a additional-path, c RIB-compressed,\
-        \ \r\n              t secondary path, L long-lived-stale,\r\nOrigin codes:\
-        \ i - IGP, e - EGP, ? - incomplete\r\nRPKI validation codes: V valid, I invalid,\
-        \ N Not found\r\n\r\n     Network          Next Hop            Metric LocPrf\
-        \ Weight Path\r\nRoute Distinguisher: 1002:1 (default for vrf red)\r\n *>\
-        \   [5][1002:1][2000::21][FF05:1::5]/42\r\n                      ::      \
-        \                           32768 ?\r\n *>   [5][1002:1][2000::21][FF33:1::3]/42\r\
-        \n                      ::                                 32768 ?\r\n *>\
-        \   [7][1002:1][16843009][2000::21][FF05:1::5]/46\r\n                    \
-        \  2.2.2.2                                0 1000 1001 ?\r\n *>   [7][1002:1][16843009][2000::21][FF33:1::3]/46\r\
-        \n                      2.2.2.2                                0 1000 1001\
-        \ ?\r\nRoute Distinguisher: 1.1.1.1:1\r\n *>   [7][1.1.1.1:1][16843009][2000::21][FF05:1::5]/46\r\
-        \n                      2.2.2.2                                0 1000 1001\
-        \ ?\r\n *>   [7][1.1.1.1:1][16843009][2000::21][FF33:1::3]/46\r\n        \
-        \              2.2.2.2                                0 1000 1001 ?"
+        - |-
+          BGP table version is 1197, local router ID is 1.1.1.1
+          Status codes: s suppressed, d damped, h history, * valid, > best, i - internal, 
+                        r RIB-failure, S Stale, m multipath, b backup-path, f RT-Filter, 
+                        x best-external, a additional-path, c RIB-compressed, 
+                        t secondary path, L long-lived-stale,
+          Origin codes: i - IGP, e - EGP, ? - incomplete
+          RPKI validation codes: V valid, I invalid, N Not found
+          
+               Network          Next Hop            Metric LocPrf Weight Path
+          Route Distinguisher: 1002:1 (default for vrf red)
+           *>   [5][1002:1][2000::21][FF05:1::5]/42
+                                ::                                 32768 ?
+           *>   [5][1002:1][2000::21][FF33:1::3]/42
+                                ::                                 32768 ?
+           *>   [7][1002:1][16843009][2000::21][FF05:1::5]/46
+                                2.2.2.2                                0 1000 1001 ?
+           *>   [7][1002:1][16843009][2000::21][FF33:1::3]/46
+                                2.2.2.2                                0 1000 1001 ?
+          Route Distinguisher: 1.1.1.1:1
+           *>   [7][1.1.1.1:1][16843009][2000::21][FF05:1::5]/46
+                                2.2.2.2                                0 1000 1001 ?
+           *>   [7][1.1.1.1:1][16843009][2000::21][FF33:1::3]/46
+                                2.2.2.2                                0 1000 1001 ?
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: leaf1#

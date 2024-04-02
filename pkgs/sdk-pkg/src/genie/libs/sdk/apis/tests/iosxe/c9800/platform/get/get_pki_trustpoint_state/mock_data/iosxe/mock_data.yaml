@@ -14,13 +14,12 @@ configure_line:
   prompt: vidya-ewlc-5(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,19 +29,26 @@ execute:
       new_state: configure
     show crypto pki trustpoints vidya-ewlc-5_WLC_TP status:
       response:
-      - "Trustpoint vidya-ewlc-5_WLC_TP:\r\n  Issuing CA certificate configured:\r\
-        \n    Subject Name:\r\n     o=Cisco Virtual Wireless LAN Controller,cn=CA-vWLC_vidya-ewlc-5\r\
-        \n    Fingerprint MD5: 31DF4D53 E4D54A0E D764E498 3B06FB6C \r\n    Fingerprint\
-        \ SHA1: 44AD78DE CB9350C6 8C979505 930B1301 0B1A92B3 \r\n  Router General\
-        \ Purpose certificate configured:\r\n    Subject Name:\r\n     serialNumber=9SV9FR9MWP9+hostname=vidya-ewlc-5,o=Cisco\
-        \ Virtual Wireless LAN Controller,cn=vidya-ewlc-5_WLC_TP\r\n    Fingerprint\
-        \ MD5: 2C597B36 58B6E88B 2DCD1670 262711B8 \r\n    Fingerprint SHA1: F508DC73\
-        \ 35C46DE2 FD17051C 9BC4AA9F A13E1730 \r\n  Last enrollment status: Granted\r\
-        \n  State:\r\n    Keys generated ............. Yes (General Purpose, exportable)\r\
-        \n    Issuing CA authenticated ....... Yes\r\n    Certificate request(s) .....\
-        \ Yes"
+        - |-
+          Trustpoint vidya-ewlc-5_WLC_TP:
+            Issuing CA certificate configured:
+              Subject Name:
+               o=Cisco Virtual Wireless LAN Controller,cn=CA-vWLC_vidya-ewlc-5
+              Fingerprint MD5: 31DF4D53 E4D54A0E D764E498 3B06FB6C 
+              Fingerprint SHA1: 44AD78DE CB9350C6 8C979505 930B1301 0B1A92B3 
+            Router General Purpose certificate configured:
+              Subject Name:
+               serialNumber=9SV9FR9MWP9+hostname=vidya-ewlc-5,o=Cisco Virtual Wireless LAN Controller,cn=vidya-ewlc-5_WLC_TP
+              Fingerprint MD5: 2C597B36 58B6E88B 2DCD1670 262711B8 
+              Fingerprint SHA1: F508DC73 35C46DE2 FD17051C 9BC4AA9F A13E1730 
+            Last enrollment status: Granted
+            State:
+              Keys generated ............. Yes (General Purpose, exportable)
+              Issuing CA authenticated ....... Yes
+              Certificate request(s) ..... Yes
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: vidya-ewlc-5#

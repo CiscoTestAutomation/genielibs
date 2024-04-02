@@ -1,0 +1,50 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: HA-9400-S2(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: HA-9400-S2(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show platform software status control-processor brief:
+      response:
+      - "Load Average\r\n Slot  Status  1-Min  5-Min 15-Min\r\n2-RP0 Healthy   0.52\
+        \   0.29   0.20\r\n\r\nMemory (kB)\r\n Slot  Status    Total     Used (Pct)\
+        \     Free (Pct) Committed (Pct)\r\n2-RP0 Healthy 15988588  5852000 (37%)\
+        \ 10136588 (63%)   7164104 (45%)\r\n\r\nCPU Utilization\r\n Slot  CPU   User\
+        \ System   Nice   Idle    IRQ   SIRQ IOwait\r\n2-RP0    0   4.20   0.90  \
+        \ 0.00  94.90   0.00   0.00   0.00\r\n         1   0.49   0.19   0.00  99.30\
+        \   0.00   0.00   0.00\r\n         2   0.90   0.30   0.00  98.80   0.00  \
+        \ 0.00   0.00\r\n         3   1.49   0.69   0.00  97.80   0.00   0.00   0.00\r\
+        \n         4   0.59   0.39   0.00  99.00   0.00   0.00   0.00\r\n        \
+        \ 5   1.30   0.50   0.00  98.20   0.00   0.00   0.00\r\n         6   0.20\
+        \   0.20   0.00  99.59   0.00   0.00   0.00\r\n         7   0.20   0.10  \
+        \ 0.00  99.60   0.00   0.00   0.10"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    show version | include operating mode: ''
+  prompt: HA-9400-S2#

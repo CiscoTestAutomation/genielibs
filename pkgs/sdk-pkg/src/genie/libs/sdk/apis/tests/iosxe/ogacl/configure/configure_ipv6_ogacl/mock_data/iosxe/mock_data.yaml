@@ -8,8 +8,8 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-    sequence 100 permit object-group v6-serv-all object-group v6-srcnet-all any log: "sequence\
-      \ 100 permit object-group v6-serv-all object-group v6-srcnet-all any log\r\n"
+    sequence 100 permit object-group v6-serv-all object-group v6-srcnet-all any log: "sequence
+      100 permit object-group v6-serv-all object-group v6-srcnet-all any log\r\n"
   prompt: Intrepid-DUT-1(config)#
 configure_line:
   commands:
@@ -21,13 +21,12 @@ configure_line:
   prompt: Intrepid-DUT-1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -40,4 +39,5 @@ execute:
     term width 0: ''
     term width 511: ''
     terminal session-timeout 0: ''
+    show version | include operating mode: ''
   prompt: Intrepid-DUT-1#

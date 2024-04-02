@@ -1,0 +1,38 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    flow monitor test: "flow monitor test\r\n"
+    line console 0:
+      new_state: configure_line
+    no cache timeout active 30: "no cache timeout active 30\r\n"
+    no cache timeout inactive 20: "no cache timeout inactive 20\r\n"
+    no logging console: ''
+    no record vlan30: "no record vlan30\r\n"
+  prompt: SG-HA(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: SG-HA(config-line)#
+connect:
+  commands:
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
+    Connected to mock_device.
+    Escape character is '^]'.
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    show version | include operating mode: ''
+  prompt: SG-HA#

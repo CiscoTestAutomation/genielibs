@@ -113,3 +113,18 @@ def execute_test_platform_hardware_fantray(device, switch_mode, switch_number):
     except Exception as err:
         log.error("Error while executing {cmd} : err")
     return out
+
+def execute_test_cable_diagnostics_tdr_interface(device, interface):
+    """ Executes test cable-diagnostics tdr interface
+        Args:
+            device ('obj'): device to use  
+            interface ('str'): Interface on which TDR test is to performed
+        Returns:
+            output ('str'): Device output
+	"""
+    cmd = f"test cable-diagnostics tdr interface {interface}"
+    try:
+        output = device.execute(cmd)
+    except Exception as err:
+        log.error(f"Error while executing {cmd}. Error:\n{err}")
+    return output

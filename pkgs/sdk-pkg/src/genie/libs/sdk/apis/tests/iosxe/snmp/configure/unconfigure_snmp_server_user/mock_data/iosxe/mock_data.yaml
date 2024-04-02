@@ -5,16 +5,16 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-    no snmp-server user privuser256256 privgrp v3: "no snmp-server user privuser256256\
-      \ privgrp v3\r\n"
-    no snmp-server user privuser256256 privgrp v3 auth sha-2 256 cisco256: "no snmp-server\
-      \ user privuser256256 privgrp v3 auth sha-2 256 cisco256\r\n"
-    no snmp-server user privuser256256 privgrp v3 auth sha-2 256 cisco256 priv aes 256 cisco256: "no\
-      \ snmp-server user privuser256256 privgrp v3 auth sha-2 256 cisco256 priv aes\
-      \ 256 cisco256\r\n"
-    no snmp-server user privuser256256 privgrp v3 auth sha-2 256 cisco256 priv aes 256 cisco256 access ipv6 nameacl nameacl: "no\
-      \ snmp-server user privuser256256 privgrp v3 auth sha-2 256 cisco256 priv aes\
-      \ 256 cisco256 access ipv6 nameacl nameacl\r\n"
+    no snmp-server user privuser256256 privgrp v3: "no snmp-server user privuser256256
+      privgrp v3\r\n"
+    no snmp-server user privuser256256 privgrp v3 auth sha-2 256 cisco256: "no snmp-server
+      user privuser256256 privgrp v3 auth sha-2 256 cisco256\r\n"
+    no snmp-server user privuser256256 privgrp v3 auth sha-2 256 cisco256 priv aes 256 cisco256: "no
+      snmp-server user privuser256256 privgrp v3 auth sha-2 256 cisco256 priv aes
+      256 cisco256\r\n"
+    no snmp-server user privuser256256 privgrp v3 auth sha-2 256 cisco256 priv aes 256 cisco256 access ipv6 nameacl nameacl: "no
+      snmp-server user privuser256256 privgrp v3 auth sha-2 256 cisco256 priv aes
+      256 cisco256 access ipv6 nameacl nameacl\r\n"
   prompt: csr(config)#
 configure_line:
   commands:
@@ -24,13 +24,12 @@ configure_line:
   prompt: csr(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -41,4 +40,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: csr#

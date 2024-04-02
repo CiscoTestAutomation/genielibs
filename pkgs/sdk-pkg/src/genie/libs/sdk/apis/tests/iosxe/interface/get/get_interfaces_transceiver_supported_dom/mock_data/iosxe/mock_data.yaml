@@ -1,0 +1,81 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: IE-3300-8P2S-E3(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: IE-3300-8P2S-E3(config-line)#
+connect:
+  commands:
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
+    Connected to mock_device.
+    Escape character is '^]'.
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show interfaces transceiver supported-list:
+      response:
+        - |-
+          Transceiver Type           Cisco p/n min version  
+                                         supporting DOM     
+          ------------------       -------------------------
+          
+             GLC-FE-100FX-RGD         ALL                      
+             GLC-FE-100LX-RGD         ALL                      
+             GLC-FE-100FX             ALL                      
+             GLC-FE-100LX             ALL                      
+             GLC-FE-100EX             ALL                      
+             GLC-FE-100ZX             ALL                      
+             GLC-FE-100BX-U           ALL                      
+             GLC-FE-100BX-D           ALL                      
+             GLC-SX-MM-RGD            ALL                      
+             GLC-LX-SM-RGD            ALL                      
+             GLC-ZX-SM-RGD            ALL                      
+             SFP-GE-S                 ALL                      
+             SFP-GE-L                 ALL                      
+             SFP-GE-Z                 ALL                      
+             GLC-BX-U                 ALL                      
+             GLC-BX-D                 ALL                      
+             GLC-BX-U-I               ALL                      
+             GLC-BX-D-I               ALL                      
+             GLC-SX-MM                NONE                     
+             GLC-LH-SM                NONE                     
+             GLC-ZX-SM                NONE                     
+             GLC-T                    NONE                     
+             GLC-TE                   NONE                     
+             GLC-T-RGD                NONE                     
+             GLC-EX-SMD               ALL                      
+             GLC-SX-MMD               ALL                      
+             GLC-LH-SMD               ALL                      
+             GLC-ZX-SMD               ALL                      
+             GLC-BX40-D-I             ALL                      
+             GLC-BX40-DA-I            ALL                      
+             GLC-BX40-U-I             ALL                      
+             GLC-BX80-D-I             ALL                      
+             GLC-BX80-U-I             ALL                      
+             SFP-CWDM-1470            ALL                      
+             SFP-CWDM-1490            ALL                      
+             SFP-CWDM-1530            ALL                      
+             SFP-CWDM-1610            ALL                      
+             SFP-DWDM-3033            ALL                      
+             SFP-DWDM-3112            ALL
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    show version | include operating mode: ''
+  prompt: IE-3300-8P2S-E3#

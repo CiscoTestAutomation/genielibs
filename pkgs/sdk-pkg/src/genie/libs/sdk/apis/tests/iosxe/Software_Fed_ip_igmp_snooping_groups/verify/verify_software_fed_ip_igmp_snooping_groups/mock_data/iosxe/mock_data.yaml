@@ -14,13 +14,12 @@ configure_line:
   prompt: SF1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,12 +29,19 @@ execute:
       new_state: configure
     show platform software fed active ip igmp snooping groups vlan 20:
       response:
-      - "Vlan:20\tGroup:224.0.1.40\r\n---------------------------------\r\nMember\
-        \ ports   :\r\nCCK_epoch      : 162\r\nFailure Flags  : 0\r\nDI handle   \
-        \   : 0x7fe998dce858\r\nREP RI handle  : 0x7fe9989f3848\r\nSI handle     \
-        \ : 0x7fe998d44328\r\nHTM handle     : 0x7fe998d5eea8"
+        - |-
+          Vlan:20	Group:224.0.1.40
+          ---------------------------------
+          Member ports   :
+          CCK_epoch      : 162
+          Failure Flags  : 0
+          DI handle      : 0x7fe998dce858
+          REP RI handle  : 0x7fe9989f3848
+          SI handle      : 0x7fe998d44328
+          HTM handle     : 0x7fe998d5eea8
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: SF1#

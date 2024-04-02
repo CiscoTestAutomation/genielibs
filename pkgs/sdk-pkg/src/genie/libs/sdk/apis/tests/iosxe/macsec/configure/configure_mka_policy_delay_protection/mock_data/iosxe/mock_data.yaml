@@ -9,8 +9,8 @@ configure:
     line console 0:
       new_state: configure_line
     macsec-cipher-suite gcm-aes-256: "macsec-cipher-suite gcm-aes-256\r\n"
-    mka policy policy1: "% If cipher currently being used is not configured, new SAK\
-      \ will be generated\r\n"
+    mka policy policy1: "% If cipher currently being used is not configured, new SAK
+      will be generated\r\n"
     no logging console: ''
   prompt: LG-PK(config)#
 configure_line:
@@ -23,13 +23,12 @@ configure_line:
   prompt: LG-PK(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -42,4 +41,5 @@ execute:
     term width 0: ''
     term width 511: ''
     terminal session-timeout 0: ''
+    show version | include operating mode: ''
   prompt: LG-PK#

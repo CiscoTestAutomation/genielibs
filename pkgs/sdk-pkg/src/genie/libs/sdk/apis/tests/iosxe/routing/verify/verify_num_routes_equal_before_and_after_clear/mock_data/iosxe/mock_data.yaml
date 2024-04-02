@@ -14,19 +14,18 @@ configure_line:
   prompt: rtr1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
     clear ip route *:
       response:
-      - ''
+        - ''
       response_type: circular
     config term:
       new_state: configure
@@ -34,58 +33,77 @@ execute:
       new_state: configure
     show ip route:
       response:
-      - "Codes: L - local, C - connected, S - static, R - RIP, M - mobile, B - BGP\r\
-        \n       D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area \r\
-        \n       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2\r\n\
-        \       E1 - OSPF external type 1, E2 - OSPF external type 2, m - OMP\r\n\
-        \       n - NAT, Ni - NAT inside, No - NAT outside, Nd - NAT DIA\r\n     \
-        \  i - IS-IS, su - IS-IS summary, L1 - IS-IS level-1, L2 - IS-IS level-2\r\
-        \n       ia - IS-IS inter area, * - candidate default, U - per-user static\
-        \ route\r\n       H - NHRP, G - NHRP registered, g - NHRP registration summary\r\
-        \n       o - ODR, P - periodic downloaded static route, l - LISP\r\n     \
-        \  a - application route\r\n       + - replicated route, % - next hop override,\
-        \ p - overrides from PfR\r\n       & - replicated local route overrides by\
-        \ connected\r\n\r\nGateway of last resort is not set\r\n\r\n      1.0.0.0/32\
-        \ is subnetted, 1 subnets\r\nC        1.1.1.1 is directly connected, Loopback0\r\
-        \n      2.0.0.0/32 is subnetted, 1 subnets\r\nO        2.2.2.2 [110/11] via\
-        \ 141.1.1.2, 00:38:57, Ethernet0/0\r\n      3.0.0.0/32 is subnetted, 1 subnets\r\
-        \nO        3.3.3.3 [110/21] via 141.1.4.4, 00:38:58, Ethernet0/1\r\n     \
-        \            [110/21] via 141.1.1.2, 00:38:57, Ethernet0/0\r\n      4.0.0.0/32\
-        \ is subnetted, 1 subnets\r\nO        4.4.4.4 [110/11] via 141.1.4.4, 00:38:58,\
-        \ Ethernet0/1\r\n      31.0.0.0/32 is subnetted, 1 subnets\r\nS        31.31.31.31\
-        \ [1/0] via 141.1.1.2\r\n      141.1.0.0/16 is variably subnetted, 6 subnets,\
-        \ 2 masks\r\nC        141.1.1.0/24 is directly connected, Ethernet0/0\r\n\
-        L        141.1.1.1/32 is directly connected, Ethernet0/0\r\nO        141.1.2.0/24\
-        \ [110/20] via 141.1.1.2, 00:38:57, Ethernet0/0\r\nO        141.1.3.0/24 [110/20]\
-        \ via 141.1.4.4, 00:38:58, Ethernet0/1\r\nC        141.1.4.0/24 is directly\
-        \ connected, Ethernet0/1\r\nL        141.1.4.1/32 is directly connected, Ethernet0/1"
-      - "Codes: L - local, C - connected, S - static, R - RIP, M - mobile, B - BGP\r\
-        \n       D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area \r\
-        \n       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2\r\n\
-        \       E1 - OSPF external type 1, E2 - OSPF external type 2, m - OMP\r\n\
-        \       n - NAT, Ni - NAT inside, No - NAT outside, Nd - NAT DIA\r\n     \
-        \  i - IS-IS, su - IS-IS summary, L1 - IS-IS level-1, L2 - IS-IS level-2\r\
-        \n       ia - IS-IS inter area, * - candidate default, U - per-user static\
-        \ route\r\n       H - NHRP, G - NHRP registered, g - NHRP registration summary\r\
-        \n       o - ODR, P - periodic downloaded static route, l - LISP\r\n     \
-        \  a - application route\r\n       + - replicated route, % - next hop override,\
-        \ p - overrides from PfR\r\n       & - replicated local route overrides by\
-        \ connected\r\n\r\nGateway of last resort is not set\r\n\r\n      1.0.0.0/32\
-        \ is subnetted, 1 subnets\r\nC        1.1.1.1 is directly connected, Loopback0\r\
-        \n      2.0.0.0/32 is subnetted, 1 subnets\r\nO        2.2.2.2 [110/11] via\
-        \ 141.1.1.2, 00:00:10, Ethernet0/0\r\n      3.0.0.0/32 is subnetted, 1 subnets\r\
-        \nO        3.3.3.3 [110/21] via 141.1.4.4, 00:00:10, Ethernet0/1\r\n     \
-        \            [110/21] via 141.1.1.2, 00:00:10, Ethernet0/0\r\n      4.0.0.0/32\
-        \ is subnetted, 1 subnets\r\nO        4.4.4.4 [110/11] via 141.1.4.4, 00:00:10,\
-        \ Ethernet0/1\r\n      31.0.0.0/32 is subnetted, 1 subnets\r\nS        31.31.31.31\
-        \ [1/0] via 141.1.1.2\r\n      141.1.0.0/16 is variably subnetted, 6 subnets,\
-        \ 2 masks\r\nC        141.1.1.0/24 is directly connected, Ethernet0/0\r\n\
-        L        141.1.1.1/32 is directly connected, Ethernet0/0\r\nO        141.1.2.0/24\
-        \ [110/20] via 141.1.1.2, 00:00:10, Ethernet0/0\r\nO        141.1.3.0/24 [110/20]\
-        \ via 141.1.4.4, 00:00:10, Ethernet0/1\r\nC        141.1.4.0/24 is directly\
-        \ connected, Ethernet0/1\r\nL        141.1.4.1/32 is directly connected, Ethernet0/1"
+        - |-
+          Codes: L - local, C - connected, S - static, R - RIP, M - mobile, B - BGP
+                 D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area 
+                 N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+                 E1 - OSPF external type 1, E2 - OSPF external type 2, m - OMP
+                 n - NAT, Ni - NAT inside, No - NAT outside, Nd - NAT DIA
+                 i - IS-IS, su - IS-IS summary, L1 - IS-IS level-1, L2 - IS-IS level-2
+                 ia - IS-IS inter area, * - candidate default, U - per-user static route
+                 H - NHRP, G - NHRP registered, g - NHRP registration summary
+                 o - ODR, P - periodic downloaded static route, l - LISP
+                 a - application route
+                 + - replicated route, % - next hop override, p - overrides from PfR
+                 & - replicated local route overrides by connected
+          
+          Gateway of last resort is not set
+          
+                1.0.0.0/32 is subnetted, 1 subnets
+          C        1.1.1.1 is directly connected, Loopback0
+                2.0.0.0/32 is subnetted, 1 subnets
+          O        2.2.2.2 [110/11] via 141.1.1.2, 00:38:57, Ethernet0/0
+                3.0.0.0/32 is subnetted, 1 subnets
+          O        3.3.3.3 [110/21] via 141.1.4.4, 00:38:58, Ethernet0/1
+                           [110/21] via 141.1.1.2, 00:38:57, Ethernet0/0
+                4.0.0.0/32 is subnetted, 1 subnets
+          O        4.4.4.4 [110/11] via 141.1.4.4, 00:38:58, Ethernet0/1
+                31.0.0.0/32 is subnetted, 1 subnets
+          S        31.31.31.31 [1/0] via 141.1.1.2
+                141.1.0.0/16 is variably subnetted, 6 subnets, 2 masks
+          C        141.1.1.0/24 is directly connected, Ethernet0/0
+          L        141.1.1.1/32 is directly connected, Ethernet0/0
+          O        141.1.2.0/24 [110/20] via 141.1.1.2, 00:38:57, Ethernet0/0
+          O        141.1.3.0/24 [110/20] via 141.1.4.4, 00:38:58, Ethernet0/1
+          C        141.1.4.0/24 is directly connected, Ethernet0/1
+          L        141.1.4.1/32 is directly connected, Ethernet0/1
+        - |-
+          Codes: L - local, C - connected, S - static, R - RIP, M - mobile, B - BGP
+                 D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area 
+                 N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+                 E1 - OSPF external type 1, E2 - OSPF external type 2, m - OMP
+                 n - NAT, Ni - NAT inside, No - NAT outside, Nd - NAT DIA
+                 i - IS-IS, su - IS-IS summary, L1 - IS-IS level-1, L2 - IS-IS level-2
+                 ia - IS-IS inter area, * - candidate default, U - per-user static route
+                 H - NHRP, G - NHRP registered, g - NHRP registration summary
+                 o - ODR, P - periodic downloaded static route, l - LISP
+                 a - application route
+                 + - replicated route, % - next hop override, p - overrides from PfR
+                 & - replicated local route overrides by connected
+          
+          Gateway of last resort is not set
+          
+                1.0.0.0/32 is subnetted, 1 subnets
+          C        1.1.1.1 is directly connected, Loopback0
+                2.0.0.0/32 is subnetted, 1 subnets
+          O        2.2.2.2 [110/11] via 141.1.1.2, 00:00:10, Ethernet0/0
+                3.0.0.0/32 is subnetted, 1 subnets
+          O        3.3.3.3 [110/21] via 141.1.4.4, 00:00:10, Ethernet0/1
+                           [110/21] via 141.1.1.2, 00:00:10, Ethernet0/0
+                4.0.0.0/32 is subnetted, 1 subnets
+          O        4.4.4.4 [110/11] via 141.1.4.4, 00:00:10, Ethernet0/1
+                31.0.0.0/32 is subnetted, 1 subnets
+          S        31.31.31.31 [1/0] via 141.1.1.2
+                141.1.0.0/16 is variably subnetted, 6 subnets, 2 masks
+          C        141.1.1.0/24 is directly connected, Ethernet0/0
+          L        141.1.1.1/32 is directly connected, Ethernet0/0
+          O        141.1.2.0/24 [110/20] via 141.1.1.2, 00:00:10, Ethernet0/0
+          O        141.1.3.0/24 [110/20] via 141.1.4.4, 00:00:10, Ethernet0/1
+          C        141.1.4.0/24 is directly connected, Ethernet0/1
+          L        141.1.4.1/32 is directly connected, Ethernet0/1
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: rtr1#

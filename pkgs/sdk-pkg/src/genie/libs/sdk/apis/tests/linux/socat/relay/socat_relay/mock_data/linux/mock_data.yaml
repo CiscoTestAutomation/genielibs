@@ -14,13 +14,12 @@ configure_line:
   prompt: linux-server(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,17 +29,19 @@ execute:
       new_state: configure
     netstat -anp | grep 3240462/socat:
       response:
-      - "(Not all processes could be identified, non-owned process info\r\n will not\
-        \ be shown, you would have to be root to see it all.)\r\ntcp        0    \
-        \  0 0.0.0.0:42899           0.0.0.0:*               LISTEN      3240462/socat\
-        \       \r\nunix  3      [ ]         DGRAM                    614448634 3240462/socat\
-        \        \r\nunix  3      [ ]         DGRAM                    614448635 3240462/socat"
+        - |-
+          (Not all processes could be identified, non-owned process info
+           will not be shown, you would have to be root to see it all.)
+          tcp        0      0 0.0.0.0:42899           0.0.0.0:*               LISTEN      3240462/socat       
+          unix  3      [ ]         DGRAM                    614448634 3240462/socat        
+          unix  3      [ ]         DGRAM                    614448635 3240462/socat
       response_type: circular
     show version: ''
     socat TCP4-LISTEN:0,reuseaddr,fork TCP4:10.28.88.99:80 &:
       response:
-      - '[1] 3240462'
+        - '[1] 3240462'
       response_type: circular
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: linux-server#

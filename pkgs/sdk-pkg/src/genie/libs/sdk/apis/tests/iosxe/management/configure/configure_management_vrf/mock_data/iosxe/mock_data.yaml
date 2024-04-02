@@ -14,13 +14,12 @@ configure_line:
   prompt: ott-c9300-67(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -31,11 +30,14 @@ execute:
     show version: ''
     show vrf:
       response:
-      - "  Name                             Default RD            Protocols   Interfaces\r\
-        \n  Mgmt-vrf                         <not set>             ipv4,ipv6   Gi0/0\r\
-        \n\r\n  Platform iVRF Name               iVRF Id               Interfaces\r\
-        \n  __Platform_iVRF:_ID00_           0                     LI18/2"
+        - |2-
+            Name                             Default RD            Protocols   Interfaces
+            Mgmt-vrf                         <not set>             ipv4,ipv6   Gi0/0
+          
+            Platform iVRF Name               iVRF Id               Interfaces
+            __Platform_iVRF:_ID00_           0                     LI18/2
       response_type: circular
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: ott-c9300-67#

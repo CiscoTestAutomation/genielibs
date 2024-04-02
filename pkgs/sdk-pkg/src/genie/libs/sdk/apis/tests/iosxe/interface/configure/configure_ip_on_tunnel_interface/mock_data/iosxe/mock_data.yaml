@@ -9,8 +9,8 @@ configure:
       new_state: configure_line
     no logging console: ''
     tunnel destination 1.1.1.2: "tunnel destination 1.1.1.2\r\n"
-    tunnel protection ipsec policy ipv4 100: "tunnel protection ipsec policy ipv4\
-      \ 100\r\n"
+    tunnel protection ipsec policy ipv4 100: "tunnel protection ipsec policy ipv4
+      100\r\n"
     tunnel protection ipsec profile P1: "tunnel protection ipsec profile P1\r\n"
     tunnel source 2.2.2.2: "tunnel source 2.2.2.2\r\n"
   prompt: Hub(config)#
@@ -22,13 +22,12 @@ configure_line:
   prompt: Hub(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -39,4 +38,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: Hub#

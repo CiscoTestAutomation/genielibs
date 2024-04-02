@@ -1,0 +1,61 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: FW-9800-7(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: FW-9800-7(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    copy running-config startup-config:
+      new_state: send_line
+      
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    "socat UDP4-LISTEN:0,reuseaddr,fork UDP4:127.0.0.1:161 &": '[1] 2203984'
+    netstat -anp | grep 2203984/socat:
+      response: |
+        "
+        (Not all processes could be identified, non-owned process info
+        will not be shown, you would have to be root to see it all.)
+        udp        0      0 0.0.0.0:34084           0.0.0.0:*                           2203984/socat
+        unix  3      [ ]         DGRAM                    1156073825 2203984/socat
+        unix  3      [ ]         DGRAM                    1156073826 2203984/socat
+        "
+    kill 2203984: ''
+  prompt: '[proxyuser1@lab-lnx ~]$'
+send_line:
+  prompt: "Destination filename [startup-config]?"
+  commands:
+    "":
+      new_state: send_yes
+send_yes:
+  prompt: "Continue? [no]:"
+  commands:
+    "y":
+      response: |
+        "Building configuration...
+        [OK]"
+      new_state: execute

@@ -5,10 +5,12 @@ configure:
     gnxi: "gnxi\r\n"
     gnxi port 8080: "gnxi port 8080\r\n"
     gnxi secure-port 443: "gnxi secure-port 443\r\n"
-    gnxi secure-allow-self-signed-trustpoint: "gnxi secure-allow-self-signed-trustpoint\r\n"
+    gnxi secure-allow-self-signed-trustpoint: "gnxi secure-allow-self-signed-trustpoint\r\
+      \n"
     gnxi secure-client-auth: "gnxi secure-client-auth\r\n"
     gnxi secure-password-auth: "gnxi secure-password-auth\r\n"
-    gnxi secure-peer-verify-trustpoint gnoi_tp: "gnxi secure-peer-verify-trustpoint gnoi_tp\r\n"
+    gnxi secure-peer-verify-trustpoint gnoi_tp: "gnxi secure-peer-verify-trustpoint
+      gnoi_tp\r\n"
     gnxi secure-trustpoint gnoi_tp: "gnxi secure-trustpoint gnoi_tp\r\n"
     gnxi secure-init: "gnxi secure-init\r\n"
     gnxi server: "gnxi server\r\n"
@@ -25,13 +27,12 @@ configure_line:
   prompt: ott-c9300-09(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -42,4 +43,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: ott-c9300-09#

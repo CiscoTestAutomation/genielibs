@@ -14,13 +14,12 @@ configure_line:
   prompt: stack3-nyquist-1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -31,11 +30,12 @@ execute:
     show version: ''
     switch 1 role active:
       response:
-      - 'WARNING: Changing the switch role may result in redundancy mode being configured
-        to designated Active/Standby mode for this stack. If the configured Active
-        or Standby switch numbers do not boot up, then the stack will not be able
-        to boot. Do you want to continue?[y/n]? [yes]'
+        - 'WARNING: Changing the switch role may result in redundancy mode being configured
+          to designated Active/Standby mode for this stack. If the configured Active
+          or Standby switch numbers do not boot up, then the stack will not be able
+          to boot. Do you want to continue?[y/n]? [yes]'
       response_type: circular
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: stack3-nyquist-1#

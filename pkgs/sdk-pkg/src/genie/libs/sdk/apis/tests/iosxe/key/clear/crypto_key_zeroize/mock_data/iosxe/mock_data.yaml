@@ -14,13 +14,12 @@ configure_line:
   prompt: INT1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,23 +29,27 @@ execute:
       new_state: configure
     crypto key zeroize:
       response:
-      - "% All keys will be removed.\r\n% All router certs issued using these keys\
-        \ will also be removed.\r\nDo you really want to remove these keys? [yes/no]:\
-        \ y"
+        - |-
+          % All keys will be removed.
+          % All router certs issued using these keys will also be removed.
+          Do you really want to remove these keys? [yes/no]: y
       response_type: circular
     'crypto key zeroize rsa ':
       response:
-      - "% All keys will be removed.\r\n% All router certs issued using these keys\
-        \ will also be removed.\r\nDo you really want to remove these keys? [yes/no]:\
-        \ y"
+        - |-
+          % All keys will be removed.
+          % All router certs issued using these keys will also be removed.
+          Do you really want to remove these keys? [yes/no]: y
       response_type: circular
     crypto key zeroize rsa RSAKEYS:
       response:
-      - "% Keys to be removed are named 'RSAKEYS'.\r\n% All router certs issued using\
-        \ these keys will also be removed.\r\nDo you really want to remove these keys?\
-        \ [yes/no]: y"
+        - |-
+          % Keys to be removed are named 'RSAKEYS'.
+          % All router certs issued using these keys will also be removed.
+          Do you really want to remove these keys? [yes/no]: y
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: INT1#

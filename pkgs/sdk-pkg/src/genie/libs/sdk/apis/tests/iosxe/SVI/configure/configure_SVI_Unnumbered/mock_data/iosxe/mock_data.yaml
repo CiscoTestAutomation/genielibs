@@ -4,8 +4,8 @@ configure:
       new_state: execute
     interface Vlan500: "interface Vlan500\r\n"
     ip unnumbered Loopback1: "ip unnumbered Loopback1\r\n"
-    ipv6 unnumbered Loopback1: "Warning: dynamic routing protocols will not work on\
-      \ non-point-to-point interfaces with IP unnumbered configured.\r\n"
+    ipv6 unnumbered Loopback1: "Warning: dynamic routing protocols will not work on
+      non-point-to-point interfaces with IP unnumbered configured.\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''
@@ -18,13 +18,12 @@ configure_line:
   prompt: gry48-l2-san(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -35,4 +34,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: gry48-l2-san#

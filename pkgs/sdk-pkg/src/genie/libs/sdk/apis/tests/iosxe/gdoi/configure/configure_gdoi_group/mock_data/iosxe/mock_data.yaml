@@ -18,8 +18,8 @@ configure:
     pfs: "rekey retransmit 10 number 3\r\n"
     profile SUITEBgcm128: "gikev2 IKEV2-PROF1\r\n"
     rekey address ipv4 121: "rekey algorithm aes 256\r\n"
-    rekey algorithm aes 256: "Group SUITEBv4 is already configured as a Key Server.\
-      \ Cannot Configure 'client protocol ...'\r\n"
+    rekey algorithm aes 256: "Group SUITEBv4 is already configured as a Key Server.
+      Cannot Configure 'client protocol ...'\r\n"
     rekey authentication mypubkey rsa REKEYRSA: "rekey address ipv4 121\r\n"
     rekey lifetime seconds 14000: "server local\r\n"
     rekey retransmit 10 number 3: "rekey lifetime seconds 14000\r\n"
@@ -36,13 +36,12 @@ configure_line:
   prompt: KS1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -53,4 +52,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: KS1#

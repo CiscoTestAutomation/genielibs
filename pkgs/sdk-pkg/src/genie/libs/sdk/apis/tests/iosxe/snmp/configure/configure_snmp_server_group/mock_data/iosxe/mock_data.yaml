@@ -6,18 +6,17 @@ configure:
       new_state: configure_line
     no logging console: ''
     snmp-server group snmp_group v3 auth: "snmp-server group snmp_group v3 auth\r\n"
-    snmp-server group snmp_group v3 auth access ipv6 useracl useracl: "snmp-server\
-      \ group snmp_group v3 auth access ipv6 useracl useracl\r\n"
-    snmp-server group snmp_group v3 auth context context: "snmp-server group snmp_group\
-      \ v3 auth context context\r\n"
-    snmp-server group snmp_group v3 auth match exact: "snmp-server group snmp_group\
-      \ v3 auth match exact\r\n"
-    snmp-server group snmp_group v3 auth notify notify access useracl: "snmp-server\
-      \ group snmp_group v3 auth notify notify access useracl\r\n"
-    snmp-server group snmp_group v3 auth read readwrite access ipv6 useracl useracl: "snmp-server\
-      \ group snmp_group v3 auth read readwrite access ipv6 useracl useracl\r\n% The\
-      \ access list could not be allocated or an access list with the same name butincompatible\
-      \ type already exists.\r\n"
+    snmp-server group snmp_group v3 auth access ipv6 useracl useracl: "snmp-server
+      group snmp_group v3 auth access ipv6 useracl useracl\r\n"
+    snmp-server group snmp_group v3 auth context context: "snmp-server group snmp_group
+      v3 auth context context\r\n"
+    snmp-server group snmp_group v3 auth match exact: "snmp-server group snmp_group
+      v3 auth match exact\r\n"
+    snmp-server group snmp_group v3 auth notify notify access useracl: "snmp-server
+      group snmp_group v3 auth notify notify access useracl\r\n"
+    snmp-server group snmp_group v3 auth read readwrite access ipv6 useracl useracl: |
+      snmp-server group snmp_group v3 auth read readwrite access ipv6 useracl useracl
+      % The access list could not be allocated or an access list with the same name butincompatible type already exists.
   prompt: UUT(config)#
 configure_line:
   commands:
@@ -27,13 +26,12 @@ configure_line:
   prompt: UUT(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -44,4 +42,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: UUT#

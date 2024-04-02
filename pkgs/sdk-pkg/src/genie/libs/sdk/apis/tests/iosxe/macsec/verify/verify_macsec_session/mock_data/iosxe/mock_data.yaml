@@ -14,13 +14,12 @@ configure_line:
   prompt: FE3(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,74 +29,207 @@ execute:
       new_state: configure
     show macsec interface TwentyFiveGigE 1/0/2:
       response:
-      - " MACsec is enabled\r\n  Replay protect : enabled\r\n  Replay window : 0\r\
-        \n  Include SCI : yes\r\n  Use ES Enable : no\r\n  Use SCB Enable : no\r\n\
-        \  Admin Pt2Pt MAC : forceTrue(1)\r\n  Pt2Pt MAC Operational : no\r\n  Cipher\
-        \ : GCM-AES-128\r\n  Confidentiality Offset : 0\r\n\r\n Capabilities\r\n \
-        \ ICV length : 16\r\n  Data length change supported: yes\r\n  Max. Rx SA :\
-        \ 16\r\n  Max. Tx SA : 16\r\n  Max. Rx SC : 8\r\n  Max. Tx SC : 8\r\n  Validate\
-        \ Frames : strict\r\n  PN threshold notification support : Yes\r\n  Ciphers\
-        \ supported : GCM-AES-128\r\n                      GCM-AES-256\r\n       \
-        \               GCM-AES-XPN-128\r\n                      GCM-AES-XPN-256\r\
-        \n\r\n Access control : must secure\r\n\r\n Transmit Secure Channels\r\n \
-        \ SCI : 24169D8A33620009\r\n  SC state : inUse(1)\r\n   Elapsed time : 00:24:57\r\
-        \n   Start time : 7w0d\r\n   Current AN: 0\r\n   Previous AN: -\r\n   Next\
-        \ PN: 1739\r\n   SA State: inUse(1)\r\n   Confidentiality : yes\r\n   SAK\
-        \ Unchanged : yes\r\n   SA Create time : 6d02h\r\n   SA Start time : 7w0d\r\
-        \n   SC Statistics\r\n    Auth-only Pkts : 0\r\n    Auth-only Bytes : 0\r\n\
-        \    Encrypted Pkts : 0\r\n    Encrypted Bytes : 0\r\n   SA Statistics\r\n\
-        \    Auth-only Pkts : 0\r\n    Auth-only Bytes : 0\r\n    Encrypted Pkts :\
-        \ 1738\r\n    Encrypted Bytes : 164724\r\n\r\n  Port Statistics\r\n   Egress\
-        \ untag pkts  0\r\n   Egress long pkts  0\r\n\r\n Receive Secure Channels\r\
-        \n  SCI : 002790BFC9010009\r\n  SC state : inUse(1)\r\n   Elapsed time : 00:24:57\r\
-        \n   Start time : 7w0d\r\n   Current AN: 0\r\n   Previous AN: -\r\n   Next\
-        \ PN: 838\r\n   RX SA Count: 0\r\n   SA State: inUse(1)\r\n   SAK Unchanged\
-        \ : yes\r\n   SA Create time : 6d02h\r\n   SA Start time : 7w0d\r\n   SC Statistics\r\
-        \n    Notvalid pkts 0\r\n    Invalid pkts 0\r\n    Valid pkts 0\r\n    Late\
-        \ pkts 0\r\n    Uncheck pkts 0\r\n    Delay pkts 0\r\n    UnusedSA pkts 0\r\
-        \n    NousingSA pkts 0\r\n    Validated Bytes 0\r\n    Decrypted Bytes 0\r\
-        \n   SA Statistics\r\n    Notvalid pkts 0\r\n    Invalid pkts 0\r\n    Valid\
-        \ pkts 837\r\n    Late pkts 0\r\n    Uncheck pkts 0\r\n    Delay pkts 0\r\n\
-        \    UnusedSA pkts 0\r\n    NousingSA pkts 0\r\n    Validated Bytes 0\r\n\
-        \    Decrypted Bytes 53651\r\n\r\n  Port Statistics\r\n   Ingress untag pkts\
-        \  0\r\n   Ingress notag pkts  821\r\n   Ingress badtag pkts  0\r\n   Ingress\
-        \ unknownSCI pkts  0\r\n   Ingress noSCI pkts  0\r\n   Ingress overrun pkts\
-        \  0"
-      - " MACsec is enabled\r\n  Replay protect : enabled\r\n  Replay window : 0\r\
-        \n  Include SCI : yes\r\n  Use ES Enable : no\r\n  Use SCB Enable : no\r\n\
-        \  Admin Pt2Pt MAC : forceTrue(1)\r\n  Pt2Pt MAC Operational : no\r\n  Cipher\
-        \ : GCM-AES-128\r\n  Confidentiality Offset : 0\r\n\r\n Capabilities\r\n \
-        \ ICV length : 16\r\n  Data length change supported: yes\r\n  Max. Rx SA :\
-        \ 16\r\n  Max. Tx SA : 16\r\n  Max. Rx SC : 8\r\n  Max. Tx SC : 8\r\n  Validate\
-        \ Frames : strict\r\n  PN threshold notification support : Yes\r\n  Ciphers\
-        \ supported : GCM-AES-128\r\n                      GCM-AES-256\r\n       \
-        \               GCM-AES-XPN-128\r\n                      GCM-AES-XPN-256\r\
-        \n\r\n Access control : must secure\r\n\r\n Transmit Secure Channels\r\n \
-        \ SCI : 24169D8A33620009\r\n  SC state : inUse(1)\r\n   Elapsed time : 00:24:59\r\
-        \n   Start time : 7w0d\r\n   Current AN: 0\r\n   Previous AN: -\r\n   Next\
-        \ PN: 1742\r\n   SA State: inUse(1)\r\n   Confidentiality : yes\r\n   SAK\
-        \ Unchanged : yes\r\n   SA Create time : 6d02h\r\n   SA Start time : 7w0d\r\
-        \n   SC Statistics\r\n    Auth-only Pkts : 0\r\n    Auth-only Bytes : 0\r\n\
-        \    Encrypted Pkts : 0\r\n    Encrypted Bytes : 0\r\n   SA Statistics\r\n\
-        \    Auth-only Pkts : 0\r\n    Auth-only Bytes : 0\r\n    Encrypted Pkts :\
-        \ 1741\r\n    Encrypted Bytes : 165236\r\n\r\n  Port Statistics\r\n   Egress\
-        \ untag pkts  0\r\n   Egress long pkts  0\r\n\r\n Receive Secure Channels\r\
-        \n  SCI : 002790BFC9010009\r\n  SC state : inUse(1)\r\n   Elapsed time : 00:24:59\r\
-        \n   Start time : 7w0d\r\n   Current AN: 0\r\n   Previous AN: -\r\n   Next\
-        \ PN: 839\r\n   RX SA Count: 0\r\n   SA State: inUse(1)\r\n   SAK Unchanged\
-        \ : yes\r\n   SA Create time : 6d02h\r\n   SA Start time : 7w0d\r\n   SC Statistics\r\
-        \n    Notvalid pkts 0\r\n    Invalid pkts 0\r\n    Valid pkts 0\r\n    Late\
-        \ pkts 0\r\n    Uncheck pkts 0\r\n    Delay pkts 0\r\n    UnusedSA pkts 0\r\
-        \n    NousingSA pkts 0\r\n    Validated Bytes 0\r\n    Decrypted Bytes 0\r\
-        \n   SA Statistics\r\n    Notvalid pkts 0\r\n    Invalid pkts 0\r\n    Valid\
-        \ pkts 838\r\n    Late pkts 0\r\n    Uncheck pkts 0\r\n    Delay pkts 0\r\n\
-        \    UnusedSA pkts 0\r\n    NousingSA pkts 0\r\n    Validated Bytes 0\r\n\
-        \    Decrypted Bytes 53699\r\n\r\n  Port Statistics\r\n   Ingress untag pkts\
-        \  0\r\n   Ingress notag pkts  822\r\n   Ingress badtag pkts  0\r\n   Ingress\
-        \ unknownSCI pkts  0\r\n   Ingress noSCI pkts  0\r\n   Ingress overrun pkts\
-        \  0"
+        - |2-
+           MACsec is enabled
+            Replay protect : enabled
+            Replay window : 0
+            Include SCI : yes
+            Use ES Enable : no
+            Use SCB Enable : no
+            Admin Pt2Pt MAC : forceTrue(1)
+            Pt2Pt MAC Operational : no
+            Cipher : GCM-AES-128
+            Confidentiality Offset : 0
+          
+           Capabilities
+            ICV length : 16
+            Data length change supported: yes
+            Max. Rx SA : 16
+            Max. Tx SA : 16
+            Max. Rx SC : 8
+            Max. Tx SC : 8
+            Validate Frames : strict
+            PN threshold notification support : Yes
+            Ciphers supported : GCM-AES-128
+                                GCM-AES-256
+                                GCM-AES-XPN-128
+                                GCM-AES-XPN-256
+          
+           Access control : must secure
+          
+           Transmit Secure Channels
+            SCI : 24169D8A33620009
+            SC state : inUse(1)
+             Elapsed time : 00:24:57
+             Start time : 7w0d
+             Current AN: 0
+             Previous AN: -
+             Next PN: 1739
+             SA State: inUse(1)
+             Confidentiality : yes
+             SAK Unchanged : yes
+             SA Create time : 6d02h
+             SA Start time : 7w0d
+             SC Statistics
+              Auth-only Pkts : 0
+              Auth-only Bytes : 0
+              Encrypted Pkts : 0
+              Encrypted Bytes : 0
+             SA Statistics
+              Auth-only Pkts : 0
+              Auth-only Bytes : 0
+              Encrypted Pkts : 1738
+              Encrypted Bytes : 164724
+          
+            Port Statistics
+             Egress untag pkts  0
+             Egress long pkts  0
+          
+           Receive Secure Channels
+            SCI : 002790BFC9010009
+            SC state : inUse(1)
+             Elapsed time : 00:24:57
+             Start time : 7w0d
+             Current AN: 0
+             Previous AN: -
+             Next PN: 838
+             RX SA Count: 0
+             SA State: inUse(1)
+             SAK Unchanged : yes
+             SA Create time : 6d02h
+             SA Start time : 7w0d
+             SC Statistics
+              Notvalid pkts 0
+              Invalid pkts 0
+              Valid pkts 0
+              Late pkts 0
+              Uncheck pkts 0
+              Delay pkts 0
+              UnusedSA pkts 0
+              NousingSA pkts 0
+              Validated Bytes 0
+              Decrypted Bytes 0
+             SA Statistics
+              Notvalid pkts 0
+              Invalid pkts 0
+              Valid pkts 837
+              Late pkts 0
+              Uncheck pkts 0
+              Delay pkts 0
+              UnusedSA pkts 0
+              NousingSA pkts 0
+              Validated Bytes 0
+              Decrypted Bytes 53651
+          
+            Port Statistics
+             Ingress untag pkts  0
+             Ingress notag pkts  821
+             Ingress badtag pkts  0
+             Ingress unknownSCI pkts  0
+             Ingress noSCI pkts  0
+             Ingress overrun pkts  0
+        - |2-
+           MACsec is enabled
+            Replay protect : enabled
+            Replay window : 0
+            Include SCI : yes
+            Use ES Enable : no
+            Use SCB Enable : no
+            Admin Pt2Pt MAC : forceTrue(1)
+            Pt2Pt MAC Operational : no
+            Cipher : GCM-AES-128
+            Confidentiality Offset : 0
+          
+           Capabilities
+            ICV length : 16
+            Data length change supported: yes
+            Max. Rx SA : 16
+            Max. Tx SA : 16
+            Max. Rx SC : 8
+            Max. Tx SC : 8
+            Validate Frames : strict
+            PN threshold notification support : Yes
+            Ciphers supported : GCM-AES-128
+                                GCM-AES-256
+                                GCM-AES-XPN-128
+                                GCM-AES-XPN-256
+          
+           Access control : must secure
+          
+           Transmit Secure Channels
+            SCI : 24169D8A33620009
+            SC state : inUse(1)
+             Elapsed time : 00:24:59
+             Start time : 7w0d
+             Current AN: 0
+             Previous AN: -
+             Next PN: 1742
+             SA State: inUse(1)
+             Confidentiality : yes
+             SAK Unchanged : yes
+             SA Create time : 6d02h
+             SA Start time : 7w0d
+             SC Statistics
+              Auth-only Pkts : 0
+              Auth-only Bytes : 0
+              Encrypted Pkts : 0
+              Encrypted Bytes : 0
+             SA Statistics
+              Auth-only Pkts : 0
+              Auth-only Bytes : 0
+              Encrypted Pkts : 1741
+              Encrypted Bytes : 165236
+          
+            Port Statistics
+             Egress untag pkts  0
+             Egress long pkts  0
+          
+           Receive Secure Channels
+            SCI : 002790BFC9010009
+            SC state : inUse(1)
+             Elapsed time : 00:24:59
+             Start time : 7w0d
+             Current AN: 0
+             Previous AN: -
+             Next PN: 839
+             RX SA Count: 0
+             SA State: inUse(1)
+             SAK Unchanged : yes
+             SA Create time : 6d02h
+             SA Start time : 7w0d
+             SC Statistics
+              Notvalid pkts 0
+              Invalid pkts 0
+              Valid pkts 0
+              Late pkts 0
+              Uncheck pkts 0
+              Delay pkts 0
+              UnusedSA pkts 0
+              NousingSA pkts 0
+              Validated Bytes 0
+              Decrypted Bytes 0
+             SA Statistics
+              Notvalid pkts 0
+              Invalid pkts 0
+              Valid pkts 838
+              Late pkts 0
+              Uncheck pkts 0
+              Delay pkts 0
+              UnusedSA pkts 0
+              NousingSA pkts 0
+              Validated Bytes 0
+              Decrypted Bytes 53699
+          
+            Port Statistics
+             Ingress untag pkts  0
+             Ingress notag pkts  822
+             Ingress badtag pkts  0
+             Ingress unknownSCI pkts  0
+             Ingress noSCI pkts  0
+             Ingress overrun pkts  0
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: FE3#

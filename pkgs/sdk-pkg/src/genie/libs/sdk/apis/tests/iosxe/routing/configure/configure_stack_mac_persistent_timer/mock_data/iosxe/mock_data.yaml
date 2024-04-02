@@ -5,12 +5,14 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-    stack-mac persistent timer 3: "stack-mac persistent timer 3\r\nWARNING: The stack\
-      \ continues to use the base MAC of the old active\r\nWARNING: as the stack-mac\
-      \ after a active switchover until the MAC \r\nWARNING: persistency timer expires.\
-      \ During this time the Network \r\nWARNING: Administrators must make sure that\
-      \ the old stack-mac does\r\nWARNING: not appear elsewhere in this network domain.\
-      \ If it does, \r\nWARNING: user traffic may be blackholed.\r\n"
+    stack-mac persistent timer 3: |
+      stack-mac persistent timer 3
+      WARNING: The stack continues to use the base MAC of the old active
+      WARNING: as the stack-mac after a active switchover until the MAC 
+      WARNING: persistency timer expires. During this time the Network 
+      WARNING: Administrators must make sure that the old stack-mac does
+      WARNING: not appear elsewhere in this network domain. If it does, 
+      WARNING: user traffic may be blackholed.
   prompt: startrek-1(config)#
 configure_line:
   commands:
@@ -20,13 +22,12 @@ configure_line:
   prompt: startrek-1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -37,4 +38,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: startrek-1#

@@ -1,8 +1,8 @@
 configure:
   commands:
-    bgp redistribute-internal: "*Oct 18 15:45:02.460: %CDP-4-NATIVE_VLAN_MISMATCH:\
-      \ Native VLAN mismatch discovered on GigabitEthernet3/0/29 (1), with Switch1\
-      \ GigabitEthernet1/0/13 (1500).router bgp 1\r\n"
+    bgp redistribute-internal: "*Oct 18 15:45:02.460: %CDP-4-NATIVE_VLAN_MISMATCH:
+      Native VLAN mismatch discovered on GigabitEthernet3/0/29 (1), with Switch1 GigabitEthernet1/0/13
+      (1500).router bgp 1\r\n"
     end:
       new_state: execute
     line console 0:
@@ -18,13 +18,12 @@ configure_line:
   prompt: Switch(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -35,4 +34,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: Switch#

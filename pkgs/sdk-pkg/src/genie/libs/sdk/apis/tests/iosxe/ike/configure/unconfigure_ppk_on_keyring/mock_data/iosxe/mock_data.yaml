@@ -9,8 +9,8 @@ configure:
     no logging console: ''
     no ppk dynamic sks-client-cfg required: "no ppk dynamic sks-client-cfg required\r\
       \n"
-    no ppk manual id ppk1 key cisco123 required: "no ppk manual id ppk1 key cisco123\
-      \ required\r\n"
+    no ppk manual id ppk1 key cisco123 required: "no ppk manual id ppk1 key cisco123
+      required\r\n"
     no pre-shared-key cisco: "no pre-shared-key cisco\r\n"
     peer 1: "peer 1\r\n"
   prompt: Hub(config)#
@@ -22,13 +22,12 @@ configure_line:
   prompt: Hub(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -39,4 +38,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: Hub#

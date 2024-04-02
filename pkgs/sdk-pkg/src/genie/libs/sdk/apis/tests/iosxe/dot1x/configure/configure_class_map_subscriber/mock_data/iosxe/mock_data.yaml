@@ -1,17 +1,17 @@
 configure:
   commands:
-    class-map type control subscriber match-all AAA_SVR_DOWN_AUTHD_HOST: "class-map\
-      \ type control subscriber match-all AAA_SVR_DOWN_AUTHD_\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b$ype control subscriber match-all AAA_SVR_DOWN_AUTHD_H\
+    class-map type control subscriber match-all AAA_SVR_DOWN_AUTHD_HOST: "class-map
+      type control subscriber match-all AAA_SVR_DOWN_AUTHD_\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b\b\b\b\b\b\b\b$ype control subscriber match-all AAA_SVR_DOWN_AUTHD_H\
       \         \b\b\b\b\b\b\b\b\bOST\r\n"
     end:
       new_state: execute
     line console 0:
       new_state: configure_line
-    match result-type method dot1x authoritative: "match result-type method dot1x\
-      \ authorit\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b$t-type method dot1x authorita         \b\b\b\b\b\b\b\b\btive\r\n"
+    match result-type method dot1x authoritative: "match result-type method dot1x
+      authorit\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b$t-type method dot1x authorita         \b\b\b\b\b\b\b\b\btive\r\n"
     no logging console: ''
   prompt: LG-PK(config)#
 configure_line:
@@ -22,13 +22,12 @@ configure_line:
   prompt: LG-PK(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -39,4 +38,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: LG-PK#

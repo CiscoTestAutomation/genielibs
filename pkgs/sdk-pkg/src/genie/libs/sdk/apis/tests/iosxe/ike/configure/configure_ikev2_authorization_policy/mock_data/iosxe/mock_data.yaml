@@ -3,8 +3,8 @@ configure:
     aaa attribute list test: "aaa attribute list test\r\n"
     backup-gateway 200.200.200.1: "backup-gateway 200.200.200.1\r\n"
     configuration version 5: "configuration version 5\r\n"
-    crypto ikev2 authorization policy IKEv2_AUTH_POLICY: "crypto ikev2 authorization\
-      \ policy IKEv2_AUTH_POLICY\r\n"
+    crypto ikev2 authorization policy IKEv2_AUTH_POLICY: "crypto ikev2 authorization
+      policy IKEv2_AUTH_POLICY\r\n"
     def-domain cisco.com: "def-domain cisco.com\r\n"
     dhcp giaddr 100.100.100.1: "dhcp giaddr 100.100.100.1\r\n"
     dhcp server 50.50.50.1: "dhcp server 50.50.50.1\r\n"
@@ -25,13 +25,13 @@ configure:
     route set access-list ipv4_acl: "route set access-list ipv4_acl\r\n"
     route set access-list ipv6 ipv6_acl: "route set access-list ipv6 ipv6_acl\r\n"
     route set interface: "route set interface\r\n"
-    route set local ipv4 20.20.20.0 255.255.255.0: "route set local ipv4 20.20.20.0\
-      \ 255.255.\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b$ocal ipv4 20.20.20.0 255.255.2         \b\b\b\b\b\b\b\b\b55.0\r\
+    route set local ipv4 20.20.20.0 255.255.255.0: "route set local ipv4 20.20.20.0
+      255.255.\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b$ocal ipv4 20.20.20.0 255.255.2         \b\b\b\b\b\b\b\b\b55.0\r\
       \n"
-    route set local ipv4 30.30.30.0 255.255.255.255: "route set local ipv4 30.30.30.0\
-      \ 255.255.\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b$ocal ipv4 30.30.30.0 255.255.2         \b\b\b\b\b\b\b\b\b55.255\r\
+    route set local ipv4 30.30.30.0 255.255.255.255: "route set local ipv4 30.30.30.0
+      255.255.\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b
+      \b\b\b\b\b\b$ocal ipv4 30.30.30.0 255.255.2         \b\b\b\b\b\b\b\b\b55.255\r\
       \n"
     route set local ipv6 2001::/64: "route set local ipv6 2001::/64\r\n"
     route set local ipv6 3001::/64: "route set local ipv6 3001::/64\r\n"
@@ -46,13 +46,12 @@ configure_line:
   prompt: TLS_Mad2(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -63,4 +62,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: TLS_Mad2#

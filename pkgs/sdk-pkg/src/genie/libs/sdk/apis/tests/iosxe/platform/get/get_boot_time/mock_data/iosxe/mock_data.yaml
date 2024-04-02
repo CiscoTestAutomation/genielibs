@@ -1,0 +1,116 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: HA-9400-S2(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: HA-9400-S2(config-line)#
+connect:
+  commands:
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
+    Connected to mock_device.
+    Escape character is '^]'.
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show clock:
+      response:
+        - '*21:05:28.319 PST Wed Feb 28 2024'
+      response_type: circular
+    show version:
+      response:
+        - |-
+          Cisco IOS XE Software, Version S2C
+          Cisco IOS Software [IOSXE], Catalyst L3 Switch Software (CAT9K_IOSXE), Experimental Version 17.15.20240228:003657 [BLD_POLARIS_DEV_S2C_20240228_002251:/nobackup/mcpre/s2c-build-ws 101]
+          Copyright (c) 1986-2024 by Cisco Systems, Inc.
+          Compiled Tue 27-Feb-24 16:37 by mcpre
+          
+          
+          Cisco IOS-XE software, Copyright (c) 2005-2024 by cisco Systems, Inc.
+          All rights reserved.  Certain components of Cisco IOS-XE software are
+          licensed under the GNU General Public License ("GPL") Version 2.0.  The
+          software code licensed under GPL Version 2.0 is free software that comes
+          with ABSOLUTELY NO WARRANTY.  You can redistribute and/or modify such
+          GPL code under the terms of GPL Version 2.0.  For more details, see the
+          documentation or "License Notice" file accompanying the IOS-XE software,
+          or the applicable URL provided on the flyer accompanying the IOS-XE
+          software.
+          
+          
+          ROM: IOS-XE ROMMONBOOTLDR: System Bootstrap, Version 17.10.1r, RELEASE SOFTWARE (P)
+          
+          HA-9400-S2 uptime is 22 hours, 23 minutes
+          Uptime for this control processor is 22 hours, 30 minutes
+          System returned to ROM by Reload Command
+          System image file is "tftp://172.19.145.141/auto/mcp-abs-cluster-101/POLARIS/BLD-BLD_POLARIS_DEV_S2C_20240228_002251/binos/linkfarm/cat9k_universalk9-iso1/cat9k_iosxe.S2C.SSA.bin"
+          Last reload reason: Reload Command
+          
+          
+          
+          This product contains cryptographic features and is subject to United
+          States and local country laws governing import, export, transfer and
+          use. Delivery of Cisco cryptographic products does not imply
+          third-party authority to import, export, distribute or use encryption.
+          Importers, exporters, distributors and users are responsible for
+          compliance with U.S. and local country laws. By using this product you
+          agree to comply with applicable laws and regulations. If you are unable
+          to comply with U.S. and local laws, return this product immediately.
+          
+          A summary of U.S. laws governing Cisco cryptographic products may be found at:
+          http://www.cisco.com/wwl/export/crypto/tool/stqrg.html
+          
+          If you require further assistance please contact us by sending email to
+          export@cisco.com.
+          
+          
+          Technology Package License Information: 
+          
+          ------------------------------------------------------------------------------
+          Technology-package                                     Technology-package
+          Current                        Type                       Next reboot  
+          ------------------------------------------------------------------------------
+          network-advantage   	Smart License                 	 network-advantage   
+          dna-advantage       	Subscription Smart License    	 dna-advantage                 
+          AIR License Level: AIR DNA Advantage
+          Next reload AIR license Level: AIR DNA Advantage
+          
+          
+          Smart Licensing Status: Smart Licensing Using Policy
+          
+          cisco C9407R (X86) processor (revision V01) with 1579614K/6147K bytes of memory.
+          Processor board ID FXS2136Q0E7
+          7 Virtual Ethernet interfaces
+          144 Gigabit Ethernet interfaces
+          16 Ten Gigabit Ethernet interfaces
+          4 Forty Gigabit Ethernet interfaces
+          32768K bytes of non-volatile configuration memory.
+          15988588K bytes of physical memory.
+          11161600K bytes of Bootflash at bootflash:.
+          1638400K bytes of Crash Files at crashinfo:.
+          
+          Base Ethernet MAC Address          : 38:0e:4d:5a:99:00
+          Motherboard Assembly Number        : 4855
+          Motherboard Serial Number          : FXS2134006M
+          Model Revision Number              : V02
+          Motherboard Revision Number        : 3
+          Model Number                       : C9407R              
+          System Serial Number               : FXS2136Q0E7
+      response_type: circular
+    term length 0: ''
+    term width 0: ''
+    show version | include operating mode: ''
+  prompt: HA-9400-S2#

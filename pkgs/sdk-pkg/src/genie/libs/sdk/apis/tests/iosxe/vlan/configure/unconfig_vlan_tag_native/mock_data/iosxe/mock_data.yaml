@@ -2,12 +2,12 @@ configure:
   commands:
     end:
       new_state: execute
-    interface range vlan 11-20: '% Invalid command at ''^'' marker.'
+    interface range vlan 11-20: "% Invalid command at '^' marker."
     line console 0:
       new_state: configure_line
     no logging console: ''
     no vlan dot1q tag native: "no vlan dot1q tag native\r\n"
-    standby 0 priority 50: '% Invalid command at ''^'' marker.'
+    standby 0 priority 50: "% Invalid command at '^' marker."
   prompt: 9500-Core(config)#
 configure_line:
   commands:
@@ -17,13 +17,12 @@ configure_line:
   prompt: 9500-Core(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -34,4 +33,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: 9500-Core#

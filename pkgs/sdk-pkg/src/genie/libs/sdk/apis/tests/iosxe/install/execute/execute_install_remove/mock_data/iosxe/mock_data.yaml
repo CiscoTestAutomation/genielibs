@@ -14,13 +14,12 @@ configure_line:
   prompt: PI-9300-Stack-102(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,63 +29,80 @@ execute:
       new_state: configure
     install remove inactive:
       response:
-      - "install_remove: START Tue Aug 09 16:42:03 UTC 2022\r\ninstall_remove: Removing\
-        \ IMG\r\nCleaning up unnecessary package files\r\nNo path specified, will\
-        \ use booted path /flash/packages.conf\r\n\r\nCleaning /flash\r\n  Scanning\
-        \ boot directory for packages ... done.\r\n  Preparing packages list to delete\
-        \ ...\r\n    [R0]: /flash/packages.conf File is in use, will not delete.\r\
-        \n    [R1]: /flash/packages.conf File is in use, will not delete.\r\n    [R2]:\
-        \ /flash/packages.conf File is in use, will not delete.\r\n    [R0]: /flash/cat9k-cc_srdriver.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg\
-        \ File is in use, will not delete.\r\n    [R1]: /flash/cat9k-cc_srdriver.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg\
-        \ File is in use, will not delete.\r\n    [R2]: /flash/cat9k-cc_srdriver.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg\
-        \ File is in use, will not delete.\r\n    [R0]: /flash/cat9k-espbase.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg\
-        \ File is in use, will not delete.\r\n    [R1]: /flash/cat9k-espbase.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg\
-        \ File is in use, will not delete.\r\n    [R2]: /flash/cat9k-espbase.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg\
-        \ File is in use, will not delete.\r\n    [R0]: /flash/cat9k-guestshell.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg\
-        \ File is in use, will not delete.\r\n    [R1]: /flash/cat9k-guestshell.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg\
-        \ File is in use, will not delete.\r\n    [R2]: /flash/cat9k-guestshell.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg\
-        \ File is in use, will not delete.\r\n    [R0]: /flash/cat9k-lni.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg\
-        \ File is in use, will not delete.\r\n    [R1]: /flash/cat9k-lni.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg\
-        \ File is in use, will not delete.\r\n    [R2]: /flash/cat9k-lni.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg\
-        \ File is in use, will not delete.\r\n    [R0]: /flash/cat9k-rpbase.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg\
-        \ File is in use, will not delete.\r\n    [R1]: /flash/cat9k-rpbase.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg\
-        \ File is in use, will not delete.\r\n    [R2]: /flash/cat9k-rpbase.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg\
-        \ File is in use, will not delete.\r\n    [R0]: /flash/cat9k-sipbase.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg\
-        \ File is in use, will not delete.\r\n    [R1]: /flash/cat9k-sipbase.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg\
-        \ File is in use, will not delete.\r\n    [R2]: /flash/cat9k-sipbase.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg\
-        \ File is in use, will not delete.\r\n    [R0]: /flash/cat9k-sipspa.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg\
-        \ File is in use, will not delete.\r\n    [R1]: /flash/cat9k-sipspa.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg\
-        \ File is in use, will not delete.\r\n    [R2]: /flash/cat9k-sipspa.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg\
-        \ File is in use, will not delete.\r\n    [R0]: /flash/cat9k-srdriver.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg\
-        \ File is in use, will not delete.\r\n    [R1]: /flash/cat9k-srdriver.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg\
-        \ File is in use, will not delete.\r\n    [R2]: /flash/cat9k-srdriver.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg\
-        \ File is in use, will not delete.\r\n    [R0]: /flash/cat9k-webui.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg\
-        \ File is in use, will not delete.\r\n    [R1]: /flash/cat9k-webui.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg\
-        \ File is in use, will not delete.\r\n    [R2]: /flash/cat9k-webui.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg\
-        \ File is in use, will not delete.\r\n    [R0]: /flash/cat9k-wlc.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg\
-        \ File is in use, will not delete.\r\n    [R1]: /flash/cat9k-wlc.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg\
-        \ File is in use, will not delete.\r\n    [R2]: /flash/cat9k-wlc.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg\
-        \ File is in use, will not delete.\r\n    [R0]: /flash/cat9k_iosxe.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.conf\
-        \ File is in use, will not delete.\r\n    [R1]: /flash/cat9k_iosxe.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.conf\
-        \ File is in use, will not delete.\r\n    [R2]: /flash/cat9k_iosxe.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.conf\
-        \ File is in use, will not delete.\r\n    [R0]: /flash/cat9k-rpboot.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg\
-        \ File is in use, will not delete.\r\n    [R1]: /flash/cat9k-rpboot.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg\
-        \ File is in use, will not delete.\r\n    [R2]: /flash/cat9k-rpboot.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg\
-        \ File is in use, will not delete.\r\n\r\nThe following files will be deleted:\r\
-        \n    [R0]: /flash/cat9k_iosxe.2022-08-08_11.57_mcpre.24044.CSCvq24044.SSA.smu.bin\r\
-        \n    [R1]: /flash/cat9k_iosxe.2022-08-08_11.57_mcpre.24044.CSCvq24044.SSA.smu.bin\r\
-        \n    [R2]: /flash/cat9k_iosxe.2022-08-08_11.57_mcpre.24044.CSCvq24044.SSA.smu.bin\r\
-        \n\r\nDo you want to remove the above files? [y/n]y\r\n\r\n\r\nDeleting file\
-        \ /flash/cat9k_iosxe.2022-08-08_11.57_mcpre.24044.CSCvq24044.SSA.smu.bin ...\
-        \ done.\r\nSUCCESS: Files deleted.\r\n\r\n--- Starting Post_Remove_Cleanup\
-        \ ---\r\nPerforming REMOVE_POSTCHECK on all members\r\nFinished Post_Remove_Cleanup\r\
-        \nSUCCESS: install_remove Tue Aug 09 16:42:11 UTC 2022\r\nPI-9300-St"
+        - |-
+          install_remove: START Tue Aug 09 16:42:03 UTC 2022
+          install_remove: Removing IMG
+          Cleaning up unnecessary package files
+          No path specified, will use booted path /flash/packages.conf
+          
+          Cleaning /flash
+            Scanning boot directory for packages ... done.
+            Preparing packages list to delete ...
+              [R0]: /flash/packages.conf File is in use, will not delete.
+              [R1]: /flash/packages.conf File is in use, will not delete.
+              [R2]: /flash/packages.conf File is in use, will not delete.
+              [R0]: /flash/cat9k-cc_srdriver.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg File is in use, will not delete.
+              [R1]: /flash/cat9k-cc_srdriver.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg File is in use, will not delete.
+              [R2]: /flash/cat9k-cc_srdriver.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg File is in use, will not delete.
+              [R0]: /flash/cat9k-espbase.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg File is in use, will not delete.
+              [R1]: /flash/cat9k-espbase.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg File is in use, will not delete.
+              [R2]: /flash/cat9k-espbase.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg File is in use, will not delete.
+              [R0]: /flash/cat9k-guestshell.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg File is in use, will not delete.
+              [R1]: /flash/cat9k-guestshell.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg File is in use, will not delete.
+              [R2]: /flash/cat9k-guestshell.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg File is in use, will not delete.
+              [R0]: /flash/cat9k-lni.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg File is in use, will not delete.
+              [R1]: /flash/cat9k-lni.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg File is in use, will not delete.
+              [R2]: /flash/cat9k-lni.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg File is in use, will not delete.
+              [R0]: /flash/cat9k-rpbase.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg File is in use, will not delete.
+              [R1]: /flash/cat9k-rpbase.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg File is in use, will not delete.
+              [R2]: /flash/cat9k-rpbase.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg File is in use, will not delete.
+              [R0]: /flash/cat9k-sipbase.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg File is in use, will not delete.
+              [R1]: /flash/cat9k-sipbase.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg File is in use, will not delete.
+              [R2]: /flash/cat9k-sipbase.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg File is in use, will not delete.
+              [R0]: /flash/cat9k-sipspa.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg File is in use, will not delete.
+              [R1]: /flash/cat9k-sipspa.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg File is in use, will not delete.
+              [R2]: /flash/cat9k-sipspa.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg File is in use, will not delete.
+              [R0]: /flash/cat9k-srdriver.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg File is in use, will not delete.
+              [R1]: /flash/cat9k-srdriver.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg File is in use, will not delete.
+              [R2]: /flash/cat9k-srdriver.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg File is in use, will not delete.
+              [R0]: /flash/cat9k-webui.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg File is in use, will not delete.
+              [R1]: /flash/cat9k-webui.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg File is in use, will not delete.
+              [R2]: /flash/cat9k-webui.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg File is in use, will not delete.
+              [R0]: /flash/cat9k-wlc.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg File is in use, will not delete.
+              [R1]: /flash/cat9k-wlc.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg File is in use, will not delete.
+              [R2]: /flash/cat9k-wlc.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg File is in use, will not delete.
+              [R0]: /flash/cat9k_iosxe.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.conf File is in use, will not delete.
+              [R1]: /flash/cat9k_iosxe.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.conf File is in use, will not delete.
+              [R2]: /flash/cat9k_iosxe.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.conf File is in use, will not delete.
+              [R0]: /flash/cat9k-rpboot.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg File is in use, will not delete.
+              [R1]: /flash/cat9k-rpboot.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg File is in use, will not delete.
+              [R2]: /flash/cat9k-rpboot.BLD_POLARIS_DEV_LATEST_20220808_072042_V17_10_0_29.SSA.pkg File is in use, will not delete.
+          
+          The following files will be deleted:
+              [R0]: /flash/cat9k_iosxe.2022-08-08_11.57_mcpre.24044.CSCvq24044.SSA.smu.bin
+              [R1]: /flash/cat9k_iosxe.2022-08-08_11.57_mcpre.24044.CSCvq24044.SSA.smu.bin
+              [R2]: /flash/cat9k_iosxe.2022-08-08_11.57_mcpre.24044.CSCvq24044.SSA.smu.bin
+          
+          Do you want to remove the above files? [y/n]y
+          
+          
+          Deleting file /flash/cat9k_iosxe.2022-08-08_11.57_mcpre.24044.CSCvq24044.SSA.smu.bin ... done.
+          SUCCESS: Files deleted.
+          
+          --- Starting Post_Remove_Cleanup ---
+          Performing REMOVE_POSTCHECK on all members
+          Finished Post_Remove_Cleanup
+          SUCCESS: install_remove Tue Aug 09 16:42:11 UTC 2022
+          PI-9300-St
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
     write memory:
       response:
-      - "Building configuration...\r\n[OK]"
+        - |-
+          Building configuration...
+          [OK]
       response_type: circular
+    show version | include operating mode: ''
   prompt: PI-9300-Stack-102#

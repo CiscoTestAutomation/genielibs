@@ -18,13 +18,12 @@ configure_line:
   prompt: R1_xe(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -32,50 +31,69 @@ execute:
       new_state: configure
     show interfaces GigabitEthernet1:
       response:
-      - "GigabitEthernet1 is up, line protocol is up \r\n  Hardware is CSR vNIC, address\
-        \ is 5e01.4000.0000 (bia 5e01.4000.0000)\r\n  Internet address is 172.16.1.211/24\r\
-        \n  MTU 1500 bytes, BW 1000000 Kbit/sec, DLY 10 usec, \r\n     reliability\
-        \ 255/255, txload 1/255, rxload 1/255\r\n  Encapsulation ARPA, loopback not\
-        \ set\r\n  Keepalive set (10 sec)\r\n  Full Duplex, 1000Mbps, link type is\
-        \ auto, media type is Virtual\r\n  output flow-control is unsupported, input\
-        \ flow-control is unsupported\r\n  ARP type: ARPA, ARP Timeout 04:00:00\r\n\
-        \  Last input 00:00:00, output 00:00:02, output hang never\r\n  Last clearing\
-        \ of \"show interface\" counters never\r\n  Input queue: 0/375/0/0 (size/max/drops/flushes);\
-        \ Total output drops: 0\r\n  Queueing strategy: fifo\r\n  Output queue: 0/40\
-        \ (size/max)\r\n  5 minute input rate 181000 bits/sec, 140 packets/sec\r\n\
-        \  5 minute output rate 0 bits/sec, 0 packets/sec\r\n     346977601 packets\
-        \ input, 57084926506 bytes, 0 no buffer\r\n     Received 0 broadcasts (0 IP\
-        \ multicasts)\r\n     0 runts, 0 giants, 0 throttles \r\n     0 input errors,\
-        \ 0 CRC, 0 frame, 0 overrun, 0 ignored\r\n     0 watchdog, 0 multicast, 0\
-        \ pause input\r\n     307569 packets output, 53171909 bytes, 0 underruns\r\
-        \n     0 output errors, 0 collisions, 1 interface resets\r\n     243055 unknown\
-        \ protocol drops\r\n     0 babbles, 0 late collision, 0 deferred\r\n     0\
-        \ lost carrier, 0 no carrier, 0 pause output\r\n     0 output buffer failures,\
-        \ 0 output buffers swapped out"
-      - "GigabitEthernet1 is up, line protocol is up \r\n  Hardware is CSR vNIC, address\
-        \ is 5e01.4000.0000 (bia 5e01.4000.0000)\r\n  Internet address is 172.16.1.211/24\r\
-        \n  MTU 1500 bytes, BW 1000000 Kbit/sec, DLY 10 usec, \r\n     reliability\
-        \ 255/255, txload 1/255, rxload 1/255\r\n  Encapsulation ARPA, loopback not\
-        \ set\r\n  Keepalive set (10 sec)\r\n  Full Duplex, 1000Mbps, link type is\
-        \ auto, media type is Virtual\r\n  output flow-control is unsupported, input\
-        \ flow-control is unsupported\r\n  ARP type: ARPA, ARP Timeout 04:00:00\r\n\
-        \  Last input 00:00:00, output 00:00:03, output hang never\r\n  Last clearing\
-        \ of \"show interface\" counters never\r\n  Input queue: 0/375/0/0 (size/max/drops/flushes);\
-        \ Total output drops: 0\r\n  Queueing strategy: fifo\r\n  Output queue: 0/40\
-        \ (size/max)\r\n  5 minute input rate 181000 bits/sec, 140 packets/sec\r\n\
-        \  5 minute output rate 0 bits/sec, 0 packets/sec\r\n     346977601 packets\
-        \ input, 57084926506 bytes, 0 no buffer\r\n     Received 0 broadcasts (0 IP\
-        \ multicasts)\r\n     0 runts, 0 giants, 0 throttles \r\n     0 input errors,\
-        \ 0 CRC, 0 frame, 0 overrun, 0 ignored\r\n     0 watchdog, 0 multicast, 0\
-        \ pause input\r\n     307569 packets output, 53171909 bytes, 0 underruns\r\
-        \n     0 output errors, 0 collisions, 1 interface resets\r\n     243055 unknown\
-        \ protocol drops\r\n     0 babbles, 0 late collision, 0 deferred\r\n     0\
-        \ lost carrier, 0 no carrier, 0 pause output\r\n     0 output buffer failures,\
-        \ 0 output buffers swapped out"
+        - |-
+          GigabitEthernet1 is up, line protocol is up 
+            Hardware is CSR vNIC, address is 5e01.4000.0000 (bia 5e01.4000.0000)
+            Internet address is 172.16.1.211/24
+            MTU 1500 bytes, BW 1000000 Kbit/sec, DLY 10 usec, 
+               reliability 255/255, txload 1/255, rxload 1/255
+            Encapsulation ARPA, loopback not set
+            Keepalive set (10 sec)
+            Full Duplex, 1000Mbps, link type is auto, media type is Virtual
+            output flow-control is unsupported, input flow-control is unsupported
+            ARP type: ARPA, ARP Timeout 04:00:00
+            Last input 00:00:00, output 00:00:02, output hang never
+            Last clearing of "show interface" counters never
+            Input queue: 0/375/0/0 (size/max/drops/flushes); Total output drops: 0
+            Queueing strategy: fifo
+            Output queue: 0/40 (size/max)
+            5 minute input rate 181000 bits/sec, 140 packets/sec
+            5 minute output rate 0 bits/sec, 0 packets/sec
+               346977601 packets input, 57084926506 bytes, 0 no buffer
+               Received 0 broadcasts (0 IP multicasts)
+               0 runts, 0 giants, 0 throttles 
+               0 input errors, 0 CRC, 0 frame, 0 overrun, 0 ignored
+               0 watchdog, 0 multicast, 0 pause input
+               307569 packets output, 53171909 bytes, 0 underruns
+               0 output errors, 0 collisions, 1 interface resets
+               243055 unknown protocol drops
+               0 babbles, 0 late collision, 0 deferred
+               0 lost carrier, 0 no carrier, 0 pause output
+               0 output buffer failures, 0 output buffers swapped out
+        - |-
+          GigabitEthernet1 is up, line protocol is up 
+            Hardware is CSR vNIC, address is 5e01.4000.0000 (bia 5e01.4000.0000)
+            Internet address is 172.16.1.211/24
+            MTU 1500 bytes, BW 1000000 Kbit/sec, DLY 10 usec, 
+               reliability 255/255, txload 1/255, rxload 1/255
+            Encapsulation ARPA, loopback not set
+            Keepalive set (10 sec)
+            Full Duplex, 1000Mbps, link type is auto, media type is Virtual
+            output flow-control is unsupported, input flow-control is unsupported
+            ARP type: ARPA, ARP Timeout 04:00:00
+            Last input 00:00:00, output 00:00:03, output hang never
+            Last clearing of "show interface" counters never
+            Input queue: 0/375/0/0 (size/max/drops/flushes); Total output drops: 0
+            Queueing strategy: fifo
+            Output queue: 0/40 (size/max)
+            5 minute input rate 181000 bits/sec, 140 packets/sec
+            5 minute output rate 0 bits/sec, 0 packets/sec
+               346977601 packets input, 57084926506 bytes, 0 no buffer
+               Received 0 broadcasts (0 IP multicasts)
+               0 runts, 0 giants, 0 throttles 
+               0 input errors, 0 CRC, 0 frame, 0 overrun, 0 ignored
+               0 watchdog, 0 multicast, 0 pause input
+               307569 packets output, 53171909 bytes, 0 underruns
+               0 output errors, 0 collisions, 1 interface resets
+               243055 unknown protocol drops
+               0 babbles, 0 late collision, 0 deferred
+               0 lost carrier, 0 no carrier, 0 pause output
+               0 output buffer failures, 0 output buffers swapped out
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
     term width 511: ''
     terminal session-timeout 0: ''
+    show version | include operating mode: ''
   prompt: R1_xe#

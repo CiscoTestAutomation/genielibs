@@ -18,13 +18,12 @@ configure_line:
   prompt: Intrepid-DUT-1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -32,32 +31,26 @@ execute:
       new_state: configure
     config-transaction:
       new_state: configure
-    show logging | include IPV6_ACL-6-ACCESSLOG: "*Dec 15 07:38:20.978: %IPV6_ACL-6-ACCESSLOGP:\
-      \ list bfd1/50 permitted udp 2013:1::20(49152) -> 2013:1::10(3784), 1 packet\r\
-      \n*Dec 15 07:38:21.583: %IPV6_ACL-6-ACCESSLOGP: list bfd1/50 permitted udp FE80::2A7:42FF:FE9B:D35F(49152)\
-      \ -> FE80::3E57:31FF:FE04:B9C5(3784), 1 packet\r\n*Dec 15 07:38:45.556: %IPV6_ACL-6-ACCESSLOGNP:\
-      \ list bfd1/70 permitted 103 FE80::2A7:42FF:FE9B:D35F -> FF02::D, 1 packet\r\
-      \n*Dec 15 07:41:23.176: %IPV6_ACL-6-ACCESSLOGP: list bfd1/40 permitted tcp 2013:1::20(46355)\
-      \ -> 2013:1::10(179), 1 packet\r\n*Dec 15 07:43:40.725: %IPV6_ACL-6-ACCESSLOGP:\
-      \ list bfd1/50 permitted udp 2013:1::20(49152) -> 2013:1::10(3784), 971 packets\r\
-      \n*Dec 15 07:43:40.725: %IPV6_ACL-6-ACCESSLOGP: list bfd1/50 permitted udp FE80::2A7:42FF:FE9B:D35F(49152)\
-      \ -> FE80::3E57:31FF:FE04:B9C5(3784), 969 packets\r\n*Dec 15 07:44:40.755: %IPV6_ACL-6-ACCESSLOGNP:\
-      \ list bfd1/70 permitted 103 FE80::2A7:42FF:FE9B:D35F -> FF02::D, 11 packets\r\
-      \n*Dec 15 07:46:40.735: %IPV6_ACL-6-ACCESSLOGP: list bfd1/40 permitted tcp 2013:1::20(46355)\
-      \ -> 2013:1::10(179), 31 packets\r\n*Dec 15 07:48:40.742: %IPV6_ACL-6-ACCESSLOGP:\
-      \ list bfd1/50 permitted udp 2013:1::20(49152) -> 2013:1::10(3784), 916 packets\r\
-      \n*Dec 15 07:48:40.742: %IPV6_ACL-6-ACCESSLOGP: list bfd1/50 permitted udp FE80::2A7:42FF:FE9B:D35F(49152)\
-      \ -> FE80::3E57:31FF:FE04:B9C5(3784), 916 packets\r\n*Dec 15 07:50:40.724: %IPV6_ACL-6-ACCESSLOGNP:\
-      \ list bfd1/70 permitted 103 FE80::2A7:42FF:FE9B:D35F -> FF02::D, 13 packets\r\
-      \n*Dec 15 07:51:40.743: %IPV6_ACL-6-ACCESSLOGP: list bfd1/40 permitted tcp 2013:1::20(46355)\
-      \ -> 2013:1::10(179), 22 packets\r\n*Dec 15 07:53:40.752: %IPV6_ACL-6-ACCESSLOGP:\
-      \ list bfd1/50 permitted udp 2013:1::20(49152) -> 2013:1::10(3784), 904 packets\r\
-      \n*Dec 15 07:53:40.752: %IPV6_ACL-6-ACCESSLOGP: list bfd1/50 permitted udp FE80::2A7:42FF:FE9B:D35F(49152)\
-      \ -> FE80::3E57:31FF:FE04:B9C5(3784), 910 packets\r\n*Dec 15 07:56:40.710: %IPV6_ACL-6-ACCESSLOGNP:\
-      \ list bfd1/70 permitted 103 FE80::2A7:42FF:FE9B:D35F -> FF02::D, 12 packets"
+    show logging | include IPV6_ACL-6-ACCESSLOG: |-
+      *Dec 15 07:38:20.978: %IPV6_ACL-6-ACCESSLOGP: list bfd1/50 permitted udp 2013:1::20(49152) -> 2013:1::10(3784), 1 packet
+      *Dec 15 07:38:21.583: %IPV6_ACL-6-ACCESSLOGP: list bfd1/50 permitted udp FE80::2A7:42FF:FE9B:D35F(49152) -> FE80::3E57:31FF:FE04:B9C5(3784), 1 packet
+      *Dec 15 07:38:45.556: %IPV6_ACL-6-ACCESSLOGNP: list bfd1/70 permitted 103 FE80::2A7:42FF:FE9B:D35F -> FF02::D, 1 packet
+      *Dec 15 07:41:23.176: %IPV6_ACL-6-ACCESSLOGP: list bfd1/40 permitted tcp 2013:1::20(46355) -> 2013:1::10(179), 1 packet
+      *Dec 15 07:43:40.725: %IPV6_ACL-6-ACCESSLOGP: list bfd1/50 permitted udp 2013:1::20(49152) -> 2013:1::10(3784), 971 packets
+      *Dec 15 07:43:40.725: %IPV6_ACL-6-ACCESSLOGP: list bfd1/50 permitted udp FE80::2A7:42FF:FE9B:D35F(49152) -> FE80::3E57:31FF:FE04:B9C5(3784), 969 packets
+      *Dec 15 07:44:40.755: %IPV6_ACL-6-ACCESSLOGNP: list bfd1/70 permitted 103 FE80::2A7:42FF:FE9B:D35F -> FF02::D, 11 packets
+      *Dec 15 07:46:40.735: %IPV6_ACL-6-ACCESSLOGP: list bfd1/40 permitted tcp 2013:1::20(46355) -> 2013:1::10(179), 31 packets
+      *Dec 15 07:48:40.742: %IPV6_ACL-6-ACCESSLOGP: list bfd1/50 permitted udp 2013:1::20(49152) -> 2013:1::10(3784), 916 packets
+      *Dec 15 07:48:40.742: %IPV6_ACL-6-ACCESSLOGP: list bfd1/50 permitted udp FE80::2A7:42FF:FE9B:D35F(49152) -> FE80::3E57:31FF:FE04:B9C5(3784), 916 packets
+      *Dec 15 07:50:40.724: %IPV6_ACL-6-ACCESSLOGNP: list bfd1/70 permitted 103 FE80::2A7:42FF:FE9B:D35F -> FF02::D, 13 packets
+      *Dec 15 07:51:40.743: %IPV6_ACL-6-ACCESSLOGP: list bfd1/40 permitted tcp 2013:1::20(46355) -> 2013:1::10(179), 22 packets
+      *Dec 15 07:53:40.752: %IPV6_ACL-6-ACCESSLOGP: list bfd1/50 permitted udp 2013:1::20(49152) -> 2013:1::10(3784), 904 packets
+      *Dec 15 07:53:40.752: %IPV6_ACL-6-ACCESSLOGP: list bfd1/50 permitted udp FE80::2A7:42FF:FE9B:D35F(49152) -> FE80::3E57:31FF:FE04:B9C5(3784), 910 packets
+      *Dec 15 07:56:40.710: %IPV6_ACL-6-ACCESSLOGNP: list bfd1/70 permitted 103 FE80::2A7:42FF:FE9B:D35F -> FF02::D, 12 packets
     show version: ''
     term length 0: ''
     term width 0: ''
     term width 511: ''
     terminal session-timeout 0: ''
+    show version | include operating mode: ''
   prompt: Intrepid-DUT-1#

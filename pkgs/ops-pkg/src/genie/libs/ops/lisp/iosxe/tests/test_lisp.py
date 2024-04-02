@@ -75,6 +75,9 @@ output['show lisp all instance-id 101 ethernet database'] = LispOutput.ShowLispI
 
 
 def mapper(key):
+    if key in output:
+        return output[key]
+    key = key.replace('show lisp ', 'show lisp all ')
     return output[key]
 
 
@@ -86,7 +89,7 @@ def incomplete_mapper(key):
     if key == 'show lisp all instance-id 101 ipv4':
         return ''
     else:
-        return output[key]
+        return mapper(key)
 
 
 class test_lisp(unittest.TestCase):
@@ -112,7 +115,6 @@ class test_lisp(unittest.TestCase):
 
         # Learn the feature
         lisp.learn()
-
         # Verify Ops was created successfully
         self.assertEqual(lisp.info, LispOutput.LispInfo)
 
@@ -130,7 +132,7 @@ class test_lisp(unittest.TestCase):
 
         # Check selective attribute
         self.assertEqual('10.166.13.13', lisp.info['lisp_router_instances'][0]\
-                                        ['service']['ipv4']['etr']\
+                                        ['service']['ipv6']\
                                         ['mapping_servers']['10.166.13.13']\
                                         ['ms_address'])
 

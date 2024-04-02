@@ -14,13 +14,12 @@ configure_line:
   prompt: PI-9300-Stack-102(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,50 +29,56 @@ execute:
       new_state: configure
     install remove version 17.10.01.0.160408:
       response:
-      - "install_remove: START Tue Aug 09 16:26:09 UTC 2022\r\ninstall_remove: Removing\
-        \ IMG\r\nPreparing packages list to remove ...\r\n\r\nThe following files\
-        \ will be deleted:\r\n    [R0]: /mnt/sd3/user/cat9k-lni.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg\r\
-        \n    [R1]: /mnt/sd3/user/cat9k-lni.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg\r\
-        \n    [R2]: /mnt/sd3/user/cat9k-lni.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg\r\
-        \n    [R0]: /mnt/sd3/user/cat9k-wlc.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg\r\
-        \n    [R1]: /mnt/sd3/user/cat9k-wlc.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg\r\
-        \n    [R2]: /mnt/sd3/user/cat9k-wlc.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg\r\
-        \n    [R0]: /mnt/sd3/user/cat9k-webui.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg\r\
-        \n    [R1]: /mnt/sd3/user/cat9k-webui.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg\r\
-        \n    [R2]: /mnt/sd3/user/cat9k-webui.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg\r\
-        \n    [R0]: /mnt/sd3/user/cat9k_iosxe.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.bin\r\
-        \n    [R1]: /mnt/sd3/user/cat9k_iosxe.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.bin\r\
-        \n    [R2]: /mnt/sd3/user/cat9k_iosxe.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.bin\r\
-        \n    [R0]: /mnt/sd3/user/cat9k-rpbase.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg\r\
-        \n    [R1]: /mnt/sd3/user/cat9k-rpbase.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg\r\
-        \n    [R2]: /mnt/sd3/user/cat9k-rpbase.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg\r\
-        \n    [R0]: /mnt/sd3/user/cat9k-rpboot.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg\r\
-        \n    [R1]: /mnt/sd3/user/cat9k-rpboot.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg\r\
-        \n    [R2]: /mnt/sd3/user/cat9k-rpboot.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg\r\
-        \n    [R0]: /mnt/sd3/user/cat9k-sipspa.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg\r\
-        \n    [R1]: /mnt/sd3/user/cat9k-sipspa.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg\r\
-        \n    [R2]: /mnt/sd3/user/cat9k-sipspa.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg\r\
-        \n    [R0]: /mnt/sd3/user/cat9k-espbase.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg\r\
-        \n    [R1]: /mnt/sd3/user/cat9k-espbase.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg\r\
-        \n    [R2]: /mnt/sd3/user/cat9k-espbase.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg\r\
-        \n    [R0]: /mnt/sd3/user/cat9k-sipbase.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg\r\
-        \n    [R1]: /mnt/sd3/user/cat9k-sipbase.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg\r\
-        \n    [R2]: /mnt/sd3/user/cat9k-sipbase.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg\r\
-        \n    [R0]: /mnt/sd3/user/cat9k-srdriver.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg\r\
-        \n    [R1]: /mnt/sd3/user/cat9k-srdriver.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg\r\
-        \n    [R2]: /mnt/sd3/user/cat9k-srdriver.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg\r\
-        \n    [R0]: /mnt/sd3/user/cat9k-guestshell.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg\r\
-        \n    [R1]: /mnt/sd3/user/cat9k-guestshell.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg\r\
-        \n    [R2]: /mnt/sd3/user/cat9k-guestshell.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg\r\
-        \n    [R0]: /mnt/sd3/user/cat9k_iosxe.2022-06-06_12.21_mcpre.24042.CSCvq24042.SSA.smu.bin\r\
-        \n    [R1]: /mnt/sd3/user/cat9k_iosxe.2022-06-06_12.21_mcpre.24042.CSCvq24042.SSA.smu.bin\r\
-        \n    [R2]: /mnt/sd3/user/cat9k_iosxe.2022-06-06_12.21_mcpre.24042.CSCvq24042.SSA.smu.bin\r\
-        \n    [R0]: /mnt/sd3/user/cat9k-cc_srdriver.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg\r\
-        \n    [R1]: /mnt/sd3/user/cat9k-cc_srdriver.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg\r\
-        \n    [R2]: /mnt/sd3/user/cat9k-cc_srdriver.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg\r\
-        \n\r\nDo you want to remove the above files? [y/n]"
+        - |-
+          install_remove: START Tue Aug 09 16:26:09 UTC 2022
+          install_remove: Removing IMG
+          Preparing packages list to remove ...
+          
+          The following files will be deleted:
+              [R0]: /mnt/sd3/user/cat9k-lni.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg
+              [R1]: /mnt/sd3/user/cat9k-lni.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg
+              [R2]: /mnt/sd3/user/cat9k-lni.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg
+              [R0]: /mnt/sd3/user/cat9k-wlc.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg
+              [R1]: /mnt/sd3/user/cat9k-wlc.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg
+              [R2]: /mnt/sd3/user/cat9k-wlc.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg
+              [R0]: /mnt/sd3/user/cat9k-webui.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg
+              [R1]: /mnt/sd3/user/cat9k-webui.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg
+              [R2]: /mnt/sd3/user/cat9k-webui.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg
+              [R0]: /mnt/sd3/user/cat9k_iosxe.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.bin
+              [R1]: /mnt/sd3/user/cat9k_iosxe.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.bin
+              [R2]: /mnt/sd3/user/cat9k_iosxe.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.bin
+              [R0]: /mnt/sd3/user/cat9k-rpbase.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg
+              [R1]: /mnt/sd3/user/cat9k-rpbase.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg
+              [R2]: /mnt/sd3/user/cat9k-rpbase.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg
+              [R0]: /mnt/sd3/user/cat9k-rpboot.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg
+              [R1]: /mnt/sd3/user/cat9k-rpboot.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg
+              [R2]: /mnt/sd3/user/cat9k-rpboot.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg
+              [R0]: /mnt/sd3/user/cat9k-sipspa.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg
+              [R1]: /mnt/sd3/user/cat9k-sipspa.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg
+              [R2]: /mnt/sd3/user/cat9k-sipspa.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg
+              [R0]: /mnt/sd3/user/cat9k-espbase.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg
+              [R1]: /mnt/sd3/user/cat9k-espbase.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg
+              [R2]: /mnt/sd3/user/cat9k-espbase.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg
+              [R0]: /mnt/sd3/user/cat9k-sipbase.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg
+              [R1]: /mnt/sd3/user/cat9k-sipbase.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg
+              [R2]: /mnt/sd3/user/cat9k-sipbase.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg
+              [R0]: /mnt/sd3/user/cat9k-srdriver.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg
+              [R1]: /mnt/sd3/user/cat9k-srdriver.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg
+              [R2]: /mnt/sd3/user/cat9k-srdriver.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg
+              [R0]: /mnt/sd3/user/cat9k-guestshell.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg
+              [R1]: /mnt/sd3/user/cat9k-guestshell.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg
+              [R2]: /mnt/sd3/user/cat9k-guestshell.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg
+              [R0]: /mnt/sd3/user/cat9k_iosxe.2022-06-06_12.21_mcpre.24042.CSCvq24042.SSA.smu.bin
+              [R1]: /mnt/sd3/user/cat9k_iosxe.2022-06-06_12.21_mcpre.24042.CSCvq24042.SSA.smu.bin
+              [R2]: /mnt/sd3/user/cat9k_iosxe.2022-06-06_12.21_mcpre.24042.CSCvq24042.SSA.smu.bin
+              [R0]: /mnt/sd3/user/cat9k-cc_srdriver.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg
+              [R1]: /mnt/sd3/user/cat9k-cc_srdriver.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg
+              [R2]: /mnt/sd3/user/cat9k-cc_srdriver.BLD_POLARIS_DEV_LATEST_20220602_224053.SSA.pkg
+          
+          Do you want to remove the above files? [y/n]
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: PI-9300-Stack-102#

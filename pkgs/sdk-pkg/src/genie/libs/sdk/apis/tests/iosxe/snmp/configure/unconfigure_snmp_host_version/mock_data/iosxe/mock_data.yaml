@@ -5,8 +5,8 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-    no snmp-server host 172.21.226.240 vrf Mgmt-vrf version 2c public udp-port 10001: "no\
-      \ snmp-server host 172.21.226.240 vrf Mgmt-vrf version 2c public udp-port 10001\r\
+    no snmp-server host 172.21.226.240 vrf Mgmt-vrf version 2c public udp-port 10001: "no
+      snmp-server host 172.21.226.240 vrf Mgmt-vrf version 2c public udp-port 10001\r\
       \n"
   prompt: startrek-1(config)#
 configure_line:
@@ -17,13 +17,12 @@ configure_line:
   prompt: startrek-1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -34,4 +33,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: startrek-1#

@@ -4,6 +4,8 @@ import copy
 # super class
 from genie.libs.ops.platform.platform import Platform as SuperPlatform
 
+from genie.libs.ops.utils.common import convert_to_bool, \
+                                        convert_to_seconds
 # Genie Parsers
 from genie.libs.parser.iosxe import show_platform
 from genie.libs.parser.iosxe.show_issu import ShowIssuStateDetail,\
@@ -20,31 +22,6 @@ class Platform(SuperPlatform):
         if m:
             item = m.groupdict()['slot']
         return item
-
-    def convert_to_bool(self, item):
-        if item and 'up' in item.lower():
-            return True
-        else:
-            return False
-
-    def convert_to_seconds(self, item):
-        # 15 hours, 4 minutes
-        p = re.compile(r'((?P<day>\d+) +(day|days), *)?'
-                        '((?P<hour>\d+) +(hour|hours), *)?'
-                        '((?P<minute>\d+) +(minute|minutes))|'
-                        '((?P<second>\d+) +(seconds|seconds))$')
-        m = p.match(item)
-        if m:
-            time_in_seconds = 0
-            if m.groupdict()['day']:
-                time_in_seconds += int(m.groupdict()['day']) * 86400
-            if m.groupdict()['hour']:
-                time_in_seconds += int(m.groupdict()['hour']) * 3600
-            if m.groupdict()['minute']:
-                time_in_seconds += int(m.groupdict()['minute']) * 60
-            if m.groupdict()['second']:
-                time_in_seconds += int(m.groupdict()['second'])
-        return time_in_seconds
 
     def learn(self):
         '''Learn Platform object'''
@@ -124,7 +101,7 @@ class Platform(SuperPlatform):
         self.add_leaf(cmd=show_platform.ShowRedundancy,
                       src='[red_sys_info][communications]',
                       dest='redundancy_communication',
-                      action=self.convert_to_bool)
+                      action=convert_to_bool)
 
         # swstack
         self.add_leaf(cmd=show_platform.ShowInventory,
@@ -176,7 +153,7 @@ class Platform(SuperPlatform):
         self.add_leaf(cmd=show_platform.ShowRedundancy,
                       src='[red_sys_info][available_system_uptime]',
                       dest='[rp_uptime]',
-                      action=self.convert_to_seconds)
+                      action=convert_to_seconds)
 
         # rp_system_image
         self.add_leaf(cmd=show_platform.ShowRedundancy,

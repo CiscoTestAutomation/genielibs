@@ -1,7 +1,7 @@
 configure:
   commands:
-    distribute-list prefix ospf_prefix_list out: "distribute-list prefix ospf_prefix_list\
-      \ out\r\n"
+    distribute-list prefix ospf_prefix_list out: "distribute-list prefix ospf_prefix_list
+      out\r\n"
     end:
       new_state: execute
     line console 0:
@@ -17,13 +17,12 @@ configure_line:
   prompt: 9300-24UX-1(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -34,4 +33,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: 9300-24UX-1#

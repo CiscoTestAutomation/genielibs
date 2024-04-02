@@ -14,13 +14,12 @@ configure_line:
   prompt: PI-9300-Stack-103(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,10 +29,12 @@ execute:
       new_state: configure
     install auto-abort-timer stop:
       response:
-      - "install_auto_abort_timer: START Sun Aug  7 12:39:13 UTC 2022\r\nSUCCESS:\
-        \ install_auto_abort_timer  Sun Aug  7 12:39:13 UTC 2022"
+        - |-
+          install_auto_abort_timer: START Sun Aug  7 12:39:13 UTC 2022
+          SUCCESS: install_auto_abort_timer  Sun Aug  7 12:39:13 UTC 2022
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: PI-9300-Stack-103#

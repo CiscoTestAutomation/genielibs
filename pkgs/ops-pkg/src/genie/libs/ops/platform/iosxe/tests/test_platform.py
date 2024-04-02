@@ -343,6 +343,30 @@ class test_platform_all(unittest.TestCase):
         self.maxDiff = None
         self.assertEqual(f.slot, PlatformOutput.platform_all_empty_dir_C3850['slot'])
 
+    def test_label_c9500(self):
+        f = Platform(device=self.device)
+
+        f.maker.outputs[ShowVersion] = \
+            {'':PlatformOutput.showVersionC9500}
+        # loading empty output
+        f.maker.outputs[Dir] = \
+            {'':PlatformOutput.showDirEmptyC3850}
+        f.maker.outputs[ShowRedundancy] = \
+            {'':PlatformOutput.showRedundancyC3850}
+        f.maker.outputs[ShowInventory] = \
+            {'':PlatformOutput.showInventoryC3850}
+        f.maker.outputs[ShowPlatform] = \
+            {'':PlatformOutput.showPlatformC3850}
+        f.maker.outputs[ShowIssuStateDetail] = \
+            {'':PlatformOutput.ShowIssuStateDetailC3850}
+        f.maker.outputs[ShowIssuRollbackTimer] = \
+            {'':PlatformOutput.ShowIssuRollbackTimerC3850}
+
+        f.learn()
+
+        self.maxDiff = None
+        self.assertEqual(f.label, PlatformOutput.showVersionC9500['version']['build_label'])
+
 
 if __name__ == '__main__':
     unittest.main()

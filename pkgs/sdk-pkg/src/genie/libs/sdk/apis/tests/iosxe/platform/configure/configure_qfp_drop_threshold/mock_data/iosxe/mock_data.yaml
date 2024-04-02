@@ -5,9 +5,10 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-    platform qfp drops threshold per-cause 2 10: "platform qfp drops threshold per-cause\
-      \ 2 10\r\n"
-    platform qfp drops threshold total 20: "platform qfp drops threshold total 20\r\n"
+    platform qfp drops threshold per-cause 2 10: "platform qfp drops threshold per-cause
+      2 10\r\n"
+    platform qfp drops threshold total 20: "platform qfp drops threshold total 20\r\
+      \n"
   prompt: Router(config)#
 configure_line:
   commands:
@@ -17,13 +18,12 @@ configure_line:
   prompt: Router(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -34,4 +34,5 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: Router#

@@ -18,13 +18,12 @@ configure_line:
   prompt: C9200-Standalone(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -32,72 +31,64 @@ execute:
       new_state: configure
     config-transaction:
       new_state: configure
-    show logging: "Syslog logging: enabled (0 messages dropped, 2 messages rate-limited,\
-      \ 0 flushes, 0 overruns, xml disabled, filtering disabled)\r\n\r\nNo Active\
-      \ Message Discriminator.\r\n\r\n\r\n\r\nNo Inactive Message Discriminator.\r\
-      \n\r\n\r\n    Console logging: disabled\r\n    Monitor logging: level debugging,\
-      \ 0 messages logged, xml disabled,\r\n                     filtering disabled\r\
-      \n    Buffer logging:  level debugging, 281 messages logged, xml disabled,\r\
-      \n                    filtering disabled\r\n    Exception Logging: size (4096\
-      \ bytes)\r\n    Count and timestamp logging messages: disabled\r\n    File logging:\
-      \ disabled\r\n    Persistent logging: disabled\r\n\r\nNo active filter modules.\r\
-      \n\r\n    Trap logging: level informational, 260 message lines logged\r\n  \
-      \      Logging Source-Interface:       VRF Name:\r\n    TLS Profiles: \r\n\r\
-      \nLog Buffer (4096 bytes):\r\nme/domain name \r\n*Nov 17 18:05:09.580: %SMART_LIC-3-COMM_FAILED:\
-      \ Communications failure with the Cisco Smart License Utility (CSLU) : Unable\
-      \ to resolve server hostname/domain name \r\n*Nov 17 19:05:18.616: %SMART_LIC-3-COMM_FAILED:\
-      \ Communications failure with the Cisco Smart License Utility (CSLU) : Unable\
-      \ to resolve server hostname/domain name \r\n*Nov 17 20:05:27.650: %SMART_LIC-3-COMM_FAILED:\
-      \ Communications failure with the Cisco Smart License Utility (CSLU) : Unable\
-      \ to resolve server hostname/domain name \r\n*Nov 17 21:05:36.687: %SMART_LIC-3-COMM_FAILED:\
-      \ Communications failure with the Cisco Smart License Utility (CSLU) : Unable\
-      \ to resolve server hostname/domain name \r\n*Nov 17 22:05:45.721: %SMART_LIC-3-COMM_FAILED:\
-      \ Communications failure with the Cisco Smart License Utility (CSLU) : Unable\
-      \ to resolve server hostname/domain name \r\n*Nov 17 23:05:54.758: %SMART_LIC-3-COMM_FAILED:\
-      \ Communications failure with the Cisco Smart License Utility (CSLU) : Unable\
-      \ to resolve server hostname/domain name \r\n*Nov 18 00:06:03.791: %SMART_LIC-3-COMM_FAILED:\
-      \ Communications failure with the Cisco Smart License Utility (CSLU) : Unable\
-      \ to resolve server hostname/domain name \r\n*Nov 18 01:06:12.824: %SMART_LIC-3-COMM_FAILED:\
-      \ Communications failure with the Cisco Smart License Utility (CSLU) : Unable\
-      \ to resolve server hostname/domain name \r\n*Nov 18 02:06:21.854: %SMART_LIC-3-COMM_FAILED:\
-      \ Communications failure with the Cisco Smart License Utility (CSLU) : Unable\
-      \ to resolve server hostname/domain name \r\n*Nov 18 03:06:30.887: %SMART_LIC-3-COMM_FAILED:\
-      \ Communications failure with the Cisco Smart License Utility (CSLU) : Unable\
-      \ to resolve server hostname/domain name \r\n*Nov 18 03:36:02.438: %SYS-5-LOG_CONFIG_CHANGE:\
-      \ Console logging disabled\r\n*Nov 18 03:36:02.686: %SYS-5-CONFIG_I: Configured\
-      \ from console by lab on console\r\n*Nov 18 03:36:05.892: %DMI-5-SYNC_NEEDED:\
-      \ Switch 1 R0/0: dmiauthd: Configuration change requiring running configuration\
-      \ sync detected - '  line console 0'. The running configuration will be synchronized\
-      \  to the NETCONF running data store.\r\n*Nov 18 03:36:12.782: %DMI-5-SYNC_START:\
-      \ Switch 1 R0/0: dmiauthd: Synchronization of the running configuration to the\
-      \ NETCONF running data store has started.\r\n*Nov 18 03:36:31.993: %DMI-5-SYNC_COMPLETE:\
-      \ Switch 1 R0/0: dmiauthd: The running configuration has been synchronized to\
-      \ the NETCONF running data store.\r\n*Nov 18 03:43:27.891: %SYS-5-CONFIG_I:\
-      \ Configured from console by lab on console\r\n*Nov 18 03:43:28.314: %DMI-5-SYNC_NEEDED:\
-      \ Switch 1 R0/0: dmiauthd: Configuration change requiring running configuration\
-      \ sync detected - '  line console 0'. The running configuration will be synchronized\
-      \  to the NETCONF running data store.\r\n*Nov 18 03:43:28.953: %DMI-5-SYNC_START:\
-      \ Switch 1 R0/0: dmiauthd: Synchronization of the running configuration to the\
-      \ NETCONF running data store has started.\r\n*Nov 18 03:43:47.877: %DMI-5-SYNC_COMPLETE:\
-      \ Switch 1 R0/0: dmiauthd: The running configuration has been synchronized to\
-      \ the NETCONF running data store.\r\n*Nov 18 03:48:09.377: %SYS-5-CONFIG_I:\
-      \ Configured from console by lab on console\r\n*Nov 18 03:48:09.819: %DMI-5-SYNC_NEEDED:\
-      \ Switch 1 R0/0: dmiauthd: Configuration change requiring running configuration\
-      \ sync detected - '  line console 0'. The running configuration will be synchronized\
-      \  to the NETCONF running data store.\r\n*Nov 18 03:48:10.200: %DMI-5-SYNC_START:\
-      \ Switch 1 R0/0: dmiauthd: Synchronization of the running configuration to the\
-      \ NETCONF running data store has started.\r\n*Nov 18 03:48:29.110: %DMI-5-SYNC_COMPLETE:\
-      \ Switch 1 R0/0: dmiauthd: The running configuration has been synchronized to\
-      \ the NETCONF running data store.\r\n*Nov 18 03:51:43.968: %SYS-5-CONFIG_I:\
-      \ Configured from console by lab on console\r\n*Nov 18 03:51:44.388: %DMI-5-SYNC_NEEDED:\
-      \ Switch 1 R0/0: dmiauthd: Configuration change requiring running configuration\
-      \ sync detected - '  line console 0'. The running configuration will be synchronized\
-      \  to the NETCONF running data store.\r\n*Nov 18 03:51:44.775: %DMI-5-SYNC_START:\
-      \ Switch 1 R0/0: dmiauthd: Synchronization of the running configuration to the\
-      \ NETCONF running data store has started."
+    show logging: |-
+      Syslog logging: enabled (0 messages dropped, 2 messages rate-limited, 0 flushes, 0 overruns, xml disabled, filtering disabled)
+      
+      No Active Message Discriminator.
+      
+      
+      
+      No Inactive Message Discriminator.
+      
+      
+          Console logging: disabled
+          Monitor logging: level debugging, 0 messages logged, xml disabled,
+                           filtering disabled
+          Buffer logging:  level debugging, 281 messages logged, xml disabled,
+                          filtering disabled
+          Exception Logging: size (4096 bytes)
+          Count and timestamp logging messages: disabled
+          File logging: disabled
+          Persistent logging: disabled
+      
+      No active filter modules.
+      
+          Trap logging: level informational, 260 message lines logged
+              Logging Source-Interface:       VRF Name:
+          TLS Profiles: 
+      
+      Log Buffer (4096 bytes):
+      me/domain name 
+      *Nov 17 18:05:09.580: %SMART_LIC-3-COMM_FAILED: Communications failure with the Cisco Smart License Utility (CSLU) : Unable to resolve server hostname/domain name 
+      *Nov 17 19:05:18.616: %SMART_LIC-3-COMM_FAILED: Communications failure with the Cisco Smart License Utility (CSLU) : Unable to resolve server hostname/domain name 
+      *Nov 17 20:05:27.650: %SMART_LIC-3-COMM_FAILED: Communications failure with the Cisco Smart License Utility (CSLU) : Unable to resolve server hostname/domain name 
+      *Nov 17 21:05:36.687: %SMART_LIC-3-COMM_FAILED: Communications failure with the Cisco Smart License Utility (CSLU) : Unable to resolve server hostname/domain name 
+      *Nov 17 22:05:45.721: %SMART_LIC-3-COMM_FAILED: Communications failure with the Cisco Smart License Utility (CSLU) : Unable to resolve server hostname/domain name 
+      *Nov 17 23:05:54.758: %SMART_LIC-3-COMM_FAILED: Communications failure with the Cisco Smart License Utility (CSLU) : Unable to resolve server hostname/domain name 
+      *Nov 18 00:06:03.791: %SMART_LIC-3-COMM_FAILED: Communications failure with the Cisco Smart License Utility (CSLU) : Unable to resolve server hostname/domain name 
+      *Nov 18 01:06:12.824: %SMART_LIC-3-COMM_FAILED: Communications failure with the Cisco Smart License Utility (CSLU) : Unable to resolve server hostname/domain name 
+      *Nov 18 02:06:21.854: %SMART_LIC-3-COMM_FAILED: Communications failure with the Cisco Smart License Utility (CSLU) : Unable to resolve server hostname/domain name 
+      *Nov 18 03:06:30.887: %SMART_LIC-3-COMM_FAILED: Communications failure with the Cisco Smart License Utility (CSLU) : Unable to resolve server hostname/domain name 
+      *Nov 18 03:36:02.438: %SYS-5-LOG_CONFIG_CHANGE: Console logging disabled
+      *Nov 18 03:36:02.686: %SYS-5-CONFIG_I: Configured from console by lab on console
+      *Nov 18 03:36:05.892: %DMI-5-SYNC_NEEDED: Switch 1 R0/0: dmiauthd: Configuration change requiring running configuration sync detected - '  line console 0'. The running configuration will be synchronized  to the NETCONF running data store.
+      *Nov 18 03:36:12.782: %DMI-5-SYNC_START: Switch 1 R0/0: dmiauthd: Synchronization of the running configuration to the NETCONF running data store has started.
+      *Nov 18 03:36:31.993: %DMI-5-SYNC_COMPLETE: Switch 1 R0/0: dmiauthd: The running configuration has been synchronized to the NETCONF running data store.
+      *Nov 18 03:43:27.891: %SYS-5-CONFIG_I: Configured from console by lab on console
+      *Nov 18 03:43:28.314: %DMI-5-SYNC_NEEDED: Switch 1 R0/0: dmiauthd: Configuration change requiring running configuration sync detected - '  line console 0'. The running configuration will be synchronized  to the NETCONF running data store.
+      *Nov 18 03:43:28.953: %DMI-5-SYNC_START: Switch 1 R0/0: dmiauthd: Synchronization of the running configuration to the NETCONF running data store has started.
+      *Nov 18 03:43:47.877: %DMI-5-SYNC_COMPLETE: Switch 1 R0/0: dmiauthd: The running configuration has been synchronized to the NETCONF running data store.
+      *Nov 18 03:48:09.377: %SYS-5-CONFIG_I: Configured from console by lab on console
+      *Nov 18 03:48:09.819: %DMI-5-SYNC_NEEDED: Switch 1 R0/0: dmiauthd: Configuration change requiring running configuration sync detected - '  line console 0'. The running configuration will be synchronized  to the NETCONF running data store.
+      *Nov 18 03:48:10.200: %DMI-5-SYNC_START: Switch 1 R0/0: dmiauthd: Synchronization of the running configuration to the NETCONF running data store has started.
+      *Nov 18 03:48:29.110: %DMI-5-SYNC_COMPLETE: Switch 1 R0/0: dmiauthd: The running configuration has been synchronized to the NETCONF running data store.
+      *Nov 18 03:51:43.968: %SYS-5-CONFIG_I: Configured from console by lab on console
+      *Nov 18 03:51:44.388: %DMI-5-SYNC_NEEDED: Switch 1 R0/0: dmiauthd: Configuration change requiring running configuration sync detected - '  line console 0'. The running configuration will be synchronized  to the NETCONF running data store.
+      *Nov 18 03:51:44.775: %DMI-5-SYNC_START: Switch 1 R0/0: dmiauthd: Synchronization of the running configuration to the NETCONF running data store has started.
     show version: ''
     term length 0: ''
     term width 0: ''
     term width 511: ''
     terminal session-timeout 0: ''
+    show version | include operating mode: ''
   prompt: C9200-Standalone#

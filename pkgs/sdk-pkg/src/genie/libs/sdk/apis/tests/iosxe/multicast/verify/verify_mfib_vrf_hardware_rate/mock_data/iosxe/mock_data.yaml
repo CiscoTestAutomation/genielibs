@@ -14,13 +14,12 @@ configure_line:
   prompt: C9400-SVL(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,83 +29,172 @@ execute:
       new_state: configure
     show ip mfib vrf vrf3001 active:
       response:
-      - "Active Multicast Sources - sending >= 4 kbps\r\nVRF vrf3001\r\nGroup: 228.1.1.1\r\
-        \n  Source: 131.1.1.2,\r\n   SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 728\
-        \ sec)\r\n   HW Rate: 990 pps/3960 kbps(1sec)\r\nGroup: 228.1.1.2\r\n  Source:\
-        \ 131.1.1.2,\r\n   SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 728 sec)\r\n \
-        \  HW Rate: 990 pps/3960 kbps(1sec)\r\nGroup: 228.1.1.3\r\n  Source: 131.1.1.2,\r\
-        \n   SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 728 sec)\r\n   HW Rate: 990\
-        \ pps/3960 kbps(1sec)\r\nGroup: 228.1.1.4\r\n  Source: 131.1.1.2,\r\n   SW\
-        \ Rate: 0 pps/0 kbps(1sec), 0 kbps(last 728 sec)\r\n   HW Rate: 990 pps/3960\
-        \ kbps(1sec)\r\nGroup: 228.1.1.5\r\n  Source: 131.1.1.2,\r\n   SW Rate: 0\
-        \ pps/0 kbps(1sec), 0 kbps(last 728 sec)\r\n   HW Rate: 990 pps/3960 kbps(1sec)\r\
-        \nGroup: 228.1.1.6\r\n  Source: 131.1.1.2,\r\n   SW Rate: 0 pps/0 kbps(1sec),\
-        \ 0 kbps(last 728 sec)\r\n   HW Rate: 990 pps/3960 kbps(1sec)\r\nGroup: 228.1.1.7\r\
-        \n  Source: 131.1.1.2,\r\n   SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 728\
-        \ sec)\r\n   HW Rate: 990 pps/3960 kbps(1sec)\r\nGroup: 228.1.1.8\r\n  Source:\
-        \ 131.1.1.2,\r\n   SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 728 sec)\r\n \
-        \  HW Rate: 990 pps/3960 kbps(1sec)\r\nGroup: 228.1.1.9\r\n  Source: 131.1.1.2,\r\
-        \n   SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 728 sec)\r\n   HW Rate: 990\
-        \ pps/3960 kbps(1sec)\r\nGroup: 228.1.1.10\r\n  Source: 131.1.1.2,\r\n   SW\
-        \ Rate: 0 pps/0 kbps(1sec), 0 kbps(last 728 sec)\r\n   HW Rate: 990 pps/3960\
-        \ kbps(1sec)\r\nGroup: 228.2.1.1\r\n  Source: 121.1.1.2,\r\n   SW Rate: 0\
-        \ pps/0 kbps(1sec), 0 kbps(last 728 sec)\r\n   HW Rate: 1008 pps/3906 kbps(1sec)\r\
-        \nGroup: 228.2.1.2\r\n  Source: 121.1.1.2,\r\n   SW Rate: 0 pps/0 kbps(1sec),\
-        \ 0 kbps(last 728 sec)\r\n   HW Rate: 1008 pps/3906 kbps(1sec)\r\nGroup: 228.2.1.3\r\
-        \n  Source: 121.1.1.2,\r\n   SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 728\
-        \ sec)\r\n   HW Rate: 990 pps/3836 kbps(1sec)\r\nGroup: 228.2.1.4\r\n  Source:\
-        \ 121.1.1.2,\r\n   SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 728 sec)\r\n \
-        \  HW Rate: 1008 pps/3906 kbps(1sec)\r\nGroup: 228.2.1.5\r\n  Source: 121.1.1.2,\r\
-        \n   SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 728 sec)\r\n   HW Rate: 990\
-        \ pps/3836 kbps(1sec)\r\nGroup: 228.2.1.6\r\n  Source: 121.1.1.2,\r\n   SW\
-        \ Rate: 0 pps/0 kbps(1sec), 0 kbps(last 728 sec)\r\n   HW Rate: 990 pps/3836\
-        \ kbps(1sec)\r\nGroup: 228.2.1.7\r\n  Source: 121.1.1.2,\r\n   SW Rate: 0\
-        \ pps/0 kbps(1sec), 0 kbps(last 728 sec)\r\n   HW Rate: 1008 pps/3906 kbps(1sec)\r\
-        \nGroup: 228.2.1.8\r\n  Source: 121.1.1.2,\r\n   SW Rate: 0 pps/0 kbps(1sec),\
-        \ 0 kbps(last 728 sec)\r\n   HW Rate: 990 pps/3836 kbps(1sec)\r\nGroup: 228.2.1.9\r\
-        \n  Source: 121.1.1.2,\r\n   SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 728\
-        \ sec)\r\n   HW Rate: 1008 pps/3906 kbps(1sec)\r\nGroup: 228.2.1.10\r\n  Source:\
-        \ 121.1.1.2,\r\n   SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 728 sec)\r\n \
-        \  HW Rate: 1008 pps/3906 kbps(1sec)\r\nGroup: 232.1.1.1\r\n  Source: 131.1.1.3,\r\
-        \n   SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 17428 sec)\r\n   HW Rate: 990\
-        \ pps/3960 kbps(1sec)\r\nGroup: 232.1.1.2\r\n  Source: 131.1.1.3,\r\n   SW\
-        \ Rate: 0 pps/0 kbps(1sec), 0 kbps(last 17428 sec)\r\n   HW Rate: 990 pps/3960\
-        \ kbps(1sec)\r\nGroup: 232.1.1.3\r\n  Source: 131.1.1.3,\r\n   SW Rate: 0\
-        \ pps/0 kbps(1sec), 0 kbps(last 17428 sec)\r\n   HW Rate: 990 pps/3960 kbps(1sec)\r\
-        \nGroup: 232.1.1.4\r\n  Source: 131.1.1.3,\r\n   SW Rate: 0 pps/0 kbps(1sec),\
-        \ 0 kbps(last 17428 sec)\r\n   HW Rate: 990 pps/3960 kbps(1sec)\r\nGroup:\
-        \ 232.1.1.5\r\n  Source: 131.1.1.3,\r\n   SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last\
-        \ 17428 sec)\r\n   HW Rate: 990 pps/3960 kbps(1sec)\r\nGroup: 232.1.1.6\r\n\
-        \  Source: 131.1.1.3,\r\n   SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 17428\
-        \ sec)\r\n   HW Rate: 990 pps/3960 kbps(1sec)\r\nGroup: 232.1.1.7\r\n  Source:\
-        \ 131.1.1.3,\r\n   SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 17428 sec)\r\n\
-        \   HW Rate: 990 pps/3960 kbps(1sec)\r\nGroup: 232.1.1.8\r\n  Source: 131.1.1.3,\r\
-        \n   SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 17428 sec)\r\n   HW Rate: 990\
-        \ pps/3960 kbps(1sec)\r\nGroup: 232.1.1.9\r\n  Source: 131.1.1.3,\r\n   SW\
-        \ Rate: 0 pps/0 kbps(1sec), 0 kbps(last 17428 sec)\r\n   HW Rate: 990 pps/3960\
-        \ kbps(1sec)\r\nGroup: 232.1.1.10\r\n  Source: 131.1.1.3,\r\n   SW Rate: 0\
-        \ pps/0 kbps(1sec), 0 kbps(last 17428 sec)\r\n   HW Rate: 990 pps/3960 kbps(1sec)\r\
-        \nGroup: 232.1.2.1\r\n  Source: 121.1.1.3,\r\n   SW Rate: 0 pps/0 kbps(1sec),\
-        \ 0 kbps(last 17465 sec)\r\n   HW Rate: 990 pps/3836 kbps(1sec)\r\nGroup:\
-        \ 232.1.2.2\r\n  Source: 121.1.1.3,\r\n   SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last\
-        \ 17465 sec)\r\n   HW Rate: 990 pps/3836 kbps(1sec)\r\nGroup: 232.1.2.3\r\n\
-        \  Source: 121.1.1.3,\r\n   SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 17465\
-        \ sec)\r\n   HW Rate: 1008 pps/3906 kbps(1sec)\r\nGroup: 232.1.2.4\r\n  Source:\
-        \ 121.1.1.3,\r\n   SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 17465 sec)\r\n\
-        \   HW Rate: 990 pps/3836 kbps(1sec)\r\nGroup: 232.1.2.5\r\n  Source: 121.1.1.3,\r\
-        \n   SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 17465 sec)\r\n   HW Rate: 1008\
-        \ pps/3906 kbps(1sec)\r\nGroup: 232.1.2.6\r\n  Source: 121.1.1.3,\r\n   SW\
-        \ Rate: 0 pps/0 kbps(1sec), 0 kbps(last 17465 sec)\r\n   HW Rate: 1008 pps/3906\
-        \ kbps(1sec)\r\nGroup: 232.1.2.7\r\n  Source: 121.1.1.3,\r\n   SW Rate: 0\
-        \ pps/0 kbps(1sec), 0 kbps(last 17465 sec)\r\n   HW Rate: 990 pps/3836 kbps(1sec)\r\
-        \nGroup: 232.1.2.8\r\n  Source: 121.1.1.3,\r\n   SW Rate: 0 pps/0 kbps(1sec),\
-        \ 0 kbps(last 17465 sec)\r\n   HW Rate: 1008 pps/3906 kbps(1sec)\r\nGroup:\
-        \ 232.1.2.9\r\n  Source: 121.1.1.3,\r\n   SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last\
-        \ 17465 sec)\r\n   HW Rate: 990 pps/3836 kbps(1sec)\r\nGroup: 232.1.2.10\r\
-        \n  Source: 121.1.1.3,\r\n   SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 17465\
-        \ sec)\r\n   HW Rate: 990 pps/3836 kbps(1sec)"
+        - |-
+          Active Multicast Sources - sending >= 4 kbps
+          VRF vrf3001
+          Group: 228.1.1.1
+            Source: 131.1.1.2,
+             SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 728 sec)
+             HW Rate: 990 pps/3960 kbps(1sec)
+          Group: 228.1.1.2
+            Source: 131.1.1.2,
+             SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 728 sec)
+             HW Rate: 990 pps/3960 kbps(1sec)
+          Group: 228.1.1.3
+            Source: 131.1.1.2,
+             SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 728 sec)
+             HW Rate: 990 pps/3960 kbps(1sec)
+          Group: 228.1.1.4
+            Source: 131.1.1.2,
+             SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 728 sec)
+             HW Rate: 990 pps/3960 kbps(1sec)
+          Group: 228.1.1.5
+            Source: 131.1.1.2,
+             SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 728 sec)
+             HW Rate: 990 pps/3960 kbps(1sec)
+          Group: 228.1.1.6
+            Source: 131.1.1.2,
+             SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 728 sec)
+             HW Rate: 990 pps/3960 kbps(1sec)
+          Group: 228.1.1.7
+            Source: 131.1.1.2,
+             SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 728 sec)
+             HW Rate: 990 pps/3960 kbps(1sec)
+          Group: 228.1.1.8
+            Source: 131.1.1.2,
+             SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 728 sec)
+             HW Rate: 990 pps/3960 kbps(1sec)
+          Group: 228.1.1.9
+            Source: 131.1.1.2,
+             SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 728 sec)
+             HW Rate: 990 pps/3960 kbps(1sec)
+          Group: 228.1.1.10
+            Source: 131.1.1.2,
+             SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 728 sec)
+             HW Rate: 990 pps/3960 kbps(1sec)
+          Group: 228.2.1.1
+            Source: 121.1.1.2,
+             SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 728 sec)
+             HW Rate: 1008 pps/3906 kbps(1sec)
+          Group: 228.2.1.2
+            Source: 121.1.1.2,
+             SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 728 sec)
+             HW Rate: 1008 pps/3906 kbps(1sec)
+          Group: 228.2.1.3
+            Source: 121.1.1.2,
+             SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 728 sec)
+             HW Rate: 990 pps/3836 kbps(1sec)
+          Group: 228.2.1.4
+            Source: 121.1.1.2,
+             SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 728 sec)
+             HW Rate: 1008 pps/3906 kbps(1sec)
+          Group: 228.2.1.5
+            Source: 121.1.1.2,
+             SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 728 sec)
+             HW Rate: 990 pps/3836 kbps(1sec)
+          Group: 228.2.1.6
+            Source: 121.1.1.2,
+             SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 728 sec)
+             HW Rate: 990 pps/3836 kbps(1sec)
+          Group: 228.2.1.7
+            Source: 121.1.1.2,
+             SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 728 sec)
+             HW Rate: 1008 pps/3906 kbps(1sec)
+          Group: 228.2.1.8
+            Source: 121.1.1.2,
+             SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 728 sec)
+             HW Rate: 990 pps/3836 kbps(1sec)
+          Group: 228.2.1.9
+            Source: 121.1.1.2,
+             SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 728 sec)
+             HW Rate: 1008 pps/3906 kbps(1sec)
+          Group: 228.2.1.10
+            Source: 121.1.1.2,
+             SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 728 sec)
+             HW Rate: 1008 pps/3906 kbps(1sec)
+          Group: 232.1.1.1
+            Source: 131.1.1.3,
+             SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 17428 sec)
+             HW Rate: 990 pps/3960 kbps(1sec)
+          Group: 232.1.1.2
+            Source: 131.1.1.3,
+             SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 17428 sec)
+             HW Rate: 990 pps/3960 kbps(1sec)
+          Group: 232.1.1.3
+            Source: 131.1.1.3,
+             SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 17428 sec)
+             HW Rate: 990 pps/3960 kbps(1sec)
+          Group: 232.1.1.4
+            Source: 131.1.1.3,
+             SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 17428 sec)
+             HW Rate: 990 pps/3960 kbps(1sec)
+          Group: 232.1.1.5
+            Source: 131.1.1.3,
+             SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 17428 sec)
+             HW Rate: 990 pps/3960 kbps(1sec)
+          Group: 232.1.1.6
+            Source: 131.1.1.3,
+             SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 17428 sec)
+             HW Rate: 990 pps/3960 kbps(1sec)
+          Group: 232.1.1.7
+            Source: 131.1.1.3,
+             SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 17428 sec)
+             HW Rate: 990 pps/3960 kbps(1sec)
+          Group: 232.1.1.8
+            Source: 131.1.1.3,
+             SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 17428 sec)
+             HW Rate: 990 pps/3960 kbps(1sec)
+          Group: 232.1.1.9
+            Source: 131.1.1.3,
+             SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 17428 sec)
+             HW Rate: 990 pps/3960 kbps(1sec)
+          Group: 232.1.1.10
+            Source: 131.1.1.3,
+             SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 17428 sec)
+             HW Rate: 990 pps/3960 kbps(1sec)
+          Group: 232.1.2.1
+            Source: 121.1.1.3,
+             SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 17465 sec)
+             HW Rate: 990 pps/3836 kbps(1sec)
+          Group: 232.1.2.2
+            Source: 121.1.1.3,
+             SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 17465 sec)
+             HW Rate: 990 pps/3836 kbps(1sec)
+          Group: 232.1.2.3
+            Source: 121.1.1.3,
+             SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 17465 sec)
+             HW Rate: 1008 pps/3906 kbps(1sec)
+          Group: 232.1.2.4
+            Source: 121.1.1.3,
+             SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 17465 sec)
+             HW Rate: 990 pps/3836 kbps(1sec)
+          Group: 232.1.2.5
+            Source: 121.1.1.3,
+             SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 17465 sec)
+             HW Rate: 1008 pps/3906 kbps(1sec)
+          Group: 232.1.2.6
+            Source: 121.1.1.3,
+             SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 17465 sec)
+             HW Rate: 1008 pps/3906 kbps(1sec)
+          Group: 232.1.2.7
+            Source: 121.1.1.3,
+             SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 17465 sec)
+             HW Rate: 990 pps/3836 kbps(1sec)
+          Group: 232.1.2.8
+            Source: 121.1.1.3,
+             SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 17465 sec)
+             HW Rate: 1008 pps/3906 kbps(1sec)
+          Group: 232.1.2.9
+            Source: 121.1.1.3,
+             SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 17465 sec)
+             HW Rate: 990 pps/3836 kbps(1sec)
+          Group: 232.1.2.10
+            Source: 121.1.1.3,
+             SW Rate: 0 pps/0 kbps(1sec), 0 kbps(last 17465 sec)
+             HW Rate: 990 pps/3836 kbps(1sec)
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: C9400-SVL#

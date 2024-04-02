@@ -14,13 +14,12 @@ configure_line:
   prompt: iolpe2(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -31,6 +30,10 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-    copy  running-config startup-config: "copy  running-config startup-config\r\nDestination filename [startup-config]?\
-        \ \r\nBuilding configuration...\r\n[OK]\r\n"
+    copy  running-config startup-config: |
+      copy  running-config startup-config
+      Destination filename [startup-config]? 
+      Building configuration...
+      [OK]
+    show version | include operating mode: ''
   prompt: iolpe2#

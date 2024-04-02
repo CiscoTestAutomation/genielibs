@@ -14,13 +14,12 @@ configure_line:
   prompt: Kahuna-Sanity(config-line)#
 connect:
   commands:
-    ? ''
-    : new_state: execute
-  preface: 'Trying mock_device ...
-
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
     Connected to mock_device.
-
-    Escape character is ''^]''.'
+    Escape character is '^]'.
   prompt: ''
 execute:
   commands:
@@ -30,12 +29,16 @@ execute:
       new_state: configure
     erase startup-config:
       response:
-      - "************************************************************************************************************\r\
-        \nErasing Nvram will not clear license trust code.\r\n************************************************************************************************************\r\
-        \nErasing the nvram filesystem will remove all configuration files! Continue?\
-        \ [confirm]\r\n[OK]\r\nErase of nvram: complete"
+        - |-
+          ************************************************************************************************************
+          Erasing Nvram will not clear license trust code.
+          ************************************************************************************************************
+          Erasing the nvram filesystem will remove all configuration files! Continue? [confirm]
+          [OK]
+          Erase of nvram: complete
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
+    show version | include operating mode: ''
   prompt: Kahuna-Sanity#
