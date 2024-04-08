@@ -1,0 +1,47 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: R1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: R1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show ip eigrp topology:
+      response:
+      - "EIGRP-IPv4 Topology Table for AS(1)/ID(1.1.1.1)\r\nCodes: P - Passive, A\
+        \ - Active, U - Update, Q - Query, R - Reply,\r\n       r - reply Status,\
+        \ s - sia Status \r\n\r\nP 192.168.2.0/24, 1 successors, FD is 25856\r\n \
+        \       via Redistributed (25856/0)\r\nP 192.168.1.0/24, 1 successors, FD\
+        \ is 28160\r\n        via Connected, FastEthernet0/0\r\n\r\nEIGRP-IPv4 Topology\
+        \ Table for AS(2)/ID(9.9.9.9)\r\nCodes: P - Passive, A - Active, U - Update,\
+        \ Q - Query, R - Reply,\r\n       r - reply Status, s - sia Status \r\n\r\n\
+        P 192.168.2.0/24, 1 successors, FD is 28160\r\n        via Connected, FastEthernet1/0\r\
+        \nP 192.168.1.0/24, 1 successors, FD is 25856\r\n        via Redistributed\
+        \ (25856/0)"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: R1#
