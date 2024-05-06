@@ -9,9 +9,9 @@ import time
 from genie.utils.timeout import Timeout
 from genie.libs.sdk.libs.utils.normalize import GroupKeys
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
+from genie.libs.parser.utils.common import Common
 
 log = logging.getLogger(__name__)
-
 
 def verify_mka_session(device, intf, status, ckn=None, timeout=160, status2=None):
     ''' To Verify MKA MACsec sessioN
@@ -27,69 +27,42 @@ def verify_mka_session(device, intf, status, ckn=None, timeout=160, status2=None
         Raises:
             SubCommandFailure
     '''
+    timeout = Timeout(timeout, interval = 10, disable_log = False)
     result = 0
-    mka_out = None
-    log.info('Verifying mka summary secure sessions')
-    timeout = Timeout(max_time = timeout, interval = 10, disable_log = False)
     while timeout.iterate():
         try:
+            converted_interface = Common.convert_intf_name(intf)
             mka_out = device.parse('show mka sessions interface '
-                '{interface} detail'.format(interface=intf))
-        except Exception as e:
-            log.info('Macsec session verification failed. Error:\n{e}'.format(e))
-            return False 
-        if len(mka_out['sessions']) != 0:
-            result = 0
-            break
-        result = 1
-        timeout.sleep()
-        if result == 1:
-            log.error("Mka session is not seen")
-            return False
+                '{interface} detail'.format(interface=converted_interface))
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
         if mka_out['sessions']['status'].lower() == status.lower():
-            log.info('Mka status is %s'%(status))
-        else:
-            log.info('Mka status should be %s'%(status))
-            log.info('Mka status is %s'%(mka_out['sessions']['status']))
-            result+=1
-        if status2:
-            for i in range(18):
-               log.info('Mka status is %s'%(status2))
-               time.sleep()
-               try:
-                   mka_out = device.parse('show mka sessions interface '
-                       '{interface} detail'.format(interface=intf))
-               except Exception as e:
-                   log.info('Macsec session verification failed. Error:\n{e}'.format(e))
-                   return False
-               if mka_out['sessions']['status'].lower() == status.lower():
-                   log.info('Mka status is %s'%(status))
-                   time.sleep(5)
-                   result = 0
-                   break
-               else:
-                   log.info('Mka status should be %s'%(status))
-                   log.info('Mka status is %s'%(mka_out['sessions']['status']))
-                   result = 1
-        if result != 0:
-            log.error('Macsec session verification failed')
-            return False
-        if ckn is not None:
-            if mka_out['sessions']['ckn'] == ckn:
-                log.info('Mka CKN is %s'%(ckn))
-                log.info('Mka CKN value matched')
-            else:
-                log.info('Mka CKN should be %s'%(ckn))
-                log.info('Mka CKN is %s'%(mka_out['sessions']['ckn']))
-                log.error('Mka CKN verification failed')
-                result+=1
-        if result != 0:
-            log.error('Macsec session verification failed')
-            return False
-        return True
+            if ckn is not None:
+                if mka_out['sessions']['ckn'] == ckn:
+                    log.info('Mka CKN is %s'%(ckn))
+                    log.info('Mka CKN value matched')
+                else:
+                    log.info('Mka CKN should be %s'%(ckn))
+                    log.info('Mka CKN is %s'%(mka_out['sessions']['ckn']))
+                    log.error('Mka CKN verification failed')
+                    result+=1    
 
+            if status2:
+                if mka_out['sessions']['status'].lower() == status.lower():
+                    result=0
+                else:
+                    log.info('Mka status should be %s'%(status))
+                    log.info('Mka status is %s'%(mka_out['sessions']['status']))
+                    result+=1 
 
+            if result==0:
+                return True
+        timeout.sleep()
 
+    return False
+   
 def verify_macsec_session(device, intf1, intf2, cipher, vlan, access, conf, count):
     ''' To fetch and verify MACsec session details
         Args:

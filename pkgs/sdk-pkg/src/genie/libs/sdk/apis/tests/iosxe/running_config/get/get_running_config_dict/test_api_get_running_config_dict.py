@@ -32,8 +32,6 @@ class TestGetRunningConfigDict(unittest.TestCase):
     def test_get_running_config_dict(self):
         result = get_running_config_dict(self.device)
         expected_output = {
-            'Building configuration...': {},
-            'Current configuration : 30522 bytes': {},
             'aaa authentication login default local': {},
             'aaa authorization exec default local': {},
             'aaa new-model': {},

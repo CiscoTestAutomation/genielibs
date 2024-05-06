@@ -18,8 +18,9 @@ class TestUnconfigInterfaceOspfv3(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: ASR1K
-            type: router
+            platform: cat8k
+            model: c8000v
+            type: iosxe
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['GD-R5']

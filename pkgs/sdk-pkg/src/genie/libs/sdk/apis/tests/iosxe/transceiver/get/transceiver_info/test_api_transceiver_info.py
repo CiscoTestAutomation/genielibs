@@ -18,10 +18,10 @@ class TestTransceiverInfo(unittest.TestCase):
                 protocol: unknown
             os: iosxe
             platform: cat9k
-            type: c9300
+            model: c9300
             custom:
                 abstraction:
-                    order: [os, type]
+                    order: [os, model]
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['A2-9300-3M']

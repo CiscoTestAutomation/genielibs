@@ -34,14 +34,17 @@ class test_rip_all(unittest.TestCase):
         self.device.custom['abstraction'] = {'order':['os']}
         self.device.mapping = {}
         self.device.mapping['cli'] = 'cli'
-        self.device.connectionmgr.connections['cli'] = self.device
+                # Create a mock connection to get output for parsing
+        self.device_connection = Mock(device=self.device)
+        self.device.connectionmgr.connections['cli'] = self.device_connection
+        # Set outputs
+        self.device_connection.execute.side_effect = mapper
 
     def test_full_rip(self):
         f = Rip(device=self.device)
         f.maker.outputs[ShowVrfDetail] = {'': RipOutput.ShowVrfDetail}
 
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
 
         # Learn the feature
         f.learn()
@@ -53,8 +56,7 @@ class test_rip_all(unittest.TestCase):
         f = Rip(device=self.device)
         f.maker.outputs[ShowVrfDetail] = {'': RipOutput.ShowVrfDetail}
 
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
 
         # Learn the feature
         f.learn()
@@ -73,8 +75,7 @@ class test_rip_all(unittest.TestCase):
         f.maker.outputs[ShowVrfDetail] = {'': RipOutput.ShowVrfDetail}
 
         # Get 'show ip static route' output
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
         # Learn the feature
         f.learn()
 
@@ -101,8 +102,7 @@ class test_rip_all(unittest.TestCase):
         outputs['show ipv6 rip vrf VRF1'] = ''
         # Return outputs above as inputs to parser when called
 
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
 
         # Learn the feature
         f.learn()

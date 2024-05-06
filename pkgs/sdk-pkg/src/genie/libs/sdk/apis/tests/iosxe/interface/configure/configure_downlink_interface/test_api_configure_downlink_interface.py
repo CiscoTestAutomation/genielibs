@@ -17,7 +17,8 @@ class TestConfigureDownlinkInterface(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: c9400
+            platform: cat9k
+            model: c9400
             type: c9400
         """
         self.testbed = loader.load(testbed)

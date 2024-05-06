@@ -37,14 +37,14 @@ class test_pim(unittest.TestCase):
         self.device.custom['abstraction'] = {'order':['os']}
         self.device.mapping={}
         self.device.mapping['cli']='cli'
-        # Give the device as a connection type
-        # This is done in order to call the parser on the output provided
-        self.device.connectionmgr.connections['cli'] = self.device
+        # Create a mock connection to get output for parsing
+        self.device_connection = Mock(device=self.device)
+        self.device.connectionmgr.connections['cli'] = self.device_connection
 
     def test_complete_output(self):
         self.maxDiff = None
         pim = Pim(device=self.device)
-        
+
         # Get outputs
         pim.maker.outputs[ShowVrfDetail] = \
             {'': PimOutput.ShowVrfDetail}
@@ -71,7 +71,7 @@ class test_pim(unittest.TestCase):
             {"{'vrf':''}": PimOutput.ShowIpv6PimBsrCandidateRp_default}
 
         pim.maker.outputs[ShowIpv6PimBsrCandidateRp].update(
-            {"{'vrf':'VRF1'}": PimOutput.ShowIpv6PimBsrCandidateRp_VRF1})           
+            {"{'vrf':'VRF1'}": PimOutput.ShowIpv6PimBsrCandidateRp_VRF1})
 
         pim.maker.outputs[ShowIpPimBsrRouter] = \
             {"{'vrf':''}": PimOutput.ShowIpPimBsrRouter_default}
@@ -127,7 +127,7 @@ class test_pim(unittest.TestCase):
         # Verify Ops was created successfully
         self.assertEqual(pim.info, PimOutput.Pim_info)
 
-        # Verify Select Attributes 
+        # Verify Select Attributes
         # Check specific attribute values
         # info - default vrf
         self.assertEqual(pim.info['vrf']['default']['address_family']\
@@ -168,7 +168,7 @@ class test_pim(unittest.TestCase):
             {"{'vrf':''}": {}}
 
         pim.maker.outputs[ShowIpv6PimBsrCandidateRp].update(
-            {"{'vrf':'VRF1'}": {}})           
+            {"{'vrf':'VRF1'}": {}})
 
         pim.maker.outputs[ShowIpPimBsrRouter] = \
             {"{'vrf':''}": {}}
@@ -227,7 +227,7 @@ class test_pim(unittest.TestCase):
 
     def test_incomplete_output(self):
         self.maxDiff = None
-        
+
         pim = Pim(device=self.device)
 
         # Get outputs
@@ -256,7 +256,7 @@ class test_pim(unittest.TestCase):
             {"{'vrf':''}": PimOutput.ShowIpv6PimBsrCandidateRp_default}
 
         pim.maker.outputs[ShowIpv6PimBsrCandidateRp].update(
-            {"{'vrf':'VRF1'}": PimOutput.ShowIpv6PimBsrCandidateRp_VRF1})           
+            {"{'vrf':'VRF1'}": PimOutput.ShowIpv6PimBsrCandidateRp_VRF1})
 
         pim.maker.outputs[ShowIpPimBsrRouter] = \
             {"{'vrf':''}": PimOutput.ShowIpPimBsrRouter_default}
@@ -317,7 +317,7 @@ class test_pim(unittest.TestCase):
         del(expect_dict['vrf']['VRF1']['interfaces']['Tunnel7'])
         del(expect_dict['vrf']['VRF1']['interfaces']['GigabitEthernet3']['address_family']['ipv6'])
 
-                
+
         # Verify Ops was created successfully
         self.assertEqual(pim.info, expect_dict)
 

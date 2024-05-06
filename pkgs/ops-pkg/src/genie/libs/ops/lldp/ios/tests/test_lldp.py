@@ -26,9 +26,9 @@ class test_lldp(unittest.TestCase):
         self.device.custom['abstraction'] = {'order':['os']}
         self.device.mapping={}
         self.device.mapping['cli']='cli'
-        # Give the device as a connection type
-        # This is done in order to call the parser on the output provided
-        self.device.connectionmgr.connections['cli'] = self.device
+        # Create a mock connection to get output for parsing
+        self.device_connection = Mock(device=self.device)
+        self.device.connectionmgr.connections['cli'] = self.device_connection
 
     def test_complete_output(self):
         self.maxDiff = None
@@ -88,7 +88,7 @@ class test_lldp(unittest.TestCase):
 
     def test_incomplete_output(self):
         self.maxDiff = None
-        
+
         lldp = Lldp(device=self.device)
         # Get outputs
         lldp.maker.outputs[ShowLldp] = \
@@ -96,7 +96,7 @@ class test_lldp(unittest.TestCase):
 
         lldp.maker.outputs[ShowLldpEntry] = \
             {'': LldpOutput.ShowLldpEntry}
-            
+
         lldp.maker.outputs[ShowLldpNeighborsDetail] = \
             {'': LldpOutput.ShowLldpNeighborsDetail}
 
@@ -115,7 +115,7 @@ class test_lldp(unittest.TestCase):
         del(expect_dict['interfaces']['GigabitEthernet1/0/16']['enabled'])
         del(expect_dict['interfaces']['GigabitEthernet1/0/17']['enabled'])
         del(expect_dict['interfaces']['GigabitEthernet2/0/15']['enabled'])
-                
+
         # Verify Ops was created successfully
         self.assertEqual(lldp.info, expect_dict)
 

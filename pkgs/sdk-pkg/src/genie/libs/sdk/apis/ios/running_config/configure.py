@@ -86,10 +86,22 @@ def restore_running_config(device, path, file, timeout=60):
     dialog = Dialog(
         [
             Statement(
-                pattern=r".*\[(yes|no)\].*",
+                pattern=r".*\[(yes|no)\].*$",
                 action="sendline(y)",
                 loop_continue=True,
                 continue_timer=False,
+            ),
+            Statement(
+                pattern=r'.*?Enter Y if you are sure you want to proceed. \? \[no]:\s*$',
+                action='sendline(y)',
+                loop_continue=True,
+                continue_timer=False
+            ),
+            Statement(
+                pattern=r'.*?Overwriting with a file sized 50% or less than running config\'s. Proceed\? \[no]:\s*$',
+                action='sendline(yes)',
+                loop_continue=True,
+                continue_timer=False
             )
         ]
     )

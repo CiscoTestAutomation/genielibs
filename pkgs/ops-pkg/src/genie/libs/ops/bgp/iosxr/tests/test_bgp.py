@@ -71,9 +71,11 @@ class test_bgp(unittest.TestCase):
         self.device.os = 'nxos'
         self.device.mapping={}
         self.device.mapping['cli']='cli'
-        # Give the device as a connection type
-        # This is done in order to call the parser on the output provided
-        self.device.connectionmgr.connections['cli'] = self.device
+        # Create a mock connection to get output for parsing
+        self.device_connection = Mock(device=self.device)
+        self.device.connectionmgr.connections['cli'] = self.device_connection
+        # Set outputs
+        self.device_connection.execute.side_effect = mapper
 
 
     def test_complete_output(self):
@@ -84,10 +86,9 @@ class test_bgp(unittest.TestCase):
         bgp.maker.outputs[ShowPlacementProgramAll] = {'':BgpOutput.ShowPlacementProgramAll}
         bgp.maker.outputs[ShowBgpInstanceAfGroupConfiguration] = {'':BgpOutput.ShowBgpInstanceAfGroupConfiguration}
         bgp.maker.outputs[ShowBgpInstanceSessionGroupConfiguration] = {'':BgpOutput.ShowBgpInstanceSessionGroupConfiguration}
-        
+
         # Return outputs above as inputs to parser when called
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
 
         # Learn the feature
         bgp.learn()
@@ -110,8 +111,6 @@ class test_bgp(unittest.TestCase):
             '': BgpOutput.ShowBgpInstanceSessionGroupConfiguration}
 
         # Return outputs above as inputs to parser when called
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
 
         # Learn the feature
         bgp.learn(vrf='VRF1', address_family='ipv4 unicast', neighbor='10.1.5.5', instance='default')
@@ -129,11 +128,8 @@ class test_bgp(unittest.TestCase):
         bgp.maker.outputs[ShowPlacementProgramAll] = {'':BgpOutput.ShowPlacementProgramAll}
         bgp.maker.outputs[ShowBgpInstanceAfGroupConfiguration] = {'':BgpOutput.ShowBgpInstanceAfGroupConfiguration}
         bgp.maker.outputs[ShowBgpInstanceSessionGroupConfiguration] = {'':BgpOutput.ShowBgpInstanceSessionGroupConfiguration}
-        
-        # Return outputs above as inputs to parser when called
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
 
+        # Return outputs above as inputs to parser when called
 
         # Learn the feature
         bgp.learn()
@@ -141,11 +137,11 @@ class test_bgp(unittest.TestCase):
         # Check specific attribute values
         # bgp.info - bgp_id
         self.assertEqual(bgp.info['instance']['default']['bgp_id'], 100)
-        
+
         # bgp.table - bgp_table_version
         self.assertEqual(bgp.table['instance']['default']['vrf']['VRF1']\
                 ['address_family']['vpnv4 unicast']['bgp_table_version'], 47)
-        
+
         # bgp.routes_per_peer - remote_as
         self.assertEqual(bgp.routes_per_peer['instance']['default']['vrf']\
                 ['default']['neighbor']['10.16.2.2']['remote_as'], 100)
@@ -154,7 +150,7 @@ class test_bgp(unittest.TestCase):
     def test_empty_output(self):
         self.maxDiff = None
         bgp = Bgp(device=self.device)
-        
+
         # Set outputs
         bgp.maker.outputs[ShowBgpInstances] = {'':''}
         bgp.maker.outputs[ShowPlacementProgramAll] = {'':''}
@@ -162,25 +158,25 @@ class test_bgp(unittest.TestCase):
         bgp.maker.outputs[ShowBgpInstanceSessionGroupConfiguration] = {'':''}
 
         # Return outputs above as inputs to parser when called
-        self.device.execute = Mock()
-        self.device.execute.side_effect = ['', '', '', '', '', '', '', '',
-                                           '', '', '', '', '', '', '', '',
-                                           '', '', '', '', '', '', '', '']
+        self.device_connection.execute.side_effect = [
+            '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
+            '', '', '', '', '', '', '', ''
+        ]
 
         # Learn the feature
         bgp.learn()
 
         # Check no attribute not found
-        
+
         # bgp.info - bgp_id
         with self.assertRaises(AttributeError):
             bgp_id = (bgp.info['instance']['default']['bgp_id'])
-        
+
         # bgp.table - bgp_table_version
         with self.assertRaises(AttributeError):
             bgp_table_version = (bgp.table['instance']['default']['vrf']\
                 ['VRF1']['address_family']['vpnv4 unicast']['bgp_table_version'])
-        
+
         # bgp.routes_per_peer - remote_as
         with self.assertRaises(AttributeError):
             remote_as = (bgp.routes_per_peer['instance']['default']['vrf']\
@@ -190,7 +186,7 @@ class test_bgp(unittest.TestCase):
     def test_incomplete_output(self):
         self.maxDiff = None
         bgp = Bgp(device=self.device)
-        
+
         # Set outputs
         bgp.maker.outputs[ShowBgpInstances] = {'':BgpOutput.ShowBgpInstances}
         bgp.maker.outputs[ShowPlacementProgramAll] = {'':BgpOutput.ShowPlacementProgramAll}
@@ -207,7 +203,7 @@ class test_bgp(unittest.TestCase):
         bgp.learn()
 
         # Check attribute values of output provided is found
-        
+
         # bgp.info - protocol_state
         self.assertEqual(bgp.info['instance']['default']['protocol_state'], 'RUNNING')
 

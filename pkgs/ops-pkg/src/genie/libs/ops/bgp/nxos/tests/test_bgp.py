@@ -55,9 +55,11 @@ class test_bgp(unittest.TestCase):
         self.device.os = 'nxos'
         self.device.mapping={}
         self.device.mapping['cli']='cli'
-        # Give the device as a connection type
-        # This is done in order to call the parser on the output provided
-        self.device.connectionmgr.connections['cli'] = self.device
+        # Create a mock connection to get output for parsing
+        self.device_connection = Mock(device=self.device)
+        self.device.connectionmgr.connections['cli'] = self.device_connection
+        # Set outputs
+        self.device_connection.execute.side_effect = mapper
 
     def test_complete_output(self):
         self.maxDiff = None
@@ -77,8 +79,6 @@ class test_bgp(unittest.TestCase):
         bgp.maker.outputs[ShowBgpVrfAllAllDampeningParameters] =\
             {"{'address_family':'all','vrf':'all'}":BgpOutput.ShowBgpVrfAllAllDampeningParameters}
         # Return outputs above as inputs to parser when called
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
 
         # Learn the feature
         bgp.learn()
@@ -113,8 +113,6 @@ class test_bgp(unittest.TestCase):
                 "{'address_family':'ipv4 unicast','vrf':'VRF1'}":
                     BgpOutput.ShowBgpVrfAllAllDampeningParameters_vrf1}
         # Return outputs above as inputs to parser when called
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
 
         # Learn the feature
         bgp.learn(vrf='VRF1', address_family='ipv4 unicast', neighbor='10.16.2.10')
@@ -140,8 +138,7 @@ class test_bgp(unittest.TestCase):
         bgp.maker.outputs[ShowBgpVrfAllAllNextHopDatabase] = {"{'address_family':'all','vrf':'all'}":''}
         bgp.maker.outputs[ShowBgpVrfAllAllSummary] = {"{'address_family':'all','vrf':'all'}":''}
         bgp.maker.outputs[ShowBgpVrfAllAllDampeningParameters] = {"{'address_family':'all','vrf':'all'}":''}
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
         # Learn the feature
         bgp.learn()
 
@@ -180,9 +177,7 @@ class test_bgp(unittest.TestCase):
         bgp.maker.outputs[ShowBgpVrfAllAllDampeningParameters] = \
             {"{'address_family':'all','vrf':'all'}": BgpOutput.ShowBgpVrfAllAllDampeningParameters}
         # Return outputs above as inputs to parser when called
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
-        
+
         # Learn the feature
         bgp.learn()
 
@@ -221,12 +216,11 @@ class test_bgp(unittest.TestCase):
         bgp.maker.outputs[ShowBgpVrfAllNeighborsReceivedRoutes] = {'':''}
 
         # Return outputs above as inputs to parser when called
-        self.device.execute = Mock()
-        self.device.execute.side_effect = ['', '', '', '', '', '', '', '', '',\
-                                           '', '', '', '', '', '', '', '', '',\
-                                           '', '', '', '', '', '', '', '', '',\
-                                           '', '', '', '', '', '', '', '', '',\
-                                           '', '', '', '']
+        self.device_connection.execute.side_effect = [
+            '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
+            '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
+            '', '', '', '', '', ''
+        ]
 
         # Learn the feature
         bgp.learn()

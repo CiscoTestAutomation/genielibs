@@ -5,13 +5,13 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-  prompt: 9400_L2_DUT(config)#
+  prompt: Skyfox-svl(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: 9400_L2_DUT(config-line)#
+  prompt: Skyfox-svl(config-line)#
 connect:
   commands:
     '':
@@ -23,9 +23,9 @@ connect:
   prompt: ''
 execute:
   commands:
-    clear access-session interface GigabitEthernet1/0/33:
+    clear access-session interface HundredGigE1/0/23:
       response:
-        - ''
+      - ''
       response_type: circular
     config term:
       new_state: configure
@@ -35,4 +35,4 @@ execute:
     term length 0: ''
     term width 0: ''
     show version | include operating mode: ''
-  prompt: 9400_L2_DUT#
+  prompt: Skyfox-svl#

@@ -19,7 +19,8 @@ class TestUnconfgiurePortChannelMinLink(unittest.TestCase):
                 protocol: unknown
             os: iosxe
             platform: cat9k
-            type: c9300
+            model: c9600
+            type: c9600
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['9300-24UX-2']

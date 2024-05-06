@@ -4,9 +4,12 @@ IOSXE specific clean stages
 
 # Python
 import re
+import copy
+import json
 import time
 import os.path
 import logging
+from textwrap import dedent
 from ipaddress import IPv4Address, IPv6Address, IPv4Interface, IPv6Interface
 
 # pyATS
@@ -18,6 +21,7 @@ from genie.abstract import Lookup
 from genie.libs import clean
 from genie.libs.clean.recovery.recovery import _disconnect_reconnect
 from genie.utils import Dq
+from genie.utils.config import Config
 from genie.metaparser.util.schemaengine import Optional, Required, Any, Or, ListOf
 from genie.utils.timeout import Timeout
 from genie.libs.clean import BaseStage
@@ -382,7 +386,7 @@ There is more than one ip address, one for each supervisor.
                          'image': image,
                          'ether_port':ether_port}
             try:
-                abstract = Lookup.from_device(device, packages={'clean': clean})
+                abstract = Lookup.from_device(device, package=clean)
                 # Item is needed to be able to know in which parallel child
 
                 # device.start only gets filled with single rp devices
@@ -392,7 +396,7 @@ There is more than one ip address, one for each supervisor.
                 else:
                     start = device.start
 
-                result = pcall(abstract.clean.recovery.recovery.recovery_worker,
+                result = pcall(abstract.recovery.recovery.recovery_worker,
                                start=start,
                                ikwargs=[{'item': i} for i, _ in enumerate(start)],
                                ckwargs= \
@@ -1629,6 +1633,9 @@ copy_to_device:
                 files_to_copy = {}
                 unknown_size = False
 
+                file_size = None
+
+
                 # Check the running image
                 if verify_running_image:
                     # Verify the image running in the device
@@ -1659,8 +1666,15 @@ copy_to_device:
 
                                 self.skipped(f"The image file provided is same as the current running image {image_version} on the device.\n\
                                              Setting the destination image to {dest_file_path}. Skipping the copy process.")
+            
+                # try to get file size from file directly
+                with steps.start(f"Get filesize of '{file}'") as step:
+                    try:
+                        file_size = os.stat(file).st_size
+                    except Exception:
+                        step.passx('Failed to get file size')
 
-                if server:
+                if not file_size and server:
                     # Get filesize of image files on remote server
                     with steps.start("Get filesize of '{}' on remote server '{}'".\
                                     format(file, server)) as step:
@@ -1689,9 +1703,7 @@ copy_to_device:
                             step.passed("Verified filesize of file '{}' to be "
                                         "{} bytes".format(file, file_size))
                 else:
-                    with steps.start(f"Get filesize of '{file}'") as step:
-                        file_size = os.stat(file).st_size
-                        log.info(f'Local file has size {file_size}')
+                    log.info(f'Local file has size {file_size}')
 
                 for dest in destinations:
 
@@ -2131,7 +2143,7 @@ connect:
                 retry_timeout.sleep()
 
             step.failed("Could not connect. Scroll up for tracebacks.")
-        
+
         with steps.start(f'Checking the current state of the device: {device.name}') as step:
 
             log.info(f'Checking the current state of the device: {device.name}')
@@ -2150,13 +2162,13 @@ connect:
                     state = device.state_machine.current_state
             except Exception as e:
                 log.warning(f'There is no connection in device.subconnections: {e}')
-        
+
         if state == "rommon":
 
             with steps.start("Setting the rommon variables") as step:
 
                 log.info('Setting the rommon variables for TFTP boot')
-    
+
                 try:
                     device.api.configure_rommon_tftp()
                 except Exception as e:
@@ -2175,9 +2187,9 @@ connect:
                     step.passx(f'Failed to boot device from rommon. {e}')
                 else:
                     log.info("Successfully booted the device from rommon.")
-        
+
         # set mit to False to initialize the connection
-        device.default.mit=False        
+        device.default.mit=False
         with steps.start("Initialize the device connection") as step:
 
             try:
@@ -2186,6 +2198,182 @@ connect:
                 step.failed(f'Failed to initialize the connection. {e}')
             else:
                 step.passed("Successfully connected to the device")
-                
-        
 
+
+class ResetConfiguration(BaseStage):
+    """ Reset device configuration by using config replace operation with a minimal configuration.
+
+    This clean stage generates a minimal configuration from the running config and stores
+    it in the base_config.txt file on bootflash. Then uses configure replace command to
+    override the running configuration.
+
+    If the file `base_config.txt` exists on flash, the contents will be overwritten.
+
+Stage Schema
+------------
+reset_configuration:
+    timeout (int, optional): The timeout for device configuration to complete in seconds.
+        Defaults to 120.
+
+Example:
+
+    reset_configuration:
+
+    order:
+        - connect
+        - reset_configuration
+    """
+    # =================
+    # Argument Defaults
+    # =================
+    TIMEOUT = 120
+
+    # ============
+    # Stage Schema
+    # ============
+    schema = {
+        Optional('timeout', description="Timeout for device configuration. Default: 120 seconds."): int,
+    }
+
+    exec_order = [
+        'create_config_file',
+        'reset_configuration',
+        'show_running_config'
+    ]
+
+    def _recurse_config_dict_to_text(self, config_dict, level=0, indent=1):
+        output = ''
+        for key, value in config_dict.items():
+            if not value:
+                # special handling for 'quit' statements in crypto config
+                if key == 'quit':
+                    output = '\n  \tquit'
+                else:
+                    output += '\n' + ' ' * level * indent + key
+            else:
+                output += '\n' + ' ' * level * indent + key + \
+                        self._recurse_config_dict_to_text(value, level + 1)
+        return output
+
+    def _generate_config_text(self, config_dict):
+        return self._recurse_config_dict_to_text(config_dict, level=0)
+
+    def _filter_config_dict(self, config_dict, new_config_dict, KEEP):
+        for k in config_dict:
+            for key in KEEP:
+                if re.search(key, k) and not KEEP[key]:
+                    # keep everything in the section
+                    break
+                elif re.search(key, k) and KEEP[key]:
+                    # filter in section
+                    self._filter_config_dict(config_dict[k], new_config_dict[k], KEEP[key])
+                    break
+            else:
+                new_config_dict.pop(k, None)
+
+    def _generate_default_config(self, device, config_dict):
+
+        DEFAULTS = dedent("""\
+            !
+            ! Last configuration change
+            !
+            hostname {device.name}
+            no logging console
+            service timestamps debug datetime msec
+            service timestamps log datetime msec
+            """.format(
+                device=device
+            ))
+
+        KEEP = {
+            '^interface GigabitEthernet0(/0)?$': {
+                '^vrf forwarding': {},
+                '^negotiation auto': {}
+            },
+            '^vrf definition Mgmt-(intf|vrf)': {},
+            '^switch 1 provision': {},
+            '^crypto pki trustpoint': {},
+            '^crypto pki certificate chain': {},
+            '^license boot level': {},
+            '^class-map match-any system': {},
+            '^policy-map system': {},
+            '^interface Vlan1$': {
+                '^no ip address': {},
+                '^shutdown': {}
+            },
+            '^transceiver type all': {},
+            '^redundancy': {},
+            '^control-plane': {},
+            '^spanning-tree extend system-id': {},
+            '^spanning-tree mode rapid-pvst': {},
+            '^diagnostic bootup level minimal': {},
+            '^memory free low-watermark processor': {},
+            '^boot system': {},
+            '^aaa new-model': {},
+            '^class-map match-any non-client-nrt-class': {},
+            '^aaa session-id common': {},
+            '^username': {},
+            '^login on-success log': {},
+            '^ip forward-protocol nd': {},
+            '^ip ssh bulk-mode': {},
+            '^line vty': {
+                '^transport input': {}
+            },
+            '^ip http server': {},
+            '^ip http secure-server': {}
+        }
+
+        new_config_dict = copy.deepcopy(config_dict)
+
+        self._filter_config_dict(config_dict, new_config_dict, KEEP)
+
+        config_text = self._generate_config_text(new_config_dict)
+
+        config_text = DEFAULTS + config_text + '\nend'
+
+        return config_text
+
+    def create_config_file(self, steps, device, timeout=TIMEOUT):
+        with steps.start('Getting current config') as step:
+            # Use lstrip to avoid stripping trailing whitespace from config lines,
+            # this is required for config replace to work with pki certs.
+            config_dict = device.api.get_running_config_dict(lstrip=True)
+            log.debug(json.dumps(config_dict, indent=4))
+
+        with steps.start('Creating minimal configuration file') as step:
+            config_text = self._generate_default_config(device, config_dict)
+            config_lines = config_text.splitlines()
+
+            # Write the configuration into a file on the device using TCL shell.
+            device.tclsh()
+            lines = ['puts [open "base_config.txt" w+] {',] + config_lines + ['}']
+            for line in lines:
+                device.sendline(line)
+                # Instead of waiting for each line to be processed, just keep
+                # reading the buffer. This is a lot faster and testing has shown
+                # this to work fine. This could be changed using a bulk approach
+                # like unicon configure() service if needed.
+                device.spawn.read_update_buffer()
+            # Wait until all config data has been processed by the device
+            device.expect(device.state_machine.get_state(
+                device.state_machine.current_state).pattern, timeout)
+
+            device.enable()
+
+    def reset_configuration(self, steps, device, timeout=TIMEOUT):
+        dialog = Dialog([
+            [r'.*?Enter Y if you are sure you want to proceed. \? \[no]:\s*$', 'sendline(y)', None, True, False],
+            [r'.*?Overwriting with a file sized 50% or less than running config\'s. Proceed\? \[no]:\s*$', 'sendline(yes)', None, True, False],
+        ])
+
+        # Configure the hostname explicitly
+        device.configure(f'hostname {device.name}')
+
+        with steps.start('Resetting configuration using config replace') as step:
+            output = device.execute('config replace bootflash:base_config.txt', reply=dialog, timeout=timeout)
+            if 'Rollback aborted' in output:
+                step.passx('Rollback aborted')
+
+    def show_running_config(self, steps, device):
+        with steps.start('Capturing running config') as step:
+            device.execute('show running-config')

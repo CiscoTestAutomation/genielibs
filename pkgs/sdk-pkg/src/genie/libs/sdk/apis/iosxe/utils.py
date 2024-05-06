@@ -754,10 +754,11 @@ def get_show_output_line_count(device, command, filter, output=None):
     return 0
 
 
-def clear_counters(device):
+def clear_counters(device, timeout=60):
     """ clear logging
         Args:
             device ('obj'): Device object
+            timeout ('int', optional): Timeout in seconds. Default is 60
         Returns:
             None
         Raises:
@@ -768,7 +769,7 @@ def clear_counters(device):
     dialog = Dialog([Statement(pattern=r'\[confirm\].*', action='sendline(\r)',loop_continue=True,continue_timer=False)])
 
     try:
-        device.execute("clear counters", reply=dialog)
+        device.execute("clear counters", reply=dialog, timeout=timeout)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not clear counters on {device}. Error:\n{error}".format(device=device, error=e)

@@ -9,8 +9,8 @@ from genie.libs.ops.utils.common import convert_to_bool, \
                                         slot_num
 # Genie Parsers
 from genie.libs.parser.iosxe.show_platform import Dir
-from genie.libs.parser.iosxe.c9500 import show_platform
-from genie.libs.parser.iosxe.c9500.show_issu import ShowIssuStateDetail,\
+from genie.libs.parser.iosxe.cat9k.c9500 import show_platform
+from genie.libs.parser.iosxe.cat9k.c9500.show_issu import ShowIssuStateDetail,\
                                                     ShowIssuRollbackTimer
 
 

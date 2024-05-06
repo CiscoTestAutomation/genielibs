@@ -1,7 +1,7 @@
 import os
 import unittest
 from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.c9800.platform.get import get_ap_country
+from genie.libs.sdk.apis.iosxe.cat9k.c9800.platform.get import get_ap_country
 
 
 class TestGetApCountry(unittest.TestCase):
@@ -18,7 +18,8 @@ class TestGetApCountry(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: c9800
+            platform: cat9k
+            model: c9800
             type: wlc
         """
         self.testbed = loader.load(testbed)

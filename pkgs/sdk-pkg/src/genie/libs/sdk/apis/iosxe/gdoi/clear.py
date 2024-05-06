@@ -24,7 +24,7 @@ def clear_crypto_gkm(device,
     """
 
     dialog = Dialog([
-                Statement(pattern=r'.*Are you sure you want to proceed.*',
+                Statement(pattern=r'^.*Are you sure you want to proceed.*\[yes\/no\].*$',
                     action=f'sendline(yes)',
                     loop_continue=True,
                     continue_timer=False)

@@ -26,7 +26,7 @@ class GracefulRestart(ConfigurableBase):
     # ==========================================================================
     #                           GLOBAL ENUM TYPES
     # ==========================================================================
-    
+
     class GR_TYPE(Enum):
         ietf = 'ietf'
         cisco = 'cisco'
@@ -74,7 +74,7 @@ class GracefulRestart(ConfigurableBase):
     def __eq__(self, other):
         if not isinstance(other, GracefulRestart):
             raise NotImplemented
-        
+
         return (self.gr_enable,
                 self.gr_type,
                 self.gr_helper_enable,
@@ -104,7 +104,7 @@ class GracefulRestart(ConfigurableBase):
                                        other.gr_restart_interval,\
                                        other.gr_helper_strict_lsa_checking)
         return str1 < str2
-    
+
     # Overload __hash__
     def __hash__(self):
         return hash((self.gr_enable,

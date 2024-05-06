@@ -688,7 +688,7 @@ def copy_startup_config_to_flash_memory(device, timeout):
             Statement(
                 pattern=r".*Destination filename.*",
                 action="sendline()",
-                loop_continue=False,
+                loop_continue=True,
                 continue_timer=False,
             )
         ]
@@ -722,7 +722,7 @@ def copy_startup_config_to_tftp(device, host, file, timeout=30):
             action='sendline()',
             loop_continue=True,
             continue_timer=False),
-        Statement(pattern=r'.*Destination filename',
+        Statement(pattern=r'.*Destination filename.*',
             action='sendline()',
             loop_continue=True,
             continue_timer=False)
@@ -757,7 +757,7 @@ def copy_running_config_to_tftp(device, host, file, timeout=30):
             action='sendline()',
             loop_continue=True,
             continue_timer=False),
-        Statement(pattern=r'.*Destination filename',
+        Statement(pattern=r'.*Destination filename.*',
             action='sendline()',
             loop_continue=True,
             continue_timer=False)
@@ -5602,6 +5602,64 @@ def unconfigure_hw_module_switch_number_ecomode_led(device, switch_number='all')
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure hw-module ecomode led on device {device.name}. Error:\n{e}")
 
+def configure_stack_power_ecomode(device, stack_name):
+    """ Configure stack power ecomode
+        Args:
+            device ('obj'): Device object
+            stack_name ('str'): Stack name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [f"stack-power stack {stack_name}", 
+           "ecomode",]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"could not configure stack power ecomode {device}. Error:\n{e}"
+        )
+
+def unconfigure_stack_power_ecomode(device, stack_name):
+    """ Unconfigure stack power ecomode
+        Args:
+            device ('obj'): Device object
+            stack_name ('str'): Stack name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [f"stack-power stack {stack_name}", 
+           "no ecomode",]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"could not unconfigure stack power ecomode {device}. Error:\n{e}"
+        )
+    
+
+def configure_default_stack_power_ecomode(device, stack_name):
+    """ Configure default stack power ecomode
+        Args:
+            device ('obj'): Device object
+            stack_name ('str'): Stack name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [f"stack-power stack {stack_name}", 
+           "default ecomode",]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"could not configure default stack power ecomode {device}. Error:\n{e}"
+        )
+    
 def configure_ip_http_client_secure_trustpoint(device, trustpoint_name):
     """ Configures the secure trustpoint
         Example : ip http client secure-trustpoint {trustpoint_name}
@@ -5622,6 +5680,64 @@ def configure_ip_http_client_secure_trustpoint(device, trustpoint_name):
        device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Failed to ip http client secure-trustpoint {trustpoint_name} on device {device.name}. Error:\n{e}')
+
+def configure_hw_module_slot_breakout(device, slot, breakout):
+    """ Configure a native port into four breakout ports of the specified slot
+        Example : hw-module slot <slot no> breakout <breakout no>
+        Args:
+            device ('obj'): device to use
+            slot ('int'): slot number to configure
+            breakout ('int'): breakout no to configure
+	"""
+    log.debug(f"Configure a native port into four breakout ports of the specified {slot} on {device.name}")
+    config = f"hw-module slot {slot} breakout {breakout}"
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure a native port into four breakout ports of the specified module {slot} on device {device.name}. Error:\n{e}")
+
+def unconfigure_hw_module_slot_breakout(device, slot, breakout):
+    """ Unconfigure a native port into four breakout ports of the specified slot
+        Example : no hw-module slot <slot no> breakout <breakout no>
+        Args:
+            device ('obj'): device to use
+            slot ('int'): slot number to configure
+            breakout ('int'): breakout no to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"Unconfigure a native port into four breakout ports of the specified {slot} on {device.name}")
+    config = f"no hw-module slot {slot} breakout {breakout}"
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure a native port into four breakout ports of the specified on module {slot} on device {device.name}. Error:\n{e}")
+
+def configure_platform_acl_egress_dscp_enable(device):
+    """ Configure platform access-list egress-dscp enable
+        Args:
+            device ('obj'): Device object
+    """
+
+    cmd = 'platform access-list egress-dscp enable'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure platform access-list egress-dscp enable on device {device}. Error:\n{e}")
+
+def unconfigure_platform_acl_egress_dscp_enable(device):
+    """ Unconfigure platform access-list egress-dscp enable
+        Args:
+            device ('obj'): Device object
+    """
+
+    cmd = 'no platform access-list egress-dscp enable'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure platform access-list egress-dscp enable on device {device}. Error:\n{e}")
 
 def configure_policy_map_control_service_temp(device,policy_map,service_template,method_name,eap_profile):
     """ Configures policy-map type control
@@ -5649,6 +5765,7 @@ def configure_policy_map_control_service_temp(device,policy_map,service_template
         Raises:
             SubCommandFailure
     """
+
     dialog = Dialog(
         [
             Statement(

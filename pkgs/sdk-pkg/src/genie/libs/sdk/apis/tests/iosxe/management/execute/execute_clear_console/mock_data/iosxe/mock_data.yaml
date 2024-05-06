@@ -1,0 +1,52 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+
+  prompt: Fnc-c9300(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+    line vty 0 4: ''
+  prompt: Fnc-c9300(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+disconnect:
+  commands:
+    null:
+      response:
+      - null
+      response_type: circular
+  prompt: Fnc-c9300#
+execute:
+  commands:
+    clear line 0: 
+      new_state: confirm_state
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    show version | include operating mode: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: Fnc-c9300#
+confirm_state:
+  prompt: "[confirm]"
+  commands:
+    "":
+        response: "[OK]"
+        new_state: execute

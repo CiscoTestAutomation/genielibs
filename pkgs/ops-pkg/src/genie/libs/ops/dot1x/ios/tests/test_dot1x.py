@@ -25,9 +25,9 @@ class test_dot1x(unittest.TestCase):
         self.device.custom['abstraction'] = {'order':['os']}
         self.device.mapping={}
         self.device.mapping['cli']='cli'
-        # Give the device as a connection type
-        # This is done in order to call the parser on the output provided
-        self.device.connectionmgr.connections['cli'] = self.device
+        # Create a mock connection to get output for parsing
+        self.device_connection = Mock(device=self.device)
+        self.device.connectionmgr.connections['cli'] = self.device_connection
 
     def test_complete_output(self):
         self.maxDiff = None
@@ -38,10 +38,10 @@ class test_dot1x(unittest.TestCase):
 
         dot1x.maker.outputs[ShowDot1xAllStatistics] = \
             {'': Dot1xOutput.ShowDot1xAllStatistics}
-            
+
         dot1x.maker.outputs[ShowDot1xAllSummary] = \
             {'': Dot1xOutput.ShowDot1xAllSummary}
-            
+
         dot1x.maker.outputs[ShowDot1xAllCount] = \
             {'': Dot1xOutput.ShowDot1xAllCount}
 
@@ -63,13 +63,13 @@ class test_dot1x(unittest.TestCase):
 
         dot1x.maker.outputs[ShowDot1xAllDetail] = \
             {'': {}}
-            
+
         dot1x.maker.outputs[ShowDot1xAllStatistics] = \
             {'': {}}
-            
+
         dot1x.maker.outputs[ShowDot1xAllSummary] = \
             {'': {}}
-            
+
         dot1x.maker.outputs[ShowDot1xAllCount] = \
             {'': {}}
 
@@ -83,18 +83,18 @@ class test_dot1x(unittest.TestCase):
 
     def test_incomplete_output(self):
         self.maxDiff = None
-        
+
         dot1x = Dot1X(device=self.device)
         # Get outputs
         dot1x.maker.outputs[ShowDot1xAllDetail] = \
             {'': Dot1xOutput.ShowDot1xAllDetail}
-            
+
         dot1x.maker.outputs[ShowDot1xAllStatistics] = \
             {'': Dot1xOutput.ShowDot1xAllStatistics}
-            
+
         dot1x.maker.outputs[ShowDot1xAllSummary] = \
             {'': Dot1xOutput.ShowDot1xAllSummary}
-            
+
         dot1x.maker.outputs[ShowDot1xAllCount] = \
             {'': {}}
 
@@ -104,7 +104,7 @@ class test_dot1x(unittest.TestCase):
         # Delete missing specific attribute values
         expect_dict = deepcopy(Dot1xOutput.Dot1x_info)
         del(expect_dict['sessions'])
-                
+
         # Verify Ops was created successfully
         self.assertEqual(dot1x.info, expect_dict)
 

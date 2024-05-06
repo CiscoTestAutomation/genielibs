@@ -489,8 +489,8 @@ class Vrf(DeviceFeature):
         '''
 
         # Abstracting the show running vrf as per device os
-        ret = Lookup.from_device(device)
-        cmd = ret.parser.show_vrf.ShowRunningConfigVrf
+        ret = Lookup.from_device(device, package=parser)
+        cmd = ret.show_vrf.ShowRunningConfigVrf
         maker = ops_Base(device=device)
 
         maker.add_leaf(cmd=cmd,

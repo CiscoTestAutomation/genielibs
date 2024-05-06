@@ -28,13 +28,14 @@ class test_vlan_new_all(unittest.TestCase):
         self.device.custom['abstraction'] = {'order':['os']}
         self.device.mapping={}
         self.device.mapping['cli']='cli'
-        self.device.connectionmgr.connections['cli'] = self.device
+                # Create a mock connection to get output for parsing
+        self.device_connection = Mock(device=self.device)
+        self.device.connectionmgr.connections['cli'] = self.device_connection
 
     def test_full_vlan_new(self):
         f = Vlan(device=self.device)
         # Get 'show vlan' output
         f.maker.outputs[ShowVlan] = {'': VlanOutput.showVlan}
-        self.device.execute = Mock()
         # Learn the feature
         f.learn()
 

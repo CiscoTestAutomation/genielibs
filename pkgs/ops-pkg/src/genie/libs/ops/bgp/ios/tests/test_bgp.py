@@ -66,7 +66,7 @@ outputs['show ip bgp all dampening parameters'] = ''
 
 def mapper(key):
     return outputs[key]
- 
+
 
 class test_bgp(unittest.TestCase):
 
@@ -76,17 +76,18 @@ class test_bgp(unittest.TestCase):
         self.device.custom['abstraction'] = {'order':['os']}
         self.device.mapping={}
         self.device.mapping['cli']='cli'
-        # Give the device as a connection type
-        # This is done in order to call the parser on the output provided
-        self.device.connectionmgr.connections['cli'] = self.device
+        # Create a mock connection to get output for parsing
+        self.device_connection = Mock(device=self.device)
+        self.device.connectionmgr.connections['cli'] = self.device_connection
+        # Set outputs
+        self.device_connection.execute.side_effect = mapper
 
     def test_complete_output(self):
         self.maxDiff = None
         bgp = Bgp(device=self.device)
 
         # Return outputs above as inputs to parser when called
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
 
         # Learn the feature
         bgp.learn()
@@ -101,8 +102,7 @@ class test_bgp(unittest.TestCase):
         bgp = Bgp(device=self.device)
 
         # Return outputs above as inputs to parser when called
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
 
         # Learn the feature
         bgp.learn(address_family='vpnv4 unicast', vrf='default', neighbor='2.2.2.2')
@@ -122,8 +122,7 @@ class test_bgp(unittest.TestCase):
         outputs['show bgp all detail'] = ''
         outputs['show bgp all neighbors'] = ''
 
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
         # Learn the feature
         bgp.learn()
 
@@ -152,8 +151,7 @@ class test_bgp(unittest.TestCase):
         bgp = Bgp(device=self.device)
 
         # Return outputs above as inputs to parser when called
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
 
         # Learn the feature
         bgp.learn()

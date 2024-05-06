@@ -32,13 +32,14 @@ def search_running_config(device, option):
     return config
 
 
-def get_running_config_dict(device, option=None, output=None):
+def get_running_config_dict(device, option=None, output=None, lstrip=False):
     """ Get show running-config output
 
         Args:
             device (`obj`): Device object
             option (`str`): option command
             output (`str`): output of show running-config
+            lstrip (`bool`): Boolean to use lstrip on config lines
         Returns:
             config_dict (`dict`): dict of show run output
     """
@@ -57,7 +58,10 @@ def get_running_config_dict(device, option=None, output=None):
                 "on device {device}".format(device=device.name)
             )
 
-    config_dict = get_config_dict(out)
+    # Remove any noise from show run command
+    out = re.sub(r'Building configuration...\s*Current configuration : \d+ bytes', '', out)
+
+    config_dict = get_config_dict(out, lstrip=lstrip)
     return config_dict
 
 

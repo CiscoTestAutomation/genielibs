@@ -42,6 +42,7 @@ execute:
         \ (25856/0)"
       response_type: circular
     show version: ''
+    show version | include operating mode: ''
     term length 0: ''
     term width 0: ''
   prompt: R1#

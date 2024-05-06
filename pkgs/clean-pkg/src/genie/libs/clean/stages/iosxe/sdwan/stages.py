@@ -594,10 +594,6 @@ There is more than one ip address, one for each supervisor.
                 'device_managed_mode': device_managed_mode
             }
             try:
-                abstract = Lookup.from_device(device,
-                                              packages={'clean': clean})
-                # Item is needed to be able to know in which parallel child
-
                 # device.start only gets filled with single rp devices
                 # for multiple rp devices we need to use subconnections
                 if device.is_ha and hasattr(device, 'subconnections'):

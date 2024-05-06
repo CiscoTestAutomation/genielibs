@@ -34,14 +34,17 @@ class test_msdp(unittest.TestCase):
         self.device.os = 'nxos'
         self.device.mapping={}
         self.device.mapping['cli']='cli'
-        self.device.connectionmgr.connections['cli'] = self.device
+                # Create a mock connection to get output for parsing
+        self.device_connection = Mock(device=self.device)
+        self.device.connectionmgr.connections['cli'] = self.device_connection
+        # Set outputs
+        self.device_connection.execute.side_effect = mapper
 
     def test_msdp_full(self):
         f= Msdp(device=self.device)
 
         # Return outputs above as inputs to parser when called
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
 
         # Learn the feature
         f.learn()
@@ -52,8 +55,7 @@ class test_msdp(unittest.TestCase):
         f = Msdp(device=self.device)
 
         # Return outputs above as inputs to parser when called
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
         # Learn the feature
         f.learn()
 
@@ -66,8 +68,7 @@ class test_msdp(unittest.TestCase):
         f = Msdp(device=self.device)
 
         # Return outputs above as inputs to parser when called
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
         # Learn the feature
         f.learn()
 
@@ -79,7 +80,7 @@ class test_msdp(unittest.TestCase):
 
 
         self.device.execute = Mock()
-        
+
         outputs['show ip msdp policy statistics sa-policy 10.4.1.1 in'] = ''
         outputs['show ip msdp policy statistics sa-policy 10.94.44.44 in vrf VRF1'] = ''
         outputs['show ip msdp policy statistics sa-policy 10.4.1.1 out'] = ''
@@ -94,7 +95,7 @@ class test_msdp(unittest.TestCase):
         # Learn the feature
         f.learn()
 
-        # revert the global outputs back        
+        # revert the global outputs back
         outputs['show ip msdp policy statistics sa-policy 10.4.1.1 in'] = \
             MsdpOutput.ShowIpMsdpPolicyStatisticsSaPolicyIn
         outputs['show ip msdp policy statistics sa-policy 10.94.44.44 in'] = \

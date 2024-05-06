@@ -17,8 +17,9 @@ class TestClearCryptoSession(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: iosxe
-            type: iosxe
+            platform: cat9k
+            model: c9300
+            type: c9300
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['kparames_csr1']

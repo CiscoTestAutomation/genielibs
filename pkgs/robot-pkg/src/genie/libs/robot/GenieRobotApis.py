@@ -16,14 +16,14 @@ class GenieRobotApis:
         self.api = API()
 
     def get_keyword_names(self):
-        return self.api.function_data.keys()
+        return list(self.api.function_data)
 
     def get_keyword_documentation(self, kw):
         if kw == '__intro__':
             return "Available networking APIs provided by Genie"
 
         return ''.join(['''Checkout this url for detailed doc on this keyword:
-        
+
         ''', DOC_LINK, kw])
 
     def run_keyword(self, name, args, kwargs):

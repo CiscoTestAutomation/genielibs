@@ -18,7 +18,8 @@ class TestUnconfigureBfdOnInterface(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: C9600
+            platform: cat9k
+            model: c9600
             type: C9600
         """
         self.testbed = loader.load(testbed)

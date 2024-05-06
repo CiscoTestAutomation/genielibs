@@ -33,9 +33,11 @@ class test_hsrp(unittest.TestCase):
         self.device.custom['abstraction'] = {'order':['os']}
         self.device.mapping={}
         self.device.mapping['cli']='cli'
-        # Give the device as a connection type
-        # This is done in order to call the parser on the output provided
-        self.device.connectionmgr.connections['cli'] = self.device
+        # Create a mock connection to get output for parsing
+        self.device_connection = Mock(device=self.device)
+        self.device.connectionmgr.connections['cli'] = self.device_connection
+        # Set outputs
+        self.device_connection.execute.side_effect = mapper
 
     def test_full(self):
         self.maxDiff = None
@@ -49,8 +51,7 @@ class test_hsrp(unittest.TestCase):
         # Get 'show standby delay' output
         hsrp.maker.outputs[ShowStandbyDelay] = {"": HsrpOutput.showStandbyDelayOutput}
 
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
 
         # Learn the feature
         hsrp.learn()
@@ -70,12 +71,11 @@ class test_hsrp(unittest.TestCase):
         hsrp.maker.outputs[ShowStandbyDelay] = {"": HsrpOutput.showStandbyDelayOutput}
         # Get 'show standby delay' output
         hsrp.maker.outputs[ShowStandbyDelay] = {"": HsrpOutput.showStandbyDelayOutput}
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
 
         # Learn the feature
         hsrp.learn()
-        
+
         self.assertEqual(
             99,
             hsrp.info["GigabitEthernet1"]["delay"]["minimum_delay"]
@@ -93,8 +93,7 @@ class test_hsrp(unittest.TestCase):
         # Get 'show standby delay' output
         hsrp.maker.outputs[ShowStandbyDelay] = {"": HsrpOutput.showStandbyDelayOutput}
 
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
 
         # Learn the feature
         hsrp.learn()
@@ -114,8 +113,7 @@ class test_hsrp(unittest.TestCase):
         # Get 'show standby delay' output
         hsrp.maker.outputs[ShowStandbyDelay] = {"": HsrpOutput.showStandbyDelayOutput}
 
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
 
         # Learn the feature
         hsrp.learn()

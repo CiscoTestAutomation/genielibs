@@ -87,7 +87,7 @@ class TestRecovery(unittest.TestCase):
         device.state_machine.go_to = Mock(side_effect=Exception)
         device.os = 'iosxe'
         device.api.device_boot_recovery = Mock()
-        device.api.execute_clear_line = Mock()
+        device.api.execute_clear_console = Mock()
         device.api.execute_power_cycle_device = Mock()
         device.is_ha = False
         device.log = logger
@@ -99,7 +99,7 @@ class TestRecovery(unittest.TestCase):
             golden_image=['bootflash:asr1000_golden.bin'],
             reconnect_delay=1)
         device.api.device_recovery_boot.assert_called_once()
-        device.api.execute_clear_line.assert_called_once()
+        device.api.execute_clear_console.assert_called_once()
         device.api.execute_power_cycle_device.assert_called_once()
         self.assertTrue(section.parent.parameters['block_section'])
 
@@ -114,12 +114,12 @@ class TestRecovery(unittest.TestCase):
         device.state_machine.go_to = Mock(side_effect=Exception)
         device.os = 'iosxe'
         device.api.device_boot_recovery = Mock()
-        device.api.execute_clear_line = Mock()
+        device.api.execute_clear_console = Mock()
         device.api.execute_power_cycle_device = Mock()
         device.log = logger
         device.is_ha = True
         device.api.device_boot_recovery = Mock()
-        device.api.execute_clear_line = Mock()
+        device.api.execute_clear_console = Mock()
         sub_con_1 = sub_con_2 = MagicMock()
         sub_con_1.state_machine.go_to = Mock(side_effect=Exception)
         device.subconnections = [sub_con_1, sub_con_2]
@@ -131,6 +131,6 @@ class TestRecovery(unittest.TestCase):
             golden_image=['bootflash:asr1000_golden.bin'],
             reconnect_delay=1)
         device.api.device_recovery_boot.assert_called_once()
-        device.api.execute_clear_line.assert_called_once()
+        device.api.execute_clear_console.assert_called_once()
         device.api.execute_power_cycle_device.assert_called_once()
         self.assertTrue(section.parent.parameters['block_section'])

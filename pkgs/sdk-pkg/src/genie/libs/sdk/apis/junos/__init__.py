@@ -2,7 +2,7 @@
 try:
     from genie import abstract
 
-    abstract.declare_token(__name__)
+    abstract.declare_token(os='junos')
 except Exception as e:
     import warnings
 

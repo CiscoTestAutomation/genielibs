@@ -15,7 +15,7 @@ from genie.libs.parser.iosxe.show_interface import ShowInterfaces, \
                                         ShowIpInterface,  \
                                         ShowIpv6Interface, \
                                         ShowInterfacesAccounting
-                                        
+
 from genie.libs.parser.iosxe.show_vrf import ShowVrf
 from genie.libs.parser.iosxe.show_lag import ShowEtherchannelSummary
 
@@ -41,16 +41,17 @@ class test_interface(unittest.TestCase):
         self.device.os = 'iosxe'
         self.device.mapping={}
         self.device.mapping['cli']='cli'
-        # Give the device as a connection type
-        # This is done in order to call the parser on the output provided
-        self.device.connectionmgr.connections['cli'] = self.device
+        # Create a mock connection to get output for parsing
+        self.device_connection = Mock(device=self.device)
+        self.device.connectionmgr.connections['cli'] = self.device_connection
+        # Set outputs
+        self.device_connection.execute.side_effect = mapper
 
     def test_complete_output(self):
         self.maxDiff = None
         intf = Interface(device=self.device)
         # Get outputs
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
 
         # Learn the feature
         intf.learn()
@@ -60,8 +61,7 @@ class test_interface(unittest.TestCase):
 
     def test_custom_output(self):
         intf = Interface(device=self.device)
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
         # Learn the feature
         intf.learn(interface='GigabitEthernet1/0/1', address_family='ipv4')
 
@@ -82,8 +82,7 @@ class test_interface(unittest.TestCase):
         outputs['show ipv6 interface'] = ''
         outputs['show interfaces accounting'] = ''
         outputs['show etherchannel summary'] = ''
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
 
         # Learn the feature
         intf.learn()
@@ -114,8 +113,7 @@ class test_interface(unittest.TestCase):
         self.maxDiff = None
         intf = Interface(device=self.device)
         # Get outputs
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
 
         # Learn the feature
         intf.learn()
@@ -141,8 +139,7 @@ class test_interface(unittest.TestCase):
 
         intf.maker.outputs[ShowInterfacesAccounting] = \
             {'':InterfaceOutput.ShowInterfacesAccountingCustom}
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
         # Learn the feature
         intf.learn(custom=custom)
 
