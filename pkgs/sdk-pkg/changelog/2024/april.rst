@@ -76,15 +76,11 @@
     * Added configure_stack_power_ecomode
     * Added unconfigure_stack_power_ecomode
     * Added configure_default_stack_power_ecomode
-    * Add API `is_management_interface`
 
 * ios
     * running_config/configure
         * update restore_running_config API.
 
-* iosxr
-    * Add API `is_management_interface`
-    * Add API `clear_standby_console`
 
 --------------------------------------------------------------------------------
                                       Fix                                       
