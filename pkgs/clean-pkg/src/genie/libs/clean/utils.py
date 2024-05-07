@@ -16,7 +16,7 @@ from pkg_resources import iter_entry_points
 # Genie
 from genie.libs import clean
 from genie.clean.extend import ExtendClean
-from genie.abstract import Lookup
+from genie.abstract import AbstractTree, Lookup
 from genie.harness.utils import load_class
 from genie.metaparser.util.schemaengine import Schema, Optional, Any, Or
 from genie.metaparser.util.exceptions import (
@@ -40,7 +40,10 @@ from unicon.eal.dialogs import Dialog
 # Logger
 log = logging.getLogger(__name__)
 
-CLEAN_PLUGIN_ENTRYPOINT = 'genie.libs.clean'
+CLEAN_MODULE_NAME = 'genie.libs.clean'
+CLEAN_PLUGIN_ENTRYPOINT = CLEAN_MODULE_NAME
+
+clean_json = None
 
 def clean_schema(schema):
     """decorator for defining schema"""
@@ -200,8 +203,6 @@ def initialize_clean_sections(image_handler, order):
     for section in order:
         getattr(image_handler, 'update_section')(section)
 
-clean_json = None
-
 def load_clean_json():
     """get all clean data in json file"""
     global clean_json
@@ -210,7 +211,7 @@ def load_clean_json():
         return clean_json
 
     try:
-        mod = importlib.import_module("genie.libs.clean")
+        mod = importlib.import_module(CLEAN_MODULE_NAME)
         functions = os.path.join(mod.__path__[0], "clean.json")
     except Exception:
         functions = ""
@@ -220,28 +221,31 @@ def load_clean_json():
             "are running with latest version of "
             "genie.libs.clean"
         )
-        clean_json = {}
+        clean_json = AbstractTree()
     else:
         # Open all the parsers in json file
         with open(functions) as f:
-            clean_json = json.load(f)
+            json_data = json.load(f)
+
+        clean_json = AbstractTree.from_json(json_data,
+                                              package=CLEAN_MODULE_NAME)
 
     for entry in iter_entry_points(group=CLEAN_PLUGIN_ENTRYPOINT):
         log.info('Loading clean APIs from {}'.format(entry.module_name))
 
         ext = ExtendClean(entry.module_name)
         ext.extend()
-        ext.output.pop('tokens', None)
         log.info("{} clean API count: {}".format(
             entry.module_name,
-            len(ext.output.keys())))
+            len(ext.output.keys()) - 1))
         log.debug('{} clean APIs {}'.format(
             entry.module_name,
             json.dumps(ext.output, indent=4)
         ))
 
-        plugin_clean_data = ext.output
-        clean_json = merge_dict(clean_json, plugin_clean_data, update=True)
+        extend_matrix = AbstractTree.from_json(ext.output,
+                                                 package=CLEAN_MODULE_NAME)
+        clean_json.update(extend_matrix)
 
     return clean_json
 
@@ -256,62 +260,31 @@ def get_clean_function(clean_name, clean_data, device):
     if '_' in name or name == name.lower():
         name = ''.join(word.title() for word in name.split('_'))
 
-    data = clean_data.get(name)
-    if data is None and name == "Powercycle":
+    if name == "Powercycle":
         # if 'powercycle' is passed for 'clean_name' argument, rather than
         # 'power_cycle', then resulting name is 'Powercycle'. It should be
         # 'PowerCycle'. Fix it here
         name = "PowerCycle"
         data = clean_data.get(name)
-
-    if data is None:
-        raise Exception(f"The clean stage '{name}' does not exist in the json "
-                        f"file") from None
+        
+    if not name in clean_data:
+        raise AttributeError(f"The clean stage '{name}' does not exist in the "
+                             f"json file") from None
 
     # Load abstraction tokens
-    tokens = Lookup.tokens_from_device(device)
+    tokens = Lookup.tokens_from_device(device, clean_data.order,
+                                       package=CLEAN_MODULE_NAME)
 
-    # Start by checking the lowest level in the json using the abstraction tokens.
-    # For each consecutive iteration, remove the last token, checking every level
-    # until there is nothing left to check or a stage is found.
-    iterated_data = data
-    for i in reversed(range(1, len(tokens) + 1)):
+    for matrix_ptr in clean_data.iter_lookup(tokens=tokens,
+                                             top=name):
+        try:
+            return matrix_ptr.load_ptr()
+            # found clean stage, no need to check fallbacks
+        except Exception:
+            pass
 
-        for token in tokens[:i]:
-            if token not in iterated_data:
-                break
-
-            iterated_data = iterated_data[token]
-
-        if 'module_name' in iterated_data:
-            # Found an abstracted stage
-            break
-
-        # reset for the next iteration
-        iterated_data = data
-
-    if iterated_data == data:
-        # The stage was not found under any of the abstraction tokens.
-        # Try 'com' as a last resort.
-        iterated_data = iterated_data.get('com', {})
-
-    if 'package' in iterated_data:
-        pkg = importlib.import_module(iterated_data['package'])
-    else:
-        pkg = clean
-    lookup = Lookup.from_device(device, packages={"clean": pkg})
-    try:
-        return getattr(_get_submodule(lookup.clean, iterated_data["module_name"]), name)
-    except Exception:
-        raise Exception(f"The clean stage '{name}' does not exist under the "
-                        f"following abstraction tokens: {['com'] + tokens}") from None
-
-def _get_submodule(abs_mod, mods):
-    """recursively find the submodule"""
-    ret = abs_mod
-    for mod in mods.split('.'):
-        ret = getattr(ret, mod)
-    return ret
+    raise AttributeError(f"The clean stage '{name}' does not exist under the "
+                         f"following abstraction tokens: {tokens}") from None
 
 def format_missing_key_msg(missing_list):
     """Beautifully populate missing keys in to human readable format
@@ -511,8 +484,8 @@ def validate_clean(clean_file, testbed_file, lint=True):
             setattr(dev, 'clean', clean_data)
             try:
                 # Get abstracted ImageHandler class
-                abstract = Lookup.from_device(dev, packages={'clean': clean})
-                ImageHandler = abstract.clean.stages.image_handler.ImageHandler
+                abstract = Lookup.from_device(dev, package=clean)
+                ImageHandler = abstract.stages.image_handler.ImageHandler
                 image_handler = ImageHandler(dev, dev.clean['images'])
                 initialize_clean_sections(image_handler, clean_data['order'])
             except Exception as e:
@@ -585,8 +558,8 @@ def remove_string_from_image(images, string):
 def get_image_handler(device):
     if device.clean.get('images'):
         # Get abstracted ImageHandler class
-        abstract = Lookup.from_device(device, packages={'clean': clean})
-        ImageHandler = abstract.clean.stages.image_handler.ImageHandler
+        abstract = Lookup.from_device(device, package=clean)
+        ImageHandler = abstract.stages.image_handler.ImageHandler
         return ImageHandler(device, device.clean['images'])
     else:
         return None

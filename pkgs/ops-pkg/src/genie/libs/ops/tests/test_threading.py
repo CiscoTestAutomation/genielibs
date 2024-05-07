@@ -203,6 +203,7 @@ class TestThreading(unittest.TestCase):
                         'os': 'IOS-XE',
                         'version': '17.14.20230827:110032',
                         'image': 'bootflash:c8kv.bin',
+                        'label': 'BLD_POLARIS_DEV_LATEST_20230827_101613',
                         'config_register': '0x2102',
                         'main_mem': '2251787'
                     },

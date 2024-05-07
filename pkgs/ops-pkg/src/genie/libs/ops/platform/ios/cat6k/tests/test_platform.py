@@ -36,7 +36,11 @@ class TestPlatformAll(unittest.TestCase):
         self.device.mapping['cli'] = 'cli'
         self.device.custom['abstraction'] = {'order': ['os']}
         self.device.platform = 'cat6k'
-        self.device.connectionmgr.connections['cli'] = self.device
+                # Create a mock connection to get output for parsing
+        self.device_connection = Mock(device=self.device)
+        self.device.connectionmgr.connections['cli'] = self.device_connection
+        # Set outputs
+        self.device_connection.execute.side_effect = mapper
 
     def test_complete_cat6k(self):
         f = Platform(device=self.device)

@@ -110,7 +110,8 @@ class Restore(object):
             compare=False,
             compare_exclude=[],
             reload_timeout=None,
-            delete_after_restore=True):
+            delete_after_restore=True,
+            **kwargs):
         if method == 'checkpoint':
             # Enable the feature
             for i in range(1, iteration):

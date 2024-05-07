@@ -27,15 +27,18 @@ class test_vrf(unittest.TestCase):
         self.device.os = 'iosxr'
         self.device.mapping={}
         self.device.mapping['cli']='cli'
-        self.device.connectionmgr.connections['cli'] = self.device
+        # Create a mock connection to get output for parsing
+        self.device_connection = Mock(device=self.device)
+        self.device.connectionmgr.connections['cli'] = self.device_connection
+        # Set outputs
+        self.device_connection.execute.side_effect = mapper
 
 
     def test_complete_output(self):
         vrf = Vrf(device=self.device)
         # Learn the feature
         vrf.maker.outputs[ShowVrfAllDetail] = {'': VrfOutput.ShowVrfAllDetail}
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
         vrf.learn()
 
         self.maxDiff = None
@@ -47,8 +50,7 @@ class test_vrf(unittest.TestCase):
         vrf = Vrf(device=self.device)
         vrf.maker.outputs[ShowVrfAllDetail] = {'': VrfOutput.ShowVrfAllDetailCustom}
         # Set outputs
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
         # Learn the feature
         vrf.learn(vrf='VRF2')
         self.maxDiff = None
@@ -61,8 +63,7 @@ class test_vrf(unittest.TestCase):
 
         # Set outputs
         vrf.maker.outputs[ShowVrfAllDetail] = {'': VrfOutput.ShowVrfAllDetail}
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
         # Learn the feature
         vrf.learn()
 
@@ -77,8 +78,7 @@ class test_vrf(unittest.TestCase):
         vrf.maker.outputs[ShowVrfAllDetail] = {'': {}}
         outputs['show vrf VRF2 detail'] = ''
         outputs['show vrf all detail'] = ''
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
         # Learn the feature
         vrf.learn()
 

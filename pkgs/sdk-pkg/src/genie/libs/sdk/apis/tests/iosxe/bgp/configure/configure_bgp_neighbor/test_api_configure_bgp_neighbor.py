@@ -17,7 +17,8 @@ class TestConfigureBgpNeighbor(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: iosxe
+            platform: cat8k
+            model: c8000v
             type: iosxe
         """
         self.testbed = loader.load(testbed)

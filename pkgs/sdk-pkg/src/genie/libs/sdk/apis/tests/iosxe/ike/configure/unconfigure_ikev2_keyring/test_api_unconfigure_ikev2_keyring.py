@@ -18,7 +18,9 @@ class TestUnconfigureIkev2Keyring(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: C8000V
+            platform: cat8k
+            model: c8000v
+            pid: C8000V
             type: iosxe
         """
         self.testbed = loader.load(testbed)

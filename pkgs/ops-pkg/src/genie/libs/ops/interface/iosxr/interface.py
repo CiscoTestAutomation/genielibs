@@ -1,4 +1,4 @@
-''' 
+'''
 Interface Genie Ops Object for IOSXR - CLI.
 '''
 # python

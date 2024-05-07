@@ -32,8 +32,7 @@ class TestPlatformAll(unittest.TestCase):
 
     def test_complete_output(self):
         self.maxDiff = None
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
         platform = Platform(device=self.device)
 
         # Learn the feature
@@ -52,8 +51,7 @@ class TestPlatformAll(unittest.TestCase):
 
     def test_missing_attributes(self):
         self.maxDiff = None
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
         f = Platform(device=self.device)
 
         f.maker.outputs['show version'] = \
@@ -70,8 +68,7 @@ class TestPlatformAll(unittest.TestCase):
 
     def test_selective_attribute_asr1k(self):
         self.maxDiff = None
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
         f = Platform(device=self.device, attributes=['[os]'])
 
         f.maker.outputs['show version'] = \
@@ -88,8 +85,7 @@ class TestPlatformAll(unittest.TestCase):
 
     def test_empty_parser_output(self):
         self.maxDiff = None
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
         f = Platform(device=self.device)
 
         f.maker.outputs['show version'] = \

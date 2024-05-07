@@ -13,10 +13,10 @@ from genie.libs.ops.igmp.iosxr.tests.igmp_output import IgmpOutput
 from genie.libs.parser.iosxr.show_igmp import ShowIgmpInterface, \
                                              ShowIgmpSummary, \
                                              ShowIgmpGroupsDetail
-                                             
+
 # iosxr show_vrf
 from genie.libs.parser.iosxr.show_vrf import ShowVrfAllDetail
- 
+
 class test_igmp(unittest.TestCase):
 
     def setUp(self):
@@ -24,7 +24,11 @@ class test_igmp(unittest.TestCase):
         self.device.os = 'iosxr'
         self.device.mapping = {}
         self.device.mapping['cli'] = 'cli'
-        self.device.connectionmgr.connections['cli'] = self.device
+                # Create a mock connection to get output for parsing
+        self.device_connection = Mock(device=self.device)
+        self.device.connectionmgr.connections['cli'] = self.device_connection
+        # Set outputs
+        self.device_connection.execute.side_effect = mapper
 
     def test_full_igmp(self):
         self.maxDiff = None
@@ -43,7 +47,7 @@ class test_igmp(unittest.TestCase):
 
         # Verify Ops was created successfully
         self.assertEqual(igmp.info, IgmpOutput.IgmpOpsOutput)
-        
+
     def test_selective_attribute_igmp(self):
         self.maxDiff = None
         igmp = Igmp(device=self.device)
@@ -65,7 +69,7 @@ class test_igmp(unittest.TestCase):
 
         # Check does not match
         self.assertNotEqual('disabled', igmp.info['vrfs']['default']['interfaces']['Loopback0']['enable'])
-        
+
     def test_missing_attributes_igmp(self):
         igmp = Igmp(device=self.device)
         # Get outputs
@@ -82,7 +86,7 @@ class test_igmp(unittest.TestCase):
 
         with self.assertRaises(KeyError):
             status = igmp.info['robustness_value']
-            
+
     def test_empty_output_igmp(self):
         self.maxDiff = None
         igmp = Igmp(device=self.device)
@@ -120,6 +124,6 @@ class test_igmp(unittest.TestCase):
 
         # Verify Ops was created successfully
         self.assertEqual(igmp.info, IgmpOutput.IgmpOpsOutputSourceList)
-        
+
 if __name__ == '__main__':
     unittest.main()

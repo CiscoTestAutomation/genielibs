@@ -1,4 +1,4 @@
-''' 
+'''
 OSPFv3 Genie Conf Object Implementation for NXOS:
     - GracefulRestart multi-line configuration implementation for NXOS - CLI
 '''

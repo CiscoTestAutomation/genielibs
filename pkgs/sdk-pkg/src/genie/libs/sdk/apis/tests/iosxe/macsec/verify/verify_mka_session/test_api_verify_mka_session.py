@@ -1,3 +1,4 @@
+import os
 import unittest
 from pyats.topology import loader
 from genie.libs.sdk.apis.iosxe.macsec.verify import verify_mka_session
@@ -7,21 +8,21 @@ class TestVerifyMkaSession(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        testbed = """
+        testbed = f"""
         devices:
-          FE3:
+          Skyfox-svl:
             connections:
               defaults:
                 class: unicon.Unicon
               a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
+                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: cat9k
+            platform: c9500
             type: c9500
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['FE3']
+        self.device = self.testbed.devices['Skyfox-svl']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -29,6 +30,6 @@ class TestVerifyMkaSession(unittest.TestCase):
         )
 
     def test_verify_mka_session(self):
-        result = verify_mka_session(self.device, 'TwentyFiveGigE 1/0/2', 'SECURED', '10', 160, 'Secured')
-        expected_output = None
+        result = verify_mka_session(self.device, 'HundredGigE1/0/23', 'INITIALIZING', None, 160, None)
+        expected_output = True
         self.assertEqual(result, expected_output)

@@ -1,0 +1,39 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    no platform access-list egress-dscp enable: "no platform access-list egress-dscp\
+      \ enable\r\nEither a) A system RELOAD or\r\n         b) Detach the ACLs, re-apply\
+      \ the ACLs\r\n            or remove the ACL and create ACL\r\n if you want to\
+      \ use the remarked dscp in egress ACL\r\n"
+  prompt: LEAF1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: LEAF1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    show version | include operating mode : ''
+    term length 0: ''
+    term width 0: ''
+  prompt: LEAF1#

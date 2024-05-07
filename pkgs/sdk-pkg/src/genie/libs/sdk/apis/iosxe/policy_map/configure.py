@@ -260,10 +260,10 @@ def configure_bandwidth_remaining_policy_map(device, policy_names, shape_average
                 cli.append(f"bandwidth percent {bandwidth_list[counter]}")
             counter += 1
 
-    cli.append(f"policy-map {policy_names[0]}")
+    cli.append(f"policy-map {policy_names[1]}")
     cli.append(f"class class-default")
     cli.append(f"shape average percent {shape_average}")
-    cli.append(f"service-policy {policy_names[1]}")
+    cli.append(f"service-policy {policy_names[2]}")
 
     try:
         device.configure(cli)

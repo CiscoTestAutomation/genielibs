@@ -53,7 +53,11 @@ class test_ospf(unittest.TestCase):
         self.device.os = 'nxos'
         self.device.mapping={}
         self.device.mapping['cli']='cli'
-        self.device.connectionmgr.connections['cli'] = self.device
+                # Create a mock connection to get output for parsing
+        self.device_connection = Mock(device=self.device)
+        self.device.connectionmgr.connections['cli'] = self.device_connection
+        # Set outputs
+        self.device_connection.execute.side_effect = mapper
 
     def test_custom_output(self):
         self.maxDiff = None
@@ -84,8 +88,7 @@ class test_ospf(unittest.TestCase):
             "{'vrf':'VRF1'}": OspfOutput.ShowIpOspfDatabaseOpaqueAreaDetailVrfAll_custom}
 
         # Return outputs above as inputs to parser when called
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
 
         # Learn the feature
         ospf.learn(vrf='VRF1', interface='Ethernet2/1', neighbor='10.84.66.66')
@@ -96,7 +99,7 @@ class test_ospf(unittest.TestCase):
     def test_complete_output(self):
         self.maxDiff = None
         ospf = Ospf(device=self.device)
-        
+
         # Set outputs
         ospf.maker.outputs[ShowFeature] = {'':OspfOutput.ShowFeature}
         ospf.maker.outputs[ShowIpOspf] = {"{'vrf':'all'}":OspfOutput.ShowIpOspfVrfAll}
@@ -110,10 +113,9 @@ class test_ospf(unittest.TestCase):
         ospf.maker.outputs[ShowIpOspfDatabaseSummaryDetail] = {"{'vrf':'all'}":OspfOutput.ShowIpOspfDatabaseSummaryDetailVrfAll}
         ospf.maker.outputs[ShowIpOspfDatabaseRouterDetail] = {"{'vrf':'all'}":OspfOutput.ShowIpOspfDatabaseRouterDetailVrfAll}
         ospf.maker.outputs[ShowIpOspfDatabaseOpaqueAreaDetail] = {"{'vrf':'all'}":OspfOutput.ShowIpOspfDatabaseOpaqueAreaDetailVrfAll}
-        
+
         # Return outputs above as inputs to parser when called
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
 
         # Learn the feature
         ospf.learn()
@@ -125,7 +127,7 @@ class test_ospf(unittest.TestCase):
     def test_selective_attribute(self):
         self.maxDiff = None
         ospf = Ospf(device=self.device)
-        
+
         # Set outputs
         ospf.maker.outputs[ShowFeature] = {'':OspfOutput.ShowFeature}
         ospf.maker.outputs[ShowIpOspf] = {"{'vrf':'all'}":OspfOutput.ShowIpOspfVrfAll}
@@ -141,8 +143,7 @@ class test_ospf(unittest.TestCase):
         ospf.maker.outputs[ShowIpOspfDatabaseOpaqueAreaDetail] = {"{'vrf':'all'}":OspfOutput.ShowIpOspfDatabaseOpaqueAreaDetailVrfAll}
 
         # Return outputs above as inputs to parser when called
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
 
         # Learn the feature
         ospf.learn()
@@ -157,7 +158,7 @@ class test_ospf(unittest.TestCase):
     def test_empty_output(self):
         self.maxDiff = None
         ospf = Ospf(device=self.device)
-        
+
         # Set outputs
         ospf.maker.outputs[ShowFeature] = {'':{}}
         ospf.maker.outputs[ShowIpOspf] = {"{'vrf':'all'}":{}}
@@ -173,8 +174,7 @@ class test_ospf(unittest.TestCase):
         ospf.maker.outputs[ShowIpOspfDatabaseOpaqueAreaDetail] = {"{'vrf':'all'}":{}}
 
         # Return outputs above as inputs to parser when called
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
 
         # Learn the feature
         ospf.learn()
@@ -187,7 +187,7 @@ class test_ospf(unittest.TestCase):
     def test_missing_attributes(self):
         self.maxDiff = None
         ospf = Ospf(device=self.device)
-        
+
         # Set outputs
         ospf.maker.outputs[ShowFeature] = {'':{}}
         ospf.maker.outputs[ShowIpOspf] = {"{'vrf':'all'}":OspfOutput.ShowIpOspfVrfAll}
@@ -203,8 +203,7 @@ class test_ospf(unittest.TestCase):
         ospf.maker.outputs[ShowIpOspfDatabaseOpaqueAreaDetail] = {"{'vrf':'all'}":OspfOutput.ShowIpOspfDatabaseOpaqueAreaDetailVrfAll}
 
         # Return outputs above as inputs to parser when called
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
 
         # Learn the feature
         ospf.learn()

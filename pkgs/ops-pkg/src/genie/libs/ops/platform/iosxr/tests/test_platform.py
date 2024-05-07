@@ -3,6 +3,7 @@ import unittest
 
 # ATS
 from pyats.topology import Device
+from unittest.mock import Mock
 
 # Genie
 from genie.ops.base import Base
@@ -11,21 +12,22 @@ from genie.libs.ops.platform.iosxr.platform import Platform
 from genie.libs.ops.platform.iosxr.tests.platform_output import PlatformOutput
 
 # Parser
-from genie.libs.parser.iosxr.show_platform import ShowVersion, ShowSdrDetail,\
-                                ShowPlatform, ShowPlatformVm,\
-                                ShowInstallActiveSummary, ShowInventory,\
-                                ShowRedundancySummary, AdminShowDiagChassis,\
-                                ShowRedundancy, Dir
+from genie.libs.parser.iosxr.show_platform import ShowVersion, ShowSdrDetail, \
+    ShowPlatform, ShowPlatformVm, \
+    ShowInstallActiveSummary, ShowInventory, \
+    ShowRedundancySummary, AdminShowDiagChassis, \
+    ShowRedundancy, Dir, ShowDiagDetails
 
 
 class test_platform(unittest.TestCase):
 
     def setUp(self):
-        self.device = Device(name='aDevice')
-        self.device.os = 'iosxr'
-        self.device.mapping={}
-        self.device.mapping['cli']='cli'
-        self.device.connectionmgr.connections['cli'] = '5'
+        self.device = Device(name='aDevice', os='iosxr')
+        self.device.custom.setdefault("abstraction", {})["order"] = ["os"]
+        self.device.mapping = {'cli': 'cli'}
+        mock_connection = Mock()
+        mock_connection.device = self.device
+        self.device.connectionmgr.connections['cli'] = mock_connection
 
     def test_all_attributes(self):
         self.maxDiff = None
@@ -54,12 +56,15 @@ class test_platform(unittest.TestCase):
             {'':PlatformOutput.adminShowDiagChassisOutput}
         # Get 'dir' output
         p.maker.outputs[Dir] = {'':PlatformOutput.dirOutput}
+        # Get 'show diag details' output
+        p.maker.outputs[ShowDiagDetails] = \
+            {'':PlatformOutput.showDiagDetailsOutput}
         # Learn the feature
         p.learn()
 
         # Check all match
-        self.assertEqual(p.chassis, 'ASR9K')
-        self.assertEqual(p.chassis_sn, 'FOX1810G8LR')
+        self.assertEqual(p.chassis, '8201-32FH')
+        self.assertEqual(p.chassis_sn, 'FLM263401XF')
         self.assertEqual(p.config_register, '0x1922')
         dir_value = {
             'dir_name': 'disk0a:/usr',
@@ -173,6 +178,9 @@ class test_platform(unittest.TestCase):
             {'':PlatformOutput.adminShowDiagChassisOutput}
         # Get 'dir' output
         p.maker.outputs[Dir] = {'':PlatformOutput.dirOutput}
+        # Get 'show diag details' output
+        p.maker.outputs[ShowDiagDetails] = \
+            {'':PlatformOutput.showDiagDetailsOutput}
         # Learn the feature
         p.learn()
 
@@ -208,6 +216,10 @@ class test_platform(unittest.TestCase):
             {'':PlatformOutput.adminShowDiagChassisOutput}
         # Get 'dir' output
         p.maker.outputs[Dir] = {'':PlatformOutput.dirOutput}
+        # Get 'show diag details' output
+        p.maker.outputs[ShowDiagDetails] = \
+            {'':PlatformOutput.showDiagDetailsOutput}
+
         # Learn the feature
         p.learn()
 
@@ -218,7 +230,6 @@ class test_platform(unittest.TestCase):
 
     def test_ignored(self):
         self.maxDiff = None
-        
         p1 = Platform(device=self.device)
         # Get 'show version' output
         p1.maker.outputs[ShowVersion] = {'':PlatformOutput.showVersionOutput}
@@ -244,6 +255,9 @@ class test_platform(unittest.TestCase):
             {'':PlatformOutput.adminShowDiagChassisOutput}
         # Get 'dir' output
         p1.maker.outputs[Dir] = {'':PlatformOutput.dirOutput}
+        # Get 'show diag details' output
+        p1.maker.outputs[ShowDiagDetails] = \
+            {'':PlatformOutput.showDiagDetailsOutput}
 
         p2 = Platform(device=self.device)
         # Get 'show version' output
@@ -270,7 +284,10 @@ class test_platform(unittest.TestCase):
             {'':PlatformOutput.adminShowDiagChassisOutput}
         # Get 'dir' output
         p2.maker.outputs[Dir] = {'':PlatformOutput.dirOutput}
-        
+        # Get 'show diag details' output
+        p2.maker.outputs[ShowDiagDetails] = \
+            {'':PlatformOutput.showDiagDetailsOutput}
+
         # Learn the feature
         p1.learn()
         p2.learn()

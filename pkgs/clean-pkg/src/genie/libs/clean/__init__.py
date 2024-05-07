@@ -8,13 +8,13 @@
 '''
 
 # metadata
-__version__ = '24.3'
+__version__ = '24.4'
 __author__ = 'Cisco Systems Inc.'
 __contact__ = ['asg-genie-support@cisco.com', 'pyats-support-ext@cisco.com']
 __copyright__ = 'Copyright (c) 2019, Cisco Systems Inc.'
 
 
 from genie import abstract
-abstract.declare_package(__name__)
+abstract.declare_package(feature="clean")
 
 from .clean import DeviceClean, PyatsDeviceClean, BaseStage

@@ -300,12 +300,13 @@ def get_component_descr(device):
     return {"name":name_list, "descr":descr_list}
 
 
-def get_hardware_version(device):
+def get_hardware_version(device, transceiver_value=" "):
     """
     Get components' hardware version
 
     Args:
         device (`obj`): Device object
+        transceiver_value (str, optional): Value of the transceiver. Defaults to "".
     Returns:
         Dictionary: components' hardware version dict
             example: {
@@ -347,7 +348,7 @@ def get_hardware_version(device):
         m = p0.match(name_raw_list[index])
         if m:
             if hw != 'NULL':
-                hw = hw+" "
+                hw = hw+transceiver_value
 
         hw_strip = hw.strip()
         ## Return two list one of int valued hardware version and another of string valued hardware version
@@ -361,6 +362,3 @@ def get_hardware_version(device):
             str_hw_list.append(hw)
 
     return {"name":[deci_name_list, str_name_list], "hardware_version": [deci_hw_list, str_hw_list]}
-
-
-

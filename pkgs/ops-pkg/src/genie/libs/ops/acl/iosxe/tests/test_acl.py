@@ -22,9 +22,9 @@ class TestAcl(unittest.TestCase):
         self.device.custom['abstraction'] = {'order': ['os']}
         self.device.mapping = {}
         self.device.mapping['cli'] = 'cli'
-        # Give the device as a connection type
-        # This is done in order to call the parser on the output provided
-        self.device.connectionmgr.connections['cli'] = self.device
+        # Create a mock connection to get output for parsing
+        self.device_connection = Mock(device=self.device)
+        self.device.connectionmgr.connections['cli'] = self.device_connection
 
     def test_complete_output(self):
         self.maxDiff = None
@@ -61,7 +61,7 @@ class TestAcl(unittest.TestCase):
 
     def test_incomplete_output(self):
         self.maxDiff = None
-        
+
         acl = Acl(device=self.device)
         # Get outputs
         acl.maker.outputs[ShowAccessLists] = \
@@ -76,7 +76,7 @@ class TestAcl(unittest.TestCase):
         # Delete missing specific attribute values
         expect_dict = deepcopy(AclOutput.Acl_info)
         del(expect_dict['acls']['acl_name']['name'])
-                
+
         # Verify Ops was created successfully
         self.assertEqual(acl.info, expect_dict)
 

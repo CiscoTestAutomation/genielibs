@@ -17,7 +17,8 @@ class TestUnconfigureInterfaceMacAddress(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: c3650
+            platform: cat3k
+            model: c3650
             type: c3650
         """
         self.testbed = loader.load(testbed)

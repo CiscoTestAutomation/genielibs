@@ -1,4 +1,4 @@
-''' 
+'''
 Platform Genie Ops Object for IOSXR.
 '''
 
@@ -20,7 +20,7 @@ class Platform(SuperPlatform):
         for node in item:
             if 'active' in item[node]['role'].lower():
                 return item[node]['node_uptime_in_seconds']
-            
+
     def learn(self):
         '''Learn Platform Ops'''
 
@@ -38,6 +38,26 @@ class Platform(SuperPlatform):
                       src='[sn]',
                       dest='[chassis_sn]')
 
+        self.add_leaf(cmd='show diag details',
+                      src='[item][Rack 0-Chassis][chassis_serial_number]',
+                      dest='[chassis_sn]')
+
+        self.add_leaf(cmd='show diag details',
+                      src='[item][Rack 0-Virtual][pcb_serial_number]',
+                      dest='[chassis_sn]')
+
+        # chassis
+        self.add_leaf(cmd=AdminShowDiagChassis,
+                      src='[pid]',
+                      dest='[chassis]')
+
+        self.add_leaf(cmd='show diag details',
+                      src='[item][Rack 0-Chassis][pid]',
+                      dest='[chassis]')
+
+        self.add_leaf(cmd='show diag details',
+                      src='[item][Rack 0-Virtual][pid]',
+                      dest='[chassis]')
 
         # rtr_type
         self.add_leaf(cmd=ShowVersion,
@@ -83,7 +103,7 @@ class Platform(SuperPlatform):
         self.add_leaf(cmd=ShowInstallActiveSummary,
                       src='[sdr]',
                       dest='[sdr_owner]')
-        
+
         # =======================
         # VirtualDeviceAttributes
         # =======================

@@ -46,3 +46,12 @@ def execute_no_debug_ip(device, protocol, debug_type=None):
         device.execute(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to execute no debug ip {protocol} on device {device}. Error:\n{e}")
+
+def execute_clear_console(device, via='telnet'):
+    """Clear console on device via another connection
+    Args:
+        via (str): Connection name from testbed to connect to device
+    """
+    device.connect(via=via, alias=via)
+    device.execute('clear line 0')
+    device.telnet.disconnect()

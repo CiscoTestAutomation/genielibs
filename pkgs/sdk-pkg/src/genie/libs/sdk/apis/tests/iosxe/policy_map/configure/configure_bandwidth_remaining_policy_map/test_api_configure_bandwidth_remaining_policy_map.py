@@ -10,7 +10,7 @@ class TestConfigureBandwidthRemainingPolicyMap(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          A1:
+          9400_L2_DUT:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -19,10 +19,10 @@ class TestConfigureBandwidthRemainingPolicyMap(unittest.TestCase):
                 protocol: unknown
             os: iosxe
             platform: cat9k
-            type: single_rp
+            type: c9400
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['A1']
+        self.device = self.testbed.devices['9400_L2_DUT']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,6 @@ class TestConfigureBandwidthRemainingPolicyMap(unittest.TestCase):
         )
 
     def test_configure_bandwidth_remaining_policy_map(self):
-        result = configure_bandwidth_remaining_policy_map(self.device, ['PQ', 'parent'], '4', None, None, True)
+        result = configure_bandwidth_remaining_policy_map(self.device, ['child1', 'child1', 'parent'], '4', None, None, True)
         expected_output = None
         self.assertEqual(result, expected_output)

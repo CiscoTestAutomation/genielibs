@@ -299,13 +299,12 @@ def clear_access_session(device, interface=None):
         Raises:
             SubCommandFailure: Failed to execute clear access-sesssion.
     """
-    converted_interface = Common.convert_intf_name(interface)
     cmd = "clear access-session"
 
     if interface:
+        converted_interface = Common.convert_intf_name(interface)
         cmd += " interface {intf}".format(intf=converted_interface)
-
-    cmd += "\n"
+        
     try:
         device.execute(cmd)
     except SubCommandFailure as e:
@@ -400,13 +399,14 @@ def config_identity_ibns(device, policy_map=None, interface=None, access=True, p
 
     if dict1['authmod'] != 'multi-auth':
         cmd += "access-session host-mode {}\n".format(dict1['authmod'])
-
-    cmd += "access-session closed\n"
+    
+    if dict1['open'] != True:
+        cmd += "access-session closed\n"
 
     if 'ctr' in dict1:
         cmd += "access-session control-direction {}\n".format(dict1['ctr'])
 
-    if  'reauth' in dict1:
+    if 'reauth' in dict1:
         cmd += "authentication timer reauthenticate {}\n".format(dict1['reauth'])
 
     if policy_map:

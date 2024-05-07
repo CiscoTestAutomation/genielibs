@@ -80,7 +80,7 @@ def _recovery_steps(device, clear_line=True, powercycler=True,
     if clear_line:
         log.info(banner("Clearing the console port line"))
         try:
-            device.api.execute_clear_line()
+            device.api.execute_clear_console()
         except Exception as e:
             log.warning(str(e))
             log.warning("Unable to clear console port line")

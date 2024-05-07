@@ -25,19 +25,22 @@ def mapper(key):
     return outputs[key]
 
 class test_route_all(unittest.TestCase):
-    
+
     def setUp(self):
         self.device = Device(name='aDevice')
         self.device.os = 'iosxr'
         self.device.custom['abstraction'] = {'order':['os']}
         self.device.mapping = {'cli': 'cli'}
-        self.device.connectionmgr.connections['cli'] = self.device
+                # Create a mock connection to get output for parsing
+        self.device_connection = Mock(device=self.device)
+        self.device.connectionmgr.connections['cli'] = self.device_connection
+        # Set outputs
+        self.device_connection.execute.side_effect = mapper
 
     def test_custom_output(self):
         f = Routing(device=self.device)
         # Get 'show ip static route' output
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
         # Learn the feature
         f.learn(address_family='ipv4', route='10.23.90.0', interface='GigabitEthernet0/0/0/1.90')
         self.maxDiff = None
@@ -46,8 +49,7 @@ class test_route_all(unittest.TestCase):
     def test_full_route(self):
         f = Routing(device=self.device)
         # Get 'show ip static route' output
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
         # Learn the feature
         f.learn()
         self.maxDiff = None
@@ -58,8 +60,7 @@ class test_route_all(unittest.TestCase):
         f = Routing(device=self.device)
 
         # Get 'show ipv4 static route' output
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
         # Learn the feature
         f.learn()
         # Check match
@@ -78,8 +79,7 @@ class test_route_all(unittest.TestCase):
         outputs['show route ipv4 10.23.90.0'] = ''
         outputs['show route vrf all ipv4 10.23.90.0'] = ''
         # Get outputs
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
 
         # Learn the feature
         f.learn()

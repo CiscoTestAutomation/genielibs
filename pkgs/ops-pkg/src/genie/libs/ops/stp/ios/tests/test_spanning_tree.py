@@ -29,9 +29,9 @@ class test_stp(unittest.TestCase):
         self.device.custom['abstraction'] = {'order':['os']}
         self.device.mapping={}
         self.device.mapping['cli']='cli'
-        # Give the device as a connection type
-        # This is done in order to call the parser on the output provided
-        self.device.connectionmgr.connections['cli'] = self.device
+        # Create a mock connection to get output for parsing
+        self.device_connection = Mock(device=self.device)
+        self.device.connectionmgr.connections['cli'] = self.device_connection
 
     def test_complete_mst_output(self):
         self.maxDiff = None
@@ -48,10 +48,10 @@ class test_stp(unittest.TestCase):
 
         stp.maker.outputs[ShowErrdisableRecovery] = \
             {'': StpMstOutput.ShowErrdisableRecovery}
-            
+
         stp.maker.outputs[ShowSpanningTree] = \
             {'': StpMstOutput.ShowSpanningTree}
-            
+
         stp.maker.outputs[ShowSpanningTreeMstConfiguration] = \
             {'': StpMstOutput.ShowSpanningTreeMstConfiguration}
 
@@ -83,10 +83,10 @@ class test_stp(unittest.TestCase):
 
         stp.maker.outputs[ShowErrdisableRecovery] = \
             {'': {}}
-            
+
         stp.maker.outputs[ShowSpanningTree] = \
             {'': {}}
-            
+
         stp.maker.outputs[ShowSpanningTreeMstConfiguration] = \
             {'': {}}
 
@@ -100,7 +100,7 @@ class test_stp(unittest.TestCase):
 
     def test_incomplete_output(self):
         self.maxDiff = None
-        
+
         stp = Stp(device=self.device)
         # Get outputs
         stp.maker.outputs[ShowSpanningTreeDetail] = \
@@ -114,10 +114,10 @@ class test_stp(unittest.TestCase):
 
         stp.maker.outputs[ShowErrdisableRecovery] = \
             {'': {}}
-            
+
         stp.maker.outputs[ShowSpanningTree] = \
             {'': StpMstOutput.ShowSpanningTree}
-            
+
         stp.maker.outputs[ShowSpanningTreeMstConfiguration] = \
             {'': StpMstOutput.ShowSpanningTreeMstConfiguration}
 
@@ -127,7 +127,7 @@ class test_stp(unittest.TestCase):
         # Delete missing specific attribute values
         expect_dict = deepcopy(StpMstOutput.Stp_info)
         del(expect_dict['global']['bpduguard_timeout_recovery'])
-                
+
         # Verify Ops was created successfully
         self.assertEqual(stp.info, expect_dict)
 
@@ -143,10 +143,10 @@ class test_stp(unittest.TestCase):
 
         stp.maker.outputs[ShowErrdisableRecovery] = \
             {'': StpRpstOutput.ShowErrdisableRecovery}
-            
+
         stp.maker.outputs[ShowSpanningTree] = \
             {'': StpRpstOutput.ShowSpanningTree}
-            
+
         stp.maker.outputs[ShowSpanningTreeMstConfiguration] = \
             {'': {}}
 

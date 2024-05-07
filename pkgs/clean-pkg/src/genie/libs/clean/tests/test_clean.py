@@ -9,7 +9,7 @@ from functools import partial
 from genie.libs.clean.clean import StageSection, BaseStage, CleanTestcase, REUSE_LIMIT_MSG
 from genie.libs.clean.stages.image_handler import BaseImageHandler
 from genie.conf.base import Device
-
+from genie.abstract.package import AbstractTree
 
 from pyats.log.utils import banner
 from pyats import results
@@ -82,25 +82,42 @@ class TestBaseStage(unittest.TestCase):
         func1.assert_called_with(test=123)
 
 
-class TestCleanTestcase(unittest.TestCase):
-
-    clean_json = {
+source_json = {
         "SomeStage": {
-            "iosxe": {
-                "package": "genie.libs.clean",
-                "module_name": "stages.stages",
-                "uid": "SomeStage",
+            "folders": {
+                "iosxe": {
+                    "package": "genie.libs.clean",
+                    "module_name": "stages.stages",
+                    "uid": "SomeStage",
+                    "tokens": {
+                        "os": "iosxe"
+                    }
+                }
             }
         },
         "SomeOtherStage": {
-            "iosxe": {
-                "package": "genie.libs.clean",
-                "module_name": "stages.stages",
-                "uid": "SomeOtherStage",
+            "folders": {
+                "iosxe": {
+                    "package": "genie.libs.clean",
+                    "module_name": "stages.stages",
+                    "uid": "SomeOtherStage",
+                    "tokens": {
+                        "os": "iosxe"
+                    }
+                }
             }
+        },
+        "token_order": ["os"],
+        "tokens": {
+            "os": ["iosxe"]
         }
     }
 
+def clean_json():
+    # mock load_clean_json function to return a new abstract matrix each test
+    return AbstractTree.from_json(source_json)
+
+class TestCleanTestcase(unittest.TestCase):
     class SomeStage(BaseStage):
         schema = {}
 
@@ -114,7 +131,7 @@ class TestCleanTestcase(unittest.TestCase):
 
         self.global_stage_reuse_limit = 3
 
-    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(return_value=clean_json))
+    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(side_effect=clean_json))
     @mock.patch('genie.libs.clean.stages.stages.SomeStage', SomeStage, create=True)
     def test_discover(self):
 
@@ -131,7 +148,7 @@ class TestCleanTestcase(unittest.TestCase):
 
         self.assertEqual(self.SomeStage, clean_testcase.stages['SomeStage']['func'])
 
-    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(return_value=clean_json))
+    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(side_effect=clean_json))
     @mock.patch('genie.libs.clean.stages.stages.SomeStage', SomeStage, create=True)
     def test_discover_with_image_handler(self):
 
@@ -153,7 +170,7 @@ class TestCleanTestcase(unittest.TestCase):
 
         clean_testcase.image_handler.update_section.assert_called_with('SomeStage')
 
-    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(return_value=clean_json))
+    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(side_effect=clean_json))
     @mock.patch('genie.libs.clean.stages.stages.SomeStage', SomeStage, create=True)
     def test_discover_custom_stage_source(self):
         self.device.clean = {
@@ -174,7 +191,7 @@ class TestCleanTestcase(unittest.TestCase):
 
         self.assertEqual(self.SomeStage, clean_testcase.stages['SomeStage']['func'])
 
-    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(return_value=clean_json))
+    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(side_effect=clean_json))
     @mock.patch('genie.libs.clean.stages.stages.SomeStage', SomeStage, create=True)
     def test_discover_invalid_stage_schema(self):
         self.device.clean = {
@@ -191,7 +208,7 @@ class TestCleanTestcase(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, expected_msg):
             clean_testcase.discover()
 
-    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(return_value=clean_json))
+    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(side_effect=clean_json))
     def test_discover_stage_doesnt_exist_in_json(self):
 
         self.device.clean = {
@@ -209,7 +226,7 @@ class TestCleanTestcase(unittest.TestCase):
         with self.assertRaisesRegex(Exception, expected_msg):
             clean_testcase.discover()
 
-    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(return_value=clean_json))
+    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(side_effect=clean_json))
     def test_discover_stage_doesnt_exist(self):
 
         self.device.clean = {
@@ -222,15 +239,14 @@ class TestCleanTestcase(unittest.TestCase):
             global_stage_reuse_limit=self.global_stage_reuse_limit)
 
         expected_msg = r"The clean stage 'SomeStage' does not exist under the " \
-                       r"following abstraction tokens: \[.*\]"
+                       r"following abstraction tokens: \{.*\}"
 
         with self.assertRaisesRegex(Exception, expected_msg):
             clean_testcase.discover()
 
-    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(return_value=clean_json))
+    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(side_effect=clean_json))
     @mock.patch('genie.libs.clean.stages.stages.SomeStage', SomeStage, create=True)
     def test_discover_device_recovery_not_in_yaml(self):
-
         self.device.clean = {
             'SomeStage': {},
             'order': ['SomeStage']
@@ -246,7 +262,7 @@ class TestCleanTestcase(unittest.TestCase):
 
         self.assertEqual(None, clean_testcase.device_recovery_processor)
 
-    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(return_value=clean_json))
+    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(side_effect=clean_json))
     @mock.patch('genie.libs.clean.stages.stages.SomeStage', SomeStage, create=True)
     def test_discover_device_recovery_in_yaml(self):
 
@@ -270,7 +286,7 @@ class TestCleanTestcase(unittest.TestCase):
         self.assertIsInstance(clean_testcase.device_recovery_processor,
                               functools.partial)
 
-    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(return_value=clean_json))
+    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(side_effect=clean_json))
     @mock.patch('genie.libs.clean.stages.stages.SomeStage', SomeStage, create=True)
     def test_iter(self):
         self.device.clean = {
@@ -286,7 +302,7 @@ class TestCleanTestcase(unittest.TestCase):
 
         self.assertEqual('stage SomeStage', str(next(iterator)))
 
-    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(return_value=clean_json))
+    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(side_effect=clean_json))
     @mock.patch('genie.libs.clean.stages.stages.SomeStage', SomeStage, create=True)
     def test_iter_unique_stage_uids(self):
         self.device.clean = {
@@ -305,7 +321,7 @@ class TestCleanTestcase(unittest.TestCase):
         self.assertEqual('stage SomeStage(2)', str(next(iterator)))
         self.assertEqual('stage SomeStage(3)', str(next(iterator)))
 
-    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(return_value=clean_json))
+    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(side_effect=clean_json))
     @mock.patch('genie.libs.clean.stages.stages.SomeStage', SomeStage, create=True)
     def test_iter_device_recovery_processor(self):
 
@@ -330,7 +346,7 @@ class TestCleanTestcase(unittest.TestCase):
                          stage.function.__processors__.post[0])
 
 
-    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(return_value=clean_json))
+    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(side_effect=clean_json))
     @mock.patch('genie.libs.clean.stages.stages.SomeStage', SomeStage, create=True)
     def test_iter_with_image_handler(self):
         self.device.clean = {
@@ -353,7 +369,7 @@ class TestCleanTestcase(unittest.TestCase):
         self.assertEqual('stage SomeStage(2)', str(next(iterator)))
         clean_testcase.image_handler.update_section.assert_called_with('SomeStage__2', update_history=True)
 
-    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(return_value=clean_json))
+    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(side_effect=clean_json))
     @mock.patch('genie.libs.clean.stages.stages.SomeStage', SomeStage, create=True)
     def test_iter_stage_in_order_but_not_declared(self):
         self.device.clean = {
@@ -374,7 +390,7 @@ class TestCleanTestcase(unittest.TestCase):
 
     @mock.patch('genie.libs.clean.clean.log')
     @mock.patch('genie.libs.clean.clean.aetest')
-    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(return_value=clean_json))
+    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(side_effect=clean_json))
     @mock.patch('genie.libs.clean.stages.stages.SomeStage', SomeStage, create=True)
     def test_iter_infinite_loop_scenario(self, mocked_aetest, mocked_log):
         self.device.clean = {
@@ -407,7 +423,7 @@ class TestCleanTestcase(unittest.TestCase):
 
     @mock.patch('genie.libs.clean.clean.log')
     @mock.patch('genie.libs.clean.clean.aetest')
-    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(return_value=clean_json))
+    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(side_effect=clean_json))
     @mock.patch('genie.libs.clean.stages.stages.SomeStage', SomeStage, create=True)
     def test_iter_failed_stage(self, mocked_aetest, mocked_log):
         self.device.clean = {
@@ -440,7 +456,7 @@ class TestCleanTestcase(unittest.TestCase):
         self.assertEqual([['SomeStage has failed', str]], mocked_aetest.executer.goto)
 
     @mock.patch('genie.libs.clean.clean.log')
-    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(return_value=clean_json))
+    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(side_effect=clean_json))
     @mock.patch('genie.libs.clean.stages.stages.SomeStage', SomeStage, create=True)
     @mock.patch('genie.libs.clean.stages.stages.SomeOtherStage', SomeOtherStage, create=True)
     def test_iter_change_order_if_pass(self, mocked_log):
@@ -473,7 +489,7 @@ class TestCleanTestcase(unittest.TestCase):
         self.assertEqual('SomeOtherStage', stage.uid)
 
     @mock.patch('genie.libs.clean.clean.log')
-    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(return_value=clean_json))
+    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(side_effect=clean_json))
     @mock.patch('genie.libs.clean.stages.stages.SomeStage', SomeStage, create=True)
     @mock.patch('genie.libs.clean.stages.stages.SomeOtherStage', SomeOtherStage, create=True)
     def test_iter_change_order_if_fail(self, mocked_log):
@@ -506,7 +522,7 @@ class TestCleanTestcase(unittest.TestCase):
 
         self.assertEqual('SomeOtherStage', stage.uid)
 
-    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(return_value=clean_json))
+    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(return_value=clean_json()))
     @mock.patch('genie.libs.clean.stages.stages.SomeStage', SomeStage, create=True)
     def test_discover_image_handler_image_override_false(self):
         self.device.clean = {
@@ -517,7 +533,6 @@ class TestCleanTestcase(unittest.TestCase):
                 'override_stage_images': False
             },
         }
-
         clean_testcase = CleanTestcase(
             device=self.device,
             global_stage_reuse_limit=self.global_stage_reuse_limit)

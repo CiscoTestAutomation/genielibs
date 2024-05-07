@@ -35,7 +35,7 @@ class Vlan(ABC):
             # enabled_interface_vlan
             elif attributes.value('enabled_interface_vlan'):
                 configurations.append_line('feature interface-vlan')
-            
+
             # enabled_vn_segment_vlan_based
             elif attributes.value('enabled_vn_segment_vlan_based'):
                 configurations.append_line('feature vn-segment-vlan-based')

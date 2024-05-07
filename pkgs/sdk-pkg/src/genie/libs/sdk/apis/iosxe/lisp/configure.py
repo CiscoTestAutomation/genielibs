@@ -120,3 +120,20 @@ def unconfigure_lisp_l2_flooding(device,instance_id,vlan,mcast_ip="239.0.0.1",pa
         raise SubCommandFailure(
             f"Failed to unconfigure l2 flooding under lisp instance-id {instance_id} for vlan {vlan} "
             )
+ 
+def configure_no_instance_lisp(device, instance_id):
+    """ unconfigure instance_id router-lisp  
+        Args:
+            device (`obj`): Device object
+            instance_id (`str`): instance_id
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Removing the instance from {device}".format(device=device))
+    cmd = ["router lisp",f"no instance-id {instance_id}"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'It has no instance-id {instance_id} on {device}. Error:\n{e}')

@@ -3,18 +3,18 @@ configure:
     autodiscovery bgp signaling ldp: "autodiscovery bgp signaling ldp\r\n"
     end:
       new_state: execute
-    l2vpn vfi context vpls: "l2vpn vfi context vpls\r\n"
+    l2vpn vfi context 10: "l2vpn vfi context 10\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''
-    vpn id 111: "vpn id 111\r\n"
-  prompt: PE1(config)#
+    vpn id 10: "vpn id 10\r\n"
+  prompt: Prometheus(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: PE1(config-line)#
+  prompt: Prometheus(config-line)#
 connect:
   commands:
     '':
@@ -34,4 +34,4 @@ execute:
     term length 0: ''
     term width 0: ''
     show version | include operating mode: ''
-  prompt: PE1#
+  prompt: Prometheus#

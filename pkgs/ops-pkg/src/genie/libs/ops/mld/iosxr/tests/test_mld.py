@@ -38,9 +38,11 @@ class test_mld(unittest.TestCase):
         self.device.os = 'iosxr'
         self.device.mapping = {}
         self.device.mapping['cli'] = 'cli'
-        # Give the device as a connection type
-        # This is done in order to call the parser on the output provided
-        self.device.connectionmgr.connections['cli'] = self.device
+        # Create a mock connection to get output for parsing
+        self.device_connection = Mock(device=self.device)
+        self.device.connectionmgr.connections['cli'] = self.device_connection
+        # Set outputs
+        self.device_connection.execute.side_effect = mapper
 
     def test_complete_output(self):
         self.maxDiff = None
@@ -60,8 +62,7 @@ class test_mld(unittest.TestCase):
             {"{'vrf':''}": MldOutput.ShowMldGroupsDetail_default}
 
         # Return outputs above as inputs to parser when called
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
 
         # Learn the feature
         mld.learn()
@@ -104,7 +105,7 @@ class test_mld(unittest.TestCase):
     def test_selective_attribute(self):
         self.maxDiff = None
         mld = Mld(device = self.device)
-        
+
         # Get outputs
         mld.maker.outputs[ShowVrfAllDetail] = \
             {'': MldOutput.ShowVrfAllDetail}
@@ -119,11 +120,10 @@ class test_mld(unittest.TestCase):
             {"{'vrf':''}": MldOutput.ShowMldGroupsDetail_default}
 
         # Return outputs above as inputs to parser when called
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
 
         # Learn the feature
-        mld.learn()      
+        mld.learn()
 
         # Check specific attribute values
         # info - default vrf
@@ -135,7 +135,7 @@ class test_mld(unittest.TestCase):
 
     def test_incomplete_output(self):
         self.maxDiff = None
-        
+
         mld = Mld(device = self.device)
 
         # Get outputs
@@ -161,7 +161,7 @@ class test_mld(unittest.TestCase):
 
         # Learn the feature
         mld.learn()
-        
+
         # revert the outputs
         outputs['show mld vrf VRF1 groups detail'] = MldOutput.ShowMldGroupsDetail_VRF
 

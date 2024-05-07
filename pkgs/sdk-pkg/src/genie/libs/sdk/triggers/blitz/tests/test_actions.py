@@ -786,7 +786,6 @@ class TestActions(unittest.TestCase):
       self.assertEqual(steps.result, Errored)
 
     def test_api_no_device_common_api(self):
-
       arguments = {'testbed': self.testbed}
       steps =  Steps()
       self.kwargs.update({'steps': steps,
@@ -993,7 +992,6 @@ class TestActions(unittest.TestCase):
     @patch("genie.libs.sdk.libs.abstracted_libs.iosxe.subsection.get_default_dir",
                 return_value='bootflash:/')
     def test_save_config_snapshot_2(self, mock):
-
       test_module = importlib.import_module('genie.harness.genie_testscript')
       script = TestScript(test_module)
       setattr(script, 'default_file_system', {})

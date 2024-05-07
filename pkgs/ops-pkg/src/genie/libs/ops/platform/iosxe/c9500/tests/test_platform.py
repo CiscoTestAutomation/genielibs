@@ -7,12 +7,12 @@ from pyats.topology import Device
 # Genie Xbu_shared
 from genie.libs.ops.platform.iosxe.c9500.platform import Platform
 from genie.libs.ops.platform.iosxe.c9500.tests.platform_output import PlatformOutput
-from genie.libs.parser.iosxe.c9500.show_platform import ShowVersion, \
+from genie.libs.parser.iosxe.cat9k.c9500.show_platform import ShowVersion, \
                                                         ShowRedundancy, \
                                                         ShowInventory, \
                                                         ShowPlatform
 from genie.libs.parser.iosxe.show_platform import Dir
-from genie.libs.parser.iosxe.c9500.show_issu import ShowIssuStateDetail,\
+from genie.libs.parser.iosxe.cat9k.c9500.show_issu import ShowIssuStateDetail,\
                                                     ShowIssuRollbackTimer
 
 
@@ -23,9 +23,11 @@ class test_platform_all(unittest.TestCase):
         self.device.os = 'iosxe'
         self.device.mapping={}
         self.device.mapping['cli']='cli'
-        # Give the device as a connection type
-        # This is done in order to call the parser on the output provided
-        self.device.connectionmgr.connections['cli'] = self.device
+        # Create a mock connection to get output for parsing
+        self.device_connection = Mock(device=self.device)
+        self.device.connectionmgr.connections['cli'] = self.device_connection
+        # Set outputs
+        self.device_connection.execute.side_effect = mapper
 
     def test_complete_c9500(self):
 

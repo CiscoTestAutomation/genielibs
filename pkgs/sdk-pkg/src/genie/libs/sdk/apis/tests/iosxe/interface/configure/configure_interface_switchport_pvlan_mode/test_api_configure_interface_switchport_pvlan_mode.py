@@ -17,7 +17,8 @@ class TestConfigureInterfaceSwitchportPvlanMode(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: c3850
+            platform: cat3k
+            model: c3850
             type: c3850
         """
         self.testbed = loader.load(testbed)

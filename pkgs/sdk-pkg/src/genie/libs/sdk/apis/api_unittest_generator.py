@@ -17,7 +17,6 @@ from pathlib import Path
 from pyats.topology import loader
 from unicon.core.errors import ConnectionError
 
-logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger('api_unittest_generator')
 
 # uses timestamp to avoid writing over existing folder
@@ -690,6 +689,7 @@ class TestGenerator:
 
 
 if __name__ == '__main__':
+    logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
     parser = argparse.ArgumentParser()
 

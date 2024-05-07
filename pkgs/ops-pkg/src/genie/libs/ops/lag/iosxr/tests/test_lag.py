@@ -21,7 +21,9 @@ class test_lag(unittest.TestCase):
         self.device.os = 'iosxr'
         self.device.mapping = {}
         self.device.mapping['cli'] = 'cli'
-        self.device.connectionmgr.connections['cli'] = self.device
+                # Create a mock connection to get output for parsing
+        self.device_connection = Mock(device=self.device)
+        self.device.connectionmgr.connections['cli'] = self.device_connection
 
     def test_full_lag(self):
         self.maxDiff = None

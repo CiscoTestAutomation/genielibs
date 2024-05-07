@@ -70,9 +70,12 @@ def device_rommon_boot(device, golden_image=None, tftp_boot=None, error_pattern=
         raise Exception('Global recovery only support golden image and tftp '
                          'boot recovery and neither was provided')
 
+    # Timeout for device to reload
+    timeout = device.clean.get('device_recovery', {}).get('timeout', 900)
+
     try:
         # To boot the image from rommon
-        device.reload(image_to_boot=cmd, error_pattern=error_pattern)
+        device.reload(image_to_boot=cmd, error_pattern=error_pattern, timeout=timeout)
     except Exception as e:
         log.error(str(e))
         raise Exception(f"Failed to boot the device {device.name}", from_exception=e)

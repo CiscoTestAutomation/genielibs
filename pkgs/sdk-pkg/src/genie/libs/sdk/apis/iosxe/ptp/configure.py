@@ -565,3 +565,35 @@ def configure_ptp_enable_on_interface(device, interface):
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not configure ptp enable on device interface. Error:\n{e}')
 
+def configure_ptp_neighbor_propagation_delay_threshold(device, delay = 60):
+    """ Configure ptp neighbor propagation delay threshold
+        Args:
+            device (`obj`): Device object
+            delay ('str'): PTP neighbor-propagation-delay-threshold value in nanoseconds.Default value is 60. Eg: <1-2147483646> nano seconds
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f"Configuring ptp neighbor-propagation-delay-threshold on {device.name}")
+    cmd = [f"ptp neighbor-propagation-delay-threshold {delay}"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configure ptp neighbor-propagation-delay-threshold on device. Error:\n{e}')
+
+def unconfigure_ptp_neighbor_propagation_delay_threshold(device):
+    """ Unconfigure ptp neighbor propagation delay threshold
+        Args:
+            device (`obj`): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f"Unconfiguring ptp neighbor-propagation-delay-threshold on {device.name}")
+    cmd = [f"no ptp neighbor-propagation-delay-threshold"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not unconfigure ptp neighbor-propagation-delay-threshold on device. Error:\n{e}')

@@ -1,0 +1,39 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: javelin-morph-sj-full3-dut1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: javelin-morph-sj-full3-dut1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    clear counters Fo1/1/1:
+      response:
+      - Clear "show interface" counters on this interface [confirm]
+      response_type: circular
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    show version | include operating mode: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: javelin-morph-sj-full3-dut1#

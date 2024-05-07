@@ -24,9 +24,9 @@ class test_fdb(unittest.TestCase):
         self.device.custom['abstraction'] = {'order':['os']}
         self.device.mapping={}
         self.device.mapping['cli']='cli'
-        # Give the device as a connection type
-        # This is done in order to call the parser on the output provided
-        self.device.connectionmgr.connections['cli'] = self.device
+        # Create a mock connection to get output for parsing
+        self.device_connection = Mock(device=self.device)
+        self.device.connectionmgr.connections['cli'] = self.device_connection
 
     def test_complete_output(self):
         self.maxDiff = None
@@ -73,7 +73,7 @@ class test_fdb(unittest.TestCase):
 
     def test_incomplete_output(self):
         self.maxDiff = None
-        
+
         fdb = Fdb(device=self.device)
         # Get outputs
         fdb.maker.outputs[ShowMacAddressTable] = \
@@ -92,7 +92,7 @@ class test_fdb(unittest.TestCase):
         expect_dict = deepcopy(FdbOutput.Fdb_info)
         del(expect_dict['mac_aging_time'])
         del(expect_dict['mac_table']['vlans']['10']['mac_aging_time'])
-                
+
         # Verify Ops was created successfully
         self.assertEqual(fdb.info, expect_dict)
 

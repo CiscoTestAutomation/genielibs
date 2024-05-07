@@ -5,13 +5,13 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-  prompt: FE3(config)#
+  prompt: Skyfox-svl(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: FE3(config-line)#
+  prompt: Skyfox-svl(config-line)#
 connect:
   commands:
     '':
@@ -27,72 +27,42 @@ execute:
       new_state: configure
     config-transaction:
       new_state: configure
-    show mka sessions interface TwentyFiveGigE 1/0/2 detail:
+    show mka sessions interface HundredGigE1/0/23 detail:
       response:
-        - |-
-          
-          MKA Detailed Status for MKA Session
-          ===================================
-          Status: SECURED - Secured MKA Session with MACsec
-          
-          Local Tx-SCI............. 2416.9d8a.3362/0009
-          Interface MAC Address.... 2416.9d8a.3362
-          MKA Port Identifier...... 9
-          Interface Name........... TwentyFiveGigE1/0/2
-          Audit Session ID......... 
-          CAK Name (CKN)........... 10
-          Member Identifier (MI)... 1FE174FD4E50B239AC69FEA6
-          Message Number (MN)...... 469213
-          EAP Role................. NA
-          Key Server............... NO
-          MKA Cipher Suite......... AES-256-CMAC
-          
-          Latest SAK Status........ Rx & Tx
-          Latest SAK AN............ 0
-          Latest SAK KI (KN)....... 19DFFA038FCA4FAD3471BE2100000001 (1)
-          Old SAK Status........... FIRST-SAK
-          Old SAK AN............... 0
-          Old SAK KI (KN).......... FIRST-SAK (0)
-          
-          SAK Transmit Wait Time... 0s (Not waiting for any peers to respond)
-          SAK Retire Time.......... 0s (No Old SAK to retire)
-          SAK Rekey Time........... 0s (SAK Rekey interval not applicable)
-          
-          MKA Policy Name.......... *DEFAULT POLICY*
-          Key Server Priority...... 0
-          Delay Protection......... NO
-          Delay Protection Timer.......... 0s (Not enabled)
-          
-          Confidentiality Offset... 0
-          Algorithm Agility........ 80C201
-          SAK Rekey On Live Peer Loss........ NO
-          Send Secure Announcement.. DISABLED
-          SCI Based SSCI Computation.... NO
-          SAK Cipher Suite......... 0080C20001000001 (GCM-AES-128)
-          MACsec Capability........ 3 (MACsec Integrity, Confidentiality, & Offset)
-          MACsec Desired........... YES
-          
-          # of MACsec Capable Live Peers............ 1
-          # of MACsec Capable Live Peers Responded.. 0
-          
-          Live Peers List:
-            MI                        MN          Rx-SCI (Peer)        KS        RxSA          SSCI
-                                                                       Priority  Installed
-            ---------------------------------------------------------------------------------------
-            19DFFA038FCA4FAD3471BE21  101         0027.90bf.c901/0009  0         YES            0
-          
-          Potential Peers List:
-            MI                        MN          Rx-SCI (Peer)        KS        RxSA          SSCI
-                                                                       Priority  Installed
-            ---------------------------------------------------------------------------------------
-          
-          Dormant Peers List:
-            MI                        MN          Rx-SCI (Peer)        KS        RxSA          SSCI
-                                                                       Priority  Installed
-            ---------------------------------------------------------------------------------------
+      - "\r\nMKA Detailed Status for MKA Session\r\n===================================\r\
+        \nStatus: INITIALIZING - Searching for Peer (Waiting to receive first Peer\
+        \ MKPDU)\r\n\r\nLocal Tx-SCI............. bc4a.56a8.f737/001e\r\nInterface\
+        \ MAC Address.... bc4a.56a8.f737\r\nMKA Port Identifier...... 30\r\nInterface\
+        \ Name........... HundredGigE1/0/23\r\nAudit Session ID......... \r\nCAK Name\
+        \ (CKN)........... 9ABC\r\nMember Identifier (MI)... CA535EE0769DE14E29319620\r\
+        \nMessage Number (MN)...... 52\r\nEAP Role................. NA\r\nKey Server...............\
+        \ YES\r\nMKA Cipher Suite......... AES-256-CMAC\r\n\r\nLatest SAK Status........\
+        \ No Rx, No Tx\r\nLatest SAK AN............ 0\r\nLatest SAK KI (KN).......\
+        \ FIRST-SAK-INITIALIZING (0)\r\nOld SAK Status........... FIRST-SAK\r\nOld\
+        \ SAK AN............... 0\r\nOld SAK KI (KN).......... FIRST-SAK (0)\r\n\r\
+        \nSAK Transmit Wait Time... 0s (Not waiting for any peers to respond)\r\n\
+        SAK Retire Time.......... 0s (No Old SAK to retire)\r\nSAK Rekey Time...........\
+        \ 0s (SAK Rekey interval not applicable)\r\n\r\nMKA Policy Name..........\
+        \ test\r\nKey Server Priority...... 255\r\nDelay Protection......... NO\r\n\
+        Delay Protection Timer.......... 0s (Not enabled)\r\n\r\nConfidentiality Offset...\
+        \ 0\r\nAlgorithm Agility........ 80C201\r\nSAK Rekey On Live Peer Loss........\
+        \ NO\r\nSend Secure Announcement.. DISABLED\r\nSCI Based SSCI Computation....\
+        \ NO\r\nSAK Cipher Suite......... (NULL)\r\nMACsec Capability........ 3 (MACsec\
+        \ Integrity, Confidentiality, & Offset)\r\nMACsec Desired........... YES\r\
+        \n\r\n# of MACsec Capable Live Peers............ 0\r\n# of MACsec Capable\
+        \ Live Peers Responded.. 0\r\n\r\nLive Peers List:\r\n  MI               \
+        \         MN          Rx-SCI (Peer)        KS        RxSA          SSCI\r\n\
+        \                                                             Priority  Installed\r\
+        \n  ---------------------------------------------------------------------------------------\r\
+        \n\r\nPotential Peers List:\r\n  MI                        MN          Rx-SCI\
+        \ (Peer)        KS        RxSA          SSCI\r\n                         \
+        \                                    Priority  Installed\r\n  ---------------------------------------------------------------------------------------\r\
+        \n\r\nDormant Peers List:\r\n  MI                        MN          Rx-SCI\
+        \ (Peer)        KS        RxSA          SSCI\r\n                         \
+        \                                    Priority  Installed\r\n  ---------------------------------------------------------------------------------------"
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
     show version | include operating mode: ''
-  prompt: FE3#
+  prompt: Skyfox-svl#

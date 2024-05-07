@@ -411,7 +411,7 @@ def _api_device_update(arguments, testbed, step, command, device=None, common_ap
 
     # if common api
     if common_api:
-        return Device(name='a', os='', custom={'abstraction':{'order': ['os']}})
+        return Device(name='a', os='', custom={'abstraction':{'order': ['origin']}})
 
     step.errored("No device is provided and the api '{}'"
                  "is not a common api".format(command))

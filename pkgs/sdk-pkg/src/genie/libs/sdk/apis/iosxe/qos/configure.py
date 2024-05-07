@@ -223,7 +223,7 @@ def copy_running_config_to_flash_memory(device, timeout=60):
             Statement(
                 pattern=r".*Destination filename.*",
                 action="sendline()",
-                loop_continue=False,
+                loop_continue=True,
                 continue_timer=False,
             )
         ]

@@ -1,7 +1,7 @@
 import os
 import unittest
 from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.c9800.platform.get import get_ap_model
+from genie.libs.sdk.apis.iosxe.cat9k.c9800.platform.get import get_ap_model
 
 
 class TestGetApModel(unittest.TestCase):

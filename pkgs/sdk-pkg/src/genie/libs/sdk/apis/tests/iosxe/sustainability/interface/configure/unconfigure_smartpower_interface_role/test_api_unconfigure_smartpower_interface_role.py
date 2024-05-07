@@ -10,7 +10,7 @@ class TestUnconfigureSmartpowerInterfaceRole(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          C9300L-ott-topo:
+          9300L:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -22,7 +22,7 @@ class TestUnconfigureSmartpowerInterfaceRole(unittest.TestCase):
             type: c9300
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['C9300L-ott-topo']
+        self.device = self.testbed.devices['9300L']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,6 @@ class TestUnconfigureSmartpowerInterfaceRole(unittest.TestCase):
         )
 
     def test_unconfigure_smartpower_interface_role(self):
-        result = unconfigure_smartpower_interface_role(self.device, 'gi1/0/1', 'potato')
+        result = unconfigure_smartpower_interface_role(self.device, 'Gi1/0/13', 'critical')
         expected_output = None
         self.assertEqual(result, expected_output)

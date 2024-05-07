@@ -19,7 +19,8 @@ class TestExecuteCreateRollbackLabel(unittest.TestCase):
                 protocol: unknown
             os: iosxe
             platform: cat9k
-            type: None
+            model: c9600
+            type: c9600
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['PI-9300-Stack-103']
