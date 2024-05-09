@@ -53,7 +53,6 @@ execute:
       response_type: circular
     show version: ''
     show version | include operating mode: ''
-    show version | include operating mode: ''
     term length 0: ''
     term width 0: ''
   prompt: R1#
