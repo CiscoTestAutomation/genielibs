@@ -5,13 +5,13 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-  prompt: nyquist3-sjc24(config)#
+  prompt: full3d2_dut2(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: nyquist3-sjc24(config-line)#
+  prompt: full3d2_dut2(config-line)#
 connect:
   commands:
     '':
@@ -27,114 +27,285 @@ execute:
       new_state: configure
     config-transaction:
       new_state: configure
-    show idprom interface TenGigabitEthernet1/1/6:
+    show version | include operating mode: ''
+    show idprom interface TenGigabitEthernet1/4/0/33:
       response:
-        - |-
-          
-          General SFP Information
-          -----------------------------------------------
-          Identifier            :   SFP/SFP+
-          Ext.Identifier        :   SFP function is defined by two-wire interface ID only
-          Connector             :   LC connector
-          Transceiver
-           10/40GE Comp code       :   10G BASE-SR
-           SONET Comp code      :   Unknown
-           GE Comp code         :   Unknown
-           Link length          :   Unknown
-           Technology           :   Unknown
-           Media                :   Unknown
-           Speed                :   Unknown
-          Encoding              :   64B/66B
-          BR_Nominal            :   10300 Mbps
-          Length(9um)-km        :   GBIC does not support single mode fibre
-          Length(9um)           :   GBIC does not support single mode fibre
-          Length(50um)          :   80 m
-          Length(62.5um)        :   20 m
-          Length(Copper)        :   GBIC does not support 50 micron multi mode OM4 fibre
-          Vendor Name           :   CISCO-AVAGO     
-          Vendor Part Number    :   SFBR-709SMZ-CS1 
-          Vendor Revision       :   0x47 0x34 0x2E 0x31
-          Vendor Serial Number  :   AVD212292NK     
-          Wavelength            :   850.00 nm
-          CC_BASE               :   0x17
-          -----------------------------------------------
-          
-          Extended ID Fields
-          -----------------------------------------------
-          Options               :   0x00 0x1A
-          BR, max               :   0x00
-          BR, min               :   0x00
-          Date code             :   170605
-          Diag monitoring       :   Implemented
-          Internally calibrated :   Yes
-          Exeternally calibrated:   No
-          Rx.Power measurement  :   Avg.Power
-          Address Change        :   Not Required
-          CC_EXT                :   0x2E
-          -----------------------------------------------
-          
-          Other Information
-          -----------------------------------------------
-          Chk for link status   : 00
-          Flow control Receive  : ON
-          Flow control Send     : Off
-          Administrative Speed  : 10000
-          Administrative Duplex : full 
-          Operational Speed     : 10000
-          Operational Duplex    : auto
-          -----------------------------------------------
-          
-          SEEPROM contents (hex):
-           0x00: 03 04 07 10 00 00 00 00 00 00 00 06 67 00 00 00
-           0x10: 08 02 00 1E 43 49 53 43 4F 2D 41 56 41 47 4F 20
-           0x20: 20 20 20 20 00 00 17 6A 53 46 42 52 2D 37 30 39
-           0x30: 53 4D 5A 2D 43 53 31 20 47 34 2E 31 03 52 00 17
-           0x40: 00 1A 00 00 41 56 44 32 31 32 32 39 32 4E 4B 20
-           0x50: 20 20 20 20 31 37 30 36 30 35 20 20 68 F0 03 2E
-           0x60: 00 00 06 14 16 2D C8 79 47 69 75 F7 7A 5A CA 65
-           0x70: 4E 4A EE 00 00 00 00 00 00 00 00 00 F4 F4 93 53
-          -----------------------------------------------
+      - "\r\nIDPROM for transceiver TenGigabitEthernet1/4/0/33:\r\n  Description \
+        \                              = SFP or SFP+ optics (type 3)\r\n  Transceiver\
+        \ Type:                         = SFP+ 10GBASE-SR (273)\r\n  Product Identifier\
+        \ (PID)                  = SFP-10G-SR          \r\n  Vendor Revision     \
+        \                      = G4.1\r\n  Serial Number (SN)                    \
+        \    = AVD221799E2     \r\n  Vendor Name                               = CISCO-AVAGO\
+        \     \r\n  Vendor OUI (IEEE company ID)              = 00.17.6A (5994)\r\n\
+        \  CLEI code                                 = COUIA8NCAA\r\n  Cisco part\
+        \ number                         = 10-2415-03\r\n  Vendor part number    \
+        \                    = SFBR-709SMZ-CS1 \r\n  Device State                \
+        \              = Enabled.\r\n  Date code (yy/mm/dd)                      =\
+        \ 18/04/30\r\n  Connector type                            = LC.\r\n  Encoding\
+        \                                  = 64B/66B (6)\r\n  Nominal bitrate    \
+        \                       =  (10300 Mbits/s)\r\n  Minimum bit rate as % of nominal\
+        \ bit rate = not specified\r\n  Maximum bit rate as % of nominal bit rate\
+        \ = not specified"
+      response_type: circular
+    show idprom interface TenGigabitEthernet1/4/0/34:
+      response:
+      - "\r\nIDPROM for transceiver TenGigabitEthernet1/4/0/34:\r\n  Description \
+        \                              = SFP or SFP+ optics (type 3)\r\n  Transceiver\
+        \ Type:                         = SFP+ 10GBASE-SR (273)\r\n  Product Identifier\
+        \ (PID)                  = SFP-10G-SR          \r\n  Vendor Revision     \
+        \                      = G4.1\r\n  Serial Number (SN)                    \
+        \    = AVD221799EV     \r\n  Vendor Name                               = CISCO-AVAGO\
+        \     \r\n  Vendor OUI (IEEE company ID)              = 00.17.6A (5994)\r\n\
+        \  CLEI code                                 = COUIA8NCAA\r\n  Cisco part\
+        \ number                         = 10-2415-03\r\n  Vendor part number    \
+        \                    = SFBR-709SMZ-CS1 \r\n  Device State                \
+        \              = Enabled.\r\n  Date code (yy/mm/dd)                      =\
+        \ 18/04/30\r\n  Connector type                            = LC.\r\n  Encoding\
+        \                                  = 64B/66B (6)\r\n  Nominal bitrate    \
+        \                       =  (10300 Mbits/s)\r\n  Minimum bit rate as % of nominal\
+        \ bit rate = not specified\r\n  Maximum bit rate as % of nominal bit rate\
+        \ = not specified"
+      response_type: circular
+    show idprom interface TenGigabitEthernet1/4/0/35:
+      response:
+      - "\r\nIDPROM for transceiver TenGigabitEthernet1/4/0/35:\r\n  Description \
+        \                              = SFP or SFP+ optics (type 3)\r\n  Transceiver\
+        \ Type:                         = SFP+ 10GBASE-SR (273)\r\n  Product Identifier\
+        \ (PID)                  = SFP-10G-SR          \r\n  Vendor Revision     \
+        \                      = G4.1\r\n  Serial Number (SN)                    \
+        \    = AVD221799ED     \r\n  Vendor Name                               = CISCO-AVAGO\
+        \     \r\n  Vendor OUI (IEEE company ID)              = 00.17.6A (5994)\r\n\
+        \  CLEI code                                 = COUIA8NCAA\r\n  Cisco part\
+        \ number                         = 10-2415-03\r\n  Vendor part number    \
+        \                    = SFBR-709SMZ-CS1 \r\n  Device State                \
+        \              = Enabled.\r\n  Date code (yy/mm/dd)                      =\
+        \ 18/04/30\r\n  Connector type                            = LC.\r\n  Encoding\
+        \                                  = 64B/66B (6)\r\n  Nominal bitrate    \
+        \                       =  (10300 Mbits/s)\r\n  Minimum bit rate as % of nominal\
+        \ bit rate = not specified\r\n  Maximum bit rate as % of nominal bit rate\
+        \ = not specified"
+      response_type: circular
+    show idprom interface TenGigabitEthernet1/4/0/36:
+      response:
+      - "\r\nIDPROM for transceiver TenGigabitEthernet1/4/0/36:\r\n  Description \
+        \                              = SFP or SFP+ optics (type 3)\r\n  Transceiver\
+        \ Type:                         = SFP+ 10GBASE-SR (273)\r\n  Product Identifier\
+        \ (PID)                  = SFP-10G-SR          \r\n  Vendor Revision     \
+        \                      = G4.1\r\n  Serial Number (SN)                    \
+        \    = AVD221799EB     \r\n  Vendor Name                               = CISCO-AVAGO\
+        \     \r\n  Vendor OUI (IEEE company ID)              = 00.17.6A (5994)\r\n\
+        \  CLEI code                                 = COUIA8NCAA\r\n  Cisco part\
+        \ number                         = 10-2415-03\r\n  Vendor part number    \
+        \                    = SFBR-709SMZ-CS1 \r\n  Device State                \
+        \              = Enabled.\r\n  Date code (yy/mm/dd)                      =\
+        \ 18/04/30\r\n  Connector type                            = LC.\r\n  Encoding\
+        \                                  = 64B/66B (6)\r\n  Nominal bitrate    \
+        \                       =  (10300 Mbits/s)\r\n  Minimum bit rate as % of nominal\
+        \ bit rate = not specified\r\n  Maximum bit rate as % of nominal bit rate\
+        \ = not specified"
+      response_type: circular
+    show idprom interface TenGigabitEthernet1/4/0/9:
+      response:
+      - "\r\nIDPROM for transceiver TenGigabitEthernet1/4/0/9:\r\n  Description  \
+        \                             = SFP or SFP+ optics (type 3)\r\n  Transceiver\
+        \ Type:                         = SFP+ 10GBASE-SR (273)\r\n  Product Identifier\
+        \ (PID)                  = SFP-10G-SR-S        \r\n  Vendor Revision     \
+        \                      = G4.1\r\n  Serial Number (SN)                    \
+        \    = AVD2325DB0V     \r\n  Vendor Name                               = CISCO-AVAGO\
+        \     \r\n  Vendor OUI (IEEE company ID)              = 00.17.6A (5994)\r\n\
+        \  CLEI code                                 = CMUIAK6CAA\r\n  Cisco part\
+        \ number                         = 10-3105-01\r\n  Vendor part number    \
+        \                    = SFBR-709SMZ-CS2 \r\n  Device State                \
+        \              = Enabled.\r\n  Date code (yy/mm/dd)                      =\
+        \ 19/06/22\r\n  Connector type                            = LC.\r\n  Encoding\
+        \                                  = 64B/66B (6)\r\n  Nominal bitrate    \
+        \                       =  (10300 Mbits/s)\r\n  Minimum bit rate as % of nominal\
+        \ bit rate = not specified\r\n  Maximum bit rate as % of nominal bit rate\
+        \ = not specified"
+      response_type: circular
+    show idprom interface TenGigabitEthernet2/4/0/13:
+      response:
+      - "\r\nIDPROM for transceiver TenGigabitEthernet2/4/0/13:\r\n  Description \
+        \                              = SFP or SFP+ optics (type 3)\r\n  Transceiver\
+        \ Type:                         = SFP+ 10GBASE-SR (273)\r\n  Product Identifier\
+        \ (PID)                  = SFP-10G-SR          \r\n  Vendor Revision     \
+        \                      = G4.1\r\n  Serial Number (SN)                    \
+        \    = AVD21309XZY     \r\n  Vendor Name                               = CISCO-AVAGO\
+        \     \r\n  Vendor OUI (IEEE company ID)              = 00.17.6A (5994)\r\n\
+        \  CLEI code                                 = COUIA8NCAA\r\n  Cisco part\
+        \ number                         = 10-2415-03\r\n  Vendor part number    \
+        \                    = SFBR-709SMZ-CS1 \r\n  Device State                \
+        \              = Enabled.\r\n  Date code (yy/mm/dd)                      =\
+        \ 17/08/04\r\n  Connector type                            = LC.\r\n  Encoding\
+        \                                  = 64B/66B (6)\r\n  Nominal bitrate    \
+        \                       =  (10300 Mbits/s)\r\n  Minimum bit rate as % of nominal\
+        \ bit rate = not specified\r\n  Maximum bit rate as % of nominal bit rate\
+        \ = not specified"
+      response_type: circular
+    show idprom interface TenGigabitEthernet2/4/0/33:
+      response:
+      - "\r\nIDPROM for transceiver TenGigabitEthernet2/4/0/33:\r\n  Description \
+        \                              = SFP or SFP+ optics (type 3)\r\n  Transceiver\
+        \ Type:                         = SFP+ 10GBASE-SR (273)\r\n  Product Identifier\
+        \ (PID)                  = SFP-10G-SR          \r\n  Vendor Revision     \
+        \                      = A   \r\n  Serial Number (SN)                    \
+        \    = FNS20221ADK     \r\n  Vendor Name                               = CISCO-FINISAR\
+        \   \r\n  Vendor OUI (IEEE company ID)              = 00.90.65 (36965)\r\n\
+        \  CLEI code                                 = COUIA8NCAA\r\n  Cisco part\
+        \ number                         = 10-2415-03\r\n  Vendor part number    \
+        \                    = FTLX8571D3BCL-C2\r\n  Device State                \
+        \              = Enabled.\r\n  Date code (yy/mm/dd)                      =\
+        \ 16/05/26\r\n  Connector type                            = LC.\r\n  Encoding\
+        \                                  = 64B/66B (6)\r\n  Nominal bitrate    \
+        \                       =  (10300 Mbits/s)\r\n  Minimum bit rate as % of nominal\
+        \ bit rate = not specified\r\n  Maximum bit rate as % of nominal bit rate\
+        \ = not specified"
+      response_type: circular
+    show idprom interface TenGigabitEthernet2/4/0/34:
+      response:
+      - "\r\nIDPROM for transceiver TenGigabitEthernet2/4/0/34:\r\n  Description \
+        \                              = SFP or SFP+ optics (type 3)\r\n  Transceiver\
+        \ Type:                         = SFP+ 10GBASE-SR (273)\r\n  Product Identifier\
+        \ (PID)                  = SFP-10G-SR          \r\n  Vendor Revision     \
+        \                      = 01  \r\n  Serial Number (SN)                    \
+        \    = OPM22140NMM     \r\n  Vendor Name                               = CISCO-OPLINK\
+        \    \r\n  Vendor OUI (IEEE company ID)              = 00.0A.1D (2589)\r\n\
+        \  CLEI code                                 = COUIA8NCAA\r\n  Cisco part\
+        \ number                         = 10-2415-03\r\n  Vendor part number    \
+        \                    = TPP4XGDS0CCISE2G\r\n  Device State                \
+        \              = Enabled.\r\n  Date code (yy/mm/dd)                      =\
+        \ 18/04/16\r\n  Connector type                            = LC.\r\n  Encoding\
+        \                                  = 64B/66B (6)\r\n  Nominal bitrate    \
+        \                       =  (10300 Mbits/s)\r\n  Minimum bit rate as % of nominal\
+        \ bit rate = not specified\r\n  Maximum bit rate as % of nominal bit rate\
+        \ = not specified"
+      response_type: circular
+    show idprom interface TenGigabitEthernet2/4/0/35:
+      response:
+      - "\r\nIDPROM for transceiver TenGigabitEthernet2/4/0/35:\r\n  Description \
+        \                              = SFP or SFP+ optics (type 3)\r\n  Transceiver\
+        \ Type:                         = SFP+ 10GBASE-SR (273)\r\n  Product Identifier\
+        \ (PID)                  = SFP-10G-SR          \r\n  Vendor Revision     \
+        \                      = G4.1\r\n  Serial Number (SN)                    \
+        \    = AVD221699CN     \r\n  Vendor Name                               = CISCO-AVAGO\
+        \     \r\n  Vendor OUI (IEEE company ID)              = 00.17.6A (5994)\r\n\
+        \  CLEI code                                 = COUIA8NCAA\r\n  Cisco part\
+        \ number                         = 10-2415-03\r\n  Vendor part number    \
+        \                    = SFBR-709SMZ-CS1 \r\n  Device State                \
+        \              = Enabled.\r\n  Date code (yy/mm/dd)                      =\
+        \ 18/04/24\r\n  Connector type                            = LC.\r\n  Encoding\
+        \                                  = 64B/66B (6)\r\n  Nominal bitrate    \
+        \                       =  (10300 Mbits/s)\r\n  Minimum bit rate as % of nominal\
+        \ bit rate = not specified\r\n  Maximum bit rate as % of nominal bit rate\
+        \ = not specified"
+      response_type: circular
+    show idprom interface TenGigabitEthernet2/4/0/36:
+      response:
+      - "\r\nIDPROM for transceiver TenGigabitEthernet2/4/0/36:\r\n  Description \
+        \                              = SFP or SFP+ optics (type 3)\r\n  Transceiver\
+        \ Type:                         = SFP+ 10GBASE-SR (273)\r\n  Product Identifier\
+        \ (PID)                  = SFP-10G-SR          \r\n  Vendor Revision     \
+        \                      = G4.1\r\n  Serial Number (SN)                    \
+        \    = AVD221799E8     \r\n  Vendor Name                               = CISCO-AVAGO\
+        \     \r\n  Vendor OUI (IEEE company ID)              = 00.17.6A (5994)\r\n\
+        \  CLEI code                                 = COUIA8NCAA\r\n  Cisco part\
+        \ number                         = 10-2415-03\r\n  Vendor part number    \
+        \                    = SFBR-709SMZ-CS1 \r\n  Device State                \
+        \              = Enabled.\r\n  Date code (yy/mm/dd)                      =\
+        \ 18/04/30\r\n  Connector type                            = LC.\r\n  Encoding\
+        \                                  = 64B/66B (6)\r\n  Nominal bitrate    \
+        \                       =  (10300 Mbits/s)\r\n  Minimum bit rate as % of nominal\
+        \ bit rate = not specified\r\n  Maximum bit rate as % of nominal bit rate\
+        \ = not specified"
       response_type: circular
     show interfaces transceiver detail:
       response:
-        - |-
-          mA: milliamperes, dBm: decibels (milliwatts), NA or N/A: not applicable.
-          ++ : high alarm, +  : high warning, -  : low warning, -- : low alarm.
-          A2D readouts (if they differ), are reported in parentheses.
-          The threshold values are calibrated.
-          
-                                          High Alarm  High Warn  Low Warn   Low Alarm
-                       Temperature        Threshold   Threshold  Threshold  Threshold
-          Port         (Celsius)          (Celsius)   (Celsius)  (Celsius)  (Celsius)
-          ---------    -----------------  ----------  ---------  ---------  ---------
-          Te1/1/6      34.1                   75.0       70.0        0.0       -5.0
-          
-                                          High Alarm  High Warn  Low Warn   Low Alarm
-                       Voltage            Threshold   Threshold  Threshold  Threshold
-          Port         (Volts)            (Volts)     (Volts)    (Volts)    (Volts)
-          ---------    -----------------  ----------  ---------  ---------  ---------
-          Te1/1/6      3.29                   3.63       3.46       3.13       2.97
-          
-                                            High Alarm  High Warn  Low Warn   Low Alarm
-                           Current          Threshold   Threshold  Threshold  Threshold
-          Port       Lane  (milliamperes)   (mA)        (mA)       (mA)       (mA)
-          ---------  ----  ---------------  ----------  ---------  ---------  ---------
-          Te1/1/6    N/A    6.7                 10.5       10.5        2.5        2.5
-          
-                           Optical          High Alarm  High Warn  Low Warn   Low Alarm
-                           Transmit Power   Threshold   Threshold  Threshold  Threshold
-          Port       Lane  (dBm)            (dBm)       (dBm)      (dBm)      (dBm)
-          ---------  ----  ---------------  ----------  ---------  ---------  ---------
-          Te1/1/6    N/A   -2.2                  1.7       -1.3       -7.3      -11.3
-          
-                           Optical          High Alarm  High Warn  Low Warn   Low Alarm
-                           Receive Power    Threshold   Threshold  Threshold  Threshold
-          Port       Lane  (dBm)            (dBm)       (dBm)      (dBm)      (dBm)
-          ---------  ----  ---------------  ----------  ---------  ---------  ---------
-          Te1/1/6    N/A  -40.0                  2.0       -1.0       -9.9      -13.9
+      - "mA: milliamperes, dBm: decibels (milliwatts), NA or N/A: not applicable.\r\
+        \n++ : high alarm, +  : high warning, -  : low warning, -- : low alarm.\r\n\
+        A2D readouts (if they differ), are reported in parentheses.\r\nThe threshold\
+        \ values are calibrated.\r\n\r\n                                High Alarm\
+        \  High Warn  Low Warn   Low Alarm\r\n             Temperature        Threshold\
+        \   Threshold  Threshold  Threshold\r\nPort         (Celsius)          (Celsius)\
+        \   (Celsius)  (Celsius)  (Celsius)\r\n---------    -----------------  ----------\
+        \  ---------  ---------  ---------\r\nTe1/4/0/9    30.3                  \
+        \ 75.0       70.0        0.0       -5.0\r\nTe1/4/0/33   34.1             \
+        \      75.0       70.0        0.0       -5.0\r\nTe1/4/0/34   31.9        \
+        \           75.0       70.0        0.0       -5.0\r\nTe1/4/0/35   32.6   \
+        \                75.0       70.0        0.0       -5.0\r\nTe1/4/0/36   33.0\
+        \                   75.0       70.0        0.0       -5.0\r\nTe2/4/0/13  \
+        \ 28.9                   75.0       70.0        0.0       -5.0\r\nTe2/4/0/33\
+        \   42.1                   75.0       70.0        0.0       -5.0\r\nTe2/4/0/34\
+        \   35.7                   75.0       70.0        0.0       -5.0\r\nTe2/4/0/35\
+        \   35.3                   75.0       70.0        0.0       -5.0\r\nTe2/4/0/36\
+        \   34.3                   75.0       70.0        0.0       -5.0\r\n\r\n \
+        \                               High Alarm  High Warn  Low Warn   Low Alarm\r\
+        \n             Voltage            Threshold   Threshold  Threshold  Threshold\r\
+        \nPort         (Volts)            (Volts)     (Volts)    (Volts)    (Volts)\r\
+        \n---------    -----------------  ----------  ---------  ---------  ---------\r\
+        \nTe1/4/0/9    3.30                   3.63       3.46       3.13       2.97\r\
+        \nTe1/4/0/33   3.30                   3.63       3.46       3.13       2.97\r\
+        \nTe1/4/0/34   3.29                   3.63       3.46       3.13       2.97\r\
+        \nTe1/4/0/35   3.30                   3.63       3.46       3.13       2.97\r\
+        \nTe1/4/0/36   3.30                   3.63       3.46       3.13       2.97\r\
+        \nTe2/4/0/13   3.29                   3.63       3.46       3.13       2.97\r\
+        \nTe2/4/0/33   3.28                   3.63       3.46       3.13       2.97\r\
+        \nTe2/4/0/34   3.26                   3.63       3.46       3.13       2.97\r\
+        \nTe2/4/0/35   3.29                   3.63       3.46       3.13       2.97\r\
+        \nTe2/4/0/36   3.29                   3.63       3.46       3.13       2.97\r\
+        \n\r\n                                  High Alarm  High Warn  Low Warn  \
+        \ Low Alarm\r\n                 Current          Threshold   Threshold  Threshold\
+        \  Threshold\r\nPort       Lane  (milliamperes)   (mA)        (mA)       (mA)\
+        \       (mA)\r\n---------  ----  ---------------  ----------  ---------  ---------\
+        \  ---------\r\nTe1/4/0/9  N/A    0.0                 10.5       10.5    \
+        \    2.5        2.5\r\nTe1/4/0/33 N/A    5.9                 10.5       10.5\
+        \        2.5        2.5\r\nTe1/4/0/34 N/A    5.7                 10.5    \
+        \   10.5        2.5        2.5\r\nTe1/4/0/35 N/A    6.5                 10.5\
+        \       10.5        2.5        2.5\r\nTe1/4/0/36 N/A    5.7              \
+        \   10.5       10.5        2.5        2.5\r\nTe2/4/0/13 N/A    0.0       \
+        \          10.5       10.5        2.5        2.5\r\nTe2/4/0/33 N/A    8.3\
+        \                 11.8       10.8        5.0        4.0\r\nTe2/4/0/34 N/A\
+        \    6.4                 12.0       11.5        1.0        0.5\r\nTe2/4/0/35\
+        \ N/A    5.9                 10.5       10.5        2.5        2.5\r\nTe2/4/0/36\
+        \ N/A    6.0                 10.5       10.5        2.5        2.5\r\n\r\n\
+        \                 Optical          High Alarm  High Warn  Low Warn   Low Alarm\r\
+        \n                 Transmit Power   Threshold   Threshold  Threshold  Threshold\r\
+        \nPort       Lane  (dBm)            (dBm)       (dBm)      (dBm)      (dBm)\r\
+        \n---------  ----  ---------------  ----------  ---------  ---------  ---------\r\
+        \nTe1/4/0/9  N/A    N/A                  1.7       -1.3       -7.3      -11.3\r\
+        \nTe1/4/0/33 N/A   -2.2                  1.7       -1.3       -7.3      -11.3\r\
+        \nTe1/4/0/34 N/A   -2.1                  1.7       -1.3       -7.3      -11.3\r\
+        \nTe1/4/0/35 N/A   -2.0                  1.7       -1.3       -7.3      -11.3\r\
+        \nTe1/4/0/36 N/A   -1.9                  1.7       -1.3       -7.3      -11.3\r\
+        \nTe2/4/0/13 N/A    N/A                  1.7       -1.3       -7.3      -11.3\r\
+        \nTe2/4/0/33 N/A   -2.0                  1.7       -1.3       -7.3      -11.3\r\
+        \nTe2/4/0/34 N/A   -2.0                  2.0       -1.0       -7.3      -11.3\r\
+        \nTe2/4/0/35 N/A   -2.2                  1.7       -1.3       -7.3      -11.3\r\
+        \nTe2/4/0/36 N/A   -2.2                  1.7       -1.3       -7.3      -11.3\r\
+        \n\r\n                 Optical          High Alarm  High Warn  Low Warn  \
+        \ Low Alarm\r\n                 Receive Power    Threshold   Threshold  Threshold\
+        \  Threshold\r\nPort       Lane  (dBm)            (dBm)       (dBm)      (dBm)\
+        \      (dBm)\r\n---------  ----  ---------------  ----------  ---------  ---------\
+        \  ---------\r\nTe1/4/0/9  N/A    N/A                  2.0       -1.0    \
+        \   -9.9      -13.9\r\nTe1/4/0/33 N/A   -2.6                  2.0       -1.0\
+        \       -9.9      -13.9\r\nTe1/4/0/34 N/A   -2.1                  2.0    \
+        \   -1.0       -9.9      -13.9\r\nTe1/4/0/35 N/A   -2.6                  2.0\
+        \       -1.0       -9.9      -13.9\r\nTe1/4/0/36 N/A   -2.0              \
+        \    2.0       -1.0       -9.9      -13.9\r\nTe2/4/0/13 N/A    N/A       \
+        \           2.0       -1.0       -9.9      -13.9\r\nTe2/4/0/33 N/A   -2.0\
+        \                  2.0       -1.0       -9.9      -13.9\r\nTe2/4/0/34 N/A\
+        \   -2.5                  2.0       -1.0       -9.9      -13.9\r\nTe2/4/0/35\
+        \ N/A   -2.1                  2.0       -1.0       -9.9      -13.9\r\nTe2/4/0/36\
+        \ N/A   -2.6                  2.0       -1.0       -9.9      -13.9\r\n\r\n\
+        \           Port Maximum      Transceiver\r\n           Allocated Power  \
+        \ Max Power\r\nPort       (Watts)           (Watts)\r\n---------  ---------------\
+        \   ----------\r\nTe1/4/0/9        Max            N/A\r\nTe1/4/0/33      \
+        \ Max            N/A\r\nTe1/4/0/34       Max            N/A\r\nTe1/4/0/35\
+        \       Max            N/A\r\nTe1/4/0/36       Max            N/A\r\nTe2/4/0/13\
+        \       Max            N/A\r\nTe2/4/0/33       Max            N/A\r\nTe2/4/0/34\
+        \       Max            N/A\r\nTe2/4/0/35       Max            N/A\r\nTe2/4/0/36\
+        \       Max            N/A"
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
-    show version | include operating mode: ''
-  prompt: nyquist3-sjc24#
+  prompt: full3d2_dut2#

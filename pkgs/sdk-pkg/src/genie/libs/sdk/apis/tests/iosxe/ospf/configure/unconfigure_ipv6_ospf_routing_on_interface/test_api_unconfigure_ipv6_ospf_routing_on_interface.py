@@ -18,7 +18,8 @@ class TestUnconfigureIpv6OspfRoutingOnInterface(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: c9600
+            platform: cat9k
+            model: c9600
             type: c9600
         """
         self.testbed = loader.load(testbed)

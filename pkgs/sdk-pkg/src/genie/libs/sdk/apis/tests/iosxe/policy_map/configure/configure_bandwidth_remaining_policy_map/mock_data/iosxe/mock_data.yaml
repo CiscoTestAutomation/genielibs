@@ -6,16 +6,16 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-    policy-map PQ: "policy-map PQ\r\n"
+    policy-map child1: "policy-map child1\r\n"
     service-policy parent: "service-policy parent\r\n"
     shape average percent 4: "shape average percent 4\r\n"
-  prompt: A1(config)#
+  prompt: 9400_L2_DUT(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: A1(config-line)#
+  prompt: 9400_L2_DUT(config-line)#
 connect:
   commands:
     '':
@@ -35,4 +35,4 @@ execute:
     term length 0: ''
     term width 0: ''
     show version | include operating mode: ''
-  prompt: A1#
+  prompt: 9400_L2_DUT#

@@ -24,9 +24,9 @@ class test_lldp(unittest.TestCase):
         self.device.os = 'iosxr'
         self.device.mapping={}
         self.device.mapping['cli']='cli'
-        # Give the device as a connection type
-        # This is done in order to call the parser on the output provided
-        self.device.connectionmgr.connections['cli'] = self.device
+        # Create a mock connection to get output for parsing
+        self.device_connection = Mock(device=self.device)
+        self.device.connectionmgr.connections['cli'] = self.device_connection
 
     def test_complete_output(self):
         self.maxDiff = None
@@ -49,7 +49,7 @@ class test_lldp(unittest.TestCase):
 
         # Learn the feature
         lldp.learn()
-        
+
         # Verify Ops was created successfully
         self.assertEqual(lldp.info, LldpOutput.lldpOutput)
 
@@ -89,7 +89,7 @@ class test_lldp(unittest.TestCase):
 
     def test_incomplete_output(self):
         self.maxDiff = None
-        
+
         lldp = Lldp(device=self.device)
         # Get outputs
         lldp.maker.outputs[ShowLldp] = \
@@ -111,10 +111,10 @@ class test_lldp(unittest.TestCase):
         del(LldpOutput.ShowLldp['hello_timer'])
         # Learn the feature
         lldp.learn()
-        
+
         # Delete missing specific attribute values
         expect_dict = deepcopy(LldpOutput.lldpOutput)
-        del(expect_dict['hello_timer'])     
+        del(expect_dict['hello_timer'])
         # Verify Ops was created successfully
         self.assertEqual(lldp.info, expect_dict)
 

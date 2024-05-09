@@ -1,6 +1,6 @@
 import unittest
 from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.c9800.platform.configure import enable_http_server
+from genie.libs.sdk.apis.iosxe.cat9k.c9800.platform.configure import enable_http_server
 
 
 class TestEnableHttpServer(unittest.TestCase):
@@ -17,7 +17,8 @@ class TestEnableHttpServer(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: c9800
+            platform: cat9k
+            model: c9800
             type: wlc
         """
         self.testbed = loader.load(testbed)

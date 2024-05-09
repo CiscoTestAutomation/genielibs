@@ -40,9 +40,9 @@ class test_pim(unittest.TestCase):
         self.device.os = 'nxos'
         self.device.mapping={}
         self.device.mapping['cli']='cli'
-        # Give the device as a connection type
-        # This is done in order to call the parser on the output provided
-        self.device.connectionmgr.connections['cli'] = self.device
+        # Create a mock connection to get output for parsing
+        self.device_connection = Mock(device=self.device)
+        self.device.connectionmgr.connections['cli'] = self.device_connection
 
     def test_complete_output(self):
         self.maxDiff = None
@@ -67,13 +67,13 @@ class test_pim(unittest.TestCase):
             {"{'vrf':'all'}": PimOutput.ShowIpPimRpVrfAll}
 
         pim.maker.outputs[ShowIpv6PimRp] = \
-            {"{'vrf':'all'}": PimOutput.ShowIpv6PimRpVrfAll}            
+            {"{'vrf':'all'}": PimOutput.ShowIpv6PimRpVrfAll}
 
         pim.maker.outputs[ShowIpPimDf] = \
             {"{'vrf':'all'}": PimOutput.ShowIpPimDfVrfAll}
 
         pim.maker.outputs[ShowIpv6PimDf] = \
-            {"{'vrf':'all'}": PimOutput.ShowIpv6PimDfVrfAll}            
+            {"{'vrf':'all'}": PimOutput.ShowIpv6PimDfVrfAll}
 
         pim.maker.outputs[ShowIpPimVrfDetail] = \
             {"{'vrf':'all'}": PimOutput.ShowIpPimVrfVallDetail}
@@ -117,7 +117,7 @@ class test_pim(unittest.TestCase):
 
         pim.maker.outputs[ShowIpMrouteVrfAll] = \
             {'': {}}
-            
+
         pim.maker.outputs[ShowIpv6MrouteVrfAll] = \
             {'': {}}
 
@@ -131,13 +131,13 @@ class test_pim(unittest.TestCase):
             {"{'vrf':'all'}": {}}
 
         pim.maker.outputs[ShowIpv6PimRp] = \
-            {"{'vrf':'all'}": {}}            
+            {"{'vrf':'all'}": {}}
 
         pim.maker.outputs[ShowIpPimDf] = \
             {"{'vrf':'all'}": {}}
 
         pim.maker.outputs[ShowIpv6PimDf] = \
-            {"{'vrf':'all'}": {}}            
+            {"{'vrf':'all'}": {}}
 
         pim.maker.outputs[ShowIpPimVrfDetail] = \
             {"{'vrf':'all'}": {}}
@@ -187,7 +187,7 @@ class test_pim(unittest.TestCase):
 
         pim.maker.outputs[ShowIpMrouteVrfAll] = \
             {'': PimOutput.ShowIpMrouteVrfAll}
-            
+
         pim.maker.outputs[ShowIpv6MrouteVrfAll] = \
             {'': PimOutput.ShowIpv6MrouteVrfAll}
 
@@ -201,13 +201,13 @@ class test_pim(unittest.TestCase):
             {"{'vrf':'all'}": PimOutput.ShowIpPimRpVrfAll}
 
         pim.maker.outputs[ShowIpv6PimRp] = \
-            {"{'vrf':'all'}": PimOutput.ShowIpv6PimRpVrfAll}            
+            {"{'vrf':'all'}": PimOutput.ShowIpv6PimRpVrfAll}
 
         pim.maker.outputs[ShowIpPimDf] = \
             {"{'vrf':'all'}": PimOutput.ShowIpPimDfVrfAll}
 
         pim.maker.outputs[ShowIpv6PimDf] = \
-            {"{'vrf':'all'}": PimOutput.ShowIpv6PimDfVrfAll}            
+            {"{'vrf':'all'}": PimOutput.ShowIpv6PimDfVrfAll}
 
         pim.maker.outputs[ShowIpPimVrfDetail] = \
             {"{'vrf':'all'}": PimOutput.ShowIpPimVrfVallDetail}
@@ -237,7 +237,7 @@ class test_pim(unittest.TestCase):
             {"{'vrf':'all'}": PimOutput.ShowIpPimPolicyStaticticsRegisterPolicyVrfAll}
 
         # Learn the feature
-        pim.learn()      
+        pim.learn()
 
         # Check specific attribute values
         # info - default vrf
@@ -251,7 +251,7 @@ class test_pim(unittest.TestCase):
 
     def test_incomplete_output(self):
         self.maxDiff = None
-        
+
         pim = Pim(device=self.device)
 
         # Get outputs
@@ -260,7 +260,7 @@ class test_pim(unittest.TestCase):
 
         pim.maker.outputs[ShowIpMrouteVrfAll] = \
             {'': PimOutput.ShowIpMrouteVrfAll}
-            
+
         pim.maker.outputs[ShowIpv6MrouteVrfAll] = \
             {'': PimOutput.ShowIpv6MrouteVrfAll}
 
@@ -274,13 +274,13 @@ class test_pim(unittest.TestCase):
             {"{'vrf':'all'}": PimOutput.ShowIpPimRpVrfAll}
 
         pim.maker.outputs[ShowIpv6PimRp] = \
-            {"{'vrf':'all'}": PimOutput.ShowIpv6PimRpVrfAll}            
+            {"{'vrf':'all'}": PimOutput.ShowIpv6PimRpVrfAll}
 
         pim.maker.outputs[ShowIpPimDf] = \
             {"{'vrf':'all'}": PimOutput.ShowIpPimDfVrfAll}
 
         pim.maker.outputs[ShowIpv6PimDf] = \
-            {"{'vrf':'all'}": PimOutput.ShowIpv6PimDfVrfAll}            
+            {"{'vrf':'all'}": PimOutput.ShowIpv6PimDfVrfAll}
 
         pim.maker.outputs[ShowIpPimVrfDetail] = \
             {"{'vrf':'all'}": PimOutput.ShowIpPimVrfVallDetail}
@@ -317,7 +317,7 @@ class test_pim(unittest.TestCase):
         del(expect_dict['feature_pim6'])
         del(expect_dict['feature_pim'])
 
-                
+
         # Verify Ops was created successfully
         self.assertEqual(pim.info, expect_dict)
 

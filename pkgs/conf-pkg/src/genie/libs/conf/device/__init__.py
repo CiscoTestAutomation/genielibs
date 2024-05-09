@@ -231,7 +231,7 @@ class Device(genie.conf.base.device.Device):
 
     def get_os_specific_Interface_class(self):
         from genie.libs.conf.interface import Interface as xbuInterface
-        return xbuInterface._get_os_specific_Interface_class(self.os)
+        return xbuInterface._get_abstract_subclass(self)
 
     def clean_interface_name(self, interface_name):
         osInterface = self.get_os_specific_Interface_class()

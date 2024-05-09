@@ -1,6 +1,6 @@
 import unittest
 from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.cat9500.configure import configure_policy_map
+from genie.libs.sdk.apis.iosxe.cat9k.c9500.configure import configure_policy_map
 
 
 class TestConfigurePolicyMap(unittest.TestCase):

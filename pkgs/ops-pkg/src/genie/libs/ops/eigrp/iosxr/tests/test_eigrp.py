@@ -20,7 +20,7 @@ outputs['show eigrp ipv4 vrf all neighbors detail'] = EigrpOutput.ShowEigrpIpv4N
 outputs['show eigrp ipv6 vrf all neighbors detail'] = EigrpOutput.ShowEigrpIpv6NeighborsDetailAllVrf
 
 def mapper(key):
-    
+
     return outputs[key]
 
 
@@ -31,7 +31,11 @@ class test_eigrp(unittest.TestCase):
         self.device.os = 'iosxr'
         self.device.mapping = {}
         self.device.mapping['cli'] = 'cli'
-        self.device.connectionmgr.connections['cli'] = self.device
+        # Create a mock connection to get output for parsing
+        self.device_connection = Mock(device=self.device)
+        self.device.connectionmgr.connections['cli'] = self.device_connection
+        # Set outputs
+        self.device_connection.execute.side_effect = mapper
 
     def test_complete_output(self):
         self.maxDiff = None
@@ -46,11 +50,6 @@ class test_eigrp(unittest.TestCase):
             '': EigrpOutput.ShowEigrpIpv6NeighborsDetail,
             '{"vrf":"all"}': EigrpOutput.ShowEigrpIpv6NeighborsDetailAllVrf,
             }
-
-        
-
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
 
         eigrp.learn()
 
@@ -69,9 +68,6 @@ class test_eigrp(unittest.TestCase):
             '': EigrpOutput.ShowEigrpIpv6NeighborsDetail,
             '{"vrf":"all"}': EigrpOutput.ShowEigrpIpv6NeighborsDetailAllVrf,
             }
-
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
 
         eigrp.learn()
 
@@ -103,8 +99,7 @@ class test_eigrp(unittest.TestCase):
             '{"vrf":"all"}': {},
             }
 
-        self.device.execute = Mock()
-        self.device.execute.side_effect = empty_mapper
+        self.device_connection.execute.side_effect = empty_mapper
 
         eigrp.learn()
 
@@ -118,9 +113,6 @@ class test_eigrp(unittest.TestCase):
         # Set outputs
         eigrp.maker.outputs[ShowEigrpIpv4NeighborsDetail] = {'': EigrpOutput.ShowEigrpIpv4NeighborsDetail}
         eigrp.maker.outputs[ShowEigrpIpv6NeighborsDetail] = {'': {}}
-
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
 
         eigrp.learn()
 

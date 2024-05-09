@@ -55,9 +55,11 @@ class test_bgp(unittest.TestCase):
         self.device.mapping={}
         self.device.mapping['cli']='cli'
         self.device.mapping['yang']='yang'
-        # Give the device as a connection type
-        # This is done in order to call the parser on the output provided
-        self.device.connectionmgr.connections['cli'] = self.device
+        # Create a mock connection to get output for parsing
+        self.device_connection = Mock(device=self.device)
+        self.device.connectionmgr.connections['cli'] = self.device_connection
+        # Set outputs
+        self.device_connection.execute.side_effect = mapper
         self.device.connectionmgr.connections['yang'] = self.device
 
         # Set context to YANG
@@ -72,7 +74,7 @@ class test_bgp(unittest.TestCase):
         bgp.maker.outputs[ShowPlacementProgramAll] = {'':BgpOutput.ShowPlacementProgramAll}
         bgp.maker.outputs[ShowBgpInstanceAfGroupConfiguration] = {'':BgpOutput.ShowBgpInstanceAfGroupConfiguration}
         bgp.maker.outputs[ShowBgpInstanceSessionGroupConfiguration] = {'':BgpOutput.ShowBgpInstanceSessionGroupConfiguration}
-        
+
         # Return outputs above as inputs to parser when called
         # Return outputs above as inputs to parser when called
         self.device.execute = Mock()

@@ -18,8 +18,9 @@ class TestConfigureIpv6Acl(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: c9500
-            type: c9500
+            platform: cat9k
+            model: c9600
+            type: C9600
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['9300-24UX-1#']

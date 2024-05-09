@@ -23,9 +23,9 @@ class test_igmp(unittest.TestCase):
         self.device.os = 'nxos'
         self.device.mapping={}
         self.device.mapping['cli']='cli'
-        # Give the device as a connection type
-        # This is done in order to call the parser on the output provided
-        self.device.connectionmgr.connections['cli'] = self.device
+        # Create a mock connection to get output for parsing
+        self.device_connection = Mock(device=self.device)
+        self.device.connectionmgr.connections['cli'] = self.device_connection
 
     def test_complete_output(self):
         self.maxDiff = None
@@ -81,7 +81,7 @@ class test_igmp(unittest.TestCase):
             {"{'vrf':'all'}": IgmpOutput.ShowIpIgmpLocalGroups}
 
         # Learn the feature
-        igmp.learn()      
+        igmp.learn()
 
         # Check specific attribute values
         # info - default vrf
@@ -93,7 +93,7 @@ class test_igmp(unittest.TestCase):
 
     def test_incomplete_output(self):
         self.maxDiff = None
-        
+
         igmp = Igmp(device=self.device)
 
         # Get outputs
@@ -116,7 +116,7 @@ class test_igmp(unittest.TestCase):
         del(expect_dict['vrfs']['VRF1']['interfaces']['Ethernet2/4']['join_group'])
         del(expect_dict['vrfs']['VRF1']['interfaces']['Ethernet2/4']['static_group'])
 
-                
+
         # Verify Ops was created successfully
         self.assertEqual(igmp.info, expect_dict)
 

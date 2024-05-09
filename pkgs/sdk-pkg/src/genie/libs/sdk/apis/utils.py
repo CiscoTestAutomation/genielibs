@@ -227,15 +227,16 @@ def get_unconfig_line(config_dict, line):
     return unconfig
 
 
-def get_config_dict(config):
+def get_config_dict(config, lstrip=False):
     """ Cast config to Configuration dict
 
         Args:
             config ('str'): config string
+            lstrip ('bool'): Boolean to use left strip
         Returns:
             Configuration dict
     """
-    cfg = Config(config)
+    cfg = Config(config, lstrip=lstrip)
     cfg.tree()
     return cfg.config
 

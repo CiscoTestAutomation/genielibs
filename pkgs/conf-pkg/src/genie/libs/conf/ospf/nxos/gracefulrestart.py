@@ -1,4 +1,4 @@
-''' 
+'''
 OSPF Genie Conf Object Implementation for NXOS:
     - GracefulRestart multi-line configuration implementation for NXOS - CLI
 '''
@@ -25,7 +25,7 @@ class GracefulRestart(ABC):
         #   graceful-restart helper-disable
         #   graceful-restart grace-period 50
         if attributes.value('gr_enable'):
-            
+
             # graceful-restart
             gr_str = 'graceful-restart'
 

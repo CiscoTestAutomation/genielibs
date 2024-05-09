@@ -4,7 +4,8 @@ from copy import deepcopy
 from unittest.mock import Mock
 
 # ATS
-from pyats.topology import Device
+# from pyats.topology import Device
+from genie.conf.base import Device
 
 # Genie
 from genie.libs.ops.vrf.ios.vrf import Vrf
@@ -29,17 +30,18 @@ class test_vrf(unittest.TestCase):
         self.device.custom['abstraction'] = {'order':['os']}
         self.device.mapping = {}
         self.device.mapping['cli'] = 'cli'
-        # Give the device as a connection type
-        # This is done in order to call the parser on the output provided
-        self.device.connectionmgr.connections['cli'] = self.device
+        # Create a mock connection to get output for parsing
+        self.device_connection = Mock(device=self.device)
+        self.device.connectionmgr.connections['cli'] = self.device_connection
+        # Set outputs
+        self.device_connection.execute.side_effect = mapper
+
     def test_complete_output(self):
         vrf = Vrf(device=self.device)
 
         # Set outputs
         vrf.maker.outputs[ShowVrfDetail] = {'': VrfOutput.ShowVrfDetail}
         # Learn the feature
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
         vrf.learn()
         self.maxDiff = None
 
@@ -49,9 +51,6 @@ class test_vrf(unittest.TestCase):
     def test_custom_vrf_output(self):
         vrf = Vrf(device=self.device)
         vrf.maker.outputs[ShowVrfDetail] = {'': VrfOutput.ShowVrfDetailCustom}
-        # Set outputs
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
         # Learn the feature
         vrf.learn(vrf='VRF2')
         self.maxDiff = None
@@ -64,8 +63,6 @@ class test_vrf(unittest.TestCase):
 
         # Set outputs
         vrf.maker.outputs[ShowVrfDetail] = {'': VrfOutput.ShowVrfDetail}
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
         # Learn the feature
         vrf.learn()
 
@@ -80,8 +77,6 @@ class test_vrf(unittest.TestCase):
         vrf.maker.outputs[ShowVrfDetail] = {'': {}}
         outputs['show vrf detail VRF2'] = ''
         outputs['show vrf detail'] = ''
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
         # Learn the feature
         vrf.learn()
 

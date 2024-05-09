@@ -71,7 +71,7 @@ def configure_l2vpn_storm_control(
             )
         )
 
-def configure_l2vpn_vfi_context_vpls(device, vpn_id, pseudowire=None,auto_bgp=None):
+def configure_l2vpn_vfi_context_vpls(device, vpn_id, pseudowire=None,auto_bgp=None,vfi_name=None):
     """
     Configures l2vpn vfi context vpls on device
 
@@ -81,6 +81,7 @@ def configure_l2vpn_vfi_context_vpls(device, vpn_id, pseudowire=None,auto_bgp=No
         pseudowire('str', optional): pseudowire to configure,
                                      default value is None
         auto_bgp('bool',optional): to configured autodiscovery bgp singalling ldp
+        vfi_name('str', optional): vfi name to configure. Default value is None
 
     Returns:
         N/A
@@ -91,15 +92,18 @@ def configure_l2vpn_vfi_context_vpls(device, vpn_id, pseudowire=None,auto_bgp=No
     log.info(
         "Configuring l2vpn vfi context vpls on {dev}".format(dev=device.name)
     )
-    config = [
-        "l2vpn vfi context vpls",
-        "vpn id {vpn}".format(vpn=vpn_id)
-    ]
+    config = []
+    if vfi_name:
+        config.append("l2vpn vfi context {vfi_name}".format(vfi_name=vfi_name))
+    else:
+        config.append("l2vpn vfi context vpls")
+    if vpn_id:
+        config.append("vpn id {vpn}".format(vpn=vpn_id))
     if pseudowire:
         for attr in pseudowire:
             config.append("member {attr}".format(attr=attr))
     if auto_bgp:
-            config.append("autodiscovery bgp signaling ldp")
+        config.append("autodiscovery bgp signaling ldp")
     try:
         device.configure(config)
     except SubCommandFailure as e:
@@ -110,13 +114,13 @@ def configure_l2vpn_vfi_context_vpls(device, vpn_id, pseudowire=None,auto_bgp=No
             )
         )
 
-def unconfigure_l2vpn_vfi_context_vpls(device):
+def unconfigure_l2vpn_vfi_context_vpls(device, vfi_name=None):
     """
     Unconfigures l2vpn vfi context vpls on device
 
     Args:
         device('obj'): device to configure
-
+        vfi_name('str', Optional): Default is None, vfi_name to unconfigure
     Returns:
         N/A
 
@@ -126,8 +130,14 @@ def unconfigure_l2vpn_vfi_context_vpls(device):
     log.info(
         "Unconfiguring l2vpn vfi context vpls on {dev}".format(dev=device.name)
     )
+    config = []
+    if vfi_name:
+        config.append("no l2vpn vfi context {vfi_name}".format(vfi_name=vfi_name))
+    else:
+        config.append("no l2vpn vfi context vpls")
+
     try:
-        device.configure("no l2vpn vfi context vpls")
+        device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Configuration removal failed for l2vpn vfi vpls on "

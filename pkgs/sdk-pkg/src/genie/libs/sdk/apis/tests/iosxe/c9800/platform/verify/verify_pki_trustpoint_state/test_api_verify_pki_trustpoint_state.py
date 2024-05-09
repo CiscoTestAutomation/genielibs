@@ -1,6 +1,6 @@
 import unittest
 from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.c9800.platform.verify import verify_pki_trustpoint_state
+from genie.libs.sdk.apis.iosxe.cat9k.c9800.platform.verify import verify_pki_trustpoint_state
 
 
 class TestVerifyPkiTrustpointState(unittest.TestCase):
@@ -17,7 +17,8 @@ class TestVerifyPkiTrustpointState(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: c9800
+            platform: cat9k
+            model: c9800
             type: wlc
             custom:
               abstraction:

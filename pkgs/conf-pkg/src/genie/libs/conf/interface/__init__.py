@@ -62,32 +62,6 @@ class Medium(Option):
     p2p = 'p2p'
     broadcast = 'broadcast'
 
-def _get_descendent_subclass(cls, subcls):
-    '''Find the descendent class of cls that is a subclass of subcls.'''
-    found_subclasses = set()
-    subclasses_walked = set()
-    subclasses_to_walk = [cls]
-    while subclasses_to_walk:
-        cls = subclasses_to_walk.pop(0)
-        if cls in subclasses_walked:
-            continue
-        else:
-            subclasses_walked.add(cls)
-        if issubclass(cls, subcls):
-            found_subclasses.add(cls)
-        else:
-            subclasses_to_walk.extend(cls.__subclasses__())
-    if not found_subclasses:
-        raise TypeError('No %r specific subclass of %r found.' % (
-            subcls.__qualname__, cls.__qualname__))
-    if len(found_subclasses) > 1:
-        raise TypeError('Too many %r specific subclass of %r found: %r' % (
-            subcls.__qualname__, cls.__qualname__, found_subclasses))
-    cls = found_subclasses.pop()
-    return cls
-
-
-
 
 class UnsupportedInterfaceOsWarning(UserWarning):
     pass
@@ -547,63 +521,6 @@ class Interface(BaseInterface):
             range=range)
         return Interface(device=self.device, name=name, **kwargs)
 
-    @classmethod
-    def _get_os_specific_Interface_class(cls, os):
-        assert type(os) is str
-        if False:
-            # XXXJST TODO The abstract module needs to be enhanced.
-            # Use it's API to perform a fast(cached) os-specific only lookup
-            # without instantiating a Lookup instance everytime and be able to
-            # work on classes / class methods.
-            from genie.abstract import Lookup
-            lib = Lookup(os)
-            osInterface = lib.conf.interface.Interface
-            if osInterface is Interface:
-                raise ImportError(
-                    'No Interface class found specific to OS {os!r}' \
-                    .format(os=os))
-
-        else:
-            mod = 'genie.libs.conf.interface.{os}'.\
-                format(os=os)
-            OsInterfaceModule = importlib.import_module(mod)
-            osInterface = OsInterfaceModule.Interface
-        return osInterface
-
-    def __new__(cls, *args, **kwargs):
-
-        factory_cls = cls
-        if factory_cls is Interface:
-            # need to load the correct interface for the right os.
-            if 'device' in kwargs:
-                device = kwargs['device']
-                if not device.os and 'os' in kwargs['device'].__dict__:
-                    device.os = kwargs['device'].__dict__['os']
-                if device.os is None:
-                    log.debug("Cannot convert interfaces for "
-                              "device '{dev}' as mandatory field "
-                              "'os' was not given in the "
-                              "yaml file".format(dev=device.name))
-                    device.os = 'generic'
-
-                try:
-                    factory_cls = cls._get_os_specific_Interface_class(device.os)
-                except (ImportError, AttributeError):
-                    # it does not exist, then just use the default one,
-                    # but configuration is not possible
-                    pass
-
-            elif not cls.device:
-                raise TypeError('\'device\' argument missing')
-
-        if factory_cls is not cls:
-            self = factory_cls.__new__(factory_cls, *args, **kwargs)
-        elif super().__new__ is object.__new__:
-            self = super().__new__(factory_cls)
-        else:
-            self = super().__new__(factory_cls, *args, **kwargs)
-        return self
-
     def __init__(self, *args, **kwargs):
         '''Base initialization for all Interface subclasses.
 
@@ -913,9 +830,7 @@ class VirtualInterface(Interface,
     def _generate_unused_interface_name(cls, device, range=None):
         assert isinstance(device, Device)
         # Find the os-specific version of this class
-        cls = _get_descendent_subclass(
-            cls._get_os_specific_Interface_class(device.os),
-            cls)
+        cls = cls._get_abstract_subclass(device)
 
         # Determine the interface name type
         interface_name_types = set(cls.__dict__.get('_interface_name_types', ()))
@@ -1337,9 +1252,7 @@ class SubInterface(VirtualInterface):
         assert isinstance(parent_interface, BaseInterface)
         device = parent_interface.device
         # Find the os-specific version of this class
-        cls = _get_descendent_subclass(
-            cls._get_os_specific_Interface_class(device.os),
-            cls)
+        cls = cls._get_abstract_subclass(device)
 
         parent_interface_name = parent_interface.name
         if range is None:
@@ -1411,80 +1324,9 @@ class TunnelTeInterface(TunnelInterface):
 
     _interface_name_number_range = range(0, 65535 + 1)
 
-    def __new__(cls, *args, **kwargs):
-
-        factory_cls = cls
-        if factory_cls is TunnelTeInterface:
-            # need to load the correct interface for the right os.
-            if 'device' not in kwargs:
-                raise TypeError('\'device\' argument missing')
-            device = kwargs['device']
-            if device.os is None:
-                log.debug("Cannot convert interfaces for "
-                          "device '{dev}' as mandatory field "
-                          "'os' was not given in the "
-                          "yaml file".format(dev=device.name))
-                device.os = 'generic'
-            try:
-                factory_cls = _get_descendent_subclass(
-                    factory_cls._get_os_specific_Interface_class(device.os),
-                    factory_cls)
-            except (ImportError, AttributeError, TypeError) as e:
-                # it does not exist, then just use the default one,
-                # but configuration is not possible
-                warnings.warn(
-                    'TunnelTeInterfaces for {dev} OS {os!r} are not'
-                    ' supported; Configuration will not be available:'
-                    ' {e}'.format(
-                        dev=device.name, os=device.os, e=e),
-                    UnsupportedInterfaceOsWarning)
-
-        if factory_cls is not cls:
-            self = factory_cls.__new__(factory_cls, *args, **kwargs)
-        elif super().__new__ is object.__new__:
-            self = super().__new__(factory_cls)
-        else:
-            self = super().__new__(factory_cls, *args, **kwargs)
-        return self
-
 
 class NamedTunnelTeInterface(NamedTunnelInterface, TunnelTeInterface):
-
-    def __new__(cls, *args, **kwargs):
-
-        factory_cls = cls
-        if factory_cls is NamedTunnelTeInterface:
-            # need to load the correct interface for the right os.
-            if 'device' not in kwargs:
-                raise TypeError('\'device\' argument missing')
-            device = kwargs['device']
-            if device.os is None:
-                log.debug("Cannot convert interfaces for "
-                          "device '{dev}' as mandatory field "
-                          "'os' was not given in the "
-                          "yaml file".format(dev=device.name))
-                device.os = 'generic'
-            try:
-                factory_cls = _get_descendent_subclass(
-                    factory_cls._get_os_specific_Interface_class(device.os),
-                    factory_cls)
-            except (ImportError, AttributeError, TypeError) as e:
-                # it does not exist, then just use the default one,
-                # but configuration is not possible
-                warnings.warn(
-                    'NamedTunnelTeInterfaces for {dev} OS {os!r} are not'
-                    ' supported; Configuration will not be available:'
-                    ' {e}'.format(
-                        dev=device.name, os=device.os, e=e),
-                    UnsupportedInterfaceOsWarning)
-
-        if factory_cls is not cls:
-            self = factory_cls.__new__(factory_cls, *args, **kwargs)
-        elif super().__new__ is object.__new__:
-            self = super().__new__(factory_cls)
-        else:
-            self = super().__new__(factory_cls, *args, **kwargs)
-        return self
+    pass
 
 
 class BviInterface(VirtualInterface):

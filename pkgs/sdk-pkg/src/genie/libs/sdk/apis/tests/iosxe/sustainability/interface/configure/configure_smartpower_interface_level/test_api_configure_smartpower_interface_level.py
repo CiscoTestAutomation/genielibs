@@ -10,7 +10,7 @@ class TestConfigureSmartpowerInterfaceLevel(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          C9300L-ott-topo:
+          9300L:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -22,7 +22,7 @@ class TestConfigureSmartpowerInterfaceLevel(unittest.TestCase):
             type: c9300
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['C9300L-ott-topo']
+        self.device = self.testbed.devices['9300L']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,6 @@ class TestConfigureSmartpowerInterfaceLevel(unittest.TestCase):
         )
 
     def test_configure_smartpower_interface_level(self):
-        result = configure_smartpower_interface_level(self.device, 'gi1/0/1', '5')
+        result = configure_smartpower_interface_level(self.device, 'Gi1/0/13', '5')
         expected_output = None
         self.assertEqual(result, expected_output)

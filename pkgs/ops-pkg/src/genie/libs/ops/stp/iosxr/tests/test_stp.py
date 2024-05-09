@@ -36,10 +36,12 @@ class test_stp(unittest.TestCase):
         self.device.custom['abstraction'] = {'order':['os']}
         self.device.mapping={}
         self.device.mapping['cli']='cli'
-        # Give the device as a connection type
-        # This is done in order to call the parser on the output provided
-        self.device.connectionmgr.connections['cli'] = self.device
-        
+        # Create a mock connection to get output for parsing
+        self.device_connection = Mock(device=self.device)
+        self.device.connectionmgr.connections['cli'] = self.device_connection
+        # Set outputs
+        self.device_connection.execute.side_effect = mapper
+
 
     def test_complete_output(self):
         stp = Stp(device=self.device)
@@ -58,16 +60,15 @@ class test_stp(unittest.TestCase):
 
         stp.maker.outputs[ShowSpanningTreePvsTag] = \
             {'': StpOutput.ShowSpanningTreePvsTag}
-        
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
+
 
         # Learn the feature
         stp.learn(mst_domain='test', mstag_domain='risc', pvst_id='a', pvrstag_domain='foo', pvstag_domain='foo')
         self.maxDiff = None
         # Verify Ops was created successfully
         self.assertEqual(stp.info, StpOutput.stpOutput)
-        
+
         # Check Selected Attributes
         self.assertEqual(stp.info['mstp']['test']['mst_instances']['0']['vlan'],
             '1-4094')
@@ -98,10 +99,9 @@ class test_stp(unittest.TestCase):
         outputs.update({'show spanning-tree pvrst a': ''})
         outputs.update({'show spanning-tree pvrstag foo': ''})
         outputs.update({'show spanning-tree pvstag foo': ''})
-        
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
-        
+
+
+
         # Learn the feature
         stp.learn(mst_domain='test', mstag_domain='risc', pvst_id='a', pvrstag_domain='foo', pvstag_domain='foo')
 
@@ -110,18 +110,17 @@ class test_stp(unittest.TestCase):
         outputs.update({'show spanning-tree pvrst a': StpOutput.ShowSpanningTreePvrst_output})
         outputs.update({'show spanning-tree pvrstag foo': StpOutput.ShowSpanningTreePvrsTag_output})
         outputs.update({'show spanning-tree pvstag foo': StpOutput.ShowSpanningTreePvsTag_output})
-        
+
         # Check no attribute not found
         with self.assertRaises(AttributeError):
             stp.info['mstp']['test']['mst_instances']['0']['vlan']
 
     def test_incomplete_output(self):
         self.maxDiff = None
-        
+
         stp = Stp(device=self.device)
 
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
 
         # Get outputs
         stp.maker.outputs[ShowSpanningTreeMst] = \
@@ -141,13 +140,13 @@ class test_stp(unittest.TestCase):
 
         # Learn the feature
         stp.learn(mst_domain='test', mstag_domain='risc', pvst_id='a', pvrstag_domain='foo', pvstag_domain='foo')
-        
+
         # delete keys from input
         del(stp.info['mstp']['test']['mst_instances']['0']['mst_id'])
-        
+
         # Delete missing specific attribute values
         expect_dict = deepcopy(StpOutput.stpOutput)
-        del(expect_dict['mstp']['test']['mst_instances']['0']['mst_id'])  
+        del(expect_dict['mstp']['test']['mst_instances']['0']['mst_id'])
 
         # Verify Ops was created successfully
         self.assertEqual(stp.info, expect_dict)

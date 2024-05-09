@@ -22,9 +22,11 @@ class test_arp(unittest.TestCase):
         self.device.os = 'iosxr'
         self.device.mapping={}
         self.device.mapping['cli']='cli'
-        # Give the device as a connection type
-        # This is done in order to call the parser on the output provided
-        self.device.connectionmgr.connections['cli'] = self.device
+        # Create a mock connection to get output for parsing
+        self.device_connection = Mock(device=self.device)
+        self.device.connectionmgr.connections['cli'] = self.device_connection
+        # Set outputs
+        self.device_connection.execute.side_effect = mapper
 
     def test_complete_output(self):
         self.maxDiff = None
@@ -103,7 +105,7 @@ class test_arp(unittest.TestCase):
 
     def test_incomplete_output(self):
         self.maxDiff = None
-        
+
         arp = Arp(device=self.device)
 
         # Get outputs
@@ -118,7 +120,7 @@ class test_arp(unittest.TestCase):
 
         # Learn the feature
         arp.learn()
-                
+
         # Check no attribute not found
         with self.assertRaises(KeyError):
             arp.info['statistics']

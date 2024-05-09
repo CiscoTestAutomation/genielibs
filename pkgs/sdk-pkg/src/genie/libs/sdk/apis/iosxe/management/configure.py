@@ -484,7 +484,7 @@ def configure_management_http(device,
     http_config = []
 
     if source_interface:
-        http_config.append(f'ip http source-interface {source_interface}')
+        http_config.append(f'ip http client source-interface {source_interface}')
 
     if http_config:
         device.configure(http_config)
@@ -598,8 +598,8 @@ def configure_management_vty_lines(device,
     all_transports = re.findall(r'transport input (.*)', output)
     for t in all_transports:
         transports.extend(t.strip().split(' '))
-    # remove duplicates and ignore "all"
-    transports = sorted([t for t in set(transports) if t != 'all'], reverse=True)
+    # remove duplicates and ignore "all" and "none"
+    transports = sorted([t for t in set(transports) if t.lower() not in ['all', 'none']], reverse=True)
 
     transport_config = 'transport input {}'.format(' '.join(transports))
     vty_config.append(transport_config)

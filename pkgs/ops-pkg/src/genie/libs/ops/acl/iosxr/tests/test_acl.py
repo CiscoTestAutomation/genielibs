@@ -21,9 +21,9 @@ class test_acl(unittest.TestCase):
         self.device.os = 'iosxr'
         self.device.mapping={}
         self.device.mapping['cli']='cli'
-        # Give the device as a connection type
-        # This is done in order to call the parser on the output provided
-        self.device.connectionmgr.connections['cli'] = self.device
+        # Create a mock connection to get output for parsing
+        self.device_connection = Mock(device=self.device)
+        self.device.connectionmgr.connections['cli'] = self.device_connection
 
     def test_complete_output(self):
         acl = Acl(device=self.device)
@@ -37,7 +37,7 @@ class test_acl(unittest.TestCase):
         acl.learn()
         # Verify Ops was created successfully
         self.assertEqual(acl.info, AclOutput.aclOutput)
-        
+
         # Check Selected Attributes
         self.assertEqual(acl.info['acls']['acl_name']['name'], 'acl_name')
         # info - ipv4_acl
@@ -63,7 +63,7 @@ class test_acl(unittest.TestCase):
 
     def test_incomplete_output(self):
         self.maxDiff = None
-        
+
         acl = Acl(device=self.device)
         # Get outputs
         acl.maker.outputs[ShowAclAfiAll] = \
@@ -80,7 +80,7 @@ class test_acl(unittest.TestCase):
         # Delete missing specific attribute values
         expect_dict = deepcopy(AclOutput.aclOutput)
         del(expect_dict['acls']['acl_name']['name'])
-        del(expect_dict['acls']['eth_acl']['name'])     
+        del(expect_dict['acls']['eth_acl']['name'])
         # Verify Ops was created successfully
         self.assertEqual(acl.info, expect_dict)
 

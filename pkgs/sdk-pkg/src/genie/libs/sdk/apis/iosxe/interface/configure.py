@@ -377,13 +377,13 @@ def config_interface_carrier_delay(device, interface, delay, delay_type):
         )
 
 
-def clear_interface_counters(device, interface):
+def clear_interface_counters(device, interface, timeout=60):
     """ Clear interface counters
 
         Args:
             device (`obj`): Device object
             interface (`str`): Interface name
-
+            timeout ('int', optional): Timeout in seconds. Default is 60
         Returns:
             None
 
@@ -395,10 +395,10 @@ def clear_interface_counters(device, interface):
             interface=interface
         )
     )
-
+    dialog = Dialog([Statement(pattern=r'.*\[confirm\].*', action='sendline(\r)',loop_continue=True, continue_timer=False)])
     try:
         device.execute(
-            "clear counters {interface}".format(interface=interface)
+            "clear counters {interface}".format(interface=interface), reply=dialog, timeout=timeout
         )
     except SubCommandFailure as e:
         raise SubCommandFailure(

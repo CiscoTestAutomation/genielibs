@@ -23,14 +23,16 @@ class Restore(object):
         try:
             self.lib.save_configuration_to_file(device, default_dir, file_name)
         except Exception as e:
-            self.failed('Saving the configuration failed', from_exception=e)
+            log.error(e)
+            raise Exception('Fail to save configuration to file')
 
     def save_configuration(self, device, method, abstract, default_dir, timeout=60):
         try:
             self.lib.save_configuration(
                 device, method, self.abstract, default_dir, timeout=timeout)
         except Exception as e:
-            self.failed('Saving the configuration failed', from_exception=e)
+            log.error(e)
+            raise Exception('Fail to save configuration')
 
     def restore_configuration(self, device, method, abstract, iteration=10,
                               interval=60, delete_after_restore=True, timeout=60):
@@ -42,7 +44,8 @@ class Restore(object):
                 delete_after_restore=delete_after_restore,
                 timeout=timeout)
         except Exception as e:
-            self.failed('Restoring the configuration failed', from_exception=e)
+            log.error(e)
+            raise Exception('Fail to restore configuration.')
 
     def create_delete_checkpoint(self, device, name, action):
         self.lib.create_delete_checkpoint(device, name, action)

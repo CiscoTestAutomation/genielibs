@@ -219,6 +219,39 @@ class PlatformOutput(object):
             'total_bytes': '2562719744 bytes',
             'total_free_bytes': '1918621184 bytes'}}
 
+    # 'show diag details'
+    showDiagDetailsOutput = {
+        'item': {
+            'Rack 0-Chassis': {
+                'description': 'Cisco 8000 Series 32x400G QSFPDD 1RU Fixed System w/HBM',
+                'controller_family': '0045',
+                'controller_type': '06b1',
+                'pid': '8201-32FH',
+                'vid': 'V03',
+                'udi_description': 'Cisco 8000 Series 32x400G QSFPDD 1RU Fixed System w/HBM',
+                'chassis_serial_number': 'FLM263401XF',
+                'top_assy_part_number': '68-7325-05',
+                'top_assy_revision': 'B0',
+                'pcb_serial_number': 'FLM263303GJ',
+                'pca_number': '73-20364-02',
+                'pca_revision': 'E0',
+                'clei_code': 'CMM6210ARC',
+                'eci_number': '477690',
+                'deviation_number_1': '0',
+                'deviation_number_2': '0',
+                'deviation_number_3': '0',
+                'deviation_number_4': '0',
+                'deviation_number_5': '0',
+                'manufacturing_number': '00 00 00 00 00 00 00 00',
+                'calibration_data': '00000000',
+                'chassis_mac_address': '3c26.e4b6.8c00',
+                'mac_address_block_size': '512',
+                'hardware_revision': '1.0',
+                'device_value_1': '42 e0 00 08 28 00 00 00'
+            }
+        }
+    }
+
     # Platform Ops Object final output
     platformOpsOutput = {
         'attributes': None,

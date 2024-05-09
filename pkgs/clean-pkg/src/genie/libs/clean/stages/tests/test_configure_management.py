@@ -66,5 +66,5 @@ class TestConfigureManagement(unittest.TestCase):
           call(['vrf definition Mgmt-vrf', 'address-family ipv4', 'exit-address-family', 'address-family ipv6', 'exit-address-family']),
           call(['interface Gi1/0', 'vrf forwarding Mgmt-vrf', 'ip address 2.2.2.2 255.255.255.0', 'no shutdown']),
           call(['ip route vrf Mgmt-vrf 192.168.1.0 255.255.255.0 172.16.1.1']),
-          call(['ip http source-interface Gi1/0'])]
+          call(['ip http client source-interface Gi1/0'])]
         )

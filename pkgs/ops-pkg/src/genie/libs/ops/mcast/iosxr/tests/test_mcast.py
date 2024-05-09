@@ -48,9 +48,11 @@ class test_mcast(unittest.TestCase):
         self.device.os = 'iosxr'
         self.device.mapping={}
         self.device.mapping['cli']='cli'
-        # Give the device as a connection type
-        # This is done in order to call the parser on the output provided
-        self.device.connectionmgr.connections['cli'] = self.device
+        # Create a mock connection to get output for parsing
+        self.device_connection = Mock(device=self.device)
+        self.device.connectionmgr.connections['cli'] = self.device_connection
+        # Set outputs
+        self.device_connection.execute.side_effect = mapper
         self.maxDiff = None
 
     def test_complete_output(self):
@@ -58,10 +60,9 @@ class test_mcast(unittest.TestCase):
 
         # Set outputs
         mcast.maker.outputs[ShowVrfAllDetail] = {'':McastOutput.ShowVrfAllDetail}
-        
+
         # Return outputs above as inputs to parser when called
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
 
         # Learn the feature
         mcast.learn()
@@ -76,10 +77,8 @@ class test_mcast(unittest.TestCase):
 
         # Set outputs
         mcast.maker.outputs[ShowVrfAllDetail] = {'':McastOutput.ShowVrfAllDetail}
-        
+
         # Return outputs above as inputs to parser when called
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
 
         # Learn the feature
         mcast.learn()
@@ -102,11 +101,10 @@ class test_mcast(unittest.TestCase):
         mcast.maker.outputs[ShowVrfAllDetail] = {'':McastOutput.ShowVrfAllDetail}
 
         # Return outputs above as inputs to parser when called
-        self.device.execute = Mock()
-        self.device.execute.side_effect = ['', '', '', '', '', '', '', '', '',\
-                                           '', '', '', '', '', '', '', '', '',\
-                                           '', '', '', '', '', '', '', '', '',\
-                                           '', '', '', '', '']
+        self.device_connection.execute.side_effect = [
+            '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
+            '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''
+        ]
 
         # Learn the feature
         mcast.learn()

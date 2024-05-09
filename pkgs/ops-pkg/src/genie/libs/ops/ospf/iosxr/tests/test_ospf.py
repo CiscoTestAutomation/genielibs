@@ -54,9 +54,11 @@ class test_ospf(unittest.TestCase):
         self.device.os = 'iosxr'
         self.device.mapping={}
         self.device.mapping['cli']='cli'
-        # Give the device as a connection type
-        # This is done in order to call the parser on the output provided
-        self.device.connectionmgr.connections['cli'] = self.device
+        # Create a mock connection to get output for parsing
+        self.device_connection = Mock(device=self.device)
+        self.device.connectionmgr.connections['cli'] = self.device_connection
+        # Set outputs
+        self.device_connection.execute.side_effect = mapper
 
     def test_custom_output(self):
         self.maxDiff = None
@@ -90,8 +92,7 @@ class test_ospf(unittest.TestCase):
                 OspfOutput.ShowOspfVrfAllInclusiveNeighborDetail_custom}
 
         # Return outputs above as inputs to parser when called
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
 
         # Learn the feature
         ospf.learn(vrf='VRF1', interface='GigabitEthernet0/0/0/1', neighbor='10.36.3.3')
@@ -102,7 +103,7 @@ class test_ospf(unittest.TestCase):
     def test_complete_output(self):
         self.maxDiff = None
         ospf = Ospf(device=self.device)
-        
+
         # Set outputs
         ospf.maker.outputs[ShowProtocolsAfiAllAll] = {'':OspfOutput.ShowProtocolsAfiAllAll}
         ospf.maker.outputs[ShowOspfVrfAllInclusive] = {"{'vrf':''}":OspfOutput.ShowOspfVrfAllInclusive}
@@ -118,8 +119,7 @@ class test_ospf(unittest.TestCase):
         ospf.maker.outputs[ShowOspfVrfAllInclusiveNeighborDetail] = {"{'interface':'','neighbor':'','vrf':''}":OspfOutput.ShowOspfVrfAllInclusiveNeighborDetail}
 
         # Return outputs above as inputs to parser when called
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
 
         # Learn the feature
         ospf.learn()
@@ -130,7 +130,7 @@ class test_ospf(unittest.TestCase):
     def test_selective_attribute(self):
         self.maxDiff = None
         ospf = Ospf(device=self.device)
-        
+
         # Set outputs
         ospf.maker.outputs[ShowProtocolsAfiAllAll] = {'':OspfOutput.ShowProtocolsAfiAllAll}
         ospf.maker.outputs[ShowOspfVrfAllInclusive] = {"{'vrf':''}":OspfOutput.ShowOspfVrfAllInclusive}
@@ -146,8 +146,7 @@ class test_ospf(unittest.TestCase):
         ospf.maker.outputs[ShowOspfVrfAllInclusiveNeighborDetail] = {"{'interface':'','neighbor':'','vrf':''}":OspfOutput.ShowOspfVrfAllInclusiveNeighborDetail}
 
         # Return outputs above as inputs to parser when called
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
 
         # Learn the feature
         ospf.learn()
@@ -162,7 +161,7 @@ class test_ospf(unittest.TestCase):
     def test_empty_output(self):
         self.maxDiff = None
         ospf = Ospf(device=self.device)
-        
+
         # Set outputs
         ospf.maker.outputs[ShowProtocolsAfiAllAll] = {'':{}}
         ospf.maker.outputs[ShowOspfVrfAllInclusive] = {"{'vrf':''}":{}}
@@ -178,8 +177,7 @@ class test_ospf(unittest.TestCase):
         ospf.maker.outputs[ShowOspfVrfAllInclusiveNeighborDetail] = {"{'interface':'','neighbor':'','vrf':''}":{}}
 
         # Return outputs above as inputs to parser when called
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
 
         # Learn the feature
         ospf.learn()
@@ -192,7 +190,7 @@ class test_ospf(unittest.TestCase):
     def test_missing_attributes(self):
         self.maxDiff = None
         ospf = Ospf(device=self.device)
-        
+
         # Set outputs
         ospf.maker.outputs[ShowProtocolsAfiAllAll] = {'':{}}
         ospf.maker.outputs[ShowOspfVrfAllInclusive] = {"{'vrf':''}":OspfOutput.ShowOspfVrfAllInclusive}
@@ -208,8 +206,7 @@ class test_ospf(unittest.TestCase):
         ospf.maker.outputs[ShowOspfVrfAllInclusiveNeighborDetail] = {"{'interface':'','neighbor':'','vrf':''}":OspfOutput.ShowOspfVrfAllInclusiveNeighborDetail}
 
         # Return outputs above as inputs to parser when called
-        self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+
 
         # Learn the feature
         ospf.learn()

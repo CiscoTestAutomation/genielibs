@@ -2,18 +2,18 @@ configure:
   commands:
     end:
       new_state: execute
-    interface gi1/0/1 ; no smartpower level 5: "interface gi1/0/1 ; no smartpower
-      level 5\r\n"
+    interface Gi1/0/13: "interface Gi1/0/13\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''
-  prompt: C9300L-ott-topo(config)#
+    no smartpower level 5: "no smartpower level 5\r\n"
+  prompt: 9300L(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: C9300L-ott-topo(config-line)#
+  prompt: 9300L(config-line)#
 connect:
   commands:
     '':
@@ -33,4 +33,4 @@ execute:
     term length 0: ''
     term width 0: ''
     show version | include operating mode: ''
-  prompt: C9300L-ott-topo#
+  prompt: 9300L#

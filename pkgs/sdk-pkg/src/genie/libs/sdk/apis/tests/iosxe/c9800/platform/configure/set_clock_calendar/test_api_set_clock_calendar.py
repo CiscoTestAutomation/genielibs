@@ -1,6 +1,6 @@
 import unittest
 from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.c9800.platform.configure import set_clock_calendar
+from genie.libs.sdk.apis.iosxe.cat9k.c9800.platform.configure import set_clock_calendar
 
 
 class TestSetClockCalendar(unittest.TestCase):
@@ -17,7 +17,8 @@ class TestSetClockCalendar(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: c9800
+            platform: cat9k
+            model: c9800
             type: wlc
         """
         self.testbed = loader.load(testbed)

@@ -22,7 +22,7 @@ from genie.libs.parser.iosxe.show_platform import ShowSwitchDetail, \
                                                   ShowModule, ShowInventory,\
                                                   ShowPlatform, ShowVersion
 
-from genie.libs.parser.iosxe.c3850.show_platform import ShowEnvironmentAll
+from genie.libs.parser.iosxe.cat3k.c3850.show_platform import ShowEnvironmentAll
 from genie.libs.parser.iosxe.show_power import ShowStackPower, ShowPowerInline
 from genie.libs.parser.iosxe.show_crypto import ShowCryptoPkiCertificates
 
@@ -75,7 +75,7 @@ class TriggerCheckCommands(CheckCommandsTemplate):
            Raises:
                pyATS Results
         '''
-        
+
         # get output
         try:
             output = ShowSwitchDetail(device=uut).parse()
@@ -88,13 +88,13 @@ class TriggerCheckCommands(CheckCommandsTemplate):
         with steps.start('Get Active/Standby/Member switches '
           'which state is Ready', continue_=True) as step:
             requirements = {
-                'active': 
+                'active':
                    [['switch', 'stack', '(?P<stack>.*)','role', 'active'],
                     ['switch', 'stack', '(?P<stack>.*)','state', 'ready']],
-                  'standby': 
+                  'standby':
                    [['switch', 'stack', '(?P<stack>.*)','role', 'standby'],
                     ['switch', 'stack', '(?P<stack>.*)','state', 'ready']],
-                  'member': 
+                  'member':
                    [['switch', 'stack', '(?P<stack>.*)','role', 'member'],
                     ['switch', 'stack', '(?P<stack>.*)','state', 'ready']]
             }
@@ -113,7 +113,7 @@ class TriggerCheckCommands(CheckCommandsTemplate):
                 step.failed("Not all switches up and Ready".format(requirements),
                                 from_exception=e, goto=['next_tc'])
 
-        # store active standby and full_stack information        
+        # store active standby and full_stack information
         self.active = ret.get('active', {})[0].get('stack', '')
         self.standby = ret.get('standby', {})[0].get('stack', '')
 
@@ -121,7 +121,7 @@ class TriggerCheckCommands(CheckCommandsTemplate):
         # Perform some SIF and Stack platform commands on active
         with steps.start('Perform some SIF and Stack '
           'platform commands on active', continue_=True) as step:
-            
+
             uut.execute("show platform software sif switch %s R0 counters" % self.active)
             uut.execute("show platform software sif switch %s R0 topo" % self.active)
             uut.execute("show platform software stack-mgr switch %s R0 sdp-counters" % self.active)
@@ -140,7 +140,7 @@ class TriggerCheckCommands(CheckCommandsTemplate):
            Raises:
                pyATS Results
         '''
-        
+
         try:
             output = ShowRedundancy(device=uut).parse()
         except Exception as e:
@@ -151,18 +151,18 @@ class TriggerCheckCommands(CheckCommandsTemplate):
         with steps.start('Get "sso" redundancy state, "Duplex" h/w mode, '
           'Up communications, ACTIVE/STANDBY HOT infomation', continue_=True) as step:
             requirements = {
-                'active_state': 
+                'active_state':
                    [['slot', 'slot {}'.format(self.active), 'curr_sw_state',
                      '(?P<active_state>ACTIVE)']],
-                  'standby_state': 
+                  'standby_state':
                    [['slot', 'slot {}'.format(self.standby), 'curr_sw_state',
                      '(?P<standby_state>STANDBY HOT)']],
-                  'redundancy_mode': 
+                  'redundancy_mode':
                    [['red_sys_info', 'conf_red_mode', '(?P<redundancy_mode>sso)']],
-                  'hw_mode': 
+                  'hw_mode':
                    [['red_sys_info', 'hw_mode', '(?P<hw_mode>Duplex)']],
-                  'communications': 
-                   [['red_sys_info', 'communications', '(?P<communications>Up)']],                    
+                  'communications':
+                   [['red_sys_info', 'communications', '(?P<communications>Up)']],
             }
             try:
                 ret = get_requirements(requirements=requirements, output=output)
@@ -194,7 +194,7 @@ class TriggerCheckCommands(CheckCommandsTemplate):
            Raises:
                pyATS Results
         '''
-        
+
         try:
             output = ShowModule(device=uut).parse()
         except Exception as e:
@@ -205,17 +205,17 @@ class TriggerCheckCommands(CheckCommandsTemplate):
         with steps.start('Get port/hw_ver/model/sw_ver/mac_address'
           '/serial_number from all switches', continue_=True) as step:
             requirements = {
-                'port': 
+                'port':
                    [['switch', '(?P<stack>.*)','port', '(?P<port>.*)']],
-                  'hw_ver': 
+                  'hw_ver':
                    [['switch', '(?P<stack>.*)','hw_ver', '(?P<hw_ver>.*)']],
-                  'model': 
+                  'model':
                    [['switch', '(?P<stack>.*)','model', '(?P<model>.*)']],
-                  'sw_ver': 
+                  'sw_ver':
                    [['switch', '(?P<stack>.*)','sw_ver', '(?P<sw_ver>.*)']],
-                  'mac_address': 
+                  'mac_address':
                    [['switch', '(?P<stack>.*)','mac_address', '(?P<mac_address>.*)']],
-                  'serial_number': 
+                  'serial_number':
                    [['switch', '(?P<stack>.*)','serial_number', '(?P<serial_number>.*)']],
             }
             try:
@@ -251,7 +251,7 @@ class TriggerCheckCommands(CheckCommandsTemplate):
            Raises:
                pyATS Results
         '''
-        
+
         try:
             output = ShowEnvironmentAll(device=uut).parse()
         except Exception as e:
@@ -262,13 +262,13 @@ class TriggerCheckCommands(CheckCommandsTemplate):
         with steps.start('Get system temperature state, fan state and power supply state'
           ' from all switches', continue_=True) as step:
             requirements = {
-                'system_temperature_state': 
+                'system_temperature_state':
                    [['switch', '(?P<stack>.*)','system_temperature_state',
                      '(?P<system_temperature_state>(ok|not present|invalid))']],
-                'power_supply_state': 
+                'power_supply_state':
                    [['switch', '(?P<stack>.*)','power_supply', '(?P<ps>.*)',
                      'status', '(?P<power_supply_state>(ok|not present))']],
-                'fan_state': 
+                'fan_state':
                    [['switch', '(?P<stack>.*)','fan', '(?P<fan>.*)', 'state',
                      '(?P<fan_state>(ok|not present))']],
             }
@@ -305,7 +305,7 @@ class TriggerCheckCommands(CheckCommandsTemplate):
            Raises:
                pyATS Results
         '''
-        
+
         try:
             output = ShowInventory(device=uut).parse()
         except Exception as e:
@@ -316,7 +316,7 @@ class TriggerCheckCommands(CheckCommandsTemplate):
         with steps.start('Get PID, VID, and SN from "Active" Switch,'
           'and entries for all switches', continue_=True) as step:
             requirements = {
-                'power_supply': 
+                'power_supply':
                    [['slot', '(?P<stack>.*)','other', '(?P<ps>.*)',
                      'name', '(?P<power_supply>.*)']],
                 'active_pid':
@@ -378,7 +378,7 @@ class TriggerCheckCommands(CheckCommandsTemplate):
            Raises:
                pyATS Results
         '''
-        
+
         try:
             output = ShowPlatform(device=uut).parse()
         except Exception as e:
@@ -389,39 +389,39 @@ class TriggerCheckCommands(CheckCommandsTemplate):
         with steps.start('Get system platform infomration'
           ' from all switches', continue_=True) as step:
             requirements = {
-                'slot_number': 
+                'slot_number':
                    [['slot', '(?P<stack>.*)','rp', '(.*)', 'slot',
                      '(?P<slot_number>\d+)']],
-                'ports': 
+                'ports':
                    [['slot', '(?P<stack>.*)','rp', '(.*)', 'ports',
                      '(?P<ports>\d+)']],
-                'model': 
+                'model':
                    [['slot', '(?P<stack>.*)','rp', '(.*)', 'name',
                      '(?P<model>.*)']],
-                'serial_number': 
+                'serial_number':
                    [['slot', '(?P<stack>.*)','rp', '(.*)', 'sn',
                      '(?P<serial_number>.*)']],
-                'mac_address': 
+                'mac_address':
                    [['slot', '(?P<stack>.*)','rp', '(.*)', 'mac_address',
                      '(?P<mac_address>.*)']],
-                'hw_ver': 
+                'hw_ver':
                    [['slot', '(?P<stack>.*)','rp', '(.*)', 'hw_ver',
                      '(?P<hw_ver>.*)']],
-                'sw_ver': 
+                'sw_ver':
                    [['slot', '(?P<stack>.*)','rp', '(.*)', 'sw_ver',
                      '(?P<sw_ver>.*)']],
-                'role': 
+                'role':
                    [['slot', '(?P<stack>.*)','rp', '(.*)', 'role',
                      '(?P<role>(Active|Standby|Member))']],
-                'priority': 
+                'priority':
                    [['slot', '(?P<stack>.*)','rp', '(.*)', 'priority',
                      '(?P<priority>.*)']],
-                'state': 
+                'state':
                    [['slot', '(?P<stack>.*)','rp', '(.*)', 'state',
                      '(?P<state>.*)']],
-                'switch_mac_address': 
+                'switch_mac_address':
                    [['main', 'switch_mac_address', '(?P<switch_mac_address>.*)']],
-                'mac_persistency_wait_time': 
+                'mac_persistency_wait_time':
                    [['main', 'mac_persistency_wait_time', '(?P<mac_persistency_wait_time>.*)']],
             }
             try:
@@ -466,7 +466,7 @@ class TriggerCheckCommands(CheckCommandsTemplate):
            Raises:
                pyATS Results
         '''
-        
+
         try:
             if hasattr(uut, 'workers'):
                 with uut.allocate() as worker:
@@ -509,50 +509,50 @@ class TriggerCheckCommands(CheckCommandsTemplate):
         # get version info
         with steps.start('Get version information', continue_=True) as step:
             req = {
-                'copyright_or_technical_support': 
+                'copyright_or_technical_support':
                    [['version', 'image_type',
                      '(?P<copyright_or_technical_support>.*)']],
-                  'rom': 
+                  'rom':
                    [['version', 'rom', '(?P<rom>.*)']],
-                  'boot_loader': 
+                  'boot_loader':
                    [['version', 'bootldr', '(?P<boot_loader>.*)']],
-                  'host': 
+                  'host':
                    [['version', 'hostname', '(?P<host>.*)']],
-                  'device_uptime': 
+                  'device_uptime':
                    [['version', 'uptime', '(?P<device_uptime>.*)']],
-                  'control_processor_uptime': 
+                  'control_processor_uptime':
                    [['version', 'uptime_this_cp', '(?P<control_processor_uptime>.*)']],
-                  'reload_reason': 
+                  'reload_reason':
                    [['version', 'last_reload_reason', '(?P<reload_reason>.*)']],
-                  'chassis': 
+                  'chassis':
                    [['version', 'chassis', '(?P<chassis>.*)']],
-                  'memory': 
+                  'memory':
                    [['version', 'main_mem', '(?P<memory>.*)']],
-                  'processor_type': 
+                  'processor_type':
                    [['version', 'processor_type', '(?P<processor_type>.*)']],
-                  'processor_board_id': 
+                  'processor_board_id':
                    [['version', 'chassis_sn', '(?P<processor_board_id>.*)']],
             }
             req_full_stack = {
-                  'base_ethernet_mac_address': 
+                  'base_ethernet_mac_address':
                    [['version', 'switch_num', '(?P<stack>.*)', 'mac_address',
                      '(?P<base_ethernet_mac_address>.*)']],
-                  'motherboard_assembly_number': 
+                  'motherboard_assembly_number':
                    [['version', 'switch_num', '(?P<stack>.*)', 'mb_assembly_num',
                      '(?P<motherboard_assembly_number>.*)']],
-                  'motherboard_serial_number': 
+                  'motherboard_serial_number':
                    [['version', 'switch_num', '(?P<stack>.*)', 'mb_sn',
                      '(?P<motherboard_serial_number>.*)']],
-                  'model_revision_number': 
+                  'model_revision_number':
                    [['version', 'switch_num', '(?P<stack>.*)', 'model_rev_num',
                      '(?P<model_revision_number>.*)']],
-                  'motherboard_revision_number': 
+                  'motherboard_revision_number':
                    [['version', 'switch_num', '(?P<stack>.*)', 'mb_rev_num',
                      '(?P<motherboard_revision_number>.*)']],
-                  'model_number': 
+                  'model_number':
                    [['version', 'switch_num', '(?P<stack>.*)', 'model_num',
                      '(?P<model_number>.*)']],
-                  'system_serial_number': 
+                  'system_serial_number':
                    [['version', 'switch_num', '(?P<stack>.*)', 'system_sn',
                      '(?P<system_serial_number>.*)']],
             }
@@ -613,7 +613,7 @@ class TriggerCheckCommands(CheckCommandsTemplate):
 
         # Extra debugging added by DEs request for a specific issue
         with steps.start('Extra debugging added by DEs request '
-          'for a specific issue', continue_=True) as step:            
+          'for a specific issue', continue_=True) as step:
             uut.execute("show stack-power detail")
             # this command is not supported anymore
             # uut.execute("test stack-power membership")
@@ -637,10 +637,10 @@ class TriggerCheckCommands(CheckCommandsTemplate):
                     continue
 
                 requirements = {
-                    'power_state': 
+                    'power_state':
                        [['interface', '(?P<interface>.*)','oper_state',
                          '(?P<power_state>on)']],
-                    'power_budgeted_amount': 
+                    'power_budgeted_amount':
                        [['interface', '(?P<interface>.*)','power',
                          '(?P<power_budgeted_amount>^(?!0)[\d\.]+)']],
                 }
@@ -663,7 +663,7 @@ class TriggerCheckCommands(CheckCommandsTemplate):
                     continue
                 else:
                     break
-            else:                
+            else:
                 self.failed('Cannot get power inline info from '
                   '"show power inline {}"'.format(intf))
 
@@ -696,22 +696,22 @@ class TriggerCheckCommands(CheckCommandsTemplate):
                     continue
 
                 req1 = {
-                    'cisco_manufacturing_ca': 
+                    'cisco_manufacturing_ca':
                        [['trustpoints', 'CISCO_IDEVID_SUDI', 'associated_trustpoints',
                          'certificate', 'issuer', 'cn',
                          '(?P<cisco_manufacturing_ca>^Cisco +Manufacturing +CA.*)']],
-                    'cisco_root_ca': 
+                    'cisco_root_ca':
                        [['trustpoints', 'CISCO_IDEVID_SUDI', 'associated_trustpoints',
                          'ca_certificate', 'issuer', 'cn',
                          '(?P<cisco_root_ca>^Cisco +Root +CA.*)']],
                 }
 
                 req2 = {
-                    'cisco_manufacturing_ca': 
+                    'cisco_manufacturing_ca':
                        [['trustpoints', 'CISCO_IDEVID_SUDI_LEGACY', 'associated_trustpoints',
                          'certificate', 'issuer', 'cn',
                          '(?P<cisco_manufacturing_ca>^Cisco +Manufacturing +CA.*)']],
-                    'cisco_root_ca': 
+                    'cisco_root_ca':
                        [['trustpoints', 'CISCO_IDEVID_SUDI_LEGACY', 'associated_trustpoints',
                          'ca_certificate', 'issuer', 'cn',
                          '(?P<cisco_root_ca>^Cisco +Root +CA.*)']],

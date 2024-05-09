@@ -1,0 +1,38 @@
+configure:
+  commands:
+    commit: ''
+    end:
+      new_state: execute
+  prompt: RP/0/0/CPU0:R1(config)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    clear line console location 0/RP1/CPU0:
+      response:
+      - "[confirm]\r\nf3b-r1-pod6 con0/RP1/CPU0 is now available\r\n\r\nPress RETURN\
+        \ to get started."
+      response_type: circular
+    configure terminal:
+      new_state: configure
+    show controller dpc rm dpa: ''
+    show line:
+      response:
+      - "Tty             Speed     Overruns             Acc I/O\r\n* con0/RP0/CPU0\
+        \  115200          0/0                 -/-\r\ncon0/RP1/CPU0  115200      \
+        \    0/0                 -/-\r\nvty0               0          0/0        \
+        \         -/-\r\nvty1               0          0/0                 -/-\r\n\
+        vty2               0          0/0                 -/-\r\nvty3            \
+        \   0          0/0                 -/-\r\nvty4               0          0/0\
+        \                 -/-\r\nvty5               0          0/0               \
+        \  -/-"
+      response_type: circular
+  prompt: RP/0/0/CPU0:R1#
