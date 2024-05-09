@@ -52,7 +52,6 @@ execute:
         \ 0\r\n  Topology-ids on interface - 0 \r\n  Authentication mode is not set"
       response_type: circular
     show version: ''
-    show version | include operating mode: ''
     term length 0: ''
     term width 0: ''
   prompt: R1#
