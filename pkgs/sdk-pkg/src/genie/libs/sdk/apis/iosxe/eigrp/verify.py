@@ -200,8 +200,6 @@ def verify_eigrp_interfaces_timers(
       check_interval (`int`): Check interval, default: 10
     Returns:
       result (bool): Verified result
-      True
-      False
     """
     assert isinstance(auto_sys, int), "auto_sys must be int"
     assert isinstance(vrf, str), "vrf must be str"
