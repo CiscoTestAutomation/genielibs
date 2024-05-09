@@ -199,8 +199,7 @@ def verify_eigrp_interfaces_timers(
       max_time (`int`): Max time, default: 30
       check_interval (`int`): Check interval, default: 10
     Returns:
-      True
-      False
+      result (`bool`): Verified result
     """
     assert isinstance(auto_sys, int), "auto_sys must be int"
     assert isinstance(vrf, str), "vrf must be str"
@@ -243,7 +242,6 @@ def verify_eigrp_interfaces_timers(
                         )[0]
                     }
                     inter_timers[interface] = [hello_interval, hold_time]
-                    print(inter_timers)
             return set(timers_dict).issubset(inter_timers)
         log.error(
             f"Please, provide a valid format for auto_sys, timers_dict, vrf and/or ip"
