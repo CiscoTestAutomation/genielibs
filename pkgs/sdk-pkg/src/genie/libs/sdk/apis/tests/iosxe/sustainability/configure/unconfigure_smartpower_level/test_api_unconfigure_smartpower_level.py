@@ -30,6 +30,6 @@ class TestUnconfigureSmartpowerLevel(unittest.TestCase):
         )
 
     def test_unconfigure_smartpower_level(self):
-        result = unconfigure_smartpower_level(self.device, '5')
+        result = unconfigure_smartpower_level(self.device, '1')
         expected_output = None
         self.assertEqual(result, expected_output)

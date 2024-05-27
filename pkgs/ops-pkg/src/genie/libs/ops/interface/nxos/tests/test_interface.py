@@ -26,7 +26,7 @@ outputs['show vrf VRF1 interface Ethernet2/1'] = InterfaceOutput.ShowVrfAllInter
 outputs['show interface Ethernet2/1 switchport'] = InterfaceOutput.ShowInterfaceSwitchport_eth2
 outputs['show ip interface Ethernet2/1 vrf VRF1'] = InterfaceOutput.ShowIpInterfaceVrfAll_all
 
-def mapper(key):
+def mapper(key, **kwargs):
     return outputs[key]
 
 class test_interface(unittest.TestCase):

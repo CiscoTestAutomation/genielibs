@@ -635,7 +635,7 @@ def get_mgmt_src_ip_addresses(device):
     Returns:
         List of IP addresses or []
     """
-    tcp_output = device.execute('show tcp brief | inc .22 |.23 ')
+    tcp_output = device.execute('show tcp brief numeric | inc .22 |.23 ')
     # 0160C06C  5.25.26.9.22                5.25.24.1.51363             ESTAB
     mgmt_src_ip_addresses = set(re.findall(r'\w+ +\S+\.(?:22|23) +(\S+)\.\d+ +ESTAB', tcp_output))
     if not mgmt_src_ip_addresses:
@@ -651,7 +651,7 @@ def get_mgmt_ip(device):
     Returns:
         IP address string or None
     """
-    tcp_output = device.execute('show tcp brief | inc .22 |.23 ')
+    tcp_output = device.execute('show tcp brief numeric | inc .22 |.23 ')
     # 0160C06C  5.25.26.9.22                5.25.24.1.51363             ESTAB
     m = re.search(r'\w+ +(\S+)\.(22|23) +\S+\.\d+ +ESTAB', tcp_output)
     if m:
@@ -673,7 +673,7 @@ def get_mgmt_ip_and_mgmt_src_ip_addresses(device, mgmt_src_ip=None):
     Returns:
         Tuple of mgmt_ip and list of IP address (mgmt_ip, [mgmt_src_addrs]) or None
     """
-    tcp_output = device.execute('show tcp brief | inc .22 |.23 ')
+    tcp_output = device.execute('show tcp brief numeric | inc .22 |.23 ')
 
     # 0160C06C  5.25.26.9.22                5.25.24.1.51363             ESTAB
     mgmt_addresses = list(set(re.findall(r'\w+ +(\S+)\.(?:22|23) +(\S+)\.\d+ +ESTAB', tcp_output)))
@@ -2000,3 +2000,23 @@ def upgrade_rom_monitor_capsule_golden(device, switch_type, rp, timeout=420):
         if re.search('.*(Press RETURN to get started.)',output):
             log.info('Golden Upgrade is Successful!')
             return True
+
+def clear_configuration_lock(device, timeout=60):
+    """ clear configuration lock
+        Args:
+            device ('obj'): Device object
+            timeout ('int', optional): Timeout in seconds. Default is 60
+        Returns:
+            output ('str'): Output of execution
+        Raises:
+            SubCommandFailure
+    """
+
+    try:
+        output = device.execute("clear configuration lock", timeout=timeout)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not clear configuration lock on {device}. Error:\n{error}".format(device=device, error=e)
+        )
+
+    return output

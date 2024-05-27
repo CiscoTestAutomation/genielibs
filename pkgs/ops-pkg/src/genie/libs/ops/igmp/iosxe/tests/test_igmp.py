@@ -44,7 +44,7 @@ outputs['show ip igmp vrf VRF1 ssm-mapping 239.8.8.8'] = IgmpOutput.ShowIpIgmpSs
 outputs['show ip igmp vrf VRF1 ssm-mapping 224.0.1.40'] = IgmpOutput.ShowIpIgmpSsmMapping_VRF1_10
 
 
-def mapper(key):
+def mapper(key, **kwargs):
     return outputs[key]
 
 

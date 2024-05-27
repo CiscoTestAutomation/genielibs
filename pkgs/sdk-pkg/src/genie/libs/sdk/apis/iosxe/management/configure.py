@@ -1206,3 +1206,48 @@ def unconfigure_ssh_certificate_profile(device):
         raise SubCommandFailure(
             "Failed to configure_ssh_certificate_profile Error {e}".format(e=e))
 
+def configure_ssh_server_algorithm(device,mac,kex):
+    '''
+    Configure device for ssh server mac and kex algorithm .
+
+    Args:
+        device ('obj'): device object
+        mac ('str'): MAC Algorithms
+        kex ('str'): KEX Algorithms
+
+    Returns:
+        None
+    '''
+    cmd = [
+            f'ip ssh server algorithm mac {mac}',
+            f'ip ssh server algorithm kex {kex}'
+    ]
+     
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure_ssh_server_algorithm Error {e}".format(e=e))
+
+def unconfigure_ssh_server_algorithm(device):
+    '''
+    Configure device for ssh server mac and kex algorithm .
+
+    Args:
+        device ('obj'): device object
+        mac ('str'): MAC Algorithms
+        kex ('str'): KEX Algorithms
+
+    Returns:
+        None
+    '''
+    cmd = [
+        'default ip ssh server algorithm mac',
+        'default ip ssh server algorithm kex'
+    ]
+     
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfigure_ssh_server_algorithm Error {e}".format(e=e))

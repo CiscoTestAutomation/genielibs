@@ -18,7 +18,7 @@ outputs['show running-config interface'] = NdOutput.ShowRunInterface
 outputs['show running-config interface GigabitEthernet0/0/0/0.390'] = NdOutput.ShowRunInterface_custom
 
 
-def mapper(key):
+def mapper(key, **kwargs):
     return outputs[key]
 
 class test_nd(unittest.TestCase):

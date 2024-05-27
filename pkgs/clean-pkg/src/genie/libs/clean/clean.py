@@ -29,7 +29,7 @@ from genie.libs.clean.recovery import recovery_processor, block_section
 # Logger
 log = logging.getLogger(__name__)
 
-NOT_A_STAGE = ['device_recovery', 'images', 'order', 'mgt_itf', 'template']
+NOT_A_STAGE = ['device_recovery', 'images', 'order', 'mgt_itf', 'template', 'resources']
 
 GLOBAL_STAGE_REUSE_LIMIT = 3
 

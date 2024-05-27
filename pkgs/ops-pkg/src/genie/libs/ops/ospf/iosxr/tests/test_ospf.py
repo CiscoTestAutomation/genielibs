@@ -43,7 +43,7 @@ outputs['show ospf vrf all-inclusive interface'] = OspfOutput.ShowOspfVrfAllIncl
 outputs['show ospf vrf all-inclusive neighbors detail'] = OspfOutput.ShowOspfVrfAllInclusiveNeighborDetail
 
 
-def mapper(key):
+def mapper(key, **kwargs):
     return outputs[key]
 
 

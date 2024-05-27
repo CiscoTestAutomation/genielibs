@@ -296,7 +296,7 @@ def recovery_processor(
         log.exception(f'Could not bring device to any valid state! Continue with recovery because of {e}.')
         recovery_is_required = True
     # Device is in rommon. try to boot the device before continuing with other recovery steps
-    if device.is_ha:
+    if hasattr(device, 'is_ha') and device.is_ha:
         if not recovery_is_required and check_all_in_same_state(device, 'enable'):
             log.info('Device is already connected. No need for device recovery.')
             return

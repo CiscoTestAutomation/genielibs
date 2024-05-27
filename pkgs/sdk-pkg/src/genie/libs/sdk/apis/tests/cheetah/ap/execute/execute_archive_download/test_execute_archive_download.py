@@ -100,7 +100,7 @@ class TestPerformArchiveDownload(unittest.TestCase):
         self.device.reload = Mock()
         self.device.connect = Mock()
         result = execute_archive_download(self.device,
-                                          "tftp://9.4.58.10/ftp/ewlc/ap3g3-k9w8-tar.master-cisco.202309230809", 300, reload=True)
+                                          "tftp://9.4.58.10/ftp/ewlc/ap3g3-k9w8-tar.master-cisco.202309230809", 300, reload=True, retries=0)
         self.assertEqual(result, False)
 
     def test_perform_archive_download_failure_2(self):
@@ -114,6 +114,6 @@ class TestPerformArchiveDownload(unittest.TestCase):
         self.device.reload = Mock()
         self.device.connect = Mock()
         result = execute_archive_download(self.device,
-                                          "tftp://9.4.58.10/ftp/ewlc/ap3g3-k9w8-tar.master-cisco.202309230809", 300, reload=True)
+                                          "tftp://9.4.58.10/ftp/ewlc/ap3g3-k9w8-tar.master-cisco.202309230809", 300, reload=True, retries=0)
         self.assertEqual(result, False)
 

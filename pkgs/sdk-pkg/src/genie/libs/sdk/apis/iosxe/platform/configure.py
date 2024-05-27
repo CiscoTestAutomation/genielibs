@@ -3107,7 +3107,7 @@ def configure_enable_secret_password(device, enable_secret, level=None):
         Args:
             device ('obj'): Device object
             enable_secret('str'): password
-            level('str', Optional): HASHED secret                                       
+            level('str', Optional): HASHED secret
             ex.)
         Raises:
             SubCommandFailure
@@ -4844,7 +4844,7 @@ def unconfigure_rep_admin_vlan(device, vlanId, segment_number):
             f"Failed to config admin vlan. Error:\n{e}")
 
 def copy_file_with_sftp(device, host, file, username=None, password=None, path=None, timeout=30):
-    """ Copy files with sftp 
+    """ Copy files with sftp
 
         Args:
             device ('obj'): Device object to modify configuration
@@ -4854,13 +4854,13 @@ def copy_file_with_sftp(device, host, file, username=None, password=None, path=N
             password ('str',optional): sftp host vm password
             path('str',optional): storage file path in the local directry
             timeout('int', Optional): timeout in seconds for configuration file load to device(Default is 30 seconds)
-            
+
             copy files to sftp location from device
             ex: copy file sftp://username:password@host/
               : copy test.txt sftp://root:cisco@1.2.3.4/
-            
+
             copy files from sftp location to device
-            ex: copy sftp://username:password@host/file path 
+            ex: copy sftp://username:password@host/file path
               : copy sftp://root:cisco@1.2.3.4/test.txt flash:/
 
         Returns:
@@ -4946,16 +4946,16 @@ def copy_file_with_scp(device, host, file, username=None, password=None, path=No
             copy files to scp location from device
             ex: copy file scp://username:password@host/
               : copy test.txt scp://root:cisco@1.2.3.4/
-            
+
             copy files from scp location to device
-            ex: copy scp://username:password@host/file path 
+            ex: copy scp://username:password@host/file path
               : copy scp://root:cisco@1.2.3.4/test.txt flash:/
 
         Returns:
             None
         Raises:
             SubCommandFailure
-            
+
     """
     log.debug(f"copy files from dut to scp server on {host}")
 
@@ -5514,13 +5514,13 @@ def unconfigure_ip_ssh_source_interface(device):
         Args:
             device ('obj'): Device object
     """
- 
+
     cmd = 'no ip ssh source-interface'
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure ip ssh source-interface on device {device}. Error:\n{e}")
-        
+
 
 def unconfigure_time_range(device, time_range_name):
     """Unconfigure time range
@@ -5540,16 +5540,16 @@ def unconfigure_time_range(device, time_range_name):
             f'Failed to unconfigure time range on {device.name}\n{e}'
         )
 
-def configure_event_manager(device, event, description,event_run_option, 
+def configure_event_manager(device, event, description,event_run_option,
                             event_run_value, action_name,action_option):
     """ Configures event manager applet
         Args:
             device ('obj'): device to use
             event ('str'): Name of the Event Manager applet
-            description('str'): description is name of event applet name 
+            description('str'): description is name of event applet name
             event_run_option('str'):  event run specific action name (maxrun, ratelimlit, sync ..)
-            event_run_value('str'): event run action values (maxrun: <0-3675744>, sync:<yes, no>...) 
-            action_name('str'): Lable name 
+            event_run_value('str'): event run action values (maxrun: <0-3675744>, sync:<yes, no>...)
+            action_name('str'): Lable name
             action_option('str'): action need to provide to perform system (reload,syslog,track ....)
     """
 
@@ -5612,7 +5612,7 @@ def configure_stack_power_ecomode(device, stack_name):
         Raises:
             SubCommandFailure
     """
-    cmd = [f"stack-power stack {stack_name}", 
+    cmd = [f"stack-power stack {stack_name}",
            "ecomode",]
     try:
         device.configure(cmd)
@@ -5631,7 +5631,7 @@ def unconfigure_stack_power_ecomode(device, stack_name):
         Raises:
             SubCommandFailure
     """
-    cmd = [f"stack-power stack {stack_name}", 
+    cmd = [f"stack-power stack {stack_name}",
            "no ecomode",]
     try:
         device.configure(cmd)
@@ -5639,7 +5639,7 @@ def unconfigure_stack_power_ecomode(device, stack_name):
         raise SubCommandFailure(
             f"could not unconfigure stack power ecomode {device}. Error:\n{e}"
         )
-    
+
 
 def configure_default_stack_power_ecomode(device, stack_name):
     """ Configure default stack power ecomode
@@ -5651,7 +5651,7 @@ def configure_default_stack_power_ecomode(device, stack_name):
         Raises:
             SubCommandFailure
     """
-    cmd = [f"stack-power stack {stack_name}", 
+    cmd = [f"stack-power stack {stack_name}",
            "default ecomode",]
     try:
         device.configure(cmd)
@@ -5659,7 +5659,7 @@ def configure_default_stack_power_ecomode(device, stack_name):
         raise SubCommandFailure(
             f"could not configure default stack power ecomode {device}. Error:\n{e}"
         )
-    
+
 def configure_ip_http_client_secure_trustpoint(device, trustpoint_name):
     """ Configures the secure trustpoint
         Example : ip http client secure-trustpoint {trustpoint_name}
@@ -5742,9 +5742,9 @@ def unconfigure_platform_acl_egress_dscp_enable(device):
 def configure_policy_map_control_service_temp(device,policy_map,service_template,method_name,eap_profile):
     """ Configures policy-map type control
             Example : policy-map type control subscriber DOT1X-MUST-SECURE-UPLINK
-                          event session-started match-all 
+                          event session-started match-all
                             10 class always do-until-failure
-                              10 authenticate using dot1x aaa authc-list MACSEC-UPLINK authz-list MACSEC-UPLINK both 
+                              10 authenticate using dot1x aaa authc-list MACSEC-UPLINK authz-list MACSEC-UPLINK both
                           event authentication-failure match-all
                             10 class always do-until-failure
                               10 terminate dot1x
@@ -5789,7 +5789,7 @@ def configure_policy_map_control_service_temp(device,policy_map,service_template
         f'10 class always do-until-failure',
         f'10 activate service-template {service_template}'
     ]
-    
+
     try:
         device.configure(config, reply=dialog)
     except SubCommandFailure as e:
@@ -5809,3 +5809,233 @@ def unconfigure_policy_map_control_service_temp(device,policy_map):
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure policy-map type control on device {device.name}. Error:\n{e}")
+
+
+def configure_hw_module_slot_upoe_plus(device, slot_num):
+    """ configures hw-module slot <LC slot no> upoe-plus
+        Args:
+            device ('obj'): device to use
+            slot_num ('int'): slot number to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f"hw-module slot {slot_num} upoe-plus"
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure hw-module slot {slot_num} upoe-plus on the device {device.name}. Error:\n{e}")
+
+def unconfigure_hw_module_slot_upoe_plus(device, slot_num):
+    """ configures hw-module slot <LC slot no> upoe-plus
+        Args:
+            device ('obj'): device to use
+            slot_num ('int'): slot number to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f"no hw-module slot {slot_num} upoe-plus"
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure hw-module slot {slot_num} upoe-plus on the device {device.name}. Error:\n{e}")
+
+def configure_cdp_run(device):
+    """ Enables cdp on target device
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure('cdp run')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure cdp run on the device {device.name}. Error:\n{e}")
+
+def unconfigure_cdp_run(device):
+    """ Disables cdp on target device
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure('no cdp run')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure cdp run on the device {device.name}. Error:\n{e}")
+
+def configure_diagnostic_monitor_module(
+    device, mod_num, test_name, failure_count=None):
+    """ execute diagnostic start module 1 test
+        Args:
+            device ('obj'): Device object
+            test_id ('str'): Test ID list (e.g. 1,3-6) or Test Name or minimal  or complete
+            Interface port number WORD    Port number list (e.g. 2,4-7)
+            mod_num ('int'): module number on which diagnostic has to be performed
+            test_name ('str'): Word , test name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = ''
+    if failure_count :
+        cmd = f"diagnostic monitor threshold module {mod_num} test {test_name} failure count {failure_count}"
+    else:
+        cmd = f"diagnostic monitor module {mod_num} test {test_name}"
+
+    try:
+       device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(f"Could not execute diagnostic start module {mod_num} test {test_name} on device. Error:\n{e}")
+
+def unconfigure_diagnostic_monitor_module(
+    device, mod_num, test_name,failure_count=None):
+    """ execute diagnostic start module 1 test
+        Args:
+            device ('obj'): Device object
+            mod_num ('int'): module number on which diagnostic has to be performed
+            test_name ('str'): Word , test name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = ''
+    if failure_count :
+        cmd = f"no diagnostic monitor threshold module {mod_num} test {test_name} failure count {failure_count}"
+    else:
+        cmd = f"no diagnostic monitor module {mod_num} test {test_name}"
+
+    try:
+       device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(f"Could not execute diagnostic monitor module {mod_num} on device. Error:\n{e}")
+
+def configure_diagnostic_schedule_module(
+    device, mod_num, time,
+    day=None, month=None, day_number=None, year=None):
+    """ execute diagnostic start module 1 test
+
+        Args:
+            device ('obj'): Device object
+            mod_num ('int'): module number on which diagnostic has to be performed
+            time ('str'): time in hours and min  "hh:mm  Begin time"
+            day ('str'): Day of the week
+            day_number ('int'): day number of a month
+            month ('str'): name of the month
+            year ('int'): year number ,
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = ''
+    cmd = f"diagnostic schedule module {mod_num} test all "
+
+    if day and time :
+        cmd += f"weekly {day} {time}"
+    elif month and year and time:
+        cmd += f"on {month} {day_number} {year} {time}"
+    else:
+        cmd += f"daily {time}"
+    try:
+       device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(f"Could not execute diagnostic schedule module {mod_num} on device. Error:\n{e}")
+
+def unconfigure_diagnostic_schedule_module(
+    device, mod_num,
+    time, day=None, month=None,
+    day_number=None, year=None):
+    """ execute diagnostic start module 1 test
+        Args:
+            device ('obj'): Device object
+            mod_num ('int'): module number on which diagnostic has to be performed
+            time ('str'): time in hours and min  "hh:mm  Begin time"
+            day ('str'): Day of the week
+            day_number ('int'): day number of a month
+            month('str'): name of the month
+            year ('int'): year number ,
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = ''
+    cmd = f"no diagnostic schedule module {mod_num} test all "
+
+    if day and time :
+        cmd += f"weekly {day} {time}"
+    elif month and year and time:
+        cmd += f"on {month} {day_number} {year} {time}"
+    else :
+        cmd += f"daily {time}"
+    try:
+       device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(f"Could not execute diagnostic schedule module {mod_num} on device. Error:\n{e}")
+
+def configure_diagnostic_monitor_interval_module(device, mod_num, test_name, time, millisec, days):
+    """ diagonistics monitor module
+        Args:
+            device ('obj'): Device object
+            mod_num('int'): module number
+            test_name('str'): diagnostic_test_name
+            time('str'): time in hh:mm:ss
+            millisec('int'): milli seconds
+            days('int'): test_days
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config = f"diagnostic monitor interval module {mod_num} test {test_name} {time} {millisec} {days}"
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"could not configure diagnostic monitor interval module  {device}. Error:\n{e}"
+        )
+
+def unconfigure_diagnostic_monitor_interval_module(device, mod_num, test_name, time, millisec, days):
+    """ diagonistics monitor module
+        Args:
+            device ('obj'): Device object
+            mod_num('int'): module number
+            test_name('str'): diagnostic_test_name
+            time('str'): time in hh:mm:ss
+            millisec('int'): milli seconds
+            days('int'): test_days
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config = f"no diagnostic monitor interval module {mod_num} test {test_name} {time} {millisec} {days}"
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"could not Unconfigure diagnostic monitor interval module  {device}. Error:\n{e}"
+        )
+
+

@@ -37,7 +37,7 @@ outputs['show ipv6 vrf VRF1 interface GigabitEthernet0/0/0/1'] = InterfaceOutput
 outputs['show vrf all detail'] = InterfaceOutput.ShowVrfAllDetail_all
 outputs['show interfaces accounting'] = InterfaceOutput.ShowInterfacesAccounting_all
 
-def mapper(key):
+def mapper(key, **kwargs):
     return outputs[key]
 
 

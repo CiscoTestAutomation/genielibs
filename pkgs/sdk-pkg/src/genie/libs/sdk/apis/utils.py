@@ -978,7 +978,7 @@ def copy_to_device(device,
         # Check if we are connected via proxy device
         proxy = device.connections[device.via].get('proxy') or \
             device.connections[device.via].get('sshtunnel', {}).get('host')
-        
+
         proxy_dev = None
         # If we haven't gotten a proxy, check servers for a proxy
         if not proxy and device.testbed.servers.get('proxy'):
@@ -1022,7 +1022,10 @@ def copy_to_device(device,
                 timeout_seconds=timeout,
                 device=device,
                 vrf=vrf,
-                interface=mgmt_interface)
+                interface=mgmt_interface,
+                compact=compact,
+                use_kstack=use_kstack,
+                **kwargs)
 
         except Exception:
             log.error('Failed to transfer file', exc_info=True)
@@ -1200,7 +1203,8 @@ def copy_from_device(device,
                                timeout_seconds=timeout,
                                device=device,
                                vrf=vrf,
-                               interface=mgmt_interface)
+                               interface=mgmt_interface,
+                               **kwargs)
 
         except Exception:
             log.error('Failed to transfer file', exc_info=True)

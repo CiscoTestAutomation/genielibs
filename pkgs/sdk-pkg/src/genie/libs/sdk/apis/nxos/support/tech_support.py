@@ -18,7 +18,9 @@ def get_show_tech(device,
                   remote_path=None,
                   protocol='scp',
                   vrf='management',
-                  timeout=600):
+                  timeout=600,
+                  use_kstack=True,
+                  **kwargs):
     """ Collect show tech-support from the device.
 
     Args:
@@ -31,6 +33,7 @@ def get_show_tech(device,
         protocol (str): protocol to use to copy (default: scp)
         vrf (str): VRF to use (default: management)
         timeout (int): timeout to copy file (default: 600s)
+        use_kstack (bool): Use faster version of copy, defaults True
 
     Returns
         True on success, False on failure
@@ -105,10 +108,13 @@ def get_show_tech(device,
                                    proto=protocol,
                                    host=remote_server,
                                    path=remote_path,
-                                   fname='{}show_tech_{}.tar.gz'.format(prefix, timestamp)
-                               ),
+                                   fname='{}show_tech_{}.tar.gz'.format(prefix, timestamp)),
                                vrf=vrf,
-                               timeout_seconds=timeout, device=device)
+                               timeout_seconds=timeout,
+                               device=device,
+                               use_kstack=use_kstack,
+                               **kwargs)
+
             device.execute('delete {}'.format(filename), reply=delete_dialog)
         except Exception:
             log.error('Failed to copy show tech, keeping file on {}'.format(device_dir))
@@ -116,7 +122,11 @@ def get_show_tech(device,
 
     else:
 
-        if device.api.copy_from_device(local_path=filename, remote_path=remote_path):
+        if device.api.copy_from_device(local_path=filename,
+                                       remote_path=remote_path,
+                                       timeout=timeout,
+                                       use_kstack=use_kstack,
+                                       **kwargs):
             device.execute('delete {}'.format(filename), reply=delete_dialog)
         else:
             log.error('Failed to copy show tech, keeping file on {}'.format(device_dir))

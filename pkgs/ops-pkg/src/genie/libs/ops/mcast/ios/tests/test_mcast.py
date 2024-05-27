@@ -36,7 +36,7 @@ outputs['show ip mroute'] = McastOutput.ShowIpMroute_default_output
 outputs['show ipv6 mroute'] = McastOutput.ShowIpv6Mroute_default_output
 outputs['show ipv6 rpf FF07::1'] = McastOutput.ShowIpv6Rpf_default_output
 
-def mapper(key):
+def mapper(key, **kwargs):
     return outputs[key]
 
 

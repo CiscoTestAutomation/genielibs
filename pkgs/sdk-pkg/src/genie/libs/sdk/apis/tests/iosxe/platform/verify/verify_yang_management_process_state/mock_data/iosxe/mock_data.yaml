@@ -1,0 +1,46 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: c8kv-2065(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: c8kv-2065(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show platform software yang-management process state:
+      response:
+      - "Confd Status: Started\r\n\r\nProcess              Status              State\
+        \      \r\n-------------------------------------------------------\r\nnesd\
+        \                 Running             Active     \r\nsyncfd              \
+        \ Running             Active     \r\nncsshd               Running        \
+        \     Not Applicable\r\ndmiauthd             Running             Active  \
+        \   \r\nnginx                Running             Not Applicable\r\nndbmand\
+        \              Running             Active     \r\npubd                 Running\
+        \             Active"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    show version | include operating mode: ''
+  prompt: c8kv-2065#

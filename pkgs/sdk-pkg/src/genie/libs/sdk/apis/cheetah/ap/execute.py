@@ -1,6 +1,7 @@
 # Python
 import logging
 import re
+import time
 from unicon.eal.dialogs import Statement, Dialog
 
 #unicon
@@ -38,7 +39,7 @@ def execute_erase_ap(device):
     return True
 
 
-def execute_archive_download(device, image_path, max_timeout=300, username=None, password=None, reload=False):
+def execute_archive_download(device, image_path, max_timeout=300, username=None, password=None, reload=False, retries=3, retry_sleep_time=10):
     """
         Downloads image via tftp/http/sftp on AP and reloads the device.
         Args:
@@ -48,6 +49,9 @@ def execute_archive_download(device, image_path, max_timeout=300, username=None,
             username(str): Username of server where image resides
             password(str): Password of server where image resides
             reload(bool): Device reload if True else no reload
+            retries(int): Number retried for downloading image
+            retry_sleep_time(int): Number of seconds to sleep before next retry
+
         Returns:
             bool: True/False
         """
@@ -70,9 +74,14 @@ def execute_archive_download(device, image_path, max_timeout=300, username=None,
 
     ])
     boot_part_before_reload = re.search("BOOT path-list:(\s+\w+)", device.execute("show boot | inc BOOT")).group(1).strip()
-    output = device.execute("archive download-sw /no-reload {}".format(image_path), timeout=max_timeout, reply=dialog)
-    if "Successfully setup AP image" in output and "Image download completed" in output:
-        log.info("Successfully downloaded the image")
+    for i in range(retries):
+        output = device.execute("archive download-sw /no-reload {}".format(image_path), timeout=max_timeout, reply=dialog)
+        if "Successfully setup AP image" in output and "Image download completed" in output:
+            log.debug("Successfully downloaded the image")
+            break
+        # sleep before next retry of downloading image
+        log.debug("Sleep for {} seconds before next retry...".format(retry_sleep_time))
+        time.sleep(retry_sleep_time)
     else:
         log.error("Failed to downloaded the image")
         return False

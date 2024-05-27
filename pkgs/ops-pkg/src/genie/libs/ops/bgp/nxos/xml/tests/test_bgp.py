@@ -45,7 +45,7 @@ outputs['show bgp vrf default all neighbors 10.16.2.5 advertised-routes'] = BgpO
 outputs['show bgp vrf default all neighbors 10.16.2.5 routes'] = BgpOutput.nbr4_routes
 outputs['show bgp vrf default all neighbors 10.16.2.5 received-routes'] = BgpOutput.nbr4_received_routes
 
-def mapper(key):
+def mapper(key, **kwargs):
     return outputs[key]
 
 class test_bgp(unittest.TestCase):

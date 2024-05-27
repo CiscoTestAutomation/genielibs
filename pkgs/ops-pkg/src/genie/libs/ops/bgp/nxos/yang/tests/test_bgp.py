@@ -40,7 +40,7 @@ outputs['show bgp vrf default all neighbors 10.16.2.2 received-routes'] = BgpOut
 outputs['yang_output'] = BgpOutput.yang_output
 outputs['show bgp process vrf all'] = BgpOutput.bgp_process_output
 
-def mapper(key):
+def mapper(key, **kwargs):
     if 'subtree' in key:
         key = 'yang_output'
     return outputs[key]

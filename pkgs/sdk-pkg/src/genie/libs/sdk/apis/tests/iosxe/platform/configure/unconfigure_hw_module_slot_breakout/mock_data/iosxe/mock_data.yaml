@@ -5,8 +5,7 @@ configure:
     line console 0:
       new_state: configure_line
     no hw-module slot 5 breakout 5: "no hw-module slot 5 breakout 5\r\nBreakout: Disabling\
-      \ breakout ports on Hu5/0/5 successful.\r\nSubports Removed: Hu5/0/5/1 to Hu5/0/5/4\r\
-      \n\r\nTF-C9600-StackWiseVi(config)#"
+      \ breakout ports on Hu5/0/5 successful.\r\nSubports Removed: Hu5/0/5/1 to Hu5/0/5/4\r\n"
     no logging console: ''
   prompt: TF-C9600-StackWiseVirtual(config)#
 configure_line:

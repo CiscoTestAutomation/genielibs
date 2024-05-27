@@ -22,7 +22,7 @@ outputs['show isis adjacency vrf all'] = IsisOutput.showIsisAdjacencyVrfAll
 outputs['show isis hostname detail vrf all'] = IsisOutput.showIsisHostnameDetailVrfAll
 outputs['show isis database detail vrf all'] = IsisOutput.showIsisDatabaseDetail
 
-def mapper(key):
+def mapper(key, **kwargs):
     return outputs[key]
 
 class TestIsisAll(unittest.TestCase):
