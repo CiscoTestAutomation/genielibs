@@ -31,7 +31,7 @@ outputs['show ipv6 mld vrf VRF1 ssm-map FF35:1::1'] = MldOutput.ShowIpv6MldSsmMa
 outputs['show ipv6 mld vrf VRF1 ssm-map FF45:1::1'] = MldOutput.ShowIpv6MldSsmMap_VRF1_4
 
 
-def mapper(key):
+def mapper(key, **kwargs):
     return outputs[key]
 
 

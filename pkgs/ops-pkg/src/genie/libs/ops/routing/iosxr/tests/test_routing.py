@@ -21,7 +21,7 @@ outputs = {
     'show route vrf all ipv4 10.23.90.0': RoutingOutput.showRouteVrfAllIpv4_route,
 }
 
-def mapper(key):
+def mapper(key, **kwargs):
     return outputs[key]
 
 class test_route_all(unittest.TestCase):

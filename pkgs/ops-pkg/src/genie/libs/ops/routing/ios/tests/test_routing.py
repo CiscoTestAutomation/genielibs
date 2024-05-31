@@ -26,7 +26,7 @@ outputs['show ipv6 route vrf default'] = \
     RouteOutput.showIpv6RouteUpdated_default
 outputs['show ipv6 route vrf VRF1'] = RouteOutput.showIpv6RouteUpdated_VRF1
 
-def mapper(key):
+def mapper(key, **kwargs):
     return outputs[key]
 
 class test_route_all(unittest.TestCase):

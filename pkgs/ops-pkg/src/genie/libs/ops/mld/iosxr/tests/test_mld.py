@@ -27,7 +27,7 @@ outputs['show mld vrf VRF1 interface'] = MldOutput.ShowMldInterface_VRF
 outputs['show mld vrf VRF1 groups detail'] = MldOutput.ShowMldGroupsDetail_VRF
 
 
-def mapper(key):
+def mapper(key, **kwargs):
     return outputs[key]
 
 

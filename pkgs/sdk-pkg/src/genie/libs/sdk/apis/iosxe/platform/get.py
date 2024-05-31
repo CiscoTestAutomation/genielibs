@@ -1159,3 +1159,123 @@ def get_cpu_min_max_avg(device):
         result['slot'] = slot_info['slot']
 
     return result
+
+def get_platform_component_type_id_info(device):
+    """
+    Extracts platform component and transceiver information.
+    
+    Args:
+        device (`obj`): Device object.
+        
+    Returns:
+        dict: A dictionary containing platform component and transceiver information.
+    """
+    output = {}
+
+    try:
+        # Parse the command outputs
+        platform_component_output = device.parse('test platform software database get-n all ios_oper/platform_component')
+        transceiver_output = device.parse('test platform software database get-n all ios_oper/transceiver')
+
+    except SchemaEmptyParserError as e:
+        # Log an error message if any of the command outputs are empty
+        log.error("Command output is empty: {e}".format(e=e))
+        return None
+
+    # Extract platform component information
+    for index, info in platform_component_output.get('table_record_index', {}).items():
+        name = info.get('cname', '')
+        type_ = info.get('type', '')
+        platform_info = {
+            'type': type_, 
+            'id': info.get('id', '')
+        }
+        output[name] = platform_info
+
+    # Modify platform_info for transceivers
+    for index, info in transceiver_output.get('table_record_index', {}).items():
+        name = info.get('name', '')
+        if name in output:
+            output[name]['type'] = 'TRANSCEIVER'
+
+    # Process type list to append appropriate prefixes
+    for name, platform_info in output.items():
+        type_ = platform_info['type']
+        if type_ == 'CONTAINER':
+            platform_info['type'] = 'cisco-xe-openconfig-platform-ext:' + type_
+        elif type_ == 'MODULE':
+            platform_info['type'] = 'openconfig-platform-types:' + 'FRU'
+        else:
+            platform_info['type'] = 'openconfig-platform-types:' + type_
+
+    return output
+
+def get_platform_component_temp_info(device):
+
+    try:
+        # Parse the command output
+        platform_component_info = device.parse('test platform software database get-n all ios_oper/platform_component')
+    except SchemaEmptyParserError as e:
+        # Log an error message if the command output is empty
+        log.error("Command 'test platform software database get-n all ios_oper/platform_component' did not return any results: {e}".format(e=e))
+        return None
+
+    # Transform the parsed output
+    output = {}
+
+    records = platform_component_info.get('table_record_index', {})
+
+    for record_id, record_data in records.items():
+        # Check if any of the temperature fields are present and not equal to zero
+        temperature_fields = ['temp_instant', 'temp_avg', 'temp_max', 'temp_min', 'temp_interval']
+        if any(record_data.get(field) and record_data.get(field) != 0 for field in temperature_fields):
+            # Process severity and interval  
+            severity = 'openconfig-alarm-types:' + record_data['severity'].split('OC_')[1]
+            interval = int(record_data['temp_interval']) * 60000000000
+            temp_avg = round(float(record_data['temp_avg']))
+
+            cname = record_data.get('cname')
+            temp_instant = record_data.get('temp_instant')
+
+            if cname:
+                output[cname] = {
+                    'alarm_severity': severity,
+                    'alarm_status': record_data.get('alarm_status'),
+                    'alarm_threshold': record_data.get('alarm_threshold'),
+                    'temp_avg': temp_avg,
+                    'temp_instant': temp_instant,
+                    'temp_interval': interval,
+                    'temp_max': record_data.get('temp_max'),
+                    'temp_min': record_data.get('temp_min')
+                }
+
+    return output
+
+def get_platform_component_firmware_info(device):
+    """
+    Extracts firmware version information for platform components.
+    Args:
+        device (`obj`): Device object.
+    Returns:
+        dict: A dictionary containing platform component names and firmware version information.
+    """
+    output = {}
+
+    try:
+        # Parse the CLI command output
+        platform_component_output = device.parse('test platform software database get-n all ios_oper/platform_component')
+
+    except SchemaEmptyParserError as e:
+        # Log an error message if the command output is empty
+        log.error("Command output is empty: {e}".format(e=e))
+        return None
+
+    # Extract firmware version information from the parsed output
+    for index, info in platform_component_output.get('table_record_index', {}).items():
+        name = info.get('cname', '')
+        firmware_ver = info.get('firmware_ver', 'NULL')
+        output[name] = {
+            'firmware_version': firmware_ver,
+        }
+
+    return output

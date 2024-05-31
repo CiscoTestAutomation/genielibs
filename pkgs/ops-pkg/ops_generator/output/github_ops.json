@@ -212,7 +212,7 @@
             "module_name": "device.iosxe.cat9k.device",
             "package": "genie.libs.ops",
             "tokens": {
-              "os": "cat9k"
+              "platform": "cat9k"
             },
             "uid": "device",
             "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/device/iosxe/cat9k/device.py#L7"
@@ -221,7 +221,7 @@
         "module_name": "device.iosxe.device",
         "package": "genie.libs.ops",
         "tokens": {
-          "origin": "iosxe"
+          "os": "iosxe"
         },
         "uid": "device",
         "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/device/iosxe/device.py#L24"
@@ -232,7 +232,7 @@
         "module_name": "device.iosxr.device",
         "package": "genie.libs.ops",
         "tokens": {
-          "origin": "iosxr"
+          "os": "iosxr"
         },
         "uid": "device",
         "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/device/iosxr/device.py#L21"
@@ -243,7 +243,7 @@
         "module_name": "device.nxos.device",
         "package": "genie.libs.ops",
         "tokens": {
-          "origin": "nxos"
+          "os": "nxos"
         },
         "uid": "device",
         "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/device/nxos/device.py#L23"
@@ -503,14 +503,14 @@
             "module_name": "interface.cheetah.ap.interface",
             "package": "genie.libs.ops",
             "tokens": {
-              "os": "ap"
+              "platform": "ap"
             },
             "uid": "interface",
             "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/interface/cheetah/ap/interface.py#L10"
           }
         },
         "tokens": {
-          "origin": "cheetah"
+          "os": "cheetah"
         }
       },
       "ios": {
@@ -539,17 +539,23 @@
             "uid": "interface",
             "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/interface/iosxe/asr1k/interface.py#L14"
           },
-          "c3850": {
-            "class": "Interface",
-            "doc": "Interface Genie Ops Object",
-            "module_name": "interface.iosxe.c3850.interface",
-            "package": "genie.libs.ops",
-            "tokens": {
-              "model": "c3850",
-              "platform": "cat3k"
+          "cat3k": {
+            "folders": {
+              "c3850": {
+                "class": "Interface",
+                "doc": "Interface Genie Ops Object",
+                "module_name": "interface.iosxe.cat3k.c3850.interface",
+                "package": "genie.libs.ops",
+                "tokens": {
+                  "model": "c3850"
+                },
+                "uid": "interface",
+                "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/interface/iosxe/cat3k/c3850/interface.py#L14"
+              }
             },
-            "uid": "interface",
-            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/interface/iosxe/c3850/interface.py#L14"
+            "tokens": {
+              "platform": "cat3k"
+            }
           }
         },
         "module_name": "interface.iosxe.interface",
@@ -781,7 +787,7 @@
         "module_name": "management.iosxr.management",
         "package": "genie.libs.ops",
         "tokens": {
-          "origin": "iosxr"
+          "os": "iosxr"
         },
         "uid": "management",
         "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/management/iosxr/management.py#L12"
@@ -1210,14 +1216,14 @@
             "module_name": "platform.cheetah.ap.platform",
             "package": "genie.libs.ops",
             "tokens": {
-              "os": "ap"
+              "platform": "ap"
             },
             "uid": "platform",
             "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/platform/cheetah/ap/platform.py#L7"
           }
         },
         "tokens": {
-          "origin": "cheetah"
+          "os": "cheetah"
         }
       },
       "ios": {
@@ -1258,39 +1264,15 @@
             },
             "uid": "platform",
             "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/platform/iosxe/asr900/platform.py#L15"
-          },
-          "c8200": {
-            "class": "Platform",
-            "doc": "Platform Ops Object",
-            "module_name": "platform.iosxe.c8200.platform",
-            "package": "genie.libs.ops",
-            "tokens": {
-              "model": "c8200",
-              "platform": "cat8k"
-            },
-            "uid": "platform",
-            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/platform/iosxe/c8200/platform.py#L16"
-          },
-          "c9500": {
-            "class": "Platform",
-            "doc": "Platform Ops Object",
-            "module_name": "platform.iosxe.c9500.platform",
-            "package": "genie.libs.ops",
-            "tokens": {
-              "model": "c9500",
-              "platform": "cat9k"
-            },
-            "uid": "platform",
-            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/platform/iosxe/c9500/platform.py#L17"
           }
         },
-        "module_name": "platform.iosxe.platform",
+        "module_name": "platform.iosxe.c8200.platform",
         "package": "genie.libs.ops",
         "tokens": {
           "os": "iosxe"
         },
         "uid": "platform",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/platform/iosxe/platform.py#L15"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/platform/iosxe/c8200/platform.py#L16"
       },
       "iosxr": {
         "class": "Platform",
@@ -1621,7 +1603,7 @@
         "module_name": "terminal.iosxe.terminal",
         "package": "genie.libs.ops",
         "tokens": {
-          "origin": "iosxe"
+          "os": "iosxe"
         },
         "uid": "terminal",
         "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/terminal/iosxe/terminal.py#L8"
@@ -1632,7 +1614,7 @@
         "module_name": "terminal.iosxr.terminal",
         "package": "genie.libs.ops",
         "tokens": {
-          "origin": "iosxr"
+          "os": "iosxr"
         },
         "uid": "terminal",
         "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/terminal/iosxr/terminal.py#L8"
@@ -1643,7 +1625,7 @@
         "module_name": "terminal.nxos.terminal",
         "package": "genie.libs.ops",
         "tokens": {
-          "origin": "nxos"
+          "os": "nxos"
         },
         "uid": "terminal",
         "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/terminal/nxos/terminal.py#L8"
@@ -1667,19 +1649,10 @@
   ],
   "tokens": {
     "model": [
-      "c3850",
-      "c8200",
-      "c9500"
-    ],
-    "origin": [
-      "cheetah",
-      "iosxe",
-      "iosxr",
-      "nxos"
+      "c3850"
     ],
     "os": [
-      "ap",
-      "cat9k",
+      "cheetah",
       "ios",
       "iosxe",
       "iosxr",
@@ -1687,11 +1660,11 @@
       "nxos"
     ],
     "platform": [
+      "ap",
       "asr1k",
       "asr900",
       "cat3k",
       "cat6k",
-      "cat8k",
       "cat9k",
       "xml",
       "yang"

@@ -352,7 +352,7 @@ class VerifyCopyToDevice(unittest.TestCase):
         self.device.testbed = testbed
 
         # And we want the parse method to be mocked with expected dict
-        self.device.parse = Mock(return_value={'version': {'xe_version': 'TEST_LATEST_IMAGE_20230606',\
+        self.device.parse = Mock(return_value={'version': {'build_label': 'TEST_LATEST_IMAGE_20230606', \
          'version_short': '17.7', 'platform': 'Catalyst L3 Switch', 'version': '17.7.1', 'image_id': 'CAT9K_IOSXE',\
          'label': 'RELEASE SOFTWARE', 'os': 'IOS-XE', 'image_type': 'production image', 'copyright_years': '1986-2021'}})
 

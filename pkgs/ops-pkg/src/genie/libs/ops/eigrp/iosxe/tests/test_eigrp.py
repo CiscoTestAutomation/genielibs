@@ -18,7 +18,7 @@ outputs = {}
 outputs['show ip eigrp neighbors detail'] = EigrpOutput.ShowIpEigrpNeighborsDetail
 outputs['show ipv6 eigrp neighbors detail'] = EigrpOutput.ShowIpv6EigrpNeighborsDetail
 
-def mapper(key):
+def mapper(key, **kwargs):
     return outputs[key]
 
 class test_eigrp(unittest.TestCase):

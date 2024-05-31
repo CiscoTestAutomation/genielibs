@@ -1,0 +1,38 @@
+configure:
+  commands:
+    diagnostic monitor interval module 1 test TestUnusedPortLoopback 00:01:00 0 0: "diagnostic\
+      \ monitor interval module 1 test TestUnusedPortLoopback 00:01:00 0 0\r\nDiagnostic[module\
+      \ 1]: The specified time interval for one or more of the health monitor tests\
+      \ is invalid and will remain unchanged.\r\n\r\n"
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: 9407R-dut1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: 9407R-dut1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version | include operating mode: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: 9407R-dut1#

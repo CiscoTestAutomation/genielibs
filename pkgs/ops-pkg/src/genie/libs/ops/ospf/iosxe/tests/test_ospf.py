@@ -45,7 +45,7 @@ outputs['show ip ospf mpls traffic-eng link'] = OspfOutput.ShowIpOspfMplsLdpInte
 outputs['show ip ospf mpls traffic-eng link'] = OspfOutput.ShowIpOspfMplsTrafficEngLink
 
 
-def mapper(key):
+def mapper(key, **kwargs):
     return outputs[key]
 
 

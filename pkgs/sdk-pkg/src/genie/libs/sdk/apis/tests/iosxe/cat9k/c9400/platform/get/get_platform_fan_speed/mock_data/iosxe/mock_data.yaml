@@ -1,0 +1,48 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: Switch(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: Switch(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show platform hardware chassis fantray detail:
+      response:
+      - "Fantray speed(RPM)\r\nRow  Fan1   | Fan2   | Fan3   | Fan4   | Throttle |\
+        \ Interrupt Source | Temp | Press\r\n---  ------   ------   ------   ------\
+        \   --------   ----------------   -----  -----\r\n1    3090     3120     3180\
+        \     3150     35%        0x0                31       101   \r\n2    3120\
+        \     3120     3150     3210     35%        0x0                31       101\
+        \   \r\n3    3150     3150     3180     3210     35%        0x0          \
+        \      31       101   \r\n4    N/A      N/A      N/A      N/A      N/A   \
+        \     N/A                N/A      N/A\r\nFantray global interrupt source register\
+        \ = 0x8700\r\nFantray global version: 17050302\r\nFantray beacon LED status:\
+        \ off\r\nFantray status LED: green"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    show version | include operating mode: ''
+  prompt: Switch#

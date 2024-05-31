@@ -267,3 +267,13 @@ class ImageHandler(BaseImageHandler, ImageLoader):
             reload_service_args = self.device.clean.setdefault('reload'+number, {}).\
                 setdefault('reload_service_args', {})
             reload_service_args['image'] = self.image[0]
+
+    def update_install_remove_inactive(self, number=''):
+        '''Update install_remove_inactive stage images with image information
+
+        '''
+        install_remove_inactive = self.device.clean.setdefault('install_remove_inactive'+number, {})
+        if self.override_stage_images:
+            install_remove_inactive.update({'images': self.image})
+        else:
+            install_remove_inactive.setdefault('images', self.image)

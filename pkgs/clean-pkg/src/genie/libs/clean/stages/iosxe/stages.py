@@ -422,7 +422,7 @@ There is more than one ip address, one for each supervisor.
     def reconnect(self, steps, device):
         with steps.start("Reconnect to device {} after TFTP boot". \
                                  format(device.name)) as step:
-            if hasattr(device, 'chassis_type') and device.chassis_type.lower() == 'stack':
+            if getattr(device, 'chassis_type', None) and device.chassis_type.lower() == 'stack':
                 log.info("Sleep for 90 seconds in order to sync ")
                 time.sleep(90)
             if not _disconnect_reconnect(device):
@@ -467,6 +467,9 @@ we cannot attempt to install another until it is removed.
 Stage Schema
 ------------
 install_image:
+    images (list, optional):
+        image to not removed by stage.
+        
     timeout (int, optional): Maximum time to wait for remove process to
         finish. Defaults to 180.
 
@@ -486,6 +489,7 @@ install_remove_inactive:
     # Stage Schema
     # ============
     schema = {
+        Optional('images'): list,
         Optional('timeout'): int,
     }
 
@@ -496,19 +500,32 @@ install_remove_inactive:
         'remove_inactive_pkgs'
     ]
 
-    def remove_inactive_pkgs(self, steps, device, timeout=TIMEOUT):
+
+
+    def remove_inactive_pkgs(self, steps, device, images, timeout=TIMEOUT):
         with steps.start("Removing inactive packages") as step:
+
+            def _check_for_system_image(spawn, system_image=None):
+                if system_image and system_image in spawn.buffer:
+                    log.debug(f'{system_image} is among the files to be deleted. send no so the {system_image} is not deleted. ')
+                    spawn.sendline('n')
+                else:
+                    spawn.sendline('y')
+            # split the image on the [:/] and pick up the image name
+            image = re.split(r'[:/]', images[0])[-1]
+
             install_remove_inactive_dialog = Dialog([
                 Statement(
                     pattern=r".*Do you want to remove the above files\? \[y\/n\]",
-                    action='sendline(y)',
+                    action=_check_for_system_image,
+                    args={'system_image': image},
                     loop_continue=False,
                     continue_timer=False),
             ])
 
             try:
                 device.execute('install remove inactive',
-                               reply=install_remove_inactive_dialog,
+                               service_dialog=install_remove_inactive_dialog,
                                timeout=timeout)
             except Exception as e:
                 step.failed("Failed to remove inactive packages",
@@ -626,10 +643,13 @@ install_image:
                 if "BUNDLE" in Dq(out).get_values("mode"):
                     step.skipped(f"The device is in bundle mode. Skipping the verify running image check.")
                 else:
-                    # To get the image version
-                    image_version = out.get("version", {}).get("xe_version", {})
+                    # Match the build_label if present, otherwise the xe_version
+                    # If neither is found, fail to match the image
+                    xe_version = out.get("version", {}).get("xe_version", "")
+                    build_label = out.get("version", {}).get("build_label", "")
+                    image_version = build_label or xe_version
                     image_match = re.search(image_version, images[0])
-                    if image_match:
+                    if image_match and image_match.group():
                         image_mapping = self.history['InstallImage'].parameters.setdefault('image_mapping', {})
                         system_image = device.api.get_running_image()
                         image_mapping.update({images[0]: system_image})
@@ -1337,7 +1357,7 @@ devices:
     def reconnect(self, steps, device, reconnect_timeout=RECONNECT_TIMEOUT):
         with steps.start("Reconnect to device") as step:
 
-            if hasattr(device, 'chassis_type') and device.chassis_type.lower() == 'stack':
+            if getattr(device, 'chassis_type', None) and device.chassis_type.lower() == 'stack':
                 log.info(f"Sleep for {reconnect_timeout} seconds in order to sync")
                 time.sleep(reconnect_timeout)
 
@@ -1654,10 +1674,13 @@ copy_to_device:
                         elif 'packages.conf' in dest_file_path and any('change_boot_variable' in order_name for order_name in device.clean.order):
                             step.passed(f"The device is in install mode and change_boot_variable stage is passed in clean file. Continuing with the copy process.")
                         else:
-                            # To handle the image mapping
-                            image_version = out.get("version", {}).get("xe_version", "")
+                            # Match the build_label if present, otherwise the xe_version
+                            # If neither is found, fail to match the image
+                            xe_version = out.get("version", {}).get("xe_version", "")
+                            build_label = out.get("version", {}).get("build_label", "")
+                            image_version = build_label or xe_version
                             image_match = re.search(image_version, file)
-                            if image_match:
+                            if image_match and image_match.group():
                                 # update image mapping 'as-if' we had copied the file
                                 for dest in destinations:
                                     dest_file_path = os.path.join(dest, os.path.basename(file))
@@ -2152,11 +2175,21 @@ connect:
             try:
                 # To check the state for HA devices
                 if device.is_ha and hasattr(device, 'subconnections'):
-                    # HA recovery is not yet implemented fully.
+                    # To allocate handles for HA devices
                     if isinstance(device.subconnections, list):
                         states = list(set([con.state_machine.current_state for con in device.subconnections]))
                         if 'rommon' in states:
-                            step.failed(f'HA device connection is in rommon state, need to recover device.')
+                            # To get the subconnections and designate handles
+                            state = 'rommon'
+                            subcons = list(device._subconnections.items())
+                            if len(subcons)>1:
+                                subcon1_alias, subcon1 = subcons[0]
+                                subcon2_alias, subcon2 = subcons[1]
+                                device._set_active_alias(subcon1_alias)
+                                device._set_standby_alias(subcon2_alias)
+                                device.default._handles_designated = True
+                            else:
+                                log.warning(f'There is only one subconnection in the HA device')
                 else:
                     # To check the state for single rp device
                     state = device.state_machine.current_state
@@ -2170,11 +2203,38 @@ connect:
                 log.info('Setting the rommon variables for TFTP boot')
 
                 try:
-                    device.api.configure_rommon_tftp()
+                    if device.is_ha and hasattr(device, 'subconnections'):
+                        device.api.configure_rommon_tftp_ha()
+                    else:
+                        device.api.configure_rommon_tftp()
                 except Exception as e:
                     step.passx(f'Failed to set rommon variables. {e}')
                 else:
                     log.info("Successfully set the rommon variables")
+
+            with steps.start("Configuring the manual boot") as step:
+
+                log.info('Configuring the manual boot')
+
+                try:
+                   
+                    if device.is_ha and hasattr(device, 'subconnections'):
+                        states_list = []
+                        # Switch to enable mode if one of the rps are disable mode.
+                        for con in device.subconnections:
+                            if con.state_machine.current_state=='disable':
+                                con.state_machine.go_to('enable', con.spawn)
+                            states_list.append(con.state_machine.current_state)
+
+                         # if one rp in enable mode and another rp in rommon set boot manual on enable rp.
+                        if 'enable' in states_list and 'rommon' in states_list:
+                            device.subconnections[states_list.index('enable')].configure('boot manual')
+                        else:
+                            log.info("Both rps are in rommon mode. Skipping the manual boot configuration")
+                except Exception as e:
+                    step.passx(f'Failed to configure manual boot. {e}')
+                else:
+                    log.info("Successfully configured manual boot")
 
             with steps.start("Booting the device from rommon") as step:
 

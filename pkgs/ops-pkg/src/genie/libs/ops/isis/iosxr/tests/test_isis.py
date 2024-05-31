@@ -29,7 +29,7 @@ outputs['show isis interface'] = IsisOutput.showIsisInterface
 outputs['show isis statistics'] = IsisOutput.showIsisStatistics
 outputs['show isis database detail'] = IsisOutput.showIsisDatabaseDetail
 
-def mapper(key):
+def mapper(key, **kwargs):
     return outputs[key]
 
 class TestIsisAll(unittest.TestCase):

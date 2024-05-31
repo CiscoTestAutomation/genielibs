@@ -3,8 +3,7 @@ configure:
     end:
       new_state: execute
     hw-module slot 5 breakout 5: "hw-module slot 5 breakout 5\r\nBreakout: Enabling\
-      \ breakout ports on Hu5/0/5 successful.\r\nSubports Created: Hu5/0/5/1 to Hu5/0/5/4\r\
-      \n\r\nTF-C9600-StackWiseVi(config)#"
+      \ breakout ports on Hu5/0/5 successful.\r\nSubports Created: Hu5/0/5/1 to Hu5/0/5/4\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''
@@ -32,7 +31,7 @@ execute:
     config-transaction:
       new_state: configure
     show version: ''
-    show version | include operating mode: '' 
+    show version | include operating mode: ''
     term length 0: ''
     term width 0: ''
   prompt: TF-C9600-StackWiseVirtual#

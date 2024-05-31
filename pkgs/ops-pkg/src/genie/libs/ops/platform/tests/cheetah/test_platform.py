@@ -14,7 +14,7 @@ outputs = {
     'show terminal' : PlatformOutput.showVersion
 }
 
-def mapper(key):
+def mapper(key, **kwargs):
     return outputs[key]
 
 class test_platform_all(unittest.TestCase):

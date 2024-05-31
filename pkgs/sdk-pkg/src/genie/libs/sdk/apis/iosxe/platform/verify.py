@@ -2,6 +2,7 @@
 import os
 import logging
 import re
+from lxml import etree
 
 # Genie
 from genie.utils import Dq
@@ -637,3 +638,140 @@ def verify_last_reload_reason(device, expected_reason):
         return True
     else:
         return False
+
+def verify_yang_management_process(
+    device,
+    process_list=None,
+    status="Running",
+    timeout=200,
+    interval=15):
+    """
+        Verify yang management process status
+        Args:
+            device ('obj'): Device object
+            process_list ('list'): list of process name
+            status ('str', optional): status of process, default is Running
+            timeout ('int', optional): Max time in seconds retrying, default is 200
+            interval ('int', optional): Interval of each retry in seconds, default is 15
+        Returns:
+            True, if processes are in expected status; else False
+    """
+    if process_list is None:
+        process_list = ['confd']
+    retry = Timeout(max_time=timeout, interval=interval)
+    while retry.iterate():
+        result = list()
+        try:
+            output = device.parse("show platform software yang-management process")
+            for process in process_list:
+                process_status = Dq(output).get_values(process, 0)
+                log.debug(f"Checking for {process}-status, Expected = {status} - Found = {process_status}")
+                result.append(process_status == status)
+
+            if all(result):
+                return True
+
+            retry.sleep()
+
+        except Exception as err:
+            log.error(f"Exception occurred: \n{err}\nRetrying...")
+            retry.sleep()
+            continue
+
+    return False
+
+def verify_yang_management_process_state(
+    device,
+    confd_status=None,
+    process_dict=None,
+    timeout=180,
+    interval=10):
+    """
+        Verify yang management process status
+        Args:
+            device ('obj'): Device object
+            confd_status ('str'): state of confd process, default is None
+            process_dict ('dict'): dict of process and expected status, default is None
+                process_dict = {
+                    "process_name": ["status", "state"],
+                    "dmiauthd": ["Running", "Active"],
+                    "ndbmand": ["Running", "Active"]
+                }
+            timeout ('int', optional): Max time in seconds retrying, default is 180
+            interval ('int', optional): Interval of each retry in seconds, default is 10
+        Returns:
+            True, if processes are in expected status; else False
+    """
+
+    retry = Timeout(max_time=timeout, interval=interval)
+    while retry.iterate():
+        result = list()
+        try:
+            output = device.parse("show platform software yang-management process state")
+            if confd_status:
+                device_confd_status = Dq(output).get_values('confd-status', 0)
+                log.debug(f"Checking for confd-status, Expected = {confd_status} - Found = {device_confd_status}")
+                result.append(device_confd_status == confd_status)
+
+            if process_dict:
+                for process, [status, state] in process_dict.items():
+                    process_status = Dq(output).contains(process).get_values('status', 0)
+                    process_state = Dq(output).contains(process).get_values('state', 0)
+                    log.debug(f"Checking for {process}, Expected: Status = {status}, State = {state} - " \
+                        f"Found: Status = {process_status}, State = {process_state}")
+                    result.append(process_status == status and process_state == state)
+
+            if all(result):
+                return True
+
+            retry.sleep()
+
+        except Exception as err:
+            log.error(f"{err} - Exception occurred during yang processes state check, retrying...")
+            retry.sleep()
+            continue
+
+    return False
+
+
+def verify_is_syncing_done(
+    device,
+    max_time=180,
+    interval=30):
+    """
+        This is to verify the sync status of the device.
+        Args:
+            device ('obj'): Device object
+            max_time ('int', optional): Max time in seconds retrying, default is 180
+            interval ('int', optional): Interval of each retry in seconds, default is 30
+        Returns:
+            True, if sync seen in expected status; else False
+    """
+    log.debug(f"Verifying if sync is done on {device}")
+    retry = Timeout(max_time=600, interval=5)
+    while retry.iterate():
+        reply = device.nc.dispatch(etree.Element("{http://cisco.com/yang/cisco-ia}is-syncing"))
+        log.debug(reply)
+        if reply.ok:
+            matches = reply.xpath('//cisco-ia:result/text()')
+            if matches and matches[0] == 'No sync in progress':
+                log.debug(f'Sync Status --> Success:\nReply: {reply}')
+                return True
+            elif 'Sync in progress' in matches[0]:
+                log.error(f'Sync is Still in Progress:\nReply: {reply}')
+                retry.sleep()
+                continue
+            else:
+                log.error('ERROR - RPC-reply is unknown')
+                return False
+        else:
+            log.error(f'ERROR - RPC-reply from {device.name} is not ok')
+            matches = reply.xpath('//nc:rpc-error/nc:error-tag/text()')
+            if matches and matches[0] == 'access-denied':
+                log.error(f'Observed Access-Denied:\nReply: {reply}')
+                retry.sleep()
+                continue
+            else:
+                log.debug('ERROR - rpc-reply is unknown')
+                return False
+    return False

@@ -17,7 +17,7 @@ outputs = {
     'show route ipv4 next-hop MgmtEth0/RP0/CPU0/0': ManagementOutput.showRouteIpv4Output
 }
 
-def mapper(key):
+def mapper(key, **kwargs):
     return outputs[key]
 
 class test_management(unittest.TestCase):

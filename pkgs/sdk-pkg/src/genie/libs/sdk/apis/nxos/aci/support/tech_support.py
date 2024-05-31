@@ -13,7 +13,9 @@ def get_show_tech(device,
                   remote_server=None,
                   remote_path=None,
                   protocol='scp',
-                  timeout=1800):
+                  timeout=1800,
+                  use_kstack=True,
+                  **kwargs):
     """ Collect show tech-support from the device.
 
     Args:
@@ -23,6 +25,7 @@ def get_show_tech(device,
         remote_path (str): path to save the file to on the server
         protocol (str): protocol to use to copy (default: scp)
         timeout (int): timeout to copy file (default: 600s)
+        use_kstack (bool): Use faster version of copy, defaults True
 
     Returns
         True on success, False on failure
@@ -84,9 +87,11 @@ def get_show_tech(device,
                                    proto=protocol,
                                    host=remote_server,
                                    path=remote_path,
-                                   fname=os.path.basename(filename)
-                               ),
-                               timeout_seconds=timeout, device=device)
+                                   fname=os.path.basename(filename)),
+                               timeout_seconds=timeout,
+                               device=device,
+                               use_kstack=use_kstack,
+                               **kwargs)
             device.execute('rm -f {}'.format(filename))
         except Exception:
             log.error('Failed to copy show tech, keeping file on filesystem')
@@ -94,7 +99,11 @@ def get_show_tech(device,
 
     else:
 
-        if device.api.copy_from_device(local_path=filename, remote_path=remote_path):
+        if device.api.copy_from_device(local_path=filename,
+                                       remote_path=remote_path,
+                                       timeout=timeout,
+                                       use_kstack=use_kstack,
+                                       **kwargs):
             device.execute('rm -f {}'.format(filename))
         else:
             log.error('Failed to copy show tech, keeping file on filesystem')

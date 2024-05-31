@@ -1,0 +1,37 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    interface TenGigabitEthernet1/0/3: "interface TenGigabitEthernet1/0/3\r\n"
+    ipv6 dhcp server: "ipv6 dhcp server\r\n"
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: PE-B(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: PE-B(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    show version | include operating mode : ''
+  prompt: PE-B#

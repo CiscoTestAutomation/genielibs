@@ -193,6 +193,8 @@ class LoadApImage(BaseStage):
 
                protocol(str): protocol through which AP image will be loaded
 
+               retries(int, optional): Number of times image download needs to be tried
+
                max_time (int, optional): Maximum time for which this clean stage will try to clean ap.
                    Defaults to 1200
 
@@ -211,6 +213,8 @@ class LoadApImage(BaseStage):
     # =================
     MAX_TIME = 1200
     PROTOCOL = "http"
+    RETRIES = 1
+    RETRY_SLEEP_TIME = 30
 
     # ============
     # Stage Schema
@@ -219,6 +223,7 @@ class LoadApImage(BaseStage):
         "server": str,
         Optional("ap_image_path"): str,
         Optional("protocol"): str,
+        Optional('retries'): int,
         Optional('max_time'): int,
     }
 
@@ -229,7 +234,7 @@ class LoadApImage(BaseStage):
         'load_image'
     ]
 
-    def load_image(self, device, steps, ap_image_path, server, protocol=PROTOCOL, max_time=MAX_TIME):
+    def load_image(self, device, steps, ap_image_path, server, protocol=PROTOCOL, max_time=MAX_TIME, retries=RETRIES, retry_sleep_time=RETRY_SLEEP_TIME):
         try:
             if not hasattr(device.testbed, 'servers'):
                 self.failed("Cannot find any servers in the testbed")
@@ -239,11 +244,12 @@ class LoadApImage(BaseStage):
             with steps.start("Load image in to device-{} and verify if its loaded correctly".format(device.name)) as step:
                 if not ap_image_path.startswith("/"):
                     ap_image_path = "/" + ap_image_path
-                full_image_path = "{}://{}:{}".format(protocol, server_ip, ap_image_path)
-                if not device.api.execute_archive_download(full_image_path, max_time, username, password, reload=True):
+                full_image_path = "{}://{}{}".format(protocol, server_ip, ap_image_path)
+                if not device.api.execute_archive_download(full_image_path, max_time, username, password, reload=True, retries=retries, 
+                                                           retry_sleep_time=retry_sleep_time):
                     step.failed("Failed to load AP image")
         except Exception as e:
             log.exception(e)
             self.failed("Failed to load image on AP")
 
-
+            

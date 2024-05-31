@@ -155,7 +155,7 @@ def configure_smartpower_role(device, role):
         raise SubCommandFailure(
             f"Could not configure SmartPower Role {device}. Error:\n{e}"
         )
-    
+
 def unconfigure_smartpower_role(device, role):
     """
     Args:
@@ -173,8 +173,8 @@ def unconfigure_smartpower_role(device, role):
         raise SubCommandFailure(
             f"Could not unconfigure SmartPower Role {device}. Error:\n{e}"
         )
-    
-    
+
+
 
 def configure_smartpower_keywords(device, keywords):
     """
@@ -193,7 +193,7 @@ def configure_smartpower_keywords(device, keywords):
         raise SubCommandFailure(
             f"Could not configure SmartPower Keywords {device}. Error:\n{e}"
         )
-    
+
 def unconfigure_smartpower_keywords(device, keywords):
     """
     Args:
@@ -217,14 +217,14 @@ def configure_smartpower_level(device, level):
     """
     Args:
         device ('obj'): Device object
-        level('int'): level : Range <1-10>
+        level('int'): level : Range <0-10>
     Returns:
         None
     Raises:
         SubCommandFailure
     """
     level = int(level)
-    if not 1 <= level <= 10:
+    if not 0 <= level <= 10:
         raise SubCommandFailure(
             f"The level value provided for {device} is outside the range of <1-10>"
         )
@@ -240,14 +240,14 @@ def unconfigure_smartpower_level(device, level):
     """
     Args:
         device ('obj'): Device object
-        level('int'): level : Range <1-10>
+        level('int'): level : Range <0-10>
     Returns:
         None
     Raises:
         SubCommandFailure
     """
     level = int(level)
-    if not 1 <= level <= 10:
+    if not 0 <= level <= 10:
         raise SubCommandFailure(
             f"The level value provided for {device} is outside the range of <1-10>"
         )
@@ -269,7 +269,7 @@ def configure_smartpower_domain_default (device):
     Raises:
         SubCommandFailure
     """
-    cmd = "default smartpower domain" 
+    cmd = "default smartpower domain"
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -286,12 +286,12 @@ def configure_smartpower_endpoint_default (device):
     Raises:
         SubCommandFailure
     """
-    cmd = "default smartpower endpoint" 
+    cmd = "default smartpower endpoint"
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not configure SmartPower endpoint {device}. Error:\n{e}")
-    
+
 
 def configure_smartpower_importance_default (device):
     """
@@ -302,7 +302,7 @@ def configure_smartpower_importance_default (device):
     Raises:
         SubCommandFailure
     """
-    cmd = "default smartpower importance" 
+    cmd = "default smartpower importance"
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -318,12 +318,12 @@ def configure_smartpower_keywords_default (device):
     Raises:
         SubCommandFailure
     """
-    cmd = "default smartpower keywords" 
+    cmd = "default smartpower keywords"
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not configure SmartPower keywords {device}. Error:\n{e}")
-    
+
 def configure_smartpower_level_default(device):
     """
     Args:
@@ -391,5 +391,43 @@ def configure_smartpower_role_default(device):
         raise SubCommandFailure(
             f"Could not configure SmartPower role {device}. Error:\n{e}"
         )
+
+def configure_ecomode_optics(device, switch_number):
+    """
+    Args:
+        device ('obj'): Device object
+        switch_number('int'): switch number
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    cmd = f"hw-module switch {switch_number} ecomode optics"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure serdes shutdown {device}. Error:\n{e}"
+        )
+
+def unconfigure_ecomode_optics(device, switch_number):
+    """
+    Args:
+        device ('obj'): Device object
+        switch_number('int'): switch number
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    cmd = f"no hw-module switch {switch_number} ecomode optics"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure serdes shutdown {device}. Error:\n{e}"
+        )
+
+
 
 

@@ -42,7 +42,7 @@ outputs['show ip ospf database router detail vrf all'] = OspfOutput.ShowIpOspfDa
 outputs['show ip ospf database opaque-area detail vrf all'] = OspfOutput.ShowIpOspfDatabaseOpaqueAreaDetailVrfAll
 
 
-def mapper(key):
+def mapper(key, **kwargs):
     return outputs[key]
 
 

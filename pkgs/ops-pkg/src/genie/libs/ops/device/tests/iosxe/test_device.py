@@ -35,7 +35,7 @@ outputs = {
 }
 
 
-def mapper(key):
+def mapper(key, **kwargs):
     return outputs[key]
 
 

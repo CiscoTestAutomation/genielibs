@@ -17,7 +17,7 @@ outputs = {}
 outputs['show ip msdp peer'] = MsdpOutput.ShowIpMsdpPeer
 outputs['show ip msdp sa-cache'] = MsdpOutput.ShowIpMsdpSaCache
 
-def mapper(key):
+def mapper(key, **kwargs):
     return outputs[key]
 
 

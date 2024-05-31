@@ -15,7 +15,7 @@ from genie.libs.parser.iosxr.show_terminal import ShowTerminal
 outputs = {
     'show terminal' : TerminalOutput.ShowTerminal
 }
-def mapper(key):
+def mapper(key, **kwargs):
     return outputs[key]
 
 class test_show_terminal(unittest.TestCase):

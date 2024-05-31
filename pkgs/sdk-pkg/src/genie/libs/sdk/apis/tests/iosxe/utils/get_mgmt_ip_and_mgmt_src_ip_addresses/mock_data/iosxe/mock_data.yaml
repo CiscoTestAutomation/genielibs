@@ -27,7 +27,7 @@ execute:
       new_state: configure
     config-transaction:
       new_state: configure
-    'show tcp brief | inc .22 |.23 ':
+    'show tcp brief numeric | inc .22 |.23 ':
       response:
         - |-
           7D5795E60118  192.168.1.6.23             192.168.1.5.60530           ESTAB

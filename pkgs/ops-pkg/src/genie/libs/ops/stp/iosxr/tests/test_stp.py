@@ -25,7 +25,7 @@ outputs.update({'show spanning-tree pvrstag foo': StpOutput.ShowSpanningTreePvrs
 outputs.update({'show spanning-tree pvstag foo': StpOutput.ShowSpanningTreePvsTag_output})
 
 
-def mapper(key):
+def mapper(key, **kwargs):
     return outputs[key]
 
 class test_stp(unittest.TestCase):

@@ -5,7 +5,7 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-    smartpower level 5: "smartpower level 5\r\n"
+    smartpower level 1: "smartpower level 1\r\n"
   prompt: 9300L(config)#
 configure_line:
   commands:
