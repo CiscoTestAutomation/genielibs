@@ -1,0 +1,36 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    interface GigabitEthernet1/4: "interface GigabitEthernet1/4\r\n"
+    line console 0:
+      new_state: configure_line
+    media-type sfp: "media-type sfp\r\n"
+    no logging console: ''
+  prompt: 1783-HMS4EG8CGR(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: 1783-HMS4EG8CGR(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version | include operating mode: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: 1783-HMS4EG8CGR#

@@ -21,7 +21,7 @@ outputs['show ntp peers'] = NtpOutputNoConfig.ShowNtpPeers
 outputs['show ntp peer-status'] = NtpOutputNoConfig.ShowNtpPeerStatus
 
 
-def mapper(key):
+def mapper(key, **kwargs):
     return outputs[key]
 
 class test_ntp(unittest.TestCase):

@@ -34,9 +34,11 @@ class RemoveInactivePkgs(unittest.TestCase):
         # This simulates the pass case.
         self.device.execute = Mock()
 
+        images = ['image.bin']
+
         # Call the method to be tested (clean step inside class)
         self.cls.remove_inactive_pkgs(
-            steps=steps, device=self.device
+            steps=steps, device=self.device, images=images
         )
 
         # Check that the result is expected
@@ -51,10 +53,14 @@ class RemoveInactivePkgs(unittest.TestCase):
         # This simulates the fail case.
         self.device.execute = Mock(side_effect=Exception)
 
+
+        images = ['image.bin']
+
         # We expect this step to fail so make sure it raises the signal
         with self.assertRaises(TerminateStepSignal):
             self.cls.remove_inactive_pkgs(
-                steps=steps, device=self.device
+                steps=steps, device=self.device,
+                images=images
             )
 
         # Check the overall result is as expected

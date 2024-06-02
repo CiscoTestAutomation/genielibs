@@ -3,6 +3,8 @@
 # Python
 import logging
 import time
+from datetime import datetime, timedelta
+
 
 from pyats.async_ import pcall
 
@@ -16,14 +18,20 @@ from genie.libs.clean.stages.iosxe.stages import (
     ChangeBootVariable as IOSXEChangeBootVariable)
 from genie.libs.clean.stages.iosxe.stages import (
     TftpBoot as IOSXETftpBoot)
+from genie.libs.clean.stages.iosxe.stages import (
+    InstallImage as IOSXEInstallImage)
 from genie.libs.clean.stages.stages import VerifyRunningImage as GenericVerifyRunningImage
+from genie.libs.clean.exception import StackMemberConfigException
 
 # MetaParser
-from genie.metaparser.util.schemaengine import Optional
+from genie.metaparser.util.schemaengine import Optional, Any
 from genie.libs.clean import BaseStage
 
 from unicon.eal.dialogs import Statement, Dialog
 from unicon.core.errors import SubCommandFailure
+
+from unicon.plugins.iosxe.stack.utils import StackUtils
+from unicon.plugins.generic.statements import buffer_settled
 
 # Logger
 log = logging.getLogger(__name__)
@@ -452,7 +460,7 @@ devices:
     def reconnect(self, steps, device):
         with steps.start("Reconnect to device") as step:
 
-            if hasattr(device, 'chassis_type') and device.chassis_type.lower() == 'stack':
+            if getattr(device, 'chassis_type', None) and device.chassis_type.lower() == 'stack':
                 log.info("Sleep for 90 seconds in order to sync")
                 time.sleep(90)
 
@@ -746,3 +754,236 @@ verify_running_image:
 
     def verify_running_image(self, steps, device, images, verify_md5=VERIFY_MD5, ignore_flash=IGNORE_FLASH):
         super().verify_running_image(steps, device, images, verify_md5=verify_md5, ignore_flash=ignore_flash)
+
+
+class InstallImage(IOSXEInstallImage):
+    """This stage installs a provided image onto the device using the install
+CLI. It also handles the automatic reloading of your device after the
+install is complete.
+
+Stage Schema
+------------
+install_image:
+    images (list): Image to install
+
+    directory (str): directory where packages.conf is created
+    save_system_config (bool, optional): Whether or not to save the system
+        config if it was modified. Defaults to False.
+
+    install_timeout (int, optional): Maximum time in seconds to wait for install
+        process to finish. Defaults to 500.
+
+    reload_timeout (int, optional): Maximum time in seconds to wait for reload
+        process to finish. Defaults to 800.
+
+    skip_boot_variable (bool, optional): 
+
+    issu (bool, optional): set the issu for installing image.
+        Defaults to False 
+
+    verify_running_image (bool, optional): Compare the image filename with the running
+        image version on device. If a match is found, the stage will be skipped.
+        Defaults to True.
+    
+    stack_member_timeout(optional, int): maximum time to to wait for all the members of a stack device 
+        to be ready. Default to 180 seconds
+
+    stack_member_interval(optional, int): the interval to check if all the members of a stack device 
+        are ready. Default to 30 seconds
+
+    reload_service_args (optional):
+
+        reload_creds (str, optional): The credential to use after the reload is
+            complete. The credential name comes from the testbed yaml file.
+            Defaults to the 'default' credential.
+
+        prompt_recovery (bool, optional): Enable or disable the prompt recovery
+            feature of unicon. Defaults to True.
+
+        error_pattern (list, optional): List of regex strings to check for errors.
+            Default: [r"FAILED:.*?$",]
+        
+        post_reload_wait(int, optional): the time after for before buffer to settle down.
+            . Default to 30 seconds
+
+        post_reload_timeout(int, optional): maximum time before accessing the device after
+            reload. Default to 60 seconds.
+        <Key>: <Value>
+            Any other arguments that the Unicon reload service supports
+
+Example
+-------
+install_image:
+    images:
+      - /auto/some-location/that-this/image/stay-isr-image.bin
+    save_system_config: True
+    install_timeout: 1000
+    reload_timeout: 1000
+
+"""
+
+    # =================
+    # Argument Defaults
+    # =================
+    SAVE_SYSTEM_CONFIG = False
+    INSTALL_TIMEOUT = 500
+    RELOAD_TIMEOUT = 800
+    RELOAD_SERVICE_ARGS = {
+        'reload_creds': 'default',
+        'prompt_recovery': True,
+        'error_pattern': [r"FAILED:.*?$",],
+        'post_reload_wait': 15,
+        'post_reload_timeout': 60
+    }
+    ISSU = False
+    SKIP_BOOT_VARIABLE = False
+    VERIFY_RUNNING_IMAGE = True
+    STACK_MEMBER_TIMEOUT = 300
+    STACK_MEMBER_INTERVAL = 30
+    # ============
+    # Stage Schema
+    # ============
+    schema = {
+        Optional('images'): list,
+        Optional('directory'): str,
+        Optional('save_system_config'): bool,
+        Optional('install_timeout'): int,
+        Optional('reload_timeout'): int,
+        Optional('issu'): bool,
+        Optional('skip_boot_variable'): bool,
+        Optional('verify_running_image', description="Compare the image filename with the running image version on device. If a match is found, the stage will be skipped", default=VERIFY_RUNNING_IMAGE): bool,
+        Optional('stack_member_timeout'): int,
+        Optional('stack_member_interval'): int,
+
+        Optional('reload_service_args'): {
+            Optional('reload_creds'): str,
+            Optional('prompt_recovery'): bool,
+            Optional('error_pattern'): list,
+            Optional('post_reload_wait'): int,
+            Optional('post_reload_timeout'):int,
+            Any(): Any()
+        }
+    }
+
+    # ==============================
+    # Execution order of Stage steps
+    # ==============================
+    exec_order = [
+        'verify_running_image',
+        'delete_boot_variable',
+        'set_boot_variable',
+        'save_running_config',
+        'verify_boot_variable',
+        'install_image'
+    ]
+
+
+    def install_image(self, steps, device, images,
+                      install_timeout=INSTALL_TIMEOUT,
+                      save_system_config=SAVE_SYSTEM_CONFIG,
+                      reload_args=RELOAD_SERVICE_ARGS,
+                      issu=ISSU, stack_member_timeout=STACK_MEMBER_TIMEOUT,
+                      stack_member_interval=STACK_MEMBER_INTERVAL):
+        # check if device is a stack device otherwise call the InstallImage for 
+        # iosxe devices.
+        if hasattr(device, 'chassis_type') and device.chassis_type == 'stack':
+            with steps.start(f"Installing image '{images[0]}'") as step:
+                # create a new instance for stackutils which include some utility 
+                # apis for working with stack devices
+                stack_utils = StackUtils()
+                # get tredundancy info of the stack device 
+                stack_redundency_info = stack_utils.get_redundancy_details(device)
+                number_of_stack_members = len(stack_redundency_info)
+                # make sure device is do not manual boot
+                device.api.configure_no_boot_manual()
+                # write to memory 
+                device.api.execute_write_memory()
+
+                def _update_counter_for_member_config(spawn, context, session):
+                    """ Handles the number of apply configure message seen after install image """
+                    if not session.get("member_config"):
+                        session['member_config'] = 1
+                        spawn.log.debug(f"member config {session['member_config']}")
+                    else:
+                        session['member_config'] += 1
+                        spawn.log.debug(f"member config {session['member_config']}")
+                    if session['member_config'] == number_of_stack_members - 1:
+                        # this is raised when all the member are done for configuration
+                        raise StackMemberConfigException
+                    
+                def _failed_to_install_image(spawn):
+                    raise Exception
+                
+                def _check_for_member_config(spawn, session):
+                    # check the session for member_config, if this is not the spawn of 
+                    # active connection we will not see the member config in buffer so
+                    # we should get out of the dialog loop after seeing press return.
+                    if not session.get('member_config'):
+                        raise StackMemberConfigException
+
+                dialog = Dialog([
+                    Statement(pattern=r"Do you want to proceed\? \[y\/n\]",
+                            action='sendline(y)',
+                            loop_continue=True,
+                            continue_timer=False),
+                    Statement(pattern=r".*Applying config on Switch \d+.*\[DONE\]$",
+                            action= _update_counter_for_member_config,
+                            loop_continue=True,
+                            continue_timer=False),
+                    Statement(pattern=r".*FAILED:.*?",
+                            action=_failed_to_install_image,
+                            loop_continue=False,
+                            continue_timer=False),
+                    Statement(pattern=r'Press RETURN to get started.*',
+                              action=_check_for_member_config,
+                              loop_continue=True,
+                              continue_timer=False)
+                ])
+                if issu:
+                    device.sendline('install add file {} activate issu commit'.format(images[0]))
+                else:
+                    device.sendline('install add file {} activate commit'.format(images[0]))
+                try:
+                    dialog.process(device.spawn,
+                                   timeout = install_timeout,
+                                   context=device.context
+                    )
+                except StackMemberConfigException as e:
+                    log.debug("Expected exception continue with the stage")
+                    log.info('Waiting for buffer to settle down')
+                    post_reload_wait_time = reload_args.get('post_reload_wait', 15)
+                    post_reload_timeout = reload_args.get('post_reload_timeout', 60)
+                    start_time = current_time = datetime.now()
+                    timeout_time = timedelta(seconds=post_reload_timeout)
+                    settle_time = current_time = datetime.now()
+                    while (current_time - settle_time) < timeout_time:
+                        if buffer_settled(device.spawn, post_reload_wait_time):
+                            log.info('Buffer settled, accessing device..')
+                            break
+                        current_time = datetime.now()
+                        if (current_time - start_time) > timeout_time:
+                            log.info('Time out, trying to acces device..')
+                            break
+                except Exception as e:
+                    step.failed("Failed to install the image", from_exception=e)
+
+                # Check all the members are ready and then try to disconnect and connect to device.
+                if stack_utils.is_all_member_ready(device, stack_member_timeout, stack_member_interval):
+                    log.info('Disconnecting and reconnecting')
+                    device.disconnect()
+                    device.connect()
+                else:
+                    step.failed("Stack members are not ready")
+
+                image_mapping = self.history['InstallImage'].parameters.setdefault(
+                    'image_mapping', {})
+                if hasattr(self, 'new_boot_var'):
+                    image_mapping.update({images[0]: self.new_boot_var})
+        else:
+            # if device is not a stack device we all the install image for iosxe 
+            super().install_image(steps, device, images,
+                      save_system_config=save_system_config,
+                      install_timeout=install_timeout,
+                      reload_service_args=None,
+                      issu=issu,
+                      )

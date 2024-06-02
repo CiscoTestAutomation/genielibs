@@ -1,0 +1,4 @@
+enable_ipv6_dhcp_server:
+    arguments:
+        interface: 'TenGigabitEthernet1/0/1'
+        pool_name: 'new_pool'

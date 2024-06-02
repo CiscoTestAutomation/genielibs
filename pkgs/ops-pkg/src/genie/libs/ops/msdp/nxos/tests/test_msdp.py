@@ -24,7 +24,7 @@ outputs['show ip msdp sa-cache detail vrf all'] = MsdpOutput.showIpMsdpSaCacheDe
 outputs['show ip msdp peer vrf all'] = MsdpOutput.showIpMsdpPeerVrf
 
 
-def mapper(key):
+def mapper(key, **kwargs):
     return outputs[key]
 
 class test_msdp(unittest.TestCase):

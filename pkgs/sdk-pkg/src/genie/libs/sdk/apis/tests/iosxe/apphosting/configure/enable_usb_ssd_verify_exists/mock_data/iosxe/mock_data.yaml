@@ -7,7 +7,6 @@ configure:
     no logging console: ''
     no platform usb disable: |-
       no platform usb disable
-      javelin-morph-mini1a(config)#
   prompt: javelin-morph-mini1a-c9300-stack(config)#
 configure_line:
   commands:

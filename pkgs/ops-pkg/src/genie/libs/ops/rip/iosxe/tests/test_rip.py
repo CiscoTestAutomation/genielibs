@@ -23,7 +23,7 @@ outputs['show ipv6 rip vrf VRF1 database'] = RipOutput.showIpv6RipDatabase_vrf1
 outputs['show ipv6 rip'] = RipOutput.showIpv6Rip_default
 outputs['show ipv6 rip vrf VRF1'] = RipOutput.showIpv6Rip_vrf1
 
-def mapper(key):
+def mapper(key, **kwargs):
     return outputs[key]
 
 class test_rip_all(unittest.TestCase):

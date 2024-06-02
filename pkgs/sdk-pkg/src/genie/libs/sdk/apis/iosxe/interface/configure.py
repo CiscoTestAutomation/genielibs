@@ -2476,13 +2476,13 @@ def attach_dhcpv6_guard_policy_to_interface(device, interface, policy_name):
         )
         raise
 
-def enable_ipv6_dhcp_server(device, interface, pool_name, rapid_commit=True):
+def enable_ipv6_dhcp_server(device, interface, pool_name=None, rapid_commit=True):
     """ Enable IPv6 DHCP server on an interface
 
         Args:
             device (`obj`): Device object
             interface (`str`): Interface to enable IPv6 DHCP server
-            pool_name (`str`): Pool name
+            pool_name (`str`,optional ): Pool name
             rapid_commit ('bool'): Rapid commit. Default is True
         Returns:
             None
@@ -2492,11 +2492,13 @@ def enable_ipv6_dhcp_server(device, interface, pool_name, rapid_commit=True):
     """
 
     cmd = [f"interface {interface}"]
-
-    if rapid_commit:
-        cmd.append(f"ipv6 dhcp server {pool_name} rapid-commit")
+    if pool_name:
+        if rapid_commit:
+            cmd.append(f"ipv6 dhcp server {pool_name} rapid-commit")
+        else:
+            cmd.append(f"ipv6 dhcp server {pool_name}")
     else:
-        cmd.append(f"ipv6 dhcp server {pool_name}")
+        cmd.append(f"ipv6 dhcp server")
     try:
         device.configure(cmd)
 
@@ -9804,3 +9806,73 @@ def unconfigure_ip_on_atm_interface(
             )
         )
 
+
+def configure_dual_port_interface_media_type(device, interface, media_type):
+    """ Configure combo-port media_type on interface
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+            media_type (`str`): media_type name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(
+        f"Configuring media_type {media_type} on interface {interface}")
+    
+    cmd = [f"interface {interface}",
+           f"media-type {media_type}"]
+        
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure media_type on {interface}. Error:\n{e}"
+            )
+        
+
+def configure_interface_range_shutdown(device, start_interface, end_interface):
+    """ Configure interface range shutdown
+        Args:
+            device ('obj'): device to use
+            start_interface('str'): Starting Interface
+            end_interface('str'): Ending Interface number
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f'Configuring interface range shutdown on {device}')
+    config = [
+        f'interface range {start_interface} - {end_interface}',
+        'shutdown'
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure interface range shutdown on device {device}. Error:\n{e}")
+
+
+def configure_interface_range_no_shutdown(device, start_interface, end_interface):
+    """ Configure interface range no shutdown
+        Args:
+            device ('obj'): device to use
+            start_interface('str'): Starting Interface
+            end_interface('str'): Ending Interface number   
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f'Configuring interface range no shutdown on {device}')
+
+    config = [
+        f'interface range {start_interface} - {end_interface}',
+        'no shutdown'
+    ]
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure interface range no shutdown on device {device}. Error:\n{e}")

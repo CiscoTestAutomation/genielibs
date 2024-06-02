@@ -21,7 +21,7 @@ outputs['show ip static route vrf VRF1'] = StaticRouteOutput.showIpv4StaticRoute
 outputs['show ipv6 static detail'] = StaticRouteOutput.showIpv6StaticRoute_default
 outputs['show ipv6 static vrf VRF1 detail'] = StaticRouteOutput.showIpv6StaticRoute_vrf1
 
-def mapper(key):
+def mapper(key, **kwargs):
     return outputs[key]
 
 class test_static_route_all(unittest.TestCase):

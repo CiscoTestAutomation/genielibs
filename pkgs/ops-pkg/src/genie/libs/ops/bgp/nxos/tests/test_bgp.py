@@ -44,7 +44,7 @@ outputs['show bgp vrf default all neighbors 10.16.2.2 received-routes'] = BgpOut
 outputs['show bgp process vrf all'] = BgpOutput.ShowBgpProcessVrfAll_all
 
 
-def mapper(key):
+def mapper(key, **kwargs):
     return outputs[key]
 
 

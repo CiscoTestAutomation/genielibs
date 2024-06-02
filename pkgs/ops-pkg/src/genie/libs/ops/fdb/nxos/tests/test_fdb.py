@@ -16,7 +16,7 @@ outputs['show mac address-table address 5e00.c000.0007 interface ethernet1/3 vla
 outputs['show mac address-table aging-time'] = FdbOutput.show_mac_address_table_aging_time
 outputs['show system internal l2fwder mac'] = FdbOutput.show_system_internal_l2fwder_mac
 
-def mapper(key):
+def mapper(key, **kwargs):
     return outputs[key]
 
 class TestFdb(unittest.TestCase):

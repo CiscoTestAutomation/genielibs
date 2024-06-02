@@ -1285,3 +1285,61 @@ def verify_interfaces_transceiver_supported(
 
     return False
 
+
+def verify_dual_port_interface_config_media_type(device, interface, media_type, 
+                                                 max_time=60, check_interval=10, 
+                                                 flag=True):
+    """Verify interface configured media_type in - show running-config interface <interface-name>
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+            max_time (`int`): max time
+            check_interval (`int`): check interval
+            media_type (`int` or 'str'): media_type  and default 'media_type auto-select'
+            flag (`bool`): True if verify media_type
+                           False if verify no media_type
+        Returns:
+            result(`bool`): verify result
+    """
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        out = device.execute(f"show run interface {interface}")
+
+        cfg_dict = get_config_dict(out)
+        key = f"interface {interface}"
+
+        if key in cfg_dict and media_type == 'auto-select':
+            if "media-type" not in cfg_dict:
+                
+                log.info(
+                    "interface config settings 'media_type' is set to default" 
+                    f"settings 'media_type {media_type}' as expected "
+                )
+                result = True 
+            else: 
+                 
+                log.info(
+                        "interface config settings 'media_type' is not set to" 
+                        f"expected settings 'media_type {media_type}' "
+                )
+                result = False
+        elif key in cfg_dict and f"media-type {media_type}" in cfg_dict[key]:
+            log.info(
+                    "interface config settings 'media_type' is set to expected" 
+                    f"settings 'media_type {media_type}' "
+            )
+            result = True
+        else:
+            log.info(
+                    "interface config settings 'media_type' is not set to expected"
+                    f"settings 'media_type {media_type}' "
+            )
+            result = False
+
+        if flag == result:
+            return True
+        timeout.sleep()
+
+    return False

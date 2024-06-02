@@ -19,7 +19,7 @@ from genie.libs.parser.iosxe.show_vrf import ShowVrf
 outputs = {}
 outputs['show ip arp'] = ArpOutput.ShowIpArp_all
 outputs['show ip arp vrf VRF1'] = ArpOutput.ShowIpArp_vrf1
-def mapper(key):
+def mapper(key, **kwargs):
     return outputs[key]
 
 

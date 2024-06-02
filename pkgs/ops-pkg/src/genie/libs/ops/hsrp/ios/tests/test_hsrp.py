@@ -23,7 +23,7 @@ outputs['show standby delay'] = HsrpOutput.showStandbyDelayOutput_golden
 outputs['show standby all'] = HsrpOutput.showStandbyAllOutput_golden
 outputs['show standby internal'] = HsrpOutput.showStandbyInternalOutput_golden
 
-def mapper(key):
+def mapper(key, **kwargs):
     return outputs[key]
 
 class test_hsrp(unittest.TestCase):

@@ -30,7 +30,7 @@ outputs['show clns neighbors detail'] = IsisOutput.showClnsNeighborsDetail
 outputs['show clns is-neighbors detail'] = IsisOutput.showClnsIsNeighborsDetail
 outputs['show clns traffic'] = IsisOutput.showClnsTraffic
 
-def mapper(key):
+def mapper(key, **kwargs):
     return outputs[key]
 
 class TestIsisAll(unittest.TestCase):

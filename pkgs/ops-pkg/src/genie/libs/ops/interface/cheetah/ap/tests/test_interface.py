@@ -21,7 +21,7 @@ outputs = {
     'show interfaces dot11radio 2' : InterfaceOutput.showInterfaceDot11Radio_2
 }
 
-def mapper(key):
+def mapper(key, **kwargs):
     return outputs[key]
 
 class test_platform_all(unittest.TestCase):

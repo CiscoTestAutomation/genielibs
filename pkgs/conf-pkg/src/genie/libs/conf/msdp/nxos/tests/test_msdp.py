@@ -14,7 +14,7 @@ from genie.libs.conf.msdp.msdp import Msdp
 
 outputs = {}
 
-def mapper(key):
+def mapper(key, **kwargs):
     return outputs[key]
 
 

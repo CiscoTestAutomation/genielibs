@@ -41,7 +41,7 @@ outputs['show bgp instance all vrf all ipv6 unicast neighbors 10.16.2.2 routes']
 outputs['yang_output'] = BgpOutput.yang_output
 
 
-def mapper(key):
+def mapper(key, **kwargs):
     if 'subtree' in key:
         key = 'yang_output'
     return outputs[key]

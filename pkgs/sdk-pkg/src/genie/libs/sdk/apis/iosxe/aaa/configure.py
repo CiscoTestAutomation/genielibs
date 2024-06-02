@@ -660,38 +660,47 @@ def unconfigure_wired_radius_attribute_44(device):
             'Could not unconfigure wired radius attribute 44'
         )
 
-def configure_radius_interface(device, interface):
+def configure_radius_interface(device, interface, protocol='ipv4'):
 
     """ Configure Radius Interface
     Args:
         device ('obj'): device to use
         interface('str'): Interface to be configured
+        protocol ('str',optional): Protocol type. Default 'ipv4
+
     Returns:
         None
     Raises:
         SubCommandFailure: Failed configuring Radius Interface
     """
     try:
-        device.configure(["ip radius source-interface {interface}".format(interface=interface)])
+        if protocol == 'ipv4':
+            device.configure(["ip radius source-interface {interface}".format(interface=interface)])
+        else:
+            device.configure(["ipv6 radius source-interface {interface}".format(interface=interface)])
+            
     except SubCommandFailure:
         raise SubCommandFailure(
             "Could not Configure Radius Interface"
         )
 
-
-def unconfigure_radius_interface(device, interface):
+def unconfigure_radius_interface(device, interface, protocol='ipv4'):
 
     """ Configure Radius Interface
     Args:
         device ('obj'): device to use
         interface('str'): Interface to be configured
+        protocol ('str',optional): Protocol type. Default 'ipv4
     Returns:
         None
     Raises:
         SubCommandFailure: Failed configuring Radius Interface
     """
     try:
-        device.configure(["no ip radius source-interface {interface}".format(interface=interface)])
+        if protocol == 'ipv4':
+            device.configure(["no ip radius source-interface {interface}".format(interface=interface)])
+        else:
+            device.configure(["no ipv6 radius source-interface {interface}".format(interface=interface)])
     except SubCommandFailure:
         raise SubCommandFailure(
             "Could not Configure Radius Interface"

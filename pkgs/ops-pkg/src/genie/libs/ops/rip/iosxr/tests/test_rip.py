@@ -21,7 +21,7 @@ outputs.update({'show rip interface': RipOutput.show_rip_interface})
 outputs.update({'show rip vrf VRF1 interface': RipOutput.show_rip_vrf1_interface})
 
 
-def mapper(key):
+def mapper(key, **kwargs):
     return outputs[key]
 
 

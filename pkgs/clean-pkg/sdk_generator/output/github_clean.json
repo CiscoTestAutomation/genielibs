@@ -54,43 +54,14 @@
             "module_name": "stages.linux.wsim.stages",
             "package": "genie.libs.clean",
             "tokens": {
-              "os": "wsim"
+              "platform": "wsim"
             },
             "uid": "ApplyGlobalConfiguration",
             "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/linux/wsim/stages.py#L101"
           }
         },
         "tokens": {
-          "origin": "linux"
-        }
-      }
-    }
-  },
-  "ApplySelfSignedCert": {
-    "folders": {
-      "iosxe": {
-        "folders": {
-          "cat9k": {
-            "folders": {
-              "c9800_cl": {
-                "doc": " This stage configures the self-signed-certificate for the given trustpoint.\n\n    Stage Schema\n    ------------\n    apply_self_signed_cert:\n\n        key_size (int, optional): Key size to be configured. Default is 2048\n\n        signature_algorithm (str, optional): Algorithm to be applied. Default is sha256\n\n        encryption_type (int, optional): Encryption type to be configured. Default is 0\n\n        password (str): Password to be configured for the trustpoint.\n\n        timeout (int, optional): Execute timeout in seconds. Defaults to 300.\n\n    Examples:\n        apply_self_signed_cert:\n            key_size:2048\n            signature_algorithm:sha256\n            encryption_type:0\n            password:cisco123\n            timeout: 150\n    ",
-                "module_name": "stages.iosxe.cat9k.c9800_cl.stages",
-                "package": "genie.libs.clean",
-                "tokens": {
-                  "platform": "cat9k",
-                  "submodel": "c9800_cl"
-                },
-                "uid": "ApplySelfSignedCert",
-                "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/cat9k/c9800_cl/stages.py#L19"
-              }
-            },
-            "tokens": {
-              "platform": "cat9k"
-            }
-          }
-        },
-        "tokens": {
-          "os": "iosxe"
+          "os": "linux"
         }
       }
     }
@@ -126,8 +97,7 @@
                 "module_name": "stages.iosxe.cat9k.c9500.stages",
                 "package": "genie.libs.clean",
                 "tokens": {
-                  "model": "c9500",
-                  "platform": "cat9k"
+                  "model": "c9500"
                 },
                 "uid": "ChangeBootVariable",
                 "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/cat9k/c9500/stages.py#L17"
@@ -139,7 +109,7 @@
               "platform": "cat9k"
             },
             "uid": "ChangeBootVariable",
-            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/cat9k/stages.py#L32"
+            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/cat9k/stages.py#L40"
           },
           "sdwan": {
             "doc": "This stage change boot variables of the device using the following steps:\n\n    - Delete existing boot variables.\n    - Configure boot variables using the provided 'images'.\n    - Write memory.\n\nStage Schema\n------------\nchange_boot_variable:\n\n    images (list): Image files to use when configuring the boot variables.\n\n    timeout (int, optional): Execute timeout in seconds. Defaults to 300.\n\nExample\n-------\nchange_boot_variable:\n    timeout: 150\n",
@@ -197,8 +167,7 @@
                 "module_name": "stages.iosxe.cat9k.c9800.stages",
                 "package": "genie.libs.clean",
                 "tokens": {
-                  "model": "c9800",
-                  "platform": "cat9k"
+                  "model": "c9800"
                 },
                 "uid": "ConfigureApTxPower",
                 "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/cat9k/c9800/stages.py#L250"
@@ -233,7 +202,7 @@
           "os": "iosxe"
         },
         "uid": "ConfigureReplace",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L2002"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L2025"
       }
     }
   },
@@ -248,8 +217,7 @@
                 "module_name": "stages.iosxe.cat9k.c9800.stages",
                 "package": "genie.libs.clean",
                 "tokens": {
-                  "model": "c9800",
-                  "platform": "cat9k"
+                  "model": "c9800"
                 },
                 "uid": "ConfigureRrmDcaChannel",
                 "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/cat9k/c9800/stages.py#L149"
@@ -289,7 +257,7 @@
           "os": "iosxe"
         },
         "uid": "Connect",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L2058"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L2081"
       },
       "linux": {
         "folders": {
@@ -298,14 +266,14 @@
             "module_name": "stages.linux.wsim.stages",
             "package": "genie.libs.clean",
             "tokens": {
-              "os": "wsim"
+              "platform": "wsim"
             },
             "uid": "Connect",
             "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/linux/wsim/stages.py#L19"
           }
         },
         "tokens": {
-          "origin": "linux"
+          "os": "linux"
         }
       }
     },
@@ -343,7 +311,7 @@
           "os": "iosxe"
         },
         "uid": "CopyToDevice",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1360"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1380"
       }
     },
     "module_name": "stages.stages",
@@ -492,6 +460,16 @@
             },
             "uid": "InstallImage",
             "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/cat3k/stages.py#L12"
+          },
+          "cat9k": {
+            "doc": "This stage installs a provided image onto the device using the install\nCLI. It also handles the automatic reloading of your device after the\ninstall is complete.\n\nStage Schema\n------------\ninstall_image:\n    images (list): Image to install\n\n    directory (str): directory where packages.conf is created\n    save_system_config (bool, optional): Whether or not to save the system\n        config if it was modified. Defaults to False.\n\n    install_timeout (int, optional): Maximum time in seconds to wait for install\n        process to finish. Defaults to 500.\n\n    reload_timeout (int, optional): Maximum time in seconds to wait for reload\n        process to finish. Defaults to 800.\n\n    skip_boot_variable (bool, optional): \n\n    issu (bool, optional): set the issu for installing image.\n        Defaults to False \n\n    verify_running_image (bool, optional): Compare the image filename with the running\n        image version on device. If a match is found, the stage will be skipped.\n        Defaults to True.\n    \n    stack_member_timeout(optional, int): maximum time to to wait for all the members of a stack device \n        to be ready. Default to 180 seconds\n\n    stack_member_interval(optional, int): the interval to check if all the members of a stack device \n        are ready. Default to 30 seconds\n\n    reload_service_args (optional):\n\n        reload_creds (str, optional): The credential to use after the reload is\n            complete. The credential name comes from the testbed yaml file.\n            Defaults to the 'default' credential.\n\n        prompt_recovery (bool, optional): Enable or disable the prompt recovery\n            feature of unicon. Defaults to True.\n\n        error_pattern (list, optional): List of regex strings to check for errors.\n            Default: [r\"FAILED:.*?$\",]\n        \n        post_reload_wait(int, optional): the time after for before buffer to settle down.\n            . Default to 30 seconds\n\n        post_reload_timeout(int, optional): maximum time before accessing the device after\n            reload. Default to 60 seconds.\n        <Key>: <Value>\n            Any other arguments that the Unicon reload service supports\n\nExample\n-------\ninstall_image:\n    images:\n      - /auto/some-location/that-this/image/stay-isr-image.bin\n    save_system_config: True\n    install_timeout: 1000\n    reload_timeout: 1000\n\n",
+            "module_name": "stages.iosxe.cat9k.stages",
+            "package": "genie.libs.clean",
+            "tokens": {
+              "platform": "cat9k"
+            },
+            "uid": "InstallImage",
+            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/cat9k/stages.py#L759"
           }
         },
         "module_name": "stages.iosxe.stages",
@@ -500,7 +478,7 @@
           "os": "iosxe"
         },
         "uid": "InstallImage",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L517"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L534"
       },
       "iosxr": {
         "folders": {
@@ -562,14 +540,14 @@
           "os": "iosxe"
         },
         "uid": "InstallPackages",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L767"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L787"
       }
     }
   },
   "InstallRemoveInactive": {
     "folders": {
       "iosxe": {
-        "doc": "This stage removes partially installed packages/images left\non the device. If a super package is left partially installed,\nwe cannot attempt to install another until it is removed.\n\nStage Schema\n------------\ninstall_image:\n    timeout (int, optional): Maximum time to wait for remove process to\n        finish. Defaults to 180.\n\nExample\n-------\ninstall_remove_inactive:\n    timeout: 180\n\n",
+        "doc": "This stage removes partially installed packages/images left\non the device. If a super package is left partially installed,\nwe cannot attempt to install another until it is removed.\n\nStage Schema\n------------\ninstall_image:\n    images (list, optional):\n        image to not removed by stage.\n        \n    timeout (int, optional): Maximum time to wait for remove process to\n        finish. Defaults to 180.\n\nExample\n-------\ninstall_remove_inactive:\n    timeout: 180\n\n",
         "module_name": "stages.iosxe.stages",
         "package": "genie.libs.clean",
         "tokens": {
@@ -585,7 +563,7 @@
       "cheetah": {
         "folders": {
           "ap": {
-            "doc": "This stage loads new AP image\n\n           Stage Schema\n           ------------\n           load_ap_image:\n               ap_image_path (str): Absolute path where ap image is located\n\n               server(str): Server alias which has AP image\n\n               protocol(str): protocol through which AP image will be loaded\n\n               max_time (int, optional): Maximum time for which this clean stage will try to clean ap.\n                   Defaults to 1200\n\n\n\n\n           Example\n           -------\n           load_ap_image:\n                ap_image_path: \"/auto/wnbu-groups-builds/FAST_BUNDLING/polaris_dev/6640/ap3g3-k9w8-tar.master-cisco.202309180209\"\n                server: \"tftp\"\n                max_time: \"1200\"\n       ",
+            "doc": "This stage loads new AP image\n\n           Stage Schema\n           ------------\n           load_ap_image:\n               ap_image_path (str): Absolute path where ap image is located\n\n               server(str): Server alias which has AP image\n\n               protocol(str): protocol through which AP image will be loaded\n\n               retries(int, optional): Number of times image download needs to be tried\n\n               max_time (int, optional): Maximum time for which this clean stage will try to clean ap.\n                   Defaults to 1200\n\n\n\n\n           Example\n           -------\n           load_ap_image:\n                ap_image_path: \"/auto/wnbu-groups-builds/FAST_BUNDLING/polaris_dev/6640/ap3g3-k9w8-tar.master-cisco.202309180209\"\n                server: \"tftp\"\n                max_time: \"1200\"\n       ",
             "module_name": "stages.cheetah.ap.stages",
             "package": "genie.libs.clean",
             "tokens": {
@@ -677,7 +655,7 @@
           "os": "iosxe"
         },
         "uid": "Reload",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L851"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L871"
       }
     },
     "module_name": "stages.stages",
@@ -695,7 +673,7 @@
           "os": "iosxe"
         },
         "uid": "ResetConfiguration",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L2203"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L2263"
       }
     }
   },
@@ -720,7 +698,7 @@
               "platform": "cat9k"
             },
             "uid": "RommonBoot",
-            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/cat9k/stages.py#L204"
+            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/cat9k/stages.py#L212"
           }
         },
         "module_name": "stages.iosxe.stages",
@@ -729,7 +707,7 @@
           "os": "iosxe"
         },
         "uid": "RommonBoot",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1098"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1118"
       }
     }
   },
@@ -742,14 +720,14 @@
             "module_name": "stages.linux.wsim.stages",
             "package": "genie.libs.clean",
             "tokens": {
-              "os": "wsim"
+              "platform": "wsim"
             },
             "uid": "RunConfigure",
             "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/linux/wsim/stages.py#L228"
           }
         },
         "tokens": {
-          "origin": "linux"
+          "os": "linux"
         }
       }
     }
@@ -798,14 +776,14 @@
             "module_name": "stages.linux.wsim.stages",
             "package": "genie.libs.clean",
             "tokens": {
-              "os": "wsim"
+              "platform": "wsim"
             },
             "uid": "StartApContainers",
             "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/linux/wsim/stages.py#L271"
           }
         },
         "tokens": {
-          "origin": "linux"
+          "os": "linux"
         }
       }
     }
@@ -823,7 +801,7 @@
               "platform": "cat9k"
             },
             "uid": "TftpBoot",
-            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/cat9k/stages.py#L91"
+            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/cat9k/stages.py#L99"
           },
           "sdwan": {
             "doc": "This stage boots a new image onto your device using the tftp booting\n    method.\n\nStage Schema\n------------\ntftp_boot:\n\n    image (list): Image to boot with\n\n    ip_address (list): Management ip address to configure to reach to the tftp server\n\n    subnet_mask (str): Management subnet mask\n\n    gateway (str): Management gateway\n\n    tftp_server (str): Tftp server that is reachable with management interface\n\n    device_managed_mode (str, optional): Specify mode 'controller' or 'autonomous'\n        Defaults to 'autonomous'\n\n    recovery_password (str, optional): Enable password for device\n        required after bootup. Defaults to None.\n\n    timeout (int, optional): Max time during which tftp boot must\n        complete. Defaults to 600.\n\n    config_reg_timeout (int, optional): Max time to set config-register.\n        Defaults to 30.\n\nExample\n-------\ntftp_boot:\n    image:\n      - /auto/some-location/that-this/image/stay-isr-image.bin\n    ip_address: [10.1.7.126, 10.1.7.127]\n    gateway: 10.1.7.1\n    subnet_mask: 255.255.255.0\n    tftp_server: 11.1.7.251\n    device_managed_mode: autonomous\n    recovery_password: nbv_12345\n    timeout: 600\n    config_reg_timeout: 10\n\nThere is more than one ip address, one for each supervisor.\n",
@@ -878,7 +856,7 @@
               "platform": "cat9k"
             },
             "uid": "VerifyAccessTunnelSummary",
-            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/cat9k/stages.py#L576"
+            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/cat9k/stages.py#L584"
           }
         },
         "tokens": {
@@ -898,8 +876,7 @@
                 "module_name": "stages.iosxe.cat9k.c9800.stages",
                 "package": "genie.libs.clean",
                 "tokens": {
-                  "model": "c9800",
-                  "platform": "cat9k"
+                  "model": "c9800"
                 },
                 "uid": "VerifyApAssociation",
                 "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/cat9k/c9800/stages.py#L87"
@@ -928,7 +905,7 @@
               "platform": "cat9k"
             },
             "uid": "VerifyApFabricSummary",
-            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/cat9k/stages.py#L463"
+            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/cat9k/stages.py#L471"
           }
         },
         "tokens": {
@@ -948,8 +925,7 @@
                 "module_name": "stages.iosxe.cat9k.c9800.stages",
                 "package": "genie.libs.clean",
                 "tokens": {
-                  "model": "c9800",
-                  "platform": "cat9k"
+                  "model": "c9800"
                 },
                 "uid": "VerifyApMode",
                 "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/cat9k/c9800/stages.py#L22"
@@ -975,14 +951,14 @@
             "module_name": "stages.linux.wsim.stages",
             "package": "genie.libs.clean",
             "tokens": {
-              "os": "wsim"
+              "platform": "wsim"
             },
             "uid": "VerifyApRunState",
             "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/linux/wsim/stages.py#L340"
           }
         },
         "tokens": {
-          "origin": "linux"
+          "os": "linux"
         }
       }
     }
@@ -998,8 +974,7 @@
                 "module_name": "stages.iosxe.cat9k.c9800.stages",
                 "package": "genie.libs.clean",
                 "tokens": {
-                  "model": "c9800",
-                  "platform": "cat9k"
+                  "model": "c9800"
                 },
                 "uid": "VerifyHaState",
                 "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/cat9k/c9800/stages.py#L315"
@@ -1027,8 +1002,7 @@
                 "module_name": "stages.iosxe.cat9k.c9800.stages",
                 "package": "genie.libs.clean",
                 "tokens": {
-                  "model": "c9800",
-                  "platform": "cat9k"
+                  "model": "c9800"
                 },
                 "uid": "VerifyInstallationMode",
                 "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/cat9k/c9800/stages.py#L206"
@@ -1057,7 +1031,7 @@
               "platform": "cat9k"
             },
             "uid": "VerifyLispSessionEstablished",
-            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/cat9k/stages.py#L519"
+            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/cat9k/stages.py#L527"
           }
         },
         "tokens": {
@@ -1079,7 +1053,7 @@
               "platform": "cat9k"
             },
             "uid": "VerifyRunningImage",
-            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/cat9k/stages.py#L712"
+            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/cat9k/stages.py#L720"
           }
         },
         "tokens": {
@@ -1114,7 +1088,7 @@
               "platform": "cat9k"
             },
             "uid": "VerifyWirelessProcess",
-            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/cat9k/stages.py#L646"
+            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/cat9k/stages.py#L654"
           }
         },
         "tokens": {
@@ -1147,9 +1121,6 @@
       "c9500",
       "c9800"
     ],
-    "origin": [
-      "linux"
-    ],
     "os": [
       "aireos",
       "apic",
@@ -1157,9 +1128,9 @@
       "ios",
       "iosxe",
       "iosxr",
+      "linux",
       "nxos",
-      "viptela",
-      "wsim"
+      "viptela"
     ],
     "platform": [
       "aci",
@@ -1168,10 +1139,8 @@
       "cat9k",
       "n9k",
       "ncs540",
-      "sdwan"
-    ],
-    "submodel": [
-      "c9800_cl"
+      "sdwan",
+      "wsim"
     ]
   }
 }

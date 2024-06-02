@@ -64,7 +64,7 @@ outputs['show ip bgp template peer-policy'] = ''
 outputs['show ip bgp all dampening parameters'] = ''
 
 
-def mapper(key):
+def mapper(key, **kwargs):
     return outputs[key]
 
 

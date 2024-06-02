@@ -18,7 +18,7 @@ from genie.libs.conf.pim.rp_address import RPAddressGroup
 
 outputs = {}
 
-def mapper(key):
+def mapper(key, **kwargs):
     return outputs[key]
 
 

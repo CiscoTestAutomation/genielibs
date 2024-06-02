@@ -16,7 +16,7 @@ from genie.libs.parser.ios.show_acl import ShowAccessLists
 outputs = {}
 outputs['show access-lists'] = AclOutput.ShowAccessLists
 
-def mapper(key):
+def mapper(key, **kwargs):
     return outputs[key]
 
 class TestAcl(unittest.TestCase):

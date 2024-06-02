@@ -74,7 +74,7 @@ output['show lisp all instance-id 101 ethernet database'] = LispOutput.ShowLispI
 
 
 
-def mapper(key):
+def mapper(key, **kwargs):
     if key in output:
         return output[key]
     key = key.replace('show lisp ', 'show lisp all ')

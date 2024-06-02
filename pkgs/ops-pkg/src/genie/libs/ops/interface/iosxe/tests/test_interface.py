@@ -32,7 +32,7 @@ outputs['show interfaces'] = InterfaceOutput.ShowInterfaces_all
 outputs['show ip interface'] = InterfaceOutput.ShowIpInterfaces_all
 outputs['show ipv6 interface'] = InterfaceOutput.ShowIpv6Interfaces_all
 outputs['show interfaces accounting'] = InterfaceOutput.ShowInterfacesAccounting_all
-def mapper(key):
+def mapper(key, **kwargs):
     return outputs[key]
 
 class test_interface(unittest.TestCase):

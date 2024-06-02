@@ -19,7 +19,7 @@ outputs['show eigrp ipv6 neighbors detail'] = EigrpOutput.ShowEigrpIpv6Neighbors
 outputs['show eigrp ipv4 vrf all neighbors detail'] = EigrpOutput.ShowEigrpIpv4NeighborsDetailAllVrf
 outputs['show eigrp ipv6 vrf all neighbors detail'] = EigrpOutput.ShowEigrpIpv6NeighborsDetailAllVrf
 
-def mapper(key):
+def mapper(key, **kwargs):
 
     return outputs[key]
 

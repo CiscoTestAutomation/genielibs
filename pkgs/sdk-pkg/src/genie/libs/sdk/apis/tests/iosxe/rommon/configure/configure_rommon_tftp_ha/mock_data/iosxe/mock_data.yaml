@@ -1,0 +1,19 @@
+enable:
+  prompt: "ott-c9400-05#"
+
+disable:
+  prompt: "ott-c9400-05>"
+
+rommon:
+    prompt: "switch:"
+    commands:
+      DEFAULT_GATEWAY=1.1.1.1: ''
+      IP_ADDRESS=5.5.5.5: ''
+      IP_SUBNET_MASK=255.255.0.0: ''
+      TFTP_SERVER=2.2.2.2: ''
+      TFTP_FILE=flash:/test.bin: ''
+      DEFAULT_GATEWAY=2.2.2.2: ''
+      IP_ADDRESS=6.6.6.6: ''
+      IP_SUBNET_MASK=255.255.0.0: ''
+      TFTP_SERVER=2.2.2.2: ''
+      TFTP_FILE=flash:/test.bin: ''     

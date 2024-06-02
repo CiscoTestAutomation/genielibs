@@ -37,7 +37,7 @@ outputs['show pim vrf default ipv6 rpf summary'] = McastOutput.PimVrfDefaultIpv6
 outputs['show pim vrf default ipv6 mstatic'] = McastOutput.PimVrfDefaultIpv6Mstatic
 outputs['show mrib vrf default ipv6 route'] = McastOutput.MribVrfDefaultIpv6Route
 
-def mapper(key):
+def mapper(key, **kwargs):
     return outputs[key]
 
 

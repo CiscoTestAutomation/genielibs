@@ -9,6 +9,7 @@ import yaml
 from genie.libs.sdk.apis.utils import get_config_dict
 from genie.libs.parser.nxos.ping import Ping
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
+from genie.libs.sdk.apis.utils import copy_from_device as generic_copy_from_device
 
 # unicon
 from unicon.eal.dialogs import Dialog, Statement
@@ -342,3 +343,63 @@ def clear_logging(device):
         )
 
     return output
+
+
+def copy_from_device(device,
+                     local_path,
+                     remote_path=None,
+                     server=None,
+                     protocol=None,
+                     vrf=None,
+                     timeout=300,
+                     timestamp=False,
+                     http_auth=True,
+                     use_kstack=True,
+                     **kwargs):
+    """
+    Copy a file from the device to the server or local system (where the script is running).
+    Local system copy uses HTTP and is only supported via telnet or SSH sessions.
+
+    Args:
+        device (Device): device object
+        local_path (str): local path from the device (path including filename)
+        remote_path (str): Path on the server (default: .) (optionally include filename)
+        server (str): Server to copy file to (optional)
+        protocol (str): Protocol to use to copy (default: http)
+        vrf (str): VRF to use for copying (default: None)
+        timeout('int'): timeout value in seconds, default 300
+        timestamp (bool): include timestamp in filename (default: False)
+        http_auth (bool): Use http authentication (default: True)
+        use_kstack (bool): Use faster version of copy, defaults True
+                           Not supported with a file transfer protocol
+                           prompting for a username and password
+
+    Returns:
+        (str, None): console output if successful, None if not
+
+    If the server is not specified, below logic applies.
+
+    If no filename is specified, the filename will be based on the device hostname
+    and slugified name of the file determined from the local_path.
+
+    The local IP adddress will be determined from the spawned telnet or ssh session.
+    A temporary http server will be created and the show tech file will be sent
+    to the host where the script is running.
+
+    If the device is connected via proxy (unix jump host) and the proxy has
+    'socat' installed, the upload will be done via the proxy automatically.
+
+    Note: if the file already exists, it will be overwritten.
+    """
+    return generic_copy_from_device(
+        device=device,
+        local_path=local_path,
+        remote_path=remote_path,
+        server=server,
+        protocol=protocol,
+        vrf=vrf,
+        timeout=timeout,
+        timestamp=timestamp,
+        http_auth=http_auth,
+        use_kstack=use_kstack,
+        **kwargs)

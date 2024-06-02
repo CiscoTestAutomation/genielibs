@@ -22,7 +22,7 @@ outputs['show ntp associations'] = NtpOutputNoConfig.ShowNtpAssociations
 outputs['show ntp status'] = NtpOutputNoConfig.ShowNtpStatus
 outputs['show ntp config'] = NtpOutputNoConfig.ShowNtpConfig
 
-def mapper(key):
+def mapper(key, **kwargs):
     return outputs[key]
 
 

@@ -6991,14 +6991,16 @@
         },
         "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/triggers/ha/reload/iosxe/asr1k/reload.py"
       },
-      "c3850": {
-        "doc": "Reload the whole device.\n\n    trigger_datafile:\n        Mandatory:\n            timeout: \n                max_time (`int`): Maximum wait time for the trigger,\n                                in second. Default: 180\n                interval (`int`): Wait time between iteration when looping is needed,\n                                in second. Default: 15\n        Optional:\n            tgn_timeout (`int`): Maximum wait time for all traffic threads to be\n                                 restored to the reference rate,\n                                 in second. Default: 60\n            tgn_delay (`int`): Wait time between each poll to verify if traffic is resumed,\n                               in second. Default: 10\n\n    steps:\n        1. Learn Platform Ops object and store the \"ok, active|ok, standby|Ready\"\n           switch(es) if has any, otherwise, SKIP the trigger\n        2. Do reload by command \"reload\"\n        3. Learn Platform Ops again and verify the state of RP(s) is \n           \"ok, active|ok, standby\", verify every member status is \"Ready\",\n           and verify left attributes from the ops are the same as the Ops in step 1\n        4. Update platform PTS if feature pts is enabled,\n           Update global/local veirifications if enabled\n\n    ",
-        "groups": [],
-        "source": {
-          "class": "triggers.ha.reload.reload.TriggerReload",
-          "pkg": "genie.libs.sdk"
-        },
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/triggers/ha/reload/iosxe/c3850/reload.py"
+      "cat3k": {
+        "c3850": {
+          "doc": "Reload the whole device.\n\n    trigger_datafile:\n        Mandatory:\n            timeout: \n                max_time (`int`): Maximum wait time for the trigger,\n                                in second. Default: 180\n                interval (`int`): Wait time between iteration when looping is needed,\n                                in second. Default: 15\n        Optional:\n            tgn_timeout (`int`): Maximum wait time for all traffic threads to be\n                                 restored to the reference rate,\n                                 in second. Default: 60\n            tgn_delay (`int`): Wait time between each poll to verify if traffic is resumed,\n                               in second. Default: 10\n\n    steps:\n        1. Learn Platform Ops object and store the \"ok, active|ok, standby|Ready\"\n           switch(es) if has any, otherwise, SKIP the trigger\n        2. Do reload by command \"reload\"\n        3. Learn Platform Ops again and verify the state of RP(s) is \n           \"ok, active|ok, standby\", verify every member status is \"Ready\",\n           and verify left attributes from the ops are the same as the Ops in step 1\n        4. Update platform PTS if feature pts is enabled,\n           Update global/local veirifications if enabled\n\n    ",
+          "groups": [],
+          "source": {
+            "class": "triggers.ha.reload.reload.TriggerReload",
+            "pkg": "genie.libs.sdk"
+          },
+          "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/triggers/ha/reload/iosxe/cat3k/c3850/reload.py"
+        }
       },
       "cat9k": {
         "doc": "Reload the whole device.\n\n    trigger_datafile:\n        Mandatory:\n            timeout: \n                max_time (`int`): Maximum wait time for the trigger,\n                                in second. Default: 180\n                interval (`int`): Wait time between iteration when looping is needed,\n                                in second. Default: 15\n        Optional:\n            tgn_timeout (`int`): Maximum wait time for all traffic threads to be\n                                 restored to the reference rate,\n                                 in second. Default: 60\n            tgn_delay (`int`): Wait time between each poll to verify if traffic is resumed,\n                               in second. Default: 10\n\n    steps:\n        1. Learn Platform Ops object and store the \"ok, active|ok, standby|Ready\"\n           switch(es) if has any, otherwise, SKIP the trigger\n        2. Do reload by command \"reload\"\n        3. Learn Platform Ops again and verify the state of RP(s) is \n           \"ok, active|ok, standby\", verify every member status is \"Ready\",\n           and verify left attributes from the ops are the same as the Ops in step 1\n        4. Update platform PTS if feature pts is enabled,\n           Update global/local verifications if enabled\n\n    ",
@@ -7209,14 +7211,16 @@
         },
         "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/triggers/ha/reload/iosxe/asr1k/reload.py"
       },
-      "c3850": {
-        "doc": "Reload active switch on device.\n\n    trigger_datafile:\n        Mandatory:\n            timeout: \n                max_time (`int`): Maximum wait time for the trigger,\n                                in second. Default: 180\n                interval (`int`): Wait time between iteration when looping is needed,\n                                in second. Default: 15\n            lcRole (`str`): The role of LC which is 'active'\n        Optional:\n            tgn_timeout (`int`): Maximum wait time for all traffic threads to be\n                                 restored to the reference rate,\n                                 in second. Default: 60\n            tgn_delay (`int`): Wait time between each poll to verify if traffic is resumed,\n                               in second. Default: 10\n            static:\n                The keys below are dynamically learnt by default.\n                However, they can also be set to a custom value when provided in the trigger datafile.\n\n                active_rp: `str`\n                standby_rp: `str`\n                members: `str`\n\n                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)\n                   OR\n                   interface: 'Ethernet1/1/1' (Specific value)\n    steps:\n        1. Learn Platform Ops object and store the \"active\" and \"standby\" switch\n           if has any, otherwise, SKIP the trigger\n        2. Do reload by command \"reload slot <lc>\"\n        3. Learn Platform Ops again and verify the role of \"active\" switch changes to \"standby\",\n           verify the role of \"standby\" switch changes to \"member\",\n           verify the role of \"member\" switch with highest priority changes to \"standby\",\n           and verify left attributes from the ops are the same as the Ops in step 1\n        4. Update platform PTS if feature pts is enabled,\n           Update global/local veirifications if enabled\n\n    ",
-        "groups": [],
-        "source": {
-          "class": "triggers.ha.reload.reload.TriggerReloadActiveRP",
-          "pkg": "genie.libs.sdk"
-        },
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/triggers/ha/reload/iosxe/c3850/reload.py"
+      "cat3k": {
+        "c3850": {
+          "doc": "Reload active switch on device.\n\n    trigger_datafile:\n        Mandatory:\n            timeout: \n                max_time (`int`): Maximum wait time for the trigger,\n                                in second. Default: 180\n                interval (`int`): Wait time between iteration when looping is needed,\n                                in second. Default: 15\n            lcRole (`str`): The role of LC which is 'active'\n        Optional:\n            tgn_timeout (`int`): Maximum wait time for all traffic threads to be\n                                 restored to the reference rate,\n                                 in second. Default: 60\n            tgn_delay (`int`): Wait time between each poll to verify if traffic is resumed,\n                               in second. Default: 10\n            static:\n                The keys below are dynamically learnt by default.\n                However, they can also be set to a custom value when provided in the trigger datafile.\n\n                active_rp: `str`\n                standby_rp: `str`\n                members: `str`\n\n                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)\n                   OR\n                   interface: 'Ethernet1/1/1' (Specific value)\n    steps:\n        1. Learn Platform Ops object and store the \"active\" and \"standby\" switch\n           if has any, otherwise, SKIP the trigger\n        2. Do reload by command \"reload slot <lc>\"\n        3. Learn Platform Ops again and verify the role of \"active\" switch changes to \"standby\",\n           verify the role of \"standby\" switch changes to \"member\",\n           verify the role of \"member\" switch with highest priority changes to \"standby\",\n           and verify left attributes from the ops are the same as the Ops in step 1\n        4. Update platform PTS if feature pts is enabled,\n           Update global/local veirifications if enabled\n\n    ",
+          "groups": [],
+          "source": {
+            "class": "triggers.ha.reload.reload.TriggerReloadActiveRP",
+            "pkg": "genie.libs.sdk"
+          },
+          "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/triggers/ha/reload/iosxe/cat3k/c3850/reload.py"
+        }
       },
       "devices": [
         "uut"
@@ -7432,14 +7436,16 @@
   },
   "TriggerReloadMember": {
     "iosxe": {
-      "c3850": {
-        "doc": "Reload member switch on device.\n\n    trigger_datafile:\n        Mandatory:\n            timeout: \n                max_time (`int`): Maximum wait time for the trigger,\n                                in second. Default: 180\n                interval (`int`): Wait time between iteration when looping is needed,\n                                in second. Default: 15\n        Optional:\n            tgn_timeout (`int`): Maximum wait time for all traffic threads to be\n                                 restored to the reference rate,\n                                 in second. Default: 60\n            tgn_delay (`int`): Wait time between each poll to verify if traffic is resumed,\n                               in second. Default: 10\n            static:\n                The keys below are dynamically learnt by default.\n                However, they can also be set to a custom value when provided in the trigger datafile.\n\n                members: `str`\n\n                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)\n                   OR\n                   interface: 'Ethernet1/1/1' (Specific value)\n    steps:\n        1. Learn Platform Ops object and store the \"member\" switch(es)\n           if has any, otherwise, SKIP the trigger\n        2. Do reload by command \"reload slot <lc>\"\n        3. Learn Platform Ops again and the ops are the same as the Ops in step 1\n        4. Update platform PTS if feature pts is enabled,\n           Update global/local veirifications if enabled\n\n    ",
-        "groups": [],
-        "source": {
-          "class": "triggers.ha.reload.reload.TriggerReloadMember",
-          "pkg": "genie.libs.sdk"
-        },
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/triggers/ha/reload/iosxe/c3850/reload.py"
+      "cat3k": {
+        "c3850": {
+          "doc": "Reload member switch on device.\n\n    trigger_datafile:\n        Mandatory:\n            timeout: \n                max_time (`int`): Maximum wait time for the trigger,\n                                in second. Default: 180\n                interval (`int`): Wait time between iteration when looping is needed,\n                                in second. Default: 15\n        Optional:\n            tgn_timeout (`int`): Maximum wait time for all traffic threads to be\n                                 restored to the reference rate,\n                                 in second. Default: 60\n            tgn_delay (`int`): Wait time between each poll to verify if traffic is resumed,\n                               in second. Default: 10\n            static:\n                The keys below are dynamically learnt by default.\n                However, they can also be set to a custom value when provided in the trigger datafile.\n\n                members: `str`\n\n                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)\n                   OR\n                   interface: 'Ethernet1/1/1' (Specific value)\n    steps:\n        1. Learn Platform Ops object and store the \"member\" switch(es)\n           if has any, otherwise, SKIP the trigger\n        2. Do reload by command \"reload slot <lc>\"\n        3. Learn Platform Ops again and the ops are the same as the Ops in step 1\n        4. Update platform PTS if feature pts is enabled,\n           Update global/local veirifications if enabled\n\n    ",
+          "groups": [],
+          "source": {
+            "class": "triggers.ha.reload.reload.TriggerReloadMember",
+            "pkg": "genie.libs.sdk"
+          },
+          "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/triggers/ha/reload/iosxe/cat3k/c3850/reload.py"
+        }
       },
       "devices": [
         "uut"
@@ -7495,14 +7501,16 @@
         },
         "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/triggers/ha/reload/iosxe/asr1k/reload.py"
       },
-      "c3850": {
-        "doc": "Reload standby switch on device.\n\n    trigger_datafile:\n        Mandatory:\n            timeout: \n                max_time (`int`): Maximum wait time for the trigger,\n                                in second. Default: 180\n                interval (`int`): Wait time between iteration when looping is needed,\n                                in second. Default: 15\n            lcRole (`str`): The role of LC which is 'standby'\n        Optional:\n            tgn_timeout (`int`): Maximum wait time for all traffic threads to be\n                                 restored to the reference rate,\n                                 in second. Default: 60\n            tgn_delay (`int`): Wait time between each poll to verify if traffic is resumed,\n                               in second. Default: 10\n            static:\n                The keys below are dynamically learnt by default.\n                However, they can also be set to a custom value when provided in the trigger datafile.\n\n                standby_rp: `str`\n                members: `str`\n\n                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)\n                   OR\n                   interface: 'Ethernet1/1/1' (Specific value)\n    steps:\n        1. Learn Platform Ops object and store the \"standby\" switch and \"member\" switch(es)\n           if has any, otherwise, SKIP the trigger\n        2. Do reload by command \"reload slot <lc>\"\n        3. Learn Platform Ops again and verify role of \"standby\" switch changes to \"member\",\n           verify the role of \"member\" switch with highest priority changes to \"standby\",\n           and verify left attributes from the ops are the same as the Ops in step 1\n        4. Update platform PTS if feature pts is enabled,\n           Update global/local veirifications if enabled\n\n    ",
-        "groups": [],
-        "source": {
-          "class": "triggers.ha.reload.reload.TriggerReloadStandbyRP",
-          "pkg": "genie.libs.sdk"
-        },
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/triggers/ha/reload/iosxe/c3850/reload.py"
+      "cat3k": {
+        "c3850": {
+          "doc": "Reload standby switch on device.\n\n    trigger_datafile:\n        Mandatory:\n            timeout: \n                max_time (`int`): Maximum wait time for the trigger,\n                                in second. Default: 180\n                interval (`int`): Wait time between iteration when looping is needed,\n                                in second. Default: 15\n            lcRole (`str`): The role of LC which is 'standby'\n        Optional:\n            tgn_timeout (`int`): Maximum wait time for all traffic threads to be\n                                 restored to the reference rate,\n                                 in second. Default: 60\n            tgn_delay (`int`): Wait time between each poll to verify if traffic is resumed,\n                               in second. Default: 10\n            static:\n                The keys below are dynamically learnt by default.\n                However, they can also be set to a custom value when provided in the trigger datafile.\n\n                standby_rp: `str`\n                members: `str`\n\n                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)\n                   OR\n                   interface: 'Ethernet1/1/1' (Specific value)\n    steps:\n        1. Learn Platform Ops object and store the \"standby\" switch and \"member\" switch(es)\n           if has any, otherwise, SKIP the trigger\n        2. Do reload by command \"reload slot <lc>\"\n        3. Learn Platform Ops again and verify role of \"standby\" switch changes to \"member\",\n           verify the role of \"member\" switch with highest priority changes to \"standby\",\n           and verify left attributes from the ops are the same as the Ops in step 1\n        4. Update platform PTS if feature pts is enabled,\n           Update global/local veirifications if enabled\n\n    ",
+          "groups": [],
+          "source": {
+            "class": "triggers.ha.reload.reload.TriggerReloadStandbyRP",
+            "pkg": "genie.libs.sdk"
+          },
+          "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/triggers/ha/reload/iosxe/cat3k/c3850/reload.py"
+        }
       },
       "devices": [
         "uut"
@@ -8750,14 +8758,16 @@
         },
         "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/triggers/ha/switchover/iosxe/asr1k/switchover.py"
       },
-      "c3850": {
-        "doc": "Do switchover on device.\n\n    trigger_datafile:\n        Mandatory:\n            timeout: \n                max_time (`int`): Maximum wait time for the trigger,\n                                in second. Default: 180\n                interval (`int`): Wait time between iteration when looping is needed,\n                                in second. Default: 15\n        Optional:\n            tgn_timeout (`int`): Maximum wait time for all traffic threads to be\n                                 restored to the reference rate,\n                                 in second. Default: 60\n            tgn_delay (`int`): Wait time between each poll to verify if traffic is resumed,\n                               in second. Default: 10\n            static:\n                The keys below are dynamically learnt by default.\n                However, they can also be set to a custom value when provided in the trigger datafile.\n\n                active_rp: `str`\n                standby_rp: `str`\n                members: `str`\n\n                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)\n                    OR\n                    interface: 'Ethernet1/1/1' (Specific value)\n\n    steps:\n        1. Learn Platform Ops object and store the \"active\" RP and \"standby\" RP\n           if has any, otherwise, SKIP the trigger\n        2. Do switchover by command \"redundancy force-switchover\"\n        3. Learn Platform Ops again and verify the roles of \n           \"active\" RP and \"standby\" RP are swapped,\n           and verify left attributes from the ops are the same as the Ops in step 1\n        4. Update platform PTS if feature pts is enabled,\n           Update global/local veirifications if enabled\n\n    ",
-        "groups": [],
-        "source": {
-          "class": "triggers.ha.switchover.switchover.TriggerSwitchover",
-          "pkg": "genie.libs.sdk"
-        },
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/triggers/ha/switchover/iosxe/c3850/switchover.py"
+      "cat3k": {
+        "c3850": {
+          "doc": "Do switchover on device.\n\n    trigger_datafile:\n        Mandatory:\n            timeout: \n                max_time (`int`): Maximum wait time for the trigger,\n                                in second. Default: 180\n                interval (`int`): Wait time between iteration when looping is needed,\n                                in second. Default: 15\n        Optional:\n            tgn_timeout (`int`): Maximum wait time for all traffic threads to be\n                                 restored to the reference rate,\n                                 in second. Default: 60\n            tgn_delay (`int`): Wait time between each poll to verify if traffic is resumed,\n                               in second. Default: 10\n            static:\n                The keys below are dynamically learnt by default.\n                However, they can also be set to a custom value when provided in the trigger datafile.\n\n                active_rp: `str`\n                standby_rp: `str`\n                members: `str`\n\n                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)\n                    OR\n                    interface: 'Ethernet1/1/1' (Specific value)\n\n    steps:\n        1. Learn Platform Ops object and store the \"active\" RP and \"standby\" RP\n           if has any, otherwise, SKIP the trigger\n        2. Do switchover by command \"redundancy force-switchover\"\n        3. Learn Platform Ops again and verify the roles of \n           \"active\" RP and \"standby\" RP are swapped,\n           and verify left attributes from the ops are the same as the Ops in step 1\n        4. Update platform PTS if feature pts is enabled,\n           Update global/local veirifications if enabled\n\n    ",
+          "groups": [],
+          "source": {
+            "class": "triggers.ha.switchover.switchover.TriggerSwitchover",
+            "pkg": "genie.libs.sdk"
+          },
+          "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/triggers/ha/switchover/iosxe/cat3k/c3850/switchover.py"
+        }
       },
       "cat9k": {
         "doc": "Do switchover on device.\n\n    trigger_datafile:\n        Mandatory:\n            timeout: \n                max_time (`int`): Maximum wait time for the trigger,\n                                in second. Default: 180\n                interval (`int`): Wait time between iteration when looping is needed,\n                                in second. Default: 15\n        Optional:\n            tgn_timeout (`int`): Maximum wait time for all traffic threads to be\n                                 restored to the reference rate,\n                                 in second. Default: 60\n            tgn_delay (`int`): Wait time between each poll to verify if traffic is resumed,\n                               in second. Default: 10\n            static:\n                The keys below are dynamically learnt by default.\n                However, they can also be set to a custom value when provided in the trigger datafile.\n\n                active_rp: `str`\n                standby_rp: `str`\n                members: `str`\n\n                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)\n                    OR\n                    interface: 'Ethernet1/1/1' (Specific value)\n\n    steps:\n        1. Learn Platform Ops object and store the \"active\" RP and \"standby\" RP\n           if has any, otherwise, SKIP the trigger\n        2. Do switchover by command \"redundancy force-switchover\"\n        3. Learn Platform Ops again and verify the roles of \n           \"active\" RP and \"standby\" RP are swapped,\n           and verify left attributes from the ops are the same as the Ops in step 1\n        4. Update platform PTS if feature pts is enabled,\n           Update global/local verifications if enabled\n\n    ",
@@ -12138,6 +12148,41 @@
       "k",
       "r",
       "s"
+    ],
+    [
+      "3",
+      "a",
+      "c",
+      "k",
+      "t"
+    ],
+    [
+      "3",
+      "a",
+      "c",
+      "k",
+      "t"
+    ],
+    [
+      "3",
+      "a",
+      "c",
+      "k",
+      "t"
+    ],
+    [
+      "3",
+      "a",
+      "c",
+      "k",
+      "t"
+    ],
+    [
+      "3",
+      "a",
+      "c",
+      "k",
+      "t"
     ],
     [
       "3",

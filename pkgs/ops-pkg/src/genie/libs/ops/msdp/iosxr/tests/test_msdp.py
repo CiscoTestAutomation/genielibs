@@ -24,7 +24,7 @@ outputs['show msdp statistics peer'] = MsdpOutput.showMsdpStatisticsPeer
 outputs['show msdp vrf VRF1 statistics peer 10.4.1.1'] = MsdpOutput.showMsdpVRFStatisticsPeerArg
 outputs['show msdp vrf VRF1 statistics peer'] = MsdpOutput.showMsdpVRFStatisticsPeer
 
-def mapper(key):
+def mapper(key, **kwargs):
     return outputs[key]
 
 

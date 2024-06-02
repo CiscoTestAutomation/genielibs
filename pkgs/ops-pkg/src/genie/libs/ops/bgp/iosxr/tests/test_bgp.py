@@ -60,7 +60,7 @@ outputs['show bgp instance all vrf all ipv6 unicast neighbors 2001:db8:20:1:5::5
 outputs['show bgp instance all vrf all ipv6 unicast neighbors 2001:db8:20:1:5::5 routes'] = BgpOutput.RoutesIpv6Output
 
 
-def mapper(key):
+def mapper(key, **kwargs):
     return outputs[key]
 
 
