@@ -4,6 +4,7 @@ import logging
 log = logging.getLogger(__name__)
 # Unicon
 from unicon.core.errors import SubCommandFailure
+from genie.libs.clean.utils import get_image_handler
 import ipaddress
 from ipaddress import IPv4Address, IPv6Address, IPv4Interface, IPv6Interface, ip_interface
 
@@ -70,9 +71,9 @@ def configure_rommon_tftp(device, use_ipv6=False):
     tftp.setdefault("TFTP_SERVER", str(device.testbed.servers.get('tftp', {}).get('address', '')))
 
     # get the image from clean data
-    tftp_image_path = getattr(device.clean, 'images', [])
-    if tftp_image_path:
-        tftp.setdefault("TFTP_FILE", tftp_image_path[0])
+    image_handler = get_image_handler(device)
+    if image_handler.image:
+        tftp.setdefault("TFTP_FILE", image_handler.image[0])
 
     log.info("checking if all the tftp information is given by the user")
     if not all(tftp.values()):

@@ -1,6 +1,7 @@
 """Common configure functions for interface"""
 # Python
 import logging
+import re
 
 # Unicon
 from unicon.core.errors import SubCommandFailure
@@ -983,3 +984,34 @@ def unconfigure_policy_map_with_pps(device, policy_name, class_map_name, police_
         raise SubCommandFailure(
             f"Could not unconfigure policy_map {policy_name} with {class_map_name} and {police_rate} in pps.  Error:\n{e}")
             
+
+def configure_policy_map_set_cos_cos_table(device, policy_map_name, class_name, table_name):
+    """ 
+    Args:
+        device ('obj'): device to use
+        policy_map_name ('str'): name of policy-map
+        class_name ('str'): class-default or any user defined class name
+        table_name('str'): table name
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    if class_name == 'class-default':
+        config = [
+            "policy-map {}".format(policy_map_name), 
+            "class {}".format(class_name), 
+            "set cos cos table {}".format(table_name)
+            ]
+    else:
+        config = [
+            "class-map {}".format(class_name), 
+            "policy-map {}".format(policy_map_name), 
+            "class {}".format(class_name), 
+            "set cos cos table {}".format(table_name)
+            ]
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure("Could not configure policy map set cos cos table. Error:\n{error}".format(error=e))

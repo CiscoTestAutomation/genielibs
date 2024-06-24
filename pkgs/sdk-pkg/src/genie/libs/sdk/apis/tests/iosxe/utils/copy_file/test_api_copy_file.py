@@ -30,6 +30,6 @@ class TestCopyFile(unittest.TestCase):
         )
 
     def test_copy_file(self):
-        result = copy_file(self.device, 'nvram', 'bootflash:', 'ca.ser')
+        result = copy_file(self.device, 'nvram', 'bootflash:', 'ca.ser', 60)
         expected_output = None
         self.assertEqual(result, expected_output)

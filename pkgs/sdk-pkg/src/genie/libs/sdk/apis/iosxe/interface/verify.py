@@ -1286,11 +1286,41 @@ def verify_interfaces_transceiver_supported(
     return False
 
 
+def verify_interface_status_duplex(device, interface, expected_duplex_status, max_time=60, 
+                                   check_interval=10):
+    """Verify interface status duplex
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+            expected_duplex_status (`str`): Expected duplex status ('auto' or specific code)
+            max_time (`int`): max time
+            check_interval (`int`): check interval
+        Returns:
+            result(`bool`): True if is up else False
+
+    """
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+
+        out = device.parse(f"show interfaces {interface} status")
+        out_status = out['interfaces'][interface]['duplex_code']
+        if expected_duplex_status == "auto":
+            if expected_duplex_status not in out_status:
+                return True
+        else:
+            if expected_duplex_status in out_status:
+                return True
+        
+        timeout.sleep()
+        
+    return False
+
+
 def verify_dual_port_interface_config_media_type(device, interface, media_type, 
                                                  max_time=60, check_interval=10, 
                                                  flag=True):
     """Verify interface configured media_type in - show running-config interface <interface-name>
-
         Args:
             device (`obj`): Device object
             interface (`str`): Interface name
@@ -1343,3 +1373,35 @@ def verify_dual_port_interface_config_media_type(device, interface, media_type,
         timeout.sleep()
 
     return False
+
+
+def verify_interface_config_no_speed(device, interface, max_time=60, check_interval=10, 
+                                     flag=True):
+    """Verify interface doesn't have speed in - show running-config interface <interface-name>
+
+        Args:
+            device (`obj`)          : Device object
+            interface (`str`)       : Interface name
+            max_time (`int`)        : max time
+            check_interval (`int`)  : check interval
+            flag (`bool`, optional) : True if verify shutdown 
+                                      False if verify no shutdown
+        Returns:
+            result(`bool`): verify result
+    """
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        out = device.execute(f"show run interface {interface}")
+
+        cfg_dict = get_config_dict(out)
+        key = f"interface {interface}"
+
+        result = not(key in cfg_dict and "speed" in cfg_dict[key])
+
+        if flag == result:
+            return True
+        timeout.sleep()
+
+    return False
+

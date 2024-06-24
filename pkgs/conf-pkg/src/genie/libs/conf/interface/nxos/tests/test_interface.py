@@ -1367,6 +1367,91 @@ class test_nx_interface(TestCase):
                 ' exit',
             ]))
 
+    def test_ethernet_interface_port_security_trunk(self):
+        testbed = Genie.testbed = Testbed()
+        dev1 = Device(testbed=testbed, name='PE1', os='nxos')
+        intf1 = EthernetInterface(name='Ethernet0/0/1', device=dev1)
+        intf1.switchport_enable = True
+        intf1.switchport_mode = 'trunk'
+        intf1.portsec_count = '1025'
+        intf1.portsec_violation_mode = 'protect'
+        intf1.portsec_aging_type = 'inactivity'
+        intf1.portsec_aging_time = '5'
+        intf1.portsec_enable = True
+        cfg = intf1.build_config(apply=False)
+        self.assertMultiLineEqual(
+            str(cfg),
+            '\n'.join([
+                'interface Ethernet0/0/1',
+                ' switchport',
+                ' switchport mode trunk',
+                ' switchport port-security maximum 1025',
+                ' switchport port-security violation protect',
+                ' switchport port-security aging time 5',
+                ' switchport port-security aging type inactivity',
+                ' switchport port-security',
+                ' exit',
+            ]))
+
+    def test_ethernet_interface_port_security_access(self):
+        testbed = Genie.testbed = Testbed()
+        dev1 = Device(testbed=testbed, name='PE1', os='nxos')
+        intf1 = EthernetInterface(name='Ethernet0/0/2', device=dev1)
+        intf1.switchport_enable = True
+        intf1.switchport_mode = 'access'
+        intf1.portsec_count = '1025'
+        intf1.portsec_violation_mode = 'restrict'
+        intf1.portsec_aging_type = 'absolute'
+        intf1.portsec_aging_time = '5'
+        intf1.portsec_type = 'static'
+        intf1.portsec_static_mac = '0015.0600.0001'
+        intf1.portsec_enable = True
+        cfg = intf1.build_config(apply=False)
+        self.assertMultiLineEqual(
+            str(cfg),
+            '\n'.join([
+                'interface Ethernet0/0/2',
+                ' switchport',
+                ' switchport mode access',
+                ' switchport port-security maximum 1025',
+                ' switchport port-security mac-address 0015.0600.0001',
+                ' switchport port-security violation restrict',
+                ' switchport port-security aging time 5',
+                ' switchport port-security aging type absolute',
+                ' switchport port-security',
+                ' exit',
+            ]))
+
+    def test_port_channel_vpc(self):
+        # For failures
+        self.maxDiff = None
+
+        # Set Genie Tb
+        testbed = Testbed()
+        Genie.testbed = testbed
+
+        # Device
+        dev1 = Device(name='PE1', testbed=testbed, os='nxos')
+        intf1 = Interface(name='port-channel10', device=dev1)
+
+        # Apply configuration
+        intf1.switchport_enable = True
+        intf1.vpc_peer_link = True
+        intf1.vpc_id = '11'
+
+        # Build config
+        cfgs = intf1.build_config(apply=False)
+        # Check config build correctly
+        self.assertMultiLineEqual(
+            str(cfgs),
+            '\n'.join([
+                'interface port-channel10',
+                ' switchport',
+                ' vpc peer-link',
+                ' vpc 11',
+                ' exit'
+                ]))
+    
 if __name__ == '__main__':
     unittest.main()
 

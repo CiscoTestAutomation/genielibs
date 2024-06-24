@@ -2,6 +2,7 @@
 
 # Python
 import logging
+import re
 
 # Unicon
 from unicon.core.errors import SubCommandFailure
@@ -303,3 +304,58 @@ def debug_vdsl_controller_slot_dump_internal(device, slot, filename='sfp', timeo
         device.execute(cmd,timeout=timeout)
     except Exception as e:
         log.warning(e)
+
+
+def debug_platform_software_fed_switch_active_punt_packet_capture(
+        device, 
+        allow_buffer_limit=False, 
+        buffer_limit=16384, 
+        allow_circular_buffer_limit=False, 
+        circular_buffer_limit=16384, 
+        allow_set_filter=False, 
+        set_filter_value=None, 
+        allow_clear_filter=False, 
+        start=False, 
+        stop=False
+        ):
+    """debug platform software fed switch active punt packet-capture on SVL
+    Args:
+        device (obj): Device to execute on
+        allow_buffer_limit(bool) : if user want to set buffer limit , Default False
+        buffer_limit(int , optional): Number of packets to capture <256-16384> , Default 16384 (max)
+        allow_circular_buffer_limit(bool) : if user want to set circular buffer limit , Default False
+        circular_buffer_limit(int , optional): Number of packets to capture <256-16384> , Default 16384 (max)
+        allow_set_filter(bool): if user want to set filter , Default False
+        set_filter_value(str): user input of filter 
+        allow_clear_filter(bool): if user want to clear all filters , Default False
+        start(bool): starting the capture
+        stop(bool): stop the capture
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: debug_platform_software_fed_switch_active_punt_packet_capture Failed !
+    """
+    cmd = []
+    
+    if allow_buffer_limit:
+        log.info("Setting the buffer limit to {buffer_limit}".format(buffer_limit=buffer_limit))
+        cmd.append("debug platform software fed switch active punt packet-capture buffer limit {buffer_limit}".format(buffer_limit=buffer_limit))  
+    if allow_circular_buffer_limit:
+        log.info("Setting the circular buffer limit to {buffer_limit}".format(buffer_limit=circular_buffer_limit))
+        cmd.append("debug platform software fed switch active punt packet-capture buffer circular limit {buffer_limit}".format(buffer_limit=circular_buffer_limit))
+    if allow_set_filter:
+        log.info("Setting filter as {}".format(set_filter_value))
+        cmd.append("debug platform software fed switch active punt packet-capture set-filter {filter}".format(filter=set_filter_value)) 
+    if allow_clear_filter:
+        log.info("Clearing all the filters")
+        cmd.append("debug platform software fed switch active punt packet-capture clear-filter")         
+    if start:
+        log.info("Starting capture")
+        cmd.append("debug platform software fed switch active punt packet-capture start")
+    if stop:
+        log.info("Stopping capture")
+        cmd.append("debug platform software fed switch active punt packet-capture stop")
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        log.error("debug_platform_software_fed_switch_active_punt_packet_capture Failed ! {}".format(e))

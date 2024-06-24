@@ -81,3 +81,41 @@ class TestRequestSystemShell(unittest.TestCase):
                            '**\r\n'
                            "Terminal type 'network' unknown. Assuming vt100")
         self.assertEqual(result, expected_output)
+
+    def test_request_system_shell_multiple_commands(self):
+        self.maxDiff = None
+        expected_output = ('Activity within this shell can jeopardize the functioning of the system.\r\n'
+                           'Are you sure you want to continue? [y/n] y\r\n'
+                           '2023/10/10 09:50:10 : Shell access was granted to user <anon>; Trace file: , '
+                           '/crashinfo/tracelogs/system_shell_R0-0.31502_0.20231010095010.bin\r\n'
+                           '********************************************************************** \r\n'
+                           'Activity within this shell can jeopardize the functioning \r\n'
+                           'of the system.\r\n'
+                           'Use this functionality only under supervision of Cisco Support.\r\n'
+                           '\r\n'
+                           'Session will be logged to:\r\n'
+                           '  crashinfo:tracelogs/system_shell_R0-0.31502_0.20231010095010.bin\r\n'
+                           '********************************************************************** \r\n'
+                           "Terminal type 'network' unknown.  Assuming vt100"
+                           '[69318.122111] NFS: SECINFO: security flavor 390005 is not supported\r\n'
+                           '[69404.497666] igb: eth1 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX\r\n'
+                           '[69437.624382] RP3 CPLD: Old val 0x30003 Updated val 0x30003\r\n'
+                           '[69437.625824] RP3 CPLD: Old val 0x30003 Updated val 0x30003\r\n'
+                           '[69961.469516] watchdog: watchdog0: nowayout prevents watchdog being stopped!\r\n'
+                           '[69961.469553] watchdog: watchdog0: nowayout prevents watchdog being stopped!\r\n'
+                           '[69961.469555] watchdog: watchdog0: watchdog did not stop!\r\n'
+                           '[69961.534934] systemd[1]: systemd 251 running in system mode (+PAM +AUDIT +SELINUX '
+                           '-APPARMOR +IMA -SMACK -SECCOMP -GCRYPT -GNUTLS -OPENSSL +ACL +BLKID -CURL -ELFUTILS '
+                           '-FIDO2 -IDN2 -IDN -IPTC +KMOD -LIBCRYPTSETUP +LIBFDISK -PCRE2 -PWQUALITY -P11KIT '
+                           '-QRENCODE -TPM2 -BZIP2 -LZ4 -XZ -ZLIB +ZSTD -BPF_FRAMEWORK '
+                           '-XKBCOMMON +UTMP +SYSVINIT default-hierarchy=hybrid)\r\n'
+                           '[69961.535030] systemd[1]: Detected architecture x86-64.\r\n'
+                           '[69966.416588] watchdog: watchdog0: watchdog did not stop!')
+        cmds_list= [
+            "sed -r -i 's/(RuntimeWatchdogSec=).*/\\10/' /etc/systemd/system.conf",
+            "systemctl daemon-reexec",
+            "echo 1 > /dev/watchdog",
+            "dmesg | tail"
+        ]
+        result = request_system_shell(self.device, command=cmds_list)
+        self.assertEqual(result, expected_output)

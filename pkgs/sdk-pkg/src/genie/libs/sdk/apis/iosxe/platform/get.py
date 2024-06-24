@@ -948,11 +948,16 @@ def get_boot_time(device):
 
         # Extract hours and minutes from the uptime string
         uptime_parts = uptime_str.split(', ')
-        hours_minutes = [part.split(' ')[0] for part in uptime_parts]
 
-        # Check if hours exist, if not, default to 0
-        hours = int(hours_minutes[0]) if hours_minutes[0].isdigit() else 0
-        minutes = int(hours_minutes[1])
+        # Initialize hours and minutes
+        hours = 0
+        minutes = 0
+
+        for part in uptime_parts:
+            if 'hour' in part:
+                hours = int(part.split(' ')[0])
+            elif 'minute' in part:
+                minutes = int(part.split(' ')[0])
 
         # Convert uptime to seconds
         uptime_seconds = hours * 3600 + minutes * 60
@@ -1171,7 +1176,7 @@ def get_platform_component_type_id_info(device):
         dict: A dictionary containing platform component and transceiver information.
     """
     output = {}
-
+    
     try:
         # Parse the command outputs
         platform_component_output = device.parse('test platform software database get-n all ios_oper/platform_component')

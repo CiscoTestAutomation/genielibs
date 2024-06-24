@@ -2935,3 +2935,98 @@ configure_management:
                 device.api.configure_management(**config_kwargs)
             else:
                 step.passx('No management info for device')
+
+
+class ConfigureInterfaces(BaseStage):
+    """This stage configures interfaces on the device.
+
+    This stages uses genie Conf objects and build_config() API to configure 
+    interfaces on devices.
+
+Stage Schema
+------------
+configure_interfaces:
+    interfaces:
+        <interfaces>:  # regex, default: '.*'
+            attributes ('list', optional):  List of interface attributes to configure.
+                Default: [enabled, speed, breakout]
+
+Example
+-------
+configure_interfaces:
+    interfaces:
+        <interface>:   # regex
+            attributes:
+                - enabled
+                - speed
+                - ipv4
+"""
+
+    # =================
+    # Argument Defaults
+    # =================
+    ATTRIBUTES = [
+        'enabled',
+        'speed',
+        'breakout',
+    ]
+    INTERFACE_NAME_REGEX = '.*'
+    ATTRIBUTE_FILTER = {}
+    INTERFACES = {
+        INTERFACE_NAME_REGEX: {
+            "attributes": ATTRIBUTES,
+        }
+    }
+
+    # ============
+    # Stage Schema
+    # ============
+    schema = {
+        Optional('interfaces'): {
+            str: {
+                Optional("attributes"): list,
+            }
+        }
+    }
+
+    # ==============================
+    # Execution order of Stage steps
+    # ==============================
+    exec_order = [
+        'configure_interfaces'
+    ]
+
+    def configure_interfaces(self, steps, device, interfaces=INTERFACES, **kwargs):
+        configuration_lines = []
+        for iface_regex in interfaces:
+            for _, iface_obj in device.interfaces.items():
+                if re.match(iface_regex, iface_obj.name):
+                    log.info(f'Preparing interface config for: {iface_obj.name}')
+                    attributes = interfaces.get(iface_regex, {}).get('attributes', {})
+
+                    # Create dictionary of attributes to configure
+                    attrs = {attr: getattr(iface_obj, attr) for attr in attributes \
+                                if getattr(iface_obj, attr, None) is not None}
+
+                    # enable interfaces if not breakout
+                    if hasattr(iface_obj, "breakout") and not iface_obj.breakout:
+                        iface_obj.enabled = True
+                        attrs.update({'enabled': True})
+
+                    # Get configuration lines from config builder
+                    try:
+                        config_lines = str(iface_obj.build_config(attributes=attrs, apply=False))
+                    except Exception as e:
+                        log.warning(f'Failed to build config for {iface_obj.name}: {e}')
+
+                    if hasattr(iface_obj, "breakout") and not iface_obj.breakout:
+                        # Extend lines to configuration variable
+                        configuration_lines.extend(config_lines.splitlines())
+
+        if getattr(device, "custom_config_cli", None):
+            config_lines = str(device.build_config(apply=False))
+            configuration_lines = config_lines.splitlines() + configuration_lines
+
+        # Configure all interfaces
+        if configuration_lines:
+            device.configure(configuration_lines)

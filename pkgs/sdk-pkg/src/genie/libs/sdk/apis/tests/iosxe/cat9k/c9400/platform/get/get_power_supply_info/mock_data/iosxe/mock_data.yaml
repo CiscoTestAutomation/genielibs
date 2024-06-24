@@ -1,0 +1,66 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: Switch(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: Switch(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show environment status:
+      response:
+      - "Power                                                       Fan States\r\n\
+        Supply  Model No              Type  Capacity  Status        1     2\r\n------\
+        \  --------------------  ----  --------  ------------  -----------\r\nPS1\
+        \     C9400-PWR-3200AC      ac    3200 W    active        good  good \r\n\r\
+        \nPS Current Configuration Mode : Combined\r\nPS Current Operating State \
+        \   : Combined\r\n\r\nPower supplies currently active    : 1\r\nPower supplies\
+        \ currently available : 1\r\n\r\n\r\nFantray : good\r\nPower consumed by Fantray\
+        \ : 540 Watts\r\nFantray airflow direction : side-to-side\r\nFantray beacon\
+        \ LED: off\r\nFantray status LED: green\r\nSYSTEM : GREEN"
+      response_type: circular
+    show platform hardware chassis power-supply detail all:
+      response:
+      - " Slot    Reg Name          Reg Value       Description                  \
+        \                                         \r\n ------  ---------------   --------------\
+        \  --------------------------------------------------------------------- \r\
+        \n PS1     REAL_TIME_FAULT   0x00 0x00 0x00  No Faults                   \
+        \                                         \r\n\r\n PS1     LATCHED_FAULT \
+        \    0x30 0x00 0x01  Vin out of range A, No Input detected A, All Vin out\
+        \ of range        \r\n\r\n\r\n Power     Input     Input     Input     Input\
+        \     Input     Input     Output    Output    Output    Fan1      Fan2   \
+        \   Heatsink  \r\n Supply    CurrentA  CurrentB  VoltageA  VoltageB  PowerA\
+        \    PowerB    Current   Voltage   Power     Speed     Speed     Temperature\r\
+        \n (Slot)    (A)       (A)       (V)       (V)       (W)       (W)       (A)\
+        \       (V)       (W)       (rpm)     (rpm)     (C)       \r\n --------- ---------\
+        \ --------- --------- --------- --------- --------- --------- --------- ---------\
+        \ --------- --------- --------- \r\n PS1       2.6       n.a       207   \
+        \    n.a       517       n.a       8.8       55        479       6065    \
+        \  6237      42"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    show version | include operating mode: ''
+  prompt: Switch#

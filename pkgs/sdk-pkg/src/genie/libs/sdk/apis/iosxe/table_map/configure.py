@@ -1,6 +1,7 @@
 """Common configure functions for interface"""
 # Python
 import logging
+import re
 
 # Unicon
 from unicon.core.errors import SubCommandFailure
@@ -79,4 +80,23 @@ def unconfigure_table_map(device, table_map_name):
                 error=e
             )
         )
-
+    
+def configure_table_map_set_default(device, table_map_name, sub_option = 'copy'):
+    """ 
+        Args:
+            device ('obj'): device to use
+            table_map_name ('str'): name of policy-map
+            sub_option ('str'): copy(By default) or ignore or any value
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        cli = [
+            "table-map {}".format(table_map_name), 
+            "default {}".format(sub_option)
+            ]
+        device.configure(cli)
+    except SubCommandFailure as e:
+        raise SubCommandFailure("Failed to configure table map set default. Error:\n{error}".format(error=e))

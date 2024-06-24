@@ -1,0 +1,44 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: 1783-HMS4EG8CGR(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: 1783-HMS4EG8CGR(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show cdp neighbors GigabitEthernet1/6:
+      response:
+      - "Capability Codes: R - Router, T - Trans Bridge, B - Source Route Bridge\r\
+        \n                  S - Switch, H - Host, I - IGMP, r - Repeater, P - Phone,\
+        \ \r\n                  D - Remote, C - CVTA, M - Two-port Mac Relay \r\n\r\
+        \nDevice ID        Local Intrfce     Holdtme    Capability  Platform  Port\
+        \ ID\r\n1783-MMS10EA-uut8\r\n                 Gig 1/6           124      \
+        \       R S I  Allen-Bra Gig 1/6\r\n\r\nTotal cdp entries displayed : 1"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    show version | include operating mode : ''
+  prompt: 1783-HMS4EG8CGR#

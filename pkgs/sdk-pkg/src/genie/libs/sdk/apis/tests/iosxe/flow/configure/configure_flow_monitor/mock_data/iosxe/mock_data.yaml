@@ -1,0 +1,43 @@
+configure:
+  commands:
+    cache timeout active 60: "javelin-morph-sj-ful(config-flow-monitor)#cache timeout\
+      \ active 60\r\n"
+    cache timeout inactive 60: "javelin-morph-sj-ful(config-flow-monitor)#cache timeout\
+      \ inactive 60\r\n"
+    end:
+      new_state: execute
+    exporter FNF-EXP: "javelin-morph-sj-ful(config-flow-monitor)#exporter FNF-EXP\r\
+      \n"
+    flow monitor m2in1: "flow monitor m2in1\r\n"
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    record r2in: "javelin-morph-sj-ful(config-flow-monitor)#record r2in\r\n"
+  prompt: javelin-morph-sj-full3-dut2(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: javelin-morph-sj-full3-dut2(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    show version | include operating mode: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: javelin-morph-sj-full3-dut2#

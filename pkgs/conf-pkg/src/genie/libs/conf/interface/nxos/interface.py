@@ -113,6 +113,7 @@ class Interface(genie.libs.conf.interface.Interface):
 
     priority_flow_control_mode = None
     switchport_mode = None
+    vpc_id        = None
     sw_acc_vlan = None
     sw_trunk_encap = None
     sw_trunk_allowed_vlan = None
@@ -744,6 +745,58 @@ class EthernetInterface(PhysicalInterface, genie.libs.conf.interface.EthernetInt
             configurations.append_line(
                 attributes.format(cmd),
                 unconfig_cmd=attributes.format(uncmd))
+
+        # Configures vpc peer-link for MCT port-channel
+        # Example:
+        # interface port-channel101
+        #   vpc peer-link
+        if attributes.value('vpc_peer_link'):
+            configurations.append_line(
+                attributes.format('vpc peer-link'),
+                unconfig_cmd='no vpc peer-link')
+        # Configures VPC id on vpc port-channel
+        # Sample:
+        #      interface port-channel102
+        #         vpc 102
+        if attributes.value('vpc_id'):
+            configurations.append_line(
+                attributes.format('vpc {vpc_id}'),
+                unconfig_cmd='no vpc {vpc_id}')
+
+        # Configures the port-security on interface
+        # Sample Configuration:
+        # interface port-channel11
+        #     switchport port-security maximum 1025
+        #     switchport port-security aging type inactivity
+        #     switchport port-security violation restrict
+        #     switchport port-security mac-address sticky
+        #     switchport port-security
+
+        if attributes.value('portsec_enable'): # Enables port-security on interface
+            # Configures max mac count for port-security
+            configurations.append_line(attributes.format('switchport port-security maximum {portsec_count}'),
+                unconfig_cmd='no switchport port-security maximum {portsec_count}')
+            if attributes.value('portsec_type') == 'static': # Configures port-security static mac
+                if attributes.value('portsec_static_vlan'): # If trunk mode, configure static mac with vlan
+                    configurations.append_line(attributes.format('switchport port-security mac-address {portsec_static_mac} vlan {portsec_static_vlan}'),
+                        unconfig_cmd='no switchport port-security mac-address {portsec_static_mac} vlan {portsec_static_vlan}')
+                else: # configure static mac without vlan
+                    configurations.append_line(attributes.format('switchport port-security mac-address {portsec_static_mac}'),
+                        unconfig_cmd='no switchport port-security mac-address {portsec_static_mac}')
+            elif attributes.value('portsec_type') == 'sticky': # configures port-security sticky mac
+                configurations.append_line(attributes.format('switchport port-security mac-address sticky'),
+                    unconfig_cmd='no switchport port-security mac-address sticky')
+            if attributes.value('portsec_violation_mode'): # configures port-security violation mode
+                configurations.append_line(attributes.format('switchport port-security violation {portsec_violation_mode}'),
+                    unconfig_cmd='no switchport port-security violation {portsec_violation_mode}')
+            if attributes.value('portsec_aging_time'): # configures port-security aging time
+                configurations.append_line(attributes.format('switchport port-security aging time {portsec_aging_time}'),
+                    unconfig_cmd='no switchport port-security aging time {portsec_aging_time}')
+            if attributes.value('portsec_aging_type'): # configures port-security aging type "inactive | absolute"
+                configurations.append_line(attributes.format('switchport port-security aging type {portsec_aging_type}'),
+                    unconfig_cmd='no switchport port-security aging type {portsec_aging_type}')
+            configurations.append_line(attributes.format('switchport port-security'),
+                unconfig_cmd='no switchport port-security')
 
         # private vlan access port
         if self.switchport_mode == str(L2_type.PRIVATE_VLAN_ACCESS):

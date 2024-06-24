@@ -10,7 +10,7 @@ class TestGetBootTime(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          HA-9400-S2:
+          Switch:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -19,10 +19,10 @@ class TestGetBootTime(unittest.TestCase):
                 protocol: unknown
             os: iosxe
             platform: cat9k
-            type: iosxe
+            type: None
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['HA-9400-S2']
+        self.device = self.testbed.devices['Switch']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -31,5 +31,5 @@ class TestGetBootTime(unittest.TestCase):
 
     def test_get_boot_time(self):
         result = get_boot_time(self.device)
-        expected_output = (1709000040, (1708000040, 1710000040))
+        expected_output = (1716175200, (1715175200, 1717175200))
         self.assertEqual(result, expected_output)

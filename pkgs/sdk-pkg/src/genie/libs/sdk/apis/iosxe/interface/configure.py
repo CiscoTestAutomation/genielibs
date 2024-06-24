@@ -4101,6 +4101,30 @@ def configure_subinterface(
         log.error(e)
         raise SubCommandFailure("Could not Configure subinterface")
 
+def configure_subinterface_second_dot1q(device, interface, intf_number,
+                                        vlan_id, second_vlan_id):
+    """ Configure subinterface second dot1q
+        Args:
+            device ('obj'): device to use
+            interface ('str'): physical interface
+            intf_number ('str'): subinterface any number
+            vlan_id ('str'): any number
+            second_vlan_id ('str'): any number
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: subinterface not enabled
+    """
+    cmd = [
+           f"interface {interface}.{intf_number}",
+           f"encapsulation dot1q {vlan_id} second-dot1q {second_vlan_id}",
+          ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not Configure subinterface")
+
 def configure_interface_reg_segment(
         device,
         interface,
@@ -7138,6 +7162,35 @@ def unconfigure_interface_switchport_dot1q_ethertype(device, interface, etherval
             )
         )
 
+def configure_interface_dot1q_ethertype(device, interface, ethervalue):
+    """ Configures ethertype on interface
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface to configure
+            ethervalue ('str'): Configure ethertype
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        "Configuring on {interface} with ethertype = {ethervalue}"\
+            .format(interface=interface, ethervalue=ethervalue
+        )
+    )
+    
+    config_list=["interface {interface}".format(interface=interface),\
+    "dot1q tunneling ethertype {ethervalue}".format(ethervalue=ethervalue)]
+
+    try:
+        device.configure(config_list)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure dot1q ethertype. Error:\n{error}"\
+                .format(error=e
+            )
+        )
+        
 def configure_hsrp_version_on_interface(device, interface, version):
     """ Configure hsrp version on interface
         Args:

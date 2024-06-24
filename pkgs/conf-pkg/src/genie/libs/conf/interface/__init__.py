@@ -24,6 +24,7 @@ from .ipv6addr import IPv6Addr
 from genie.libs import conf
 from genie.libs.conf.base import IPv4Address, IPv6Address, IPv4Interface, IPv6Interface, MAC
 from genie.libs.conf.vrf import Vrf
+from genie.abstract import Lookup
 
 from pyats.topology.schema import ipv6_or_list_of_ipv6
 
@@ -73,10 +74,22 @@ class UnknownInterfaceName(UserWarning):
 
 class ParsedInterfaceName(types.SimpleNamespace):
 
-    def __init__(self, name, device=None):
+    def __new__(cls, *args, device=None, **kwargs):
+        if '.'.join([cls.__module__, cls.__name__]) == 'genie.libs.conf.interface.ParsedInterfaceName':
+            genie_abstract = Lookup.from_device(device, packages={'conf': conf})
+            new_cls = genie_abstract.conf.interface.ParsedInterfaceName
+            return super().__new__(new_cls)
+        else:
+            return super().__new__(cls)
+
+    def __init__(self, name, device=None, **kwargs):
         if device is None and isinstance(name, ParsedInterfaceName):
             # copy constructor
             return super().__init__(vars(name))
+
+        if name is None:
+            return super().__init__(**kwargs)
+
         assert type(name) is str
 
         d = dict(
@@ -124,7 +137,9 @@ class ParsedInterfaceName(types.SimpleNamespace):
             $
         ''', name, re.VERBOSE | re.IGNORECASE)
         if not m:
-            raise ValueError('Unrecognized interface name %r' % (name,))
+            log.warning('Unrecognized interface name %r' % (name,))
+            return
+
         d.update(m.groupdict())
 
         if d['number']:

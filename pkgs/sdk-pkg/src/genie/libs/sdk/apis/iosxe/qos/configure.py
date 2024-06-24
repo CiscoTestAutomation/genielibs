@@ -364,3 +364,19 @@ def configure_queue_sub_interface(device, interface):
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure Queuing mode. Error:\n{e}")
+
+def config_replace_to_flash_memory_force(device,flash='flash', timeout=60):
+    """ execute configure replace to flash memory force
+        Args:
+            device ('obj'): Device object
+            flash ('str'): flash name for example flash or stby-bootflash.Defaults to flash
+            timeout ('int',optional): Max time for copying file from flash to complete in seconds.Defaults to 60
+        Returns:
+            None
+        Raise:
+            SubCommandFailure: Failed to execute replace flash memory force  
+    """
+    try:
+        device.execute(f"configure replace {flash}:backup_config force",timeout=timeout)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to execute configure replace flash memory force. Error:\n{e}")

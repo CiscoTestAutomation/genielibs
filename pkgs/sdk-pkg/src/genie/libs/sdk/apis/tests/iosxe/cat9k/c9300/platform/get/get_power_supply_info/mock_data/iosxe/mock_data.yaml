@@ -1,0 +1,53 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: Switch(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: Switch(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    show version | include operating mode: ''
+    test platform hardware fep switch 1 B dump-statistics:
+      response:
+      - "   Input voltage:   207.250V\r\n   Input current:   0.422A\r\n   Input power:\
+        \     76.0W\r\n   Output voltage:  55.914V\r\n   Output current:  1.195A\r\
+        \n   Output power:    66.500W\r\n   Inlet temp:      35.250 degrees\r\n  \
+        \ Outlet temp:     44.500 degrees\r\n   Hot-spot temp:   51.500 degrees\r\n\
+        \   Fan speed:       3136 RPM\r\n   Status word:     0x0\r\n   Status fans:\
+        \     0x0\r\n   VOUT_MODE:       0x19"
+      response_type: circular
+    test platform software database get-n all ios_oper/power_supply_comp:
+      response:
+      - "Table Record Index 0 = {\r\n [0] ps_name = PowerSupply1/A\r\n [1] ps_enabled\
+        \ = false\r\n [2] ps_capacity = 0\r\n [3] ps_iin = 0\r\n [4] ps_iout = 0\r\
+        \n [5] ps_vin = 0\r\n [6] ps_vout = 0\r\n [7] ps_pout = 0\r\n}\r\nTable Record\
+        \ Index 1 = {\r\n [0] ps_name = PowerSupply1/B\r\n [1] ps_enabled = true\r\
+        \n [2] ps_capacity = 350\r\n [3] ps_iin = 438\r\n [4] ps_iout = 1219\r\n [5]\
+        \ ps_vin = 206250\r\n [6] ps_vout = 55914\r\n [7] ps_pout = 68000\r\n}"
+      response_type: circular
+  prompt: Switch#

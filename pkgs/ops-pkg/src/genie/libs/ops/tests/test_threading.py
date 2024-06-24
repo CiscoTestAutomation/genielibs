@@ -211,5 +211,5 @@ class TestThreading(unittest.TestCase):
                     'status_message': 'learnt successfully'
                 }
             }
-
+        
         self.assertEqual(results, {'r1': expected_results, 'r2': expected_results})
