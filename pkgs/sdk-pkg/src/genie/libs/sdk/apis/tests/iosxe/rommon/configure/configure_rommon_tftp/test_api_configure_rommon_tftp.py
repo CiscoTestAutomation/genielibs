@@ -40,13 +40,30 @@ class TestConfigureRommonTftp(unittest.TestCase):
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['ott-c9300-63']
-        # To test the TFTP_FILE rommon variable
-        self.device.clean.images = ["flash:/test.bin"]
         self.device.connect(
             mit=True
         )
 
-    def test_configure_rommon_tftp(self):
+    def tearDown(self):
+        self.device.disconnect()
+
+    def test_configure_rommon_tftp_1(self):
+        # To test the TFTP_FILE rommon variable
+        self.device.clean.images = ['flash:/test.bin']
+        result = configure_rommon_tftp(self.device)
+        expected_output = None
+        self.assertEqual(result, expected_output)
+
+    def test_configure_rommon_tftp_2(self):
+        # To test the TFTP_FILE rommon variable
+        self.device.clean.images = {'image': ['flash:/test.bin']}
+        result = configure_rommon_tftp(self.device)
+        expected_output = None
+        self.assertEqual(result, expected_output)
+
+    def test_configure_rommon_tftp_3(self):
+        # To test the TFTP_FILE rommon variable
+        self.device.clean.images = {'image': {'file': ['flash:/test.bin']}}
         result = configure_rommon_tftp(self.device)
         expected_output = None
         self.assertEqual(result, expected_output)

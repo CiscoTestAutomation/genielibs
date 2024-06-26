@@ -1,0 +1,36 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    interface TenGigabitEthernet0/1/1: "interface TenGigabitEthernet0/1/1\r\n"
+    line console 0:
+      new_state: configure_line
+    loopback mac: "loopback mac\r\n"
+    no logging console: ''
+  prompt: Speedracer(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: Speedracer(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version | include operating mode: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: Speedracer#

@@ -560,3 +560,41 @@ def configure_interface_default_snmp(device, interface ,type):
         raise SubCommandFailure(
             "Could not configure mac address on interface"
         )
+
+def configure_mac_loopback(device, interface):
+    """ Config mac loopback on device
+        Args:
+            device (`obj`): device object
+            interface (`str`): Interface name
+        Return:
+            None
+        Raises:
+            SubCommandFailure 
+    """
+    configs = [f'interface {interface}',
+                'loopback mac']
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure loopback mac on interface {interface} . Error:\n{e}")
+    
+def unconfigure_mac_loopback(device, interface):
+    """ Unconfig mac loopback on device
+        Args:
+            device (`obj`): device object
+            interface (`str`): Interface name
+        Return:
+            None
+        Raises:
+            SubCommandFailure 
+    """
+    configs = [f'interface {interface}',
+                'no loopback mac']
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure loopback mac on interface {interface} . Error:\n{e}")

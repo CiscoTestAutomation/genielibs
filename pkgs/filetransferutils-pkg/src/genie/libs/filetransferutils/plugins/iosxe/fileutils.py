@@ -246,7 +246,7 @@ class FileUtils(FileUtilsDeviceBase):
 
         return file_details
 
-    def deletefile(self, target, timeout_seconds=300, *args, **kwargs):
+    def deletefile(self, target, timeout_seconds=300, force=False, *args, **kwargs):
         """ Delete a file
 
             Parameters
@@ -256,6 +256,9 @@ class FileUtils(FileUtilsDeviceBase):
 
                 timeout_seconds : `int`
                     The number of seconds to wait before aborting the operation.
+
+                force : `bool`
+                    Whether to force the deletion of the file. Default is False.
 
             Returns
             -------
@@ -282,7 +285,11 @@ class FileUtils(FileUtilsDeviceBase):
 
         """
 
-        super().deletefile(target, timeout_seconds, *args, **kwargs)
+        cmd = None
+        if force:
+            cmd = 'delete /force {f}'.format(f=target)
+
+        super().deletefile(target, timeout_seconds, cmd=cmd, *args, **kwargs)
 
     def renamefile(self, source, destination, timeout_seconds=300, *args,
         **kwargs):

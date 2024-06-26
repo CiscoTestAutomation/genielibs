@@ -44,7 +44,8 @@ def configure_interface_tunnel_hub(device,
             ip_redirects ('boolean',optional): Setting ip redirects.Defaults to False.
             gre_multipoint ('boolean',optional) : Setting gre_multipoint in case "gre multipoint" option is chosen.Defaults to False.
             ipsec ('boolean',optional) : Setting ipsec in case "ipsec" option is chosen.Defaults to False.
-            dual_overlay ('boolean',optional) : Setting dual_overlay for tunnel mode ipsec dual-overlay option.Defaults to False.
+            dual_overlay ('boolean',optional) : Setting dual_overlay for tunnel mode 
+            ipsec dual-overlay option.Defaults to False.
             type ('str',optional) : Type of IP address [Ipv4 or Ipv6]
             ipv6_enable ('boolean',optional) : Setting ipv6 enable.Defaults to False.
             vrf_forwarding ('str',optional) : Configured VRF name to be entered.
@@ -266,3 +267,463 @@ def unconfigure_interface_tunnel_key(device, tunnel_intf):
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure tunnel key on interface {tunnel_intf}. Error:\n{e}")
+
+def configure_tunnel_mode_gre_multipoint(device, tunnel_intf):
+    """ Configure tunnel mode gre multipoint
+        Args:
+            device (`obj`): Device object
+            tunnel_intf('str'):interface to be configured
+        Returns:
+            NA
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configure tunnel mode gre multipoint")
+
+    configs=[f"interface {tunnel_intf}",
+             "tunnel mode gre multipoint"]
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configure tunnel mode gre multipoint on {tunnel_intf}. Error: {e}')
+
+def unconfigure_tunnel_mode_gre_multipoint(device, tunnel_intf):
+    """ Configure tunnel mode gre multipoint
+        Args:
+            device (`obj`): Device object
+            tunnel_intf('str'):interface to be configured
+        Returns:
+            NA
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configure tunnel mode gre multipoint")
+
+    configs=[f"interface {tunnel_intf}",
+             "no tunnel mode gre multipoint"]
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not unconfigure tunnel mode gre multipoint on {tunnel_intf}. Error: {e}')
+
+def configure_tunnel_source(device, interface, tunnel_intf):
+    """ Configure tunnel source
+        Args:
+            device (`obj`): Device object
+            tunnel_intf('str'):interface to be configured
+            interface('str'):source interface
+        Returns:
+            NA
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configure tunnel source")
+
+    configs=[f"interface {tunnel_intf}",
+             f"tunnel source {interface}"]
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configure tunnel source on {tunnel_intf}. Error: {e}')
+
+def unconfigure_tunnel_source(device, interface, tunnel_intf):
+    """ Configure tunnel source
+        Args:
+            device (`obj`): Device object
+            tunnel_intf('str'):interface to be configured
+            interface('str'):source interface
+        Returns:
+            NA
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configure tunnel source")
+
+    configs=[f"interface {tunnel_intf}",
+             f"no tunnel source {interface}"]
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not unconfigure tunnel source on {tunnel_intf}. Error: {e}')
+
+
+def configure_ip_nhrp_network_id(device, tunnel_intf, num):
+    """ Configure ip nhrp network id
+        Args:
+            device (`obj`): Device object
+            tunnel_intf('str'):interface to be configured
+            num('int'):network id
+        Returns:
+            NA
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configure ip nhrp network id")
+
+    configs=[f"interface {tunnel_intf}",
+             f"ip nhrp network-id {num}"]
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not Configure ip nhrp network id on {tunnel_intf}. Error: {e}')
+
+def unconfigure_ip_nhrp_network_id(device, tunnel_intf, num):
+    """ Configure ip nhrp network id
+        Args:
+            device (`obj`): Device object
+            tunnel_intf('str'):interface to be configured
+            num('int'):network id
+        Returns:
+            NA
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configure ip nhrp network id")
+
+    configs=[f"interface {tunnel_intf}",
+             f"no ip nhrp network-id {num}"]
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not unconfigure ip nhrp network id on {tunnel_intf}. Error: {e}')
+
+def configure_ip_nhrp_redirect(device, tunnel_intf):
+    """ Configure ip nhrp redirect
+        Args:
+            device (`obj`): Device object
+            tunnel_intf('str'):interface to be configured
+        Returns:
+            NA
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configure ip nhrp redirect")
+
+    configs=[f"interface {tunnel_intf}",
+             "ip nhrp redirect"]
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not Configure ip nhrp redirect on {tunnel_intf}. Error: {e}')
+
+def unconfigure_ip_nhrp_redirect(device, tunnel_intf):
+    """ Configure ip nhrp redirect
+        Args:
+            device (`obj`): Device object
+            tunnel_intf('str'):interface to be configured
+        Returns:
+            NA
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configure ip nhrp redirect")
+
+    configs=[f"interface {tunnel_intf}",
+             "no ip nhrp redirect"]
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not unconfigure ip nhrp redirect on {tunnel_intf}. Error: {e}')
+
+def configure_ip_nhrp_map(device, tunnel_intf, tunnel_ip, nbma_address):
+    """ Configure ip nhrp map
+        Args:
+            device (`obj`): Device object
+            tunnel_intf('str'):tunnel interface to be configured
+            tunnel_ip('str'):tunnel ip address of destination
+            nbma_address('str'):nbma address of destination
+        Returns:
+            NA
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configure ip nhrp map")
+
+    configs=[f"interface {tunnel_intf}",
+             f"ip nhrp map {tunnel_ip} {nbma_address}"]
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not Configure ip nhrp map on {tunnel_intf}. Error: {e}')
+
+def unconfigure_ip_nhrp_map(device, tunnel_intf, tunnel_ip, nbma_address):
+    """ Configure ip nhrp map
+        Args:
+            device (`obj`): Device object
+            tunnel_intf('str'):tunnel interface to be configured
+            tunnel_ip('str'):tunnel ip address of destination
+            nbma_address('str'):nbma address of destination
+        Returns:
+            NA
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configure ip nhrp map")
+
+    configs=[f"interface {tunnel_intf}",
+             f"no ip nhrp map {tunnel_ip} {nbma_address}"]
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not unconfigure ip nhrp map on {tunnel_intf}. Error: {e}')
+
+def configure_ip_nhrp_map_multicast(device, tunnel_intf, nbma_address):
+    """ Configure ip nhrp map multicast
+        Args:
+            device (`obj`): Device object
+            tunnel_intf('str'):tunnel interface to be configured
+            nbma_address('str'):nbma address of destination
+        Returns:
+            NA
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configure ip nhrp map multicast")
+
+    configs=[f"interface {tunnel_intf}",
+             f"ip nhrp map multicast {nbma_address}"]
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not Configure ip nhrp map multicast on {tunnel_intf}. Error: {e}')
+
+def unconfigure_ip_nhrp_map_multicast(device, tunnel_intf, nbma_address):
+    """ Configure ip nhrp map multicast
+        Args:
+            device (`obj`): Device object
+            tunnel_intf('str'):tunnel interface to be configured
+            nbma_address('str'):nbma address of destination
+        Returns:
+            NA
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configure ip nhrp map multicast")
+
+    configs=[f"interface {tunnel_intf}",
+             f"no ip nhrp map multicast {nbma_address}"]
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not unconfigure ip nhrp map multicast on {tunnel_intf}. Error: {e}')
+
+def configure_ip_nhrp_nhs(device, tunnel_intf, tunnel_ip ):
+    """ Configure ip nhrp nhs
+        Args:
+            device (`obj`): Device object
+            tunnel_intf('str'):tunnel interface to be configured
+            tunnel_ip('str'):tunnel ip address of destination
+        Returns:
+            NA
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configure ip nhrp nhs")
+
+    configs=[f"interface {tunnel_intf}",
+             f"ip nhrp nhs {tunnel_ip}"]
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not Configure ip nhrp nhs on {tunnel_intf}. Error: {e}')
+
+def unconfigure_ip_nhrp_nhs(device, tunnel_intf, tunnel_ip ):
+    """ Configure ip nhrp nhs
+        Args:
+            device (`obj`): Device object
+            tunnel_intf('str'):tunnel interface to be configured
+            tunnel_ip('str'):tunnel ip address of destination
+        Returns:
+            NA
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configure ip nhrp nhs")
+
+    configs=[f"interface {tunnel_intf}",
+             f"no ip nhrp nhs {tunnel_ip}"]
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not unconfigure ip nhrp nhs on {tunnel_intf}. Error: {e}')
+
+def configure_ip_nhrp_authentication(device, tunnel_intf, test):
+    """ Configure ip nhrp authentication
+        Args:
+            device (`obj`): Device object
+            tunnel_intf('str'):tunnel interface to be configured
+            test('str'):test name
+        Returns:
+            NA
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configure ip nhrp authentication")
+
+    configs=[f"interface {tunnel_intf}",
+             f"ip nhrp authentication {test}"]
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not Configure ip nhrp authentication on {tunnel_intf}. Error: {e}')
+
+def unconfigure_ip_nhrp_authentication(device, tunnel_intf, test):
+    """ Configure ip nhrp authentication
+        Args:
+            device (`obj`): Device object
+            tunnel_intf('str'):tunnel interface to be configured
+            test('str'):test name
+        Returns:
+            NA
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configure ip nhrp authentication")
+
+    configs=[f"interface {tunnel_intf}",
+             f"no ip nhrp authentication {test}"]
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not unconfigure ip nhrp authentication on {tunnel_intf}. Error: {e}')
+
+def configure_nhrp_group(device, tunnel_intf, group):
+    """ Configure nhrp group
+        Args:
+            device (`obj`): Device object
+            tunnel_intf('str'):tunnel interface to be configured
+            group('str'):nhrp group
+        Returns:
+            NA
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configure nhrp group")
+
+    configs=[f"interface {tunnel_intf}",
+             f"nhrp group {group}"]
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not Configure nhrp group on {tunnel_intf}. Error: {e}')
+
+def unconfigure_nhrp_group(device, tunnel_intf, group):
+    """ Configure nhrp group
+        Args:
+            device (`obj`): Device object
+            tunnel_intf('str'):tunnel interface to be configured
+            group('str'):nhrp group
+        Returns:
+            NA
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configure nhrp group")
+
+    configs=[f"interface {tunnel_intf}",
+             f"no nhrp group {group}"]
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not unconfigure nhrp group on {tunnel_intf}. Error: {e}')
+
+def configure_ip_nhrp_holdtime(device, tunnel_intf, time):
+    """ Configure ip nhrp holdtime
+        Args:
+            device (`obj`): Device object
+            tunnel_intf('str'):tunnel interface to be configured
+            time('int'):time
+        Returns:
+            NA
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configure ip nhrp holdtime")
+
+    configs = [f"interface {tunnel_intf}",
+               f"ip nhrp holdtime {time}"]
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not Configure ip nhrp holdtime on {tunnel_intf}. Error: {e}')
+
+def unconfigure_ip_nhrp_holdtime(device, tunnel_intf, time):
+    """ Configure ip nhrp holdtime
+        Args:
+            device (`obj`): Device object
+            tunnel_intf('str'):tunnel interface to be configured
+            time('int'):time
+        Returns:
+            NA
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configure ip nhrp holdtime")
+
+    configs = [f"interface {tunnel_intf}",
+               f"no ip nhrp holdtime {time}"]
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not unconfigure ip nhrp holdtime on {tunnel_intf}. Error: {e}')
+
+def configure_ip_nhrp_map_multicast_dynamic(device, tunnel_intf):
+    """ Configure ip nhrp map multicast dynamic
+        Args:
+            device (`obj`): Device object
+            tunnel_intf('str'):tunnel interface to be configured
+        Returns:
+            NA
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configure ip nhrp map multicast dynamic")
+
+    configs = [f"interface {tunnel_intf}",
+               "ip nhrp map multicast dynamic"]
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not Configure ip nhrp map multicast dynamic on {tunnel_intf}. Error: {e}')
+    
+def unconfigure_ip_nhrp_map_multicast_dynamic(device, tunnel_intf):
+    """ Configure ip nhrp map multicast dynamic
+        Args:
+            device (`obj`): Device object
+            tunnel_intf('str'):tunnel interface to be configured
+        Returns:
+            NA
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configure ip nhrp map multicast dynamic")
+
+    configs = [f"interface {tunnel_intf}",
+               "no ip nhrp map multicast dynamic"]
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not unconfigure ip nhrp map multicast dynamic on {tunnel_intf}. Error: {e}')
+

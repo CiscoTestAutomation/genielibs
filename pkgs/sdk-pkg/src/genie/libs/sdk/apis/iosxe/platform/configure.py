@@ -6037,5 +6037,42 @@ def unconfigure_diagnostic_monitor_interval_module(device, mod_num, test_name, t
         raise SubCommandFailure(
             f"could not Unconfigure diagnostic monitor interval module  {device}. Error:\n{e}"
         )
+        
+def configure_platform_mgmt_interface(device, interface_name):
+    """ Configure platform management interface
+    Args:
+        device ('obj'): device to use
+        interface_name ('str'): interface name
+        Returns
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = f"platform management-interface {interface_name}"
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure platform management interface. Error:\n{e}")
+
+def unconfigure_platform_mgmt_interface(device, interface_name):
+    """ UnConfigure platform management interface
+    Args:
+        device ('obj'): device to use
+        interface_name ('str'): interface name
+        Returns
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = f"no platform management-interface {interface_name}"
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure platform management interface. Error:\n{e}")
+
 
 

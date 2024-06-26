@@ -7,8 +7,8 @@ from unittest.mock import Mock
 from pyats.topology import Device
 
 # Genie
-from genie.libs.ops.interface.iosxe.c3850.interface import Interface
-from genie.libs.ops.interface.iosxe.c3850.tests.interface_output import InterfaceOutput
+from genie.libs.ops.interface.iosxe.cat3k.c3850.interface import Interface
+from genie.libs.ops.interface.iosxe.cat3k.c3850.tests.interface_output import InterfaceOutput
 
 # iosxe show_interface
 from genie.libs.parser.iosxe.show_interface import ShowInterfaces, \

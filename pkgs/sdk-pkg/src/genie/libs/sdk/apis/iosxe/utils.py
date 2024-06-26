@@ -22,13 +22,14 @@ from ats.log.utils import banner
 log = logging.getLogger(__name__)
 
 
-def delete_local_file(device, path, file):
+def delete_local_file(device, path, file, timeout=60):
     """ Delete local file
 
         Args:
             device (`obj`): Device object
             path (`str`): directory
             file (`str`): file name
+            timeout ('int', optional): Timeout in seconds. Default is 60
         Returns:
             None
     """
@@ -47,7 +48,7 @@ def delete_local_file(device, path, file):
                 )
             ])
     try:
-        device.execute(f"delete {path}{file}", reply=dialog)
+        device.execute(f"delete {path}{file}", reply=dialog, timeout=timeout)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not delete file {file} from device "
@@ -1646,7 +1647,7 @@ def clear_ip_traffic(device):
             Error:\n{error}".format(device=device, error=e)
         )
 
-def copy_file(device, source_path, destination_path, filename):
+def copy_file(device, source_path, destination_path, filename, timeout=60):
     '''
         Copying file from source path to destination path in local device.
         Args:
@@ -1654,6 +1655,7 @@ def copy_file(device, source_path, destination_path, filename):
             source_path ('str'): source path
             destination_path ('str'): destination path
             filename ('str'): filename that needs to copy
+            timeout ('int'): Timeout in seconds for waiting for the console. Default is 60.
         Returns:
             None
         Raises:
@@ -1674,7 +1676,7 @@ def copy_file(device, source_path, destination_path, filename):
     cmd = "copy {src_path}:{file} {dst_path}".format(
         src_path=source_path, file=filename, dst_path=destination_path)
     try:
-        device.execute(cmd, reply=dialog)
+        device.execute(cmd, reply=dialog, timeout=timeout)
 
     except SubCommandFailure as e:
         raise SubCommandFailure(log.error("failed to copy file from source to destination""Error:\n{error}".format(error=e)))
@@ -1714,6 +1716,11 @@ def request_system_shell(device, switch_type=None, processor_slot=None, uname=Fa
         Raises:
             SubCommandFailure
     '''
+    if command:
+        if isinstance(command, str):
+            command = [command]
+        command_list = command
+
     dialog = Dialog([Statement(pattern=r'.*\?\s\[y\/n\].*',
         action='sendline(y)',
         loop_continue=True,
@@ -1737,7 +1744,8 @@ def request_system_shell(device, switch_type=None, processor_slot=None, uname=Fa
         if uname:
             output += device.execute('uname -a')
         if command:
-            output += device.execute(command)
+            for command in command_list:
+                output += device.execute(command)
         if exit:
             device.execute('exit', reply=exit_dialog)
     except SubCommandFailure as e:
