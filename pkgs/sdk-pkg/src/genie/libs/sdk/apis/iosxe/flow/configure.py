@@ -1538,3 +1538,34 @@ def unconfigure_flow_exporter(device, exporter_name, dest_ip=None, udp_port=None
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not Unconfigure flow exporter {exporter_name}. Error\n{e}')
+
+
+def configure_flow_monitor(device, monitor_name, exporter_name, record_name,
+                        timeout):
+    """ Config Flow Monitor on Device
+        Args:
+            device (`obj`): Device object
+            monitor_name (`str`): Flow Monitor name
+            exporter_name (`str`): Flow exporter name
+            record_name (`str`): Flow record name
+            timeout ('int'): Timeout
+            
+        Return:
+            None
+
+        Raise:
+            SubCommandFailure: Failed configuring flow monitor
+    """
+    
+    try:
+        device.configure([
+                          f"flow monitor {monitor_name}",
+                          f"exporter {exporter_name}",
+                          f"cache timeout inactive {timeout}",
+                          f"cache timeout active {timeout}",
+                          f"record {record_name}"
+                          ])
+    except SubCommandFailure:
+            raise SubCommandFailure(
+               f'Could not configure flow monitor {monitor_name}'
+            )

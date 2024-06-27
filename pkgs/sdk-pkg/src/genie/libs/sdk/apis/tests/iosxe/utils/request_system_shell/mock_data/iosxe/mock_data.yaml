@@ -65,6 +65,24 @@ execute:
     term length 0: ''
     term width 0: ''
     show version | include operating mode: ''
+    request platform software system shell:
+      response:
+        - Activity within this shell can jeopardize the functioning of the system.
+      new_state: confirm_dialog
+    sed -r -i 's/(RuntimeWatchdogSec=).*/\10/' /etc/systemd/system.conf: ''
+    systemctl daemon-reexec: ''
+    echo 1 > /dev/watchdog: ''
+    dmesg | tail: |
+      [69318.122111] NFS: SECINFO: security flavor 390005 is not supported
+      [69404.497666] igb: eth1 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
+      [69437.624382] RP3 CPLD: Old val 0x30003 Updated val 0x30003
+      [69437.625824] RP3 CPLD: Old val 0x30003 Updated val 0x30003
+      [69961.469516] watchdog: watchdog0: nowayout prevents watchdog being stopped!
+      [69961.469553] watchdog: watchdog0: nowayout prevents watchdog being stopped!
+      [69961.469555] watchdog: watchdog0: watchdog did not stop!
+      [69961.534934] systemd[1]: systemd 251 running in system mode (+PAM +AUDIT +SELINUX -APPARMOR +IMA -SMACK -SECCOMP -GCRYPT -GNUTLS -OPENSSL +ACL +BLKID -CURL -ELFUTILS -FIDO2 -IDN2 -IDN -IPTC +KMOD -LIBCRYPTSETUP +LIBFDISK -PCRE2 -PWQUALITY -P11KIT -QRENCODE -TPM2 -BZIP2 -LZ4 -XZ -ZLIB +ZSTD -BPF_FRAMEWORK -XKBCOMMON +UTMP +SYSVINIT default-hierarchy=hybrid)
+      [69961.535030] systemd[1]: Detected architecture x86-64.
+      [69966.416588] watchdog: watchdog0: watchdog did not stop!
   prompt: 9350-stack-1#
 confirm_dialog:
   prompt: 'Are you sure you want to continue? [y/n] '

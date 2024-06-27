@@ -217,7 +217,7 @@ class FileUtils(FileUtilsCommonDeviceBase):
                                dir_output=dir_output,
                                **kwargs)
 
-    def deletefile(self, target, timeout_seconds, *args, **kwargs):
+    def deletefile(self, target, timeout_seconds, cmd = None, *args, **kwargs):
         """ Delete a file
 
             Parameters
@@ -227,6 +227,9 @@ class FileUtils(FileUtilsCommonDeviceBase):
 
                 timeout_seconds : `int`
                     The number of seconds to wait before aborting the operation.
+
+                cmd : `str`
+                    Command to override the default delete command
 
             Returns
             -------
@@ -254,7 +257,7 @@ class FileUtils(FileUtilsCommonDeviceBase):
         """
 
         # delete flash:memleak.tcl
-        cmd = 'delete {f}'.format(f=target)
+        cmd = cmd or 'delete {f}'.format(f=target)
 
         self.send_cli_to_device(cli=cmd,
                                 timeout_seconds=timeout_seconds,

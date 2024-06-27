@@ -84,3 +84,62 @@ def verify_total_cdp_entries_displayed_interfaces(device,
                       format(value))
             timeout.sleep()
     return False
+
+
+def verify_cdp_neighbors_interface(device, interfaces=None, peer_port_id=None, max_time=60,
+                              check_interval=10):
+    """ Verify interfaces of peer are present in cdp neighbors
+        Args:
+            device('obj'): device
+            interfaces(`list`): interfaces to be checked
+            peer_port_id(`str`): specific port_id to check
+        returns:
+            True if cdp is enabled, false in all other cases
+    """
+    timeout = Timeout(max_time, check_interval, True)
+
+    while timeout.iterate():
+        try:
+            if interfaces is None and peer_port_id is None:
+                log.error("No interfaces or specific port_id provided for verification.")
+                return False
+
+            if peer_port_id:
+                   
+                intf, port_id = interfaces[0], peer_port_id[0]
+                log.info(intf)
+                log.info(port_id)
+                output_specific = device.parse(f'show cdp neighbors {intf}')
+                neighbor_intf_specific = output_specific.q.get_values('port_id')
+                                
+                if port_id in neighbor_intf_specific:
+                    log.info(f"Required peer port_id {port_id} found in cdp neighborship for interface {intf}")
+                    return True
+                else:
+                    log.error(f"Required peer port_id {port_id} not found for interface {intf}")
+                    timeout.sleep()
+
+            elif interfaces and len(interfaces) > 1:
+                # If a list of interfaces is provided, use 'show cdp neighbors'
+                output_general = device.parse('show cdp neighbors')
+                neighbor_intf_general = output_general.q.get_values('port_id')
+                neighbor_intf_list = [Common.convert_intf_name(intf=intf.strip()) for intf in interfaces]
+
+                if not (set(neighbor_intf_list) - set(neighbor_intf_general)):
+                    log.info(
+                        f"Required interfaces {neighbor_intf_list} present in cdp "
+                        f"neighborship")
+                    return True
+                else:
+                    log.error(f"Required interfaces "
+                              f"{set(neighbor_intf_list) - set(neighbor_intf_general)} not found")
+                    timeout.sleep()
+
+            else:
+                log.error("Invalid interfaces or specific port_id provided for verification.")
+                return False
+
+        except Exception:
+            timeout.sleep()
+
+    return False

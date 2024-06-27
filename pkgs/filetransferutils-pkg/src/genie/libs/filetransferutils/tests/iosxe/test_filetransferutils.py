@@ -4,7 +4,7 @@
 import os
 import unittest
 from unittest.mock import patch
-from unittest.mock import Mock
+from unittest.mock import Mock, ANY
 
 # ATS
 from pyats.topology import Device, loader
@@ -99,6 +99,12 @@ class test_filetransferutils(unittest.TestCase):
         Delete flash:/memleak.tcl? [confirm]
     '''
 
+    raw3_1 ='''
+        delete /force flash:memleak.tcl
+        Delete filename [memleak.tcl]?
+        Delete flash:/memleak.tcl? [confirm]
+    '''
+
     raw4 = '''
         rename flash:memleak.tcl new_file.tcl
         Destination filename [new_file.tcl]?
@@ -144,6 +150,7 @@ class test_filetransferutils(unittest.TestCase):
             = raw1
     outputs['dir'] = raw2
     outputs['delete flash:memleak.tcl'] = raw3
+    outputs['delete /force flash:memleak.tcl'] = raw3_1
     outputs['rename flash:memleak.tcl new_file.tcl'] = raw4
     outputs['show clock | redirect ftp://1.1.1.1//auto/tftp-ssr/show_clock'] = \
       raw5
@@ -198,6 +205,22 @@ class test_filetransferutils(unittest.TestCase):
 
         self.fu_device.deletefile(target='flash:memleak.tcl',
           timeout_seconds=300, device=self.device)
+        
+        self.device.execute.assert_called_once_with(
+            'delete flash:memleak.tcl', 
+            prompt_recovery=True, timeout=300, reply=ANY, error_pattern=ANY)
+        
+    def test_deletefile_force(self):
+
+        self.device.execute = Mock()
+        self.device.execute.side_effect = self.mapper
+
+        self.fu_device.deletefile(target='flash:memleak.tcl',
+          timeout_seconds=300, force=True, device=self.device)
+
+        self.device.execute.assert_called_once_with(
+            'delete /force flash:memleak.tcl', 
+            prompt_recovery=True, timeout=300, reply=ANY, error_pattern=ANY)
 
     def test_renamefile(self):
 

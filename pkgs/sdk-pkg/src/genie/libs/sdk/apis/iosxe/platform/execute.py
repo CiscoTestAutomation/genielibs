@@ -314,7 +314,7 @@ def delete_unprotected_files(device,
             directory ('str'): working directory to perform the operation
             protected ('list'): list of file patterns that won't be deleted. If it begins
                                 and ends with (), it will be considered as a regex
-            files_to_delete('list') list of files that should be deleted unless they are not protected
+            files_to_delete('list') list of files that should be deleted unless they are protected
             dir_output ('str'): output of dir command, if not provided execute the cmd on device to get the output
             allow_failure (bool, optional): Allow the deletion of a file to silently fail. Defaults to False.
             destination ('str') : Destination directory. default to None. i.e bootflash:/
@@ -367,9 +367,9 @@ def delete_unprotected_files(device,
             log.info(f'Deleting the unprotected file "{file}"')
             try:
                 if destination:
-                    fu_device.deletefile(f"{destination}{file}", device=device)
+                    fu_device.deletefile(f"{destination}{file}", force=True, device=device)
                 else:
-                    fu_device.deletefile(file, device=device)
+                    fu_device.deletefile(file, force=True, device=device)
             except Exception as e:
                 if allow_failure:
                     log.info(

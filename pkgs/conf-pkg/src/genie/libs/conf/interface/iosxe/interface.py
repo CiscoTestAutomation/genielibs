@@ -16,12 +16,13 @@ __all__ = (
     'TunnelTeInterface',
     'PortchannelInterface',
     'NveInterface',
+    'ParsedInterfaceName'
 )
 
 import re
 import contextlib
 import abc
-import weakref
+import logging
 from enum import Enum
 
 from genie.decorator import managedattribute
@@ -40,7 +41,102 @@ from genie.libs.conf.base import \
 from genie.libs.conf.l2vpn import PseudowireNeighbor
 from genie.libs.conf.l2vpn.pseudowire import EncapsulationType
 
-import genie.libs.conf.interface
+from genie.libs.conf.interface import (
+    Interface as BaseInterface,
+    ParsedInterfaceName as BaseParsedInterfaceName,
+    PhysicalInterface as BasePhysicalInterface,
+    VirtualInterface as BaseVirtualInterface,
+    LoopbackInterface as BaseLoopbackInterface,
+    LagInterface as BaseLagInterface,
+    EthernetInterface as BaseEthernetInterface,
+    SubInterface as BaseSubInterface,
+    TunnelInterface as BaseTunnelInterface,
+    TunnelTeInterface as BaseTunnelTeInterface,
+    VlanInterface as BaseVlanInterface,
+    NveInterface as BaseNveInterface)
+
+
+logger = logging.getLogger(__name__)
+
+
+class ParsedInterfaceName(BaseParsedInterfaceName):
+
+    def __init__(self, name, device=None, **kwargs):
+        if device is None and isinstance(name, ParsedInterfaceName):
+            # copy constructor
+            return super().__init__(vars(name))
+        assert type(name) is str
+
+        d = dict(
+            # main parts
+            type=None,
+            number=None,
+            subintf_sep=None,
+            subintf=None,
+            # sub-parts
+            net_module=None,
+            module=None,
+            rack=None,
+            slot=None,
+            instance=None,
+            port=None,
+            subport=None,
+            cpu=None,
+            rsip=None,
+        )
+
+        m = re.match(r'''
+            ^
+            # ignore leading spaces
+            \s*
+            # not an empty string
+            (?=\S)
+            # optional <type>
+            (?P<type>
+                # generic: POS, tunnel-te, odu...
+                [A-Za-z]+(?:-[A-Za-z]+)*
+            )?
+            # optional spaces
+            \s*
+            # rest is optional too
+            (?:
+                # <number>
+                (?P<number>\d+(?:[/_]?\d+)*)
+                # optional <subintf>
+                (?:(?P<subintf_sep>[.:])(?P<subintf>\d+))?
+            )?
+            # ignore trailing spaces
+            \s*
+            $
+        ''', name, re.VERBOSE | re.IGNORECASE)
+        if not m:
+            logger.warning('Unrecognized interface name %r' % (name,))
+
+        d.update(m.groupdict())
+
+        # FourHundredGigE1/0/15/1
+        p1 = re.compile(r'^(?P<rsip>(?P<slot>\d+)/(?P<module>\d+)/(?P<port>\d+))(/(?P<subport>\d+))?$')
+        # GigabitEthernet1/0/1
+        p2 = re.compile(r'^(?P<rsip>(?P<slot>\d+)/(?P<module>\d+)/(?P<port>\d+))$')
+        # GigabitEthernet0/0
+        p3 = re.compile(r'^(?P<rsip>(?P<slot>\d+)/(?P<port>\d+))$')
+        # GigabitEthernet0
+        p4 = re.compile(r'^(?P<rsip>(?P<port>\d+))$')
+
+
+        interface_number = d['number']
+        for pattern in [p1, p2, p3, p4]:
+            m = pattern.match(interface_number)
+            if m:
+                d.update(m.groupdict())
+                break
+        else:
+            logger.debug(f'{self}: Unsupported interface name: {name}')
+            super().__init__(name, device=None, **kwargs)
+            return
+
+        super().__init__(name=None, **d)
+
 
 class ConfigurableInterfaceNamespace(ConfigurableBase):
 
@@ -63,7 +159,7 @@ class ConfigurableInterfaceNamespace(ConfigurableBase):
         return self.interface.device
 
 
-class Interface(genie.libs.conf.interface.Interface):
+class Interface(BaseInterface):
     """ base Interface class for IOS-XE devices
     """
 
@@ -75,7 +171,7 @@ class Interface(genie.libs.conf.interface.Interface):
                 name = kwargs['name']
             except KeyError:
                 raise TypeError('\'name\' argument missing')
-            d_parsed = genie.libs.conf.interface.ParsedInterfaceName(
+            d_parsed = ParsedInterfaceName(
                 name, kwargs.get('device', None))
             if d_parsed.subintf:
                 factory_cls = SubInterface
@@ -436,7 +532,7 @@ class Interface(genie.libs.conf.interface.Interface):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-class PhysicalInterface(Interface, genie.libs.conf.interface.PhysicalInterface):
+class PhysicalInterface(Interface, BasePhysicalInterface):
 
     def _build_config_interface_submode(self, configurations, attributes, unconfig):
 
@@ -478,14 +574,12 @@ class PhysicalInterface(Interface, genie.libs.conf.interface.PhysicalInterface):
         configurations.append_line(
             attributes.format('pagp port-priority {lag_pagp_port_priority}'))
 
-
-
     @abc.abstractmethod
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
 
-class VirtualInterface(Interface, genie.libs.conf.interface.VirtualInterface):
+class VirtualInterface(Interface, BaseVirtualInterface):
 
     def build_config(self, apply=True, attributes=None, unconfig=False,
                      **kwargs):
@@ -520,7 +614,7 @@ class VirtualInterface(Interface, genie.libs.conf.interface.VirtualInterface):
         super().__init__(*args, **kwargs)
 
 
-class LoopbackInterface(VirtualInterface, genie.libs.conf.interface.LoopbackInterface):
+class LoopbackInterface(VirtualInterface, BaseLoopbackInterface):
 
     _interface_name_types = (
         'loopback',
@@ -531,7 +625,7 @@ class LoopbackInterface(VirtualInterface, genie.libs.conf.interface.LoopbackInte
         super().__init__(*args, **kwargs)
 
 
-class PortchannelInterface(VirtualInterface, genie.libs.conf.interface.LagInterface):
+class PortchannelInterface(VirtualInterface, BaseLagInterface):
     """ PortchannelInterface class, presenting port-channel type of `Interface`
     objects
 
@@ -569,7 +663,7 @@ class PortchannelInterface(VirtualInterface, genie.libs.conf.interface.LagInterf
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-class EthernetInterface(PhysicalInterface, genie.libs.conf.interface.EthernetInterface):
+class EthernetInterface(PhysicalInterface, BaseEthernetInterface):
 
     _interface_name_types = (
         'ethernet',
@@ -664,7 +758,7 @@ class EthernetInterface(PhysicalInterface, genie.libs.conf.interface.EthernetInt
                 configurations.append_line('no negotiation auto',unconfig_cmd = 'default negotiation auto')
 
 
-class SubInterface(VirtualInterface, genie.libs.conf.interface.SubInterface):
+class SubInterface(VirtualInterface, BaseSubInterface):
 
     def __new__(cls, *args, **kwargs):
 
@@ -803,7 +897,7 @@ class PseudowireInterface(VirtualInterface):
             elif isinstance(v,IPv4Address):
                 configurations.append_line(attributes.format('preferred-path peer {preferred_path}'))
 
-class TunnelInterface(VirtualInterface, genie.libs.conf.interface.TunnelInterface):
+class TunnelInterface(VirtualInterface, BaseTunnelInterface):
 
     _interface_name_types = (
         'tunnel',
@@ -832,7 +926,7 @@ class TunnelInterface(VirtualInterface, genie.libs.conf.interface.TunnelInterfac
         return self
 
 
-class TunnelTeInterface(TunnelInterface, genie.libs.conf.interface.TunnelTeInterface):
+class TunnelTeInterface(TunnelInterface, BaseTunnelTeInterface):
 
     tunnel_mode = managedattribute(
         name='tunnel_mode',
@@ -1040,7 +1134,7 @@ class TunnelTeInterface(TunnelInterface, genie.libs.conf.interface.TunnelTeInter
             configurations.append_block(ns.build_config(apply=False, unconfig=unconfig, attributes=attributes2))
 
 class VlanInterface(
-    VirtualInterface, genie.libs.conf.interface.VlanInterface):
+    VirtualInterface, BaseVlanInterface):
     """ VlanInterface class, presenting vlan type of `Interface`
     objects
 
@@ -1097,7 +1191,7 @@ class VlanInterface(
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-class NveInterface(VirtualInterface, genie.libs.conf.interface.NveInterface):
+class NveInterface(VirtualInterface, BaseNveInterface):
     _interface_name_types = (
         'nve',
         'Nve',

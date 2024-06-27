@@ -85,7 +85,7 @@ def empty_mapper(key):
     return ''
 
 
-def incomplete_mapper(key):
+def incomplete_mapper(key, *args, **kwargs):
     if key == 'show lisp all instance-id 101 ipv4':
         return ''
     else:

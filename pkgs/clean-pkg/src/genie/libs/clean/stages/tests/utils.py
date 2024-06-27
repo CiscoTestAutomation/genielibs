@@ -17,7 +17,7 @@ class CommonStageTests:
                         "{}".format(exec_order - cls_attributes))
 
 
-def create_test_device(name, os, platform=None):
+def create_test_device(name, os, platform=None, **tokens):
     """This function does boilerplate work of creating a device for unittests.
 
     - Sets the device os and platform
@@ -35,9 +35,9 @@ def create_test_device(name, os, platform=None):
     """
 
     if platform:
-        device = Device(name, os=os, platform=platform)
+        device = Device(name, os=os, platform=platform, **tokens)
     else:
-        device = Device(name, os=os)
+        device = Device(name, os=os, **tokens)
 
     device.custom.abstraction = {'order': ['os', 'platform']}
 

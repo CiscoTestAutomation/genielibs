@@ -1,0 +1,235 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: NGSVL(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: NGSVL(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    configure replace stby-bootflash:backup_config force:
+      response:
+      - "% ipv6 addresses from all interfaces in VRF vrf_99 have been removed\r\n\
+        % ipv4 addresses from all interfaces in VRF vrf_99 have been removed\r\n%\
+        \ ipv6 addresses from all interfaces in VRF vrf_98 have been removed\r\n%\
+        \ ipv4 addresses from all interfaces in VRF vrf_98 have been removed\r\n%\
+        \ ipv6 addresses from all interfaces in VRF vrf_97 have been removed\r\n%\
+        \ ipv4 addresses from all interfaces in VRF vrf_97 have been removed\r\n%\
+        \ ipv6 addresses from all interfaces in VRF vrf_96 have been removed\r\n%\
+        \ ipv4 addresses from all interfaces in VRF vrf_96 have been removed\r\n%\
+        \ ipv6 addresses from all interfaces in VRF vrf_95 have been removed\r\n%\
+        \ ipv4 addresses from all interfaces in VRF vrf_95 have been removed\r\n%\
+        \ ipv6 addresses from all interfaces in VRF vrf_94 have been removed\r\n%\
+        \ ipv4 addresses from all interfaces in VRF vrf_94 have been removed\r\n%\
+        \ ipv6 addresses from all interfaces in VRF vrf_93 have been removed\r\n%\
+        \ ipv4 addresses from all interfaces in VRF vrf_93 have been removed\r\n%\
+        \ ipv6 addresses from all interfaces in VRF vrf_92 have been removed\r\n%\
+        \ ipv4 addresses from all interfaces in VRF vrf_92 have been removed\r\n%\
+        \ ipv6 addresses from all interfaces in VRF vrf_91 have been removed\r\n%\
+        \ ipv4 addresses from all interfaces in VRF vrf_91 have been removed\r\n%\
+        \ ipv6 addresses from all interfaces in VRF vrf_90 have been removed\r\n%\
+        \ ipv4 addresses from all interfaces in VRF vrf_90 have been removed\r\n%\
+        \ ipv6 addresses from all interfaces in VRF vrf_9 have been removed\r\n% ipv4\
+        \ addresses from all interfaces in VRF vrf_9 have been removed\r\n% ipv6 addresses\
+        \ from all interfaces in VRF vrf_89 have been removed\r\n% ipv4 addresses\
+        \ from all interfaces in VRF vrf_89 have been removed\r\n% ipv6 addresses\
+        \ from all interfaces in VRF vrf_88 have been removed\r\n% ipv4 addresses\
+        \ from all interfaces in VRF vrf_88 have been removed\r\n% ipv6 addresses\
+        \ from all interfaces in VRF vrf_87 have been removed\r\n% ipv4 addresses\
+        \ from all interfaces in VRF vrf_87 have been removed\r\n% ipv6 addresses\
+        \ from all interfaces in VRF vrf_86 have been removed\r\n% ipv4 addresses\
+        \ from all interfaces in VRF vrf_86 have been removed\r\n% ipv6 addresses\
+        \ from all interfaces in VRF vrf_85 have been removed\r\n% ipv4 addresses\
+        \ from all interfaces in VRF vrf_85 have been removed\r\n% ipv6 addresses\
+        \ from all interfaces in VRF vrf_84 have been removed\r\n% ipv4 addresses\
+        \ from all interfaces in VRF vrf_84 have been removed\r\n% ipv6 addresses\
+        \ from all interfaces in VRF vrf_83 have been removed\r\n% ipv4 addresses\
+        \ from all interfaces in VRF vrf_83 have been removed\r\n% ipv6 addresses\
+        \ from all interfaces in VRF vrf_82 have been removed\r\n% ipv4 addresses\
+        \ from all interfaces in VRF vrf_82 have been removed\r\n% ipv6 addresses\
+        \ from all interfaces in VRF vrf_81 have been removed\r\n% ipv4 addresses\
+        \ from all interfaces in VRF vrf_81 have been removed\r\n% ipv6 addresses\
+        \ from all interfaces in VRF vrf_80 have been removed\r\n% ipv4 addresses\
+        \ from all interfaces in VRF vrf_80 have been removed\r\n% ipv6 addresses\
+        \ from all interfaces in VRF vrf_8 have been removed\r\n% ipv4 addresses from\
+        \ all interfaces in VRF vrf_8 have been removed\r\n% ipv6 addresses from all\
+        \ interfaces in VRF vrf_79 have been removed\r\n% ipv4 addresses from all\
+        \ interfaces in VRF vrf_79 have been removed\r\n% ipv6 addresses from all\
+        \ interfaces in VRF vrf_78 have been removed\r\n% ipv4 addresses from all\
+        \ interfaces in VRF vrf_78 have been removed\r\n% ipv6 addresses from all\
+        \ interfaces in VRF vrf_77 have been removed\r\n% ipv4 addresses from all\
+        \ interfaces in VRF vrf_77 have been removed\r\n% ipv6 addresses from all\
+        \ interfaces in VRF vrf_76 have been removed\r\n% ipv4 addresses from all\
+        \ interfaces in VRF vrf_76 have been removed\r\n% ipv6 addresses from all\
+        \ interfaces in VRF vrf_75 have been removed\r\n% ipv4 addresses from all\
+        \ interfaces in VRF vrf_75 have been removed\r\n% ipv6 addresses from all\
+        \ interfaces in VRF vrf_74 have been removed\r\n% ipv4 addresses from all\
+        \ interfaces in VRF vrf_74 have been removed\r\n% ipv6 addresses from all\
+        \ interfaces in VRF vrf_73 have been removed\r\n% ipv4 addresses from all\
+        \ interfaces in VRF vrf_73 have been removed\r\n% ipv6 addresses from all\
+        \ interfaces in VRF vrf_72 have been removed\r\n% ipv4 addresses from all\
+        \ interfaces in VRF vrf_72 have been removed\r\n% ipv6 addresses from all\
+        \ interfaces in VRF vrf_71 have been removed\r\n% ipv4 addresses from all\
+        \ interfaces in VRF vrf_71 have been removed\r\n% ipv6 addresses from all\
+        \ interfaces in VRF vrf_70 have been removed\r\n% ipv4 addresses from all\
+        \ interfaces in VRF vrf_70 have been removed\r\n% ipv6 addresses from all\
+        \ interfaces in VRF vrf_7 have been removed\r\n% ipv4 addresses from all interfaces\
+        \ in VRF vrf_7 have been removed\r\n% ipv6 addresses from all interfaces in\
+        \ VRF vrf_69 have been removed\r\n% ipv4 addresses from all interfaces in\
+        \ VRF vrf_69 have been removed\r\n% ipv6 addresses from all interfaces in\
+        \ VRF vrf_68 have been removed\r\n% ipv4 addresses from all interfaces in\
+        \ VRF vrf_68 have been removed\r\n% ipv6 addresses from all interfaces in\
+        \ VRF vrf_67 have been removed\r\n% ipv4 addresses from all interfaces in\
+        \ VRF vrf_67 have been removed\r\n% ipv6 addresses from all interfaces in\
+        \ VRF vrf_66 have been removed\r\n% ipv4 addresses from all interfaces in\
+        \ VRF vrf_66 have been removed\r\n% ipv6 addresses from all interfaces in\
+        \ VRF vrf_65 have been removed\r\n% ipv4 addresses from all interfaces in\
+        \ VRF vrf_65 have been removed\r\n% ipv6 addresses from all interfaces in\
+        \ VRF vrf_64 have been removed\r\n% ipv4 addresses from all interfaces in\
+        \ VRF vrf_64 have been removed\r\n% ipv6 addresses from all interfaces in\
+        \ VRF vrf_63 have been removed\r\n% ipv4 addresses from all interfaces in\
+        \ VRF vrf_63 have been removed\r\n% ipv6 addresses from all interfaces in\
+        \ VRF vrf_62 have been removed\r\n% ipv4 addresses from all interfaces in\
+        \ VRF vrf_62 have been removed\r\n% ipv6 addresses from all interfaces in\
+        \ VRF vrf_61 have been removed\r\n% ipv4 addresses from all interfaces in\
+        \ VRF vrf_61 have been removed\r\n% ipv6 addresses from all interfaces in\
+        \ VRF vrf_60 have been removed\r\n% ipv4 addresses from all interfaces in\
+        \ VRF vrf_60 have been removed\r\n% ipv6 addresses from all interfaces in\
+        \ VRF vrf_6 have been removed\r\n% ipv4 addresses from all interfaces in VRF\
+        \ vrf_6 have been removed\r\n% ipv6 addresses from all interfaces in VRF vrf_59\
+        \ have been removed\r\n% ipv4 addresses from all interfaces in VRF vrf_59\
+        \ have been removed\r\n% ipv6 addresses from all interfaces in VRF vrf_58\
+        \ have been removed\r\n% ipv4 addresses from all interfaces in VRF vrf_58\
+        \ have been removed\r\n% ipv6 addresses from all interfaces in VRF vrf_57\
+        \ have been removed\r\n% ipv4 addresses from all interfaces in VRF vrf_57\
+        \ have been removed\r\n% ipv6 addresses from all interfaces in VRF vrf_56\
+        \ have been removed\r\n% ipv4 addresses from all interfaces in VRF vrf_56\
+        \ have been removed\r\n% ipv6 addresses from all interfaces in VRF vrf_55\
+        \ have been removed\r\n% ipv4 addresses from all interfaces in VRF vrf_55\
+        \ have been removed\r\n% ipv6 addresses from all interfaces in VRF vrf_54\
+        \ have been removed\r\n% ipv4 addresses from all interfaces in VRF vrf_54\
+        \ have been removed\r\n% ipv6 addresses from all interfaces in VRF vrf_53\
+        \ have been removed\r\n% ipv4 addresses from all interfaces in VRF vrf_53\
+        \ have been removed\r\n% ipv6 addresses from all interfaces in VRF vrf_52\
+        \ have been removed\r\n% ipv4 addresses from all interfaces in VRF vrf_52\
+        \ have been removed\r\n% ipv6 addresses from all interfaces in VRF vrf_51\
+        \ have been removed\r\n% ipv4 addresses from all interfaces in VRF vrf_51\
+        \ have been removed\r\n% ipv6 addresses from all interfaces in VRF vrf_50\
+        \ have been removed\r\n% ipv4 addresses from all interfaces in VRF vrf_50\
+        \ have been removed\r\n% ipv6 addresses from all interfaces in VRF vrf_5 have\
+        \ been removed\r\n% ipv4 addresses from all interfaces in VRF vrf_5 have been\
+        \ removed\r\n% ipv6 addresses from all interfaces in VRF vrf_49 have been\
+        \ removed\r\n% ipv4 addresses from all interfaces in VRF vrf_49 have been\
+        \ removed\r\n% ipv6 addresses from all interfaces in VRF vrf_48 have been\
+        \ removed\r\n% ipv4 addresses from all interfaces in VRF vrf_48 have been\
+        \ removed\r\n% ipv6 addresses from all interfaces in VRF vrf_47 have been\
+        \ removed\r\n% ipv4 addresses from all interfaces in VRF vrf_47 have been\
+        \ removed\r\n% ipv6 addresses from all interfaces in VRF vrf_46 have been\
+        \ removed\r\n% ipv4 addresses from all interfaces in VRF vrf_46 have been\
+        \ removed\r\n% ipv6 addresses from all interfaces in VRF vrf_45 have been\
+        \ removed\r\n% ipv4 addresses from all interfaces in VRF vrf_45 have been\
+        \ removed\r\n% ipv6 addresses from all interfaces in VRF vrf_44 have been\
+        \ removed\r\n% ipv4 addresses from all interfaces in VRF vrf_44 have been\
+        \ removed\r\n% ipv6 addresses from all interfaces in VRF vrf_43 have been\
+        \ removed\r\n% ipv4 addresses from all interfaces in VRF vrf_43 have been\
+        \ removed\r\n% ipv6 addresses from all interfaces in VRF vrf_42 have been\
+        \ removed\r\n% ipv4 addresses from all interfaces in VRF vrf_42 have been\
+        \ removed\r\n% ipv6 addresses from all interfaces in VRF vrf_41 have been\
+        \ removed\r\n% ipv4 addresses from all interfaces in VRF vrf_41 have been\
+        \ removed\r\n% ipv6 addresses from all interfaces in VRF vrf_40 have been\
+        \ removed\r\n% ipv4 addresses from all interfaces in VRF vrf_40 have been\
+        \ removed\r\n% ipv6 addresses from all interfaces in VRF vrf_4 have been removed\r\
+        \n% ipv4 addresses from all interfaces in VRF vrf_4 have been removed\r\n\
+        % ipv6 addresses from all interfaces in VRF vrf_39 have been removed\r\n%\
+        \ ipv4 addresses from all interfaces in VRF vrf_39 have been removed\r\n%\
+        \ ipv6 addresses from all interfaces in VRF vrf_38 have been removed\r\n%\
+        \ ipv4 addresses from all interfaces in VRF vrf_38 have been removed\r\n%\
+        \ ipv6 addresses from all interfaces in VRF vrf_37 have been removed\r\n%\
+        \ ipv4 addresses from all interfaces in VRF vrf_37 have been removed\r\n%\
+        \ ipv6 addresses from all interfaces in VRF vrf_36 have been removed\r\n%\
+        \ ipv4 addresses from all interfaces in VRF vrf_36 have been removed\r\n%\
+        \ ipv6 addresses from all interfaces in VRF vrf_35 have been removed\r\n%\
+        \ ipv4 addresses from all interfaces in VRF vrf_35 have been removed\r\n%\
+        \ ipv6 addresses from all interfaces in VRF vrf_34 have been removed\r\n%\
+        \ ipv4 addresses from all interfaces in VRF vrf_34 have been removed\r\n%\
+        \ ipv6 addresses from all interfaces in VRF vrf_33 have been removed\r\n%\
+        \ ipv4 addresses from all interfaces in VRF vrf_33 have been removed\r\n%\
+        \ ipv6 addresses from all interfaces in VRF vrf_32 have been removed\r\n%\
+        \ ipv4 addresses from all interfaces in VRF vrf_32 have been removed\r\n%\
+        \ ipv6 addresses from all interfaces in VRF vrf_31 have been removed\r\n%\
+        \ ipv4 addresses from all interfaces in VRF vrf_31 have been removed\r\n%\
+        \ ipv6 addresses from all interfaces in VRF vrf_30 have been removed\r\n%\
+        \ ipv4 addresses from all interfaces in VRF vrf_30 have been removed\r\n%\
+        \ ipv6 addresses from all interfaces in VRF vrf_3 have been removed\r\n% ipv4\
+        \ addresses from all interfaces in VRF vrf_3 have been removed\r\n% ipv6 addresses\
+        \ from all interfaces in VRF vrf_29 have been removed\r\n% ipv4 addresses\
+        \ from all interfaces in VRF vrf_29 have been removed\r\n% ipv6 addresses\
+        \ from all interfaces in VRF vrf_28 have been removed\r\n% ipv4 addresses\
+        \ from all interfaces in VRF vrf_28 have been removed\r\n% ipv6 addresses\
+        \ from all interfaces in VRF vrf_27 have been removed\r\n% ipv4 addresses\
+        \ from all interfaces in VRF vrf_27 have been removed\r\n% ipv6 addresses\
+        \ from all interfaces in VRF vrf_26 have been removed\r\n% ipv4 addresses\
+        \ from all interfaces in VRF vrf_26 have been removed\r\n% ipv6 addresses\
+        \ from all interfaces in VRF vrf_25 have been removed\r\n% ipv4 addresses\
+        \ from all interfaces in VRF vrf_25 have been removed\r\n% ipv6 addresses\
+        \ from all interfaces in VRF vrf_24 have been removed\r\n% ipv4 addresses\
+        \ from all interfaces in VRF vrf_24 have been removed\r\n% ipv6 addresses\
+        \ from all interfaces in VRF vrf_23 have been removed\r\n% ipv4 addresses\
+        \ from all interfaces in VRF vrf_23 have been removed\r\n% ipv6 addresses\
+        \ from all interfaces in VRF vrf_22 have been removed\r\n% ipv4 addresses\
+        \ from all interfaces in VRF vrf_22 have been removed\r\n% ipv6 addresses\
+        \ from all interfaces in VRF vrf_21 have been removed\r\n% ipv4 addresses\
+        \ from all interfaces in VRF vrf_21 have been removed\r\n% ipv6 addresses\
+        \ from all interfaces in VRF vrf_20 have been removed\r\n% ipv4 addresses\
+        \ from all interfaces in VRF vrf_20 have been removed\r\n% ipv6 addresses\
+        \ from all interfaces in VRF vrf_2 have been removed\r\n% ipv4 addresses from\
+        \ all interfaces in VRF vrf_2 have been removed\r\n% ipv6 addresses from all\
+        \ interfaces in VRF vrf_19 have been removed\r\n% ipv4 addresses from all\
+        \ interfaces in VRF vrf_19 have been removed\r\n% ipv6 addresses from all\
+        \ interfaces in VRF vrf_18 have been removed\r\n% ipv4 addresses from all\
+        \ interfaces in VRF vrf_18 have been removed\r\n% ipv6 addresses from all\
+        \ interfaces in VRF vrf_17 have been removed\r\n% ipv4 addresses from all\
+        \ interfaces in VRF vrf_17 have been removed\r\n% ipv6 addresses from all\
+        \ interfaces in VRF vrf_16 have been removed\r\n% ipv4 addresses from all\
+        \ interfaces in VRF vrf_16 have been removed\r\n% ipv6 addresses from all\
+        \ interfaces in VRF vrf_15 have been removed\r\n% ipv4 addresses from all\
+        \ interfaces in VRF vrf_15 have been removed\r\n% ipv6 addresses from all\
+        \ interfaces in VRF vrf_14 have been removed\r\n% ipv4 addresses from all\
+        \ interfaces in VRF vrf_14 have been removed\r\n% ipv6 addresses from all\
+        \ interfaces in VRF vrf_13 have been removed\r\n% ipv4 addresses from all\
+        \ interfaces in VRF vrf_13 have been removed\r\n% ipv6 addresses from all\
+        \ interfaces in VRF vrf_12 have been removed\r\n% ipv4 addresses from all\
+        \ interfaces in VRF vrf_12 have been removed\r\n% ipv6 addresses from all\
+        \ interfaces in VRF vrf_11 have been removed\r\n% ipv4 addresses from all\
+        \ interfaces in VRF vrf_11 have been removed\r\n% ipv6 addresses from all\
+        \ interfaces in VRF vrf_10 have been removed\r\n% ipv4 addresses from all\
+        \ interfaces in VRF vrf_10 have been removed\r\n% ipv6 addresses from all\
+        \ interfaces in VRF vrf_1 have been removed\r\n% ipv4 addresses from all interfaces\
+        \ in VRF vrf_1 have been removed\r\nTotal number of passes: 1\r\nRollback\
+        \ Done"
+      response_type: circular
+    show version | include operating mode: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: NGSVL#

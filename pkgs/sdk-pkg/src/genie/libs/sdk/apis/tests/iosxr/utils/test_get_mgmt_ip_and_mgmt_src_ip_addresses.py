@@ -3,7 +3,7 @@ from textwrap import dedent
 from unittest.mock import Mock, call
 
 from genie.conf.base.device import Device
-from genie.libs.sdk.apis.iosxr.c8000.utils import get_mgmt_ip_and_mgmt_src_ip_addresses
+from genie.libs.sdk.apis.iosxr.spitfire.utils import get_mgmt_ip_and_mgmt_src_ip_addresses
 
 
 class testAPI(unittest.TestCase):
@@ -12,7 +12,7 @@ class testAPI(unittest.TestCase):
         device = Device(
             name='Router',
             os='iosxr',
-            platform='c8000',
+            platform='spitfire',
             custom=dict(abstraction=dict(order=['os', 'platform']))
         )
         device.is_connected = Mock(return_value=True)
@@ -28,11 +28,11 @@ class testAPI(unittest.TestCase):
         tcp6       0      0 :::830                  :::*                    LISTEN      7756/sshd       
         '''))
 
-        with self.assertLogs('genie.libs.sdk.apis.iosxr.c8000.utils') as cm:
+        with self.assertLogs('genie.libs.sdk.apis.iosxr.spitfire.utils') as cm:
             result = get_mgmt_ip_and_mgmt_src_ip_addresses(device)
             self.assertEqual(cm.output,[
-                "INFO:genie.libs.sdk.apis.iosxr.c8000.utils:Device management IP: 1.1.1.95",
-                "INFO:genie.libs.sdk.apis.iosxr.c8000.utils:Device management source IP addresses: {'2.2.2.145'}"
+                "INFO:genie.libs.sdk.apis.iosxr.spitfire.utils:Device management IP: 1.1.1.95",
+                "INFO:genie.libs.sdk.apis.iosxr.spitfire.utils:Device management source IP addresses: {'2.2.2.145'}"
             ])
             self.assertEqual(result, ('1.1.1.95', {'2.2.2.145'}))
 
@@ -42,7 +42,7 @@ class testAPI(unittest.TestCase):
         device = Device(
             name='Router',
             os='iosxr',
-            platform='c8000',
+            platform='spitfire',
             custom=dict(abstraction=dict(order=['os', 'platform']))
         )
         device.is_connected = Mock(return_value=True)
@@ -58,11 +58,11 @@ class testAPI(unittest.TestCase):
         tcp6       0      0 :::830                  :::*                    LISTEN      7756/sshd       
         '''))
 
-        with self.assertLogs('genie.libs.sdk.apis.iosxr.c8000.utils') as cm:
+        with self.assertLogs('genie.libs.sdk.apis.iosxr.spitfire.utils') as cm:
             result = get_mgmt_ip_and_mgmt_src_ip_addresses(device, mgmt_src_ip='2.2.2.145')
             self.assertEqual(cm.output,[
-                "INFO:genie.libs.sdk.apis.iosxr.c8000.utils:Device management IP: 1.1.1.95",
-                "INFO:genie.libs.sdk.apis.iosxr.c8000.utils:Device management source IP addresses: {'2.2.2.145'}"
+                "INFO:genie.libs.sdk.apis.iosxr.spitfire.utils:Device management IP: 1.1.1.95",
+                "INFO:genie.libs.sdk.apis.iosxr.spitfire.utils:Device management source IP addresses: {'2.2.2.145'}"
             ])
             self.assertEqual(result, ('1.1.1.95', {'2.2.2.145'}))
 

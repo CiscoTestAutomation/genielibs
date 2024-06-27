@@ -1264,15 +1264,44 @@
             },
             "uid": "platform",
             "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/platform/iosxe/asr900/platform.py#L15"
+          },
+          "cat8k": {
+            "folders": {
+              "c8200": {
+                "class": "Platform",
+                "doc": "Platform Ops Object",
+                "module_name": "platform.iosxe.cat8k.c8200.platform",
+                "package": "genie.libs.ops",
+                "tokens": {
+                  "model": "c8200"
+                },
+                "uid": "platform",
+                "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/platform/iosxe/cat8k/c8200/platform.py#L16"
+              }
+            },
+            "tokens": {
+              "platform": "cat8k"
+            }
+          },
+          "cat9k": {
+            "class": "Platform",
+            "doc": "Platform Ops Object",
+            "module_name": "platform.iosxe.cat9k.c9500.platform",
+            "package": "genie.libs.ops",
+            "tokens": {
+              "platform": "cat9k"
+            },
+            "uid": "platform",
+            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/platform/iosxe/cat9k/c9500/platform.py#L17"
           }
         },
-        "module_name": "platform.iosxe.c8200.platform",
+        "module_name": "platform.iosxe.platform",
         "package": "genie.libs.ops",
         "tokens": {
           "os": "iosxe"
         },
         "uid": "platform",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/platform/iosxe/c8200/platform.py#L16"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/platform/iosxe/platform.py#L15"
       },
       "iosxr": {
         "class": "Platform",
@@ -1649,7 +1678,8 @@
   ],
   "tokens": {
     "model": [
-      "c3850"
+      "c3850",
+      "c8200"
     ],
     "os": [
       "cheetah",
@@ -1665,6 +1695,7 @@
       "asr900",
       "cat3k",
       "cat6k",
+      "cat8k",
       "cat9k",
       "xml",
       "yang"

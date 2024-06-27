@@ -506,10 +506,11 @@ install_remove_inactive:
         with steps.start("Removing inactive packages") as step:
 
             def _check_for_system_image(spawn, system_image=None):
-                if system_image and system_image in spawn.buffer:
+                if system_image and re.search(f"{system_image}\r", spawn.buffer):
                     log.debug(f'{system_image} is among the files to be deleted. send no so the {system_image} is not deleted. ')
                     spawn.sendline('n')
                 else:
+                    log.debug(f'{system_image} is not among the files to be deleted. Hence, send yes to delete files.')
                     spawn.sendline('y')
             # split the image on the [:/] and pick up the image name
             image = re.split(r'[:/]', images[0])[-1]

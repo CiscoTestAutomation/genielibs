@@ -4387,6 +4387,7 @@ def device_recovery_boot(device, console_activity_pattern=None, console_breakboo
     break_count = break_count or recovery_info.get('break_count') or 15
     timeout = timeout or recovery_info.get('timeout') or 750
     ether_port = 0
+    golden_image = golden_image or recovery_info.get('golden_image', [])
     tftp_boot = tftp_boot or recovery_info.get('tftp_boot', {})
 
     
@@ -4397,7 +4398,7 @@ def device_recovery_boot(device, console_activity_pattern=None, console_breakboo
         log.warning("Failed to destroy the device connection but "
                     "attempting to continue", exc_info=True)
     
-    if golden_image or recovery_info.get('golden_image'):
+    if golden_image:
         log.info(banner("Booting device '{}' with the Golden images".\
                         format(device.name)))
         log.info("Golden image information found:\n{}".format(golden_image))
@@ -4442,7 +4443,7 @@ def device_recovery_boot(device, console_activity_pattern=None, console_breakboo
                 'grub_breakboot_char': grub_breakboot_char,
                 'break_count': break_count,
                 'timeout': timeout,
-                'golden_image': golden_image or recovery_info.get('golden_image'),
+                'golden_image': golden_image,
                 'tftp_boot': tftp_boot,
                 'recovery_password': recovery_password or recovery_info.get('recovery_password')}
         )
