@@ -178,3 +178,73 @@ def verify_eigrp_router_id(
             return set(router_id).issubset(eigrp_id)
         log.error(f"Please, provid a valid format for auto_sys, router_id, vrf and/or ip")
         continue
+
+def verify_eigrp_interfaces_timers(
+    device,
+    timers_dict=None,
+    vrf="default",
+    auto_sys=None,
+    ip="ipv4",
+    max_time=60,
+    check_interval=10,
+):
+    """Verify hello interval and hold time of interfaces for a given vrf and active auto_sys for ipv4 or ipv6
+    Args:
+      device (obj): Device object
+      timers_dict (dict): dict to verify containing interfaces with their hello interval and hold time
+         # ex.) timers_dict = {'FastEthernet0/0': [{'hello_interval': 5}, {'hold_time': 15}]}
+      vrf (str) : Name of the vrf by default set to "default"
+      auto_sys (int) : Autonomous System
+      ip (str): Protocol ip, default: "ipv4" to change to "ipv6"
+      max_time (`int`): Max time, default: 30
+      check_interval (`int`): Check interval, default: 10
+    Returns:
+      result (bool): Verified result
+    """
+    assert isinstance(auto_sys, int), "auto_sys must be int"
+    assert isinstance(vrf, str), "vrf must be str"
+    assert isinstance(timers_dict, dict), "timers_dict must be dict"
+    assert auto_sys != 0, "auto_sys must not be 0"
+    assert ip in ["ipv4", "ipv6"], "ip must be ipv4 or ipv6"
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        if auto_sys and timers_dict:
+            try:
+                response = device.parse(
+                    f"show {'ipv6' if ip!='ipv4' else 'ip'} eigrp interfaces detail"
+                )
+            except SchemaEmptyParserError:
+                timeout.sleep()
+                continue
+            inter_timers = {}
+            if (vrf not in response.q.get_values("vrf")) or (
+                str(auto_sys) not in response.q.get_values("eigrp_instance")
+            ):
+                log.error(
+                    f"Sorry, no data for the provided for 'auto_sys = {auto_sys}' and/or 'vrf = {vrf}'"
+                )
+            else:
+                interfaces = (
+                    response.q.contains(vrf)
+                    .contains_key_value("eigrp_instance", str(auto_sys))
+                    .contains(ip)
+                    .get_values("interface")
+                )
+                for interface in interfaces:
+                    hello_interval = {
+                        "hello_interval": (
+                            response.q.contains(interface).get_values("hello_interval")
+                        )[0]
+                    }
+                    hold_time = {
+                        "hold_time": (
+                            response.q.contains(interface).get_values("hold_time")
+                        )[0]
+                    }
+                    inter_timers[interface] = [hello_interval, hold_time]
+            return set(timers_dict).issubset(inter_timers)
+        log.error(
+            f"Please, provide a valid format for auto_sys, timers_dict, vrf and/or ip"
+        )
+        continue
+        
