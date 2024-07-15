@@ -195,7 +195,7 @@ def verify_eigrp_interfaces_timers(
          # ex.) timers_dict = {'FastEthernet0/0': [{'hello_interval': 5}, {'hold_time': 15}]}
       vrf (str) : Name of the vrf by default set to "default"
       auto_sys (int) : Autonomous System
-      ip = "ipv4" (str): Protocol ip, default: "ipv4" to change to "ipv6"
+      ip (str): Protocol ip, default: "ipv4" to change to "ipv6"
       max_time (`int`): Max time, default: 30
       check_interval (`int`): Check interval, default: 10
     Returns:
