@@ -248,3 +248,67 @@ def verify_eigrp_interfaces_timers(
         )
         continue
         
+def verify_eigrp_interfaces_peers(
+    device,
+    peers_dict=None,
+    vrf="default",
+    auto_sys=None,
+    ip="ipv4",
+    max_time=60,
+    check_interval=10,
+):
+    """Verify interfaces and number of EIGRP peers for a given vrf/active auto_sys
+    Args:
+      device (obj): Device object
+      peers_dict (dict): dict of interfaces and the peers
+         # ex.) peers_dict = {'FastEthernet0/0': 1}
+      vrf (str) : Name of the vrf by default set to "default"
+      auto_sys (int) : Autonomous System
+      ip (str): Protocol ip, default: "ipv4" to change to "ipv6"
+      max_time (`int`): Max time, default: 30
+      check_interval (`int`): Check interval, default: 10
+    Returns:
+      result (bool): Verified result
+    """
+    assert isinstance(auto_sys, int), "auto_sys must be int"
+    assert isinstance(peers_dict, dict), "peers_dict must be dict"
+    assert isinstance(vrf, str), "vrf must be str"
+    assert auto_sys != 0, "auto_sys must not be 0"
+    assert ip in ["ipv4", "ipv6"], "ip must be ipv4 or ipv6"
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        if auto_sys and peers_dict:
+            try:
+                response = device.parse(
+                    f"show {'ipv6' if ip!='ipv4' else 'ip'} eigrp interfaces"
+                )
+            except SchemaEmptyParserError:
+                timeout.sleep()
+                continue
+            inter_peers = {}
+            if (vrf not in response.q.get_values("vrf")) or (
+                str(auto_sys) not in response.q.get_values("eigrp_instance")
+            ):
+                log.error(
+                    f"Sorry, no data for the provided 'auto_sys = {auto_sys}' and/or 'vrf = {vrf}'"
+                )
+            else:
+                interfaces = (
+                    response.q.contains(vrf)
+                    .contains_key_value("eigrp_instance", str(auto_sys))
+                    .contains(ip)
+                    .get_values("interface")
+                )
+                peers = (
+                    response.q.contains(vrf)
+                    .contains_key_value("eigrp_instance", str(auto_sys))
+                    .contains(ip)
+                    .get_values("peers")
+                )
+                for interface in interfaces:
+                    inter_peers = dict(zip(interfaces, peers))
+            return all(item in inter_peers.items() for item in peers_dict.items())
+        log.error(
+            f"Please, provide a valid format for auto_sys, peers_dict, vrf and/or ip"
+        )
+        continue
