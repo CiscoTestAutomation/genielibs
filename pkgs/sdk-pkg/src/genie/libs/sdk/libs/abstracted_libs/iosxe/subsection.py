@@ -2,6 +2,7 @@
 import re
 import logging
 from os import path
+from unicon.core.errors import SubCommandFailure
 
 # unicon
 from unicon.eal.dialogs import Statement, Dialog
@@ -113,7 +114,10 @@ def save_device_information(device, **kwargs):
         >>> save_device_information(device=Device())
     """
     # configure config-register
-    device.configure('config-register 0x2102')
+    try:
+        device.configure('config-register 0x2102')
+    except SubCommandFailure:
+        log.error('Cannot configure config-register 0x2102')
 
     # save all configuration to startup for all slots
     dialog = Dialog([

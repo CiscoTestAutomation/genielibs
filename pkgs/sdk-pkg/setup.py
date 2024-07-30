@@ -55,7 +55,7 @@ install_requires = [
     'ruamel.yaml', 
     f'yang.connector{version_range}',
     f'rest.connector{version_range}',
-    'pysnmp-lextudio==5.0.29', 
+    'pysnmp-lextudio==6.1.2', 
     'pyasn1==0.4.8'
 ]
 
@@ -103,9 +103,6 @@ setup(
 
     # project keywords
     keywords = 'genie pyats test automation',
-
-    # uses namespace package
-    namespace_packages = ['genie', 'genie.libs'],
 
     # project packages
     packages = find_packages(where = 'src'),

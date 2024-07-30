@@ -45,9 +45,9 @@ CYTHON_CMD	  = compileAll
 # Development pkg requirements
 RELATED_PKGS = genie.libs.health genie.libs.clean genie.libs.conf genie.libs.ops genie.libs.robot genie.libs.sdk
 RELATED_PKGS += genie.libs.filetransferutils
-# pinning the version of pysnmp and pyasn1 to fix the type error when using execute_power_cycle_device api
+# pinning the version of pysnmp-lextudio and pyasn1 to fix the type error when using execute_power_cycle_device api
 # Adding pyasyncore pkg to fix pysnmp scripts for python 3.12
-DEPENDENCIES = restview psutil Sphinx wheel asynctest pysnmp-lextudio==5.0.29 pyasn1==0.4.8 pyasyncore
+DEPENDENCIES = restview psutil Sphinx wheel asynctest pysnmp-lextudio==6.1.2 pyasn1==0.4.8 pyasyncore
 DEPENDENCIES += sphinx-rtd-theme==1.1.0 pyftpdlib tftpy\<0.8.1 robotframework
 DEPENDENCIES += Cython==3.0.0 requests ruamel.yaml grpcio protobuf jinja2
 # Internal variables.
@@ -200,6 +200,11 @@ develop:
 	@echo ""
 	@echo "Done."
 	@echo ""
+	@echo "--------------------------------------------------------------------"
+	@echo "Development environment has been setup."
+	@echo -e "\e[1;33mWarning: Do make json to generate json files to acccess the genie features!!!\e[0m"
+	@echo "--------------------------------------------------------------------"
+
 
 undevelop:
 	@echo ""

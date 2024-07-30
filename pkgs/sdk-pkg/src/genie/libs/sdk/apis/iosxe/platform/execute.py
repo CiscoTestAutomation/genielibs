@@ -1781,3 +1781,24 @@ def execute_event_manager_run_with_reload(device,username,password,
         return False
     log.debug(f"Reload is successful on {device.name}")
     return True
+ 
+def test_platform_software_usb_fake_insert_remove(device, switch_num, usbflash, action):
+    """
+    Execute 'test platform software usb slot <switch_num> <usbflash> <action>' command on the device.
+
+    Args:
+        device (obj): Device object
+        switch_num (int): Slot or switch number
+        usbflash (str): USB flash identifier ('usbflash1' or 'usbflash2')
+        action (str): Action to perform ('fake-insert' or 'fake-remove')
+        
+    Returns:
+        str: Output of the command
+    """
+    command = f"test platform software usb slot {switch_num} {usbflash} {action}"
+    
+    try:
+        device.execute(command)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to perform fake insert/remove. Error:\n{e}")
+

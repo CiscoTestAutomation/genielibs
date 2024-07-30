@@ -284,29 +284,8 @@ def set_stack_mode(dev, stack_mode, active_sw_number='', standby_sw_number=''):
             return True
         else:
             log.info('Reload failed')
-            return False  
+            return False
 
-def install_wcs_enable_guestshell(device, appid_name, directory, package_name):
-    '''
-        Args:
-            device ('obj'): device to use
-            appid_name('str'): WORD  Name of application
-            directory('str'): flash: Package path
-            package_name('str'): flash:iperf3_signed.tar
-        Returns:
-            None
-        Raises:
-            SubCommandFailure
-    '''
-    
-    cli= "app-hosting install appid {appid_name} package {directory}:{package_name}".format(directory=directory,package_name=package_name,appid_name=appid_name)
-    if not execute_apphosting_cli(device, cli=cli):
-        log.info("Unable to install wcs_docker app using CLI")        
-    time.sleep(300)
-    try:
-        device.execute("guestshell enable", timeout=300)    
-    except SubCommandFailure as e:
-        raise SubCommandFailure(f"Unable to execute guestshell. Error {e}")
 
 def execute_apphosting_cli(device, cli="", loops=10, wait_timer=10, unicon_timer=60):
     ''' 
@@ -335,3 +314,33 @@ def execute_apphosting_cli(device, cli="", loops=10, wait_timer=10, unicon_timer
             return True
 
     return False
+
+
+def install_wcs_enable_guestshell(device, appid_name, directory, package_name, timeout=300):
+    '''
+        Args:
+            device ('obj'): device to use
+            appid_name('str'): WORD  Name of application
+            directory('str'): flash: Package path
+            package_name('str'): flash:iperf3_signed.tar
+            timeout('int'): Timeout in seconds. Default is 300
+        Returns:
+            True or False
+        Raises:
+            SubCommandFailure
+    '''
+    
+    cli= f"app-hosting install appid {appid_name} package {directory}:{package_name}"
+    if not execute_apphosting_cli(device, cli=cli):
+        log.info("Unable to install wcs_docker app using CLI")
+        return False
+    time.sleep(timeout)
+    try:
+        output = device.execute("guestshell enable", timeout=timeout)
+        if 'RUNNING' in output:
+            log.info("Successfully enabled guestshell")
+            return True
+        else:
+            return False
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Unable to execute guestshell. Error {e}")

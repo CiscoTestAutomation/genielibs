@@ -7,14 +7,13 @@ import logging
 
 # Unicon
 from unicon.eal.dialogs import Statement, statement_decorator
-from unicon.plugins.generic.statements import buffer_settled
+from unicon.plugins.generic.statements import buffer_settled, enable_password_handler
 from genie.libs.clean.recovery.dialogs import RommonDialog as TelnetDialog
 
 # Genie
 from genie.libs.clean.utils import print_message
 
 log = logging.getLogger(__name__)
-
 
 class BreakBootDialog(TelnetDialog):
     '''Dialog to stop the device to boot at reload time'''
@@ -48,6 +47,19 @@ class BreakBootDialog(TelnetDialog):
         self.add_statement(Statement(pattern=r'^(Router|Switch|ios|switch|.+[^#])(\\(standby\\))?(\\(-stby)\\)?(\\(boot\\))?#$',
                                      action=print_message,
                                      args={'message': 'Device has reached privileged exec prompt'}))
+        
+        # Press RETURN to get started
+        self.add_statement(Statement(pattern=r'^.*Press RETURN to get started.*',
+                                     action='sendline()',
+                                     loop_continue=True,
+                                     continue_timer=False))
+        
+        # Password
+        self.add_statement(Statement(pattern=r'^.*Password:\s?$',
+                                     action=enable_password_handler,
+                                     args=None,
+                                     loop_continue=True,
+                                     continue_timer=False))
 
 
 class RommonDialog(TelnetDialog):

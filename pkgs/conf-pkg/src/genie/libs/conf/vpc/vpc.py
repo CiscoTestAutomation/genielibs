@@ -10,13 +10,14 @@ from genie.conf.base.base import DeviceFeature, InterfaceFeature
 from genie.conf.base.attributes import DeviceSubAttributes, \
     SubAttributesDict,\
     AttributesHelper, \
-    KeyedSubAttributes
+    KeyedSubAttributes, \
+    InterfaceSubAttributes
 
 # Structure Hierarchy:
 # Vpc
 # +-- DeviceAttribute
 #     +--DomainAttribute
-
+#     +--InterfaceAttribute
 
 class Vpc(DeviceFeature):
 
@@ -188,12 +189,26 @@ class Vpc(DeviceFeature):
         type=(None, managedattribute.test_istype(int)),
         doc="Tracked object value.")
 
-    # virtual_peer_link_ip
-    virtual_peer_link_ip = managedattribute(
-        name='virtual_peer_link_ip',
+    # virtual_peer_link_dst_ip
+    virtual_peer_link_dst_ip = managedattribute(
+        name='virtual_peer_link_dst_ip',
         default=None,
         type=(None, managedattribute.test_istype(str)),
         doc="Virtual peer-link destination ip.")
+
+    # virtual_peer_link_src_ip
+    virtual_peer_link_src_ip = managedattribute(
+        name='virtual_peer_link_src_ip',
+        default=None,
+        type=(None, managedattribute.test_istype(str)),
+        doc="Virtual peer-link source ip.")
+
+    # virtual_peer_link_dscp
+    virtual_peer_link_dscp = managedattribute(
+        name='virtual_peer_link_dscp',
+        default=None,
+        type=(None, managedattribute.test_istype(int)),
+        doc="DSCP value for vpc Fabric ports")
 
     # keepalive_dst_ip
     keepalive_dst_ip = managedattribute(
@@ -258,6 +273,27 @@ class Vpc(DeviceFeature):
         type=(None, managedattribute.test_istype(str)),
         doc="Precedence Value.")
 
+    # vpc peer-link on interface
+    peer_link = managedattribute(
+        name='peer_link',
+        default=None,
+        type=(None, managedattribute.test_istype(bool)),
+        doc="Specifies if the interface is peer-link.")
+
+    # vpc id on interface
+    vpc_id = managedattribute(
+        name='vpc_id',
+        default=None,
+        type=(None, managedattribute.test_istype(str)),
+        doc="Specifies the vpc id the interface belongs to.")
+    
+    # port type fabric on interface, for Fabric peering 
+    fabric_port = managedattribute(
+        name='fabric_port',
+        default=None,
+        type=(None, managedattribute.test_istype(bool)),
+        doc="Specifies if the interface connects to Fabric.")
+       
     class DeviceAttributes(DeviceSubAttributes):
 
         class DomainAttributes(KeyedSubAttributes):
@@ -274,7 +310,21 @@ class Vpc(DeviceFeature):
         def domain_attr(self):
             return SubAttributesDict(
                 self.DomainAttributes, parent=self)
+        
+        class InterfaceAttributes(InterfaceSubAttributes):
 
+            def __init__(self, parent, key):
+                super().__init__(parent=parent, key=key)
+
+        interface_attr = managedattribute(
+            name='interface_attr',
+            read_only=True,
+            doc=InterfaceAttributes.__doc__)
+
+        @interface_attr.initter
+        def interface_attr(self):
+            return SubAttributesDict(self.InterfaceAttributes, parent=self)
+        
     device_attr = managedattribute(
         name='device_attr',
         read_only=True,
@@ -316,3 +366,5 @@ class Vpc(DeviceFeature):
                 self.testbed.config_on_devices(cfg, fail_invalid=True)
         else:
             return cfgs
+
+

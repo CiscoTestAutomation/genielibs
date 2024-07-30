@@ -72,9 +72,6 @@ setup(
     # project keywords
     keywords = 'genie clean pyats cisco',
 
-    # uses namespace package
-    namespace_packages = ['genie', 'genie.libs'],
-
     # project packages
     packages = find_packages(where = 'src'),
 

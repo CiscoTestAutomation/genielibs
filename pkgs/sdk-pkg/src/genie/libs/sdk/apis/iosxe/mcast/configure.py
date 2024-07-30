@@ -238,16 +238,15 @@ def configure_pim_ssm_default(device):
         Raises:
             SubCommandFailure
     """
+    
     configs = f"ip pim ssm default"
+    
     try:
         device.configure(configs)
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            "Failed to configure IP pim ssm default device {dev}. Error:\n{error}".format(
-                dev=device.name,
-                error=e,
-            )
-        )
+            f"Failed to configure IP PIM SSM default on device {device.name}. Error:\n{e}")
+
 def unconfigure_pim_ssm_default(device):
 
     """ Unconfigure PIM SSM Default
@@ -262,14 +261,127 @@ def unconfigure_pim_ssm_default(device):
         Raises:
             SubCommandFailure
     """
+    
     configs = f"no ip pim ssm default"
+    
     try:
         device.configure(configs)
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            "Failed to unconfigure IP pim ssm default device {dev}. Error:\n{error}".format(
-                dev=device.name,
-                error=e,
-            )
-        )
+            f"Failed to unconfigure IP PIM SSM default on device {device.name}. Error:\n{e}")
         
+def configure_pim_vrf_ssm_default(device, vrf):
+
+    """ Configure PIM SSM Default
+    Example : ip pim vrf <> ssm default
+
+        Args:
+            device ('obj'): Device object
+            vrf (`str`): name of the vrf
+           
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    
+    configs = f"ip pim vrf {vrf} ssm default"
+    
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Failed to configure IP pim vrf {vrf} ssm default device {device.name}. Error:\n{e}')
+
+def unconfigure_pim_vrf_ssm_default(device, vrf):
+
+    """ Unconfigure PIM SSM Default
+    Example : no ip pim vrf <> ssm default
+
+        Args:
+            device ('obj'): Device object
+            vrf (`str`): name of the vrf
+           
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    
+    configs = f"no ip pim vrf {vrf} ssm default"
+    
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Failed to unconfigure IP pim vrf {vrf} ssm default device {device.name}. Error:\n{e}')
+
+def configure_pim_autorp_listener(device, vrf, intf=None, ttl=None, announce=True, discovery=True):
+    
+    """ Config pim autorp listener
+        Args:
+            device ('obj'): Device object
+            intf ('str'): Name of the interface
+            vrf ('str'): Name of the vrf
+            ttl ('int'): TTL value
+            announce ('bool'): True or False
+            discovery ('bool'): True or False
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+  
+    '''
+    Configuring ip pim vrf <vrf> autorp listener
+    ip pim vrf red send-rp-discovery scope <ttl>
+    ip pim vrf red send-rp-announce <intf> scope <ttl>
+    '''
+     
+    configs = [f"ip pim vrf {vrf} autorp listener"]
+               
+    if discovery and ttl:
+        configs.append(f"ip pim vrf {vrf} send-rp-discovery scope {ttl}")
+                       
+    if announce and intf and ttl:
+        configs.append(f"ip pim vrf {vrf} send-rp-announce {intf} scope {ttl}")
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure pim autorp listener. Error:{e}")
+
+def unconfigure_pim_autorp_listener(device, vrf, intf=None, ttl=None, announce=True, discovery=True):
+    
+    """ Unconfig multicast advertise sync-only
+        Args:
+            device ('obj'): Device object
+            intf ('str'): Name of the interface
+            vrf ('str'): Name of the vrf
+            ttl ('int'): TTL value
+            announce ('bool'): True or False
+            discovery ('bool'): True or False
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+  
+    '''
+    Unconfiguring no ip pim vrf <vrf> autorp listener
+    no ip pim vrf red send-rp-discovery scope <ttl>
+    no ip pim vrf red send-rp-announce <intf> scope <ttl>
+    '''
+     
+    configs = [f"no ip pim vrf {vrf} autorp listener"]
+               
+    if discovery and ttl:
+        configs.append(f"no ip pim vrf {vrf} send-rp-discovery scope {ttl}")
+                       
+    if announce and intf and ttl:
+        configs.append(f"no ip pim vrf {vrf} send-rp-announce {intf} scope {ttl}")
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure pim autorp listener. Error:{e}")

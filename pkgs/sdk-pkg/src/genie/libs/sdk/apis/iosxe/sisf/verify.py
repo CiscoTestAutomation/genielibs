@@ -327,7 +327,8 @@ def verify_ip_mac_binding_not_in_network(device, macAddr, ipAddr=None, max_time=
 
 
 def verify_ip_mac_binding_in_network(device, ipAddr, macAddr, origin, preflevel, 
-                                     clientid=None, max_time=60, check_interval=10, verify_reachable=False):
+                                     clientid=None, max_time=60, check_interval=10,
+                                     verify_reachable=False, interface=None, vlan=None):
     """ Verify the ip-mac binding is present on device
 
         Args:
@@ -338,7 +339,10 @@ def verify_ip_mac_binding_in_network(device, ipAddr, macAddr, origin, preflevel,
             preflevel('int'): binding table entry preflevel
             clientid('str', optional): client mac address (aiming for dhcp entry). Defaults to None
             max_time('int', optional): max check time. Defaults to 60
-            check_interval('int', optional): check intervals. Defaults to 10
+            check_interval('int', optional): check intervals. Defaults to 10,
+            verify_reachable('bool', optional): verify the entry is reachable. Defaults to False
+            interface('str', optional): interface name. Defaults to None
+            vlan('int', optional): vlan id. Defaults to None
         Returns:
             Bool
         Raises:
@@ -355,17 +359,26 @@ def verify_ip_mac_binding_in_network(device, ipAddr, macAddr, origin, preflevel,
                        entries[i]['link_layer_address'] == macAddr and \
                        entries[i]['pref_level_code'] == preflevel:
                         log.debug('{} entry {} matching criteria found'.format(origin, ipAddr))
-                        if verify_reachable:
-                            if entries[i]['state'] == "REACHABLE":
-                                return True
-                            else:
+                        if interface is not None:
+                            interface = Common.convert_intf_name(interface)
+                            entry_interface = Common.convert_intf_name(entries[i]['interface'])
+                            if entry_interface != interface:
                                 continue
-                        else:
-                            return True
+
+                        if vlan is not None:
+                            if entries[i]["vlan_id"] != vlan:
+                                continue
+
+                        if verify_reachable:
+                            if entries[i]['state'] != "REACHABLE":
+                                continue
+
+                        return True
+
         log.debug('Entry {} not found, retry in {}s...'.format(ipAddr, check_interval))
         timeout.sleep()
 
-    log.debug('Entry {} still not found after {}s'.format(ipAddr, max_time))
+    log.debug(f'Expected Entry IP={ipAddr} MAC={macAddr} Origin={origin} Preflevel={preflevel} not found after {max_time}s')
     return False
 
 

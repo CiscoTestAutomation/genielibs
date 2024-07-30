@@ -6073,6 +6073,42 @@ def unconfigure_platform_mgmt_interface(device, interface_name):
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure platform management interface. Error:\n{e}")
+        
+def execute_issu_set_rollback_timer(device, timer=0):
+    """
+    Performs issu set rollback-timer on device
+    Args:
+        device ('obj'): Device object
+        timer:	<0-7200>  Rollback timer in <seconds> format or hh:mm:ss  Rollback timer in hh:mm:ss format
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    
+    cmd = f"issu set rollback-timer {timer}"
+    try:
+        output = device.configure(cmd)
+    except SubCommandFailure:
+        raise SubCommandFailure("Rollback timer should be in <seconds> format (0-7200) or hh:mm:ss format")
+        
+def unconfigure_issu_set_rollback_timer(device, timer=0):
+    """
+    Unconfigures issu set rollback-timer on device
+    Args:
+        device ('obj'): Device object
+        timer:	<0-7200>  Rollback timer in <seconds> format or hh:mm:ss  Rollback timer in hh:mm:ss format
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+
+    cmd = f"no issu set rollback-timer {timer}"
+    try:
+        output = device.configure(cmd)
+    except SubCommandFailure:
+        raise SubCommandFailure("unconfigure issu set rollback timer")
 
 
 

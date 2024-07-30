@@ -10,7 +10,7 @@ class TestUnconfigureBreakoutCli(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          GD_F12:
+          encore_sanity:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,11 +18,11 @@ class TestUnconfigureBreakoutCli(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: iosxe
-            type: iosxe
+            platform: cat8k
+            type: router
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['GD_F12']
+        self.device = self.testbed.devices['encore_sanity']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,6 @@ class TestUnconfigureBreakoutCli(unittest.TestCase):
         )
 
     def test_unconfigure_breakout_cli(self):
-        result = unconfigure_breakout_cli(self.device, 'native_port_8', '10g', '0/2')
+        result = unconfigure_breakout_cli(self.device, 'native_port_8', '10g', '0/2', 60)
         expected_output = None
         self.assertEqual(result, expected_output)

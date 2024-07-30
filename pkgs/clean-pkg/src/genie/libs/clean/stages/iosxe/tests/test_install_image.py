@@ -330,7 +330,7 @@ class TestInstallImage(unittest.TestCase):
         cls.install_image(steps=steps, device=device, images=['sftp://server/image.bin'])
 
         device.reload.assert_has_calls([
-            call('install add file sftp://server/image.bin activate commit', reply=ANY,
+            call('install add file sftp://server/image.bin activate commit prompt-level none', reply=ANY,
                  reload_creds='default', prompt_recovery=True, error_pattern=['FAILED:.*?$'],
                  timeout=500, device_recovery=False)
         ])
@@ -357,7 +357,7 @@ class TestInstallImage(unittest.TestCase):
                           reload_service_args=dict(grub_boot_image='packages.conf'))
 
         device.reload.assert_has_calls([
-            call('install add file sftp://server/image.bin activate commit', reply=ANY,
+            call('install add file sftp://server/image.bin activate commit prompt-level none', reply=ANY,
                  reload_creds='default', prompt_recovery=True, error_pattern=['FAILED:.*?$'],
                  grub_boot_image='packages.conf', device_recovery=False, timeout=500)
         ])

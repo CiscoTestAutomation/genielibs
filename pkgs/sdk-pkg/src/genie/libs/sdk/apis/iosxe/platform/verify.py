@@ -734,7 +734,12 @@ def verify_yang_management_process_state(
     return False
 
 
-def verify_is_syncing_done(
+def verify_is_syncing_done(*args, **kwargs):
+    log.warning('verify_is_syncing_done is deprecated, please use verify_yang_is_syncing_done')
+    return verify_yang_is_syncing_done(*args, **kwargs)
+
+
+def verify_yang_is_syncing_done(
     device,
     max_time=180,
     interval=30):
@@ -753,7 +758,8 @@ def verify_is_syncing_done(
         reply = device.nc.dispatch(etree.Element("{http://cisco.com/yang/cisco-ia}is-syncing"))
         log.debug(reply)
         if reply.ok:
-            matches = reply.xpath('//cisco-ia:result/text()')
+            n = {'cisco-ia':"http://cisco.com/yang/cisco-ia"}
+            matches = reply.xpath('//cisco-ia:result/text()', namespaces=n)
             if matches and matches[0] == 'No sync in progress':
                 log.debug(f'Sync Status --> Success:\nReply: {reply}')
                 return True

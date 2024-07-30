@@ -1251,3 +1251,122 @@ def unconfigure_ssh_server_algorithm(device):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Failed to unconfigure_ssh_server_algorithm Error {e}".format(e=e))
+
+def configure_ip_ssh_client_algorithm_mac(device, mac):
+
+    """ Configure ip ssh client algorith mac
+        Args:
+            device ('obj'): Device object
+            mac('str'): MAC algorithm
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f'ip ssh client algorithm mac {mac}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure ip ssh client algorithm mac on device {device}. Error:\n{e}")
+
+def configure_ip_ssh_client_algorithm_kex(device, kex):
+
+    """ Configure ip ssh client algorith kex
+        Args:
+            device ('obj'): Device object
+            kex('str'): Key Exchange algorith
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f'ip ssh client algorithm kex {kex}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure ip ssh client algorithm kex on device {device}. Error:\n{e}")
+
+def configure_ip_ssh_client_algorithm_encryption(device, encryption):
+
+    """ Configure ip ssh client algorith encryption
+        Args:
+            device ('obj'): Device object
+            encryption('str'): Encryption algorithm
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f'ip ssh client algorithm encryption {encryption}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure ip ssh client algorithm encryption on device {device}. Error:\n{e}")
+
+def configure_ip_ssh_server_algorithm_mac(device, mac):
+    
+    """ Configure ip ssh server algorith mac
+        Args:
+            device ('obj'): Device object
+            mac('str'): MAC algorithm
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f'ip ssh server algorithm mac {mac}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure ip ssh server algorithm mac on device {device}. Error:\n{e}")
+
+def configure_ip_ssh_server_algorithm_kex(device, kex):
+    
+    """ Configure ip ssh server algorith kex
+        Args:
+            device ('obj'): Device object
+            kex('str'): Key Exchange algorith
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f'ip ssh server algorithm kex {kex}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure ip ssh server algorithm kex on device {device}. Error:\n{e}")
+
+def configure_ip_ssh_server_algorithm_encryption(device, encryption):
+    
+    """ Configure ip ssh server algorith encryption
+        Args:
+            device ('obj'): Device object
+            encryption('str'): Encryption algorithm
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f'ip ssh server algorithm encryption {encryption}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure ip ssh server algorithm encryption on device {device}. Error:\n{e}")
+
+def configure_ip_ssh_server_algorithm_hostkey(device, hostkey):
+    
+    """ Configure ip ssh server algorith encryption
+        Args:
+            device ('obj'): Device object
+            hostkey('str'): hostkey algorithm
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f'ip ssh server algorithm hostkey {hostkey}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure ip ssh server algorithm hostkey on device {device}. Error:\n{e}")

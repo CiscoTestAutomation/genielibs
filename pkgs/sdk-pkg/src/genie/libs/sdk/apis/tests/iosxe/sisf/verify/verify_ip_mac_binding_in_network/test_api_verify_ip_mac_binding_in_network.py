@@ -32,3 +32,23 @@ class TestVerifyIpMacBindingInNetwork(unittest.TestCase):
         result = verify_ip_mac_binding_in_network(self.device, '2001:DB8::105', 'dead.beef.0001', 'ND', '005', None, 60, 10, False)
         expected_output = False
         self.assertEqual(result, expected_output)
+
+    def test_verify_ip_mac_binding_in_network_interface_1(self):
+        result = verify_ip_mac_binding_in_network(self.device, '2001:DB8::105', 'dead.beef.0001', 'ND', 5 , None, 60, 10, False, interface="Twe1/0/1")
+        expected_output = True
+        self.assertEqual(result, expected_output)
+
+    def test_verify_ip_mac_binding_in_network_interface_2(self):
+        result = verify_ip_mac_binding_in_network(self.device, '2001:DB8::105', 'dead.beef.0001', 'ND', 5 , None, 60, 10, False, interface="TwentyFiveGigE1/0/1")
+        expected_output = True
+        self.assertEqual(result, expected_output)
+
+    def test_verify_ip_mac_binding_in_network_interface_3(self):
+        result = verify_ip_mac_binding_in_network(self.device, '2002::100', 'ba25.cdf4.ad38', 'L', 100, verify_reachable=True, interface="Vlan20")
+        expected_output = True
+        self.assertEqual(result, expected_output)
+
+    def test_verify_ip_mac_binding_in_network_interface_4(self):
+        result = verify_ip_mac_binding_in_network(self.device, '2002::100', 'ba25.cdf4.ad38', 'L', 100, verify_reachable=True, vlan=20)
+        expected_output = True
+        self.assertEqual(result, expected_output)

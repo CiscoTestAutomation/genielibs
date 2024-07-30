@@ -1,0 +1,689 @@
+exclude:
+default:
+    arguments:
+      tets: 1
+configure_interface_isis_network:
+    arguments:
+        - network_type: 'point-to-point'
+          interface: 'Gi1/0/20'
+configure_ip_msdp_peer:
+    arguments:
+        - hostname: '172.16.254.2'
+          remote_as_number: 65001
+          interface: 'Gi3/0/21'
+        - hostname: '172.16.254.2'
+          remote_as_number: 65001
+exclude_ip_dhcp:
+    arguments:
+        - ip: 6.6.6.0
+        - ip: 4.4.4.4
+          high_ip: 5.5.5.5
+unconfigure_exclude_ip_dhcp:
+    arguments:
+        - ip: 6.6.6.0
+        - ip: 4.4.4.4
+          high_ip: 5.5.5.5
+configure_dhcp_pool:
+    arguments:
+        - pool_name: test
+          router_id: 192.168.1.10
+          network: 192.168.21.1
+          mask: 255.255.255.0
+        - pool_name: test1
+          router_id: 2.2.2.2
+        - pool_name: test3
+          network: 172.16.1.0
+          mask: 255.255.0.0
+unconfigure_dhcp_pool:
+    arguments:
+        - pool_name: test
+          router_id: 192.168.1.10
+          network: 192.168.21.1
+          mask: 255.255.255.0
+        - pool_name: test1
+          router_id: 2.2.2.2
+        - pool_name: test3
+          network: 172.16.1.0
+          mask: 255.255.0.0
+
+
+configure_ospf_networks:
+    arguments:
+        - ospf_process_id: 10
+          ip_address:
+            - 172.16.70.0
+            - 172.16.71.0
+            - 172.16.80.0
+          netmask: 0.0.0.255
+          area: 0
+          router_id: 1.1.1.1
+          bfd: 'all-interfaces'
+          vrf_name: green
+        - ospf_process_id: 9
+          ip_address:
+            - 172.16.70.0
+            - 172.16.71.0
+            - 172.16.80.0
+          netmask: 0.0.0.255
+          area: 0
+          router_id: 1.1.1.1
+          bfd: 'all-interfaces'
+        - ospf_process_id: 5
+          router_id: 1.1.1.1
+          bfd: 'all-interfaces'
+          vrf_name: green
+configure_shape_map:
+    arguments:
+        # - queue_name: test
+        #   class_map_list:
+        #     - class_map_name: tc7
+        #       priority_level: 1
+        #       shape_average: 44444
+        #       bandwidth: 10
+        #       queue_limit: 1000000
+        #       child_policy: tcy1
+        #       shape_average_percent: 2
+        #       random_detect_type: discard-class
+        #       discard_class_value: 0
+        #       minimum_threshold: 25
+        #       maximum_threshold: 50
+        #       mark_probability: 3
+        # - queue_name: test
+        #   class_map_list:
+        #     - class_map_name: tc7
+        #       bandwidth: 10
+        #       shape_average_percent: 2
+        #       random_detect_type: discard-class
+        #       discard_class_value: 0
+        #       minimum_threshold: 25
+        #       maximum_threshold: 50
+        #       mark_probability: 3
+        #     - class_map_name: tc7
+        #       shape_average_percent: 2
+        #       random_detect_type: discard-class-based
+        # - queue_name: test
+        #   class_map_list:
+        #     - class_map_name: tc7
+        #       priority_level: 1
+        #       shape_average: 44444
+        #       bandwidth: 10
+        #       queue_limit: 1000000
+        #       random_detect_type: discard-class
+        #       discard_class_value: 0
+        #       minimum_threshold: 25
+        #       maximum_threshold: 50
+        - policy_name: map1
+          class_map_list:
+            - class_map_name: tc7
+              priority_level: 1
+              shape_average: 44444
+              bandwidth: 10
+              child_policy: tcy1
+              shape_average_percent: 2
+              random_detect_type: dscp
+              discard_class_value: 0
+              minimum_threshold: 25
+              maximum_threshold: 50
+        - policy_name: map1
+          class_map_list:
+            - class_map_name: tc7
+              bandwidth: 10
+              shape_average_percent: 2
+              random_detect_type: dscp
+              discard_class_value: 0
+              minimum_threshold: 25
+              maximum_threshold: 50
+            - class_map_name: tc7
+              shape_average_percent: 2
+              random_detect_type: dscp-based
+        - policy_name: map1
+          class_map_list:
+            - class_map_name: tc7
+              priority_level: 1
+              shape_average: 44444
+              bandwidth: 10
+              random_detect_type: precedence
+              discard_class_value: 0
+              minimum_threshold: 25
+              maximum_threshold: 50
+configure_acl_with_ip_any:
+    arguments:
+        - acl_name: 102
+          action: permit
+hw_module_switch_usbflash_security_password:
+    arguments:
+        - switch_number: 1
+          action: enable
+          pwd: password
+configure_ospf_redistribute_in_bgp:
+    arguments:
+        - bgp_as: 3
+          address_family: ipv6
+          ospf_instance: 10
+          match_criteria: "internal external 1 external 2"
+          metric: 6
+          route_map: test
+        - bgp_as: 3
+          address_family: ipv6
+          ospf_instance: 10
+          metric: 6
+          route_map: test
+        - bgp_as: 3
+          address_family: ipv6
+          ospf_instance: 10
+          route_map: test
+configure_ipv6_multicast_routing:
+    arguments:
+        - vrf_name: null
+        - vrf_name: green
+unconfigure_ipv6_multicast_routing:
+    arguments:
+        - vrf_name: null
+        - vrf_name: green
+configure_ospf_internal_external_routes_into_bgp:
+    arguments:
+        - bgp_as: 3
+          process_id: 3
+          vrf: green
+          address_family: ipv4
+          metric: 10
+        - bgp_as: 3
+          process_id: 3
+          address_family: ipv4
+          metric: 10
+        - bgp_as: 3
+          process_id: 3
+          vrf: green
+          address_family: ipv4
+        - bgp_as: 3
+          process_id: 3
+          address_family: ipv4
+configure_dhcp_pool_dns_server:
+    arguments:
+        - ip_version: ipv6
+          pool_name: test
+          dns_server: 2001::26
+configure_bgp_eigrp_redistribution:
+    arguments:
+      - vrf: green
+        eigrp_instance: 10
+      - vrf: green
+      - eigrp_instance: 10
+configure_extended_acl:
+    arguments:
+      - acl_name: test
+        permission: permit
+        protocol: tcp
+        src_ip: 2.2.2.2
+        dst_ip: 4.4.4.4
+        sequence_num: 3
+        src_wildcard: 0.0.0.255
+        dst_wildcard: 0.0.255.255
+      - acl_name: test1
+        permission: deny
+        protocol: udp
+        src_ip: 2.2.2.2
+        dst_ip: 4.4.4.4
+        src_wildcard: 0.0.0.255
+        dst_wildcard: 0.0.255.255
+      - acl_name: test2
+        permission: permit
+        protocol: icmp
+        src_ip: any
+        dst_ip: any
+      - acl_name: test3
+        permission: permit
+        protocol: tcp
+        src_ip: any
+        dst_ip: any
+        sequence_num: 3
+configure_eigrp_redistribute_bgp:
+    arguments:
+      - process_id: 6
+        bgp_as: 3
+        ipv6: false
+      - process_id: 8
+        bgp_as: 3
+        ipv6: true
+configure_nat_pool:
+    arguments:
+      - pool_name: outside_pool 
+        pool_start_ip: 4.4.4.4
+        pool_end_ip: 4.5.5.5
+        network_mask: 255.0.0.0
+      - pool_name: outside_pool1 
+        pool_start_ip: 4.4.4.4
+        pool_end_ip: 4.5.5.5
+        prefix_length: 8
+unconfigure_nat_pool:
+    arguments:
+      - pool_name: outside_pool 
+        pool_start_ip: 4.4.4.4
+        pool_end_ip: 4.5.5.5
+        network_mask: 255.0.0.0
+      - pool_name: outside_pool1 
+        pool_start_ip: 4.4.4.4
+        pool_end_ip: 4.4.5.5
+        prefix_length: 16
+configure_router_isis:
+    arguments:
+      - router_name: test
+        network_entity: 49.1290.0000.0011.00
+        router_id: Gi1/0/4
+        metric_style: wide
+        traffic_eng_router_id: Gi1/0/4
+        traffic_eng_level: level-1
+      - router_name: test
+        router_id: Gi1/0/4
+        metric_style: wide
+        traffic_eng_router_id: Gi1/0/4
+        traffic_eng_level: level-1
+      - router_name: test
+        metric_style: wide
+        traffic_eng_router_id: Gi1/0/4
+        traffic_eng_level: level-1
+      - router_name: test
+        traffic_eng_router_id: Gi1/0/4
+        traffic_eng_level: level-1
+      - router_name: test
+        traffic_eng_level: level-1
+configure_ptp_priority:
+    arguments:
+      - priority1: 20
+        priority2: 128
+      - priority1: 29
+      - priority2: 98
+configure_app_hosting_appid_trunk_port:
+    arguments:
+      - appid: 1key
+        app_vnic: AppGigabitEthernet
+        app_vnic_port: 2
+        app_vnic_port_mode: trunk
+        vlan_id: 14
+        app_ip: 172.15.0.1
+        app_netmask: 255.255.255.0
+        app_gateway_ip: 172.15.0.255
+        start: true
+      - appid: 1key1
+        app_vnic: management
+        app_vnic_guest_interface: 0
+        app_gateway_ip: 172.15.0.255
+        start: false
+      - appid: 1key2
+        app_vnic: AppGigabitEthernet
+        app_vnic_port: 2
+        app_vnic_port_mode: trunk
+        vlan_id: 14
+        app_ip: 172.15.0.1
+        app_netmask: 255.255.255.0
+        start: true
+configure_app_hosting_appid_docker:
+    arguments:
+      - appid: 1key
+        prepend_pkg_opts: true
+        run_opts:
+          - index: 3
+            string: '-e TEAGENT_ACCOUNT_TOKEN=r3d29srpebr4j845lvnamwhswlori2xs'
+          - index: 5
+            string: '-e TEAGENT_PROXY_TYPE=STATIC'
+          - index: 7
+            string: '-e TEAGENT_PROXY_BYPASS_LIST=*.cisco.com'
+      - appid: 1key1
+        prepend_pkg_opts: false
+        run_opts:
+          - index: 3
+            string: '-e TEAGENT_ACCOUNT_TOKEN=r3d29srpebr4j845lvnamwhswlori2xs'
+          - index: 5
+            string: '-e TEAGENT_PROXY_TYPE=STATIC'
+          - index: 7
+            string: '-e TEAGENT_PROXY_BYPASS_LIST=*.cisco.com'
+      - appid: 1key2
+        prepend_pkg_opts: true
+configure_app_hosting_resource_profile:
+    arguments:
+      - appid: 1key
+        profile_name: custom
+        cpu: 40
+        cpu_percent: 30
+        memory: 4000
+        vcpu: 5666
+        start: true
+      - appid: 1key1
+        profile_name: custom
+        cpu: 40
+        memory: 4000
+        vcpu: 5666
+        start: false
+      - appid: 1key
+        profile_name: custom
+        cpu: 40
+        vcpu: 5666
+        start: false
+configure_evpn_ethernet_segment:
+    arguments:
+      - segment_value: 6
+        identifier_type: 0
+        esi_value: 00.00.00.00.00.00.00.00.01
+        redundancy: true
+      - segment_value: 7
+        identifier_type: 3
+        system_mac: 00.00.00
+        redundancy: false
+configure_interface_tunnel_mode_ipsec:
+    arguments:
+      interface: Gi1/0/18
+unconfigure_interface_tunnel_mode_ipsec:
+    arguments:
+      interface: Gi1/0/18
+enable_dhcp_compatibility_suboption:
+    arguments:
+      - suboption: link-selection
+        value: standard
+disable_dhcp_compatibility_suboption:
+    arguments:
+      - suboption: link-selection
+        value: standard
+execute_install_one_shot:
+    arguments:
+      - file_path: "flash:cat9k_iosxe.BLD_POLARIS_DEV_LATEST_20221120_082013_V17_11_0_27.SSA.bin"
+      #- file_path: "flash:cat9k_iosxe.BLD_POLARIS_DEV_LATEST_20220815_071713_V17_10_0_31.SSA.bin"
+        timeout: 2400
+        connect_timeout: 50
+        xfsu: true
+unconfigure_nat_pool_address:
+    arguments:
+      - pool_name: inside_pool1
+        start_ip_address: 1.1.1.1
+        end_ip_address: 1.2.2.2
+        network_mask: 255.0.0.0
+        pool_type: match-host
+      - pool_name: inside_pool2
+        start_ip_address: 1.1.1.1
+        end_ip_address: 1.2.2.2
+        prefix_length: 8
+configure_dhcpv6_guard_policy:
+    arguments:
+      - policy_name: test2
+        device_role: client
+configure_interface_evpn_ethernet_segment:
+    arguments:
+      - interface: Gi1/0/18
+        segment_value: 10
+verify_bgp_l2vpn_evpn_rt2_nxthop:
+    arguments:
+      - expected_rd: '172.16.254.1:201'
+        expected_nexthop: 172.16.254.1
+        expected_prefix: 192.168.1.200
+configure_policy_map:
+    arguments:
+      - policy_name: 'policy1'
+        class_map_list:
+          - class_map_name: test
+            policer_val: 2000000000
+            priority_level: 3
+            bandwidth_percent: 40
+            bandwidth_remaining_percent: 50
+            match_mode:
+              - dscp
+              - cos
+            matched_value:
+              - cs1
+              - 5
+            table_map_name: test
+            table_map_mode: cos
+            police_cir_percent: 30
+      - policy_name: 'policy1'
+        class_map_list:
+          - class_map_name: test
+            policer_val: 2000000000
+            priority_level: 2
+            bandwidth_percent: 40
+            bandwidth_remaining_percent: 50
+            police_cir_percent: 30
+      - policy_name: 'policy1'
+        class_map_list:
+          - class_map_name: test
+            bandwidth_remaining_percent: 50
+            match_mode:
+              - dscp
+              - cos
+            matched_value:
+              - cs1
+              - 5
+            table_map_name: test
+            table_map_mode: cos
+configure_policy_map_class_parameters:
+    arguments:
+      - version: 2
+        policy_name: test
+        class_map_name: test
+        policer_rate: 200000
+        confirm_action: set-discard-class-transmit
+        confirm_transmit_action: 5
+        pir_rate: 60000000
+        exceed_action: set-discard-class-transmit
+        exceed_transmit_action: 5
+        violate_action: set-dscp-transmit
+        violate_transmit_action: dscp
+        table_map_name: t1
+        traffic_class_mode:
+        traffic_class_table:
+      - version: 2
+        policy_name: test
+        class_map_name: test
+        cir_percent: 30
+        confirm_action: transmit
+        confirm_transmit_action:
+        violate_action: set-dscp-transmit
+        violate_transmit_action: dscp
+        traffic_class_mode:
+        traffic_class_table:
+      - version: 2
+        policy_name: test
+        class_map_name: test
+        rate_percent: 20
+        confirm_action: set-discard-class-transmit
+        confirm_transmit_action: 5
+        exceed_action: transmit
+        exceed_transmit_action: 
+        violate_action: set-dscp-transmit
+        violate_transmit_action: dscp
+        table_map_name: t1
+        traffic_class_mode:
+        traffic_class_table:
+unconfigure_policy_map_class_parameters:
+    arguments:
+      - version: 2
+        policy_name: test
+        class_map_name: test
+        policer_rate: 200000
+        confirm_action: set-discard-class-transmit
+        confirm_transmit_action: 5
+        pir_rate: 60000000
+        exceed_action: set-discard-class-transmit
+        exceed_transmit_action: 5
+        violate_action: set-dscp-transmit
+        violate_transmit_action: dscp
+        table_map_name: t1
+        traffic_class_mode:
+        traffic_class_table:
+      - version: 2
+        policy_name: test
+        class_map_name: test
+        cir_percent: 30
+        confirm_action: transmit
+        confirm_transmit_action:
+        violate_action: set-dscp-transmit
+        violate_transmit_action: dscp
+        traffic_class_mode:
+        traffic_class_table:
+      - version: 2
+        policy_name: test
+        class_map_name: test
+        rate_percent: 20
+        confirm_action: set-discard-class-transmit
+        confirm_transmit_action: 5
+        exceed_action: transmit
+        exceed_transmit_action: 
+        violate_action: set-dscp-transmit
+        violate_transmit_action: dscp
+        table_map_name: t1
+        traffic_class_mode:
+        traffic_class_table:
+unconfigure_pvlan_primary:
+    arguments:
+      - primary_vlan: 2
+        secondary_vlan: 6
+unconfigure_pvlan_type:
+    arguments:
+      - vlan: 2
+        pvlan_type: isolated
+configure_static_nat_rule:
+    arguments:
+      - inside_local_ip: 193.168.0.2
+        inside_global_ip: 10.10.10.1
+        l4_protocol: tcp
+        inside_port: 22
+        outside_port: 22
+        extendable: true
+        vrf: VRF2
+        no_alias: true
+      - inside_local_ip: 193.168.0.2
+        inside_global_ip: 10.10.10.1
+        extendable: true
+        vrf: VRF2
+        no_alias: true
+      - inside_local_ip: 193.168.0.2
+        inside_global_ip: 10.10.10.1
+        l4_protocol: tcp
+        inside_port: 22
+        outside_port: 22
+        extendable: false
+        vrf:
+        no_alias: false
+unconfigure_static_nat_rule:
+    arguments:
+      - inside_local_ip: 193.168.0.2
+        inside_global_ip: 10.10.10.1
+        l4_protocol: tcp
+        inside_port: 22
+        outside_port: 22
+        extendable: true
+        vrf: VRF2
+        no_alias: true
+      - inside_local_ip: 193.168.0.2
+        inside_global_ip: 10.10.10.1
+        extendable: true
+        vrf: VRF2
+        no_alias: true
+      - inside_local_ip: 193.168.0.2
+        inside_global_ip: 10.10.10.1
+        l4_protocol: tcp
+        inside_port: 22
+        outside_port: 22
+        extendable: false
+        vrf:
+        no_alias: false
+configure_static_nat_outside_rule:
+    arguments:
+      - outside_global_address: 193.168.128.2
+        outside_local_address: 20.20.20.1
+        l4_protocol: tcp
+        global_port: 34
+        local_port: 34
+        network: true
+        network_mask: 255.255.0.0
+        extendable: true
+        add_route: true
+        vrf: VRF2
+      - outside_global_address: 193.168.128.2
+        outside_local_address: 20.20.20.1
+        extendable: true
+        add_route: true
+        vrf: VRF2
+      - outside_global_address: 193.168.128.2
+        outside_local_address: 20.20.20.1
+        l4_protocol: tcp
+        global_port: 34
+        local_port: 34
+        extendable: false
+        add_route: false
+        vrf: VRF2
+unconfigure_static_nat_outside_rule:
+    arguments:
+      - outside_global_address: 193.168.128.2
+        outside_local_address: 20.20.20.1
+        l4_protocol: tcp
+        global_port: 34
+        local_port: 34
+        network: true
+        network_mask: 255.255.0.0
+        extendable: true
+        add_route: true
+        vrf: VRF2
+      - outside_global_address: 193.168.128.2
+        outside_local_address: 20.20.20.1
+        extendable: true
+        add_route: true
+        vrf: VRF2
+      - outside_global_address: 193.168.128.2
+        outside_local_address: 20.20.20.1
+        l4_protocol: tcp
+        global_port: 34
+        local_port: 34
+        extendable: false
+        add_route: false
+        vrf: VRF2
+unconfigure_nat_translation_max_entries:
+    arguments:
+      - entry_type: vrf
+        entry_name: test
+        number_of_entries: 5
+      - entry_type: all-vrf
+        entry_name: ''
+        number_of_entries: 5
+      - entry_type: list
+        entry_name: test1
+        number_of_entries: 5
+unconfigure_static_nat_source_list_rule:
+    arguments:
+      - translation: inside
+        list_name: test
+        pool_name: test1
+        interface:
+        vrf_name: vrf_1
+        overload: pap
+        egress_interface: Gi1/0/16
+        oer: oer
+      - translation: inside
+        list_name: list_in_VRF2
+        pool_name: pool_in_VRF2
+        interface: Gi1/0/16
+        vrf_name: vrf_1
+        overload: ''
+        egress_interface:
+        oer:
+      - translation: inside
+        list_name: test
+        pool_name:
+        interface: Gi1/0/16
+        vrf_name: vrf_1
+        overload: ''
+        egress_interface:
+        oer:
+get_mgmt_ip_and_mgmt_src_ip_addresses:
+    arguments:
+      - mgmt_src_ip: 192.168.1.5
+configure_cdp:
+    arguments:
+      - interfaces: null
+        timeout: 300
+      # - interfaces: 
+      #   - Te1/0/19
+      #   - Te1/0/20
+      #   timeout: 200
+configure_policy_map_set_cos_cos_table:
+    arguments:
+      - policy_map_name: map1
+        class_name: class-default
+        table_name: cos2cos

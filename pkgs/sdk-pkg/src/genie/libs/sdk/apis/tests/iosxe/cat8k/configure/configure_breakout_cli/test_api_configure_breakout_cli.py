@@ -10,7 +10,7 @@ class TestConfigureBreakoutCli(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          GD_F12:
+          encore_sanity:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,11 +18,11 @@ class TestConfigureBreakoutCli(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: iosxe
-            type: iosxe
+            platform: cat8k
+            type: router
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['GD_F12']
+        self.device = self.testbed.devices['encore_sanity']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,6 @@ class TestConfigureBreakoutCli(unittest.TestCase):
         )
 
     def test_configure_breakout_cli(self):
-        result = configure_breakout_cli(self.device, 'all', '0/2', '10g')
+        result = configure_breakout_cli(self.device, 'all', '0/2', '10g', 60)
         expected_output = None
         self.assertEqual(result, expected_output)

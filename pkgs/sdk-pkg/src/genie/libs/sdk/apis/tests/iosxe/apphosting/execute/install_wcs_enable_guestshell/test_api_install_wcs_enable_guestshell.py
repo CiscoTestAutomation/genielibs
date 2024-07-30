@@ -18,8 +18,8 @@ class TestInstallWcsEnableGuestshell(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: c9300
-            type: c9500
+            platform: cat9k
+            type: c9300
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['stack3-nyquist-1']
@@ -30,6 +30,6 @@ class TestInstallWcsEnableGuestshell(unittest.TestCase):
         )
 
     def test_install_wcs_enable_guestshell(self):
-        result = install_wcs_enable_guestshell(self.device, 'wcs_docker', 'flash', 'iperf3_signed.tar')
-        expected_output = None
+        result = install_wcs_enable_guestshell(self.device, 'wcs_docker', 'flash', 'iperf3_signed.tar', 300)
+        expected_output = False
         self.assertEqual(result, expected_output)

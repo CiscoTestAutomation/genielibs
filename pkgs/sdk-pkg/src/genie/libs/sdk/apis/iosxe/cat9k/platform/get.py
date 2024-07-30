@@ -32,16 +32,28 @@ def get_boot_variables(device, boot_var, output=None):
         if boot_var == 'current':
             if boot_out.get("active", {}):
                 boot_variables = boot_out.get("active", {}).get("boot_variable")
+                log.info(f"Boot images set using boot_variable on active device: {boot_variables}")
             else:
-                boot_variables = boot_out.get("current_boot_variable")
+                for each in ["current_boot_variable", "boot_variable"]:
+                    if boot_out.get(each):
+                        boot_variables = boot_out.get(each)
+                        log.info(f"Boot images set using {each} -> {boot_variables}")
+                        break
+                
         else:
             if boot_out.get("active", {}):
                 boot_variables = boot_out.get("active", {}).get("boot_variable")
+                log.info(f"Boot images set using boot_variable on active device: {boot_variables}")
             else:
-                boot_variables = boot_out.get("next_reload_boot_variable")
+                for each in ["next_reload_boot_variable", "boot_variable"]:
+                    if boot_out.get(each):
+                        boot_variables = boot_out.get(each)
+                        log.info(f"Boot images set using {each} -> {boot_variables}")
+                        break
 
             if boot_variables is None:
                 boot_variables = boot_out.get("next_reload_boot_variable")
+                log.info(f"Boot images set using next_reload_boot_variable -> {boot_variables}")
 
         # Trim
         if boot_variables:

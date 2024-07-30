@@ -34,6 +34,7 @@ from genie.libs.clean.utils import (
 
 # Unicon
 from unicon.eal.dialogs import Statement, Dialog
+from unicon.core.errors import SubCommandFailure
 
 # Logger
 log = logging.getLogger(__name__)
@@ -469,9 +470,12 @@ Stage Schema
 install_image:
     images (list, optional):
         image to not removed by stage.
-        
+
     timeout (int, optional): Maximum time to wait for remove process to
         finish. Defaults to 180.
+
+    force_remove (bool, optional): Whether or not to remove the inactive
+        package irrespective of availability of passed image. Defaults to True.
 
 Example
 -------
@@ -484,6 +488,7 @@ install_remove_inactive:
     # Argument Defaults
     # =================
     TIMEOUT = 180
+    FORCE_REMOVE = True
 
     # ============
     # Stage Schema
@@ -491,6 +496,7 @@ install_remove_inactive:
     schema = {
         Optional('images'): list,
         Optional('timeout'): int,
+        Optional('force_remove'): bool,
     }
 
     # ==============================
@@ -501,17 +507,22 @@ install_remove_inactive:
     ]
 
 
-
-    def remove_inactive_pkgs(self, steps, device, images, timeout=TIMEOUT):
+    def remove_inactive_pkgs(self, steps, device, images, timeout=TIMEOUT, force_remove=FORCE_REMOVE):
         with steps.start("Removing inactive packages") as step:
 
-            def _check_for_system_image(spawn, system_image=None):
+            def _check_for_system_image(spawn, system_image=None, force_remove=None):
+                if force_remove is True:
+                    log.warning(f'Sending yes to delete files without checking {system_image} in among the files to be deleted.')
+                    spawn.sendline('y')
+                    return
+
                 if system_image and re.search(f"{system_image}\r", spawn.buffer):
                     log.debug(f'{system_image} is among the files to be deleted. send no so the {system_image} is not deleted. ')
                     spawn.sendline('n')
                 else:
                     log.debug(f'{system_image} is not among the files to be deleted. Hence, send yes to delete files.')
                     spawn.sendline('y')
+
             # split the image on the [:/] and pick up the image name
             image = re.split(r'[:/]', images[0])[-1]
 
@@ -519,7 +530,7 @@ install_remove_inactive:
                 Statement(
                     pattern=r".*Do you want to remove the above files\? \[y\/n\]",
                     action=_check_for_system_image,
-                    args={'system_image': image},
+                    args={'system_image': image, 'force_remove': force_remove},
                     loop_continue=False,
                     continue_timer=False),
             ])
@@ -768,10 +779,10 @@ install_image:
                     'reply': install_add_one_shot_dialog
                 })
                 if issu:
-                    device.reload('install add file {} activate issu commit'.format(images[0]),
+                    device.reload('install add file {} activate issu commit prompt-level none'.format(images[0]),
                               **reload_args)
                 else:
-                    device.reload('install add file {} activate commit'.format(images[0]),
+                    device.reload('install add file {} activate commit prompt-level none'.format(images[0]),
                               **reload_args)
 
                 device.execute('install commit')
@@ -908,6 +919,8 @@ reload:
     reconnect_via (str, optional): Specify which connection to use after reloading.
         Defaults to the 'default' connection in the testbed yaml file.
 
+    attempt_manual_boot (bool, optional): Enable to attempt manual boot when reload fails.
+        Defaults to True.
 
 Example
 -------
@@ -937,6 +950,7 @@ reload:
         'ignore_modules': None,
     }
     RECONNECT_VIA = None
+    ATTEMPT_MANUAL_BOOT = True
 
     # ============
     # Stage Schema
@@ -958,6 +972,8 @@ reload:
             Any(): Any()
         },
         Optional('reconnect_via'): str,
+        Optional('attempt_manual_boot'): bool,
+
     }
 
     # ==============================
@@ -970,7 +986,7 @@ reload:
         'check_modules'
     ]
 
-    def reload(self, steps, device, reload_service_args=None):
+    def reload(self, steps, device, reload_service_args=None, attempt_manual_boot=ATTEMPT_MANUAL_BOOT):
 
         if reload_service_args is None:
             # If user provides no custom values, take the defaults
@@ -981,15 +997,39 @@ reload:
             # the many optional arguments, we still need to default the others.
             self.RELOAD_SERVICE_ARGS.update(reload_service_args)
             self.reload_service_args = self.RELOAD_SERVICE_ARGS
+
+        # custom exception for reload
+        class ReloadError(BaseException):
+            """Exception raised for errors that are specific to reload.
+            """
+            pass
+
+        def break_reload(device):
+            """ Breaks the reload process on a device
+            """
+            log.info(f"Boot variable does not exist!!! Breaking the reload process.")
+            # Send No to exit from reload process
+            device.sendline('N')
+
+            # Throw custom reload error from base exception.
+            raise ReloadError('Exiting the reload process.')
+
         # Disable device_recovey for reload in unicon
         self.reload_service_args.update({'device_recovery':False})
         reload_dialog = Dialog([
           Statement(pattern=r".*Do you wish to proceed with reload anyway\[confirm\].*",
                     action='sendline(y)',
                     loop_continue=True,
-                    continue_timer=False),
-                    ])
+                    continue_timer=False)])
 
+        if attempt_manual_boot:
+            reload_dialog.append(
+                Statement(pattern=r".*Boot variable either does not exist or buffer is too small.*",
+                    action=break_reload,
+                    args={'device': device},
+                    loop_continue=False,
+                    continue_timer=False),
+            )
 
         self.reload_service_args.update({
                     'reply': reload_dialog
@@ -999,6 +1039,43 @@ reload:
 
             try:
                 device.reload(**self.reload_service_args)
+            except ReloadError as e:
+                # Get the current system image
+                try:
+                    output = device.parse('show version')
+                    system_image = output['version']['system_image']
+                except Exception as e:
+                    log.exception(f"Failed to get the system image from device {device.name}, Error: {e}")
+
+                config_reg = None
+                # capture the current boot settings to restore it on later stage
+                try:
+                    output = device.parse('show boot')
+                    config_reg = output.get('active', {}).get('configuration_register')
+                except Exception as e:
+                    log.exception(f"Failed to get the boot information for {device.name}, Error: {e}")
+
+                # Bring the device state to rommon
+                device.rommon()
+
+                # If the device is HA then update context for standy rp
+                cmd = f'boot {system_image}'
+                if device.is_ha and hasattr(device, 'subconnections'):
+                    for con in device.subconnections:
+                        if con.role=='standby':
+                            con.context['boot_cmd'] = cmd
+
+                with steps.start(f"Reload using manual boot for {device.name}") as step:
+                    try:
+                        device.reload(reload_command=cmd)
+                    except Exception as e:
+                        step.failed(f"Failed to reload within {self.reload_service_args['timeout']} "
+                                    f"seconds.", from_exception=e)
+
+                # Restore the boot settings
+                if config_reg:
+                    device.api.execute_set_config_register(config_register=config_reg)
+
             except Exception as e:
                 step.failed(f"Failed to reload within {self.reload_service_args['timeout']} "
                             f"seconds.", from_exception=e)
@@ -1282,30 +1359,27 @@ devices:
     def rommon_boot(self, steps, device, image, tftp=None, timeout=TIMEOUT, recovery_password=RECOVERY_PASSWORD,
                   recovery_username=RECOVERY_USERNAME, recovery_enable_password=RECOVERY_ENABLE_PASSWORD, ether_port=ETHER_PORT):
         with steps.start("Boot device from rommon") as step:
-            if not tftp:
-                tftp = {}
+            if tftp is not None:
+                # Check if management attribute in device object, if not set to empty dict
+                if not hasattr(device, 'management'):
+                    setattr(device, "management", {})
 
 
-            # Check if management attribute in device object, if not set to empty dict
-            if not hasattr(device, 'management'):
-                setattr(device, "management", {})
-
-
-            # Getting the tftp information, if the info not provided by user, it takes from testbed
-            address = device.management.get('address', {}).get('ipv4', '')
-            if isinstance(address, IPv4Interface):
-                ip_address = [str(address.ip)]
-                subnet_mask = str(address.netmask)
-            elif isinstance(address, IPv6Interface):
-                ip_address = [str(address.ip)]
-                subnet_mask = str(address.netmask)
-            tftp.setdefault("ip_address", ip_address)
-            tftp.setdefault("subnet_mask", subnet_mask)
-            tftp.setdefault("gateway", str(device.management.get('gateway', {}).get('ipv4')))
-            tftp.setdefault("tftp_server", device.testbed.servers.get('tftp', {}).get('address'))
+                # Getting the tftp information, if the info not provided by user, it takes from testbed
+                address = device.management.get('address', {}).get('ipv4', '')
+                if isinstance(address, IPv4Interface):
+                    ip_address = [str(address.ip)]
+                    subnet_mask = str(address.netmask)
+                elif isinstance(address, IPv6Interface):
+                    ip_address = [str(address.ip)]
+                    subnet_mask = str(address.netmask)
+                tftp.setdefault("ip_address", ip_address)
+                tftp.setdefault("subnet_mask", subnet_mask)
+                tftp.setdefault("gateway", str(device.management.get('gateway', {}).get('ipv4')))
+                tftp.setdefault("tftp_server", device.testbed.servers.get('tftp', {}).get('address'))
 
             log.info("checking if all the tftp information is given by the user")
-            if not all(tftp.values()):
+            if tftp and not all(tftp.values()):
                 log.warning(f"Some TFTP information is missing: {tftp}")
                 # setting tftp empty if ttfp information is missing
                 tftp = {}
@@ -1690,7 +1764,7 @@ copy_to_device:
 
                                 self.skipped(f"The image file provided is same as the current running image {image_version} on the device.\n\
                                              Setting the destination image to {dest_file_path}. Skipping the copy process.")
-            
+
                 # try to get file size from file directly
                 with steps.start(f"Get filesize of '{file}'") as step:
                     try:
@@ -2218,7 +2292,7 @@ connect:
                 log.info('Configuring the manual boot')
 
                 try:
-                   
+
                     if device.is_ha and hasattr(device, 'subconnections'):
                         states_list = []
                         # Switch to enable mode if one of the rps are disable mode.
@@ -2353,6 +2427,7 @@ Example:
             },
             '^vrf definition Mgmt-(intf|vrf)': {},
             '^switch 1 provision': {},
+            '^stackwise-virtual': {},
             '^crypto pki trustpoint': {},
             '^crypto pki certificate chain': {},
             '^license boot level': {},
@@ -2438,3 +2513,195 @@ Example:
     def show_running_config(self, steps, device):
         with steps.start('Capturing running config') as step:
             device.execute('show running-config')
+
+
+class SetControllerMode(BaseStage):
+    """Set controller mode
+
+Stage Schema
+------------
+set_controller_mode:
+
+    mode (str, optional): `enable` or `disable`. Defaults to `enable`
+
+    reload_timeout (int, optional): maximum time to wait for reload.
+        Defaults to 600 secs
+
+    delete_inactive_versions (bool, optional): delete non active version after
+        changing image. Defaults to True
+
+Example
+-------
+set_controller_mode:
+    mode: enable
+    reload_timeout: 600
+    delete_inactive_versions: True
+"""
+
+    # =================
+    # Argument Defaults
+    # =================
+    MODE = 'enable'
+    RELOAD_TIMEOUT = 600
+    DELETE_INACTIVE_VERSIONS = True
+
+    # ============
+    # Stage Schema
+    # ============
+    schema = {
+        Optional('mode'): str,
+        Optional('reload_timeout'): int,
+        Optional('delete_inactive_versions'): bool,
+    }
+
+    # ==============================
+    # Execution order of Stage steps
+    # ==============================
+    exec_order = [
+        'set_controller_mode', 'confirm_and_set_default',
+        'delete_inactive_versions'
+    ]
+
+    def set_controller_mode(
+        self,
+        steps,
+        device,
+        mode=MODE,
+        reload_timeout=RELOAD_TIMEOUT,
+    ):
+
+        # Check if we're already in the desired mode
+        version_data = device.parse("show version")
+
+        # For those versions of IOSXE where version is a str
+        try:
+            router_operating_mode = version_data.get('version', {}).get('router_operating_mode')
+        except AttributeError:
+            router_operating_mode = None
+
+        if router_operating_mode == 'Autonomous' and mode == 'disable':
+            self.skipped("Router already in Autonomous mode")
+        elif router_operating_mode == 'Controller-Managed' and mode == 'enable':
+            self.skipped("Router already in Controller-Managed mode")
+
+        with steps.start("setting controller mode") as step:
+
+            if device.connected:
+                device.destroy_all()
+
+            device.connect()
+
+            _, password = device.api.get_username_password()
+
+            # Username: admin
+            # Password:
+            # Default admin password needs to be changed.
+            #
+            #
+            # Enter new password:
+            # Confirm password:
+            #
+            # Router# pnpa service discovery stop
+
+            controller_mode_dialog = Dialog([
+                Statement(pattern=r'Continue\? \[confirm\]',
+                          action='sendline()',
+                          loop_continue=True,
+                          continue_timer=False),
+                Statement(pattern=r'Do you want to abort\? \(yes/\[no\]\):',
+                          action='sendline(no)',
+                          loop_continue=True,
+                          continue_timer=False),
+                Statement(pattern=r'Username:',
+                          action='sendline(admin)',
+                          loop_continue=True,
+                          continue_timer=False),
+                Statement(pattern=r'Password:',
+                          action='sendline(admin)',
+                          loop_continue=True,
+                          continue_timer=False),
+                Statement(pattern=r'Enter new password:',
+                          action=f'sendline({password})',
+                          loop_continue=True,
+                          continue_timer=False),
+                Statement(pattern=r'Confirm password:',
+                          action=f'sendline({password})',
+                          loop_continue=True,
+                          continue_timer=False),
+                Statement(
+                    pattern=
+                    r'Would you like to enter basic management setup\? \[yes/no\]:',
+                    action=f'sendline(no)',
+                    loop_continue=True,
+                    continue_timer=False),
+            ])
+
+            try:
+                device.execute(f'controller-mode {mode}',
+                            timeout=reload_timeout,
+                            reply=controller_mode_dialog)
+            except SubCommandFailure:
+                self.skipped("Unable to configure controller-mode. Is it a "
+                             "feature of this device?")
+
+    def confirm_and_set_default(
+            self,
+            steps,
+            device,
+            mode=MODE):
+
+        with steps.start("upgrade-confirm and set-default") as step:
+
+            if device.connected:
+                device.destroy_all()
+            self.output = device.connect()
+
+            parsed_output = device.parse('show sdwan software')
+            active_version = parsed_output.q.contains_key_value(
+                'active', 'true').get_values('version', 0)
+            self.non_active_version = parsed_output.q.contains_key_value(
+                'active', 'false').get_values('version')
+
+            if active_version:
+                commands = [
+                    'request platform software sdwan software upgrade-confirm',
+                    f'request platform software sdwan software set-default {active_version}',
+                    'show sdwan software'
+                ]
+                device.execute(commands)
+            else:
+                step.failed('Active version was not confirmed.')
+
+        with steps.start("Verify controller mode") as step:
+            if 'Controller-Managed' in self.output and mode == 'enable':
+                step.passed(
+                    "Device booted up with controller-mode successfully.")
+            elif 'Autonomous' in self.output and mode == 'disable':
+                step.passed(
+                    "Device booted up with autonomous-mode successfully.")
+            elif 'Controller-Managed' in self.output and mode == 'disable':
+                step.failed(
+                    "Device couldn't boot up with autonomous-mode")
+            elif 'Autonomous' in self.output and mode == 'enable':
+                step.failed(
+                    "Device couldn't boot up with controller-mode")
+            else:
+                step.failed(f"Something went wrong configuring `controller-mode {mode}`")
+
+    def delete_inactive_versions(
+            self,
+            steps,
+            device,
+            delete_inactive_versions=DELETE_INACTIVE_VERSIONS):
+
+        with steps.start("deleting non active version") as step:
+
+            if delete_inactive_versions and self.non_active_version:
+                for version in self.non_active_version:
+                    device.execute(
+                        f"request platform software sdwan software remove {version}"
+                    )
+                device.execute("show sdwan software")
+                log.info(
+                    f"Non active versions {self.non_active_version} are deleted."
+                )

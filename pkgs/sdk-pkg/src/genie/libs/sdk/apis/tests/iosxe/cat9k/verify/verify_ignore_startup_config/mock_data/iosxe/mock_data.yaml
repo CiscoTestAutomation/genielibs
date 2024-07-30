@@ -1,0 +1,53 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: Switch(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: Switch(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show romvar:
+      response:
+      - "----------------------------------\r\nROMMON variables for Active Switch\r\
+        \n----------------------------------\r\nABNORMAL_RESET_COUNT=0\r\nAUTO_SWITCH_CONSOLE_DISABLE=0\r\
+        \nBAUD=9600\r\nBOARDID=24662\r\nBOOT=flash:packages.conf;\r\nBOOT_LOADER_UPGRADE_DISABLE=1\r\
+        \nBSI=0\r\nCALL_HOME_DEBUG=0000000000000\r\nCONSOLE_MIRRORING_DISABLE=0\r\n\
+        CSDL_ENTROPY_REQUIREMENT_DISABLE=\r\nCSDL_MODE_DISABLE=\r\nDC_COPY=yes\r\n\
+        DEFAULT_GATEWAY=5.40.0.1\r\nENABLE_BREAK=yes\r\nFIPS_MODE=\r\nIMAGE_UPGRADE=no\r\
+        \nIP_ADDRESS=5.40.13.67\r\nIP_SUBNET_MASK=255.255.255.0\r\nMAC_ADDR=A4:11:BB:42:2F:00\r\
+        \nMANUAL_BOOT=no\r\nMODEL_NUM=C9300-24U\r\nMODEL_REVISION_NUM=H0\r\nMOTHERBOARD_ASSEMBLY_NUM=73-18272-04\r\
+        \nMOTHERBOARD_REVISION_NUM=A0\r\nMOTHERBOARD_SERIAL_NUM=FOC26446BLL\r\nRANDOM_NUM=2087507619\r\
+        \nRET_2_RCALTS=\r\nRET_2_RTS=\r\nROMMON_AUTOBOOT_ATTEMPT=3\r\nReloadReason=Image\
+        \ Install RET_2_RCALTS=1720527812\r\nSWITCH_IGNORE_STARTUP_CFG=0\r\nSWITCH_NUMBER=1\r\
+        \nSWITCH_PRIORITY=1\r\nSYSTEM_SERIAL_NUM=FOC2646Y5B9\r\nTEMPLATE=access\r\n\
+        TFTP_BLKSIZE=8192\r\nTFTP_FILE=file:///auto/lighthouse2/prod/images/cat9k_universalk9-image/polaris_dev/197880/cat9k_universalk9-image/cat9k_iosxe.S2C.SSA.bin\r\
+        \nTFTP_SERVER=223.255.254.254\r\nUSB_DISABLE=0\r\nVERSION_ID=V03\r\n@9\a@:\t\
+        @@32^Z^YED@4^[F@@@@@^]@!@^]@Q^\\@ @^\\@P=@<:5^D/^VA"
+      response_type: circular
+    show version: ''
+    show version | include operating mode: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: Switch#

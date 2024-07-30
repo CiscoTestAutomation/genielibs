@@ -53,6 +53,14 @@ class Vpc(ABC):
                     sub.build_config(apply=False,
                                      attributes=attributes2,
                                      unconfig=unconfig))
+
+            # InterfaceAttribute
+            for sub, attributes2 in attributes.mapping_values('interface_attr',
+                                                              sort=True, keys=self.interface_attr):
+                configurations.append_block(
+                    sub.build_config(apply=False,
+                                     attributes=attributes2,
+                                     unconfig=unconfig))
             if apply:
                 if configurations:
                     self.device.configure(configurations)
@@ -185,10 +193,18 @@ class Vpc(ABC):
                         configurations.append_line(
                             attributes.format('track {track}'))
 
-                    # nxos: virtual peer-link destination <value>
-                    if attributes.value('virtual_peer_link_ip'):
+                    # nxos: virtual peer-link attributes
+                    if attributes.value('virtual_peer_link_dst_ip'):
+                        virtual_peer_link_cfg = 'virtual peer-link destination {virtual_peer_link_dst_ip} '
+
+                        if attributes.value('virtual_peer_link_src_ip'):
+                            virtual_peer_link_cfg += 'source {virtual_peer_link_src_ip} '
+
+                        if attributes.value('virtual_peer_link_dscp'):
+                            virtual_peer_link_cfg += 'dscp {virtual_peer_link_dscp}'
+
                         configurations.append_line(
-                            attributes.format('virtual peer-link destination {virtual_peer_link_ip}'))
+                            attributes.format(virtual_peer_link_cfg))
 
                     # nxos: keepalive attributes
                     if attributes.value('keepalive_dst_ip'):
@@ -225,3 +241,29 @@ class Vpc(ABC):
 
             def build_unconfig(self, apply=True, attributes=None, **kwargs):
                 return self.build_config(apply=apply, attributes=attributes, unconfig=True, **kwargs)
+        
+        class InterfaceAttributes(ABC):
+
+            def build_config(self, apply=True, attributes=None, unconfig=False,
+                             **kwargs):
+                assert not kwargs, kwargs
+                attributes = AttributesHelper(self, attributes)
+                configurations = CliConfigBuilder(unconfig=unconfig)
+                with configurations.submode_context(attributes.format(
+                        'interface {interface_name}', force=True)):
+                    if unconfig and attributes.iswildcard:
+                        configurations.submode_unconfig()
+
+                    if attributes.value('peer_link'):
+                        configurations.append_line('vpc peer-link', unconfig_cmd='no vpc peer-link')
+                    if attributes.value('fabric_port'):
+                        configurations.append_line('port-type fabric', unconfig_cmd='no port-type fabric')      
+                    if attributes.value('vpc_id'):
+                        configurations.append_line(attributes.format(
+                        'vpc {vpc_id}'), unconfig_cmd=attributes.format(
+                        'no vpc {vpc_id}'))             
+                return str(configurations)
+                     
+            def build_unconfig(self, apply=True, attributes=None, **kwargs):
+                return self.build_config(apply=apply, attributes=attributes, unconfig=True, **kwargs)
+        
