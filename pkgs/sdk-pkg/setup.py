@@ -10,7 +10,7 @@ import os
 import re
 import sys
 
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages, find_namespace_packages
 from setuptools.command.develop import develop as setupdevelop
 
 
@@ -105,7 +105,7 @@ setup(
     keywords = 'genie pyats test automation',
 
     # project packages
-    packages = find_packages(where = 'src'),
+    packages = find_namespace_packages(where = 'src'),
 
     # project directory
     package_dir = {

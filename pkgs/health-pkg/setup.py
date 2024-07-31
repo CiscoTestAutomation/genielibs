@@ -8,7 +8,7 @@ See:
 import re
 import os
 
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages, find_namespace_packages
 
 
 def read(*paths):
@@ -80,7 +80,7 @@ setup(
     },
 
     # project packages
-    packages=find_packages(where='src'),
+    packages=find_namespace_packages(where='src'),
 
     # additional package data files that goes into the package itself
     package_data={
