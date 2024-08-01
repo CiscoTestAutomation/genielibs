@@ -8,7 +8,7 @@ See:
 import re
 import os
 
-from setuptools import setup, find_packages, Command
+from setuptools import setup, find_packages, Command, find_namespace_packages
 
 def read(*paths):
     '''read and return txt content of file'''
@@ -89,11 +89,8 @@ setup(
     # project keywords
     keywords = 'genie pyats test automation',
 
-    # uses namespace package
-    namespace_packages = ['genie', 'genie.libs'],
-
     # project packages
-    packages = find_packages(where = 'src'),
+    packages = find_namespace_packages(where = 'src'),
 
     # project directory
     package_dir = {

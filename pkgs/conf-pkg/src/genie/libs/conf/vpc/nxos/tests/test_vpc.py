@@ -7,7 +7,7 @@ from unittest.mock import Mock
 # Genie
 from genie.tests.conf import TestCase
 from genie.conf import Genie
-from genie.conf.base import Testbed, Device
+from genie.conf.base import Testbed, Device, Interface
 from genie.conf.base.attributes import UnsupportedAttributeWarning
 
 # Vpc
@@ -24,6 +24,11 @@ class test_vpc(TestCase):
 
         # Device
         self.dev = Device(name='node01', testbed=testbed, os='nxos')
+
+        # Interfaces
+        self.intf1 = Interface(name='Ethernet1/1',device=self.dev)
+        self.intf2 = Interface(name='Ethernet1/2',device=self.dev)
+        self.intf3 = Interface(name='port-channel1',device=self.dev)
 
         # Vpc object
         self.vpc = Vpc()
@@ -58,15 +63,19 @@ class test_vpc(TestCase):
         self.vpc.device_attr[self.dev].domain_attr[100].system_mac = '2.2.2'
         self.vpc.device_attr[self.dev].domain_attr[100].system_priority = 601
         self.vpc.device_attr[self.dev].domain_attr[100].track = 201
-        self.vpc.device_attr[self.dev].domain_attr[100].virtual_peer_link_ip = '2.2.2.2'
+        self.vpc.device_attr[self.dev].domain_attr[100].virtual_peer_link_dst_ip = '2.2.2.2'
+        self.vpc.device_attr[self.dev].domain_attr[100].virtual_peer_link_src_ip = '2.2.2.1'
+        self.vpc.device_attr[self.dev].domain_attr[100].virtual_peer_link_dscp = 56
         self.vpc.device_attr[self.dev].domain_attr[100].keepalive_dst_ip = '10.1.1.1'
         self.vpc.device_attr[self.dev].domain_attr[100].keepalive_src_ip = '10.2.2.2'
         self.vpc.device_attr[self.dev].domain_attr[100].keepalive_vrf = 'default'
         self.vpc.device_attr[self.dev].domain_attr[100].keepalive_udp_port = 2000
+        self.vpc.device_attr[self.dev].interface_attr[self.intf1.name].fabric_port = True
+        self.vpc.device_attr[self.dev].interface_attr[self.intf2.name].peer_link = True
+        self.vpc.device_attr[self.dev].interface_attr[self.intf3.name].vpc_id = "11"
 
         # Build vpc configuration
         cfgs = self.vpc.build_config(apply=False)
-
         # Check config built correctly
         self.assertMultiLineEqual(
             str(cfgs[self.dev.name]),
@@ -95,8 +104,17 @@ class test_vpc(TestCase):
                 ' system-mac 2.2.2',
                 ' system-priority 601',
                 ' track 201',
-                ' virtual peer-link destination 2.2.2.2',
+                ' virtual peer-link destination 2.2.2.2 source 2.2.2.1 dscp 56',
                 ' peer-keepalive destination 10.1.1.1 source 10.2.2.2 vrf default udp-port 2000 ',
+                ' exit',
+                'interface Ethernet1/1',
+                ' port-type fabric',
+                ' exit',
+                'interface Ethernet1/2',
+                ' vpc peer-link',
+                ' exit',
+                'interface port-channel1',
+                ' vpc 11',
                 ' exit'
             ]))
 

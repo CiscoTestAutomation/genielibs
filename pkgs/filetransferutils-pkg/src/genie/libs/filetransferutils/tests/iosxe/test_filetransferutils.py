@@ -144,6 +144,14 @@ class test_filetransferutils(unittest.TestCase):
         1269880464 bytes copied in 103.256 secs (12298370 bytes/sec)
     '''
 
+    raw10 = '''
+        copy flash:/memleak.tcl ftp://foo@bar//auto/tftp-ssr/memleak.tcl
+        Address or name of remote host [bar]?
+        Destination filename [/auto/tftp-ssr/memleak.tcl]?
+        !!
+        104260 bytes copied in 0.396 secs (263283 bytes/sec)
+    '''
+
     outputs = {}
     outputs['copy flash:/memleak.tcl '
             'ftp://myuser:mypw@1.1.1.1//auto/tftp-ssr/memleak.tcl']\
@@ -160,6 +168,8 @@ class test_filetransferutils(unittest.TestCase):
       raw8
     outputs['copy tftp://172.19.1.250//auto/tftp-kmukku/9300m-tb2/meraki1.bin flash:/meraki1.bin'] = \
       raw9
+    outputs['copy flash:/memleak.tcl ftp://foo@bar//auto/tftp-ssr/memleak.tcl'] = \
+      raw10
 
     def mapper(self, key, timeout=None, reply= None, prompt_recovery=False, error_pattern=None):
         return self.outputs[key]
@@ -173,6 +183,24 @@ class test_filetransferutils(unittest.TestCase):
         self.fu_device.copyfile(source='flash:/memleak.tcl',
             destination='ftp://1.1.1.1//auto/tftp-ssr/memleak.tcl',
             timeout_seconds='300', device=self.device)
+
+        self.device.execute.assert_called_once_with(
+            'copy flash:/memleak.tcl ftp://myuser:mypw@1.1.1.1//auto/tftp-ssr/memleak.tcl',
+            prompt_recovery=True, timeout='300', reply=ANY, error_pattern=ANY)
+
+    def test_copyfile_with_hostname(self):
+
+        self.device.execute = Mock()
+        self.device.execute.side_effect = self.mapper
+
+        # Call copyfiles
+        self.fu_device.copyfile(source='flash:/memleak.tcl',
+            destination='ftp://foo@bar//auto/tftp-ssr/memleak.tcl',
+            timeout_seconds='300', device=self.device)
+
+        self.device.execute.assert_called_once_with(
+            'copy flash:/memleak.tcl ftp://foo@bar//auto/tftp-ssr/memleak.tcl',
+            prompt_recovery=True, timeout='300', reply=ANY, error_pattern=ANY)
 
     def test_dir(self):
 

@@ -9929,3 +9929,296 @@ def configure_interface_range_no_shutdown(device, start_interface, end_interface
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure interface range no shutdown on device {device}. Error:\n{e}")
+
+def configure_system_debounce_link_up_timer(device, link_up):
+    """ Config system debounce timer on Device
+    Args:
+        device ('obj'): Device object
+        link_up ('str'): link up timer
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring system debounce timer
+    """
+    
+    log.debug("Configure system debounce link-up timer")
+    cmd = f"system debounce link-up {link_up}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure System debounce link-up timer, Error:\n{e}"
+        )
+
+def configure_system_debounce_link_down_timer(device, link_down):
+    """ Config system debounce timer on Device
+    Args:
+        device ('obj'): Device object
+        link_down ('str'): link down timer
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring system debounce timer
+    """
+    
+    log.debug("Configure system debounce link-down timer")
+    cmd = f"system debounce link-down {link_down}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure System debounce link-down timer, Error:\n{e}"
+        )
+
+def unconfigure_system_debounce_link_up_timer(device, link_up):
+    """ Unconfig system debounce timer on Device
+    Args:
+        device ('obj'): Device object
+        link_up ('str'): link up timer
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed unconfiguring system debounce timer
+    """
+    log.debug("Unconfigure system debounce link-up timer")
+    cmd = f"no system debounce link-up {link_up}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure System debounce link-up timer, Error:\n{e}"
+        )
+
+def unconfigure_system_debounce_link_down_timer(device, link_down):
+    """ Unconfig system debounce timer on Device
+    Args:
+        device ('obj'): Device object
+        link_down ('str'): link down timer
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed unconfiguring system debounce timer
+    """
+    
+    log.debug("Unconfigure system debounce link-down timer")
+    cmd = f"no system debounce link-down {link_down}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure System debounce link-down timer, Error:\n{e}"
+        )
+
+def configure_phymode_ignore_linkup_fault(device, interface):
+    """ Configure phymode ignore linkup fault on interface
+    Args:
+        device ('obj'): Device object
+        interface ('str'): which interface to configure
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring phymode ignore linkup fault
+    """
+    
+    log.debug("Configure phymode ignore linkup fault")
+    cmd =[f"interface {interface}", "phymode ignore-linkup-fault"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure phymode ignore linkup fault, Error:\n{e}"
+        )
+
+def unconfigure_phymode_ignore_linkup_fault(device, interface):
+    """ Unconfigure phymode ignore linkup fault on interface
+    Args:
+        device ('obj'): Device object
+        interface ('str'): which interface to configure
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring phymode ignore linkup fault
+    """
+    
+    log.debug("Unconfigure phymode ignore linkup fault")
+    cmd =[f"interface {interface}", "no phymode"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure phymode ignore linkup fault, Error:\n{e}"
+        )
+
+def configure_sub_interface_range(device, interface, sub_interface_start, sub_interface_end):
+    """Configure sub_interface range
+       Args:
+           device ('obj'): device to us
+           interface ('str'): interface to configure
+           sub_interface_start(int): sub_interface_start number
+           sub_interface_end(int): sub_interface_end number
+       Returns:
+            None
+       Raises:
+            SubCommandFailure : sub_interface range not configured
+    """
+    log.debug("configure the sub_interface range on {interface}".format(interface=interface))
+    cmd = [
+            f"interface range {interface}.{sub_interface_start} - {interface}.{sub_interface_end}",
+            "logging event subif-link-status",
+            "no shut"
+          ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"failed to configure the sub_interface range on {interface}. Error: {e}")
+
+def configure_interface_range_switchport_mode(device, interface, mode):
+    """ Configures switchport mode on interface
+        Args:
+            device ('obj')    : device to use
+            interface ('str') : interface to configure
+            mode ('str')      : interface mode
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(
+        "Configuring switchport mode on {interface} with mode = {mode}".format(
+            interface=interface, mode=mode
+        )
+    )
+    configure = [
+                f"interface range {interface}",
+                f"switchport mode {mode}"
+                ]
+    try:
+        device.configure(configure)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure switchport mode on {interface}.Error: {e}")
+
+def shutdown_sub_interface_range(device, interface, sub_interface_start, sub_interface_end):
+    """shutdown sub_interface range
+       Args:
+           device ('obj'): device to us
+           interface ('str'): interface to configure
+           sub_interface_start(int): sub_interface_start number
+           sub_interface_end(int): sub_interface_end number
+       Returns:
+            None
+       Raises:
+            SubCommandFailure : sub_interface range not configured
+    """
+    log.debug("configure the sub_interface range on {interface}".format(interface=interface))
+    cmd = [
+            f"interface range {interface}.{sub_interface_start} - {interface}.{sub_interface_end}",
+            "shut"
+          ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"failed to shutdown the sub_interface range on {interface}.Error: {e}")
+
+def shutdown_interface_range(device, interface, interface_start, interface_end):
+    """shutdown interface range
+       Args:
+           device ('obj'): device to us
+           interface ('str'): interface to configure
+           interface_start(int): interface_start number
+           interface_end(int): interface_end number
+       Returns:
+            None
+       Raises:
+            SubCommandFailure : interface range not configured
+    """
+    log.debug("configure the interface range on {interface}".format(interface=interface))
+    cmd = [
+            f"interface range {interface} {interface_start} - {interface_end}",
+            "shut"
+          ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"failed to shutdown the interface range on {interface} Error: {e}")
+
+def no_shut_interface_range(device, interface, interface_start, interface_end):
+    """no shutdown interface range
+       Args:
+           device ('obj'): device to us
+           interface ('str'): interface to configure
+           interface_start(int): interface_start number
+           interface_end(int): interface_end number
+       Returns:
+            None
+       Raises:
+            SubCommandFailure : interface range not configured
+    """
+    log.debug("configure the interface range on {interface}".format(interface=interface))
+    cmd = [
+            f"interface range {interface} {interface_start} - {interface_end}",
+            "no shut"
+          ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"failed to no shutdown the interface range on {interface}. Error: {e}")
+
+def no_shut_sub_interface_range(device, interface, sub_interface_start, sub_interface_end):
+    """un shut sub_interface range
+       Args:
+           device ('obj'): device to us
+           interface ('str'): interface to configure
+           sub_interface_start(int): sub_interface_start number
+           sub_interface_end(int): sub_interface_end number
+       Returns:
+            None
+       Raises:
+            SubCommandFailure : sub_interface range not configured
+    """
+    log.debug("configure the sub_interface range on {interface}".format(interface=interface))
+    cmd = [
+            f"interface range {interface}.{sub_interface_start} - {interface}.{sub_interface_end}",
+            "no shut"
+          ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"failed to no shutdown the sub_interface range on {interface}. Error: {e}")
+
+def configure_sub_interface_encapsulation_dot1q(
+    device,
+    physical_port,
+    any_number,
+    ip_address,
+    sub_mask
+):
+    """ Configure sub_interface
+        Args:
+            device ('obj'): device to use
+            physical_port ('str'): physical port
+            any_number ('str'): any number
+            ip_address ('str'): Ip address
+            sub_mask ('str'): Subnet mask
+        Returns:
+            console output
+        Raises:
+            SubCommandFailure: sub_interface not enabled
+    """
+    log.debug("configure the sub_interface range on {physical_port}".format(physical_port=physical_port))
+    cmd = [
+            f"interface {physical_port}.{any_number}",
+            f"encapsulation dot1q {any_number}",
+            f"ip address {ip_address} {sub_mask}"
+          ]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not Configure sub_interface_encapsulation_dot1q on interface {physical_port}. Error: {e}")

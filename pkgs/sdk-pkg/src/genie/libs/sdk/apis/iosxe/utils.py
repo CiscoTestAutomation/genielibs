@@ -2028,3 +2028,32 @@ def clear_configuration_lock(device, timeout=60):
         )
 
     return output
+
+def delete_directory_force(device, file_system, directory_path, directory,timeout=30):
+    """ Delete directory from filesystem
+        Args:
+            device (`obj`): Device object
+            file_system (`str`): file system
+            directory_path (`str`): directory path
+            directory (`str`): directory name
+            timeout (`int`): Timeout in second
+        Returns:
+             None
+    """
+    full_path = f"{file_system}:{directory_path}/{directory}"
+    
+    dialog = Dialog([
+        Statement(pattern=f'Remove directory filename [{directory}]?',
+                  action='sendline()',
+                  loop_continue=True,
+                  continue_timer=False),
+        Statement(pattern=f'Delete {full_path}? [confirm]',
+                  action='sendline()',
+                  loop_continue=True,
+                  continue_timer=False)
+    ])
+    try:
+        log.debug('Deleting directory from the filesystem')
+        device.execute(f"delete /force /recursive {full_path}", reply=dialog, timeout=timeout)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not delete directory {directory} from device: {str(e)}")

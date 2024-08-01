@@ -1569,3 +1569,54 @@ def configure_flow_monitor(device, monitor_name, exporter_name, record_name,
             raise SubCommandFailure(
                f'Could not configure flow monitor {monitor_name}'
             )
+
+def  configure_datalink_flow_monitor(device, interface, flow_name, direction):
+    """ Config datalink flow monitor on Device
+        Args:
+            device ('obj'): Device object
+            interface ('str'): interface
+            flow_name ('str'): different flow names.
+            direction ('str'): Input or Output direction.
+            ex:)
+                input    Apply Flow Monitor on input traffic
+                output   Apply Flow Monitor on output traffic
+                sampler  Optional Sampler to apply to this Flow Monitor
+        Return:
+            None
+
+        Raise:
+            SubCommandFailure: Failed configuring datalink flow monitor
+    """
+
+    config = [f'interface {interface}', f'datalink flow monitor {flow_name} {direction}']
+    
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure datalink flow monitor m4out device {device.name}. Error:\n{e}")
+
+
+def  unconfigure_datalink_flow_monitor(device, interface, flow_name, direction):
+    """ Unconfigure datalink flow monitor on Device
+        Args:
+            device ('obj'): Device object
+            interface('str'): interface
+            flow_name ('str'): different flow names.
+            direction ('str'): Input or Output direction.
+            ex:)
+                input    Apply Flow Monitor on input traffic
+                output   Apply Flow Monitor on output traffic
+                sampler  Optional Sampler to apply to this Flow Monitor
+        Return:
+            None
+
+        Raise:
+            SubCommandFailure: Failed unconfiguring datalink flow monitor
+    """
+    config=[f'interface {interface}', f'no datalink flow monitor {flow_name} {direction}']
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure datalink flow monitor device {device.name}. Error:\n{e}")

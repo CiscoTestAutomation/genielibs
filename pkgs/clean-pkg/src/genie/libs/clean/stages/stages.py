@@ -2940,7 +2940,7 @@ configure_management:
 class ConfigureInterfaces(BaseStage):
     """This stage configures interfaces on the device.
 
-    This stages uses genie Conf objects and build_config() API to configure 
+    This stages uses genie Conf objects and build_config() API to configure
     interfaces on devices.
 
 Stage Schema

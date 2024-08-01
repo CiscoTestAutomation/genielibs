@@ -245,7 +245,7 @@
           "os": "iosxe"
         },
         "uid": "ConfigureReplace",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L2026"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L2099"
       }
     }
   },
@@ -300,7 +300,7 @@
           "os": "iosxe"
         },
         "uid": "Connect",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L2082"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L2155"
       },
       "linux": {
         "folders": {
@@ -354,7 +354,7 @@
           "os": "iosxe"
         },
         "uid": "CopyToDevice",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1381"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1454"
       }
     },
     "module_name": "stages.stages",
@@ -512,7 +512,7 @@
               "platform": "cat9k"
             },
             "uid": "InstallImage",
-            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/cat9k/stages.py#L759"
+            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/cat9k/stages.py#L757"
           }
         },
         "module_name": "stages.iosxe.stages",
@@ -521,7 +521,7 @@
           "os": "iosxe"
         },
         "uid": "InstallImage",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L535"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L545"
       },
       "iosxr": {
         "folders": {
@@ -583,14 +583,14 @@
           "os": "iosxe"
         },
         "uid": "InstallPackages",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L788"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L798"
       }
     }
   },
   "InstallRemoveInactive": {
     "folders": {
       "iosxe": {
-        "doc": "This stage removes partially installed packages/images left\non the device. If a super package is left partially installed,\nwe cannot attempt to install another until it is removed.\n\nStage Schema\n------------\ninstall_image:\n    images (list, optional):\n        image to not removed by stage.\n        \n    timeout (int, optional): Maximum time to wait for remove process to\n        finish. Defaults to 180.\n\nExample\n-------\ninstall_remove_inactive:\n    timeout: 180\n\n",
+        "doc": "This stage removes partially installed packages/images left\non the device. If a super package is left partially installed,\nwe cannot attempt to install another until it is removed.\n\nStage Schema\n------------\ninstall_image:\n    images (list, optional):\n        image to not removed by stage.\n        \n    timeout (int, optional): Maximum time to wait for remove process to\n        finish. Defaults to 180.\n\n    force_remove (bool, optional): Whether or not to remove the inactive\n        package irrespective of availability of passed image. Defaults to True.\n\nExample\n-------\ninstall_remove_inactive:\n    timeout: 180\n\n",
         "module_name": "stages.iosxe.stages",
         "package": "genie.libs.clean",
         "tokens": {
@@ -691,14 +691,14 @@
     "doc": " This stage reloads the device.\n\nStage Schema\n------------\nreload:\n\n    reload_service_args (optional):\n\n        timeout (int, optional): Maximum time in seconds allowed for the reload.\n            Defaults to 800.\n\n        reload_creds (str, optional): The credential to use after the reload is\n            complete. The credential name comes from the testbed yaml file.\n            Defaults to the 'default' credential.\n\n        prompt_recovery (bool, optional): Enable or disable the prompt recovery\n            feature of unicon. Defaults to True.\n\n        error_pattern (list, optional): List of regex patterns to check for errors.\n            Defaults to an empty list (no error checking).\n\n        <Key>: <Value>\n            Any other arguments that the Unicon reload service supports\n\n    check_modules:\n\n        check (bool, optional): Enable the checking of modules after reload.\n            Defaults to True.\n\n        timeout (int, optional): Maximum time in seconds allowed for verifying\n            the modules are in a stable state. Defaults to 180.\n\n        interval (int, optional): How often to check the module states in\n            seconds. Defaults to 30.\n\n    reconnect_via (str, optional): Specify which connection to use after reloading.\n        Defaults to the 'default' connection in the testbed yaml file.\n\n\nExample\n-------\nreload:\n    reload_service_args:\n        timeout: 600\n        reload_creds: clean_reload_creds\n        prompt_recovery: True\n    check_modules:\n        check: False\n",
     "folders": {
       "iosxe": {
-        "doc": " This stage reloads the device.\n\nStage Schema\n------------\nreload:\n    license: (optional)\n        check: (bool, optional): Enable the checking license inconsistency and fix\n\n    reload_service_args (optional):\n\n        timeout (int, optional): Maximum time in seconds allowed for the reload.\n            Defaults to 800.\n\n        reload_creds (str, optional): The credential to use after the reload is\n            complete. The credential name comes from the testbed yaml file.\n            Defaults to the 'default' credential.\n\n        prompt_recovery (bool, optional): Enable or disable the prompt recovery\n            feature of unicon. Defaults to True.\n\n\n        <Key>: <Value>\n            Any other arguments that the Unicon reload service supports\n\n    check_modules:\n\n        check (bool, optional): Enable the checking of modules after reload.\n            Defaults to True.\n\n        timeout (int, optional): Maximum time in seconds allowed for verifying\n            the modules are in a stable state. Defaults to 180.\n\n        interval (int, optional): How often to check the module states in\n            seconds. Defaults to 30.\n\n    reconnect_via (str, optional): Specify which connection to use after reloading.\n        Defaults to the 'default' connection in the testbed yaml file.\n\n\nExample\n-------\nreload:\n    reload_service_args:\n        timeout: 600\n        reload_creds: clean_reload_creds\n        prompt_recovery: True\n    check_modules:\n        check: False\n",
+        "doc": " This stage reloads the device.\n\nStage Schema\n------------\nreload:\n    license: (optional)\n        check: (bool, optional): Enable the checking license inconsistency and fix\n\n    reload_service_args (optional):\n\n        timeout (int, optional): Maximum time in seconds allowed for the reload.\n            Defaults to 800.\n\n        reload_creds (str, optional): The credential to use after the reload is\n            complete. The credential name comes from the testbed yaml file.\n            Defaults to the 'default' credential.\n\n        prompt_recovery (bool, optional): Enable or disable the prompt recovery\n            feature of unicon. Defaults to True.\n\n\n        <Key>: <Value>\n            Any other arguments that the Unicon reload service supports\n\n    check_modules:\n\n        check (bool, optional): Enable the checking of modules after reload.\n            Defaults to True.\n\n        timeout (int, optional): Maximum time in seconds allowed for verifying\n            the modules are in a stable state. Defaults to 180.\n\n        interval (int, optional): How often to check the module states in\n            seconds. Defaults to 30.\n\n    reconnect_via (str, optional): Specify which connection to use after reloading.\n        Defaults to the 'default' connection in the testbed yaml file.\n\n    attempt_manual_boot (bool, optional): Enable to attempt manual boot when reload fails.\n        Defaults to True.\n\nExample\n-------\nreload:\n    reload_service_args:\n        timeout: 600\n        reload_creds: clean_reload_creds\n        prompt_recovery: True\n    check_modules:\n        check: False\n",
         "module_name": "stages.iosxe.stages",
         "package": "genie.libs.clean",
         "tokens": {
           "os": "iosxe"
         },
         "uid": "Reload",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L872"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L882"
       }
     },
     "module_name": "stages.stages",
@@ -716,7 +716,7 @@
           "os": "iosxe"
         },
         "uid": "ResetConfiguration",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L2264"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L2337"
       }
     }
   },
@@ -750,7 +750,7 @@
           "os": "iosxe"
         },
         "uid": "RommonBoot",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1119"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1195"
       }
     }
   },
@@ -899,7 +899,7 @@
               "platform": "cat9k"
             },
             "uid": "VerifyAccessTunnelSummary",
-            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/cat9k/stages.py#L584"
+            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/cat9k/stages.py#L582"
           }
         },
         "tokens": {
@@ -948,7 +948,7 @@
               "platform": "cat9k"
             },
             "uid": "VerifyApFabricSummary",
-            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/cat9k/stages.py#L471"
+            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/cat9k/stages.py#L469"
           }
         },
         "tokens": {
@@ -1074,7 +1074,7 @@
               "platform": "cat9k"
             },
             "uid": "VerifyLispSessionEstablished",
-            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/cat9k/stages.py#L527"
+            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/cat9k/stages.py#L525"
           }
         },
         "tokens": {
@@ -1096,7 +1096,7 @@
               "platform": "cat9k"
             },
             "uid": "VerifyRunningImage",
-            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/cat9k/stages.py#L720"
+            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/cat9k/stages.py#L718"
           }
         },
         "tokens": {
@@ -1131,7 +1131,7 @@
               "platform": "cat9k"
             },
             "uid": "VerifyWirelessProcess",
-            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/cat9k/stages.py#L654"
+            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/cat9k/stages.py#L652"
           }
         },
         "tokens": {

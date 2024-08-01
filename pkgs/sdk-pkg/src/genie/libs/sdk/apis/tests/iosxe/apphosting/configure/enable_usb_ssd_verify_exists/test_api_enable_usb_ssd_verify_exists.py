@@ -10,7 +10,7 @@ class TestEnableUsbSsdVerifyExists(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          javelin-morph-mini1a-c9300-stack:
+          stack3-nyquist-1:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -19,10 +19,10 @@ class TestEnableUsbSsdVerifyExists(unittest.TestCase):
                 protocol: unknown
             os: iosxe
             platform: cat9k
-            type: c9600
+            type: c9300
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['javelin-morph-mini1a-c9300-stack']
+        self.device = self.testbed.devices['stack3-nyquist-1']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],

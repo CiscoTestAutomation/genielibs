@@ -44,114 +44,16 @@ def recovery_worker(start, device, console_activity_pattern=None,
             None
     """
 
-    def telnet_breakboot(spawn, break_count):
-        """ Breaks the booting process on a device using telnet `send break`
+    device.api.send_break_boot(
+        console_activity_pattern=console_activity_pattern,
+        console_breakboot_char=console_breakboot_char,
+        console_breakboot_telnet_break=console_breakboot_telnet_break,
+        grub_activity_pattern=grub_activity_pattern,
+        grub_breakboot_char=grub_breakboot_char,
+        break_count=break_count,
+        timeout=timeout)
 
-            Args:
-                spawn (obj): Spawn connection object
-                break_count (int): Number of break commands to send
-                break_char (str): Char to send
-
-            Returns:
-                None
-        """
-
-        log.info(f"Found the console_activity_pattern! Breaking the boot process using telnet break.")
-
-        for _ in range(break_count):
-            log.info(f"Using telnet break")
-            spawn.send('\x1d')
-            spawn.expect(r'telnet>\s*$')
-            spawn.sendline('send break')
-            spawn.expect('.+')
-            time.sleep(2)
-
-    def console_breakboot(spawn, break_count, break_char):
-        """ Breaks the booting process on a device
-
-            Args:
-                spawn (obj): Spawn connection object
-                break_count (int): Number of break commands to send
-                break_char (str): Char to send
-
-            Returns:
-                None
-        """
-
-        log.info(f"Found the console_activity_pattern! Breaking the boot process.")
-
-        for _ in range(break_count):
-            log.info(f"Sending {repr(break_char)}")
-            spawn.send(break_char)
-            time.sleep(1)
-
-    def grub_breakboot(spawn, break_char):
-        """ Breaks the booting process on a device
-
-            Args:
-                spawn (obj): Spawn connection object
-                break_char (str): Char to send
-
-            Returns:
-                None
-        """
-
-        log.info(f"Found the grub_activity_pattern! Breaking the boot process "
-                 f"by sending {repr(break_char)}")
-
-        spawn.send(break_char)
-
-    # Set a target for each recovery session
-    # so it's easier to distinguish expect debug logs on the console.
-    device.instantiate(connection_timeout=timeout)
-
-    # Get device console port information
-    last_word_in_start_match = re.match(r'.*\s(\S+)$', start)
-    last_word_in_start = last_word_in_start_match.group(1) \
-        if last_word_in_start_match else ""
-
-    # Set target
-    target = "{}_{}".format(device.hostname, last_word_in_start)
-
-    spawn = Spawn(spawn_command=start,
-                  settings=device.cli.settings,
-                  target=target,
-                  logger=device.log,
-                  device=device)
-
-    # Stop the device from booting
-    break_dialog = BreakBootDialog()
-
-    # Either use break character or telnet escape break
-    # break character is ctrl-c by default
-    if console_activity_pattern and console_breakboot_char and not console_breakboot_telnet_break:
-        break_dialog.add_statement(
-            Statement(pattern=console_activity_pattern,
-                      action=console_breakboot,
-                      args={'break_count': break_count,
-                            'break_char': console_breakboot_char},
-                      loop_continue=True,
-                      continue_timer=False), pos=0)
-
-    # telnet escape is used only if user specified
-    if console_activity_pattern and console_breakboot_telnet_break:
-        break_dialog.add_statement(
-            Statement(pattern=console_activity_pattern,
-                      action=telnet_breakboot,
-                      args={'break_count': break_count},
-                      loop_continue=True,
-                      continue_timer=False), pos=0)
-
-    if grub_activity_pattern and grub_breakboot_char:
-        break_dialog.add_statement(
-            Statement(pattern=grub_activity_pattern,
-                      action=grub_breakboot,
-                      args={'break_char': grub_breakboot_char},
-                      loop_continue=True,
-                      continue_timer=False), pos=0)
-
-    break_dialog.dialog.process(spawn, timeout=timeout)
-
+    spawn = device.spawn
     # Recover the device using the specified method
     if kwargs.get('golden_image'):
         device_recovery(spawn, timeout, *args, **kwargs)
@@ -182,7 +84,8 @@ def device_recovery(spawn, timeout, golden_image, recovery_password=None, **kwar
                  'password': to_plaintext(credentials.get('default',{}).get('password')),
                  'username': to_plaintext(credentials.get('default',{}).get('username')),
                  'en_password': to_plaintext(credentials.get('enable',{}).get('password')),
-                 'pass_login':1})
+                 'pass_login':1},
+        prompt_recovery=True)
 
 
 def tftp_device_recovery(spawn, timeout, device, tftp_boot, item, recovery_password=None

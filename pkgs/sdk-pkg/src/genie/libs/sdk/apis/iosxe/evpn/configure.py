@@ -1203,6 +1203,7 @@ def configure_vfi_context_evpn(device, word, id, ethernet_segment=None, value=No
 
 
 def unconfigure_vfi_context_evpn(device, word):
+    
     """ Unconfigure vfi context evpn
         Args:
             device ('obj'): Device object
@@ -1228,4 +1229,32 @@ def unconfigure_vfi_context_evpn(device, word):
         raise SubCommandFailure(
            f"Failed to unconfigure l2vpn vfi context evpn. Error:\n{e}"
         )
-        
+
+def configure_l2vpn_evpn_advertise_sync(device, instance=None):
+    
+    """ Config multicast advertise sync-only
+        Args:
+            device ('obj'): Device object
+            instance ('int'): instance ID
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+  
+    '''Configuring 'multicast advertise sync-only' on l2vpn evpn'''
+    
+    configs = ["l2vpn evpn",
+               "multicast advertise sync-only"]
+    
+    if instance is not None:
+        configs.extend([f"l2vpn evpn instance {instance} vlan-based",
+                        "multicast advertise sync-only"])
+    
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure 'multicast advertise sync-only' on l2vpn evpn. "
+            f"Error: {e}"
+        )

@@ -16,13 +16,15 @@ from genie.libs.parser.iosxe.show_ospf import ShowIpOspf,\
                                    ShowIpOspfNeighborDetail,\
                                    ShowIpOspfShamLinks,\
                                    ShowIpOspfVirtualLinks,\
+                                   ShowIpOspfMplsLdpInterface,\
+                                   ShowIpOspfMplsTrafficEngLink
+
+from genie.libs.parser.iosxe.show_ospf_database import \
                                    ShowIpOspfDatabaseRouter,\
                                    ShowIpOspfDatabaseExternal,\
                                    ShowIpOspfDatabaseNetwork,\
                                    ShowIpOspfDatabaseSummary,\
-                                   ShowIpOspfDatabaseOpaqueArea,\
-                                   ShowIpOspfMplsLdpInterface,\
-                                   ShowIpOspfMplsTrafficEngLink
+                                   ShowIpOspfDatabaseOpaqueArea
 
 # iosxe show_ospf
 from genie.libs.parser.iosxe.show_protocols import ShowIpProtocols

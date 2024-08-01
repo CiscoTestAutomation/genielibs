@@ -116,4 +116,59 @@ do_you_want_to_remove2:
         Performing REMOVE_POSTCHECK on all members
         Finished Post_Remove_Cleanup
         SUCCESS: install_remove Sat Jun 01 19:50:22 UTC 2024
-      new_state: execute1
+      new_state: execute2
+
+remove_inactive_yes_forcefully:
+  <<: *connect
+  commands:
+    ? ''
+    : new_state: execute3
+
+execute3:
+  commands:
+    <<: *execute
+    install remove inactive:
+      new_state: do_you_want_to_remove3
+  prompt: "%N#"
+
+do_you_want_to_remove3:
+  preface:
+    timing:
+        - 0:,0,0.05
+    response: |
+      install_remove: START Tue May 28 18:23:26 UTC 2024
+
+      install_remove: Removing IMG
+
+      Cleaning up unnecessary package files
+
+      No path specified, will use booted path /bootflash//packages.conf
+
+
+      Cleaning /bootflash
+
+        Scanning boot directory for packages ... done.
+
+        Preparing packages list to delete ...
+
+          [R0]: /bootflash/packages.conf File is in use, will not delete.
+
+
+      The following files will be deleted:
+
+          [R0]: /bootflash/image.bin
+
+  prompt: Do you want to remove the above files? [y/n]
+  commands:
+    "y":
+      timing:
+        - 0:,0,0.05
+      response: |
+        Deleting file /bootflash/image.bin ... done.
+        SUCCESS: Files deleted.
+
+        --- Starting Post_Remove_Cleanup ---
+        Performing REMOVE_POSTCHECK on all members
+        Finished Post_Remove_Cleanup
+        SUCCESS: install_remove Sat Jun 01 19:50:22 UTC 2024
+      new_state: execute3

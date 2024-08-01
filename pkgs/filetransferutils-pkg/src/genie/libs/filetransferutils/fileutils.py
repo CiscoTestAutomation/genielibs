@@ -415,8 +415,9 @@ class FileUtils(FileUtilsBase):
                 # only include address, no port or credentials
                 used_server = str(ipaddress.ip_address(parsed.hostname))
                 break
-            except:
-                continue
+            except Exception:
+                if parsed.hostname:
+                    used_server = parsed.hostname
 
         if not used_server:
             # If both URLS have no valid IP addres, raise an exception

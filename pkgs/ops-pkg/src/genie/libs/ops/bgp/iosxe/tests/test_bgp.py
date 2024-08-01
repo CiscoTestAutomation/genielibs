@@ -14,13 +14,15 @@ from genie.libs.parser.iosxe.show_bgp import ShowBgpAllSummary, ShowBgpAllCluste
                                   ShowBgpAllNeighborsAdvertisedRoutes, \
                                   ShowBgpAllNeighborsReceivedRoutes, \
                                   ShowBgpAllNeighborsRoutes, \
-                                  ShowIpBgpTemplatePeerPolicy, \
                                   ShowBgpAllNeighbors, \
-                                  ShowIpBgpAllDampeningParameters, \
-                                  ShowIpBgpTemplatePeerSession, \
                                   ShowBgpAllNeighborsPolicy, \
                                   ShowBgpAllDetail, \
                                   ShowBgpAll
+
+from genie.libs.parser.iosxe.show_ip_bgp import \
+                                  ShowIpBgpTemplatePeerPolicy, \
+                                  ShowIpBgpAllDampeningParameters, \
+                                  ShowIpBgpTemplatePeerSession
 
 outputs = {}
 

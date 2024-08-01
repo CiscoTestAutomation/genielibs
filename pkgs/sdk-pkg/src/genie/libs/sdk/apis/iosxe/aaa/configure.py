@@ -2764,3 +2764,167 @@ def unconfigure_aaa_accounting_update_periodic_interval(device, interval):
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not unconfigure aaa accounting update periodic {interval}. Error:\n{e}')
+
+
+def configure_aaa_accounting_network_default_start_stop_group(device , server_group_name):
+    '''api for aaa accounting network default start-stop group <NAME>
+
+    Args:
+        device ('obj') : Device object
+        server_group_name ('str') : Server-group name [Command accounting supports only tacacs group]
+    Return:
+        None
+    Raise:
+        SubCommandFailure: failed to configure aaa accounting network default start-stop group <NAME>
+    '''
+
+    cmd = f"aaa accounting network default start-stop group {server_group_name}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"failed to configure aaa accounting network default start-stop group {server_group_name}")
+    
+def unconfigure_aaa_accounting_network_default_start_stop_group(device , server_group_name):
+    '''api for no aaa accounting network default start-stop group <NAME>
+
+    Args:
+        device ('obj') : Device object
+        server_group_name ('str') : Server-group name [Command accounting supports only tacacs group]
+    Return:
+        None
+    Raise:
+        SubCommandFailure: failed to configure aaa accounting network default start-stop group <NAME>
+    '''
+
+    cmd = f"no aaa accounting network default start-stop group {server_group_name}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"failed to unconfigure aaa accounting network default start-stop group {server_group_name}")
+    
+def configure_aaa_accounting_identity_default_start_stop_group(device , server_group_name):
+    '''api for aaa accounting identity default start-stop group<NAME>
+
+    Args:
+        device ('obj') : Device object
+        server_group_name ('str') : Server-group name [Command accounting supports only tacacs group]
+    Return:
+        None
+    Raise:
+        SubCommandFailure: failed to configure aaa accounting identity default start-stop group<NAME>
+    '''
+    cmd = f"aaa accounting identity default start-stop group {server_group_name}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"failed to configure aaa accounting identity default start-stop group {server_group_name}")
+    
+
+def unconfigure_mab_on_switchport_mode_access_interface(device , interface):
+    '''api for configuring no mab on switchport mode access interface
+
+    Args:
+        device ('obj') : Device object
+        interface ('str') : switchport mode access interface name 
+    Return:
+        None
+    Raise:
+        SubCommandFailure: failed to configure no mab on switchport mode access interface
+    '''
+
+    cmd = [f"interface {interface}" , "no mab"]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"failed to unconfigure mab on switchport mode access {interface}")
+    
+def configure_mab_eap_on_switchport_mode_access_interface(device , interface):
+    '''api for configuring mab eap on switchport mode access interface
+
+    Args:
+        device ('obj') : Device object
+        interface ('str') : switchport mode access interface name 
+    Return:
+        None
+    Raise:
+        SubCommandFailure: failed to configure mab eap on switchport mode access interface
+    '''
+    cmd = [f"interface {interface}" , "mab eap"]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"failed to configure mab eap on switchport mode access interface {interface}")    
+
+def configure_aaa_authentication_login_default_group_local(device, group_name):
+    '''api for configuring aaa authentication login default group <group_name> local
+
+    Args:
+        device ('obj') : Device object
+        group_name ('str') : Group name required to configure 
+    Return:
+        None
+    Raise:
+        SubCommandFailure: failed to configure aaa authentication login default group <group_name> local
+    '''
+    cmd = f"aaa authentication login default group {group_name} local"
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"failed to configure aaa authentication login default group {group_name} local")
+    
+def configure_aaa_authentication_enable_default_group_enable(device, group_name):
+    '''api for configuring aaa authentication enable default group <group_name> enable
+
+    Args:
+        device ('obj') : Device object
+        group_name ('str') : Group name required to configure 
+    Return:
+        None
+    Raise:
+        SubCommandFailure: failed to configure aaa authentication enable default group <group_name> enable
+    '''
+    cmd = f"aaa authentication enable default group {group_name} enable"
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"failed to configure aaa authentication enable default group {group_name} enable")
+    
+def configure_aaa_authorization_exec_default_group_if_authenticated(device, group_name):
+    '''api for configuring aaa authorization exec default group <group_name> if-authenticated
+
+    Args:
+        device ('obj') : Device object
+        group_name ('str') : Group name required to configure 
+    Return:
+        None
+    Raise:
+        SubCommandFailure: failed to configure aaa authorization exec default group <group_name> if-authenticated
+    '''
+    cmd = f"aaa authorization exec default group {group_name} if-authenticated"
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"failed to configure aaa authorization exec default group {group_name} if-authenticated")
+
+def configure_aaa_authorization_network_default_group(device, group_name):
+    '''api for configuring aaa authorization network default group <group_name>
+
+    Args:
+        device ('obj') : Device object
+        group_name ('str') : Group name required to configure 
+    Return:
+        None
+    Raise:
+        SubCommandFailure: failed to configure aaa network default group <group_name>
+    '''
+    cmd = f"aaa authorization network default group {group_name}"
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"failed to configure aaa authorization network default group {group_name}")

@@ -1183,21 +1183,21 @@ Verify_IpArp:
     class: genie.harness.base.Template
 Verify_IpBgpAllDampeningParameters:
   cmd:
-    class: show_bgp.ShowIpBgpAllDampeningParameters
+    class: show_ip_bgp.ShowIpBgpAllDampeningParameters
     pkg: genie.libs.parser
   context: cli
   source:
     class: genie.harness.base.Template
 Verify_IpBgpTemplatePeerPolicy:
   cmd:
-    class: show_bgp.ShowIpBgpTemplatePeerPolicy
+    class: show_ip_bgp.ShowIpBgpTemplatePeerPolicy
     pkg: genie.libs.parser
   context: cli
   source:
     class: genie.harness.base.Template
 Verify_IpBgpTemplatePeerSession:
   cmd:
-    class: show_bgp.ShowIpBgpTemplatePeerSession
+    class: show_ip_bgp.ShowIpBgpTemplatePeerSession
     pkg: genie.libs.parser
   context: cli
   source:
@@ -1379,7 +1379,7 @@ Verify_IpMulticast:
     class: genie.harness.base.Template
 Verify_IpOspfDatabaseExternal:
   cmd:
-    class: show_ospf.ShowIpOspfDatabaseExternal
+    class: show_ospf_database.ShowIpOspfDatabaseExternal
     pkg: genie.libs.parser
   context: cli
   source:
@@ -1400,7 +1400,7 @@ Verify_IpOspfDatabaseExternalDetail_vrf_default:
     class: genie.harness.base.Template
 Verify_IpOspfDatabaseNetwork:
   cmd:
-    class: show_ospf.ShowIpOspfDatabaseNetwork
+    class: show_ospf_database.ShowIpOspfDatabaseNetwork
     pkg: genie.libs.parser
   context: cli
   source:
@@ -1421,7 +1421,7 @@ Verify_IpOspfDatabaseNetworkDetail_vrf_default:
     class: genie.harness.base.Template
 Verify_IpOspfDatabaseOpaqueArea:
   cmd:
-    class: show_ospf.ShowIpOspfDatabaseOpaqueArea
+    class: show_ospf_database.ShowIpOspfDatabaseOpaqueArea
     pkg: genie.libs.parser
   context: cli
   source:
@@ -1442,7 +1442,7 @@ Verify_IpOspfDatabaseOpaqueAreaDetail_vrf_default:
     class: genie.harness.base.Template
 Verify_IpOspfDatabaseRouter:
   cmd:
-    class: show_ospf.ShowIpOspfDatabaseRouter
+    class: show_ospf_database.ShowIpOspfDatabaseRouter
     pkg: genie.libs.parser
   context: cli
   source:
@@ -1463,7 +1463,7 @@ Verify_IpOspfDatabaseRouterDetail_vrf_default:
     class: genie.harness.base.Template
 Verify_IpOspfDatabaseSummary:
   cmd:
-    class: show_ospf.ShowIpOspfDatabaseSummary
+    class: show_ospf_database.ShowIpOspfDatabaseSummary
     pkg: genie.libs.parser
   context: cli
   source:
@@ -2121,210 +2121,210 @@ Verify_LacpSysId:
     class: genie.harness.base.Template
 Verify_LispDynamicEidDetail_instance_id_*:
   cmd:
-    class: show_lisp.ShowLispDynamicEidDetail
+    class: show_lisp_dynamic.ShowLispDynamicEidDetail
     pkg: genie.libs.parser
   context: cli
   source:
     class: genie.harness.base.Template
 Verify_LispPlatform:
   cmd:
-    class: show_lisp.ShowLispPlatform
+    class: show_lisp_platform.ShowLispPlatform
     pkg: genie.libs.parser
   context: cli
   source:
     class: genie.harness.base.Template
 Verify_LispServiceDatabase_service_ethernet_instance_id_*:
   cmd:
-    class: show_lisp.ShowLispServiceDatabase
+    class: show_lisp_service.ShowLispServiceDatabase
     pkg: genie.libs.parser
   context: cli
   source:
     class: genie.harness.base.Template
 Verify_LispServiceDatabase_service_ipv4_instance_id_*:
   cmd:
-    class: show_lisp.ShowLispServiceDatabase
+    class: show_lisp_service.ShowLispServiceDatabase
     pkg: genie.libs.parser
   context: cli
   source:
     class: genie.harness.base.Template
 Verify_LispServiceDatabase_service_ipv6_instance_id_*:
   cmd:
-    class: show_lisp.ShowLispServiceDatabase
+    class: show_lisp_service.ShowLispServiceDatabase
     pkg: genie.libs.parser
   context: cli
   source:
     class: genie.harness.base.Template
 Verify_LispServiceMapCache_service_ethernet_instance_id_*:
   cmd:
-    class: show_lisp.ShowLispServiceMapCache
+    class: show_lisp_service.ShowLispServiceMapCache
     pkg: genie.libs.parser
   context: cli
   source:
     class: genie.harness.base.Template
 Verify_LispServiceMapCache_service_ipv4_instance_id_*:
   cmd:
-    class: show_lisp.ShowLispServiceMapCache
+    class: show_lisp_service.ShowLispServiceMapCache
     pkg: genie.libs.parser
   context: cli
   source:
     class: genie.harness.base.Template
 Verify_LispServiceMapCache_service_ipv6_instance_id_*:
   cmd:
-    class: show_lisp.ShowLispServiceMapCache
+    class: show_lisp_service.ShowLispServiceMapCache
     pkg: genie.libs.parser
   context: cli
   source:
     class: genie.harness.base.Template
 Verify_LispServiceRlocMembers_service_ethernet_instance_id_*:
   cmd:
-    class: show_lisp.ShowLispServiceRlocMembers
+    class: show_lisp_service.ShowLispServiceRlocMembers
     pkg: genie.libs.parser
   context: cli
   source:
     class: genie.harness.base.Template
 Verify_LispServiceRlocMembers_service_ipv4_instance_id_*:
   cmd:
-    class: show_lisp.ShowLispServiceRlocMembers
+    class: show_lisp_service.ShowLispServiceRlocMembers
     pkg: genie.libs.parser
   context: cli
   source:
     class: genie.harness.base.Template
 Verify_LispServiceRlocMembers_service_ipv6_instance_id_*:
   cmd:
-    class: show_lisp.ShowLispServiceRlocMembers
+    class: show_lisp_service.ShowLispServiceRlocMembers
     pkg: genie.libs.parser
   context: cli
   source:
     class: genie.harness.base.Template
 Verify_LispServiceServerDetailInternal_service_ethernet_instance_id_*:
   cmd:
-    class: show_lisp.ShowLispServiceServerDetailInternal
+    class: show_lisp_service.ShowLispServiceServerDetailInternal
     pkg: genie.libs.parser
   context: cli
   source:
     class: genie.harness.base.Template
 Verify_LispServiceServerDetailInternal_service_ipv4_instance_id_*:
   cmd:
-    class: show_lisp.ShowLispServiceServerDetailInternal
+    class: show_lisp_service.ShowLispServiceServerDetailInternal
     pkg: genie.libs.parser
   context: cli
   source:
     class: genie.harness.base.Template
 Verify_LispServiceServerDetailInternal_service_ipv6_instance_id_*:
   cmd:
-    class: show_lisp.ShowLispServiceServerDetailInternal
+    class: show_lisp_service.ShowLispServiceServerDetailInternal
     pkg: genie.libs.parser
   context: cli
   source:
     class: genie.harness.base.Template
 Verify_LispServiceServerSummary_service_ethernet_instance_id_*:
   cmd:
-    class: show_lisp.ShowLispServiceServerSummary
+    class: show_lisp_service.ShowLispServiceServerSummary
     pkg: genie.libs.parser
   context: cli
   source:
     class: genie.harness.base.Template
 Verify_LispServiceServerSummary_service_ipv4_instance_id_*:
   cmd:
-    class: show_lisp.ShowLispServiceServerSummary
+    class: show_lisp_service.ShowLispServiceServerSummary
     pkg: genie.libs.parser
   context: cli
   source:
     class: genie.harness.base.Template
 Verify_LispServiceServerSummary_service_ipv6_instance_id_*:
   cmd:
-    class: show_lisp.ShowLispServiceServerSummary
+    class: show_lisp_service.ShowLispServiceServerSummary
     pkg: genie.libs.parser
   context: cli
   source:
     class: genie.harness.base.Template
 Verify_LispServiceSmr_service_ethernet_instance_id_*:
   cmd:
-    class: show_lisp.ShowLispServiceSmr
+    class: show_lisp_service.ShowLispServiceSmr
     pkg: genie.libs.parser
   context: cli
   source:
     class: genie.harness.base.Template
 Verify_LispServiceSmr_service_ipv4_instance_id_*:
   cmd:
-    class: show_lisp.ShowLispServiceSmr
+    class: show_lisp_service.ShowLispServiceSmr
     pkg: genie.libs.parser
   context: cli
   source:
     class: genie.harness.base.Template
 Verify_LispServiceSmr_service_ipv6_instance_id_*:
   cmd:
-    class: show_lisp.ShowLispServiceSmr
+    class: show_lisp_service.ShowLispServiceSmr
     pkg: genie.libs.parser
   context: cli
   source:
     class: genie.harness.base.Template
 Verify_LispServiceStatistics_service_ethernet_instance_id_*:
   cmd:
-    class: show_lisp.ShowLispServiceStatistics
+    class: show_lisp_service.ShowLispServiceStatistics
     pkg: genie.libs.parser
   context: cli
   source:
     class: genie.harness.base.Template
 Verify_LispServiceStatistics_service_ipv4_instance_id_*:
   cmd:
-    class: show_lisp.ShowLispServiceStatistics
+    class: show_lisp_service.ShowLispServiceStatistics
     pkg: genie.libs.parser
   context: cli
   source:
     class: genie.harness.base.Template
 Verify_LispServiceStatistics_service_ipv6_instance_id_*:
   cmd:
-    class: show_lisp.ShowLispServiceStatistics
+    class: show_lisp_service.ShowLispServiceStatistics
     pkg: genie.libs.parser
   context: cli
   source:
     class: genie.harness.base.Template
 Verify_LispServiceSummary_service_ethernet:
   cmd:
-    class: show_lisp.ShowLispServiceSummary
+    class: show_lisp_service.ShowLispServiceSummary
     pkg: genie.libs.parser
   context: cli
   source:
     class: genie.harness.base.Template
 Verify_LispServiceSummary_service_ipv4:
   cmd:
-    class: show_lisp.ShowLispServiceSummary
+    class: show_lisp_service.ShowLispServiceSummary
     pkg: genie.libs.parser
   context: cli
   source:
     class: genie.harness.base.Template
 Verify_LispServiceSummary_service_ipv6:
   cmd:
-    class: show_lisp.ShowLispServiceSummary
+    class: show_lisp_service.ShowLispServiceSummary
     pkg: genie.libs.parser
   context: cli
   source:
     class: genie.harness.base.Template
 Verify_LispService_service_ethernet:
   cmd:
-    class: show_lisp.ShowLispService
+    class: show_lisp_service.ShowLispService
     pkg: genie.libs.parser
   context: cli
   source:
     class: genie.harness.base.Template
 Verify_LispService_service_ipv4:
   cmd:
-    class: show_lisp.ShowLispService
+    class: show_lisp_service.ShowLispService
     pkg: genie.libs.parser
   context: cli
   source:
     class: genie.harness.base.Template
 Verify_LispService_service_ipv6:
   cmd:
-    class: show_lisp.ShowLispService
+    class: show_lisp_service.ShowLispService
     pkg: genie.libs.parser
   context: cli
   source:
     class: genie.harness.base.Template
 Verify_LispSession:
   cmd:
-    class: show_lisp.ShowLispSession
+    class: show_lisp_session.ShowLispSession
     pkg: genie.libs.parser
   context: cli
   source:
@@ -2660,14 +2660,14 @@ Verify_Platform:
     class: genie.harness.base.Template
 Verify_PlatformSoftwareSlotActiveMonitorMem:
   cmd:
-    class: show_platform.ShowPlatformSoftwareSlotActiveMonitorMem
+    class: show_platform_software.ShowPlatformSoftwareSlotActiveMonitorMem
     pkg: genie.libs.parser
   context: cli
   source:
     class: genie.harness.base.Template
 Verify_PlatformSoftwareStatusControl:
   cmd:
-    class: show_platform.ShowPlatformSoftwareStatusControl
+    class: show_platform_software.ShowPlatformSoftwareStatusControl
     pkg: genie.libs.parser
   context: cli
   source:

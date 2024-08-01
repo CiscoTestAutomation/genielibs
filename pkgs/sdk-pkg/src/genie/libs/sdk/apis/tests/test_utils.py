@@ -7,7 +7,8 @@ from ats.topology import Device
 
 from genie.libs.clean.stages.tests.utils import create_test_device
 from genie.libs.sdk.apis.utils import (
-    modify_filename, copy_from_device, copy_to_device, device_recovery_boot)
+    modify_filename, copy_from_device, copy_to_device, device_recovery_boot,
+    configure_management_console, configure_peripheral_terminal_server)
 
 
 class TestUtilsApi(unittest.TestCase):
@@ -127,3 +128,104 @@ class TestUtilsApi(unittest.TestCase):
         with patch("genie.libs.sdk.apis.utils.pcall") as pcall_mock:
             device_recovery_boot(device)
             pcall_mock.assert_called_once()
+            
+    def test_configure_management_console(self):
+        dev1 = MagicMock()
+        terminal_device_1 =  MagicMock()
+        terminal_device_1.is_connected.side_effect =[False, True, True, True]
+        dev1.api.configure_terminal_line_speed = MagicMock()
+        dev1.parse.return_value = {'baud_rate':{'tx':115200}} 
+        dev1.connect = MagicMock()
+        dev1.connect.side_effect = [Exception, Exception, True]
+        dev1.peripherals = {'terminal_server': {'terminal_1': [{'line': 14}]}}
+        dev1.testbed.devices = {'terminal_1':terminal_device_1}
+        configure_management_console(dev1)
+        expected_calls = [
+            call(terminal_device_1, 14, 9600),
+            call(terminal_device_1, 14, 115200)]
+        self.assertEqual(dev1.api.configure_terminal_line_speed.mock_calls, expected_calls)
+
+        dev2 = MagicMock()
+        terminal_device_2 =  MagicMock()
+        terminal_device_2.is_connected.side_effect =[False, True, True, True]
+        dev2.connect = MagicMock()
+        dev2.api.configure_terminal_line_speed = MagicMock()
+        dev2.connect.side_effect = [Exception, Exception, True]
+        dev2.peripherals = {'terminal_server': {'terminal_2': [{'line': 14, 'speed': 9600}, {'line': 15, 'speed': 9600}]}}
+        dev1.parse.return_value = {'baud_rate':{'tx':115200}} 
+        dev2.testbed.devices = {'terminal_2':terminal_device_2}
+        dev2.state_machine.current_state = 'enable'
+        configure_management_console(dev2)
+        expected_calls = [
+            call(terminal_device_2, 14, 9600),
+            call(terminal_device_2, 15, 9600),
+            call(terminal_device_2, 14, 115200),
+            call(terminal_device_2, 15, 115200),
+            call(terminal_device_2, 14, 9600),
+            call(terminal_device_2, 15, 9600),]
+        self.assertEqual(dev2.api.configure_terminal_line_speed.mock_calls, expected_calls)
+        
+        dev3 = MagicMock()
+        terminal_device_3 =  MagicMock()
+        terminal_device_3.is_connected.side_effect =[False, True]
+        dev3.connect = MagicMock()
+        dev3.connect.side_effect = [True]
+        dev3.api.configure_terminal_line_speed = MagicMock()
+        dev3.parse.return_value = {'baud_rate':{'tx':19200}}
+        dev3.peripherals = {'terminal_server': {'terminal_3': [{'line': 14, 'speed': 9600}]}}
+        dev3.testbed.devices = {'terminal_3':terminal_device_3}
+        dev3.state_machine.current_state = 'enable'
+        configure_management_console(dev3)
+        expected_calls = [
+            call(terminal_device_3,14, 9600)]
+        self.assertEqual(dev3.api.configure_terminal_line_speed.mock_calls, expected_calls)
+        
+        dev4 = MagicMock()
+        terminal_device_4 =  MagicMock()
+        terminal_device_4.is_connected.side_effect =[False, True, True, True]
+        terminal_device_5 =  MagicMock()
+        terminal_device_5.is_connected.side_effect =[False, True, True, True]
+        dev4.connect = MagicMock()
+        dev4.connect.side_effect = [Exception, Exception, True]
+        dev4.parse.return_value = {'baud_rate':{'tx':19200}}
+        dev4.api.configure_terminal_line_speed = MagicMock()
+        dev4.peripherals = {'terminal_server': {'terminal_4': [{'line': 14, 'speed': 9600}],
+                                                'terminal_5': [{'line': 15, 'speed': 9600}]}}
+        dev4.testbed.devices = {'terminal_4':terminal_device_4, 'terminal_5':terminal_device_5 }
+        dev4.state_machine.current_state = 'enable'
+        configure_management_console(dev4)
+        expected_calls = [
+            call(terminal_device_4, 14, 9600),
+            call(terminal_device_5, 15, 9600),
+            call(terminal_device_4, 14, 115200),
+            call(terminal_device_5, 15, 115200),
+            call(terminal_device_4, 14, 9600),
+            call(terminal_device_5, 15, 9600,)]
+        self.assertEqual(dev4.api.configure_terminal_line_speed.mock_calls, expected_calls)
+
+    def test_configure_peripheral_terminal_server(self):
+        dev1 = MagicMock()
+        dev1.os = 'iosxe'
+        terminal_device =  MagicMock()
+        terminal_device.configure = MagicMock()
+        terminal_device.connections = {'cli': MagicMock}
+        dev1.peripherals = {'terminal_server': {'terminal_1': [{'line': 14, 'speed': 9600}, {'line': 15, 'speed': 9600}]}}
+        dev1.testbed.devices = {'terminal_1':terminal_device}
+        configure_peripheral_terminal_server(dev1)
+        
+        expected_calls = [
+            call(['line 14', 'speed 9600']),
+            call(['line 15', 'speed 9600'])]
+        
+        self.assertEqual(terminal_device.configure.mock_calls, expected_calls)
+        
+        dev2 = MagicMock()
+        dev2.os = 'iosxe'
+        terminal_device =  MagicMock()
+        terminal_device.configure = MagicMock()
+        terminal_device.connections = {'cli': MagicMock}
+        dev2.peripherals = {'terminal_server':[14,15]}
+        dev2.testbed.devices = {'terminal_1':terminal_device}
+        configure_peripheral_terminal_server(dev1)
+
+        terminal_device.configure.assert_not_called()

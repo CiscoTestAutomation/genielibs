@@ -393,26 +393,24 @@ devices:
                   recovery_username=RECOVERY_USERNAME, recovery_enable_password=RECOVERY_ENABLE_PASSWORD, ether_port=ETHER_PORT):
 
         with steps.start("Boot device from rommon") as step:
-            if not tftp:
-                tftp = {}
-            
-            # Check if management attribute in device object, if not set to empty dict
-            if not hasattr(device, 'management'):
-                setattr(device, "management", {})
-            
-            try:
-                # Getting the tftp information, if the info not provided by user, it takes from testbed
-                tftp.setdefault("ip_address", [str(device.management.get('address', '').get('ipv4', '').ip)])
-                tftp.setdefault("subnet_mask", str(device.management.get('address', '').get('ipv4', '').netmask))
-                tftp.setdefault("gateway", str(device.management.get('gateway').get('ipv4')))
-                tftp.setdefault("tftp_server", device.testbed.servers.get('tftp', {}).get('address'))
+            if tftp is not None:
+                # Check if management attribute in device object, if not set to empty dict
+                if not hasattr(device, 'management'):
+                    setattr(device, "management", {})
 
-                log.info("checking if all the tftp information is given by the user")
-                if not all(tftp.values()):
-                    log.warning(f"Some TFTP information is missing: {tftp}")
-            except Exception as e:
-                log.warning(f"Tftp information is missing. Please provide it either from testbed or clean stage {tftp}.")
-                
+                try:
+                    # Getting the tftp information, if the info not provided by user, it takes from testbed
+                    tftp.setdefault("ip_address", [str(device.management.get('address', '').get('ipv4', '').ip)])
+                    tftp.setdefault("subnet_mask", str(device.management.get('address', '').get('ipv4', '').netmask))
+                    tftp.setdefault("gateway", str(device.management.get('gateway').get('ipv4')))
+                    tftp.setdefault("tftp_server", device.testbed.servers.get('tftp', {}).get('address'))
+
+                    log.info("checking if all the tftp information is given by the user")
+                    if not all(tftp.values()):
+                        log.warning(f"Some TFTP information is missing: {tftp}")
+                except Exception as e:
+                    log.warning(f"Tftp information is missing. Please provide it either from testbed or clean stage {tftp}.")
+
             # Need to instantiate to get the device.start
             # The device.start only works because of a|b
             device.instantiate(connection_timeout=timeout)

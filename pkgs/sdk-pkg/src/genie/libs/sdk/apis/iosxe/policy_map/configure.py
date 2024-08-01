@@ -1015,3 +1015,80 @@ def configure_policy_map_set_cos_cos_table(device, policy_map_name, class_name, 
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure("Could not configure policy map set cos cos table. Error:\n{error}".format(error=e))
+
+
+def configure_policy_map_class(device,
+    policy_name,
+    class_map_list):
+    """ Configures policy_map
+        Args:
+            device ('obj'): device to use
+            policy_name('str) : name of the policy name
+            class_map_list('list'): list of data type hold number class map information
+                [
+                    {
+                        class_map_name('str') : name of the class
+                        policer_val('int',optional): police rate value,
+                        match_mode('list',optional): match mode name for cos,
+                        matched_value('list',optional): match mode values for cos traffic_class and dscp,
+                        table_map_name('str',optional): to set the table name for policy_map,
+                        table_map_mode('str',optional : name of the tablemode
+                        police_cir_percent(int, optional): police cir percent
+                        priority_level('int',optional): value of priority queue for 0 to 7
+                        bandwidth_percent(int, optional): bandwidth percent
+                        bandwidth_remaining_percent(int, optional): bandwidth remaining percent
+                    }
+                ]
+
+                example:
+                    class_map_list=[
+                        {
+                            'class_map_name':'test1',
+                            'policer_val':2000000000,
+                            'match_mode':['dscp','cos']
+                            'matched_value':['cs1','5']
+                            'table_map_name':'table1'
+                            'table_map_mode':'dscp'
+                        }
+                    ]
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(
+        "Configuring policy_map {policy_name}".format(
+            policy_name=policy_name,
+        )
+    )
+
+    cmd = [f"policy-map {policy_name}"]
+    for class_map in class_map_list:
+        if isinstance(class_map, dict):
+            cmd.append(f"class {class_map['class_map_name']}")
+            if 'priority_level' in class_map:
+                cmd.append(f"priority level {class_map['priority_level']}")
+            if 'bandwidth_percent' in class_map:
+                cmd.append(f"bandwidth percent {class_map['bandwidth_percent']}")
+            if 'bandwidth_remaining_percent' in class_map:
+                cmd.append(f"bandwidth remaining percent {class_map['bandwidth_remaining_percent']}")
+            if class_map.get('match_mode', None)  and class_map.get('matched_value', None):
+                for match_mode, matched_value in zip(class_map['match_mode'], class_map['matched_value']):
+                    cmd.append(f"set {match_mode} {matched_value}")
+            if 'table_map_name' in class_map:
+                cmd.append(f"set {class_map['table_map_mode']} {class_map['table_map_mode']} table {class_map['table_map_name']}")
+            if 'policer_val' in class_map:
+                cmd.append(f"police rate {class_map['policer_val']}")
+            if 'police_cir_percent' in class_map:
+                cmd.append(f"police cir percent {class_map['police_cir_percent']}")
+        else:
+            cmd.append(f"{class_map}")
+
+    try:
+        device.configure(cmd)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure class_map. Error:\n{e}"
+        )

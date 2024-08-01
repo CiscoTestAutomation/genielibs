@@ -3787,15 +3787,6 @@
     }
   },
   "Verify_IpBgpAllDampeningParameters": {
-    "ios": {
-      "doc": "Parser for show ip bgp all dampening parameters",
-      "groups": [],
-      "schema": "{'vrf': {Any  (str) *: {Optional  (str) address_family: {Any  (str) *: {Optional  (str) dampening: <class 'bool'>, Optional  (str) dampening_decay_time: <class 'int'>, Optional  (str) dampening_half_life_time: <class 'int'>, Optional  (str) dampening_reuse_time: <class 'int'>, Optional  (str) dampening_max_suppress_penalty: <class 'int'>, Optional  (str) dampening_suppress_time: <class 'int'>, Optional  (str) dampening_max_suppress_time: <class 'int'>}}}}}",
-      "source": {
-        "class": "genie.harness.base.Template"
-      },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/ios/show_bgp.py"
-    },
     "iosxe": {
       "devices": [
         "uut"
@@ -3807,19 +3798,10 @@
       "source": {
         "class": "genie.harness.base.Template"
       },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_bgp.py"
+      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_ip_bgp.py"
     }
   },
   "Verify_IpBgpTemplatePeerPolicy": {
-    "ios": {
-      "doc": "Parser for show ip bgp template peer-policy <WORD>",
-      "groups": [],
-      "schema": "{'peer_policy': {Any  (str) *: {Optional  (str) local_policies: <class 'str'>, Optional  (str) inherited_polices: <class 'str'>, Optional  (str) local_disable_policies: <class 'str'>, Optional  (str) inherited_disable_polices: <class 'str'>, Optional  (str) allowas_in: <class 'bool'>, Optional  (str) allowas_in_as_number: <class 'int'>, Optional  (str) as_override: <class 'bool'>, Optional  (str) default_originate: <class 'bool'>, Optional  (str) default_originate_route_map: <class 'str'>, Optional  (str) route_map_name_in: <class 'str'>, Optional  (str) route_map_name_out: <class 'str'>, Optional  (str) maximum_prefix_max_prefix_no: <class 'int'>, Optional  (str) maximum_prefix_threshold: <class 'int'>, Optional  (str) maximum_prefix_restart: <class 'int'>, Optional  (str) maximum_prefix_warning_only: <class 'bool'>, Optional  (str) next_hop_self: <class 'bool'>, Optional  (str) route_reflector_client: <class 'bool'>, Optional  (str) send_community: <class 'str'>, Optional  (str) soft_reconfiguration: <class 'bool'>, Optional  (str) soo: <class 'str'>, Optional  (str) index: <class 'int'>, Optional  (str) inherited_policies: {Optional  (str) allowas_in: <class 'bool'>, Optional  (str) allowas_in_as_number: <class 'int'>, Optional  (str) as_override: <class 'bool'>, Optional  (str) default_originate: <class 'bool'>, Optional  (str) default_originate_route_map: <class 'str'>, Optional  (str) route_map_name_in: <class 'str'>, Optional  (str) route_map_name_out: <class 'str'>, Optional  (str) maximum_prefix_max_prefix_no: <class 'int'>, Optional  (str) maximum_prefix_threshold: <class 'int'>, Optional  (str) maximum_prefix_restart: <class 'int'>, Optional  (str) maximum_prefix_warning_only: <class 'bool'>, Optional  (str) next_hop_self: <class 'bool'>, Optional  (str) route_reflector_client: <class 'bool'>, Optional  (str) send_community: <class 'str'>, Optional  (str) soft_reconfiguration: <class 'bool'>, Optional  (str) soo: <class 'str'>}}}}",
-      "source": {
-        "class": "genie.harness.base.Template"
-      },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/ios/show_bgp.py"
-    },
     "iosxe": {
       "devices": [
         "uut"
@@ -3831,19 +3813,10 @@
       "source": {
         "class": "genie.harness.base.Template"
       },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_bgp.py"
+      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_ip_bgp.py"
     }
   },
   "Verify_IpBgpTemplatePeerSession": {
-    "ios": {
-      "doc": "Parser for show ip bgp template peer-session <WORD>",
-      "groups": [],
-      "schema": "{'peer_session': {Any  (str) *: {Optional  (str) local_policies: <class 'str'>, Optional  (str) inherited_polices: <class 'str'>, Optional  (str) fall_over_bfd: <class 'bool'>, Optional  (str) suppress_four_byte_as_capability: <class 'bool'>, Optional  (str) description: <class 'str'>, Optional  (str) disable_connected_check: <class 'bool'>, Optional  (str) ebgp_multihop_enable: <class 'bool'>, Optional  (str) ebgp_multihop_max_hop: <class 'int'>, Optional  (str) local_as_as_no: <class 'int'>, Optional  (str) password_text: <class 'str'>, Optional  (str) remote_as: <class 'int'>, Optional  (str) shutdown: <class 'bool'>, Optional  (str) keepalive_interval: <class 'int'>, Optional  (str) holdtime: <class 'int'>, Optional  (str) transport_connection_mode: <class 'str'>, Optional  (str) update_source: <class 'str'>, Optional  (str) index: <class 'int'>, Optional  (str) inherited_session_commands: {Optional  (str) fall_over_bfd: <class 'bool'>, Optional  (str) suppress_four_byte_as_capability: <class 'bool'>, Optional  (str) description: <class 'str'>, Optional  (str) disable_connected_check: <class 'bool'>, Optional  (str) ebgp_multihop_enable: <class 'bool'>, Optional  (str) ebgp_multihop_max_hop: <class 'int'>, Optional  (str) local_as_as_no: <class 'int'>, Optional  (str) password_text: <class 'str'>, Optional  (str) remote_as: <class 'int'>, Optional  (str) shutdown: <class 'bool'>, Optional  (str) keepalive_interval: <class 'int'>, Optional  (str) holdtime: <class 'int'>, Optional  (str) transport_connection_mode: <class 'str'>, Optional  (str) update_source: <class 'str'>}}}}",
-      "source": {
-        "class": "genie.harness.base.Template"
-      },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/ios/show_bgp.py"
-    },
     "iosxe": {
       "devices": [
         "uut"
@@ -3855,7 +3828,7 @@
       "source": {
         "class": "genie.harness.base.Template"
       },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_bgp.py"
+      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_ip_bgp.py"
     }
   },
   "Verify_IpIgmpGroupsDetail": {
@@ -4580,15 +4553,6 @@
     }
   },
   "Verify_IpOspfDatabaseExternal": {
-    "ios": {
-      "doc": " Parser for \"show ip ospf database external\" ",
-      "groups": [],
-      "schema": "{'vrf': {Any  (str) *: {'address_family': {Any  (str) *: {'instance': {Any  (str) *: {Optional  (str) areas: {Any  (str) *: {'database': {'lsa_types': {Any  (str) *: {'lsa_type': <class 'int'>, 'lsas': {Any  (str) *: {'lsa_id': <class 'str'>, 'adv_router': <class 'str'>, 'ospfv2': {'header': {'option': <class 'str'>, 'option_desc': <class 'str'>, 'lsa_id': <class 'str'>, 'age': <class 'int'>, 'type': <class 'int'>, 'adv_router': <class 'str'>, 'seq_num': <class 'str'>, 'checksum': <class 'str'>, 'length': <class 'int'>, Optional  (str) routing_bit_enable: <class 'bool'>}, 'body': {'external': {'network_mask': <class 'str'>, 'topologies': {Any  (str) *: {'mt_id': <class 'int'>, Optional  (str) flags: <class 'str'>, Optional  (str) metric_type: <class 'int'>, 'metric': <class 'int'>, 'forwarding_address': <class 'str'>, 'external_route_tag': <class 'int'>}}}}}}}}}}}}}}}}}}}",
-      "source": {
-        "class": "genie.harness.base.Template"
-      },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/ios/show_ospf.py"
-    },
     "iosxe": {
       "devices": [
         "uut"
@@ -4599,7 +4563,7 @@
       "source": {
         "class": "genie.harness.base.Template"
       },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_ospf.py"
+      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_ospf_database.py"
     }
   },
   "Verify_IpOspfDatabaseExternalDetail_vrf_all": {
@@ -4643,15 +4607,6 @@
     }
   },
   "Verify_IpOspfDatabaseNetwork": {
-    "ios": {
-      "doc": " Parser for \"show ip ospf database network\" ",
-      "groups": [],
-      "schema": "{'vrf': {Any  (str) *: {'address_family': {Any  (str) *: {'instance': {Any  (str) *: {Optional  (str) areas: {Any  (str) *: {'database': {'lsa_types': {Any  (str) *: {'lsa_type': <class 'int'>, 'lsas': {Any  (str) *: {'lsa_id': <class 'str'>, 'adv_router': <class 'str'>, 'ospfv2': {'header': {'option': <class 'str'>, 'option_desc': <class 'str'>, 'lsa_id': <class 'str'>, 'age': <class 'int'>, 'type': <class 'int'>, 'adv_router': <class 'str'>, 'seq_num': <class 'str'>, 'checksum': <class 'str'>, 'length': <class 'int'>, Optional  (str) routing_bit_enable: <class 'bool'>}, 'body': {'network': {'network_mask': <class 'str'>, 'attached_routers': {Any  (str) *: {}}}}}}}}}}}}}}}}}}}",
-      "source": {
-        "class": "genie.harness.base.Template"
-      },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/ios/show_ospf.py"
-    },
     "iosxe": {
       "devices": [
         "uut"
@@ -4663,7 +4618,7 @@
       "source": {
         "class": "genie.harness.base.Template"
       },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_ospf.py"
+      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_ospf_database.py"
     }
   },
   "Verify_IpOspfDatabaseNetworkDetail_vrf_all": {
@@ -4700,15 +4655,6 @@
     }
   },
   "Verify_IpOspfDatabaseOpaqueArea": {
-    "ios": {
-      "doc": " Parser for \"show ip ospf database opaque-area\" ",
-      "groups": [],
-      "schema": "{'vrf': {Any  (str) *: {'address_family': {Any  (str) *: {'instance': {Any  (str) *: {Optional  (str) areas: {Any  (str) *: {'database': {'lsa_types': {Any  (str) *: {'lsa_type': <class 'int'>, 'lsas': {Any  (str) *: {'lsa_id': <class 'str'>, 'adv_router': <class 'str'>, 'ospfv2': {'header': {'option': <class 'str'>, 'option_desc': <class 'str'>, 'lsa_id': <class 'str'>, 'age': <class 'int'>, 'type': <class 'int'>, 'adv_router': <class 'str'>, 'seq_num': <class 'str'>, 'checksum': <class 'str'>, 'length': <class 'int'>, Optional  (str) opaque_type: <class 'int'>, 'opaque_id': <class 'int'>, Optional  (str) fragment_number: <class 'int'>}, 'body': {'opaque': {Optional  (str) mpls_te_router_id: <class 'str'>, Optional  (str) links: {Any  (str) *: {'link_id': <class 'str'>, 'topologies': {Any  (str) *: {'mt_id': <class 'int'>}}}}, Optional  (str) num_of_links: <class 'int'>, Optional  (str) router_capabilities_tlv: {Any  (str) *: {'length': <class 'int'>, 'tlv_type': <class 'str'>, Optional  (str) information_capabilities: {Optional  (str) graceful_restart: <class 'bool'>, Optional  (str) graceful_restart_helper: <class 'bool'>, Optional  (str) stub_router: <class 'bool'>, Optional  (str) traffic_enginnering: <class 'bool'>, Optional  (str) p2p_over_lan: <class 'bool'>, Optional  (str) experimental_te: <class 'bool'>}}}, Optional  (str) sr_algorithm_tlv: {Any  (str) *: {'tlv_type': <class 'str'>, 'length': <class 'int'>, Optional  (str) algorithm: {Optional  (str) spf: <class 'bool'>, Optional  (str) strict_spf: <class 'bool'>}}}, Optional  (str) sid_range_tlvs: {Any  (str) *: {'tlv_type': <class 'str'>, 'length': <class 'int'>, 'range_size': <class 'int'>, 'sub_tlvs': {Any  (str) *: {'type': <class 'str'>, 'length': <class 'int'>, 'label': <class 'int'>, Optional  (str) local_interface_id: <class 'int'>, Optional  (str) remote_interface_id: <class 'int'>}}}}, Optional  (str) node_msd_tlvs: {Any  (str) *: {'tlv_type': <class 'str'>, 'length': <class 'int'>, 'sub_type': {'node_max_sid_depth_value': <class 'int'>}}}, Optional  (str) local_block_tlvs: {Any  (str) *: {'tlv_type': <class 'str'>, 'range_size': <class 'int'>, 'length': <class 'int'>, 'sub_tlvs': {Any  (str) *: {'type': <class 'str'>, 'length': <class 'int'>, 'label': <class 'int'>}}}}, Optional  (str) extended_prefix_tlvs: {Any  (str) *: {'tlv_type': <class 'str'>, 'route_type': <class 'str'>, 'length': <class 'int'>, 'flags': <class 'str'>, 'prefix': <class 'str'>, 'af': <class 'int'>, Optional  (str) sub_tlvs: {Any  (str) *: {'type': <class 'str'>, 'length': <class 'int'>, 'flags': <class 'str'>, Optional  (str) mt_id: <class 'int'>, 'algo': <class 'str'>, 'sid': <class 'int'>}}}}, Optional  (str) extended_link_tlvs: {Any  (str) *: {'link_id': <class 'str'>, 'link_data': <class 'str'>, 'length': <class 'int'>, Optional  (str) link_name: <class 'str'>, 'link_type': <class 'int'>, 'tlv_type': <class 'str'>, 'sub_tlvs': {Any  (str) *: {'type': <class 'str'>, Optional  (str) length: <class 'int'>, Optional  (str) flags: <class 'str'>, Optional  (str) mt_id: <class 'int'>, Optional  (str) weight: <class 'int'>, Optional  (str) label: <class 'int'>, Optional  (str) remote_interface_address: <class 'str'>, Optional  (str) local_interface_id: <class 'int'>, Optional  (str) remote_interface_id: <class 'int'>}}}}, Optional  (str) link_tlvs: {Any  (str) *: {Optional  (str) link_type: <class 'int'>, Optional  (str) link_name: <class 'str'>, Optional  (str) link_id: <class 'str'>, Optional  (str) te_metric: <class 'int'>, Optional  (str) max_bandwidth: <class 'int'>, Optional  (str) max_reservable_bandwidth: <class 'int'>, Optional  (str) admin_group: <class 'str'>, Optional  (str) igp_metric: <class 'int'>, Optional  (str) total_priority: <class 'int'>, Optional  (str) local_if_ipv4_addrs: {Any  (str) *: {}}, Optional  (str) remote_if_ipv4_addrs: {Any  (str) *: {}}, Optional  (str) unreserved_bandwidths: {Any  (str) *: {'priority': <class 'int'>, 'unreserved_bandwidth': <class 'int'>}}, Optional  (str) unknown_tlvs: {Any  (str) *: {'type': <class 'int'>, 'length': <class 'int'>, 'value': <class 'str'>}}, Optional  (str) extended_admin_group: {'length': <class 'int'>, Optional  (str) groups: {Any  (str) *: {'value': <class 'int'>}}}}}}}}}}}}}}}}}}}}}}",
-      "source": {
-        "class": "genie.harness.base.Template"
-      },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/ios/show_ospf.py"
-    },
     "iosxe": {
       "devices": [
         "uut"
@@ -4719,7 +4665,7 @@
       "source": {
         "class": "genie.harness.base.Template"
       },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_ospf.py"
+      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_ospf_database.py"
     }
   },
   "Verify_IpOspfDatabaseOpaqueAreaDetail_vrf_all": {
@@ -4756,15 +4702,6 @@
     }
   },
   "Verify_IpOspfDatabaseRouter": {
-    "ios": {
-      "doc": " Parser for \"show ip ospf database router\" ",
-      "groups": [],
-      "schema": "{'vrf': {Any  (str) *: {'address_family': {Any  (str) *: {'instance': {Any  (str) *: {Optional  (str) areas: {Any  (str) *: {'database': {'lsa_types': {Any  (str) *: {'lsa_type': <class 'int'>, 'lsas': {Any  (str) *: {'lsa_id': <class 'str'>, 'adv_router': <class 'str'>, 'ospfv2': {'header': {'option': <class 'str'>, 'option_desc': <class 'str'>, 'lsa_id': <class 'str'>, 'age': <class 'int'>, 'type': <class 'int'>, 'adv_router': <class 'str'>, 'seq_num': <class 'str'>, 'checksum': <class 'str'>, 'length': <class 'int'>, Optional  (str) routing_bit_enable: <class 'bool'>, Optional  (str) as_boundary_router: <class 'bool'>, Optional  (str) area_border_router: <class 'bool'>}, 'body': {'router': {Optional  (str) flags: <class 'str'>, 'num_of_links': <class 'int'>, Optional  (str) links: {Any  (str) *: {'link_id': <class 'str'>, 'link_data': <class 'str'>, 'type': <class 'str'>, Optional  (str) num_mtid_metrics: <class 'int'>, Optional  (str) num_tos_metrics: <class 'int'>, 'topologies': {Any  (str) *: {'mt_id': <class 'int'>, Optional  (str) metric: <class 'int'>, Optional  (str) tos: <class 'int'>}}}}}}}}}}}}}}}}}}}}}",
-      "source": {
-        "class": "genie.harness.base.Template"
-      },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/ios/show_ospf.py"
-    },
     "iosxe": {
       "devices": [
         "uut"
@@ -4776,7 +4713,7 @@
       "source": {
         "class": "genie.harness.base.Template"
       },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_ospf.py"
+      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_ospf_database.py"
     }
   },
   "Verify_IpOspfDatabaseRouterDetail_vrf_all": {
@@ -4813,15 +4750,6 @@
     }
   },
   "Verify_IpOspfDatabaseSummary": {
-    "ios": {
-      "doc": " Parser for \"show ip ospf database summary\" ",
-      "groups": [],
-      "schema": "{'vrf': {Any  (str) *: {'address_family': {Any  (str) *: {'instance': {Any  (str) *: {Optional  (str) areas: {Any  (str) *: {'database': {'lsa_types': {Any  (str) *: {'lsa_type': <class 'int'>, 'lsas': {Any  (str) *: {'lsa_id': <class 'str'>, 'adv_router': <class 'str'>, 'ospfv2': {'header': {'option': <class 'str'>, 'option_desc': <class 'str'>, 'lsa_id': <class 'str'>, 'age': <class 'int'>, 'type': <class 'int'>, 'adv_router': <class 'str'>, 'seq_num': <class 'str'>, 'checksum': <class 'str'>, 'length': <class 'int'>, Optional  (str) routing_bit_enable: <class 'bool'>}, 'body': {'summary': {'network_mask': <class 'str'>, 'topologies': {Any  (str) *: {'mt_id': <class 'int'>, 'metric': <class 'int'>}}}}}}}}}}}}}}}}}}}",
-      "source": {
-        "class": "genie.harness.base.Template"
-      },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/ios/show_ospf.py"
-    },
     "iosxe": {
       "devices": [
         "uut"
@@ -4833,19 +4761,10 @@
       "source": {
         "class": "genie.harness.base.Template"
       },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_ospf.py"
+      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_ospf_database.py"
     }
   },
   "Verify_IpOspfDatabaseSummaryDetail_vrf_all": {
-    "iosxe": {
-      "doc": " Parser for:\n        * 'show ip ospf database database-summary detail'\n        * \"show ip ospf {process_id} database database-summary detail\"\n    ",
-      "groups": [],
-      "schema": "{'vrf': {Any  (str) *: {'instance': {Any  (str) *: {Any  (str) *: {'router': {'count': <class 'int'>, 'delete': <class 'int'>, 'maxage': <class 'int'>}, 'network': {'count': <class 'int'>, 'delete': <class 'int'>, 'maxage': <class 'int'>}, 'summary_net': {'count': <class 'int'>, 'delete': <class 'int'>, 'maxage': <class 'int'>}, 'summary_asbr': {'count': <class 'int'>, 'delete': <class 'int'>, 'maxage': <class 'int'>}, 'type_5_ext': {'count': <class 'int'>, 'delete': <class 'int'>, 'maxage': <class 'int'>}, 'type_7_ext': {'count': <class 'int'>, 'delete': <class 'int'>, 'maxage': <class 'int'>}, 'opaque_link': {'count': <class 'int'>, 'delete': <class 'int'>, 'maxage': <class 'int'>}, 'opaque_area': {'count': <class 'int'>, 'delete': <class 'int'>, 'maxage': <class 'int'>}, 'opaque_as': {'count': <class 'int'>, 'delete': <class 'int'>, 'maxage': <class 'int'>}, 'total': {'count': <class 'int'>, 'delete': <class 'int'>, 'maxage': <class 'int'>}}}}}}}",
-      "source": {
-        "class": "genie.harness.base.Template"
-      },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_ospf.py"
-    },
     "nxos": {
       "devices": [
         "uut"
@@ -4864,15 +4783,6 @@
     }
   },
   "Verify_IpOspfDatabaseSummaryDetail_vrf_default": {
-    "iosxe": {
-      "doc": " Parser for:\n        * 'show ip ospf database database-summary detail'\n        * \"show ip ospf {process_id} database database-summary detail\"\n    ",
-      "groups": [],
-      "schema": "{'vrf': {Any  (str) *: {'instance': {Any  (str) *: {Any  (str) *: {'router': {'count': <class 'int'>, 'delete': <class 'int'>, 'maxage': <class 'int'>}, 'network': {'count': <class 'int'>, 'delete': <class 'int'>, 'maxage': <class 'int'>}, 'summary_net': {'count': <class 'int'>, 'delete': <class 'int'>, 'maxage': <class 'int'>}, 'summary_asbr': {'count': <class 'int'>, 'delete': <class 'int'>, 'maxage': <class 'int'>}, 'type_5_ext': {'count': <class 'int'>, 'delete': <class 'int'>, 'maxage': <class 'int'>}, 'type_7_ext': {'count': <class 'int'>, 'delete': <class 'int'>, 'maxage': <class 'int'>}, 'opaque_link': {'count': <class 'int'>, 'delete': <class 'int'>, 'maxage': <class 'int'>}, 'opaque_area': {'count': <class 'int'>, 'delete': <class 'int'>, 'maxage': <class 'int'>}, 'opaque_as': {'count': <class 'int'>, 'delete': <class 'int'>, 'maxage': <class 'int'>}, 'total': {'count': <class 'int'>, 'delete': <class 'int'>, 'maxage': <class 'int'>}}}}}}}",
-      "source": {
-        "class": "genie.harness.base.Template"
-      },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_ospf.py"
-    },
     "nxos": {
       "devices": [
         "uut"
@@ -7214,15 +7124,6 @@
     }
   },
   "Verify_LispDynamicEidDetail_instance_id_*": {
-    "ios": {
-      "doc": " Parser for \"show lisp all instance-id <instance_id> dynamic-eid detail\"",
-      "groups": [],
-      "schema": "{'lisp_router_instances': {Any  (str) *: {Optional  (str) service: {Any  (str) *: {'etr': {'local_eids': {Any  (str) *: {'dynamic_eids': {Any  (str) *: {'dynamic_eid_name': <class 'str'>, 'id': <class 'str'>, 'rlocs': <class 'str'>, Optional  (str) registering_more_specific: <class 'bool'>, Optional  (str) loopback_address: <class 'str'>, Optional  (str) priority: <class 'int'>, Optional  (str) weight: <class 'int'>, Optional  (str) record_ttl: <class 'int'>, Optional  (str) site_based_multicast_map_notify_group: <class 'str'>, Optional  (str) proxy_reply: <class 'bool'>, Optional  (str) registration_interval: <class 'int'>, Optional  (str) global_map_server: <class 'bool'>, Optional  (str) num_of_roaming_dynamic_eid: <class 'int'>, Optional  (str) mapping_servers: {Any  (str) *: {Optional  (str) proxy_reply: <class 'bool'>}}, Optional  (str) last_dynamic_eid: {Any  (str) *: {'last_dynamic_eid_discovery_elaps_time': <class 'str'>, 'eids': {Any  (str) *: {'interface': <class 'str'>, 'uptime': <class 'str'>, 'last_activity': <class 'str'>, 'discovered_by': <class 'str'>}}}}, Optional  (str) eid_address: {Optional  (str) address_type: <class 'str'>, Optional  (str) virtual_network_id: <class 'str'>}}}}}}}}}}}",
-      "source": {
-        "class": "genie.harness.base.Template"
-      },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/ios/show_lisp.py"
-    },
     "iosxe": {
       "devices": [
         "uut"
@@ -7238,19 +7139,10 @@
       "source": {
         "class": "genie.harness.base.Template"
       },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp.py"
+      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp_dynamic.py"
     }
   },
   "Verify_LispPlatform": {
-    "ios": {
-      "doc": " Parser for \"show lisp platform\" ",
-      "groups": [],
-      "schema": "{'parallel_lisp_instance_limit': <class 'int'>, 'rloc_forwarding_support': {'local': {'ipv4': <class 'str'>, 'ipv6': <class 'str'>, 'mac': <class 'str'>}, 'remote': {'ipv4': <class 'str'>, 'ipv6': <class 'str'>, 'mac': <class 'str'>}}, 'latest_supported_config_style': <class 'str'>, 'current_config_style': <class 'str'>, Optional  (str) support_for_signal_forward: {'ipv4': <class 'str'>, 'ipv6': <class 'str'>, 'mac': <class 'str'>}, Optional  (str) platform_reported_limits: {'l3_limit': {'l3_limit': <class 'int'>, 'total_current_utilization': <class 'str'>, 'ipv4': {'local_eid': <class 'int'>, 'multiplier': <class 'int'>, 'remote_eid': <class 'int'>, 'remote_eid_idle': <class 'int'>, 'mapping_cache_full': <class 'str'>}, 'ipv6': {'local_eid': <class 'int'>, 'multiplier': <class 'int'>, 'remote_eid': <class 'int'>, 'remote_eid_idle': <class 'int'>, 'mapping_cache_full': <class 'str'>}}, 'l2_limit': {'l2_limit': <class 'int'>, 'total_current_utilization': <class 'str'>, 'mac': {'local_eid': <class 'int'>, 'multiplier': <class 'int'>, 'remote_eid': <class 'int'>, 'remote_eid_idle': <class 'int'>, 'mapping_cache_full': <class 'str'>}}, Optional  (str) software_only: {'ipv4': {'local_eid': <class 'int'>, 'remote_eid': <class 'int'>}, 'ipv6': {'local_eid': <class 'int'>, 'remote_eid': <class 'int'>}, 'mac': {'local_eid': <class 'int'>, 'remote_eid': <class 'int'>}}}}",
-      "source": {
-        "class": "genie.harness.base.Template"
-      },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/ios/show_lisp.py"
-    },
     "iosxe": {
       "devices": [
         "uut"
@@ -7259,23 +7151,14 @@
       "groups": [
         "lisp"
       ],
-      "schema": "{'parallel_lisp_instance_limit': <class 'int'>, 'rloc_forwarding_support': {'local': {'ipv4': <class 'str'>, 'ipv6': <class 'str'>, 'mac': <class 'str'>}, 'remote': {'ipv4': <class 'str'>, 'ipv6': <class 'str'>, 'mac': <class 'str'>}}, 'latest_supported_config_style': <class 'str'>, 'current_config_style': <class 'str'>, Optional  (str) support_for_signal_forward: {'ipv4': <class 'str'>, 'ipv6': <class 'str'>, 'mac': <class 'str'>}, Optional  (str) platform_reported_limits: {'l3_limit': {'l3_limit': <class 'int'>, 'total_current_utilization': <class 'str'>, 'ipv4': {'local_eid': <class 'int'>, 'multiplier': <class 'int'>, 'remote_eid': <class 'int'>, 'remote_eid_idle': <class 'int'>, 'mapping_cache_full': <class 'str'>}, 'ipv6': {'local_eid': <class 'int'>, 'multiplier': <class 'int'>, 'remote_eid': <class 'int'>, 'remote_eid_idle': <class 'int'>, 'mapping_cache_full': <class 'str'>}}, 'l2_limit': {'l2_limit': <class 'int'>, 'total_current_utilization': <class 'str'>, 'mac': {'local_eid': <class 'int'>, 'multiplier': <class 'int'>, 'remote_eid': <class 'int'>, 'remote_eid_idle': <class 'int'>, 'mapping_cache_full': <class 'str'>}}, Optional  (str) software_only: {'ipv4': {'local_eid': <class 'int'>, 'remote_eid': <class 'int'>}, 'ipv6': {'local_eid': <class 'int'>, 'remote_eid': <class 'int'>}, 'mac': {'local_eid': <class 'int'>, 'remote_eid': <class 'int'>}}}}",
+      "schema": "{'parallel_lisp_instance_limit': <class 'int'>, 'rloc_forwarding_support': {'local': {'ipv4': <class 'str'>, 'ipv6': <class 'str'>, 'mac': <class 'str'>}, 'remote': {'ipv4': <class 'str'>, 'ipv6': <class 'str'>, 'mac': <class 'str'>}}, 'latest_supported_config_style': <class 'str'>, 'current_config_style': <class 'str'>, Optional  (str) support_for_signal_forward: {'ipv4': <class 'str'>, 'ipv6': <class 'str'>, 'mac': <class 'str'>}, Optional  (str) platform_reported_limits: {'l3_limit': {'l3_limit': <class 'int'>, 'total_current_utilization': <class 'str'>, 'ipv4': {'local_eid': <class 'int'>, 'multiplier': <class 'int'>, 'remote_eid': <class 'int'>, Optional  (str) remote_eid_idle: <class 'int'>, Optional  (str) mapping_cache_full: <class 'str'>}, 'ipv6': {'local_eid': <class 'int'>, 'multiplier': <class 'int'>, 'remote_eid': <class 'int'>, Optional  (str) remote_eid_idle: <class 'int'>, Optional  (str) mapping_cache_full: <class 'str'>}}, 'l2_limit': {'l2_limit': <class 'int'>, 'total_current_utilization': <class 'str'>, 'mac': {'local_eid': <class 'int'>, 'multiplier': <class 'int'>, 'remote_eid': <class 'int'>, Optional  (str) remote_eid_idle: <class 'int'>, Optional  (str) mapping_cache_full: <class 'str'>}}, Optional  (str) software_only: {'ipv4': {'local_eid': <class 'int'>, 'remote_eid': <class 'int'>}, 'ipv6': {'local_eid': <class 'int'>, 'remote_eid': <class 'int'>}, 'mac': {'local_eid': <class 'int'>, 'remote_eid': <class 'int'>}}}}",
       "source": {
         "class": "genie.harness.base.Template"
       },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp.py"
+      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp_platform.py"
     }
   },
   "Verify_LispServiceDatabase_service_ethernet_instance_id_*": {
-    "ios": {
-      "doc": "Parser for \"show lisp all instance-id <instance_id> <service> dabatase\"",
-      "groups": [],
-      "schema": "{'lisp_id': {Any  (str) *: {'instance_id': {<class 'int'>: {'eid_table': <class 'str'>, 'lsb': <class 'str'>, 'entries': {'total': <class 'int'>, 'no_route': <class 'int'>, 'inactive': <class 'int'>, Optional  (str) do_not_register: <class 'int'>, 'eids': {<class 'str'>: {'eid': <class 'str'>, 'mask': <class 'int'>, Optional  (str) do_not_register: <class 'bool'>, Optional  (str) dynamic_eid: <class 'str'>, Optional  (str) locator_set: <class 'str'>, Optional  (str) no_route_to_prefix: <class 'bool'>, Optional  (str) proxy: <class 'bool'>, Optional  (str) sgt: <class 'str'>, Optional  (str) domain_id: <class 'str'>, Optional  (str) service_insertion: <class 'str'>, Optional  (str) service_insertion_id: <class 'int'>, Optional  (str) auto_discover_rlocs: <class 'bool'>, Optional  (str) uptime: <class 'str'>, Optional  (str) last_change: <class 'str'>, Optional  (str) locators: {<class 'str'>: {'priority': <class 'int'>, 'weight': <class 'int'>, 'source': <class 'str'>, 'location': <class 'str'>, 'state': <class 'str'>, Optional  (str) affinity_id_x: <class 'int'>, Optional  (str) affinity_id_y: <class 'int'>}}}}}}}}}}",
-      "source": {
-        "class": "genie.harness.base.Template"
-      },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/ios/show_lisp.py"
-    },
     "iosxe": {
       "devices": [
         "uut"
@@ -7292,19 +7175,10 @@
       "source": {
         "class": "genie.harness.base.Template"
       },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp.py"
+      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp_service.py"
     }
   },
   "Verify_LispServiceDatabase_service_ipv4_instance_id_*": {
-    "ios": {
-      "doc": "Parser for \"show lisp all instance-id <instance_id> <service> dabatase\"",
-      "groups": [],
-      "schema": "{'lisp_id': {Any  (str) *: {'instance_id': {<class 'int'>: {'eid_table': <class 'str'>, 'lsb': <class 'str'>, 'entries': {'total': <class 'int'>, 'no_route': <class 'int'>, 'inactive': <class 'int'>, Optional  (str) do_not_register: <class 'int'>, 'eids': {<class 'str'>: {'eid': <class 'str'>, 'mask': <class 'int'>, Optional  (str) do_not_register: <class 'bool'>, Optional  (str) dynamic_eid: <class 'str'>, Optional  (str) locator_set: <class 'str'>, Optional  (str) no_route_to_prefix: <class 'bool'>, Optional  (str) proxy: <class 'bool'>, Optional  (str) sgt: <class 'str'>, Optional  (str) domain_id: <class 'str'>, Optional  (str) service_insertion: <class 'str'>, Optional  (str) service_insertion_id: <class 'int'>, Optional  (str) auto_discover_rlocs: <class 'bool'>, Optional  (str) uptime: <class 'str'>, Optional  (str) last_change: <class 'str'>, Optional  (str) locators: {<class 'str'>: {'priority': <class 'int'>, 'weight': <class 'int'>, 'source': <class 'str'>, 'location': <class 'str'>, 'state': <class 'str'>, Optional  (str) affinity_id_x: <class 'int'>, Optional  (str) affinity_id_y: <class 'int'>}}}}}}}}}}",
-      "source": {
-        "class": "genie.harness.base.Template"
-      },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/ios/show_lisp.py"
-    },
     "iosxe": {
       "devices": [
         "uut"
@@ -7321,19 +7195,10 @@
       "source": {
         "class": "genie.harness.base.Template"
       },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp.py"
+      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp_service.py"
     }
   },
   "Verify_LispServiceDatabase_service_ipv6_instance_id_*": {
-    "ios": {
-      "doc": "Parser for \"show lisp all instance-id <instance_id> <service> dabatase\"",
-      "groups": [],
-      "schema": "{'lisp_id': {Any  (str) *: {'instance_id': {<class 'int'>: {'eid_table': <class 'str'>, 'lsb': <class 'str'>, 'entries': {'total': <class 'int'>, 'no_route': <class 'int'>, 'inactive': <class 'int'>, Optional  (str) do_not_register: <class 'int'>, 'eids': {<class 'str'>: {'eid': <class 'str'>, 'mask': <class 'int'>, Optional  (str) do_not_register: <class 'bool'>, Optional  (str) dynamic_eid: <class 'str'>, Optional  (str) locator_set: <class 'str'>, Optional  (str) no_route_to_prefix: <class 'bool'>, Optional  (str) proxy: <class 'bool'>, Optional  (str) sgt: <class 'str'>, Optional  (str) domain_id: <class 'str'>, Optional  (str) service_insertion: <class 'str'>, Optional  (str) service_insertion_id: <class 'int'>, Optional  (str) auto_discover_rlocs: <class 'bool'>, Optional  (str) uptime: <class 'str'>, Optional  (str) last_change: <class 'str'>, Optional  (str) locators: {<class 'str'>: {'priority': <class 'int'>, 'weight': <class 'int'>, 'source': <class 'str'>, 'location': <class 'str'>, 'state': <class 'str'>, Optional  (str) affinity_id_x: <class 'int'>, Optional  (str) affinity_id_y: <class 'int'>}}}}}}}}}}",
-      "source": {
-        "class": "genie.harness.base.Template"
-      },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/ios/show_lisp.py"
-    },
     "iosxe": {
       "devices": [
         "uut"
@@ -7350,19 +7215,10 @@
       "source": {
         "class": "genie.harness.base.Template"
       },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp.py"
+      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp_service.py"
     }
   },
   "Verify_LispServiceMapCache_service_ethernet_instance_id_*": {
-    "ios": {
-      "doc": "Parser for \"show lisp all instance-id <instance_id> <service> map-cache\"",
-      "groups": [],
-      "schema": "{'lisp_router_instances': {Any  (str) *: {'lisp_router_instance_id': <class 'int'>, Optional  (str) service: {Any  (str) *: {'service': <class 'str'>, 'itr': {'map_cache': {Any  (str) *: {'vni': <class 'str'>, 'entries': <class 'int'>, 'mappings': {Any  (str) *: {'id': <class 'str'>, 'creation_time': <class 'str'>, 'time_to_live': <class 'str'>, 'via': <class 'str'>, 'eid': {'address_type': <class 'str'>, 'vrf': <class 'str'>, Optional  (str) ipv4: {'ipv4': <class 'str'>}, Optional  (str) ipv4_prefix: {'ipv4_prefix': <class 'str'>}, Optional  (str) ipv6: {'ipv6': <class 'str'>}, Optional  (str) ipv6_prefix: {'ipv6_prefix': <class 'str'>}}, Optional  (str) negative_mapping: {'map_reply_action': <class 'str'>}, Optional  (str) sgt: <class 'str'>, Optional  (str) encap_to_petr: <class 'bool'>, Optional  (str) encap_to_petr_iid: <class 'str'>, Optional  (str) positive_mapping: {'rlocs': {Any  (str) *: {'id': <class 'str'>, 'uptime': <class 'str'>, 'state': <class 'str'>, 'priority': <class 'int'>, 'weight': <class 'int'>, Optional  (str) encap_iid: <class 'str'>, 'locator_address': {'address_type': <class 'str'>, 'virtual_network_id': <class 'str'>, Optional  (str) ipv4: {'ipv4': <class 'str'>}, Optional  (str) ipv4_prefix: {'ipv4_prefix': <class 'str'>}, Optional  (str) ipv6: {'ipv6': <class 'str'>}, Optional  (str) ipv6_prefix: {'ipv6_prefix': <class 'str'>}}}}}}}}}}}}}}}",
-      "source": {
-        "class": "genie.harness.base.Template"
-      },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/ios/show_lisp.py"
-    },
     "iosxe": {
       "devices": [
         "uut"
@@ -7380,19 +7236,10 @@
       "source": {
         "class": "genie.harness.base.Template"
       },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp.py"
+      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp_service.py"
     }
   },
   "Verify_LispServiceMapCache_service_ipv4_instance_id_*": {
-    "ios": {
-      "doc": "Parser for \"show lisp all instance-id <instance_id> <service> map-cache\"",
-      "groups": [],
-      "schema": "{'lisp_router_instances': {Any  (str) *: {'lisp_router_instance_id': <class 'int'>, Optional  (str) service: {Any  (str) *: {'service': <class 'str'>, 'itr': {'map_cache': {Any  (str) *: {'vni': <class 'str'>, 'entries': <class 'int'>, 'mappings': {Any  (str) *: {'id': <class 'str'>, 'creation_time': <class 'str'>, 'time_to_live': <class 'str'>, 'via': <class 'str'>, 'eid': {'address_type': <class 'str'>, 'vrf': <class 'str'>, Optional  (str) ipv4: {'ipv4': <class 'str'>}, Optional  (str) ipv4_prefix: {'ipv4_prefix': <class 'str'>}, Optional  (str) ipv6: {'ipv6': <class 'str'>}, Optional  (str) ipv6_prefix: {'ipv6_prefix': <class 'str'>}}, Optional  (str) negative_mapping: {'map_reply_action': <class 'str'>}, Optional  (str) sgt: <class 'str'>, Optional  (str) encap_to_petr: <class 'bool'>, Optional  (str) encap_to_petr_iid: <class 'str'>, Optional  (str) positive_mapping: {'rlocs': {Any  (str) *: {'id': <class 'str'>, 'uptime': <class 'str'>, 'state': <class 'str'>, 'priority': <class 'int'>, 'weight': <class 'int'>, Optional  (str) encap_iid: <class 'str'>, 'locator_address': {'address_type': <class 'str'>, 'virtual_network_id': <class 'str'>, Optional  (str) ipv4: {'ipv4': <class 'str'>}, Optional  (str) ipv4_prefix: {'ipv4_prefix': <class 'str'>}, Optional  (str) ipv6: {'ipv6': <class 'str'>}, Optional  (str) ipv6_prefix: {'ipv6_prefix': <class 'str'>}}}}}}}}}}}}}}}",
-      "source": {
-        "class": "genie.harness.base.Template"
-      },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/ios/show_lisp.py"
-    },
     "iosxe": {
       "devices": [
         "uut"
@@ -7410,19 +7257,10 @@
       "source": {
         "class": "genie.harness.base.Template"
       },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp.py"
+      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp_service.py"
     }
   },
   "Verify_LispServiceMapCache_service_ipv6_instance_id_*": {
-    "ios": {
-      "doc": "Parser for \"show lisp all instance-id <instance_id> <service> map-cache\"",
-      "groups": [],
-      "schema": "{'lisp_router_instances': {Any  (str) *: {'lisp_router_instance_id': <class 'int'>, Optional  (str) service: {Any  (str) *: {'service': <class 'str'>, 'itr': {'map_cache': {Any  (str) *: {'vni': <class 'str'>, 'entries': <class 'int'>, 'mappings': {Any  (str) *: {'id': <class 'str'>, 'creation_time': <class 'str'>, 'time_to_live': <class 'str'>, 'via': <class 'str'>, 'eid': {'address_type': <class 'str'>, 'vrf': <class 'str'>, Optional  (str) ipv4: {'ipv4': <class 'str'>}, Optional  (str) ipv4_prefix: {'ipv4_prefix': <class 'str'>}, Optional  (str) ipv6: {'ipv6': <class 'str'>}, Optional  (str) ipv6_prefix: {'ipv6_prefix': <class 'str'>}}, Optional  (str) negative_mapping: {'map_reply_action': <class 'str'>}, Optional  (str) sgt: <class 'str'>, Optional  (str) encap_to_petr: <class 'bool'>, Optional  (str) encap_to_petr_iid: <class 'str'>, Optional  (str) positive_mapping: {'rlocs': {Any  (str) *: {'id': <class 'str'>, 'uptime': <class 'str'>, 'state': <class 'str'>, 'priority': <class 'int'>, 'weight': <class 'int'>, Optional  (str) encap_iid: <class 'str'>, 'locator_address': {'address_type': <class 'str'>, 'virtual_network_id': <class 'str'>, Optional  (str) ipv4: {'ipv4': <class 'str'>}, Optional  (str) ipv4_prefix: {'ipv4_prefix': <class 'str'>}, Optional  (str) ipv6: {'ipv6': <class 'str'>}, Optional  (str) ipv6_prefix: {'ipv6_prefix': <class 'str'>}}}}}}}}}}}}}}}",
-      "source": {
-        "class": "genie.harness.base.Template"
-      },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/ios/show_lisp.py"
-    },
     "iosxe": {
       "devices": [
         "uut"
@@ -7440,19 +7278,10 @@
       "source": {
         "class": "genie.harness.base.Template"
       },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp.py"
+      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp_service.py"
     }
   },
   "Verify_LispServiceRlocMembers_service_ethernet_instance_id_*": {
-    "ios": {
-      "doc": "Parser for \"show lisp all instance-id <instance_id> <service> rloc members\"",
-      "groups": [],
-      "schema": "{'lisp_router_instances': {Any  (str) *: {'lisp_router_instance_id': <class 'int'>, Optional  (str) service: {Optional  (Any) Any  (str) *: {'instance_id': {Any  (str) *: {Optional  (str) rloc: {'total_entries': <class 'int'>, 'valid_entries': <class 'int'>, 'distribution': <class 'bool'>, Optional  (str) members: {Any  (str) *: {'origin': <class 'str'>, 'valid': <class 'str'>}}}}}}}}}}",
-      "source": {
-        "class": "genie.harness.base.Template"
-      },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/ios/show_lisp.py"
-    },
     "iosxe": {
       "devices": [
         "uut"
@@ -7469,19 +7298,10 @@
       "source": {
         "class": "genie.harness.base.Template"
       },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp.py"
+      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp_service.py"
     }
   },
   "Verify_LispServiceRlocMembers_service_ipv4_instance_id_*": {
-    "ios": {
-      "doc": "Parser for \"show lisp all instance-id <instance_id> <service> rloc members\"",
-      "groups": [],
-      "schema": "{'lisp_router_instances': {Any  (str) *: {'lisp_router_instance_id': <class 'int'>, Optional  (str) service: {Optional  (Any) Any  (str) *: {'instance_id': {Any  (str) *: {Optional  (str) rloc: {'total_entries': <class 'int'>, 'valid_entries': <class 'int'>, 'distribution': <class 'bool'>, Optional  (str) members: {Any  (str) *: {'origin': <class 'str'>, 'valid': <class 'str'>}}}}}}}}}}",
-      "source": {
-        "class": "genie.harness.base.Template"
-      },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/ios/show_lisp.py"
-    },
     "iosxe": {
       "devices": [
         "uut"
@@ -7498,19 +7318,10 @@
       "source": {
         "class": "genie.harness.base.Template"
       },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp.py"
+      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp_service.py"
     }
   },
   "Verify_LispServiceRlocMembers_service_ipv6_instance_id_*": {
-    "ios": {
-      "doc": "Parser for \"show lisp all instance-id <instance_id> <service> rloc members\"",
-      "groups": [],
-      "schema": "{'lisp_router_instances': {Any  (str) *: {'lisp_router_instance_id': <class 'int'>, Optional  (str) service: {Optional  (Any) Any  (str) *: {'instance_id': {Any  (str) *: {Optional  (str) rloc: {'total_entries': <class 'int'>, 'valid_entries': <class 'int'>, 'distribution': <class 'bool'>, Optional  (str) members: {Any  (str) *: {'origin': <class 'str'>, 'valid': <class 'str'>}}}}}}}}}}",
-      "source": {
-        "class": "genie.harness.base.Template"
-      },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/ios/show_lisp.py"
-    },
     "iosxe": {
       "devices": [
         "uut"
@@ -7527,19 +7338,10 @@
       "source": {
         "class": "genie.harness.base.Template"
       },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp.py"
+      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp_service.py"
     }
   },
   "Verify_LispServiceServerDetailInternal_service_ethernet_instance_id_*": {
-    "ios": {
-      "doc": "Parser for \"show lisp all instance-id <instance_id> <service> server detail internal\"",
-      "groups": [],
-      "schema": "{'lisp_router_instances': {Any  (str) *: {Optional  (str) service: {Any  (str) *: {'map_server': {'sites': {Any  (str) *: {'site_id': <class 'str'>, 'allowed_configured_locators': <class 'str'>}}, Optional  (str) virtual_network_ids: {Any  (str) *: {'vni': <class 'str'>, 'mappings': {Any  (str) *: {'eid_id': <class 'str'>, 'eid_address': {'address_type': <class 'str'>, 'virtual_network_id': <class 'str'>, Optional  (str) ipv4: {'ipv4': <class 'str'>}, Optional  (str) ipv6: {'ipv6': <class 'str'>}, Optional  (str) ipv4_prefix: {'ipv4_prefix': <class 'str'>}, Optional  (str) ipv6_prefix: {'ipv6_prefix': <class 'str'>}}, 'site_id': <class 'str'>, 'first_registered': <class 'str'>, 'last_registered': <class 'str'>, 'routing_table_tag': <class 'int'>, 'origin': <class 'str'>, Optional  (str) more_specifics_accepted: <class 'bool'>, 'merge_active': <class 'bool'>, 'proxy_reply': <class 'bool'>, 'ttl': <class 'str'>, 'state': <class 'str'>, 'registration_errors': {'authentication_failures': <class 'int'>, 'allowed_locators_mismatch': <class 'int'>}, Optional  (str) sgt: <class 'int'>, Optional  (str) mapping_records: {Any  (str) *: {'xtr_id': <class 'str'>, 'site_id': <class 'str'>, 'etr': <class 'str'>, 'eid': {'address_type': <class 'str'>, 'virtual_network_id': <class 'str'>, Optional  (str) ipv4: {'ipv4': <class 'str'>}, Optional  (str) ipv6: {'ipv6': <class 'str'>}, Optional  (str) ipv4_prefix: {'ipv4_prefix': <class 'str'>}, Optional  (str) ipv6_prefix: {'ipv6_prefix': <class 'str'>}}, 'ttl': <class 'str'>, 'time_to_live': <class 'int'>, 'creation_time': <class 'str'>, 'merge': <class 'bool'>, 'proxy_reply': <class 'bool'>, 'map_notify': <class 'bool'>, 'hash_function': <class 'str'>, 'nonce': <class 'str'>, 'state': <class 'str'>, 'security_capability': <class 'bool'>, 'sourced_by': <class 'str'>, 'locator': {Any  (str) *: {'local': <class 'bool'>, 'state': <class 'str'>, 'priority': <class 'int'>, 'weight': <class 'int'>, 'scope': <class 'str'>}}}}}}}}}}}}}}",
-      "source": {
-        "class": "genie.harness.base.Template"
-      },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/ios/show_lisp.py"
-    },
     "iosxe": {
       "devices": [
         "uut"
@@ -7556,19 +7358,10 @@
       "source": {
         "class": "genie.harness.base.Template"
       },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp.py"
+      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp_service.py"
     }
   },
   "Verify_LispServiceServerDetailInternal_service_ipv4_instance_id_*": {
-    "ios": {
-      "doc": "Parser for \"show lisp all instance-id <instance_id> <service> server detail internal\"",
-      "groups": [],
-      "schema": "{'lisp_router_instances': {Any  (str) *: {Optional  (str) service: {Any  (str) *: {'map_server': {'sites': {Any  (str) *: {'site_id': <class 'str'>, 'allowed_configured_locators': <class 'str'>}}, Optional  (str) virtual_network_ids: {Any  (str) *: {'vni': <class 'str'>, 'mappings': {Any  (str) *: {'eid_id': <class 'str'>, 'eid_address': {'address_type': <class 'str'>, 'virtual_network_id': <class 'str'>, Optional  (str) ipv4: {'ipv4': <class 'str'>}, Optional  (str) ipv6: {'ipv6': <class 'str'>}, Optional  (str) ipv4_prefix: {'ipv4_prefix': <class 'str'>}, Optional  (str) ipv6_prefix: {'ipv6_prefix': <class 'str'>}}, 'site_id': <class 'str'>, 'first_registered': <class 'str'>, 'last_registered': <class 'str'>, 'routing_table_tag': <class 'int'>, 'origin': <class 'str'>, Optional  (str) more_specifics_accepted: <class 'bool'>, 'merge_active': <class 'bool'>, 'proxy_reply': <class 'bool'>, 'ttl': <class 'str'>, 'state': <class 'str'>, 'registration_errors': {'authentication_failures': <class 'int'>, 'allowed_locators_mismatch': <class 'int'>}, Optional  (str) sgt: <class 'int'>, Optional  (str) mapping_records: {Any  (str) *: {'xtr_id': <class 'str'>, 'site_id': <class 'str'>, 'etr': <class 'str'>, 'eid': {'address_type': <class 'str'>, 'virtual_network_id': <class 'str'>, Optional  (str) ipv4: {'ipv4': <class 'str'>}, Optional  (str) ipv6: {'ipv6': <class 'str'>}, Optional  (str) ipv4_prefix: {'ipv4_prefix': <class 'str'>}, Optional  (str) ipv6_prefix: {'ipv6_prefix': <class 'str'>}}, 'ttl': <class 'str'>, 'time_to_live': <class 'int'>, 'creation_time': <class 'str'>, 'merge': <class 'bool'>, 'proxy_reply': <class 'bool'>, 'map_notify': <class 'bool'>, 'hash_function': <class 'str'>, 'nonce': <class 'str'>, 'state': <class 'str'>, 'security_capability': <class 'bool'>, 'sourced_by': <class 'str'>, 'locator': {Any  (str) *: {'local': <class 'bool'>, 'state': <class 'str'>, 'priority': <class 'int'>, 'weight': <class 'int'>, 'scope': <class 'str'>}}}}}}}}}}}}}}",
-      "source": {
-        "class": "genie.harness.base.Template"
-      },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/ios/show_lisp.py"
-    },
     "iosxe": {
       "devices": [
         "uut"
@@ -7585,19 +7378,10 @@
       "source": {
         "class": "genie.harness.base.Template"
       },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp.py"
+      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp_service.py"
     }
   },
   "Verify_LispServiceServerDetailInternal_service_ipv6_instance_id_*": {
-    "ios": {
-      "doc": "Parser for \"show lisp all instance-id <instance_id> <service> server detail internal\"",
-      "groups": [],
-      "schema": "{'lisp_router_instances': {Any  (str) *: {Optional  (str) service: {Any  (str) *: {'map_server': {'sites': {Any  (str) *: {'site_id': <class 'str'>, 'allowed_configured_locators': <class 'str'>}}, Optional  (str) virtual_network_ids: {Any  (str) *: {'vni': <class 'str'>, 'mappings': {Any  (str) *: {'eid_id': <class 'str'>, 'eid_address': {'address_type': <class 'str'>, 'virtual_network_id': <class 'str'>, Optional  (str) ipv4: {'ipv4': <class 'str'>}, Optional  (str) ipv6: {'ipv6': <class 'str'>}, Optional  (str) ipv4_prefix: {'ipv4_prefix': <class 'str'>}, Optional  (str) ipv6_prefix: {'ipv6_prefix': <class 'str'>}}, 'site_id': <class 'str'>, 'first_registered': <class 'str'>, 'last_registered': <class 'str'>, 'routing_table_tag': <class 'int'>, 'origin': <class 'str'>, Optional  (str) more_specifics_accepted: <class 'bool'>, 'merge_active': <class 'bool'>, 'proxy_reply': <class 'bool'>, 'ttl': <class 'str'>, 'state': <class 'str'>, 'registration_errors': {'authentication_failures': <class 'int'>, 'allowed_locators_mismatch': <class 'int'>}, Optional  (str) sgt: <class 'int'>, Optional  (str) mapping_records: {Any  (str) *: {'xtr_id': <class 'str'>, 'site_id': <class 'str'>, 'etr': <class 'str'>, 'eid': {'address_type': <class 'str'>, 'virtual_network_id': <class 'str'>, Optional  (str) ipv4: {'ipv4': <class 'str'>}, Optional  (str) ipv6: {'ipv6': <class 'str'>}, Optional  (str) ipv4_prefix: {'ipv4_prefix': <class 'str'>}, Optional  (str) ipv6_prefix: {'ipv6_prefix': <class 'str'>}}, 'ttl': <class 'str'>, 'time_to_live': <class 'int'>, 'creation_time': <class 'str'>, 'merge': <class 'bool'>, 'proxy_reply': <class 'bool'>, 'map_notify': <class 'bool'>, 'hash_function': <class 'str'>, 'nonce': <class 'str'>, 'state': <class 'str'>, 'security_capability': <class 'bool'>, 'sourced_by': <class 'str'>, 'locator': {Any  (str) *: {'local': <class 'bool'>, 'state': <class 'str'>, 'priority': <class 'int'>, 'weight': <class 'int'>, 'scope': <class 'str'>}}}}}}}}}}}}}}",
-      "source": {
-        "class": "genie.harness.base.Template"
-      },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/ios/show_lisp.py"
-    },
     "iosxe": {
       "devices": [
         "uut"
@@ -7614,19 +7398,10 @@
       "source": {
         "class": "genie.harness.base.Template"
       },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp.py"
+      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp_service.py"
     }
   },
   "Verify_LispServiceServerSummary_service_ethernet_instance_id_*": {
-    "ios": {
-      "doc": "Parser for \"show lisp all instance-id <instance_id> <service> server summary\"",
-      "groups": [],
-      "schema": "{'lisp_router_instances': {Any  (str) *: {'lisp_router_instance_id': <class 'int'>, 'service': {Any  (str) *: {'instance_id': {Any  (str) *: {'map_server': {Optional  (str) sites: {Any  (str) *: {'site_id': <class 'str'>, 'configured': <class 'int'>, 'registered': <class 'int'>, 'inconsistent': <class 'int'>}}, 'summary': {'number_configured_sites': <class 'int'>, 'number_registered_sites': <class 'int'>, Optional  (str) af_datum: {Any  (str) *: {'address_type': <class 'str'>, Optional  (str) number_configured_eids: <class 'int'>, Optional  (str) number_registered_eids: <class 'int'>}}, 'sites_with_inconsistent_registrations': <class 'int'>, Optional  (str) site_registration_limit: <class 'int'>, Optional  (str) site_registration_count: <class 'int'>}}}}}}}}}",
-      "source": {
-        "class": "genie.harness.base.Template"
-      },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/ios/show_lisp.py"
-    },
     "iosxe": {
       "devices": [
         "uut"
@@ -7643,19 +7418,10 @@
       "source": {
         "class": "genie.harness.base.Template"
       },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp.py"
+      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp_service.py"
     }
   },
   "Verify_LispServiceServerSummary_service_ipv4_instance_id_*": {
-    "ios": {
-      "doc": "Parser for \"show lisp all instance-id <instance_id> <service> server summary\"",
-      "groups": [],
-      "schema": "{'lisp_router_instances': {Any  (str) *: {'lisp_router_instance_id': <class 'int'>, 'service': {Any  (str) *: {'instance_id': {Any  (str) *: {'map_server': {Optional  (str) sites: {Any  (str) *: {'site_id': <class 'str'>, 'configured': <class 'int'>, 'registered': <class 'int'>, 'inconsistent': <class 'int'>}}, 'summary': {'number_configured_sites': <class 'int'>, 'number_registered_sites': <class 'int'>, Optional  (str) af_datum: {Any  (str) *: {'address_type': <class 'str'>, Optional  (str) number_configured_eids: <class 'int'>, Optional  (str) number_registered_eids: <class 'int'>}}, 'sites_with_inconsistent_registrations': <class 'int'>, Optional  (str) site_registration_limit: <class 'int'>, Optional  (str) site_registration_count: <class 'int'>}}}}}}}}}",
-      "source": {
-        "class": "genie.harness.base.Template"
-      },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/ios/show_lisp.py"
-    },
     "iosxe": {
       "devices": [
         "uut"
@@ -7672,19 +7438,10 @@
       "source": {
         "class": "genie.harness.base.Template"
       },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp.py"
+      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp_service.py"
     }
   },
   "Verify_LispServiceServerSummary_service_ipv6_instance_id_*": {
-    "ios": {
-      "doc": "Parser for \"show lisp all instance-id <instance_id> <service> server summary\"",
-      "groups": [],
-      "schema": "{'lisp_router_instances': {Any  (str) *: {'lisp_router_instance_id': <class 'int'>, 'service': {Any  (str) *: {'instance_id': {Any  (str) *: {'map_server': {Optional  (str) sites: {Any  (str) *: {'site_id': <class 'str'>, 'configured': <class 'int'>, 'registered': <class 'int'>, 'inconsistent': <class 'int'>}}, 'summary': {'number_configured_sites': <class 'int'>, 'number_registered_sites': <class 'int'>, Optional  (str) af_datum: {Any  (str) *: {'address_type': <class 'str'>, Optional  (str) number_configured_eids: <class 'int'>, Optional  (str) number_registered_eids: <class 'int'>}}, 'sites_with_inconsistent_registrations': <class 'int'>, Optional  (str) site_registration_limit: <class 'int'>, Optional  (str) site_registration_count: <class 'int'>}}}}}}}}}",
-      "source": {
-        "class": "genie.harness.base.Template"
-      },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/ios/show_lisp.py"
-    },
     "iosxe": {
       "devices": [
         "uut"
@@ -7701,19 +7458,10 @@
       "source": {
         "class": "genie.harness.base.Template"
       },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp.py"
+      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp_service.py"
     }
   },
   "Verify_LispServiceSmr_service_ethernet_instance_id_*": {
-    "ios": {
-      "doc": "Parser for \"show lisp all instance-id <instance_id> <service> smr\"",
-      "groups": [],
-      "schema": "{'lisp_router_instances': {Any  (str) *: {'lisp_router_instance_id': <class 'int'>, Optional  (str) service: {Optional  (Any) Any  (str) *: {'instance_id': {Any  (str) *: {Optional  (str) smr: {'vrf': <class 'str'>, 'entries': <class 'int'>, Optional  (str) prefixes: {Any  (str) *: {'producer': <class 'str'>}}}}}}}}}}",
-      "source": {
-        "class": "genie.harness.base.Template"
-      },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/ios/show_lisp.py"
-    },
     "iosxe": {
       "devices": [
         "uut"
@@ -7730,19 +7478,10 @@
       "source": {
         "class": "genie.harness.base.Template"
       },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp.py"
+      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp_service.py"
     }
   },
   "Verify_LispServiceSmr_service_ipv4_instance_id_*": {
-    "ios": {
-      "doc": "Parser for \"show lisp all instance-id <instance_id> <service> smr\"",
-      "groups": [],
-      "schema": "{'lisp_router_instances': {Any  (str) *: {'lisp_router_instance_id': <class 'int'>, Optional  (str) service: {Optional  (Any) Any  (str) *: {'instance_id': {Any  (str) *: {Optional  (str) smr: {'vrf': <class 'str'>, 'entries': <class 'int'>, Optional  (str) prefixes: {Any  (str) *: {'producer': <class 'str'>}}}}}}}}}}",
-      "source": {
-        "class": "genie.harness.base.Template"
-      },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/ios/show_lisp.py"
-    },
     "iosxe": {
       "devices": [
         "uut"
@@ -7759,19 +7498,10 @@
       "source": {
         "class": "genie.harness.base.Template"
       },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp.py"
+      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp_service.py"
     }
   },
   "Verify_LispServiceSmr_service_ipv6_instance_id_*": {
-    "ios": {
-      "doc": "Parser for \"show lisp all instance-id <instance_id> <service> smr\"",
-      "groups": [],
-      "schema": "{'lisp_router_instances': {Any  (str) *: {'lisp_router_instance_id': <class 'int'>, Optional  (str) service: {Optional  (Any) Any  (str) *: {'instance_id': {Any  (str) *: {Optional  (str) smr: {'vrf': <class 'str'>, 'entries': <class 'int'>, Optional  (str) prefixes: {Any  (str) *: {'producer': <class 'str'>}}}}}}}}}}",
-      "source": {
-        "class": "genie.harness.base.Template"
-      },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/ios/show_lisp.py"
-    },
     "iosxe": {
       "devices": [
         "uut"
@@ -7788,19 +7518,10 @@
       "source": {
         "class": "genie.harness.base.Template"
       },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp.py"
+      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp_service.py"
     }
   },
   "Verify_LispServiceStatistics_service_ethernet_instance_id_*": {
-    "ios": {
-      "doc": "Parser for \"show lisp all instance-id <instance_id> <service> statistics\"",
-      "groups": [],
-      "schema": "{'lisp_id': {<class 'int'>: {'last_cleared': <class 'str'>, 'control_packets': {'map_requests': {'in': <class 'int'>, 'out': <class 'int'>, '5_sec': <class 'int'>, '1_min': <class 'int'>, '5_min': <class 'int'>, 'encapsulated': {'in': <class 'int'>, 'out': <class 'int'>}, 'rloc_probe': {'in': <class 'int'>, 'out': <class 'int'>}, 'smr_based': {'in': <class 'int'>, 'out': <class 'int'>}, 'extranet_smr_cross_iid': {'in': <class 'int'>}, 'expired': {'on_queue': <class 'int'>, 'no_reply': <class 'int'>}, 'map_resolver_forwarded': <class 'int'>, 'map_server_forwarded': <class 'int'>}, 'map_reply': {'in': <class 'int'>, 'out': <class 'int'>, 'authoritative': {'in': <class 'int'>, 'out': <class 'int'>}, 'non_authoritative': {'in': <class 'int'>, 'out': <class 'int'>}, 'negative': {'in': <class 'int'>, 'out': <class 'int'>}, 'rloc_probe': {'in': <class 'int'>, 'out': <class 'int'>}, 'map_server_proxy_reply': {'out': <class 'int'>}}, 'wlc_map_subscribe': {'in': <class 'int'>, 'out': <class 'int'>, 'failures': {'in': <class 'int'>, 'out': <class 'int'>}}, 'wlc_map_unsubscribe': {'in': <class 'int'>, 'out': <class 'int'>, 'failures': {'in': <class 'int'>, 'out': <class 'int'>}}, 'map_register': {'in': <class 'int'>, 'out': <class 'int'>, '5_sec': <class 'int'>, '1_min': <class 'int'>, '5_min': <class 'int'>, 'map_server_af_disabled': <class 'int'>, 'not_valid_site_eid_prefix': <class 'int'>, 'authentication_failures': <class 'int'>, 'disallowed_locators': <class 'int'>, 'misc': <class 'int'>}, 'wlc_map_registers': {'in': <class 'int'>, 'out': <class 'int'>, 'ap': {'in': <class 'int'>, 'out': <class 'int'>}, 'client': {'in': <class 'int'>, 'out': <class 'int'>}, 'failures': {'in': <class 'int'>, 'out': <class 'int'>}}, 'map_notify': {'in': <class 'int'>, 'out': <class 'int'>, 'authentication_failures': <class 'int'>}, 'wlc_map_notify': {'in': <class 'int'>, 'out': <class 'int'>, 'ap': {'in': <class 'int'>, 'out': <class 'int'>}, 'client': {'in': <class 'int'>, 'out': <class 'int'>}, 'failures': {'in': <class 'int'>, 'out': <class 'int'>}}, 'publish_subscribe': {'subscription_request': {'in': <class 'int'>, 'out': <class 'int'>, 'iid': {'in': <class 'int'>, 'out': <class 'int'>}, 'pub_refresh': {'in': <class 'int'>, 'out': <class 'int'>}, 'policy': {'in': <class 'int'>, 'out': <class 'int'>}, 'failures': {'in': <class 'int'>, 'out': <class 'int'>}}, 'subscription_status': {'in': <class 'int'>, 'out': <class 'int'>, 'end_of_publication': {'in': <class 'int'>, 'out': <class 'int'>}, 'subscription_rejected': {'in': <class 'int'>, 'out': <class 'int'>}, 'subscription_removed': {'in': <class 'int'>, 'out': <class 'int'>}, 'failures': {'in': <class 'int'>, 'out': <class 'int'>}}, 'solicit_subscription': {'in': <class 'int'>, 'out': <class 'int'>, 'failures': {'in': <class 'int'>, 'out': <class 'int'>}}, 'publication': {'in': <class 'int'>, 'out': <class 'int'>, 'failures': {'in': <class 'int'>, 'out': <class 'int'>}}}}, 'errors': {'mapping_rec_ttl_alerts': <class 'int'>, 'map_request_invalid_source_rloc_drops': <class 'int'>, 'map_register_invalid_source_rloc_drops': <class 'int'>, 'ddt_requests_failed': <class 'int'>, 'ddt_itr_map_requests': {'dropped': <class 'int'>, 'nonce_collision': <class 'int'>, 'bad_xtr_nonce': <class 'int'>}}, 'cache_related': {'cache_entries': {'created': <class 'int'>, 'deleted': <class 'int'>}, 'nsf_cef_replay_entry_count': <class 'int'>, 'rejected_eid_prefix_due_to_limit': <class 'int'>}, 'forwarding': {'data_signals': {'processed': <class 'int'>, 'dropped': <class 'int'>}, 'reachability_reports': {'count': <class 'int'>, 'dropped': <class 'int'>}, 'smr_signals': {'dropped': <class 'int'>}}, 'rloc_statistics': {'last_cleared': <class 'str'>, 'control_packets': {'rtr': {'map_requests_forwarded': <class 'int'>, 'map_notifies_forwarded': <class 'int'>}, 'ddt': {'map_requests': {'in': <class 'int'>, 'out': <class 'int'>}, 'map_referrals': {'in': <class 'int'>, 'out': <class 'int'>}}}, 'errors': {'map_request_format': <class 'int'>, 'map_reply_format': <class 'int'>, 'map_referral': <class 'int'>}}, 'misc_statistics': {'invalid': {'ip_version_drops': <class 'int'>, 'ip_header_drops': <class 'int'>, 'ip_proto_field_drops': <class 'int'>, 'packet_size_drops': <class 'int'>, 'lisp_control_port_drops': <class 'int'>, 'lisp_checksum_drops': <class 'int'>}, 'unsupported_lisp_packet_drops': <class 'int'>, 'unknown_packet_drops': <class 'int'>}}}}",
-      "source": {
-        "class": "genie.harness.base.Template"
-      },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/ios/show_lisp.py"
-    },
     "iosxe": {
       "devices": [
         "uut"
@@ -7818,19 +7539,10 @@
       "source": {
         "class": "genie.harness.base.Template"
       },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp.py"
+      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp_service.py"
     }
   },
   "Verify_LispServiceStatistics_service_ipv4_instance_id_*": {
-    "ios": {
-      "doc": "Parser for \"show lisp all instance-id <instance_id> <service> statistics\"",
-      "groups": [],
-      "schema": "{'lisp_id': {<class 'int'>: {'last_cleared': <class 'str'>, 'control_packets': {'map_requests': {'in': <class 'int'>, 'out': <class 'int'>, '5_sec': <class 'int'>, '1_min': <class 'int'>, '5_min': <class 'int'>, 'encapsulated': {'in': <class 'int'>, 'out': <class 'int'>}, 'rloc_probe': {'in': <class 'int'>, 'out': <class 'int'>}, 'smr_based': {'in': <class 'int'>, 'out': <class 'int'>}, 'extranet_smr_cross_iid': {'in': <class 'int'>}, 'expired': {'on_queue': <class 'int'>, 'no_reply': <class 'int'>}, 'map_resolver_forwarded': <class 'int'>, 'map_server_forwarded': <class 'int'>}, 'map_reply': {'in': <class 'int'>, 'out': <class 'int'>, 'authoritative': {'in': <class 'int'>, 'out': <class 'int'>}, 'non_authoritative': {'in': <class 'int'>, 'out': <class 'int'>}, 'negative': {'in': <class 'int'>, 'out': <class 'int'>}, 'rloc_probe': {'in': <class 'int'>, 'out': <class 'int'>}, 'map_server_proxy_reply': {'out': <class 'int'>}}, 'wlc_map_subscribe': {'in': <class 'int'>, 'out': <class 'int'>, 'failures': {'in': <class 'int'>, 'out': <class 'int'>}}, 'wlc_map_unsubscribe': {'in': <class 'int'>, 'out': <class 'int'>, 'failures': {'in': <class 'int'>, 'out': <class 'int'>}}, 'map_register': {'in': <class 'int'>, 'out': <class 'int'>, '5_sec': <class 'int'>, '1_min': <class 'int'>, '5_min': <class 'int'>, 'map_server_af_disabled': <class 'int'>, 'not_valid_site_eid_prefix': <class 'int'>, 'authentication_failures': <class 'int'>, 'disallowed_locators': <class 'int'>, 'misc': <class 'int'>}, 'wlc_map_registers': {'in': <class 'int'>, 'out': <class 'int'>, 'ap': {'in': <class 'int'>, 'out': <class 'int'>}, 'client': {'in': <class 'int'>, 'out': <class 'int'>}, 'failures': {'in': <class 'int'>, 'out': <class 'int'>}}, 'map_notify': {'in': <class 'int'>, 'out': <class 'int'>, 'authentication_failures': <class 'int'>}, 'wlc_map_notify': {'in': <class 'int'>, 'out': <class 'int'>, 'ap': {'in': <class 'int'>, 'out': <class 'int'>}, 'client': {'in': <class 'int'>, 'out': <class 'int'>}, 'failures': {'in': <class 'int'>, 'out': <class 'int'>}}, 'publish_subscribe': {'subscription_request': {'in': <class 'int'>, 'out': <class 'int'>, 'iid': {'in': <class 'int'>, 'out': <class 'int'>}, 'pub_refresh': {'in': <class 'int'>, 'out': <class 'int'>}, 'policy': {'in': <class 'int'>, 'out': <class 'int'>}, 'failures': {'in': <class 'int'>, 'out': <class 'int'>}}, 'subscription_status': {'in': <class 'int'>, 'out': <class 'int'>, 'end_of_publication': {'in': <class 'int'>, 'out': <class 'int'>}, 'subscription_rejected': {'in': <class 'int'>, 'out': <class 'int'>}, 'subscription_removed': {'in': <class 'int'>, 'out': <class 'int'>}, 'failures': {'in': <class 'int'>, 'out': <class 'int'>}}, 'solicit_subscription': {'in': <class 'int'>, 'out': <class 'int'>, 'failures': {'in': <class 'int'>, 'out': <class 'int'>}}, 'publication': {'in': <class 'int'>, 'out': <class 'int'>, 'failures': {'in': <class 'int'>, 'out': <class 'int'>}}}}, 'errors': {'mapping_rec_ttl_alerts': <class 'int'>, 'map_request_invalid_source_rloc_drops': <class 'int'>, 'map_register_invalid_source_rloc_drops': <class 'int'>, 'ddt_requests_failed': <class 'int'>, 'ddt_itr_map_requests': {'dropped': <class 'int'>, 'nonce_collision': <class 'int'>, 'bad_xtr_nonce': <class 'int'>}}, 'cache_related': {'cache_entries': {'created': <class 'int'>, 'deleted': <class 'int'>}, 'nsf_cef_replay_entry_count': <class 'int'>, 'rejected_eid_prefix_due_to_limit': <class 'int'>}, 'forwarding': {'data_signals': {'processed': <class 'int'>, 'dropped': <class 'int'>}, 'reachability_reports': {'count': <class 'int'>, 'dropped': <class 'int'>}, 'smr_signals': {'dropped': <class 'int'>}}, 'rloc_statistics': {'last_cleared': <class 'str'>, 'control_packets': {'rtr': {'map_requests_forwarded': <class 'int'>, 'map_notifies_forwarded': <class 'int'>}, 'ddt': {'map_requests': {'in': <class 'int'>, 'out': <class 'int'>}, 'map_referrals': {'in': <class 'int'>, 'out': <class 'int'>}}}, 'errors': {'map_request_format': <class 'int'>, 'map_reply_format': <class 'int'>, 'map_referral': <class 'int'>}}, 'misc_statistics': {'invalid': {'ip_version_drops': <class 'int'>, 'ip_header_drops': <class 'int'>, 'ip_proto_field_drops': <class 'int'>, 'packet_size_drops': <class 'int'>, 'lisp_control_port_drops': <class 'int'>, 'lisp_checksum_drops': <class 'int'>}, 'unsupported_lisp_packet_drops': <class 'int'>, 'unknown_packet_drops': <class 'int'>}}}}",
-      "source": {
-        "class": "genie.harness.base.Template"
-      },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/ios/show_lisp.py"
-    },
     "iosxe": {
       "devices": [
         "uut"
@@ -7848,19 +7560,10 @@
       "source": {
         "class": "genie.harness.base.Template"
       },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp.py"
+      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp_service.py"
     }
   },
   "Verify_LispServiceStatistics_service_ipv6_instance_id_*": {
-    "ios": {
-      "doc": "Parser for \"show lisp all instance-id <instance_id> <service> statistics\"",
-      "groups": [],
-      "schema": "{'lisp_id': {<class 'int'>: {'last_cleared': <class 'str'>, 'control_packets': {'map_requests': {'in': <class 'int'>, 'out': <class 'int'>, '5_sec': <class 'int'>, '1_min': <class 'int'>, '5_min': <class 'int'>, 'encapsulated': {'in': <class 'int'>, 'out': <class 'int'>}, 'rloc_probe': {'in': <class 'int'>, 'out': <class 'int'>}, 'smr_based': {'in': <class 'int'>, 'out': <class 'int'>}, 'extranet_smr_cross_iid': {'in': <class 'int'>}, 'expired': {'on_queue': <class 'int'>, 'no_reply': <class 'int'>}, 'map_resolver_forwarded': <class 'int'>, 'map_server_forwarded': <class 'int'>}, 'map_reply': {'in': <class 'int'>, 'out': <class 'int'>, 'authoritative': {'in': <class 'int'>, 'out': <class 'int'>}, 'non_authoritative': {'in': <class 'int'>, 'out': <class 'int'>}, 'negative': {'in': <class 'int'>, 'out': <class 'int'>}, 'rloc_probe': {'in': <class 'int'>, 'out': <class 'int'>}, 'map_server_proxy_reply': {'out': <class 'int'>}}, 'wlc_map_subscribe': {'in': <class 'int'>, 'out': <class 'int'>, 'failures': {'in': <class 'int'>, 'out': <class 'int'>}}, 'wlc_map_unsubscribe': {'in': <class 'int'>, 'out': <class 'int'>, 'failures': {'in': <class 'int'>, 'out': <class 'int'>}}, 'map_register': {'in': <class 'int'>, 'out': <class 'int'>, '5_sec': <class 'int'>, '1_min': <class 'int'>, '5_min': <class 'int'>, 'map_server_af_disabled': <class 'int'>, 'not_valid_site_eid_prefix': <class 'int'>, 'authentication_failures': <class 'int'>, 'disallowed_locators': <class 'int'>, 'misc': <class 'int'>}, 'wlc_map_registers': {'in': <class 'int'>, 'out': <class 'int'>, 'ap': {'in': <class 'int'>, 'out': <class 'int'>}, 'client': {'in': <class 'int'>, 'out': <class 'int'>}, 'failures': {'in': <class 'int'>, 'out': <class 'int'>}}, 'map_notify': {'in': <class 'int'>, 'out': <class 'int'>, 'authentication_failures': <class 'int'>}, 'wlc_map_notify': {'in': <class 'int'>, 'out': <class 'int'>, 'ap': {'in': <class 'int'>, 'out': <class 'int'>}, 'client': {'in': <class 'int'>, 'out': <class 'int'>}, 'failures': {'in': <class 'int'>, 'out': <class 'int'>}}, 'publish_subscribe': {'subscription_request': {'in': <class 'int'>, 'out': <class 'int'>, 'iid': {'in': <class 'int'>, 'out': <class 'int'>}, 'pub_refresh': {'in': <class 'int'>, 'out': <class 'int'>}, 'policy': {'in': <class 'int'>, 'out': <class 'int'>}, 'failures': {'in': <class 'int'>, 'out': <class 'int'>}}, 'subscription_status': {'in': <class 'int'>, 'out': <class 'int'>, 'end_of_publication': {'in': <class 'int'>, 'out': <class 'int'>}, 'subscription_rejected': {'in': <class 'int'>, 'out': <class 'int'>}, 'subscription_removed': {'in': <class 'int'>, 'out': <class 'int'>}, 'failures': {'in': <class 'int'>, 'out': <class 'int'>}}, 'solicit_subscription': {'in': <class 'int'>, 'out': <class 'int'>, 'failures': {'in': <class 'int'>, 'out': <class 'int'>}}, 'publication': {'in': <class 'int'>, 'out': <class 'int'>, 'failures': {'in': <class 'int'>, 'out': <class 'int'>}}}}, 'errors': {'mapping_rec_ttl_alerts': <class 'int'>, 'map_request_invalid_source_rloc_drops': <class 'int'>, 'map_register_invalid_source_rloc_drops': <class 'int'>, 'ddt_requests_failed': <class 'int'>, 'ddt_itr_map_requests': {'dropped': <class 'int'>, 'nonce_collision': <class 'int'>, 'bad_xtr_nonce': <class 'int'>}}, 'cache_related': {'cache_entries': {'created': <class 'int'>, 'deleted': <class 'int'>}, 'nsf_cef_replay_entry_count': <class 'int'>, 'rejected_eid_prefix_due_to_limit': <class 'int'>}, 'forwarding': {'data_signals': {'processed': <class 'int'>, 'dropped': <class 'int'>}, 'reachability_reports': {'count': <class 'int'>, 'dropped': <class 'int'>}, 'smr_signals': {'dropped': <class 'int'>}}, 'rloc_statistics': {'last_cleared': <class 'str'>, 'control_packets': {'rtr': {'map_requests_forwarded': <class 'int'>, 'map_notifies_forwarded': <class 'int'>}, 'ddt': {'map_requests': {'in': <class 'int'>, 'out': <class 'int'>}, 'map_referrals': {'in': <class 'int'>, 'out': <class 'int'>}}}, 'errors': {'map_request_format': <class 'int'>, 'map_reply_format': <class 'int'>, 'map_referral': <class 'int'>}}, 'misc_statistics': {'invalid': {'ip_version_drops': <class 'int'>, 'ip_header_drops': <class 'int'>, 'ip_proto_field_drops': <class 'int'>, 'packet_size_drops': <class 'int'>, 'lisp_control_port_drops': <class 'int'>, 'lisp_checksum_drops': <class 'int'>}, 'unsupported_lisp_packet_drops': <class 'int'>, 'unknown_packet_drops': <class 'int'>}}}}",
-      "source": {
-        "class": "genie.harness.base.Template"
-      },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/ios/show_lisp.py"
-    },
     "iosxe": {
       "devices": [
         "uut"
@@ -7878,19 +7581,10 @@
       "source": {
         "class": "genie.harness.base.Template"
       },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp.py"
+      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp_service.py"
     }
   },
   "Verify_LispServiceSummary_service_ethernet": {
-    "ios": {
-      "doc": "Parser for \"show lisp all service <service> summary\"",
-      "groups": [],
-      "schema": "{'lisp_router_instances': {Any  (str) *: {'lisp_router_instance_id': <class 'int'>, Optional  (str) service: {Optional  (Any) Any  (str) *: {Optional  (str) virtual_network_ids: {Any  (str) *: {Optional  (str) vrf: <class 'str'>, 'interface': <class 'str'>, 'db_size': <class 'int'>, 'db_no_route': <class 'int'>, Optional  (str) rloc_status: <class 'str'>, 'cache_size': <class 'int'>, 'incomplete': <class 'str'>, 'cache_idle': <class 'str'>, 'lisp_role': {Any  (str) *: {'lisp_role_type': <class 'str'>}}}}, 'etr': {'summary': {'instance_count': <class 'int'>, 'total_eid_tables': <class 'int'>, 'total_db_entries': <class 'int'>, 'total_db_entries_inactive': <class 'int'>, Optional  (str) maximum_db_entries: <class 'int'>, 'total_map_cache_entries': <class 'int'>, Optional  (str) maximum_map_cache_entries: <class 'int'>, 'eid_tables_inconsistent_locators': <class 'int'>, 'eid_tables_incomplete_map_cache_entries': <class 'int'>, 'eid_tables_pending_map_cache_update_to_fib': <class 'int'>}}}}}}}",
-      "source": {
-        "class": "genie.harness.base.Template"
-      },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/ios/show_lisp.py"
-    },
     "iosxe": {
       "devices": [
         "uut"
@@ -7906,19 +7600,10 @@
       "source": {
         "class": "genie.harness.base.Template"
       },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp.py"
+      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp_service.py"
     }
   },
   "Verify_LispServiceSummary_service_ipv4": {
-    "ios": {
-      "doc": "Parser for \"show lisp all service <service> summary\"",
-      "groups": [],
-      "schema": "{'lisp_router_instances': {Any  (str) *: {'lisp_router_instance_id': <class 'int'>, Optional  (str) service: {Optional  (Any) Any  (str) *: {Optional  (str) virtual_network_ids: {Any  (str) *: {Optional  (str) vrf: <class 'str'>, 'interface': <class 'str'>, 'db_size': <class 'int'>, 'db_no_route': <class 'int'>, Optional  (str) rloc_status: <class 'str'>, 'cache_size': <class 'int'>, 'incomplete': <class 'str'>, 'cache_idle': <class 'str'>, 'lisp_role': {Any  (str) *: {'lisp_role_type': <class 'str'>}}}}, 'etr': {'summary': {'instance_count': <class 'int'>, 'total_eid_tables': <class 'int'>, 'total_db_entries': <class 'int'>, 'total_db_entries_inactive': <class 'int'>, Optional  (str) maximum_db_entries: <class 'int'>, 'total_map_cache_entries': <class 'int'>, Optional  (str) maximum_map_cache_entries: <class 'int'>, 'eid_tables_inconsistent_locators': <class 'int'>, 'eid_tables_incomplete_map_cache_entries': <class 'int'>, 'eid_tables_pending_map_cache_update_to_fib': <class 'int'>}}}}}}}",
-      "source": {
-        "class": "genie.harness.base.Template"
-      },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/ios/show_lisp.py"
-    },
     "iosxe": {
       "devices": [
         "uut"
@@ -7934,19 +7619,10 @@
       "source": {
         "class": "genie.harness.base.Template"
       },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp.py"
+      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp_service.py"
     }
   },
   "Verify_LispServiceSummary_service_ipv6": {
-    "ios": {
-      "doc": "Parser for \"show lisp all service <service> summary\"",
-      "groups": [],
-      "schema": "{'lisp_router_instances': {Any  (str) *: {'lisp_router_instance_id': <class 'int'>, Optional  (str) service: {Optional  (Any) Any  (str) *: {Optional  (str) virtual_network_ids: {Any  (str) *: {Optional  (str) vrf: <class 'str'>, 'interface': <class 'str'>, 'db_size': <class 'int'>, 'db_no_route': <class 'int'>, Optional  (str) rloc_status: <class 'str'>, 'cache_size': <class 'int'>, 'incomplete': <class 'str'>, 'cache_idle': <class 'str'>, 'lisp_role': {Any  (str) *: {'lisp_role_type': <class 'str'>}}}}, 'etr': {'summary': {'instance_count': <class 'int'>, 'total_eid_tables': <class 'int'>, 'total_db_entries': <class 'int'>, 'total_db_entries_inactive': <class 'int'>, Optional  (str) maximum_db_entries: <class 'int'>, 'total_map_cache_entries': <class 'int'>, Optional  (str) maximum_map_cache_entries: <class 'int'>, 'eid_tables_inconsistent_locators': <class 'int'>, 'eid_tables_incomplete_map_cache_entries': <class 'int'>, 'eid_tables_pending_map_cache_update_to_fib': <class 'int'>}}}}}}}",
-      "source": {
-        "class": "genie.harness.base.Template"
-      },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/ios/show_lisp.py"
-    },
     "iosxe": {
       "devices": [
         "uut"
@@ -7962,19 +7638,10 @@
       "source": {
         "class": "genie.harness.base.Template"
       },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp.py"
+      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp_service.py"
     }
   },
   "Verify_LispService_service_ethernet": {
-    "ios": {
-      "doc": "Parser for \"show lisp all instance-id <instance_id> <service>\"",
-      "groups": [],
-      "schema": "{'lisp_id': {<class 'int'>: {'locator_table': <class 'str'>, 'itr': {'enabled': <class 'bool'>, 'proxy_itr_router': <class 'bool'>, Optional  (str) proxy_itr_rloc: <class 'str'>, Optional  (str) local_rloc_last_resort: <class 'str'>, Optional  (str) use_proxy_etr_rloc: <class 'list'>, 'solicit_map_request': <class 'str'>, 'max_smr_per_map_cache': <class 'str'>, 'multiple_smr_supression_time': <class 'int'>}, 'etr': {'enabled': <class 'bool'>, 'proxy_etr_router': <class 'bool'>, 'accept_mapping_data': <class 'str'>, 'map_cache_ttl': <class 'str'>}, Optional  (str) nat_traversal_router: <class 'bool'>, Optional  (str) mobility_first_hop_router: <class 'str'>, 'map_server': {'enabled': <class 'bool'>}, 'map_resolver': {'enabled': <class 'bool'>}, 'delegated_database_tree': <class 'str'>, 'mr_use_petr': {'role': <class 'str'>, Optional  (str) locator_set: <class 'str'>}, 'first_packet_petr': {'role': <class 'str'>, Optional  (str) locator_set: <class 'str'>}, Optional  (str) multiple_ip_per_mac: <class 'bool'>, Optional  (str) mcast_flood_access_tunnel: <class 'bool'>, Optional  (str) pub_sub: {'role': <class 'bool'>, Optional  (str) publishers: <class 'list'>, Optional  (str) subscribers: <class 'list'>}, Optional  (str) mapping_servers: {Any  (str) *: {'ms_address': <class 'str'>, Optional  (str) prefix_list: <class 'str'>}}, Optional  (str) map_resolvers: {Any  (str) *: {'mr_address': <class 'str'>, Optional  (str) prefix_list: <class 'str'>}}, Optional  (str) xtr_id: <class 'str'>, Optional  (str) site_id: <class 'str'>, 'locator_status_algorithms': {'rloc_probe_algorithm': <class 'str'>, 'rloc_probe_on_route_change': <class 'bool'>, 'rloc_probe_member_change': <class 'str'>, 'lsb_reports': <class 'str'>, 'ipv4_rloc_min_mask_len': <class 'int'>, 'ipv6_rloc_min_mask_len': <class 'int'>}, 'map_cache': {'limit': <class 'int'>, 'activity_check_period': <class 'int'>, 'persistent': <class 'str'>}, 'database': {'dynamic_database_limit': <class 'int'>}, Optional  (str) source_locator_configuration: {'vlans': {Any  (str) *: {'address': <class 'str'>, 'interface': <class 'str'>}}}}}}",
-      "source": {
-        "class": "genie.harness.base.Template"
-      },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/ios/show_lisp.py"
-    },
     "iosxe": {
       "devices": [
         "uut"
@@ -7990,19 +7657,10 @@
       "source": {
         "class": "genie.harness.base.Template"
       },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp.py"
+      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp_service.py"
     }
   },
   "Verify_LispService_service_ipv4": {
-    "ios": {
-      "doc": "Parser for \"show lisp all instance-id <instance_id> <service>\"",
-      "groups": [],
-      "schema": "{'lisp_id': {<class 'int'>: {'locator_table': <class 'str'>, 'itr': {'enabled': <class 'bool'>, 'proxy_itr_router': <class 'bool'>, Optional  (str) proxy_itr_rloc: <class 'str'>, Optional  (str) local_rloc_last_resort: <class 'str'>, Optional  (str) use_proxy_etr_rloc: <class 'list'>, 'solicit_map_request': <class 'str'>, 'max_smr_per_map_cache': <class 'str'>, 'multiple_smr_supression_time': <class 'int'>}, 'etr': {'enabled': <class 'bool'>, 'proxy_etr_router': <class 'bool'>, 'accept_mapping_data': <class 'str'>, 'map_cache_ttl': <class 'str'>}, Optional  (str) nat_traversal_router: <class 'bool'>, Optional  (str) mobility_first_hop_router: <class 'str'>, 'map_server': {'enabled': <class 'bool'>}, 'map_resolver': {'enabled': <class 'bool'>}, 'delegated_database_tree': <class 'str'>, 'mr_use_petr': {'role': <class 'str'>, Optional  (str) locator_set: <class 'str'>}, 'first_packet_petr': {'role': <class 'str'>, Optional  (str) locator_set: <class 'str'>}, Optional  (str) multiple_ip_per_mac: <class 'bool'>, Optional  (str) mcast_flood_access_tunnel: <class 'bool'>, Optional  (str) pub_sub: {'role': <class 'bool'>, Optional  (str) publishers: <class 'list'>, Optional  (str) subscribers: <class 'list'>}, Optional  (str) mapping_servers: {Any  (str) *: {'ms_address': <class 'str'>, Optional  (str) prefix_list: <class 'str'>}}, Optional  (str) map_resolvers: {Any  (str) *: {'mr_address': <class 'str'>, Optional  (str) prefix_list: <class 'str'>}}, Optional  (str) xtr_id: <class 'str'>, Optional  (str) site_id: <class 'str'>, 'locator_status_algorithms': {'rloc_probe_algorithm': <class 'str'>, 'rloc_probe_on_route_change': <class 'bool'>, 'rloc_probe_member_change': <class 'str'>, 'lsb_reports': <class 'str'>, 'ipv4_rloc_min_mask_len': <class 'int'>, 'ipv6_rloc_min_mask_len': <class 'int'>}, 'map_cache': {'limit': <class 'int'>, 'activity_check_period': <class 'int'>, 'persistent': <class 'str'>}, 'database': {'dynamic_database_limit': <class 'int'>}, Optional  (str) source_locator_configuration: {'vlans': {Any  (str) *: {'address': <class 'str'>, 'interface': <class 'str'>}}}}}}",
-      "source": {
-        "class": "genie.harness.base.Template"
-      },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/ios/show_lisp.py"
-    },
     "iosxe": {
       "devices": [
         "uut"
@@ -8018,19 +7676,10 @@
       "source": {
         "class": "genie.harness.base.Template"
       },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp.py"
+      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp_service.py"
     }
   },
   "Verify_LispService_service_ipv6": {
-    "ios": {
-      "doc": "Parser for \"show lisp all instance-id <instance_id> <service>\"",
-      "groups": [],
-      "schema": "{'lisp_id': {<class 'int'>: {'locator_table': <class 'str'>, 'itr': {'enabled': <class 'bool'>, 'proxy_itr_router': <class 'bool'>, Optional  (str) proxy_itr_rloc: <class 'str'>, Optional  (str) local_rloc_last_resort: <class 'str'>, Optional  (str) use_proxy_etr_rloc: <class 'list'>, 'solicit_map_request': <class 'str'>, 'max_smr_per_map_cache': <class 'str'>, 'multiple_smr_supression_time': <class 'int'>}, 'etr': {'enabled': <class 'bool'>, 'proxy_etr_router': <class 'bool'>, 'accept_mapping_data': <class 'str'>, 'map_cache_ttl': <class 'str'>}, Optional  (str) nat_traversal_router: <class 'bool'>, Optional  (str) mobility_first_hop_router: <class 'str'>, 'map_server': {'enabled': <class 'bool'>}, 'map_resolver': {'enabled': <class 'bool'>}, 'delegated_database_tree': <class 'str'>, 'mr_use_petr': {'role': <class 'str'>, Optional  (str) locator_set: <class 'str'>}, 'first_packet_petr': {'role': <class 'str'>, Optional  (str) locator_set: <class 'str'>}, Optional  (str) multiple_ip_per_mac: <class 'bool'>, Optional  (str) mcast_flood_access_tunnel: <class 'bool'>, Optional  (str) pub_sub: {'role': <class 'bool'>, Optional  (str) publishers: <class 'list'>, Optional  (str) subscribers: <class 'list'>}, Optional  (str) mapping_servers: {Any  (str) *: {'ms_address': <class 'str'>, Optional  (str) prefix_list: <class 'str'>}}, Optional  (str) map_resolvers: {Any  (str) *: {'mr_address': <class 'str'>, Optional  (str) prefix_list: <class 'str'>}}, Optional  (str) xtr_id: <class 'str'>, Optional  (str) site_id: <class 'str'>, 'locator_status_algorithms': {'rloc_probe_algorithm': <class 'str'>, 'rloc_probe_on_route_change': <class 'bool'>, 'rloc_probe_member_change': <class 'str'>, 'lsb_reports': <class 'str'>, 'ipv4_rloc_min_mask_len': <class 'int'>, 'ipv6_rloc_min_mask_len': <class 'int'>}, 'map_cache': {'limit': <class 'int'>, 'activity_check_period': <class 'int'>, 'persistent': <class 'str'>}, 'database': {'dynamic_database_limit': <class 'int'>}, Optional  (str) source_locator_configuration: {'vlans': {Any  (str) *: {'address': <class 'str'>, 'interface': <class 'str'>}}}}}}",
-      "source": {
-        "class": "genie.harness.base.Template"
-      },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/ios/show_lisp.py"
-    },
     "iosxe": {
       "devices": [
         "uut"
@@ -8046,19 +7695,10 @@
       "source": {
         "class": "genie.harness.base.Template"
       },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp.py"
+      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp_service.py"
     }
   },
   "Verify_LispSession": {
-    "ios": {
-      "doc": " Parser for show lisp session",
-      "groups": [],
-      "schema": "{'vrf': {<class 'str'>: {'total': <class 'str'>, 'established': <class 'str'>, Optional  (str) peers: {<class 'str'>: ListOf  (dict) {Optional  (str) port: <class 'str'>, 'state': <class 'str'>, 'time': <class 'str'>, 'in': <class 'str'>, 'out': <class 'str'>, 'users': <class 'str'>, Optional  (str) rtt: <class 'str'>}}}}}",
-      "source": {
-        "class": "genie.harness.base.Template"
-      },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/ios/show_lisp.py"
-    },
     "iosxe": {
       "devices": [
         "uut"
@@ -8072,7 +7712,7 @@
       "source": {
         "class": "genie.harness.base.Template"
       },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp.py"
+      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_lisp_session.py"
     }
   },
   "Verify_Lldp": {
@@ -8794,7 +8434,7 @@
       "doc": "Parser for show ospf vrf all-inclusive",
       "exclude": [],
       "groups": [],
-      "schema": "{'vrf': {Any  (str) *: {'address_family': {Any  (str) *: {'instance': {Any  (str) *: {'router_id': <class 'str'>, 'role': <class 'str'>, 'nsr': {'enable': <class 'bool'>}, Optional  (str) maximum_interfaces: <class 'int'>, Optional  (str) redistribution: {Optional  (str) max_prefix: {Optional  (str) num_of_prefix: <class 'int'>, Optional  (str) prefix_thld: <class 'int'>, Optional  (str) warn_only: <class 'bool'>}, Optional  (str) connected: {'enabled': <class 'bool'>, Optional  (str) metric: <class 'int'>}, Optional  (str) static: {'enabled': <class 'bool'>, Optional  (str) metric: <class 'int'>}, Optional  (str) bgp: {'bgp_id': <class 'int'>, Optional  (str) metric: <class 'int'>}, Optional  (str) isis: {'isis_pid': <class 'str'>, Optional  (str) metric: <class 'int'>}}, Optional  (str) database_control: {'max_lsa': <class 'int'>}, Optional  (str) stub_router: {Optional  (str) always: {Optional  (str) always: <class 'bool'>, Optional  (str) include_stub: <class 'bool'>, Optional  (str) summary_lsa: <class 'bool'>, Optional  (str) external_lsa: <class 'bool'>, Optional  (str) summary_lsa_metric: <class 'int'>, Optional  (str) external_lsa_metric: <class 'int'>, Optional  (str) state: <class 'str'>}, Optional  (str) on_startup: {Optional  (str) on_startup: <class 'int'>, Optional  (str) include_stub: <class 'bool'>, Optional  (str) summary_lsa: <class 'bool'>, Optional  (str) summary_lsa_metric: <class 'int'>, Optional  (str) external_lsa: <class 'bool'>, Optional  (str) external_lsa_metric: <class 'int'>, 'state': <class 'str'>}, Optional  (str) on_switchover: {Optional  (str) on_switchover: <class 'int'>, Optional  (str) include_stub: <class 'bool'>, Optional  (str) summary_lsa: <class 'bool'>, Optional  (str) summary_lsa_metric: <class 'int'>, Optional  (str) external_lsa: <class 'bool'>, Optional  (str) external_lsa_metric: <class 'int'>, Optional  (str) state: <class 'str'>}, Optional  (str) on_procrestart: {Optional  (str) on_procrestart: <class 'int'>, Optional  (str) include_stub: <class 'bool'>, Optional  (str) summary_lsa: <class 'bool'>, Optional  (str) summary_lsa_metric: <class 'int'>, Optional  (str) external_lsa: <class 'bool'>, Optional  (str) external_lsa_metric: <class 'int'>, 'state': <class 'str'>}}, Optional  (str) spf_control: {Optional  (str) paths: <class 'str'>, 'throttle': {'spf': {'start': <class 'int'>, 'hold': <class 'int'>, 'maximum': <class 'int'>}, 'lsa': {'start': <class 'int'>, 'hold': <class 'int'>, 'maximum': <class 'int'>, 'interval': <class 'int'>, 'arrival': <class 'int'>, 'refresh_interval': <class 'int'>}}}, Optional  (str) mpls: {'ldp': {'ldp_igp_sync': <class 'bool'>, 'ldp_sync_status': <class 'str'>}}, Optional  (str) adjacency_stagger: {'disable': <class 'bool'>, 'initial_number': <class 'int'>, 'maximum_number': <class 'int'>, 'nbrs_forming': <class 'int'>, 'nbrs_full': <class 'int'>}, Optional  (str) graceful_restart: {Any  (str) *: {'enable': <class 'bool'>, 'type': <class 'str'>}}, Optional  (str) numbers: {Optional  (str) external_lsa: <class 'int'>, Optional  (str) external_lsa_checksum: <class 'str'>, Optional  (str) opaque_as_lsa: <class 'int'>, Optional  (str) opaque_as_lsa_checksum: <class 'str'>, Optional  (str) dc_bitless: <class 'int'>, Optional  (str) do_not_age: <class 'int'>}, Optional  (str) total_areas: <class 'int'>, Optional  (str) total_normal_areas: <class 'int'>, Optional  (str) total_stub_areas: <class 'int'>, Optional  (str) total_nssa_areas: <class 'int'>, Optional  (str) flood_pacing_interval_msec: <class 'int'>, Optional  (str) retransmission_pacing_interval: <class 'int'>, Optional  (str) external_flood_list_length: <class 'int'>, Optional  (str) snmp_trap: <class 'bool'>, Optional  (str) lsd_state: <class 'str'>, Optional  (str) lsd_revision: <class 'int'>, Optional  (str) segment_routing_global_block_default: <class 'str'>, Optional  (str) segment_routing_global_block_status: <class 'str'>, Optional  (str) strict_spf: <class 'bool'>, Optional  (str) flags: {Optional  (str) abr: <class 'bool'>, Optional  (str) asbr: <class 'bool'>}, Optional  (str) areas: {Any  (str) *: {'area_id': <class 'str'>, 'area_type': <class 'str'>, Optional  (str) summary: <class 'bool'>, Optional  (str) default_cost: <class 'int'>, Optional  (str) lsa_translation: <class 'str'>, Optional  (str) ranges: {Any  (str) *: {'prefix': <class 'str'>, 'advertise': <class 'bool'>}}, Optional  (str) rrr_enabled: <class 'bool'>, Optional  (str) topology_version: <class 'int'>, Optional  (str) statistics: {Optional  (str) spf_runs_count: <class 'int'>, Optional  (str) interfaces_count: <class 'int'>, Optional  (str) area_scope_lsa_count: <class 'int'>, Optional  (str) area_scope_lsa_cksum_sum: <class 'str'>, Optional  (str) area_scope_opaque_lsa_count: <class 'int'>, Optional  (str) area_scope_opaque_lsa_cksum_sum: <class 'str'>, Optional  (str) dcbitless_lsa_count: <class 'int'>, Optional  (str) indication_lsa_count: <class 'int'>, Optional  (str) donotage_lsa_count: <class 'int'>, Optional  (str) flood_list_length: <class 'int'>, Optional  (str) lfa_interface_count: <class 'int'>, Optional  (str) lfa_revision: <class 'int'>, Optional  (str) lfa_per_prefix_interface_count: <class 'int'>, Optional  (str) nbrs_staggered_mode: <class 'int'>, Optional  (str) nbrs_full: <class 'int'>}}}, Optional  (str) ipfrr_per_prefix_tiebreakers: {Optional  (str) name: <class 'str'>, Optional  (str) no_tunnel: <class 'str'>, Optional  (str) node_protection: <class 'str'>, Optional  (str) line_card_disjoint: <class 'str'>, Optional  (str) lowest_metric: <class 'str'>, Optional  (str) primary_path: <class 'str'>, Optional  (str) downstream: <class 'str'>, Optional  (str) secondary_path: <class 'str'>, Optional  (str) srlg_disjoint: <class 'str'>, Optional  (str) post_convergence_path: <class 'str'>}}}}}}}}",
+      "schema": "{'vrf': {Any  (str) *: {'address_family': {Any  (str) *: {'instance': {Any  (str) *: {'router_id': <class 'str'>, 'role': <class 'str'>, 'nsr': {'enable': <class 'bool'>}, Optional  (str) maximum_interfaces: <class 'int'>, Optional  (str) redistribution: {Optional  (str) max_prefix: {Optional  (str) num_of_prefix: <class 'int'>, Optional  (str) prefix_thld: <class 'int'>, Optional  (str) warn_only: <class 'bool'>}, Optional  (str) connected: {'enabled': <class 'bool'>, Optional  (str) metric: <class 'int'>}, Optional  (str) static: {'enabled': <class 'bool'>, Optional  (str) metric: <class 'int'>}, Optional  (str) bgp: {'bgp_id': <class 'int'>, Optional  (str) metric: <class 'int'>}, Optional  (str) isis: {'isis_pid': <class 'str'>, Optional  (str) metric: <class 'int'>}}, Optional  (str) database_control: {'max_lsa': <class 'int'>, Optional  (str) current_lsa: <class 'int'>, Optional  (str) threshold: <class 'int'>, Optional  (str) ignore_time: <class 'int'>, Optional  (str) reset_time: <class 'int'>, Optional  (str) allowed_ignore_count: <class 'int'>, Optional  (str) current_ignore_count: <class 'int'>}, Optional  (str) suppress_neighbor: {Optional  (str) max_external_prefix: <class 'int'>, Optional  (str) warning_threshold: <class 'int'>}, Optional  (str) stub_router: {Optional  (str) always: {Optional  (str) always: <class 'bool'>, Optional  (str) include_stub: <class 'bool'>, Optional  (str) summary_lsa: <class 'bool'>, Optional  (str) external_lsa: <class 'bool'>, Optional  (str) summary_lsa_metric: <class 'int'>, Optional  (str) external_lsa_metric: <class 'int'>, Optional  (str) state: <class 'str'>}, Optional  (str) on_startup: {Optional  (str) on_startup: <class 'int'>, Optional  (str) include_stub: <class 'bool'>, Optional  (str) summary_lsa: <class 'bool'>, Optional  (str) summary_lsa_metric: <class 'int'>, Optional  (str) external_lsa: <class 'bool'>, Optional  (str) external_lsa_metric: <class 'int'>, 'state': <class 'str'>}, Optional  (str) on_switchover: {Optional  (str) on_switchover: <class 'int'>, Optional  (str) include_stub: <class 'bool'>, Optional  (str) summary_lsa: <class 'bool'>, Optional  (str) summary_lsa_metric: <class 'int'>, Optional  (str) external_lsa: <class 'bool'>, Optional  (str) external_lsa_metric: <class 'int'>, Optional  (str) state: <class 'str'>}, Optional  (str) on_procrestart: {Optional  (str) on_procrestart: <class 'int'>, Optional  (str) include_stub: <class 'bool'>, Optional  (str) summary_lsa: <class 'bool'>, Optional  (str) summary_lsa_metric: <class 'int'>, Optional  (str) external_lsa: <class 'bool'>, Optional  (str) external_lsa_metric: <class 'int'>, 'state': <class 'str'>}}, Optional  (str) spf_control: {Optional  (str) paths: <class 'str'>, 'throttle': {'spf': {'start': <class 'int'>, 'hold': <class 'int'>, 'maximum': <class 'int'>}, 'lsa': {'start': <class 'int'>, 'hold': <class 'int'>, 'maximum': <class 'int'>, 'interval': <class 'int'>, 'arrival': <class 'int'>, 'refresh_interval': <class 'int'>}}}, Optional  (str) mpls: {'ldp': {'ldp_igp_sync': <class 'bool'>, 'ldp_sync_status': <class 'str'>}}, Optional  (str) adjacency_stagger: {'disable': <class 'bool'>, 'initial_number': <class 'int'>, 'maximum_number': <class 'int'>, 'nbrs_forming': <class 'int'>, 'nbrs_full': <class 'int'>}, Optional  (str) graceful_restart: {Any  (str) *: {'enable': <class 'bool'>, 'type': <class 'str'>}}, Optional  (str) numbers: {Optional  (str) external_lsa: <class 'int'>, Optional  (str) external_lsa_checksum: <class 'str'>, Optional  (str) opaque_as_lsa: <class 'int'>, Optional  (str) opaque_as_lsa_checksum: <class 'str'>, Optional  (str) dc_bitless: <class 'int'>, Optional  (str) do_not_age: <class 'int'>}, Optional  (str) total_areas: <class 'int'>, Optional  (str) total_normal_areas: <class 'int'>, Optional  (str) total_stub_areas: <class 'int'>, Optional  (str) total_nssa_areas: <class 'int'>, Optional  (str) flood_pacing_interval_msec: <class 'int'>, Optional  (str) retransmission_pacing_interval: <class 'int'>, Optional  (str) external_flood_list_length: <class 'int'>, Optional  (str) snmp_trap: <class 'bool'>, Optional  (str) lsd_state: <class 'str'>, Optional  (str) lsd_revision: <class 'int'>, Optional  (str) segment_routing_global_block_default: <class 'str'>, Optional  (str) segment_routing_global_block_status: <class 'str'>, Optional  (str) strict_spf: <class 'bool'>, Optional  (str) flags: {Optional  (str) abr: <class 'bool'>, Optional  (str) asbr: <class 'bool'>}, Optional  (str) areas: {Any  (str) *: {'area_id': <class 'str'>, 'area_type': <class 'str'>, Optional  (str) summary: <class 'bool'>, Optional  (str) default_cost: <class 'int'>, Optional  (str) lsa_translation: <class 'str'>, Optional  (str) ranges: {Any  (str) *: {'prefix': <class 'str'>, 'advertise': <class 'bool'>}}, Optional  (str) rrr_enabled: <class 'bool'>, Optional  (str) topology_version: <class 'int'>, Optional  (str) statistics: {Optional  (str) spf_runs_count: <class 'int'>, Optional  (str) interfaces_count: <class 'int'>, Optional  (str) area_scope_lsa_count: <class 'int'>, Optional  (str) area_scope_lsa_cksum_sum: <class 'str'>, Optional  (str) area_scope_opaque_lsa_count: <class 'int'>, Optional  (str) area_scope_opaque_lsa_cksum_sum: <class 'str'>, Optional  (str) dcbitless_lsa_count: <class 'int'>, Optional  (str) indication_lsa_count: <class 'int'>, Optional  (str) donotage_lsa_count: <class 'int'>, Optional  (str) flood_list_length: <class 'int'>, Optional  (str) lfa_interface_count: <class 'int'>, Optional  (str) lfa_revision: <class 'int'>, Optional  (str) lfa_per_prefix_interface_count: <class 'int'>, Optional  (str) nbrs_staggered_mode: <class 'int'>, Optional  (str) nbrs_full: <class 'int'>}}}, Optional  (str) ipfrr_per_prefix_tiebreakers: {Optional  (str) name: <class 'str'>, Optional  (str) no_tunnel: <class 'str'>, Optional  (str) node_protection: <class 'str'>, Optional  (str) line_card_disjoint: <class 'str'>, Optional  (str) lowest_metric: <class 'str'>, Optional  (str) primary_path: <class 'str'>, Optional  (str) downstream: <class 'str'>, Optional  (str) secondary_path: <class 'str'>, Optional  (str) srlg_disjoint: <class 'str'>, Optional  (str) post_convergence_path: <class 'str'>}}}}}}}}",
       "source": {
         "class": "genie.harness.base.Template"
       },
@@ -9181,15 +8821,6 @@
     }
   },
   "Verify_PlatformSoftwareSlotActiveMonitorMem": {
-    "ios": {
-      "doc": "Parser for show platform software process slot switch active R0 monitor | inc Mem :|Swap:",
-      "groups": [],
-      "schema": "{'memory': {'total': <class 'int'>, 'free': <class 'int'>, 'used': <class 'int'>, 'buff_cache': <class 'int'>}, 'swap': {'total': <class 'int'>, 'free': <class 'int'>, 'used': <class 'int'>, 'available_memory': <class 'int'>}}",
-      "source": {
-        "class": "genie.harness.base.Template"
-      },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/ios/show_platform.py"
-    },
     "iosxe": {
       "devices": [
         "uut"
@@ -9201,19 +8832,10 @@
       "source": {
         "class": "genie.harness.base.Template"
       },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_platform.py"
+      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_platform_software.py"
     }
   },
   "Verify_PlatformSoftwareStatusControl": {
-    "ios": {
-      "doc": "Parser for show platform software status control-processor brief",
-      "groups": [],
-      "schema": "{'slot': {Any  (str) *: {'load_average': {'status': <class 'str'>, '1_min': <class 'float'>, '5_min': <class 'float'>, '15_min': <class 'float'>}, 'memory': {'status': <class 'str'>, 'total': <class 'int'>, 'used': <class 'int'>, 'used_percentage': <class 'int'>, 'free': <class 'int'>, 'free_percentage': <class 'int'>, 'committed': <class 'int'>, 'committed_percentage': <class 'int'>}, 'cpu': {Any  (str) *: {'user': <class 'float'>, 'system': <class 'float'>, 'nice_process': <class 'float'>, 'idle': <class 'float'>, 'irq': <class 'float'>, 'sirq': <class 'float'>, 'waiting': <class 'float'>}}}}}",
-      "source": {
-        "class": "genie.harness.base.Template"
-      },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/ios/show_platform.py"
-    },
     "iosxe": {
       "devices": [
         "uut"
@@ -9229,7 +8851,7 @@
       "source": {
         "class": "genie.harness.base.Template"
       },
-      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_platform.py"
+      "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/show_platform_software.py"
     }
   },
   "Verify_PlatformVm": {
@@ -10420,7 +10042,7 @@
     "ios": {
       "doc": "Parser for show vrf",
       "groups": [],
-      "schema": "{'vrf': {Any  (str) *: {Optional  (str) route_distinguisher: <class 'str'>, Optional  (str) protocols: <class 'list'>, Optional  (str) interfaces: <class 'list'>, Optional  (str) being_deleted: <class 'bool'>}}}",
+      "schema": "{'vrf': {Any  (str) *: {Optional  (str) route_distinguisher: <class 'str'>, Optional  (str) route_distinguisher_auto: <class 'bool'>, Optional  (str) protocols: <class 'list'>, Optional  (str) interfaces: <class 'list'>, Optional  (str) being_deleted: <class 'bool'>}}}",
       "source": {
         "class": "genie.harness.base.Template"
       },
@@ -10429,7 +10051,7 @@
     "iosxe": {
       "doc": " Parser for:\n            show vrf\n            show vrf {vrf}\n    ",
       "groups": [],
-      "schema": "{'vrf': {Any  (str) *: {Optional  (str) route_distinguisher: <class 'str'>, Optional  (str) protocols: <class 'list'>, Optional  (str) interfaces: <class 'list'>, Optional  (str) being_deleted: <class 'bool'>}}}",
+      "schema": "{'vrf': {Any  (str) *: {Optional  (str) route_distinguisher: <class 'str'>, Optional  (str) route_distinguisher_auto: <class 'bool'>, Optional  (str) protocols: <class 'list'>, Optional  (str) interfaces: <class 'list'>, Optional  (str) being_deleted: <class 'bool'>}}}",
       "source": {
         "class": "genie.harness.base.Template"
       },
@@ -12711,22 +12333,8 @@
       "x"
     ],
     [
-      "e",
       "i",
       "o",
-      "s",
-      "x"
-    ],
-    [
-      "e",
-      "i",
-      "o",
-      "s",
-      "x"
-    ],
-    [
-      "i",
-      "o",
       "r",
       "s",
       "x"
@@ -13416,206 +13024,6 @@
       "r",
       "s",
       "x"
-    ],
-    [
-      "i",
-      "o",
-      "s"
-    ],
-    [
-      "i",
-      "o",
-      "s"
-    ],
-    [
-      "i",
-      "o",
-      "s"
-    ],
-    [
-      "i",
-      "o",
-      "s"
-    ],
-    [
-      "i",
-      "o",
-      "s"
-    ],
-    [
-      "i",
-      "o",
-      "s"
-    ],
-    [
-      "i",
-      "o",
-      "s"
-    ],
-    [
-      "i",
-      "o",
-      "s"
-    ],
-    [
-      "i",
-      "o",
-      "s"
-    ],
-    [
-      "i",
-      "o",
-      "s"
-    ],
-    [
-      "i",
-      "o",
-      "s"
-    ],
-    [
-      "i",
-      "o",
-      "s"
-    ],
-    [
-      "i",
-      "o",
-      "s"
-    ],
-    [
-      "i",
-      "o",
-      "s"
-    ],
-    [
-      "i",
-      "o",
-      "s"
-    ],
-    [
-      "i",
-      "o",
-      "s"
-    ],
-    [
-      "i",
-      "o",
-      "s"
-    ],
-    [
-      "i",
-      "o",
-      "s"
-    ],
-    [
-      "i",
-      "o",
-      "s"
-    ],
-    [
-      "i",
-      "o",
-      "s"
-    ],
-    [
-      "i",
-      "o",
-      "s"
-    ],
-    [
-      "i",
-      "o",
-      "s"
-    ],
-    [
-      "i",
-      "o",
-      "s"
-    ],
-    [
-      "i",
-      "o",
-      "s"
-    ],
-    [
-      "i",
-      "o",
-      "s"
-    ],
-    [
-      "i",
-      "o",
-      "s"
-    ],
-    [
-      "i",
-      "o",
-      "s"
-    ],
-    [
-      "i",
-      "o",
-      "s"
-    ],
-    [
-      "i",
-      "o",
-      "s"
-    ],
-    [
-      "i",
-      "o",
-      "s"
-    ],
-    [
-      "i",
-      "o",
-      "s"
-    ],
-    [
-      "i",
-      "o",
-      "s"
-    ],
-    [
-      "i",
-      "o",
-      "s"
-    ],
-    [
-      "i",
-      "o",
-      "s"
-    ],
-    [
-      "i",
-      "o",
-      "s"
-    ],
-    [
-      "i",
-      "o",
-      "s"
-    ],
-    [
-      "i",
-      "o",
-      "s"
-    ],
-    [
-      "i",
-      "o",
-      "s"
-    ],
-    [
-      "i",
-      "o",
-      "s"
-    ],
-    [
-      "i",
-      "o",
-      "s"
     ],
     [
       "i",

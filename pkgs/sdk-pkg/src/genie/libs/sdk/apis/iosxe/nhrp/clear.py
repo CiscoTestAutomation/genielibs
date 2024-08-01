@@ -232,4 +232,53 @@ def clear_dmvpn_crypto_nhrp_ike_stats(device,timeout=30):
                     .format(device=device, error=e)
             )
 
+def monitor_event_trace_dmvpn_nhrp_enable(device,timeout=30):
+    ''' monitor event-trace dmvpn nhrp enable commands
+        Args:
+            device('obj'): Device object
+            timeout('int', optional): timeout for exec command execution, default is 30
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    '''
+
+    cmd_list = ['monitor event-trace dmvpn nhrp event enable','monitor event-trace dmvpn nhrp error enable',
+                'monitor event-trace dmvpn nhrp exception enable']
+
+    for cmd in cmd_list:
+        try:
+            device.execute(cmd,
+                    timeout=timeout)
+
+        except SubCommandFailure as e:
+            raise SubCommandFailure(
+                "Could not execute enable command on {device}. Error:\n{error}"
+                    .format(device=device, error=e)
+            )
+
+def monitor_event_trace_dmvpn_nhrp_clear(device,timeout=30):
+    ''' monitor event-trace dmvpn nhrp clear commands
+        Args:
+            device('obj'): Device object
+            timeout('int', optional): timeout for exec command execution, default is 30
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    '''
+
+    cmd_list = ['monitor event-trace dmvpn nhrp event clear','monitor event-trace dmvpn nhrp error clear',
+                'monitor event-trace dmvpn nhrp exception clear']
+
+    for cmd in cmd_list:
+        try:
+            device.execute(cmd,
+                    timeout=timeout)
+
+        except SubCommandFailure as e:
+            raise SubCommandFailure(
+                "Could not execute clear command on {device}. Error:\n{error}"
+                    .format(device=device, error=e)
+            )
 

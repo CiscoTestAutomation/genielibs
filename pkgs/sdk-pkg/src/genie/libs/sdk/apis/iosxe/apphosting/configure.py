@@ -396,9 +396,8 @@ def enable_usb_ssd_verify_exists(device, storage_name="usbflash1:.",timeout=30):
     """
 
     try:
-        out = device.api.get_show_output_include(command='show running-config | include platform usb disable',\
-                                                        filter='platform usb disable')
-        if not out[0]: # if we got False
+        out = device.api.get_show_output_include(command='show running-config', filter='platform usb disable')
+        if out[0]: # if we get True
             device.api.enable_usb_ssd()
             time.sleep(timeout)
         output = device.parse("show version")

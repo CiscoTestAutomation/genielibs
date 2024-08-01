@@ -124,3 +124,35 @@ def configure_ipv6_local_pool(device, name, pool_prefix, prefix_length):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not configure ipv6 local pool on {device}. Error:\n{e}")
+
+def configure_ipv6_nd_cache_expire(device, timeout):
+    """ Configure ipv6 nd cache expire timeout
+        Args:
+            device (`obj`): Device object
+            timeout ('int') : time need to set to expire cache        
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f'ipv6 nd cache expire {timeout}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure ipv6 nd cache expire timeout on {device}. Error:\n{e}")
+
+def unconfigure_ipv6_nd_cache_expire(device):
+    """ Unconfigure ipv6 nd cache expire
+        Args:
+            device (`obj`): Device object       
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure('no ipv6 nd cache expire')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure ipv6 nd cache expire on {device}. Error:\n{e}")

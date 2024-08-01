@@ -858,3 +858,21 @@ def unconfigure_spanning_tree_portfast_on_interface(device, interface, option=No
         )
 
 
+def configure_default_spanning_tree_vlan(device, vlan_range, option_type=None):
+    """ Configure default spanning-tree vlan {vlan_range}
+        Args:
+            device ('obj'): Device object]
+            vlan_range ('str'): vlan range, example: 1,3-5,7,9-11
+            option_type ('str'): optional attribute, example: 'forward-time', 'hello-time', 'max-age'. Default is None
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = f"default spanning-tree vlan {vlan_range}{f' {option_type}' if option_type else ''}" 
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure spanning-tree mode mst on device. Error:\n{e}")

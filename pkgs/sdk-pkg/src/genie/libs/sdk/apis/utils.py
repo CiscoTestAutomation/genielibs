@@ -25,6 +25,8 @@ from ipaddress import IPv4Interface
 from urllib.parse import urlparse
 from functools import wraps
 
+
+
 # pyATS
 from pyats.easypy import runtime
 from pyats.utils.email import EmailMsg
@@ -44,6 +46,8 @@ from genie.utils.timeout import Timeout
 from genie.conf.base import Device
 from genie.utils import Dq
 from genie.libs.sdk.libs.utils.normalize import merge_dict
+from genie.libs.sdk.libs.utils.utils import connect_to_device, get_terminal_server, get_lines, ensure_connection, get_speed, \
+                                            device_connection_provider_connect
 from genie.libs.sdk.powercycler import powercyclers
 from genie.libs.sdk.powercycler.base import PowerCycler
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
@@ -54,9 +58,9 @@ from unicon.eal.dialogs import Dialog, Statement
 from unicon.core.errors import ConnectionError
 from unicon.plugins.generic.statements import default_statement_list
 from unicon import Connection
+from unicon.core.errors import SubCommandFailure
 
 log = logging.getLogger(__name__)
-
 
 def _cli(device, cmd, timeout, prompt):
     """ Send command to device and get the output
@@ -4401,7 +4405,7 @@ def device_recovery_boot(device, console_activity_pattern=None, console_breakboo
     if golden_image:
         log.info(banner("Booting device '{}' with the Golden images".\
                         format(device.name)))
-        log.info("Golden image information found:\n{}".format(golden_image))
+        log.info("Golden image information found:\n{}".format(golden_image or recovery_info.get('golden_image')))
 
     elif tftp_boot:
         # set ether_port to default value 0
@@ -4489,3 +4493,101 @@ def check_and_wait(expect, max_time, poll_time, call_on_fail_func=None, **call_o
             return result
         return inner_func
     return decorator
+
+
+def configure_management_console(device):
+    ''' Configure and verify serial console speed on device and terminal server peripheral
+    Args:
+        device('obj'): device object
+    '''
+    SPEEDS = [9600, 115200, 19200]
+    connected = False
+    terminal_servers = get_terminal_server(device)
+    try:
+        log.info(f'Connecting to device {device.name}')
+        device.connect(connection_timeout=30, settings=dict(GRACEFUL_DISCONNECT_WAIT_SEC=0, POST_DISCONNECT_WAIT_SEC=0))
+        connected = True
+    except Exception:
+        log.info(f'Could not connect to device {device}, updating the line speed and trying again.')
+        for speed in SPEEDS:
+            for terminal_server, terminal_server_lines in terminal_servers.items():
+                if terminal_server in device.testbed.devices and not device.testbed.devices[terminal_server].is_connected():
+                    log.info(f'Connecting to terminal server {terminal_server} to configure line speed')
+                    device.testbed.devices[terminal_server].connect()
+                elif terminal_server not in device.testbed.devices:
+                    continue
+                lines = get_lines(terminal_server_lines)
+                for line in lines:
+                    log.debug(f'Configure speed {speed} for line {line}')
+                    device.api.configure_terminal_line_speed(device.testbed.devices[terminal_server], line, speed)
+            if connect_to_device(device):
+                connected = True
+                break
+    if connected:
+        try:
+            out = device.parse('show terminal')
+        except SchemaEmptyParserError as e:
+            log.error(e)
+            out = {}
+        device_speed = out.get('baud_rate', {}).get('tx')
+        testbed_speed = get_speed(terminal_servers)
+        if device_speed and testbed_speed and device_speed != testbed_speed:
+            device.switchto('config')
+            device.execute('line 0')
+            device.sendline(f'speed {testbed_speed}')
+            for terminal_server, terminal_server_lines in terminal_servers.items():
+                lines = get_lines(terminal_server_lines)
+                if terminal_server in device.testbed.devices and not device.testbed.devices[terminal_server].is_connected():
+                    log.info(f'Connecting to terminal server {terminal_server} to configure line speed')
+                    device.testbed.devices[terminal_server].connect()
+                elif terminal_server not in device.testbed.devices:
+                    continue
+                for line in lines:
+                    log.debug(f'Configure speed {testbed_speed} for line {line}')
+                    device.api.configure_terminal_line_speed(device.testbed.devices[terminal_server], line, testbed_speed)
+            device_connection_provider_connect(device)
+            if device.state_machine.current_state != 'enable':
+                log.exception(f'Could not configure speed on device {device.name}')
+            else:
+                log.info(f'Successfully connected to device after configuring defined speed {testbed_speed}')
+    for terminal_server in terminal_servers:
+        if terminal_server in device.testbed.devices and device.testbed.devices[terminal_server].is_connected():
+            device.testbed.devices[terminal_server].disconnect()
+
+
+def configure_terminal_line_speed(device, terminal_line, speed):
+    ''' Configure terminal line speed
+    Args:
+        device: device object
+        terminal_line(int): line number
+        speed(int): speed to configure
+    '''
+    cmd = []
+    cmd.append(f'line {terminal_line}')
+    cmd.append(f'speed {speed}')
+    log.info(f'Configuring speed {speed} on line {terminal_line}')
+    try:
+       device.configure(cmd)
+    except SubCommandFailure as e:
+        log.exception(f"Failed to configure speed {speed} for line {terminal_line} for device {device}")
+   
+def configure_peripheral_terminal_server(device):
+    ''' configure terminal server lines for peripherals 
+    Args:
+        device: device object
+    '''
+    if hasattr(device, 'peripherals') and 'terminal_server' in device.peripherals:
+        for terminal_server, terminal_server_lines in device.peripherals['terminal_server'].items():
+            if isinstance(terminal_server_lines, list) and terminal_server in device.testbed.devices:
+                with ensure_connection(device.testbed.devices[terminal_server]):
+                    for line in terminal_server_lines:
+                        if isinstance(line, dict) and line.get('speed') and line.get('line'):
+                            configure_terminal_line_speed(device.testbed.devices[terminal_server], line['line'], line['speed'])
+                        else:
+                            log.error('the value for line or speed is not provided!')
+            else:
+                log.error(f'Terminal server {terminal_server} is not in the testbed or the line is not a list')
+    else:
+        log.error(f'Device {device} has no peripherals or terminal_server!')
+                        
+

@@ -2091,3 +2091,31 @@ def configure_mpls_ldp_sync_under_ospf(device, process_id, router_id):
         raise SubCommandFailure(
             f'Failed to Configure router ospf mpls on {device.name}\n{e}'
         )
+
+def config_qinq_encapsulation_on_interface(device, vlan, second_vlan, interface):
+    """ Configure dot1q encapsulation on Interface with double tagging
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface on which the edge trunk config to be applied
+            vlan  (`str`): Vlan to be configured with encapsulation
+            second_vlan (`str`): Second Vlan to be configured with encapsulation
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure(
+            [
+               f"interface {interface}",
+               f"encapsulation dot1q {vlan} second-dot1q {second_vlan}"
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Couldn't configure qinq encapsulation on interface {interface}. "
+            "Error:\n{error}".format(interface=interface, error=e)
+        ) 
