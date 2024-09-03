@@ -7,11 +7,16 @@ from genie.libs.ops.utils.common import convert_to_bool, \
                                         convert_to_seconds, \
                                         convert_to_lower, \
                                         slot_num
-# Genie Parsers
-from genie.libs.parser.iosxe.show_platform import Dir
-from genie.libs.parser.iosxe.cat9k.c9500 import show_platform
-from genie.libs.parser.iosxe.cat9k.c9500.show_issu import ShowIssuStateDetail,\
-                                                    ShowIssuRollbackTimer
+                                                    
+# commands
+show_version = 'show version'
+show_platform = 'show platform'
+show_inventory = 'show inventory'
+show_redundancy = 'show redundancy'
+show_issu_state_detail = 'show issu state detail'
+show_rollback_timer = 'show issu rollback-timer'
+dir = 'dir'
+
 
 
 class Platform(SuperPlatform):
@@ -50,36 +55,37 @@ class Platform(SuperPlatform):
         # Global callable
         self.callables = {'slot_num': slot_num}
 
+
         # Place holder to make it more readable
         src_ver = '[version]'
 
         # === DeviceAttributes ===
         # chassis
-        self.add_leaf(cmd=show_platform.ShowVersion,
+        self.add_leaf(cmd=show_version,
                       src=src_ver + '[chassis]',
                       dest='chassis')
 
-        self.add_leaf(cmd=show_platform.ShowVersion,
+        self.add_leaf(cmd=show_version,
                       src=src_ver + '[system_sn]',
                       dest='chassis_sn')
 
         # rtr_type
-        self.add_leaf(cmd=show_platform.ShowVersion,
+        self.add_leaf(cmd=show_version,
                       src=src_ver + '[chassis]',
                       dest='rtr_type')
 
         # os
-        self.add_leaf(cmd=show_platform.ShowVersion,
+        self.add_leaf(cmd=show_version,
                       src=src_ver + '[os]',
                       dest='os')
 
         # version
-        self.add_leaf(cmd=show_platform.ShowVersion,
+        self.add_leaf(cmd=show_version,
                       src=src_ver + '[version]',
                       dest='version')
 
         # image
-        self.add_leaf(cmd=show_platform.ShowVersion,
+        self.add_leaf(cmd=show_version,
                       src=src_ver + '[system_image]',
                       dest='image')
 
@@ -93,43 +99,43 @@ class Platform(SuperPlatform):
         # N/A
 
         # config_register
-        self.add_leaf(cmd=show_platform.ShowVersion,
+        self.add_leaf(cmd=show_version,
                       src=src_ver + '[curr_config_register]',
                       dest='config_register')
 
         # main_mem
-        self.add_leaf(cmd=show_platform.ShowVersion,
+        self.add_leaf(cmd=show_version,
                       src=src_ver + '[main_mem]',
                       dest='main_mem')
 
         # dir
-        self.add_leaf(cmd=Dir,
+        self.add_leaf(cmd=dir,
                       src='[dir][dir]',
                       dest='dir')
 
         # redundancy_mode
-        self.add_leaf(cmd=show_platform.ShowRedundancy,
+        self.add_leaf(cmd=show_redundancy,
                       src='[red_sys_info][oper_red_mode]',
                       dest='redundancy_mode')
 
         # switchover_reason
-        self.add_leaf(cmd=show_platform.ShowRedundancy,
+        self.add_leaf(cmd=show_redundancy,
                       src='[red_sys_info][last_switchover_reason]',
                       dest='switchover_reason')
 
         # redundancy_communication
-        self.add_leaf(cmd=show_platform.ShowRedundancy,
+        self.add_leaf(cmd=show_redundancy,
                       src='[red_sys_info][communications]',
                       dest='redundancy_communication',
                       action=convert_to_bool)
 
         # issu_rollback_timer_state
-        self.add_leaf(cmd=ShowIssuRollbackTimer,
+        self.add_leaf(cmd=show_rollback_timer,
                       src='[rollback_timer_state]',
                       dest='issu_rollback_timer_state')
 
         # issu_rollback_timer_reason
-        self.add_leaf(cmd=ShowIssuRollbackTimer,
+        self.add_leaf(cmd=show_rollback_timer,
                       src='[rollback_timer_reason]',
                       dest='issu_rollback_timer_reason')
 
@@ -183,28 +189,28 @@ class Platform(SuperPlatform):
         #  subslot
         keys = ['name', 'state', 'insert_time', 'slot', 'cpld_ver', 'fw_ver', 'subslot']
         for key in keys:
-            self.add_leaf(cmd=show_platform.ShowPlatform,
+            self.add_leaf(cmd=show_platform,
                           src='[slot][(?P<slot>.*)][{key}]'.format(key=key),
                           dest='[slot][(?P<slot>.*)][{key}]'.format(key=key))
 
         # rp_redundancy_state
-        self.add_leaf(cmd=show_platform.ShowRedundancy,
+        self.add_leaf(cmd=show_redundancy,
                       src='[slot][(?P<slot>{slot_num})][curr_sw_state]',
                       dest='red[(?P<slot>{slot_num})][redundancy_state]',
                       action=convert_to_lower)
 
         # rp_uptime
-        self.add_leaf(cmd=show_platform.ShowRedundancy,
+        self.add_leaf(cmd=show_redundancy,
                       src='[slot][(?P<slot>{slot_num})][uptime_in_curr_state]',
                       dest='red[(?P<slot>{slot_num})][uptime]')
 
         # rp_system_image
-        self.add_leaf(cmd=show_platform.ShowRedundancy,
+        self.add_leaf(cmd=show_redundancy,
                       src='[slot][(?P<slot>{slot_num})][image_ver]',
                       dest='red[(?P<slot>{slot_num})][system_image]')
 
         # rp_boot_image
-        self.add_leaf(cmd=show_platform.ShowRedundancy,
+        self.add_leaf(cmd=show_redundancy,
                       src='[slot][(?P<slot>{slot_num})][boot]',
                       dest='red[(?P<slot>{slot_num})][boot_image]')
 
@@ -212,7 +218,7 @@ class Platform(SuperPlatform):
         # N/A
 
         # rp_config_register
-        self.add_leaf(cmd=show_platform.ShowRedundancy,
+        self.add_leaf(cmd=show_redundancy,
                       src='[slot][(?P<slot>{slot_num})][config_register]',
                       dest='red[(?P<slot>{slot_num})][config_register]')
 
@@ -223,7 +229,7 @@ class Platform(SuperPlatform):
         #  sn
         keys = ['name', 'descr', 'pid', 'vid', 'sn']
         for key in keys:
-            self.add_leaf(cmd=show_platform.ShowInventory,
+            self.add_leaf(cmd=show_inventory,
                           src='[index][(?P<index>.*)][{key}]'.format(key=key),
                           dest='[slot][(?P<index>.*)][{key}]'.format(key=key))
 
@@ -233,7 +239,7 @@ class Platform(SuperPlatform):
         #   last_operation
         for src_key in ['issu_in_progress', 'last_operation']:
             dest_key = src_key if src_key != 'issu_in_progress' else 'in_progress'
-            self.add_leaf(cmd=ShowIssuStateDetail,
+            self.add_leaf(cmd=show_issu_state_detail,
                       src='[slot][(?P<slot>.*)][{key}]'.format(key=src_key),
                       dest='[slot][(?P<slot>.*)][issu][{key}]'.format(key=dest_key))
 
@@ -284,25 +290,28 @@ class Platform(SuperPlatform):
                                     del new_dict['rp'][str(slot)]['subslot'][subslot]['subslot']
                 elif 'Supervisor' in ret_key:
                     res = supervisor_match.match(ret_key)
-                    supervisor_slot = res.groupdict()['supervisor_slot']
-                    for key in self.slot[slot]:
-                        if key in ['descr', 'pid', 'vid', 'cpld_ver', 'fw_ver', 'insert_time', 'slot']:
-                            continue
-                        new_dict.setdefault('rp', {}).setdefault(supervisor_slot, {}).setdefault(key, self.slot[slot][key])
+                    if res:
+                        supervisor_slot = res.groupdict()['supervisor_slot']
+                        for key in self.slot[slot]:
+                            if key in ['descr', 'pid', 'vid', 'cpld_ver', 'fw_ver', 'insert_time', 'slot']:
+                                continue
+                            new_dict.setdefault('rp', {}).setdefault(supervisor_slot, {}).setdefault(key, self.slot[slot][key])
                 elif 'Power' in ret_key:
                     res = power_match.match(ret_key)
-                    power_slot = 'P{}'.format(res.groupdict()['slot'])
-                    for key in self.slot[slot]:
-                        if key in ['descr', 'pid', 'vid', 'cpld_ver', 'fw_ver', 'insert_time', 'slot']:
-                            continue
-                        new_dict.setdefault('oc', {}).setdefault(power_slot, {}).setdefault(key, self.slot[slot][key])
+                    if res:
+                        power_slot = 'P{}'.format(res.groupdict()['slot'])
+                        for key in self.slot[slot]:
+                            if key in ['descr', 'pid', 'vid', 'cpld_ver', 'fw_ver', 'insert_time', 'slot']:
+                                continue
+                            new_dict.setdefault('oc', {}).setdefault(power_slot, {}).setdefault(key, self.slot[slot][key])
                 elif('HundredGigE' in ret_key) or ('FortyGigabitEthernet' in ret_key):
                     res = interface_match.match(ret_key)
-                    for key in self.slot[slot]:
-                        if key in ['descr', 'pid', 'vid']:
-                            continue
-                        new_dict.setdefault('rp', {}).setdefault(res.groupdict()['slot'], {}).\
-                            setdefault('subslot', {}).setdefault(res.groupdict()['subslot'], {}).setdefault(key, self.slot[slot][key])
+                    if res:
+                        for key in self.slot[slot]:
+                            if key in ['descr', 'pid', 'vid']:
+                                continue
+                            new_dict.setdefault('rp', {}).setdefault(res.groupdict()['slot'], {}).\
+                                setdefault('subslot', {}).setdefault(res.groupdict()['subslot'], {}).setdefault(key, self.slot[slot][key])
                 else:
                     res = fan_match.match(ret_key)
                     if res:
@@ -317,7 +326,7 @@ class Platform(SuperPlatform):
         # Assign redundancy to the corresponding rp slot
         if hasattr(self, 'red'):
             for red in self.red:
-                if red in self.slot['rp'].keys():
+                if red in self.slot.get('rp', {}).keys():
                     for key in self.red[red]:
                         self.slot['rp'][red][key] = self.red[red][key]
 

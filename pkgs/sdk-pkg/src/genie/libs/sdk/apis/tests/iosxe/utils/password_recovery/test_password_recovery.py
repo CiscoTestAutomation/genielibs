@@ -1,9 +1,6 @@
 import unittest
 from unittest.mock import MagicMock, patch
-from genie.libs.sdk.apis.iosxe.cat9k.utils import (
-    password_recovery,
-)
-
+from genie.libs.sdk.apis.iosxe.utils import password_recovery
 
 class TestPasswordRecovery(unittest.TestCase):
 

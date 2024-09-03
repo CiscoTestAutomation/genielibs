@@ -5,21 +5,22 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-  prompt: T1-9300-SP1(config)#
+  prompt: 9407R-dut1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: T1-9300-SP1(config-line)#
+  prompt: 9407R-dut1(config-line)#
 connect:
   commands:
-    '':
-      new_state: execute
-  preface: |-
-    Trying mock_device ...
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
     Connected to mock_device.
-    Escape character is '^]'.
+
+    Escape character is ''^]''.'
   prompt: ''
 execute:
   commands:
@@ -27,8 +28,18 @@ execute:
       new_state: configure
     config-transaction:
       new_state: configure
+    show app-hosting infra:
+      response:
+      - "IOX version: 2.11.0.5\r\nApp signature verification: enabled\r\nCAF Health:\
+        \ Stable\r\nInternal working directory: /flash1/iox_alt_hdd_mount_dir/iox\r\
+        \n\r\nApplication Interface Mapping\r\nAppGigabitEthernet Port #  Interface\
+        \ Name                 Port Type            Bandwidth  \r\n           1  \
+        \             AppGigabitEthernet3/0/1        KR Port - Internal   1G\r\n \
+        \       \r\n\r\nCPU:\r\n  Quota: 25(Percentage) \r\n  Available: 25(Percentage)\r\
+        \n  Quota: 7850(Units)\r\n  Available: 7850(Units)"
+      response_type: circular
     show version: ''
+    show version | include operating mode: ''
     term length 0: ''
     term width 0: ''
-    show version | include operating mode: ''
-  prompt: T1-9300-SP1#
+  prompt: 9407R-dut1#

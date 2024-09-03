@@ -3,6 +3,7 @@ import json
 import time
 import logging
 from datetime import datetime
+from threading import Thread
 
 # from pyats
 from pyats.easypy import runtime
@@ -22,7 +23,7 @@ from .actions_helper import (configure_handler, api_handler, learn_handler,
                              parse_handler, execute_handler, _get_exclude,
                              _condition_validator, rest_handler,
                              bash_console_handler, dialog_handler,
-                             yang_handler, check_yang_subscribe)
+                             yang_handler,)
 from .yang_snapshot import YangSnapshot
 
 # skip in case pyats.contrib is not installed
@@ -304,10 +305,52 @@ def configure(self,
                        'expected_failure': expected_failure})
 
         output = configure_handler(**kwargs)
-        check_yang_subscribe(device, step)
 
     return output
 
+# saved ON_CHANGE subscriptions waiting for change to happen
+active_subscriptions = {}
+
+@add_result_as_extra
+def check_yang_subscribe(self,
+                         steps,
+                         device,
+                         **kwargs):
+    """Look for subscribe, wait for subscribe thread to stop, return result."""
+
+    subscribe_thread = None
+    hostname = None
+    del_from_active = False
+    if hasattr(device, 'name'):
+        hostname = device.name
+    elif hasattr(device, 'device') and hasattr(device.device, 'name'):
+        hostname = device.device.name
+    if hostname is None:
+        # how did we get this far?
+        log.error('YANG Subscribe check, cannot find hostname')
+        return
+
+    if hostname in active_subscriptions:
+        log.info(f"Request being sent:\n{active_subscriptions[hostname].request}")
+        del_from_active = True
+        # ON_CHANGE thread waiting for change
+        subscribe_thread = active_subscriptions[hostname]
+        if subscribe_thread.stopped():
+            log.info('ON_CHANGE subscribe terminated...')
+            subscribe_thread.stop()
+            del active_subscriptions[hostname]
+            return
+
+    if subscribe_thread is not None:
+        # Wait for subscribe thread to finish and return result.
+        while not subscribe_thread.stopped():
+            log.info('Waiting for notification...')
+            time.sleep(1)
+        # set subscribe result
+        if not subscribe_thread.result:
+            steps.failed('subscription failed')
+        if del_from_active:
+            del active_subscriptions[hostname]
 
 @add_result_as_extra
 def configure_dual(self,
@@ -740,6 +783,17 @@ def yang(self,
     if returns is None:
         returns = {}
 
+    # hostname check
+    hostname = None
+    if hasattr(device, 'name'):
+        hostname = device.name
+    elif hasattr(device, 'device') and hasattr(device.device, 'name'):
+        hostname = device.device.name
+    if hostname is None:
+        # how did we get this far?
+        log.error('YANG action cannot find hostname')
+        return
+
     # Valid protocols mapped to their respective run functions
     protocols = {
         'netconf': run_netconf,
@@ -777,7 +831,14 @@ def yang(self,
                 }
 
             result = yang_handler(**handler_kwargs)
-            check_yang_subscribe(device, step, result)
+
+            if isinstance(result, Thread):
+                # If the sub_mode is on_change then the yang result is updated to active subscriptions
+                if result.sub_mode == 'ON_CHANGE':
+                    log.warning(f'Updating active subscriptions for the device {hostname}')
+                    active_subscriptions[hostname] = result
+                    log.info(f"Waiting notifications for request sent:\n{active_subscriptions[hostname].request}")
+                    return
     else:
         result = None
 
@@ -1402,4 +1463,5 @@ actions = {
     'bash_console': bash_console,
     'yang_snapshot': yang_snapshot,
     'yang_snapshot_restore': yang_snapshot_restore,
+    'check_yang_subscribe': check_yang_subscribe,
 }

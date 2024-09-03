@@ -185,6 +185,21 @@ class SaveRunningConfig(unittest.TestCase):
 
         # Check the overall result is as expected
         self.assertEqual(Failed, steps.details[0].result)
+    
+    def test_skipped(self):
+        # Make sure we have a unique Steps() object for result verification
+        steps = Steps()
+
+        # And we want the execute_copy_run_to_start api to be mocked.
+        # This simulates the pass case.
+        self.device.api.execute_copy_run_to_start = Mock()
+
+        # Call the method to be tested (clean step inside class)
+        self.cls.save_running_config(
+            steps=steps, device=self.device, skip_save_running_config=True
+        )
+        # Check that the result is expected
+        self.assertEqual(Skipped, steps.details[0].result)
 
 
 class VerifyBootVariable(unittest.TestCase):

@@ -130,6 +130,44 @@ class ConfirmAndSetDefault(unittest.TestCase):
         # Check that the result is expected
         self.assertEqual(Passed, steps.details[0].result)
 
+    def test_pass_mode_disable(self):
+        # Make sure we have a unique Steps() object for result verification
+        steps = Steps()
+        data = '''
+        A summary of U.S. laws governing Cisco cryptographic products may be found at:
+        http://www.cisco.com/wwl/export/crypto/tool/stqrg.html
+
+        If you require further assistance please contact us by sending email to
+        export@cisco.com.
+
+        License Mode: Controller-Managed
+
+        Smart Licensing Status: Registration Not Applicable/Not Applicable
+
+        cisco ASR1001-X (1NG) processor (revision 1NG) with 3746359K/6147K bytes of memory.
+        Processor board ID FXS2412Q36T
+        Router operating mode: Autonomous
+        6 Gigabit Ethernet interfaces
+        2 Ten Gigabit Ethernet interfaces
+        32768K bytes of non-volatile configuration memory.
+        8388608K bytes of physical memory.
+        6070271K bytes of eUSB flash at bootflash:.
+
+        Configuration register is 0x2102
+        '''
+
+        # And we want the following methods to be mocked.
+        # This simulates the pass case.
+        self.device.connect = Mock(return_value=data)
+
+        # Call the method to be tested (clean step inside class)
+        self.cls.confirm_and_set_default(
+            steps=steps, device=self.device, mode='disable'
+        )
+
+        # Check that the result is expected
+        self.assertEqual(Passed, steps.details[0].result)
+        
 
     def test_fail_inactive_version(self):
         # Make sure we have a unique Steps() object for result verification

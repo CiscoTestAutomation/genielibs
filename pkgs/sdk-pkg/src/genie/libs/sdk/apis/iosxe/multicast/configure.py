@@ -2056,3 +2056,49 @@ def unconfig_ip_multicast_routing_vrf_distributed(device, vrf_name):
         raise SubCommandFailure(
             "Unconfigure ip multicast-routing vrf distributed Error {e}".format(e=e)
         )
+
+def configure_ip_msdp_vrf_peer(device, peer, vrf, intf=None):
+    
+    """ Configures ip msdp vrf <> peer
+        Args:
+            device ('obj')    : device to use
+            peer ('str')  : name or ip address of the peer
+            vrf ('vrf')  : name of the vrf
+            intf ('str', optional) : configires connect-source if defined. Default is None
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = f'ip msdp vrf {vrf} peer {peer}'
+    if intf:
+        cmd += f' connect-source {intf}'
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configures ip msdp vrf peer. Error: {e}')
+
+def unconfigure_ip_msdp_vrf_peer(device, peer, vrf, intf=None):
+    
+    """ Unconfigures ip msdp vrf <> peer
+        Args:
+            device ('obj')    : device to use
+            peer ('str')  : name or ip address of the peer
+            vrf ('vrf')  : name of the vrf
+            intf ('str', optional) : configires connect-source if defined. Default is None
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = f'no ip msdp vrf {vrf} peer {peer}'
+    if intf:
+        cmd += f' connect-source {intf}'
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not unconfigures ip msdp vrf peer. Error: {e}')

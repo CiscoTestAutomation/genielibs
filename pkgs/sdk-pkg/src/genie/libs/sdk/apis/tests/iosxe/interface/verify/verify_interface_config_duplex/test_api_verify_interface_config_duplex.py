@@ -10,7 +10,7 @@ class TestVerifyInterfaceConfigDuplex(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          1783-CMS20DN:
+          1783-HMS4EG8CGR:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,11 +18,11 @@ class TestVerifyInterfaceConfigDuplex(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: s5k
-            type: switch
+            platform: ie3300
+            type: iosxe
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['1783-CMS20DN']
+        self.device = self.testbed.devices['1783-HMS4EG8CGR']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,6 @@ class TestVerifyInterfaceConfigDuplex(unittest.TestCase):
         )
 
     def test_verify_interface_config_duplex(self):
-        result = verify_interface_config_duplex(self.device, 'GigabitEthernet1/2', 'auto', 30, 10, True)
-        expected_output = True
+        result = verify_interface_config_duplex(self.device, 'GigabitEthernet1/6', 'full', 60, 10, True)
+        expected_output = False
         self.assertEqual(result, expected_output)

@@ -324,10 +324,10 @@ def unconfigure_app_hosting_appid(device, appid=''):
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not unconfigure app-hosting appid. Error: {e}')
 
-def confirm_iox_enabled_requested_storage_media(uut, storage='ssd'):
+def confirm_iox_enabled_requested_storage_media(device, storage='ssd'):
     """Confirm iox enabled requested storage media
     Args:
-        uut('obj'): Device object
+        device('obj'): Device object
     Returns:
         None
     Raises:
@@ -339,25 +339,30 @@ def confirm_iox_enabled_requested_storage_media(uut, storage='ssd'):
     log.debug(local_args)
     log.debug("Called by function name " + inspect.currentframe().f_back.f_code.co_name)
 
-    other_storage = ""
-
-    if storage == "ssd":
-        req_storage_string = "/vol/usb1"
-        other_storage = "/mnt/sd3"
-
-    elif storage == "alt_hdd":
-        req_storage_string = "/mnt/sd3"
-        other_storage = "/vol/usb1"
-    else:
+    if storage not in ["ssd", "alt_hdd"]:
         log.error("Passed in value of storage not supported!")
         return False
-
+    storage_map = {
+        "ssd": {
+            "req_storage_string": "/vol/usb1",
+            "mod_storage_string": "/flash1/",
+            "sso_storage_string": "/vol/disk0",
+            "other_storage": "/mnt/sd3"
+        },
+        "alt_hdd": {
+            "req_storage_string": "/mnt/sd3",
+            "mod_storage_string": "/flash1/",
+            "sso_storage_string": "/vol/disk0",
+            "other_storage": "/vol/usb1"
+        }
+    }
+    
+    storage_strings = storage_map[storage]
     result = False
-
     output = []
     for attempt in range(1, 10):
         try:
-            output = uut.parse('show app-hosting infra')
+            output = device.parse('show app-hosting infra')
             log.debug(output)
             break
         except Exception as e:
@@ -373,15 +378,15 @@ def confirm_iox_enabled_requested_storage_media(uut, storage='ssd'):
         return False
     internal_storage = output['internal_working_directory']
 
-    if req_storage_string in internal_storage:
-        log.info('IOX brought up on Requested Storage %s \n with location %s successfully!' % (storage, req_storage_string))
-        return True
-    elif other_storage in internal_storage:
-        log.error('IOX brought up on the other Storage Media Instead! - Error!')
-        return False
-    else:
-        log.error('IOX not brought up properly! - Error!')
-        return False
+    for key, storage_string in storage_strings.items():
+        if storage_string in internal_storage:
+            if key == "other_storage":
+                log.error('IOX brought up on the other Storage Media Instead! - Error!')
+                return False
+            log.info(f'IOX brought up on Requested Storage {storage} \n with location {storage_string} successfully!')
+            return True
+    log.error('IOX not brought up properly! - Error!')
+    return False
 
 def enable_usb_ssd_verify_exists(device, storage_name="usbflash1:.",timeout=30):
     """ configure app-hosting appid
@@ -424,7 +429,7 @@ def configure_app_management_networking(device, app_name="guestshell", auto_star
             app_name('str'): WORD  no description
             auto_start('str'): Application start
         Returns:
-            None
+            True/False
         Raises:
             SubCommandFailure
     '''
@@ -437,5 +442,7 @@ def configure_app_management_networking(device, app_name="guestshell", auto_star
 
     try:
         device.configure(config)
+        return True 
     except SubCommandFailure as e:
-        raise SubCommandFailure(f"Could not configure app_management networking. Error:\n{e}")
+        log.error(f"Couldn't configure app management networking. Error:\n{e}")
+        return False 

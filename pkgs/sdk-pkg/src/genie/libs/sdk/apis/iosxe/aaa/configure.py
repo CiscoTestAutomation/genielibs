@@ -2928,3 +2928,144 @@ def configure_aaa_authorization_network_default_group(device, group_name):
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"failed to configure aaa authorization network default group {group_name}")
+
+def configure_radius_attribute_policy_name_globally(device, word, request):
+    """configure radius attribute policy-name globally {word, request}
+       example:
+        radius-server attribute policy-name Global_ACCESS_REQUEST_ISE_ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 include-in-access-req
+        radius-server attribute policy-name Global_ACCOUNT_REQUEST_ISE_ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 include-in-accounting-req
+    Args:
+        device ('obj'): Device object
+        word ('str'):  String to be configured.
+        request ('str'):  Values can be 'access' or 'accounting'
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring radius attribute attribute policy-name globally
+    """
+    cmd = f"radius-server attribute policy-name {word} include-in-{request}-req"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Failed configuring radius attribute attribute policy-name globally {word}. Error:\n{e}')
+    
+
+def unconfigure_radius_attribute_policy_name_globally(device, word, request):
+    """unconfigure radius attribute policy-name globally {word, request}
+       example:
+        no radius-server attribute policy-name Global_ACCESS_REQUEST_ISE_ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 include-in-access-req
+        no radius-server attribute policy-name Global_ACCOUNT_REQUEST_ISE_ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 include-in-accounting-req
+    Args:
+        device ('obj'): Device object
+        word ('str'):  String to be configured.
+        request ('str'):  Values can be 'access' or 'accounting'
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed unconfiguring radius attribute attribute policy-name globally
+    """
+    cmd = f"no radius-server attribute policy-name {word} include-in-{request}-req"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Failed unconfiguring radius attribute attribute policy-name globally {word}. Error:\n{e}')
+    
+
+def configure_radius_attribute_policy_name_under_server(device, server_name, word, request):
+    """configure radius attribute policy-name under radius server {server_name, word, request}
+       example:
+        !
+        radius server ISE
+        attribute policy-name RADSER_ACCESS_REQUEST_ISE2_ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 include-in-access-req
+        attribute policy-name RADSER_ACCOUN_REQUEST_ISE2_ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 include-in-accounting-req
+        !
+
+    Args:
+        device ('obj'): Device object
+        server_name ('str'): Radius server name
+        word ('str'):  String to be configured.
+        request ('str'):  Values can be 'access' or 'accounting'
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring radius attribute policy-name under radius server
+    """
+    cmd = [f'radius server {server_name}', f"attribute policy-name {word} include-in-{request}-req"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Failed configuring radius attribute policy-name under radius server {word}. Error:\n{e}')
+    
+def unconfigure_radius_attribute_policy_name_under_server(device, server_name, word, request):
+    """unconfigure radius attribute policy-name under radius server {server_name, word, request}
+       example:
+        !
+        radius server ISE
+        no attribute policy-name RADSER_ACCESS_REQUEST_ISE2_ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 include-in-access-req
+        no attribute policy-name RADSER_ACCOUN_REQUEST_ISE2_ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 include-in-accounting-req
+        !
+
+    Args:
+        device ('obj'): Device object
+        server_name ('str'): Radius server name
+        word ('str'):  String to be configured.
+        request ('str'):  Values can be 'access' or 'accounting'
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed unconfiguring radius attribute policy-name under radius server
+    """
+    
+    cmd = [f'radius server {server_name}', f'no attribute policy-name {word} include-in-{request}-req']
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Failed unconfiguring radius attribute policy-name under radius server {word}. Error:\n{e}')
+    
+def configure_radius_attribute_policy_name_under_servergroup(device, server_group, word, request):
+    """configure radius attribute policy-name under radius server group {server_group, word, request}
+       example:
+        !
+        aaa group server radius ISEGRP
+        attribute policy-name RADSER_ACCESS_REQUEST_ISE2_ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 include-in-access-req
+        attribute policy-name RADSER_ACCOUN_REQUEST_ISE2_ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 include-in-accounting-req
+        !
+    Args:
+        device ('obj'): Device object
+        server_group ('str'): Radius server group name
+        word ('str'):  String to be configured.
+        request ('str'):  Values can be 'access' or 'accounting'
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring radius attribute policy-name under radius server group
+    """
+    cmd = [f'aaa group server radius {server_group}', f'attribute policy-name {word} include-in-{request}-req']
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Failed configuring radius attribute policy-name under radius server group {word}. Error:\n{e}')
+
+def unconfigure_radius_attribute_policy_name_under_servergroup(device, server_group, word, request):
+    """unconfigure radius attribute policy-name under radius server group {server_group, word, request}
+       example:
+        !
+        aaa group server radius ISEGRP
+        no attribute policy-name RADSER_ACCESS_REQUEST_ISE2_ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 include-in-access-req
+        no attribute policy-name RADSER_ACCOUN_REQUEST_ISE2_ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 include-in-accounting-req
+        !
+    Args:
+        device ('obj'): Device object
+        server_group ('str'): Radius server group name
+        word ('str'):  String to be configured.
+        request ('str'):  Values can be 'access' or 'accounting'.
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed unconfiguring radius attribute policy-name under radius server group
+    """
+    cmd = [f'aaa group server radius {server_group}', f'no attribute policy-name {word} include-in-{request}-req']
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Failed unconfiguring radius attribute policy-name under radius server group {word}. Error:\n{e}')

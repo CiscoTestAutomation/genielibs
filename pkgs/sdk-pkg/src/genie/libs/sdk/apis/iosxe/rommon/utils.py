@@ -90,8 +90,8 @@ def device_rommon_boot(device, golden_image=None, tftp_boot=None, error_pattern=
         log.info(f"Successfully boot the device {device.name}")
 
 
-def send_break_boot(device, console_activity_pattern='\[.*Ctrl-C.*\]',
-                    console_breakboot_char='\x03', console_breakboot_telnet_break=None,
+def send_break_boot(device, console_activity_pattern= None,
+                    console_breakboot_char=None, console_breakboot_telnet_break=None,
                     grub_activity_pattern=None, grub_breakboot_char=None,
                     break_count=2, timeout=60):
     """ Connects to the device, waits for the (console or grub) activity pattern and
@@ -100,7 +100,7 @@ def send_break_boot(device, console_activity_pattern='\[.*Ctrl-C.*\]',
         Args:
             device ('obj'): Device object
             console_activity_pattern (str): Pattern to send the break at. Default to match
-                                            this boot statement - Preparing to autoboot. [Press Ctrl-C to interrupt]
+                                            this boot statement: "...."
             console_breakboot_char (str): Character to send when console_activity_pattern is matched. Default to '\x03'.
             console_breakboot_telnet_break (bool): Use telnet `send break` to interrupt device boot. 
             grub_activity_pattern (str): Break pattern on the device for grub boot mode
@@ -113,8 +113,8 @@ def send_break_boot(device, console_activity_pattern='\[.*Ctrl-C.*\]',
             SubCommandFailure
     """
 
-    if console_activity_pattern is None and grub_activity_pattern is None:
-        log.error('console_activity_pattern and grub_activity_pattern are empty, the break boot will not be effective')
+    console_activity_pattern = console_activity_pattern or '\.\.\.\.'
+    console_breakboot_char = console_breakboot_char or '\x03'
     
     def telnet_breakboot(spawn, break_count):
         """ Breaks the booting process on a device using telnet `send break`
@@ -214,20 +214,13 @@ def send_break_boot(device, console_activity_pattern='\[.*Ctrl-C.*\]',
                       loop_continue=True,
                       continue_timer=False))
 
-    # Rommon >
-    connection_dialog.append(
-        Statement(pattern=r'^(.*)((rommon(.*))+>|switch *:).*$',
+    # add the pattern for all the states for the device to connection_dialog
+    for state in device.state_machine.states:
+        connection_dialog.append(
+                Statement(state.pattern,
                   action=print_message,
-                  args={'message': 'Device reached rommon prompt in break boot stage'},
-                  trim_buffer=False))
-
-    # grub>
-    connection_dialog.append(
-        Statement(pattern=r'.*grub *>.*',
-                  action=print_message,
-                  args={'message': 'Device reached grub prompt in break boot stage'},
-                  trim_buffer=False))
-
+                  args={'message': f'Device reached {state} state in break boot stage'},
+                  ))
     # To process the break boot dialogs
     connection_dialog.process(spawn, timeout=timeout)
 
@@ -236,3 +229,5 @@ def send_break_boot(device, console_activity_pattern='\[.*Ctrl-C.*\]',
     device.state_machine.go_to('any', spawn=device.spawn, context=device.default.context)
     if not device.state_machine.current_state == 'rommon':
         log.warning(f"The device {device.name} is not in rommon")
+    # send a new line in order to catch the buffer output in recovery process
+    device.sendline()

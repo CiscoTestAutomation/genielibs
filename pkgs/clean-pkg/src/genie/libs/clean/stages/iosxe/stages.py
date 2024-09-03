@@ -35,6 +35,8 @@ from genie.libs.clean.utils import (
 # Unicon
 from unicon.eal.dialogs import Statement, Dialog
 from unicon.core.errors import SubCommandFailure
+from unicon.plugins.generic.statements import GenericStatements
+from unicon.core.errors import UniconAuthenticationError
 
 # Logger
 log = logging.getLogger(__name__)
@@ -558,6 +560,9 @@ install_image:
 
     save_system_config (bool, optional): Whether or not to save the system
         config if it was modified. Defaults to False.
+    
+    skip_save_running_config (bool, optional): Skip the step to save the the running
+                                        configuration to the startup config.
 
     install_timeout (int, optional): Maximum time in seconds to wait for install
         process to finish. Defaults to 500.
@@ -607,6 +612,7 @@ install_image:
     }
     ISSU = False
     SKIP_BOOT_VARIABLE = False
+    SKIP_SAVE_RUNNING_CONFIG = False
     VERIFY_RUNNING_IMAGE = True
 
     # ============
@@ -620,6 +626,7 @@ install_image:
         Optional('reload_timeout'): int,
         Optional('issu'): bool,
         Optional('skip_boot_variable'): bool,
+        Optional('skip_save_running_config'): bool,
         Optional('verify_running_image', description="Compare the image filename with the running image version on device. If a match is found, the stage will be skipped", default=VERIFY_RUNNING_IMAGE): bool,
         Optional('reload_service_args'): {
             Optional('reload_creds'): str,
@@ -708,8 +715,11 @@ install_image:
                     step.failed("Failed to configure the boot variable",
                                 from_exception=e)
 
-    def save_running_config(self, steps, device):
+    def save_running_config(self, steps, device, skip_save_running_config=SKIP_SAVE_RUNNING_CONFIG):
         with steps.start("Save the running config to the startup config") as step:
+            if skip_save_running_config:
+                step.skipped()
+                return
             try:
                 device.api.execute_copy_run_to_start(
                     max_time=60, check_interval=30)
@@ -1157,14 +1167,15 @@ reload:
                 device.connect()
             except Exception as e:
                 step.failed("Failed to reconnect", from_exception=e)
-            if rommon_to_disable and hasattr(rommon_to_disable, 'command'):
-                if device.is_ha:
-                    index = device.subconnections[0].state_machine.paths.index(rommon_to_disable)
-                    for subcon in device.subconnections:
-                        subcon.state_machine.paths[index].command = original_command
-                else:
-                    index = device.state_machine.paths.index(rommon_to_disable)
-                    device.state_machine.paths[index].command = original_command
+            if hasattr(device, 'platform') and device.platform != 'sdwan':
+                if rommon_to_disable and hasattr(rommon_to_disable, 'command'):
+                    if device.is_ha:
+                        index = device.subconnections[0].state_machine.paths.index(rommon_to_disable)
+                        for subcon in device.subconnections:
+                            subcon.state_machine.paths[index].command = original_command
+                    else:
+                        index = device.state_machine.paths.index(rommon_to_disable)
+                        device.state_machine.paths[index].command = original_command
 
     def check_modules(self, steps, device, check_modules=None):
 
@@ -2230,6 +2241,16 @@ connect:
                         getattr(device, alias).connect()
                     else:
                         device.connect()
+                except UniconAuthenticationError as e:
+                    log.info(f'Could not connect to device because of {e}')
+                    log.info('Starting device password recovery.')
+                    try:
+                        device.api.password_recovery(timeout=timeout)
+                    except Exception as e:
+                        log.error("Password recovery failed", exc_info=True)
+                    else:
+                        step.passed("Successfully connected".format(device.name))
+                        # Don't loop
                 except Exception:
                     log.error("Connection to the device failed", exc_info=True)
                     device.destroy_all()
@@ -2428,8 +2449,12 @@ Example:
             '^vrf definition Mgmt-(intf|vrf)': {},
             '^switch 1 provision': {},
             '^stackwise-virtual': {},
+            '^platform hardware throughput level': {},
+            '^ignition': {},
+            '^canbus baudrate': {},
             '^crypto pki trustpoint': {},
             '^crypto pki certificate chain': {},
+            '^license udi': {},
             '^license boot level': {},
             '^class-map match-any system': {},
             '^policy-map system': {},
@@ -2450,8 +2475,12 @@ Example:
             '^aaa session-id common': {},
             '^username': {},
             '^login on-success log': {},
+            '^interface Async': {},
             '^ip forward-protocol nd': {},
             '^ip ssh bulk-mode': {},
+            '^line con': {
+                '^speed': {}
+            },
             '^line vty': {
                 '^transport input': {}
             },
@@ -2545,6 +2574,7 @@ set_controller_mode:
     RELOAD_TIMEOUT = 600
     DELETE_INACTIVE_VERSIONS = True
 
+
     # ============
     # Stage Schema
     # ============
@@ -2567,8 +2597,7 @@ set_controller_mode:
         steps,
         device,
         mode=MODE,
-        reload_timeout=RELOAD_TIMEOUT,
-    ):
+        reload_timeout=RELOAD_TIMEOUT):
 
         # Check if we're already in the desired mode
         version_data = device.parse("show version")
@@ -2602,6 +2631,7 @@ set_controller_mode:
             # Confirm password:
             #
             # Router# pnpa service discovery stop
+            generic_statments = GenericStatements()
 
             controller_mode_dialog = Dialog([
                 Statement(pattern=r'Continue\? \[confirm\]',
@@ -2629,17 +2659,38 @@ set_controller_mode:
                           loop_continue=True,
                           continue_timer=False),
                 Statement(
+                    pattern=r'Press RETURN to get started.*',
+                    action=f'sendline()',
+                    loop_continue=True,
+                    continue_timer=False),
+                Statement(
                     pattern=
-                    r'Would you like to enter basic management setup\? \[yes/no\]:',
+                    r'(.*?)Would you like to enter the initial configuration dialog\? \[yes/no\]:\s*',
                     action=f'sendline(no)',
                     loop_continue=True,
                     continue_timer=False),
+
+                Statement(
+                    pattern=
+                    r'(.*?)Would you like to enter the initial configuration dialog\? \[yes/no\]:\s*',
+                    action=f'sendline(no)',
+                    loop_continue=True,
+                    continue_timer=False),         
+                
+                
+                generic_statments.syslog_msg_stmt,
+                
+                generic_statments.enable_secret_stmt,
+                
+                generic_statments.enter_your_selection_stmt,
+                
             ])
 
             try:
                 device.execute(f'controller-mode {mode}',
                             timeout=reload_timeout,
-                            reply=controller_mode_dialog)
+                            service_dialog=controller_mode_dialog,
+                            allow_state_change = True)
             except SubCommandFailure:
                 self.skipped("Unable to configure controller-mode. Is it a "
                              "feature of this device?")
@@ -2651,26 +2702,28 @@ set_controller_mode:
             mode=MODE):
 
         with steps.start("upgrade-confirm and set-default") as step:
-
             if device.connected:
                 device.destroy_all()
-            self.output = device.connect()
-
-            parsed_output = device.parse('show sdwan software')
-            active_version = parsed_output.q.contains_key_value(
-                'active', 'true').get_values('version', 0)
-            self.non_active_version = parsed_output.q.contains_key_value(
-                'active', 'false').get_values('version')
-
-            if active_version:
-                commands = [
-                    'request platform software sdwan software upgrade-confirm',
-                    f'request platform software sdwan software set-default {active_version}',
-                    'show sdwan software'
-                ]
-                device.execute(commands)
+            if mode == 'disable':
+                self.output = device.connect(learn_tokens=True, overwrite_testbed_tokens=True)
             else:
-                step.failed('Active version was not confirmed.')
+                self.output = device.connect()
+
+                parsed_output = device.parse('show sdwan software')
+                active_version = parsed_output.q.contains_key_value(
+                    'active', 'true').get_values('version', 0)
+                self.non_active_version = parsed_output.q.contains_key_value(
+                    'active', 'false').get_values('version')
+
+                if active_version:
+                    commands = [
+                        'request platform software sdwan software upgrade-confirm',
+                        f'request platform software sdwan software set-default {active_version}',
+                        'show sdwan software'
+                    ]
+                    device.execute(commands)
+                else:
+                    step.failed('Active version was not confirmed.')
 
         with steps.start("Verify controller mode") as step:
             if 'Controller-Managed' in self.output and mode == 'enable':
@@ -2692,16 +2745,21 @@ set_controller_mode:
             self,
             steps,
             device,
-            delete_inactive_versions=DELETE_INACTIVE_VERSIONS):
+            delete_inactive_versions=DELETE_INACTIVE_VERSIONS,
+            mode=MODE):
 
         with steps.start("deleting non active version") as step:
-
-            if delete_inactive_versions and self.non_active_version:
-                for version in self.non_active_version:
-                    device.execute(
-                        f"request platform software sdwan software remove {version}"
+            
+            if mode == 'disable':
+                step.skipped("Disabling the controller mode skipping the step as not needed. ")
+            
+            else: 
+                if delete_inactive_versions and self.non_active_version:
+                    for version in self.non_active_version:
+                        device.execute(
+                            f"request platform software sdwan software remove {version}"
+                        )
+                    device.execute("show sdwan software")
+                    log.info(
+                        f"Non active versions {self.non_active_version} are deleted."
                     )
-                device.execute("show sdwan software")
-                log.info(
-                    f"Non active versions {self.non_active_version} are deleted."
-                )

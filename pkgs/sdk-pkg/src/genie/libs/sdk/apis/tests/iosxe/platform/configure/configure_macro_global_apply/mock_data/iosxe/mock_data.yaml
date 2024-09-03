@@ -4,23 +4,25 @@ configure:
       new_state: execute
     line console 0:
       new_state: configure_line
-    macro global apply test_api: "macro global apply test_api\r\n"
+    macro global apply m-qos $interface "range gi1/0/1-48": "macro global apply m-qos\
+      \ $interface \"range gi1/0/1-48\"\r\n"
     no logging console: ''
-  prompt: 9300-24UX-1(config)#
+  prompt: C9300CR-matrix(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: 9300-24UX-1(config-line)#
+  prompt: C9300CR-matrix(config-line)#
 connect:
   commands:
-    '':
-      new_state: execute
-  preface: |-
-    Trying mock_device ...
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
     Connected to mock_device.
-    Escape character is '^]'.
+
+    Escape character is ''^]''.'
   prompt: ''
 execute:
   commands:
@@ -29,7 +31,7 @@ execute:
     config-transaction:
       new_state: configure
     show version: ''
+    show version | include operating mode: ''
     term length 0: ''
     term width 0: ''
-    show version | include operating mode: ''
-  prompt: 9300-24UX-1#
+  prompt: C9300CR-matrix#

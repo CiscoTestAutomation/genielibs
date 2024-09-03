@@ -1,0 +1,53 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: 1783-HMS4EG8CGR(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: 1783-HMS4EG8CGR(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show interfaces GigabitEthernet1/6 switchport:
+      response:
+      - "Name: Gi1/6\r\nSwitchport: Enabled\r\nAdministrative Mode: dynamic auto\r\
+        \nOperational Mode: static access\r\nAdministrative Trunking Encapsulation:\
+        \ dot1q\r\nOperational Trunking Encapsulation: native\r\nNegotiation of Trunking:\
+        \ On\r\nAccess Mode VLAN: 1 (default)\r\nTrunking Native Mode VLAN: 1 (default)\r\
+        \nAdministrative Native VLAN tagging: enabled\r\nVoice VLAN: none\r\nAdministrative\
+        \ private-vlan host-association: none \r\nAdministrative private-vlan mapping:\
+        \ none \r\nAdministrative private-vlan trunk native VLAN: none\r\nAdministrative\
+        \ private-vlan trunk Native VLAN tagging: enabled\r\nAdministrative private-vlan\
+        \ trunk encapsulation: dot1q\r\nAdministrative private-vlan trunk normal VLANs:\
+        \ none\r\nAdministrative private-vlan trunk associations: none\r\nAdministrative\
+        \ private-vlan trunk mappings: none\r\nOperational private-vlan: none\r\n\
+        Trunking VLANs Enabled: ALL\r\nPruning VLANs Enabled: 2-1001\r\nCapture Mode\
+        \ Disabled\r\nCapture VLANs Allowed: ALL\r\n\r\nProtected: false\r\nUnknown\
+        \ unicast blocked: disabled\r\nUnknown multicast blocked: disabled\r\nAppliance\
+        \ trust: none"
+      response_type: circular
+    show version: ''
+    show version | include operating mode: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: 1783-HMS4EG8CGR#

@@ -1,0 +1,51 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    macro name m-qos:
+        new_state: macro_name
+    no logging console: ''
+    default interface $interface: ''
+    interface $interface: ''
+  prompt: C9300CR-matrix(config)#
+macro_name:
+  preface: "Enter macro commands one per line. End with the character '@'."
+  prompt: ""
+  commands:
+    "default interface $interface": ""
+    "interface $interface": ""
+    "description": ""
+    "switchport access vlan 10": ""
+    "switchport mode access": ""
+    "@":
+        new_state: configure
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: C9300CR-matrix(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    show version | include operating mode: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: C9300CR-matrix#
+

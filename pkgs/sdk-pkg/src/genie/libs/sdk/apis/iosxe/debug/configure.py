@@ -359,3 +359,115 @@ def debug_platform_software_fed_switch_active_punt_packet_capture(
         device.execute(cmd)
     except SubCommandFailure as e:
         log.error("debug_platform_software_fed_switch_active_punt_packet_capture Failed ! {}".format(e))
+
+def debug_platform_software_fed_drop_capture(
+    device, action, trap_type, trap_proto, trap_value, switch_type, switch=None
+    ):
+    """ debug platform software fed active drop capture configuration
+        Args:
+            device (`obj`): Device object
+            action (`str`): action mustbe either set-trap, clear-trap or start or stop 
+            trap_type (`str`): Type of trap to set . npu-trap or tm-trap
+            trap_proto (`str`): trap protocol to be configured . ethernet or ipv4 or  ipv6 or mpls
+            trap_value (`str`): trap value
+            switch_type (`str`): switch type is active or standby
+            switch (`str`): Default value None. stack device switch number
+            
+        Returns:
+            None
+        Raises:
+            SubCommandFailure, ValueError
+    """
+    cmd = ''
+
+    if not all((
+        action in ['set-trap', 'clear-trap'],
+        switch_type in ['active', 'standby'],
+        trap_type in ['npu-trap', 'tm-trap']
+    )):
+        raise ValueError("Invalid argument. Please check the values for action, switch_type, and trap_type.")
+    
+    cmd += 'debug platform software fed'
+
+    if switch is not None:
+        cmd += f' {switch}'
+
+    cmd += f' {switch_type} drop-capture {action} {trap_type} {trap_proto} {trap_value}'
+
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure debug platform software fed drop-capture commands on {device}. Error:\n{error}".format(device=device, error=e)
+        )
+
+def debug_platform_software_fed_drop_capture_action(
+    device, action, switch_type, switch=None
+    ):
+    """ debug platform software fed active drop capture configuration
+        Args:
+            device (`obj`): Device object
+            action (`str`): action mustbe either start or stop 
+            switch_type (`str`): switch type is active or standby
+            switch (`str`): Default value None. stack device switch number
+            
+        Returns:
+            None
+        Raises:
+            SubCommandFailure, ValueError
+    """
+    cmd = ''
+
+    if not all((
+        action in ['start', 'stop', 'clear-statistics'],
+        switch_type in ['active', 'standby']
+    )):
+        raise ValueError("Invalid argument. Please check the values for action and switch_type.")
+    
+    cmd += 'debug platform software fed'
+
+    if switch is not None:
+        cmd += f' {switch}'
+
+    cmd += f' {switch_type} drop-capture {action}'
+
+    try:
+        device.execute(cmd)       
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure debug platform software fed drop-capture commands on {device}. Error:\n{error}".format(device=device, error=e)
+        )
+
+def debug_platform_software_fed_drop_capture_buffer(
+    device, limit, buffer_type=None, switch=None
+    ):
+    """ debug platform software fed active drop capture configuration
+        Args:
+            device (`obj`): Device object
+            limit (`int`): buffer limit to configure
+            buffer_type (`str`): type of buffer to configure . 
+            switch (`str`): Default value None. stack device switch number
+            
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f'debug platform software fed'
+    
+    if switch :
+        cmd += f' {switch}'
+    
+    cmd += f' active drop-capture buffer'
+
+    if buffer_type:
+        cmd += f' {buffer_type} '
+
+    cmd += f' limit {limit}'
+    
+    try:
+        device.execute(cmd)            
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure debug platform software fed drop-capture commands on {device}. Error:\n{e}"
+        )    
