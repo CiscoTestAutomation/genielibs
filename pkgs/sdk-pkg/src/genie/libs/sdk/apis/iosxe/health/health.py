@@ -30,7 +30,7 @@ def health_cpu(device,
             command    (`str`): Override show command
                                 Default to `show processes cpu`
             processes (`list`): List of processes to check
-                                if not specified, will return one ALL_PROCESSES 
+                                if not specified, will return one ALL_PROCESSES
                                 with total cpu load
             check_key  (`str`): Key to check in parsed output
                                 Default to `five_sec_cpu`
@@ -132,7 +132,7 @@ def health_memory(device,
                   threshold=90,
                   health=True):
     '''Get memory usage on device. Threshold can be passed as argument.
-       Check memory usage from header of show command first, then in case 
+       Check memory usage from header of show command first, then in case
        the usage exceeds threshold, capture all the show output for detail.
 
         Args:
@@ -356,7 +356,7 @@ def health_logging(device,
         existing_log_count = runtime_health_data.get('num_of_logs') or 0
         log_count = len(logs)
 
-        if log_count > 0 and existing_log_count > log_count:
+        if log_count > 0 and log_count >= existing_log_count:
             new_log_count = log_count - existing_log_count
         elif log_count:
             new_log_count = log_count
@@ -399,7 +399,7 @@ def health_core(device,
 
         Args:
             device      (`obj`) : Device object
-            default_dir (`str` or `list`) : default directory where core or 
+            default_dir (`str` or `list`) : default directory where core or
                                             system-report is generated on device
                                             ex.) `bootflash:/core/`
             output      (`str`) : Output of `dir` command

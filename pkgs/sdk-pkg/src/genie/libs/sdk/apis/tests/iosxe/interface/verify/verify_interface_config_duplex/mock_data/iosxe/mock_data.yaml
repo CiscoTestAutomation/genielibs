@@ -5,21 +5,22 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-  prompt: 1783-CMS20DN(config)#
+  prompt: 1783-HMS4EG8CGR(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: 1783-CMS20DN(config-line)#
+  prompt: 1783-HMS4EG8CGR(config-line)#
 connect:
   commands:
-    '':
-      new_state: execute
-  preface: |-
-    Trying mock_device ...
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
     Connected to mock_device.
-    Escape character is '^]'.
+
+    Escape character is ''^]''.'
   prompt: ''
 execute:
   commands:
@@ -27,19 +28,25 @@ execute:
       new_state: configure
     config-transaction:
       new_state: configure
-    show run interface GigabitEthernet1/2:
+    show run interface GigabitEthernet1/6:
       response:
-        - |-
-          Building configuration...
-          
-          Current configuration : 47 bytes
-          !
-          interface GigabitEthernet1/2
-           speed 100
-          end
+      - "Building configuration...\r\n\r\nCurrent configuration : 36 bytes\r\n!\r\n\
+        interface GigabitEthernet1/6\r\nend"
+      - "Building configuration...\r\n\r\nCurrent configuration : 36 bytes\r\n!\r\n\
+        interface GigabitEthernet1/6\r\nend"
+      - "Building configuration...\r\n\r\nCurrent configuration : 36 bytes\r\n!\r\n\
+        interface GigabitEthernet1/6\r\nend"
+      - "Building configuration...\r\n\r\nCurrent configuration : 36 bytes\r\n!\r\n\
+        interface GigabitEthernet1/6\r\nend"
+      - "Building configuration...\r\n\r\nCurrent configuration : 36 bytes\r\n!\r\n\
+        interface GigabitEthernet1/6\r\nend"
+      - "Building configuration...\r\n\r\nCurrent configuration : 36 bytes\r\n!\r\n\
+        interface GigabitEthernet1/6\r\nend"
+      - "Building configuration...\r\n\r\nCurrent configuration : 36 bytes\r\n!\r\n\
+        interface GigabitEthernet1/6\r\nend"
       response_type: circular
     show version: ''
+    show version | include operating mode: ''
     term length 0: ''
     term width 0: ''
-    show version | include operating mode: ''
-  prompt: 1783-CMS20DN#
+  prompt: 1783-HMS4EG8CGR#

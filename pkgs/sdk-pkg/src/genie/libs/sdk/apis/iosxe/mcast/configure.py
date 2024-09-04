@@ -385,3 +385,43 @@ def unconfigure_pim_autorp_listener(device, vrf, intf=None, ttl=None, announce=T
         device.configure(configs)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure pim autorp listener. Error:{e}")
+
+def configure_ip_pim_vrf_ssm_range(device, vrf, acl_name):
+
+    """ Configures ip pim vrf <vrf> ssm range
+        Args:
+            device ('obj')    : device to use
+            vrf ('str')  : Name of the vrf
+            acl_name ('str') : Name of the acl
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = f'ip pim vrf {vrf} ssm range {acl_name}'
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configures ip pim vrf {vrf} ssm range. Error: {e}')
+
+def unconfigure_ip_pim_vrf_ssm_range(device, vrf, acl_name):
+
+    """ Unconfigures ip pim vrf <vrf> ssm range
+        Args:
+            device ('obj')    : device to use
+            vrf ('str')  : Name of the vrf
+            acl_name ('str') : Name of the acl
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = f'no ip pim vrf {vrf} ssm range {acl_name}'
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not unconfigures ip pim vrf {vrf} ssm range. Error: {e}')

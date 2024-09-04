@@ -14,35 +14,33 @@ configure_line:
   prompt: 9404R-dut1(config-line)#
 connect:
   commands:
-    '':
-      new_state: execute
-  preface: |-
-    Trying mock_device ...
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
     Connected to mock_device.
-    Escape character is '^]'.
+
+    Escape character is ''^]''.'
   prompt: ''
 execute:
   commands:
-    clear logging onboard rp active:
+    'clear logging onboard rp active ':
       response:
-        - |-
-          Done clearing Message data
-          Done clearing Voltage data
-          
-          --------------------------------------------------------------------------------
-          No POE sensor description data
-          
-          --------------------------------------------------------------------------------
-          Done clearing Temperature data
-          Done clearing Environment data
-          Done clearing Counter data
+      - "Done clearing Message data\r\nDone clearing Voltage data\r\n\r\n--------------------------------------------------------------------------------\r\
+        \nNo POE sensor description data\r\n\r\n--------------------------------------------------------------------------------\r\
+        \nDone clearing Temperature data\r\nDone clearing Environment data\r\nDone\
+        \ clearing Counter data"
+      response_type: circular
+    clear logging onboard rp active temperature:
+      response:
+      - Done clearing Temperature data
       response_type: circular
     config term:
       new_state: configure
     config-transaction:
       new_state: configure
     show version: ''
+    show version | include operating mode: ''
     term length 0: ''
     term width 0: ''
-    show version | include operating mode: ''
   prompt: 9404R-dut1#

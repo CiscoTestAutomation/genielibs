@@ -82,11 +82,11 @@ class SNMPClient(object):
         more_oid_obj = [ObjectType(ObjectIdentity(obj)) for obj in more_oids]
 
         # Create command generator
-        cmd_generator = \
+        cmd_response = \
             getCmd(SnmpEngine(),
                    CommunityData(self.read_community,
                                  mpModel=self.mp_model), \
-                   UdpTransportTarget((self.host, self.port)),
+                   UdpTransportTarget((self.host, self.port), timeout=3, retries=3),
                    ContextData(),
                    ObjectType(
                        ObjectIdentity(oid)),
@@ -94,9 +94,10 @@ class SNMPClient(object):
                    )
 
         # Fetch the values
-        error_indication, error_status, error_index, var_binds =\
-            next(cmd_generator)
-
+        if cmd_response:
+            error_indication, error_status, error_index, var_binds = cmd_response
+        else:
+            error_indication, error_status, error_index, var_binds = None, 0, 0, []
         # Predefine our results list
         results = []
 
@@ -141,21 +142,23 @@ class SNMPClient(object):
             raise TypeError('Invalid Type provided: %s' % (type,))
 
         # Create command generator
-        cmd_generator = \
+        cmd_response = \
             setCmd(SnmpEngine(),
                    CommunityData(self.write_community,
                                  mpModel=self.mp_model), \
-                   UdpTransportTarget((self.host, self.port)),
+                   UdpTransportTarget((self.host, self.port), timeout=3, retries=3),
                    ContextData(),
                    ObjectType(
-                       ObjectIdentity(oid), value_class(value)
+                    ObjectIdentity(oid), value_class(value)
                     )
                    )
+        
 
-        # Fetch the values
-        error_indication, error_status, error_index, var_binds =\
-            next(cmd_generator)
-
+        if cmd_response:
+            error_indication, error_status, error_index, var_binds = cmd_response
+        else:
+            error_indication, error_status, error_index, var_binds = None, 0, 0, []
+        
         # Predefine our results list
         results = []
 
@@ -234,10 +237,10 @@ class SNMPv3Client(object):
         more_oid_obj = [ObjectType(ObjectIdentity(obj)) for obj in more_oids]
 
         # Create command generator
-        cmd_generator = \
+        cmd_response = \
             getCmd(SnmpEngine(),
                    self.auth,
-                   UdpTransportTarget((self.host, self.port)),
+                   UdpTransportTarget((self.host, self.port), timeout=3, retries=3),
                    ContextData(),
                    ObjectType(
                        ObjectIdentity(oid)),
@@ -245,8 +248,10 @@ class SNMPv3Client(object):
                    )
 
         # Fetch the values
-        error_indication, error_status, error_index, var_binds =\
-            next(cmd_generator)
+        if cmd_response:
+            error_indication, error_status, error_index, var_binds = cmd_response
+        else:
+            error_indication, error_status, error_index, var_binds = None, 0, 0, []
 
         # Predefine our results list
         results = []

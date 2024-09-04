@@ -775,6 +775,9 @@ install_image:
         process to finish. Defaults to 800.
 
     skip_boot_variable (bool, optional): 
+    
+    skip_save_running_config (bool, optional): Skip the step to save the the running
+                                        configuration to the startup config.
 
     issu (bool, optional): set the issu for installing image.
         Defaults to False 
@@ -835,6 +838,7 @@ install_image:
     }
     ISSU = False
     SKIP_BOOT_VARIABLE = False
+    SKIP_SAVE_RUNNING_CONFIG = False
     VERIFY_RUNNING_IMAGE = True
     STACK_MEMBER_TIMEOUT = 300
     STACK_MEMBER_INTERVAL = 30
@@ -849,6 +853,7 @@ install_image:
         Optional('reload_timeout'): int,
         Optional('issu'): bool,
         Optional('skip_boot_variable'): bool,
+        Optional('skip_save_running_config'): bool,
         Optional('verify_running_image', description="Compare the image filename with the running image version on device. If a match is found, the stage will be skipped", default=VERIFY_RUNNING_IMAGE): bool,
         Optional('stack_member_timeout'): int,
         Optional('stack_member_interval'): int,
@@ -881,7 +886,8 @@ install_image:
                       save_system_config=SAVE_SYSTEM_CONFIG,
                       reload_args=RELOAD_SERVICE_ARGS,
                       issu=ISSU, stack_member_timeout=STACK_MEMBER_TIMEOUT,
-                      stack_member_interval=STACK_MEMBER_INTERVAL):
+                      stack_member_interval=STACK_MEMBER_INTERVAL,
+                      skip_save_running_config=SKIP_SAVE_RUNNING_CONFIG):
         # check if device is a stack device otherwise call the InstallImage for 
         # iosxe devices.
         if hasattr(device, 'chassis_type') and device.chassis_type == 'stack':

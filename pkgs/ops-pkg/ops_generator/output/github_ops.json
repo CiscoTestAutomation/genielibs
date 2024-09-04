@@ -1295,15 +1295,22 @@
             }
           },
           "cat9k": {
-            "class": "Platform",
-            "doc": "Platform Ops Object",
-            "module_name": "platform.iosxe.cat9k.c9500.platform",
-            "package": "genie.libs.ops",
+            "folders": {
+              "c9500": {
+                "class": "Platform",
+                "doc": "Platform Ops Object",
+                "module_name": "platform.iosxe.cat9k.c9500.platform",
+                "package": "genie.libs.ops",
+                "tokens": {
+                  "model": "c9500"
+                },
+                "uid": "platform",
+                "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/platform/iosxe/cat9k/c9500/platform.py#L22"
+              }
+            },
             "tokens": {
               "platform": "cat9k"
-            },
-            "uid": "platform",
-            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/platform/iosxe/cat9k/c9500/platform.py#L17"
+            }
           }
         },
         "module_name": "platform.iosxe.platform",
@@ -1701,7 +1708,8 @@
   "tokens": {
     "model": [
       "c3850",
-      "c8200"
+      "c8200",
+      "c9500"
     ],
     "os": [
       "cheetah",

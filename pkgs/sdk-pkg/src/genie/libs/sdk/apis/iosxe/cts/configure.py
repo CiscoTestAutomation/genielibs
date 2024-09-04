@@ -1122,3 +1122,45 @@ def disable_cts_enforcement_vlan_list(device, vlan):
         raise SubCommandFailure(
             "Could not disble CTS enforcement on vlan {}.Error:\n{}".format(vlan, str(e))
         )
+
+def configure_interface_cts_role_based_sgt_map(device, interface, vlan, sgt):
+    """ Configure interface cts role-based sgt-map
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface to configure
+            vlan ('str'): vlan to configure
+            sgt ('int'): Security Group Tag (SGT) value
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure interface cts role-based sgt-map
+    """
+    log.info("Configure interface cts role-based sgt-map")
+    cmd = ["interface {}".format(interface), "cts role-based sgt-map vlan {} sgt {}".format(vlan, sgt)]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure interface cts role-based sgt-map.Error:\n{}".format(str(e))
+        )
+
+def unconfigure_interface_cts_role_based_sgt_map(device, interface, vlan, sgt):
+    """ Unconfigure interface cts role-based sgt-map 
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface to unconfigure
+            vlan ('str'): vlan to unconfigure
+            sgt ('int'): Security Group Tag (SGT) value
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to unconfigure interface cts role-based sgt-map
+    """
+    log.info("Unconfigure interface cts role-based sgt-map")
+    cmd = ["interface {}".format(interface), "no cts role-based sgt-map vlan {} sgt {}".format(vlan, sgt)]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure interface cts role-based sgt-map.Error:\n{}".format(str(e))
+        )

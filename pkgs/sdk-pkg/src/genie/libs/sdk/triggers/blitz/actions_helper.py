@@ -325,53 +325,6 @@ def yang_handler(step,
     # go through the include/exclude process
     return _output_query_template(**kwargs)
 
-# saved ON_CHANGE subscriptions waiting for change to happen
-active_subscriptions = {}
-
-
-def check_yang_subscribe(device, step, result=None):
-    """Look for subscribe, wait for subscribe thread to stop, return result."""
-    if step.result.value == 'failed':
-        # subscribe or change for ON_CHANGE subscribe failed
-        return
-    subscribe_thread = None
-    hostname = None
-    del_from_active = False
-    if hasattr(device, 'name'):
-        hostname = device.name
-    elif hasattr(device, 'device') and hasattr(device.device, 'name'):
-        hostname = device.device.name
-    if hostname is None:
-        # how did we get this far?
-        log.error('YANG Subscribe check, cannot find hostname')
-        return
-
-    if isinstance(result, Thread):
-        if result.sub_mode == 'ON_CHANGE':
-            active_subscriptions[hostname] = result
-            return
-        subscribe_thread = result
-    elif hostname in active_subscriptions:
-        del_from_active = True
-        # ON_CHANGE thread waiting for change
-        subscribe_thread = active_subscriptions[hostname]
-        if subscribe_thread.stopped():
-            log.info('ON_CHANGE subscribe terminated...')
-            subscribe_thread.stop()
-            del active_subscriptions[hostname]
-            return
-
-    if subscribe_thread is not None:
-        # Wait for subscribe thread to finish and return result.
-        while not subscribe_thread.stopped():
-            log.info('Waiting for notification...')
-            time.sleep(1)
-        # set subscribe result
-        if not subscribe_thread.result:
-            step.failed('subscription failed')
-        if del_from_active:
-            del active_subscriptions[hostname]
-
 
 def _api_device_update(arguments, testbed, step, command, device=None, common_api=None):
     """

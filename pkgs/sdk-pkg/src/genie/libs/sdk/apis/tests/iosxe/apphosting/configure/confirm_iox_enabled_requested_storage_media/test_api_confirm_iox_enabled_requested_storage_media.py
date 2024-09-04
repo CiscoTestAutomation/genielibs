@@ -10,7 +10,7 @@ class TestConfirmIoxEnabledRequestedStorageMedia(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          T1-9300-SW1:
+          9404R-dut1:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,11 +18,11 @@ class TestConfirmIoxEnabledRequestedStorageMedia(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: c9500
-            type: c9500
+            platform: cat9k
+            type: None
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['T1-9300-SW1']
+        self.device = self.testbed.devices['9404R-dut1']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,6 @@ class TestConfirmIoxEnabledRequestedStorageMedia(unittest.TestCase):
         )
 
     def test_confirm_iox_enabled_requested_storage_media(self):
-        result = confirm_iox_enabled_requested_storage_media('T1-9300-SW1', 'ssd')
-        expected_output = False
+        result = confirm_iox_enabled_requested_storage_media(self.device)
+        expected_output = True
         self.assertEqual(result, expected_output)

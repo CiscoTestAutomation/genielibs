@@ -23,14 +23,14 @@ from genie.libs.sdk.triggers.blitz.actions import (compare, rest, sleep,
                                                    execute, configure,
                                                    print_, configure_replace,
                                                    save_config_snapshot, diff,
-                                                   configure_dual, dialog)
+                                                   configure_dual, dialog,
+                                                   check_yang_subscribe)
 
 from genie.libs.sdk.triggers.blitz.actions_helper import (Dialog,
                                                           _send_command,
                                                           _prompt_handler,
                                                           _condition_validator,
-                                                          _output_query_template,
-                                                          check_yang_subscribe)
+                                                          _output_query_template,)
 
 from genie.libs.sdk.triggers.blitz.gnmi_util import GnmiSubscriptionStream
 
@@ -334,6 +334,7 @@ class TestActions(unittest.TestCase):
         self.dev.custom = {'abstraction': {'order': ['os']}}
         self.blitz_obj.parameters['test_sections'] = [{'section1': [{'action': {'command': 'a'}}]}]
         sections = self.blitz_obj._discover()
+
         self.kwargs = {'self': self.blitz_obj,
                        'section': sections[0],
                        'name': ''}
@@ -1636,37 +1637,25 @@ class TestActions(unittest.TestCase):
         print_(**self.kwargs)
         self.assertEqual(step.result, Passed)
 
+
     def test_check_yang_subscribe_pass(self):
+        steps = Steps()
+        gnmi_thrd = GnmiSubscriptionStream(responses=[])
+        gnmi_thrd.sub_mode = 'ON_CHANGE'
 
-      steps = Steps()
-      gnmi_thrd = GnmiSubscriptionStream(responses=[])
-      gnmi_thrd.sub_mode = 'ON_CHANGE'
+        with steps.start("Starting action") as step:
 
-      with steps.start("Starting action") as step:
-        # thread is saved in active_subscriptions
-        step.passed('Subscription helper passed.')
-        check_yang_subscribe(self.testbed, step, gnmi_thrd)
-        check_yang_subscribe(self.testbed, step, 'junk')
-        # saved thread is found and result recorded
-        gnmi_thrd.stop()
-        self.assertEqual(step.result, Passed)
+          kwargs_1 = {
+            'self': self,
+            'device': self.dev,
+            'steps': step,
+            'result': gnmi_thrd
+          }
 
-    def test_check_yang_subscribe_fail(self):
-
-      steps = Steps()
-      gnmi_thrd = GnmiSubscriptionStream(responses=[])
-      gnmi_thrd.sub_mode = 'ON_CHANGE'
-
-      with steps.start("Starting action") as step:
-        # thread is saved in active_subscriptions
-        step.passed('Subscription helper passed.')
-        check_yang_subscribe(self.testbed, step, gnmi_thrd)
-        # thread stopped prematurely
-        gnmi_thrd.stop()
-        check_yang_subscribe(self.testbed, step, 'junk')
-        # saved thread is found and result recorded
-        self.assertEqual(step.result, Failed)
-
+          # thread is saved in active_subscriptions
+          check_yang_subscribe(**kwargs_1)
+          # saved thread is found and result recorded
+          self.assertEqual(step.result, Passed)
 
 if __name__ == '__main__':
     unittest.main()

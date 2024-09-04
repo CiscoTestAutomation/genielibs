@@ -1543,3 +1543,27 @@ def get_interfaces_transceiver_supported_dom(device, transceivers_list):
         return False
     
     return dom_value
+
+
+def get_interfaces_switchport_state(device, interface):
+    """ Get interface switchport state of an interface
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+
+        Returns:
+            None
+            switchport_enable state:  (`bool`): if switchport is enabled return True
+                                                   switchport is disabled return False 
+              
+        Raises:
+            None
+    """
+    cmd = f"show interfaces {interface} switchport"
+    try:
+        out = device.parse(cmd)
+    except SchemaEmptyParserError:
+        return
+
+    return out[interface].get('switchport_enable')

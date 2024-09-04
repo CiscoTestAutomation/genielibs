@@ -4384,7 +4384,7 @@ def device_recovery_boot(device, console_activity_pattern=None, console_breakboo
         log.info(f'There is no recovery info for device {device.name}')
         recovery_info = {}
 
-    console_activity_pattern = console_activity_pattern or recovery_info.get('console_activity_pattern') or "\\.\\.\\.\\."
+    console_activity_pattern = console_activity_pattern or recovery_info.get('console_activity_pattern') 
     console_breakboot_char = console_breakboot_char or recovery_info.get('console_breakboot_char') or '\x03'
     console_breakboot_telnet_break =  console_breakboot_telnet_break or recovery_info.get('console_breakboot_telnet_break') or False
     grub_breakboot_char = grub_breakboot_char or recovery_info.get('grub_breakboot_char') or 'c'
@@ -4453,7 +4453,7 @@ def device_recovery_boot(device, console_activity_pattern=None, console_breakboo
         )
     except Exception as e:
         log.error(str(e))
-        raise Exception(f"Failed to boot the device {device.name}", from_exception=e)
+        raise Exception(f"Failed to boot the device {device.name}") from e
     else:
         log.info(f"Successfully boot the device {device.name}")
 

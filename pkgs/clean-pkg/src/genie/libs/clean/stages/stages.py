@@ -1811,6 +1811,7 @@ verify_running_image:
     VERIFY_MD5 = None
     VERIFY_MD5_TIMEOUT = 60
     IGNORE_FLASH = False
+    REGEX_SEARCH = False
 
     # ============
     # Stage Schema
@@ -1831,7 +1832,8 @@ verify_running_image:
         'verify_running_image'
     ]
 
-    def verify_running_image(self, steps, device, images, verify_md5=VERIFY_MD5, ignore_flash=IGNORE_FLASH):
+    def verify_running_image(self, steps, device, images, verify_md5=VERIFY_MD5, ignore_flash=IGNORE_FLASH,
+                             regex_search=REGEX_SEARCH):
         if verify_md5:
             # Set default if not provided
             timeout = verify_md5.setdefault('timeout', self.VERIFY_MD5_TIMEOUT)
@@ -1924,7 +1926,8 @@ verify_running_image:
             with steps.start("Verify running image on device {}". \
                                      format(device.name)) as step:
                 try:
-                    device.api.verify_current_image(images=images, ignore_flash=ignore_flash)
+                    device.api.verify_current_image(images=images, ignore_flash=ignore_flash,
+                                                    regex_search=regex_search)
                 except Exception as e:
                     step.failed("Unable to verify running image on device {}\n{}". \
                                 format(device.name, str(e)))
@@ -2875,6 +2878,8 @@ configure_management:
         protocols ('list', optional): [list of protocols]
 
         set_hostname (bool): Configure device hostname (default: True)
+        alias_as_hostname (bool): When used with `set_hostname`, will use the
+            alias as the hostname. (default: False)
 
 
 Example
@@ -2909,7 +2914,8 @@ configure_management:
         },
         Optional('dhcp_timeout'): int,
         Optional('protocols'): ListOf(str),
-        Optional('set_hostname'): bool
+        Optional('set_hostname'): bool,
+        Optional('alias_as_hostname'): bool,
     }
 
     # ==============================

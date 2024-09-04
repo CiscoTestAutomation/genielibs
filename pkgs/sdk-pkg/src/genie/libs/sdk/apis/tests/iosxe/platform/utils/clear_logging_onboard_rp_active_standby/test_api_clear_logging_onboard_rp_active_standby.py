@@ -18,8 +18,8 @@ class TestClearLoggingOnboardRpActiveStandby(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: cat9400
-            type: iosxe
+            platform: cat9k
+            type: c9300
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['9404R-dut1']
@@ -30,6 +30,11 @@ class TestClearLoggingOnboardRpActiveStandby(unittest.TestCase):
         )
 
     def test_clear_logging_onboard_rp_active_standby(self):
-        result = clear_logging_onboard_rp_active_standby(self.device, 'active')
+        result = clear_logging_onboard_rp_active_standby(self.device, 'active', None)
+        expected_output = None
+        self.assertEqual(result, expected_output)
+
+    def test_clear_logging_onboard_rp_active_standby_1(self):
+        result = clear_logging_onboard_rp_active_standby(self.device, 'active', 'temperature')
         expected_output = None
         self.assertEqual(result, expected_output)

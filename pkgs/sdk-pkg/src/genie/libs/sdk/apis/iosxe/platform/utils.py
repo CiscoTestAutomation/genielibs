@@ -546,12 +546,13 @@ def erase_startup_config(device):
         raise SubCommandFailure(
             f'could not erase startup config on  {device}. Error:\n{e}')    
               
-def clear_logging_onboard_rp_active_standby(device, rp_active_standby):
+def clear_logging_onboard_rp_active_standby(device, rp_active_standby, log_name=None):
     """ clears logging onboard rp active/standby
         Example: clear logging onboard rp active/standby
         Args:
             device ('obj'): Device object
             rp_active_standby('str'): Rp active/standby
+            log_name('str'): Log name. Ex: environment, temperature. Default is None.
         Returns:
             None
         Raises:
@@ -564,11 +565,10 @@ def clear_logging_onboard_rp_active_standby(device, rp_active_standby):
             loop_continue=False
         )
     ])
-    config = f"clear logging onboard rp {rp_active_standby}"
+    config = f"clear logging onboard rp {rp_active_standby} {log_name if log_name else ''}"
     try:
         device.execute(config, reply=dialog)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not clear logging onboard rp {rp_active_standby} on {device.name}. Error:\n{e}"
         )
-        

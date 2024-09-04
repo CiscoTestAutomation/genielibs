@@ -688,7 +688,9 @@ def configure_management(device,
                          routes=None,
                          dhcp_timeout=30,
                          protocols=None,
-                         set_hostname=False):
+                         set_hostname=False,
+                         alias_as_hostname=False,
+                         ):
     ''' Configure management connectivity on the device.
 
     Arguments can be provided with the management connectivity information. By default,
@@ -735,6 +737,7 @@ def configure_management(device,
         dhcp_timeout ('int', optional): DHCP timeout in seconds (default: 30)
         protocols ('list', optional): [list of protocols]
         set_hostname (bool): Configure hostname on the device (default: False)
+        alias_as_hostname (bool): Whether to use the alias to configure the hostname (default: False)
     '''
     management = getattr(device, 'management', {})
 
@@ -745,7 +748,10 @@ def configure_management(device,
     vrf = vrf or management.get('vrf')
 
     if set_hostname:
-        device.configure(f'hostname {device.name}')
+        if alias_as_hostname:
+            device.configure(f'hostname {device.alias}')
+        else:
+            device.configure(f'hostname {device.name}')
 
     device.api.configure_management_vrf(vrf)
 
@@ -1181,7 +1187,7 @@ def configure_ssh_certificate_profile(device,
         ssh_profile.extend(['server', f'trustpoint sign {trustpoint}'])
     if user:
         ssh_profile.extend(['user', f'trustpoint verify {trustpoint}'])
-        
+
     try:
         device.configure(ssh_profile)
     except SubCommandFailure as e:
@@ -1199,7 +1205,7 @@ def unconfigure_ssh_certificate_profile(device):
         None
     '''
     ssh_profile = 'no ip ssh server certificate profile'
-     
+
     try:
         device.configure(ssh_profile)
     except SubCommandFailure as e:
@@ -1222,7 +1228,7 @@ def configure_ssh_server_algorithm(device,mac,kex):
             f'ip ssh server algorithm mac {mac}',
             f'ip ssh server algorithm kex {kex}'
     ]
-     
+
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -1245,7 +1251,7 @@ def unconfigure_ssh_server_algorithm(device):
         'default ip ssh server algorithm mac',
         'default ip ssh server algorithm kex'
     ]
-     
+
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -1304,7 +1310,7 @@ def configure_ip_ssh_client_algorithm_encryption(device, encryption):
         raise SubCommandFailure(f"Failed to configure ip ssh client algorithm encryption on device {device}. Error:\n{e}")
 
 def configure_ip_ssh_server_algorithm_mac(device, mac):
-    
+
     """ Configure ip ssh server algorith mac
         Args:
             device ('obj'): Device object
@@ -1321,7 +1327,7 @@ def configure_ip_ssh_server_algorithm_mac(device, mac):
         raise SubCommandFailure(f"Failed to configure ip ssh server algorithm mac on device {device}. Error:\n{e}")
 
 def configure_ip_ssh_server_algorithm_kex(device, kex):
-    
+
     """ Configure ip ssh server algorith kex
         Args:
             device ('obj'): Device object
@@ -1338,7 +1344,7 @@ def configure_ip_ssh_server_algorithm_kex(device, kex):
         raise SubCommandFailure(f"Failed to configure ip ssh server algorithm kex on device {device}. Error:\n{e}")
 
 def configure_ip_ssh_server_algorithm_encryption(device, encryption):
-    
+
     """ Configure ip ssh server algorith encryption
         Args:
             device ('obj'): Device object
@@ -1355,7 +1361,7 @@ def configure_ip_ssh_server_algorithm_encryption(device, encryption):
         raise SubCommandFailure(f"Failed to configure ip ssh server algorithm encryption on device {device}. Error:\n{e}")
 
 def configure_ip_ssh_server_algorithm_hostkey(device, hostkey):
-    
+
     """ Configure ip ssh server algorith encryption
         Args:
             device ('obj'): Device object

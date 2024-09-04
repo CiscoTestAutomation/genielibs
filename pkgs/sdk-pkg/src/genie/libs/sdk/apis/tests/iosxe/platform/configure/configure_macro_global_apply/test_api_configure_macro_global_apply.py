@@ -10,7 +10,7 @@ class TestConfigureMacroGlobalApply(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          9300-24UX-1:
+          C9300CR-matrix:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,11 +18,11 @@ class TestConfigureMacroGlobalApply(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: c9300
+            platform: cat900
             type: c9300
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['9300-24UX-1']
+        self.device = self.testbed.devices['C9300CR-matrix']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,6 @@ class TestConfigureMacroGlobalApply(unittest.TestCase):
         )
 
     def test_configure_macro_global_apply(self):
-        result = configure_macro_global_apply(self.device, 'test_api')
+        result = configure_macro_global_apply(self.device, 'm-qos', '$interface', '"range gi1/0/1-48"', 60)
         expected_output = None
         self.assertEqual(result, expected_output)

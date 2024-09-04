@@ -373,16 +373,18 @@ def _verify_local_file_size_stable(file, max_tries=3, delay_seconds=2):
     return True
 
 
-def verify_current_image(device, images, delimiter_regex=None, ignore_flash=False):
+def verify_current_image(device, images, delimiter_regex=None, ignore_flash=False, regex_search=False):
     '''Verify current images on the device
         Args:
             device (`obj`): Device object
             images (`list`): List of images expected on the device
             delimiter_regex (`regex string`): Regex of delimeters, default ':|\/'
             ignore_flash (`bool`): Ignore flash directory names. Default: False
+            regex_search (`bool`): Verify using regular expression.. Default: False
         Returns:
             None
     '''
+    match = False
 
     if not delimiter_regex:
         delimiter_regex = ':|\/'
@@ -431,17 +433,40 @@ def verify_current_image(device, images, delimiter_regex=None, ignore_flash=Fals
     log.debug(f'Comparing {expected_images} and {configured_images}')
 
     # Compare the (directory, image) tuple sets of images and running images
-    if expected_images != configured_images:
+    match = expected_images == configured_images
+
+    # Compare the images with regex search
+    if regex_search is True:
+        match = device.api.verify_images_with_regex(images, running_images)
+
+    if match is False:
         raise Exception("Running images '{}' do not match list of the "
                         "expected images '{}'. \nNote: delimeters have been "
                         "excluded from this comparison based on this regex "
                         "patern: '{}'"
                         .format(running_images, images, delimiter_regex))
+
     log.info("Successfully loaded the following images on device '{}':".\
              format(device.name))
+
     for i in running_images:
         log.info(i)
+
     return
+
+
+def verify_images_with_regex(passed_images, running_images):
+    '''Verify current images on the device with regular expression
+        Args:
+            passed_images (`list`): List of images provided by the user
+            running_images (`list`): List of images expected on the device
+        Returns:
+            bool
+    '''
+    for p_image, r_image in zip(passed_images, running_images):
+        if not (re.search(fr"^{p_image}(\.\w+)?$", r_image) or re.search(fr"^{r_image}(\.\w+)?$", p_image)):
+            return False
+    return True
 
 
 def verify_enough_disk_space(device,

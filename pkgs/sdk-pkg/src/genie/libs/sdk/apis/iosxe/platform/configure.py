@@ -1898,13 +1898,16 @@ def request_platform_software_package_clean(device, switch_detail, clean_option,
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to perform request platform software package clean switch on the device. Error:\n{e}")
 
-def configure_macro_global_apply(device, macro_name):
+def configure_macro_global_apply(device, macro_name, variables=None, values=None, timeout=60):
     """
         Configure macro global apply on device
         cli: macro global apply
         Args:
             device ('obj'): Device object
             macro_name ('str'): macro name
+            variables('str',optional): variable name (ex: "$interface")
+            values('str',optional): corresponding values depends on the varaible name (ex: "range gi1/0/1-48")
+            timeout ('int', optional): Timeout in seconds. Default is 60
         Raises:
             SubCommandFailure
         Returns:
@@ -1913,8 +1916,11 @@ def configure_macro_global_apply(device, macro_name):
         None
     """
     cmd = f"macro global apply {macro_name}"
+    if variables and values:
+        cmd += f" {variables} {values}"
+        
     try:
-        device.configure(cmd)
+        device.configure(cmd, timeout=timeout)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Failed to configure macro global on device {device}. Error:\n{e}"
@@ -6110,5 +6116,40 @@ def unconfigure_issu_set_rollback_timer(device, timer=0):
     except SubCommandFailure:
         raise SubCommandFailure("unconfigure issu set rollback timer")
 
+
+def configure_macro_name(device, macro_name, macro_configs, timeout=60):
+    """ Configure macro name
+    
+    Args:
+        device ('obj'): Device object
+        macro_name ('str'): Macro namef
+        macro_configs ('list'): Configuration lines for the macro
+        timeout ('int', optional): Timeout for the CLI operation in seconds.
+    Raises:
+        SubCommandFailure
+    Returns:
+        None
+    """
+    def send_configs(device, macro_configs):
+        for config in macro_configs:
+            device.sendline(config)
+    
+    dialog = Dialog([
+        Statement(
+            pattern=r"Enter macro commands one per line. End with the character.*",
+            action=send_configs,
+            args={"device": device, "macro_configs": macro_configs},
+            loop_continue=True,
+            continue_timer=False
+        )
+    ])
+
+    cmd = f'macro name {macro_name}'
+    try:
+        device.configure(cmd, reply=dialog, timeout=timeout)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure macro name {macro_name} on device {device.hostname}. Error:\n{e}"
+        )
 
 

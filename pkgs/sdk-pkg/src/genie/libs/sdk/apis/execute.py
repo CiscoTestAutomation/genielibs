@@ -91,7 +91,6 @@ def execute_power_off_device(device):
     Returns:
         None
     '''
-
     pcs = get_power_cyclers(device)
 
     # Turn power cyclers off
@@ -147,7 +146,11 @@ def execute_power_cycle_device(device, delay=30):
         None
     '''
     # Destroy device object
-    device.destroy_all()
+    try:
+        device.destroy_all()
+    except Exception as e:
+        log.warning('could not destroy the device object continue with powercycle.')
+        
 
     device.api.execute_power_off_device()
     log.info(f"Waiting '{delay}' seconds before powercycling device on")
@@ -172,7 +175,6 @@ def change_power_cycler_state(device, powercycler, state, outlets):
     except AssertionError:
         raise Exception("Invalid state provided for powercycler\n"
                         "Acceptable states are 'on' or 'off'")
-
     if state == 'on':
         powercycler.on(*outlets)
     elif state == 'off':
