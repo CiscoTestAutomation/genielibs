@@ -2,6 +2,5 @@
                                       New                                       
 --------------------------------------------------------------------------------
 
-* iosxe
-    * cat9k
-        * Use the cmd string format instead of importing the module.
+* iosxr
+    * check the version for validate_and_update_url since the behaviour changed from 7.x.x.x version

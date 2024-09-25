@@ -68,4 +68,3 @@ created a new API.
 * [robot](pkgs/robot-pkg/changelog/CHANGELOG.md)
 
 > Copyright (c) 2020 Cisco Systems, Inc. and/or its affiliates
-# Trigger pipeline
