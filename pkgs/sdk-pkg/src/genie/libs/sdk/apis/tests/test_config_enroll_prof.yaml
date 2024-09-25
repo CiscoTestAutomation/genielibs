@@ -1,0 +1,12 @@
+default:
+        arguments:
+                device : 'host_router2'
+configure_crypto_pki_profile:
+        arguments:
+                prof_name : 'API_PROF'
+                method_est : True
+                enrollment_http_username : 'ashrishe'
+                enrollment_http_password_type : "0"
+                enrollment_http_password : 'nopassword'
+                enrollment_url : 'https://10.106.29.252:443'
+                exit_flag : True

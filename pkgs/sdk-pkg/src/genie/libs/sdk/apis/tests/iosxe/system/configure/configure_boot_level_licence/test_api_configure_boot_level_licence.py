@@ -10,7 +10,7 @@ class TestConfigureBootLevelLicence(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          BB_ASR1006-X:
+          9350-stack-1:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,11 +18,11 @@ class TestConfigureBootLevelLicence(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: iosxe
-            type: iosxe
+            platform: cat9k
+            type: c9350
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['BB_ASR1006-X']
+        self.device = self.testbed.devices['9350-stack-1']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,11 @@ class TestConfigureBootLevelLicence(unittest.TestCase):
         )
 
     def test_configure_boot_level_licence(self):
-        result = configure_boot_level_licence(self.device, False, False, False, True, False, False, True)
+        result = configure_boot_level_licence(self.device, False, False, False, False, False, False, False, True, False)
+        expected_output = None
+        self.assertEqual(result, expected_output)
+
+    def test_configure_boot_level_licence_1(self):
+        result = configure_boot_level_licence(self.device, False, False, False, False, False, False, False, False, True)
         expected_output = None
         self.assertEqual(result, expected_output)

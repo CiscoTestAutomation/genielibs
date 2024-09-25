@@ -532,7 +532,7 @@ def unconfigure_crypto_ikev2_keyring(device,keyring):
 def configure_ikev2_profile_pre_share(device, profile_name, auth_local='pre-share', auth_remote='pre-share',
                                     keyring=None, address=None, mask='', protocol='ipv4',
                                     dpd_interval=None, dpd_retry='2', dpd_type='periodic',
-                                    fvrf=None, lifetime=None):
+                                    fvrf=None, lifetime=None, local_interface=None):
 
     """ Configure Ikev2 Profile with pre-share option
         Args:
@@ -549,7 +549,8 @@ def configure_ikev2_profile_pre_share(device, profile_name, auth_local='pre-shar
             dpd_retry ('str',optional) DPD Retries (Default 2)
             dpd_type ('str',optional) DPD type (ie periodic or on-demand) (Default periodic)
             fvrf ('str',optional) FVRF name (Default None)
-            lifetime ('str',optional) lifetime in secs  (Default is None)
+            lifetime ('str',optional) lifetime in secs (Default is None)
+            local_interface ('str', optional) interface name  (Default is None)
         Returns:
             None
         Raises:
@@ -577,6 +578,8 @@ def configure_ikev2_profile_pre_share(device, profile_name, auth_local='pre-shar
                                                                   retry=dpd_retry, type=dpd_type))
     if lifetime:
         config_list.append("lifetime {lifetime}".format(lifetime=lifetime))
+    if local_interface:
+        config_list.append("match address local interface {local_interface}".format(local_interface=local_interface))
 
     try:
         device.configure(config_list)

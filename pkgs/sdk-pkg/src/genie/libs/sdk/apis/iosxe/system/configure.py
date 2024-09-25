@@ -32,7 +32,7 @@ def config_license(device, license):
 
 def configure_boot_level_licence(device, nw_advantage=False, nw_essentials=False,
         nw_premier=False, addon=False, adventerprise=False, advipservices=False,
-        ipbase=False):
+        ipbase=False, advantage=False, essentials=False):
     """ Config boot level license on Device
     Args:
         device ('obj'): Device object
@@ -43,6 +43,8 @@ def configure_boot_level_licence(device, nw_advantage=False, nw_essentials=False
         adventerprise ('bool'): boot level adventerprise
         advipservices ('bool'): boot level advipservices
         ipbase ('bool'): boot level ipbase
+        advantage ('bool'): boot level advantage
+        essentials ('bool'): boot level essentials
     Return:
         None
     Raise:
@@ -69,6 +71,10 @@ def configure_boot_level_licence(device, nw_advantage=False, nw_essentials=False
         cmd += " network-premier"
         if addon:
             cmd += " addon dna-premier"
+    elif advantage:
+        cmd += " advantage"
+    elif essentials:
+        cmd += " essentials"
     try:
         device.configure(cmd)
     except SubCommandFailure as e:

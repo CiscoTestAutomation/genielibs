@@ -108,6 +108,14 @@ class test_filetransferutils(unittest.TestCase):
               Transferred 11332 Bytes
               11332 bytes copied in 0 sec (251822)bytes/sec
     '''
+    raw8 =  '''
+            copy ftp://SERVER-IP/IOS-eXR/7.4.2/ASR9K.IOS-eXR7.4.2.All-SMUs.20230501.tar harddisk:/tmp-ALL-v7.4.2-PyATS/ASR9K.IOS-eXR7.4.2.All-SMUs.20230501.tar                    
+            Thu Feb 29 10:32:44.460 EST
+            Source username: [anonymous]?SERVER-USERNAME
+            Source password: 
+            Destination filename [/harddisk:/tmp-ALL-v7.4.2-PyATS/ASR9K.IOS-eXR7.4.2.All-SMUs.20230501.tar]?
+            Accessing ftp://SERVER-USERNAME:*@SERVER-IP/IOS-eXR/7.4.2/ASR9K.IOS-eXR7.4.2.All-SMUs.20230501.tar
+    '''
     outputs = {}
     outputs['copy disk0:/fake_config_2.tcl '
         'ftp://myuser:mypw@1.1.1.1//auto/tftp-ssr/fake_config_2.tcl'] = raw1
@@ -118,6 +126,7 @@ class test_filetransferutils(unittest.TestCase):
     outputs['copy running-config ftp://10.1.6.242//auto/tftp-ssr/fake_config_2.tcl'] = \
         raw6
     outputs['sftp running-config myuser@1.1.1.1:/home/virl'] = raw7
+    outputs['copy running-config ftp://1.1.1.1//home/virl'] = raw7
     def mapper(self, key, timeout=None, reply= None, prompt_recovery=False, error_pattern=None):
         return self.outputs[key]
 
@@ -125,6 +134,8 @@ class test_filetransferutils(unittest.TestCase):
 
         self.device.execute = Mock()
         self.device.execute.side_effect = self.mapper
+        self.device.parse = Mock()
+        self.device.parse.return_value = {'software_version':'6.1.2'}
 
         # Call copyfiles
         self.fu_device.copyfile(source='disk0:/fake_config_2.tcl',
@@ -204,6 +215,17 @@ class test_filetransferutils(unittest.TestCase):
         self.fu_device.copyconfiguration(source='running-config',
           destination='ftp://10.1.6.242//auto/tftp-ssr/fake_config_2.tcl',
           timeout_seconds=300, device=self.device)
+        
+    def test_copyfile_ftp(self):
+        self.device.execute = Mock()
+        self.device.parse = Mock()
+        self.device.parse.return_value = {'software_version':'7.1.2'} 
+        self.device.execute.side_effect = self.mapper
+
+        # Call copyfiles
+        self.fu_device.copyfile(source='running-config',
+                                destination='ftp://1.1.1.1//home/virl',
+                                device=self.device)
 
 
 if __name__ == '__main__':

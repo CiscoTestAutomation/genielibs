@@ -10,6 +10,8 @@ from genie.libs.clean.stages.iosxe.stages import Connect
 from unicon.plugins.tests.mock.mock_device_iosxe import MockDeviceTcpWrapperIOSXE
 import unicon
 
+from unicon.core.errors import UniconBackendDecodeError
+
 unicon.settings.Settings.POST_DISCONNECT_WAIT_SEC = 0
 unicon.settings.Settings.GRACEFUL_DISCONNECT_WAIT_SEC = 0.2
 
@@ -59,7 +61,7 @@ class TestIosXEConnect(unittest.TestCase):
     def tearDownClass(self):
         self.device.disconnect()
         self.md.stop()
-    
+
     def test_connect(self):
         steps = Steps()
         self.connect = Connect()
@@ -67,3 +69,14 @@ class TestIosXEConnect(unittest.TestCase):
         self.assertEqual(Passed, steps.details[0].result)
 
 
+    @patch('unicon.eal.backend.pty_backend.Spawn._read', Mock(return_value=b'\xcej'))
+    def test_connect_speed_fail(self):
+        steps = Steps()
+        self.device.api.configure_management_console = MagicMock()
+        try:
+            self.device.disconnect()
+            self.connect = Connect()
+            self.connect(steps=steps, device=self.device)
+        except:
+            ...
+        self.device.api.configure_management_console.assert_called_once()

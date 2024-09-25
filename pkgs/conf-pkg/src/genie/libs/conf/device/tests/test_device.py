@@ -20,7 +20,7 @@ from genie.libs.conf.device.ixia import Device as IxiaDevice
 from genie.libs.conf.device.pagent import Device as PagentDevice
 from genie.libs.conf.device.spirent import Device as SpirentDevice
 
-
+from genie.libs.conf.tests.device.interface_output import InterfaceOutput
 class test_device(TestCase):
 
     def test_init(self):
@@ -93,7 +93,48 @@ class test_device(TestCase):
         dev.default = MagicMock()
         dev.traffic_control(param='value')
         dev.default.traffic_control.assert_has_calls([call(param='value')])
+        
+class TestLearnInterface(unittest.TestCase):
+        
+    def test_learn_interfaces_iosxe(self):
+        self.dev1 = Device(name='PE1', os='iosxe')
+        xe_interfaces = {'GigabitEthernet0/1/0', 'GigabitEthernet0/0/1', 'GigabitEthernet0/0/0', 'GigabitEthernet1/0/1', 'GigabitEthernet1/0/2', 'GigabitEthernet0/2/0'}
+        
+        self.dev1.learn = MagicMock()
+        learn_1_return_value = MagicMock()
+        learn_1_return_value.to_dict = MagicMock(return_value=InterfaceOutput.IosxeInterfaceOutput_info)
+        self.dev1.learn.return_value = learn_1_return_value
+        self.dev1.api.is_management_interface = MagicMock(return_value=False)
+        self.assertEqual(len(self.dev1.interfaces), 0)
+        self.dev1.learn_interfaces()
+        self.assertEqual(set(self.dev1.interfaces.keys()), xe_interfaces)
 
+    def test_learn_interfaces_iosxr(self): 
+        self.dev2 = Device(name='PE1', os='iosxr')
+        xr_interfaces = {'Null0', 'GigabitEthernet0/0/0/5', 'GigabitEthernet0/0/0/0.20', 'GigabitEthernet0/0/0/4', 'GigabitEthernet0/0/0/0.10', 'MgmtEth0/0/CPU0/0', 
+                        'GigabitEthernet0/0/0/6', 'GigabitEthernet0/0/0/1', 'GigabitEthernet0/0/0/0', 'GigabitEthernet0/0/0/2', 'GigabitEthernet0/0/0/3'}    
+        self.dev2.learn = MagicMock()
+        learn_2_return_value = MagicMock()
+        learn_2_return_value.to_dict = MagicMock(return_value=InterfaceOutput.IosxrInterfaceOpsOutput_info)
+        self.dev2.learn.return_value = learn_2_return_value
+        self.dev2.api.is_management_interface = MagicMock(return_value=False)
+        self.assertEqual(len(self.dev2.interfaces), 0)
+        self.dev2.learn_interfaces()
+        self.assertEqual(set(self.dev2.interfaces.keys()), xr_interfaces)
+        # self.dev3.learn.side_effect = InterfaceOutput.NxosInterfaceOpsOutput_info
+
+    def test_learn_interfaces_nxos(self): 
+        self.dev3 = Device(name='PE1', os='nxos')
+        xr_interfaces = {'Ethernet1/17', 'Mgmt0', 'Ethernet1/15', 'Ethernet1/18', 'Null0', 'Ethernet1/10', 'Ethernet1/12', 'Ethernet1/1', 
+                         'Ethernet2/1', 'Ethernet1/13', 'Ethernet1/14', 'Ethernet1/16', 'Ethernet1/11'}    
+        self.dev3.learn = MagicMock()
+        learn_3_return_value = MagicMock()
+        learn_3_return_value.to_dict = MagicMock(return_value=InterfaceOutput.NxosInterfaceOpsOutput_info)
+        self.dev3.learn.return_value = learn_3_return_value
+        self.dev3.api.is_management_interface = MagicMock(return_value=False)
+        self.assertEqual(len(self.dev3.interfaces), 0)
+        self.dev3.learn_interfaces()
+        self.assertEqual(set(self.dev3.interfaces.keys()), xr_interfaces)
 
 if __name__ == '__main__':
     unittest.main()

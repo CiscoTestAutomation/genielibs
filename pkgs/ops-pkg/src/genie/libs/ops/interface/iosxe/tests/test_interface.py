@@ -32,6 +32,12 @@ outputs['show interfaces'] = InterfaceOutput.ShowInterfaces_all
 outputs['show ip interface'] = InterfaceOutput.ShowIpInterfaces_all
 outputs['show ipv6 interface'] = InterfaceOutput.ShowIpv6Interfaces_all
 outputs['show interfaces accounting'] = InterfaceOutput.ShowInterfacesAccounting_all
+outputs['show interfaces accounting'] = InterfaceOutput.ShowInterfacesAccounting_all
+outputs['show interfaces accounting'] = InterfaceOutput.ShowInterfacesAccounting_all
+outputs['show interfaces | include line protocol|Hardware is|BW'] = InterfaceOutput.ShowInterfaces_Brief
+outputs['show ip interface | include line protocol|Internet address'] = InterfaceOutput.ShowIpInterface_Brief
+outputs['show ipv6 interface | include protocol|address|subnet'] = InterfaceOutput.ShowIpv6Interface_Brief
+
 def mapper(key, **kwargs):
     return outputs[key]
 
@@ -156,6 +162,15 @@ class test_interface(unittest.TestCase):
         # Verify Ops was created successfully
         self.assertDictEqual(intf.info, expect_dict)
 
+
+    def test_brief_output(self):
+        self.maxDiff = None
+        intf = Interface(device=self.device)
+
+        # Learn the feature
+        intf.learn(brief=True)
+        # Verify Ops was created successfully
+        self.assertDictEqual(intf.info, InterfaceOutput.InterfaceOpsBriefOutput_info)
 
 if __name__ == '__main__':
     unittest.main()

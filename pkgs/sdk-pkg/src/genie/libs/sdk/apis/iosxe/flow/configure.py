@@ -1620,3 +1620,30 @@ def  unconfigure_datalink_flow_monitor(device, interface, flow_name, direction):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Failed to unconfigure datalink flow monitor device {device.name}. Error:\n{e}")
+
+
+def configure_fnf_flow_record_match_flow(device, record_name, flow_name, cts_type=None):
+    
+    """ Configure Flow Record match flow on Device
+        Args:
+            device ('obj'): Device object
+            record_name ('str'): Flow record name
+            flow_name ('str'): cts or direction or observation
+            cts_type ('str', optional): source or destination. Default is None
+
+        Return:
+            None
+            
+        Raise:
+            SubCommandFailure: Failed configuring Flow Record on Device
+    """
+    
+    config = [f'flow record {record_name}']
+    if flow_name == 'observation':
+        config.append(f'match flow observation point')
+    elif flow_name == 'cts' and cts_type:
+        config.append(f'match flow cts {cts_type} group-tag')
+    try:
+        device.configure(config)
+    except SubCommandFailure:
+        raise SubCommandFailure(f'Could not configure flow record {record_name}')

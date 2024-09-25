@@ -1,4 +1,4 @@
-''' 
+'''
 MCAST Genie Ops Object for IOSXE - CLI.
 '''
 # super class
@@ -24,7 +24,7 @@ class Mcast(SuperMacst):
     def learn(self):
         '''Learn Mcast Ops'''
 
-        # get vrf list        
+        # get vrf list
         self.add_leaf(cmd=ShowVrfDetail,
                       src='',
                       dest='list_of_vrfs',
@@ -35,9 +35,9 @@ class Mcast(SuperMacst):
         vrf_list = ['default']
         try:
             vrf_list.extend(self.list_of_vrfs)
-        except:
+        except Exception:
             pass
-        else:            
+        else:
             # delete the list_of_vrfs in the info table
             del self.list_of_vrfs
 
@@ -50,20 +50,19 @@ class Mcast(SuperMacst):
 
             # create kwargs
             vrf_name = '' if vrf == 'default' else vrf
-                
 
             ########################################################################
             #                                 info
             ########################################################################
 
             # enable - ipv4
-            self.add_leaf(cmd='show ip multicast vrf {vrf}'.format(vrf=vrf),
+            self.add_leaf(cmd=f'show ip multicast vrf {vrf}' if vrf_name else 'show ip multicast',
                           src='[vrf][(?P<vrf>.*)][enable]',
                           dest='info[vrf][(?P<vrf>.*)][address_family][ipv4][enable]',
                           vrf=vrf_name)
 
             # multipath - ipv4
-            self.add_leaf(cmd='show ip multicast vrf {vrf}'.format(vrf=vrf),
+            self.add_leaf(cmd=f'show ip multicast vrf {vrf}' if vrf_name else 'show ip multicast',
                           src='[vrf][(?P<vrf>.*)][multipath]',
                           dest='info[vrf][(?P<vrf>.*)][address_family][ipv4][multipath]',
                           vrf=vrf_name)
@@ -73,7 +72,7 @@ class Mcast(SuperMacst):
                           src='[vrf][(?P<vrf>.*)][interface][(?P<interface>.*)][pim_enabled]',
                           dest='info[vrf][(?P<vrf>.*)][interface][(?P<interface>.*)][pim_enabled]',
                           vrf=vrf_name)
-     
+
 
             # multipath - ipv6 from show run
 
@@ -83,7 +82,7 @@ class Mcast(SuperMacst):
                         '[mroute][(?P<mroute>.*)][path][(?P<path>.*)]'
 
             for key in ['neighbor_address', 'admin_distance']:
-                self.add_leaf(cmd='show ip mroute vrf {vrf} static'.format(vrf=vrf),
+                self.add_leaf(cmd=f'show ip mroute vrf {vrf} static' if vrf_name else 'show ip mroute static',
                               src=info_src+'[{key}]'.format(key=key),
                               dest=info_dest+'[{key}]'.format(key=key),
                               vrf=vrf_name)
@@ -113,7 +112,7 @@ class Mcast(SuperMacst):
 
             try:
                 ipv6_mroute_list = self.table['vrf'][vrf]['address_family']['ipv6']['multicast_group'].keys()
-            except:
+            except Exception:
                 ipv6_mroute_list = []
 
             # ipv6 - neighbor_address, interface_name, admin_distance
@@ -136,11 +135,11 @@ class Mcast(SuperMacst):
                     if self.info['vrf'][vrf]['interface'][intf]['pim_enabled']:
                         self.info['vrf'][vrf]['address_family']['ipv6']['enable'] = True
                         break
-            except:
+            except Exception:
                 pass
 
             # delete unused ops attribute
             try:
                 del(self.info['vrf'][vrf]['interface'])
-            except:
+            except Exception:
                 pass

@@ -564,7 +564,7 @@
           "os": "iosxe"
         },
         "uid": "interface",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/interface/iosxe/interface.py#L17"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/interface/iosxe/interface.py#L20"
       },
       "iosxr": {
         "class": "Interface",
@@ -580,6 +580,19 @@
       "nxos": {
         "class": "Interface",
         "doc": "Interface Genie Ops Object",
+        "folders": {
+          "rev1": {
+            "class": "Interface",
+            "doc": "Interface Genie Ops Object",
+            "module_name": "interface.nxos.rev1.interface",
+            "package": "genie.libs.ops",
+            "tokens": {
+              "revision": "1"
+            },
+            "uid": "interface",
+            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/interface/nxos/rev1/interface.py#L21"
+          }
+        },
         "module_name": "interface.nxos.interface",
         "package": "genie.libs.ops",
         "tokens": {
@@ -1730,6 +1743,9 @@
       "cat9k",
       "xml",
       "yang"
+    ],
+    "revision": [
+      "1"
     ]
   },
   "vlan": {

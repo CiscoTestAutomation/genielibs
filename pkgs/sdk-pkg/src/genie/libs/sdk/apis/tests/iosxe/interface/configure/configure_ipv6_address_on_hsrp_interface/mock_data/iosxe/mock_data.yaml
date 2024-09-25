@@ -2,28 +2,31 @@ configure:
   commands:
     end:
       new_state: execute
-    interface vlan16: "interface vlan16\r\n"
+    interface Vlan600: "interface Vlan600\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''
-    standby 0  preempt delay sync 0: "standby 0  preempt delay sync 0\r\n"
-    standby 0 ipv6 10::3/64: "standby 0 ipv6 10::3/64\r\n"
-    standby 0 timers 1 4: "standby 0 timers 1 4\r\n"
-  prompt: 9300-1(config)#
+    standby 3  preempt delay sync 10: "standby 3  preempt delay sync 10\r\n"
+    standby 3  priority 100: "standby 3  priority 100\r\n"
+    standby 3 ipv6 2001:db8:10::100/64: "standby 3 ipv6 2001:db8:10::100/64\r\n"
+    standby 3 timers 10 20: "standby 3 timers 10 20\r\n"
+    standby version 2: "standby version 2\r\n"
+  prompt: platform-Prom-1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: 9300-1(config-line)#
+  prompt: platform-Prom-1(config-line)#
 connect:
   commands:
-    '':
-      new_state: execute
-  preface: |-
-    Trying mock_device ...
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
     Connected to mock_device.
-    Escape character is '^]'.
+
+    Escape character is ''^]''.'
   prompt: ''
 execute:
   commands:
@@ -32,7 +35,7 @@ execute:
     config-transaction:
       new_state: configure
     show version: ''
+    show version | include operating mode: ''
     term length 0: ''
     term width 0: ''
-    show version | include operating mode: ''
-  prompt: 9300-1#
+  prompt: platform-Prom-1#

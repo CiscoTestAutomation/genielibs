@@ -62,9 +62,6 @@ Verify_BgpIpMvpnRouteType_vrf_all_route_type_4:
   iteration:
     attempt: 15
     interval: 10
-  iteration:
-    attempt: 15
-    interval: 10
   exclude: []
   parameters:
     route_type: '4'

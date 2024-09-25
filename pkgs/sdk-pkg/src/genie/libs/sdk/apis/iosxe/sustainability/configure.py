@@ -428,6 +428,44 @@ def unconfigure_ecomode_optics(device, switch_number):
             f"Could not unconfigure serdes shutdown {device}. Error:\n{e}"
         )
 
+def configure_auto_off_optics(device, switch_number):
+    """
+    Args:
+        device ('obj'): Device object
+        switch_number('int'): switch number
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    cmd = f"hw-module switch {switch_number} auto-off optics"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure serdes shutdown {device}. Error:\n{e}"
+        )
+
+def unconfigure_auto_off_optics(device, switch_number):
+    """
+    Args:
+        device ('obj'): Device object
+        switch_number('int'): switch number
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    cmd = f"no hw-module switch {switch_number} auto-off optics"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure serdes shutdown {device}. Error:\n{e}"
+        )
+
+
+
 
 
 

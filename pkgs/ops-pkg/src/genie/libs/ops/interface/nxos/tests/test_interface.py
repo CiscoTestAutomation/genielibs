@@ -25,6 +25,7 @@ outputs['show interface Ethernet2/1'] = InterfaceOutput.ShowInterface_eth2
 outputs['show vrf VRF1 interface Ethernet2/1'] = InterfaceOutput.ShowVrfAllInterface_vrf1_eth2
 outputs['show interface Ethernet2/1 switchport'] = InterfaceOutput.ShowInterfaceSwitchport_eth2
 outputs['show ip interface Ethernet2/1 vrf VRF1'] = InterfaceOutput.ShowIpInterfaceVrfAll_all
+outputs['show interface | include " is (up|down)|Hardware:|BW"'] = InterfaceOutput.ShowInterfaceBrief
 
 def mapper(key, **kwargs):
     return outputs[key]
@@ -59,6 +60,7 @@ class test_interface(unittest.TestCase):
 
         # Verify Ops was created successfully
         self.assertDictEqual(intf.info, InterfaceOutput.InterfaceOpsOutput_info)
+
     def test_custom_output(self):
         self.maxDiff = None
         intf = Interface(device=self.device)
@@ -74,6 +76,7 @@ class test_interface(unittest.TestCase):
 
         # Verify Ops was created successfully
         self.assertDictEqual(intf.info, InterfaceOutput.InterfaceOpsOutput_custom_info)
+
     def test_empty_output(self):
         self.maxDiff = None
         intf = Interface(device=self.device)
@@ -100,6 +103,7 @@ class test_interface(unittest.TestCase):
         outputs['show interface switchport'] = InterfaceOutput.ShowInterfaceSwitchport_all
         outputs['show ip interface vrf all'] = InterfaceOutput.ShowIpInterfaceVrfAll_all
         outputs['show ipv6 interface vrf all'] = InterfaceOutput.ShowIpv6InterfaceVrfAll_all
+        
     def test_selective_attribute(self):
         self.maxDiff = None
         intf = Interface(device=self.device)
@@ -142,7 +146,22 @@ class test_interface(unittest.TestCase):
 
         # Verify Ops was created successfully
         self.assertDictEqual(intf.info, expect_dict)
+        
+    def test_brief_output(self):
+        self.maxDiff = None
+        intf = Interface(device=self.device)
+        # Get outputs
 
+
+        intf.maker.outputs[ShowRoutingVrfAll] = \
+            {"{'vrf':''}":InterfaceOutput.ShowRoutingVrfAll}
+        intf.maker.outputs[ShowRoutingIpv6VrfAll] = \
+            {"{'vrf':''}":InterfaceOutput.ShowRoutingIpv6VrfAll}
+
+        # Learn the feature
+        intf.learn(brief=True)
+    #     # Verify Ops was created successfully
+        self.assertDictEqual(intf.info, InterfaceOutput.InterfaceBriefOpsOutput_info)
 
 if __name__ == '__main__':
     unittest.main()

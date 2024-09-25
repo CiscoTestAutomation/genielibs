@@ -2,28 +2,29 @@ configure:
   commands:
     end:
       new_state: execute
-    license boot level ipbase: |
-      license boot level ipbase
-      % use 'write' command to make license boot config take effect on next boot
-      
+    license boot level advantage: "license boot level advantage\r\n% use 'write' command\
+      \ to make license boot config take effect on next boot\r\n\r\n"
+    license boot level essentials: "license boot level essentials\r\n% use 'write'\
+      \ command to make license boot config take effect on next boot\r\n\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''
-  prompt: BB_ASR1006-X(config)#
+  prompt: 9350-stack-1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: BB_ASR1006-X(config-line)#
+  prompt: 9350-stack-1(config-line)#
 connect:
   commands:
-    '':
-      new_state: execute
-  preface: |-
-    Trying mock_device ...
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
     Connected to mock_device.
-    Escape character is '^]'.
+
+    Escape character is ''^]''.'
   prompt: ''
 execute:
   commands:
@@ -32,7 +33,7 @@ execute:
     config-transaction:
       new_state: configure
     show version: ''
+    show version | include operating mode: ''
     term length 0: ''
     term width 0: ''
-    show version | include operating mode: ''
-  prompt: BB_ASR1006-X#
+  prompt: 9350-stack-1#

@@ -4384,7 +4384,7 @@ def device_recovery_boot(device, console_activity_pattern=None, console_breakboo
         log.info(f'There is no recovery info for device {device.name}')
         recovery_info = {}
 
-    console_activity_pattern = console_activity_pattern or recovery_info.get('console_activity_pattern') 
+    console_activity_pattern = console_activity_pattern or recovery_info.get('console_activity_pattern')
     console_breakboot_char = console_breakboot_char or recovery_info.get('console_breakboot_char') or '\x03'
     console_breakboot_telnet_break =  console_breakboot_telnet_break or recovery_info.get('console_breakboot_telnet_break') or False
     grub_breakboot_char = grub_breakboot_char or recovery_info.get('grub_breakboot_char') or 'c'
@@ -4394,14 +4394,14 @@ def device_recovery_boot(device, console_activity_pattern=None, console_breakboo
     golden_image = golden_image or recovery_info.get('golden_image', [])
     tftp_boot = tftp_boot or recovery_info.get('tftp_boot', {})
 
-    
+
     log.info('Destroy device connection.')
     try:
         device.destroy()
     except Exception:
         log.warning("Failed to destroy the device connection but "
                     "attempting to continue", exc_info=True)
-    
+
     if golden_image:
         log.info(banner("Booting device '{}' with the Golden images".\
                         format(device.name)))
@@ -4555,10 +4555,11 @@ def configure_management_console(device):
             device.testbed.devices[terminal_server].disconnect()
 
 
-def configure_terminal_line_speed(device, terminal_line, speed):
+def configure_terminal_line_speed(device, terminal_device, terminal_line, speed):
     ''' Configure terminal line speed
     Args:
         device: device object
+        terminal_device: terminal device object
         terminal_line(int): line number
         speed(int): speed to configure
     '''
@@ -4567,12 +4568,12 @@ def configure_terminal_line_speed(device, terminal_line, speed):
     cmd.append(f'speed {speed}')
     log.info(f'Configuring speed {speed} on line {terminal_line}')
     try:
-       device.configure(cmd)
+       terminal_device.configure(cmd)
     except SubCommandFailure as e:
-        log.exception(f"Failed to configure speed {speed} for line {terminal_line} for device {device}")
-   
+        log.exception(f"Failed to configure speed {speed} for line {terminal_line} for device {terminal_device}")
+
 def configure_peripheral_terminal_server(device):
-    ''' configure terminal server lines for peripherals 
+    ''' configure terminal server lines for peripherals
     Args:
         device: device object
     '''
@@ -4582,12 +4583,12 @@ def configure_peripheral_terminal_server(device):
                 with ensure_connection(device.testbed.devices[terminal_server]):
                     for line in terminal_server_lines:
                         if isinstance(line, dict) and line.get('speed') and line.get('line'):
-                            configure_terminal_line_speed(device.testbed.devices[terminal_server], line['line'], line['speed'])
+                            configure_terminal_line_speed(device, device.testbed.devices[terminal_server], line['line'], line['speed'])
                         else:
                             log.error('the value for line or speed is not provided!')
             else:
                 log.error(f'Terminal server {terminal_server} is not in the testbed or the line is not a list')
     else:
         log.error(f'Device {device} has no peripherals or terminal_server!')
-                        
+
 

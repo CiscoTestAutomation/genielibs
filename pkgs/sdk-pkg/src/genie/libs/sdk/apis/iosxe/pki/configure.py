@@ -495,6 +495,112 @@ def configure_trustpoint(device,
         )
     )
 
+def configure_crypto_pki_profile(device,
+                      prof_name,
+                      method_est=False,
+                      enrollment_http_username=None,
+                      enrollment_http_password_type=None,
+                      enrollment_http_password=None,
+                      enrollment_url=None,
+                      source_interface=None,
+                      exit_flag=False,
+                      no_config=None,
+                      vrf=None
+):
+
+    '''
+    configure crypto pki enrollment profile
+    Args:
+         device('obj'): Device object
+         prof_name('string'): crypto pki enrollment profile name
+         method_est('bool'): use EST method
+         enrollment_http_username('string'): http authentication username
+         enrollment_http_password_type('bool'): http password type
+         enrollment_http_password('string'): http authentication password 
+         enrollment_url('string'): http or tftp url used for enrollment to CA
+         source_interface('string'): source interface for enrollment
+         vrf('string'): used for crf config
+         no_config('string'): used for unconfiguration of sub configs used in trustpoint
+         exit_flag('bool'): used for exit
+    Returns: 
+        None
+    Raises:
+        SubCommandFailure
+    '''
+    
+    logger.debug("configuring crypto pki profile enrollment")
+
+    tp_config = [f"crypto pki profile enrollment {prof_name}"]   
+
+    if method_est:
+        tp_config.append("method-est")
+
+    if enrollment_http_username is not None:
+        assert enrollment_http_password is not None, "A password is required when enrollment_http_username is given"
+        if enrollment_http_password_type is not None:
+            tp_config.append(f"enrollment http username {enrollment_http_username} password {enrollment_http_password_type} {enrollment_http_password}")
+        else:
+            tp_config.append(f"enrollment http username {enrollment_http_username} password {enrollment_http_password}")
+
+    if enrollment_url is not None:
+        if vrf is not None:
+            tp_config.append(f"enrollment url {enrollment_url} vrf {vrf}")
+        else:
+            tp_config.append(f"enrollment url {enrollment_url}")
+
+    if source_interface is not None:
+        tp_config.append(f"source interface {source_interface}")
+
+    if no_config is not None:
+        tp_config.append(f"no {no_config}")
+
+    if exit_flag:
+        tp_config.append("exit")
+    
+    error_patterns = ["The command you have entered is available in the IOS.sh",
+                        ]
+    
+    try:
+        device.configure(tp_config, error_pattern = error_patterns)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            logger.error("Failed to configure trust point",
+                "Error:\n{error}".format(error=e)
+        )
+    )
+
+def unconfigure_crypto_pki_profile(device,
+                           prof_name):
+    '''
+    unconfiguring crypto pki profile enrollment
+    Args:
+        device ('obj'): Device object
+        prof_name ('str'): Name of the trsutpoint
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    '''
+
+    dialog = Dialog([
+                Statement(pattern=r'.*Are you sure you want to do this.*',
+                    action=f'sendline(yes)',
+                    loop_continue=True,
+                    continue_timer=False)
+                ])
+
+    logger.debug("Unconfiguring crypto pki profile enrollment")
+
+    tp_unconfig = (f"no crypto pki profile enrollment {prof_name}")
+    try:
+        device.configure(tp_unconfig, reply=dialog, error_pattern=["Can't find profile"])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            logger.error("Failed to unconfigure enrollment profile"
+                "Error:\n{error}".format(error=e)
+            )
+        )
+
 def unconfigure_crypto_pki_server(device,
                                   server_name):
     '''
@@ -954,4 +1060,27 @@ def configure_pki_authenticate_certificate(device, certificate, label_name):
             "Could not Paste certificate on device "
             "Error: {error}".format(error=e)
             )
+    
+def configure_no_pki_enroll(device, tp_name):
+    '''
+        Configuring crypto pki enroll
+        Args:
+            device ('obj'): Device object
+            tp_name ('str'): name of the trustpoint
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    '''
+    logger.debug("Cancelling crypto pki enroll server")
+    pki_no_enroll_config = (f"no crypto pki enroll {tp_name}")
+    try:
+        device.configure(pki_no_enroll_config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            logger.error("failed to cancel crypto pki enroll"
+                "Error:\n{error}".format(error=e)
+            )
+        )
+
 

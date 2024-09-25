@@ -103,7 +103,6 @@ def tftp_device_recovery(spawn, timeout, device, tftp_boot, item, recovery_passw
         Returns:
             None
     """
-
     dialog = TftpRommonDialog()
 
     # Add a statement to the dialog which will match the device hostname
@@ -112,6 +111,17 @@ def tftp_device_recovery(spawn, timeout, device, tftp_boot, item, recovery_passw
                           r''.format(hostname=device.hostname),
                   action=print_message,
                   args={'message': 'Device has reached privileged exec prompt'}))
+
+    credentials = device.credentials
+
+    if recovery_username is None:
+        recovery_username = to_plaintext(credentials.get('default', {}).get('username'))
+
+    if recovery_password is None:
+        recovery_password = to_plaintext(credentials.get('default', {}).get('password'))
+
+    if recovery_en_password is None:
+        recovery_en_password = to_plaintext(credentials.get('enable', {}).get('password'))
 
     dialog.dialog.process(
         spawn,

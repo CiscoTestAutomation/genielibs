@@ -121,3 +121,30 @@ def clear_active_punt_ios_cause(device, state=None):
         raise SubCommandFailure(
             'Could not clear punt ios-cause on {device}. Error:\n{error}'.format(device=device.name, error=e)
         )
+        
+def clear_platform_qos_statistics_iif_id(device, state, iif_id, switch=None):
+    """ clear platform hardware qos statistics internal cpu policer
+        Args:
+            device ('obj'): Device object
+            state ('str'): Switch state active or standby
+            switch ('str', optional): Switch string
+            iif_id('int'): iif id (1-4294967295)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"clear platform hardware fed switch qos statistics iif_id on {device}")
+	
+    command = f"clear platform hardware fed {state} qos statistics iif_id {iif_id}" 
+    if switch:
+        command = f"clear platform hardware fed {switch} {state} qos statistics iif_id {iif_id}"
+
+    try:
+        device.execute(command)
+        
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not clear qos statistics iif_id on {device}. Error:\n{error}".format(device=device, error=e)
+        )
+        

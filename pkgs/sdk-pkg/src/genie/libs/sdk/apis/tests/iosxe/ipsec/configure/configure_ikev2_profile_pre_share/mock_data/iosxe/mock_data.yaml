@@ -2,31 +2,37 @@ configure:
   commands:
     authentication local pre-share: "   1. A local and a remote authentication method.\r\
       \n"
-    authentication remote pre-share: "   2. A match identity or a match certificate
-      or match any statement.\r\n"
-    crypto ikev2 profile test_ike_prof: "crypto ikev2 profile test_ike_prof\r\n"
+    authentication remote pre-share: "   2. A match identity or a match certificate\
+      \ or match any statement.\r\n"
+    crypto ikev2 profile scale_ikev2_profile_v4_phy: "crypto ikev2 profile scale_ikev2_profile_v4_phy\r\
+      \n"
     end:
       new_state: execute
-    keyring local 1: "match fvrf UNDERLAY\r\n"
+    keyring local ikev2_key_v4_phy: "match identity remote address 19.1.1.0 255.255.255.0\r\
+      \n"
     line console 0:
       new_state: configure_line
-    match fvrf UNDERLAY: "IKEv2 profile MUST have:\r\n"
+    match address local interface TenGigabitEthernet1/0/1: "authentication local pre-share\r\
+      \n"
+    match identity remote address 19.1.1.0 255.255.255.0: "IKEv2 profile MUST have:\r\
+      \n"
     no logging console: ''
-  prompt: kparames_csr1(config)#
+  prompt: PE-B(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: kparames_csr1(config-line)#
+  prompt: PE-B(config-line)#
 connect:
   commands:
-    '':
-      new_state: execute
-  preface: |-
-    Trying mock_device ...
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
     Connected to mock_device.
-    Escape character is '^]'.
+
+    Escape character is ''^]''.'
   prompt: ''
 execute:
   commands:
@@ -35,7 +41,7 @@ execute:
     config-transaction:
       new_state: configure
     show version: ''
+    show version | include operating mode: ''
     term length 0: ''
     term width 0: ''
-    show version | include operating mode: ''
-  prompt: kparames_csr1#
+  prompt: PE-B#

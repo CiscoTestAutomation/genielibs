@@ -10,6 +10,7 @@ from genie.libs.clean.clean import StageSection, BaseStage, CleanTestcase, REUSE
 from genie.libs.clean.stages.image_handler import BaseImageHandler
 from genie.conf.base import Device
 from genie.abstract.package import AbstractTree
+from genie.libs.clean.utils import validate_clean
 
 from pyats.log.utils import banner
 from pyats import results
@@ -587,3 +588,41 @@ class TestCleanTestcase(unittest.TestCase):
         clean_testcase.discover()
 
         self.assertEqual(clean_testcase.image_handler.override_stage_images, True)
+
+
+class TestValidateClean(unittest.TestCase):
+
+    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(side_effect=clean_json))
+    def test_validate_clean_image_management_stage(self):
+        expected_result = {'warnings': [], 'exceptions': []}
+        clean_yaml = """cleaners:
+  DeviceClean:
+    module: genie.libs.clean
+    devices: [router]
+
+devices:
+  router:
+    images:
+      - /auto/release/path/image.bin
+
+    image_management:
+      override_stage_images: False
+
+    connect:
+
+    order:
+      - 'connect'
+"""
+        testbed_yaml = """
+testbed:
+  name: SAMPLE-TESTBED
+
+devices:
+  router:
+    os: iosxe
+    connections:
+      defaults:
+        class: unicon.Unicon
+"""
+        actual_result = validate_clean(clean_yaml, testbed_yaml)
+        self.assertEqual(expected_result, actual_result)

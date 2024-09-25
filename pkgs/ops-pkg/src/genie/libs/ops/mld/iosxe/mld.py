@@ -1,4 +1,4 @@
-''' 
+'''
 MLD Genie Ops Object for IOSXE - CLI.
 '''
 # super class
@@ -12,14 +12,14 @@ class Mld(SuperMld):
     '''MLD Genie Ops Object'''
 
     def keys(self, item):
-        '''return only the key as list from the item'''        
+        '''return only the key as list from the item'''
         if isinstance(item, dict):
             return list(item.keys())
 
     def learn(self):
         '''Learn MLD Ops'''
 
-        # get vrf list        
+        # get vrf list
         self.add_leaf(cmd=ShowVrfDetail,
                       src='',
                       dest='list_of_vrfs',
@@ -32,7 +32,7 @@ class Mld(SuperMld):
             vrf_list.extend(self.list_of_vrfs)
         except AttributeError:
             pass
-        else:            
+        else:
             # delete the list_of_vrfs in the info table
             del self.list_of_vrfs
 
@@ -45,7 +45,7 @@ class Mld(SuperMld):
 
             # create kwargs
             vrf_name = '' if vrf == 'default' else vrf
-        
+
             ########################################################################
             #                               info
             ########################################################################
@@ -66,9 +66,9 @@ class Mld(SuperMld):
             #     --  enable, group_policy
             #     --  max_groups, query_interval, query_max_response_time
             #     --  oper_status, querier, version
-            # 
+            #
             # immediate_leave, robustness_variable, joined_group are not supported on iosxe
-            req_keys = ['[enable]', 
+            req_keys = ['[enable]',
                         '[group_policy]', '[max_groups]', '[query_interval]',
                         '[query_max_response_time]', '[oper_status]',
                         '[querier]', '[version]']
@@ -121,11 +121,11 @@ class Mld(SuperMld):
                     req_keys = ['[ssm_map][(?P<ssm_map>.*)][source_addr]',
                                 '[ssm_map][(?P<ssm_map>.*)][group_address]']
                     for key in req_keys:
-                        self.add_leaf(cmd='show ipv6 mld vrf {vrf} ssm-map {group}'.format(vrf=vrf, group=group),
+                        self.add_leaf(cmd=f'show ipv6 mld vrf {vrf} ssm-map {group}' if vrf_name else
+                                          f'show ipv6 mld ssm-map {group}',
                                       src=src + '[{}]'.format(key),
                                       dest=dest + '[{}]'.format(key),
                                       group=group, vrf=vrf_name)
-
 
             # make to write in cache
             self.make(final_call=True)

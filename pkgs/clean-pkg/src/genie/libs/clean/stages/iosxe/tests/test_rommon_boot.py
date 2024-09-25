@@ -109,6 +109,13 @@ class TestRommonBoot(unittest.TestCase):
             "Failed to write memory",
             from_exception=api_exception)
 
+    def test_go_to_rommon(self):
+        steps = mock.MagicMock()
+        self.device.rommon = mock.Mock()
+        self.cls.go_to_rommon(steps, self.device, config_register="0x40")
+        steps.start.assert_called_with("Bring device down to rommon mode")
+        self.device.rommon.assert_called_once()
+
     @mock.patch('genie.libs.clean.stages.iosxe.stages._disconnect_reconnect')
     def test_reconnect_pass(self, _disconnect_reconnect):
         steps = mock.MagicMock()
@@ -139,5 +146,3 @@ class TestRommonBoot(unittest.TestCase):
         #  with steps.start('...') as step_context:
         step_context = steps.start.return_value.__enter__.return_value
         step_context.failed.assert_called_with("Failed to reconnect")
-
-

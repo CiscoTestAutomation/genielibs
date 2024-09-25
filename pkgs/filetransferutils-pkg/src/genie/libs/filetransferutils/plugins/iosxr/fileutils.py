@@ -1,7 +1,9 @@
 """ File utils base class for IOSXR devices. """
 
+import logging
 # Parent inheritance
 from .. import FileUtils as FileUtilsDeviceBase
+from urllib.parse import urlparse
 
 # Dir parser
 try:
@@ -14,7 +16,8 @@ except ImportError:
 # Unicon
 from unicon.core.errors import SubCommandFailure
 
-
+DEFAULT_PORTS = {'ftp': 21, 'tftp': 69, 'scp': 22, 'sftp': 22, 'http': 80}
+logger = logging.getLogger(__name__)
 class FileUtils(FileUtilsDeviceBase):
 
     def copyfile(self,
@@ -507,3 +510,46 @@ class FileUtils(FileUtilsDeviceBase):
             return output
         else:
             raise SubCommandFailure('File was not successfully copied')
+
+    def validate_and_update_url(self, url, device=None, **kwargs ):
+        """Validate the url and replace the hostname/address with a
+        reachable address from the testbed"""
+        parsed_url = urlparse(url)
+        protocol = self.get_protocol(url)
+        if protocol != 'ftp':
+            return super().validate_and_update_url(url, device=device, **kwargs)
+        if hasattr(device,'version') and device.version:
+           version = device.version
+        else: 
+            try:
+                out = device.parse('show version')
+            except Exception as e:
+                logger.error(f'Could not copy file because of {e}')
+                raise e
+            version = out.get('software_version')
+        if version and int(version.split('.')[0]) >= 7:
+            # if there is a host name, this means the address is remote
+            if parsed_url.hostname:
+                # get hostname to check for valid ip
+                hostname = self.get_hostname(parsed_url.hostname, device=device, **kwargs)
+                    
+                # Append port if it's defined
+                server_block = self.get_server_block(
+                server_name_or_ip = parsed_url.hostname, device = device)
+                port = server_block.get('port')
+                if port and port != DEFAULT_PORTS[protocol]:
+                    hostname = '%s:%s' % (hostname, str(port))
+                # Make sure we don't replace the protocol when the hostname has the
+                # same name eg. ftp://ftp/path/to/file
+                if protocol and url.startswith(protocol):
+                    url = protocol + url[len(protocol):].replace(
+                        parsed_url.hostname, hostname, 1)
+                else:
+                    url = url.replace(parsed_url.hostname, hostname, 1)
+                return url
+
+            # just return url if it's local
+            else:
+                return url
+        else:
+            return super().validate_and_update_url(url, device=None, **kwargs)
