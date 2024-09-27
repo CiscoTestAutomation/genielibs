@@ -3,6 +3,7 @@ import unittest
 from pyats.topology import loader
 from genie.libs.sdk.apis.iosxe.aaa.configure import configure_common_criteria_policy
 
+
 class TestConfigureCommonCriteriaPolicy(unittest.TestCase):
 
     @classmethod
