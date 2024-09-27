@@ -921,9 +921,9 @@ def configure_common_criteria_policy(device,
     if lifetime:
        for key in lifetime:
            configs.append("lifetime {attr} {val}".format(attr=key, val=lifetime[key]))
-    if int(lower_case) > 0:
+    if lower_case and int(lower_case) > 0:
         configs.append("lower-case {low}".format(low=lower_case))
-    if int(upper_case) > 0:
+    if upper_case and int(upper_case) > 0:
         configs.append("upper-case {up}".format(up=upper_case))
     if max_len:
         configs.append("max-length {maxl}".format(maxl=max_len))
@@ -938,7 +938,7 @@ def configure_common_criteria_policy(device,
             for key in no_value:
                 configs.append("no {attr} {val}".format(attr=key,
                     val=no_value[key]))
-    if int(num_count) > 0:
+    if num_count and int(num_count) > 0:
         configs.append("numeric-count {num}".format(num=num_count))
     if special_case:
         configs.append("special-case {spcl}".format(spcl=special_case))
