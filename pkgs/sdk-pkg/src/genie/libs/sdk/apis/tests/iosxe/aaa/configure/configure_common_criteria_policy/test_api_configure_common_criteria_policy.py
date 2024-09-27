@@ -7,21 +7,21 @@ class TestConfigureCommonCriteriaPolicy(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        testbed = f"""
+        testbed = """
         devices:
-          Router:
+          VTP-PK1:
             connections:
               defaults:
                 class: unicon.Unicon
               a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
+                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: vwlc
-            type: wlc
+            platform: cat9k
+            type: c9200
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Router']
+        self.device = self.testbed.devices['VTP-PK1']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -29,7 +29,7 @@ class TestConfigureCommonCriteriaPolicy(unittest.TestCase):
         )
 
     def test_configure_common_criteria_policy(self):
-        result = configure_common_criteria_policy(self.device, 'ABCD', None, None, None, None, None, None, 1, None, None, None, False, None)
+        result = configure_common_criteria_policy(self.device, 'ABCD', 5, 0, 0, 1, 1, 20, 8, 0, 1, 5, True, 1)
         expected_output = None
         self.assertEqual(result, expected_output)
 
