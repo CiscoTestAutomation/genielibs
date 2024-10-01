@@ -184,6 +184,7 @@ class VirtualInterface(Interface, genie.libs.conf.interface.VirtualInterface):
 class LoopbackInterface(VirtualInterface, genie.libs.conf.interface.LoopbackInterface):
 
     _interface_name_types = (
+        'loopback',
         'Loopback',
     )
 
@@ -194,6 +195,7 @@ class LoopbackInterface(VirtualInterface, genie.libs.conf.interface.LoopbackInte
 class EthernetInterface(PhysicalInterface, genie.libs.conf.interface.EthernetInterface):
 
     _interface_name_types = (
+        'ethernet',
         'Ethernet',  # TODO verify
         'FastEthernet',
         'GigabitEthernet',  # TODO verify

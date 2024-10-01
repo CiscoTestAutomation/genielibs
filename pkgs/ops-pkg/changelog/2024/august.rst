@@ -5,5 +5,3 @@
 * iosxe
     * cat9k
         * Use the cmd string format instead of importing the module.
-
-

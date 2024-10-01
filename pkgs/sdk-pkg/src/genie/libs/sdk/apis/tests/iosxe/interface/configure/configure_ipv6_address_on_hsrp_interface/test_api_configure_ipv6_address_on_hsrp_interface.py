@@ -10,7 +10,7 @@ class TestConfigureIpv6AddressOnHsrpInterface(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          9300-1:
+          platform-Prom-1:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -19,10 +19,10 @@ class TestConfigureIpv6AddressOnHsrpInterface(unittest.TestCase):
                 protocol: unknown
             os: iosxe
             platform: cat9k
-            type: C9300
+            type: c9500
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['9300-1']
+        self.device = self.testbed.devices['platform-Prom-1']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,6 @@ class TestConfigureIpv6AddressOnHsrpInterface(unittest.TestCase):
         )
 
     def test_configure_ipv6_address_on_hsrp_interface(self):
-        result = configure_ipv6_address_on_hsrp_interface(self.device, 'vlan16', 0, '10::3/64', None, '0', '1', '4')
+        result = configure_ipv6_address_on_hsrp_interface(self.device, 'Vlan600', 3, 2, '2001:db8:10::100/64', '100', '10', '10', '20')
         expected_output = None
         self.assertEqual(result, expected_output)

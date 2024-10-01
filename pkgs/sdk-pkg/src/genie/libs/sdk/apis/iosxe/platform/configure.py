@@ -1,4 +1,4 @@
-'''IOSXE execute functions for platform'''
+'''IOSXE configure functions for platform'''
 
 # Python
 import logging
@@ -5570,7 +5570,6 @@ def configure_event_manager(device, event, description,event_run_option,
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure event manager applet on device {device.name}. Error:\n{e}")
 
-
 def configure_hw_module_switch_number_ecomode_led(device, switch_number='all'):
 
     """ configure_hw_module_switch_number_ecomode_led
@@ -5664,6 +5663,101 @@ def configure_default_stack_power_ecomode(device, stack_name):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"could not configure default stack power ecomode {device}. Error:\n{e}"
+        )
+
+def configure_hw_module_switch_number_auto_off_led(device, switch_number='all'):
+
+    """ configure_hw_module_switch_number_auto_off_led
+        Args:
+            device ('obj'): device to use
+            switch_number ('str'): switch number
+        Returns:
+            None
+        Raises:
+            SubCommandFailure exception
+    """
+
+    cmd = [f"hw-module switch {switch_number} auto-off led"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure hw-module auto-off led on device {device.name}. Error:\n{e}")
+
+
+def unconfigure_hw_module_switch_number_auto_off_led(device, switch_number='all'):
+
+    """ unconfigure_hw_module_switch_number_auto_off_led
+        Args:
+            device ('obj'): device to use
+            switch_number ('str'): switch number
+        Returns:
+            None
+        Raises:
+            SubCommandFailure exception
+    """
+
+    cmd = [f"no hw-module switch {switch_number} auto-off led"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure hw-module auto-off led on device {device.name}. Error:\n{e}")
+
+def configure_stack_power_auto_off(device, stack_name):
+    """ Configure stack power auto-off
+        Args:
+            device ('obj'): Device object
+            stack_name ('str'): Stack name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [f"stack-power stack {stack_name}",
+           "auto-off",]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"could not configure stack power auto-off {device}. Error:\n{e}"
+        )
+
+def unconfigure_stack_power_auto_off(device, stack_name):
+    """ Unconfigure stack power auto-off
+        Args:
+            device ('obj'): Device object
+            stack_name ('str'): Stack name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [f"stack-power stack {stack_name}",
+           "no auto-off",]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"could not unconfigure stack power auto-off {device}. Error:\n{e}"
+        )
+
+
+def configure_default_stack_power_auto_off(device, stack_name):
+    """ Configure default stack power auto-off
+        Args:
+            device ('obj'): Device object
+            stack_name ('str'): Stack name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [f"stack-power stack {stack_name}",
+           "default auto-off",]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"could not configure default stack power auto-off {device}. Error:\n{e}"
         )
 
 def configure_ip_http_client_secure_trustpoint(device, trustpoint_name):
@@ -6151,5 +6245,4 @@ def configure_macro_name(device, macro_name, macro_configs, timeout=60):
         raise SubCommandFailure(
             f"Failed to configure macro name {macro_name} on device {device.hostname}. Error:\n{e}"
         )
-
 

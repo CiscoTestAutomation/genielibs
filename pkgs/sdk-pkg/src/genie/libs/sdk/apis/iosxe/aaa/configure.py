@@ -3069,3 +3069,21 @@ def unconfigure_radius_attribute_policy_name_under_servergroup(device, server_gr
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Failed unconfiguring radius attribute policy-name under radius server group {word}. Error:\n{e}')
+        
+def unconfigure_aaa_accounting_dot1x_default_start_stop_group(device , server_group_name):
+    '''api for no aaa accounting dot1x default start-stop group <NAME>
+
+    Args:
+        device ('obj') : Device object
+        server_group_name ('str') : Server-group name [Command accounting supports only tacacs group]
+    Return:
+        None
+    Raise:
+        SubCommandFailure: failed to configure aaa accounting dot1x default start-stop group <NAME>
+    '''
+
+    cmd = f"no aaa accounting dot1x default start-stop group {server_group_name}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"failed to unconfigure aaa accounting dot1x default start-stop group {server_group_name}")

@@ -1850,14 +1850,6 @@ TriggerAddRemoveBgpAggregateAddressIpv6:
       interval: 10
     devices: ['uut']
 
-TriggerAddRemoveBgpNetworkIPv4:
-    groups: ['add-remove', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
-
 TriggerAddRemoveBgpKeepaliveHoldtime:
     groups: ['add-remove', 'bgp', 'L3']
     method: 'checkpoint'

@@ -3,80 +3,75 @@
 --------------------------------------------------------------------------------
 
 * iosxe
-    * Added configure_macro_name
-        * API to configure 'macro name {macro_name}'.
-    * Enhanced existing api configure_macro_global_apply
-        * Modified API to configure 'macro global apply {macro_name} {variables} {values} '.
-    * Added configure_ip_pim_vrf_ssm_range
-        * API to configure ip pim vrf ssm range
-    * Added unconfigure_ip_pim_vrf_ssm_range
-        * API to unconfigure ip pim vrf ssm range
-    * Added configure_ip_msdp_vrf_peer
-        * API to configure msdp vrf peer
-    * Added unconfigure_ip_msdp_vrf_peer
-        * API to unconfigure msdp vrf peer
-    * Added config_prp_sup_vlan_aware
-        * prp channel-group 1 supervisionFrameOption vlan-aware-enable
-    * Added unconfig_prp_sup_vlan_aware
-        * no prp channel-group 1 supervisionFrameOption vlan-aware-enable
-    * Added config_prp_sup_vlan_aware_allowed_vlan_list
-        * prp channel-group 1 supervisionFrameOption vlan-aware-allowed-vlan 30,40
-    * Added unconfig_prp_sup_vlan_aware_allowed_vlan_list
-        * no prp channel-group 1 supervisionFrameOption vlan-aware-allowed-vlan
-    * Added config_prp_static_vdan_entry
-        * prp channel-group 1 vdanMacaddress 000001000011 vlan-id 10
-    * Added unconfig_prp_static_vdan_entry
-        * no prp channel-group 1 vdanMacaddress 000001000011
-    * Added config_prp_sup_vlan_aware_reject_untagged
-        * prp channel-group 1 supervisionFrameOption vlan-aware-reject-untagged
-    * Added def unconfig_prp_sup_vlan_aware_reject_untagged(device, interface)
-        * no prp channel-group 1 supervisionFrameOption vlan-aware-reject-untagged
-    * Added config_prp_sup_vlan_id
-        * prp channel-group 1 supervisionFrameoption vlan-id 10
-    * Added unconfig_prp_sup_vlan_id
-        * no prp channel-group 1 supervisionFrameoption vlan-id 10
-    * Added config_prp_sup_vlan_tagged
-        * prp channel-group 1 supervisionFrameOption vlan-tagged
-    * Added unconfig_prp_sup_vlan_tagged
-        * no prp channel-group 1 supervisionFrameOption vlan-tagged
-    * Updated the config using f-strings
-        * config = f"prp channel-group {interface} supervisionFrameOption vlan-aware-enable"
-    * Updated api config_prp_static_vdan_entry as configure_prp_static_vdan_entry_with_vlan
-        * prp channel-group 1 vdanMacaddress 000001000011 vlan-id 10
-    * Added configure_prp_static_vdan_entry
-        * prp channel-group 1 vdanMacaddress 000001000012
-    * Added configure_interface_cts_role_based_sgt_map
-        * API to configure interface cts role based sgt map
-    * Added unconfigure_interface_cts_role_based_sgt_map
-        * API to unconfigure interface cts role based sgt map
-    * Added debug_platform_software_fed_drop_capture
-        * added api to debug_platform_software_fed_drop_capture
-    * Added debug_platform_software_fed_drop_capture_action
-        * added api to debug_platform_software_fed_drop_capture_action
-    * Added debug_platform_software_fed_drop_capture_buffer
-        * added api to debug_platform_software_fed_drop_capture_buffer
-    * Added configure_ignore_startup_config
-        * added api to configure_ignore_startup_config
-    * Added unconfigure_ignore_startup_config
-        * added api to unconfigure_ignore_startup_config
-    * Added verify_ignore_startup_config
-        * added api to verify_ignore_startup_config
-    * Added new API get_interfaces_switchport_state
-        * get_interfaces_switchport_state - Get switchport state for interfaces
-    * Added configure_radius_attribute_policy_name_globally
-    * Added unconfigure_radius_attribute_policy_name_globally
-    * Added configure_radius_attribute_policy_name_under_server
-    * Added unconfigure_radius_attribute_policy_name_under_server
-    * Added configure_radius_attribute_policy_name_under_servergroup
-    * Added unconfigure_radius_attribute_policy_name_under_servergroup
+    * Added configure_spanning_tree_bridge_assurance
+        * API for configure spanning tree bridge assurance
+    * Added unconfigure_spanning_tree_bridge_assurance
+        * API for unconfigure spanning tree bridge assurance
+    * Added configure_spanning_tree_portfast_bridge_assurance
+        * API for configure spanning tree portfast bridge assurance
+    * Added unconfigure_spanning_tree_portfast_bridge_assurance
+        * API for unconfigure spanning tree portfast bridge assurance
+    * Added configure_spanning_tree_portfast_bridge_assurance_on_interface
+        * API for configure spanning tree portfast bridge assurance on interface
+    * Added unconfigure_spanning_tree_portfast_bridge_assurance_on_interface
+        * API for unconfigure spanning tree portfast bridge assurance on interface
+    * Added configure_vlan_dot1q_tag_native
+        * API to configure vlan dot1q tag native
+    * Added unconfigure_vlan_dot1q_tag_native
+        * API to unconfigure vlan dot1q tag native
+    * Added configure_switchport_trunk_native_vlan_tag
+        * API to configure switchport trunk native vlan tag
+    * Added configure_auto_off_optics
+        * Added configure_auto_off_optics
+    * Added unconfigure_auto_off_optics
+        * Added unconfigure_auto_off_optics
+    * Added test_platform_software_fru_fake_insert_remove
+        * New API to execute test platform software fed switch {switch_num} fru {action}
+    * Added new API to not set config register value in IOT devices
+        * This is done to avoid this setting in clean install of IOT devices.
+    * Added configure_medium_p2p_interface
+        * Configure medium p2p on interface
+    * Added unconfigure_medium_p2p_interface
+        * Unconfigure medium p2p on interface
+    * Added configure_access_list_extend_with_dst_address_and_port
+        * New API to configures access-list extend with destination address and ports on device
+    * Added configure_access_list_extend_with_port
+        * New API to configures access-list extend with port on device
+    * Added configure_access_list_extend_with_dst_address_and_gt_port
+        * New API to configures access-list extend with destination address and gt port on device
+    * Added configure_access_list_extend_with_range_and_eq_port
+        * New API to configures access-list extend with range and eq port on device
+    * Added configure_access_list_extend
+        * New API to configures access-list extend on device
+    * Added configure_ipv6_address_on_hsrp_interface
+        * Added configure_ipv6_address_on_hsrp_interface
+    * Added configure_spanning_tree_portfast under c9610
+        * New API to configures spanning-tree portfast under c9610
+    * Added configure_fnf_flow_record_match_flow
+        * added api to configure flow record match flow
+    * Added configure_ip_sgacl
+        * API for configure the ip agacl rules
+    * Added unconfigure_ip_sgacl
+        * API for unconfigure ip sgacl
+    * Added clear_platform_qos_statistics_iif_id
+        * added clear platform hardware qos statistics internal cpu policer API
+    * Added monitor_capture_start_capture_filter
+        * Execute monitor_capture_start_capture_filter
+    * Added monitor_capture_file_location_flash
+        * Execute monitor_capture_file_location_flash
+    * Added monitor_capture_class_map
+        * Execute monitor_capture_class_map
+    * Added monitor_capture_clear
+        * Execute monitor_capture_clear
+    * Added unconfigure_aaa_accounting_dot1x_default_start_stop_group
+        * New API to unconfigure "no aaa accounting dot1x default start-stop group {server_group_name}"
 
-* iosxe/cat9k
-    * Added send_break_boot
-        * send break boot command for cat9k devices
+* added unconfigure_switchport_trunk_native_vlan_tag
+    * API to unconfigure switchport trunk native vlan tag
 
-* sdk/triggers
-    * blitz
-        * Added new action check_yang_subscribe
+* generic/nxos
+    * Added configure_hostname
+        * New API to configure hostname on device.
 
 
 --------------------------------------------------------------------------------
@@ -84,38 +79,27 @@
 --------------------------------------------------------------------------------
 
 * iosxe
-    * send_break_boot
-        * update the pattern for break boot for iosxe
-    * Fixed clear_logging_onboard_rp_active_standby
-        * added optional variable 'log_name'
-    * Fixed confirm_iox_enabled_requested_storage_media
-        * Added mod_storage_string and sso_storage_strings to support modular
-    * Fixed configure_app_management_networking
-        * Fixed returns True or False instead of none
-    * Fixed issue with 'verify_interface_config_duplex' API
-        * API not working fine when any other config present under interface for auto duplex.
-    * Fixed issue with 'verify_interface_config_speed' API
-        * API not working fine when any other config present under interface for auto speed.
-    * Modified verify_current_image
-        * Added provision to compare images based on regex if regex_search parameter is True
-    * ASR1K
-        * Added verify_current_image
-            * Passing regex_search as True to compare images based on regex
-    * Modified configure_management
-        * Added `alias_as_hostname` argument
-        * Allows user to use the alias as the device hostname
-    * Modified health_logging
-        * Fixed logic error with log count
+    * Fixed configure_hw_module_switch_number_auto_off_led
+        * Changed ecomode to auto-off
+    * Fixed unconfigure_hw_module_switch_number_auto_off_led
+        * Changed ecomode to auto-off
+    * Fixed configure_stack_power_auto_off
+        * Changed ecomode to auto-off
+    * Fixed unconfigure_stack_power_auto_off
+        * Changed ecomode to auto-off
+    * Fixed configure_default_stack_power_auto_off
+        * Changed ecomode to auto-off
+    * Modified API configure_ikev2_profile_pre_share
+        * Added local_interface parameter
+        * Added logic and command to execute if local_interface parameter is provided
+    * Fixed configure_boot_level_licence
+        * Added optional agruments advantage and essentials
+    * Removed duplicate entry of configure_interface_monitor_session_shutdown_erspan_dest, configure_interface_monitor_session_mtu and configure_interface_monitor_session_no_mtu
+    * Modified configure_management_vty_lines API
+        * Added stackable check for configure_management_vty_lines API using stackable parameter
+    * Fixed configure_ipv6_address_on_hsrp_interface
+        * Changed version to groupnumber
 
-* execute
-    * execute power cycle
-        * add try except for destroying device object.
-
-* abstracted_libs
-    * Modified __init__.py file to import all modules available in the abstracted_libs folder
-
-* power cycler
-    * snmp client
-        * update the logic to work with tuple instead of iterator.
-
-
+* nxos
+    * Removed duplicate TriggerAddRemoveBgpNetworkIPv4 trigger from trigger_datafile_nxos.yaml file
+    * Removed duplicate iteration attribute under Verify_BgpIpMvpnRouteType_vrf_all_route_type_4 from verification_datafile_nxos.yaml file

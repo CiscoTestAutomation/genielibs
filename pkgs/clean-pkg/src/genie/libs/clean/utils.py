@@ -379,7 +379,8 @@ def validate_clean(clean_file, testbed_file, lint=True):
     # these sections are not true stages and therefore cant be loaded
     sections_to_ignore = [
         'images',
-        'order'
+        'order',
+        'image_management'
     ]
 
     base_schema = {
@@ -462,6 +463,7 @@ def validate_clean(clean_file, testbed_file, lint=True):
         schema.update({Optional('order'): list})
         schema.update({Optional('device_recovery'): dict})
         schema.update({Optional('images'): Or(list, dict)})
+        schema.update({Optional('image_management'): dict})
 
         clean_data = clean_dict["devices"][dev]
 

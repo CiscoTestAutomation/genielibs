@@ -1,0 +1,9 @@
+default:
+        arguments:
+                device : 'host_router2'
+
+unconfigure_crypto_pki_profile:
+        arguments:
+                prof_name : 'API_PROF'
+
+

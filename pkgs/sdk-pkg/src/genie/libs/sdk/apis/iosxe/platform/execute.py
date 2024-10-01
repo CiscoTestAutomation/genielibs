@@ -1802,3 +1802,23 @@ def test_platform_software_usb_fake_insert_remove(device, switch_num, usbflash, 
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to perform fake insert/remove. Error:\n{e}")
 
+def test_platform_software_fru_fake_insert_remove(device, switch_num, action):
+    """
+    Execute 'test platform software fed switch {switch_num} fru {action}' command on the device.
+
+    Args:
+        device (obj): Device object
+        switch_num (int): Slot or switch number
+        action (str): Action to perform ('fake-insert' or 'fake-remove')
+        
+    Returns:
+        str: Output of the command
+    """
+    log.debug(f"Perform fake insert/remove for fru on {device}")
+    
+    command = f"test platform software fed switch {switch_num} fru {action}"
+    
+    try:
+        device.execute(command)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to perform fake insert/remove for fru. Error:\n{e}")

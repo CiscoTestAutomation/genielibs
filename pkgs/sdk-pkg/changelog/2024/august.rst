@@ -117,5 +117,3 @@
 * power cycler
     * snmp client
         * update the logic to work with tuple instead of iterator.
-
-

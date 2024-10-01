@@ -1,0 +1,43 @@
+configure:
+  commands:
+    crypto pki profile enrollment API_PROF: "crypto pki profile enrollment API_PROF\r\
+      \n"
+    end:
+      new_state: execute
+    enrollment http username ashrishe password 0 nopassword: "enrollment http username\
+      \ ashrishe password 0 nopassword\r\n"
+    enrollment url https://10.106.29.252:443: "enrollment url https://10.106.29.252:443\r\
+      \n"
+    exit: "exit\r\n"
+    line console 0:
+      new_state: configure_line
+    method-est: "method-est\r\n"
+    no logging console: ''
+  prompt: dut1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: dut1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    show version | include operating mode: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: dut1#

@@ -1,0 +1,41 @@
+configure:
+  commands:
+    70 permit udp any range 14000 14449 host 206.203.117.19 gt 2023: "70 permit udp\
+      \ any range 14000 14449 host 206.203.117.1\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b$dp\
+      \ any range 14000 14449 host 206.203.117.19         \b\b\b\b\b\b\b\b\b gt 2023\r\
+      \n"
+    end:
+      new_state: execute
+    ip access-list extended ACL_1: "ip access-list extended ACL_1\r\n"
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: Raitt(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: Raitt(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    show version | include operating mode: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: Raitt#

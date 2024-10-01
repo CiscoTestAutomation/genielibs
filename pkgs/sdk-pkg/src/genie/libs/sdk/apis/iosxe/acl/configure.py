@@ -2171,3 +2171,178 @@ def configure_type_access_list_action(device, type, name, action, action_type=No
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure {type} acl on the device {device.name}. Error:\n{e}")
+
+def configure_access_list_extend_with_dst_address_and_port(device, access_list_name, sequence_number, access_type, protocol_name, dst_address, dst_wildcard_bits, port_num1, port_num2):
+    """ Configures access-list extend with destination address and ports
+        Args:
+             device ('obj'): device to use
+             access_list_name ('str'): access list name
+             sequence_number ('int'):  sequence number
+             access_type ('str'): access type(i.e deny/permit)
+             protocol_name ('str'): protocol name(i.e udp/tcp)
+             dst_address ('str'): destinamtion address
+             dst_wildcard_bits ('str'): destination wildcard bits
+             port_num1 ('int'): first port number 
+             port_num2 ('int'): second port number 
+             
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"configure access-list extend with {dst_address} and {port_num1} and {port_num2}")
+
+    config = [f"ip access-list extended {access_list_name}",
+	      f"{sequence_number} {access_type} {protocol_name} any {dst_address} {dst_wildcard_bits} range {port_num1} {port_num2}"]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure access-list extend with {dst_address} and {port_num1} and {port_num2}.  Error:\n{e}")
+
+def configure_access_list_extend_with_port(device, access_list_name, sequence_number, access_type, protocol_name, port_num1, port_num2, port_num3, port_num4):
+    """ Configures access-list extend with ranges
+        Args:
+             device ('obj'): device to use
+             access_list_name ('str'): access list name
+             sequence_number ('int'):  sequence number
+             access_type ('str'): access type(i.e deny/permit)
+             protocol_name ('str'): protocol name(i.e udp/tcp)
+             port_num1 ('int'): first port number 
+             port_num2 ('int'): second port number 
+             port_num3 ('int'): third port number 
+             port_num4 ('int'): fourth port number 
+             
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"configure access-list extend with ranges on device {device}")
+
+    config = [f"ip access-list extended {access_list_name}",
+		f"{sequence_number} {access_type} {protocol_name} any range {port_num1} {port_num2} any range {port_num3} {port_num4}"]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure access-list extend with ranges on device {device}.Error:\n{e}") 
+
+def configure_access_list_extend_with_dst_address_and_gt_port(device, access_list_name, sequence_number, access_type, protocol_name, port_num1, port_num2, dst_address, port_num3):
+    """ Configures access-list extend with destination address and gt port config
+        Args:
+             device ('obj'): device to use
+             access_list_name ('str'): access list name
+             sequence_number ('int'):  sequence number
+             access_type ('str'): access type(i.e deny/permit)
+             protocol_name ('str'): protocol name(i.e udp/tcp)
+             port_num1 ('int'): first port number 
+             port_num2 ('int'): second port number 
+             dst_address ('str'): destinamtion address
+             port_num3 ('int'): third port number 
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"configure access-list extend with destination address and gt port config on device {device}")
+
+    config = [f"ip access-list extended {access_list_name}",
+		f"{sequence_number} {access_type} {protocol_name} any range {port_num1} {port_num2} host {dst_address} gt {port_num3}"]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure access-list extend with  destination address and gt port config on device {device}.Error:\n{e}") 
+            
+def configure_access_list_extend_with_range_and_eq_port(device, access_list_name, sequence_number, access_type, protocol_name, port_num1, port_num2, port_num3):
+    """ Configures access-list extend with range and eq port config
+        Args:
+             device ('obj'): device to use
+             access_list_name ('str'): access list name
+             sequence_number ('int'):  sequence number
+             access_type ('str'): access type(i.e deny/permit)
+             protocol_name ('str'): protocol name(i.e udp/tcp)
+             port_num1 ('int'): first port number 
+             port_num2 ('int'): second port number 
+             port_num3 ('int'): third port number 
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"configure access-list extend with range and eq port config on device {device}")
+
+    config = [f"ip access-list extended {access_list_name}",
+		f"{sequence_number} {access_type} {protocol_name} any range {port_num1} {port_num2} any eq {port_num3}"]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure access-list extend with range and eq port config on device {device}.Error:\n{e}")  
+
+def configure_access_list_extend(device, access_list_name, sequence_number, access_type, protocol_name):
+    """ Configures access-list extend
+        Args:
+             device ('obj'): device to use
+             access_list_name ('str'): access list name
+             sequence_number ('int'):  sequence number
+             access_type ('str'): access type(i.e deny/permit)
+             protocol_name ('str'): protocol name(i.e udp/tcp)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"configure access-list extend on device {device}")
+
+    config = [f"ip access-list extended {access_list_name}",
+		f"{sequence_number} {access_type} {protocol_name} any any"]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure access-list extend on device {device}.Error:\n{e}") 
+
+def configure_ip_sgacl(device, acl_action, ip_protocol_version):
+    """Configure ip sgacl
+        Example: ip access-list role-based PERMIT
+                 permit ip log
+        Args:
+            device ('obj'): device to use
+            acl_action ('str'): (permit | deny) permits or denies traffic
+            ip_protocol_version ('str'): define ip (or) ipv6
+        Returns:
+            None
+        Raises: 
+            SubCommandFailure
+    """
+    acl_action = acl_action.strip().lower()
+    if acl_action not in ('permit', 'deny'):
+        log.error("Invalid action type")
+    config = [f"{ip_protocol_version} access-list role-based {acl_action}",
+              f"{acl_action} {ip_protocol_version} log"]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure ip sgacl on the device {device.name}. Error:\n{e}")
+
+def unconfigure_ip_sgacl(device, acl_action, ip_protocol_version):
+    """Unconfigure ip sgacl
+        Example: no ip access-list role-based PERMIT
+        Args:
+            device ('obj'): device to use
+            acl_action ('str'): (permit | deny) permits or denies traffic
+        Returns:
+            None
+        Raises: 
+            SubCommandFailure
+    """
+    acl_action = acl_action.strip().lower()
+    if acl_action not in ('permit', 'deny'):
+        log.error("Invalid action type")
+    config = [f"no {ip_protocol_version} access-list role-based {acl_action}"]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure ip sgacl on the device {device.name}. Error:\n{e}")

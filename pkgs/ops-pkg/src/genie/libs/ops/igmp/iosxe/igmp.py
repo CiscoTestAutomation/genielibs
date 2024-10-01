@@ -1,4 +1,4 @@
-''' 
+'''
 IGMP Genie Ops Object for IOSXE - CLI.
 '''
 # super class
@@ -19,7 +19,7 @@ class Igmp(SuperIgmp):
     def learn(self):
         '''Learn IGMP Ops'''
 
-        # get vrf list        
+        # get vrf list
         self.add_leaf(cmd=ShowVrfDetail,
                       src='',
                       dest='list_of_vrfs',
@@ -30,9 +30,9 @@ class Igmp(SuperIgmp):
         vrf_list = ['default']
         try:
             vrf_list.extend(self.list_of_vrfs)
-        except:
+        except Exception:
             pass
-        else:            
+        else:
             # delete the list_of_vrfs in the info table
             del self.list_of_vrfs
 
@@ -45,13 +45,13 @@ class Igmp(SuperIgmp):
 
             # create kwargs
             vrf_name = '' if vrf == 'default' else vrf
-        
+
             ########################################################################
             #                               info
             ########################################################################
 
             # max_groups
-            self.add_leaf(cmd='show ip igmp vrf {vrf} interface'.format(vrf=vrf),
+            self.add_leaf(cmd=f'show ip igmp vrf {vrf} interface' if vrf_name else 'show ip igmp interface',
                           src='[vrf][(?P<vrf>.*)][global_max_groups]',
                           dest='info[vrfs][(?P<vrf>.*)][max_groups]',
                           vrf=vrf_name)
@@ -67,27 +67,27 @@ class Igmp(SuperIgmp):
             #     --  enable, last_member_query_interval, group_policy
             #     --  max_groups, query_interval, query_max_response_time
             #     --  oper_status, querier
-            # 
+            #
             # immediate_leave, robustness_variable are not supported on iosxe
             req_keys = ['[enable]', '[last_member_query_interval]',
                         '[group_policy]', '[max_groups]', '[query_interval]',
                         '[query_max_response_time]', '[oper_status]',
                         '[querier]']
             for key in req_keys:
-                self.add_leaf(cmd='show ip igmp vrf {vrf} interface'.format(vrf=vrf),
+                self.add_leaf(cmd=f'show ip igmp vrf {vrf} interface' if vrf_name else 'show ip igmp interface',
                               src=src + '[{}]'.format(key),
                               dest=dest + '[{}]'.format(key),
                               vrf=vrf_name)
 
             # version
-            self.add_leaf(cmd='show ip igmp vrf {vrf} interface'.format(vrf=vrf),
+            self.add_leaf(cmd=f'show ip igmp vrf {vrf} interface' if vrf_name else 'show ip igmp interface',
                           src=src + '[router_version]',
                           dest=dest + '[version]',
                           vrf=vrf_name)
 
             # interfaces
             #     --  joined_group
-            self.add_leaf(cmd='show ip igmp vrf {vrf} interface'.format(vrf=vrf),
+            self.add_leaf(cmd=f'show ip igmp vrf {vrf} interface' if vrf_name else 'show ip igmp interface',
                           src=src + '[joined_group]',
                           dest=dest + '[joined_group]',
                           vrf=vrf_name,
@@ -112,14 +112,13 @@ class Igmp(SuperIgmp):
                         '[group][(?P<group>.*)][source][(?P<source>.*)][expire]',
                         '[group][(?P<group>.*)][source][(?P<source>.*)][last_reporter]']
             for key in req_keys:
-                self.add_leaf(cmd='show ip igmp vrf {vrf} groups detail'.format(vrf=vrf),
+                self.add_leaf(cmd=f'show ip igmp vrf {vrf} groups detail' if vrf_name else 'show ip igmp groups detail',
                               src=src + '[{}]'.format(key),
                               dest=dest + '[{}]'.format(key),
                               vrf=vrf_name)
 
             # make to write in cache
             self.make()
-
 
             if not hasattr(self, 'info'):
                 continue
@@ -143,12 +142,11 @@ class Igmp(SuperIgmp):
                     req_keys = ['[ssm_map][(?P<ssm_map>.*)][source_addr]',
                                 '[ssm_map][(?P<ssm_map>.*)][group_address]']
                     for key in req_keys:
-                        self.add_leaf(cmd='show ip igmp vrf {vrf} ssm-mapping {group}' \
-                                           .format(vrf=vrf, group=group),
+                        self.add_leaf(cmd=f'show ip igmp vrf {vrf} ssm-mapping {group}' if vrf_name else
+                                          f'show ip igmp ssm-mapping {group}',
                                       src=src + '[{}]'.format(key),
                                       dest=dest + '[{}]'.format(key),
                                       group=group, vrf=vrf_name)
-
 
             # make to write in cache
             self.make(final_call=True)

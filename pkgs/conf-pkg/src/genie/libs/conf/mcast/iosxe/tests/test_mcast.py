@@ -19,14 +19,14 @@ from genie.libs.conf.mcast import Mcast
 class test_mcast_mroute(TestCase):
 
     def setUp(self):
-        
+
         # Set Genie Tb
         testbed = Testbed()
         Genie.testbed = testbed
-        
+
         # Device
         self.dev1 = Device(name='PE1', testbed=testbed, os='iosxe')
-        
+
         # Mcast object
         self.mcast = Mcast()
 

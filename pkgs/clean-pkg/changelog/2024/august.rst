@@ -24,5 +24,3 @@
     * Modified configure_management
         * Added `alias_as_hostname` argument
         * Allows user to use the alias as the device hostname
-
-

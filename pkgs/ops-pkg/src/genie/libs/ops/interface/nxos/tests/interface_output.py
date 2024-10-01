@@ -132,6 +132,149 @@ class InterfaceOutput(object):
                 0 lost carrier  0 no carrier  0 babble  0 output discard
                 0 Tx pause
         '''
+     
+    ShowInterfaceBrief = '''
+               mgmt0 is up
+               admin state is up,
+                 Hardware: GigabitEthernet, address: 188b.9df3.2a98 (bia 188b.9df3.2a98)
+                 MTU 1500 bytes, BW 1000000 Kbit , DLY 10 usec
+               Ethernet1/1 is down (XCVR not inserted)
+               admin state is up, Dedicated Interface
+                 Hardware: 100/1000/10000/25000/40000/100000 Ethernet, address: 188b.9df3.2a9f (bia 188b.9df3.2aa0)
+                 MTU 1500 bytes, BW 100000000 Kbit , DLY 10 usec
+               Ethernet1/2 is down (XCVR not inserted)
+               admin state is up, Dedicated Interface
+                 Hardware: 100/1000/10000/25000/40000/100000 Ethernet, address: 188b.9df3.2a9f (bia 188b.9df3.2aa4)
+                 MTU 1500 bytes, BW 100000000 Kbit , DLY 10 usec
+               Ethernet1/3 is down (XCVR not inserted)
+               admin state is up, Dedicated Interface
+                 Hardware: 100/1000/10000/25000/40000/100000 Ethernet, address: 188b.9df3.2a9f (bia 188b.9df3.2aa8)
+                 MTU 1500 bytes, BW 100000000 Kbit , DLY 10 usec
+               Ethernet1/4 is down (XCVR not inserted)
+               admin state is up, Dedicated Interface
+                 Hardware: 100/1000/10000/25000/40000/100000 Ethernet, address: 188b.9df3.2a9f (bia 188b.9df3.2aac)
+                 MTU 1500 bytes, BW 100000000 Kbit , DLY 10 usec
+               Ethernet1/5 is down (XCVR not inserted)
+               admin state is up, Dedicated Interface
+                 Hardware: 100/1000/10000/25000/40000/100000 Ethernet, address: 188b.9df3.2a9f (bia 188b.9df3.2ab0)
+                 MTU 1500 bytes, BW 100000000 Kbit , DLY 10 usec
+               Ethernet1/6 is down (XCVR not inserted)
+               admin state is up, Dedicated Interface
+                 Hardware: 100/1000/10000/25000/40000/100000 Ethernet, address: 188b.9df3.2a9f (bia 188b.9df3.2ab4)
+                 MTU 1500 bytes, BW 100000000 Kbit , DLY 10 usec
+               Ethernet1/7 is down (XCVR not inserted)
+               admin state is up, Dedicated Interface
+                 Hardware: 100/1000/10000/25000/40000/100000 Ethernet, address: 188b.9df3.2a9f (bia 188b.9df3.2ab8)
+                 MTU 1500 bytes, BW 100000000 Kbit , DLY 10 usec
+               Ethernet1/8 is down (XCVR not inserted)
+               admin state is up, Dedicated Interface
+                 Hardware: 100/1000/10000/25000/40000/100000 Ethernet, address: 188b.9df3.2a9f (bia 188b.9df3.2abc)
+                 MTU 1500 bytes, BW 100000000 Kbit , DLY 10 usec
+               Ethernet1/9 is down (XCVR not inserted)
+               admin state is up, Dedicated Interface
+                 Hardware: 100/1000/10000/25000/40000/100000 Ethernet, address: 188b.9df3.2a9f (bia 188b.9df3.2ac0)
+                 MTU 1500 bytes, BW 100000000 Kbit , DLY 10 usec
+               Ethernet1/10 is down (XCVR not inserted)
+               admin state is up, Dedicated Interface
+                 Hardware: 100/1000/10000/25000/40000/100000 Ethernet, address: 188b.9df3.2a9f (bia 188b.9df3.2ac4)
+                 MTU 1500 bytes, BW 100000000 Kbit , DLY 10 usec
+               Ethernet1/11 is down (XCVR not inserted)
+               admin state is up, Dedicated Interface
+                 Hardware: 100/1000/10000/25000/40000/100000 Ethernet, address: 188b.9df3.2a9f (bia 188b.9df3.2ac8)
+                 MTU 1500 bytes, BW 100000000 Kbit , DLY 10 usec
+               Ethernet1/12 is down (XCVR not inserted)
+               admin state is up, Dedicated Interface
+                 Hardware: 100/1000/10000/25000/40000/100000 Ethernet, address: 188b.9df3.2a9f (bia 188b.9df3.2acc)
+                 MTU 1500 bytes, BW 100000000 Kbit , DLY 10 usec
+               Ethernet1/13 is down (XCVR not inserted)
+               admin state is up, Dedicated Interface
+                 Hardware: 100/1000/10000/25000/40000/100000 Ethernet, address: 188b.9df3.2a9f (bia 188b.9df3.2ad0)
+                 MTU 1500 bytes, BW 100000000 Kbit , DLY 10 usec
+               Ethernet1/14 is down (XCVR not inserted)
+               admin state is up, Dedicated Interface
+                 Hardware: 100/1000/10000/25000/40000/100000 Ethernet, address: 188b.9df3.2a9f (bia 188b.9df3.2ad4)
+                 MTU 1500 bytes, BW 100000000 Kbit , DLY 10 usec
+               Ethernet1/15 is down (XCVR not inserted)
+               admin state is up, Dedicated Interface
+                 Hardware: 100/1000/10000/25000/40000/100000 Ethernet, address: 188b.9df3.2a9f (bia 188b.9df3.2ad8)
+                 MTU 1500 bytes, BW 100000000 Kbit , DLY 10 usec
+               Ethernet1/16 is down (XCVR not inserted)
+               admin state is up, Dedicated Interface
+                 Hardware: 100/1000/10000/25000/40000/100000 Ethernet, address: 188b.9df3.2a9f (bia 188b.9df3.2adc)
+                 MTU 1500 bytes, BW 100000000 Kbit , DLY 10 usec
+               Ethernet1/17 is up
+               admin state is up, Dedicated Interface
+                 Hardware: 100/1000/10000/25000/40000/100000 Ethernet, address: 188b.9df3.2a9f (bia 188b.9df3.2ae0)
+                 MTU 1500 bytes, BW 100000000 Kbit , DLY 10 usec
+               Ethernet1/18 is down (XCVR not inserted)
+               admin state is up, Dedicated Interface
+                 Hardware: 100/1000/10000/25000/40000/100000 Ethernet, address: 188b.9df3.2a9f (bia 188b.9df3.2ae4)
+                 MTU 1500 bytes, BW 100000000 Kbit , DLY 10 usec
+               Ethernet1/19 is down (XCVR not inserted)
+               admin state is up, Dedicated Interface
+                 Hardware: 100/1000/10000/25000/40000/100000 Ethernet, address: 188b.9df3.2a9f (bia 188b.9df3.2ae8)
+                 MTU 1500 bytes, BW 100000000 Kbit , DLY 10 usec
+               Ethernet1/20 is up
+               admin state is up, Dedicated Interface
+                 Hardware: 100/1000/10000/25000/40000/100000 Ethernet, address: 188b.9df3.2a9f (bia 188b.9df3.2aec)
+                 MTU 1500 bytes, BW 100000000 Kbit , DLY 10 usec
+               Ethernet1/21 is down (XCVR not inserted)
+               admin state is up, Dedicated Interface
+                 Hardware: 100/1000/10000/25000/40000/100000 Ethernet, address: 188b.9df3.2a9f (bia 188b.9df3.2af0)
+                 MTU 1500 bytes, BW 100000000 Kbit , DLY 10 usec
+               Ethernet1/22 is down (XCVR not inserted)
+               admin state is up, Dedicated Interface
+                 Hardware: 100/1000/10000/25000/40000/100000 Ethernet, address: 188b.9df3.2a9f (bia 188b.9df3.2af4)
+                 MTU 1500 bytes, BW 100000000 Kbit , DLY 10 usec
+               Ethernet1/23 is down (XCVR not inserted)
+               admin state is up, Dedicated Interface
+                 Hardware: 100/1000/10000/25000/40000/100000 Ethernet, address: 188b.9df3.2a9f (bia 188b.9df3.2af8)
+                 MTU 1500 bytes, BW 100000000 Kbit , DLY 10 usec
+               Ethernet1/24 is down (XCVR not inserted)
+               admin state is up, Dedicated Interface
+                 Hardware: 100/1000/10000/25000/40000/100000 Ethernet, address: 188b.9df3.2a9f (bia 188b.9df3.2afc)
+                 MTU 1500 bytes, BW 100000000 Kbit , DLY 10 usec
+               Ethernet1/25 is down (XCVR not inserted)
+               admin state is up, Dedicated Interface
+                 Hardware: 100/1000/10000/25000/40000/100000 Ethernet, address: 188b.9df3.2a9f (bia 188b.9df3.2b00)
+                 MTU 1500 bytes, BW 100000000 Kbit , DLY 10 usec
+               Ethernet1/26 is down (XCVR not inserted)
+               admin state is up, Dedicated Interface
+                 Hardware: 100/1000/10000/25000/40000/100000 Ethernet, address: 188b.9df3.2a9f (bia 188b.9df3.2b04)
+                 MTU 1500 bytes, BW 100000000 Kbit , DLY 10 usec
+               Ethernet1/27 is down (XCVR not inserted)
+               admin state is up, Dedicated Interface
+                 Hardware: 100/1000/10000/25000/40000/100000 Ethernet, address: 188b.9df3.2a9f (bia 188b.9df3.2b08)
+                 MTU 1500 bytes, BW 100000000 Kbit , DLY 10 usec
+               Ethernet1/28 is down (Link not connected)
+               admin state is up, Dedicated Interface
+                 Hardware: 100/1000/10000/25000/40000/100000 Ethernet, address: 188b.9df3.2a9f (bia 188b.9df3.2b0c)
+                 MTU 1500 bytes, BW 100000000 Kbit , DLY 10 usec
+               Ethernet1/29 is down (XCVR not inserted)
+               admin state is up, Dedicated Interface
+                 Hardware: 100/1000/10000/25000/40000/100000 Ethernet, address: 188b.9df3.2a9f (bia 188b.9df3.2b10)
+                 MTU 1500 bytes, BW 100000000 Kbit , DLY 10 usec
+               Ethernet1/30 is down (Link not connected)
+               admin state is up, Dedicated Interface
+                 Hardware: 100/1000/10000/25000/40000/100000 Ethernet, address: 188b.9df3.2a9f (bia 188b.9df3.2b14)
+                 MTU 1500 bytes, BW 100000000 Kbit , DLY 10 usec
+               Ethernet1/31 is down (XCVR not inserted)
+               admin state is up, Dedicated Interface
+                 Hardware: 100/1000/10000/25000/40000/100000 Ethernet, address: 188b.9df3.2a9f (bia 188b.9df3.2b18)
+                 MTU 1500 bytes, BW 100000000 Kbit , DLY 10 usec
+               Ethernet1/32 is down (XCVR not inserted)
+               admin state is up, Dedicated Interface
+                 Hardware: 100/1000/10000/25000/40000/100000 Ethernet, address: 188b.9df3.2a9f (bia 188b.9df3.2b1c)
+                 MTU 1500 bytes, BW 100000000 Kbit , DLY 10 usec
+               Ethernet1/33 is down (XCVR not inserted)
+               admin state is up, Dedicated Interface
+                 Hardware: 100/1000/10000 Ethernet, address: 188b.9df3.2a9f (bia 188b.9df3.2b20)
+                 MTU 1500 bytes, BW 10000000 Kbit , DLY 10 usec
+               Ethernet1/34 is down (XCVR not inserted)
+               admin state is up, Dedicated Interface
+                 Hardware: 100/1000/10000 Ethernet, address: 188b.9df3.2a9f (bia 188b.9df3.2b21)
+                 MTU 1500 bytes, BW 10000000 Kbit , DLY 10 usec
+     '''
 
     ShowInterface_eth2 = '''
         Ethernet2/1 is up
@@ -1437,3 +1580,467 @@ class InterfaceOutput(object):
                 'port_speed': '1000',
                 'type': 'Ethernet',
                 'vrf': 'management'}}
+
+    InterfaceBriefOpsOutput_info={
+      'Ethernet1/1': {'bandwidth': 100000000,
+                      'delay': 10,
+                      'enabled': True,
+                      'mac_address': '188b.9df3.2a9f',
+                      'mtu': 1500,
+                      'oper_status': 'down',
+                      'phys_address': '188b.9df3.2aa0',
+                      'port_channel': {'port_channel_member': False},
+                      'type': '100/1000/10000/25000/40000/100000 Ethernet'},
+      'Ethernet1/10': {'bandwidth': 100000000,
+                       'delay': 10,
+                       'enabled': True,
+                       'mac_address': '188b.9df3.2a9f',
+                       'mtu': 1500,
+                       'oper_status': 'down',
+                       'phys_address': '188b.9df3.2ac4',
+                       'port_channel': {'port_channel_member': False},
+                       'type': '100/1000/10000/25000/40000/100000 Ethernet'},
+      'Ethernet1/11': {'bandwidth': 100000000,
+                       'delay': 10,
+                       'enabled': True,
+                       'mac_address': '188b.9df3.2a9f',
+                       'mtu': 1500,
+                       'oper_status': 'down',
+                       'phys_address': '188b.9df3.2ac8',
+                       'port_channel': {'port_channel_member': False},
+                       'type': '100/1000/10000/25000/40000/100000 Ethernet'},
+      'Ethernet1/12': {'bandwidth': 100000000,
+                       'delay': 10,
+                       'enabled': True,
+                       'mac_address': '188b.9df3.2a9f',
+                       'mtu': 1500,
+                       'oper_status': 'down',
+                       'phys_address': '188b.9df3.2acc',
+                       'port_channel': {'port_channel_member': False},
+                       'type': '100/1000/10000/25000/40000/100000 Ethernet'},
+      'Ethernet1/13': {'bandwidth': 100000000,
+                       'delay': 10,
+                       'enabled': True,
+                       'mac_address': '188b.9df3.2a9f',
+                       'mtu': 1500,
+                       'oper_status': 'down',
+                       'phys_address': '188b.9df3.2ad0',
+                       'port_channel': {'port_channel_member': False},
+                       'type': '100/1000/10000/25000/40000/100000 Ethernet'},
+      'Ethernet1/14': {'bandwidth': 100000000,
+                       'delay': 10,
+                       'enabled': True,
+                       'mac_address': '188b.9df3.2a9f',
+                       'mtu': 1500,
+                       'oper_status': 'down',
+                       'phys_address': '188b.9df3.2ad4',
+                       'port_channel': {'port_channel_member': False},
+                       'type': '100/1000/10000/25000/40000/100000 Ethernet'},
+      'Ethernet1/15': {'bandwidth': 100000000,
+                       'delay': 10,
+                       'enabled': True,
+                       'mac_address': '188b.9df3.2a9f',
+                       'mtu': 1500,
+                       'oper_status': 'down',
+                       'phys_address': '188b.9df3.2ad8',
+                       'port_channel': {'port_channel_member': False},
+                       'type': '100/1000/10000/25000/40000/100000 Ethernet'},
+      'Ethernet1/16': {'bandwidth': 100000000,
+                       'delay': 10,
+                       'enabled': True,
+                       'mac_address': '188b.9df3.2a9f',
+                       'mtu': 1500,
+                       'oper_status': 'down',
+                       'phys_address': '188b.9df3.2adc',
+                       'port_channel': {'port_channel_member': False},
+                       'type': '100/1000/10000/25000/40000/100000 Ethernet'},
+      'Ethernet1/17': {'bandwidth': 100000000,
+                       'delay': 10,
+                       'enabled': True,
+                       'mac_address': '188b.9df3.2a9f',
+                       'mtu': 1500,
+                       'oper_status': 'up',
+                       'phys_address': '188b.9df3.2ae0',
+                       'port_channel': {'port_channel_member': False},
+                       'type': '100/1000/10000/25000/40000/100000 Ethernet'},
+      'Ethernet1/18': {'bandwidth': 100000000,
+                       'delay': 10,
+                       'enabled': True,
+                       'mac_address': '188b.9df3.2a9f',
+                       'mtu': 1500,
+                       'oper_status': 'down',
+                       'phys_address': '188b.9df3.2ae4',
+                       'port_channel': {'port_channel_member': False},
+                       'type': '100/1000/10000/25000/40000/100000 Ethernet'},
+      'Ethernet1/19': {'bandwidth': 100000000,
+                       'delay': 10,
+                       'enabled': True,
+                       'mac_address': '188b.9df3.2a9f',
+                       'mtu': 1500,
+                       'oper_status': 'down',
+                       'phys_address': '188b.9df3.2ae8',
+                       'port_channel': {'port_channel_member': False},
+                       'type': '100/1000/10000/25000/40000/100000 Ethernet'},
+      'Ethernet1/2': {'bandwidth': 100000000,
+                      'delay': 10,
+                      'enabled': True,
+                      'mac_address': '188b.9df3.2a9f',
+                      'mtu': 1500,
+                      'oper_status': 'down',
+                      'phys_address': '188b.9df3.2aa4',
+                      'port_channel': {'port_channel_member': False},
+                      'type': '100/1000/10000/25000/40000/100000 Ethernet'},
+      'Ethernet1/20': {'bandwidth': 100000000,
+                       'delay': 10,
+                       'enabled': True,
+                       'mac_address': '188b.9df3.2a9f',
+                       'mtu': 1500,
+                       'oper_status': 'up',
+                       'phys_address': '188b.9df3.2aec',
+                       'port_channel': {'port_channel_member': False},
+                       'type': '100/1000/10000/25000/40000/100000 Ethernet'},
+      'Ethernet1/21': {'bandwidth': 100000000,
+                       'delay': 10,
+                       'enabled': True,
+                       'mac_address': '188b.9df3.2a9f',
+                       'mtu': 1500,
+                       'oper_status': 'down',
+                       'phys_address': '188b.9df3.2af0',
+                       'port_channel': {'port_channel_member': False},
+                       'type': '100/1000/10000/25000/40000/100000 Ethernet'},
+      'Ethernet1/22': {'bandwidth': 100000000,
+                       'delay': 10,
+                       'enabled': True,
+                       'mac_address': '188b.9df3.2a9f',
+                       'mtu': 1500,
+                       'oper_status': 'down',
+                       'phys_address': '188b.9df3.2af4',
+                       'port_channel': {'port_channel_member': False},
+                       'type': '100/1000/10000/25000/40000/100000 Ethernet'},
+      'Ethernet1/23': {'bandwidth': 100000000,
+                       'delay': 10,
+                       'enabled': True,
+                       'mac_address': '188b.9df3.2a9f',
+                       'mtu': 1500,
+                       'oper_status': 'down',
+                       'phys_address': '188b.9df3.2af8',
+                       'port_channel': {'port_channel_member': False},
+                       'type': '100/1000/10000/25000/40000/100000 Ethernet'},
+      'Ethernet1/24': {'bandwidth': 100000000,
+                       'delay': 10,
+                       'enabled': True,
+                       'mac_address': '188b.9df3.2a9f',
+                       'mtu': 1500,
+                       'oper_status': 'down',
+                       'phys_address': '188b.9df3.2afc',
+                       'port_channel': {'port_channel_member': False},
+                       'type': '100/1000/10000/25000/40000/100000 Ethernet'},
+      'Ethernet1/25': {'bandwidth': 100000000,
+                       'delay': 10,
+                       'enabled': True,
+                       'mac_address': '188b.9df3.2a9f',
+                       'mtu': 1500,
+                       'oper_status': 'down',
+                       'phys_address': '188b.9df3.2b00',
+                       'port_channel': {'port_channel_member': False},
+                       'type': '100/1000/10000/25000/40000/100000 Ethernet'},
+      'Ethernet1/26': {'bandwidth': 100000000,
+                       'delay': 10,
+                       'enabled': True,
+                       'mac_address': '188b.9df3.2a9f',
+                       'mtu': 1500,
+                       'oper_status': 'down',
+                       'phys_address': '188b.9df3.2b04',
+                       'port_channel': {'port_channel_member': False},
+                       'type': '100/1000/10000/25000/40000/100000 Ethernet'},
+      'Ethernet1/27': {'bandwidth': 100000000,
+                       'delay': 10,
+                       'enabled': True,
+                       'mac_address': '188b.9df3.2a9f',
+                       'mtu': 1500,
+                       'oper_status': 'down',
+                       'phys_address': '188b.9df3.2b08',
+                       'port_channel': {'port_channel_member': False},
+                       'type': '100/1000/10000/25000/40000/100000 Ethernet'},
+      'Ethernet1/28': {'bandwidth': 100000000,
+                       'delay': 10,
+                       'enabled': True,
+                       'mac_address': '188b.9df3.2a9f',
+                       'mtu': 1500,
+                       'oper_status': 'down',
+                       'phys_address': '188b.9df3.2b0c',
+                       'port_channel': {'port_channel_member': False},
+                       'type': '100/1000/10000/25000/40000/100000 Ethernet'},
+      'Ethernet1/29': {'bandwidth': 100000000,
+                       'delay': 10,
+                       'enabled': True,
+                       'mac_address': '188b.9df3.2a9f',
+                       'mtu': 1500,
+                       'oper_status': 'down',
+                       'phys_address': '188b.9df3.2b10',
+                       'port_channel': {'port_channel_member': False},
+                       'type': '100/1000/10000/25000/40000/100000 Ethernet'},
+      'Ethernet1/3': {'bandwidth': 100000000,
+                      'delay': 10,
+                      'enabled': True,
+                      'mac_address': '188b.9df3.2a9f',
+                      'mtu': 1500,
+                      'oper_status': 'down',
+                      'phys_address': '188b.9df3.2aa8',
+                      'port_channel': {'port_channel_member': False},
+                      'type': '100/1000/10000/25000/40000/100000 Ethernet'},
+      'Ethernet1/30': {'bandwidth': 100000000,
+                       'delay': 10,
+                       'enabled': True,
+                       'mac_address': '188b.9df3.2a9f',
+                       'mtu': 1500,
+                       'oper_status': 'down',
+                       'phys_address': '188b.9df3.2b14',
+                       'port_channel': {'port_channel_member': False},
+                       'type': '100/1000/10000/25000/40000/100000 Ethernet'},
+      'Ethernet1/31': {'bandwidth': 100000000,
+                       'delay': 10,
+                       'enabled': True,
+                       'mac_address': '188b.9df3.2a9f',
+                       'mtu': 1500,
+                       'oper_status': 'down',
+                       'phys_address': '188b.9df3.2b18',
+                       'port_channel': {'port_channel_member': False},
+                       'type': '100/1000/10000/25000/40000/100000 Ethernet'},
+      'Ethernet1/32': {'bandwidth': 100000000,
+                       'delay': 10,
+                       'enabled': True,
+                       'mac_address': '188b.9df3.2a9f',
+                       'mtu': 1500,
+                       'oper_status': 'down',
+                       'phys_address': '188b.9df3.2b1c',
+                       'port_channel': {'port_channel_member': False},
+                       'type': '100/1000/10000/25000/40000/100000 Ethernet'},
+      'Ethernet1/33': {'bandwidth': 10000000,
+                       'delay': 10,
+                       'enabled': True,
+                       'mac_address': '188b.9df3.2a9f',
+                       'mtu': 1500,
+                       'oper_status': 'down',
+                       'phys_address': '188b.9df3.2b20',
+                       'port_channel': {'port_channel_member': False},
+                       'type': '100/1000/10000 Ethernet'},
+      'Ethernet1/34': {'bandwidth': 10000000,
+                       'delay': 10,
+                       'enabled': True,
+                       'mac_address': '188b.9df3.2a9f',
+                       'mtu': 1500,
+                       'oper_status': 'down',
+                       'phys_address': '188b.9df3.2b21',
+                       'port_channel': {'port_channel_member': False},
+                       'type': '100/1000/10000 Ethernet'},
+      'Ethernet1/4': {'bandwidth': 100000000,
+                      'delay': 10,
+                      'enabled': True,
+                      'mac_address': '188b.9df3.2a9f',
+                      'mtu': 1500,
+                      'oper_status': 'down',
+                      'phys_address': '188b.9df3.2aac',
+                      'port_channel': {'port_channel_member': False},
+                      'type': '100/1000/10000/25000/40000/100000 Ethernet'},
+      'Ethernet1/5': {'bandwidth': 100000000,
+                      'delay': 10,
+                      'enabled': True,
+                      'mac_address': '188b.9df3.2a9f',
+                      'mtu': 1500,
+                      'oper_status': 'down',
+                      'phys_address': '188b.9df3.2ab0',
+                      'port_channel': {'port_channel_member': False},
+                      'type': '100/1000/10000/25000/40000/100000 Ethernet'},
+      'Ethernet1/6': {'bandwidth': 100000000,
+                      'delay': 10,
+                      'enabled': True,
+                      'mac_address': '188b.9df3.2a9f',
+                      'mtu': 1500,
+                      'oper_status': 'down',
+                      'phys_address': '188b.9df3.2ab4',
+                      'port_channel': {'port_channel_member': False},
+                      'type': '100/1000/10000/25000/40000/100000 Ethernet'},
+      'Ethernet1/7': {'bandwidth': 100000000,
+                      'delay': 10,
+                      'enabled': True,
+                      'mac_address': '188b.9df3.2a9f',
+                      'mtu': 1500,
+                      'oper_status': 'down',
+                      'phys_address': '188b.9df3.2ab8',
+                      'port_channel': {'port_channel_member': False},
+                      'type': '100/1000/10000/25000/40000/100000 Ethernet'},
+      'Ethernet1/8': {'bandwidth': 100000000,
+                      'delay': 10,
+                      'enabled': True,
+                      'mac_address': '188b.9df3.2a9f',
+                      'mtu': 1500,
+                      'oper_status': 'down',
+                      'phys_address': '188b.9df3.2abc',
+                      'port_channel': {'port_channel_member': False},
+                      'type': '100/1000/10000/25000/40000/100000 Ethernet'},
+      'Ethernet1/9': {'bandwidth': 100000000,
+                      'delay': 10,
+                      'enabled': True,
+                      'mac_address': '188b.9df3.2a9f',
+                      'mtu': 1500,
+                      'oper_status': 'down',
+                      'phys_address': '188b.9df3.2ac0',
+                      'port_channel': {'port_channel_member': False},
+                      'type': '100/1000/10000/25000/40000/100000 Ethernet'},
+      'Ethernet2/1': {'vrf': 'VRF1'},
+      'Ethernet2/1.10': {'vrf': 'default'},
+      'Ethernet2/1.20': {'vrf': 'default'},
+      'Ethernet2/10': {'vrf': 'default'},
+      'Ethernet2/11': {'vrf': 'default'},
+      'Ethernet2/12': {'vrf': 'default'},
+      'Ethernet2/13': {'vrf': 'default'},
+      'Ethernet2/14': {'vrf': 'default'},
+      'Ethernet2/15': {'vrf': 'default'},
+      'Ethernet2/16': {'vrf': 'default'},
+      'Ethernet2/17': {'vrf': 'default'},
+      'Ethernet2/18': {'vrf': 'default'},
+      'Ethernet2/19': {'vrf': 'default'},
+      'Ethernet2/20': {'vrf': 'default'},
+      'Ethernet2/21': {'vrf': 'default'},
+      'Ethernet2/22': {'vrf': 'default'},
+      'Ethernet2/23': {'vrf': 'default'},
+      'Ethernet2/24': {'vrf': 'default'},
+      'Ethernet2/25': {'vrf': 'default'},
+      'Ethernet2/26': {'vrf': 'default'},
+      'Ethernet2/27': {'vrf': 'default'},
+      'Ethernet2/28': {'vrf': 'default'},
+      'Ethernet2/29': {'vrf': 'default'},
+      'Ethernet2/30': {'vrf': 'default'},
+      'Ethernet2/31': {'vrf': 'default'},
+      'Ethernet2/32': {'vrf': 'default'},
+      'Ethernet2/33': {'vrf': 'default'},
+      'Ethernet2/34': {'vrf': 'default'},
+      'Ethernet2/35': {'vrf': 'default'},
+      'Ethernet2/36': {'vrf': 'default'},
+      'Ethernet2/37': {'vrf': 'default'},
+      'Ethernet2/38': {'vrf': 'default'},
+      'Ethernet2/39': {'vrf': 'default'},
+      'Ethernet2/4': {'vrf': 'default'},
+      'Ethernet2/40': {'vrf': 'default'},
+      'Ethernet2/41': {'vrf': 'default'},
+      'Ethernet2/42': {'vrf': 'default'},
+      'Ethernet2/43': {'vrf': 'default'},
+      'Ethernet2/44': {'vrf': 'default'},
+      'Ethernet2/45': {'vrf': 'default'},
+      'Ethernet2/46': {'vrf': 'default'},
+      'Ethernet2/47': {'vrf': 'default'},
+      'Ethernet2/48': {'vrf': 'default'},
+      'Ethernet2/5': {'vrf': 'default'},
+      'Ethernet2/6': {'vrf': 'default'},
+      'Ethernet2/7': {'vrf': 'default'},
+      'Ethernet2/8': {'vrf': 'default'},
+      'Ethernet2/9': {'vrf': 'default'},
+      'Ethernet3/1': {'vrf': 'default'},
+      'Ethernet3/10': {'vrf': 'default'},
+      'Ethernet3/11': {'vrf': 'default'},
+      'Ethernet3/12': {'vrf': 'default'},
+      'Ethernet3/13': {'vrf': 'default'},
+      'Ethernet3/14': {'vrf': 'default'},
+      'Ethernet3/15': {'vrf': 'default'},
+      'Ethernet3/16': {'vrf': 'default'},
+      'Ethernet3/17': {'vrf': 'default'},
+      'Ethernet3/18': {'vrf': 'default'},
+      'Ethernet3/19': {'vrf': 'default'},
+      'Ethernet3/2': {'vrf': 'default'},
+      'Ethernet3/20': {'vrf': 'default'},
+      'Ethernet3/21': {'vrf': 'default'},
+      'Ethernet3/22': {'vrf': 'default'},
+      'Ethernet3/23': {'vrf': 'default'},
+      'Ethernet3/24': {'vrf': 'default'},
+      'Ethernet3/25': {'vrf': 'default'},
+      'Ethernet3/26': {'vrf': 'default'},
+      'Ethernet3/27': {'vrf': 'default'},
+      'Ethernet3/28': {'vrf': 'default'},
+      'Ethernet3/29': {'vrf': 'default'},
+      'Ethernet3/3': {'vrf': 'default'},
+      'Ethernet3/30': {'vrf': 'default'},
+      'Ethernet3/31': {'vrf': 'default'},
+      'Ethernet3/32': {'vrf': 'default'},
+      'Ethernet3/33': {'vrf': 'default'},
+      'Ethernet3/34': {'vrf': 'default'},
+      'Ethernet3/35': {'vrf': 'default'},
+      'Ethernet3/36': {'vrf': 'default'},
+      'Ethernet3/37': {'vrf': 'default'},
+      'Ethernet3/38': {'vrf': 'default'},
+      'Ethernet3/39': {'vrf': 'default'},
+      'Ethernet3/4': {'vrf': 'default'},
+      'Ethernet3/40': {'vrf': 'default'},
+      'Ethernet3/41': {'vrf': 'default'},
+      'Ethernet3/42': {'vrf': 'default'},
+      'Ethernet3/43': {'vrf': 'default'},
+      'Ethernet3/44': {'vrf': 'default'},
+      'Ethernet3/45': {'vrf': 'default'},
+      'Ethernet3/46': {'vrf': 'default'},
+      'Ethernet3/47': {'vrf': 'default'},
+      'Ethernet3/48': {'vrf': 'default'},
+      'Ethernet3/5': {'vrf': 'default'},
+      'Ethernet3/6': {'vrf': 'default'},
+      'Ethernet3/7': {'vrf': 'default'},
+      'Ethernet3/8': {'vrf': 'default'},
+      'Ethernet3/9': {'vrf': 'default'},
+      'Ethernet4/1': {'vrf': 'default'},
+      'Ethernet4/10': {'vrf': 'default'},
+      'Ethernet4/11': {'vrf': 'default'},
+      'Ethernet4/12': {'vrf': 'default'},
+      'Ethernet4/13': {'vrf': 'default'},
+      'Ethernet4/14': {'vrf': 'default'},
+      'Ethernet4/15': {'vrf': 'default'},
+      'Ethernet4/16': {'vrf': 'default'},
+      'Ethernet4/17': {'vrf': 'default'},
+      'Ethernet4/18': {'vrf': 'default'},
+      'Ethernet4/19': {'vrf': 'default'},
+      'Ethernet4/2': {'vrf': 'default'},
+      'Ethernet4/20': {'vrf': 'default'},
+      'Ethernet4/21': {'vrf': 'default'},
+      'Ethernet4/22': {'vrf': 'default'},
+      'Ethernet4/23': {'vrf': 'default'},
+      'Ethernet4/24': {'vrf': 'default'},
+      'Ethernet4/25': {'vrf': 'default'},
+      'Ethernet4/26': {'vrf': 'default'},
+      'Ethernet4/27': {'vrf': 'default'},
+      'Ethernet4/28': {'vrf': 'default'},
+      'Ethernet4/29': {'vrf': 'default'},
+      'Ethernet4/3': {'vrf': 'default'},
+      'Ethernet4/30': {'vrf': 'default'},
+      'Ethernet4/31': {'vrf': 'default'},
+      'Ethernet4/32': {'vrf': 'default'},
+      'Ethernet4/33': {'vrf': 'default'},
+      'Ethernet4/34': {'vrf': 'default'},
+      'Ethernet4/35': {'vrf': 'default'},
+      'Ethernet4/36': {'vrf': 'default'},
+      'Ethernet4/37': {'vrf': 'default'},
+      'Ethernet4/38': {'vrf': 'default'},
+      'Ethernet4/39': {'vrf': 'default'},
+      'Ethernet4/4': {'vrf': 'default'},
+      'Ethernet4/40': {'vrf': 'default'},
+      'Ethernet4/41': {'vrf': 'default'},
+      'Ethernet4/42': {'vrf': 'default'},
+      'Ethernet4/43': {'vrf': 'default'},
+      'Ethernet4/44': {'vrf': 'default'},
+      'Ethernet4/45': {'vrf': 'default'},
+      'Ethernet4/46': {'vrf': 'default'},
+      'Ethernet4/47': {'vrf': 'default'},
+      'Ethernet4/48': {'vrf': 'default'},
+      'Ethernet4/5': {'vrf': 'default'},
+      'Ethernet4/6': {'vrf': 'default'},
+      'Ethernet4/7': {'vrf': 'default'},
+      'Ethernet4/8': {'vrf': 'default'},
+      'Ethernet4/9': {'vrf': 'default'},
+      'Mgmt0': {'bandwidth': 1000000,
+                'delay': 10,
+                'enabled': True,
+                'mac_address': '188b.9df3.2a98',
+                'mtu': 1500,
+                'oper_status': 'up',
+                'phys_address': '188b.9df3.2a98',
+                'port_channel': {'port_channel_member': False},
+                'type': 'GigabitEthernet',
+                'vrf': 'management'},
+      'Null0': {'vrf': 'default'}
+}

@@ -557,7 +557,7 @@ def configure_management_telnet(device,
 
 def configure_management_vty_lines(device,
                                    authentication=None,
-                                   transport=None):
+                                   transport=None, stackable=True):
     '''
     Configure device for management via vty lines.
 
@@ -565,6 +565,7 @@ def configure_management_vty_lines(device,
         device ('obj'):  device object
         authentication ('str'): authentication details
         transport ('str'): transport details
+        stackable ('bool'): stackable set as True if device is stack else False
 
     Returns:
         None
@@ -591,8 +592,12 @@ def configure_management_vty_lines(device,
     username = creds.get(authentication, {}).get('username')
     password = to_plaintext(creds.get(authentication, {}).get('password', ''))
 
-    if username and password and f'login authentication {authentication}' not in output:
-        vty_config.append(f'login authentication {authentication}')
+    if stackable:
+        if username and password and f'login authentication {authentication}' not in output:
+            vty_config.append(f'login authentication {authentication}')
+    else:
+        if username and password and f'login local' not in output:
+            vty_config.append(f'login local')
 
     # find all transports
     all_transports = re.findall(r'transport input (.*)', output)

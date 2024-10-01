@@ -286,8 +286,9 @@ def recovery_processor(
         if hasattr(device, 'is_ha') and device.is_ha:
             log.info('Device is HA! checking all the subconnections.')
             for index, connection in enumerate(device.subconnections,1):
-                bring_to_any_state(connection, connection_timeout)
-                log.info(f'subconnection {index} is in {connection.state_machine.current_state}')
+                if device.get_rp_state(target=connection.alias) != 'IN_CHASSIS_STANDBY':
+                    bring_to_any_state(connection, connection_timeout)
+                    log.info(f'subconnection {index} is in {connection.state_machine.current_state}')
         else:
             bring_to_any_state(device, connection_timeout)
             log.info(f'Device is in {device.state_machine.current_state}')

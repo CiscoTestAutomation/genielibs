@@ -7,6 +7,7 @@ __all__ = (
     'EmulatedDevice',
 )
 
+import logging
 import importlib
 import warnings
 import abc
@@ -20,7 +21,9 @@ from genie.conf.base.attributes import AttributesHelper, AttributesHelper2
 from genie.conf.base.cli import CliConfigBuilder
 
 from genie.libs.conf.address_family import AddressFamily
+from genie.libs.parser.utils.common import Common
 
+logger = logging.getLogger(__name__)
 
 class UnsupportedDeviceOsWarning(UserWarning):
     pass
@@ -89,6 +92,31 @@ class Device(genie.conf.base.device.Device):
 
     def learn_interface_mac_addresses(self):
         return NotImplemented  # Not an error; Just not supported.
+    
+    def learn_interfaces(self, include_management=False, timeout=300):
+        ''' Learn device interfaces and add interfaces if they dont already exist in device.interfaces.
+        Api to learn interfaces  of the device and add the interfaces if the dont exist in device.interfaces.
+        Args:
+             include_management(`bool`): Don't include the management interface, unless it is set to True
+             timeout(`int`): Timeout for learn, default to 300 seconds
+        Return:
+            None 
+        Examples:
+            Learn interfaces and add them if they don't already exists.
+            >>> device.learn_interfaces()
+        '''
+        ifaces = self.learn('interface', brief=True, timeout=timeout).to_dict()
+        for ifname, ifdata in ifaces.get('info', {}).items():
+            ifname = Common.convert_intf_name(ifname)
+            if ifname not in self.interfaces:
+                if self.api.is_management_interface(ifname) and not include_management:
+                    continue
+                enabled = ifdata.get('enabled')
+                try:
+                    iface = genie.libs.conf.interface.Interface(device=self, name=ifname, enabled=enabled)
+                    iface.type = iface._interface_name_types[0]
+                except Exception as e:
+                    logger.warning(f'interface {ifname}: {e}')
 
     def build_config(self, apply=True, attributes=None):
         """method to build the configuration of the device

@@ -1934,8 +1934,8 @@ class MgmtMultilinkController(Controller):
 class LoopbackInterface(VirtualInterface, genie.libs.conf.interface.LoopbackInterface):
 
     _interface_name_types = (
+        'loopback',
         'Loopback',
-        'loopback'
     )
 
     def __init__(self, *args, **kwargs):
@@ -1945,6 +1945,7 @@ class LoopbackInterface(VirtualInterface, genie.libs.conf.interface.LoopbackInte
 class EthernetInterface(PhysicalInterface, genie.libs.conf.interface.EthernetInterface):
 
     _interface_name_types = (
+        'ethernet',
         'FastEthernet',
         'FASTETHERNET',
         'GigabitEthernet',

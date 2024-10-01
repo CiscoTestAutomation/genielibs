@@ -36,7 +36,7 @@ from genie.libs.clean.utils import (
 from unicon.eal.dialogs import Statement, Dialog
 from unicon.core.errors import SubCommandFailure
 from unicon.plugins.generic.statements import GenericStatements
-from unicon.core.errors import UniconAuthenticationError
+from unicon.core.errors import UniconAuthenticationError, UniconBackendDecodeError
 
 # Logger
 log = logging.getLogger(__name__)
@@ -133,7 +133,7 @@ change_boot_variable:
 
                 try:
                     output = device.parse('show version')
-                    images = [output['version']['system_image']]
+                    images = self.running_images = [output['version']['system_image']]
                 except Exception as e:
                     step.failed("Failed to retrieve the running image. Cannot "
                                 "set boot variables",
@@ -172,9 +172,15 @@ change_boot_variable:
             else:
                 step.passed("Successfully executed 'write memory'")
 
-    def verify_boot_variable(self, steps, device, images):
+    def verify_boot_variable(self, steps, device, images,
+                             current_running_image=CURRENT_RUNNING_IMAGE):
         with steps.start("Verify next reload boot variables are correctly set "
                          "on {}".format(device.name)) as step:
+
+            if current_running_image:
+                log.info("Verifying next reload boot variables Using the running image due to "
+                         "'current_running_image: True'")
+                images = self.running_images
 
             if not device.api.verify_boot_variable(boot_images=images):
                 step.failed("Boot variables are NOT correctly set")
@@ -560,7 +566,7 @@ install_image:
 
     save_system_config (bool, optional): Whether or not to save the system
         config if it was modified. Defaults to False.
-    
+
     skip_save_running_config (bool, optional): Skip the step to save the the running
                                         configuration to the startup config.
 
@@ -1245,6 +1251,8 @@ rommon_boot:
     config_reg_timeout (int, optional): Max time to set config-register.
         Defaults to 30.
 
+    config_register (str, optional): Specify a custom config register for rommon booting.
+        Defaults to 0x0.
 
     rommon_timeout (int, optional): Timeout after bringing the device to rommon. Default to 15 sec.
 
@@ -1266,6 +1274,7 @@ rommon_boot:
     save_system_config: False
     timeout: 600
     config_reg_timeout: 10
+    config_register: 0x0
 
 There is more than one ip address, one for each supervisor.
 
@@ -1307,7 +1316,7 @@ devices:
     ETHER_PORT = 0
     ROMMON_TIMEOUT = 15
     RECONNECT_TIMEOUT = 90
-
+    CONFIG_REGISTER = "0x0"
 
     # ============
     # Stage Schema
@@ -1327,6 +1336,7 @@ devices:
         Optional('timeout'): int,
         Optional('ether_port'): int,
         Optional('rommon_timeout'): int,
+        Optional('config_register'): str,
     }
 
     # ==============================
@@ -1355,11 +1365,10 @@ devices:
             except Exception as e:
                 step.failed("Failed to write memory", from_exception=e)
 
-    def go_to_rommon(self, steps, device, rommon_timeout=ROMMON_TIMEOUT):
+    def go_to_rommon(self, steps, device, config_register=CONFIG_REGISTER, rommon_timeout=ROMMON_TIMEOUT):
         with steps.start("Bring device down to rommon mode") as step:
             try:
-                device.rommon()
-                time.sleep(rommon_timeout)
+                device.rommon(config_register=config_register)
             except Exception as e:
                 step.failed("Failed to bring device to rommon!", from_exception=e)
 
@@ -2217,7 +2226,6 @@ connect:
         with steps.start("Connecting to the device") as step:
 
             log.info('Checking connection to device: %s' % device.name)
-
             # Create a timeout that will loop
             retry_timeout = Timeout(float(retry_timeout), float(retry_interval))
             retry_timeout.one_more_time = True
@@ -2236,11 +2244,17 @@ connect:
                                    via=via,
                                    alias=alias,
                                    mit=True)
+
                 try:
                     if alias:
                         getattr(device, alias).connect()
                     else:
                         device.connect()
+                except UniconBackendDecodeError:
+                    log.info("Console speed mismatch. Trying to recover")
+                    device.destroy_all()
+                    device.api.configure_management_console()
+                    step.passed("Successfully connected".format(device.name))
                 except UniconAuthenticationError as e:
                     log.info(f'Could not connect to device because of {e}')
                     log.info('Starting device password recovery.')
@@ -2346,6 +2360,7 @@ connect:
 
         # set mit to False to initialize the connection
         device.default.mit=False
+        device.default.learn_hostname = False
         with steps.start("Initialize the device connection") as step:
 
             try:
@@ -2675,15 +2690,15 @@ set_controller_mode:
                     r'(.*?)Would you like to enter the initial configuration dialog\? \[yes/no\]:\s*',
                     action=f'sendline(no)',
                     loop_continue=True,
-                    continue_timer=False),         
-                
-                
+                    continue_timer=False),
+
+
                 generic_statments.syslog_msg_stmt,
-                
+
                 generic_statments.enable_secret_stmt,
-                
+
                 generic_statments.enter_your_selection_stmt,
-                
+
             ])
 
             try:
@@ -2749,11 +2764,11 @@ set_controller_mode:
             mode=MODE):
 
         with steps.start("deleting non active version") as step:
-            
+
             if mode == 'disable':
                 step.skipped("Disabling the controller mode skipping the step as not needed. ")
-            
-            else: 
+
+            else:
                 if delete_inactive_versions and self.non_active_version:
                     for version in self.non_active_version:
                         device.execute(

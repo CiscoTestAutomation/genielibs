@@ -67,7 +67,7 @@ class StaticRouting(SuperStaticRouting):
                                       '[routes][(?P<route>.*)]'
             dest_static_routing_route = 'info' + src_static_routing_route
 
-            self.add_leaf(cmd='show ip static route vrf {vrf}'.format(vrf=vrf),
+            self.add_leaf(cmd=f'show ip static route vrf {vrf}' if vrf_name else 'show ip static route',
                           src=src_static_routing_route + '[route]',
                           dest=dest_static_routing_route + '[route]',
                           vrf=vrf_name)
@@ -75,21 +75,19 @@ class StaticRouting(SuperStaticRouting):
             src_static_routing_intf = src_static_routing_route +'[next_hop][outgoing_interface][(?P<intf>.*)]'
             dest_static_routing_intf = 'info' + src_static_routing_intf
 
-
-            req_key =['outgoing_interface','active','preference']
+            req_key =['outgoing_interface', 'active', 'preference']
             for key in req_key:
-                self.add_leaf(cmd='show ip static route vrf {vrf}'.format(vrf=vrf),
+                self.add_leaf(cmd=f'show ip static route vrf {vrf}' if vrf_name else 'show ip static route',
                               src=src_static_routing_intf + '[{}]'.format(key),
                               dest=dest_static_routing_intf + '[{}]'.format(key),
                               vrf=vrf_name)
-
 
             src_static_routing_hop = src_static_routing_route +'[next_hop][next_hop_list][(?P<index>.*)]'
             dest_static_routing_hop = 'info' + src_static_routing_hop
 
             req_key = ['index', 'active', 'next_hop', 'outgoing_interface', 'preference']
             for key in req_key:
-                self.add_leaf(cmd='show ip static route vrf {vrf}'.format(vrf=vrf),
+                self.add_leaf(cmd=f'show ip static route vrf {vrf}' if vrf_name else 'show ip static route',
                               src=src_static_routing_hop + '[{}]'.format(key),
                               dest=dest_static_routing_hop + '[{}]'.format(key),
                               vrf=vrf_name)
@@ -98,14 +96,14 @@ class StaticRouting(SuperStaticRouting):
             ##############################################
             ####            Ipv6                ##########
 
-            self.add_leaf(cmd='show ipv6 static vrf {vrf} detail'.format(vrf=vrf),
+            self.add_leaf(cmd=f'show ipv6 static vrf {vrf} detail' if vrf_name else 'show ipv6 static detail',
                           src=src_static_routing_route + '[route]',
                           dest=dest_static_routing_route + '[route]',
                           vrf = vrf_name)
 
             req_key = ['outgoing_interface', 'active', 'preference']
             for key in req_key:
-                self.add_leaf(cmd='show ipv6 static vrf {vrf} detail'.format(vrf=vrf),
+                self.add_leaf(cmd=f'show ipv6 static vrf {vrf} detail' if vrf_name else 'show ipv6 static detail',
                               src=src_static_routing_intf + '[{}]'.format(key),
                               dest=dest_static_routing_intf + '[{}]'.format(key),
                               vrf=vrf_name)
@@ -113,7 +111,7 @@ class StaticRouting(SuperStaticRouting):
 
             req_key = ['index', 'active', 'next_hop', 'outgoing_interface', 'preference']
             for key in req_key:
-                self.add_leaf(cmd='show ipv6 static vrf {vrf} detail'.format(vrf=vrf),
+                self.add_leaf(cmd=f'show ipv6 static vrf {vrf} detail' if vrf_name else 'show ipv6 static detail',
                               src=src_static_routing_hop + '[{}]'.format(key),
                               dest=dest_static_routing_hop + '[{}]'.format(key),
                               vrf=vrf_name)

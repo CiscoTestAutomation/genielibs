@@ -7211,12 +7211,13 @@ def configure_hsrp_version_on_interface(device, interface, version):
              f"Failed to configure hsrp version on interface. Error:\n{e}"
          )
 
-def configure_ipv6_address_on_hsrp_interface(device, interface, version, ipv6_address, priority=None,
+def configure_ipv6_address_on_hsrp_interface(device, interface, groupnumber, version, ipv6_address, priority=None,
         preempt=None, hello_interval=None, hold_time=None):
     """ Configure ipv6 address on hsrp interface
         Args:
              device (`obj`): Device object
              interface ('str'): Interface to configure hsrp
+             groupnumber('int'): Group number
              version (`int`): version number
              ipv6_address ('str') : ipv6 address
              priority ('str', optional) : config custom priority to hsrp
@@ -7229,13 +7230,14 @@ def configure_ipv6_address_on_hsrp_interface(device, interface, version, ipv6_ad
             SubCommandFailure
     """
     configs = [f"interface {interface}",
-               f"standby {version} ipv6 {ipv6_address}"]
+               f"standby version {version}",
+               f"standby {groupnumber} ipv6 {ipv6_address}"]
     if priority:
-        configs.append(f"standby {version}  priority {priority}")
+        configs.append(f"standby {groupnumber}  priority {priority}")
     if preempt:
-        configs.append(f"standby {version}  preempt delay sync {preempt}")
+        configs.append(f"standby {groupnumber}  preempt delay sync {preempt}")
     if hello_interval and hold_time:
-        configs.append(f"standby {version} timers {hello_interval} {hold_time}")
+        configs.append(f"standby {groupnumber} timers {hello_interval} {hold_time}")
 
     try:
          device.configure(configs)
@@ -10222,3 +10224,79 @@ def configure_sub_interface_encapsulation_dot1q(
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not Configure sub_interface_encapsulation_dot1q on interface {physical_port}. Error: {e}")
+
+def configure_switchport_trunk_native_vlan_tag(device, interface):
+    """ configure switchport trunk native vlan tag
+        Args:
+            device ('obj')    : device to use
+            interface ('str') : interface to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f'configure switchport trunk native vlan tag on {device}')
+    cmd = [f"interface {interface}","switchport trunk native vlan tag"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Could not configure switchport trunk native vlan tag on {device}.Error:\n{e}')     
+            
+def unconfigure_switchport_trunk_native_vlan_tag(device, interface):
+    """ unconfigure switchport trunk native vlan tag
+        Args:
+            device ('obj')    : device to use
+            interface ('str') : interface to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f'unconfigure switchport trunk native vlan tag on {device}')
+    cmd = [f"interface {interface}","no switchport trunk native vlan tag"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Could not unconfigure switchport trunk native vlan tag on {device}.Error:\n{e}')
+
+def configure_medium_p2p_interface(device, interface):
+    """ Configure medium p2p on interface
+    Args:
+        device ('obj'): Device object
+        interface ('str'): which interface to configure
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring medium p2p on interface
+    """
+    
+    log.debug("Configure medium p2p on interface")
+    cmd =[f"interface {interface}", "medium p2p"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure medium p2p on interface, Error:\n{e}"
+        ) 
+        
+def unconfigure_medium_p2p_interface(device, interface):
+    """ Unconfigure medium p2p on interface
+    Args:
+        device ('obj'): Device object
+        interface ('str'): which interface to configure
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed unconfiguring medium p2p on interface
+    """
+    
+    log.debug("Unconfigure medium p2p on interface")
+    cmd =[f"interface {interface}", "no medium p2p"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure medium p2p on interface, Error:\n{e}"
+        )

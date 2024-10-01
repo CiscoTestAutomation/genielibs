@@ -245,7 +245,7 @@
           "os": "iosxe"
         },
         "uid": "ConfigureReplace",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L2111"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L2120"
       }
     }
   },
@@ -300,7 +300,7 @@
           "os": "iosxe"
         },
         "uid": "Connect",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L2167"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L2176"
       },
       "linux": {
         "folders": {
@@ -354,7 +354,7 @@
           "os": "iosxe"
         },
         "uid": "CopyToDevice",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1466"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1475"
       }
     },
     "module_name": "stages.stages",
@@ -492,7 +492,7 @@
   "InstallImage": {
     "folders": {
       "iosxe": {
-        "doc": "This stage installs a provided image onto the device using the install\nCLI. It also handles the automatic reloading of your device after the\ninstall is complete.\n\nStage Schema\n------------\ninstall_image:\n    images (list): Image to install\n\n    directory (str): directory where packages.conf is created\n\n\n    save_system_config (bool, optional): Whether or not to save the system\n        config if it was modified. Defaults to False.\n    \n    skip_save_running_config (bool, optional): Skip the step to save the the running\n                                        configuration to the startup config.\n\n    install_timeout (int, optional): Maximum time in seconds to wait for install\n        process to finish. Defaults to 500.\n\n    reload_timeout (int, optional): Maximum time in seconds to wait for reload\n        process to finish. Defaults to 800.\n\n    verify_running_image (bool, optional): Compare the image filename with the running\n        image version on device. If a match is found, the stage will be skipped.\n        Defaults to True.\n\n    reload_service_args (optional):\n\n        reload_creds (str, optional): The credential to use after the reload is\n            complete. The credential name comes from the testbed yaml file.\n            Defaults to the 'default' credential.\n\n        prompt_recovery (bool, optional): Enable or disable the prompt recovery\n            feature of unicon. Defaults to True.\n\n        error_pattern (list, optional): List of regex strings to check for errors.\n            Default: [r\"FAILED:.*?$\",]\n\n        <Key>: <Value>\n            Any other arguments that the Unicon reload service supports\n\nExample\n-------\ninstall_image:\n    images:\n      - /auto/some-location/that-this/image/stay-isr-image.bin\n    save_system_config: True\n    install_timeout: 1000\n    reload_timeout: 1000\n\n",
+        "doc": "This stage installs a provided image onto the device using the install\nCLI. It also handles the automatic reloading of your device after the\ninstall is complete.\n\nStage Schema\n------------\ninstall_image:\n    images (list): Image to install\n\n    directory (str): directory where packages.conf is created\n\n\n    save_system_config (bool, optional): Whether or not to save the system\n        config if it was modified. Defaults to False.\n\n    skip_save_running_config (bool, optional): Skip the step to save the the running\n                                        configuration to the startup config.\n\n    install_timeout (int, optional): Maximum time in seconds to wait for install\n        process to finish. Defaults to 500.\n\n    reload_timeout (int, optional): Maximum time in seconds to wait for reload\n        process to finish. Defaults to 800.\n\n    verify_running_image (bool, optional): Compare the image filename with the running\n        image version on device. If a match is found, the stage will be skipped.\n        Defaults to True.\n\n    reload_service_args (optional):\n\n        reload_creds (str, optional): The credential to use after the reload is\n            complete. The credential name comes from the testbed yaml file.\n            Defaults to the 'default' credential.\n\n        prompt_recovery (bool, optional): Enable or disable the prompt recovery\n            feature of unicon. Defaults to True.\n\n        error_pattern (list, optional): List of regex strings to check for errors.\n            Default: [r\"FAILED:.*?$\",]\n\n        <Key>: <Value>\n            Any other arguments that the Unicon reload service supports\n\nExample\n-------\ninstall_image:\n    images:\n      - /auto/some-location/that-this/image/stay-isr-image.bin\n    save_system_config: True\n    install_timeout: 1000\n    reload_timeout: 1000\n\n",
         "folders": {
           "cat3k": {
             "doc": "This stage installs a provided image onto the device using the install\nCLI. It also handles the automatic reloading of your device after the\ninstall is complete.\n\nStage Schema\n------------\ninstall_image:\n    images (list): Image to install\n\n    save_system_config (bool, optional): Whether or not to save the system\n        config if it was modified. Defaults to False.\n\n    install_timeout (int, optional): Maximum time in seconds to wait for install\n        process to finish. Defaults to 500.\n\n    reload_timeout (int, optional): Maximum time in seconds to wait for reload\n        process to finish. Defaults to 800.\n\nExample\n-------\ninstall_image:\n    images:\n      - /auto/some-location/that-this/image/stay-isr-image.bin\n    save_system_config: True\n    install_timeout: 1000\n    reload_timeout: 1000\n\n",
@@ -521,7 +521,7 @@
           "os": "iosxe"
         },
         "uid": "InstallImage",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L548"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L554"
       },
       "iosxr": {
         "folders": {
@@ -583,7 +583,7 @@
           "os": "iosxe"
         },
         "uid": "InstallPackages",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L809"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L815"
       }
     }
   },
@@ -597,7 +597,7 @@
           "os": "iosxe"
         },
         "uid": "InstallRemoveInactive",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L465"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L471"
       }
     }
   },
@@ -698,7 +698,7 @@
           "os": "iosxe"
         },
         "uid": "Reload",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L893"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L899"
       }
     },
     "module_name": "stages.stages",
@@ -716,7 +716,7 @@
           "os": "iosxe"
         },
         "uid": "ResetConfiguration",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L2359"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L2374"
       }
     }
   },
@@ -731,7 +731,7 @@
   "RommonBoot": {
     "folders": {
       "iosxe": {
-        "doc": "This stage boots an image onto the device through rommon. Using either\na local image or one from a tftp server.\n\nStage Schema\n------------\nrommon_boot:\n\n    image (list): Image to boot with\n\n    tftp (optional): If specified boot via tftp otherwise boot using local\n        image.\n\n        ip_address (list, optional): Management ip address to configure to reach to the\n            tftp server\n\n        subnet_mask (str, optional): Management subnet mask\n\n        gateway (str, optional): Management gateway\n\n        tftp_server (str, optional): Tftp server that is reachable with management interface\n\n\n    recovery_password (str): Enable password for device\n        required after bootup. Defaults to None.\n\n    recovery_enable_password (str): Enable password for device\n        required after bootup. Defaults to None.\n\n    recovery_username (str): Enable username for device\n        required after bootup. Defaults to None.\n\n    save_system_config (bool, optional): Whether or not to save the\n        system config if it was modified. Defaults to True.\n\n    timeout (int, optional): Max time allowed for the booting process.\n        Defaults to 600.\n\n    config_reg_timeout (int, optional): Max time to set config-register.\n        Defaults to 30.\n\n\n    rommon_timeout (int, optional): Timeout after bringing the device to rommon. Default to 15 sec.\n\n    reconnect_timeout (int, optional): Timeout to reconnect the device after booting. Default to 90 sec.\n\nExample\n-------\nrommon_boot:\n    image:\n      - /auto/some-location/that-this/image/stay-isr-image.bin\n    tftp:\n        ip_address: [10.1.7.126, 10.1.7.127]\n        gateway: 10.1.7.1\n        subnet_mask: 255.255.255.0\n        tftp_server: 11.1.7.251\n    recovery_password: nbv_12345\n    recovery_username: user_12345\n    recovery_enable_password: en\n    save_system_config: False\n    timeout: 600\n    config_reg_timeout: 10\n\nThere is more than one ip address, one for each supervisor.\n\nTo pass tftp information and tftp server ip from the testbed, refer the example below\n\n\ntestbed:\n  name:\n  name:\n  passwords:\n    tacacs: test\n    enable: test\n  servers:\n    tftp:\n    tftp:\n        address: 10.x.x.x\n        credentials:\n            default:\n                username: user\n                password: 1234\ndevices:\n    uut1:\n        management:\n            address:\n                ipv4: '10.1.1.1/16'\n            gateway:\n                ipv4: '10.1.0.1'\n\n",
+        "doc": "This stage boots an image onto the device through rommon. Using either\na local image or one from a tftp server.\n\nStage Schema\n------------\nrommon_boot:\n\n    image (list): Image to boot with\n\n    tftp (optional): If specified boot via tftp otherwise boot using local\n        image.\n\n        ip_address (list, optional): Management ip address to configure to reach to the\n            tftp server\n\n        subnet_mask (str, optional): Management subnet mask\n\n        gateway (str, optional): Management gateway\n\n        tftp_server (str, optional): Tftp server that is reachable with management interface\n\n\n    recovery_password (str): Enable password for device\n        required after bootup. Defaults to None.\n\n    recovery_enable_password (str): Enable password for device\n        required after bootup. Defaults to None.\n\n    recovery_username (str): Enable username for device\n        required after bootup. Defaults to None.\n\n    save_system_config (bool, optional): Whether or not to save the\n        system config if it was modified. Defaults to True.\n\n    timeout (int, optional): Max time allowed for the booting process.\n        Defaults to 600.\n\n    config_reg_timeout (int, optional): Max time to set config-register.\n        Defaults to 30.\n\n    config_register (str, optional): Specify a custom config register for rommon booting.\n        Defaults to 0x0.\n\n    rommon_timeout (int, optional): Timeout after bringing the device to rommon. Default to 15 sec.\n\n    reconnect_timeout (int, optional): Timeout to reconnect the device after booting. Default to 90 sec.\n\nExample\n-------\nrommon_boot:\n    image:\n      - /auto/some-location/that-this/image/stay-isr-image.bin\n    tftp:\n        ip_address: [10.1.7.126, 10.1.7.127]\n        gateway: 10.1.7.1\n        subnet_mask: 255.255.255.0\n        tftp_server: 11.1.7.251\n    recovery_password: nbv_12345\n    recovery_username: user_12345\n    recovery_enable_password: en\n    save_system_config: False\n    timeout: 600\n    config_reg_timeout: 10\n    config_register: 0x0\n\nThere is more than one ip address, one for each supervisor.\n\nTo pass tftp information and tftp server ip from the testbed, refer the example below\n\n\ntestbed:\n  name:\n  name:\n  passwords:\n    tacacs: test\n    enable: test\n  servers:\n    tftp:\n    tftp:\n        address: 10.x.x.x\n        credentials:\n            default:\n                username: user\n                password: 1234\ndevices:\n    uut1:\n        management:\n            address:\n                ipv4: '10.1.1.1/16'\n            gateway:\n                ipv4: '10.1.0.1'\n\n",
         "folders": {
           "cat9k": {
             "doc": "This stage boots an image onto the device through rommon. Using either\na local image or one from a tftp server.\n\nStage Schema\n------------\nrommon_boot:\n\n    image (list): Image to boot with\n\n    tftp (optional): If specified boot via tftp otherwise boot using local\n        image.\n\n        ip_address (list, optional): Management ip address to configure to reach to the\n            tftp server\n\n        subnet_mask (str, optional): Management subnet mask\n\n        gateway (str, optional): Management gateway\n\n        tftp_server (str, optional): Tftp server that is reachable with management interface\n    \n    recovery_password (str): Enable password for device\n        required after bootup. Defaults to None.\n\n    recovery_enable_password (str): Enable password for device\n        required after bootup. Defaults to None.\n\n    recovery_username (str): Enable username for device\n        required after bootup. Defaults to None.\n\n    save_system_config (bool, optional): Whether or not to save the\n        system config if it was modified. Defaults to True.\n\n    timeout (int, optional): Max time allowed for the booting process.\n        Defaults to 600.\n\n    config_reg_timeout (int, optional): Max time to set config-register.\n        Defaults to 30.\n\nExample\n-------\nrommon_boot:\n    image:\n      - /auto/some-location/that-this/image/stay-isr-image.bin\n    tftp:\n        ip_address: [10.1.7.126, 10.1.7.127]\n        gateway: 10.1.7.1\n        subnet_mask: 255.255.255.0\n        tftp_server: 11.1.7.251\n    recovery_password: nbv_12345\n    recovery_username: user_12345\n    recovery_enable_password: en\n    save_system_config: False\n    timeout: 600\n    config_reg_timeout: 10\n\nThere is more than one ip address, one for each supervisor.\n\nTo pass tftp information and tftp server ip from the testbed, refer the example below\n\n\ntestbed:\n  name: \n  passwords: \n    tacacs: test\n    enable: test\n  servers:\n    tftp:                       \n        address: 10.x.x.x\n        credentials:\n            default:\n                username: user\n                password: 1234\ndevices:\n    uut1:\n        management:\n            address:\n                ipv4: '10.1.1.1/16'\n            gateway:\n                ipv4: '10.1.0.1'\n\n",
@@ -750,7 +750,7 @@
           "os": "iosxe"
         },
         "uid": "RommonBoot",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1207"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1213"
       }
     }
   },
@@ -785,7 +785,7 @@
           "os": "iosxe"
         },
         "uid": "SetControllerMode",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L2547"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L2562"
       }
     }
   },
@@ -856,7 +856,7 @@
           "os": "iosxe"
         },
         "uid": "TftpBoot",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L196"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L202"
       },
       "iosxr": {
         "doc": "This stage boots a new image onto your device using the tftp booting\nmethod.\n\nStage Schema\n------------\ntftp_boot:\n\n    image (list): Image to boot with\n\n    ip_address (list): Management ip address to configure to reach to the\n        tftp server\n\n    subnet_mask (str): Management subnet mask\n\n    gateway (str): Management gateway\n\n    tftp_server (str): Tftp server that is reachable with management interface\n\n    timeout (int, optional): Max time during which tftp boot must\n        complete. Defaults to 600.\n\n    config_reg_timeout (int, optional): Max time to set config-register.\n        Defaults to 30.\n\n    device_reload_sleep (int, optional): Time in seconds to wait after\n        reloading the device. Defaults to 20.\n\n    recovery_username (str, optional): Enable username for device\n        required after bootup. Defaults to None.\n\n    recovery_password (str, optional): Enable password for device\n        required after bootup. Defaults to None.\n\nExample\n-------\ntftp_boot:\n    image:\n        - /auto/some-location/that-this/image/asr9k-mini-px.vm\n    ip_address: [10.1.7.126, 10.1.7.127]\n    gateway: 10.1.7.1\n    subnet_mask: 255.255.255.0\n    tftp_server: 11.1.7.251\n    timeout: 1200\n    config_reg_timeout: 60\n    device_reload_sleep: 300\n    recovery_username: admin\n    recovery_password: nbv_12345\n\nNote: There is more than one ip address, one for each supervisor.\n",

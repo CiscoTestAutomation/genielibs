@@ -876,3 +876,124 @@ def configure_default_spanning_tree_vlan(device, vlan_range, option_type=None):
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure spanning-tree mode mst on device. Error:\n{e}")
+
+def configure_spanning_tree_bridge_assurance(device):
+    """
+    Configures spanning-tree Bridge Assurance
+    Args:
+        device ('obj') : Device object
+    Returns:
+        None
+    """
+
+    try:
+        output = device.configure("spanning-tree bridge assurance")
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not Configure Spanning Tree Bridge Assurance - Error:\n{error}".format(error=e)
+        )
+
+def unconfigure_spanning_tree_bridge_assurance(device):
+    """ 
+    UnConfigures spanning-tree Bridge assurance
+    Args:
+        device ('obj') : Device object
+    Returns:
+        None
+    """
+    try:
+        output = device.configure("no spanning-tree bridge assurance")
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not UnConfigure Spanning Tree Bridge Assurance - Error:\n{error}".format(error=e)
+        )
+
+def configure_spanning_tree_portfast_bridge_assurance(device, option):
+    """ Configures Spanning Tree Portfast_bridge_assurance
+        Args:
+            device ('obj')    : device to use
+            option ('str'): normal / edge / network / edge bpduguard / edge bpdufilter
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config = "spanning-tree portfast "
+    if option:
+        config += f" {option} default"
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as error:
+        raise SubCommandFailure(
+            f'Could not configure spanning-tree portfast bridge assurance - Error:\n{error}'
+        )
+
+def unconfigure_spanning_tree_portfast_bridge_assurance(device, option):
+    """ Unconfigures Spanning Tree Portfast
+        Args:
+            device ('obj')    : device to use
+            option ('str'): normal / edge / network / edge bpduguard / edge bpdufilter
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config = "no spanning-tree portfast "
+    if option:
+        config += f" {option} default"
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as error:
+        raise SubCommandFailure(
+            f'Could not unconfigure spanning-tree portfast bridge assurance - Error:\n{error}'
+        )
+
+def configure_spanning_tree_portfast_bridge_assurance_on_interface(device, interface, option):
+    """ Configures Spanning Tree Portfast bridge assurance on interface
+        Args:
+            device ('obj')    : device to use
+            interface ('str'): enable spanning-tree portfast bridge assurance on this interface
+            option('str'): edge trunk/network
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [
+                f"interface {interface}",
+                f"spanning-tree portfast {option}"
+          ]  
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure the spanning-tree portfast bridge assurance on interface Error:\n{error}".format(error=e)
+        )
+
+def unconfigure_spanning_tree_portfast_bridge_assurance_on_interface(device, interface, option):
+    """ Unconfigures Spanning Tree Portfast bridge assurance on interface
+        Args:
+            device ('obj')    : device to use
+            interface ('str'): enable spanning-tree portfast bridge assurance on this interface
+            option('str'): edge trunk/network
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [
+                f"interface {interface}",
+                f"no spanning-tree portfast {option}"
+          ]  
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not Unconfigure the spanning-tree portfast bridge assurance on interface Error:\n{error}".format(error=e)
+        )
+

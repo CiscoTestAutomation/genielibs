@@ -14,7 +14,7 @@ from genie.libs.parser.iosxe.show_interface import ShowInterfacesSwitchport
 class Interface(CommonInterface):
     '''Interface Genie Ops Object'''
 
-    def learn(self, interface='', address_family='', custom=None):
+    def learn(self, interface='', address_family='', custom=None, **kwargs):
         '''Learn Interface Ops'''
         
         # ======================================================================

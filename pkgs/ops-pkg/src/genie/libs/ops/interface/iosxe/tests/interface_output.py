@@ -988,3 +988,79 @@ class InterfaceOutput(object):
             "bandwidth": 1000000
         },
     }
+
+    ShowInterfaces_Brief ='''
+        GigabitEthernet0/0/0 is administratively down, line protocol is down 
+          Hardware is ISR4221-2x1GE, address is 70ea.1ab5.49b0 (bia 70ea.1ab5.49b0)
+          MTU 1500 bytes, BW 1000000 Kbit/sec, DLY 10 usec, 
+        GigabitEthernet0/0/1 is administratively down, line protocol is down 
+          Hardware is ISR4221-2x1GE, address is 70ea.1ab5.49b1 (bia 70ea.1ab5.49b1)
+          MTU 1500 bytes, BW 1000000 Kbit/sec, DLY 10 usec, 
+        GigabitEthernet0/1/0 is administratively down, line protocol is down 
+          Hardware is NIM-1GE-CU-SFP, address is 70ea.1ab5.49b8 (bia 70ea.1ab5.49b8)
+          MTU 1500 bytes, BW 1000000 Kbit/sec, DLY 10 usec, 
+        GigabitEthernet0/2/0 is administratively down, line protocol is down 
+          Hardware is NIM-1GE-CU-SFP, address is 70ea.1ab5.49c0 (bia 70ea.1ab5.49c0)
+          MTU 1500 bytes, BW 1000000 Kbit/sec, DLY 10 usec,
+    '''
+    ShowIpInterface_Brief = '''
+        GigabitEthernet0/0/0 is administratively down, line protocol is down
+        GigabitEthernet0/0/1 is administratively down, line protocol is down
+        GigabitEthernet0/1/0 is administratively down, line protocol is down
+        GigabitEthernet0/2/0 is administratively down, line protocol is down
+    '''
+    ShowIpv6Interface_Brief = '''
+        GigabitEthernet0/0/0 is administratively down, line protocol is down
+          IPv6 is tentative, link-local address is FE80::72EA:1AFF:FEB5:49B0 [TEN]
+          No Virtual link-local address(es):
+          Stateless address autoconfig enabled
+          No global unicast address is configured
+          Joined group address(es):
+          Hosts use stateless autoconfig for addresses.
+    '''
+    InterfaceOpsBriefOutput_info = {
+        'GigabitEthernet0/0/0': {'bandwidth': 1000000,
+            'delay': 10,
+            'enabled': False,
+            'ipv6': {'FE80::72EA:1AFF:FEB5:49B0': {'ip': 'FE80::72EA:1AFF:FEB5:49B0',
+                                                    'origin': 'link_layer',
+                                                    'status': 'tentative'}},
+            'mac_address': '70ea.1ab5.49b0',
+            'mtu': 1500,
+            'oper_status': 'down',
+            'phys_address': '70ea.1ab5.49b0',
+            'port_channel': {'port_channel_member': False},
+            'switchport_enable': False,
+            'type': 'ISR4221-2x1GE'},
+        'GigabitEthernet0/0/1': {'bandwidth': 1000000,
+            'delay': 10,
+            'enabled': False,
+            'mac_address': '70ea.1ab5.49b1',
+            'mtu': 1500,
+            'oper_status': 'down',
+            'phys_address': '70ea.1ab5.49b1',
+            'port_channel': {'port_channel_member': False},
+            'switchport_enable': False,
+            'type': 'ISR4221-2x1GE'},
+        'GigabitEthernet0/1/0': {'bandwidth': 1000000,
+            'delay': 10,
+            'enabled': False,
+            'mac_address': '70ea.1ab5.49b8',
+            'mtu': 1500,
+            'oper_status': 'down',
+            'phys_address': '70ea.1ab5.49b8',
+            'port_channel': {'port_channel_member': False},
+            'switchport_enable': False,
+            'type': 'NIM-1GE-CU-SFP'},
+        'GigabitEthernet0/2/0': {'bandwidth': 1000000,
+            'delay': 10,
+            'enabled': False,
+            'mac_address': '70ea.1ab5.49c0',
+            'mtu': 1500,
+            'oper_status': 'down',
+            'phys_address': '70ea.1ab5.49c0',
+            'port_channel': {'port_channel_member': False},
+            'switchport_enable': False,
+            'type': 'NIM-1GE-CU-SFP'},
+        'GigabitEthernet1/0/1': {'switchport_enable': False, 'vrf': 'VRF1'},
+        'GigabitEthernet1/0/2': {'switchport_enable': False, 'vrf': 'Mgmt-intf'}}

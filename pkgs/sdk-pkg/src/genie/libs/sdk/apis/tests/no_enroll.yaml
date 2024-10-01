@@ -1,0 +1,7 @@
+default:
+  arguments:
+    device: "dut1"
+
+configure_no_pki_enroll:
+  arguments:
+    tp_name: "tp_wo_pass_enc"
