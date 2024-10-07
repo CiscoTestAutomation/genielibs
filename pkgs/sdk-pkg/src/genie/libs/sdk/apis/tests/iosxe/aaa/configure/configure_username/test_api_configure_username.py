@@ -30,7 +30,7 @@ class TestConfigureUsername(unittest.TestCase):
         )
 
     def test_configure_username(self):
-        result = configure_username(self.device, 'test', 'lab', privilege=1)
+        result = configure_username(self.device, 'test', 'lab', '1')
         expected_output = None
         self.assertEqual(result, expected_output)
 
