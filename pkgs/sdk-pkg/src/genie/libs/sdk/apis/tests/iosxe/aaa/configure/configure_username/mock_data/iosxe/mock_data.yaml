@@ -5,24 +5,32 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-    username test privilege 1 password lab: |
-      username test privilege 1 password lab
-       WARNING: Command has been added to the configuration using a type 0 password. However, recommended to migrate to strong type-6 encryption
-  prompt: Switch-9300(config)#
+    username USER privilege 15 view VIEW common-criteria-policy POLICY secret test: "username\
+      \ USER privilege 15 view VIEW common-criteri\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b$ER privilege\
+      \ 15 view VIEW common-criteria         \b\b\b\b\b\b\b\b\b-policy P\b\b\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\bge 15 view VIEW common-criteria-policy PO         \b\b\b\b\b\b\
+      \b\b\bLICY secr\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b VIEW common-criteria-policy POLICY secre\
+      \         \b\b\b\b\b\b\b\b\bt test\r\n% CC policy \"POLICY\" not found in policy\
+      \ map\r\n"
+  prompt: yang-infra-c8kv-3(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: Switch-9300(config-line)#
+  prompt: yang-infra-c8kv-3(config-line)#
 connect:
   commands:
-    '':
-      new_state: execute
-  preface: |-
-    Trying mock_device ...
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
     Connected to mock_device.
-    Escape character is '^]'.
+
+    Escape character is ''^]''.'
   prompt: ''
 execute:
   commands:
@@ -31,7 +39,7 @@ execute:
     config-transaction:
       new_state: configure
     show version: ''
+    show version | include operating mode: ''
     term length 0: ''
     term width 0: ''
-    show version | include operating mode: ''
-  prompt: Switch-9300#
+  prompt: yang-infra-c8kv-3#

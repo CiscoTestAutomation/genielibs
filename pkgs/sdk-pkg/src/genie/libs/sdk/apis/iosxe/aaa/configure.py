@@ -730,7 +730,7 @@ def clear_aaa_cache(device, server_grp, profile='all'):
         )
 
 
-def configure_username(device, username, pwd, encryption=0, privilege=''):
+def configure_username(device, username, pwd='', encryption=0, privilege='', view = '', policy_type='', policy_name = '', secret=''):
     """ Configure a user with a password
         Args:
             device ('obj'): Device object
@@ -738,6 +738,10 @@ def configure_username(device, username, pwd, encryption=0, privilege=''):
             pwd ('str'): Password for the user
             encryption ('int',optional): Encryption level (Default 0 for cleartext)
             privilege ('int',optional): User privilege level (0-15)
+            view ('str', optional): CLI View for the user
+            poliy_type ('str', optional): Password security policy
+            policy_name ('str', optional): Name of the policy being configured
+            secret ('str', optional): Secret for the user
         Return:
             None
         Raise:
@@ -747,14 +751,28 @@ def configure_username(device, username, pwd, encryption=0, privilege=''):
             -->username testUser password 0 secretPwd
             dut1.api.configure_username(username='testUser', pwd='secretPwd', privilege='1')
             -->username testUser privilege 1 password secretPwd
+            dut1.api.configure_username(username=user, privilege=privilege, view=view, policy_type=policy_type, policy_name=policy_name, secret=secret)
+            -->username testUser priv 15 view VIEW common-criteria-policy POLICY secret test
+
     """
     try:
         # Update str with password encryption level
-        if encryption:
+        if encryption and pwd != '':
             pwd = '{encryption} {pwd}'.format(encryption=encryption,pwd=pwd)
         if privilege:
             username = '{username} privilege {privilege}'.format(username=username,privilege=privilege)
-        device.configure('username {username} password {pwd}'.format(username=username,pwd=pwd))
+        if secret:
+            secret = 'secret {secret}'.format(secret=secret)
+        if view != '':
+            view = 'view {view}'.format(view=view)
+
+        # using password
+        if pwd != '':
+            device.configure('username {username} password {pwd} {view} {policy_type} {policy_name}'.format(username=username,pwd=pwd, view=view, policy_type=policy_type ,policy_name=policy_name).strip())
+        # using secret
+        else:
+            device.configure('username {username} {view} {policy_type} {policy_name} {secret}'.format(username=username,pwd=pwd, view=view, policy_type=policy_type ,policy_name=policy_name, secret=secret))
+
     except SubCommandFailure:
         raise SubCommandFailure(
             "Failed to configure user {username}".format(username=username)
