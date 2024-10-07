@@ -30,7 +30,7 @@ class TestConfigureUsername(unittest.TestCase):
         )
 
     def test_configure_username(self):
-        result = configure_username(self.device, 'test', 'lab', '1')
+        result = configure_username(self.device, 'test', 'lab', privilege=1)
         expected_output = None
         self.assertEqual(result, expected_output)
 
@@ -45,7 +45,7 @@ class TestConfigureUsernameSecret(unittest.TestCase):
               defaults:
                 class: unicon.Unicon
               a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
+                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data_secret --state connect
                 protocol: unknown
             os: iosxe
             platform: vwlc
