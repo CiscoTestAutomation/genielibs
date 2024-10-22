@@ -1,32 +1,29 @@
 configure:
   commands:
-    continue 20: "continue 20\r\n"
     end:
       new_state: execute
     line console 0:
       new_state: configure_line
-    match as-path 12: "match as-path 12\r\n"
+    match community 20: "match community 20\r\n"
+    match interface Loopback0: "match interface Loopback0\r\n"
     no logging console: ''
-    route-map internal permit 10: "route-map internal permit 10\r\n"
-    set as-path prepend 45000: "set as-path prepend 45000\r\n"
-    set local-preference 500: "set local-preference 500\r\n"
-    set metric 30: "set metric 30\r\n"
-    set weight 100: "set weight 100\r\n"
-  prompt: stack3-nyquist-1(config)#
+    route-map rm-adv-loopback permit 10: "route-map rm-adv-loopback permit 10\r\n"
+  prompt: IR1101(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: stack3-nyquist-1(config-line)#
+  prompt: IR1101(config-line)#
 connect:
   commands:
-    '':
-      new_state: execute
-  preface: |-
-    Trying mock_device ...
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
     Connected to mock_device.
-    Escape character is '^]'.
+
+    Escape character is ''^]''.'
   prompt: ''
 execute:
   commands:
@@ -35,7 +32,7 @@ execute:
     config-transaction:
       new_state: configure
     show version: ''
+    show version | include operating mode: ''
     term length 0: ''
     term width 0: ''
-    show version | include operating mode: ''
-  prompt: stack3-nyquist-1#
+  prompt: IR1101#

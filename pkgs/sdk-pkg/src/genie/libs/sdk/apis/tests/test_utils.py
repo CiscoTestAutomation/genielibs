@@ -4,6 +4,7 @@ import unittest
 from unittest.mock import MagicMock, Mock, call, patch
 
 from ats.topology import Device
+from unittest import mock
 
 from genie.libs.clean.stages.tests.utils import create_test_device
 from genie.libs.sdk.apis.utils import (

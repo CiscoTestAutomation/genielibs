@@ -10,7 +10,7 @@ class TestConfigureEvpnInstanceEvi(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          T3-9500-S2:
+          IR1101:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,11 +18,11 @@ class TestConfigureEvpnInstanceEvi(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: c9300
-            type: c9500
+            platform: router
+            type: router
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['T3-9500-S2']
+        self.device = self.testbed.devices['IR1101']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -30,6 +30,6 @@ class TestConfigureEvpnInstanceEvi(unittest.TestCase):
         )
 
     def test_configure_evpn_instance_evi(self):
-        result = configure_evpn_instance_evi(self.device, 201, 'vlan-based', ['encapsulation', 'ip'], 'vxlan', 'disable')
+        result = configure_evpn_instance_evi(self.device, 12, 'vlan-based', ['default-gateway'], 'vxlan', 'disable')
         expected_output = None
         self.assertEqual(result, expected_output)

@@ -1,28 +1,28 @@
 configure:
   commands:
-    encapsulation vxlan: "encapsulation vxlan\r\n"
+    default-gateway advertise enable: "default-gateway advertise enable\r\n"
     end:
       new_state: execute
-    ip local-learning disable: "ip local-learning disable\r\n"
-    l2vpn evpn instance 201 vlan-based: "l2vpn evpn instance 201 vlan-based\r\n"
+    l2vpn evpn instance 12 vlan-based: "l2vpn evpn instance 12 vlan-based\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''
-  prompt: T3-9500-S2(config)#
+  prompt: IR1101(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: T3-9500-S2(config-line)#
+  prompt: IR1101(config-line)#
 connect:
   commands:
-    '':
-      new_state: execute
-  preface: |-
-    Trying mock_device ...
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
     Connected to mock_device.
-    Escape character is '^]'.
+
+    Escape character is ''^]''.'
   prompt: ''
 execute:
   commands:
@@ -31,7 +31,7 @@ execute:
     config-transaction:
       new_state: configure
     show version: ''
+    show version | include operating mode: ''
     term length 0: ''
     term width 0: ''
-    show version | include operating mode: ''
-  prompt: T3-9500-S2#
+  prompt: IR1101#

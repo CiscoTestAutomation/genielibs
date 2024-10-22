@@ -1,3 +1,4 @@
+import os
 import unittest
 from pyats.topology import loader
 from genie.libs.sdk.apis.iosxe.bgp.configure import configure_bgp_router_id_peergroup_neighbor
@@ -7,21 +8,21 @@ class TestConfigureBgpRouterIdPeergroupNeighbor(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        testbed = """
+        testbed = f"""
         devices:
-          mac-gen2:
+          IR1101:
             connections:
               defaults:
                 class: unicon.Unicon
               a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
+                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: cat9k
-            type: C9400
+            platform: router
+            type: router
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['mac-gen2']
+        self.device = self.testbed.devices['IR1101']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -29,6 +30,6 @@ class TestConfigureBgpRouterIdPeergroupNeighbor(unittest.TestCase):
         )
 
     def test_configure_bgp_router_id_peergroup_neighbor(self):
-        result = configure_bgp_router_id_peergroup_neighbor(self.device, '1', 'neigh-gig1', '1')
+        result = configure_bgp_router_id_peergroup_neighbor(self.device, 1, 'pg-ibgp-rc', 1, '102.102.102.0/24', 'pg-ibgp-rc')
         expected_output = None
         self.assertEqual(result, expected_output)

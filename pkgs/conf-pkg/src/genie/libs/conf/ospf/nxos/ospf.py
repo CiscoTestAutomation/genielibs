@@ -316,6 +316,10 @@ class Ospf(ABC):
                         if attributes.value('router_id'):
                             configurations.append_line(attributes.format('router-id {router_id}'))
 
+                        #segment-routing mpls
+                        if attributes.value('segment_routing_mpls'):
+                            configurations.append_line(attributes.format('segment-routing mpls'))
+
                         # router ospf 1
                         #   distance 110
                         if attributes.value('pref_all'):

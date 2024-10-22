@@ -151,6 +151,7 @@ def configure_bba_group(device,name,vt_number, service_profile_name=None,
                 .format(device=device, error=e)
         )
 
+
 def unconfigure_bba_group(device,name,vt_number):
     """ bba-group
         Args:
@@ -1918,7 +1919,7 @@ def configure_macro_global_apply(device, macro_name, variables=None, values=None
     cmd = f"macro global apply {macro_name}"
     if variables and values:
         cmd += f" {variables} {values}"
-        
+
     try:
         device.configure(cmd, timeout=timeout)
     except SubCommandFailure as e:
@@ -6137,7 +6138,7 @@ def unconfigure_diagnostic_monitor_interval_module(device, mod_num, test_name, t
         raise SubCommandFailure(
             f"could not Unconfigure diagnostic monitor interval module  {device}. Error:\n{e}"
         )
-        
+
 def configure_platform_mgmt_interface(device, interface_name):
     """ Configure platform management interface
     Args:
@@ -6173,7 +6174,7 @@ def unconfigure_platform_mgmt_interface(device, interface_name):
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure platform management interface. Error:\n{e}")
-        
+
 def execute_issu_set_rollback_timer(device, timer=0):
     """
     Performs issu set rollback-timer on device
@@ -6185,13 +6186,13 @@ def execute_issu_set_rollback_timer(device, timer=0):
     Raises:
         SubCommandFailure
     """
-    
+
     cmd = f"issu set rollback-timer {timer}"
     try:
         output = device.configure(cmd)
     except SubCommandFailure:
         raise SubCommandFailure("Rollback timer should be in <seconds> format (0-7200) or hh:mm:ss format")
-        
+
 def unconfigure_issu_set_rollback_timer(device, timer=0):
     """
     Unconfigures issu set rollback-timer on device
@@ -6213,7 +6214,7 @@ def unconfigure_issu_set_rollback_timer(device, timer=0):
 
 def configure_macro_name(device, macro_name, macro_configs, timeout=60):
     """ Configure macro name
-    
+
     Args:
         device ('obj'): Device object
         macro_name ('str'): Macro namef
@@ -6227,7 +6228,7 @@ def configure_macro_name(device, macro_name, macro_configs, timeout=60):
     def send_configs(device, macro_configs):
         for config in macro_configs:
             device.sendline(config)
-    
+
     dialog = Dialog([
         Statement(
             pattern=r"Enter macro commands one per line. End with the character.*",
@@ -6245,4 +6246,71 @@ def configure_macro_name(device, macro_name, macro_configs, timeout=60):
         raise SubCommandFailure(
             f"Failed to configure macro name {macro_name} on device {device.hostname}. Error:\n{e}"
         )
+
+def configure_key_config_key_newpass_oldpass(device, new_pass, old_pass):
+    """ Changes the master key password
+        Args:
+            device (`obj`): Device object
+            new_pass('str'): password, The new config-key
+                Minimum 8 characters not beginning with
+                IOS special character(! # ;)
+            old_pass('str'): password, The old config-key
+                Minimum 8 characters not beginning with
+                IOS special character(! # ;)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f'key config-key newpass {new_pass} oldpass {old_pass}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure configure key config key newpass oldpass on {device}. Error:\n{e}")
+
+def configure_parser_view(device, view_name, pwd, view_configs):
+    """" Configure Parser view
+
+    Args:
+        device ('obj'): Device object
+        view_name ('str'): View name
+        pwd ('str'): Password
+        view_configs ('list'): Configuration execution to be included in the parser view
+    Raises:
+        SubCommandFailure
+    Returns:
+        None
+    """
+    view_configs = [str(cmd) for cmd in view_configs]
+    base_config = [
+            f'parser view {view_name}',
+            f'secret 0 {pwd}'
+            ]
+    view_configs = [f'command exec include {cmd}' for cmd in view_configs]
+    commands = base_config + view_configs + ['end']
+    try:
+         device.configure(commands)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Parser view creation failed. Error:\n{e}")
+
+
+def unconfigure_parser_view(device, view_name):
+    """" Unconfigure Parser view
+
+    Args:
+        device ('obj'): Device object
+        view_name ('str'): View name
+    Raises:
+        SubCommandFailure
+    Returns:
+        None
+    """
+
+    cmd = f"no parser view {view_name}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Parser view deletion failed {view_name}. Error:\n{e}")
+
 

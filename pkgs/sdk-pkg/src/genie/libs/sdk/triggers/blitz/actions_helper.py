@@ -1229,7 +1229,7 @@ def _condition_validator(items):
             left_hand = output['left_hand_value']
             left_hand = left_hand if isinstance(left_hand, (float, int)) else left_hand.strip()
 
-            log.debug('right_hand: {}, operation {}, left_hand'.format(right_hand, operation, left_hand))
+            log.debug('right_hand: {}, operation {}, left_hand {}'.format(right_hand, operation, left_hand))
             result = _evaluate_operator(right_hand,
                                         operation=operation,
                                         value=left_hand)

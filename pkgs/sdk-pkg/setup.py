@@ -52,11 +52,11 @@ def version_info(*paths):
 version, version_range = version_info('src', 'genie', 'libs', 'sdk', '__init__.py')
 
 install_requires = [
-    'ruamel.yaml', 
+    'ruamel.yaml',
     f'yang.connector{version_range}',
     f'rest.connector{version_range}',
-    'pysnmp-lextudio==6.1.2', 
-    'pyasn1==0.4.8'
+    'pysnmp>=6.1.4,<6.2',
+    'pyasn1==0.4.8',
 ]
 
 # launch setup
