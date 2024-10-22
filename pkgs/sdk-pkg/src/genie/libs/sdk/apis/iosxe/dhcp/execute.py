@@ -76,3 +76,20 @@ def clear_ip_dhcp_snooping_statistics(device):
         raise SubCommandFailure(
             f'Failed to clear dhcp snooping statistics\n{e}'
         )
+
+def clear_ip_dhcp_snooping_track_server(device):
+    """execute 'clear ip dhcp snooping binding *' on device
+       Args:
+            device('obj'): device object
+       Returns:
+            None
+       Raises:
+            SubCommandFailure
+    """
+    log.info("Executing clear_ip_dhcp_snooping_track_server API")
+    try:
+        device.execute("clear ip dhcp snooping track server all")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to clear dhcp snooping track server\n{e}'
+        )

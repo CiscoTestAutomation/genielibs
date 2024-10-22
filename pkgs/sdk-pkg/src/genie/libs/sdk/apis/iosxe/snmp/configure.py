@@ -724,3 +724,42 @@ def configure_object_list_schema_transfer_for_bulkstat(device, type_, object_nam
         raise SubCommandFailure(
             f"Could not  configure Object list Schema Transfer for Bulkstat. Error:\n{error}"
         )
+
+
+def configure_snmp_server_host(device, host_ip, version, community_string):
+    """ Configures the snmp-server host or informs on device
+        Args:
+            device ('obj'): device to use
+            host_ip ('str'): WORD     IP address of the SNMP notification host
+            community_string ('str'): Community string
+            version ('str', optional): SNMP version
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f"snmp-server host {host_ip} {version} {community_string}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as error:
+        raise SubCommandFailure(f"Could not configure host on snmp-server. Error:\n{str(error)}")
+
+
+def unconfigure_snmp_server_host(device, host_ip, version, community_string):
+    """ Unconfigures the snmp-server host
+        Args:
+            device ('obj'): device to use
+            host_ip ('str'): IP address of the SNMP notification host
+            version ('str'): SNMP version
+            community_string ('str'): Community string
+        Returns:
+           None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f"no snmp-server host {host_ip} {version} {community_string}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as error:
+        raise SubCommandFailure(f"Could not unconfigure SNMP server host. Error:\n{str(error)}")
+

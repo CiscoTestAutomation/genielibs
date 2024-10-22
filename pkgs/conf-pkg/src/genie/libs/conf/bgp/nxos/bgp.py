@@ -401,6 +401,17 @@ class Bgp(ABC):
                     if attributes.value('bestpath_med_missing_at_worst'):
                         configurations.append_line(attributes.format(
                             'bestpath med missing-as-worst'))
+                    # nxos: router bgp 100 / [instance someword] /
+                    # [vrf someword] /bestpath multipath-relax
+                    if attributes.value('bestpath_multipath_relax'):
+                       configurations.append_line(attributes.format(
+                           'bestpath as-path multipath-relax'))
+
+                    # nxos: router bgp 100 / [instance someword] /
+                    # [vrf someword] /allocate-index allocate_index
+                    if attributes.value('allocate_index'):
+                       configurations.append_line(attributes.format(
+                           'allocate-index {allocate_index}'))
 
                     # nxos: router bgp 100 / [instance someword] /
                     # [vrf someword] / cluster-id <cluster_id>
@@ -794,9 +805,15 @@ class Bgp(ABC):
                                 configurations.append_line(attributes.format(
                                 'network {af_v6_network_number}'))
 
-                        # nxos: address-family ipv4 unicast/
+                        # nxos: address-family ipv6 unicast/
                         # af_v6_allocate_label_all
                         if attributes.value('af_v6_allocate_label_all'):
+                            configurations.append_line(attributes.format(
+                                'allocate-label all'))
+
+                        # nxos: address-family ipv4 unicast/
+                        # af_v4_allocate_label_all
+                        if attributes.value('af_v4_allocate_label_all'):
                             configurations.append_line(attributes.format(
                                 'allocate-label all'))
 
@@ -822,6 +839,18 @@ class Bgp(ABC):
                         if attributes.value('af_advertise_l2_evpn'):
                             configurations.append_line(attributes.format(
                                 'advertise l2vpn evpn'))
+
+                        #additional-paths install backup
+                        if attributes.value('af_additional_paths_install_backup'):
+                            configurations.append_line(attributes.format(
+                                'additional-paths install backup'))
+                        #allocate-label option-b
+                        if attributes.value('af_allocate_label_option_b') is False:
+                            configurations.append_line(attributes.format(
+                                'no allocate-label option-b'))
+                        elif attributes.value('af_allocate_label_option_b') is True:
+                            configurations.append_line(attributes.format(
+                                'allocate-label option-b'))
                     return str(configurations)
 
                 def build_unconfig(self, apply=True, attributes=None,
@@ -1183,6 +1212,25 @@ class Bgp(ABC):
                             if attributes.value('nbr_af_rewrite_mvpn_rt_asn'):
                                 configurations.append_line(
                                     attributes.format('rewrite-rt-asn'))
+                            #encapsulation mpls
+                            if attributes.value('nbr_af_encap_mpls'):
+                                configurations.append_line(
+                                    attributes.format('encapsulation mpls'))
+
+                            #weight
+                            if attributes.value('nbr_af_weight'):
+                                configurations.append_line(
+                                    attributes.format('weight {nbr_af_weight}'))
+
+                            #import l2vpn evpn reoriginate
+                            if attributes.value('nbr_af_import_l2vpn_evpn_reoriginate'):
+                                configurations.append_line(
+                                    attributes.format('import l2vpn evpn reoriginate'))
+
+                            #import vpn unicast reoriginate
+                            if attributes.value('nbr_af_import_vpn_unicast_reoriginate'):
+                                configurations.append_line(
+                                    attributes.format('import vpn unicast reoriginate'))
 
                         return str(configurations)
 

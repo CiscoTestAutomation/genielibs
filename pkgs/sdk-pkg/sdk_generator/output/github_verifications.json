@@ -3704,6 +3704,15 @@
           },
           "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/cat9k/c9300/show_platform.py"
         },
+        "c9350": {
+          "doc": "\n    Parser for :\n        * show inventory\n    ",
+          "groups": [],
+          "schema": "{'index': {Any  (str) *: {'name': <class 'str'>, 'descr': <class 'str'>, Optional  (str) pid: <class 'str'>, Optional  (str) vid: <class 'str'>, Optional  (str) sn: <class 'str'>}}}",
+          "source": {
+            "class": "genie.harness.base.Template"
+          },
+          "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/cat9k/c9350/show_platform.py"
+        },
         "c9500": {
           "doc": " Parser for:\n        * 'show inventory'\n    ",
           "groups": [],
@@ -4532,7 +4541,7 @@
     "ios": {
       "doc": "Parser for:\n        show ip multicast\n        show ip multicast vrf <vrf>\n    ",
       "groups": [],
-      "schema": "{'vrf': {Any  (str) *: {'enable': <class 'bool'>, 'multipath': <class 'bool'>, 'route_limit': <class 'str'>, 'fallback_group_mode': <class 'str'>, 'multicast_bound_with_filter_autorp': <class 'int'>, Optional  (str) mo_frr: <class 'bool'>}}}",
+      "schema": "{'vrf': {Any  (str) *: {'enable': <class 'bool'>, 'multipath': <class 'bool'>, 'route_limit': <class 'str'>, 'fallback_group_mode': <class 'str'>, 'multicast_bound_with_filter_autorp': <class 'int'>, Optional  (str) mo_frr: <class 'bool'>, Optional  (str) algorithm: <class 'str'>}}}",
       "source": {
         "class": "genie.harness.base.Template"
       },
@@ -4545,7 +4554,7 @@
       "doc": "Parser for:\n        show ip multicast\n        show ip multicast vrf <vrf>\n    ",
       "exclude": [],
       "groups": [],
-      "schema": "{'vrf': {Any  (str) *: {'enable': <class 'bool'>, 'multipath': <class 'bool'>, 'route_limit': <class 'str'>, 'fallback_group_mode': <class 'str'>, 'multicast_bound_with_filter_autorp': <class 'int'>, Optional  (str) mo_frr: <class 'bool'>}}}",
+      "schema": "{'vrf': {Any  (str) *: {'enable': <class 'bool'>, 'multipath': <class 'bool'>, 'route_limit': <class 'str'>, 'fallback_group_mode': <class 'str'>, 'multicast_bound_with_filter_autorp': <class 'int'>, Optional  (str) mo_frr: <class 'bool'>, Optional  (str) algorithm: <class 'str'>}}}",
       "source": {
         "class": "genie.harness.base.Template"
       },
@@ -7171,7 +7180,7 @@
         "instance_id": "*",
         "service": "ethernet"
       },
-      "schema": "{'lisp_id': {Any  (str) *: {'instance_id': {<class 'int'>: {'eid_table': <class 'str'>, 'lsb': <class 'str'>, 'entries': {'total': <class 'int'>, 'no_route': <class 'int'>, 'inactive': <class 'int'>, Optional  (str) do_not_register: <class 'int'>, 'eids': {<class 'str'>: {'eid': <class 'str'>, 'mask': <class 'int'>, Optional  (str) do_not_register: <class 'bool'>, Optional  (str) dynamic_eid: <class 'str'>, Optional  (str) locator_set: <class 'str'>, Optional  (str) no_route_to_prefix: <class 'bool'>, Optional  (str) proxy: <class 'bool'>, Optional  (str) sgt: <class 'str'>, Optional  (str) domain_id: <class 'str'>, Optional  (str) service_insertion: <class 'str'>, Optional  (str) service_insertion_id: <class 'int'>, Optional  (str) auto_discover_rlocs: <class 'bool'>, Optional  (str) uptime: <class 'str'>, Optional  (str) last_change: <class 'str'>, Optional  (str) locators: {<class 'str'>: {'priority': <class 'int'>, 'weight': <class 'int'>, 'source': <class 'str'>, 'location': <class 'str'>, 'state': <class 'str'>, Optional  (str) affinity_id_x: <class 'int'>, Optional  (str) affinity_id_y: <class 'int'>}}}}}}}}}}",
+      "schema": "{'lisp_id': {Any  (str) *: {'instance_id': {<class 'int'>: {'eid_table': <class 'str'>, 'lsb': <class 'str'>, 'entries': {'total': <class 'int'>, 'no_route': <class 'int'>, 'inactive': <class 'int'>, Optional  (str) do_not_register: <class 'int'>, 'eids': {<class 'str'>: {'eid': <class 'str'>, 'mask': <class 'int'>, Optional  (str) do_not_register: <class 'bool'>, Optional  (str) dynamic_eid: <class 'str'>, Optional  (str) locator_set: <class 'str'>, Optional  (str) dbmap_src: <class 'str'>, Optional  (str) no_route_to_prefix: <class 'bool'>, Optional  (str) proxy: <class 'bool'>, Optional  (str) sgt: <class 'str'>, Optional  (str) domain_id: <class 'str'>, Optional  (str) service_insertion: <class 'str'>, Optional  (str) service_insertion_id: <class 'int'>, Optional  (str) auto_discover_rlocs: <class 'bool'>, Optional  (str) uptime: <class 'str'>, Optional  (str) last_change: <class 'str'>, Optional  (str) publish_mode: <class 'str'>, Optional  (str) locators: {<class 'str'>: {'priority': <class 'int'>, 'weight': <class 'int'>, 'source': <class 'str'>, 'location': <class 'str'>, 'state': <class 'str'>, Optional  (str) affinity_id_x: <class 'int'>, Optional  (str) affinity_id_y: <class 'int'>}}}}}}}}}}",
       "source": {
         "class": "genie.harness.base.Template"
       },
@@ -7191,7 +7200,7 @@
         "instance_id": "*",
         "service": "ipv4"
       },
-      "schema": "{'lisp_id': {Any  (str) *: {'instance_id': {<class 'int'>: {'eid_table': <class 'str'>, 'lsb': <class 'str'>, 'entries': {'total': <class 'int'>, 'no_route': <class 'int'>, 'inactive': <class 'int'>, Optional  (str) do_not_register: <class 'int'>, 'eids': {<class 'str'>: {'eid': <class 'str'>, 'mask': <class 'int'>, Optional  (str) do_not_register: <class 'bool'>, Optional  (str) dynamic_eid: <class 'str'>, Optional  (str) locator_set: <class 'str'>, Optional  (str) no_route_to_prefix: <class 'bool'>, Optional  (str) proxy: <class 'bool'>, Optional  (str) sgt: <class 'str'>, Optional  (str) domain_id: <class 'str'>, Optional  (str) service_insertion: <class 'str'>, Optional  (str) service_insertion_id: <class 'int'>, Optional  (str) auto_discover_rlocs: <class 'bool'>, Optional  (str) uptime: <class 'str'>, Optional  (str) last_change: <class 'str'>, Optional  (str) locators: {<class 'str'>: {'priority': <class 'int'>, 'weight': <class 'int'>, 'source': <class 'str'>, 'location': <class 'str'>, 'state': <class 'str'>, Optional  (str) affinity_id_x: <class 'int'>, Optional  (str) affinity_id_y: <class 'int'>}}}}}}}}}}",
+      "schema": "{'lisp_id': {Any  (str) *: {'instance_id': {<class 'int'>: {'eid_table': <class 'str'>, 'lsb': <class 'str'>, 'entries': {'total': <class 'int'>, 'no_route': <class 'int'>, 'inactive': <class 'int'>, Optional  (str) do_not_register: <class 'int'>, 'eids': {<class 'str'>: {'eid': <class 'str'>, 'mask': <class 'int'>, Optional  (str) do_not_register: <class 'bool'>, Optional  (str) dynamic_eid: <class 'str'>, Optional  (str) locator_set: <class 'str'>, Optional  (str) dbmap_src: <class 'str'>, Optional  (str) no_route_to_prefix: <class 'bool'>, Optional  (str) proxy: <class 'bool'>, Optional  (str) sgt: <class 'str'>, Optional  (str) domain_id: <class 'str'>, Optional  (str) service_insertion: <class 'str'>, Optional  (str) service_insertion_id: <class 'int'>, Optional  (str) auto_discover_rlocs: <class 'bool'>, Optional  (str) uptime: <class 'str'>, Optional  (str) last_change: <class 'str'>, Optional  (str) publish_mode: <class 'str'>, Optional  (str) locators: {<class 'str'>: {'priority': <class 'int'>, 'weight': <class 'int'>, 'source': <class 'str'>, 'location': <class 'str'>, 'state': <class 'str'>, Optional  (str) affinity_id_x: <class 'int'>, Optional  (str) affinity_id_y: <class 'int'>}}}}}}}}}}",
       "source": {
         "class": "genie.harness.base.Template"
       },
@@ -7211,7 +7220,7 @@
         "instance_id": "*",
         "service": "ipv6"
       },
-      "schema": "{'lisp_id': {Any  (str) *: {'instance_id': {<class 'int'>: {'eid_table': <class 'str'>, 'lsb': <class 'str'>, 'entries': {'total': <class 'int'>, 'no_route': <class 'int'>, 'inactive': <class 'int'>, Optional  (str) do_not_register: <class 'int'>, 'eids': {<class 'str'>: {'eid': <class 'str'>, 'mask': <class 'int'>, Optional  (str) do_not_register: <class 'bool'>, Optional  (str) dynamic_eid: <class 'str'>, Optional  (str) locator_set: <class 'str'>, Optional  (str) no_route_to_prefix: <class 'bool'>, Optional  (str) proxy: <class 'bool'>, Optional  (str) sgt: <class 'str'>, Optional  (str) domain_id: <class 'str'>, Optional  (str) service_insertion: <class 'str'>, Optional  (str) service_insertion_id: <class 'int'>, Optional  (str) auto_discover_rlocs: <class 'bool'>, Optional  (str) uptime: <class 'str'>, Optional  (str) last_change: <class 'str'>, Optional  (str) locators: {<class 'str'>: {'priority': <class 'int'>, 'weight': <class 'int'>, 'source': <class 'str'>, 'location': <class 'str'>, 'state': <class 'str'>, Optional  (str) affinity_id_x: <class 'int'>, Optional  (str) affinity_id_y: <class 'int'>}}}}}}}}}}",
+      "schema": "{'lisp_id': {Any  (str) *: {'instance_id': {<class 'int'>: {'eid_table': <class 'str'>, 'lsb': <class 'str'>, 'entries': {'total': <class 'int'>, 'no_route': <class 'int'>, 'inactive': <class 'int'>, Optional  (str) do_not_register: <class 'int'>, 'eids': {<class 'str'>: {'eid': <class 'str'>, 'mask': <class 'int'>, Optional  (str) do_not_register: <class 'bool'>, Optional  (str) dynamic_eid: <class 'str'>, Optional  (str) locator_set: <class 'str'>, Optional  (str) dbmap_src: <class 'str'>, Optional  (str) no_route_to_prefix: <class 'bool'>, Optional  (str) proxy: <class 'bool'>, Optional  (str) sgt: <class 'str'>, Optional  (str) domain_id: <class 'str'>, Optional  (str) service_insertion: <class 'str'>, Optional  (str) service_insertion_id: <class 'int'>, Optional  (str) auto_discover_rlocs: <class 'bool'>, Optional  (str) uptime: <class 'str'>, Optional  (str) last_change: <class 'str'>, Optional  (str) publish_mode: <class 'str'>, Optional  (str) locators: {<class 'str'>: {'priority': <class 'int'>, 'weight': <class 'int'>, 'source': <class 'str'>, 'location': <class 'str'>, 'state': <class 'str'>, Optional  (str) affinity_id_x: <class 'int'>, Optional  (str) affinity_id_y: <class 'int'>}}}}}}}}}}",
       "source": {
         "class": "genie.harness.base.Template"
       },
@@ -10800,6 +10809,13 @@
       "c"
     ],
     [
+      "0",
+      "3",
+      "5",
+      "9",
+      "c"
+    ],
+    [
       "1",
       "a",
       "k",
@@ -10987,6 +11003,13 @@
       "t"
     ],
     [
+      "9",
+      "a",
+      "c",
+      "k",
+      "t"
+    ],
+    [
       "a",
       "a",
       "g",
@@ -11029,6 +11052,13 @@
       "i",
       "n",
       "r"
+    ],
+    [
+      "e",
+      "i",
+      "o",
+      "s",
+      "x"
     ],
     [
       "e",

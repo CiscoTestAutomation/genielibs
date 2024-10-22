@@ -91,4 +91,45 @@ def unconfigure_class_map(device, class_name, class_match_type='match-all'):
                 error=e
             )
         )
-        
+
+def configure_class_map_access_group_on_device(device, class_map_name, acc_list_number):
+    """ Configure class-map access-group on device
+        Args:
+            device ('obj'): device to use
+            class_map_name ('str'): class-map name on which we need to configure
+            acc_list_number ('str') : access-list number/name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configuring class-map access-group on device")
+    configs = [f'class-map match-all {class_map_name}',
+           f'match access-group {acc_list_number}']	    
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure class-map access-group on device {device}. Error:\n{e}")
+
+def configure_traffic_class_for_class_map(device, class_map_name, matching_statement, traffic_class_value):
+    """ Configure traffic-class for class-map on device
+        Args:
+            device ('obj'): device to use
+            class_map_name ('str'): Class-map name
+            matching_statement ('str') : matching statements under the classmap (match-any/match-all)
+            traffic_class_value ('int'): Traffic Class value from 0 to 7
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configuring traffic-class for class-map on device")
+    cmd = [f'class-map {matching_statement} {class_map_name}',
+        f'match traffic-class {traffic_class_value}']
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure traffic-class for class-map on device {device}. Error:\n{e}")       
+            

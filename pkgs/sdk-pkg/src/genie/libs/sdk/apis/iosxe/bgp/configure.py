@@ -630,6 +630,75 @@ def configure_bgp_l2vpn_neighbor_activate(
             "router {bgp_as}. Error:{e}".format(bgp_as=bgp_as, e=e)
         )
 
+def configure_bgp_l2vpn_route_map(
+            device, address_family, bgp_as, neighbor_address,route_map,direction,
+            address_family_modifier=""
+            ):
+    """ Activate bgp neighbor on bgp router
+
+        Args:
+            device ('obj')             : Device to be configured
+            address_family ('str')     : Address family to be configured
+            bgp_as ('str')             : Bgp Id to be added to configuration
+            neighbor_address ('str')   : Address of neighbor to be added to configuration
+            route_map ('str')          : Name of the route map
+            direction ('str')          : Direction in which route map has to be applied
+            address_family_modifier ('str') : the endpoint provisioning information to be distributed
+                                              to BGP peers.
+        Returns:
+            N/A
+        Raises:
+            SubCommandFailure: Failed executing configure commands
+
+    """
+    log.info("configure router_map on l2vpn vpls address-family on router bgp {bgp_as}"
+                              .format(bgp_as=bgp_as))
+    configs=[
+            f"router bgp {bgp_as}",
+            f"address-family {address_family} {address_family_modifier}",
+            f"neighbor {neighbor_address} route-map {route_map} {direction}"
+        ]
+    try:
+       device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure route_map on l2vpn bgp neighbor on bgp "
+            "router {bgp_as}. Error:{e}".format(bgp_as=bgp_as, e=e)
+        )
+
+def configure_bgp_l2vpn_route_reflector_client(
+            device, address_family, bgp_as, neighbor_address,
+            address_family_modifier=""
+            ):
+    """ Activate bgp neighbor on bgp router
+
+        Args:
+            device ('obj')             : Device to be configured
+            address_family ('str')     : Address family to be configured
+            bgp_as ('str')             : Bgp Id to be added to configuration
+            neighbor_address ('str')   : Address of neighbor to be added to configuration
+            address_family_modifier ('str') : the endpoint provisioning information to be distributed
+                                              to BGP peers.
+        Returns:
+            N/A
+        Raises:
+            SubCommandFailure: Failed executing configure commands
+
+    """
+    log.info("configure route-reflector-client on l2vpn vpls address-family on router bgp {bgp_as}"
+                              .format(bgp_as=bgp_as))
+    configs = [    
+            f"router bgp {bgp_as}",
+            f"address-family {address_family} {address_family_modifier}",
+            f"neighbor {neighbor_address} route-reflector-client"
+        ]
+    try:
+      device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure route-reflector-client on l2vpn bgp neighbor on bgp "
+            "router {bgp_as}. Error:{e}".format(bgp_as=bgp_as, e=e)
+        )
 def configure_shut_bgp_neighbors(
     device, bgp_as, neighbors=None, address_family=None, vrf=None,
     noshut=False):
@@ -1012,7 +1081,7 @@ def configure_bgp_address_advertisement(
             "router bgp {bgp_as}".format(bgp_as)
         )
 
-def configure_redistribute_connected(device, bgp_as, address_family, vrf=None):
+def configure_redistribute_connected(device, bgp_as, address_family, vrf=None,route_map=None):
     """ configure redistribute connected in bgp
 
         Args:
@@ -1036,7 +1105,11 @@ def configure_redistribute_connected(device, bgp_as, address_family, vrf=None):
     else:
         confg.append("address-family {address_family}".format(
                              address_family=address_family))
-    confg.append("redistribute connected")
+    if route_map:
+        confg.append("redistribute connected route-map {route_map}".format(
+                             route_map=route_map))
+    else:
+        confg.append("redistribute connected")
     try:
         device.configure(confg)
     except SubCommandFailure:
@@ -1630,7 +1703,8 @@ def configure_bgp_update_delay(device, bgp_as, delay):
             "BGP router {bgp_as}".format(delay=delay, bgp_as=bgp_as)
         )
 
-def configure_bgp_router_id_peergroup_neighbor(device, bgp_as, neighborname, as_id):
+def configure_bgp_router_id_peergroup_neighbor(device, bgp_as, neighborname, as_id,listen_range=None,
+                                                peer_group=None):
     """ Configures router-id on BGP router
 
         Args:
@@ -1638,6 +1712,8 @@ def configure_bgp_router_id_peergroup_neighbor(device, bgp_as, neighborname, as_
             bgp_as('str'): bgp id (autonomous system number) to configure
             neighborname('str'): neighbor peer-group-name  to configure
             as_id('str'): ASN of the peer group to configure
+            listen_range('str'): Range of IP's that BGP listen
+            peer_group('str'): peer_group_name
         Return:
             None
         Raises:
@@ -1658,6 +1734,9 @@ def configure_bgp_router_id_peergroup_neighbor(device, bgp_as, neighborname, as_
                 'neighbor {neighborname} peer-group'.format(neighborname=neighborname),
 				'neighbor {neighborname} remote-as {as_id}'.format(neighborname=neighborname, as_id=as_id)
             ]
+    if listen_range and peer_group:
+        config.append('bgp listen range {listen_range} peer-group {peer_group}'.format(
+                                  listen_range=listen_range, peer_group=peer_group))
     try:
         device.configure(config)
     except SubCommandFailure as e:

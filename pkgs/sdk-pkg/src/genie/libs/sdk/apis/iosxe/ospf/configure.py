@@ -582,6 +582,31 @@ def configure_ospf_network_point(device, interface):
         )
 
 
+def configure_ospf_network_broadcast(device, interface):
+    """configure ospf broadcast network
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): interface to configure
+            ex.)
+                interface = 'tenGigabitEthernet0/4/0'
+
+        Return:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    configs = [
+         f"interface {interface}",
+         f"ip ospf network broadcast"
+         ]
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Ospf network broadcast is not configured on device {device} for interface {interface}. Error:\n{e}"
+           )
 
 def configure_ospf_bfd(device, interface):
     """configure ospf ip bfd
@@ -613,6 +638,32 @@ def configure_ospf_bfd(device, interface):
             )
         )
 
+def configure_ospf_priority(device, interface,priority):
+    """configure ip ospf priority
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): interface to configure
+            ex.)
+                interface = 'tenGigabitEthernet0/4/0'
+            priority('int'): Priority value to configure for ospf
+
+        Return:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [
+        f"interface {interface}",
+        f"ip ospf priority {priority}"
+    ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+          f"Ospf priority is not configured on device {device} for interface {interface}.Error:\n{e}"
+        )
 def unconfigure_ospfv3(device, pid):
     """unconfigure ospfv3
 

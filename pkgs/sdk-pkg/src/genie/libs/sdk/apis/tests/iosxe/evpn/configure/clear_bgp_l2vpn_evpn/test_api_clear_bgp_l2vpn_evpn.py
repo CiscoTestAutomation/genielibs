@@ -10,7 +10,7 @@ class TestClearBgpL2vpnEvpn(unittest.TestCase):
     def setUpClass(self):
         testbed = f"""
         devices:
-          Leaf-01:
+          IR1101:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,11 +18,11 @@ class TestClearBgpL2vpnEvpn(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: cat9k
-            type: c9300
+            platform: router
+            type: router
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Leaf-01']
+        self.device = self.testbed.devices['IR1101']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],

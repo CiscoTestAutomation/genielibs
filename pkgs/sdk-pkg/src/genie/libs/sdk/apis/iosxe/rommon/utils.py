@@ -43,8 +43,7 @@ def device_rommon_boot(device, golden_image=None, tftp_boot=None, error_pattern=
     image = tftp_boot.get('image', [])
     tftp_server = tftp_boot.get('tftp_server', "")
 
-
-    # To boot using golden image
+        # To boot using golden image
     if golden_image:
         log.info(banner("Booting device '{}' with the Golden images".\
                         format(device.name)))
@@ -66,6 +65,22 @@ def device_rommon_boot(device, golden_image=None, tftp_boot=None, error_pattern=
         cmd_info = ("tftp://", tftp_server, image[0])
         cmd = ''.join(cmd_info)
 
+        # If the length of the TFTP path is greater than the
+        # imposed limit on IOSXE, boot from TFTP_FILE instead
+        if len(cmd) > 199:
+            log.info(f"TFTP path `{cmd}` is too long, will boot from TFTP_FILE instead")
+            cmd = "tftp:"
+
+            # Set ROMMON variables
+            log.info('Setting the rommon variables for TFTP boot (device_rommon_boot)')
+            try:
+                if device.is_ha and hasattr(device, 'subconnections'):
+                    device.api.configure_rommon_tftp_ha()
+                else:
+                    device.api.configure_rommon_tftp()
+            except Exception as e:
+                log.warning(f'Failed to set the rommon variables for device {device.name}')
+
     # To boot using tftp rommon variable
     # In this case, we assume the rommon variable TFTP_FILE is set already
     # and booting it using the "boot tftp:" command
@@ -85,7 +100,7 @@ def device_rommon_boot(device, golden_image=None, tftp_boot=None, error_pattern=
         device.reload(image_to_boot=cmd, error_pattern=error_pattern, timeout=timeout)
     except Exception as e:
         log.error(str(e))
-        raise Exception(f"Failed to boot the device {device.name}", from_exception=e)
+        raise Exception(f"Failed to boot the device {device.name}")
     else:
         log.info(f"Successfully boot the device {device.name}")
 
@@ -102,7 +117,7 @@ def send_break_boot(device, console_activity_pattern= None,
             console_activity_pattern (str): Pattern to send the break at. Default to match
                                             this boot statement: "...."
             console_breakboot_char (str): Character to send when console_activity_pattern is matched. Default to '\x03'.
-            console_breakboot_telnet_break (bool): Use telnet `send break` to interrupt device boot. 
+            console_breakboot_telnet_break (bool): Use telnet `send break` to interrupt device boot.
             grub_activity_pattern (str): Break pattern on the device for grub boot mode
             grub_breakboot_char (str): Character to send when grub_activity_pattern is matched
             break_count (int, optional): Number of break commands to send. Defaults to 2.
@@ -115,7 +130,6 @@ def send_break_boot(device, console_activity_pattern= None,
 
     console_activity_pattern = console_activity_pattern or '\.\.\.\.'
     console_breakboot_char = console_breakboot_char or '\x03'
-    
     def telnet_breakboot(spawn, break_count):
         """ Breaks the booting process on a device using telnet `send break`
 
@@ -142,7 +156,7 @@ def send_break_boot(device, console_activity_pattern= None,
 
             Args:
                 spawn (obj): Spawn connection object
-                break_count (int): Number of break commands to send  
+                break_count (int): Number of break commands to send
                 break_char (str): Char to send
 
             Returns:

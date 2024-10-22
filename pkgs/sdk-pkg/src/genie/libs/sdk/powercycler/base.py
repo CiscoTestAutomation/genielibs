@@ -2,6 +2,8 @@ import re
 import logging
 import time
 
+log = logging.getLogger(__name__)
+
 from .snmp_client import SNMPClient, SNMPv3Client
 try:
     import pysnmp
@@ -12,12 +14,11 @@ try:
      usmAesCfb256Protocol, usmNoPrivProtocol
     pysnmp_installed = True
 except ImportError:
+    log.debug('traceback:', exc_info=True)
     pysnmp_installed = False
 
 # Unicon
 from unicon.eal.dialogs import Statement, Dialog
-
-log = logging.getLogger(__name__)
 
 
 class PowerCyclerMeta(type):

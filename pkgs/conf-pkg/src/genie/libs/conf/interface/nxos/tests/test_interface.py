@@ -27,6 +27,7 @@ class test_interface(TestCase):
         intf1.evpn_multisite_fabric_tracking = True
         intf1.evpn_multisite_dci_tracking = True
         intf1.fabric_forwarding_mode = 'anycast-gateway'
+        intf1.mpls_ip_forwarding = True
         intf1.ip_forward = True
         intf1.ipv6_addr_use_link_local_only = True
 
@@ -38,18 +39,21 @@ class test_interface(TestCase):
                 ' evpn multisite dci-tracking',
                 ' evpn multisite fabric-tracking',
                 ' fabric forwarding mode anycast-gateway',
+                ' mpls ip forwarding',
                 ' ip forward',
                 ' ipv6 address use-link-local-only',
                 ' exit',
             ]))
-
+        print('cfg: {0}'.format(cfg))
         partial_uncfg = intf1.build_unconfig(apply=False,attributes={"evpn_multisite_fabric_tracking":True,
                                                                      "evpn_multisite_dci_tracking": True,
-                                                                     "ip_forward":True})
+                                                                     "ip_forward":True,"mpls_ip_forwarding":True})
+        print('cfg: {0}'.format(partial_uncfg))
         self.assertMultiLineEqual(str(partial_uncfg), '\n'.join([
             'interface Ethernet0/0/1',
             ' no evpn multisite dci-tracking',
             ' no evpn multisite fabric-tracking',
+            ' no mpls ip forwarding',
             ' no ip forward',
             ' exit',
         ]))

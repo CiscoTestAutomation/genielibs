@@ -380,3 +380,30 @@ def config_replace_to_flash_memory_force(device,flash='flash', timeout=60):
         device.execute(f"configure replace {flash}:backup_config force",timeout=timeout)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to execute configure replace flash memory force. Error:\n{e}")
+        
+def configure_ip_access_list_with_dscp_on_device(device, acc_list_number, sequence_num, action, src_ip_add, dst_ip_add, dscp_val):
+    """ Configure ip access-list with source/destination host and dscp value
+        Args:
+            device ('obj'): device to use
+            acc_list_number('int') : Extended IP access-list number
+            sequence_num ('int') : Sequence Number
+            action ('str'): Specify packets to forward or reject (eg. permit, deny)
+            src_ip_add('str'): Sender Host IP address (eg. 10.1.1.1)
+            dst_ip_add('str'): Receiver Host IP address (eg. 10.1.1.1)
+            dscp_val('str'): Services codepoint value (eg. 0-7)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configuring ip access-list with source/destination host and dscp value on device")
+
+    configs = [f'ip access-list extended {acc_list_number}',
+           f'{sequence_num} {action} ip host {src_ip_add} host {dst_ip_add} dscp {dscp_val}']       
+    try:
+        device.configure(configs)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure ip access-list with source/destination host and dscp value on device {device}. Error:\n{e}")
+            

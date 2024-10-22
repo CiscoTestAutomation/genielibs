@@ -58,7 +58,7 @@ def recovery_worker(start, device, console_activity_pattern=None,
     if kwargs.get('golden_image'):
         device_recovery(spawn, timeout, *args, **kwargs)
     elif kwargs.get('tftp_boot'):
-        tftp_device_recovery(spawn, timeout, device, *args, **kwargs)
+        device.api.device_rommon_boot(tftp_boot=kwargs.get('tftp_boot'))
 
     spawn.close()
 

@@ -1,0 +1,37 @@
+configure:
+  commands:
+    bridge-domain 10: "bridge-domain 10\r\n"
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    member Vlan12 service-instance 12: "member Vlan12 service-instance 12\r\n"
+    no logging console: ''
+  prompt: IR1101(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: IR1101(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    show version | include operating mode: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: IR1101#

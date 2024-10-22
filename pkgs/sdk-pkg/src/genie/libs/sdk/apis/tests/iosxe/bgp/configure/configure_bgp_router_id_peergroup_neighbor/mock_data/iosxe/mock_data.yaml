@@ -1,29 +1,32 @@
 configure:
   commands:
+    bgp listen range 102.102.102.0/24 peer-group pg-ibgp-rc: "bgp listen range 102.102.102.0/24\
+      \ peer-group pg-ibgp-rc\r\n"
     bgp log-neighbor-changes: "bgp log-neighbor-changes\r\n"
     end:
       new_state: execute
     line console 0:
       new_state: configure_line
-    neighbor neigh-gig1 peer-group: "neighbor neigh-gig1 peer-group\r\n"
-    neighbor neigh-gig1 remote-as 1: "neighbor neigh-gig1 remote-as 1\r\n"
+    neighbor pg-ibgp-rc peer-group: "neighbor pg-ibgp-rc peer-group\r\n"
+    neighbor pg-ibgp-rc remote-as 1: "neighbor pg-ibgp-rc remote-as 1\r\n"
     no logging console: ''
     router bgp 1: "router bgp 1\r\n"
-  prompt: mac-gen2(config)#
+  prompt: IR1101(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: mac-gen2(config-line)#
+  prompt: IR1101(config-line)#
 connect:
   commands:
-    '':
-      new_state: execute
-  preface: |-
-    Trying mock_device ...
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
     Connected to mock_device.
-    Escape character is '^]'.
+
+    Escape character is ''^]''.'
   prompt: ''
 execute:
   commands:
@@ -32,7 +35,7 @@ execute:
     config-transaction:
       new_state: configure
     show version: ''
+    show version | include operating mode: ''
     term length 0: ''
     term width 0: ''
-    show version | include operating mode: ''
-  prompt: mac-gen2#
+  prompt: IR1101#

@@ -290,16 +290,17 @@ class test_ospf(TestCase):
         ospf1.device_attr[dev1].enabled = True
 
         # Add OSPF configurations to vrf default
-        ospf1.device_attr[dev1].vrf_attr[vrf0].instance = '1'
-        ospf1.device_attr[dev1].vrf_attr[vrf0].enable = True
-        ospf1.device_attr[dev1].vrf_attr[vrf0].router_id = '1.1.1.1'
+        ospf1.device_attr[dev1].vrf_attr['default'].instance = '1'
+        ospf1.device_attr[dev1].vrf_attr['default'].enable = True
+        ospf1.device_attr[dev1].vrf_attr['default'].router_id = '1.1.1.1'
+        ospf1.device_attr[dev1].vrf_attr['default'].segment_routing_mpls = True
 
         # Add OSPF to the device
         dev1.add_feature(ospf1)
         
         # Build config
         cfgs = ospf1.build_config(apply=False)
-
+        print(cfgs[dev1.name])
         # Check config strings built correctly
         self.assertMultiLineEqual(
             str(cfgs[dev1.name]),
@@ -308,24 +309,37 @@ class test_ospf(TestCase):
                 'router ospf 1',
                 ' no shutdown',
                 ' router-id 1.1.1.1',
+                ' segment-routing mpls',
                 ' exit',
-            ]))
-
-        # Unconfigure router-id
-        ospf_uncfg = ospf1.build_unconfig(apply=False, attributes={
-            'device_attr': {
-                dev1.name: 'vrf_attr__default__router_id',
-            }})
-
+            ])
+        )
+        print('cfg new args added')
+        print(cfgs[dev1.name])
+        ospf_uncfg = ospf1.build_unconfig(
+        apply=False,
+        attributes={
+           'device_attr': {
+              dev1.name: {
+                'vrf_attr': {
+                    'default': {
+                        'router_id': None,  # Unconfigure router-id
+                        'segment_routing_mpls': None  # Unconfigure segment-routing mpls
+                       }
+                    }
+                 }
+              }
+           }
+        )
+        print(ospf_uncfg[dev1.name])
         # Check unconfig strings built correctly
         self.assertMultiLineEqual(
             str(ospf_uncfg[dev1.name]),
             '\n'.join([
                 'router ospf 1',
                 ' no router-id 1.1.1.1',
+                ' no segment-routing mpls',
                 ' exit',
             ]))
-
 
 if __name__ == '__main__':
     unittest.main()

@@ -294,6 +294,12 @@ class Ospf(Routing, DeviceFeature, LinkFeature):
         default=None,
         type=(None, managedattribute.test_istype(str)))
 
+    # segment_routing_mpls
+    segment_routing_mpls = managedattribute(
+        name='segment_routing_mpls',
+        default=None,
+        type=(None, managedattribute.test_istype(bool)))
+
     # pref_all
     pref_all = managedattribute(
         name='pref_all',

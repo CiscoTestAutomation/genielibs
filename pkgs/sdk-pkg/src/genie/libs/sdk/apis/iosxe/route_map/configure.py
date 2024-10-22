@@ -97,13 +97,14 @@ def configure_route_map_permit(
         device, route_map, seq, prefix_list=None, set_community=None,
         match_community=None, set_metric=None, set_weight=None,
         set_as_path_prepend=None, local_preference=None,
-        match_as_path=None, continue_id=None):
+        match_as_path=None, continue_id=None, match_interface=None):
     """ Configures route-map on device
         Args:
             device('obj'): device to configure on
             route_map('list'): route-map
             seq ('int'): sequence number
             prefix_list ('str'): prefix-list value
+            match_interface ('str'): Interface that needs to be matched
             set_community ('int'): set community value
             match_community ('int'): match community value
             set_as_path ('int') : set as-path values
@@ -121,6 +122,8 @@ def configure_route_map_permit(
     cmd = [f"route-map {route_map} permit {seq}"]
     if prefix_list:
         cmd.append(f"match ip address prefix-list {prefix_list}")
+    if match_interface:
+        cmd.append(f"match interface {match_interface}")
     if match_community:
         cmd.append(f"match community {match_community}")
     if set_community:

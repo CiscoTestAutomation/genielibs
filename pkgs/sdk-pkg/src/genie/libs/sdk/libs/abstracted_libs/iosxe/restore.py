@@ -175,6 +175,7 @@ class Restore(object):
 
             for i in range(1, iteration):
                 # configure replace location:<filename>
+                device.execute(f'show archive config incremental-diffs {self.to_url}')
                 out = device.execute(
                     'configure replace {}'. format(
                         self.to_url),

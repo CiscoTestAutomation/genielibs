@@ -381,6 +381,13 @@ class Interface(genie.libs.conf.interface.Interface):
                 attributes.format('fabric forwarding mode {}'.format(mode)),
                 unconfig_cmd='no fabric forwarding mode {}'.format(mode))
 
+        #mpls ip forwarding
+        if attributes.value('mpls_ip_forwarding'):
+            configurations.append_line(
+                attributes.format('mpls ip forwarding'),
+                unconfig_cmd='no mpls ip forwarding')
+
+
         # ip forward
         if attributes.value('ip_forward'):
             configurations.append_line(

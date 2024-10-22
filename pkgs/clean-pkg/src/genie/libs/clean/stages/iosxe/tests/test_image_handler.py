@@ -8,10 +8,13 @@ from unittest.mock import Mock
 class ValidStructures(unittest.TestCase):
 
     IMAGE = '/path/to/image.bin'
+    SMU = '/path/to/smu.bin'
     PACKAGE_1 = '/path/to/package1.bin'
     PACKAGE_2 = '/path/to/package2.bin'
 
+
     EXPECTED_IMAGE = [IMAGE]
+    EXPECTED_SMU = [SMU]
     EXPECTED_SINGLE_PKG = [PACKAGE_1]
     EXPECTED_DOUBLE_PKG = [PACKAGE_1, PACKAGE_2]
 
@@ -21,26 +24,31 @@ class ValidStructures(unittest.TestCase):
     def test_structure_1_without_package(self):
         images = [
             self.IMAGE,
+            self.SMU
         ]
 
         image_handler = ImageHandler(self.device, images)
 
         self.assertEqual(image_handler.image, self.EXPECTED_IMAGE)
+        self.assertEqual(image_handler.smu, self.EXPECTED_SMU)
 
     def test_structure_1_with_package(self):
         images = [
             self.IMAGE,
+            self.SMU,
             self.PACKAGE_1
         ]
 
         image_handler = ImageHandler(self.device, images)
 
         self.assertEqual(image_handler.image, self.EXPECTED_IMAGE)
+        self.assertEqual(image_handler.smu, self.EXPECTED_SMU)
         self.assertEqual(image_handler.packages, self.EXPECTED_SINGLE_PKG)
 
     def test_structure_1_with_packages(self):
         images = [
             self.IMAGE,
+            self.SMU,
             self.PACKAGE_1,
             self.PACKAGE_2
         ]
@@ -48,6 +56,7 @@ class ValidStructures(unittest.TestCase):
         image_handler = ImageHandler(self.device, images)
 
         self.assertEqual(image_handler.image, self.EXPECTED_IMAGE)
+        self.assertEqual(image_handler.smu, self.EXPECTED_SMU)
         self.assertEqual(image_handler.packages, self.EXPECTED_DOUBLE_PKG)
 
     def test_structure_2_without_packages(self):
@@ -55,16 +64,23 @@ class ValidStructures(unittest.TestCase):
             'image': [
                 self.IMAGE
             ],
+            'smu': [
+                self.SMU
+            ]
         }
 
         image_handler = ImageHandler(self.device, images)
 
         self.assertEqual(image_handler.image, self.EXPECTED_IMAGE)
+        self.assertEqual(image_handler.smu, self.EXPECTED_SMU)
 
     def test_structure_2_with_package(self):
         images = {
             'image': [
                 self.IMAGE
+            ],
+            'smu': [
+                self.SMU
             ],
             'packages': [
                 self.PACKAGE_1
@@ -74,12 +90,16 @@ class ValidStructures(unittest.TestCase):
         image_handler = ImageHandler(self.device, images)
 
         self.assertEqual(image_handler.image, self.EXPECTED_IMAGE)
+        self.assertEqual(image_handler.smu, self.EXPECTED_SMU)
         self.assertEqual(image_handler.packages, self.EXPECTED_SINGLE_PKG)
 
     def test_structure_2_with_packages(self):
         images = {
             'image': [
                 self.IMAGE
+            ],
+            'smu': [
+                self.SMU
             ],
             'packages': [
                 self.PACKAGE_1,
@@ -90,6 +110,7 @@ class ValidStructures(unittest.TestCase):
         image_handler = ImageHandler(self.device, images)
 
         self.assertEqual(image_handler.image, self.EXPECTED_IMAGE)
+        self.assertEqual(image_handler.smu, self.EXPECTED_SMU)
         self.assertEqual(image_handler.packages, self.EXPECTED_DOUBLE_PKG)
 
     def test_structure_3_without_packages(self):
@@ -98,18 +119,29 @@ class ValidStructures(unittest.TestCase):
                 'file': [
                     self.IMAGE
                 ]
+            },
+            'smu': {
+                'file': [
+                    self.SMU
+                ]
             }
         }
 
         image_handler = ImageHandler(self.device, images)
 
         self.assertEqual(image_handler.image, self.EXPECTED_IMAGE)
+        self.assertEqual(image_handler.smu, self.EXPECTED_SMU)
 
     def test_structure_3_with_package(self):
         images = {
             'image': {
                 'file': [
                     self.IMAGE
+                ]
+            },
+            'smu': {
+                'file': [
+                    self.SMU
                 ]
             },
             'packages': {
@@ -122,6 +154,7 @@ class ValidStructures(unittest.TestCase):
         image_handler = ImageHandler(self.device, images)
 
         self.assertEqual(image_handler.image, self.EXPECTED_IMAGE)
+        self.assertEqual(image_handler.smu, self.EXPECTED_SMU)
         self.assertEqual(image_handler.packages, self.EXPECTED_SINGLE_PKG)
 
     def test_structure_3_with_packages(self):
@@ -129,6 +162,11 @@ class ValidStructures(unittest.TestCase):
             'image': {
                 'file': [
                     self.IMAGE
+                ]
+            },
+            'smu': {
+                'file': [
+                    self.SMU
                 ]
             },
             'packages': {
@@ -142,8 +180,8 @@ class ValidStructures(unittest.TestCase):
         image_handler = ImageHandler(self.device, images)
 
         self.assertEqual(image_handler.image, self.EXPECTED_IMAGE)
+        self.assertEqual(image_handler.smu, self.EXPECTED_SMU)
         self.assertEqual(image_handler.packages, self.EXPECTED_DOUBLE_PKG)
-
 
 class InvalidStructures(unittest.TestCase):
 

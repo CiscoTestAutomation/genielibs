@@ -1,28 +1,29 @@
 configure:
   commands:
+    bridge-domain 40: "bridge-domain 40\r\n"
     end:
       new_state: execute
     line console 0:
       new_state: configure_line
-    member evpn-instance 10 vni 100: |
-      member evpn-instance 10 vni 100
+    member evpn-instance 9 vni 30012 ethernet-tag 20012: "member evpn-instance 9 vni\
+      \ 30012 ethernet-tag 20012\r\n"
     no logging console: ''
-    bridge-domain 1: "bridge-domain 1"
-  prompt: VTEP1(config)#
+  prompt: IR1101(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: VTEP1(config-line)#
+  prompt: IR1101(config-line)#
 connect:
   commands:
-    '':
-      new_state: execute
-  preface: |-
-    Trying mock_device ...
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
     Connected to mock_device.
-    Escape character is '^]'.
+
+    Escape character is ''^]''.'
   prompt: ''
 execute:
   commands:
@@ -31,7 +32,7 @@ execute:
     config-transaction:
       new_state: configure
     show version: ''
+    show version | include operating mode: ''
     term length 0: ''
     term width 0: ''
-    'show version | include operating mode': ''
-  prompt: VTEP1#
+  prompt: IR1101#

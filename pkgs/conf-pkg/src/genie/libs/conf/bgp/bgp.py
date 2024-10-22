@@ -338,6 +338,16 @@ class Bgp(Routing, DeviceFeature):
         default=None,
         type=(None, managedattribute.test_istype(bool)))
 
+    bestpath_multipath_relax = managedattribute(
+        name='bestpath_multipath_relax',
+        default=None,
+        type=(None, managedattribute.test_istype(bool)))
+
+    allocate_index = managedattribute(
+        name='allocate_index',
+        default=None,
+        type=(None, managedattribute.test_istype(int)))
+
     cluster_id = managedattribute(
         name='cluster_id',
         default=None,
@@ -664,6 +674,11 @@ class Bgp(Routing, DeviceFeature):
         default=None,
         type=(None, managedattribute.test_istype(bool)))
 
+    af_v4_allocate_label_all = managedattribute(
+        name='af_v4_allocate_label_all',
+        default=None,
+        type=(None, managedattribute.test_istype(bool)))
+
     af_retain_rt_all = managedattribute(
         name='af_retain_rt_all',
         default=None,
@@ -685,6 +700,24 @@ class Bgp(Routing, DeviceFeature):
         default=None,
         type=(None, managedattribute.test_istype(bool))
     )
+
+    af_additional_paths_install_backup = managedattribute(
+        name='af_additional_paths_install_backup',
+        default=None,
+        type=(None, managedattribute.test_istype(bool))
+    )
+
+    af_additional_paths_install_backup = managedattribute(
+        name='af_additional_paths_install_backup',
+        default=None,
+        type=(None, managedattribute.test_istype(bool))
+    )
+    af_allocate_label_option_b = managedattribute(
+        name='af_allocate_label_option_b',
+        default=None,
+        type=(None, managedattribute.test_istype(bool))
+    )
+
     # ==== Neighbor section ======================
     class NBR_TRANSPORT_CONNECTION_MODE(Enum):
         active = 'active'
@@ -950,6 +983,26 @@ class Bgp(Routing, DeviceFeature):
         name='send_community',
         default=None,
         type=(None, managedattribute.test_istype(str)))
+
+    nbr_af_weight = managedattribute(
+        name='nbr_af_weight',
+        default=None,
+        type=(None, managedattribute.test_istype(int)))
+
+    nbr_af_encap_mpls = managedattribute(
+        name='nbr_af_encap_mpls',
+        default=None,
+        type=(None, managedattribute.test_istype(bool)))
+
+    nbr_af_import_l2vpn_evpn_reoriginate = managedattribute(
+        name='nbr_af_import_l2vpn_evpn_reoriginate',
+        default=None,
+        type=(None, managedattribute.test_istype(bool)))
+
+    nbr_af_import_vpn_unicast_reoriginate = managedattribute(
+        name='nbr_af_import_vpn_unicast_reoriginate',
+        default=None,
+        type=(None, managedattribute.test_istype(bool)))
 
     ha_mode = managedattribute(
         name='ha_mode',
