@@ -185,7 +185,7 @@ def learn_routing(device,
                         setdefault(ip, {}).update({device.name: keys})
 
 
-def check_memory_leaks(section, devices, keywords, timeout=60):
+def check_memory_leaks(section, processor, devices, keywords, timeout=60):
     '''Check memory leaks by show memory debug leaks command
 
     Args:
@@ -229,8 +229,83 @@ def check_memory_leaks(section, devices, keywords, timeout=60):
                              ikwargs=ikwargs)
 
         if pcall_return and all(pcall_return):
-            log.info(f"No memory leaks found with keywords {keywords}")
-            section.result += Passed
+            processor.passed(f"No memory leaks found with keywords {keywords}")
         else:
-            log.error(f"Found memory leaks with keywords {keywords}")
-            section.result += Failed
+            processor.failed(f"Found memory leaks with keywords {keywords}")
+
+def execute_reload(section,
+                   processor,
+                   devices,
+                   prompt_recovery=True,
+                   reload_creds='default',
+                   sleep_after_reload=120,
+                   timeout=800,
+                   reload_command='reload',
+                   error_pattern=None,
+                   exclude_devices=None,
+                   save_config=True):
+    '''Execute reload on devices
+
+    Args:
+        devices (`list`): List of device name
+        prompt_recovery (`bool`): Prompt recovery. default: True
+        reload_creds (`str`): Reload credentials. default: 'default'
+        sleep_after_reload (`int`): Sleep after reload. default: 120
+        timeout (`int`): Timeout value. default: 800
+        reload_command (`str`): Reload command. default: 'reload'
+        error_pattern (`str`): Error pattern. default: None
+        exclude_devices (`list`): List of devices to exclude. default: None
+        save_config (`bool`): Save config. default: True
+        
+    Returns:
+        None
+
+    Raises:
+        None
+    '''
+
+    def execute_reload_worker(device, prompt_recovery, reload_creds, sleep_after_reload, 
+                              timeout, reload_command, error_pattern, exclude_devices, save_config):
+
+        if save_config:
+            device.api.save_running_config()
+
+        try:
+            device.api.execute_reload(prompt_recovery=prompt_recovery,
+                                      reload_creds=reload_creds,
+                                      sleep_after_reload=sleep_after_reload,
+                                      timeout=timeout,
+                                      reload_command=reload_command,
+                                      error_pattern=error_pattern,
+                                      exclude_devices=exclude_devices)
+        except Exception as e:
+            log.exception(e)
+            return False
+
+        return True
+
+    if section and getattr(section, 'parameters', {}):
+        testbed = section.parameters.get('testbed', {})
+        ckwargs = {
+            'prompt_recovery': prompt_recovery,
+            'reload_creds': reload_creds,
+            'sleep_after_reload': sleep_after_reload,
+            'timeout': timeout,
+            'reload_command': reload_command,
+            'error_pattern': error_pattern,
+            'exclude_devices': exclude_devices,
+            'save_config': save_config
+        }
+        ikwargs = []
+        for device in devices:
+            if device in testbed.devices:
+                ikwargs.append({'device': testbed.devices[device]})
+
+        pcall_return = pcall(execute_reload_worker,
+                             ckwargs=ckwargs,
+                             ikwargs=ikwargs)
+
+        if pcall_return and all(pcall_return):
+            processor.passed(f"Reloaded devices {devices}")
+        else:
+            processor.failed(f"Failed to reload devices {devices}")

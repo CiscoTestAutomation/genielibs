@@ -1484,7 +1484,7 @@ def get_interface_media_types(device, interface):
 
         Returns:
             None
-            media types (`str`): Example: '10/100/1000BaseTX' , '100/1000/2.5GBaseTX' ,'100/1000/10GBaseTX - interface media 
+            media types (`str`): Example: '10/100/1000BaseTX' , '100/1000/2.5GBaseTX' ,'100/1000/10GBaseTX - interface media
                                  type supporting copper connection.
                                  Example: '1000BaseSX', '1000BaseEX'- interface media type is supporting fiber connection.
                                  'unknown' - interface type is unknown.
@@ -1526,12 +1526,12 @@ def get_interface_capabilities_multiple_media_types(device, interface):
 
 
 def get_interfaces_transceiver_supported_dom(device, transceivers_list):
-    """Get the corresponding DOM type for the list of transceivers 
+    """Get the corresponding DOM type for the list of transceivers
 
         Args:
             device (`obj`): Device object
             transceivers_list (`list`): List of transceivers to get the DOM type
-            
+
         Returns:
             dom_value ('dict'): Digital Optical Monitoring value of the supported transceiver
     """
@@ -1541,7 +1541,7 @@ def get_interfaces_transceiver_supported_dom(device, transceivers_list):
     except Exception as e:
         log.error(f"Not able to get output for show interfaces transceiver supported-list. Error:\n{e}")
         return False
-    
+
     return dom_value
 
 
@@ -1555,8 +1555,8 @@ def get_interfaces_switchport_state(device, interface):
         Returns:
             None
             switchport_enable state:  (`bool`): if switchport is enabled return True
-                                                   switchport is disabled return False 
-              
+                                                   switchport is disabled return False
+
         Raises:
             None
     """
@@ -1567,3 +1567,23 @@ def get_interfaces_switchport_state(device, interface):
         return
 
     return out[interface].get('switchport_enable')
+
+
+def get_interface_traffic_packet_counters(device, interface, counter_fields):
+    """ Get interface traffic packet counters
+
+        Args:
+            api (`obj`): Device object
+            interface (`str`): Interface name
+            counter_fields (`list`): List of counter fields to get
+
+        Returns:
+            packet_counters (`dict`): Dictionary containing packet counters
+
+        Raises:
+            None
+    """
+    packet_counters = {}
+    for counter_field in counter_fields:
+        packet_counters[counter_field] = device.api.get_interface_packet_counter(interface=interface, counter_field=counter_field, output=None)
+    return packet_counters

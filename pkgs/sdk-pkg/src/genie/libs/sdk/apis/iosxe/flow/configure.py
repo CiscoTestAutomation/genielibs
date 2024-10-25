@@ -1163,7 +1163,7 @@ def configure_flow_record_match_datalink(device, record_name, field_type, mac_ty
     elif direction is None and mac_type is None:
         config.append(f'match datalink {field_type}')
     elif direction is not None and mac_type is None:
-        config.append(f'match datalink {field_type} {direction}')        
+        config.append(f'match datalink {field_type} {direction}')
     elif direction:
         config.append(f'match datalink {field_type} {mac_type} {direction}')
 
@@ -1299,7 +1299,7 @@ def configure_flow_exporter(device, exporter_name, dest_ip=None, udp_port=None, 
         config.append(f'source {source_int}')
     if export_proto:
         config.append(f'export-protocol {export_proto}')
-    
+
     try:
         device.configure(config)
 
@@ -1445,11 +1445,11 @@ def configure_fnf_flow_record(
     if collect_type_mask:
         configs.extend([f'collect ipv4 {collect_type_mask} mask'])
     if collect_length:
-        configs.extend([f'collect ipv4 length {collect_length}'])    
+        configs.extend([f'collect ipv4 length {collect_length}'])
     if collect_ipv4_ttl:
         configs.extend([f'collect ipv4 ttl {collect_ipv4_ttl}'])
     if collect_udp_ports:
-        configs.extend([f'collect transport udp {collect_udp_ports}'])    
+        configs.extend([f'collect transport udp {collect_udp_ports}'])
 
     try:
         device.configure(configs)
@@ -1458,12 +1458,12 @@ def configure_fnf_flow_record(
             f'Could not configure flow record. Error:\n{e}')
 
 def unconfigure_record_configs_from_flow_monitor(
-    device, 
-    monitor_name, 
+    device,
+    monitor_name,
     record_name=None,
-    active_timeout=None, 
-    inactive_timeout=None, 
-    cache_entries=None, 
+    active_timeout=None,
+    inactive_timeout=None,
+    cache_entries=None,
     exporter_name=None
     ):
     """ Unconfig Flow Monitor with cache entry on Device
@@ -1482,7 +1482,7 @@ def unconfigure_record_configs_from_flow_monitor(
     """
     cmd = ["flow monitor {monitor_name}".format(monitor_name=monitor_name)]
     if active_timeout:
-        cmd.append("no cache timeout active {active_timeout}".format(active_timeout=active_timeout))    
+        cmd.append("no cache timeout active {active_timeout}".format(active_timeout=active_timeout))
     if inactive_timeout:
         cmd.append("no cache timeout inactive {inactive_timeout}".format(inactive_timeout=inactive_timeout))
     if record_name:
@@ -1533,7 +1533,7 @@ def unconfigure_flow_exporter(device, exporter_name, dest_ip=None, udp_port=None
         config.append('no source {source_int}'.format(source_int=source_int))
     if export_proto:
         config.append('no export-protocol {export_proto}'.format(export_proto=export_proto))
-    
+
     try:
         device.configure(config)
     except SubCommandFailure as e:
@@ -1549,14 +1549,14 @@ def configure_flow_monitor(device, monitor_name, exporter_name, record_name,
             exporter_name (`str`): Flow exporter name
             record_name (`str`): Flow record name
             timeout ('int'): Timeout
-            
+
         Return:
             None
 
         Raise:
             SubCommandFailure: Failed configuring flow monitor
     """
-    
+
     try:
         device.configure([
                           f"flow monitor {monitor_name}",
@@ -1589,7 +1589,7 @@ def  configure_datalink_flow_monitor(device, interface, flow_name, direction):
     """
 
     config = [f'interface {interface}', f'datalink flow monitor {flow_name} {direction}']
-    
+
     try:
         device.configure(config)
     except SubCommandFailure as e:
@@ -1623,7 +1623,7 @@ def  unconfigure_datalink_flow_monitor(device, interface, flow_name, direction):
 
 
 def configure_fnf_flow_record_match_flow(device, record_name, flow_name, cts_type=None):
-    
+
     """ Configure Flow Record match flow on Device
         Args:
             device ('obj'): Device object
@@ -1633,11 +1633,11 @@ def configure_fnf_flow_record_match_flow(device, record_name, flow_name, cts_typ
 
         Return:
             None
-            
+
         Raise:
             SubCommandFailure: Failed configuring Flow Record on Device
     """
-    
+
     config = [f'flow record {record_name}']
     if flow_name == 'observation':
         config.append(f'match flow observation point')
@@ -1647,3 +1647,17 @@ def configure_fnf_flow_record_match_flow(device, record_name, flow_name, cts_typ
         device.configure(config)
     except SubCommandFailure:
         raise SubCommandFailure(f'Could not configure flow record {record_name}')
+
+def clear_monitor_capture(device, capture_name):
+    """
+        Execute monitor capture <capture_name> clear
+        Example: monitor capture test clear
+        Args:
+            device ('obj'): Device Object
+            capture_name ('str'): Name of Capture
+    """
+    cmd = f"monitor capture {capture_name} clear"
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not execute monitor capture {capture_name} clear. \nError: {e}")

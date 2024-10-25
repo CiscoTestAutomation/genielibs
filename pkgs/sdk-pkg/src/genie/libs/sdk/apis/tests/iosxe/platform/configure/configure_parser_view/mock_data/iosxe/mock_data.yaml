@@ -1,0 +1,46 @@
+configure:
+  commands:
+    end: 
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    parser view pv1:
+      new_state: configure_view
+  prompt: c8kv-dev-11(config)#
+
+configure_view:
+  prompt: c8kv-dev-11(config-view)#
+  commands: 
+    secret 0 pass: |
+      WARNING: CLI-VIEW secret command has been added to the configuration using a type 0 secret. However, type 0 secret will soon be deprecated. Migrate to either, type 8 or type 9 secret
+    command exec include show vrrp: "command exec include show vrrp\r\n"
+    end:
+      new_state: execute
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: c8kv-dev-11(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    show version | include operating mode: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: c8kv-dev-11# 

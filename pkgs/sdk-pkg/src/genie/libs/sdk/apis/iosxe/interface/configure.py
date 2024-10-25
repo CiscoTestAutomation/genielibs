@@ -7178,7 +7178,7 @@ def configure_interface_dot1q_ethertype(device, interface, ethervalue):
             .format(interface=interface, ethervalue=ethervalue
         )
     )
-    
+
     config_list=["interface {interface}".format(interface=interface),\
     "dot1q tunneling ethertype {ethervalue}".format(ethervalue=ethervalue)]
 
@@ -7190,7 +7190,7 @@ def configure_interface_dot1q_ethertype(device, interface, ethervalue):
                 .format(error=e
             )
         )
-        
+
 def configure_hsrp_version_on_interface(device, interface, version):
     """ Configure hsrp version on interface
         Args:
@@ -9700,7 +9700,7 @@ def unconfigure_interface_speed(device, interface):
     config = [
         f'interface {interface}',
         'no speed'
-    ] 
+    ]
     try:
         device.configure(config)
     except SubCommandFailure as e:
@@ -9875,17 +9875,17 @@ def configure_dual_port_interface_media_type(device, interface, media_type):
     """
     log.debug(
         f"Configuring media_type {media_type} on interface {interface}")
-    
+
     cmd = [f"interface {interface}",
            f"media-type {media_type}"]
-        
+
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not configure media_type on {interface}. Error:\n{e}"
             )
-        
+
 
 def configure_interface_range_shutdown(device, start_interface, end_interface):
     """ Configure interface range shutdown
@@ -9914,7 +9914,7 @@ def configure_interface_range_no_shutdown(device, start_interface, end_interface
         Args:
             device ('obj'): device to use
             start_interface('str'): Starting Interface
-            end_interface('str'): Ending Interface number   
+            end_interface('str'): Ending Interface number
         Returns:
             None
         Raises:
@@ -9942,7 +9942,7 @@ def configure_system_debounce_link_up_timer(device, link_up):
     Raise:
         SubCommandFailure: Failed configuring system debounce timer
     """
-    
+
     log.debug("Configure system debounce link-up timer")
     cmd = f"system debounce link-up {link_up}"
     try:
@@ -9962,7 +9962,7 @@ def configure_system_debounce_link_down_timer(device, link_down):
     Raise:
         SubCommandFailure: Failed configuring system debounce timer
     """
-    
+
     log.debug("Configure system debounce link-down timer")
     cmd = f"system debounce link-down {link_down}"
     try:
@@ -10001,7 +10001,7 @@ def unconfigure_system_debounce_link_down_timer(device, link_down):
     Raise:
         SubCommandFailure: Failed unconfiguring system debounce timer
     """
-    
+
     log.debug("Unconfigure system debounce link-down timer")
     cmd = f"no system debounce link-down {link_down}"
     try:
@@ -10021,7 +10021,7 @@ def configure_phymode_ignore_linkup_fault(device, interface):
     Raise:
         SubCommandFailure: Failed configuring phymode ignore linkup fault
     """
-    
+
     log.debug("Configure phymode ignore linkup fault")
     cmd =[f"interface {interface}", "phymode ignore-linkup-fault"]
     try:
@@ -10041,7 +10041,7 @@ def unconfigure_phymode_ignore_linkup_fault(device, interface):
     Raise:
         SubCommandFailure: Failed configuring phymode ignore linkup fault
     """
-    
+
     log.debug("Unconfigure phymode ignore linkup fault")
     cmd =[f"interface {interface}", "no phymode"]
     try:
@@ -10241,8 +10241,8 @@ def configure_switchport_trunk_native_vlan_tag(device, interface):
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            f'Could not configure switchport trunk native vlan tag on {device}.Error:\n{e}')     
-            
+            f'Could not configure switchport trunk native vlan tag on {device}.Error:\n{e}')
+
 def unconfigure_switchport_trunk_native_vlan_tag(device, interface):
     """ unconfigure switchport trunk native vlan tag
         Args:
@@ -10261,6 +10261,29 @@ def unconfigure_switchport_trunk_native_vlan_tag(device, interface):
         raise SubCommandFailure(
             f'Could not unconfigure switchport trunk native vlan tag on {device}.Error:\n{e}')
 
+def configure_service_policy_type_queueing_on_interface(device, interface, direction, policy_map_name):
+    """ Configure service-policy type queueing on interface
+        Args:
+            device ('obj') : device to use
+            interface ('str') : interface name on which we need to configure
+            direction ('str') : Assign policy-map direction
+            policy_map_name ('str') : Policy-map name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+	"""
+    log.debug("Configuring service-policy type queueing on interface")
+
+    configs = [f'interface {interface}',
+           f'service-policy type queueing {direction} {policy_map_name}']
+    try:
+        device.configure(configs)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure service-policy type queueing on interface {interface}. Error:\n{e}")
+
 def configure_medium_p2p_interface(device, interface):
     """ Configure medium p2p on interface
     Args:
@@ -10271,7 +10294,7 @@ def configure_medium_p2p_interface(device, interface):
     Raise:
         SubCommandFailure: Failed configuring medium p2p on interface
     """
-    
+
     log.debug("Configure medium p2p on interface")
     cmd =[f"interface {interface}", "medium p2p"]
     try:
@@ -10279,8 +10302,8 @@ def configure_medium_p2p_interface(device, interface):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Failed to configure medium p2p on interface, Error:\n{e}"
-        ) 
-        
+        )
+
 def unconfigure_medium_p2p_interface(device, interface):
     """ Unconfigure medium p2p on interface
     Args:
@@ -10291,7 +10314,7 @@ def unconfigure_medium_p2p_interface(device, interface):
     Raise:
         SubCommandFailure: Failed unconfiguring medium p2p on interface
     """
-    
+
     log.debug("Unconfigure medium p2p on interface")
     cmd =[f"interface {interface}", "no medium p2p"]
     try:
@@ -10300,3 +10323,216 @@ def unconfigure_medium_p2p_interface(device, interface):
         raise SubCommandFailure(
             f"Failed to unconfigure medium p2p on interface, Error:\n{e}"
         )
+
+def configure_interface_rep_stcn_segment(device, interface, segment):
+    """Configure interface rep stcn segment
+    Args:
+        device ('obj'): Device object
+        interface ('str'): Interface to configure
+        segment ('str'): Segment value
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed configuring interface rep stcn segment
+    """
+    log.debug("Configure interface rep stcn segment")
+    cmd = [f"interface {interface}", f"rep stcn segment {segment}"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed configuring interface rep stcn segment: {e}")
+
+def unconfigure_interface_rep_stcn_segment(device, interface):
+    """Unconfigure interface rep stcn segment
+    Args:
+        device ('obj'): Device object
+        interface ('str'): Interface to configure
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed unconfiguring interface rep stcn segment
+    """
+    log.debug("Unconfigure interface rep stcn segment")
+    cmd = [f"interface {interface}", "no rep stcn segment"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed unconfiguring interface rep stcn segment on {interface}") from e
+
+def configure_interface_rep_stcn_stp(device, interface):
+    """Configure interface rep stcn stp
+    Args:
+        device ('obj'): Device object
+        interface ('str'): Interface to configure
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed configuring interface rep stcn stp
+    """
+    log.debug("Configure interface rep stcn stp")
+    cmd = [f"interface {interface}", "rep stcn stp"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed configuring interface rep stcn stp on {interface}: {e}")
+
+def unconfigure_interface_rep_stcn_stp(device, interface):
+    """Unconfigure interface rep stcn stp
+    Args:
+        device ('obj'): Device object
+        interface ('str'): Interface to configure
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed unconfiguring interface rep stcn stp
+    """
+    log.debug("Unconfigure interface rep stcn stp")
+    cmd = [f"interface {interface}", "no rep stcn stp"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed unconfiguring interface rep stcn stp on {interface}: {e}")
+
+def configure_interface_rep_segment_edge_preferred(device, interface, segment):
+    """Configure REP Segment Edge Preferred on the device
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Interface name
+            segment ('str'): Segment value
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring rep segment edge preferred
+    """
+
+    cmd = [f"interface {interface}", "switchport", "switchport mode trunk", f"rep segment {segment} edge preferred"]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure REP Segment Edge Preferred on device {device.name}. Error: {e}"
+        )
+
+def unconfigure_interface_rep_segment_edge_preferred(device, interface, segment):
+    """Unconfigure REP Segment Edge Preferred on the device
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Interface name
+            segment ('str'): Segment value
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed unconfiguring rep segment edge preferred
+    """
+
+    cmd = [f"interface {interface}", f"no rep segment {segment} edge preferred"]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure REP Segment Edge Preferred on device {device.name}. Error: {e}"
+        )
+
+def configure_interface_rep_segment_edge_primary(device, interface, segment, preferred=False):
+    """Configure REP Segment Edge Primary on the device
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Interface name
+            segment ('str'): Segment value
+            preferred ('bool', optional): Set to True for edge primary preferred (default: False)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring rep segment edge primary
+    """
+    log.debug("Configure REP Segment Edge Primary")
+    cmd = [f"interface {interface}", "switchport", "switchport mode trunk"]
+    if preferred:
+        cmd.append(f"rep segment {segment} edge primary preferred")
+    else:
+        cmd.append(f"rep segment {segment} edge primary")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure REP Segment Edge Primary on {interface}: {e}")
+
+def unconfigure_interface_rep_segment_edge_primary(device, interface, segment):
+    """Unconfigure REP Segment Edge Primary on the device
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Interface name
+            segment ('str'): Segment value
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed unconfiguring rep segment edge primary
+    """
+
+    cmd = [f"interface {interface}", f"no rep segment {segment} edge primary"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure REP Segment Edge Primary on interface {interface}: {e}")
+
+def configure_ppp_multilink(device, interface):
+    """ Configure ppp multilink on interface
+    Args:
+        device ('obj'): Device object
+        interface ('str'): which interface to configure
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring ppp multilink on interface
+    """
+
+    log.debug(f"Configure ppp multilink on interface {interface}")
+    cmd =[f"interface {interface}", "ppp multilink"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure ppp multilink on interface, Error:\n{e}"
+        )
+
+def unconfigure_ppp_multilink(device, interface):
+    """ Configure no ppp multilink on interface
+    Args:
+        device ('obj'): Device object
+        interface ('str'): which interface to configure
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring no ppp multilink on interface
+    """
+
+    log.debug(f"Configure no ppp multilink on interface {interface}")
+    cmd =[f"interface {interface}", "no ppp multilink"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure ppp multilink on interface, Error:\n{e}"
+        )
+
+def unconfigure_port_channel(device, port_channel):
+    """ Unconfigure port-channel ip address on port-channel interface
+        Args:
+            device ('obj'): Device object
+            port_channel ('str'): Port-channel number for the Port-channel interface
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    log.debug(f"Unconfigure interface port-channel {port_channel}")
+    config = [f"no interface Port-channel {port_channel}"]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure interface Port-channel {port_channel}. Error: {e}")
+
+

@@ -1723,12 +1723,12 @@ def clear_ip_pim_rp_mapping(device):
 
 def execute_event_manager_run_with_reload(device,username,password,
                                             embedded_event_name="RELOAD",sleep_time=10):
-    """ Execute event manager with Embedded Event Manager policy name  
+    """ Execute event manager with Embedded Event Manager policy name
         Args:
             device ('obj'): device to use
-            embedded_event_name ('str'): Embedded Event Manager policy name 
-            username ('str'): username 
-            password ('str'): password 
+            embedded_event_name ('str'): Embedded Event Manager policy name
+            username ('str'): username
+            password ('str'): password
             sleep_time : sleep time
         Returns:
             True if reload successful else False
@@ -1781,7 +1781,36 @@ def execute_event_manager_run_with_reload(device,username,password,
         return False
     log.debug(f"Reload is successful on {device.name}")
     return True
- 
+
+def platform_software_fed_switch_phy_options(device, mode, lpn, phy_info, read_mode, phy_mode, phy_side, phy_device_id, phy_page_number, phy_register_address):
+    """
+    Execute 'test platform software fed switch' command with the specified parameters.
+
+    Args:
+        device (obj): Device object
+        mode(str) : 'active'
+        lpn (int): Local Port Number value (1-96)
+        phy_info (int): Phy mode (0-1)
+        read_mode (str): read,write,dump
+        phy_mode(int) : <0-1> 0/1 - Mode - Mdio clause 22/45
+        phy_side (int): Phy line/system side (0-1)
+        phy_device_id (int): Phy device_id (0-255)
+        phy_page_number (int): Phy page number (0-65535)
+        phy_register_address (int): Phy register address (0-65535)
+
+    Returns:
+        str: Output of the command
+    Raises:
+        SubCommandFailure: Failed executing the command
+    """
+
+    cmd = f"test platform software fed switch {mode} xcvr lpn {lpn} {phy_info} {read_mode} {phy_mode} {phy_side} {phy_device_id} {phy_page_number} {phy_register_address}"
+
+    try:
+        return device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to execute command. Error:\n{e}")
+
 def test_platform_software_usb_fake_insert_remove(device, switch_num, usbflash, action):
     """
     Execute 'test platform software usb slot <switch_num> <usbflash> <action>' command on the device.
@@ -1791,12 +1820,12 @@ def test_platform_software_usb_fake_insert_remove(device, switch_num, usbflash, 
         switch_num (int): Slot or switch number
         usbflash (str): USB flash identifier ('usbflash1' or 'usbflash2')
         action (str): Action to perform ('fake-insert' or 'fake-remove')
-        
+
     Returns:
         str: Output of the command
     """
     command = f"test platform software usb slot {switch_num} {usbflash} {action}"
-    
+
     try:
         device.execute(command)
     except SubCommandFailure as e:
@@ -1810,15 +1839,16 @@ def test_platform_software_fru_fake_insert_remove(device, switch_num, action):
         device (obj): Device object
         switch_num (int): Slot or switch number
         action (str): Action to perform ('fake-insert' or 'fake-remove')
-        
+
     Returns:
         str: Output of the command
     """
     log.debug(f"Perform fake insert/remove for fru on {device}")
-    
+
     command = f"test platform software fed switch {switch_num} fru {action}"
-    
+
     try:
         device.execute(command)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to perform fake insert/remove for fru. Error:\n{e}")
+

@@ -39,9 +39,14 @@ class PrefixSidMapEntry(Base):
         name='attach',
         default=None,
         type=(None, managedattribute.test_istype(bool)))
+    
+    absolute = managedattribute(
+        name='absolute',
+        default=None,
+        type=(None, managedattribute.test_istype(int)))
 
     def __hash__(self):
-        return hash((self.prefix,self.index,self.range,self.attach))
+        return hash((self.prefix,self.index,self.range,self.attach,self.absolute))
 
 class SegmentRouting(Routing, DeviceFeature):
 

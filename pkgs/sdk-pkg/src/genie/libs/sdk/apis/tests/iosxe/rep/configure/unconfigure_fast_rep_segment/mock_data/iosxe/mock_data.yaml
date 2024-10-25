@@ -1,0 +1,53 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    interface Gi1/0/10: 
+      new_state: interface
+    interface Gi1/0/11:
+      new_state: interface
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: IE-II-03-AgN1_2008_PB(config)#
+
+interface:
+  prompt: IE-II-03-AgN1_2008_P(config-if)#
+  commands:
+    no rep fastmode: ""
+    no rep segment 1 edge: ""
+    no shut: ""
+    no switchport mode trunk: ""
+    no switchport trunk allowed vlan 25: ""
+    no vlan 25: ""
+    shut: ""
+    end:
+      new_state: execute
+
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: IE-II-03-AgN1_2008_PB(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    show version | include operating mode: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: IE-II-03-AgN1_2008_PB#

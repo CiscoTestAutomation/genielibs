@@ -128,3 +128,20 @@ def execute_test_cable_diagnostics_tdr_interface(device, interface):
     except Exception as err:
         log.error(f"Error while executing {cmd}. Error:\n{err}")
     return output
+    
+def execute_test_fru_fake_insert(device, mode):
+    """ 
+        Args:
+            device ('obj'): device to use 
+            mode ('str'): mode active/standby
+        Returns:
+            Return the test command execution output
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f"test platform software fed switch {mode} fru fake-insert"
+    try:
+        out = device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Failed to perform FRU Fake-insert. Error:\n{e}')
+    return out

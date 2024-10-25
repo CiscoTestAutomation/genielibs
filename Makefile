@@ -45,9 +45,8 @@ CYTHON_CMD	  = compileAll
 # Development pkg requirements
 RELATED_PKGS = genie.libs.health genie.libs.clean genie.libs.conf genie.libs.ops genie.libs.robot genie.libs.sdk
 RELATED_PKGS += genie.libs.filetransferutils
-# pinning the version of pysnmp-lextudio and pyasn1 to fix the type error when using execute_power_cycle_device api
 # Adding pyasyncore pkg to fix pysnmp scripts for python 3.12
-DEPENDENCIES = restview psutil Sphinx wheel asynctest pysnmp-lextudio==6.1.2 pyasn1==0.4.8 pyasyncore
+DEPENDENCIES = restview psutil Sphinx wheel asynctest 'pysnmp>=6.1.4,<6.2' pyasn1==0.4.8
 DEPENDENCIES += sphinx-rtd-theme==1.1.0 pyftpdlib tftpy\<0.8.1 robotframework
 DEPENDENCIES += Cython==3.0.0 requests ruamel.yaml grpcio protobuf jinja2
 # Internal variables.
@@ -322,7 +321,7 @@ json:
 	@echo "--------------------------------------------------------------------"
 	@echo "Generating libs json file"
 	@echo ""
-	@python3 -c "from genie.json.make_json import make_genielibs; make_genielibs()"
+	@python3 -W ignore::SyntaxWarning -c "from genie.json.make_json import make_genielibs; make_genielibs()"
 	@echo ""
 	@echo "Done."
 	@echo ""

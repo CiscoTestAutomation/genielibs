@@ -95,7 +95,7 @@ class SetBootVariable(unittest.TestCase):
         # And we want the execute_set_boot_variable api to be mocked.
         # This simulates the pass case.
         self.device.api.execute_set_boot_variable = Mock()
-
+        self.device.api.unconfigure_ignore_startup_config = Mock()
         # Call the method to be tested (clean step inside class)
         self.cls.set_boot_variable(
             steps=steps, device=self.device
@@ -234,6 +234,7 @@ class VerifyBootVariable(unittest.TestCase):
         # And we want the verify_boot_variable api to be mocked.
         # This simulates the pass case.
         self.device.execute = Mock(return_value=data1['show boot'])
+        self.device.api.verify_ignore_startup_config = Mock()
 
         # Call the method to be tested (clean step inside class)
         self.cls.verify_boot_variable(
@@ -241,7 +242,36 @@ class VerifyBootVariable(unittest.TestCase):
         )
         # Check that the result is expected
         self.assertEqual(Passed, steps.details[0].result)
+        
+    def test_verify_ignore_config_fail(self):
+        # Make sure we have a unique Steps() object for result verification
+        steps = Steps()
+        self.cls.new_boot_var = 'bootflash:cat9k_iosxe.BLD_V173_THROTTLE_LATEST_20200421_032634.SSA.bin'
 
+        data1 = {'show boot': '''
+            starfleet-1#show boot
+            BOOT variable = bootflash:cat9k_iosxe.BLD_V173_THROTTLE_LATEST_20200421_032634.SSA.bin;
+            Configuration Register is 0x102
+            MANUAL_BOOT variable = no
+            BAUD variable = 9600
+            ENABLE_BREAK variable does not exist
+            BOOTMODE variable does not exist
+            IPXE_TIMEOUT variable does not exist
+            CONFIG_FILE variable =
+        '''
+        }
+
+        # And we want the verify_boot_variable api to be mocked.
+        # This simulates the pass case.
+        self.device.execute = Mock(return_value=data1['show boot'])
+        self.device.api.verify_ignore_startup_config = Mock(return_value=False)
+
+        # Call the method to be tested (clean step inside class)
+        with self.assertRaises(TerminateStepSignal):
+            self.cls.verify_boot_variable(
+                steps=steps, device=self.device)
+        # Check the overall result is as expected
+        self.assertEqual(Failed, steps.details[0].result)
 
     def test_fail_to_verify_boot_variables(self):
         # Make sure we have a unique Steps() object for result verification
