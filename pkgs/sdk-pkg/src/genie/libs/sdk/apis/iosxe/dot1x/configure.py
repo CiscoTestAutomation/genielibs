@@ -2380,3 +2380,23 @@ def unconfigure_parameter_map(device, parameter_map_name):
         raise SubCommandFailure(
             f"Failed to unconfigure parameter map {parameter_map_name}.Error:\n{e}"
         )
+
+def unconfigure_parameter_map_subscriber(device, parameter_map_name):
+    """UnConfigure parameter map subscriber
+        Args:
+            device ('obj'): device to use
+            parameter_map_name (`str`): Parameter Map name to be unconfigured
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to unconfigure parameter map subscriber
+    """
+    cmd = f'no parameter-map type subscriber attribute-to-service {parameter_map_name}'
+
+    log.debug("UnConfigure parameter map subscriber")
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure parameter map subscriber")

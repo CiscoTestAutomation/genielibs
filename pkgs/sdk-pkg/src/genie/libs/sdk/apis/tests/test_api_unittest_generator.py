@@ -1,10 +1,16 @@
 from unittest import TestCase
-from unittest.mock import MagicMock, patch, mock_open
+from unittest.mock import Mock, MagicMock, patch, mock_open
 from collections import ChainMap
-from genie.libs.sdk.apis.api_unittest_generator import TestGenerator
+from genie.libs.sdk.apis.api_unittest_generator import (
+    APIUTGenerator, TestGenerator, TestFactory,
+    ParserTestGenerator, ConfigureTestGenerator, ExecuteTestGenerator
+)
 from genie.libs.sdk.apis.api_unittest_generator import Path
 from unicon.core.errors import ConnectionError
-import logging
+import pprint
+import os
+from datetime import datetime
+from inspect import getmembers, isfunction
 
 TEST_ARGS_YAML = {
     'default': {
@@ -28,14 +34,328 @@ TEST_ARGS_YAML = {
     }
 }
 
+class TestParserGenerator(TestCase):
+    def setUp(self):
+        self.device = Mock()
+        self.device.name = 'fake_device'
+        self.device.os = 'fake_os'
+        self.device.platform = 'fake_platform'
+        self.device.type = 'fake_type'
+        self.module_import = 'mock_module'
+        self.api = Mock()
+        self.api.__name__ = 'mock_api'
+        self.test_generator = ParserTestGenerator(self.device, self.module_import, self.api)
 
-class TestAPIUnittestGenerator(TestCase):
+    def test_build_imports(self):
+        expected_imports = [
+            'import os',
+            'from pyats.topology import loader',
+            'from unittest import TestCase',
+            'from mock_module import mock_api'
+        ]
+        self.assertEqual(self.test_generator._build_imports(), expected_imports)
+
+    def test_build_test_class(self):
+        expected_class = {
+            'api': 'mock_api',
+            'class_name': 'TestMockApi',
+            'device': 'fake_device',
+            'imports': [
+                'import os',
+                'from pyats.topology import loader',
+                'from unittest import TestCase',
+                'from mock_module import mock_api'
+            ]
+        }
+        self.assertEqual(self.test_generator.build_test_class(), expected_class)
+
+    def test_build_test_method(self):
+        arguments = 'arg1, arg2'
+        result = {'key': 'value'}
+        expected_method = {
+            'api': 'mock_api',
+            'arguments': arguments,
+            'expected_output': pprint.pformat(result)
+        }
+        self.assertEqual(self.test_generator.build_test_method(arguments, result), expected_method)
+
+    def test_build_write_args(self):
+        arguments = ['arg1', 'arg2']
+        varargs = ['var1']
+        kwargs = {'kwarg1': 'value1'}
+        expected_args = "'arg1', 'arg2', var1, kwarg1='value1'"
+        self.assertEqual(self.test_generator.build_write_args(arguments, varargs, kwargs), expected_args)
+
+        self.assertEqual(
+            self.test_generator.build_write_args([self.device], (), {}),
+            'self.device'
+        )
+
+        # test with existing arguments
+        self.assertEqual(
+            self.test_generator.build_write_args(['intf1', 'abcd'], (), {}),
+            "'intf1', 'abcd'"
+        )
+
+        # test with empty arguments
+        self.assertEqual(self.test_generator.build_write_args([], (), {}), '')
+
+    def test_create_testbed(self):
+        self.maxDiff = None
+        self.assertEqual(
+            self.test_generator._create_testbed(),
+            {               
+            'cmd':
+                'mock_device_cli --os fake_os '
+                '--mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect',
+            'device': 'fake_device',
+            'has_mock_data': True,
+            'os': 'fake_os',
+            'platform': 'fake_platform',
+            'type': 'fake_type',
+            }
+        )
+
+class TestConfigureGenerator(TestCase):
+    def setUp(self):
+        self.device = Mock()
+        self.device.name = 'fake_device'
+        self.device.os = 'fake_os'
+        self.device.platform = 'fake_platform'
+        self.device.type = 'fake_type'
+        self.module_import = 'mock_module'
+        self.api = Mock()
+        self.api.__name__ = 'mock_api'
+        self.test_generator = ConfigureTestGenerator(self.device, self.module_import, self.api)
+
+    def test_build_imports(self):
+        expected_imports = [
+            'from unittest import TestCase',
+            'from mock_module import mock_api',
+            'from unittest.mock import Mock'
+        ]
+        self.assertEqual(self.test_generator._build_imports(), expected_imports)
+
+    def test_build_test_class(self):
+        expected_class = {
+            'api': 'mock_api',
+            'class_name': 'TestMockApi',
+            'device': 'fake_device',
+            'imports': [
+                'from unittest import TestCase',
+                'from mock_module import mock_api',
+                'from unittest.mock import Mock'
+            ]
+        }
+        self.assertEqual(self.test_generator.build_test_class(), expected_class)
+
+    @patch('genie.libs.sdk.apis.api_unittest_generator.dill')
+    @patch('builtins.open', new_callable=mock_open)
+    def test_create_mock_variables_configure(self, mock_open, mock_dill):
+        self.test_generator.get_mock_data_file = Mock()
+        mock_dill.load.return_value = {
+            'configure': {
+                "['ip access-list extended acl_in', 'permit ip any any']": [],
+            },
+        }
+
+        self.assertEqual(
+            self.test_generator._create_mock_variables(),
+            {
+                'test_type': 'configure',
+                'configure_calls': [['ip access-list extended acl_in', 'permit ip any any']],
+            }
+        )
+
+        mock_dill.load.return_value = {
+            'configure': {
+                "interface GigabitEthernet1\nno ip access-group acl_in in": [],
+            },
+        }
+
+        self.assertEqual(
+            self.test_generator._create_mock_variables(),
+            {
+                'test_type': 'configure',
+                'configure_calls': [pprint.pformat("interface GigabitEthernet1\nno ip access-group acl_in in")],
+            }
+        )
+
+class TestExecuteGenerator(TestCase):
+    def setUp(self):
+        self.device = Mock()
+        self.device.name = 'fake_device'
+        self.device.os = 'fake_os'
+        self.device.platform = 'fake_platform'
+        self.device.type = 'fake_type'
+        self.module_import = 'mock_module'
+        self.api = Mock()
+        self.api.__name__ = 'mock_api'
+        self.test_generator = ExecuteTestGenerator(self.device, self.module_import, self.api)
+
+    def test_build_imports(self):
+        expected_imports = [
+            'from unittest import TestCase',
+            'from mock_module import mock_api',
+            'from unittest.mock import Mock'
+        ]
+        self.assertEqual(self.test_generator._build_imports(), expected_imports)
+
+    def test_build_test_class(self):
+        expected_class = {
+            'api': 'mock_api',
+            'class_name': 'TestMockApi',
+            'device': 'fake_device',
+            'imports': [
+                'from unittest import TestCase',
+                'from mock_module import mock_api',
+                'from unittest.mock import Mock'
+            ]
+        }
+        self.assertEqual(self.test_generator.build_test_class(), expected_class)
+
+    @patch('genie.libs.sdk.apis.api_unittest_generator.dill')
+    @patch('builtins.open', new_callable=mock_open)
+    def test_create_mock_variables_execute(self, mock_open, mock_dill):
+        self.test_generator.get_mock_data_file = Mock()
+        mock_dill.load.return_value = {
+            'execute': {
+                'some_command': [{'output': 'some_output'}]
+            }
+        }
+
+        self.assertEqual(
+            self.test_generator._create_mock_variables(),
+            {
+                'test_type': 'execute',
+                'execute_asserts': {'some_command': 'some_output'},
+            }
+        )
+
+
+class TestTestFactory(TestCase):
+    @patch('genie.libs.sdk.apis.api_unittest_generator.TestFactory._inspect_function')
+    def test_select_test_generator(self, mock_inspect_function):
+        mock_inspect_function.return_value = ['parse', 'execute']
+        result = TestFactory.select_test_generator('device', 'mock_import', 'mock_function')
+
+        self.assertIsInstance(result, ParserTestGenerator)
+        mock_inspect_function.assert_called_once_with('mock_function', 'device')
+
+        mock_inspect_function.return_value = ['execute', 'execute']
+        result = TestFactory.select_test_generator('device', 'mock_import', 'mock_function')
+
+        self.assertIsInstance(result, ExecuteTestGenerator)
+
+        mock_inspect_function.return_value = ['configure']
+        result = TestFactory.select_test_generator('device', 'mock_import', 'mock_function')
+
+        # Assert the expected behavior
+        self.assertIsInstance(result, ConfigureTestGenerator)
+
+        mock_inspect_function.return_value = ['some_other_test']
+        result = TestFactory.select_test_generator('device', 'mock_import', 'mock_function')
+        self.assertIsInstance(result, ParserTestGenerator)
+
+class TestTestGenerator(TestCase):
+
+    def setUp(self):
+        self.device = Mock()
+        self.device.name = 'mock_device'
+        self.module_import = 'mock_module'
+        self.api = Mock()
+        self.api.__name__ = 'mock_api'
+        self.test_generator = TestGenerator(self.device, self.module_import, self.api)
+
+    def test_build_imports(self):
+        expected_imports = [
+            'from unittest import TestCase',
+            'from mock_module import mock_api'
+        ]
+        self.assertEqual(self.test_generator._build_imports(), expected_imports)
+
+    def test_build_test_class(self):
+        expected_class = {
+            'api': 'mock_api',
+            'class_name': 'TestMockApi',
+            'device': 'mock_device',
+            'imports': [
+                'from unittest import TestCase',
+                'from mock_module import mock_api'
+            ]
+        }
+        self.assertEqual(self.test_generator.build_test_class(), expected_class)
+
+    def test_build_test_method(self):
+        arguments = 'arg1, arg2'
+        result = {'key': 'value'}
+        expected_method = {
+            'api': 'mock_api',
+            'arguments': arguments,
+            'expected_output': pprint.pformat(result)
+        }
+        self.assertEqual(self.test_generator.build_test_method(arguments, result), expected_method)
+
+    def test_build_write_args(self):
+        arguments = ['arg1', 'arg2']
+        varargs = ['var1']
+        kwargs = {'kwarg1': 'value1'}
+        expected_args = "'arg1', 'arg2', var1, kwarg1='value1'"
+        self.assertEqual(self.test_generator.build_write_args(arguments, varargs, kwargs), expected_args)
+
+        self.assertEqual(
+            self.test_generator.build_write_args([self.device], (), {}),
+            'self.device'
+        )
+
+        # test with existing arguments
+        self.assertEqual(
+            self.test_generator.build_write_args(['intf1', 'abcd'], (), {}),
+            "'intf1', 'abcd'"
+        )
+
+        # test with empty arguments
+        self.assertEqual(self.test_generator.build_write_args([], (), {}), '')
+
+    @patch('os.path.join', side_effect=lambda *args: '/'.join(args))
+    @patch('builtins.open', new_callable=mock_open)
+    def test_create_test_files(self, mock_open, mock_path_join):
+        mock_test_file_data = {'key': 'mock_api'}
+        mock_template = MagicMock()
+        api = mock_test_file_data["key"]
+        mock_destination = f'mock_destination'
+        
+        # Mock the behavior of the template rendering if necessary
+        mock_template.render.return_value = 'rendered content'
+        
+        self.test_generator.create_test_files(mock_test_file_data, mock_template, mock_destination)
+        
+        expected_destination = f'mock_destination/{api}'
+        mock_path_join.assert_called_with(expected_destination, f'test_api_{api}.py')
+        expected_path = f'{expected_destination}/test_api_{api}.py'
+        mock_open.assert_called_with(expected_path, 'w')
+        mock_open().write.assert_called_with('rendered content')
+
+    @patch('genie.libs.sdk.apis.api_unittest_generator.TEMP_DIR', new='/mock_temp_dir')
+    def test_get_mock_data_file(self):
+        expected_path = '/mock_temp_dir/mock_device'
+        
+        self.assertEqual(self.test_generator.get_mock_data_file(), expected_path)
+
+    def test_get_api_expected_output(self):
+        self.assertEqual(self.test_generator.get_api_expected_output(TEST_ARGS_YAML, None), None)
+        self.test_generator.api = Mock()
+        self.test_generator.api.__name__ = 'get_interface_carrier_delay'
+        self.assertEqual(self.test_generator.get_api_expected_output(TEST_ARGS_YAML, None, index=1), 'blah')
+        
+
+class TestAPIUTGenerator(TestCase):
 
     def setUp(self):
         self.testbed = MagicMock()
         self.device = MagicMock()
         self.device.name = 'fake_device'
-        self.device.os = 'fake_os'
+        self.device.os.return_value = 'fake_os'
         self.device.platform = 'fake_platform'
         self.device.type = 'fake_type'
         self.testbed.devices.__getitem__.return_value = self.device
@@ -44,8 +364,8 @@ class TestAPIUnittestGenerator(TestCase):
         test_args = 'interface:intf1,another_var:abcd'
 
         # skips module import
-        with patch.object(TestGenerator, '_get_apis'):
-            ut_gen = TestGenerator(
+        with patch.object(APIUTGenerator, '_get_apis'):
+            ut_gen = APIUTGenerator(
                 testbed=self.testbed,
                 device='blah',
                 module='interface.get',
@@ -67,13 +387,13 @@ class TestAPIUnittestGenerator(TestCase):
         test_args_yaml = 'fakepath/ta.yaml'
 
         # skips module import
-        with patch.object(TestGenerator, '_get_apis'):
+        with patch.object(APIUTGenerator, '_get_apis'):
             with patch("builtins.open", mock_open()) as mo:
                 mo.return_value = MagicMock()
                 # mock loading a yaml file
                 with patch("yaml.load") as md:
                     md.return_value = TEST_ARGS_YAML
-                    ut_gen = TestGenerator(
+                    ut_gen = APIUTGenerator(
                         testbed=self.testbed,
                         device='blah',
                         module='interface.get',
@@ -113,7 +433,7 @@ class TestAPIUnittestGenerator(TestCase):
         test_args_yaml = 'fakepath/ta.yaml'
 
         # skips module import
-        with patch.object(TestGenerator, '_get_apis'):
+        with patch.object(APIUTGenerator, '_get_apis'):
             with patch("builtins.open", mock_open()) as mo:
                 mo.return_value = MagicMock()
                 # mock loading a yaml file
@@ -125,7 +445,7 @@ class TestAPIUnittestGenerator(TestCase):
                             }
                         }
                     }
-                    ut_gen = TestGenerator(
+                    ut_gen = APIUTGenerator(
                         testbed=self.testbed,
                         device='blah',
                         module='interface.get',
@@ -141,402 +461,3 @@ class TestAPIUnittestGenerator(TestCase):
 
         self.assertEqual(ut_gen.test_arguments, expected_arguments)
 
-    def test_get_api_expected_output(self):
-        # skipping __init__ as it is not necessary for this test
-        with patch.object(TestGenerator, '__init__') as mt:
-            mt.return_value = None
-            ut_gen = TestGenerator()
-            ut_gen.test_arguments = TEST_ARGS_YAML
-
-        self.assertEqual(
-            ut_gen._get_api_expected_output('get_interface_carrier_delay'),
-            None)
-        self.assertEqual(
-            ut_gen._get_api_expected_output(
-                'get_interface_carrier_delay', index=1),
-            'blah')
-
-    def test_build_api_args(self):
-        test_args = 'interface:intf1,another_arg:abcd'
-
-        # skips module import
-        with patch.object(TestGenerator, '_get_apis'):
-            ut_gen = TestGenerator(
-                testbed=self.testbed,
-                device='blah',
-                module='interface.get',
-                api='get_bundled_interface',
-                test_arguments=test_args
-            )
-
-        # test with device as an argument
-        # get_bundled_interface(device)
-        self.assertEqual(
-            ut_gen._build_api_args(
-                'get_bundled_interface',
-                ['device'],
-                '',
-                '',
-                None
-            ),
-            [([self.device], (), {})]
-        )
-
-        # test with existing and default arguments
-        # get_bundled_interface(interface, another_arg, test=None)
-        self.assertEqual(
-            ut_gen._build_api_args(
-                'get_bundled_interface',
-                ['interface', 'another_arg', 'test'],
-                '',
-                '',
-                (None,)  # None is a default argument
-            ),
-            [(['intf1', 'abcd', None], (), {})]
-        )
-
-        # test with non-existing arguments
-        # get_bundled_interface()
-        self.assertEqual(
-            ut_gen._build_api_args(
-                'get_bundled_interface',
-                ['not_an_arg'],
-                '',
-                '',
-                None
-            ),
-            [([], (), {})]
-        )
-
-    def test_build_api_varargs(self):
-        test_args = 'interface:intf1,another_arg:abcd'
-
-        # skips module import
-        with patch.object(TestGenerator, '_get_apis'):
-            ut_gen = TestGenerator(
-                testbed=self.testbed,
-                device='blah',
-                module='fake_module.get',
-                api='get_var_args_test',
-                test_arguments=test_args
-            )
-            ut_gen.test_arguments = {
-                'default': {
-                    'arguments': {
-                        'arg1': 'some_arg',
-                        'arg2': [1, 2, 3]
-                    }
-                }
-            }
-
-        # test with positional arguments
-        # get_var_args_test(arg1, *arg2)
-        self.assertEqual(
-            ut_gen._build_api_args(
-                'get_var_args_test',
-                ['arg1'],
-                'arg2',
-                '',
-                None
-            ),
-            [(['some_arg'], (1, 2, 3), {})]
-        )
-
-    def test_build_api_kwargs(self):
-        # skips module import
-        with patch.object(TestGenerator, '_get_apis'):
-            ut_gen = TestGenerator(
-                testbed=self.testbed,
-                device='blah',
-                module='jinja.get',
-                api='load_jinja_template',
-                test_arguments_yaml=''
-            )
-            ut_gen.test_arguments = {
-                'default': {
-                    'arguments': {
-                        'path': '',
-                        'file': 'interface.j2',
-                        'kwargs': {
-                            'interface': '',
-                            'desc': 'test description'
-                        }
-                    }
-                }
-            }
-
-        # test with keyword arguments
-        # load_jinja_template(path, file, **kwargs)
-        self.assertEqual(
-            ut_gen._build_api_args(
-                'load_jinja_template',
-                ['path', 'file'],
-                '',
-                'kwargs',
-                None
-            ),
-            [(
-                ['', 'interface.j2'],  # args
-                (),  # positional args
-                {'interface': '', 'desc': 'test description'}  # kwargs
-            )]
-        )
-
-    def test_build_test_class(self):
-        # skipping __init__ as it is not necessary for this test
-        with patch.object(TestGenerator, '__init__') as mt:
-            mt.return_value = None
-            ut_gen = TestGenerator()
-        ut_gen.test_arguments = TEST_ARGS_YAML
-        ut_gen.module_import = 'fake_module'
-        ut_gen.device = self.device
-
-        expected_test_class = {
-            'api': 'get_fake_api',
-            'class_name': 'TestGetFakeApi',
-            'device': 'fake_device',
-            'imports': [
-                'import os',
-                'import unittest',
-                'from pyats.topology import loader',
-                'from fake_module import get_fake_api'
-            ]
-        }
-
-        self.assertEqual(
-            ut_gen._build_test_class('get_fake_api'),
-            expected_test_class
-        )
-
-    def test_build_test_method(self):
-        arguments = 'a=1, b=2, c="3"'
-        api_name = 'get_interface_names'
-        value = 'abc'
-
-        # skipping __init__ as it is not necessary for this test
-        with patch.object(TestGenerator, '__init__') as mt:
-            mt.return_value = None
-            ut_gen = TestGenerator()
-
-        self.assertEqual(
-            ut_gen._build_test_method(api_name, arguments, value),
-            {
-                'api': 'get_interface_names',
-                'arguments': 'a=1, b=2, c="3"',
-                'expected_output': "'abc'"
-            }
-        )
-
-        pass
-
-    def test_build_write_args(self):
-        # skipping __init__ as it is not necessary for this test
-        with patch.object(TestGenerator, '__init__') as mt:
-            mt.return_value = None
-            ut_gen = TestGenerator()
-            ut_gen.device = self.device
-
-        # test with device as an argument
-        self.assertEqual(
-            ut_gen._build_write_args(
-                [self.device],
-                (),
-                {}
-            ),
-            'self.device'
-        )
-
-        # test with existing arguments
-        self.assertEqual(
-            ut_gen._build_write_args(
-                ['intf1', 'abcd'],
-                (),
-                {}
-            ),
-            "'intf1', 'abcd'"
-        )
-
-        # test with empty arguments
-        self.assertEqual(
-            ut_gen._build_write_args([], (), {}),
-            ''
-        )
-
-    def test_create_testbed(self):
-        # skipping __init__ as it is not necessary for this test
-        with patch.object(TestGenerator, '__init__') as mt:
-            mt.return_value = None
-            ut_gen = TestGenerator()
-        ut_gen.device = self.device
-
-        self.assertEqual(
-            ut_gen._create_testbed(),
-            {
-                'cmd':
-                    'mock_device_cli --os fake_os '
-                    '--mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect',
-                'device': 'fake_device',
-                'os': 'fake_os',
-                'platform': 'fake_platform',
-                'type': 'fake_type',
-            }
-        )
-
-    def test_get_test_arguments(self):
-        # skipping __init__ as it is not necessary for this test
-        with patch.object(TestGenerator, '__init__') as mt:
-            mt.return_value = None
-            ut_gen = TestGenerator()
-        ut_gen.test_arguments = TEST_ARGS_YAML
-
-        # test with an api in test arguments yaml
-        self.assertEqual(
-            ut_gen._get_test_arguments('get_interface_carrier_delay'),
-            [
-                ChainMap(
-                    {'delay_type': 'up', 'expected_output': None},
-                    {'interface': 'GigabitEthernet1',
-                     'interface_list': ['GigabitEthernet1'],
-                     'ip_address': '172.16.1.139'}),
-                ChainMap(
-                    {'delay_type': 'down', 'expected_output': 'blah'},
-                    {'interface': 'GigabitEthernet1',
-                     'interface_list': ['GigabitEthernet1'],
-                     'ip_address': '172.16.1.139'})
-            ]
-        )
-
-        # test with an api not in test arguments yaml
-        self.assertEqual(
-            ut_gen._get_test_arguments('get_some_random_api'),
-            [
-                ChainMap({
-                    'interface': 'GigabitEthernet1',
-                    'interface_list': ['GigabitEthernet1'],
-                    'ip_address': '172.16.1.139'
-                })
-            ]
-        )
-
-    @patch('genie.libs.sdk.apis.api_unittest_generator.importlib')
-    def test_get_apis_single_api(self, mock_import):
-        # skipping __init__ as it is not necessary for this test
-        with patch.object(TestGenerator, '__init__') as mt:
-            mt.return_value = None
-            ut_gen = TestGenerator()
-        ut_gen.device = self.device
-        ut_gen.exclude_apis = []
-
-        # assert with single API
-        mock_import.util.find_spec.return_value = ''
-        ut_gen.module = \
-            mock_import.import_module.return_value = MagicMock()
-        ut_gen.module.fake_api_1 = 'fake_api_1'
-        apis = ut_gen._get_apis(module='interface.get', api='fake_api_1')
-
-        self.assertEqual(
-            apis,
-            [('fake_api_1', ut_gen.module.fake_api_1)]
-        )
-
-    @patch('genie.libs.sdk.apis.api_unittest_generator.importlib')
-    @patch('genie.libs.sdk.apis.api_unittest_generator.getmembers')
-    def test_get_apis_module(self, mock_members, mock_import):
-        # skipping __init__ as it is not necessary for this test
-        with patch.object(TestGenerator, '__init__') as mt:
-            mt.return_value = None
-            ut_gen = TestGenerator()
-        ut_gen.device = self.device
-        ut_gen.exclude_apis = {}
-
-        # assert getting all APIs
-        mock_import.util.find_spec.return_value = ''
-        ut_gen.module = \
-            mock_import.import_module.return_value = MagicMock()
-
-        mock_members.return_value = [
-            ('fake_api_1', 'fake_api_1'),
-            ('fake_api_2', 'fake_api_2')]
-
-        apis = ut_gen._get_apis(module='interface.get')
-        self.assertEqual(
-            apis,
-            [('fake_api_1', 'fake_api_1'),
-             ('fake_api_2', 'fake_api_2')]
-        )
-
-        # assert getting APIs with exclude
-        ut_gen.exclude_apis = {'regex': '_1'}
-        apis = ut_gen._get_apis(module='interface.get')
-        self.assertEqual(
-            apis,
-            [('fake_api_2', 'fake_api_2')]
-        )
-
-    @patch.object(Path, 'is_file')
-    @patch('genie.libs.sdk.apis.api_unittest_generator.importlib')
-    def test_get_apis_module_path(self, mock_import, mock_is_file):
-        # skipping __init__ as it is not necessary for this test
-        with patch.object(TestGenerator, '__init__') as mt:
-            mt.return_value = None
-            ut_gen = TestGenerator()
-        ut_gen.device = self.device
-        ut_gen.exclude_apis = {}
-
-        path_1 = 'somepath/genie/libs/sdk/apis/nxos/interface/get.py'
-        mock_is_file.return_value = True
-        ut_gen._get_apis(module_path=path_1)
-
-        # assert module path
-        self.assertEqual(
-            ut_gen.module_import,
-            'genie.libs.sdk.apis.nxos.interface.get'
-        )
-        # assert default path
-        self.assertEqual(
-            ut_gen.destination,
-            'tests/nxos/interface/get'
-        )
-
-        path_2 = 'somepath/genielibs/src/sdk/apis/iosxe/interface/verify.py'
-        ut_gen._get_apis(module_path=path_2, destination='fake_folder')
-        # assert module path
-        self.assertEqual(
-            ut_gen.module_import,
-            'genie.libs.sdk.apis.iosxe.interface.verify'
-        )
-
-        # assert with different destination
-        self.assertEqual(
-            ut_gen.destination,
-            'fake_folder/iosxe/interface/verify'
-        )
-
-        path_3 = 'somepath/genielibs/src/sdk/apis/jinja/utils.py'
-        ut_gen._get_apis(module_path=path_3)
-        # assert module path
-        self.assertEqual(
-            ut_gen.module_import,
-            'genie.libs.sdk.apis.jinja.utils'
-        )
-
-    @patch('genie.libs.sdk.apis.api_unittest_generator.logger')
-    @patch('genie.libs.sdk.apis.api_unittest_generator.os')
-    @patch('genie.libs.sdk.apis.api_unittest_generator.importlib')
-    @patch('genie.libs.sdk.apis.api_unittest_generator.getmembers')
-    def test_run_error(self, mock_members, mock_import, mock_os, mock_logger):
-        test_arguments = ''
-        self.device.is_connected.return_value = False
-        self.device.connect.side_effect = ConnectionError()
-        ut_gen = TestGenerator(
-            self.testbed,
-            self.device.name,
-            module='fake_module',
-            api='fake_api',
-            test_arguments=test_arguments
-        )
-        ut_gen.destination = ''
-        mock_os.makedirs.return_value = True
-        mock_os.path.isdir.return_value = False
-
-        self.assertRaises(SystemExit, ut_gen.run)

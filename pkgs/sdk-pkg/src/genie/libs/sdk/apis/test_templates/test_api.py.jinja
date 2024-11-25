@@ -2,8 +2,9 @@
 {{imp}}
 {% endfor %}
 
-class {{class_name}}(unittest.TestCase):
+class {{class_name}}(TestCase):
 
+{%- if has_mock_data|default(false) %}
     @classmethod
     def setUpClass(self):
         testbed = f"""
@@ -26,9 +27,46 @@ class {{class_name}}(unittest.TestCase):
             init_config_commands=[],
             init_exec_commands=[]
         )
+{%- endif %}
 {% for ut in unit_tests %}
     def test_{{ut.api}}{% if loop.index0 > 0 %}_{{loop.index0}}{% endif %}(self):
+        {%- if not has_mock_data|default(false) %}
+        self.device = Mock()
+        {%- endif %}
+        {%- if test_type != 'execute' %}
         result = {{ut.api}}({{ut.arguments}})
+        {%- endif %}
+        {%- if test_type == 'configure' %}
+        {%- for configure_call in configure_calls %}
+        self.assertEqual(
+            self.device.configure.mock_calls[{{loop.index0}}].args,
+            ({{configure_call}},)
+        )
+        {%- endfor %}
+        {%- elif test_type == 'execute' %}
+        results_map = {
+        {%- for key, value in execute_asserts.items() %}
+            '{{ key }}': '{{ value }}',
+        {%- endfor %}
+        }
+        
+        def results_side_effect(arg, **kwargs):
+            return results_map.get(arg)
+        
+        self.device.execute.side_effect = results_side_effect
+        
+        result = {{ut.api}}({{ut.arguments}})
+
+        {%- for key in execute_asserts.keys() %}
+        self.assertIn(
+            '{{key}}',
+            self.device.execute.call_args_list[{{loop.index0}}][0]
+        )
+        {%- endfor %}
+        {%- endif %}
+
+        {%- if ut.expected_output and test_type != 'configure' %}
         expected_output = {{ut.expected_output}}
         self.assertEqual(result, expected_output)
+        {%- endif %}
 {% endfor %}

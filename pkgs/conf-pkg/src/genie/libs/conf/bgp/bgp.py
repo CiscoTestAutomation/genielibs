@@ -634,6 +634,11 @@ class Bgp(Routing, DeviceFeature):
         default=None,
         type=(None, managedattribute.test_istype(bool)))
 
+    af_redist_am = managedattribute(
+        name='af_redist_am',
+        default=None,
+        type=(None, managedattribute.test_istype(bool)))
+
     af_redist_connected_metric = managedattribute(
         name='af_redist_connected_metric',
         default=None,
@@ -641,6 +646,11 @@ class Bgp(Routing, DeviceFeature):
 
     af_redist_connected_route_policy = managedattribute(
         name='af_redist_connected_route_policy',
+        default=None,
+        type=(None, managedattribute.test_istype(str)))
+
+    af_redist_am_route_policy = managedattribute(
+        name='af_redist_am_route_policy',
         default=None,
         type=(None, managedattribute.test_istype(str)))
 
@@ -752,6 +762,11 @@ class Bgp(Routing, DeviceFeature):
 
     nbr_fall_over_bfd = managedattribute(
         name='nbr_fall_over_bfd',
+        default=None,
+        type=(None, managedattribute.test_istype(bool)))
+
+    nbr_fall_over_bfd_mh = managedattribute(
+        name='nbr_fall_over_bfd_mh',
         default=None,
         type=(None, managedattribute.test_istype(bool)))
 

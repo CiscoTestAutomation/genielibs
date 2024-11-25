@@ -1016,6 +1016,33 @@ def configure_policy_map_set_cos_cos_table(device, policy_map_name, class_name, 
     except SubCommandFailure as e:
         raise SubCommandFailure("Could not configure policy map set cos cos table. Error:\n{error}".format(error=e))
 
+def unconfigure_policy_map_set_cos_cos_table(device, policy_map_name, class_name, table_name):
+    """ 
+    Args:
+        device ('obj'): device to use
+        policy_map_name ('str'): name of policy-map
+        class_name ('str'): class-default or any user defined class name
+        table_name('str'): table name
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    config = []
+
+    if class_name != 'class-default':
+        config.append("class-map {}".format(class_name))
+
+    config.extend([
+        "policy-map {}".format(policy_map_name), 
+        "class {}".format(class_name), 
+        "no set cos cos table {}".format(table_name)
+    ])
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure("Could not unconfigure policy map set cos cos table. Error:\n{error}".format(error=e))
 
 def configure_policy_map_class(device,
     policy_name,
@@ -1092,3 +1119,60 @@ def configure_policy_map_class(device,
         raise SubCommandFailure(
             f"Could not configure class_map. Error:\n{e}"
         )
+
+def configure_policy_map_with_police_cir_percentage(device, policy_map_name, class_name=None, percent=None, action=None):
+    """ Configure policy-map with police cir percentage
+        Args:
+             device ('obj'): device to use
+             policy_map_name('str'): Policy-map name
+             class_name('str',optional) : Class-name 
+             percent('int',optional) : police cir percentage  
+             action('str',optional) : exceed-action to do (drop/transmit)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configuring policy-map with police cir percentage on device")
+
+    config = [f'policy-map {policy_map_name}']
+    if class_name:
+        config.append(f'class {class_name}')
+    if percent and action:
+        config.append(f'police cir percent {percent} conform-action transmit exceed-action {action}')
+    try:
+        device.configure(config)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure policy-map with police cir percentage on device {device}.Error:\n{e}") 
+
+def configure_policy_map_parameters(device, policy_map_name, class_name=None, priority_level=None, bandwidth_remaining_percent=None):
+    """ Configure policy-map parameters on device
+        Args:
+             device ('obj'): device to use
+             policy_map_name('str'): Policy-map name
+             class_name('str',optional) : Class-name 
+             priority_level('int',optional): value of priority queue from 0 to 7
+             bandwidth_remaining_percent('int',optional) :bandwidth remaining percent
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configuring policy-map parameters on device")
+
+    config = [f'policy-map type queueing {policy_map_name}']
+    if class_name:
+        config.append(f'class {class_name}')  
+    if priority_level:
+        config.append(f'priority level {priority_level}')
+    if bandwidth_remaining_percent:
+        config.append(f'bandwidth remaining ratio {bandwidth_remaining_percent}')  
+    try:
+        device.configure(config)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure policy-map parameters on device {device}.Error:\n{e}") 
+            

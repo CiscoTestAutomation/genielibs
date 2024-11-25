@@ -1,5 +1,5 @@
 import unittest
-from pyats.topology import loader
+from unittest.mock import Mock
 from genie.libs.sdk.apis.iosxe.aaa.configure import configure_aaa_default_group_methods
 
 
@@ -7,28 +7,14 @@ class TestConfigureAaaDefaultGroupMethods(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        testbed = """
-        devices:
-          stack-12m:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: c9300
-            type: c9300
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['stack-12m']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+        self.device = Mock()
 
     def test_configure_aaa_default_group_methods(self):
-        result = configure_aaa_default_group_methods(self.device, 'group', 'ISEGRP')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        configure_aaa_default_group_methods(self.device, 'group', 'ISEGRP')
+        self.device.configure.assert_called_once_with([
+            'aaa authentication dot1x default group ISEGRP',
+            'aaa authorization network default group ISEGRP',
+            'aaa authorization network MLIST group ISEGRP',
+            'aaa authorization auth-proxy default group ISEGRP',
+            'aaa accounting network default start-stop group ISEGRP'
+        ])

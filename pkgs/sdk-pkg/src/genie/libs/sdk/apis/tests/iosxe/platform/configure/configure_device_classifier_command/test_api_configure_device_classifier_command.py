@@ -1,35 +1,14 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
 from genie.libs.sdk.apis.iosxe.platform.configure import configure_device_classifier_command
+from unittest.mock import Mock
 
 
-class TestConfigureDeviceClassifierCommand(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          stack3-nyquist-1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: c9300
-            type: c9300
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['stack3-nyquist-1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureDeviceClassifierCommand(TestCase):
 
     def test_configure_device_classifier_command(self):
-        result = configure_device_classifier_command(self.device, 'condition', 'COND_TEST_A', 'no lldp', 'tlv-type 6 value String Cisco', 'no device classifier', 60)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.device = Mock()
+        result = configure_device_classifier_command(self.device, 'condition', 'COND_TEST_A', 'no lldp', 'tlv-type 6 value String Cisco', 'no device classifier', 30)
+        self.assertEqual(
+            self.device.configure.mock_calls[0].args,
+            (['device classifier condition COND_TEST_A', 'no lldp tlv-type 6 value String Cisco', 'no device classifier'],)
+        )

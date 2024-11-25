@@ -1692,7 +1692,8 @@ def configure_masked_unmasked_credentials (device,
                                   ccp_name=None,
                                   algorithm_type=None,
                                   masked=True,
-                                  secret=True,):
+                                  secret=True,
+                                  view=None,):
 
     """ Configure masked or unmasked credentials with privilege,common criteria policy
         and encryption algorithm type.
@@ -1706,6 +1707,7 @@ def configure_masked_unmasked_credentials (device,
         algorithm_type ('str', optional): specified algorithm type else None
         masked ('bool'):                  masked secret if True else unmasked.
         secret ('bool'):                  secret if True else plain-text
+        view ('str', optional):           specified CLI view else None
     Return :
         None
     Raise:
@@ -1714,6 +1716,8 @@ def configure_masked_unmasked_credentials (device,
     cmd=f"username {username}"
     if privilege :
         cmd+=f" privilege {privilege}"
+    if view:
+        cmd+=f" view {view}"
     if ccp_name :
         cmd+=f" common-criteria-policy {ccp_name}"
     if algorithm_type :

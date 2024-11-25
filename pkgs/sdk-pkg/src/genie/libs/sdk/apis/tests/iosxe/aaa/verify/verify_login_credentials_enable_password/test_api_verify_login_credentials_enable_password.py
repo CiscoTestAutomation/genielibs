@@ -1,5 +1,5 @@
 import unittest
-from pyats.topology import loader
+from unittest.mock import Mock
 from genie.libs.sdk.apis.iosxe.aaa.verify import verify_login_credentials_enable_password
 
 
@@ -7,28 +7,18 @@ class TestVerifyLoginCredentialsEnablePassword(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        testbed = """
-        devices:
-          9300_stack:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: ng9k_stack
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['9300_stack']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+        self.device = Mock()
 
     def test_verify_login_credentials_enable_password(self):
-        result = verify_login_credentials_enable_password(self.device, 'dnac', 'cisco123', True, 'dnac1', '15')
-        expected_output = True
-        self.assertEqual(result, expected_output)
+        self.device.execute.side_effect = ['', 'Password:']
+        result = verify_login_credentials_enable_password(
+            self.device, 'dnac', 'cisco123', True, 'dnac1', '15')
+        self.assertIn(
+            'exit',
+            self.device.execute.call_args_list[0][0]
+        )
+        self.assertIn(
+            'enable 15',
+            self.device.execute.call_args_list[1][0]
+        )
+        self.assertEqual(result, True)

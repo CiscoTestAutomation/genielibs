@@ -627,6 +627,13 @@ class InstallRemoveInactive(BaseStage):
     # ==============================
     exec_order = ["remove_inactive_pkgs"]
 
+    def __call__(self, **parameters):
+        images = parameters.get('images')
+        if not images:
+            self.skipped('Base image not provided. Skipping install remove inactive')
+            return
+        super().__call__(**parameters)
+
     def remove_inactive_pkgs(
         self, steps, device, images, timeout=TIMEOUT, force_remove=FORCE_REMOVE
     ):
@@ -786,6 +793,13 @@ class InstallImage(BaseStage):
         "install_image",
     ]
 
+    def __call__(self, **parameters):
+        images = parameters.get('images')
+        if not images:
+            self.skipped('Base image not provided. Skipping the install image stage.')
+            return
+        super().__call__(**parameters)
+
     def verify_running_image(
         self, steps, device, images, verify_running_image=VERIFY_RUNNING_IMAGE
     ):
@@ -808,7 +822,7 @@ class InstallImage(BaseStage):
                     # If neither is found, fail to match the image
                     xe_version = out.get("version", {}).get("xe_version", "")
                     build_label = out.get("version", {}).get("build_label", "")
-                    image_version = build_label or xe_version
+                    image_version = xe_version or build_label
                     image_match = re.search(image_version, images[0])
                     if image_match and image_match.group():
                         image_mapping = self.history[
@@ -816,10 +830,22 @@ class InstallImage(BaseStage):
                         ].parameters.setdefault("image_mapping", {})
                         system_image = device.api.get_running_image()
                         image_mapping.update({images[0]: system_image})
-                        self.skipped(
-                            f"The image file provided is same as the current running image {image_version} on the device.\n\
-                                    Skipping the install image stage."
-                        )
+
+                        log.info(f'Unconfigure the ignore startup config on {device.name}')
+                        try:
+                            device.api.unconfigure_ignore_startup_config()
+                        except Exception as e:
+                            step.failed(f"Failed to unconfigure ignore startup config on the device {device.name}",
+                                from_exception=e)
+
+                        log.info(f'Verify the ignore startup config')
+                        if not device.api.verify_ignore_startup_config():
+                            step.failed(f"Failed to verify unconfigure the ignore startup config on {device.name}")
+                        else:
+                            self.skipped(
+                                f"The image file provided is same as the current running image {image_version} on the device.\n\
+                                        Skipping the install image stage."
+                            )
 
     def delete_boot_variable(
         self, steps, device, issu=ISSU, skip_boot_variable=SKIP_BOOT_VARIABLE
@@ -1063,7 +1089,7 @@ class InstallRemoveSmu(BaseStage):
         force_remove=FORCE_REMOVE,
     ):
 
-        with steps.start("Removing SMU image") as step:
+        with steps.start("Removing SMU image") as super_step:
 
             def _check_for_system_image(
                 spawn, system_image=None, force_remove=None
@@ -1095,7 +1121,7 @@ class InstallRemoveSmu(BaseStage):
             if reload_service_args:
                 reload_args.update(reload_service_args)
 
-            with steps.start("Checking status of SMU image") as step:
+            with super_step.start("Checking status of SMU image") as step:
                 try:
                     output = device.parse("show install summary")
                     location = list(output.get("location").keys())[0]
@@ -1122,7 +1148,7 @@ class InstallRemoveSmu(BaseStage):
                         step.skipped("No smu image to remove")
 
                 if file_state == "C" and file_type == "SMU":
-                    with steps.start(f"Deactivate the smu image '{image}'") as step:
+                    with step.start(f"Deactivate the smu image '{image}'") as sub_step:
                         try:
                             install_smu_dialog = Dialog(
                                 [
@@ -1156,11 +1182,11 @@ class InstallRemoveSmu(BaseStage):
                             )
                             device.parse("show install summary")
                         except Exception as e:
-                            step.failed(
+                            sub_step.failed(
                                 "Failed to deactivate SMU image", from_exception=e
                             )
 
-                    with steps.start("commit the smu image") as step:
+                    with step.start("commit the smu image") as sub_step:
                         try:
                             output = device.parse("show install summary")
                             location = list(output.get("location").keys())[0]
@@ -1175,9 +1201,9 @@ class InstallRemoveSmu(BaseStage):
                                     device.execute("show install summary")
                                     log.info("The image is in inactivate state")
                         except Exception as e:
-                            step.failed("Failed to commit SMU image", from_exception=e)
+                            sub_step.failed("Failed to commit SMU image", from_exception=e)
 
-                    with steps.start("Remove inactive smu image") as step:
+                    with step.start("Remove inactive smu image") as sub_step:
                         try:
                             install_remove_smu_inactive_dialog = Dialog(
                                 [
@@ -1196,18 +1222,18 @@ class InstallRemoveSmu(BaseStage):
                                 timeout=timeout,
                             )
                         except Exception as e:
-                            step.failed("Failed to remove inactive smu image", from_exception=e)
+                            sub_step.failed("Failed to remove inactive smu image", from_exception=e)
 
                 elif file_state == "D" and file_type == "SMU":
-                    with steps.start("commit the smu image") as step:
+                    with step.start("commit the smu image") as sub_step:
                         try:
                             device.execute("install commit")
                             device.execute("show install summary")
                             log.info("The image is in inactivate state")
                         except Exception as e:
-                            step.failed("Failed to commit SMU image", from_exception=e)
+                            sub_step.failed("Failed to commit SMU image", from_exception=e)
 
-                    with steps.start("Remove inactive smu image") as step:
+                    with step.start("Remove inactive smu image") as sub_step:
                         try:
                             install_remove_smu_inactive_dialog = Dialog(
                                 [
@@ -1226,7 +1252,7 @@ class InstallRemoveSmu(BaseStage):
                                 timeout=timeout,
                             )
                         except Exception as e:
-                            step.failed("Failed to remove inactive packages", from_exception=e)
+                            sub_step.failed("Failed to remove inactive packages", from_exception=e)
                 else:
                     step.skipped("SMU image is in inactive state")
 
@@ -1327,12 +1353,12 @@ class InstallSmu(BaseStage):
         reload_service_args=None,
     ):
 
-        with steps.start("Installing smu image") as step:
+        with steps.start("Installing smu image") as super_step:
 
             if not images:
-                step.skipped("No smu image provided, skipping install_smu stage")
+                super_step.skipped("No smu image provided, skipping install_smu stage")
             if "smu" not in images[0]:
-                step.skipped("No smu image provided, skipping install_smu stage")
+                super_step.skipped("No smu image provided, skipping install_smu stage")
 
             # Set default reload args
             reload_args = self.RELOAD_SERVICE_ARGS.copy()
@@ -1368,13 +1394,13 @@ class InstallSmu(BaseStage):
                 ]
             )
 
-            with steps.start(f"Add SMU image : '{images[0]}'") as step:
+            with super_step.start(f"Add SMU image : '{images[0]}'") as step:
                 try:
                     device.execute("install add file {}".format(images[0]))
                 except Exception as e:
                     step.failed("Failed to add SMU image", from_exception=e)
 
-            with steps.start("Verify SMU image is added successfully") as step:
+            with super_step.start("Verify SMU image is added successfully") as step:
                 try:
                     output = device.parse("show install summary")
                     location = list(output.get("location").keys())[0]
@@ -1393,7 +1419,7 @@ class InstallSmu(BaseStage):
                 except Exception as e:
                     step.failed("Failed to verify SMU image", from_exception=e)
 
-            with steps.start(f"Activate the SMU file with image '{images[0]}'") as step:
+            with super_step.start(f"Activate the SMU file with image '{images[0]}'") as step:
                 try:
                     reload_args.update(
                         {"timeout": install_timeout, "reply": install_smu_dialog}
@@ -1406,7 +1432,7 @@ class InstallSmu(BaseStage):
                 except Exception as e:
                     step.failed("Failed to activate SMU image", from_exception=e)
 
-            with steps.start("Commit the SMU file with image") as step:
+            with super_step.start("Commit the SMU file with image") as step:
                 try:
                     output = device.parse("show install active")
                     location = list(output.get("location").keys())[0]
@@ -1420,7 +1446,7 @@ class InstallSmu(BaseStage):
                 except Exception as e:
                     step.failed("Failed to activate SMU image", from_exception=e)
 
-            with steps.start("Check if SMU is applied succesfully") as step:
+            with super_step.start("Check if SMU is applied succesfully") as step:
                 try:
                     output = device.parse("show install summary")
                     for pkg in output.get("location").get(location).get("pkg_state"):
@@ -1688,7 +1714,7 @@ class Reload(BaseStage):
 
         self.reload_service_args.update({"reply": reload_dialog})
 
-        with steps.start(f"Reload {device.name}") as step:
+        with steps.start(f"Reload {device.name}") as super_step:
 
             try:
                 device.reload(**self.reload_service_args)
@@ -1722,7 +1748,7 @@ class Reload(BaseStage):
                         if con.role == "standby":
                             con.context["boot_cmd"] = cmd
 
-                with steps.start(f"Reload using manual boot for {device.name}") as step:
+                with super_step.start(f"Reload using manual boot for {device.name}") as step:
                     try:
                         device.reload(reload_command=cmd)
                     except Exception as e:
@@ -1737,7 +1763,7 @@ class Reload(BaseStage):
                     device.api.execute_set_config_register(config_register=config_reg)
 
             except Exception as e:
-                step.failed(
+                super_step.failed(
                     f"Failed to reload within {self.reload_service_args['timeout']} "
                     f"seconds.",
                     from_exception=e,
@@ -2835,6 +2861,9 @@ class CopyToDevice(BaseStage):
                                             device.name, dest
                                         )
                                     )
+                            else:
+                                step.skipped(f"Skip verifying free space on the device '{device.name}'"
+                                             " because skip_deletion is set to True")
 
                     # Copy the file to the devices
                     for file, file_data in files_to_copy.items():

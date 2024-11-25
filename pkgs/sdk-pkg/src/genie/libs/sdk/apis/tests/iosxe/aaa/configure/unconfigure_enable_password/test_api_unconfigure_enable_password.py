@@ -1,34 +1,28 @@
 import unittest
-from pyats.topology import loader
+from unittest.mock import Mock
 from genie.libs.sdk.apis.iosxe.aaa.configure import unconfigure_enable_password
 
 
 class TestUnconfigureEnablePassword(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(self):
-        testbed = """
-        devices:
-          9300_stack:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: ng9k_stack
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['9300_stack']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
+    def test_unconfigure_enable_password(self):
+        self.device = Mock()
+        unconfigure_enable_password(self.device, False, None)
+        self.device.configure.assert_called_with(
+            'no enable password'
         )
 
-    def test_unconfigure_enable_password(self):
-        result = unconfigure_enable_password(self.device, True, 15)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+    def test_unconfigure_enable_password_1(self):
+        self.device = Mock()
+        unconfigure_enable_password(self.device, False, 15)
+        self.device.configure.assert_called_with(
+            'no enable password level 15'
+        )
+
+    def test_unconfigure_enable_password_2(self):
+        self.device = Mock()
+        unconfigure_enable_password(self.device, True, 15)
+        self.device.configure.assert_called_with(
+            'no enable secret level 15'
+        )
+            

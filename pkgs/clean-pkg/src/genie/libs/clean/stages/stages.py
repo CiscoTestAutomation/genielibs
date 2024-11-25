@@ -709,7 +709,7 @@ copy_to_linux:
                             step.failed("File size is not the same on the origin"
                                         " and on the file server")
                         else:
-                            self.passed("File size is the same on the origin "
+                            step.passed("File size is the same on the origin "
                                            "and on the file server")
                     except Exception as e:
                         step.failed("Failed to verify file. Error: {}".format(
@@ -1162,6 +1162,9 @@ copy_to_device:
                                     step.failed("Error while creating free space for "
                                                 "image on device {} {}".\
                                                 format(device.name, dest))
+                            else:
+                                step.skipped(f"Skip verifying free space on the device '{device.name}'"
+                                             " because skip_deletion is set to True")
 
                     # Copy the file to the devices
                     for file, file_data in files_to_copy.items():

@@ -62,6 +62,21 @@ class test_route_policy(TestCase):
              " exit"
             ]))
 
+        rpl3 = RoutePolicy(policy_definition='rpl3',
+                           route_disposition='permit')
+        dev1.add_feature(rpl3)
+
+        rpl3.device_attr[dev1].statement_attr['10']
+        rpl3.device_attr[dev1].statement_attr['10'].match_tag = 5
+
+        cfgs = rpl3.build_config(apply=False)
+        self.assertCountEqual(cfgs.keys(), [dev1.name])
+        self.assertMultiLineEqual(str(cfgs[dev1.name]), '\n'.join(
+            ['route-map rpl3 permit 10',
+             ' match tag 5',
+             ' exit'
+            ]))
+
     def test_basic_uncfg(self):
         Genie.testbed = testbed = Testbed()
         dev1 = Device(testbed=testbed, name='PE1', os='nxos')

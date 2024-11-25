@@ -1,0 +1,42 @@
+configure:
+  commands:
+    class cm-acl100: "class cm-acl100\r\n"
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    police cir percent 10 conform-action transmit exceed-action drop: "police cir\
+      \ percent 10 conform-action transmit exceed-act\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b$percent 10 conform-action transmit exceed-acti         \b\b\b\b\b\b\b\
+      \b\bon drop\r\n"
+    policy-map pm-acl-policer: "policy-map pm-acl-policer\r\n"
+  prompt: Raitt(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: Raitt(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    show version | include operating mode: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: Raitt#

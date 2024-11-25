@@ -1,5 +1,5 @@
 import unittest
-from pyats.topology import loader
+from unittest.mock import Mock
 from genie.libs.sdk.apis.iosxe.aaa.configure import configure_common_criteria_policy
 
 
@@ -7,58 +7,25 @@ class TestConfigureCommonCriteriaPolicy(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        testbed = """
-        devices:
-          VTP-PK1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: c9200
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['VTP-PK1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+        self.device = Mock()
 
     def test_configure_common_criteria_policy(self):
-        result = configure_common_criteria_policy(self.device, 'ABCD', 5, 0, 0, 1, 1, 20, 8, 0, 1, 5, True, 1)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        configure_common_criteria_policy(self.device, 'ABCD', None, None, None, None, None, None, 1, None, None, None, False, None)
+        self.device.configure.assert_called_with([
+            'aaa common-criteria policy ABCD'
+        ])
 
-class TestConfigureCommonCriteriaPolicyBase(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          Router:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: vwlc
-            type: wlc
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Router']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
-
-    def test_configure_common_criteria_policy(self):
-        result = configure_common_criteria_policy(self.device, 'ABCD', None, None, None, None, None, None, 1, None, None, None, False, None)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+    def test_configure_common_criteria_policy_1(self):
+        configure_common_criteria_policy(self.device, 'CDEF', 5, None, None, 1, 1, 20, 8, None, 1, 5, True, 1)
+        self.device.configure.assert_called_with([
+            'aaa common-criteria policy CDEF',
+            'char-changes 5',
+            'lower-case 1',
+            'upper-case 1',
+            'max-length 20',
+            'min-length 8',
+            'numeric-count 1',
+            'special-case 1',
+            'character-repetition 5',
+            'restrict-consecutive-letters'
+        ])

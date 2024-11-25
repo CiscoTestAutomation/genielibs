@@ -1,8 +1,7 @@
 configure:
   commands:
-    default spanning-tree vlan 1-3 max-age: "default spanning-tree vlan 1-3 max-age\r\
-      \njavelin-morph-bgl16-(config)#"
-    default spanning-tree vlan 3-8: "default spanning-tree vlan 3-8\r\njavelin-morph-bgl16-(config)#"
+    default spanning-tree vlan 1-3 max-age: ""
+    default spanning-tree vlan 3-8: ""
     end:
       new_state: execute
     line console 0:

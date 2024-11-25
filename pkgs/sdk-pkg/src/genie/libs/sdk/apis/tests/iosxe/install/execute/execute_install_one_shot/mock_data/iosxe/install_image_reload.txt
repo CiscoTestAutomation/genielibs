@@ -1,0 +1,137 @@
+
+
+
+Initializing Hardware ...
+
+
+System integrity status: 88170200  21030117  00000300
+Procyon RSM done
+Procyon RSM done
+Procyon RSM done
+Procyon RSM done
+
+
+System Bootstrap, Version 17.15(1r), DEVELOPMENT SOFTWARE
+Copyright (c) 1994-2024 by cisco Systems, Inc.
+Compiled Tue May  7 17:46:07 2024 by siballa
+
+
+Current image running: Boot ROM1
+
+Last reset cause: LocalSoft
+
+
+LEDA FPGA Version:     0x02080921
+
+Castor 0 FPGA Version: 0x21310821
+
+Castor 1 FPGA Version: 0x21310821
+
+
+C8500-20X6C-K9 platform with 67108864 Kbytes of main memory
+
+
+File size is 0x00000473
+
+Located packages.conf
+
+Image size 1139 inode num 269309, bks cnt 1 blk size 8*512
+
+#
+
+File size is 0x04885b48
+
+Located c8500x_COMPUTE_ASR1K.rpboot.BLD_LUX_DEV_LATEST_20241029_211620.SSA.pkg
+
+Image size 76045128 inode num 1248521, bks cnt 18566 blk size 8*512
+
+######################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################
+
+Boot image size = 76045128 (0x4885b48) bytes
+
+
+ROM:RSA Self Test Passed
+
+ROM:Sha512 Self Test Passed
+
+
+Package header rev 3 structure detected
+
+Validating main package signatures
+
+
+RSA Signed DEVELOPMENT Image Signature Verification Successful.
+
+Image validated
+
+find_debug_conf.sh:Info: User specified /bootflash/debug.conf as debug.conf file
+find_debug_conf.sh:Error: /bootflash/debug.conf does not exist or has zero size.
+find_debug_conf.sh:Error: Failed to fetch debug.conf. (rc=4)
+Nov  6 11:51:54.016: %BOOT-5-OPMODE_LOG: R0/0: binos: System booted in AUTONOMOUS mode
+
+              Restricted Rights Legend
+
+Use, duplication, or disclosure by the Government is
+subject to restrictions as set forth in subparagraph
+(c) of the Commercial Computer Software - Restricted
+Rights clause at FAR sec. 52.227-19 and subparagraph
+(c) (1) (ii) of the Rights in Technical Data and Computer
+Software clause at DFARS sec. 252.227-7013.
+
+           Cisco Systems, Inc.
+           170 West Tasman Drive
+           San Jose, California 95134-1706
+
+
+
+Cisco IOS Software [Lux], c8000aep Software (X86_64_LINUX_IOSD-UNIVERSALK9-M), Experimental Version 17.17.20241029:213734 [BLD_LUX_DEV_LATEST_20241029_211620:/nobackup/build 101]
+Copyright (c) 1986-2024 by Cisco Systems, Inc.
+Compiled Tue 29-Oct-24 21:40 by mcpre
+
+
+This software version supports only Smart Licensing as the software licensing mechanism.
+
+
+Please read the following carefully before proceeding. By downloading,
+installing, and/or using any Cisco software product, application, feature,
+license, or license key (collectively, the "Software"), you accept and
+agree to the following terms. If you do not agree, do not proceed and do not
+use this Software.
+
+This Software and its use are governed by Cisco's General Terms and any
+relevant supplemental terms found at
+https://www.cisco.com/site/us/en/about/legal/contract-experience/index.html.
+If you have a negotiated agreement with Cisco that includes this Software, the
+terms of that agreement apply as well. In the event of a conflict, the order
+of precedence stated in your negotiated agreement controls.
+
+Cisco Software is licensed on a term and/or subscription-basis. The license to
+the Software is valid only for the duration of the specified term, or in the
+case of a subscription-based license, only so long as all required subscription
+payments are current and fully paid-up. While Cisco may provide you
+licensing-related alerts, it is your sole responsibility to monitor your usage.
+Using Cisco Software without a valid license is not permitted and may result in
+fees charged to your account. Cisco reserves the right to terminate access to,
+or restrict the functionality of, any Cisco Software, or any features thereof,
+that are being used without a valid license.
+
+
+cisco C8500-20X6C (ACE) processor (revision ACE) with 32404776K/6147K bytes of memory.
+Processor board ID FOX2541P3Y7
+Router operating mode: Autonomous
+20 Ten Gigabit Ethernet interfaces
+6 Hundred Gigabit Ethernet interfaces
+32768K bytes of non-volatile configuration memory.
+67108864K bytes of physical memory.
+468786007K bytes of SATA hard disk at harddisk:.
+26763263K bytes of eUSB flash at bootflash:.
+
+
+% If cipher currently being used is not configured, new SAK will be generated
+
+ WARNING: Command has been added to the configuration using a type 0 password. However, recommended to migrate to strong type-6 encryption
+
+ WARNING: ** NOTICE **  The H.323 protocol is no longer supported from IOS-XE release 17.6.1. Please consider using SIP for multimedia applications.
+
+
+Press RETURN to get started!

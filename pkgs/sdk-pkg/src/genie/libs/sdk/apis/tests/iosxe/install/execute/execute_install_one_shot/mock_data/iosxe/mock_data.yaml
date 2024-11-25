@@ -38,7 +38,7 @@ execute:
           System not ready for reload fast, Please run this command later
           FAILED: xFSU requirement pre-check
           Checking STP eligibility: Eligible
-          
+
           [1]: Performing xFSU-pre-check
           300+0 records in
           300+0 records out
@@ -59,3 +59,83 @@ execute:
       response_type: circular
     show version | include operating mode: ''
   prompt: AMZ-Acc-4#
+
+connect1:
+  commands:
+    '':
+      new_state: execute1
+  preface: |-
+    Trying mock_device ...
+    Connected to mock_device.
+    Escape character is '^]'.
+  prompt: ''
+
+execute1:
+  prompt: "AMZ-Acc-4#"
+  commands:
+    show version | include operating mode: ''
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    write memory: |
+      Building configuration...
+      [OK]
+    install add file bootflash:c8500x_COMPUTE_ASR1K.image.BLD_LUX_DEV_LATEST_20241029_211620.SSA.bin activate commit prompt-level none:
+      new_state: install_image_state
+
+install_image_state:
+  prompt: "AMZ-Acc-4#"
+  preface: |
+    install_add_activate_commit: START Wed Nov 06 17:18:32 IST 2024
+    install_add: START Wed Nov 06 17:18:32 IST 2024
+    install_add: Adding IMG
+    --- Starting initial file syncing ---
+    Copying bootflash:c8500x_COMPUTE_ASR1K.image.BLD_LUX_DEV_LATEST_20241029_211620.SSA.bin from  R0 to  R0
+    Info: Finished copying to the selected
+    Finished initial file syncing
+
+    --- Starting Add ---
+    Performing Add on all members
+    Checking status of Add on [R0]
+    Add: Passed on [R0]
+    Image added. Version: 22.1.1.0.2956
+
+    Finished Add
+
+    install_activate: START Wed Nov 06 17:19:22 IST 2024
+    install_activate: Activating IMG
+    Following packages shall be activated:
+    /bootflash/c8500x_COMPUTE_ASR1K.empty.BLD_LUX_DEV_LATEST_20241029_211620.SSA.pkg
+    /bootflash/c8500x_COMPUTE_ASR1K.rpboot.BLD_LUX_DEV_LATEST_20241029_211620.SSA.pkg
+    --- Starting Activate ---
+    Performing Activate on all members
+    [1] Activate package(s) on  R0
+    Warning: Booting with bundle mode will be deprecated in the near future. Migration to install mode is required.
+    Building configuration...
+    [OK] [1] Finished Activate on  R0
+    Checking status of Activate on [R0]
+    Activate: Passed on [R0]
+    Finished Activate
+
+    --- Starting Commit ---
+    Performing Commit on all members
+    [1] Commit package(s) on  R0
+    [1] Finished Commit on  R0
+    Checking status of Commit on [R0]
+    Commit: Passed on [R0]
+    Finished Commit operation
+
+    SUCCESS: install_add_activate_commit Wed Nov 06 17:19:32 IST 2024
+  commands:
+    '':
+      new_state: install_image_reload_state
+
+install_image_reload_state:
+  prompt: ""
+  preface: file|iosxe/install_image_reload.txt
+  timing:
+    - 0:,0,0.005
+  commands:
+    '':
+      new_state: execute1

@@ -263,6 +263,8 @@ class test_bgp_config1(TestCase):
             bgp.device_attr[dev1].vrf_attr[None].neighbor_attr[neighbor_id]
             bgp.device_attr[dev1].vrf_attr[None].neighbor_attr[neighbor_id]. \
                 nbr_fall_over_bfd = True
+            bgp.device_attr[dev1].vrf_attr[None].neighbor_attr[neighbor_id].\
+                nbr_fall_over_bfd_mh = True
             bgp.device_attr[dev1].vrf_attr[None].neighbor_attr[neighbor_id]. \
                 nbr_shutdown = True
             nbr_af_name = 'ipv4 unicast'
@@ -284,6 +286,7 @@ class test_bgp_config1(TestCase):
                  ' timers prefix-peer-timeout 10',
                  ' neighbor 10.2.0.2',
                  '  bfd',
+                 '  bfd multihop', 
                  '  shutdown',
                  '  address-family ipv4 unicast',
                  '   allowas-in',
@@ -488,6 +491,8 @@ class test_bgp_config1(TestCase):
             bgp.device_attr[dev1].vrf_attr[vrf1].neighbor_attr[neighbor_id]
             bgp.device_attr[dev1].vrf_attr[vrf1].neighbor_attr[neighbor_id].\
                 nbr_fall_over_bfd = True
+            bgp.device_attr[dev1].vrf_attr[vrf1].neighbor_attr[neighbor_id].\
+                nbr_fall_over_bfd_mh = True
             nbr_af_name = 'ipv4 unicast'
             bgp.device_attr[dev1].vrf_attr[vrf1].neighbor_attr[neighbor_id].\
                 address_family_attr[nbr_af_name]
@@ -993,6 +998,205 @@ class test_bgp_config1(TestCase):
         self.maxDiff = None
         self.assertMultiLineEqual(str(uncfgs[dev1.name]), '\n'.join(
             ['router bgp 100',
+	     ' no bestpath as-path multipath-relax',
+             ' neighbor 150.101.30.30',
+             '  address-family l2vpn evpn',
+             '   no encapsulation mpls',
+             '   no import vpn unicast reoriginate',
+             '   exit',
+             '  address-family vpnv4 unicast',
+             '   no import l2vpn evpn reoriginate',
+             '   exit',
+             '  address-family vpnv6 unicast',
+             '   no import l2vpn evpn reoriginate',
+             '   exit',
+             '  exit',
+             ' address-family ipv4 unicast',
+             '  no allocate-label all',
+             '  no additional-paths install backup',
+             '  exit',
+             ' address-family vpnv4 unicast',
+             '  no allocate-label option-b',
+             '  exit',
+             ' address-family vpnv6 unicast',
+             '  no allocate-label option-b',
+             '  exit',
+             ' vrf vrf8',
+             '  no bestpath as-path multipath-relax',
+             '  no allocate-index 80',
+             '  neighbor 101.100.30.30',
+             '   address-family ipv4 unicast',
+             '    no weight 10',
+             '    exit',
+             '   exit',
+             '  exit',
+             ' exit',
+             ]))
+
+    def test_cfg_am_redistribute(self):
+        self.maxDiff = None
+        Genie.testbed = testbed = Testbed()
+        dev1 = Device(testbed=testbed, name='PE1', os='nxos')
+        bgp = Bgp(bgp_id=35000)
+
+        # Defining attributes
+        af_name = 'ipv4 unicast'
+        vrf = Vrf('srmpls-1012')
+
+        self.assertIs(bgp.testbed, testbed)
+        dev1.add_feature(bgp)
+
+        bgp.device_attr[dev1].vrf_attr[vrf].address_family_attr[af_name].\
+            af_redist_am = True
+        bgp.device_attr[dev1].vrf_attr[vrf].address_family_attr[af_name].\
+            af_redist_am_route_policy = 'permitall'
+
+        bgp.device_attr[dev1]
+
+        self.assertIs(bgp.testbed, testbed)
+        dev1.add_feature(bgp)
+
+        cfgs = bgp.build_config(apply=False)
+        self.assertCountEqual(cfgs.keys(), [dev1.name])
+        self.assertMultiLineEqual(str(cfgs[dev1.name]), '\n'.join(
+            ['router bgp 35000',
+             ' vrf srmpls-1012',
+             '  address-family ipv4 unicast',
+             '   redistribute am route-map permitall',
+             '   exit',
+             '  exit',
+             ' exit',
+             ]))
+
+        # Defining attributes
+        af_name = 'ipv4 unicast'
+        vrf = Vrf('default')
+        neighbor_id='150.101.30.30'
+        bgp.device_attr[dev1].vrf_attr[vrf].bestpath_multipath_relax = True
+        bgp.device_attr[dev1].vrf_attr[vrf].address_family_attr[af_name].af_additional_paths_install_backup = True
+        bgp.device_attr[dev1].vrf_attr[vrf].address_family_attr[af_name].af_v4_allocate_label_all = True
+        bgp.device_attr[dev1].vrf_attr[vrf].address_family_attr['vpnv4 unicast'].af_allocate_label_option_b = True
+        bgp.device_attr[dev1].vrf_attr[vrf].address_family_attr['vpnv6 unicast'].af_allocate_label_option_b = True
+        bgp.device_attr[dev1].vrf_attr[vrf].neighbor_attr[neighbor_id]
+        bgp.device_attr[dev1].vrf_attr[vrf].neighbor_attr[neighbor_id].address_family_attr['l2vpn evpn'].nbr_af_encap_mpls = True
+        bgp.device_attr[dev1].vrf_attr[vrf].neighbor_attr[neighbor_id].address_family_attr['l2vpn evpn'].nbr_af_import_vpn_unicast_reoriginate = True
+        bgp.device_attr[dev1].vrf_attr[vrf].neighbor_attr[neighbor_id].address_family_attr['vpnv4 unicast'].nbr_af_import_l2vpn_evpn_reoriginate = True
+        bgp.device_attr[dev1].vrf_attr[vrf].neighbor_attr[neighbor_id].address_family_attr['vpnv6 unicast'].nbr_af_import_l2vpn_evpn_reoriginate = True
+        bgp.device_attr[dev1].vrf_attr['vrf8'].bestpath_multipath_relax = True
+        bgp.device_attr[dev1].vrf_attr['vrf8'].allocate_index = 80
+        bgp.device_attr[dev1].vrf_attr['vrf8'].neighbor_attr['101.100.30.30']
+        bgp.device_attr[dev1].vrf_attr['vrf8'].neighbor_attr['101.100.30.30'].address_family_attr[af_name].nbr_af_weight = 10
+
+        self.assertIs(bgp.testbed, testbed)
+        dev1.add_feature(bgp)
+
+        cfgs = bgp.build_config(apply=False)
+        print(cfgs)
+        self.assertCountEqual(cfgs.keys(), [dev1.name])
+        self.assertMultiLineEqual(str(cfgs[dev1.name]), '\n'.join(
+            ['router bgp 35000',
+	     ' bestpath as-path multipath-relax',
+             ' neighbor 150.101.30.30',
+             '  address-family l2vpn evpn',
+             '   encapsulation mpls',
+             '   import vpn unicast reoriginate',
+             '   exit',
+             '  address-family vpnv4 unicast',
+             '   import l2vpn evpn reoriginate',
+             '   exit',
+             '  address-family vpnv6 unicast',
+             '   import l2vpn evpn reoriginate',
+             '   exit',
+             '  exit',
+             ' address-family ipv4 unicast',
+             '  allocate-label all',
+             '  additional-paths install backup',
+             '  exit',
+             ' address-family vpnv4 unicast',
+             '  allocate-label option-b',
+             '  exit',
+             ' address-family vpnv6 unicast',
+             '  allocate-label option-b',
+             '  exit',
+             ' vrf srmpls-1012',
+             '  address-family ipv4 unicast',
+             '   redistribute am route-map permitall',
+             '   exit',
+             '  exit',
+             ' vrf vrf8',
+             '  bestpath as-path multipath-relax',
+             '  allocate-index 80',
+             '  neighbor 101.100.30.30',
+             '   address-family ipv4 unicast',
+             '    weight 10',
+             '    exit',
+             '   exit',
+             '  exit',
+             ' exit',
+             ]))
+        print('cfg of bgp new args')
+        print(cfgs[dev1.name])
+        uncfgs = bgp.build_unconfig(
+         apply=False,
+         attributes={
+          'device_attr': {
+            '*': {
+                'vrf_attr': {
+                    '*': {
+                        'bestpath_multipath_relax': None,  # Unconfigure multipath relax
+                        'neighbor_attr': {
+                            '150.101.30.30': {  # Neighbor to be unconfigured
+                                'address_family_attr': {
+                                    'l2vpn evpn': {  # Address family for neighbor
+                                        'nbr_af_encap_mpls': None,  # Unconfigure MPLS encapsulation
+                                        'nbr_af_import_vpn_unicast_reoriginate': None
+                                    },
+                                    'vpnv4 unicast': {
+                                        'nbr_af_import_l2vpn_evpn_reoriginate': None,
+                                    },
+                                    'vpnv6 unicast': {
+                                        'nbr_af_import_l2vpn_evpn_reoriginate': None,
+                                    },
+                                }
+                            }
+                        },
+                        'address_family_attr': {
+                            'ipv4 unicast': {
+                                'af_additional_paths_install_backup': None,  # Unconfigure additional paths
+                                'af_v4_allocate_label_all': None  # Unconfigure label allocation
+                            },
+                            'vpnv4 unicast': {
+                                'af_allocate_label_option_b': None  # Unconfigure label option for vpnv4
+                            },
+                            'vpnv6 unicast': {
+                                'af_allocate_label_option_b': None  # Unconfigure label option for vpnv6
+                            }
+                        }
+                    },
+                    'vrf8': {
+                        'bestpath_multipath_relax': None,  # Unconfigure multipath relax for vrf8
+                        'allocate_index': 80,  # Unconfigure specific allocate index
+                        'neighbor_attr': {
+                           '101.100.30.30': {  # Neighbor to be unconfigured
+                                'address_family_attr': {
+                                    'ipv4 unicast': {  # Address family for neighbor
+                                        'nbr_af_weight': 10  # Unconfigure MPLS encapsulation
+                                    }
+                                }
+                            }
+                         }
+                      }
+                  }
+               }
+             }
+           }
+        )
+        print('ucfg of bgp args')
+        print(uncfgs[dev1.name])
+        self.assertCountEqual(uncfgs.keys(), [dev1.name])
+        self.maxDiff = None
+        self.assertMultiLineEqual(str(uncfgs[dev1.name]), '\n'.join(
+            ['router bgp 35000',
 	     ' no bestpath as-path multipath-relax',
              ' neighbor 150.101.30.30',
              '  address-family l2vpn evpn',

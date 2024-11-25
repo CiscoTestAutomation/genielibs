@@ -2,14 +2,18 @@
 
 import time
 import logging
-log = logging.getLogger(__name__)
+
 from pyats.log.utils import banner
+from pyats.utils.secret_strings import to_plaintext
+
 # Unicon
 from unicon.core.errors import SubCommandFailure
 from unicon.eal.dialogs import Statement, Dialog
+
 # Genie
 from genie.libs.clean.utils import print_message
 
+log = logging.getLogger(__name__)
 
 def device_rommon_boot(device, golden_image=None, tftp_boot=None, error_pattern=[]):
     '''Boot device using golden image or using tftp image
@@ -231,17 +235,32 @@ def send_break_boot(device, console_activity_pattern= None,
     # add the pattern for all the states for the device to connection_dialog
     for state in device.state_machine.states:
         connection_dialog.append(
-                Statement(state.pattern,
-                  action=print_message,
-                  args={'message': f'Device reached {state} state in break boot stage'},
-                  ))
+            Statement(
+                state.pattern,
+                action=print_message,
+                args={'message': f'Device reached {state} state in break boot stage'},
+            )
+        )
+
     # To process the break boot dialogs
-    connection_dialog.process(spawn, timeout=timeout)
+    credentials = device.credentials
+    connection_dialog.process(
+        spawn,
+        timeout=timeout,
+        context={
+            'password': to_plaintext(credentials.get('default', {}).get('password')),
+            'username': to_plaintext(credentials.get('default', {}).get('username')),
+            'enable_password': to_plaintext(credentials.get('enable', {}).get('password'))
+        },
+        prompt_recovery=True
+    )
 
     # Check the device state after breaking the boot process
     device.sendline()
     device.state_machine.go_to('any', spawn=device.spawn, context=device.default.context)
+
     if not device.state_machine.current_state == 'rommon':
         log.warning(f"The device {device.name} is not in rommon")
+
     # send a new line in order to catch the buffer output in recovery process
     device.sendline()

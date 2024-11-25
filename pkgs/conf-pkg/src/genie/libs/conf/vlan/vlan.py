@@ -322,6 +322,12 @@ class Vlan(DeviceFeature, LinkFeature):
         type=(None, managedattribute.test_istype(int)),
         doc='Segment id')
 
+    associate_vrf_name = managedattribute(
+        name='associate_vrf_name',
+        default=None,
+        type=(None, managedattribute.test_istype(str)),
+        doc='associate-vrf name')
+
     class Mode(Enum):
         CE = 'ce'
         FABRICPATH = 'fabricpath'
