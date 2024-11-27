@@ -79,7 +79,10 @@ But got the following structure
             return False
 
         if len(images) == 1:
-            setattr(self, "image", images)
+            if "smu" in images[0]:
+                setattr(self, "smu", images)
+            else:
+                setattr(self, "image", images)
             return True
         if len(images) >= 2:
             setattr(self, "image", images[:1])
@@ -162,6 +165,7 @@ class ImageHandler(BaseImageHandler, ImageLoader):
     def __init__(self, device, images, *args, **kwargs):
 
         # Set default
+        self.image = []
         self.smu = []
         self.packages = []
         self.other = []
@@ -171,7 +175,7 @@ class ImageHandler(BaseImageHandler, ImageLoader):
         ImageLoader.load(self, images)
 
         # Temp workaround for XPRESSO
-        self.image = [self.image[0].replace("file://", "")]
+        self.image = [self.image[0].replace("file://", "")] if self.image else []
 
         if hasattr(self, "smu"):
             self.smu = [x.replace("file://", "") for x in self.smu]
@@ -182,7 +186,7 @@ class ImageHandler(BaseImageHandler, ImageLoader):
         if hasattr(self, "other"):
             self.other = [x.replace("file://", "") for x in self.other]
 
-        self.original_image = [self.image[0].replace("file://", "")]
+        self.original_image = [self.image[0].replace("file://", "")] if self.image else []
 
         super().__init__(device, *args, **kwargs)
 

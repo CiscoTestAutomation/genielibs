@@ -904,11 +904,13 @@ class test_nx_interface(TestCase):
         ipv4a = IPv4Addr(device=dev1)
         ipv4a.ipv4 = IPv4Address('192.168.1.1')
         ipv4a.prefix_length = '24'
+        ipv4a.route_tag = '10'
         intf1.add_ipv4addr(ipv4a)
         ipv4b = IPv4Addr(device=dev1)
         ipv4b.ipv4 = IPv4Address('192.168.1.2')
         ipv4b.prefix_length = '24'
         ipv4b.ipv4_secondary = True
+        ipv4b.route_tag = '5'
         ipv4b.redirect = False
         intf1.add_ipv4addr(ipv4b)
         intf1.shutdown = False
@@ -925,9 +927,9 @@ class test_nx_interface(TestCase):
                 ' description multiple lines config',
                 ' no shutdown',
                 ' no switchport',
-                ' ip address 192.168.1.1/24',
+                ' ip address 192.168.1.1/24 tag 10',
                 ' no ip redirects',
-                ' ip address 192.168.1.2/24 secondary',
+                ' ip address 192.168.1.2/24 secondary tag 5',
                 ' no ip redirects',
                 ' exit'
                 ]))
@@ -968,10 +970,12 @@ class test_nx_interface(TestCase):
         ipv6a = IPv6Addr(device=dev1)
         ipv6a.ipv6 = IPv6Address('2001:db1:1::1')
         ipv6a.ipv6_prefix_length = '64'
+        ipv6a.ipv6_route_tag = '10'
         intf1.add_ipv6addr(ipv6a)
         ipv6b = IPv6Addr(device=dev1)
         ipv6b.ipv6 = IPv6Address('2001:db1:2::2')
         ipv6b.ipv6_prefix_length = '64'
+        ipv6b.ipv6_route_tag = '15'
         ipv6b.redirect = False
         intf1.add_ipv6addr(ipv6b)
         intf1.shutdown = False
@@ -988,9 +992,9 @@ class test_nx_interface(TestCase):
                 ' description multiple lines config',
                 ' no shutdown',
                 ' no switchport',
-                ' ipv6 address 2001:db1:1::1/64',
+                ' ipv6 address 2001:db1:1::1/64 tag 10',
                 ' no ipv6 redirects',
-                ' ipv6 address 2001:db1:2::2/64',
+                ' ipv6 address 2001:db1:2::2/64 tag 15',
                 ' no ipv6 redirects',
                 ' exit'
                 ]))        

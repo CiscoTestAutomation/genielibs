@@ -10535,4 +10535,23 @@ def unconfigure_port_channel(device, port_channel):
         raise SubCommandFailure(
             f"Failed to unconfigure interface Port-channel {port_channel}. Error: {e}")
 
-
+def configure_interface_speed_auto(device, interface):
+    """ configure speed auto on interface
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Interface name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"Configuring speed auto on interface {interface}")
+    
+    config = [
+        f'interface {interface}',
+        'speed auto'
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure speed auto on {interface}. Error:\n{e}")

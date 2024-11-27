@@ -925,7 +925,7 @@ install_image:
                     if not session.get('member_config'):
                         raise StackMemberConfigException
 
-                dialog = Dialog([
+                install_add_one_shot_dialog = Dialog([
                     Statement(pattern=r"Do you want to proceed\? \[y\/n\]",
                             action='sendline(y)',
                             loop_continue=True,
@@ -943,31 +943,22 @@ install_image:
                               loop_continue=True,
                               continue_timer=False)
                 ])
-                if issu:
-                    device.sendline('install add file {} activate issu commit'.format(images[0]))
-                else:
-                    device.sendline('install add file {} activate commit'.format(images[0]))
                 try:
-                    dialog.process(device.spawn,
-                                   timeout = install_timeout,
-                                   context=device.context
+                    reload_args.update(
+                        {"timeout": install_timeout, "reply": install_add_one_shot_dialog}
                     )
-                except StackMemberConfigException as e:
-                    log.debug("Expected exception continue with the stage")
-                    log.info('Waiting for buffer to settle down')
-                    post_reload_wait_time = reload_args.get('post_reload_wait', 15)
-                    post_reload_timeout = reload_args.get('post_reload_timeout', 60)
-                    start_time = current_time = datetime.now()
-                    timeout_time = timedelta(seconds=post_reload_timeout)
-                    settle_time = current_time = datetime.now()
-                    while (current_time - settle_time) < timeout_time:
-                        if buffer_settled(device.spawn, post_reload_wait_time):
-                            log.info('Buffer settled, accessing device..')
-                            break
-                        current_time = datetime.now()
-                        if (current_time - start_time) > timeout_time:
-                            log.info('Time out, trying to acces device..')
-                            break
+                    if issu:
+                        device.reload("install add file {} activate issu commit".format(
+                            images[0]
+                        ),
+                        **reload_args,
+                    )
+                    else:
+                        device.reload("install add file {} activate commit".format(
+                            images[0]
+                        ),
+                        **reload_args,
+                    )
                 except Exception as e:
                     step.failed("Failed to install the image", from_exception=e)
 

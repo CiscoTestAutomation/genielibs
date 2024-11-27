@@ -18,10 +18,13 @@ def verify_ignore_startup_config(device):
     
     try:
         output = device.parse(cmd)
-        if output['version']['next_config_register'] != '0x2102':
-            return False
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not verify the ignore startup config on {device.name}. Error:\n{e}")
+    # first check the next config register if its not there check the current config register
+    config_reg = output['version'].get('next_config_register') or output['version'].get('curr_config_register')
+
+    if config_reg != '0x2102':
+        return False
 
     return True

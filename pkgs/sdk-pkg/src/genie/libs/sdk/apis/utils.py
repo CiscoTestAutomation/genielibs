@@ -4592,90 +4592,31 @@ def configure_peripheral_terminal_server(device):
         log.error(f'Device {device} has no peripherals or terminal_server!')
 
 
-def load_image(device, template_name="LOAD_IMAGE", template_override={}, template=None, **kwargs):
-    ''' Load image template
+def load_image(device, images, server=None, protocol=None, **kwargs):
+    ''' Load image api
     Args:
-        Renders the clean template and uses it to call clean. A clean template is JSON
-        data which can have placeholders for data which the user needs to
-        provide when calling this API. Similar to how Python functions
-        can have keyword arguments with default values, default arguments
-        may also be defined for a clean template. These are stored in
-        a Python dictionary whose variable name should follow this
-        convention: {template_name}_ARGS
-        Shortened example:
-        ```python
-        from genie.conf.base.api import OPTIONAL, REQUIRED
-        MY_TEMPLATE = {
-            "order": [
-                "connect",
-                "apply_configuration",
-                "ping_server",
-                "copy_to_device",
-            ],
-            "images": r"%CLEANARG{images}",
-            "connect": {},
-            "apply_configuration": {
-                "configuration": r"%CLEANARG{config_str}",
-            },
-            "ping_server": {
-                "server": "%CLEANARG{server}",
-                "vrf": "%CLEANARG{vrf}",
-            },
-            "copy_to_device": {
-                "overwrite": r"%CLEANARG{overwrite}",
-                "origin": {
-                    "hostname": "%CLEANARG{server}",
-                },
-                "vrf": "%CLEANARG{vrf}",
-            },
-        }
-
-        MY_TEMPLATE_ARGS = {
-            "vrf": "management",    # argument with default which user can override
-            "server": REQUIRED,     # required argument which user must provide
-            "overwrite": OPTIONAL,  # optional argument
-            "config_str": REQUIRED,
-            "images": REQUIRED,
-        }
-
-        ```
-        Arguments:
-        1. device: device object
-        2. template_name: which clean template to use, or None to not use any
-        clean template
-        3. template_override: optionally override data in clean template. This
-        is done with a recursive dictionary update.
-        Example:
-        ```python
-        # template assumes config string is being provided. We want
-        # to use a config file
-        config_file_location = "..."
-        override = {"apply_configuration": {"file": config_file_location}}
-        dev.api.clean(template_name="MY_TEMPLATE", template_override=config_file_location)
-        ```
-        4. kwargs: arguments which are substituted into the template.
-        Example:
-        ```python
-        dev.api.clean(
-            template_name="MY_TEMPLATE",
-            vrf="Mgmt",
-            server="10.10.10.10",
-            images={
-                "server": [...],
-                "kickstart": [...],
-            }
-            ...
-        )
-        ```
-        vrf, server and config_str are all kwargs, and will be substituted into
-        the MY_TEMPLATE template to render the clean YAML that is used when
-        invoking clean
+        device (obj): Device object
+        images (list): Image to install
+        server (str): Name of the server. Defaults to None
+        protocol (str): Protocol used for copy operation. Defaults to None
     '''
-    try:
-        device.api.clean(template_name=template_name,
-                         template_override=template_override,
-                         template=template,
-                         **kwargs)
-    except Exception as e:
-        raise Exception(f'Failed to load the image template from clean. Error: {e}')
 
+    # default template is set to LOAD IMAGE because 
+    # it will not have the reset_configuration stage
+    kwargs.setdefault("template_name", "LOAD_IMAGE")
+
+    if server and protocol:
+        device.api.clean(images=images,
+                        copy_to_device__origin__hostname=server,
+                        copy_to_device__protocol=protocol,
+                        **kwargs)
+    elif server:
+        device.api.clean(images=images,
+                        copy_to_device__origin__hostname=server,
+                        **kwargs)
+    elif protocol:
+        device.api.clean(images=images,
+                        copy_to_device__protocol=protocol,
+                        **kwargs)
+    else:
+        device.api.clean(images=images, **kwargs)

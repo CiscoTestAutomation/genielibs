@@ -1782,6 +1782,22 @@ def execute_event_manager_run_with_reload(device,username,password,
     log.debug(f"Reload is successful on {device.name}")
     return True
 
+def request_platform_software_trace_rotate_all(device):
+    """ Request platform software trace rotate all
+    Args:
+        device (`obj`): Device object
+
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    cmd = f"request platform software trace rotate all"
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not perform request platform software rotate all {device}. Error:\n{e}")
+
 def platform_software_fed_switch_phy_options(device, mode, lpn, phy_info, read_mode, phy_mode, phy_side, phy_device_id, phy_page_number, phy_register_address):
     """
     Execute 'test platform software fed switch' command with the specified parameters.
@@ -1851,4 +1867,70 @@ def test_platform_software_fru_fake_insert_remove(device, switch_num, action):
         device.execute(command)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to perform fake insert/remove for fru. Error:\n{e}")
+
+
+def platform_hardware_fed_switch_phy_debug(device, mode, port_num, debug_command_options):
+    """Execute a PHY debug command on the specified switch and port
+    Args:
+        device ('obj'): Device to use
+        mode ('str'): Mode identifier (e.g., 'active')
+        port_num ('int'): Port number
+        debug_command_options ('str'): Debug command to execute
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+
+    cmd = f"test platform hardware fed switch {mode} port {port_num} phy phy-debug Debug_Command {debug_command_options}"
+
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to execute PHY debug command. Error:\n{e}")
+        
+def execute_diagnostic_start_switch_port(device, switch_number, test_id, port_num):
+    """ execute diagnostic start switch 1 test
+        Args:
+            device ('obj'): Device object
+            test_id ('str'): Test ID list (e.g. 1,3-6) or Test Name or minimal  or complete
+              Interface port number WORD    Port number list (e.g. 2,4-7)
+            switch_number ('int'): Switch number on which diagnostic has to be performed            
+            port ('str'): word (e.g. 1-8 or all)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    if test_id and port_num:
+        cmd = f"diagnostic start switch {switch_number} test {test_id} port {port_num}"
+    else:
+        raise ValueError("Both test_id and port_num must be provided.")
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+    
+        f"Could not execute diagnostic start switch {switch_number} test {test_id} on device. Error:\n{e}")
+
+def request_platform_hardware_pfu(device, mode, route_processor, slot, action):
+    """ request  platform  hardware  pfu  switch  1  R0 set-power-slot 0 on
+        Args:
+            device (obj): Device object
+            mode (str): The switch number or mode. Specify as a number (e.g., '1', '2') or as a mode such as 'active' or 'standby' to identify the target switch.
+            route_processor (str): The route processor unit for the switch, such as 'R0' or 'RP'. This typically identifies the control processor for the specified switch.
+            slot (int): The slot number for the hardware component or module where the power will be set. Use '0' or a relevant slot number, depending on the switch type or configuration.
+            action ('str'): off/on
+        Returns:
+            Command output
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = f'request platform hardware pfu switch {mode} {route_processor} set-power-slot {slot} {action}'   
+    
+    try:
+        output = device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to perform powerslot  off/on Error:\n{e}")
 

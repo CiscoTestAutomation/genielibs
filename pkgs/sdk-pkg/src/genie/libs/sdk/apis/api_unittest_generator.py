@@ -1,5 +1,9 @@
+from __future__ import annotations
 import argparse
+import ast
+import dill
 import importlib
+import inspect
 import logging
 import os
 import pprint
@@ -49,29 +53,18 @@ class TestReport:
         self.start_time = datetime.now()
         self.end_time = None
 
-    def add_successful_test(self, values):
+    def add_test_result(self, values, success:bool):
         """
         Adds API test to a dictionary containing successful tests
 
         Args:
             values (dict): all key-value pairs to add
+            success (bool): if it is a successful test or a failure
         Returns:
             None
         """
-        for key, value in values.items():
-            self._tests['passed'][key] = value
-
-    def add_failed_test(self, values):
-        """
-        Adds API test to a dictionary containing failed tests
-
-        Args:
-            values (dict): all key-value pairs to add
-        Returns:
-            None
-        """
-        for key, value in values.items():
-            self._tests['failed'][key] = value
+        test_result = 'passed' if success else 'failed'
+        self._tests[test_result].update(values)
 
     def print_results(self, *args, **kwargs):
         """
@@ -125,18 +118,336 @@ class TestReport:
             for k, v in self._tests['failed'].items():
                 logger.info('{}: {}'.format(k, v))
 
+        logger.info('='*DEFAULT_HEADER_WIDTH)
+        logger.warning('Tests have been generated but still need to be executed to ensure they work correctly.')
+        logger.warning('To run the tests, navigate to the folder created by the script and use the following command:')
+        logger.warning('python -m unittest test_*.py')
+        logger.info('='*DEFAULT_HEADER_WIDTH)
+
+
+class MethodCallVisitor(ast.NodeVisitor):
+    def __init__(self, device_class_name):
+        self.device_class_name = device_class_name
+        self.calls = []
+
+    def visit_Call(self, node):
+        if isinstance(node.func, ast.Attribute):
+            if isinstance(node.func.value, ast.Name) and node.func.value.id == self.device_class_name:
+                self.calls.append(node.func.attr)
+        self.generic_visit(node)
+
 
 class TestGenerator:
-    def __init__(
-         self,
-         testbed,
-         device,
-         module=None,
-         module_path=None,
-         api=None,
-         test_arguments=None,
-         test_arguments_yaml=None,
-         destination=None):
+    def __init__(self, device, module_import, api):
+        self.device = device
+        self.module_import = module_import
+        self.api = api
+
+    def _build_imports(self):
+        return [
+            'from unittest import TestCase',
+            'from {} import {}'.format(self.module_import, self.api.__name__)
+        ]
+
+    def build_test_class(self):
+        """
+        Creates a test class for the given API.
+
+        Returns:
+            dict: a dictionary containing the file content.
+        """
+
+        api_name = self.api.__name__
+
+        # load module into unit test
+        # Create setUpClass to connect to mocked device
+        imports = self._build_imports()
+
+        class_name = 'Test' + ''.join(
+            [c.capitalize() for c in api_name.split('_')])
+
+        ret_dict = {
+            'api': api_name,
+            'class_name': class_name,
+            'device': self.device.name,
+            'imports': imports,
+        }
+
+        return ret_dict
+
+    def build_test_method(self, arguments, result):
+        """
+        Creates a test method for the given API and its arguments.
+
+        Args:
+            api_name (str): The name of the API.
+            arguments (str): A comma-separated string containing test arguments
+            result: the output of the API call
+        Returns:
+            dict: Arguments to render a test method in the jinja template
+        """
+        expected_output = pprint.pformat(result)
+
+        ret_dict = {
+            'api': self.api.__name__,
+            'arguments': arguments,
+            'expected_output': expected_output
+        }
+
+        return ret_dict
+
+    def build_write_args(self, arguments, varargs, kwargs):
+        """
+        Builds a string containing all arguments used in a test.
+
+        Args:
+            arguments (dict): The arguments necessary to run the test
+            varargs (dict): Positional arguments necessary to run the test
+            kwargs (dict): Keyword arguments necessary to run the test
+        Returns:
+            str: a string containing all arguments used in the API call
+        """
+
+        write_args = []
+
+        for value in arguments:
+            if value == self.device:
+                arg_value = 'self.device'
+            else:
+                arg_value = pprint.pformat(value)
+            write_args.append('{}'.format(arg_value))
+        if varargs:
+            for var in varargs:
+                write_args.append('{}'.format(var))
+        if kwargs:
+            for key, value in kwargs.items():
+                arg_value = pprint.pformat(value)
+                write_args.append('{}={}'.format(key, arg_value))
+
+        return ', '.join(write_args)
+
+    def create_test_files(self, test_file_data:dict, template:"Template", destination:str):
+        """
+        Arguments:
+            test_file_data (dict): Dictionary containing all data required to build the test script
+            template (Template): Jinja template
+        """
+        api_folder = os.path.join(destination, self.api.__name__)
+
+        Path(api_folder).mkdir(parents=True, exist_ok=True)
+            
+        # create empty __init__.py file
+        with open(os.path.join(api_folder, '__init__.py'), 'w'): pass
+
+        file_name = os.path.join(
+            api_folder, f'{TEST_FILE_NAME_PREFIX}{self.api.__name__}.py')
+
+        # generate file content from jinja template
+        content = template.render(test_file_data)
+        with open(file_name, 'w') as tf:
+            tf.write(content)
+
+    def get_api_expected_output(self, arguments, api_result, index=0):
+        api = arguments.get(self.api.__name__, {})
+        if 'arguments' in api:
+            if isinstance(api['arguments'], list):
+                test_instance = api['arguments'][index]
+            else:
+                test_instance = api['arguments']
+            # if expected output is provided, return it
+            # if not, use API result instead
+            if expected_result := test_instance.get('expected_output'):
+                return expected_result
+            else:
+                return api_result
+        return None
+
+    def get_mock_data_file(self):
+        # collects data from pickle file with device name
+        return os.path.join(TEMP_DIR, self.device.name)
+
+
+class ParserTestGenerator(TestGenerator):
+    """
+    This is the original test generator.
+    It uses unicon recordings to generate mock data and unit tests that load them to compare outputs
+    """
+    def _build_imports(self):
+        imports = ['import os', 'from pyats.topology import loader']
+        imports.extend(super()._build_imports())
+        return imports
+
+    def _create_testbed(self):
+        """
+        Creates the testbed file used to connect to the mock data.
+
+        Args:
+            api_name (str): the name of the API
+            mock_data_path (str): the path to the mock data folder
+        Returns:
+            None
+        """
+
+        cmd = 'mock_device_cli --os {} --mock_data_dir {{os.path.dirname(__file__)}}/{} --state connect'.\
+            format(self.device.os, MOCK_DATA_FOLDER)
+
+        tb_info = {
+            'cmd': cmd,
+            'device': self.device.name,
+            'os': self.device.os,
+            'platform': self.device.platform,
+            'type': self.device.type,
+            'has_mock_data': True
+        }
+
+        return tb_info
+
+    def _create_mock_data(self, destination, router='switch'):
+        """
+        Creates mock data YAML file and corresponding testbed file
+
+        Args:
+            api_name (str): name of the API
+            router (str): name of the router/hostname
+        Returns:
+            None
+        """
+
+        # creates data YAML file and testbed file
+        mock_data_path = os.path.join(
+            destination, self.api.__name__, MOCK_DATA_FOLDER)
+        outfile = os.path.join(
+            mock_data_path, self.device.os, MOCK_DATA_FILE_NAME)
+
+        # collects data from pickle file with device name
+        file_name = self.get_mock_data_file()
+
+        self.device.create_yaml(
+            file_name, router, outfile, allow_repeated_commands=True)
+
+    def create_test_files(self, test_file_data:dict, template:"Template", destination:str):
+        """
+        Arguments:
+            test_file_data (dict): Dictionary containing all data required to build the test script
+            template (Template): Jinja template
+            destination (str): Test's parent folder
+        """
+        test_file_data.update(self._create_testbed())
+
+        super().create_test_files(test_file_data, template, destination)
+
+        # create mock data and testbed file for test cases
+        self._create_mock_data(destination, router=self.device.hostname)
+
+
+class ConfigureTestGenerator(TestGenerator):
+    def _build_imports(self):
+        imports = super()._build_imports()
+        imports.append('from unittest.mock import Mock')
+        return imports
+
+    def _create_mock_variables(self):
+        data_path = self.get_mock_data_file()
+
+        with open(data_path, 'rb') as f:
+            data = dill.load(f)
+
+        configure_calls = []
+
+        for cli, _ in data['configure'].items():
+            # breaks multiple commands into a list of commands
+            # e.g. ['ip access-list extended acl_in', 'permit ip any any']
+            if cli.startswith('[') or cli.endswith(']'):
+                # if multiple commands, create one key for each command
+                configure_calls.append([c.strip() for c in cli.replace("'", '').strip("']['").split(',')])
+            else:
+                configure_calls.append(pprint.pformat(cli))
+
+        return {
+            'test_type': 'configure',
+            'configure_calls': configure_calls
+        }
+
+    def create_test_files(self, test_file_data: dict, template: "Template", destination: str):
+        test_file_data.update(self._create_mock_variables())
+        print('This is the test_file_data:', test_file_data)
+        return super().create_test_files(test_file_data, template, destination)
+
+
+class ExecuteTestGenerator(TestGenerator):
+    def _build_imports(self):
+        imports = super()._build_imports()
+        imports.append('from unittest.mock import Mock')
+        return imports
+
+    def _create_mock_variables(self):
+        data_path = self.get_mock_data_file()
+
+        with open(data_path, 'rb') as f:
+            data = dill.load(f)
+
+        execute_asserts = {}
+
+        for cli, output in data['execute'].items():
+            if cli in 'show version':
+                continue
+            # gets only first output recorded for a command
+            # this might not work on all cases
+            execute_asserts[cli] = output[0]['output']
+        return {
+            'test_type': 'execute',
+            'execute_asserts': execute_asserts
+        }
+
+    def create_test_files(self, test_file_data: dict, template: "Template", destination: str):
+        test_file_data.update(self._create_mock_variables())
+        return super().create_test_files(test_file_data, template, destination)
+
+
+class TestFactory:
+
+    @classmethod
+    def _inspect_function(cls, func, device_class_name):
+        source = ast.parse(inspect.getsource(func))
+        visitor = MethodCallVisitor(device_class_name)
+        visitor.visit(source)
+        return visitor.calls
+
+    @classmethod
+    def select_test_generator(cls, device, module_import, api):
+        """
+        Create a test object based on the API name.
+
+        Args:
+            device (obj): The device object.
+            api_name (str): The name of the API.
+            arguments (str): A comma-separated string containing test arguments.
+
+        Returns:
+            Test: An instance of the appropriate test class.
+        """
+        # extracts a list of all device method calls to determine which approach to use
+        method_calls = cls._inspect_function(api, 'device')
+
+        if 'parse' in method_calls:
+            return ParserTestGenerator(device, module_import, api)
+        elif 'execute' in method_calls:
+            return ExecuteTestGenerator(device, module_import,api)
+        elif 'configure' in method_calls:
+            return ConfigureTestGenerator(device, module_import, api)
+        else:
+            # default generator for now
+            return ParserTestGenerator(device, module_import, api)
+
+
+class APIUTGenerator:
+    def __init__(self,
+                 testbed, device,
+                 module=None, module_path=None,
+                 api=None,
+                 test_arguments=None, test_arguments_yaml=None,
+                 destination=None):
+
         self.testbed = testbed
         try:
             self.device = self.testbed.devices[device]
@@ -158,8 +469,7 @@ class TestGenerator:
         self.test_arguments = self._load_arguments(
             test_arguments, test_arguments_yaml)
         self.report = TestReport()
-        self.template_env = Environment(
-            loader=FileSystemLoader(TEMPLATE_FOLDER))
+        self.template_env = Environment(loader=FileSystemLoader(TEMPLATE_FOLDER))
 
     def run(self):
         """
@@ -170,90 +480,67 @@ class TestGenerator:
 
         for api_name, api in self.apis:
             print_header('Generating tests for API {}'.format(api_name))
-            argspec = getfullargspec(api)
-            arguments = argspec.args
-            varargs = argspec.varargs
-            varkw = argspec.varkw
-            defaults = argspec.defaults
+            api_args = self._build_api_args(api)
 
-            api_args = self._build_api_args(
-                api_name, arguments, varargs, varkw, defaults)
+            test_generator = TestFactory.select_test_generator(
+                self.device,
+                self.module_import,
+                api
+            )
 
-            test_info = (self._build_test_class(api_name))
+            test_info = test_generator.build_test_class()
 
-            try:
-                self._set_stored_data()
-            except Exception:
-                logger.error('Failed to record device information')
-                self._cleanup()
-                raise
+            self._set_stored_data()
 
             test_class = test_info.setdefault('unit_tests', [])
 
             # generates a test for each item in the list of API arguments
             for index, test_arg in enumerate(api_args):
-                # if test arguments contain the expected output
-                # extract it from list of arguments
-                expected_output = self._get_api_expected_output(
-                    api_name, index)
+                report_result = {}
+                expected_output = None
                 try:
                     args, varargs, kwargs = test_arg
+                    # api call result
                     api_result = api(*args, *varargs, **kwargs)
+                    # if test arguments contain the expected output
+                    # extract it from list of arguments
+                    expected_output = test_generator.get_api_expected_output(self.test_arguments, api_result, index)
                 except TypeError as t:
-                    error_message = \
-                        'Update test-arguments YAML: {}'.\
-                        format(t)
-
-                    logger.warning(error_message)
-                    self.report.add_failed_test({api_name: error_message})
+                    message = f'Update test-arguments YAML: {t}'
+                    logger.warning(message)
+                    report_result = {api_name: message}
+                    self.report.add_test_result(report_result, success=False)
                     continue
                 except Exception as e:
-                    logger.warning(e)
-                    # add to report as a failure
-                    self.report.add_failed_test({api_name: e})
+                    report_result = {api_name: e}
+                    self.report.add_test_result(report_result, success=False)
                     continue
 
                 if expected_output and expected_output != api_result:
                     # API result does not match expected_output
-                    error_message = 'API result does not match expected output'
-                    logger.warning(error_message)
+                    message = 'API result does not match expected output'
+                    logger.warning(message)
                     # add to report as a failure
-                    self.report.add_failed_test({api_name: error_message})
+                    report_result = {api_name: message}
+                    self.report.add_test_result(report_result, success=False)
                 else:
-                    arguments = self._build_write_args(args, varargs, kwargs)
-                    test_class.append(self._build_test_method(
-                        api_name,
-                        arguments,
-                        api_result
-                    ))
-
-                    self.report.add_successful_test({api_name: 'Created'})
+                    arguments = test_generator.build_write_args(args, varargs, kwargs)
+                    test_class.append(
+                        test_generator.build_test_method(
+                            arguments,
+                            expected_output
+                        )
+                    )
+                    report_result = {api_name: 'Created'}
+                    self.report.add_test_result(report_result, success=True)
 
             # if there are tests to generate
             if test_class:
-                test_info.update(self._create_testbed())
-
-                template = self.template_env.get_template(TEMPLATE_TEST)
-                api_folder = os.path.join(
-                    self.destination, api_name)
-
-                Path(api_folder).mkdir(parents=True, exist_ok=True)
-                
-                # create empty __init__.py file
-                init_file = os.path.join(api_folder, '__init__.py')
-                with open(init_file, 'w'): pass
-
-                test_file_name = '{}{}.py'.format(
-                    TEST_FILE_NAME_PREFIX, api_name)
-                file_name = os.path.join(api_folder, test_file_name)
-
-                # generate file content from jinja template
-                content = template.render(test_info)
-                with open(file_name, 'w') as tf:
-                    tf.write(content)
-                # create mock data and testbed file for test cases
-                self._create_mock_data(
-                    api_name, router=self.device.hostname)
+                test_generator.create_test_files(
+                    test_file_data=test_info,
+                    template=self.template_env.get_template(TEMPLATE_TEST),
+                    destination=self.destination
+                )
                 # resets recording before next API call
                 self._reset_stored_data()
 
@@ -263,38 +550,31 @@ class TestGenerator:
         self._cleanup()
 
         print_args = {'destination': self.destination}
+        # tests were generated in a folder other than the default
         if hasattr(self, 'base_destination'):
             print_args.update({'base_destination': self.base_destination})
         self.report.print_results(**print_args)
 
-    def _get_api_expected_output(self, api_name, index=0):
-        api = self.test_arguments.get(api_name, {})
-        if 'arguments' in api:
-            if isinstance(api['arguments'], list):
-                test_instance = api['arguments'][index]
-            else:
-                test_instance = api['arguments']
-            return test_instance.get('expected_output', None)
-        return None
-
-    def _build_api_args(self, api_name, args,
-                        varargs, varkw, defaults):
+    def _build_api_args(self, api):
         """
         Creates list of test arguments for the given API.
 
         Args:
-            api_name (str): the name of the API
-            arguments (str): API arguments
-            varargs (str): the name of the variable containing positional arguments
-            varkw (str): the name of the variable containing keyword arguments
-            defaults (list): all default values for the given API
+            api (obj): the API
         Returns:
             list: List of dictionaries with API arguments and values
         """
         def_args = {}
         args_list = []
 
-        test_args_list = self._get_test_arguments(api_name)
+        # get arguments from API reference
+        argspec = getfullargspec(api)
+        args = argspec.args
+        varargs = argspec.varargs
+        varkw = argspec.varkw
+        defaults = argspec.defaults
+
+        test_args_list = self._get_test_arguments(api.__name__)
 
         # if test arguments are not provided
         if not test_args_list:
@@ -333,112 +613,7 @@ class TestGenerator:
                 api_varkw = test_args_dict[varkw]
             args_list.append((api_args, api_varargs, api_varkw))
 
-        return args_list
-
-    def _build_test_class(self, api_name):
-        """
-        Creates a test class for the given API.
-
-        Args:
-            api_name: the name of the API
-        Returns:
-            dict: a dictionary containing the file content.
-        """
-
-        # load module into unit test
-        # Create setUpClass to connect to mocked device
-        imports = [
-            'import os',
-            'import unittest',
-            'from pyats.topology import loader',
-            'from {} import {}'.format(self.module_import, api_name)
-        ]
-
-        class_name = 'Test' + ''.join(
-            [c.capitalize() for c in api_name.split('_')])
-
-        ret_dict = {
-            'api': api_name,
-            'class_name': class_name,
-            'device': self.device.name,
-            'imports': imports,
-        }
-
-        return ret_dict
-
-    def _build_test_method(self, api_name, arguments, value):
-        """
-        Creates a test method for the given API and its arguments.
-
-        Args:
-            api_name (str): The name of the API.
-            arguments (str): A comma-separated string containing test arguments
-        Returns:
-            dict: Arguments to render a test method in the jinja template
-        """
-        value = pprint.pformat(value)
-
-        ret_dict = {
-            'api': api_name,
-            'arguments': arguments,
-            'expected_output': value
-        }
-
-        return ret_dict
-
-    def _build_write_args(self, arguments, varargs, kwargs):
-        """
-        Builds a string containing all arguments used in a test.
-
-        Args:
-            arguments (dict): The arguments necessary to run the test
-            varargs (dict): Positional arguments necessary to run the test
-            kwargs (dict): Keyword arguments necessary to run the test
-        Returns:
-            str: a string containing all arguments used in the API call
-        """
-
-        write_args = []
-
-        for value in arguments:
-            if value == self.device:
-                arg_value = 'self.device'
-            else:
-                arg_value = pprint.pformat(value)
-            write_args.append('{}'.format(arg_value))
-        if varargs:
-            for var in varargs:
-                write_args.append('{}'.format(var))
-        if kwargs:
-            for key, value in kwargs.items():
-                arg_value = pprint.pformat(value)
-                write_args.append('{}={}'.format(key, arg_value))
-
-        return ', '.join(write_args)
-
-    def _create_testbed(self):
-        """
-        Creates the testbed file used to connect to the mock data.
-
-        Args:
-            api_name (str): the name of the API
-            mock_data_path (str): the path to the mock data folder
-        Returns:
-            None
-        """
-
-        cmd = 'mock_device_cli --os {} --mock_data_dir {{os.path.dirname(__file__)}}/{} --state connect'.\
-            format(self.device.os, MOCK_DATA_FOLDER)
-
-        tb_info = {
-            'cmd': cmd,
-            'device': self.device.name,
-            'os': self.device.os,
-            'platform': self.device.platform,
-            'type': self.device.type,
-        }
-
-        return tb_info
+        return args_list 
 
     def _get_test_arguments(self, api_name):
         '''
@@ -664,29 +839,6 @@ class TestGenerator:
         # adds connection data back to the recording
         self.device.update_stored_data(self._connected_data)
 
-    def _create_mock_data(self, api_name, router='switch'):
-        """
-        Creates mock data YAML file and corresponding testbed file
-
-        Args:
-            api_name (str): name of the API
-            router (str): name of the router/hostname
-        Returns:
-            None
-        """
-
-        # creates data YAML file and testbed file
-        mock_data_path = os.path.join(
-            self.destination, api_name, MOCK_DATA_FOLDER)
-        outfile = os.path.join(
-            mock_data_path, self.device.os, MOCK_DATA_FILE_NAME)
-
-        # collects data from pickle file with device name
-        file_name = os.path.join(TEMP_DIR, self.device.name)
-
-        self.device.create_yaml(
-            file_name, router, outfile, allow_repeated_commands=True)
-
 
 if __name__ == '__main__':
     logging.basicConfig(stream=sys.stdout, level=logging.INFO)
@@ -751,14 +903,11 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    test_generator = TestGenerator(
-        args.testbed,
-        args.device,
-        module=args.module,
-        module_path=args.module_path,
+    APIUTGenerator(
+        args.testbed, args.device,
+        module=args.module, module_path=args.module_path,
         api=args.api,
         test_arguments=args.test_arguments,
         test_arguments_yaml=args.test_arguments_yaml,
-        destination=args.destination)
-
-    test_generator.run()
+        destination=args.destination
+    ).run()

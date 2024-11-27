@@ -945,6 +945,9 @@ copy_to_device:
                                 step.failed("Error while creating free space for "
                                             "image on device {} {}".
                                             format(device.name, dest))
+                        else:
+                            step.skipped(f"Skip verifying free space on the device '{device.name}'"
+                                         " because skip_deletion is set to True")
 
                 # Copy the file to the devices
                 for file, file_data in files_to_copy.items():
@@ -1029,8 +1032,6 @@ copy_to_device:
                                 substep.skipped(
                                     "Image file has been copied to device {} correctly"
                                     " but cannot verify file size".format(device.name))
-
-        self.passed("Copy to device completed")
 
 
 class ApplyConfiguration(BaseStage):

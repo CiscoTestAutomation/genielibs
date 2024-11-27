@@ -198,8 +198,6 @@ def recovery_processor(
           grub_breakboot_char: <Character to send when grub_activity_pattern is matched, 'str'>
           timeout: <Timeout in seconds to recover the device, 'int'>
           recovery_password: <Device password after coming up, 'str'>
-          recovery_username: <Device username after coming up, 'str'>
-          recovery_en_password: <Device enable password after coming up, 'str'>
           powercycler: <Should powercycler execute, 'bool'> (Default: True)
           powercycler_delay: <Powercycler delay between on/off>, 'int'> (Default: 30)
           reconnect_delay: <Once device recovered, delay before final reconnect>, 'int'> (Default: 60)

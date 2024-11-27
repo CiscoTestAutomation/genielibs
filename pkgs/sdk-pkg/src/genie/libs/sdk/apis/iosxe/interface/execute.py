@@ -145,3 +145,75 @@ def execute_test_fru_fake_insert(device, mode):
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Failed to perform FRU Fake-insert. Error:\n{e}')
     return out
+    
+def execute_test_platform_hardware_cman(device, cman, mode, route_processor, function=None, sub_functional_part=None, action=None, action2=None, slot=0):
+    """
+    Execute 'test platform hardware cman_thermal switch {mode} {route_processor} {function} {sub_functional_part} {action}' command on the device.
+    Args:
+        device (obj): Device object for executing commands.
+        cman (str): CMAN type, either 'cman_thermal' or 'cman_fep'.
+        mode (str): Mode of operation. Options are 'active/standby', '1', or '2'.
+        route_processor (str): Route processor, such as 'R0' or 'RP'.
+        function (str, optional): Functional aspect to control. Options include 'fan', 'status', or 'temperature'.
+            Default is None.
+        sub_functional_part (str, optional): Sub-functional part. Can be one of 'fake', 'hotspot', 'inlet', 'outlet', or 
+            'fan-curve'. Default is None.
+        action (str, optional): Action to perform. Options include 'on', 'off', any integer between -255 and 255, or one 
+            of 'normal', 'test', or 'turbo'. Default is None.
+        action2 (str, optional): Secondary action, either 'on' or 'off'. Default is None.
+        slot (int, optional): Slot number. Can be 0, 1, or 2. Default is 0.
+        
+    Returns:
+        str: Output of the command
+    """
+    if  cman == 'cman-fep':
+        command  = f"test  platform hardware  {cman} switch {mode} {route_processor} {slot} dump-statistics"
+    elif  action2:
+        command  = f"test  platform hardware  {cman} switch {mode} {route_processor} {function} {sub_functional_part} {action} {action2}"
+    elif sub_functional_part:
+        command  = f"test  platform hardware  {cman} switch {mode} {route_processor} {function} {sub_functional_part} {action}"
+    else:  
+        command  = f"test  platform hardware  {cman} switch {mode} {route_processor} {function}" 
+
+    try:
+        device.execute(command)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to execute  test platfrom  hardware cman_thermal. Error:\n{e}") 
+   
+def execute_test_sfp_port_lpn_fake_insert(device, mode, lpn_num):
+    """ 
+        Args:
+            device ('obj'): device to use 
+            mode ('str'): mode active/ standby
+            lpn_num ('str'): lpn number
+        Returns:
+            Return the test command execution output
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f"test platform software fed switch {mode} sfp port {lpn_num} fake-insert"
+    try:
+        out = device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure('Failed to perform sfp port lpn Fake-insert.Error:\n{e}')
+    return out
+
+def execute_test_sfp_port_lpn_fake_remove(device, mode, lpn_num):
+    """ 
+        Args:
+            device ('obj'): device to use 
+            mode ('str'):  mode active/ standby
+            lpn_num ('str'): lpn number
+        Returns:
+            Return the test command execution output
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f"test platform software fed switch {mode} sfp port {lpn_num} fake-remove"
+    try:
+        out = device.execute(cmd)
+    except SubCommandFailure as e:
+
+        raise SubCommandFailure('Failed to perform sfp port lpn Fake-remove.Error:\n{e}')
+    return out
+    

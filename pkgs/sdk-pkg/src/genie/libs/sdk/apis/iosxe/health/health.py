@@ -9,13 +9,14 @@ from pyats.easypy import runtime
 from genie.metaparser.util.exceptions import (SchemaEmptyParserError,
                                               InvalidCommandError)
 from genie.libs.parser.iosxe.show_logging import ShowLogging
+from genie.utils import Dq
 
 # Logger
 log = logging.getLogger(__name__)
 
 
 def health_cpu(device,
-               command='show processes cpu sorted | exclude 0.00%',
+               command=['show processes cpu sorted | exclude 0.00%', 'show processes cpu platform sorted | exclude 0%'],
                processes=None,
                check_key='five_sec_cpu',
                check_key_total='five_sec_cpu_total',
@@ -27,8 +28,8 @@ def health_cpu(device,
 
         Args:
             device     (`obj`): Device object
-            command    (`str`): Override show command
-                                Default to `show processes cpu`
+            command    (`str`) or list(`str`): Override show commands
+                                Default to `show processes cpu sorted` and `show processes cpu platform sorted`
             processes (`list`): List of processes to check
                                 if not specified, will return one ALL_PROCESSES
                                 with total cpu load
@@ -57,16 +58,23 @@ def health_cpu(device,
     '''
 
     cpu_load_dict = {}
-
-    try:
-        parsed = device.parse(command, output=output, timeout=timeout)
-    except SchemaEmptyParserError as e:
-        log.error("Command '{cmd}' did not return any output\n{msg}".\
-                  format(cmd=command, msg=str(e)))
+    parsed_output = []
+    # Check if the command is a list if its not make it a list
+    if not isinstance(command, list):
+        command = [command]
+    # loop through the list of commands and add the parsed output to parsed_output
+    for cmd in command:
+        try:
+            parsed = device.parse(cmd, output=output, timeout=timeout)
+            parsed_output.append(parsed)
+        except SchemaEmptyParserError as e:
+            log.error(f"Command '{cmd}' did not return any output\n{e}")
+    if not parsed_output:
         return None
 
     if processes:
         for ps_item in processes:
+            for output in parsed_output:
             # To get process id based on check_key
             # {
             #   (snip))
@@ -75,14 +83,17 @@ def health_cpu(device,
             #       "process": "Chunk Manager",
             #       (snip)
             #       "five_sec_cpu": 0.0,
-            indexes = parsed.q.contains_key_value(
-                'process', ps_item, value_regex=True).get_values('sort')
-            for index in indexes:
-                cpu_load_dict.update({
-                    parsed['sort'][index]['process']:
-                    parsed['sort'][index][check_key]
-                })
-
+                indexes = Dq(output).contains_key_value(
+                    'process', ps_item, value_regex=True).get_values('sort')
+                for index in indexes:
+                    if output['sort'][index]['process'] not in cpu_load_dict:
+                        process = output['sort'][index]['process']
+                    else:
+                        process = output['sort'][index]['process'] + '_1'
+                    cpu_load_dict.update({
+                        process:
+                        output['sort'][index][check_key]
+                    })
     # if health is True, change the dict
     # from:
     # cpu_load_dict = {
@@ -102,6 +113,11 @@ def health_cpu(device,
     #     }
     #   ]
     # }
+    # if we have more than one parser we use the one with biggest value of the the 2 commands for the check_key_total
+    if len(parsed_output) == 2 and parsed_output[1].get('cpu_utilization', {}).get(check_key_total):
+        total = max(float(parsed_output[0][check_key_total]), float(parsed_output[1]['cpu_utilization'][check_key_total]))
+    else:
+        total = float(parsed_output[0][check_key_total])
     if health:
         health_data = {}
         health_data.setdefault('health_data', [])
@@ -110,14 +126,14 @@ def health_cpu(device,
                 'process':
                 'ALL_PROCESSES',
                 'value':
-                float(parsed[check_key_total])
+                total
             })
         for k, v in cpu_load_dict.items():
             health_data['health_data'].append({'process': k, 'value': v})
         return health_data
 
     if add_total:
-        cpu_load_dict.update({'ALL_PROCESSES': float(parsed[check_key_total])})
+        cpu_load_dict.update({'ALL_PROCESSES': total})
 
     return cpu_load_dict
 

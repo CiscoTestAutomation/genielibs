@@ -30,18 +30,14 @@ class IPv4Addr(ABC):
 
         if attributes.value('ipv4') and attributes.value('prefix_length'):
             if attributes.value('ipv4_secondary'):
-                configurations.append_line('ip address'
-                    ' {ipv4}/{prefix_length} secondary'
-                    .format(ipv4=attributes.value('ipv4'),
-                        prefix_length=attributes.value('prefix_length')))
-                if attributes.value('tag'):
-                    configurations.append_line('ip address'
-                        ' {ipv4}/{prefix_length} secondary'
-                        ' tag {route_tag}'
-                        .format(ipv4=attributes.value('ipv4'), 
-                            prefix_length=attributes.value('prefix_length'),
-                            route_tag=attributes.value('route_tag')))
-            elif attributes.value('tag'):
+                cmd_line = 'ip address {ipv4}/{prefix_length} secondary'.format(
+                        ipv4=attributes.value('ipv4'),
+                        prefix_length=attributes.value('prefix_length'))
+                if attributes.value('route_tag'):
+                    cmd_line += ' tag {route_tag}'.format(
+                             route_tag=attributes.value('route_tag'))
+                configurations.append_line(cmd_line)
+            elif attributes.value('route_tag'):
                     configurations.append_line('ip address'
                         ' {ipv4}/{prefix_length}'
                         ' tag {route_tag}'

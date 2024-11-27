@@ -403,6 +403,24 @@ def remove_default_ipv4_sgacl(device, sgacl):
             "Could not remove default sgacl {}.Error: {}".format(sgacl,str(e))
         )
 
+def remove_default_ipv6_sgacl(device, sgacl):
+    """ Remove a default static SGACL(ipv6)
+        Args:
+            device ('obj'): device to use
+            sgacl ('str'): Role-based Access-list name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to remove default static SGACL(ipv6)
+    """
+    log.info("Remove default ipv6 SGACL")
+    try:
+        device.configure(["no cts role-based permissions default ipv6 {}".format(sgacl)])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not remove default sgacl ipv6 {}.Error: {}".format(sgacl,str(e))
+        )
+
 def clear_cts_credentials(device):
     """ clear CTS credentials
         Args:

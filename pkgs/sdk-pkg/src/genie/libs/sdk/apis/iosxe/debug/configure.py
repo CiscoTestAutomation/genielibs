@@ -470,4 +470,42 @@ def debug_platform_software_fed_drop_capture_buffer(
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not configure debug platform software fed drop-capture commands on {device}. Error:\n{e}"
-        )    
+        )  
+
+def set_platform_soft_trace_ptp_debug(device, sprocess, snumber, feature_type, debug_type, switch=None):
+    ''' set platform software trace fed ptp debug
+        Args:
+            device ('obj'): Device object
+            sprocess ('str'): process for trace logs
+            feature_type ('str'): feature name
+            debug_type ('str'): type of the debugs warning/debug etc
+            switch ('str', optional): switch for SVL/Stack devices
+            snumber ('str', optional): switch number 1/2/active/standby
+    '''
+    if switch:
+        cmd = f"set platform software trace {sprocess} {switch} {snumber} {feature_type} {debug_type}"
+    else:
+        cmd = f"set platform software trace {sprocess} {snumber} {feature_type} {debug_type}"
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not set platform software trace fed debug {device}. Error:\n{e}")       
+def debug_software_cpm_switch_pcap(device, mode, enable_disable):
+    """ debug software cpm switch pcap
+    Args:
+        device ('obj'): device to use
+        mode ('str'): active/standby
+        enable_disable('str'): enable or disable
+        Returns
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = f"debug platform software cpm switch {mode} b0 pcap {enable_disable}"  
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+
+        raise SubCommandFailure(f"Failed to perform pcap enable/disable. Error:\n{e}")
+        

@@ -652,6 +652,14 @@ class Bgp(ABC):
                                     'redistribute direct route-map '
                                     '{af_redist_connected_route_policy}'))
 
+                        # nxos: address-family ipv4|ipv6 unicast/
+                        # redistribute am route-map <route_policy>
+                        if attributes.value('af_redist_am'):
+                            configurations.append_line(
+                                attributes.format(
+                                    'redistribute am route-map '
+                                    '{af_redist_am_route_policy}'))
+
                         if attributes.value('af_default_metric'):
                             configurations.append_line(
                                 attributes.format(
@@ -880,6 +888,11 @@ class Bgp(ABC):
                             attributes.value('bfd_fast_detect'):
                             configurations.append_line(
                                 attributes.format('bfd'))
+
+                        # nxos: neighbor <neighbor_id> \ bfd multihop
+                        if attributes.value('nbr_fall_over_bfd_mh'):
+                            configurations.append_line(
+                                attributes.format('bfd multihop'))
 
                         # nxos: neighbor <neighbor_id> \
                         # capability suppress 4-byte-as

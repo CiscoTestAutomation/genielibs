@@ -330,3 +330,82 @@ class VerifyCopyToDevice(unittest.TestCase):
                  error_pattern=ANY),
             call('dir bootflash:')
         ])
+
+
+    def test_copy_to_device_skip_deletion_true(self):
+        class MockExecute:
+
+            def __init__(self, *args, **kwargs):
+                self.data = {
+                    'dir bootflash:': iter([
+                    '''
+                        Directory of bootflash:/
+                                11  drwx            16384  Nov 25 2016 19:32:53 -07:00  lost+found
+                                12  -rw-                0  Dec 13 2016 11:36:36 -07:00  ds_stats.txt
+                                104417  drwx             4096  Apr 10 2017 09:09:11 -07:00  .prst_sync
+                                80321  drwx             4096  Nov 25 2016 19:40:38 -07:00  .rollback_timer
+                                64257  drwx             4096  Nov 25 2016 19:41:02 -07:00  .installer
+                                48193  drwx             4096  Nov 25 2016 19:41:14 -07:00  virtual-instance-stby-sync
+                                1940303872 bytes total (1036210176 bytes free)
+                    ''',
+                    f'''
+                        Directory of bootflash:/
+                                11  drwx            16384  Nov 25 2016 19:32:53 -07:00  lost+found
+                                12  -rw-                0  Dec 13 2016 11:36:36 -07:00  ds_stats.txt
+                                104417  drwx             4096  Apr 10 2017 09:09:11 -07:00  .prst_sync
+                                80321  drwx             4096  Nov 25 2016 19:40:38 -07:00  .rollback_timer
+                                64257  drwx             4096  Nov 25 2016 19:41:02 -07:00  .installer
+                                48193  drwx             4096  Nov 25 2016 19:41:14 -07:00  virtual-instance-stby-sync
+                                8033  drwx             4096  Nov 25 2016 18:42:07 -07:00  test.bin
+                                1940303872 bytes total (1036210176 bytes free)
+                    '''
+                    ]),
+                    'copy scp://127.0.0.1//path/test.bin bootflash:/test.bin': iter(['Copied file']),
+                }
+
+            def __call__(self, cmd, *args, **kwargs):
+                output = next(self.data[cmd])
+                return output
+
+        mock_execute = MockExecute()
+
+        # And we want the execute method to be mocked with device console output.
+        self.device.execute = Mock(side_effect=mock_execute)
+
+        steps = Steps()
+
+        testbed = Testbed('mytb', servers={
+            'server1': {
+                'address': '127.0.0.1',
+                'protocol': 'scp'
+            }
+        })
+
+        self.device.testbed = testbed
+
+        # Call the method to be tested (clean step inside class)
+        with self.assertLogs(level='INFO') as log:
+            self.cls.copy_to_device(
+                steps=steps, device=self.device,
+                origin=dict(
+                    files=[f'/path/test.bin'],
+                    hostname='server1'
+                ),
+                destination=dict(
+                    directory='bootflash:'
+                ),
+                protocol='scp',
+                skip_deletion=True
+            )
+            self.assertIn(f"INFO:pyats.aetest.steps.implementation:Skipped reason: Skip verifying free space on the device '{self.device.name}' because skip_deletion is set to True",
+                          log.output)
+
+        # Check that the result is expected
+        self.assertEqual(Passed, steps.details[0].result)
+        self.device.execute.assert_has_calls([
+            call('dir bootflash:'),
+            call(f'copy scp://127.0.0.1//path/test.bin bootflash:/test.bin',
+                 prompt_recovery=False, timeout=300, reply=ANY,
+                 error_pattern=ANY),
+            call('dir bootflash:')
+        ])

@@ -637,5 +637,72 @@ class test_vlan(TestCase):
                 'no feature vn-segment-vlan-based',
             ]))
 
+    def test_cfg_with_vn_segment(self):
+        Genie.testbed = testbed = Testbed()
+        dev1 = Device(testbed=testbed, name='PE1', os='nxos')
+
+        with self.assertNoWarnings():
+            Genie.testbed = None
+            with self.assertRaises(TypeError):
+                vlan = Vlan()
+            Genie.testbed = testbed
+
+            vlan = Vlan(vlan='102')
+            vlan.device_attr[dev1].vlan_attr['102'].name = 'vlan2'
+            vlan.device_attr[dev1].vlan_attr['102'].state = 'active'
+            vlan.device_attr[dev1].vlan_attr['102'].mode = 'ce'
+            vlan.device_attr[dev1].vlan_attr['102'].vn_segment_id = 100102
+            vlan.device_attr[dev1].vlan_attr['102'].associate_vrf_name = 'vxlan-1001'
+
+            vlan.device_attr[dev1].config_vlan_attr['102'].config_vlan_id = '102'
+            vlan.device_attr[dev1].config_vlan_attr['102'].ip_igmp_snooping = True
+
+            self.assertIs(vlan.testbed, testbed)
+
+            dev1.add_feature(vlan)
+
+            cfgs = vlan.build_config(apply=False)
+            self.assertCountEqual(cfgs.keys(), [dev1.name])
+            self.assertMultiLineEqual(str(cfgs[dev1.name]), '\n'.join([
+                'vlan 102',
+                ' name vlan2',
+                ' state active',
+                ' mode ce',
+                ' vn-segment 100102',
+                ' associate-vrf vxlan-1001',
+                ' exit',
+                'vlan configuration 102',
+                ' ip igmp snooping',
+                ' exit'
+            ]))
+
+            un_cfgs = vlan.build_unconfig(apply=False)
+            self.assertMultiLineEqual(str(un_cfgs[dev1.name]), '\n'.join([
+                'no vlan 102',
+                'no vlan configuration 102',
+            ]))
+
+            un_cfgs = vlan.build_unconfig(apply=False,
+                                          attributes={'device_attr': {
+                                                        dev1: {
+                                                            'vlan_attr': {
+                                                                '102': {"mode": None}
+                                                            },
+                                                            'config_vlan_attr': {
+                                                                '102': {"ip_igmp_snooping": None}
+                                                            }
+                                                        }
+                                                    }
+                                                })
+            self.assertCountEqual(un_cfgs.keys(), [dev1.name])
+            self.assertMultiLineEqual(str(un_cfgs[dev1.name]), '\n'.join([
+                'vlan 102',
+                ' no mode ce',
+                ' exit',
+                'vlan configuration 102',
+                ' no ip igmp snooping',
+                ' exit',
+            ]))
+
 if __name__ == '__main__':
     unittest.main()

@@ -2,76 +2,84 @@ configure:
   commands:
     end:
       new_state: execute
-    line console:
-      new_state: configure_line
     line console 0:
       new_state: configure_line
     no logging console: ''
-  prompt: R1_xe(config)#
+  prompt: ott-c9300-66(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-    line vty: ''
-    terminal width 511: ''
-  prompt: R1_xe(config-line)#
+  prompt: ott-c9300-66(config-line)#
 connect:
   commands:
-    '':
-      new_state: execute
-  preface: |-
-    Trying mock_device ...
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
     Connected to mock_device.
-    Escape character is '^]'.
+
+    Escape character is ''^]''.'
   prompt: ''
 execute:
   commands:
     config term:
       new_state: configure
-    show ip interface brief: |-
-      Interface              IP-Address      OK? Method Status                Protocol
-      GigabitEthernet1       172.16.1.211    YES TFTP   up                    up      
-      GigabitEthernet2       unassigned      YES unset  up                    up      
-      GigabitEthernet2.90    10.12.90.1      YES TFTP   up                    up      
-      GigabitEthernet2.110   10.12.110.1     YES TFTP   up                    up      
-      GigabitEthernet2.115   10.12.115.1     YES TFTP   up                    up      
-      GigabitEthernet2.120   10.12.120.1     YES TFTP   up                    up      
-      GigabitEthernet2.390   10.12.90.1      YES TFTP   up                    up      
-      GigabitEthernet2.410   10.12.110.1     YES TFTP   up                    up      
-      GigabitEthernet2.415   10.12.115.1     YES TFTP   up                    up      
-      GigabitEthernet2.420   10.12.120.1     YES TFTP   up                    up      
-      GigabitEthernet3       unassigned      YES unset  up                    up      
-      GigabitEthernet3.90    10.13.90.1      YES TFTP   up                    up      
-      GigabitEthernet3.110   10.13.110.1     YES TFTP   up                    up      
-      GigabitEthernet3.115   10.13.115.1     YES TFTP   up                    up      
-      GigabitEthernet3.120   10.13.120.1     YES TFTP   up                    up      
-      GigabitEthernet3.390   10.13.90.1      YES TFTP   up                    up      
-      GigabitEthernet3.410   10.13.110.1     YES TFTP   up                    up      
-      GigabitEthernet3.415   10.13.115.1     YES TFTP   up                    up      
-      GigabitEthernet3.420   10.13.120.1     YES TFTP   up                    up      
-      GigabitEthernet4       unassigned      YES unset  up                    up      
-      GigabitEthernet5       unassigned      YES unset  up                    up      
-      GigabitEthernet6       unassigned      YES unset  up                    up      
-      GigabitEthernet7       unassigned      YES unset  up                    up      
-      Loopback0              1.1.1.1         YES TFTP   up                    up      
-      Loopback300            1.1.1.1         YES TFTP   up                    up      
-      Port-channel12         unassigned      YES unset  down                  down    
-      Port-channel13         unassigned      YES unset  up                    up      
-      Tunnel0                unassigned      YES unset  up                    up      
-      Tunnel1                unassigned      YES unset  up                    up      
-      Tunnel2                10.13.110.1     YES unset  up                    down    
-      Tunnel3                10.13.110.1     YES unset  up                    down    
-      Tunnel4                1.1.1.1         YES unset  up                    up      
-      Tunnel5                1.1.1.1         YES unset  up                    up      
-      Tunnel6                1.1.1.1         YES unset  up                    up      
-      Tunnel7                1.1.1.1         YES unset  up                    up      
-      Tunnel8                unassigned      YES unset  up                    down    
-      Tunnel9                unassigned      YES unset  up                    down
+    config-transaction:
+      new_state: configure
+    show ip interface brief:
+      response:
+      - "Interface              IP-Address      OK? Method Status                Protocol\r\
+        \nVlan1                  unassigned      YES unset  administratively down\
+        \ down    \r\nGigabitEthernet0/0     5.40.13.66      YES manual up       \
+        \             up      \r\nGigabitEthernet1/0/1   unassigned      YES unset\
+        \  up                    up      \r\nGigabitEthernet1/0/2   unassigned   \
+        \   YES unset  down                  down    \r\nGigabitEthernet1/0/3   unassigned\
+        \      YES unset  down                  down    \r\nGigabitEthernet1/0/4 \
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet1/0/5\
+        \   unassigned      YES unset  down                  down    \r\nGigabitEthernet1/0/6\
+        \   unassigned      YES unset  down                  down    \r\nGigabitEthernet1/0/7\
+        \   unassigned      YES unset  down                  down    \r\nGigabitEthernet1/0/8\
+        \   unassigned      YES unset  down                  down    \r\nGigabitEthernet1/0/9\
+        \   unassigned      YES unset  down                  down    \r\nGigabitEthernet1/0/10\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet1/0/11\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet1/0/12\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet1/0/13\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet1/0/14\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet1/0/15\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet1/0/16\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet1/0/17\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet1/0/18\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet1/0/19\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet1/0/20\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet1/0/21\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet1/0/22\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet1/0/23\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet1/0/24\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet1/1/1\
+        \   unassigned      YES unset  down                  down    \r\nGigabitEthernet1/1/2\
+        \   unassigned      YES unset  down                  down    \r\nGigabitEthernet1/1/3\
+        \   unassigned      YES unset  down                  down    \r\nGigabitEthernet1/1/4\
+        \   unassigned      YES unset  down                  down    \r\nTe1/1/1 \
+        \               unassigned      YES unset  down                  down    \r\
+        \nTe1/1/2                unassigned      YES unset  down                 \
+        \ down    \r\nTe1/1/3                unassigned      YES unset  down     \
+        \             down    \r\nTe1/1/4                unassigned      YES unset\
+        \  down                  down    \r\nTe1/1/5                unassigned   \
+        \   YES unset  down                  down    \r\nTe1/1/6                unassigned\
+        \      YES unset  down                  down    \r\nTe1/1/7              \
+        \  unassigned      YES unset  down                  down    \r\nTe1/1/8  \
+        \              unassigned      YES unset  down                  down    \r\
+        \nFo1/1/1                unassigned      YES unset  down                 \
+        \ down    \r\nFo1/1/2                unassigned      YES unset  down     \
+        \             down    \r\nTwentyFiveGigE1/1/1    unassigned      YES unset\
+        \  down                  down    \r\nTwentyFiveGigE1/1/2    unassigned   \
+        \   YES unset  down                  down    \r\nAp1/0/1                unassigned\
+        \      YES unset  up                    up"
+      response_type: circular
     show version: ''
+    show version | include operating mode: ''
     term length 0: ''
     term width 0: ''
-    term width 511: ''
-    terminal session-timeout 0: ''
-    show version | include operating mode: ''
-  prompt: R1_xe#
+  prompt: ott-c9300-66#

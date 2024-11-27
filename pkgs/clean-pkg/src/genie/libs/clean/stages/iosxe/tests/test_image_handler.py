@@ -183,6 +183,17 @@ class ValidStructures(unittest.TestCase):
         self.assertEqual(image_handler.smu, self.EXPECTED_SMU)
         self.assertEqual(image_handler.packages, self.EXPECTED_DOUBLE_PKG)
 
+    def test_image_handler_without_base_image(self):
+        images = [
+            self.SMU
+        ]
+
+        image_handler = ImageHandler(self.device, images)
+        # since the smu image is passed instead of base image
+        self.EXPECTED_IMAGE = []
+        self.assertEqual(image_handler.image, self.EXPECTED_IMAGE)
+        self.assertEqual(image_handler.smu, self.EXPECTED_SMU)
+
 class InvalidStructures(unittest.TestCase):
 
     def setUp(self):

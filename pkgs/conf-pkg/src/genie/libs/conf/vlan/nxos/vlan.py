@@ -90,6 +90,11 @@ class Vlan(ABC):
                     configurations.append_line(
                         attributes.format('vn-segment {vn_segment_id}'))
 
+                # nxos: vlan 1000 / associate-vrf vxlan-1001
+                if attributes.value('associate_vrf_name'):
+                    configurations.append_line(
+                        attributes.format('associate-vrf {associate_vrf_name}'))
+
             # nxos: vlan dot1q tag native
             # nxos: vlan dot1q tag native exclude control
             # nxos: vlan dot1q tag native fabricpath
@@ -351,6 +356,11 @@ class Vlan(ABC):
                     if attributes.value('vn_segment_id'):
                         configurations.append_line(
                             attributes.format('vn-segment {vn_segment_id}'))
+
+                    # associate_vrf_name
+                    if attributes.value('associate_vrf_name'):
+                        configurations.append_line(
+                            attributes.format('associate-vrf {associate_vrf_name}'))
 
                 return str(configurations)
 

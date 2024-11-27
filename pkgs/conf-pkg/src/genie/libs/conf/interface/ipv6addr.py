@@ -55,7 +55,7 @@ class IPv6Addr(ConfigurableBase):
     ipv6_route_tag = managedattribute(
         name='ipv6_route_tag',
         default=None,
-        type=(None, managedattribute.test_istype(bool)),
+        type=(None, managedattribute.test_istype(str)),
         doc='Route-tag to be associated with this address')
 
     # ipv6 redirect

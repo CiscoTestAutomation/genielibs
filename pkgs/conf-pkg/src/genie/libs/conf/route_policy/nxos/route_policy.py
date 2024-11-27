@@ -137,6 +137,13 @@ class RoutePolicy(ABC):
                             attributes.format('match ipv6 address prefix-list '
                                 '{match_prefix_list_v6}'))
 
+                    # nxos: match tag
+                    # <match_tag>
+                    if attributes.value('match_tag'):
+                        configurations.append_line(
+                            attributes.format('match tag '
+                                '{match_tag}'))
+
                     # nxos: set origin <set_route_origin>
                     if attributes.value('set_route_origin'):
                         configurations.append_line(

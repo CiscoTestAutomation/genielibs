@@ -305,6 +305,11 @@ def execute_install_one_shot(device, file_path=None, prompt=True, issu=False,
                   args = None,
                   loop_continue = False,
                   continue_timer = False),
+        Statement(pattern = r".*FAILED\: install_add_activate_commit.*",
+                  action = None,
+                  args = None,
+                  loop_continue = False,
+                  continue_timer = False),
         ])
 
     log.info(f"Perform install one shot {device.name}")
@@ -326,7 +331,7 @@ def execute_install_one_shot(device, file_path=None, prompt=True, issu=False,
 
     try:
         device.api.execute_write_memory()
-        output = device.execute(cmd, reply=dialog, timeout=timeout)
+        _, output = device.reload(cmd, reply=dialog, timeout=timeout, return_output=True)
     except Exception as e:
         log.error(f"Error while executing {cmd} on {device.name}: {e}")
 
@@ -989,3 +994,4 @@ def execute_install_package_reload_fast(device, image_dir, image, reload_fast=Tr
     result = 'successful' if match else 'failed'
     log.info(f"install reloadfast {result} on {device.name}")
     return output if match else match
+
