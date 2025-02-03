@@ -228,7 +228,7 @@ class TriggerClearBgpNeighborIpv4(TriggerClear):
     mapping = Mapping(requirements={'ops.bgp.bgp.Bgp':{
                                           'requirements':[
                                               ['info', 'instance', '(?P<instance>.*)',
-                                              'vrf', '(?P<vrf>.*)','neighbor', '(?P<neighbor>^[\d\.]+$)',
+                                              'vrf', '(?P<vrf>.*)','neighbor', r'(?P<neighbor>^[\d\.]+$)',
                                               'session_state', 'established']],
                                           'kwargs':{'attributes':['info']},
                                           'exclude': exclude}},
@@ -259,7 +259,7 @@ class TriggerClearBgpNeighborIpv6(TriggerClear):
     mapping = Mapping(requirements={'ops.bgp.bgp.Bgp':{
                                           'requirements':[
                                               ['info', 'instance', '(?P<instance>.*)',
-                                              'vrf', '(?P<vrf>.*)','neighbor', '(?P<neighbor>^[\w\:]+$)',
+                                              'vrf', '(?P<vrf>.*)','neighbor', r'(?P<neighbor>^[\w\:]+$)',
                                               'session_state', 'established']],
                                           'kwargs':{'attributes':['info']},
                                           'exclude': exclude}},
@@ -290,7 +290,7 @@ class TriggerClearBgpNeighborSoftIpv4(TriggerClear):
     mapping = Mapping(requirements={'ops.bgp.bgp.Bgp':{
                                           'requirements':[
                                               ['info', 'instance', '(?P<instance>.*)',
-                                              'vrf', '(?P<vrf>.*)','neighbor', '(?P<neighbor>^[\d\.]+$)',
+                                              'vrf', '(?P<vrf>.*)','neighbor', r'(?P<neighbor>^[\d\.]+$)',
                                               'session_state', 'established']],
                                           'kwargs':{'attributes':['info']},
                                           'exclude': exclude}},
@@ -320,7 +320,7 @@ class TriggerClearBgpNeighborSoftIpv6(TriggerClear):
     mapping = Mapping(requirements={'ops.bgp.bgp.Bgp':{
                                           'requirements':[
                                               ['info', 'instance', '(?P<instance>.*)',
-                                              'vrf', '(?P<vrf>.*)','neighbor', '(?P<neighbor>^[\w\:]+$)',
+                                              'vrf', '(?P<vrf>.*)','neighbor', r'(?P<neighbor>^[\w\:]+$)',
                                               'session_state', 'established']],
                                           'kwargs':{'attributes':['info']},
                                           'exclude': exclude}},

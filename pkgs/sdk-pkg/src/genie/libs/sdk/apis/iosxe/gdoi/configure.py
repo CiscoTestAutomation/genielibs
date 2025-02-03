@@ -4,7 +4,6 @@
 from email.policy import default
 import logging
 import re
-from telnetlib import XAUTH
 
 # Unicon
 from unicon.core.errors import SubCommandFailure
@@ -82,8 +81,8 @@ def configure_gdoi_group(device,
         Raises:
             SubCommandFailure
     """
-			
-			
+
+
     log.info(
         "Configuring CRYPTO GDOI GROUP"
     )
@@ -152,7 +151,7 @@ def configure_gdoi_group(device,
                 configs.append(f"value {server_local_identifier_val}")
             elif server_local_identifier_range is not None :
                 configs.append(f"range {server_local_identifier_range}")
-            
+
     try:
         device.configure(configs)
     except SubCommandFailure as e:

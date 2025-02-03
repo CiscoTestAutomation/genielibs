@@ -23,7 +23,7 @@ def verify_syslog_interface_shut(interface, server, output):
     # <133>2143: Jun  7 02:45:48.206 EST: %LINK-5-CHANGED: Interface GigabitEthernet5, changed state to administratively down
     r1 = re.compile(
         r".+\%LINK\-\d+\-CHANGED\:\s+Interface\s+(?P<interface>\S+)"
-        "\,\s+changed\s+state\s+to\s+(administratively\s+down)"
+        r"\,\s+changed\s+state\s+to\s+(administratively\s+down)"
     )
     for line in output:
         result = r1.match(line.load.decode())
@@ -61,8 +61,8 @@ def verify_syslog_interface_up(interface, server, output):
 
     # <133>2143: Jun  7 02:53:26.222 EST: %LINK-3-UPDOWN: Interface GigabitEthernet4, changed state to up
     r1 = re.compile(
-        ".+\%LINK\-3\-UPDOWN\:\s+Interface\s+(?P<interface>\S+)\,\s"
-        "+changed\s+state\s+to\s+(up)"
+        r".+\%LINK\-3\-UPDOWN\:\s+Interface\s+(?P<interface>\S+)\,\s"
+        r"+changed\s+state\s+to\s+(up)"
     )
 
     for line in output:
@@ -103,8 +103,8 @@ def verify_syslog_ospf_neighbor_up(interface, server, output):
     # <133>2143: Jun  7 02:49:10.999 EST: %OSPF-5-ADJCHG: Process 65109, Nbr 10.169.197.252 on GigabitEthernet2 from LOADING to FULL, Loading Done
     r1 = re.compile(
         r".+\%OSPF\-\d+\-ADJCHG\:\s+Process\s+\d+\,\s+Nbr\s+\S+\s+"
-        "on\s+(?P<interface>\S+)\s+from\s+LOADING\s+to\s+FULL\,\s"
-        "+Loading\s+Done"
+        r"on\s+(?P<interface>\S+)\s+from\s+LOADING\s+to\s+FULL\,\s"
+        r"+Loading\s+Done"
     )
 
     for line in output:
@@ -143,8 +143,8 @@ def verify_syslog_ospf_neighbor_down(interface, server, output):
     # <133>2143: Jun  7 02:45:47.289 EST: %OSPF-5-ADJCHG: Process 65109, Nbr 10.169.197.252 on GigabitEthernet2 from FULL to DOWN, Neighbor Down: Interface down or detached
     r1 = re.compile(
         r".+\%OSPF\-\d+\-ADJCHG\:\s+Process\s+\d+\,\s+Nbr\s+\S+\s+"
-        "on\s+(?P<interface>\S+)\s+from\s+FULL\s+to\s+DOWN\,\s+"
-        "Neighbor\s+Down\:\s+Interface\s+down\s+or\s+detached"
+        r"on\s+(?P<interface>\S+)\s+from\s+FULL\s+to\s+DOWN\,\s+"
+        r"Neighbor\s+Down\:\s+Interface\s+down\s+or\s+detached"
     )
 
     for line in output:
@@ -247,8 +247,8 @@ def verify_syslog_interface_link_up(device, interface, server, output):
 
     # Jun  7 02:53:26.222 EST: %LINK-3-UPDOWN: Interface GigabitEthernet4, changed state to up
     r1 = re.compile(
-        ".+\%LINK\-3\-UPDOWN\:\s+Interface\s+(?P<interface>\S+)\,\s"
-        "+changed\s+state\s+to\s+up"
+        r".+\%LINK\-3\-UPDOWN\:\s+Interface\s+(?P<interface>\S+)\,\s"
+        r"+changed\s+state\s+to\s+up"
     )
 
     for line in output:
@@ -288,8 +288,8 @@ def verify_syslog_interface_link_down(device, interface, server, output):
     """
     # Jun  7 02:53:26.222 EST: %LINK-3-UPDOWN: Interface GigabitEthernet4, changed state to down
     r1 = re.compile(
-        ".+\%LINK\-3\-UPDOWN\:\s+Interface\s+(?P<interface>\S+)\,\s"
-        "+changed\s+state\s+to\s+down"
+        r".+\%LINK\-3\-UPDOWN\:\s+Interface\s+(?P<interface>\S+)\,\s"
+        r"+changed\s+state\s+to\s+down"
     )
 
     for line in output:

@@ -28,7 +28,7 @@ class AreaRange(ABC):
         if attributes.value('area_range_prefix'):
 
             # + range {area_range_prefix}
-            if re.search("\/", attributes.value('area_range_prefix')):
+            if re.search(r"\/", attributes.value('area_range_prefix')):
                 range_val = IPNetwork(attributes.value('area_range_prefix'))
                 prefix = str(range_val.ip)
                 netmask = str(range_val.netmask)

@@ -2118,4 +2118,26 @@ def config_qinq_encapsulation_on_interface(device, vlan, second_vlan, interface)
         raise SubCommandFailure(
             "Couldn't configure qinq encapsulation on interface {interface}. "
             "Error:\n{error}".format(interface=interface, error=e)
-        ) 
+        )
+
+def config_pseudowire_class_interworking(device, pw_class, interworking):
+    """ configure pseudowire class with interworking
+        Args:
+            device (`obj`): Router on which pseudowire class has to be configured
+            pw_class ('str'): pseudowire class name on which configuration needs to be applied.
+            interworking (`str`): Interworking enabled or disabled for traffic in peusdowire class.
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = ["pseudowire-class {pw_class}".format(pw_class=pw_class),
+           "encapsulation mpls",
+           "interworking {interworking}".format(interworking=interworking)]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure pseudowire class {pw_class}. Error:\n{error}"\
+                .format(pw_class=pw_class, error=e)
+        )

@@ -132,7 +132,7 @@ class TriggerShutNoShutEthernetInterface(TriggerShutNoShut):
     # Also permit to dictate which key to verify
     mapping = Mapping(requirements={'ops.interface.interface.Interface':{
                                         'requirements':[\
-                                            ['info', '(?P<interface>Ethernet(\S+))', 'oper_status', 'up'],
+                                            ['info', r'(?P<interface>Ethernet(\S+))', 'oper_status', 'up'],
                                             ['info', '(?P<interface>.*)', 'enabled', True],
                                             ['info', '(?P<interface>.*)', 'port_channel', 'port_channel_member', False]],
                                         'exclude': interface_exclude}},

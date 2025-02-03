@@ -541,7 +541,10 @@ def api(self,
 
     msg = kwargs.pop('custom_substep_message', default_msg)
 
-    with steps.start(msg, continue_=continue_) as step:
+    # check if the step logs needs to be suppressed
+    suppress_logs = bool(self.parameters.get('suppress_logs'))
+
+    with steps.start(msg, continue_=continue_, suppress_logs=suppress_logs) as step:
 
         kwargs.update({'step': step,
                        'device': device,

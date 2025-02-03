@@ -1,0 +1,40 @@
+configure:
+  commands:
+    df-election wait-time 1: "df-election wait-time 1\r\n"
+    end:
+      new_state: execute
+    identifier type 3 system-mac 0012.0012.0012: "identifier type 3 system-mac 0012.0012.0012\r\
+      \n"
+    l2vpn evpn ethernet-segment 1: "l2vpn evpn ethernet-segment 1\r\n"
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    redundancy all-active: "redundancy all-active\r\n"
+  prompt: R1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: R1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    show version | include operating mode: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: R1#

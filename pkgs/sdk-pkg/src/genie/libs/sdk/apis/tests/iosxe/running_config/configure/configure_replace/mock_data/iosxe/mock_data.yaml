@@ -22,7 +22,7 @@ connect:
 
     Escape character is ''^]''.'
   prompt: ''
-execute:
+execute: &exec
   commands:
     config term:
       new_state: configure
@@ -30,6 +30,8 @@ execute:
       new_state: configure
     configure replace flash:new_config:
       new_state: proceed
+    configure replace bootflash:base_conf.conf force: |
+      Error: Could not open file bootflash:base_conf.conf for reading
     show version: ''
     term length 0: ''
     term width 0: ''
@@ -43,4 +45,9 @@ proceed:
         \nconfiguration. Enter Y if you are sure you want to proceed. ? [no]:"
   commands:
     "Y":
-      new_state: execute
+      new_state: execute2
+
+execute2:
+  <<: *exec
+  prompt: 9300-24UX-2#
+

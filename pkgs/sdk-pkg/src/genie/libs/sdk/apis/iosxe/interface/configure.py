@@ -10435,47 +10435,6 @@ def unconfigure_interface_rep_segment_edge_preferred(device, interface, segment)
             f"Could not unconfigure REP Segment Edge Preferred on device {device.name}. Error: {e}"
         )
 
-def configure_interface_rep_segment_edge_primary(device, interface, segment, preferred=False):
-    """Configure REP Segment Edge Primary on the device
-        Args:
-            device ('obj'): Device object
-            interface ('str'): Interface name
-            segment ('str'): Segment value
-            preferred ('bool', optional): Set to True for edge primary preferred (default: False)
-        Returns:
-            None
-        Raises:
-            SubCommandFailure: Failed configuring rep segment edge primary
-    """
-    log.debug("Configure REP Segment Edge Primary")
-    cmd = [f"interface {interface}", "switchport", "switchport mode trunk"]
-    if preferred:
-        cmd.append(f"rep segment {segment} edge primary preferred")
-    else:
-        cmd.append(f"rep segment {segment} edge primary")
-    try:
-        device.configure(cmd)
-    except SubCommandFailure as e:
-        raise SubCommandFailure(f"Failed to configure REP Segment Edge Primary on {interface}: {e}")
-
-def unconfigure_interface_rep_segment_edge_primary(device, interface, segment):
-    """Unconfigure REP Segment Edge Primary on the device
-        Args:
-            device ('obj'): Device object
-            interface ('str'): Interface name
-            segment ('str'): Segment value
-        Returns:
-            None
-        Raises:
-            SubCommandFailure: Failed unconfiguring rep segment edge primary
-    """
-
-    cmd = [f"interface {interface}", f"no rep segment {segment} edge primary"]
-    try:
-        device.configure(cmd)
-    except SubCommandFailure as e:
-        raise SubCommandFailure(f"Failed to unconfigure REP Segment Edge Primary on interface {interface}: {e}")
-
 def configure_ppp_multilink(device, interface):
     """ Configure ppp multilink on interface
     Args:
@@ -10535,23 +10494,222 @@ def unconfigure_port_channel(device, port_channel):
         raise SubCommandFailure(
             f"Failed to unconfigure interface Port-channel {port_channel}. Error: {e}")
 
-def configure_interface_speed_auto(device, interface):
+def configure_interface_speed_auto(device, interface, port_speed = None):
     """ configure speed auto on interface
         Args:
             device ('obj'): Device object
             interface ('str'): Interface name
+            port_speed ('str'): port speed values
         Returns:
             None
         Raises:
             SubCommandFailure
     """
     log.debug(f"Configuring speed auto on interface {interface}")
-    
-    config = [
+    if port_speed:
+        config = [
         f'interface {interface}',
-        'speed auto'
-    ]
+        f'speed auto {port_speed}'
+        ]  
+    else:
+        config = [
+            f'interface {interface}',
+            'speed auto'
+        ]
     try:
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not configure speed auto on {interface}. Error:\n{e}")
+
+def configure_interface_macro_description(device, interface, trigger_name):
+    """configure interface macro description
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+            trigger_name(`str`): Trigger name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"Configuring macro description on interface {interface}")
+    
+    config = [
+        f'interface {interface}',
+        f'macro description {trigger_name}'
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure macro description on {interface}. Error:\n{e}")
+        
+def unconfigure_interface_macro_description(device, interface, trigger_name):
+    """unconfigure interface macro description
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+            trigger_name(`str`): Trigger name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"UnConfiguring macro description on interface {interface}")
+    
+    config = [
+        f'interface {interface}',
+        f'no macro description {trigger_name}'
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not unconfigure macro description on {interface}. Error:\n{e}")
+
+def configure_interface_serial_physical_layer(device, serial_interface, physical_layer):
+    """ configure physical layer on serial interface
+        Args:
+            device (`obj`): Router on which serial interface is to be configured.
+            serial_interface (`str`): Interface name on which physical layer is to be configured.
+            physical_layer ('str'): Physical layer which is to be configured, for example sync or async.
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configure physical-layer on serial interface")
+    cmd =[f"interface {serial_interface}", f"physical-layer {physical_layer}"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure physical-layer on serial interface, Error:\n{e}")
+
+def unconfigure_interface_serial_physical_layer(device, serial_interface, physical_layer):
+    """ unconfigure physical layer on serial interface
+        Args:
+            device (`obj`): Router on which serial interface is to be unconfigured.
+            serial_interface (`str`): Interface name on which physical layer is to be unconfigured.
+            physical_layer ('str'): Physical layer which is to be unconfigured, for example sync or async.
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("UnConfigure physical-layer on serial interface")
+    cmd =[f"interface {serial_interface}", f"no physical-layer {physical_layer}"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure physical-layer on serial interface, Error:\n{e}")
+
+def configure_interface_serial_encapsulation(device, serial_interface, encapsulation):
+    """ configure encapsulation on serial interface
+        Args:
+            device (`obj`): Router on which serial interface is to be configured.
+            serial_interface (`str`): Interface name on which physical layer is to be configured.
+            encapsulation ('str'): Encapsulation to be configured, for example raw-tcp, raw-udp and scada.
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configure encapsulation on serial interface")
+    cmd =[f"interface {serial_interface}", f"encapsulation {encapsulation}"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure encapsulation on serial interface, Error:\n{e}")
+
+def unconfigure_interface_serial_encapsulation(device, serial_interface, encapsulation):
+    """ unconfigure encapsulation on serial interface
+        Args:
+            device (`obj`): Router on which serial interface is to be configured.
+            serial_interface (`str`): Interface name on which physical layer is to be configured.
+            encapsulation ('str'): Encapsulation to be unconfigured, for example raw-tcp, raw-udp and scada.
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Unconfigure encapsulation on serial interface")
+    cmd =[f"interface {serial_interface}", f"no encapsulation {encapsulation}"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure encapsulation on serial interface, Error:\n{e}")
+
+def configure_interface_raw_socket_client(device, serial_interface, rawtcp_server_ip, rawtcp_server_port, rawtcp_client_ip, rawtcp_client_port):
+    """ configure raw-socket tcp client on serial interface
+        Args:
+            device (`obj`): Router on which raw socket tcp server is to be configured.
+            serial_interface (`str`):  Interface on router, for example 0/3/0.
+            rawtcp_server_port ('int'): Port number of raw tcp server to which client must connect.
+            rawtcp_server_ip ('str'): IP address of raw tcp server to which client must connect.
+            rawtcp_client_port ('int'): Port number of raw tcp client on interface.
+            rawtcp_client_ip ('str'): IP address of raw tcp client on interface.
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configure raw-socket tcp client on an interface")
+    cmd =[f"interface {serial_interface}",
+           f"raw-socket tcp client {rawtcp_server_ip} {rawtcp_server_port} {rawtcp_client_ip} {rawtcp_client_port}"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure raw-socket tcp client on an interface, Error:\n{e}")
+
+def unconfigure_interface_raw_socket_client(device, serial_interface, rawtcp_server_ip, rawtcp_server_port, rawtcp_client_ip, rawtcp_client_port):
+    """ unconfigure raw-socket client on interface
+        Args:
+            device (`obj`): Router on which raw socket tcp server is to be configured.
+            serial_interface (`str`):  Interface on router, for example 0/3/0.
+            rawtcp_server_port ('int'): Port number of raw tcp server to which client must connect.
+            rawtcp_server_ip ('str'): IP address of raw tcp server to which client must connect.
+            rawtcp_client_port ('int'): Port number of raw tcp client on interface.
+            rawtcp_client_ip ('str'): IP address of raw tcp client on interface.
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Uncononfigure raw-socket tcp client on an interface")
+    cmd =[f"interface {serial_interface}",
+           f"no raw-socket tcp client {rawtcp_server_ip} {rawtcp_server_port} {rawtcp_client_ip} {rawtcp_client_port}"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure raw-socket tcp client on serial interface, Error:\n{e}")
+
+def unconfigure_interface_speed_auto(device, interface, port_speed = None):
+    """ unconfigure speed auto on interface
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Interface name
+            port_speed ('str'): port speed values
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"Unconfiguring speed auto on interface {interface}")
+    if port_speed:
+        config = [
+        f'interface {interface}',
+        f'no speed auto {port_speed}'
+        ]  
+    else:
+        config = [
+            f'interface {interface}',
+            'no speed auto'
+        ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not unconfigure speed auto on {interface}. Error:\n{e}")

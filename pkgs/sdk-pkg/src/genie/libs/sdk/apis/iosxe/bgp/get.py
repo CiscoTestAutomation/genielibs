@@ -1491,18 +1491,18 @@ def get_bgp_running_config(device, address_family, vrf=""):
     if vrf:
         # address-family ipv4 vrf CE1test
         r1 = re.compile(
-            r"address\-family\s+" + address_family + "\s+" "vrf\s+" + vrf
+            r"address\-family\s+" + address_family + r"\s+" r"vrf\s+" + vrf
         )
     else:
         # address-family ipv4 vrf CE1test
         r1 = re.compile(
-            r"address\-family\s+" + address_family + "\s+" "vrf\s+(?P<vrf>\S+)"
+            r"address\-family\s+" + address_family + r"\s+" r"vrf\s+(?P<vrf>\S+)"
         )
 
     # neighbor 192.168.10.253 remote-as 65555
     r2 = re.compile(
         r"neighbor\s+(?P<neighbor_address>\S+)\s+"
-        "remote\-as\s+(?P<remote_as>\S+)"
+        r"remote\-as\s+(?P<remote_as>\S+)"
     )
 
     flag_address_family = False

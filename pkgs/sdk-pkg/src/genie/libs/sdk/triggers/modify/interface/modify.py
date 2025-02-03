@@ -78,7 +78,7 @@ class TriggerModifyEthernetMtu(TriggerModify):
     # Mapping of Information between Ops and Conf
     # Also permit to dictates which key to verify
     mapping = Mapping(requirements={'ops.interface.interface.Interface':{
-                                        'requirements': [['info', '(?P<interface>e|Ethernet[0-9\/\s]+$)', 'mtu', '(?P<mtu>.*)'],
+                                        'requirements': [['info', r'(?P<interface>e|Ethernet[0-9\/\s]+$)', 'mtu', '(?P<mtu>.*)'],
                                                          ['info', '(?P<interface>.*)', 'enabled', True],
                                                          ['info', '(?P<interface>.*)', 'port_channel', 'port_channel_member', False],
                                                          ['info', '(?P<interface>.*)', 'oper_status', 'up']],
@@ -90,7 +90,7 @@ class TriggerModifyEthernetMtu(TriggerModify):
                                                              'attach': False}}}},
                       verify_ops={'ops.interface.interface.Interface':{
                                       'requirements': [['info', '(?P<interface>.*)', 'mtu', 9216],
-                                                       ['info', '(?P<interface>.*)', 'bandwidth', '(\d+)']],
+                                                       ['info', '(?P<interface>.*)', 'bandwidth', r'(\d+)']],
                                       'exclude': interface_exclude}},
                       num_values={'interface': 1, 'mtu': 1})
 
@@ -167,7 +167,7 @@ class TriggerModifySwitchportModeTrunkToAccess(TriggerModify):
                                         'requirements': [\
                                             ['info', '(?P<interface>.*)', 'switchport_mode', 'access'],
                                             ['info', '(?P<interface>.*)', 'enabled', False],
-                                            ['info', '(.*)', 'switchport_mode', '(\w+)']],
+                                            ['info', '(.*)', 'switchport_mode', r'(\w+)']],
                                         'exclude': interface_exclude + ['(Vlan.*)']}},
                       num_values={'interface': 1})
 
@@ -228,9 +228,9 @@ class TriggerModifyLoopbackInterfaceIp(TriggerModify):
     # Mapping of Information between Ops and Conf
     # Also permit to dictates which key to verify
     mapping = Mapping(requirements={'ops.interface.interface.Interface':{
-                                        'requirements': [['info', '(?P<name>[l|L]oopback\d+)',
+                                        'requirements': [['info', r'(?P<name>[l|L]oopback\d+)',
                                                           'ipv4', '(?P<ip_mask>.*)', 'ip', '(?P<ip>.*)'],
-                                                         ['info', '(?P<name>[l|L]oopback\d+)',
+                                                         ['info', r'(?P<name>[l|L]oopback\d+)',
                                                           'ipv4', '(?P<ip_mask>.*)', 'prefix_length', '(?P<mask>.*)']],
                                         'all_keys':True,
                                         'exclude': interface_exclude,
@@ -324,9 +324,9 @@ class TriggerModifyLoopbackInterfaceIpv6(TriggerModify):
     # Mapping of Information between Ops and Conf
     # Also permit to dictates which key to verify
     mapping = Mapping(requirements={'ops.interface.interface.Interface':{
-                                        'requirements': [['info', '(?P<name>[l|L]oopback\d+)',
+                                        'requirements': [['info', r'(?P<name>[l|L]oopback\d+)',
                                                           'ipv6', '(?P<ip_mask>.*)', 'ip', '(?P<ip>.*)'],
-                                                         ['info', '(?P<name>[l|L]oopback\d+)',
+                                                         ['info', r'(?P<name>[l|L]oopback\d+)',
                                                           'ipv6', '(?P<ip_mask>.*)', 'prefix_length', '(?P<mask>.*)']],
                                         'exclude': interface_exclude,
                                         'all_keys': True}},
@@ -341,7 +341,7 @@ class TriggerModifyLoopbackInterfaceIpv6(TriggerModify):
                                                         'prefix_length', '64'],
                                                        ['info', '(?P<name>.*)',  'ipv6', '10:254::254:254/64',
                                                         'ip', '10:254::254:254'],
-                                                       ['info', '(?P<name>.*)',  '(ipv6)', '([\w\/\.\:]+)']],
+                                                       ['info', '(?P<name>.*)',  '(ipv6)', r'([\w\/\.\:]+)']],
                                       'exclude': interface_exclude}},
                       num_values={'name': 1, 'ip_mask': 1, 'ip' : 'all', 'mask': 'all'})
 
@@ -481,6 +481,6 @@ class TriggerModifyVlanMtu(TriggerModify):
                                                              'attach': False}}}},
                       verify_ops={'ops.interface.interface.Interface':{
                                       'requirements': [['info', '(?P<name>.*)', 'mtu', 9216],
-                                                       ['info', '(?P<name>.*)', 'bandwidth', '(\d+)']],
+                                                       ['info', '(?P<name>.*)', 'bandwidth', r'(\d+)']],
                                       'exclude': interface_exclude}},
                       num_values={'name': 1, 'mtu': 1})

@@ -67,7 +67,7 @@ def device_recovery(start, device, console_activity_pattern, golden_image=None,
     device.instantiate(connection_timeout=timeout)
 
     # Get device console port information
-    last_word_in_start_match = re.match('.*\s(\S+)$', start)
+    last_word_in_start_match = re.match(r'.*\s(\S+)$', start)
     last_word_in_start = last_word_in_start_match.group(1) \
         if last_word_in_start_match else ""
 
@@ -130,7 +130,7 @@ def tftp_recovery_worker(start, device, console_activity_pattern, tftp_boot=None
     device.instantiate(connection_timeout=timeout)
 
     # Get device console port information
-    last_word_in_start_match = re.match('.*\s(\S+)$', start)
+    last_word_in_start_match = re.match(r'.*\s(\S+)$', start)
     last_word_in_start = last_word_in_start_match.group(1) \
         if last_word_in_start_match else ""
 

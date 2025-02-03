@@ -1,7 +1,9 @@
 import os
 import unittest
 from pyats.topology import loader
+from unicon.core.errors import SubCommandFailure
 from genie.libs.sdk.apis.iosxe.running_config.configure import configure_replace
+
 
 
 class TestConfigureReplace(unittest.TestCase):
@@ -29,11 +31,18 @@ class TestConfigureReplace(unittest.TestCase):
             init_exec_commands=[]
         )
 
-    def test_configure_replace(self):
+    def test_configure_replace(self) -> None:
         result = configure_replace(self.device, 'flash:', 'new_config', '', 1, 60)
         expected_output = ('This will apply all necessary additions and deletions\r\n'
- 'to replace the current running configuration with the\r\n'
- 'contents of the specified configuration file, which is\r\n'
- 'assumed to be a complete configuration, not a partial\r\n'
- 'configuration. Enter Y if you are sure you want to proceed. ? [no]:Y')
+                           'to replace the current running configuration with the\r\n'
+                           'contents of the specified configuration file, which is\r\n'
+                           'assumed to be a complete configuration, not a partial\r\n'
+                           'configuration. Enter Y if you are sure you want to proceed. ? [no]:Y')
         self.assertEqual(result, expected_output)
+
+    def test_configure_replace_exception(self) -> None:
+        with self.assertRaises(SubCommandFailure) as err:
+            configure_replace(self.device, 'bootflash:', 'base_conf.conf', 'force', 1, 60)
+        self.assertIn('Error: Could not open file bootflash:base_conf.conf for reading', err.exception.args[0])
+        self.assertEqual(self.device.learned_hostname, '9300-24UX-2')
+        self.assertEqual(self.device.hostname, '9300-24UX-2')

@@ -43,7 +43,7 @@ def clear_ip_nhrp(device,
 
     try:   
         device.execute(cmd, 
-                    error_pattern=[f'VRF \"{vrf}\" is not valid.','% Invalid input detected at \'\^\' marker\.'], 
+                    error_pattern=[f'VRF \"{vrf}\" is not valid.',r'% Invalid input detected at \'\^\' marker\.'], 
                     timeout=timeout)
     
     except SubCommandFailure as e:
@@ -87,7 +87,7 @@ def clear_ipv6_nhrp(device,
 
     try:   
         device.execute(cmd, 
-                    error_pattern=[f'VRF \"{vrf}\" is not valid.','% Invalid input detected at \'\^\' marker\.'], 
+                    error_pattern=[f'VRF \"{vrf}\" is not valid.',r'% Invalid input detected at \'\^\' marker\.'], 
                     timeout=timeout)
     
     except SubCommandFailure as e:
@@ -126,7 +126,7 @@ def clear_dmvpn(device,
 
     try:   
         device.execute(cmd, 
-                    error_pattern=[f'VRF \"{vrf}\" is not valid.','% Invalid input detected at \'\^\' marker\.'], 
+                    error_pattern=[f'VRF \"{vrf}\" is not valid.',r'% Invalid input detected at \'\^\' marker\.'], 
                     timeout=timeout)
     
     except SubCommandFailure as e:
@@ -161,7 +161,7 @@ def clear_dmvpn_statistics(device,
     
     try:
         device.execute(cmd, 
-                    error_pattern=[f'VRF \"{vrf}\" is not valid.','% Invalid input detected at \'\^\' marker\.'], 
+                    error_pattern=[f'VRF \"{vrf}\" is not valid.',r'% Invalid input detected at \'\^\' marker\.'], 
                     timeout=timeout)
     
     except SubCommandFailure as e:

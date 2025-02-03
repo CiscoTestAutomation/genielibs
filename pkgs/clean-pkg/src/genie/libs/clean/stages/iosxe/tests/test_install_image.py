@@ -9,8 +9,8 @@ from genie.libs.clean.stages.tests.utils import CommonStageTests, create_test_de
 
 
 from pyats.aetest.steps import Steps
-from pyats.results import Passed, Failed, Skipped
-from pyats.aetest.signals import TerminateStepSignal, AEtestSkippedSignal
+from pyats.results import Passed, Failed, Skipped, Passx
+from pyats.aetest.signals import TerminateStepSignal, AEtestSkippedSignal, AEtestStepPassxSignal
 
 # Disable logging. It may be useful to comment this out when developing tests.
 logging.disable(logging.CRITICAL)
@@ -140,7 +140,43 @@ class SetBootVariable(unittest.TestCase):
 
         # Check the overall result is as expected
         self.assertEqual(Failed, steps.details[0].result)
+        
 
+    def test_passx_set_boot_variables_unconfigure_ignore_startup_config_errored(self):
+        # Make sure we have a unique Steps() object for result verification
+        steps = Steps()
+        data = {'dir bootflash:/': '''
+                   Directory of bootflash:/
+                        11  drwx            16384  Nov 25 2016 19:32:53 -07:00  lost+found
+                        12  -rw-                0  Dec 13 2016 11:36:36 -07:00  ds_stats.txt
+                        104417  drwx             4096  Apr 10 2017 09:09:11 -07:00  .prst_sync
+                        80321  drwx             4096  Nov 25 2016 19:40:38 -07:00  .rollback_timer
+                        64257  drwx             4096  Nov 25 2016 19:41:02 -07:00  .installer
+                        48193  drwx             4096  Nov 25 2016 19:41:14 -07:00  virtual-instance-stby-sync
+                        8033  drwx             4096  Nov 25 2016 18:42:07 -07:00  test.bin
+                        1940303872 bytes total (1036210176 bytes free)
+                '''
+                }
+
+        # And we want the execute method to be mocked with device console output.
+        self.device.execute = Mock(return_value = data['dir bootflash:/'])
+
+        def mock_execute(*args, **kwargs):
+            assert args == ('puts [open "bootflash:/packages.conf" w+] {}',)
+
+        self.device.tclsh = mock_execute
+
+        # And we want the execute_set_boot_variable
+        self.device.api.execute_set_boot_variable = Mock()
+        
+        self.device.api.unconfigure_ignore_startup_config= Mock(side_effect=Exception)
+        
+        self.cls.set_boot_variable(
+                steps=steps, device=self.device
+            )
+
+        # Check the overall result is as expected
+        self.assertEqual(Passx, steps.details[0].result)
 
 class SaveRunningConfig(unittest.TestCase):
 
@@ -307,6 +343,35 @@ class VerifyBootVariable(unittest.TestCase):
 
         # Check the overall result is as expected
         self.assertEqual(Failed, steps.details[0].result)
+
+    def test_verify_ignore_config_exception(self):
+        # Make sure we have a unique Steps() object for result verification
+        steps = Steps()
+        self.cls.new_boot_var = 'bootflash:cat9k_iosxe.BLD_V173_THROTTLE_LATEST_20200421_032634.SSA.bin'
+
+        data1 = {'show boot': '''
+            starfleet-1#show boot
+            BOOT variable = bootflash:cat9k_iosxe.BLD_V173_THROTTLE_LATEST_20200421_032634.SSA.bin;
+            Configuration Register is 0x102
+            MANUAL_BOOT variable = no
+            BAUD variable = 9600
+            ENABLE_BREAK variable does not exist
+            BOOTMODE variable does not exist
+            IPXE_TIMEOUT variable does not exist
+            CONFIG_FILE variable =
+        '''
+        }
+
+        # And we want the verify_boot_variable api to be mocked.
+        # This simulates the pass case.
+        self.device.execute = Mock(return_value=data1['show boot'])
+        self.device.api.verify_ignore_startup_config = Mock(side_effect=Exception)
+
+        # Call the method to be tested (clean step inside class)
+        self.cls.verify_boot_variable(
+                steps=steps, device=self.device)
+        # Check the overall result is as expected
+        self.assertEqual(Passx, steps.details[0].result)
 
 
 class Installimage(unittest.TestCase):

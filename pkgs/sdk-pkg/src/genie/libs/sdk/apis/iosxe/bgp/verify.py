@@ -874,7 +874,7 @@ def is_bgp_neighbors_shutdown(
         device,
         neighbors,
         address_family,
-        state="^idle \(admin\)$",
+        state=r"^idle \(admin\)$",
         max_time=max_time,
         check_interval=check_interval,
     )
@@ -930,7 +930,7 @@ def is_bgp_neighbors_established(
         device,
         neighbors,
         address_family,
-        state="^\d+$",
+        state=r"^\d+$",
         max_time=max_time,
         check_interval=check_interval,
     )
@@ -2424,7 +2424,7 @@ def verify_bgp_l2vpn_evpn_rt2_ipprefix(
             for route in routes:
                 # [2][1.1.1.1:1][0][48][DEC856540245][128][2000::DCC8:56FF:FE54:245]/36
                 # [2][1.1.1.1:1][0][48][A03D6EC594E4][0][*]/20
-                data_found = re.search("\[2\]\[(.*)\].*\[(.*)\]",route)
+                data_found = re.search(r"\[2\]\[(.*)\].*\[(.*)\]",route)
                 if data_found:
                     # 1.1.1.1:1][0][48]
                     rd_list=data_found.groups()[0].split("][")
@@ -2510,7 +2510,7 @@ def verify_bgp_l2vpn_evpn_rt5_ipprefix(
             for route in routes:
                 # [5][1002:1][0][24][6.6.6.0]/17
                 # [5][1002:1][0][64][2060::]/29
-                data_found = re.search("\[5\]\[(.*)\].*\[(.*)\]",route)
+                data_found = re.search(r"\[5\]\[(.*)\].*\[(.*)\]",route)
                 if data_found:
                     # 1002:1][0][64]
                     rd_list=data_found.groups()[0].split("][")
@@ -2600,7 +2600,7 @@ def verify_bgp_rt5_mvpn_all_ip_mgroup(
         if out:
             routes = out.q.get_values("routes")
             for route in routes:                
-                data_found = re.search("\[5\]\[(.*)\]+",route)
+                data_found = re.search(r"\[5\]\[(.*)\]+",route)
                 if data_found:
                     local_lis = []
                     # 1002:1][16843009][20.20.20.22/32][232.1.1.6/32
@@ -2667,7 +2667,7 @@ def verify_bgp_rt7_mvpn_all_ip_mgroup(
         if out:
             routes = out.q.get_values("routes")
             for route in routes:                
-                data_found = re.search("\[7\]\[(.*)\]+",route)
+                data_found = re.search(r"\[7\]\[(.*)\]+",route)
                 if data_found:
                     local_lis = []
                     # 1002:1][16843009][20.20.20.22/32][232.1.1.6/32
@@ -2731,7 +2731,7 @@ def verify_bgp_l2vpn_evpn_rt2_nxthop(
             for route in routes:
                 # [2][1.1.1.1:1][0][48][DEC856540245][128][2000::DCC8:56FF:FE54:245]/36
                 # [2][1.1.1.1:1][0][48][A03D6EC594E4][0][*]/20
-                data_found = re.search("\[2\]\[(.*)\].*\[(.*)\]",route)
+                data_found = re.search(r"\[2\]\[(.*)\].*\[(.*)\]",route)
                 if data_found:
                     # 1.1.1.1:1][0][48]
                     rd_list=data_found.groups()[0].split("][")
@@ -2793,7 +2793,7 @@ def verify_bgp_l2vpn_evpn_rt5_nxthop(
             for route in routes:
                 # [5][1002:1][0][24][6.6.6.0]/17
                 # [5][1002:1][0][64][2060::]/29
-                data_found = re.search("\[5\]\[(.*)\].*\[(.*)\]",route)
+                data_found = re.search(r"\[5\]\[(.*)\].*\[(.*)\]",route)
                 if data_found:
                     # 1002:1][0][64]
                     rd_list=data_found.groups()[0].split("][")

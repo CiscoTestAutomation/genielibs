@@ -138,8 +138,8 @@ class TriggerModifyDot1xUserCredential(TriggerModify):
                       verify_ops={'ops.dot1x.dot1x.Dot1x':{
                                        'requirements':[['info', 'interfaces', '(?P<interface>.*)',
                                                         'clients', '(?P<client>.*)', 'status', 'unauthorized'],
-                                                       ['info', 'sessions', 'authorized_clients', '(\d+)'],
-                                                       ['info', 'sessions', 'unauthorized_clients', '(\d+)']],
+                                                       ['info', 'sessions', 'authorized_clients', r'(\d+)'],
+                                                       ['info', 'sessions', 'unauthorized_clients', r'(\d+)']],
                                        'kwargs':{'attributes':['info[interfaces][(.*)][clients][(.*)][status]',
                                                                'info[sessions]']},
                                        'exclude': dot1x_exclude},

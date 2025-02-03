@@ -529,6 +529,10 @@ class Health(Blitz):
             pre_processor_run (`bool`) : if pre processor runs or not
             pre_processor_result (`obj`) : return processor result (Result obj)
         """
+
+        # Suppress blitz actions step logs using this flag
+        self.parameters.update({'suppress_logs': True})
+
         devices_connected = []
         new_data_dict = {}
         selected_options = 0
@@ -851,7 +855,7 @@ class Health(Blitz):
         elif processor_type == 'pre':
             pre_processor_run = False
             # processor is skipped
-            log.info(
+            log.debug(
                 f"Pre-processor pyATS Health '{name}' is skipped due to: {reasons}"
             )
             if pre_processor_result == Passed:
@@ -867,7 +871,7 @@ class Health(Blitz):
                 # reflect processor results to section
                 section.result = section.result + processor.result + self.pre_processor_result
             # processor is skipped
-            log.info(
+            log.debug(
                 f"Post-processor pyATS Health '{name}' was skipped due to: {reasons}"
             )
             if pre_processor_result == Passed:
@@ -1007,7 +1011,7 @@ class Health(Blitz):
             for each_data in self._get_actions(data))
 
         if not post_if_pre_execute_flag:
-            log.info(
+            log.debug(
                 "Post-processor pyATS Health '{name}' was skipped because required Pre-processor was not executed."
                 .format(name=name))
 

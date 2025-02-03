@@ -11,6 +11,7 @@ from genie.metaparser.util.exceptions import (SchemaEmptyParserError,
 from genie.libs.parser.iosxe.show_logging import ShowLogging
 from genie.utils import Dq
 
+
 # Logger
 log = logging.getLogger(__name__)
 
@@ -69,6 +70,8 @@ def health_cpu(device,
             parsed_output.append(parsed)
         except SchemaEmptyParserError as e:
             log.error(f"Command '{cmd}' did not return any output\n{e}")
+        except InvalidCommandError as e:
+            log.warning(f"Command '{cmd}' is not supported on the device {device.name}")
     if not parsed_output:
         return None
 

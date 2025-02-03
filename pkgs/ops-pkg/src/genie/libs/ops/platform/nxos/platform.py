@@ -17,9 +17,9 @@ class Platform(SuperPlatform):
         # 0 days, 7 hours, 57 minutes, 30 seconds
 
         p = re.compile(r'((?P<day>\d+) +(day|days), *)?'
-                        '((?P<hour>\d+) +(hour|hours), *)?'
-                        '((?P<minute>\d+) +(minute|minutes), *)?'
-                        '((?P<second>\d+) +(seconds|seconds))$')
+                        r'((?P<hour>\d+) +(hour|hours), *)?'
+                        r'((?P<minute>\d+) +(minute|minutes), *)?'
+                        r'((?P<second>\d+) +(seconds|seconds))$')
         m = p.match(item)
         time_in_seconds = 0
         if m:

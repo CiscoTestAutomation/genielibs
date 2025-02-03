@@ -950,7 +950,7 @@ def get_route_mpls_labels(device,
 
     if mpls_label:
         if return_list:
-            return re.findall('Push (\d+)', mpls_label)
+            return re.findall(r'Push (\d+)', mpls_label)
         else:
             return mpls_label
 

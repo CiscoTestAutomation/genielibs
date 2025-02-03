@@ -151,6 +151,12 @@ class Macsec(DeviceFeature, LinkFeature):
                                         default=None,
                                         type=(None, managedattribute.test_istype(str)),
                                         doc='Configure PPK crypto-qkd-profile')
+
+    lldp_encrypted = managedattribute(name='lldp_encrypted',
+                                        default=None,
+                                        type=(None, managedattribute.test_istype(bool)),
+                                        doc='Configure macsec lldp bypass')
+    
     
     #macsec interface level attributes
     key_chain = managedattribute(name='key_chain',

@@ -130,7 +130,7 @@ def execute_power_on_device(device):
         log.debug(f"Powercycled device '{device.name}' to 'on' state")
 
 
-def execute_power_cycle_device(device, delay=30):
+def execute_power_cycle_device(device, delay=30, destroy=True):
     ''' Powercycle a device
 
     Args:
@@ -139,6 +139,9 @@ def execute_power_cycle_device(device, delay=30):
         delay (int, optional): Time in seconds to sleep between turning the
             device off and then back on. Defaults to 30.
 
+        destroy (bool): Determine if the device connection object should be
+            destroyed. Defaults to True
+
     Raises:
         Exception if powercycling fails.
 
@@ -146,10 +149,11 @@ def execute_power_cycle_device(device, delay=30):
         None
     '''
     # Destroy device object
-    try:
-        device.destroy_all()
-    except Exception as e:
-        log.warning('could not destroy the device object continue with powercycle.')
+    if destroy:
+        try:
+            device.destroy_all()
+        except Exception as e:
+            log.warning('could not destroy the device object continue with powercycle.')
         
 
     device.api.execute_power_off_device()

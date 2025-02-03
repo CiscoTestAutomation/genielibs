@@ -258,7 +258,7 @@ class TriggerUnconfigConfigMldJoinGroup(TriggerUnconfigConfig):
                                      'group', '(?P<group>.*)'],
                                     ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
                                      '(?P<interface>.*)', 'join_group', '(?P<join_group>.*)',
-                                     'source', '(?P<source>\*)']],
+                                     'source', r'(?P<source>\*)']],
                                 'all_keys': True,
                                 'kwargs':{'attributes': [
                                     'info[vrfs][(.*)][interfaces][(.*)][join_group][(.*)]',
@@ -297,7 +297,7 @@ class TriggerUnconfigConfigMldJoinGroup(TriggerUnconfigConfig):
                                                                  '(?P<interface>.*)', NotExists('group')],
                                                                 ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
                                                                  '(?P<interface>.*)', 'group', '(?P<group>.*)',
-                                                                 'source', NotExists('(?P<source>\*)')],
+                                                                 'source', NotExists(r'(?P<source>\*)')],
                                                                 ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
                                                                  '(?P<interface>.*)', 'group', '(?P<group>.*)',
                                                                  NotExists('source')]
@@ -382,7 +382,7 @@ class TriggerUnconfigConfigMldStaticGroup(TriggerUnconfigConfig):
                                      'group', '(?P<group>.*)'],
                                     ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
                                      '(?P<interface>.*)', 'static_group', '(?P<static_group>.*)',
-                                     'source', '(?P<source>\*)']],
+                                     'source', r'(?P<source>\*)']],
                                 'all_keys': True,
                                 'kwargs':{'attributes': [
                                     'info[vrfs][(.*)][interfaces][(.*)][join_group]',
@@ -421,7 +421,7 @@ class TriggerUnconfigConfigMldStaticGroup(TriggerUnconfigConfig):
                                                                  '(?P<interface>.*)', NotExists('group')],
                                                                 ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
                                                                  '(?P<interface>.*)', 'group', '(?P<group>.*)',
-                                                                 'source', NotExists('(?P<source>\*)')],
+                                                                 'source', NotExists(r'(?P<source>\*)')],
                                                                 ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
                                                                  '(?P<interface>.*)', 'group', '(?P<group>.*)',
                                                                  NotExists('source')]

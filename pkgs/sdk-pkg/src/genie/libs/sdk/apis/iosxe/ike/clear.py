@@ -48,7 +48,7 @@ def clear_ikev2_sa(device,
 
     try:    
         device.execute(cmd, 
-            error_pattern=[f' No VRF named {fvrf} exists','% Invalid input detected at \'\^\' marker\.'], 
+            error_pattern=[f' No VRF named {fvrf} exists',r'% Invalid input detected at \'\^\' marker\.'], 
             timeout=timeout)
     
     except SubCommandFailure as e:

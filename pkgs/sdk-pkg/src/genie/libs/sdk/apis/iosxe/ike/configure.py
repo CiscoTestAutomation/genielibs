@@ -142,7 +142,7 @@ def configure_ikev2_proposal(device,
     configs = []
     configs.append(f"crypto ikev2 proposal {proposal_name}")
     configs.append(f"encryption {encr_algos}")
-    if not re.search("aes\-gcm\-.*", encr_algos):
+    if not re.search(r"aes\-gcm\-.*", encr_algos):
         configs.append(f"integrity {integrity_algos}")
     configs.append(f"group {dh_group}")
     if prf_algos is not None:
@@ -681,7 +681,7 @@ def configure_ikev2_profile_advanced(device,
     f"% Invalid keyring {keyring_local}",
     f"% No such trustpoint {trustpoint}",
     "Reconnect can not be configured if either Keyring, PSK  authentication or PSK authorization enabled in profile.",
-    " \! \(IKEv2 Cluster load-balancer is not enabled\)"
+    r" \! \(IKEv2 Cluster load-balancer is not enabled\)"
     ]
     try:
         device.configure(configs, error_pattern = errors)
@@ -1015,7 +1015,7 @@ def unconfigure_ikev2_proposal(device,
     configs.append(f"no crypto ikev2 proposal {proposal_name}")
    
     try:
-        device.configure(configs, error_pattern=['% Cannot remove as proposal is in use\.'])
+        device.configure(configs, error_pattern=[r'% Cannot remove as proposal is in use\.'])
     except SubCommandFailure as e:
         log.error("Failed to configure ikev2 policy,"
              "Error:\n{error}".format(error=e)
@@ -1257,7 +1257,7 @@ def clear_crypto_session(device,
 
     try:    
         device.execute(cmd, 
-            error_pattern=[f' No VRF named {fvrf} exists','% Invalid input detected at \'\^\' marker\.'], 
+            error_pattern=[f' No VRF named {fvrf} exists',r'% Invalid input detected at \'\^\' marker\.'], 
             timeout=timeout)
 
     except SubCommandFailure as e:

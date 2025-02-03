@@ -200,7 +200,7 @@ ianaift:ethernetCsmacd</type>
 <x>
   <ocif:interfaces xmlns:ocif="http://openconfig.net/yang/interfaces">
     <ocif:interface>
-      <ocif:name>This:is:some\silly-interface&lt;haha&gt;</ocif:name>
+      <ocif:name>This:is:some\\silly-interface&lt;haha&gt;</ocif:name>
     </ocif:interface>
   </ocif:interfaces>
 </x>
@@ -213,7 +213,7 @@ ianaift:ethernetCsmacd</type>
 <x>
   <interfaces xmlns="http://openconfig.net/yang/interfaces">
     <interface>
-      <name>This:is:some\silly-interface&lt;haha&gt;</name>
+      <name>This:is:some\\silly-interface&lt;haha&gt;</name>
     </interface>
   </interfaces>
 </x>

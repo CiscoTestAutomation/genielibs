@@ -40,7 +40,7 @@ def configure_tacacs_server(device, server_config):
                     ] 
                         
         Returns:
-            None
+            Response received from configuring the command
         Raises:
             SubCommandFailure: Failed configuring tacacs server 
     """
@@ -49,7 +49,8 @@ def configure_tacacs_server(device, server_config):
     for sc in server_config:
         if "host" in sc:
             config.append("tacacs server {}\n".format(sc["host"]))
-            config.append("address ipv4 {}\n".format(sc["host"]))
+            config.append("address ipv4 {}\n".format(sc["server"]))
+                                                                                                                                                                                                                                                                                                                                                                     
         if "timeout" in sc:
             config.append("timeout {}\n".format(sc["timeout"]))
         if "key_type" in sc and "key" in sc:
@@ -60,13 +61,14 @@ def configure_tacacs_server(device, server_config):
         config.append("exit\n")
 
         try:
-            device.configure("".join(config))
+            response = device.configure("".join(config))
         except SubCommandFailure:
             raise SubCommandFailure(
                 "Could not configure tacacs server on device {device}".format(
                     device=device.name
                 )
             )
+        return response
 
 
 def configure_radius_server(device, server_config):

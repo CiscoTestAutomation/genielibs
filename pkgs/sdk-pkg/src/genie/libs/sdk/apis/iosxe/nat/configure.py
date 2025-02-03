@@ -2032,3 +2032,158 @@ def unconfigure_static_nat_source_list_rule(device, translation, list_name, pool
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not Unconfigure static NAT source list rule. Error:{e}")
+
+
+def configure_nat64_mapt_domain(device, domain_num, dmr, bmr,
+                                bmr_ip, share_ratio, start_port=None,
+                                pset_id=None, local_ip=None):
+    """ Configure mapt domain on device
+        Args:
+            device ('obj'): device object
+            domain_num ('str'): mapt domain num
+            dmr ('str'): dmr ipv6 prefix
+            bmr ('str'): bmr ipv6 prefix
+            bmr_ip ('str'): bmr ipv4 prefix
+            share_ratio ('str'): share ratio
+            start_port ('str', optional): start port. Default value is None
+            pset_id ('str', optional): pset id, default value is None
+            local_ip ('str', optional): local ip prefix, default value is None
+        Returns:
+            config
+        Raises:
+            SubCommandFailure: Failed to configure mapt domain
+    """
+
+    config = [f'nat64 map-t domain {domain_num}',
+              f'default-mapping-rule {dmr}',
+              'basic-mapping-rule',
+              f'ipv6-prefix {bmr}',
+              f'ipv4-prefix {bmr_ip}']
+    cmd = f'port-parameters share-ratio {share_ratio}'\
+        f'{f" start-port {start_port}" if start_port else ""}'
+    config.append(cmd)
+    if pset_id:
+        cmd = f'port-set-id {pset_id}'
+        config.append(cmd)
+    if local_ip:
+        cmd = f'local-ipv4-prefix {local_ip}'
+        config.append(cmd)
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to config mapt domain. Error:\n{e}")
+
+
+def unconfigure_nat64_mapt_domain(device, domain_num):
+    """ UnConfigure mapt domain on device
+        Args:
+            device ('obj'): device object
+            domain_num ('str'): mapt domain num
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to unconfigure map-t domain
+    """
+    try:
+        device.configure(f'no nat64 map-t domain {domain_num}')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfig mapt domain. Error:\n{e}")
+
+
+def configure_nat64_route(device, ip, interface, vrf=None, enable=True):
+    """ Configure nat64 route on device
+        Args:
+            device ('obj'): device object
+            ip ('str'): ipv4 prefix
+            interface ('str'): output interface
+            vrf ('str', optional): vrf name. Default value is None
+            enable (boolean, optional): configure or unconfigure
+        Returns:
+            config
+        Raises:
+            SubCommandFailure: Failed to configure nat64 route
+    """
+    if enable:
+        cmd = ''
+    else:
+        cmd = 'no '
+    cmd += f'nat64 route'\
+        f'{f" vrf {vrf}" if vrf else ""}'\
+        f'  {ip} {interface}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to config nat64 route. Error:\n{e}")
+
+
+def configure_nat64_mapt_ce(device, enable=True):
+    """ Enables nat64 mapt ce on device
+        Args:
+            device ('obj'): Device object
+            enable (boolean): configure or unconfigure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    if enable:
+        config = ''
+    else:
+        config = 'no '
+    config += "nat64 settings map-t ce"
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure nat64 mapt ce on "
+            "device. Error:\n{e}".format(e=e)
+        )
+
+
+def configure_nat_service_all_algs(device, enable=True):
+    """ Enable or disable all algs on device
+        Args:
+            device ('obj'): Device object
+            enable (boolean): configure or unconfigure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    if enable:
+        config = ''
+    else:
+        config = 'no '
+    config += "ip nat service all-algs"
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure nat service all-algs on "
+            "device. Error:\n{e}".format(e=e)
+        )
+
+
+def configure_nat_setting_gatekeeper_size(device, size, enable=True):
+    """ Enable or disable gate keeper size on device
+        Args:
+            device ('obj'): Device object
+            size ('str'): gate keeper size
+            enable (boolean): configure or unconfigure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    if enable:
+        config = ''
+    else:
+        config = 'no '
+    config += f'ip nat settings gatekeeper-size {size}'
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure nat gatekeeper size on "
+            "device. Error:\n{e}".format(e=e)
+        )

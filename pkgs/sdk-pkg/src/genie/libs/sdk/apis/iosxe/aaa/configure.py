@@ -211,11 +211,37 @@ def configure_radius_group(device, server_config):
     if 'dscp_acct' in server_config:
         config_list.append(f"dscp acct {server_config['dscp_acct']}")
 
+
     try:
         device.configure(config_list)
         return config_list
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Failed configuring aaa radius server group. Error:\n{e}')
+
+
+def configure_radius_group_load_balance_method(device,group,batch_size = None):
+    """
+    Configure aaa radius server group
+    Args:
+        device ('obj'): Device object
+        group ('str'): Radius server group name
+        batch_size ('int'): batch size
+    Returns:
+        None
+    Raises:
+        SubCommandFailure        
+    """
+    config_list = [f"aaa group server radius {group}"]
+    if batch_size:
+        config_list.append(f"load-balance method least-outstanding batch-size {batch_size}")
+    else:            
+        config_list.append("load-balance method least-outstanding ignore-preferred-server")
+
+    try:
+        device.configure(config_list)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Failed configuring aaa radius server group load balance method. Error:\n{e}')
+
 
 def configure_coa(device, config_dict):
     """
@@ -1879,6 +1905,82 @@ def configure_aaa_authentication_login(device,auth_list,auth_type, group_name=''
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not configure aaa authentication login. Error:\n{e}")
 
+def configure_aaa_authorization_exec(device,auth_list,auth_type, group_name=''):
+    """ configure aaa authorization exec
+        Args:
+            device ('obj'): Device object
+            auth_list ('str'): authorization list (default/Named authorization list)
+            auth_type ('str'): authorization type (local/none)
+            group_name ('str',optional): Server-group name
+            None
+        Raise:
+            SubCommandFailure: Failed configuring aaa authorization exec
+    """
+    logger.debug(f"aaa authorization exec")
+
+    configs=f"aaa authorization exec {auth_list} {auth_type}"
+
+    if group_name:
+        configs+=f' group {group_name}'
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure aaa authorization exec. Error:\n{e}")
+
+def unconfigure_aaa_authorization_exec(device,auth_list):
+    """ unconfigure aaa authorization exec
+        Args:
+            device ('obj'): Device object
+            auth_list ('str'): authorization list (default/Named authorization list)
+        Raise:
+            SubCommandFailure: Failed configuring aaa authorization exec
+    """
+    logger.debug(f"no aaa authorization exec")
+
+    configs= f"no aaa authorization exec {auth_list}"
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure aaa authorization exec. Error:\n{e}")
+    
+
+def configure_aaa_authorization_console(device):
+      """configure authorization console
+         Args:
+           device ('obj'): Device object
+           None
+         Raise:
+           SubCommandFailure: Failed aaa authorization console
+      """
+      logger.debug(f"aaa authorization console")
+
+      configs= f"aaa authorization console"
+
+      try:
+         device.configure(configs)
+      except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure aaa authorization console. Error:\n{e}")
+
+
+def unconfigure_aaa_authorization_console(device):
+      """configure authorization console
+         Args:
+           device ('obj'): Device object
+           None
+         Raise:
+           SubCommandFailure: Failed aaa authorization console
+      """
+      logger.debug(f"aaa authorization console")
+
+      configs= f"no aaa authorization console"
+
+      try:
+         device.configure(configs)
+      except SubCommandFailure as e:
+         raise SubCommandFailure(f"Could not configure aaa authorization console. Error:\n{e}")
+       
+
 def configure_aaa_default_group_methods(device,server_grp,server_grp_name):
     """ configure aaa default group methods
         Args:
@@ -1921,6 +2023,139 @@ def configure_aaa_authorization_exec_default(device,auth_type,group_name=''):
         device.configure(configs)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not configure aaa authorization exec default. Error:\n{e}")
+
+def configure_aaa_accounting_exec_default_start_stop(device,server_grp_name):
+    """ configure aaa accounting exec default start-stop
+        Args:
+            device (`obj`): Device object
+            server_grp_name ('str'): Server-group name
+            None
+        Raise:
+            SubCommandFailure: Failed configuring aaa accounting exec default start-stop
+    """
+    logger.debug(f"aaa accounting exec default start-stop")
+
+    configs= f"aaa accounting exec default start-stop group {server_grp_name}"
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure aaa accounting exec default start-stop. Error:\n{e}")
+
+def unconfigure_aaa_accounting_exec_default_start_stop(device):
+    """ unconfigure aaa accounting exec default start-stop
+        Args:
+            device (`obj`): Device object
+            None
+        Raise:
+            SubCommandFailure: Failed configuring aaa accounting exec default start-stop
+    """
+    logger.debug(f"no aaa accounting exec default start-stop")
+
+    configs= f"no aaa accounting exec default start-stop group"
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not unconfigure aaa accounting exec default start-stop. Error:\n{e}")
+
+
+def enable_ssh_on_vty(device):
+      """enable ssh on vty
+        Args:
+           device (`obj`): Device object
+           None
+        Raise:
+            SubCommandFailure: enable ssh on vty
+      """
+      logger.debug(f"enable ssh on vty")
+
+      config_list = ["line vty 0 15","transport input ssh"]
+
+      try:
+         device.configure(config_list)
+      except SubCommandFailure as e:
+         raise SubCommandFailure(f"Could not enable ssh on vty\n{e}")
+
+
+def disable_ssh_on_vty(device):
+     """configure aaa enable ssh on vty
+        Args:
+           device (`obj`): Device object
+           None
+        Raise:
+            SubCommandFailure:  disable ssh on vty
+     """
+     config_list = ["line vty 0 15","no transport input"]
+
+     try:
+         device.configure(config_list)
+     except SubCommandFailure as e:
+         raise SubCommandFailure(f"Could not disable ssh on vty\n{e}")
+
+def configure_login_authentication_on_vty(device,authentication_list):
+     """configure login authentication on vty
+        Args:
+          device (`obj`): Device object
+          None
+        Raise:
+           SubCommandFailure:  configure login authentication on vty
+     """
+
+     config_list = ["line vty 0 15",f"login authentication {authentication_list}"]
+     try:
+         device.configure(config_list)
+     except SubCommandFailure as e:
+         raise SubCommandFailure(f"configure login authentication on vty")
+
+
+def configure_authorization_exec_on_vty(device,authorization_list):
+     """configure authorization exec on vty
+        Args:
+          device (`obj`): Device object
+          None
+        Raise:
+           SubCommandFailure:  configure authorization exec on vty
+     """
+
+     config_list = ["line vty 0 15",f'authorization exec {authorization_list}']
+     try:
+         device.configure(config_list)
+     except SubCommandFailure as e:
+         raise SubCommandFailure(f"configure authorization exec on vty")
+
+
+def unconfigure_login_authentication_on_vty(device):
+     """unconfigure login authentication on vty
+        Args:
+          device (`obj`): Device object
+          None
+        Raise:
+           SubCommandFailure:  unconfigure login authentication on vty
+     """
+
+     config_list = ["line vty 0 15","no login authentication"]
+     try:
+         device.configure(config_list)
+     except SubCommandFailure as e:
+         raise SubCommandFailure(f"configure login authentication on vty")
+
+
+def unconfigure_authorization_exec_on_vty(device):
+     """configure authorization exec on vty
+        Args:
+          device (`obj`): Device object
+          None
+        Raise:
+           SubCommandFailure: unconfigure authorization exec on vty
+     """
+
+     config_list = ["line vty 0 15","no authorization exec"]
+     try:
+         device.configure(config_list)
+     except SubCommandFailure as e:
+         raise SubCommandFailure(f"unconfigure authorization exec on vty")
+
 
 def configure_aaa_accounting_update_periodic(device,interval):
     """ configure aaa accounting update newinfo periodic
@@ -2078,6 +2313,28 @@ def configure_aaa_authentication_enable(device, group, group_name, group_action)
         raise SubCommandFailure(
             f'Could not configure aaa authentication enable:\n{e}'
         )
+
+def configure_aaa_authentication_enable_none(device):
+
+    """ configure 'aaa authentication enable default none'
+    Args:
+        device (`obj`)   : Device object
+
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+
+    cmd = f'aaa authentication enable default none'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Could not configure aaa authentication enable:\n{e}'
+        )
+
+        
 
 def unconfigure_aaa_authentication_enable(device):
 

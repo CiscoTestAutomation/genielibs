@@ -405,7 +405,7 @@ class BaseCyberSwitchingPowerCycler(PowerCycler):
             time.sleep(after)
 
         clear_line_dialog = Dialog([
-            Statement(pattern='.*\[confirm\]',
+            Statement(pattern=r'.*\[confirm\]',
                       action='sendline()',
                       loop_continue=True,
                       continue_timer=False)])
@@ -497,7 +497,7 @@ class BaseCliPowerCycler(PowerCycler):
         try:
             if outlets:
                 clear_line_dialog = Dialog([
-                    Statement(pattern='.*\?\s*\[y\/n\]\s*$',
+                    Statement(pattern=r'.*\?\s*\[y\/n\]\s*$',
                       action='sendline(y)',
                       loop_continue=True,
                       continue_timer=False)])
@@ -519,7 +519,7 @@ class BaseCliPowerCycler(PowerCycler):
         try:
             if outlets:
                 clear_line_dialog = Dialog([
-                    Statement(pattern='.*\?\s*\[y\/n\]\s*$',
+                    Statement(pattern=r'.*\?\s*\[y\/n\]\s*$',
                       action='sendline(y)',
                       loop_continue=True,
                       continue_timer=False)])

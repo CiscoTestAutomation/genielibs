@@ -1,7 +1,7 @@
 import logging
 import unittest
 
-from unittest.mock import Mock, MagicMock, call, ANY
+from unittest.mock import Mock, MagicMock, call, ANY, patch
 
 from genie.libs.clean.stages.iosxe.stages import InstallSmu
 from genie.libs.clean.stages.tests.utils import create_test_device
@@ -34,16 +34,27 @@ class Installimage(unittest.TestCase):
         device.parse = Mock(return_value=
                             {'location': {'Switch 1': {'pkg_state': 
                             {1: {'type': 'IMG', 'state': 'C', 'filename_version': '17.17.01.0.207986'},
-                             2: {'type': 'SMU', 'state': 'I', 'filename_version': 'flash:cat9k_iosxe.BLD_POLARIS_DEV_LATEST_20240908_003038.0.NODEFECT.SSA.smu.bin'}},
+                             2: {'type': 'SMU', 'state': 'I', 'filename_version': 'flash://server/image.smu.bin'}},
                              'auto_abort_timer': 'inactive'}}})
+        with patch("genie.libs.clean.stages.iosxe.stages.Dialog") as dialog_mock:
+            cls.install_smu(steps=steps, device=device, images=['flash://server/image.smu.bin'])
+        self.assertEqual(Passed, steps.details[0].result)
 
-        cls.install_smu(steps=steps, device=device, images=['sftp://server/image.smu.bin'])
+    def test_iosxe_multiple_install_image_pass(self):
+        steps = Steps()
+        cls = InstallSmu()
+        cls.history = MagicMock()
 
-        device.reload.assert_has_calls([
-            call('install activate file sftp://server/image.smu.bin', reply=ANY,
-                 reload_creds='default', prompt_recovery=True, error_pattern=['FAILED:.*?$'],
-                 timeout=500, device_recovery=False)
-        ])
+        device = Mock()
+        device.reload = Mock()
+        device.parse = Mock(return_value=
+                            {'location': {'Switch 1': {'pkg_state': 
+                            {1: {'type': 'IMG', 'state': 'C', 'filename_version': '17.17.01.0.207986'},
+                             2: {'type': 'SMU', 'state': 'I', 'filename_version': 'flash://server/image1.smu.bin'},
+                             2: {'type': 'SMU', 'state': 'I', 'filename_version': 'flash://server/image2.smu.bin'}},
+                             'auto_abort_timer': 'inactive'}}})
+        with patch("genie.libs.clean.stages.iosxe.stages.Dialog") as dialog_mock:
+            cls.install_smu(steps=steps, device=device, images=['flash://server/image1.smu.bin', 'flash://server/image2.smu.bin'])
         self.assertEqual(Passed, steps.details[0].result)
 
     def test_iosxe_install_smu_image_skip(self):
@@ -52,5 +63,5 @@ class Installimage(unittest.TestCase):
         cls.history = MagicMock()
         device = Mock()
         # skip the stage if the provide image is not a smu image
-        cls.install_smu(steps=steps, device=device, images=['sftp://server/image.bin'])
+        cls.install_smu(steps=steps, device=device, images=['flash://server/image.bin'])
         self.assertEqual(Skipped, steps.details[0].result)

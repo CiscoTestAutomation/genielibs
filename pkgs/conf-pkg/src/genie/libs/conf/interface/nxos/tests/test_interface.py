@@ -30,6 +30,8 @@ class test_interface(TestCase):
         intf1.mpls_ip_forwarding = True
         intf1.ip_forward = True
         intf1.ipv6_addr_use_link_local_only = True
+        intf1.fec = 'rs-fec'
+        intf1.media_type = '10g-sx'
 
         cfg = intf1.build_config(apply=False)
         self.assertMultiLineEqual(
@@ -42,6 +44,8 @@ class test_interface(TestCase):
                 ' mpls ip forwarding',
                 ' ip forward',
                 ' ipv6 address use-link-local-only',
+                ' fec rs-fec',
+                ' media-type 10g-sx',
                 ' exit',
             ]))
         print('cfg: {0}'.format(cfg))

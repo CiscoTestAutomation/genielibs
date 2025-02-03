@@ -350,7 +350,7 @@ class TriggerAddRemoveMldJoinGroup(TriggerAddRemove):
                                      'group', '(?P<group>.*)'],
                                     ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
                                      '(?P<interface>.*)', 'join_group', '(?P<join_group>.*)',
-                                     'source', '(?P<source>\*)'],
+                                     'source', r'(?P<source>\*)'],
                                     ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
                                      '(?P<interface>.*)', 'group', '(?P<group>.*)', '(?P<dummy>.*)'], # incase there is nothing learned
                                     ],

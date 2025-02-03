@@ -135,7 +135,7 @@ class FileServer:
         for iname, iface in interfaces.items():
             for snic in iface:
                 if snic.family == socket.AF_INET:
-                    ip = netaddr.IPAddress(snic.address)
+                    ip = netaddr.IPAddress(snic.address, flags=netaddr.INET_ATON)
                     if ip in subnet:
                         valid_ips.append(snic.address)
 

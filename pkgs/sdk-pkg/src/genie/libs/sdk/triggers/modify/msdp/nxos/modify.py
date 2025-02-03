@@ -372,7 +372,7 @@ class TriggerModifyMsdpSaLimit(TriggerModify):
                                               ['info', 'vrf', '(?P<vrf>.*)', 'peer',
                                                '(?P<peer>.*)', 'session_state', 'established'],
                                               ['info', 'vrf', '(?P<vrf>.*)', 'peer',
-                                               '(?P<peer>.*)', 'sa_limit', '(?P<sa_limit>\d+)']],
+                                               '(?P<peer>.*)', 'sa_limit', r'(?P<sa_limit>\d+)']],
                                           'kwargs':{'attributes': [
                                               'info[vrf][(.*)][peer][(.*)][session_state]',
                                               'info[vrf][(.*)][peer][(.*)][sa_limit]']},

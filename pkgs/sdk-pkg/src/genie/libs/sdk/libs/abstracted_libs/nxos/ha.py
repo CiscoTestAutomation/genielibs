@@ -69,7 +69,7 @@ class HA(HA_main):
         cores = []
         # Execute command to check for cores
         header = ["VDC", "Module", "Instance",
-                  "Process-name", "PID", "Date\(Year-Month-Day Time\)"]
+                  "Process-name", "PID", "Date\\(Year-Month-Day Time\\)"]
 
         if self.device.alias == 'uut':
             # In case of restarting process on a the main VDC
@@ -90,7 +90,7 @@ class HA(HA_main):
         # Parse through output to collect core information (if any)
         for k in sorted(output.entries.keys(), reverse=True):
             row = output.entries[k]
-            date = row.get("Date\(Year-Month-Day Time\)", None)
+            date = row.get("Date\\(Year-Month-Day Time\\)", None)
             if not date:
                 continue
             date_ = datetime.strptime(date, '%Y-%m-%d %H:%M:%S')

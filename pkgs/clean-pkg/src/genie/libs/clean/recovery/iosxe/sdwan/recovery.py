@@ -84,7 +84,7 @@ def recovery_worker(start,
     device.instantiate(connection_timeout=timeout)
 
     # Get device console port information
-    last_word_in_start_match = re.match('.*\s(\S+)$', start)
+    last_word_in_start_match = re.match(r'.*\s(\S+)$', start)
     last_word_in_start = last_word_in_start_match.group(1) \
         if last_word_in_start_match else ""
 

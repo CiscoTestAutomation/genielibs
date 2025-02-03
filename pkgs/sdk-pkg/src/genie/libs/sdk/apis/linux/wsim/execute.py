@@ -148,7 +148,7 @@ def verify_ap_associate(device,ap_count,max_time=600):
         while timeout.iterate():
             try:
                 show_data = device.execute("show ap status | grep APs:")
-                current_ap_count = re.search("\d+\s+APs:.* (\d+)\s+Run", show_data, re.IGNORECASE).group(1)
+                current_ap_count = re.search(r"\d+\s+APs:.* (\d+)\s+Run", show_data, re.IGNORECASE).group(1)
                 log.info("Current ap count on wsim:{}".format(str(current_ap_count)))
                 log.info("Expected ap count:{}".format(str(ap_count)))
                 if current_ap_count != ap_count:

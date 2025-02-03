@@ -186,7 +186,7 @@ class RommonDialog(CommonRommonDialog):
         # clean up disk space in case NXOS goes to bash prompt during reload
         # no info about protected_files in this situation, so protect only given
         # golden image and delete other thinkable image files
-        m = re.search("'(?P<storage>\S+)' is FULL", spawn.buffer)
+        m = re.search(r"'(?P<storage>\S+)' is FULL", spawn.buffer)
         if m:
             spawn.buffer = ''
             storage = m.group('storage')

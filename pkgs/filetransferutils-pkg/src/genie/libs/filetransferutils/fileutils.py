@@ -28,7 +28,7 @@ from genie.libs import sdk, parser
 logger = logging.getLogger(__name__)
 
 # Error patterns to be caught when executing cli on device
-FAIL_MSG = ['Permission denied[^,]', 'failed to copy', 'Unable to find', 'Error(?! opening tftp://255\.255\.255\.255)', 
+FAIL_MSG = ['Permission denied[^,]', 'failed to copy', 'Unable to find', r'Error(?! opening tftp://255\.255\.255\.255)', 
             'operation failed', 'Compaction is not supported', 'Copy failed', 'No route to host', 'Connection timed out', 
             'not found', 'No space', 'not a remote file', 'Could not resolve', 'Invalid URI', "couldn't connect to host",
             "no such file or directory (invalid server)", ".*Cannot overwrite/delete.*", "No such file or directory"]

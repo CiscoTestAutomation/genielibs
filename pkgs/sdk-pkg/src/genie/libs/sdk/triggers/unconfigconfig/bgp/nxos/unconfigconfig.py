@@ -1128,14 +1128,14 @@ class TriggerUnconfigConfigBgpNeighborIpv4(TriggerUnconfigConfig):
     mapping = Mapping(requirements={'ops.bgp.bgp.Bgp':{
                                           'requirements':[['info', 'instance', '(?P<instance>.*)',
                                                            'vrf', '(?P<vrf>.*)', 'neighbor',
-                                                           '(?P<neighbor>^[\d\.]+$)', 'session_state', 'established'],
+                                                           r'(?P<neighbor>^[\d\.]+$)', 'session_state', 'established'],
                                                           ['info', 'instance', '(?P<instance>.*)', 'bgp_id', '(?P<bgp_id>.*)']],
                                         'all_keys':True,
                                         'kwargs':{'attributes':['info']},
                                         'exclude': bgp_exclude}},
                       config_info={'conf.bgp.Bgp':{
                                      'requirements':[['device_attr', '{uut}', 'vrf_attr', '(?P<vrf>.*)',
-                                                      'neighbor_attr','(?P<neighbor>^[\d\.]+$)']],
+                                                      'neighbor_attr',r'(?P<neighbor>^[\d\.]+$)']],
                                      'verify_conf':False,
                                      'kwargs':{'mandatory':{'bgp_id': '(?P<bgp_id>.*)'}}}},
                       verify_ops={'ops.bgp.bgp.Bgp':{
@@ -1212,14 +1212,14 @@ class TriggerUnconfigConfigBgpNeighborIpv6(TriggerUnconfigConfig):
     mapping = Mapping(requirements={'ops.bgp.bgp.Bgp':{
                                           'requirements':[['info', 'instance', '(?P<instance>.*)',
                                                            'vrf', '(?P<vrf>.*)', 'neighbor',
-                                                           '(?P<neighbor>^[\w\:]+$)', 'session_state', 'established'],
+                                                           r'(?P<neighbor>^[\w\:]+$)', 'session_state', 'established'],
                                                           ['info', 'instance', '(?P<instance>.*)', 'bgp_id', '(?P<bgp_id>.*)']],
                                         'all_keys':True,
                                         'kwargs':{'attributes':['info']},
                                         'exclude': bgp_exclude}},
                       config_info={'conf.bgp.Bgp':{
                                      'requirements':[['device_attr', '{uut}', 'vrf_attr', '(?P<vrf>.*)',
-                                                      'neighbor_attr','(?P<neighbor>^[\w\:]+$)']],
+                                                      'neighbor_attr',r'(?P<neighbor>^[\w\:]+$)']],
                                      'verify_conf':False,
                                      'kwargs':{'mandatory':{'bgp_id': '(?P<bgp_id>.*)'}}}},
                       verify_ops={'ops.bgp.bgp.Bgp':{

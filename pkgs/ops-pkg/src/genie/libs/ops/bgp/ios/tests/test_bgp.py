@@ -25,7 +25,7 @@ from genie.libs.parser.ios.show_bgp import ShowBgpAllSummary, ShowBgpAllClusterI
 outputs = {}
 
 outputs['show bgp all summary'] = BgpOutput.show_bgp_all_summary
-outputs['show vrf detail | inc \(VRF'] = BgpOutput.show_vrf_detail
+outputs['show vrf detail | inc \\(VRF'] = BgpOutput.show_vrf_detail
 outputs['show bgp all cluster-ids'] = BgpOutput.show_bgp_all_cluster_ids
 
 outputs['show bgp all neighbors'] = BgpOutput.show_bgp_all_neighbors

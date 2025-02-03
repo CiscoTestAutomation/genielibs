@@ -2087,8 +2087,9 @@ def password_recovery(device, console_activity_pattern='',
     '''
 
     # step:1 Powercycle the device
+    # Set the "destroy" option to false when performing a power cycle for password recovery
     log.info(f'Powercycle the device {device.name}')
-    device.api.execute_power_cycle_device()
+    device.api.execute_power_cycle_device(destroy=False)
 
     # step:2 Break boot and enter rommon state
     log.info(f'Breakboot to reach rommon state on {device.name}')
@@ -2112,21 +2113,25 @@ def password_recovery(device, console_activity_pattern='',
     device.api.configure_ignore_startup_config()
 
     # step:4 Bring the device to enable mode
-    device.enable()
+    if device.is_ha:
+        # designate handle method will bring the device to enable mode
+        device.connection_provider.designate_handles()
+    else:
+        device.enable()
 
     # step:5 Configure the login credentials
     log.info(f'Configure the login credentials {device.name}')
     device.api.configure_management_credentials()
 
     # step:6 Unconfigure the ignore startup config
-    log.info(f'Unconfigure the ignore startup config')
+    log.info(f'Unconfigure the ignore startup config {device.name}')
     device.api.unconfigure_ignore_startup_config()
 
     # step:7 verify the rommon variable
-    log.info(f'verify the ignore startup config')
+    log.info(f'verify the ignore startup config {device.name}')
     if not device.api.verify_ignore_startup_config():
         raise Exception(f"Failed to unconfigure the ignore startup config on {device.name}")
 
     # step:8 Execute write memory
-    log.info(f'Executing write memory')
+    log.info(f'Executing write memory {device.name}')
     device.api.execute_write_memory()

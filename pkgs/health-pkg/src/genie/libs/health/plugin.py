@@ -561,7 +561,8 @@ class HealthCheckPlugin(BasePlugin):
                         'reconnect': reconnect,
                         'health_settings': health_settings,
                         'name': section_name,
-                        'data': section_data
+                        'data': section_data,
+                        'suppress_logs': True, # To supress processor logs.
                     })
                 processors.setdefault('context', []).append(processor)
 

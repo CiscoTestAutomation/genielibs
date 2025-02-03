@@ -324,7 +324,7 @@ class TriggerUnconfigConfigMsdpSaLimit(TriggerUnconfigConfig):
                                               ['info', 'vrf', '(?P<vrf>.*)', 'peer',
                                                '(?P<peer>.*)', 'session_state', 'established'],
                                               ['info', 'vrf', '(?P<vrf>.*)', 'peer',
-                                               '(?P<peer>.*)', 'sa_limit', '(?P<sa_limit>\d+)']],
+                                               '(?P<peer>.*)', 'sa_limit', r'(?P<sa_limit>\d+)']],
                                           'kwargs':{'attributes': [
                                               'info[vrf][(.*)][peer][(.*)][session_state]',
                                               'info[vrf][(.*)][peer][(.*)][sa_limit]']},
@@ -332,7 +332,7 @@ class TriggerUnconfigConfigMsdpSaLimit(TriggerUnconfigConfig):
                       config_info={'conf.msdp.Msdp':{
                                        'requirements':[
                                          ['device_attr', '{uut}', 'vrf_attr', '(?P<vrf>.*)',
-                                          'peer_attr', '(?P<peer>.*)', 'sa_limit','(?P<sa_limit>\d+)']],
+                                          'peer_attr', '(?P<peer>.*)', 'sa_limit',r'(?P<sa_limit>\d+)']],
                                        'verify_conf':False,
                                        'kwargs':{}}},
                       verify_ops={'ops.msdp.msdp.Msdp':{

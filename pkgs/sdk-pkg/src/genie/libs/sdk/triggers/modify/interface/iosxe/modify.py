@@ -75,7 +75,7 @@ class TriggerModifyEthernetMtu(TriggerModify):
     # Mapping of Information between Ops and Conf
     # Also permit to dictates which key to verify
     mapping = Mapping(requirements={'ops.interface.interface.Interface':{
-                                        'requirements': [['info', '(?P<interface>\w+Ethernet[0-9\/]+$)', 'mtu', '(?P<mtu>.*)'],
+                                        'requirements': [['info', r'(?P<interface>\w+Ethernet[0-9\/]+$)', 'mtu', '(?P<mtu>.*)'],
                                                          ['info', '(?P<interface>.*)', 'port_channel', 'port_channel_member', False],
                                                          ['info', '(?P<interface>.*)', 'oper_status', 'up']],
                                         'exclude': interface_exclude,
@@ -87,8 +87,8 @@ class TriggerModifyEthernetMtu(TriggerModify):
                                                              'attach': False}}}},
                       verify_ops={'ops.interface.interface.Interface':{
                                       'requirements': [['info', '(?P<interface>.*)', 'mtu', 9216],
-                                                       ['info', '(?P<interface>.*)', 'bandwidth', '(\d+)'],
-                                                       ['info', '(.*)', 'mtu', '(\d+)']],
+                                                       ['info', '(?P<interface>.*)', r'bandwidth', r'(\d+)'],
+                                                       ['info', '(.*)', 'mtu', r'(\d+)']],
                                       'exclude': interface_exclude}},
                       num_values={'interface': 1, 'mtu': 1})
 

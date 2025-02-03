@@ -151,7 +151,7 @@ class HA(HA_iosxe):
                 raise Exception("Device '{}' does not have standby RP - cannot "
                                 "perform ISSU".format(device.name))
             standby_rp = ret[0][1][1]
-            srp = re.search('(?P<srp>(\d))', standby_rp).groupdict()['srp']
+            srp = re.search(r'(?P<srp>(\d))', standby_rp).groupdict()['srp']
             logger.info("Standby RP on '{dev}' is: '{standby_rp}'".format(
                         dev=device.name, standby_rp=standby_rp))
 
@@ -342,8 +342,8 @@ class HA(HA_iosxe):
             raise Exception("Unable to execute 'dir {}'".format(disk))
 
         # 78704144384 bytes total (59693568000 bytes free)
-        m = re.search('(?P<total>(\d+)) +bytes +total +\((?P<free>(\d+)) '
-                      '+bytes +free\)', output)
+        m = re.search(r'(?P<total>(\d+)) +bytes +total +\((?P<free>(\d+)) '
+                      r'+bytes +free\)', output)
         bytes_total = m.groupdict()['total']
         bytes_free = m.groupdict()['free']
 

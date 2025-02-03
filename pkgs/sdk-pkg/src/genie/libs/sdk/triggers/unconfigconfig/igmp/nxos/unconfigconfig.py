@@ -259,7 +259,7 @@ class TriggerUnconfigConfigIgmpJoinGroup(TriggerUnconfigConfig):
                                      'group', '(?P<group>.*)'],
                                     ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
                                      '(?P<interface>.*)', 'join_group', '(?P<join_group>.*)',
-                                     'source', '(?P<source>\*)']],
+                                     'source', r'(?P<source>\*)']],
                                 'all_keys': True,
                                 'kwargs':{'attributes': [
                                     'info[vrfs][(.*)][interfaces][(.*)][join_group][(.*)]',
@@ -301,7 +301,7 @@ class TriggerUnconfigConfigIgmpJoinGroup(TriggerUnconfigConfig):
                                                                  NotExists('source')],
                                                                 ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
                                                                  '(?P<interface>.*)', 'group', '(?P<group>.*)',
-                                                                 'source', NotExists('(?P<source>\*)')]
+                                                                 'source', NotExists(r'(?P<source>\*)')]
                                                                ])
                                                   ],
                                                 ],
@@ -382,7 +382,7 @@ class TriggerUnconfigConfigIgmpStaticGroup(TriggerUnconfigConfig):
                                      'group', '(?P<group>.*)'],
                                     ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
                                      '(?P<interface>.*)', 'static_group', '(?P<static_group>.*)',
-                                     'source', '(?P<source>\*)']],
+                                     'source', r'(?P<source>\*)']],
                                 'all_keys': True,
                                 'kwargs':{'attributes': [
                                     'info[vrfs][(.*)][interfaces][(.*)][join_group]',
@@ -424,7 +424,7 @@ class TriggerUnconfigConfigIgmpStaticGroup(TriggerUnconfigConfig):
                                                                  NotExists('source')],
                                                                 ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
                                                                  '(?P<interface>.*)', 'group', '(?P<group>.*)',
-                                                                 'source', NotExists('(?P<source>\*)')]
+                                                                 'source', NotExists(r'(?P<source>\*)')]
                                                                ])
                                                   ],
                                                 ],

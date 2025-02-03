@@ -114,3 +114,95 @@ def unconfigure_ip_name_server(
             "Could not Un-configure ip name server. Error:\n{error}".format(error=e)
         )
     return out
+
+def configure_ip_host(
+    device, 
+    hostname,
+    ip_address
+):
+    """ Configure ip host with domain name and ip address 
+        Args:
+            device ('obj'): device to use
+            hostname ('str'): Name of the host
+            ip_address ('str'): IP Address of the host
+        Returns:
+            console output
+        Raises:
+            SubCommandFailure: ip host configuration
+    """
+
+    cmd = f"ip host {hostname} {ip_address}"
+    try:
+        out = device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure ip host. Error:\n{error}".format(error=e)
+        )
+    return out
+
+def unconfigure_ip_host(
+    device, 
+    hostname,
+    ip_address
+):
+    """ Enable ip name server 
+        Args:
+            device ('obj'): device to use
+            hostname ('str'): Name of the host
+            ip_address ('str'): IP Address of the host
+        Returns:
+            console output
+        Raises:
+            SubCommandFailure: ip host Un-configuration
+    """
+
+    cmd = f"no ip host {hostname} {ip_address}"
+    try:
+        out = device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not Un-configure ip host. Error:\n{error}".format(error=e)
+        )
+    return out
+
+def configure_ip_dns_server(
+    device
+):
+    """ Enable ip DNS server 
+        Args:
+            device ('obj'): device to use
+        Returns:
+            console output
+        Raises:
+            SubCommandFailure: DNS configuration
+    """
+
+    cmd = f"ip dns server"
+    try:
+        out = device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure ip dns server . Error:\n{error}".format(error=e)
+        )
+    return out
+
+def unconfigure_ip_dns_server(
+    device
+):
+    """ Disable ip DNS server 
+        Args:
+            device ('obj'): device to use
+        Returns:
+            console output
+        Raises:
+            SubCommandFailure: DNS Un-configuration
+    """
+
+    cmd = f"no ip dns server"
+    try:
+        out = device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not Un-configure ip dns server . Error:\n{error}".format(error=e)
+        )
+    return out

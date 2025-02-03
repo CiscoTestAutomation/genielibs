@@ -19,6 +19,10 @@ class TestConfigureReplace(unittest.TestCase):
 
         self.cls = ConfigureReplace()
         self.device = create_test_device('PE1', os='iosxe')
+        self.device.state_machine = Mock()
+        self.device.default = Mock()
+        self.device._get_learned_hostname = Mock()
+        self.device.spawn = Mock()
 
         self.data = {
             'configure replace bootflash:test.cfg force': '''

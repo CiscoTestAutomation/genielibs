@@ -74,7 +74,7 @@ class BgpOutput(object):
     '''
     
     show_vrf_detail = '''\
-        show vrf detail | inc \(VRF
+        show vrf detail | inc \\(VRF
         VRF Mgmt-intf (VRF Id = 1); default RD <not set>; default VPNID <not set>
         VRF VRF1 (VRF Id = 2); default RD 65000:1; default VPNID <not set>
     '''

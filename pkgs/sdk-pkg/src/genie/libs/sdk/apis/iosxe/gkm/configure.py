@@ -4,7 +4,6 @@
 from email.policy import default
 import logging
 import re
-from telnetlib import XAUTH
 
 # Unicon
 from unicon.core.errors import SubCommandFailure
@@ -25,7 +24,7 @@ def configure_gikev2_profile_under_gkm_group(device,
             group_name ('str'): gkm group name
             server_local ('bool', optional): Configure server local.  Default is False
             gikev2_profile ('str'): Gikev2 profile name.
-        Returns: None    
+        Returns: None
         Raises:
             SubCommandFailure
     """
@@ -54,9 +53,9 @@ def configure_client_protocol_under_gkm_group(device,
         Args:
             device ('obj'): Device object
             group_name ('str'): gkm group name
-            client_protocol ('bool'): Gikev2/gdoi 
+            client_protocol ('bool'): Gikev2/gdoi
             profile_name ('str'): Gikev2/gdoi profile name.
-        Returns: None            
+        Returns: None
         Raises:
             SubCommandFailure
     """
@@ -83,7 +82,7 @@ def configure_gkm_group_identity_number(device,
             device ('obj'): Device object
             group_name ('str'): gkm group name
             ident_num ('str', optional): Identity number of  gkm group
-        Returns: None            
+        Returns: None
         Raises:
             SubCommandFailure
     """
@@ -100,7 +99,7 @@ def configure_gkm_group_identity_number(device,
         log.error(f"Failed to configure identity number under crypto gkm group,"
              "Error:\n{error}")
         raise
-    
+
 def configure_rekey_under_gkm_group(device,
                         group_name,
                         server_local=True,
@@ -122,8 +121,8 @@ def configure_rekey_under_gkm_group(device,
             rekey_retransmit ('str', optional): Configure rekey retransmit periodic
             rekey_retransmit_number ('str', optional): Configure rekey retransmit number
             rekey_auth_key ('str', optional): Configure authentication key
-            rekey_transport_unicast ('bool', optional): Configure rekey transport as unicast. Default is False            
-        Returns: None            
+            rekey_transport_unicast ('bool', optional): Configure rekey transport as unicast. Default is False
+        Returns: None
         Raises:
             SubCommandFailure
     """
@@ -176,7 +175,6 @@ def configure_ipsec_under_gkm_group(device,
             sa_ipsec_replay ('bool', optional): Set to True if sa replay needs to configured. Default is False
             sa_ipsec_replay_time ('str', optional): Set replay time window size
             sa_ipsec_tag ('bool', optional): Set tag. Default is False
-. Default is False            
         Returns: None
         Raises:
             SubCommandFailure
@@ -192,9 +190,9 @@ def configure_ipsec_under_gkm_group(device,
             if sa_ipsec_profile is not None:
                 configs.append(f"profile {sa_ipsec_profile}")
             if sa_ipsec_match_ipv4 is not None:
-                configs.append(f"match address ipv4 {sa_ipsec_match_ipv4}")                
+                configs.append(f"match address ipv4 {sa_ipsec_match_ipv4}")
             if sa_ipsec_match_ipv6 is not None:
-                configs.append(f"match address ipv6 {sa_ipsec_match_ipv6}")            
+                configs.append(f"match address ipv6 {sa_ipsec_match_ipv6}")
             if sa_ipsec_replay:
                 if sa_ipsec_replay_time is not None :
                     configs.append(f"replay time window-size {sa_ipsec_replay_time}")
@@ -220,7 +218,7 @@ def configure_server_redundancy_under_gkm_group(device,
         Args:
             device ('obj'): Device object
             group_name ('str'): gkm group name
-            server_local_redundancy ('bool', optional): Set redundancy in local server. Default is False            
+            server_local_redundancy ('bool', optional): Set redundancy in local server. Default is False
             server_local_redundancy ('bool', optional): Set redundancy in local server. Default is False
             server_local_redundancy_local_prior ('str', optional): set local priority value for redundancy
             server_local_redundancy_peer_addr ('str', optional): set peer address value for redundancy
@@ -241,7 +239,7 @@ def configure_server_redundancy_under_gkm_group(device,
                 configs.append(f"local priority {server_local_redundancy_local_prior}")
             if server_local_redundancy_peer_addr is not None :
                 configs.append(f"peer address ipv4 {server_local_redundancy_peer_addr}")
-                
+
     try:
         device.configure(configs)
     except SubCommandFailure as error:
@@ -261,7 +259,7 @@ def configure_protocol_version_optimize_cli_under_gkm_group(device,
             server_local ('bool', optional): Configure server local.  Default is False
             server_local_redundancy ('bool', optional): Set redundancy in local server. Default is False
             protocol_version_optimize ('str', optional): set protocol version optimize
-        Returns: None            
+        Returns: None
         Raises:
             SubCommandFailure
     """
@@ -294,7 +292,7 @@ def configure_ip_for_server_local_under_gkm_group(device,
             server_local ('bool', optional): Configure server local.  Default is False
             ipv4_address ('str'): ipv4 address
 
-        Returns: None            
+        Returns: None
 
         Raises:
             SubCommandFailure
@@ -314,7 +312,7 @@ def configure_ip_for_server_local_under_gkm_group(device,
         log.error(f"Failed to configure ipv4 address for server local under crypto gkm group,"
              "Error:\n{error}")
         raise
-        
+
 def configure_ipv4_server_under_gkm_group(device,
                         group_name,
                         server_ipv4_address=None,
@@ -325,7 +323,7 @@ def configure_ipv4_server_under_gkm_group(device,
             group_name ('str'): gkm group name
             server_ipv4_address ('str', optional): Set ipv4 server address
             server_ipv4_sec_address ('str', optional): Set ipv4 secondary server address
-        Returns: None            
+        Returns: None
         Raises:
             SubCommandFailure
     """
@@ -354,7 +352,7 @@ def configure_pfs_enable_or_disable_under_gkm_group(device,
             group_name ('str'): gkm group name
             server_local ('bool', optional): Configure server local.  Default is False
             pfs ('str', optional): Enable/Disable the PFS feature on Key Server
-        Returns: None            
+        Returns: None
         Raises:
             SubCommandFailure
     """

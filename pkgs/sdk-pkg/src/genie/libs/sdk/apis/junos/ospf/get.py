@@ -50,8 +50,8 @@ def get_ospf_spf_scheduled_time(log):
         date time ('str')  
     """  
     # Jun 12 03:32:19.068983 OSPF SPF scheduled for topology default in 8s
-    p_scheduled = ('(?P<date>\S+\s+\d+) (?P<scheduled_time>\d+\:\d+\:\d+\.\d+) '\
-        'OSPF SPF scheduled for topology default in (?P<spf_change>\d+)s')    
+    p_scheduled = (r'(?P<date>\S+\s+\d+) (?P<scheduled_time>\d+\:\d+\:\d+\.\d+) '\
+        r'OSPF SPF scheduled for topology default in (?P<spf_change>\d+)s')    
     m = re.match(p_scheduled, log)
 
     try:
@@ -76,7 +76,7 @@ def get_ospf_spf_start_time(log):
     """
     # Jun 12 03:40:19.068983 Starting full SPF for topology default
     p_start = (
-        '(?P<date>\S+\s+\d+) (?P<start_time>\d+\:\d+\:\d+\.\d+) Starting full SPF for topology default'
+        r'(?P<date>\S+\s+\d+) (?P<start_time>\d+\:\d+\:\d+\.\d+) Starting full SPF for topology default'
     )     
     m = re.match(p_start, log)
     

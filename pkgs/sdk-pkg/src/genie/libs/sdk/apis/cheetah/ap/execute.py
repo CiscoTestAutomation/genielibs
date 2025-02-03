@@ -73,7 +73,7 @@ def execute_archive_download(device, image_path, max_timeout=300, username=None,
                   continue_timer=False),
 
     ])
-    boot_part_before_reload = re.search("BOOT path-list:(\s+\w+)", device.execute("show boot | inc BOOT")).group(1).strip()
+    boot_part_before_reload = re.search(r"BOOT path-list:(\s+\w+)", device.execute("show boot | inc BOOT")).group(1).strip()
     for i in range(retries):
         output = device.execute("archive download-sw /no-reload {}".format(image_path), timeout=max_timeout, reply=dialog)
         if "Successfully setup AP image" in output and "Image download completed" in output:
@@ -94,7 +94,7 @@ def execute_archive_download(device, image_path, max_timeout=300, username=None,
             log.error("Failed to bring-up device after reload")
             return False
         else:
-            boot_part_after_reload = re.search("BOOT path-list:(\s+\w+)", device.execute("show boot | inc BOOT")).group(1).strip()
+            boot_part_after_reload = re.search(r"BOOT path-list:(\s+\w+)", device.execute("show boot | inc BOOT")).group(1).strip()
             if boot_part_after_reload == boot_part_before_reload:
                 log.error("Same boot part loaded after image downloading")
                 return False 

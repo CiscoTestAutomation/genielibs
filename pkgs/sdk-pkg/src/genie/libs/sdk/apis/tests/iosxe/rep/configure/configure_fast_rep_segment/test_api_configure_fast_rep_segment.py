@@ -1,35 +1,14 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
 from genie.libs.sdk.apis.iosxe.rep.configure import configure_fast_rep_segment
+from unittest.mock import Mock
 
 
-class TestConfigureFastRepSegment(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          IE-II-03-AgN1_2008_PB:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: switch
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['IE-II-03-AgN1_2008_PB']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureFastRepSegment(TestCase):
 
     def test_configure_fast_rep_segment(self):
-        result = configure_fast_rep_segment(self.device, ['Gi1/0/10', 'Gi1/0/11'], '1', '25', True, False)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.device = Mock()
+        result = configure_fast_rep_segment(self.device, ['GigabitEthernet1/0/1'], 1, 10, True, False, True, True)
+        self.assertEqual(
+            self.device.configure.mock_calls[0].args,
+            (['interface GigabitEthernet1/0/1', 'switchport mode trunk', 'rep segment 1 edge', 'rep fastmode', 'shut', 'no shut', 'switchport trunk allowed vlan 10', 'vlan 10'],)
+        )

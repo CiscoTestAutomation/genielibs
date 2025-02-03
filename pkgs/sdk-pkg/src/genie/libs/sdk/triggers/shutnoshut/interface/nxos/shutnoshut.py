@@ -348,7 +348,7 @@ class TriggerShutNoShutAutoRpVrfInterface(TriggerShutNoShut):
     # Also permit to dictate which key to verify
     mapping = Mapping(requirements={'conf.pim.Pim': {
                                         'requirements': [['device_attr', '{uut}', '_vrf_attr',
-                                                          '(?P<vrf>^(?!default)\w+$)', '_address_family_attr',
+                                                          r'(?P<vrf>^(?!default)\w+$)', '_address_family_attr',
                                                           '(?P<address_family>ipv4)', 'send_rp_announce_intf', '(?P<send_rp_announce_intf>.*)']],
                                         'kwargs': {'attributes': ['pim[vrf_attr][(.*)][address_family_attr][ipv4][send_rp_announce_intf]']},
                                         'exclude': pim_conf_exclude}},
@@ -429,7 +429,7 @@ class TriggerShutNoShutBsrRpInterface(TriggerShutNoShut):
                                   'ops.interface.interface.Interface': {
                                         'requirements': [['info', '(?P<interface>.*)', 'vrf', '(?P<vrf>^default$)'],
                                                          ['info', '(?P<interface>.*)', 'ipv4',
-                                                          '(?P<ip>[\w\.\:]+)','ip', '(?P<rp_addr>.*)'],
+                                                          r'(?P<ip>[\w\.\:]+)','ip', '(?P<rp_addr>.*)'],
                                                          ['info', '(?P<interface>.*)', 'oper_status', 'up']],
                                         'kwargs': {'attributes': [
                                                       'info[(.*)][(ipv4|ipv6)][(.*)][ip]',
@@ -516,7 +516,7 @@ class TriggerShutNoShutBsrRpVrfInterface(TriggerShutNoShut):
     # Mapping of Information between Ops and Conf
     # Also permit to dictate which key to verify
     mapping = Mapping(requirements={'ops.pim.pim.Pim': {
-                                        'requirements': [['info', 'vrf', '(?P<vrf>^(?!default)\w+$)',
+                                        'requirements': [['info', 'vrf', r'(?P<vrf>^(?!default)\w+$)',
                                                           'address_family','(?P<address_family>.*)', 'rp', 'bsr',
                                                           '(?P<rp_addr>.*)', 'address', '(?P<rp_addr>.*)']],
                                         'kwargs': {'attributes': [
@@ -525,7 +525,7 @@ class TriggerShutNoShutBsrRpVrfInterface(TriggerShutNoShut):
                                   'ops.interface.interface.Interface': {
                                         'requirements': [['info', '(?P<interface>.*)', 'ipv4',
                                                           '(?P<ip>.*)','ip', '(?P<rp_addr>.*)'],
-                                                         ['info', '(?P<interface>.*)', 'vrf', '(?P<vrf>^(?!default)\w+$)'],
+                                                         ['info', '(?P<interface>.*)', 'vrf', r'(?P<vrf>^(?!default)\w+$)'],
                                                          ['info', '(?P<interface>.*)', 'oper_status', 'up']],
                                         'all_keys': True,
                                         'kwargs': {'attributes': [
@@ -549,10 +549,10 @@ class TriggerShutNoShutBsrRpVrfInterface(TriggerShutNoShut):
                                                       'info[(.*)][oper_status]']},
                                        'exclude': interface_exclude},
                                   'ops.pim.pim.Pim':{
-                                       'requirements':[['info', 'vrf', '(?P<vrf>^(?!default)\w+$)',
+                                       'requirements':[['info', 'vrf', r'(?P<vrf>^(?!default)\w+$)',
                                                         'address_family','(?P<address_family>.*)', 'rp', 'bsr',
                                                         NotExists('bsr')],
-                                                       ['info', 'vrf', '(?P<vrf>^(?!default)\w+$)',
+                                                       ['info', 'vrf', r'(?P<vrf>^(?!default)\w+$)',
                                                         'address_family','(?P<address_family>.*)', 'rp', 'bsr',
                                                         NotExists('bsr_candidate')]],
                                         'kwargs': {'attributes': [
@@ -704,7 +704,7 @@ class TriggerShutNoShutStaticRpVrfInterface(TriggerShutNoShut):
     # Mapping of Information between Ops and Conf
     # Also permit to dictate which key to verify
     mapping = Mapping(requirements={'ops.pim.pim.Pim': {
-                                        'requirements': [['info', 'vrf', '(?P<vrf>^(?!default)\w+$)',
+                                        'requirements': [['info', 'vrf', r'(?P<vrf>^(?!default)\w+$)',
                                                           'address_family','(?P<address_family>.*)', 'rp', 'static_rp',
                                                           '(?P<rp_addr>.*)', '(?P<rp_rest>.*)']],
                                         'kwargs': {'attributes': [
@@ -713,7 +713,7 @@ class TriggerShutNoShutStaticRpVrfInterface(TriggerShutNoShut):
                                   'ops.interface.interface.Interface': {
                                         'requirements': [['info', '(?P<interface>.*)', 'ipv4',
                                                           '(?P<rp_addr>.*)','ip', '(?P<rp_addr>.*)'],
-                                                         ['info', '(?P<interface>.*)', 'vrf', '(?P<vrf>^(?!default)\w+$)'],
+                                                         ['info', '(?P<interface>.*)', 'vrf', r'(?P<vrf>^(?!default)\w+$)'],
                                                          ['info', '(?P<interface>.*)', 'oper_status', 'up']],
                                         'kwargs': {'attributes': [
                                                       'info[(.*)][(ipv4|ipv6)][(.*)][ip]',
@@ -736,7 +736,7 @@ class TriggerShutNoShutStaticRpVrfInterface(TriggerShutNoShut):
                                                       'info[(.*)][oper_status]']},
                                        'exclude': interface_exclude},
                                   'ops.pim.pim.Pim':{
-                                       'requirements':[['info', 'vrf', '(?P<vrf>^(?!default)\w+$)',
+                                       'requirements':[['info', 'vrf', r'(?P<vrf>^(?!default)\w+$)',
                                                         'address_family','(?P<address_family>.*)', 'rp', 'static_rp',
                                                         NotExists('(?P<static_rp>.*)')]],
                                         'kwargs': {'attributes': [
@@ -796,19 +796,19 @@ class TriggerShutNoShutPimNbrInterface(TriggerShutNoShut):
     # Also permit to dictate which key to verify
     mapping = Mapping(requirements={'ops.pim.pim.Pim': {
                                         'requirements': [['info', 'vrf', '(?P<vrf>^default$)',
-                                                          'interfaces','(?P<interface>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))',
+                                                          'interfaces',r'(?P<interface>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))',
                                                           'address_family', '(?P<address_family>.*)', 'oper_status', 'up'],
                                                          ['info', 'vrf', '(?P<vrf>^default$)',
-                                                          'interfaces','(?P<interface>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))',
+                                                          'interfaces',r'(?P<interface>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))',
                                                           'address_family', '(?P<address_family>.*)', 'neighbors', '(?P<address>.*)']],
                                         'kwargs': {'attributes': [
                                                       'info[vrf][default][interfaces][(.*)][address_family][(.*)][oper_status]',
                                                       'info[vrf][default][interfaces][(.*)][address_family][(.*)][neighbors]']},
                                         'exclude': pim_exclude },
                                   'ops.interface.interface.Interface': {
-                                        'requirements': [['info', '(?P<interface>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))',
+                                        'requirements': [['info', r'(?P<interface>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))',
                                                           'vrf', '(?P<vrf>^default$)'],
-                                                         ['info', '(?P<interface>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))',
+                                                         ['info', r'(?P<interface>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))',
                                                           'oper_status', 'up']],
                                         'kwargs': {'attributes': [
                                                       'info[(.*)][vrf]',
@@ -892,20 +892,20 @@ class TriggerShutNoShutPimNbrVrfInterface(TriggerShutNoShut):
     # Mapping of Information between Ops and Conf
     # Also permit to dictate which key to verify
     mapping = Mapping(requirements={'ops.pim.pim.Pim': {
-                                        'requirements': [['info', 'vrf', '(?P<vrf>^(?!default)\w+$)',
-                                                          'interfaces','(?P<interface>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))',
+                                        'requirements': [['info', 'vrf', r'(?P<vrf>^(?!default)\w+$)',
+                                                          'interfaces',r'(?P<interface>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))',
                                                           'address_family', '(?P<address_family>.*)', 'oper_status', 'up'],
-                                                         ['info', 'vrf', '(?P<vrf>^(?!default)\w+$)',
-                                                          'interfaces','(?P<interface>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))',
+                                                         ['info', 'vrf', r'(?P<vrf>^(?!default)\w+$)',
+                                                          'interfaces',r'(?P<interface>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))',
                                                           'address_family', '(?P<address_family>.*)', 'neighbors', '(?P<address>.*)']],
                                         'kwargs': {'attributes': [
                                                       'info[vrf][(.*)][interfaces][(.*)][address_family][(.*)][oper_status]',
                                                       'info[vrf][(.*)][interfaces][(.*)][address_family][(.*)][neighbors]']},
                                         'exclude': pim_exclude },
                                   'ops.interface.interface.Interface': {
-                                        'requirements': [['info', '(?P<interface>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))',
-                                                          'vrf', '(?P<vrf>^(?!default)\w+$)'],
-                                                         ['info', '(?P<interface>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))',
+                                        'requirements': [['info', r'(?P<interface>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))',
+                                                          'vrf', r'(?P<vrf>^(?!default)\w+$)'],
+                                                         ['info', r'(?P<interface>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))',
                                                           'oper_status', 'up']],
                                         'kwargs': {'attributes': [
                                                       'info[(.*)][vrf]',
@@ -988,7 +988,7 @@ class TriggerShutNoShutPortChannelInterface(TriggerShutNoShut):
     # Also permit to dictate which key to verify
     mapping = Mapping(requirements={'ops.interface.interface.Interface':{
                                         'requirements':[\
-                                            ['info', '(?P<interface>([p|P]ort-channel)(\S+))', 'oper_status', 'up'],
+                                            ['info', r'(?P<interface>([p|P]ort-channel)(\S+))', 'oper_status', 'up'],
                                             ['info', '(?P<interface>.*)', 'enabled', True]],
                                         'exclude': interface_exclude}},
                       config_info={'conf.interface.Interface':{

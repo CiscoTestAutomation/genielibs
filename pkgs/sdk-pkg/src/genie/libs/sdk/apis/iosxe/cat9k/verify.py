@@ -8,7 +8,7 @@ def verify_current_image(device, images, delimiter_regex=None, ignore_flash=True
         Args:
             device (`obj`): Device object
             images (`list`): List of images expected on the device
-            delimiter_regex (`regex string`): Regex of delimeters, default ':|\/'
+            delimiter_regex (`regex string`): Regex of delimeters, default ':|\\/'
             ignore_flash (`bool`): Ignore flash directory names. Default: True
         Returns:
             None

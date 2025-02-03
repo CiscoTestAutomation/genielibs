@@ -144,6 +144,14 @@ class Macsec(ABC):
                     #   ppk crypto-qkd-profile QKD1
                     if attributes.value('ppk_profile_name'):
                        configurations.append_line(attributes.format('ppk crypto-qkd-profile {ppk_profile_name}'))
+                    
+                    #macsec policy <MP1>
+                    #   no protocol lldp encrypted
+                    if attributes.value('lldp_encrypted') is True:
+                       configurations.append_line(attributes.format('protocol lldp encrypted'))
+                    if attributes.value('lldp_encrypted') is False:
+                        configurations.append_line(attributes.format('no protocol lldp encrypted'))
+                        
 
                 return str(configurations)
 

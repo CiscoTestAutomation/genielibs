@@ -1,0 +1,37 @@
+configure:
+  commands:
+    end: "PREG_IFD_CFD_TB2_920(config-if)#end\r\n"
+    interface vlan100: "interface vlan100\r\n"
+    ipv6 flow monitor m6 sampler s1 input: "PREG_IFD_CFD_TB2_920(config-if)#ipv6 flow\
+      \ monitor m6 sampler s1 input\r\n"
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: PREG_IFD_CFD_TB2_9200_STACK(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: PREG_IFD_CFD_TB2_9200_STACK(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    show version | include operating mode: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: PREG_IFD_CFD_TB2_9200_STACK#

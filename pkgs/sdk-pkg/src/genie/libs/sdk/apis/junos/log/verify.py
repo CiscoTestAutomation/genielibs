@@ -44,7 +44,7 @@ def is_logging_ospf_spf_logged(device, expected_spf_delay=None, ospf_trace_log=N
         # log message:
         # Jun 12 03:32:19.068983 OSPF SPF scheduled for topology default in 8s
         p = (
-            '.*OSPF SPF scheduled for topology default in (?P<spf_change>\d+)s'
+            r'.*OSPF SPF scheduled for topology default in (?P<spf_change>\d+)s'
         )
 
         for i in file_content_list:

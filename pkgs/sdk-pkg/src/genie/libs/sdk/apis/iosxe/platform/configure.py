@@ -6313,4 +6313,272 @@ def unconfigure_parser_view(device, view_name):
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Parser view deletion failed {view_name}. Error:\n{e}")
 
+def configure_macro_auto_mac_address_group(device, mac_address_group_name, config_addr_grp_mac, list_of_addr):
+    """ Configure macro auto mac-address group on this device
 
+    Args:
+        device ('obj'): device to use
+        mac_address_group_name('str'): Auto Smart Ports MAC address-group name
+        config_addr_grp_mac('str'):  MAC address group configuration commands mac-address or oui
+        list_of_addr('str'):  Configure a list of OUI or mac-addresses 
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    config = [
+        f'macro auto mac-address-group {mac_address_group_name}',
+        f'{config_addr_grp_mac} list {list_of_addr}',
+    ]
+    
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure macro auto mac-address-group on this device. Error:\n{e}")
+        
+def unconfigure_macro_auto_mac_address_group(device, mac_address_group_name):
+    """ UnConfigure macro auto sticky on this device
+
+    Args:
+        device ('obj'): device to use
+        mac_address_group_name('str'): Auto Smart Ports MAC address-group name
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+
+    cmd = f'no macro auto mac-address-group {mac_address_group_name}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure macro auto mac-address-group on this device. Error:\n{e}")
+
+def configure_shell_trigger(device, trigger_name, trigger_description):
+    """" configure shell trigger
+
+    Args:
+        device ('obj'): Device object
+        trigger_name ('str'): Trigger or Event name
+        trigger_description ('str'): Set shell trigger description text
+    Raises:
+        SubCommandFailure
+    Returns:
+        None
+    """
+
+    cmd = f"shell trigger {trigger_name} {trigger_description}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure shell trigger. Error:\n{e}")
+        
+def unconfigure_shell_trigger(device, trigger_name, trigger_description):
+    """" unconfigure shell trigger
+
+    Args:
+        device ('obj'): Device object
+        trigger_name ('str'): Trigger or Event name
+        trigger_description ('str'): Set shell trigger description text
+    Raises:
+        SubCommandFailure
+    Returns:
+        None
+    """
+
+    cmd = f"no shell trigger {trigger_name} {trigger_description}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not unconfigure shell trigger. Error:\n{e}")
+
+def configure_macro_auto_trigger(device, trigger_name, device_name_from_device_classifier=None, device_profile_from_device_classifier=None):
+    """configure macro auto trigger
+        Args:
+            device (`obj`): Device object
+            trigger_name (`str`): trigger name
+            device_name_from_device_classifier (`str`): Enter the device name
+            device_profile_from_device_classifier(`str`): Enter the profile name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"Configuring macro auto trigger")
+
+    config = [
+        f'macro auto trigger {trigger_name}',
+    ]
+    if device_name_from_device_classifier:
+        config += f'device {device_name_from_device_classifier}',
+    if device_profile_from_device_classifier:
+        config += f'profile {device_profile_from_device_classifier}'
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure macro auto trigger. Error:\n{e}")
+        
+def unconfigure_macro_auto_trigger(device, trigger_name):
+    """unconfigure macro auto trigger
+        Args:
+            device (`obj`): Device object
+            trigger_name (`str`): trigger name
+            device_name_from_device_classifier (`str`): Enter the device name
+            device_profile_from_device_classifier(`str`): Enter the profile name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"UnConfiguring macro auto trigger")
+
+    config = [
+        f'no macro auto trigger {trigger_name}',
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not unconfigure macro auto trigger. Error:\n{e}")
+        
+def configure_macro_auto_device_parameters(device, device_name, parameters):
+    """configure macro auto device {device_name} {parameters}
+        Args:
+            device (`obj`): Device object
+            device_name (`str`): Enter the device name
+            parameters (`str`): Provide optional parameters of form  [Parameters name=value]
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"Configuring macro auto device")
+
+    config = [
+        f'macro auto device {device_name} {parameters}',
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure macro auto device parameters. Error:\n{e}")
+
+def unconfigure_macro_auto_device_parameters(device, device_name, parameters):
+    """unconfigure macro auto device {device_name} {parameters}
+        Args:
+            device (`obj`): Device object
+            device_name (`str`): Enter the device name
+            parameters (`str`): Provide optional parameters of form  [Parameters name=value]
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"UnConfiguring macro auto device")
+
+    config = [
+        f'no macro auto device {device_name} {parameters}',
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not unconfigure macro auto device parameters. Error:\n{e}")        
+
+def configure_macro_auto_execute(device, macro_name, input_macro_parameters, macro_configs_link_up=None, macro_configs_link_down=None):
+    """configure macro auto execute
+        Args:
+            device (`obj`): Device object
+            macro_name (`str`): macro name
+            input_macro_parameters (`str`): Input Macro Parameters [parameter_name=value] (e.g. VOICE_VLAN=100); or to define a new macro use { macro commands }
+            macro_configs_link_up (`list`): Configuration lines for the macro during link up
+            macro_configs_link_down(`list`): Configuration lines for the macro during link down
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+        Ex: macro auto execute test_macro ACCESS_VLAN=70 {
+                   if [[ $LINKUP == YES ]]
+                    then conf t
+                    interface $INTERFACE
+                    macro description $TRIGGER
+                    description [VOIP] PBX
+                    exit
+                   fi
+                   if [[ $LINKUP == NO ]]
+                    then conf t
+                    default interface $INTERFACE
+                    exit
+                   fi
+            }
+    """
+    log.debug(f"Configuring macro auto execute")
+
+    config = [f'macro auto execute {macro_name} {input_macro_parameters}' + "{" ]
+    config.extend(macro_configs_link_up)
+    config.extend(macro_configs_link_down)
+    config += ["}"]
+    
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure macro auto execute. Error:\n{e}")
+        
+def unconfigure_macro_auto_execute(device, macro_name):
+    """unconfigure macro auto execute
+        Args:
+            device (`obj`): Device object
+            macro_name (`str`): macro name
+
+        raise SubCommandFailure(f"Could not unconfigure macro auto trigger. Error:\n{e}")
+    """
+    log.debug(f"UnConfiguring macro auto execute")
+
+    config = [f'no macro auto execute {macro_name}']
+     
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not unconfigure macro auto execute. Error:\n{e}")
+        
+def configure_macro_auto_fallback(device, fallback, parameters=None):
+    """configure macro auto global processing {fallback} 
+        Args:
+            device (`obj`): Device object
+            fallback (`str`):  cdp-fallback or  Configure a fallback if dot1x fails
+            parameters (`str`): Apply macro based on CDP if dot1x authentication fails for fallback if dot1x fails
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("configure macro auto global processing for fallback")
+
+    if parameters:
+        config = [f'macro auto global processing {fallback} {parameters}']
+    else:
+        config = [f'macro auto global processing {fallback}']
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure macro auto global processing fallback. Error:\n{e}")
+
+def unconfigure_macro_auto_fallback(device, fallback, parameters=None):
+    """unconfigure macro auto global processing {fallback} 
+        Args:
+            device (`obj`): Device object
+            fallback (`str`):  cdp-fallback or  Configure a fallback if dot1x fails
+            parameters (`str`): Apply macro based on CDP if dot1x authentication fails for fallback if dot1x fails
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("unconfigure macro auto global processing for fallback")
+
+    if parameters:
+        config = [f'no macro auto global processing {fallback} {parameters}']
+    else:
+        config = [f'no macro auto global processing {fallback}']
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure macro auto global processing fallback. Error:\n{e}")

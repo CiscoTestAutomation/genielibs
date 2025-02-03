@@ -378,7 +378,7 @@ def verify_current_image(device, images, delimiter_regex=None, ignore_flash=Fals
         Args:
             device (`obj`): Device object
             images (`list`): List of images expected on the device
-            delimiter_regex (`regex string`): Regex of delimeters, default ':|\/'
+            delimiter_regex (`regex string`): Regex of delimeters, default ':|\\/'
             ignore_flash (`bool`): Ignore flash directory names. Default: False
             regex_search (`bool`): Verify using regular expression.. Default: False
         Returns:
@@ -387,7 +387,7 @@ def verify_current_image(device, images, delimiter_regex=None, ignore_flash=Fals
     match = False
 
     if not delimiter_regex:
-        delimiter_regex = ':|\/'
+        delimiter_regex = r':|\/'
 
     # Get current running image
     running_images = device.api.get_running_image()

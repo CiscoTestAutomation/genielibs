@@ -212,3 +212,28 @@ def configure_l2vpn_evpn_ethernet_segment(device, segment_value, action_type, ma
             f'Failed to configure l2vpn evpn ethernet-segment 201 on {device.name}\n{e}'
         ) 
         
+def configure_l2vpn_evpn_ethernet_segment_all_active(device, segment_value, action_type, mac_address, time):
+    """ Configuring l2vpn evpn ethernet-segment 201 with redundancy as all-active
+        Args:
+            device ('obj'): Device object
+            segment_value ('int'):<1-65535>  Ethernet segment local discriminator value
+            action_type ('int'):  0  Type 0 (arbitrary 9-octet ESI value)
+                                  3  Type 3 (MAC-based ESI value)
+            mac_address ('str'):  H.H.H  MAC address
+            time ('int'): <1-10>  Number of seconds to wait before electing a designated forwarder
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config =[ f"l2vpn evpn ethernet-segment {segment_value}",
+              f"identifier type {action_type} system-mac {mac_address}",
+                "redundancy all-active",
+              f"df-election wait-time {time}"
+            ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to configure l2vpn evpn ethernet-segment 201 with redundancy as all-active on {device.name}\n{e}'
+        ) 

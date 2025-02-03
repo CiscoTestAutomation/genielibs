@@ -235,7 +235,7 @@ class TriggerModifyNveVniMcastGroup(TriggerModify):
     # Mapping of Information between Ops and Conf
     # Also permit to dictates which key to verify
     mapping = Mapping(requirements={'ops.vxlan.vxlan.Vxlan':{
-                                          'requirements':[['nve','(?P<nve_name>.*)','vni','(?P<nve_vni>.*)','mcast','(?P<mcast>[\d+\.\d+\.\d+\.\d+].*)'],
+                                          'requirements':[['nve','(?P<nve_name>.*)','vni','(?P<nve_vni>.*)','mcast',r'(?P<mcast>[\d+\.\d+\.\d+\.\d+].*)'],
                                                           ['nve','(?P<nve_name>.*)','vni','(?P<nve_vni>.*)','vni_state','up']],
                                           'kwargs':{'attributes':['nve[(.*)][vni][(.*)][mcast]',
                                                                   'nve[(.*)][vni][(.*)][vni_state]']},
