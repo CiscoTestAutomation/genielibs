@@ -15,6 +15,7 @@ from ipaddress import IPv4Address, IPv6Address, IPv4Interface, IPv6Interface
 # pyATS
 from pyats.async_ import pcall
 from pyats.utils.fileutils import FileUtils
+from pyats.connections.wrapper import ServiceWrapper
 
 # Genie
 from genie.abstract import Lookup
@@ -195,13 +196,6 @@ class ChangeBootVariable(BaseStage):
             "Verify next reload boot variables are correctly set "
             "on {}".format(device.name)
         ) as step:
-
-            if current_running_image:
-                log.info(
-                    "Verifying next reload boot variables Using the running image due to "
-                    "'current_running_image: True'"
-                )
-                images = self.running_images
 
             if current_running_image:
                 log.info("Verifying next reload boot variables Using the running image due to "
@@ -835,7 +829,7 @@ class InstallImage(BaseStage):
                         try:
                             device.api.unconfigure_ignore_startup_config()
                         except Exception as e:
-                            step.failed(f"Failed to unconfigure ignore startup config on the device {device.name}",
+                            step.passx(f"Failed to unconfigure ignore startup config on the device {device.name}",
                                 from_exception=e)
 
                         log.info(f'Verify the ignore startup config')
@@ -901,10 +895,9 @@ class InstallImage(BaseStage):
 
                 log.info(f'Unconfigure the ignore startup config on {device.name}')
                 try:
-                   device.api.unconfigure_ignore_startup_config()
+                    device.api.unconfigure_ignore_startup_config()
                 except Exception as e:
-                    step.failed(f"Failed to unconfigure ignore startup config on the device {device.name}",
-                            from_exception=e)
+                    step.passx(f"Unable to unconfigure ignore startup config on the device {device.name}")
 
     def save_running_config(self, steps, device, skip_save_running_config=SKIP_SAVE_RUNNING_CONFIG):
         with steps.start("Save the running config to the startup config") as step:
@@ -926,9 +919,13 @@ class InstallImage(BaseStage):
                 if not device.api.verify_boot_variable(boot_images=[self.new_boot_var]):
                     step.failed(f"Boot variables are not correctly set to "
                                 f"{self.new_boot_var}")
-            log.info(f'verify the ignore startup config')
-            if not device.api.verify_ignore_startup_config():
-                step.failed(f"Failed to verify unconfigure the ignore startup config on {device.name}")
+            log.info('verify the ignore startup config')
+            try:
+                if not device.api.verify_ignore_startup_config():
+                    step.failed(f"Failed to verify unconfigure the ignore startup config on {device.name}")
+            except Exception as e:
+                step.passx(f"Unable to verify unconfigure the ignore startup config on {device.name}")
+            
 
     def install_image(
         self,
@@ -994,24 +991,25 @@ class InstallImage(BaseStage):
             )
 
             try:
+                reload_method = device.reload.service if isinstance(device.reload, ServiceWrapper) else device.reload
                 reload_args.update(
                     {"timeout": install_timeout, "reply": install_add_one_shot_dialog}
                 )
+
                 if issu:
-                    device.reload(
+                    reload_method(
                         "install add file {} activate issu commit prompt-level none".format(
                             images[0]
                         ),
                         **reload_args,
                     )
                 else:
-                    device.reload(
+                    reload_method(
                         "install add file {} activate commit prompt-level none".format(
                             images[0]
                         ),
                         **reload_args,
                     )
-
                 device.execute("install commit")
 
             except Exception as e:
@@ -1025,32 +1023,31 @@ class InstallImage(BaseStage):
 
 
 class InstallRemoveSmu(BaseStage):
-    """This stage removes smu images from the device.
+    """This stage removes inactive smu images from the device.
     If the SMU is installed, it will be de-activated first.
 
     Stage Schema
     ------------
     install_remove_smu:
+        smu_reload_wait (int, optional): The maximum time allowed, in seconds,
+            to differentiate between a hot SMU and a cold SMU.
+            Defaults to 30.
 
         timeout (int, optional): Maximum time to wait for remove process to
-            finish. Defaults to 180.
-
-        force_remove (bool, optional): Whether or not to remove the inactive
-            package irrespective of availability of passed image. Defaults to True.
+            finish. Defaults to 800.
 
     Example
     -------
     install_remove_smu:
-        timeout: 180
+        timeout: 800
 
     """
 
     # =================
     # Argument Defaults
     # =================
-    TIMEOUT = 180
-    FORCE_REMOVE = True
-    RELOAD_TIMEOUT = 800
+    TIMEOUT = 800
+    SMU_RELOAD_WAIT = 30
     RELOAD_SERVICE_ARGS = {
         "reload_creds": "default",
         "prompt_recovery": True,
@@ -1064,8 +1061,7 @@ class InstallRemoveSmu(BaseStage):
     # ============
     schema = {
         Optional("timeout"): int,
-        Optional("force_remove"): bool,
-        Optional("reload_timeout"): int,
+        Optional("smu_reload_wait"): int,
         Optional("reload_service_args"): {
             Optional("reload_creds"): str,
             Optional("prompt_recovery"): bool,
@@ -1083,34 +1079,15 @@ class InstallRemoveSmu(BaseStage):
         self,
         steps,
         device,
-        reload_timeout=RELOAD_TIMEOUT,
         timeout=TIMEOUT,
-        reload_service_args=None,
-        force_remove=FORCE_REMOVE,
+        smu_reload_wait=SMU_RELOAD_WAIT,
+        reload_service_args=None
     ):
 
-        with steps.start("Removing SMU image") as super_step:
+        active_image = []
+        deactivate_image = []
 
-            def _check_for_system_image(
-                spawn, system_image=None, force_remove=None
-                ):
-                    if force_remove is True:
-                        log.warning(
-                            f"Sending yes to delete files without checking {system_image} in among the files to be deleted."
-                        )
-                        spawn.sendline("y")
-                        return
-
-                    if system_image and re.search(f"{system_image}\r", spawn.buffer):
-                        log.debug(
-                            f"{system_image} is among the files to be deleted. send no so the {system_image} is not deleted. "
-                        )
-                        spawn.sendline("n")
-                    else:
-                        log.debug(
-                            f"{system_image} is not among the files to be deleted. Hence, send yes to delete files."
-                        )
-                        spawn.sendline("y")
+        with steps.start("Check the state of SMU image") as super_step:
 
             # Set default reload args
             reload_args = self.RELOAD_SERVICE_ARGS.copy()
@@ -1121,140 +1098,177 @@ class InstallRemoveSmu(BaseStage):
             if reload_service_args:
                 reload_args.update(reload_service_args)
 
-            with super_step.start("Checking status of SMU image") as step:
-                try:
-                    output = device.parse("show install summary")
-                    location = list(output.get("location").keys())[0]
-                    for pkg in output.get("location").get(location).get("pkg_state"):
-                        file_state = output["location"][location]["pkg_state"][pkg][
-                            "state"
-                        ]
-                        file_type = output["location"][location]["pkg_state"][pkg][
-                            "type"
-                        ]
-                        image = output["location"][location]["pkg_state"][pkg][
-                                "filename_version"
-                        ]
-                        if file_state == "C" and file_type == "SMU":
-                            log.info("The installed SMU image is in committed state")
-                            break
-                        elif file_state == "D" and file_type == "SMU":
-                            log.info("The installed SMU image is in deactivated state")
-                            break
-                except Exception as e:
-                    step.failed("Failed to check status of smu image", from_exception=e)
-                else:
-                    if file_state == "C" and file_type == "IMG":
-                        step.skipped("No smu image to remove")
+            try:
+                output = device.parse("show install summary")
+                location = list(output.get("location").keys())[0]
+                for pkg in output.get("location").get(location).get("pkg_state"):
+                    file_state = output["location"][location]["pkg_state"][pkg][
+                        "state"
+                    ]
+                    file_type = output["location"][location]["pkg_state"][pkg][
+                        "type"
+                    ]
+                    filename_version = output["location"][location]["pkg_state"][pkg][
+                        "filename_version"
+                    ]
 
-                if file_state == "C" and file_type == "SMU":
-                    with step.start(f"Deactivate the smu image '{image}'") as sub_step:
-                        try:
-                            install_smu_dialog = Dialog(
-                                [
-                                    Statement(
-                                        pattern=r".*reload of the system\. "
-                                        r"Do you want to proceed\? \[y\/n\]",
-                                        action="sendline(y)",
-                                        loop_continue=True,
-                                        continue_timer=False,
-                                    ),
-                                    Statement(
-                                        pattern=r"FAILED:.*?$",
-                                        action=None,
-                                        loop_continue=False,
-                                        continue_timer=False,
-                                    ),
-                                    Statement(
-                                        pattern=r"^.*RETURN to get started",
-                                        action="sendline()",
-                                        loop_continue=False,
-                                        continue_timer=False,
-                                    ),
-                                ]
-                            )
+                    if file_state == "C" and file_type == "SMU":
+                        active_image.append(filename_version)
+                    elif file_state == "D" and file_type == "SMU":
+                        deactivate_image.append(filename_version)
 
-                            reload_args.update(
-                                {"timeout": reload_timeout, "reply": install_smu_dialog}
-                            )
-                            device.reload(
-                                f"install deactivate file {image}", **reload_args
-                            )
-                            device.parse("show install summary")
-                        except Exception as e:
-                            sub_step.failed(
-                                "Failed to deactivate SMU image", from_exception=e
-                            )
+                log.info(f"Active images {active_image}")
+                if len(active_image):
+                    for image in active_image:
+                        log.info(f"SMU image to be deactivated: {image}")
+                        with super_step.start(f"Deactivate the smu image '{image}'") as step:
+                            try:
+                                install_smu_dialog = Dialog(
+                                    [
+                                        Statement(
+                                            pattern=r".*reload of the system\. "
+                                            r"Do you want to proceed\? \[y\/n\]",
+                                            action="sendline(y)",
+                                            loop_continue=True,
+                                            continue_timer=False,
+                                        ),
+                                        Statement(
+                                            pattern=r"FAILED:.*?$",
+                                            action=None,
+                                            loop_continue=False,
+                                            continue_timer=False,
+                                        )
+                                    ]
+                                )
 
-                    with step.start("commit the smu image") as sub_step:
-                        try:
-                            output = device.parse("show install summary")
-                            location = list(output.get("location").keys())[0]
-                            for pkg in (
-                                output.get("location").get(location).get("pkg_state")
-                            ):
-                                file_state = output["location"][location]["pkg_state"][
-                                    pkg
-                                ]["state"]
-                                if file_state == "D":
-                                    device.execute("install commit")
+                                reload_args.update(
+                                    {"timeout": timeout, "reply": install_smu_dialog}
+                                )
+                                check_reload_dialog = Dialog(
+                                    [
+                                        Statement(
+                                            pattern=r".*reloading, reason - Reload command",
+                                            action=None,
+                                            loop_continue=False,
+                                            continue_timer=False,
+                                        )
+                                    ]
+                                )
+                                # address the reload dialog prompt when encountering a cold SMU scenario
+                                device.execute(
+                                    "install deactivate file {}".format(image), reply=install_smu_dialog
+                                )
+                                # The key difference between hot and cold SMUs is that a reload occurs
+                                # with cold SMUs, whereas it does not with hot SMUs.
+                                try:
+                                    # dialog processor to identify reload patterns in case of cold smu;
+                                    # upon detection of such a pattern, we perform reload and
+                                    # update the timeout, which is managed in the subsequent steps
+                                    check_reload_dialog.process(device.spawn, timeout=smu_reload_wait)
+                                except TimeoutError:
+                                    # We deliberately trigger a timeout error under the assumption that the provided
+                                    # image is a hot SMU, allowing us to continue with execution.
+                                    device.execute("show version")
                                     device.execute("show install summary")
-                                    log.info("The image is in inactivate state")
-                        except Exception as e:
-                            sub_step.failed("Failed to commit SMU image", from_exception=e)
+                                else:
+                                    # When a reload pattern is detected during the dialog process,
+                                    # we verify the presence of the wrapper and,
+                                    # if applicable, directly invoke the reload service
+                                    if isinstance(device.reload, ServiceWrapper):
+                                        device.reload.service("", **reload_args)
+                                    else:
+                                        device.reload(
+                                            "", **reload_args
+                                        )
+                            except Exception as e:
+                                step.failed(
+                                    "Failed to deactivate SMU image", from_exception=e
+                                )
 
-                    with step.start("Remove inactive smu image") as sub_step:
-                        try:
-                            install_remove_smu_inactive_dialog = Dialog(
-                                [
-                                    Statement(
-                                        pattern=r".*Do you want to remove the above files\? \[y\/n\]",
-                                        action=_check_for_system_image,
-                                        args={"system_image": image, "force_remove": force_remove},
-                                        loop_continue=False,
-                                        continue_timer=False,
-                                    ),
-                                ]
-                            )
-                            device.execute(
-                                "install remove inactive",
-                                service_dialog=install_remove_smu_inactive_dialog,
-                                timeout=timeout,
-                            )
-                        except Exception as e:
-                            sub_step.failed("Failed to remove inactive smu image", from_exception=e)
+                        with super_step.start(f"Set {image} in inactive state") as step:
+                            try:
+                                output = device.parse("show install summary")
+                                location = list(output.get("location").keys())[0]
+                                for pkg in (
+                                    output.get("location").get(location).get("pkg_state")
+                                ):
+                                    file_state = output["location"][location]["pkg_state"][
+                                        pkg
+                                    ]["state"]
+                                    if file_state == "D":
+                                        device.execute("install commit")
+                                        device.execute("show install summary")
+                                        log.info("The image is in inactivate state")
+                            except Exception as e:
+                                step.failed("Failed to commit SMU image", from_exception=e)
 
-                elif file_state == "D" and file_type == "SMU":
-                    with step.start("commit the smu image") as sub_step:
-                        try:
-                            device.execute("install commit")
-                            device.execute("show install summary")
-                            log.info("The image is in inactivate state")
-                        except Exception as e:
-                            sub_step.failed("Failed to commit SMU image", from_exception=e)
+                        with super_step.start(f"Remove inactive smu image {image}") as step:
+                            try:
+                                install_remove_smu_inactive_dialog = Dialog(
+                                    [
+                                        Statement(
+                                            pattern=r".*Do you want to remove the above files\? \[y\/n\]",
+                                            action="sendline(y)",
+                                            loop_continue=False,
+                                            continue_timer=False,
+                                        ),
+                                    ]
+                                )
+                                device.execute(
+                                    "install remove inactive",
+                                    service_dialog=install_remove_smu_inactive_dialog,
+                                    timeout=timeout,
+                                )
+                            except Exception as e:
+                                step.failed("Failed to remove inactive smu image", from_exception=e)
+                                log.info("The installed SMU image is in committed state")
 
-                    with step.start("Remove inactive smu image") as sub_step:
-                        try:
-                            install_remove_smu_inactive_dialog = Dialog(
-                                [
-                                    Statement(
-                                        pattern=r".*Do you want to remove the above files\? \[y\/n\]",
-                                        action=_check_for_system_image,
-                                        args={"system_image": image, "force_remove": force_remove},
-                                        loop_continue=False,
-                                        continue_timer=False,
-                                    ),
-                                ]
-                            )
-                            device.execute(
-                                "install remove inactive",
-                                service_dialog=install_remove_smu_inactive_dialog,
-                                timeout=timeout,
-                            )
-                        except Exception as e:
-                            sub_step.failed("Failed to remove inactive packages", from_exception=e)
-                else:
-                    step.skipped("SMU image is in inactive state")
+                log.info(f"Deactive images {deactivate_image}")
+                if len(deactivate_image):
+                    for image in deactivate_image:
+                        log.info(f"SMU image to be deactivated: {image}")
+                        with super_step.start(f"Set {image} in inactive state") as step:
+                            try:
+                                output = device.parse("show install summary")
+                                location = list(output.get("location").keys())[0]
+                                for pkg in (
+                                    output.get("location").get(location).get("pkg_state")
+                                ):
+                                    file_state = output["location"][location]["pkg_state"][
+                                        pkg
+                                    ]["state"]
+                                    if file_state == "D":
+                                        device.execute("install commit")
+                                        device.execute("show install summary")
+                                        log.info("The image is in inactivate state")
+                            except Exception as e:
+                                step.failed("Failed to commit SMU image", from_exception=e)
+
+                        with super_step.start("Remove inactive smu image") as step:
+                            try:
+                                install_remove_smu_inactive_dialog = Dialog(
+                                    [
+                                        Statement(
+                                            pattern=r".*Do you want to remove the above files\? \[y\/n\]",
+                                            action="sendline(y)",
+                                            loop_continue=False,
+                                            continue_timer=False,
+                                        ),
+                                    ]
+                                )
+                                device.execute(
+                                    "install remove inactive",
+                                    service_dialog=install_remove_smu_inactive_dialog,
+                                    timeout=timeout,
+                                )
+                            except Exception as e:
+                                step.failed("Failed to remove inactive smu image", from_exception=e)
+
+            except Exception as e:
+                super_step.failed("Failed to check state of smu image", from_exception=e)
+            else:
+                if file_type == "IMG":
+                    super_step.skipped("No smu image to remove")
 
 
 class InstallSmu(BaseStage):
@@ -1268,10 +1282,11 @@ class InstallSmu(BaseStage):
         images (list): Image to install
 
         install_timeout (int, optional): Maximum time in seconds to wait for install
-            process to finish. Defaults to 500.
-
-        reload_timeout (int, optional): Maximum time in seconds to wait for reload
             process to finish. Defaults to 800.
+
+        smu_reload_wait (int, optional): The maximum time allowed, in seconds,
+            to differentiate between a hot SMU and a cold SMU.
+            Defaults to 30.
 
         reload_service_args (optional):
 
@@ -1294,7 +1309,6 @@ class InstallSmu(BaseStage):
         images:
           - /auto/some-location/that-this/image/smu-image.bin
         install_timeout: 1000
-        reload_timeout: 1000
 
     """
 
@@ -1302,8 +1316,8 @@ class InstallSmu(BaseStage):
     # Argument Defaults
     # =================
     SKIP_SAVE_RUNNING_CONFIG = False
-    INSTALL_TIMEOUT = 500
-    RELOAD_TIMEOUT = 800
+    SMU_RELOAD_WAIT = 30
+    INSTALL_TIMEOUT = 800
     RELOAD_SERVICE_ARGS = {
         "reload_creds": "default",
         "prompt_recovery": True,
@@ -1318,7 +1332,7 @@ class InstallSmu(BaseStage):
     schema = {
         Optional("images"): list,
         Optional("install_timeout"): int,
-        Optional("reload_timeout"): int,
+        Optional("smu_reload_wait"): int,
         Optional("reload_service_args"): {
             Optional("reload_creds"): str,
             Optional("prompt_recovery"): bool,
@@ -1330,19 +1344,7 @@ class InstallSmu(BaseStage):
     # ==============================
     # Execution order of Stage steps
     # ==============================
-    exec_order = ["save_running_config", "install_smu"]
-
-    def save_running_config(
-        self, steps, device, skip_save_running_config=SKIP_SAVE_RUNNING_CONFIG
-    ):
-        with steps.start("Save the running config to the startup config") as step:
-            if skip_save_running_config:
-                step.skipped()
-                return
-            try:
-                device.api.execute_copy_run_to_start(max_time=60, check_interval=30)
-            except Exception as e:
-                step.failed("Failed to save the running config", from_exception=e)
+    exec_order = ["install_smu"]
 
     def install_smu(
         self,
@@ -1350,6 +1352,7 @@ class InstallSmu(BaseStage):
         device,
         images,
         install_timeout=INSTALL_TIMEOUT,
+        smu_reload_wait=SMU_RELOAD_WAIT,
         reload_service_args=None,
     ):
 
@@ -1384,80 +1387,121 @@ class InstallSmu(BaseStage):
                         action=None,
                         loop_continue=False,
                         continue_timer=False,
-                    ),
-                    Statement(
-                        pattern=r"^.*RETURN to get started",
-                        action="sendline()",
-                        loop_continue=False,
-                        continue_timer=False,
-                    ),
+                    )
                 ]
             )
+            log.info(f"Images: {images}")
+            for image in images:
+                with super_step.start("Save the running config to the startup config") as step:
+                    try:
+                        device.api.execute_copy_run_to_start(max_time=60, check_interval=30)
+                    except Exception as e:
+                        step.failed("Failed to save the running config", from_exception=e)
 
-            with super_step.start(f"Add SMU image : '{images[0]}'") as step:
-                try:
-                    device.execute("install add file {}".format(images[0]))
-                except Exception as e:
-                    step.failed("Failed to add SMU image", from_exception=e)
+                with super_step.start(f"Add SMU image : '{image}'") as step:
+                    try:
+                        device.execute("install add file {}".format(image))
+                    except Exception as e:
+                        step.failed("Failed to add SMU image", from_exception=e)
 
-            with super_step.start("Verify SMU image is added successfully") as step:
-                try:
-                    output = device.parse("show install summary")
-                    location = list(output.get("location").keys())[0]
-                    for pkg in output.get("location").get(location).get("pkg_state"):
-                        file_state = output["location"][location]["pkg_state"][pkg][
-                            "state"
-                        ]
-                        file_type = output["location"][location]["pkg_state"][pkg][
-                            "type"
-                        ]
+                with super_step.start("Verify SMU image is added successfully") as step:
+                    try:
+                        output = device.parse("show install summary")
+                        location = list(output.get("location").keys())[0]
+                        for pkg in output.get("location").get(location).get("pkg_state"):
+                            file_state = output["location"][location]["pkg_state"][pkg][
+                                "state"
+                            ]
+                            file_type = output["location"][location]["pkg_state"][pkg][
+                                "type"
+                            ]
+                            filename_version = output["location"][location]["pkg_state"][pkg][
+                                "filename_version"
+                            ]
+                            try:
+                                if file_state == "I" and file_type == "SMU" and filename_version in image:
+                                    log.info("The installed SMU image is in inactive state")
+                            except Exception as e:
+                                step.failed("Failed to add the SMU image", from_exception=e)
+                    except Exception as e:
+                        step.failed("Failed to verify SMU image", from_exception=e)
+
+                with super_step.start(f"Activate the SMU file with image '{image}'") as step:
+                    try:
+                        reload_args.update(
+                            {"timeout": install_timeout, "reply": install_smu_dialog}
+                        )
+
+                        check_reload_dialog = Dialog(
+                            [
+                                Statement(
+                                    pattern=r".*reloading, reason - Reload command",
+                                    action=None,
+                                    loop_continue=False,
+                                    continue_timer=False,
+                                )
+                            ]
+                        )
+                        # address the reload dialog prompt when encountering a cold SMU scenario
+                        device.execute(
+                            "install activate file {}".format(image), reply=install_smu_dialog
+                        )
+                        # The key difference between hot and cold SMUs is that a reload occurs
+                        # with cold SMUs, whereas it does not with hot SMUs.
                         try:
-                            if file_state == "I" and file_type == "SMU":
-                                log.info("The installed SMU image is in inactive state")
-                        except Exception as e:
-                            step.failed("Failed to add the SMU image", from_exception=e)
-                except Exception as e:
-                    step.failed("Failed to verify SMU image", from_exception=e)
+                            # dialog processor to identify reload patterns in case of cold smu;
+                            # upon detection of such a pattern, we perform reload and
+                            # update the timeout, which is managed in the subsequent steps
+                            check_reload_dialog.process(device.spawn, timeout=smu_reload_wait)
+                        except TimeoutError:
+                            # We deliberately trigger a timeout error under the assumption that the provided
+                            # image is a hot SMU, allowing us to continue with execution.
+                            device.execute("show version")
+                            device.execute("show install summary")
+                        else:
+                            # When a reload pattern is detected during the dialog process,
+                            # we verify the presence of the wrapper and,
+                            # if applicable, directly invoke the reload service
+                            if isinstance(device.reload, ServiceWrapper):
+                                device.reload.service("", **reload_args)
+                            else:
+                                device.reload(
+                                    "", **reload_args
+                                )
+                    except Exception as e:
+                        step.failed("Failed to activate SMU image", from_exception=e)
 
-            with super_step.start(f"Activate the SMU file with image '{images[0]}'") as step:
-                try:
-                    reload_args.update(
-                        {"timeout": install_timeout, "reply": install_smu_dialog}
-                    )
-                    device.reload(
-                        "install activate file {}".format(images[0]), **reload_args
-                    )
-                    device.execute("show version")
-                    device.execute("show install summary")
-                except Exception as e:
-                    step.failed("Failed to activate SMU image", from_exception=e)
+                with super_step.start("Commit the SMU file with image") as step:
+                    try:
+                        output = device.parse("show install active")
+                        location = list(output.get("location").keys())[0]
+                        for pkg in output.get("location").get(location).get("pkg_state"):
+                            file_state = output["location"][location]["pkg_state"][pkg][
+                                "state"
+                            ]
+                            if file_state == "U":
+                                device.execute("install commit")
+                                log.info("The image is activated and uncommitted")
+                    except Exception as e:
+                        step.failed("Failed to activate SMU image", from_exception=e)
 
-            with super_step.start("Commit the SMU file with image") as step:
-                try:
-                    output = device.parse("show install active")
-                    location = list(output.get("location").keys())[0]
-                    for pkg in output.get("location").get(location).get("pkg_state"):
-                        file_state = output["location"][location]["pkg_state"][pkg][
-                            "state"
-                        ]
-                        if file_state == "U":
-                            device.execute("install commit")
-                            log.info("The image is activated and uncommitted")
-                except Exception as e:
-                    step.failed("Failed to activate SMU image", from_exception=e)
+                with super_step.start("Check if SMU is applied succesfully") as step:
+                    try:
+                        output = device.parse("show install summary")
+                        for pkg in output.get("location").get(location).get("pkg_state"):
+                            file_state = output["location"][location]["pkg_state"][pkg][
+                                "state"
+                            ]
+                            filename_version = output["location"][location]["pkg_state"][pkg][
+                                "filename_version"
+                            ]
+                            #get_image name
+                            image_name = re.split(r"[:/]", filename_version)[-1]
+                            if file_state == "C" and image_name in image:
+                                log.info(f"Applied SMU image {filename_version} successfully")
 
-            with super_step.start("Check if SMU is applied succesfully") as step:
-                try:
-                    output = device.parse("show install summary")
-                    for pkg in output.get("location").get(location).get("pkg_state"):
-                        file_state = output["location"][location]["pkg_state"][pkg][
-                            "state"
-                        ]
-                        if file_state == "C":
-                            log.info("Applied SMU successfully")
-
-                except Exception as e:
-                    step.failed("Failed to apply SMU image", from_exception=e)
+                    except Exception as e:
+                        step.failed("Failed to apply SMU image", from_exception=e)
 
 
 class InstallPackages(BaseStage):

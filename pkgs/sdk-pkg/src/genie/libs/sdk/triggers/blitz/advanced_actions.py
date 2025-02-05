@@ -40,8 +40,11 @@ def loop(self, steps, testbed, section, name, action_item):
     else:
         msg = 'Executing actions in a loop'
 
+    # check if the step logs needs to be suppressed
+    suppress_logs = bool(self.parameters.get('suppress_logs'))
+
     # Since loop shows up in action level, it has to be treated as an action and step
-    with steps.start(msg, continue_=True) as step:
+    with steps.start(msg, continue_=True, suppress_logs=suppress_logs) as step:
 
         # check if user has made any input error and error out the step
         _check_user_input_error(step, action_item, loop_return_items)
@@ -94,7 +97,11 @@ def parallel(self, steps, testbed, section, name, data):
     """
     pcall_payloads = []
     pcall_returns = []
-    with steps.start('Executing actions in parallel', continue_=True) as steps:
+
+    # check if the step logs needs to be suppressed
+    suppress_logs = bool(self.parameters.get('suppress_logs'))
+
+    with steps.start('Executing actions in parallel', continue_=True, suppress_logs=suppress_logs) as steps:
 
         kwargs = {
             'self': self,
@@ -130,6 +137,9 @@ def run_condition(self, steps, testbed, section, name, action_item):
     """
     ret_list = []
 
+    # check if the logs needs to be suppressed
+    suppress_logs = bool(self.parameters.get('suppress_logs', False))
+
     # Legacy implementation
     if isinstance(action_item, dict):
 
@@ -157,7 +167,8 @@ def run_condition(self, steps, testbed, section, name, action_item):
             return _run_condition_with_optional_func(condition_bool,
                                                     condition,
                                                     kwargs,
-                                                    description=desc)
+                                                    description=desc,
+                                                    suppress_logs=suppress_logs)
 
         msg = action_item.pop('custom_substep_message',
                             'Checking the condition {}'.format(condition))
@@ -260,7 +271,8 @@ def run_condition(self, steps, testbed, section, name, action_item):
                 return _run_condition_with_optional_func(condition_bool,
                                                         condition,
                                                         kwargs,
-                                                        description=desc)
+                                                        description=desc,
+                                                        suppress_logs=suppress_logs,)
 
             # When condition is True and function
             if function and condition_bool:

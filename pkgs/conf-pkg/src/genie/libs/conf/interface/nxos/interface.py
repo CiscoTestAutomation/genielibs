@@ -424,7 +424,20 @@ class Interface(genie.libs.conf.interface.Interface):
                     apply=False, attributes=attributes2))
             else:
                 configurations.append_block(ipv6addr.build_config(
-                    apply=False, attributes=attributes2))
+                    apply=False, attributes=attributes2)) 
+        
+        # fec <rs-fec>
+        if attributes.value('fec'):
+            configurations.append_line(
+                attributes.format('fec {fec}'),
+                unconfig_cmd='no fec')
+        
+        # media_type <10g-tx>
+        if attributes.value('media_type'):
+            configurations.append_line(
+                attributes.format('media-type {media_type}'),
+                unconfig_cmd='no media-type')
+        
 
         # -- ETHER L2, L3, PC
         # nxos: interface <intf> / buffer-boost

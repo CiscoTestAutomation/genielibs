@@ -1476,9 +1476,9 @@ class TriggerAddRemoveBgpAggregateAddressIpv4(TriggerAddRemove):
     mapping = Mapping(requirements={ \
         'ops.bgp.bgp.Bgp': {
             'requirements': [ \
-                ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'address_family','(?P<af>^(ipv4)[\w -]+)',
+                ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'address_family',r'(?P<af>^(ipv4)[\w -]+)',
                  NotExists('aggregate_address_ipv4_address')],
-                ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'address_family', '(?P<af>^(ipv4)[\w -]+)',
+                ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'address_family', r'(?P<af>^(ipv4)[\w -]+)',
                  NotExists('aggregate_address_ipv4_mask')],
                 ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)',
                  'session_state', 'established'],
@@ -1489,9 +1489,9 @@ class TriggerAddRemoveBgpAggregateAddressIpv4(TriggerAddRemove):
         config_info={ \
             'conf.bgp.Bgp': {
                 'requirements': [ \
-                    ['device_attr', '{uut}', 'vrf_attr', '(?P<vrf>.*)', 'address_family_attr', '(?P<af>^(ipv4)[\w -]+)',
+                    ['device_attr', '{uut}', 'vrf_attr', '(?P<vrf>.*)', 'address_family_attr', r'(?P<af>^(ipv4)[\w -]+)',
                      'af_aggregate_address_ipv4_address', '83.0.0.0'],
-                    ['device_attr', '{uut}', 'vrf_attr', '(?P<vrf>.*)', 'address_family_attr', '(?P<af>^(ipv4)[\w -]+)',
+                    ['device_attr', '{uut}', 'vrf_attr', '(?P<vrf>.*)', 'address_family_attr', r'(?P<af>^(ipv4)[\w -]+)',
                      'af_aggregate_address_ipv4_mask', '16']
                 ],
                 'verify_conf': False,
@@ -1501,9 +1501,9 @@ class TriggerAddRemoveBgpAggregateAddressIpv4(TriggerAddRemove):
                 'requirements': [ \
                     ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)',
                      'session_state', 'established'],
-                    ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'address_family', '(?P<af>^(ipv4)[\w -]+)',
+                    ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'address_family', r'(?P<af>^(ipv4)[\w -]+)',
                      'aggregate_address_ipv4_address', '83.0.0.0'],
-                    ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'address_family', '(?P<af>^(ipv4)[\w -]+)',
+                    ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'address_family', r'(?P<af>^(ipv4)[\w -]+)',
                      'aggregate_address_ipv4_mask', '16'],
                 ],
                 'kwargs': {'attributes': ['info']},
@@ -1750,7 +1750,7 @@ class TriggerAddRemoveBgpNetworkIPv4(TriggerAddRemove):
         requirements={\
             'conf.bgp.Bgp': {
                 'requirements': [\
-                    ['device_attr', '{uut}', '_vrf_attr', '(?P<vrf>.*)', '_address_family_attr', '(?P<af>^(ipv4)[\w -]+)', NotExists('af_network_number')]],
+                    ['device_attr', '{uut}', '_vrf_attr', '(?P<vrf>.*)', '_address_family_attr', r'(?P<af>^(ipv4)[\w -]+)', NotExists('af_network_number')]],
                 'exclude': bgp_exclude_keepalive},
             'ops.bgp.bgp.Bgp': {
                 'requirements': [\
@@ -1837,7 +1837,7 @@ class TriggerAddRemoveBgpNetworkIPv6(TriggerAddRemove):
             'conf.bgp.Bgp': {
                 'requirements': [\
                     ['device_attr', '{uut}', '_vrf_attr', '(?P<vrf>.*)', '_address_family_attr',
-                     '(?P<af>(AddressFamily.)(ipv6|ipv6[\S]+)(.*))', NotExists('af_v6_network_number')]],
+                     r'(?P<af>(AddressFamily.)(ipv6|ipv6[\S]+)(.*))', NotExists('af_v6_network_number')]],
                 'exclude': bgp_exclude_keepalive},
             'ops.bgp.bgp.Bgp': {
                 'requirements': [\

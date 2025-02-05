@@ -336,7 +336,7 @@ class TestMapleConverter(unittest.TestCase):
                            show version
                        match: |
                            \\d
-                           \w
+                           \\w
         """
         maple_dict = ruamel.yaml.safe_load(maple)
         kwargs = {'confirm_data': maple_dict,

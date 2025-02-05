@@ -371,7 +371,7 @@ def verify_chassis_environment_present(device,
                 # >>> m=re.search('(.+?) +Fan +\d+',name).group(1)
                 # >>> m
                 # 'Fan Tray 0'   
-                res = re.search('(.+?) +Fan +\d+',item['name'])
+                res = re.search(r'(.+?) +Fan +\d+',item['name'])
                 if not res:
                     continue
                 name = res.group(1)  

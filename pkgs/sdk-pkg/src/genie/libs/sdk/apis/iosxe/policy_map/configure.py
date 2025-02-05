@@ -29,6 +29,7 @@ def configure_policy_map(device,
              table_map_name('str',optional): to set the table name for policy_map,
              table_map_mode('str',optional : name of the tablemode
              police_cir_percent(int, optional): police cir percent
+             priority_percent('int',optional) : priority percent
              priority_level('int',optional): value of priority queue for 0 to 7
              bandwidth_percent(int, optional): bandwidth percent
              bandwidth_remaining_percent(int, optional): bandwidth remaining percent
@@ -62,6 +63,8 @@ def configure_policy_map(device,
                 cmd.append(f"priority level {class_map['priority_level']}")
             if 'bandwidth_percent' in class_map:
                 cmd.append(f"bandwidth percent {class_map['bandwidth_percent']}")
+            if 'priority_percent' in class_map:
+                cmd.append(f"priority percent {class_map['priority_percent']}")    
             if 'bandwidth_remaining_percent' in class_map:
                 cmd.append(f"bandwidth remaining percent {class_map['bandwidth_remaining_percent']}")
             if class_map.get('match_mode', None)  and class_map.get('matched_value', None):

@@ -97,13 +97,15 @@ def configure_ignore_startup_config(device):
     """
 
     try:
-        # If the device state is in rommon configure rommon variable
-        if device.state_machine.current_state == 'rommon':
-            cmd = 'SWITCH_IGNORE_STARTUP_CFG=1'
-            device.execute(cmd)
-        else:
-            cmd = 'system ignore startupconfig switch all'
-            device.configure(cmd)
+        connections = getattr(device, 'subconnections', None) or [device]
+        for con in connections:
+            # If the device state is in rommon configure rommon variable
+            if con.state_machine.current_state == "rommon":
+                cmd = 'SWITCH_IGNORE_STARTUP_CFG=1'
+                con.execute(cmd)
+            else:
+                cmd = 'system ignore startupconfig switch all'
+                con.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not configure ignore startup config on {device.name}. Error:\n{e}")
@@ -119,13 +121,15 @@ def unconfigure_ignore_startup_config(device):
     """
     
     try:
-        # If the device state is in rommon configure rommon variable
-        if device.state_machine.current_state == 'rommon':
-            cmd = 'SWITCH_IGNORE_STARTUP_CFG=0'
-            device.execute(cmd)
-        else:
-            cmd = 'no system ignore startupconfig switch all'
-            device.configure(cmd)
+        connections = getattr(device, 'subconnections', None) or [device]
+        for con in connections:
+            # If the device state is in rommon configure rommon variable
+            if con.state_machine.current_state == "rommon":
+                cmd = 'SWITCH_IGNORE_STARTUP_CFG=0'
+                con.execute(cmd)
+            else:
+                cmd = 'no system ignore startupconfig switch all'
+                con.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not unconfigure ignore startup config on {device.name}. Error:\n{e}")

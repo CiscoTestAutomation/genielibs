@@ -1972,7 +1972,7 @@ class EthernetInterface(PhysicalInterface, genie.libs.conf.interface.EthernetInt
 
     @transceiver_permit_pid_all.defaulter
     def transceiver_permit_pid_all(self):
-        if re.match('asr9\d\d\d', self.device.platform or ''):
+        if re.match(r'asr9\d\d\d', self.device.platform or ''):
             return True
         return None
 

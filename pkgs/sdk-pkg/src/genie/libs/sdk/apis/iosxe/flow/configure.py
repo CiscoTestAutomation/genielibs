@@ -758,27 +758,62 @@ def clear_flow_monitor_statistics_for_et_analytics(device):
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not clear flow monitor statistics for et-analytics. Error:\n{e}")
 
-def configure_monitor_capture(device, capture_name, match_type, direction, interface):
+def configure_monitor_capture(
+    device, 
+    capture_name,
+    match_type,
+    direction,
+    interface,
+    file_location=None,
+    file_size=None,
+    buffer_size=None,
+    duration=None,
+    packets=None,
+    packet_len=None,
+    capture_frequency=None,
+    pps=None
+    ):
     """ Configure Monitor Capture on Device
         Args:
             device (`obj`): Device object
-            capture_name (`str`): Monitor capture name
+            capture_name (`str`): Name of the Capture
             match_type(`str`): Match type of monitor (any/ipv4/ipv6/mac)
             direction ('str'): Direction of monitor (input/output/both)
             interface('str'): Interface
-
+            file_location ('str'): Location of the pcap file
+            file_size ('int'): Total size of file(s) in MB <1-100>
+            buffer_size ('int'): Buffer size in MB  : Min 1 : Max 100
+            duration ('int'): Limit total duration of capture in Seconds : Min 1 - Max 1000000
+            packets ('int'): Number of Packet  : Min 1 - Max 100000 
+            packet_len ('int'): packet length(in bytes) : Min 64 : Max 9500
+            capture_frequency('int'): Fraction of Packets to capture (every Nth)  : Min 2 - Max 100000
+            pps ('int'): Maximum number of packets per second <1-1000000>
         Return:
             None
         Raise:
             SubCommandFailure: Failed to Configure Monitor Capture
     """
-    cmd = "monitor capture {capture_name} match {match_type} interface {interface} {direction}".format(
-            capture_name=capture_name, match_type=match_type, interface=interface, direction=direction)
+    cmd = f"monitor capture {capture_name} match {match_type} interface {interface} {direction}"
+    if file_location:
+        cmd += f" file location {file_location}"
+    if file_size:
+        cmd += f" size {file_size}"
+    if buffer_size:
+        cmd += f" buffer-size {buffer_size}"
+    if duration:
+        cmd += f" limit duration {duration}"
+    if packets:
+        cmd += f" packets {packets}"
+    if packet_len:
+        cmd += f" packet-len {packet_len}"
+    if capture_frequency:
+        cmd += f" every {capture_frequency}"
+    if pps:
+        cmd += f" pps {pps}"
     try:
         device.execute(cmd)
-
     except SubCommandFailure as e:
-        raise SubCommandFailure(f'monitor capture {capture_name} match {match_type} interface {interface} {direction}. Error:\n{e}')
+        raise SubCommandFailure(f'monitor capture {capture_name} match start. Error:\n{e}')
 
 def start_monitor_capture(device, capture_name):
     """ Start Monitor Capture on Device

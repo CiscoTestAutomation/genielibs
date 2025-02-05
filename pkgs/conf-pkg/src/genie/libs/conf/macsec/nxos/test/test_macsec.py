@@ -29,7 +29,8 @@ class test_macsec(TestCase):
         macsec.device_attr[dev1].macsec_policy_attr['MP1'].include_icv_indicator = True 
         macsec.device_attr[dev1].macsec_policy_attr['MP1'].include_sci = False 
         macsec.device_attr[dev1].macsec_policy_attr['MP1'].window_size = 100000
-        macsec.device_attr[dev1].macsec_policy_attr['MP1'].ppk_profile_name = 'QKD1'
+        macsec.device_attr[dev1].macsec_policy_attr['MP1'].ppk_profile_name = 'QKD1' 
+        macsec.device_attr[dev1].macsec_policy_attr['MP1'].lldp_encrypted = True
         
         cfgs = macsec.build_config(apply=False)
         self.assertCountEqual(cfgs.keys(), [dev1.name])
@@ -45,9 +46,10 @@ class test_macsec(TestCase):
                 ' no include-sci',
                 ' window-size 100000',
                 ' ppk crypto-qkd-profile QKD1',
+                ' protocol lldp encrypted',
                 ' exit'
             ]))
-
+        
         un_cfgs = macsec.build_unconfig(apply=False)
         self.assertCountEqual(un_cfgs.keys(), [dev1.name])
         self.maxDiff = None

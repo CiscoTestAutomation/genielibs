@@ -29,11 +29,6 @@ TriggerProfileSystem:
 # UNCONFIG-CONFIG
 # ----------------
 
-TriggerUnconfigureConfigureOspf:
-    source:
-        pkg: genie.libs.sdk
-        class: triggers.unconfconf.ospf.unconfconf.TriggerUnconfigureConfigureOspf
-
 TriggerUnconfigConfigOspfInteface:
     source:
         pkg: genie.libs.sdk

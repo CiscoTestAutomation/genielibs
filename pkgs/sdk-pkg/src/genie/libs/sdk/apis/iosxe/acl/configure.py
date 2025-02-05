@@ -1548,6 +1548,36 @@ def configure_mac_acl(device, name, action, source, dest, ethertype=''):
         raise SubCommandFailure(f"Failed to configure mac acl on the device {device.name}. Error:\n{e}")
 
 
+def configure_mac_acl_etherType(device, name, action, ethertype=None, mask=None):
+    """ Configuring MAC ACL
+        Example: mac access-list extended aclname
+                 permit any any 0x8892 0x0
+
+        Args:
+            device ('obj'): device to use
+            name ('str'): name of the ACL to which the entry belongs
+            action ('str'): (permit | deny) permits or denies Layer 2 traffic
+            ethertype ('str'): {optional} ethertype
+            mask('str') : ether type mask
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    config = [f"mac access-list extended {name}"]
+    action = action.strip().lower()
+    if action in ('permit', 'deny'):
+        config.append(f"{action} any any {ethertype} {mask}")
+    else:
+        raise SubCommandFailure("Invalid action type only permit and deny are valid actions")
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure mac acl on the device {device.name}. Error:\n{e}")
+
+
 
 def configure_access_map_match_ip_address_action_forward(device, vlan_access_name):
     """ Configuring access map match ip address action forward 
@@ -2346,3 +2376,50 @@ def unconfigure_ip_sgacl(device, acl_action, ip_protocol_version):
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure ip sgacl on the device {device.name}. Error:\n{e}")
+
+def configure_protocol_acl_any_any(device, acl_name, permission, protocol):
+    """ configure permit/deny protocol any any on acl
+        Args:
+            device ('obj'): Device object
+            acl_name ('str'): access_list name
+            permission ('str'): permit | deny
+            protocol ('str'): protocol Name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"configure permit/deny protocol any any on acl {acl_name}")
+
+    config = [
+        f'ip access-list extended {acl_name}',
+        f'{permission} {protocol} any any'
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure permit/deny protocol any any on acl {acl_name}. Error:\n{e}")    
+
+def unconfigure_protocol_acl_any_any(device, acl_name, permission, protocol):
+    """ unconfigure permit/deny protocol any any on acl
+        Args:
+            device ('obj'): Device object
+            acl_name ('str'): access_list name
+            permission ('str'): permit | deny
+            protocol ('str'): protocol Name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"Unconfigure permit/deny protocol any any on acl {acl_name}")
+
+    config = [
+        f'ip access-list extended {acl_name}',
+        f'no {permission} {protocol} any any'
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not unconfigure permit/deny protocol any any on acl {acl_name}. Error:\n{e}")   
+  

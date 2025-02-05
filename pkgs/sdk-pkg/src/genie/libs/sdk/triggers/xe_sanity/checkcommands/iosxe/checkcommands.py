@@ -391,10 +391,10 @@ class TriggerCheckCommands(CheckCommandsTemplate):
             requirements = {
                 'slot_number':
                    [['slot', '(?P<stack>.*)','rp', '(.*)', 'slot',
-                     '(?P<slot_number>\d+)']],
+                     r'(?P<slot_number>\d+)']],
                 'ports':
                    [['slot', '(?P<stack>.*)','rp', '(.*)', 'ports',
-                     '(?P<ports>\d+)']],
+                     r'(?P<ports>\d+)']],
                 'model':
                    [['slot', '(?P<stack>.*)','rp', '(.*)', 'name',
                      '(?P<model>.*)']],
@@ -642,7 +642,7 @@ class TriggerCheckCommands(CheckCommandsTemplate):
                          '(?P<power_state>on)']],
                     'power_budgeted_amount':
                        [['interface', '(?P<interface>.*)','power',
-                         '(?P<power_budgeted_amount>^(?!0)[\d\.]+)']],
+                         r'(?P<power_budgeted_amount>^(?!0)[\d\.]+)']],
                 }
                 try:
                     ret = get_requirements(requirements=requirements, output=output)

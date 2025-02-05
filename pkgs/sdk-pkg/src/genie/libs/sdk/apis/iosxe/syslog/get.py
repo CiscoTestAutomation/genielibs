@@ -47,9 +47,9 @@ def get_syslog_maximum_ospf_down_time(device, logs, server):
 def get_syslog_message_time(
     message,
     regex=r".+\s+(?P<month>\S+) +(?P<day>\d+) "
-    "+(?P<hour>\d+)\:(?P<minute>\d+)\:"
-    "(?P<second>\d+)\.(?P<millisecond>"
-    "\d+).+",
+    r"+(?P<hour>\d+)\:(?P<minute>\d+)\:"
+    r"(?P<second>\d+)\.(?P<millisecond>"
+    r"\d+).+",
 ):
     """ Get message time
         Args:
@@ -127,7 +127,7 @@ def get_syslog_first_ospf_down_message(
     # <133>837: Jun 7 02:45:47.289 EST: %OSPF-5-ADJCHG: Process 65109, Nbr 10.169.197.252 on GigabitEthernet2 from FULL to DOWN, Neighbor Down: Interface down or detached
     r1 = re.compile(
         r".+\%OSPF\-\d+\-ADJCHG\:\s+Process\s+\d+\,\s+Nbr\s+\S+\s+"
-        "on\s+(?P<interface>\S+)+\s+from\s+FULL\s+to\s+DOWN\,\s+Neighbor\s+Down.*"
+        r"on\s+(?P<interface>\S+)+\s+from\s+FULL\s+to\s+DOWN\,\s+Neighbor\s+Down.*"
     )
 
     for packet in logs:
@@ -236,7 +236,7 @@ def get_syslog_first_ospf_up_message(
     # <133>837: Jul 13 05:45:23.872 EST: %OSPF-5-ADJCHG: Process 65109, Nbr 10.169.197.252 on GigabitEthernet2 from LOADING to FULL, Loading Done
     r1 = re.compile(
         r".+\%OSPF\-\d+\-ADJCHG\:\s+Process\s+\d+\,\s+Nbr\s+\S+\s+"
-        "on\s+(?P<interface>\S+)\s+from\s+LOADING\s+to\s+FULL.+"
+        r"on\s+(?P<interface>\S+)\s+from\s+LOADING\s+to\s+FULL.+"
     )
 
     for packet in logs:

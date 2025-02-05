@@ -7,6 +7,7 @@ class TestPasswordRecovery(unittest.TestCase):
     def setUp(self):
         # Mock the device object and its methods
         self.device = MagicMock()
+        self.device.is_ha = False
         self.device.name = 'TestDevice'
         self.device.api.execute_power_cycle_device = MagicMock()
         self.device.api.send_break_boot = MagicMock()
@@ -24,7 +25,6 @@ class TestPasswordRecovery(unittest.TestCase):
 
         # Test the password recovery process with expected behavior
         password_recovery(self.device)
-
         # Verify that all steps were called
         self.device.api.execute_power_cycle_device.assert_called_once()
         self.device.api.send_break_boot.assert_called_once()
@@ -52,3 +52,18 @@ class TestPasswordRecovery(unittest.TestCase):
         self.device.api.unconfigure_ignore_startup_config.assert_called_once()
         self.device.api.verify_ignore_startup_config.assert_called_once()
         self.device.api.execute_write_memory.assert_not_called()
+
+    def test_password_recovery_ha(self):
+
+        # Test the password recovery process with expected behavior
+        self.device.is_ha = True
+        password_recovery(self.device)
+        # Verify that all steps were called
+        self.device.api.execute_power_cycle_device.assert_called_once()
+        self.device.api.send_break_boot.assert_called_once()
+        self.device.connection_provider.designate_handles.assert_called_once()
+        self.device.api.configure_management_credentials.assert_called_once()
+        self.device.api.execute_write_memory.assert_called_once()
+        self.device.api.configure_ignore_startup_config.assert_called_once()
+        self.device.api.unconfigure_ignore_startup_config.assert_called_once()
+        self.device.api.verify_ignore_startup_config.assert_called_once()

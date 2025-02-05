@@ -64,7 +64,7 @@ class Device(SuperDevice):
     def get_numeric_value(self, item):
         '''return the numeric value at the beginning of a string'''
         return re.sub(
-            '^(?P<num>[0-9]+)\s*(?P<unit>.*)$',
+            r'^(?P<num>[0-9]+)\s*(?P<unit>.*)$',
             r'\1',
             item
         )
@@ -72,7 +72,7 @@ class Device(SuperDevice):
     def get_unit_value(self, item):
         '''return the unit value at the end of a string'''
         unit = re.sub(
-            '^(?P<num>[0-9]+)\s*(?P<unit>.*)$',
+            r'^(?P<num>[0-9]+)\s*(?P<unit>.*)$',
             r'\2',
             item)
         return unit.capitalize()

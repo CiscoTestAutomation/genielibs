@@ -699,6 +699,64 @@ def configure_bgp_l2vpn_route_reflector_client(
             "Could not configure route-reflector-client on l2vpn bgp neighbor on bgp "
             "router {bgp_as}. Error:{e}".format(bgp_as=bgp_as, e=e)
         )
+def configure_bgp_route_reflector_client(
+            device, bgp_as, neighbor_address
+            ):
+    """ Configure route reflector client on bgp neighbor
+
+        Args:
+            device ('obj')             : Device to be configured
+            bgp_as ('str')             : Bgp Id to be added to configuration
+            neighbor_address ('str')   : Address of neighbor to be added to configuration
+
+        Returns:
+            N/A
+        Raises:
+            SubCommandFailure: Failed executing configure commands
+
+    """
+    log.debug("configure route-reflector-client on bgp neighbor on router bgp {bgp_as}"
+                              .format(bgp_as=bgp_as))
+    configs = [    
+            f"router bgp {bgp_as}",
+            f"neighbor {neighbor_address} route-reflector-client"
+        ]
+    try:
+      device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure route-reflector-client on bgp neighbor on bgp "
+            "router {bgp_as}. Error:{e}".format(bgp_as=bgp_as, e=e)
+        )
+def configure_fall_over_bfd_on_bgp_neighbor(
+            device, bgp_as, neighbor_address
+            ):
+    """ Configure fall-over bfd on bgp neighbor
+
+        Args:
+            device ('obj')             : Device to be configured
+            bgp_as ('str')             : Bgp Id to be added to configuration
+            neighbor_address ('str')   : Address of neighbor to be added to configuration
+
+        Returns:
+            N/A
+        Raises:
+            SubCommandFailure: Failed executing configure commands
+
+    """
+    log.debug("configure fall-over bfd on bgp neighbor on router bgp {bgp_as}"
+                              .format(bgp_as=bgp_as))
+    configs = [    
+            f"router bgp {bgp_as}",
+            f"neighbor {neighbor_address} fall-over bfd"
+        ]
+    try:
+      device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure fall-over bfd on bgp neighbor on bgp "
+            "router {bgp_as}. Error:{e}".format(bgp_as=bgp_as, e=e)
+        )
 def configure_shut_bgp_neighbors(
     device, bgp_as, neighbors=None, address_family=None, vrf=None,
     noshut=False):

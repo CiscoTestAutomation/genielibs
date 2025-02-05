@@ -677,7 +677,7 @@ def get_ipv6_intf_tentative_address(device, interface):
     # addresses = [ip.get('ip') for ip in ipv6_addr if ip.get('ip') is not None and ip.get('status') == 'tentative']
 
     # device.execute implementation
-    rgx = re.compile("\d.*\[.*\/?TEN\]")
+    rgx = re.compile(r"\d.*\[.*\/?TEN\]")
     addrs = re.findall(rgx, output)
     addrs = [addr.split(',')[0] for addr in addrs]
 

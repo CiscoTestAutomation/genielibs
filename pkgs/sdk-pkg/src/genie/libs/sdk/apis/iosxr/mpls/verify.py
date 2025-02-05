@@ -36,7 +36,7 @@ def verify_segment_routing_gb_range(
 
     reqs = R(['table', '(.*)',
                'label', '(?P<label>.*)',
-               'label_type', '(?P<label_type>[Lbl\-blk.*])',
+               'label_type', r'(?P<label_type>[Lbl\-blk.*])',
                '(?P<start_label>.*)'])
 
     found = find([out], reqs, filter_=False, all_keys=True)

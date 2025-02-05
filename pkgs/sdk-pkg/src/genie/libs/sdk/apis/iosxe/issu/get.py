@@ -26,7 +26,7 @@ def get_issu_space_info_on_disk(device, disk, output=""):
             )
 
     m = re.search(
-        "(?P<total>(\d+)) +bytes +total +\((?P<free>(\d+)) " "+bytes +free\)",
+        r"(?P<total>(\d+)) +bytes +total +\((?P<free>(\d+)) +bytes +free\)",
         output,
     )
 

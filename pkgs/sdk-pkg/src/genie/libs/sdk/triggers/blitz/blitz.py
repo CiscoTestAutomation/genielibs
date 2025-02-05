@@ -128,13 +128,17 @@ class Blitz(Trigger):
                     section_continue = section.section_continue
                     continue
 
+                # check if the step logs needs to be suppressed
+                suppress_logs = bool(self.parameters.get('suppress_logs'))
+
                 pre_step_removed_kwargs = self._pre_step_start_kwargs_update(
                     action, kwargs, testbed, ret_dict, section)
                 # Action starts.
                 with steps.start(
                         pre_step_removed_kwargs['step_msg'],
                         continue_=pre_step_removed_kwargs['continue_'],
-                        description=pre_step_removed_kwargs['description']
+                        description=pre_step_removed_kwargs['description'],
+                        suppress_logs=suppress_logs,
                 ) as step:
 
                     kwargs = self._pre_action_call_kwargs_update(

@@ -32,7 +32,7 @@ def verify_ping_from_server(server, ip_address, count, interface):
 
     p1 = re.compile(
         r"{} +packets +transmitted, +{} +received, +0%"
-        " +packet +loss, +time +\w+".format(count, count)
+        r" +packet +loss, +time +\w+".format(count, count)
     )
     m = p1.search(out)
     if m:

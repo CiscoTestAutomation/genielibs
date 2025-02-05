@@ -509,3 +509,52 @@ def debug_software_cpm_switch_pcap(device, mode, enable_disable):
 
         raise SubCommandFailure(f"Failed to perform pcap enable/disable. Error:\n{e}")
         
+def show_platform_software_mcu_snapshot_detail_request(device, switch=None, rp=None):
+    """
+    Show platform software MCU details with optional parameters.
+    
+    Args:
+        device ('obj'): Device to execute the command on
+        switch ('str' or 'int', optional): Switch number (1-8), 'active', or 'standby'
+        rp ('str', optional): Route processor, e.g., 'R0' or 'RP'
+    
+    Returns:
+        str: Command output
+    
+    Raises:
+        SubCommandFailure: If the command execution fails
+    """
+    cmd = f"show platform software mcu switch {switch} {rp} snapshot_detail request"
+
+    try:
+        return device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to execute command '{cmd}' on device. Error:\n{e}"
+        )
+        
+        
+def set_platform_software_ilpower_mcu(device, mode, rp, action):
+    """
+    Set platform software ilpower switch MCU enable/stop.
+
+    Args:
+        device ('obj'): Device to execute the command on
+        mode ('str'): Switch mode, e.g., 'active' or 'standby'
+        rp ('str'): Route processor, e.g., 'R0'
+        action ('str'): Action to perform, e.g., 'enable' or 'stop'
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: If the command execution fails
+    """
+    cmd = f"set platform software ilpower switch {mode} {rp} MCU {action}"
+
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to execute 'set platform software ilpower' with action {action}. Error:\n{e}"
+        )

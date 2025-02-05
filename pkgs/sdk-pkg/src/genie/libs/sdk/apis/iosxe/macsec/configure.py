@@ -682,9 +682,9 @@ def unconfigure_pki_trustpoint(device, label_name):
 
     dialog = Dialog([
     Statement(pattern=r'.*\% Removing an enrolled trustpoint will destroy all certificates\n'
-    'received from the related Certificate Authority\.\n'
+    r'received from the related Certificate Authority\.\n'
 
-    'Are you sure you want to do this\? \[yes\/no\]\:',
+    r'Are you sure you want to do this\? \[yes\/no\]\:',
                         action='sendline(y)',
                         loop_continue=True,
                         continue_timer=False)
@@ -725,7 +725,7 @@ def configure_mka_macsec(device,
     configs.append("macsec")
 
     errors = [f"% MKA policy \"{policy_name}\" has not been configured.",
-    f"% Either the Key-Chain \"{keychain_name}\" is not defined or there is no valid key in the key-chain\."
+    f"% Either the Key-Chain \"{keychain_name}\" is not defined or there is no valid key in the key-chain\\."
     ]
 
     try:

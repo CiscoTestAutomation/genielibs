@@ -1761,3 +1761,119 @@ def unconfigure_pnp_startup_vlan(device, vlan):
         raise SubCommandFailure(
             f'Failed to Unconfigure pnp startup-vlan: {vlan} on {device.name}\n{e}'
         )
+   
+def configure_interface_ip_dhcp_relay_information_option_insert(device, interface):
+    """ Configure ip dhcp relay information option-insert on the interface
+        Args:
+            device ('obj'): device to use
+            interface ('str'): name of the interface to be configured # example  "interface vlan 100" "ip dhcp relay information option-insert"
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to ip dhcp relay information option-insert
+    """
+    log.info("Configuring ip dhcp relay information option-insert on the interface")
+    config =  ["interface {}".format(interface),
+                "ip dhcp relay information option-insert"]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure ip dhcp relay information option-insert on the interface {interface}. Error\n{e}"
+        )
+
+def unconfigure_interface_ip_dhcp_relay_information_option_insert(device, interface):
+    """ Unconfigure ip dhcp relay information option-insert on the interface # example  "interface vlan 100" "ip dhcp relay information option-insert"
+        Args:
+            device ('obj'): device to use
+            interface ('str'): name of the interface to be configured # example  "interface vlan 100" "ip dhcp relay information option-insert"
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to enable dhcp relay information option-insert
+    """
+    log.info("Unconfiguring ip dhcp relay information option-insert on the interface")
+    config =  ["interface {}".format(interface),
+               "no ip dhcp relay information option-insert"]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure ip dhcp relay information option-insert on the interface {interface}. Error\n{e}"
+        )
+        
+def configure_ip_ddns_update_method(
+    device, method_name, method_option=None, dns_option=None, url=None):
+    """ Configure Ip DDNS update method 
+        Args:
+            device ('obj'): device to use
+            method_name ('str'): Method name for DDNS update
+            method_option ('str',optional): method option for DDNS update, default is HTTP
+            dns_option ('str',optional): dns option for DDNS update, default is add
+            url ('str',optional): URL used to add or remove DNS records
+    
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed creating dhcp pool
+    """
+    log.debug(f"Configuring ip ddns update method {method_name}")
+
+    config = [
+            f"ip ddns update method {method_name}",
+	        f"{method_option}",
+            f"{dns_option} {url}",
+            "interval maximum 0 1 0 0"
+            ]
+    try:
+        device.configure(config)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure DDNS Update Method {method_name}. Error:\n{e}"
+            )
+
+def unconfigure_ip_ddns_update_method(device, method_name):
+    """ Configure Ip DDNS update method 
+        Args:
+            device ('obj'): device to use
+            method_name ('str'): name of the method to be created
+    
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed creating dhcp pool
+    """
+    log.debug(f"Unconfiguring ip ddns update method {method_name}")
+
+    config =  ["no ip ddns update method {}".format(method_name)]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure ip ddns update method {method_name}. Error\n{e}"
+        )
+        
+def configure_dhcp_option(device, pool, data_type='ascii', dhcp_option=None, ascii_string=None):
+    """ Configure dhcp option 
+       Args:
+            device ('obj'): device object
+            pool ('str'): pool name to configure
+            data_type ('str'): Data type can be any. Default is ascii
+            dhcp_option ('str'): DHCP option code
+            ascii_string ('str'):   Data as an NVT ASCII string  to configure    
+       Return:
+            None
+       Raises:
+            SubCommandFailure
+    """
+    log.debug(f"configure option")
+    config= [f'ip dhcp pool {pool}']
+    if data_type == 'ascii' and ascii_string is not None and dhcp_option is not None:
+        config += [f'option {dhcp_option} {data_type} {ascii_string}'] 
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to configure dhcp option for pool: {pool} on {device.name}\n{e}'
+        )

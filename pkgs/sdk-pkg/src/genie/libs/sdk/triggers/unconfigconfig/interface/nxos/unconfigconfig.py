@@ -149,7 +149,7 @@ class TriggerUnconfigConfigAutoRpInterface(TriggerUnconfigConfig):
     mapping = Mapping(requirements={'conf.pim.Pim': {
                                         'requirements': [['device_attr', '{uut}', '_vrf_attr',
                                                           '(?P<vrf>^default$)', '_address_family_attr',
-                                                          '(?P<af>ipv4)', 'send_rp_announce_intf', '(?P<rp_intf>(l|L)oopback\d+)']],
+                                                          '(?P<af>ipv4)', 'send_rp_announce_intf', r'(?P<rp_intf>(l|L)oopback\d+)']],
                                         'kwargs': {'attributes': ['pim[vrf_attr][(.*)][address_family_attr][ipv4][send_rp_announce_intf]']},
                                         'exclude': pim_conf_exclude}},
                       config_info={'conf.interface.Interface':{
@@ -206,7 +206,7 @@ class TriggerUnconfigConfigAutoRpVrfInterface(TriggerUnconfigConfig):
     # Also permit to dictate which key to verify
     mapping = Mapping(requirements={'conf.pim.Pim': {
                                         'requirements': [['device_attr', '{uut}', '_vrf_attr',
-                                                          '(?P<vrf>^(?!default)\w+$)', '_address_family_attr',
+                                                          r'(?P<vrf>^(?!default)\w+$)', '_address_family_attr',
                                                           '(?P<af>ipv4)', 'send_rp_announce_intf', '(?P<rp_intf>.*)']],
                                         'kwargs': {'attributes': ['pim[vrf_attr][(.*)][address_family_attr][ipv4][send_rp_announce_intf]']},
                                         'exclude': pim_conf_exclude}},
@@ -271,7 +271,7 @@ class TriggerUnconfigConfigBsrRpInterface(TriggerUnconfigConfig):
                                   'ops.interface.interface.Interface': {
                                         'requirements': [['info', '(?P<rp_intf>.*)', 'vrf', '(?P<vrf>^default$)'],
                                                          ['info', '(?P<rp_intf>.*)', 'ipv4',
-                                                          '(?P<ip>[\w\.\:]+)','ip', '(?P<rp_addr>.*)'],
+                                                          r'(?P<ip>[\w\.\:]+)','ip', '(?P<rp_addr>.*)'],
                                                          ['info', '(?P<rp_intf>.*)', 'oper_status', 'up']],
                                         'kwargs': {'attributes': [
                                                       'info[(.*)][(ipv4|ipv6)][(.*)][ip]',
@@ -346,7 +346,7 @@ class TriggerUnconfigConfigBsrRpVrfInterface(TriggerUnconfigConfig):
     # Mapping of Information between Ops and Conf
     # Also permit to dictate which key to verify
     mapping = Mapping(requirements={'ops.pim.pim.Pim': {
-                                        'requirements': [['info', 'vrf', '(?P<vrf>^(?!default)\w+$)',
+                                        'requirements': [['info', 'vrf', r'(?P<vrf>^(?!default)\w+$)',
                                                           'address_family','(?P<af>.*)', 'rp', 'bsr',
                                                           '(?P<rp_addr>.*)', 'address', '(?P<rp_addr>.*)']],
                                         'kwargs': {'attributes': [
@@ -355,7 +355,7 @@ class TriggerUnconfigConfigBsrRpVrfInterface(TriggerUnconfigConfig):
                                   'ops.interface.interface.Interface': {
                                         'requirements': [['info', '(?P<rp_intf>.*)', 'ipv4',
                                                           '(?P<ip>.*)','ip', '(?P<rp_addr>.*)'],
-                                                         ['info', '(?P<rp_intf>.*)', 'vrf', '(?P<vrf>^(?!default)\w+$)'],
+                                                         ['info', '(?P<rp_intf>.*)', 'vrf', r'(?P<vrf>^(?!default)\w+$)'],
                                                          ['info', '(?P<rp_intf>.*)', 'oper_status', 'up']],
                                         'all_keys': True,
                                         'kwargs': {'attributes': [
@@ -378,10 +378,10 @@ class TriggerUnconfigConfigBsrRpVrfInterface(TriggerUnconfigConfig):
                                                       'info[(.*)][oper_status]']},
                                        'exclude': interface_exclude},
                                   'ops.pim.pim.Pim':{
-                                       'requirements':[['info', 'vrf', '(?P<vrf>^(?!default)\w+$)',
+                                       'requirements':[['info', 'vrf', r'(?P<vrf>^(?!default)\w+$)',
                                                         'address_family','(?P<af>.*)', 'rp', 'bsr',
                                                         NotExists('bsr')],
-                                                       ['info', 'vrf', '(?P<vrf>^(?!default)\w+$)',
+                                                       ['info', 'vrf', r'(?P<vrf>^(?!default)\w+$)',
                                                         'address_family','(?P<af>.*)', 'rp', 'bsr',
                                                         NotExists('bsr_candidate')]],
                                         'kwargs': {'attributes': [
@@ -519,7 +519,7 @@ class TriggerUnconfigConfigStaticRpVrfInterface(TriggerUnconfigConfig):
     # Mapping of Information between Ops and Conf
     # Also permit to dictate which key to verify
     mapping = Mapping(requirements={'ops.pim.pim.Pim': {
-                                        'requirements': [['info', 'vrf', '(?P<vrf>^(?!default)\w+$)',
+                                        'requirements': [['info', 'vrf', r'(?P<vrf>^(?!default)\w+$)',
                                                           'address_family','(?P<af>.*)', 'rp', 'static_rp',
                                                           '(?P<rp_addr>.*)', '(?P<rp_rest>.*)']],
                                         'kwargs': {'attributes': [
@@ -528,7 +528,7 @@ class TriggerUnconfigConfigStaticRpVrfInterface(TriggerUnconfigConfig):
                                   'ops.interface.interface.Interface': {
                                         'requirements': [['info', '(?P<rp_intf>.*)', 'ipv4',
                                                           '(?P<rp_addr>.*)','ip', '(?P<rp_addr>.*)'],
-                                                         ['info', '(?P<rp_intf>.*)', 'vrf', '(?P<vrf>^(?!default)\w+$)'],
+                                                         ['info', '(?P<rp_intf>.*)', 'vrf', r'(?P<vrf>^(?!default)\w+$)'],
                                                          ['info', '(?P<rp_intf>.*)', 'oper_status', 'up']],
                                         'kwargs': {'attributes': [
                                                       'info[(.*)][(ipv4|ipv6)][(.*)][ip]',
@@ -549,10 +549,10 @@ class TriggerUnconfigConfigStaticRpVrfInterface(TriggerUnconfigConfig):
                                        'exclude': interface_exclude},
                                   'ops.pim.pim.Pim':{
                                        'requirements':[[partial(verify_ops_or_logic,
-                                                            requires=[['info', 'vrf', '(?P<vrf>^(?!default)\w+$)',
+                                                            requires=[['info', 'vrf', r'(?P<vrf>^(?!default)\w+$)',
                                                                        'address_family','(?P<af>.*)', 'rp', 'static_rp',
                                                                        NotExists('(?P<rp_addr>.*)')],
-                                                                      ['info', 'vrf', '(?P<vrf>^(?!default)\w+$)',
+                                                                      ['info', 'vrf', r'(?P<vrf>^(?!default)\w+$)',
                                                                        'address_family','(?P<af>.*)', 'rp', NotExists('static_rp')],
                                                                       ['info', 'vrf', '(?P<vrf>.*)',
                                                                        'address_family','(?P<af>.*)', 'rp', 'static_rp',
@@ -685,19 +685,19 @@ class TriggerUnconfigConfigPimNbrVrfInterface(TriggerUnconfigConfig):
     # Mapping of Information between Ops and Conf
     # Also permit to dictate which key to verify
     mapping = Mapping(requirements={'ops.pim.pim.Pim': {
-                                        'requirements': [['info', 'vrf', '(?P<vrf>^(?!default)\w+$)',
-                                                          'interfaces','(?P<pim_intf>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))',
+                                        'requirements': [['info', 'vrf', r'(?P<vrf>^(?!default)\w+$)',
+                                                          'interfaces',r'(?P<pim_intf>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))',
                                                           'address_family', '(?P<af>.*)', 'oper_status', 'up'],
-                                                         ['info', 'vrf', '(?P<vrf>^(?!default)\w+$)',
-                                                          'interfaces','(?P<pim_intf>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))',
+                                                         ['info', 'vrf', r'(?P<vrf>^(?!default)\w+$)',
+                                                          'interfaces',r'(?P<pim_intf>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))',
                                                           'address_family', '(?P<af>.*)', 'neighbors', '(?P<address>.*)']],
                                         'kwargs': {'attributes': [
                                                       'info[vrf][(.*)][interfaces][(.*)][address_family][(.*)][oper_status]',
                                                       'info[vrf][(.*)][interfaces][(.*)][address_family][(.*)][neighbors]']},
                                         'exclude': pim_exclude },
                                   'ops.interface.interface.Interface': {
-                                        'requirements': [['info', '(?P<pim_intf>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))', 'vrf', '(?P<vrf>.*)'],
-                                                         ['info', '(?P<pim_intf>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))', 'oper_status', 'up']],
+                                        'requirements': [['info', r'(?P<pim_intf>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))', 'vrf', '(?P<vrf>.*)'],
+                                                         ['info', r'(?P<pim_intf>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))', 'oper_status', 'up']],
                                         'kwargs': {'attributes': [
                                                       'info[(.*)][vrf]',
                                                       'info[(.*)][oper_status]']},
@@ -714,7 +714,7 @@ class TriggerUnconfigConfigPimNbrVrfInterface(TriggerUnconfigConfig):
                                                       'info[(.*)][oper_status]']},
                                        'exclude': interface_exclude},
                                   'ops.pim.pim.Pim':{
-                                       'requirements':[['info', 'vrf', '(?P<vrf>^(?!default)\w+$)',
+                                       'requirements':[['info', 'vrf', r'(?P<vrf>^(?!default)\w+$)',
                                                         'interfaces', NotExists('(?P<pim_intf>.*)')]],
                                         'kwargs': {'attributes': [
                                                       'info[vrf][(.*)][interfaces][(.*)][address_family][(.*)][oper_status]',

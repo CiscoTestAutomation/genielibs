@@ -20,7 +20,7 @@ import threading
 
 from time import strptime
 from datetime import datetime
-from netaddr import IPAddress
+from netaddr import IPAddress, INET_ATON
 from ipaddress import IPv4Interface
 from urllib.parse import urlparse
 from functools import wraps
@@ -836,7 +836,7 @@ def netmask_to_bits(net_mask):
         Returns:
             Net mask bits
     """
-    return IPAddress(net_mask).netmask_bits()
+    return IPAddress(net_mask, flags=INET_ATON).netmask_bits()
 
 
 def bits_to_netmask(bits):
@@ -859,13 +859,14 @@ def copy_to_device(device,
                    remote_path,
                    local_path=None,
                    server=None,
-                   protocol=None,
+                   protocol='http',
                    vrf=None,
                    timeout=300,
                    compact=False,
                    use_kstack=False,
                    fu=None,
                    http_auth=True,
+                   interface=None,
                    **kwargs):
     """
     Copy file from linux server to the device.
@@ -884,6 +885,7 @@ def copy_to_device(device,
                             Not supported with a file transfer protocol
                             prompting for a username and password
         http_auth (bool): Use http authentication (default: True)
+        interface (str): Interface name in string (default: None)
 
     Returns:
         (str, None): console output if successful, None if not
@@ -901,9 +903,8 @@ def copy_to_device(device,
         fu = FileUtils.from_device(device, protocol=protocol)
 
     if server:
-        if protocol is None:
-            server_block = fu.get_server_block(server)
-            protocol = server_block.get('protocol', 'http')
+        server_block = fu.get_server_block(server)
+        protocol = server_block.get('protocol', protocol)
 
         # re-instantiate FileUtils object now we have protocol
         fu = FileUtils.from_device(device, protocol=protocol)
@@ -951,15 +952,31 @@ def copy_to_device(device,
             else:
                 raise
 
+    # Check if we are connected via proxy device
+    proxy = device.connections[device.via].get('proxy') or \
+        device.connections[device.via].get('sshtunnel', {}).get('host')
+    
+    # check servers and devices for a proxy
+    if proxy:
+        proxy_dev = device.api.convert_server_to_linux_device(proxy) or \
+            device.testbed.devices.get(proxy)
+    else:
+        proxy_dev = None
+
     # Try to figure out local IP address
-    local_ip = device.api.get_local_ip()
+    if proxy_dev:
+        proxy_dev.connect()
+        local_ip = proxy_dev.api.get_local_ip()
+    else:
+        local_ip = device.api.get_local_ip()
+
     if local_ip is None:
         log.error('Unable to determine local IP address, cannot copy file')
         return
 
     mgmt_ip, mgmt_src_ip_addresses = device.api.get_mgmt_ip_and_mgmt_src_ip_addresses()
 
-    mgmt_interface = device.api.get_mgmt_interface(mgmt_ip=mgmt_ip)
+    mgmt_interface = kwargs.pop('interface', None) or device.api.get_mgmt_interface(mgmt_ip=mgmt_ip)
 
     if local_ip in mgmt_src_ip_addresses:
         mgmt_src_ip = local_ip
@@ -979,20 +996,16 @@ def copy_to_device(device,
         local_port = fs.get('port')
 
         proxy_port = None
-        # Check if we are connected via proxy device
-        proxy = device.connections[device.via].get('proxy') or \
-            device.connections[device.via].get('sshtunnel', {}).get('host')
 
-        proxy_dev = None
-        # If we haven't gotten a proxy, check servers for a proxy
-        if not proxy and device.testbed.servers.get('proxy'):
-            proxy_dev = device.api.convert_server_to_linux_device('proxy')
-
-        if proxy and isinstance(proxy, str) or proxy_dev:
+        if proxy_dev:
             log.info('Setting up port relay via proxy')
-            proxy_dev = proxy_dev or device.testbed.devices[proxy]
+            proxy_dev = proxy_dev or device.testbed.devices.get(proxy)
+            if proxy_dev is None and device.testbed.servers.get(proxy):
+                 proxy_dev = device.api.convert_server_to_linux_device('proxy')
+
             proxy_dev.connect()
-            proxy_port = proxy_dev.api.socat_relay(remote_ip=local_ip, remote_port=local_port)
+            socat_protocol = 'UDP4' if protocol == 'tftp' else 'TCP4'
+            proxy_port = proxy_dev.api.socat_relay(remote_ip=local_ip, remote_port=local_port, protocol=socat_protocol)
 
             ifconfig_output = proxy_dev.execute('ifconfig')
             proxy_ip_addresses = re.findall(r'inet (?:addr:)?(\S+)', ifconfig_output)
@@ -1002,10 +1015,10 @@ def copy_to_device(device,
                     mgmt_src_ip = proxy_ip
                     break
 
-        if protocol == 'http' and http_auth:
+        if protocol.startswith('http') and http_auth:
             username = fs.get('credentials', {}).get('http', {}).get('username', '')
             password = to_plaintext(fs.get('credentials', {}).get('http', {}).get('password', ''))
-            source = 'http://{}:{}@'.format(username, password)
+            source = f'{protocol}://{username}:{password}@'
         else:
             source = f'{protocol}://'
 
@@ -1020,6 +1033,7 @@ def copy_to_device(device,
         try:
             fu.validate_and_update_url = lambda url, *args, **kwargs: url  # override to avoid url changes
             fu.get_server = lambda *args, **kwargs: None  # override to suppress log messages
+
             return fu.copyfile(
                 source=source,
                 destination=local_path,
@@ -1040,7 +1054,7 @@ def copy_from_device(device,
                      local_path,
                      remote_path=None,
                      server=None,
-                     protocol=None,
+                     protocol='http',
                      vrf=None,
                      timeout=300,
                      timestamp=False,
@@ -1094,9 +1108,8 @@ def copy_from_device(device,
         else:
             remote_path = filename
 
-        if protocol is None:
-            server_block = fu.get_server_block(server)
-            protocol = server_block.get('protocol', 'http')
+        server_block = fu.get_server_block(server)
+        protocol = server_block.get('protocol', protocol)
 
         # re-instantiate FileUtils object, now we have protocol
         fu = FileUtils.from_device(device, protocol=protocol)
@@ -1117,8 +1130,24 @@ def copy_from_device(device,
                                timeout_seconds=timeout,
                                **kwargs)
 
+    # Check if we are connected via proxy device
+    proxy = device.connections[device.via].get('proxy') or \
+        device.connections[device.via].get('sshtunnel', {}).get('host')
+
+    # check servers and devices for a proxy
+    if proxy:
+        proxy_dev = device.api.convert_server_to_linux_device(proxy) or \
+            device.testbed.devices.get(proxy)
+    else:
+        proxy_dev = None
+
     # Try to figure out local IP address
-    local_ip = device.api.get_local_ip()
+    if proxy_dev:
+        proxy_dev.connect()
+        local_ip = proxy_dev.api.get_local_ip()
+    else:
+        local_ip = device.api.get_local_ip()
+
     if local_ip is None:
         log.error('Unable to determine local IP address, cannot copy file')
         return
@@ -1153,7 +1182,7 @@ def copy_from_device(device,
         ts = datetime.utcnow().strftime('%Y%m%dT%H%M%S%f')[:-3]
         filename = '{}_{}'.format(filename, ts)
 
-    with FileServer(protocol='http',
+    with FileServer(protocol=protocol,
                     address=local_ip,
                     path=remote_path,
                     custom=dict(http_auth=http_auth)) as fs:
@@ -1161,20 +1190,13 @@ def copy_from_device(device,
         local_port = fs.get('port')
 
         proxy_port = None
-        # Check if we are connected via proxy device
-        proxy = device.connections[device.via].get('proxy') or \
-            device.connections[device.via].get('sshtunnel', {}).get('host')
 
-        proxy_dev = None
-        # If we haven't gotten a proxy, check servers for a proxy
-        if not proxy and device.testbed.servers.get('proxy'):
-            proxy_dev = device.api.convert_server_to_linux_device('proxy')
-
-        if proxy and isinstance(proxy, str) or proxy_dev:
+        if proxy_dev:
             log.info('Setting up port relay via proxy')
             proxy_dev = proxy_dev or device.testbed.devices[proxy]
             proxy_dev.connect()
-            proxy_port = proxy_dev.api.socat_relay(remote_ip=local_ip, remote_port=local_port)
+            socat_protocal = 'UDP4' if protocol == 'tftp' else 'TCP4'
+            proxy_port = proxy_dev.api.socat_relay(remote_ip=local_ip, remote_port=local_port, protocol=socat_protocal)
 
             ifconfig_output = proxy_dev.execute('ifconfig')
             proxy_ip_addresses = re.findall(r'inet (?:addr:)?(\S+)', ifconfig_output)
@@ -1184,12 +1206,12 @@ def copy_from_device(device,
                     mgmt_src_ip = proxy_ip
                     break
 
-        if http_auth:
+        if protocol.startswith('http') and http_auth:
             username = fs.get('credentials', {}).get('http', {}).get('username', '')
             password = to_plaintext(fs.get('credentials', {}).get('http', {}).get('password', ''))
-            destination = 'http://{}:{}@'.format(username, password)
+            destination = f'{protocol}://{username}:{password}@'
         else:
-            destination = 'http://'
+            destination = f'{protocol}://'
 
         if mgmt_src_ip and proxy_port:
             destination += '{}:{}/{}'.format(mgmt_src_ip, proxy_port, filename)
@@ -4570,7 +4592,7 @@ def configure_terminal_line_speed(device, terminal_device, terminal_line, speed)
     try:
        terminal_device.configure(cmd)
     except SubCommandFailure as e:
-        log.exception(f"Failed to configure speed {speed} for line {terminal_line} for device {terminal_device}")
+        log.exception(f"Failed to configure speed {speed} for line {terminal_line} for device {device}")
 
 def configure_peripheral_terminal_server(device):
     ''' configure terminal server lines for peripherals

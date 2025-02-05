@@ -525,7 +525,7 @@ install_image_and_packages:
 
             install_activate_dialog = Dialog([
                 Statement(pattern='.*This install operation will reload the '
-                                  'system\, continue\?.*\[yes[:\/]no\]\:\[yes\].*',
+                                  r'system\, continue\?.*\[yes[:\/]no\]\:\[yes\].*',
                           action='sendline(yes)',
                           loop_continue=False,
                           continue_timer=False)])

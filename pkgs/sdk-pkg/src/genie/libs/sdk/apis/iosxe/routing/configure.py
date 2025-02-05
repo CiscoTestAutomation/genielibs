@@ -66,6 +66,78 @@ def configure_routing_ip_route(
             )
         )
 
+def configure_routing_ip_route_track(device, ip_address, mask, interface, dest_add, next_hop_name, track_obj, vrf = None):
+    """ Configure ip route on device
+
+        Args:
+            device ('obj'): Device obj
+            vrf ('str') : vrf name
+            ip_address ('str'): ip address for interface
+            mask (str): mask the ip address
+            interface ('str'): interface name to configure
+            dest_add('str'): destination address to configure
+            next_hop_name(str) : name of the next hop
+            track_obj(int)  : tracked object
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    cmd = []
+    if vrf:
+        cmd.append(f"ip route vrf {vrf} {ip_address} {mask} {interface} {dest_add} name {next_hop_name} track {track_obj}")
+    else:
+        cmd.append(f"ip route {ip_address} {mask} {interface} {dest_add} name {next_hop_name} track {track_obj}")
+ 
+
+    try:
+        device.configure(cmd)    
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure object tracking. Error:\n{error}".format(
+                error=e
+            )
+        )
+
+        
+def unconfigure_routing_ip_route_track(device, ip_address, mask, interface, dest_add, next_hop_name, track_obj, vrf = None):
+    """ Configure ip route on device
+
+        Args:
+            device ('obj'): Device obj
+            vrf ('str') : vrf name
+            ip_address ('str'): ip address for interface
+            mask (str): mask the ip address
+            interface ('str'): interface name to configure
+            dest_add('str'): destination address to configure
+            next_hop_name(str) : name of the next hop
+            track_obj(int)  : tracked object
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    cmd = []
+    if vrf:
+        cmd.append(f"no ip route vrf {vrf} {ip_address} {mask} {interface} {dest_add} name {next_hop_name} track {track_obj}")
+    else:
+        cmd.append(f"no ip route {ip_address} {mask} {interface} {dest_add} name {next_hop_name} track {track_obj}")
+
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure object tracking. Error:\n{error}".format(
+                error=e
+            )
+        )
+        
+
 def configure_routing_static_routev6(
     device, routev6, mask, vrf=None, interface=None, destination_addressv6=None
 ):

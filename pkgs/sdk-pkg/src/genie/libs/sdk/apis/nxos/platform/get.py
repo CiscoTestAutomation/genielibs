@@ -495,7 +495,7 @@ def get_software_version(device, return_tuple:bool=False):
         .split(' ')[0]
     if return_tuple :
         # Tokenize system version into a list with delimiters '.', '(' and ')'
-        ver:list = [ch for ch in re.split('\.|\(|\)', ver) if ch != '']
+        ver:list = [ch for ch in re.split(r'\.|\(|\)', ver) if ch != '']
         # Convert to int whereever possible
         for i in range(len(ver)):
             try:

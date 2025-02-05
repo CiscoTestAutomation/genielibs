@@ -1416,7 +1416,7 @@ def execute_reload_fast(device, fast_type=None, username=None, password=None, pr
         cmd += f" {fast_type}"
 
     try:
-        device.execute(cmd, reply=dialog, timeout=timeout, append_error_pattern=['.*FAILED\:.*'])
+        device.execute(cmd, reply=dialog, timeout=timeout, append_error_pattern=[r'.*FAILED\:.*'])
         log.debug(f"Reload Fast successfully executed")
         return True
 
@@ -1933,4 +1933,22 @@ def request_platform_hardware_pfu(device, mode, route_processor, slot, action):
         output = device.execute(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to perform powerslot  off/on Error:\n{e}")
+        
+def request_platform_software_trace_archive(device):
+    """Request platform software trace archive
+    Args:
+        device (`obj`): Device object
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    cmd = "request platform software trace archive"
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not perform request platform software trace archive on {device}. Error:\n{e}")
+
+
+
 

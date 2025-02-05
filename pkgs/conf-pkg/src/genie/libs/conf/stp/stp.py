@@ -55,7 +55,7 @@ class Stp(DeviceFeature, InterfaceFeature):
         unchanged.
 
         Args:
-            reg: Any reg, such as an regexp pattern ('\d+')
+            reg: Any reg, such as an regexp pattern ('\\d+')
 
         Example:
 
@@ -268,7 +268,7 @@ class Stp(DeviceFeature, InterfaceFeature):
     mag_if_root_id = managedattribute(
         name='mag_if_root_id',
         default=None,
-        type=(None, managedattribute.test_isregexp('\w+\.\w+\.\w+')))
+        type=(None, managedattribute.test_isregexp(r'\w+\.\w+\.\w+')))
     
     mag_if_vlans = managedattribute(
         name='mag_if_vlans',
@@ -392,7 +392,7 @@ class Stp(DeviceFeature, InterfaceFeature):
     prag_if_v_root_id = managedattribute(
         name='prag_if_v_root_id',
         default=None,
-        type=(None, managedattribute.test_isregexp('\w+\.\w+\.\w+')))
+        type=(None, managedattribute.test_isregexp(r'\w+\.\w+\.\w+')))
     
     prag_if_v_root_cost = managedattribute(
         name='prag_if_v_root_cost',
@@ -407,7 +407,7 @@ class Stp(DeviceFeature, InterfaceFeature):
     prag_if_v_bridge_id = managedattribute(
         name='prag_if_v_bridge_id',
         default=None,
-        type=(None, managedattribute.test_isregexp('\w+\.\w+\.\w+')))
+        type=(None, managedattribute.test_isregexp(r'\w+\.\w+\.\w+')))
 
     prag_if_v_port_priority = managedattribute(
         name='prag_if_v_port_priority',
@@ -438,7 +438,7 @@ class Stp(DeviceFeature, InterfaceFeature):
     pag_if_v_root_id = managedattribute(
         name='pag_if_v_root_id',
         default=None,
-        type=(None, managedattribute.test_isregexp('\w+\.\w+\.\w+')))
+        type=(None, managedattribute.test_isregexp(r'\w+\.\w+\.\w+')))
     
     pag_if_v_root_cost = managedattribute(
         name='pag_if_v_root_cost',
@@ -453,7 +453,7 @@ class Stp(DeviceFeature, InterfaceFeature):
     pag_if_v_bridge_id = managedattribute(
         name='pag_if_v_bridge_id',
         default=None,
-        type=(None, managedattribute.test_isregexp('\w+\.\w+\.\w+')))
+        type=(None, managedattribute.test_isregexp(r'\w+\.\w+\.\w+')))
 
     pag_if_v_port_priority = managedattribute(
         name='pag_if_v_port_priority',

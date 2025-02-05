@@ -74,9 +74,9 @@ class TriggerUnconfigConfigEthernetInterface(TriggerUnconfigConfig):
         """
 
     mapping = Mapping(requirements={'ops.interface.interface.Interface':{
-                                        'requirements':[['info', '(?P<interface>(GigabitEthernet|gigabitEthernet|TenGigE|HundredGigE)[0-9\/]+)',
+                                        'requirements':[['info', r'(?P<interface>(GigabitEthernet|gigabitEthernet|TenGigE|HundredGigE)[0-9\/]+)',
                                                          'enabled', True],
-                                                        ['info', '(?P<interface>(GigabitEthernet|gigabitEthernet|TenGigE|HundredGigE)[0-9\/]+)',
+                                                        ['info', r'(?P<interface>(GigabitEthernet|gigabitEthernet|TenGigE|HundredGigE)[0-9\/]+)',
                                                          'oper_status', 'up']],
                                         'exclude': interface_exclude}},
                       config_info={'conf.interface.Interface':{

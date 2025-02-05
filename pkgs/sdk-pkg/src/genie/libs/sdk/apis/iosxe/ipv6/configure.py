@@ -156,3 +156,28 @@ def unconfigure_ipv6_nd_cache_expire(device):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not unconfigure ipv6 nd cache expire on {device}. Error:\n{e}")
+
+def configure_ipv6_flow_monitor_sampler(device, interface, monitor_name=None, sampler_name=None):
+    """ Configure IPv6 flow monitor sampler on the specified interface.
+        Args:
+            device (obj): Device object
+            interface (str): Interface name
+            monitor_name (str): The flow monitor name
+            sampler_name (str): The sampler name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure:
+    """
+    cmd = [
+        f"interface {interface}",  
+        f"ipv6 flow monitor {monitor_name} sampler {sampler_name} input",
+        "end"
+    ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(f"Failed to configure IPv6 flow monitor sampler on {interface}. Error: {e}")
+        raise SubCommandFailure(
+            f"Could not configure IPv6 flow monitor sampler on {device} for {interface}. Error:\n{e}"
+        )

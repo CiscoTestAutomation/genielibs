@@ -2,7 +2,7 @@
 
 # Python
 import logging
-from netaddr import IPAddress
+from netaddr import IPAddress, INET_ATON
 import re
 import operator
 
@@ -258,11 +258,11 @@ def verify_neighbor_state_went_down(device,
         Raises:
             N/A
     """
-    regex_string1 = 'area +0.0.0.0\)) +state +'\
-                    'changed +from +Full +to +Down +due +to +(?P<asdf>'
-    regex_string2 = '[\s\S]+)$'
-    temp = ('^(?P<ignored_portion>[\s\S]+)realm +(?P<interface>'
-            '{realm} {interface} {regex_string1}{fail_reason}{regex_string2}'.
+    regex_string1 = r'area +0.0.0.0\)) +state +'\
+                    r'changed +from +Full +to +Down +due +to +(?P<asdf>'
+    regex_string2 = r'[\s\S]+)$'
+    temp = (r'^(?P<ignored_portion>[\s\S]+)realm +(?P<interface>'
+            r'{realm} {interface} {regex_string1}{fail_reason}{regex_string2}'.
             format(
                 realm=realm,
                 interface=interface,
@@ -768,7 +768,7 @@ def verify_ospf_interface_in_database(device,
                         continue
                     else:
                         #{'address-mask': '255.255.255.255'}
-                        current_mask = IPAddress(ospf_external_lsa.get('address-mask')).netmask_bits()
+                        current_mask = IPAddress(ospf_external_lsa.get('address-mask'), flags=INET_ATON).netmask_bits()
                         if str(current_mask) != subnet_mask:
                             continue
 

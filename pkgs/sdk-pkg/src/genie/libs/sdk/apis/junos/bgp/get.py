@@ -159,7 +159,7 @@ def get_bgp_summary_neighbor_state_count(device, expected_neighbor_state='Establ
         return None
 
     if expected_neighbor_state=='Establ':
-        expected_neighbor_state='Establ|[\d\/ ]+'
+        expected_neighbor_state=r'Establ|[\d\/ ]+'
     
     state_count = out.q.contains('peer-state').contains(expected_neighbor_state, 
         regex=True).count()

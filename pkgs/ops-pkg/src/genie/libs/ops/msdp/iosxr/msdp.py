@@ -105,7 +105,7 @@ class Msdp(SuperMsdp):
             #           out
             for key in ['in', 'out']:
                 self.add_leaf(cmd=ShowMsdpPeer,
-                              src=info_src+'[sa_filter][{key}][(?P<filter_in>\(\S+\))][filter]'.format(key=key),
+                              src=info_src+r'[sa_filter][{key}][(?P<filter_in>(\S+))][filter]'.format(key=key),
                               dest=info_dest+'[sa_filter][{key}]'.format(key=key),
                               vrf=vrf, peer=peer)
     

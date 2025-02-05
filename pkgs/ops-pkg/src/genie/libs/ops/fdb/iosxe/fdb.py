@@ -24,8 +24,8 @@ class Fdb(SuperFdb):
                       src='[mac_aging_time]',
                       dest='info[mac_aging_time]')
 
-        vlan_src = '[vlans][(?P<vlan>^\d+$)]'
-        vlan_dst = 'info[mac_table][vlans][(?P<vlan>^\d+$)]'
+        vlan_src = r'[vlans][(?P<vlan>^\d+$)]'
+        vlan_dst = r'info[mac_table][vlans][(?P<vlan>^\d+$)]'
 
         self.add_leaf(cmd='show mac address-table aging-time',
                       src=vlan_src + '[mac_aging_time]',
@@ -39,7 +39,7 @@ class Fdb(SuperFdb):
         # vlan, mac_address, drop, interfaces
         self.add_leaf(cmd='show mac address-table',
                       src='[mac_table]' + vlan_src,
-                      dest='info[mac_table][vlans][(?P<vlan>^\d+$)]')
+                      dest=r'info[mac_table][vlans][(?P<vlan>^\d+$)]')
         # total_mac_addresses
         self.add_leaf(cmd='show mac address-table',
                       src='[total_mac_addresses]',

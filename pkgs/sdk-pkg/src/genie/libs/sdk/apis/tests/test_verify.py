@@ -86,10 +86,10 @@ class TestVerifyApis(unittest.TestCase):
 
         # Test changing the delimiter works
         device.api.get_running_image = \
-            Mock(return_value=('bootflash\csr1000v-boot.16.09.01.SPA.pkg:01'))
+            Mock(return_value=('bootflash\\csr1000v-boot.16.09.01.SPA.pkg:01'))
         verify_current_image(
             device, 
-            images=['bootflash\csr1000v-boot.16.09.01.SPA.pkg:01'], 
+            images=['bootflash\\csr1000v-boot.16.09.01.SPA.pkg:01'], 
             delimiter_regex=r'\\'
         )
 

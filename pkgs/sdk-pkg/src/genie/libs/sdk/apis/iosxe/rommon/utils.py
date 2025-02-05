@@ -9,6 +9,7 @@ from pyats.utils.secret_strings import to_plaintext
 # Unicon
 from unicon.core.errors import SubCommandFailure
 from unicon.eal.dialogs import Statement, Dialog
+from concurrent.futures import ThreadPoolExecutor, wait as wait_futures, ALL_COMPLETED
 
 # Genie
 from genie.libs.clean.utils import print_message
@@ -47,7 +48,7 @@ def device_rommon_boot(device, golden_image=None, tftp_boot=None, error_pattern=
     image = tftp_boot.get('image', [])
     tftp_server = tftp_boot.get('tftp_server', "")
 
-        # To boot using golden image
+    # To boot using golden image
     if golden_image:
         log.info(banner("Booting device '{}' with the Golden images".\
                         format(device.name)))
@@ -132,8 +133,9 @@ def send_break_boot(device, console_activity_pattern= None,
             SubCommandFailure
     """
 
-    console_activity_pattern = console_activity_pattern or '\.\.\.\.'
+    console_activity_pattern = console_activity_pattern or r'\.\.\.\.'
     console_breakboot_char = console_breakboot_char or '\x03'
+
     def telnet_breakboot(spawn, break_count):
         """ Breaks the booting process on a device using telnet `send break`
 
@@ -167,7 +169,7 @@ def send_break_boot(device, console_activity_pattern= None,
                 None
         """
 
-        log.info(f"Found the console_activity_pattern! Breaking the boot process.")
+        log.info("Found the console_activity_pattern! Breaking the boot process.")
 
         for _ in range(break_count):
             log.info(f"Sending {repr(break_char)}")
@@ -192,75 +194,97 @@ def send_break_boot(device, console_activity_pattern= None,
 
     # Set a target for each recovery session
     # so it's easier to distinguish expect debug logs on the console.
-    device.instantiate(connection_timeout=timeout)
+    if (device.is_ha and not getattr(device, "subconnections", None)) or \
+            (not device.is_ha and not getattr(device, "spawn", None)):
+        device.instantiate(connection_timeout=timeout)
 
-    # setup the device connection
-    device.setup_connection()
-
-    # Get the spawn object
-    spawn = device.spawn
-
-    # connection dialog to handle the booting process
-    connection_dialog = device.connection_provider.get_connection_dialog()
-
-    # Either use break character or telnet escape break
-    # break character is ctrl-c by default
-    if console_activity_pattern and console_breakboot_char and not console_breakboot_telnet_break:
-        connection_dialog.append(
-            Statement(pattern=console_activity_pattern,
-                      action=console_breakboot,
-                      args={'break_count': break_count,
-                            'break_char': console_breakboot_char},
-                      loop_continue=True,
-                      continue_timer=False))
-
-    # telnet escape is used only if user specified
-    if console_activity_pattern and console_breakboot_telnet_break:
-        connection_dialog.append(
-            Statement(pattern=console_activity_pattern,
-                      action=telnet_breakboot,
-                      args={'break_count': break_count},
-                      loop_continue=True,
-                      continue_timer=False))
-
-    # grub_activity_pattern is used only if user specified
-    if grub_activity_pattern and grub_breakboot_char:
-        connection_dialog.append(
-            Statement(pattern=grub_activity_pattern,
-                      action=grub_breakboot,
-                      args={'break_char': grub_breakboot_char},
-                      loop_continue=True,
-                      continue_timer=False))
-
-    # add the pattern for all the states for the device to connection_dialog
-    for state in device.state_machine.states:
-        connection_dialog.append(
-            Statement(
-                state.pattern,
-                action=print_message,
-                args={'message': f'Device reached {state} state in break boot stage'},
-            )
-        )
+    if not device.connected:
+        # setup the device connection
+        device.setup_connection()
 
     # To process the break boot dialogs
     credentials = device.credentials
-    connection_dialog.process(
-        spawn,
-        timeout=timeout,
-        context={
-            'password': to_plaintext(credentials.get('default', {}).get('password')),
-            'username': to_plaintext(credentials.get('default', {}).get('username')),
-            'enable_password': to_plaintext(credentials.get('enable', {}).get('password'))
-        },
-        prompt_recovery=True
-    )
 
-    # Check the device state after breaking the boot process
-    device.sendline()
-    device.state_machine.go_to('any', spawn=device.spawn, context=device.default.context)
+    if device.is_ha and hasattr(device, 'subconnections'):
+        conn_list = device.subconnections
+    else:
+        conn_list = [device]
 
-    if not device.state_machine.current_state == 'rommon':
-        log.warning(f"The device {device.name} is not in rommon")
+    def get_connection_dialog(device, conn):
 
-    # send a new line in order to catch the buffer output in recovery process
-    device.sendline()
+        # connection dialog to handle the booting process
+        connection_dialog = device.connection_provider.get_connection_dialog()
+
+        # Either use break character or telnet escape break
+        # break character is ctrl-c by default
+        if console_activity_pattern and console_breakboot_char and not console_breakboot_telnet_break:
+            connection_dialog.append(
+                Statement(pattern=console_activity_pattern,
+                          action=console_breakboot,
+                          args={'break_count': break_count,
+                                'break_char': console_breakboot_char},
+                          loop_continue=True,
+                          continue_timer=False))
+
+        # telnet escape is used only if user specified
+        if console_activity_pattern and console_breakboot_telnet_break:
+            connection_dialog.append(
+                Statement(pattern=console_activity_pattern,
+                          action=telnet_breakboot,
+                          args={'break_count': break_count},
+                          loop_continue=True,
+                          continue_timer=False))
+
+        # grub_activity_pattern is used only if user specified
+        if grub_activity_pattern and grub_breakboot_char:
+            connection_dialog.append(
+                Statement(pattern=grub_activity_pattern,
+                          action=grub_breakboot,
+                          args={'break_char': grub_breakboot_char},
+                          loop_continue=True,
+                          continue_timer=False))
+
+        # add the pattern for all the states for the device to connection_dialog
+        for state in conn.state_machine.states:
+            connection_dialog.append(
+                Statement(
+                    state.pattern,
+                    action=print_message,
+                    args={'message': f'Device reached {state} state in break boot stage'},
+                )
+            )
+
+        return connection_dialog
+
+    def task(device, con):
+
+        dialog = get_connection_dialog(device, con)
+
+        dialog.process(
+            con.spawn,
+            timeout=timeout,
+            context={
+                'password': to_plaintext(credentials.get('default', {}).get('password')),
+                'username': to_plaintext(credentials.get('default', {}).get('username')),
+                'enable_password': to_plaintext(credentials.get('enable', {}).get('password'))
+            },
+            prompt_recovery=True
+        )
+
+        # Check the device state after breaking the boot process
+        con.sendline()
+        con.state_machine.go_to('any', spawn=con.spawn, context=con.context)
+
+        if not con.state_machine.current_state == 'rommon':
+            log.warning(f"The device {device.name} is not in rommon")
+
+    futures = []
+    executor = ThreadPoolExecutor(max_workers=len(conn_list))
+
+    for con in conn_list:
+        futures.append(executor.submit(
+            task,
+            device,
+            con
+        ))
+    wait_futures(futures, timeout=timeout, return_when=ALL_COMPLETED)

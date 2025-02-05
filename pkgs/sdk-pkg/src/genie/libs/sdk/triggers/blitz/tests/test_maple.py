@@ -260,7 +260,7 @@ class TestMaple(unittest.TestCase):
       self.kwargs.update({'steps': steps,
                           'search_string': self.execute_output_1,
                           'device': self.dev,
-                          'include': ['\s*\bSel-Num\b.*']})
+                          'include': [r'\s*\bSel-Num\b.*']})
 
       maple_search(**self.kwargs)
       self.assertEqual(steps.result, Failed)
@@ -283,7 +283,7 @@ class TestMaple(unittest.TestCase):
       self.kwargs.update({'steps': steps,
                           'search_string': self.execute_output_1,
                           'device': self.dev,
-                          'exclude': ['\s*\bSel-Num\b.*']})
+                          'exclude': [r'\s*\bSel-Num\b.*']})
 
       maple_search(**self.kwargs)
       self.assertEqual(steps.result, Passed)

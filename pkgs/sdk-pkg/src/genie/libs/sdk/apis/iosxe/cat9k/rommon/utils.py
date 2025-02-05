@@ -23,7 +23,7 @@ def send_break_boot(device, console_activity_pattern=None,
         Raises:
             SubCommandFailure
     """
-    console_activity_pattern = console_activity_pattern or '\[.*Ctrl-C.*\]'
+    console_activity_pattern = console_activity_pattern or r'\[.*Ctrl-C.*\]'
     console_breakboot_char = console_breakboot_char or '\x03'
 
     xe_generic_break_boot(device, console_activity_pattern=console_activity_pattern,

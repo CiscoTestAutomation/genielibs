@@ -283,7 +283,7 @@ class TriggerShutNoShutBgpLoopbackInterface(TriggerShutNoShut):
         'exclude': bgp_exclude + ['distance_local']}
 
     requirements['ops.interface.interface.Interface'] = {
-        'requirements':[['info', '(?P<interface>l|Loopback[0-9\s]+)',
+        'requirements':[['info', r'(?P<interface>l|Loopback[0-9\s]+)',
                          'oper_status', 'up']],
         'all_keys':True,
         'exclude': interface_exclude}

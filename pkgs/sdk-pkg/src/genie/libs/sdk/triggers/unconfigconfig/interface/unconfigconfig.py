@@ -152,9 +152,9 @@ class TriggerUnconfigConfigPhysicalTrunkInterface(TriggerUnconfigConfig):
     # Mapping of Information between Ops and Conf
     # Also permit to dictate which key to verify
     mapping = Mapping(requirements={'ops.interface.interface.Interface':{
-                                       'requirements':[['info', '(?P<interface>[E|e]thernet[\d\/\.]+)',
+                                       'requirements':[['info', r'(?P<interface>[E|e]thernet[\d\/\.]+)',
                                                         'switchport_mode', 'trunk'],
-                                                        ['info', '(?P<interface>[E|e]thernet[\d\/\.]+)',
+                                                        ['info', r'(?P<interface>[E|e]thernet[\d\/\.]+)',
                                                         'port_channel', 'port_channel_member', False]],
                                        'exclude': interface_exclude}},
                       config_info={'conf.interface.Interface':{
@@ -167,7 +167,7 @@ class TriggerUnconfigConfigPhysicalTrunkInterface(TriggerUnconfigConfig):
                                                        ['info', '(?P<interface>.*)', 'enabled', False],
                                                        ['info', '(?P<interface>.*)', 'port_channel',
                                                         'port_channel_member', False],
-                                                       ['info', '(?P<interface>.*)', 'mac_address', '([\w\.]+)'],
+                                                       ['info', '(?P<interface>.*)', 'mac_address', r'([\w\.]+)'],
                                                        ['info', '(?P<interface>.*)', '(.*)']],
                                        'exclude': interface_exclude + ['(Vlan.*)']}},
                       num_values={'interface':1})
@@ -231,7 +231,7 @@ class TriggerUnconfigConfigVirtualTrunkInterface(TriggerUnconfigConfig):
     # Mapping of Information between Ops and Conf
     # Also permit to dictate which key to verify
     mapping = Mapping(requirements={'ops.interface.interface.Interface':{
-                                       'requirements':[['info', '(?P<interface>[p|P]ort-channel[\d\.]+)',
+                                       'requirements':[['info', r'(?P<interface>[p|P]ort-channel[\d\.]+)',
                                                         'switchport_mode', 'trunk']],
                                        'exclude': interface_exclude}},
                       config_info={'conf.interface.Interface':{
@@ -284,7 +284,7 @@ class TriggerUnconfigConfigPortChannelInterface(TriggerUnconfigConfig):
 
                 interface: `str`
 
-                (e.g) interface: '(?P<interface>[p|P]ort-channel[\d\.]+)' (Regex supported)
+                (e.g) interface: '(?P<interface>[p|P]ort-channel[\\d\\.]+)' (Regex supported)
                       OR
                       interface: 'Port-channel1' (Specific value)
     steps:
@@ -302,7 +302,7 @@ class TriggerUnconfigConfigPortChannelInterface(TriggerUnconfigConfig):
     # Mapping of Information between Ops and Conf
     # Also permit to dictate which key to verify
     mapping = Mapping(requirements={'ops.interface.interface.Interface':{
-                                       'requirements':[['info', '(?P<interface>[p|P]ort-channel[\d\.]+)',
+                                       'requirements':[['info', r'(?P<interface>[p|P]ort-channel[\d\.]+)',
                                                         'oper_status', 'up']],
                                        'exclude': interface_exclude}},
                       config_info={'conf.interface.Interface':{
@@ -355,7 +355,7 @@ class TriggerUnconfigConfigBridgeDomainInterface(TriggerUnconfigConfig):
 
                 interface: `str`
 
-                (e.g) interface: '(?P<interface>[BDI|bdi][\d\.]+)' (Regex supported)
+                (e.g) interface: '(?P<interface>[BDI|bdi][\\d\\.]+)' (Regex supported)
                       OR
                       interface: 'BDI1' (Specific value)
     steps:
@@ -373,7 +373,7 @@ class TriggerUnconfigConfigBridgeDomainInterface(TriggerUnconfigConfig):
     # Mapping of Information between Ops and Conf
     # Also permit to dictate which key to verify
     mapping = Mapping(requirements={'ops.interface.interface.Interface':{
-                                       'requirements':[['info', '(?P<interface>[BDI|bdi][\d\.]+)',
+                                       'requirements':[['info', r'(?P<interface>[BDI|bdi][\d\.]+)',
                                                         'oper_status', 'up']],
                                        'exclude': interface_exclude}},
                       config_info={'conf.interface.Interface':{
@@ -455,11 +455,11 @@ class TriggerUnconfigConfigEthernetInterface(TriggerUnconfigConfig):
         return False
 
     mapping = Mapping(requirements={'ops.interface.interface.Interface':{
-                                        'requirements':[['info', '(?P<interface>(GigabitEthernet|gigabitEthernet|Ethernet|ethernet)[0-9\/]+$)',
+                                        'requirements':[['info', r'(?P<interface>(GigabitEthernet|gigabitEthernet|Ethernet|ethernet)[0-9\/]+$)',
                                                          'enabled', True],
-                                                        ['info', '(?P<interface>(GigabitEthernet|gigabitEthernet|Ethernet|ethernet)[0-9\/]+$)',
+                                                        ['info', r'(?P<interface>(GigabitEthernet|gigabitEthernet|Ethernet|ethernet)[0-9\/]+$)',
                                                          'port_channel', 'port_channel_member', False],
-                                                        ['info', '(?P<interface>(GigabitEthernet|gigabitEthernet|Ethernet|ethernet)[0-9\/]+$)',
+                                                        ['info', r'(?P<interface>(GigabitEthernet|gigabitEthernet|Ethernet|ethernet)[0-9\/]+$)',
                                                          'oper_status', 'up']],
                                         'exclude': interface_exclude}},
                       config_info={'conf.interface.Interface':{
@@ -471,12 +471,12 @@ class TriggerUnconfigConfigEthernetInterface(TriggerUnconfigConfig):
                                         'requirements':[['info', '(?P<interface>.*)', 'vrf', 'default'],
                                                         ['info', '(?P<interface>.*)', 'enabled', False],
                                                         ['info', '(?P<interface>.*)', 'oper_status', 'down'],
-                                                        ['info', '(?P<interface>.*)', 'delay', '(\d+)'],
-                                                        ['info', '(?P<interface>.*)', 'bandwidth', '(\d+)'],
-                                                        ['info', '(?P<interface>.*)', 'encapsulation', 'encapsulation', '(\S+)'],
-                                                        ['info', '(?P<interface>.*)', 'mac_address', '(\S+)'],
-                                                        ['info', '(?P<interface>.*)', 'medium', '(\S+)'],
-                                                        ['info', '(?P<interface>.*)', 'mtu', '(\d+)'],
+                                                        ['info', '(?P<interface>.*)', 'delay', r'(\d+)'],
+                                                        ['info', '(?P<interface>.*)', 'bandwidth', r'(\d+)'],
+                                                        ['info', '(?P<interface>.*)', 'encapsulation', 'encapsulation', r'(\S+)'],
+                                                        ['info', '(?P<interface>.*)', 'mac_address', r'(\S+)'],
+                                                        ['info', '(?P<interface>.*)', 'medium', r'(\S+)'],
+                                                        ['info', '(?P<interface>.*)', 'mtu', r'(\d+)'],
                                                         ['info', '(?P<interface>.*)', 'port_channel', 'port_channel_member', False]],
                                         'exclude': interface_exclude +\
                                                    [remove_related_subinterface, '(Vlan.*)']}},
@@ -537,9 +537,9 @@ class TriggerUnconfigConfigEthernetInterfaceSub(TriggerUnconfigConfig):
     """
 
     mapping = Mapping(requirements={'ops.interface.interface.Interface':{
-                                        'requirements':[['info', '(?P<interface>(GigabitEthernet|gigabitEthernet|Ethernet|ethernet)[0-9\/]+\.[0-9]+)',
+                                        'requirements':[['info', r'(?P<interface>(GigabitEthernet|gigabitEthernet|Ethernet|ethernet)[0-9\/]+\.[0-9]+)',
                                                          'enabled', True],
-                                                        ['info', '(?P<interface>(GigabitEthernet|gigabitEthernet|Ethernet|ethernet)[0-9\/]+\.[0-9]+)',
+                                                        ['info', r'(?P<interface>(GigabitEthernet|gigabitEthernet|Ethernet|ethernet)[0-9\/]+\.[0-9]+)',
                                                          'oper_status', 'up']],
                                         'exclude': interface_exclude}},
                       config_info={'conf.interface.Interface':{

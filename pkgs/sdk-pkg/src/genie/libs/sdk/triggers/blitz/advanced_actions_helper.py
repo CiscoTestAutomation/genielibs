@@ -420,7 +420,8 @@ def blitz_control(self, section, condition, key):
 def _run_condition_with_optional_func(condition_bool,
                                       condition,
                                       kwargs,
-                                      description=''):
+                                      description='',
+                                      suppress_logs=False):
 
     ret_dict = {'substeps': [],
                 'run_condition_skipped': not condition_bool,
@@ -429,20 +430,25 @@ def _run_condition_with_optional_func(condition_bool,
                 'condition': condition
                 }
 
+    # To suppress the processor logs if suppress log parameter is passed.
+    # Use case for Health plugin to reduce the noise.
+    log_method = log.debug if suppress_logs else log.info
+
     if condition_bool:
 
-        log.info(banner("run condition: {}\n"\
-                        "Condition {} is met, running the actions"
-                        .format(description, condition )))
-
+        msg = banner("run condition: {}\n"\
+                    "Condition {} is met, running the actions"
+                    .format(description, condition ))
+        log_method(msg)
         ret_dict.update({'substeps':
                          list(callback_blitz_dispatcher_gen(**kwargs))})
 
     else:
 
-        log.info(banner("run condition: {}\n"\
-                        "Condition {} is not met, not running the actions"
-                        .format(description, condition )))
+        msg = banner("run condition: {}\n"\
+                    "Condition {} is not met, not running the actions"
+                    .format(description, condition ))
+        log_method(msg)
 
     return ret_dict
 

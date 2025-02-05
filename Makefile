@@ -240,7 +240,7 @@ distribute:
 	@test -d $(DIST_DIR) || { echo "Nothing to distribute! Exiting..."; exit 1; }
 	@echo "Organizing distributable into folders"
 	@organize_dist --dist $(DIST_DIR)
-	@rsync -rtlv --progress $(DIST_DIR)/* $(PROD_USER):$(PROD_PKGS)
+	@rsync -rtlpv --progress $(DIST_DIR)/* $(PROD_USER):$(PROD_PKGS)
 	@echo ""
 	@echo "Done."
 	@echo ""
@@ -252,7 +252,7 @@ distribute_staging:
 	@test -d $(DIST_DIR) || { echo "Nothing to distribute! Exiting..."; exit 1; }
 	@echo "Organizing distributable into folders"
 	@organize_dist --dist $(DIST_DIR)
-	@rsync -rtlv --progress $(DIST_DIR)/* $(PROD_USER):$(STAGING_PKGS)
+	@rsync -rtlpv --progress $(DIST_DIR)/* $(PROD_USER):$(STAGING_PKGS)
 	@echo ""
 	@echo "Done."
 	@echo ""
@@ -321,7 +321,7 @@ json:
 	@echo "--------------------------------------------------------------------"
 	@echo "Generating libs json file"
 	@echo ""
-	@python3 -W ignore::SyntaxWarning -c "from genie.json.make_json import make_genielibs; make_genielibs()"
+	@python3 -c "from genie.json.make_json import make_genielibs; make_genielibs()"
 	@echo ""
 	@echo "Done."
 	@echo ""

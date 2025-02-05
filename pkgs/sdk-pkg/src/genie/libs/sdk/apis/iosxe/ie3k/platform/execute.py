@@ -27,3 +27,30 @@ def execute_set_config_register():
     '''
 
     log.info("Config register configuration not supported on IOT platforms")
+
+
+def execute_locate_switch(device, seconds, switch_number=None, switch_type=None):
+    """ Execute locate switch
+        Args:
+            device ('obj'): Device object
+            switch_number ('int'): Switch number
+            seconds ('str'): Time in seconds
+            switch_type ('str'): Switch type(active/standby)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    if switch_number:
+        cmd = f"locate-switch {switch_number} {seconds}"
+    elif switch_type:
+        cmd = f"locate-switch {switch_type} {seconds}"
+    else:
+        cmd = f"locate-switch {seconds}"
+    
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to execute locate switch on {device.name}. Error:\n{e}"
+        )

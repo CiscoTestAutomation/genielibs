@@ -689,7 +689,7 @@ class GenieRobot(object):
             # Make sure it match the name, as
             # Or logic could match more than expected
             if tc.parameters['uut'] != device_handle or\
-               not re.match(name+'\.', tc.uid):
+               not re.match(name+r'\.', tc.uid):
                 continue
             tc_to_run.append(tc)
 

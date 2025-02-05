@@ -1144,7 +1144,23 @@ def configure_interface_evpn_ethernet_segment(device, interface, segment_value):
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not configure interface evpn ethernet-segment. Error: {e}')
 
+def unconfigure_interface_evpn_ethernet_segment(device, interface):
+    """ Unconfigure interface evpn ethernet-segment
+        Args:
+            device ('obj'): device to use
+            interface ('str'): Interface Name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
 
+    config = [f"interface {interface}", f"no evpn ethernet-segment"]
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not unconfigure interface evpn ethernet-segment. Error: {e}')
 def configure_pvlan_loadbalancing_ethernetsegment_l2vpn_evpn(device, ethsegmentvalue,
     esivalue='',  identifier_type='0', system_mac='', red_single_active='yes'):
     """ configure per vlan load balncing between PEs on ethernet segment

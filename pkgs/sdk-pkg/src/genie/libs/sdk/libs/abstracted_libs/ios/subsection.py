@@ -237,7 +237,7 @@ def process_check(device):
 
         # set pattern
         p = re.compile(r'^(?P<name>[\w\_\-]+) +(?P<state>(up|unavail)) +'
-                       '\((?P<options>[\w\:\_\-]+)\)$')
+                       r'\((?P<options>[\w\:\_\-]+)\)$')
 
         for line in output.splitlines():
             line = line.strip()

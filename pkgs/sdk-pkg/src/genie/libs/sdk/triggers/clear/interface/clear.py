@@ -46,11 +46,11 @@ class TriggerClearCounters(TriggerClear):
 
     mapping = Mapping(requirements={'ops.interface.interface.Interface':{
                                         'requirements':[\
-                                            ['info', '(?P<interface>[\w\-\/]+$)', 'enabled', True],
-                                            ['info', '(?P<interface>[\w\-\/]+$)', 'oper_status', 'up'],
-                                            ['info', '(?P<interface>[\w\-\/]+$)', 'counters',
+                                            ['info', r'(?P<interface>[\w\-\/]+$)', 'enabled', True],
+                                            ['info', r'(?P<interface>[\w\-\/]+$)', 'oper_status', 'up'],
+                                            ['info', r'(?P<interface>[\w\-\/]+$)', 'counters',
                                              'in_pkts', '(?P<in_pkts>.*)'],
-                                            ['info', '(?P<interface>[\w\-\/]+$)', 'counters',
+                                            ['info', r'(?P<interface>[\w\-\/]+$)', 'counters',
                                              'out_pkts', '(?P<out_pkts>.*)']],
                                         'all_keys': True,
                                         'kwargs': {'attributes': \

@@ -138,9 +138,9 @@ class CmdsConverter(InternalConverter):
                                 type: matcher
                                 commands: |
                                     #@# cmds=patterns:::
-                                    [show version,,BIOS:\s+version\s+XX(bios)XX([0-9A-Za-z()./]+).*]
-                                    [show version,,bootflash:\s+XX(bootflash)XX([0-9A-Za-z()./]+)\s+XX(measure)XX(\w+).*]
-                                    [show vrf,,default\s+XX(default)XX([0-9/]+)\s+XX(up_down)XX(Up|Down).*]
+                                    [show version,,BIOS:\\s+version\\s+XX(bios)XX([0-9A-Za-z()./]+).*]
+                                    [show version,,bootflash:\\s+XX(bootflash)XX([0-9A-Za-z()./]+)\\s+XX(measure)XX(\\w+).*]
+                                    [show vrf,,default\\s+XX(default)XX([0-9/]+)\\s+XX(up_down)XX(Up|Down).*]
                                     #@#
             ==================================================
               - step-3:
@@ -149,15 +149,15 @@ class CmdsConverter(InternalConverter):
                     command: show version
                     device: N93_3
                     save:
-                    - filter: BIOS:\s+version\s+(?P<bios>[0-9A-Za-z()./]+).*
+                    - filter: BIOS:\\s+version\\s+(?P<bios>[0-9A-Za-z()./]+).*
                       regex: true
-                    - filter: bootflash:\s+(?P<bootflash>[0-9A-Za-z()./]+)\s+(?P<measure>\w+).*
+                    - filter: bootflash:\\s+(?P<bootflash>[0-9A-Za-z()./]+)\\s+(?P<measure>\\w+).*
                       regex: true
                 - execute:
                     command: show vrf
                     device: N93_3
                     save:
-                    - filter: default\s+(?P<default>[0-9/]+)\s+(?P<up_down>Up|Down).*
+                    - filter: default\\s+(?P<default>[0-9/]+)\\s+(?P<up_down>Up|Down).*
                       regex: true
 
             ____________________________________________
@@ -222,7 +222,7 @@ class CmdsConverter(InternalConverter):
                             type: cli
                             commands: |
                                 #@# cmds=groups:::
-                                [ping6 77:77:77::2 vrf vrf_2_7_8 count 5,,\d+ packets transmitted, \d+ packets received, ([0-9.]+)% packet loss]
+                                [ping6 77:77:77::2 vrf vrf_2_7_8 count 5,,\\d+ packets transmitted, \\d+ packets received, ([0-9.]+)% packet loss]
                                 #@#
                             match: |
                                 #@# cmds=groups:::1.1 <= 1.0 #@#
@@ -230,7 +230,7 @@ class CmdsConverter(InternalConverter):
                             type: cli
                             commands: |
                                 #@# cmds=groups:::
-                                [sh int ethernet 1/6/1 counters detailed | section Rx | begin Packets,,Rx Packets:\s+(\d+)]
+                                [sh int ethernet 1/6/1 counters detailed | section Rx | begin Packets,,Rx Packets:\\s+(\\d+)]
                                 #@#
                             match: |
                                 #@# cmds=groups:::1.1 > 1000 #@#
@@ -242,7 +242,7 @@ class CmdsConverter(InternalConverter):
                   device: NX2
                   command: ping6 77:77:77::2 vrf vrf_2_7_8 count 5
                   save:
-                  - filter: \d+ packets transmitted, \d+ packets received, (?P<name1_1>[0-9.]+)%
+                  - filter: \\d+ packets transmitted, \\d+ packets received, (?P<name1_1>[0-9.]+)%
                       packet loss
                     regex: true
                   continue: false
@@ -253,7 +253,7 @@ class CmdsConverter(InternalConverter):
                   device: NX2
                   command: sh int ethernet 1/6/1 counters detailed | section Rx | begin Packets
                   save:
-                  - filter: Rx Packets:\s+(?P<name1_1>\d+)
+                  - filter: Rx Packets:\\s+(?P<name1_1>\\d+)
                     regex: true
                   continue: false
                 compare:

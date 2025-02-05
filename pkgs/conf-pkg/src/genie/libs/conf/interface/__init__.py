@@ -476,6 +476,18 @@ class Interface(BaseInterface):
         default=None,
         type=(None, managedattribute.test_istype(bool)),
         doc='Configure ipv6 forward')
+    
+    fec = managedattribute(
+        name='fec',
+        default=None,
+        type=(None, managedattribute.test_istype(str)),
+        doc='Configure fec')
+
+    media_type = managedattribute(
+        name='media_type',
+        default=None,
+        type=(None, managedattribute.test_istype(str)),
+        doc='Configure media type') 
 
 
     @abc.abstractmethod

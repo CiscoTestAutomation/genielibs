@@ -381,7 +381,7 @@ class TriggerAddRemoveIgmpJoinGroup(TriggerAddRemove):
                                      'source', '(?P<add_igmp_source>.*)'],
                                     ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
                                      '(?P<interface>.*)', 'group', '(?P<add_igmp_group>.*)',
-                                     'last_reporter', '([\w\.]+)']],
+                                     'last_reporter', r'([\w\.]+)']],
                                 'kwargs':{'attributes': [
                                     'info[vrfs][(.*)][interfaces][(.*)][join_group][(.*)]',
                                     'info[vrfs][(.*)][interfaces][(.*)][static_group][(.*)]',
@@ -534,7 +534,7 @@ class TriggerAddRemoveIgmpStaticGroup(TriggerAddRemove):
                                      '(?P<interface>.*)', 'static_group', '(?P<add_igmp_group_key>.*)',
                                      'source', '(?P<add_igmp_source>.*)'],
                                     ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
-                                     '(?P<interface>.*)', 'group', '(?P<add_igmp_group>.*)', 'last_reporter', '([\w\.]+)']],
+                                     '(?P<interface>.*)', 'group', '(?P<add_igmp_group>.*)', 'last_reporter', r'([\w\.]+)']],
                                 'kwargs':{'attributes': [
                                     'info[vrfs][(.*)][interfaces][(.*)][join_group][(.*)]',
                                     'info[vrfs][(.*)][interfaces][(.*)][static_group][(.*)]',

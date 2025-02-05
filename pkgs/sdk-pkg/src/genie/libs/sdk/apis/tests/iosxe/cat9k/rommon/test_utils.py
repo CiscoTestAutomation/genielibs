@@ -15,7 +15,7 @@ class TestSendBreakBoot(unittest.TestCase):
         # Verify that generic_break_boot was called with the correct arguments
         mock_generic_break_boot.assert_called_once_with(
             mock_device,
-            console_activity_pattern='\[.*Ctrl-C.*\]',
+            console_activity_pattern=r'\[.*Ctrl-C.*\]',
             console_breakboot_char='\x03',
             console_breakboot_telnet_break=None,
             grub_activity_pattern=None,

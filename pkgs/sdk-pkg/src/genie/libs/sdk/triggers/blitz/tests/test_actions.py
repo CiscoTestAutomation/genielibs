@@ -631,7 +631,7 @@ class TestActions(unittest.TestCase):
       self.kwargs.update({'device': self.dev,
                           'steps': steps,
                           'command': 'cmd',
-                          'include': ['\d']})
+                          'include': [r'\d']})
 
       execute(**self.kwargs)
       self.assertEqual(steps.result, Passed)
@@ -1467,7 +1467,7 @@ class TestActions(unittest.TestCase):
                 'device': self.dev,
                 'command': 'command',
                 'include': None,
-                'exclude': ['\d'],
+                'exclude': [r'\d'],
                 'continue_': True,
                 'action': 'api',
                 'max_time': None,
@@ -1532,7 +1532,7 @@ class TestActions(unittest.TestCase):
                 'device': self.dev,
                 'command': 'command',
                 'include': None,
-                'exclude':["T\$p"],
+                'exclude':[r"T\$p"],
                 'continue_': True,
                 'action': 'execute',
                 'max_time': 14,

@@ -42,16 +42,16 @@ class TestCmdsConverter(unittest.TestCase):
 
    patterns_cmd = '''
             cmds=patterns:::
-         [show version,,BIOS:\s+version\s+XX(bios)XX([0-9A-Za-z()./]+).*]
-         [show version,,bootflash:\s+XX(bootflash)XX([0-9A-Za-z()./]+)\s+XX(measure)XX(\w+).*]
-         [show vrf,,default\s+XX(default)XX([0-9/]+)\s+XX(up_down)XX(Up|Down).*]
+         [show version,,BIOS:\\s+version\\s+XX(bios)XX([0-9A-Za-z()./]+).*]
+         [show version,,bootflash:\\s+XX(bootflash)XX([0-9A-Za-z()./]+)\\s+XX(measure)XX(\\w+).*]
+         [show vrf,,default\\s+XX(default)XX([0-9/]+)\\s+XX(up_down)XX(Up|Down).*]
          '''
 
    eval_cmd = "cmds=eval:::'XX(adminSt)XX' == 'enabled'"
 
    groups_cmd_pattern = '''
                cmds=groups:::
-            [ping6 77:77:77::2 vrf vrf_2_7_8 count 5,,\d+ packets transmitted, \d+ packets received, ([0-9.]+)% packet loss]
+            [ping6 77:77:77::2 vrf vrf_2_7_8 count 5,,\\d+ packets transmitted, \\d+ packets received, ([0-9.]+)% packet loss]
                         '''
 
    groups_cmd_matcher = 'cmds=groups:::1.1 > 1000'

@@ -75,7 +75,7 @@ def is_logging_bfd_down_logged(*args, **kwargs):
     # Jan 24 18:13:10.814 EST: %BFDFSM-6-BFD_SESS_DOWN: BFD-SYSLOG: BFD session ld:2039 handle:2,is going Down Reason: ECHO FAILURE
     # *Jan 24 18:13:10.814 EST: %BFDFSM-6-BFD_SESS_DOWN: BFD-SYSLOG: BFD session ld:2039 handle:2,is going Down Reason: ECHO FAILURE
     return is_logging_string_matching_regex_logged(
-        regex="^\*?(?P<timestamp>\w+ +\d+ +\S+) +\w+: +%BFDFSM-6-BFD_SESS_DOWN.*ECHO FAILURE$",
+        regex=r"^\*?(?P<timestamp>\w+ +\d+ +\S+) +\w+: +%BFDFSM-6-BFD_SESS_DOWN.*ECHO FAILURE$",
         *args,
         **kwargs
     )

@@ -443,7 +443,7 @@ class TriggerShutNoShutEthernetInterface(TriggerShutNoShut):
     # Also permit to dictate which key to verify
     mapping = Mapping(requirements={'ops.interface.interface.Interface':{
                                         'requirements':[\
-                                            ['info', '(?P<interface>(\w+(e|E)thernet[\S]+|\w+(g|G)ig[\S]+))', 'oper_status', 'up'],
+                                            ['info', r'(?P<interface>(\w+(e|E)thernet[\S]+|\w+(g|G)ig[\S]+))', 'oper_status', 'up'],
                                             ['info', '(?P<interface>.*)', 'port_channel', 'port_channel_member', False]],
                                         'exclude': interface_exclude,
                                         'kwargs': {'attributes': ['info[(.*)][switchport_enable]',
@@ -675,7 +675,7 @@ class TriggerShutNoShutDot1xInterface(TriggerShutNoShut):
     # Mapping of Information between Ops and Conf
     # Also permit to dictate which key to verify
     mapping = Mapping(requirements={'ops.interface.interface.Interface':{
-                                       'requirements':[['info', '(?P<interface>\w+Ethernet[\d\/]+$)', 'enabled', True],
+                                       'requirements':[['info', r'(?P<interface>\w+Ethernet[\d\/]+$)', 'enabled', True],
                                                        ['info', '(?P<interface>.*)', 'switchport_enable', True],
                                                        ['info', '(?P<interface>.*)', 'switchport_mode', 'static access'],
                                                        ['info', '(?P<interface>.*)', 'oper_status', 'up']],

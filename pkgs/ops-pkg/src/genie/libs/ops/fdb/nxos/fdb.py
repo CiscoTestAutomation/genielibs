@@ -44,8 +44,8 @@ class Fdb(SuperFdb):
                       src='[mac_aging_time]',
                       dest='info[mac_aging_time]')
 
-        vlan_src = '[mac_table][vlans][(?P<vlan>^\d+$)]'
-        vlan_dst = 'info[mac_table][vlans][(?P<vlan>^\d+$)]'
+        vlan_src = r'[mac_table][vlans][(?P<vlan>^\d+$)]'
+        vlan_dst = r'info[mac_table][vlans][(?P<vlan>^\d+$)]'
         self.add_leaf(cmd=ShowMacAddressTable,
                       src=vlan_src + '[vlan]',
                       dest=vlan_dst + '[vlan]',

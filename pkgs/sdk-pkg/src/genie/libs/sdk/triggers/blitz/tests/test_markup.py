@@ -157,7 +157,7 @@ class TestMarkup(unittest.TestCase):
 
         filtered_out = apply_list_filter(self.blitz_obj,
                                          list_output,
-                                         filters='\d')
+                                         filters=r'\d')
         self.assertEqual(filtered_out, [])
 
     def test_dq_filter(self):

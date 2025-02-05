@@ -7,6 +7,7 @@ from typing import Any
 from genie.conf.base.utils import QDict
 from genie.libs.conf.device import Device as GenieDevice
 
+from threading import Lock
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 logger = logging.getLogger(__name__)
@@ -116,12 +117,14 @@ Configuration register is 0x2102
 def _task_learn(
     device: str,
     models: list[str],
+    thread_lock: Lock,
     os: str | None = None,
     exec_timeout: int | None = None,
 ) -> tuple[str, QDict]:
     results = {}
 
-    dev = Device(device, os=os, exec_timeout=exec_timeout)
+    with thread_lock:
+        dev = Device(device, os=os, exec_timeout=exec_timeout)
 
     for model in models:
         try:
@@ -157,6 +160,8 @@ def _learn(
     if isinstance(models, str):
         models = [models]
 
+    lock = Lock()
+
     results = {}
     with ThreadPoolExecutor(
         max_workers=num_threads,
@@ -168,6 +173,7 @@ def _learn(
                     _task_learn,
                     device,
                     models,
+                    lock,
                     os,
                     exec_timeout,
                 )
