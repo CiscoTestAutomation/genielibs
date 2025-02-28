@@ -2446,3 +2446,73 @@ def configure_interface_template_with_default_ipv6_dhcp_guard_policy(device, tem
         raise SubCommandFailure(
             "Failed to configure default ipv6 dhcp guard policy on template"
         )
+
+def configure_device_tracking_policy_reachable(device, policy, tracking, time=None):
+    """ Device tracking configuration
+        Args:
+            device ('obj'): Device object
+            policy ('str'): Policy name 
+            tracking ('str'): tracking is enable or disable
+            time ('str', Optional) : Reachable life time value 1-86400-seconds or infinite 
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    configs = []
+    configs.append("device-tracking policy {policy}".format(policy=policy))
+    if tracking=="enable" and time:
+        configs.append("tracking enable reachable-lifetime {time}".format(time=time))
+    elif tracking=="disable" and time:
+        configs.append("tracking disable stale-lifetime {time}".format(time=time))
+    elif tracking and time is None:
+        configs.append("tracking {tracking}".format(tracking=tracking))
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure device policy on {device}. Error:\n{error}"
+            .format(device=device, error=e))
+
+def configure_device_tracking_binding_globally(device, vlan, address, interface):
+    """Adds static entry to binding table globally
+    Args:
+        device ('obj'): device object
+        vlan ('str'): vlan id
+        address ('str'): ip address (v4 or v6)
+        interface ('str'): interface for entry - Eg. TWE 1/0/1
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed to add static entry globally
+    """
+    cmd = f"device-tracking binding vlan {vlan} {address} interface {interface}"
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure static entry globally on {device}. Error:\n{error}"
+            .format(device=device, error=e))
+
+def unconfigure_device_tracking_binding_globally(device, vlan, address, interface):
+    """Removes static entry to binding table globally
+    Args:
+        device ('obj'): device object
+        vlan ('str'): vlan id
+        address ('str'): ip address (v4 or v6)
+        interface ('str'): interface for entry - Eg. TWE 1/0/1
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed to add static entry
+    """
+    cmd = f"no device-tracking binding vlan {vlan} {address} interface {interface}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfigure static entry globally on {device}. Error:\n{error}"
+            .format(device=device, error=e))
+

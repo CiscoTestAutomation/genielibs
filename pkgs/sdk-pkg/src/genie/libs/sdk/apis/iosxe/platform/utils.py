@@ -368,7 +368,7 @@ def fp_switchover(device,timeout=420):
     """
 
     # Capture the parsed output of "show platform"
-    output = device.parse("show platform")
+    output = device.parse("show platform", abstract=dict(revision=None))
 
     # Check if FP data is available in parsed output
     if 'F0' in output['slot'] and 'F1' in output['slot']:
@@ -412,7 +412,7 @@ def fp_switchover(device,timeout=420):
         while wait_time < timeout:
             # Fetch both FP state during FP switchover
             try:
-                output = device.parse("show platform")
+                output = device.parse("show platform", abstract=dict(revision=None))
             except SchemaEmptyParserError as e:
                 log.error("Failed to parse 'show platform', Error: {}".format(str(e)))
                 return False
@@ -442,14 +442,14 @@ def fp_switchover(device,timeout=420):
 def clear_logging_onboard_switch(device, switch_number):
     """ clears logging onboard switch
         Example: clear logging onboard switch 1
-        
+
         Args:
             device ('obj'): Device object
             switch_number('int'): Switch number (Range: 1-16)
-        
+
         Returns:
             None
-        
+
         Raises:
             SubCommandFailure
     """
@@ -469,17 +469,17 @@ def clear_logging_onboard_switch(device, switch_number):
 def upgrade_hw_programmable(device, programmable_type, file_system, package_name, slot):
     """ FPGA/CPLD upgrade
         Example: upgrade hw-programmable cpld filename bootflash:<pkg> R0
-        
+
         Args:
             device ('obj'): Device object
-            programmable_type ('str'): programmable type. Ex: cpld, fpga. 
+            programmable_type ('str'): programmable type. Ex: cpld, fpga.
             file_system ('str'): file system type. Ex: bootflash:, harddisk:, usb0:
             package_name ('str'): programmable package name.
             slot ('str'): slot name. Ex: F0, R0, 0.
-        
+
         Returns:
             CLI output
-        
+
         Raises:
             SubCommandFailure
     """
@@ -517,7 +517,7 @@ def clear_controllers_ethernet_controller(device):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f'Could not clear controllers ethernet controller {device}. Error:\n{e}')
-            
+
 def erase_startup_config(device):
     """ erase startup_config
         Args:
@@ -544,8 +544,8 @@ def erase_startup_config(device):
         device.execute("erase startup-config", reply=erase_dialog)
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            f'could not erase startup config on  {device}. Error:\n{e}')    
-              
+            f'could not erase startup config on  {device}. Error:\n{e}')
+
 def clear_logging_onboard_rp_active_standby(device, rp_active_standby, log_name=None):
     """ clears logging onboard rp active/standby
         Example: clear logging onboard rp active/standby

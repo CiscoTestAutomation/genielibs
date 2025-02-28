@@ -188,3 +188,34 @@ def unconfigure_radius_server(device, server_name):
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Failed to unconfigure radius server on device {device.name}. Error:\n{e}')
+
+def configure_radius_server_dtls_trustpoint(device, server_name=None, trustpoint_server=None, trustpoint_client=None):
+    """ Configure radius server dtls trustpoint
+
+        Args:
+            device ('obj'): Device object
+            server_name('str', optional): Radius server name
+            trustpoint_server('str', optional): Trustpoint server name
+            trustpoint_client('str', optional): Trustpoint client name
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config_list = []
+    
+    if server_name:
+        config_list.append(f'radius server {server_name}')
+    if trustpoint_server:
+        config_list.append(f'dtls trustpoint server {trustpoint_server}')
+    if trustpoint_client:
+        config_list.append(f'dtls trustpoint client {trustpoint_client}')
+    
+    if not config_list:
+        raise ValueError("At least one of server_name, trustpoint_server, or trustpoint_client must be provided")
+    
+    try:
+        device.configure(config_list)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configure radius server dtls trustpoint on device {device.name}. Error:\n{e}')

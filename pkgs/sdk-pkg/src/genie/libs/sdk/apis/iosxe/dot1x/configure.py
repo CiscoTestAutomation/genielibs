@@ -65,12 +65,13 @@ def configure_dot1x_cred_profile(device, profile_name, user_name, passwd, passwd
             "Could not configure dot1x credential profile {}.Error: {}".format(profile_name, str(e))
         )
 
-def configure_eap_profile(device, profile_name,method='md5'):
+def configure_eap_profile(device, profile_name,method='md5',ciphersuite=None):
     """Configure EAP Md5 profile
         Args:
             device ('obj'): device to use
             profile_name (`str`): eap profile name
             method ('str',optional). Method to use for eap authentication. Default is md5
+            ciphersuite ('str', optional): Ciphersuite to use for eap profile
         Returns:
             None
         Raises:
@@ -79,6 +80,8 @@ def configure_eap_profile(device, profile_name,method='md5'):
     cmd = ''
     cmd += 'eap profile {}\n'.format(profile_name)
     cmd += 'method {}\n'.format(method)
+    if ciphersuite:
+        cmd += 'ciphersuite {}\n'.format(ciphersuite)
     log.debug("Configure eap profile")
     try:
         device.configure(cmd)
@@ -2400,3 +2403,43 @@ def unconfigure_parameter_map_subscriber(device, parameter_map_name):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not unconfigure parameter map subscriber")
+    
+def configure_access_session_tls_version(device, version):
+    """Configure access-session tls-version
+        Args:
+            device ('obj'): device to use
+            version (`str`): TLS version to configure ('1.0', '1.2', '1.3', 'all')
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure access-session tls-version
+    """
+    if version not in ['1.0', '1.2', '1.3', 'all']:
+        raise ValueError("Invalid TLS version. Accepted values are '1.0', '1.2', '1.3', 'all'.")
+
+    cmd = 'access-session tls-version {}'.format(version)
+    log.info("Configuring access-session tls-version to {}".format(version))
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure access-session tls-version {}.Error: {}".format(version, str(e))
+        )
+
+def unconfigure_access_session_tls_version(device):
+    """Unconfigure access-session tls-version
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to unconfigure access-session tls-version
+    """
+    cmd = 'no access-session tls-version'
+    log.info("Unconfiguring access-session tls-version")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure access-session tls-version. Error: {}".format(str(e))
+        )

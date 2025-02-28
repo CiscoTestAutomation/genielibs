@@ -17,6 +17,8 @@ from genie.conf.base.config import CliConfig
 
 import genie.libs.conf.device
 import genie.libs.conf.device.cisco
+from genie.libs.conf.interface.iosxe import interface
+from genie.libs.parser.utils.common import Common
 
 logger = logging.getLogger(__name__)
 
@@ -31,14 +33,15 @@ class Device(genie.libs.conf.device.cisco.Device):
         interface = None
         for line in out.splitlines():
             line = line.rstrip()
-            m = re.match(r'^(?i)(?P<interface>\S+) is .* line protocol is', line)
+            m = re.match(r'^(?P<interface>\S+) is .* line protocol is', line, flags=re.IGNORECASE)
             if m:
-                interface = self.interfaces[m.group('interface')]
+                interface = self.interfaces.get(m.group('interface'))
                 # GigabitEthernet0/0/0/0 is administratively down, line protocol is administratively down
-                continue
+                if interface:
+                    continue
             if interface:
-                m = re.match(r'(?i)^ +Hardware is +[^,]+, +address is +(?P<mac>[A-Fa-f0-9.:-]+)(?: \(bia (?P<bi_mac>[A-Fa-f0-9.:-]+)\))?', line) \
-                    or re.match(r'(?i)^ +address: +([A-Fa-f0-9.:-]+)(?: \(bia (?P<bi_mac>[A-Fa-f0-9.:-]+)\))?', line)
+                m = re.match(r'^ +Hardware is +[^,]+, +address is +(?P<mac>[A-Fa-f0-9.:-]+)(?: \(bia (?P<bi_mac>[A-Fa-f0-9.:-]+)\))?', line, flags=re.IGNORECASE) \
+                    or re.match(r'^ +address: +([A-Fa-f0-9.:-]+)(?: \(bia (?P<bi_mac>[A-Fa-f0-9.:-]+)\))?', line, flags=re.IGNORECASE)
                 if m:
                     # IOS, IOS-XR:
                     #   Hardware is GigabitEthernet, address is 6c9c.ed74.06e8 (bia 6c9c.ed74.06e8)

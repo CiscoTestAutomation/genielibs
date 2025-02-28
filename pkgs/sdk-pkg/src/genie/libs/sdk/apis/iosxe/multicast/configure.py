@@ -2102,3 +2102,22 @@ def unconfigure_ip_msdp_vrf_peer(device, peer, vrf, intf=None):
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not unconfigures ip msdp vrf peer. Error: {e}')
+    
+def configure_ipv6_pim_rp_vrf(device, vrf_name, address):
+    """ Configure IPv6 PIM RP for a VRF
+    Args:
+        device (`obj`): Device object
+        vrf_name (`str`): VRF name
+        address (`str`): RP address
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    cmd = f"ipv6 pim vrf {vrf_name} rp-address {address}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure IPv6 PIM RP for VRF {vrf_name}:\n{e}"
+        )

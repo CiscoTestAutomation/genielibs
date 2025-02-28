@@ -132,3 +132,49 @@ def verify_dhcp_snooping_glean_disabled(device, max_time=30, interval=10):
 
     log.info("Switch DHCP gleaning is NOT disabled!")
     return False
+
+def verify_ip_address_on_interface(device, interface, ip_address, max_time=20, check_interval=5):
+    """Verify if a specific IP address is configured on a given interface.
+
+    Args:
+        device (object): The device object on which to perform the verification.
+        interface (str): The name of the interface to check.
+        ip_address (str): The IP address to verify on the interface.
+        max_time (int, optional): Maximum time to wait for the IP address to appear, in seconds. Default is 20 seconds.
+        check_interval (int, optional): Interval between checks, in seconds. Default is 5 seconds.
+
+    Returns:
+        bool: True if the IP address is configured on the interface, False otherwise.
+
+    Raises:
+        None
+
+    Example:
+        result = verify_ip_address_on_interface(device, 'GigabitEthernet0/0', '192.168.1.1')
+    """
+    log.debug(f"Starting verification for IP address '{ip_address}' on interface '{interface}'.")
+
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        try:
+            output = device.parse("show ip interface brief")
+            log.debug(f"Parsed output: {output}")
+        except SchemaEmptyParserError:
+            log.warning("No output received from 'show ip interface brief'. Retrying...")
+            timeout.sleep()
+            continue
+
+        if output:
+            intf_data = output.get('interface', {})
+            if interface in intf_data:
+                configured_ip = intf_data[interface].get('ip_address')
+                if configured_ip == ip_address:
+                    log.debug(f"IP address '{ip_address}' is configured on interface '{interface}'.")
+                    return True
+            else:
+                log.debug(f"Interface '{interface}' not found in output.")
+                timeout.sleep()
+
+    log.error(f"IP address '{ip_address}' is not configured on interface '{interface}' after {max_time} seconds.")
+    return False

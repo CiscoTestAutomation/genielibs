@@ -6582,3 +6582,23 @@ def unconfigure_macro_auto_fallback(device, fallback, parameters=None):
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not configure macro auto global processing fallback. Error:\n{e}")
+        
+def set_platform_software_selinux(device, selinux_mode=None):
+    """
+    Set SELinux mode on the device.
+    Args:
+        device ('obj'): Device to execute the command on
+        selinux_mode ('str', optional): SELinux mode to set ('default', 'enforcing', or 'permissive'). Defaults to 'default'.
+    Returns:
+        str: Command output confirming SELinux mode change
+    Raises:
+        SubCommandFailure: If the command execution fails
+    """
+    cmd = f"set platform software selinux {selinux_mode}"
+
+    try:
+        return device.execute(cmd)  # Return the command output for verification
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to execute command '{cmd}' on device. Error:\n{e}"
+        )

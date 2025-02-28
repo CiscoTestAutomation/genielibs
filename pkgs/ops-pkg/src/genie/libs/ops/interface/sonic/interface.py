@@ -9,7 +9,7 @@ from genie.libs.ops.interface.interface import Interface as SuperInterface
 class Interface(SuperInterface):
     '''Interface Genie Ops Object'''
 
-    def learn(self, custom=None, interface=None, vrf=None, address_family=None):
+    def learn(self, custom=None, interface=None, vrf=None, address_family=None, **kwargs):
         '''Learn Interface Ops'''
         ########################################################################
         #                               info

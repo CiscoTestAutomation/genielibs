@@ -46,9 +46,18 @@ class Platform(SuperPlatform):
                       src='[item][Rack 0-Virtual][pcb_serial_number]',
                       dest='[chassis_sn]')
 
+        # Backup in the event the above doesn't work
+        self.add_leaf(cmd='show inventory',
+                      src='[module_name][Rack 0][sn]',
+                      dest='[chassis_sn]')
+
         # chassis
         self.add_leaf(cmd=AdminShowDiagChassis,
                       src='[pid]',
+                      dest='[chassis]')
+
+        self.add_leaf(cmd='show inventory',
+                      src='[module_name][Rack 0][pid]',
                       dest='[chassis]')
 
         self.add_leaf(cmd='show diag details',

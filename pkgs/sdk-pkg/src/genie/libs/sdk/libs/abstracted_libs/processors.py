@@ -8,6 +8,7 @@ import copy
 import logging
 import shutil
 import zipfile
+import importlib
 
 # pyats
 from pyats.async_ import pcall
@@ -19,13 +20,8 @@ from pyats.results import TestResult, Passed, Failed, Skipped, Passx, Aborted, E
 from pyats.utils.objects import find, R, NotExists
 
 # import pcall
-import importlib
-try:
-    pcall = importlib.import_module('pyats.async').pcall
-except ImportError:
-    from pyats.async_ import pcall
-# # import pcall
-# from pyats.async import pcall
+from pyats.async_ import pcall
+
 
 # Abstract
 from genie.abstract import Lookup
@@ -1878,7 +1874,7 @@ def stop_traffic(section, wait_time=30):
 
     for dev in tgn_devices:
         if dev.name not in section.parent.mapping_data['devices']:
-            log.info("Traffic generator devices not specified in --devices")
+            log.info(f"Traffic generator device {dev.name} not specified in mapping datafile")
             return
 
         # Connect to TGN
@@ -1922,7 +1918,7 @@ def start_traffic(section, wait_time=30):
         return
     for dev in tgn_devices:
         if dev.name not in section.parent.mapping_data['devices']:
-            log.info("Traffic generator devices not specified in --devices")
+            log.info(f"Traffic generator device {dev.name} not specified in mapping datafile")
             return
 
         # Connect to TGN
@@ -1966,7 +1962,7 @@ def disconnect_traffic_device(section, wait_time=30):
         return
     for dev in tgn_devices:
         if dev.name not in section.parent.mapping_data['devices']:
-            log.info("Traffic generator devices not specified in --devices")
+            log.info(f"Traffic generator device {dev.name} not specified in mapping datafile")
             return
 
         # Connect to TGN
@@ -2001,7 +1997,7 @@ def connect_traffic_device(section, wait_time=30):
 
     for dev in tgn_devices:
         if dev.name not in section.parent.mapping_data['devices']:
-            log.info("Traffic generator devices not specified in --devices")
+            log.info(f"Traffic generator device {dev.name} not specified in mapping datafile")
             return
 
         # Connect to TGN
@@ -2068,7 +2064,7 @@ def compare_traffic_profile(
     # Init
     for dev in tgn_devices:
         if dev.name not in section.parent.mapping_data['devices']:
-            log.info("Traffic generator devices not specified in --devices")
+            log.info(f"Traffic generator device {dev.name} not specified in mapping datafile")
             return
 
         # Connect to TGN
@@ -2238,7 +2234,7 @@ def _check_traffic_loss(
 
     for dev in tgn_devices:
         if dev.name not in section.parent.mapping_data['devices']:
-            log.info("Traffic generator devices not specified in --devices")
+            log.info(f"Traffic generator device {dev.name} not specified in mapping datafile")
             return
 
         # Connect to TGN
@@ -2326,8 +2322,7 @@ def _check_traffic_loss_tcl(section):
         # Check if device is found in mapping context
         if not hasattr(section.parent, 'mapping_data') or \
            tgn_device.name not in section.parent.mapping_data['devices']:
-            log.info("TGN '{}' information not found in mapping datafile".
-                     format(tgn_device.name))
+            log.info(f"Traffic generator device {tgn_device.name} not specified in mapping datafile")
             return
 
         # Check if TGN is connected
@@ -2425,7 +2420,7 @@ def _clear_traffic_statistics(section, clear_stats_time=30):
 
     for dev in tgn_devices:
         if dev.name not in section.parent.mapping_data['devices']:
-            log.info("Traffic generator devices not specified in --devices")
+            log.info(f"Traffic generator device {dev.name} not specified in mapping datafile")
             return
 
         # Connect to TGN
@@ -2480,8 +2475,7 @@ def _clear_traffic_statistics_tcl(section):
         # Check if device is found in mapping context
         if not hasattr(section.parent, 'mapping_data') or\
            tgn_device.name not in section.parent.mapping_data['devices']:
-            log.info("TGN '{}' information not found in mapping datafile".
-                     format(tgn_device.name))
+            log.info(f"Traffic generator device {tgn_device.name} not specified in mapping datafile")
             return
 
         # Check if TGN is connected

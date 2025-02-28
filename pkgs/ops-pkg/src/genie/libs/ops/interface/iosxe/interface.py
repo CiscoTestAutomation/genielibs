@@ -1,8 +1,8 @@
 '''
 Interface Genie Ops Object for IOSXE - CLI.
 '''
-
 import logging
+
 # super class
 from genie.libs.ops.interface.interface import Interface as SuperInterface
 
@@ -16,6 +16,7 @@ show_ipv6_interface = "show ipv6 interface"
 show_ipv6_interface_include = "protocol|address|subnet"
 show_interfaces_accounting = "show interfaces accounting"
 
+logger = logging.getLogger(__name__)
 
 class Interface(SuperInterface):
     '''Interface Genie Ops Object'''
@@ -41,14 +42,22 @@ class Interface(SuperInterface):
         self.attributes = None
         self.maker.attributes = None
 
+        # Attribute filtering is not working for show_vrf, disabling and restoring after
+
+        # save attributes
+        attrs = self.attributes
+        self.attributes = None
+        self.maker.attributes = None
+
         self.add_leaf(cmd=show_vrf,
                       src='vrf[(?P<vrf>.*)][interfaces]',
                       dest='info[vrf][(?P<vrf>.*)][interfaces]', vrf=vrf)
         self.make()
+
         # restore attributes
         self.attributes = attrs
         self.maker.attributes = attrs
-        
+
         if vrf:
             for intf in self.info['vrf'][vrf]['interfaces']:
                 for key in req_keys:
@@ -62,7 +71,8 @@ class Interface(SuperInterface):
                         self.add_leaf(cmd=show_interfaces,
                                     src=src + '[{}]'.format(key),
                                     dest=dest + '[{}]'.format(key),
-                                    interface=intf)
+                                    interface=intf,
+                                    include=show_interfaces_include)
         else:
             for key in req_keys:
                 if brief:
@@ -76,7 +86,6 @@ class Interface(SuperInterface):
                                 src=src + '[{}]'.format(key),
                                 dest=dest + '[{}]'.format(key),
                                 interface=interface)
-
 
         # make to write in cache
         self.make()
@@ -301,14 +310,15 @@ class Interface(SuperInterface):
             for key in req_keys:
                 if brief:
                     self.add_leaf(cmd=show_interfaces,
-                                    src=src + '[{}]'.format(key),
-                                    dest=dest + '[{}]'.format(key),
-                                    interface=interface,
-                                    include=show_interfaces_include)
+                                src=src + '[{}]'.format(key),
+                                dest=dest + '[{}]'.format(key),
+                                interface=interface,
+                                include=show_interfaces_include)
                 else:
                     self.add_leaf(cmd=show_interfaces,
-                                    src=src + '[{}]'.format(key),
-                                    dest=dest + '[{}]'.format(key), interface=interface)
+                                src=src + '[{}]'.format(key),
+                                dest=dest + '[{}]'.format(key),
+                                interface=interface)
 
 
             # Global source - counters | rate

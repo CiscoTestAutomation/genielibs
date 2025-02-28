@@ -1,13 +1,15 @@
 # Genie package
 import re
 import copy
+import logging
+
 # super class
 from genie.libs.ops.platform.platform import Platform as SuperPlatform
 from genie.libs.ops.utils.common import convert_to_bool, \
                                         convert_to_seconds, \
                                         convert_to_lower, \
                                         slot_num
-                                                    
+
 # commands
 show_version = 'show version'
 show_platform = 'show platform'
@@ -51,6 +53,10 @@ class Platform(SuperPlatform):
 
     def learn(self):
         '''Learn Platform object'''
+
+        show_version_command = "show version"
+        show_inventory_command = "show inventory"
+        show_platform_command = "show platform"
 
         # Global callable
         self.callables = {'slot_num': slot_num}
@@ -248,7 +254,9 @@ class Platform(SuperPlatform):
         new_dict= {}
         interface_match = re.compile(r'\S+(?P<slot>\d)\/(?P<subslot>\d+\/\d+)$')
         power_match = re.compile(r'Power +Supply +Module +(?P<slot>\d+)$')
+        power_match_1 = re.compile(r'Switch \d+ - Power Supply (?P<slot>\w+)$')
         supervisor_match = re.compile(r'Slot +(?P<supervisor_slot>\d+) +Supervisor$')
+        switch_match = re.compile(r'Switch (\d+)$')
         fan_match = re.compile(r'Fan +Tray +(?P<fan_slot>\d+)$')
 
         # Assign rtr_type as per the corresponding platform
@@ -277,9 +285,20 @@ class Platform(SuperPlatform):
                 # Need to support all IOSXE platforms
                 if 'Chassis' in ret_key:
                     continue
+
+                if 'c95xx Stack' in ret_key:
+                    continue
+
+                m = re.search(switch_match, ret_key)
+                if m:
+                    switch_index = m.group(1)
+                    for key in self.slot[slot]:
+                        if key in ['descr', 'vid', 'cpld_ver', 'fw_ver', 'insert_time', 'slot']:
+                            continue
+                        new_dict.setdefault('rp', {}).setdefault(str(switch_index), {}).setdefault(key, self.slot[slot][key])
                 elif 'C9500' in ret_key:
                     for key in self.slot[slot]:
-                        if key in ['descr', 'pid', 'vid', 'cpld_ver', 'fw_ver', 'insert_time', 'slot']:
+                        if key in ['descr', 'vid', 'cpld_ver', 'fw_ver', 'insert_time', 'slot']:
                             continue
                         new_dict.setdefault('rp', {}).setdefault(str(slot), {}).setdefault(key, self.slot[slot][key])
                         if 'subslot' in new_dict['rp'][str(slot)]:
@@ -317,7 +336,7 @@ class Platform(SuperPlatform):
                     if res:
                         continue
                     for key in self.slot[slot]:
-                        if key in ['descr', 'pid', 'vid', 'insert_time', 'slot']:
+                        if key in ['descr', 'vid', 'insert_time', 'slot']:
                             continue
                         new_dict.setdefault('oc', {}).setdefault(str(slot), {}).setdefault(key, self.slot[slot][key])
 

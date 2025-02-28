@@ -1,4 +1,4 @@
-''' 
+'''
 Interface Genie Ops Object Outputs for NXOS.
 '''
 
@@ -16,7 +16,7 @@ class InterfaceOutput(object):
           full-duplex, 1000 Mb/s
           Auto-Negotiation is turned on
           Auto-mdix is turned off
-          EtherType is 0x0000 
+          EtherType is 0x0000
           1 minute input rate 0 bits/sec, 0 packets/sec
           1 minute output rate 24 bits/sec, 0 packets/sec
           Rx
@@ -39,8 +39,8 @@ class InterfaceOutput(object):
               Auto-Negotiation is turned off
               Input flow-control is off, output flow-control is off
               Auto-mdix is turned off
-              Switchport monitor is off 
-              EtherType is 0x8100 
+              Switchport monitor is off
+              EtherType is 0x8100
               Members in this channel: Po1
               EEE (efficient-ethernet) : n/a
               Last link flapped 00:00:29
@@ -78,7 +78,7 @@ class InterfaceOutput(object):
               Encapsulation 802.1Q Virtual LAN, Vlan ID 10, medium is broadcast
               Port mode is routed
               Auto-mdix is turned off
-              EtherType is 0x8100 
+              EtherType is 0x8100
         Ethernet2/1.20 is up
             admin state is up, Dedicated Interface, [parent interface is Ethernet2/1]
               Hardware: 10/100/1000 Ethernet, address: 5254.003b.4af8 (bia 5254.003b.4aca)
@@ -87,7 +87,7 @@ class InterfaceOutput(object):
               Encapsulation 802.1Q Virtual LAN, Vlan ID 20, medium is p2p
               Port mode is routed
               Auto-mdix is turned off
-              EtherType is 0x8100 
+              EtherType is 0x8100
         Ethernet2/2 is up
             admin state is up, Dedicated Interface
               Hardware: 10/100/1000 Ethernet, address: 5254.00ac.b52e (bia 5254.00ac.b52e)
@@ -100,7 +100,7 @@ class InterfaceOutput(object):
               Auto-Negotiation is turned off
               Input flow-control is off, output flow-control is off
               Auto-mdix is turned off
-              Switchport monitor is off 
+              Switchport monitor is off
               EtherType is 0x8100
                 Members in this channel: Po1
               EEE (efficient-ethernet) : n/a
@@ -132,7 +132,7 @@ class InterfaceOutput(object):
                 0 lost carrier  0 no carrier  0 babble  0 output discard
                 0 Tx pause
         '''
-     
+
     ShowInterfaceBrief = '''
                mgmt0 is up
                admin state is up,
@@ -291,8 +291,8 @@ class InterfaceOutput(object):
               Auto-Negotiation is turned off
               Input flow-control is off, output flow-control is off
               Auto-mdix is turned off
-              Switchport monitor is off 
-              EtherType is 0x8100 
+              Switchport monitor is off
+              EtherType is 0x8100
               Members in this channel: Po1
               EEE (efficient-ethernet) : n/a
               Last link flapped 00:00:29
@@ -411,7 +411,7 @@ class InterfaceOutput(object):
               IP address: 10.2.2.2, IP subnet: 10.2.2.0/24 secondary
               IP address: 10.3.3.3, IP subnet: 10.3.3.0/24 secondary
               IP broadcast address: 255.255.255.255
-              IP multicast groups locally joined: 
+              IP multicast groups locally joined:
                  224.0.0.6  224.0.0.5  224.0.0.2
               IP MTU: 1600 bytes (using link MTU)
               IP primary address route-preference: 0, tag: 0
@@ -420,12 +420,12 @@ class InterfaceOutput(object):
               IP Local Proxy ARP : disabled
               IP multicast routing: disabled
               IP icmp redirects: disabled
-              IP directed-broadcast: disabled 
-              IP Forwarding: disabled 
+              IP directed-broadcast: disabled
+              IP Forwarding: disabled
               IP icmp unreachables (except port): disabled
               IP icmp port-unreachable: enabled
               IP unicast reverse path forwarding: none
-              IP load sharing: none 
+              IP load sharing: none
               IP interface statistics last reset: never
               IP interface software stats: (sent/received/forwarded/originated/consumed)
                 Unicast packets    : 0/0/0/0/0
@@ -447,7 +447,7 @@ class InterfaceOutput(object):
               IP address: 10.2.2.2, IP subnet: 10.2.2.0/24 secondary
               IP address: 10.3.3.3, IP subnet: 10.3.3.0/24 secondary
               IP broadcast address: 255.255.255.255
-              IP multicast groups locally joined: 
+              IP multicast groups locally joined:
                  224.0.0.6  224.0.0.5  224.0.0.2
               IP MTU: 1600 bytes (using link MTU)
               IP primary address route-preference: 0, tag: 0
@@ -456,12 +456,12 @@ class InterfaceOutput(object):
               IP Local Proxy ARP : disabled
               IP multicast routing: disabled
               IP icmp redirects: disabled
-              IP directed-broadcast: disabled 
-              IP Forwarding: disabled 
+              IP directed-broadcast: disabled
+              IP Forwarding: disabled
               IP icmp unreachables (except port): disabled
               IP icmp port-unreachable: enabled
               IP unicast reverse path forwarding: none
-              IP load sharing: none 
+              IP load sharing: none
               IP interface statistics last reset: never
               IP interface software stats: (sent/received/forwarded/originated/consumed)
                 Unicast packets    : 0/0/0/0/0
@@ -820,7 +820,7 @@ class InterfaceOutput(object):
     ShowInterfaceSwitchport_all = '''
             Name: Ethernet2/2
               Switchport: Enabled
-              Switchport Monitor: Not enabled 
+              Switchport Monitor: Not enabled
               Operational Mode: trunk
               Access Mode VLAN: 1 (default)
               Trunking Native Mode VLAN: 1 (default)
@@ -836,7 +836,7 @@ class InterfaceOutput(object):
               Operational private-vlan: none
             Name: Ethernet2/3
               Switchport: Enabled
-              Switchport Monitor: Not enabled 
+              Switchport Monitor: Not enabled
               Operational Mode: access
               Access Mode VLAN: 100 (Vlan not created)
               Trunking Native Mode VLAN: 1 (default)
@@ -849,12 +849,12 @@ class InterfaceOutput(object):
               Administrative private-vlan trunk encapsulation: dot1q
               Administrative private-vlan trunk normal VLANs: none
               Administrative private-vlan trunk private VLANs: none
-              Operational private-vlan: none  
+              Operational private-vlan: none
           '''
     ShowInterfaceSwitchport_eth2='''
         Name: Ethernet2/1
               Switchport: Enabled
-              Switchport Monitor: Not enabled 
+              Switchport Monitor: Not enabled
               Operational Mode: trunk
               Access Mode VLAN: 1 (default)
               Trunking Native Mode VLAN: 1 (default)
@@ -929,7 +929,7 @@ class InterfaceOutput(object):
 
         IPv6 Interface Status for VRF "VRF1"
         Ethernet2/1, Interface status: protocol-up/link-up/admin-up, iod: 36
-          IPv6 address: 
+          IPv6 address:
             2001:db8:1:1::1/64 [VALID]
             2001:db8:3:3::3/64 [VALID]
             2001:db8:4:4:a8aa:bbff:febb:cccc/64 [VALID]
@@ -942,13 +942,13 @@ class InterfaceOutput(object):
           IPv6 multicast routing: disabled
           IPv6 report link local: disabled
           IPv6 Forwarding feature: disabled
-          IPv6 multicast groups locally joined:   
-              ff02::1:ffbb:cccc  ff02::1:ff00:3  ff02::1:ff00:2  ff02::2   
-              ff02::1  ff02::1:ff00:1  ff02::1:ffbb:cccc  ff02::1:ff00:0  
+          IPv6 multicast groups locally joined:
+              ff02::1:ffbb:cccc  ff02::1:ff00:3  ff02::1:ff00:2  ff02::2
+              ff02::1  ff02::1:ff00:1  ff02::1:ffbb:cccc  ff02::1:ff00:0
           IPv6 multicast (S,G) entries joined: none
           IPv6 MTU: 1600 (using link MTU)
           IPv6 unicast reverse path forwarding: none
-          IPv6 load sharing: none 
+          IPv6 load sharing: none
           IPv6 interface statistics last reset: never
           IPv6 interface RP-traffic statistics: (forwarded/originated/consumed)
             Unicast packets:      0/0/0
@@ -959,7 +959,7 @@ class InterfaceOutput(object):
     ShowIpv6InterfaceVrfAll_eth1='''
      IPv6 Interface Status for VRF "VRF1"
         Ethernet2/1, Interface status: protocol-up/link-up/admin-up, iod: 36
-          IPv6 address: 
+          IPv6 address:
             2001:db8:1:1::1/64 [VALID]
             2001:db8:3:3::3/64 [VALID]
             2001:db8:4:4:a8aa:bbff:febb:cccc/64 [VALID]
@@ -972,13 +972,13 @@ class InterfaceOutput(object):
           IPv6 multicast routing: disabled
           IPv6 report link local: disabled
           IPv6 Forwarding feature: disabled
-          IPv6 multicast groups locally joined:   
-              ff02::1:ffbb:cccc  ff02::1:ff00:3  ff02::1:ff00:2  ff02::2   
-              ff02::1  ff02::1:ff00:1  ff02::1:ffbb:cccc  ff02::1:ff00:0  
+          IPv6 multicast groups locally joined:
+              ff02::1:ffbb:cccc  ff02::1:ff00:3  ff02::1:ff00:2  ff02::2
+              ff02::1  ff02::1:ff00:1  ff02::1:ffbb:cccc  ff02::1:ff00:0
           IPv6 multicast (S,G) entries joined: none
           IPv6 MTU: 1600 (using link MTU)
           IPv6 unicast reverse path forwarding: none
-          IPv6 load sharing: none 
+          IPv6 load sharing: none
           IPv6 interface statistics last reset: never
           IPv6 interface RP-traffic statistics: (forwarded/originated/consumed)
             Unicast packets:      0/0/0
@@ -1552,10 +1552,10 @@ class InterfaceOutput(object):
         'Ethernet4/8': {'vrf': 'default'},
         'Ethernet4/9': {'vrf': 'default'},
         'Null0': {'vrf': 'default'},
-        'Mgmt0': 
+        'Mgmt0':
             {'auto_negotiate': True,
             'bandwidth': 1000000,
-            'counters': 
+            'counters':
                 {'in_broadcast_pkts': 4,
                 'in_multicast_pkts': 2,
                 'in_octets': 4726,
@@ -1888,151 +1888,7 @@ class InterfaceOutput(object):
                       'phys_address': '188b.9df3.2ac0',
                       'port_channel': {'port_channel_member': False},
                       'type': '100/1000/10000/25000/40000/100000 Ethernet'},
-      'Ethernet2/1': {'vrf': 'VRF1'},
-      'Ethernet2/1.10': {'vrf': 'default'},
-      'Ethernet2/1.20': {'vrf': 'default'},
-      'Ethernet2/10': {'vrf': 'default'},
-      'Ethernet2/11': {'vrf': 'default'},
-      'Ethernet2/12': {'vrf': 'default'},
-      'Ethernet2/13': {'vrf': 'default'},
-      'Ethernet2/14': {'vrf': 'default'},
-      'Ethernet2/15': {'vrf': 'default'},
-      'Ethernet2/16': {'vrf': 'default'},
-      'Ethernet2/17': {'vrf': 'default'},
-      'Ethernet2/18': {'vrf': 'default'},
-      'Ethernet2/19': {'vrf': 'default'},
-      'Ethernet2/20': {'vrf': 'default'},
-      'Ethernet2/21': {'vrf': 'default'},
-      'Ethernet2/22': {'vrf': 'default'},
-      'Ethernet2/23': {'vrf': 'default'},
-      'Ethernet2/24': {'vrf': 'default'},
-      'Ethernet2/25': {'vrf': 'default'},
-      'Ethernet2/26': {'vrf': 'default'},
-      'Ethernet2/27': {'vrf': 'default'},
-      'Ethernet2/28': {'vrf': 'default'},
-      'Ethernet2/29': {'vrf': 'default'},
-      'Ethernet2/30': {'vrf': 'default'},
-      'Ethernet2/31': {'vrf': 'default'},
-      'Ethernet2/32': {'vrf': 'default'},
-      'Ethernet2/33': {'vrf': 'default'},
-      'Ethernet2/34': {'vrf': 'default'},
-      'Ethernet2/35': {'vrf': 'default'},
-      'Ethernet2/36': {'vrf': 'default'},
-      'Ethernet2/37': {'vrf': 'default'},
-      'Ethernet2/38': {'vrf': 'default'},
-      'Ethernet2/39': {'vrf': 'default'},
-      'Ethernet2/4': {'vrf': 'default'},
-      'Ethernet2/40': {'vrf': 'default'},
-      'Ethernet2/41': {'vrf': 'default'},
-      'Ethernet2/42': {'vrf': 'default'},
-      'Ethernet2/43': {'vrf': 'default'},
-      'Ethernet2/44': {'vrf': 'default'},
-      'Ethernet2/45': {'vrf': 'default'},
-      'Ethernet2/46': {'vrf': 'default'},
-      'Ethernet2/47': {'vrf': 'default'},
-      'Ethernet2/48': {'vrf': 'default'},
-      'Ethernet2/5': {'vrf': 'default'},
-      'Ethernet2/6': {'vrf': 'default'},
-      'Ethernet2/7': {'vrf': 'default'},
-      'Ethernet2/8': {'vrf': 'default'},
-      'Ethernet2/9': {'vrf': 'default'},
-      'Ethernet3/1': {'vrf': 'default'},
-      'Ethernet3/10': {'vrf': 'default'},
-      'Ethernet3/11': {'vrf': 'default'},
-      'Ethernet3/12': {'vrf': 'default'},
-      'Ethernet3/13': {'vrf': 'default'},
-      'Ethernet3/14': {'vrf': 'default'},
-      'Ethernet3/15': {'vrf': 'default'},
-      'Ethernet3/16': {'vrf': 'default'},
-      'Ethernet3/17': {'vrf': 'default'},
-      'Ethernet3/18': {'vrf': 'default'},
-      'Ethernet3/19': {'vrf': 'default'},
-      'Ethernet3/2': {'vrf': 'default'},
-      'Ethernet3/20': {'vrf': 'default'},
-      'Ethernet3/21': {'vrf': 'default'},
-      'Ethernet3/22': {'vrf': 'default'},
-      'Ethernet3/23': {'vrf': 'default'},
-      'Ethernet3/24': {'vrf': 'default'},
-      'Ethernet3/25': {'vrf': 'default'},
-      'Ethernet3/26': {'vrf': 'default'},
-      'Ethernet3/27': {'vrf': 'default'},
-      'Ethernet3/28': {'vrf': 'default'},
-      'Ethernet3/29': {'vrf': 'default'},
-      'Ethernet3/3': {'vrf': 'default'},
-      'Ethernet3/30': {'vrf': 'default'},
-      'Ethernet3/31': {'vrf': 'default'},
-      'Ethernet3/32': {'vrf': 'default'},
-      'Ethernet3/33': {'vrf': 'default'},
-      'Ethernet3/34': {'vrf': 'default'},
-      'Ethernet3/35': {'vrf': 'default'},
-      'Ethernet3/36': {'vrf': 'default'},
-      'Ethernet3/37': {'vrf': 'default'},
-      'Ethernet3/38': {'vrf': 'default'},
-      'Ethernet3/39': {'vrf': 'default'},
-      'Ethernet3/4': {'vrf': 'default'},
-      'Ethernet3/40': {'vrf': 'default'},
-      'Ethernet3/41': {'vrf': 'default'},
-      'Ethernet3/42': {'vrf': 'default'},
-      'Ethernet3/43': {'vrf': 'default'},
-      'Ethernet3/44': {'vrf': 'default'},
-      'Ethernet3/45': {'vrf': 'default'},
-      'Ethernet3/46': {'vrf': 'default'},
-      'Ethernet3/47': {'vrf': 'default'},
-      'Ethernet3/48': {'vrf': 'default'},
-      'Ethernet3/5': {'vrf': 'default'},
-      'Ethernet3/6': {'vrf': 'default'},
-      'Ethernet3/7': {'vrf': 'default'},
-      'Ethernet3/8': {'vrf': 'default'},
-      'Ethernet3/9': {'vrf': 'default'},
-      'Ethernet4/1': {'vrf': 'default'},
-      'Ethernet4/10': {'vrf': 'default'},
-      'Ethernet4/11': {'vrf': 'default'},
-      'Ethernet4/12': {'vrf': 'default'},
-      'Ethernet4/13': {'vrf': 'default'},
-      'Ethernet4/14': {'vrf': 'default'},
-      'Ethernet4/15': {'vrf': 'default'},
-      'Ethernet4/16': {'vrf': 'default'},
-      'Ethernet4/17': {'vrf': 'default'},
-      'Ethernet4/18': {'vrf': 'default'},
-      'Ethernet4/19': {'vrf': 'default'},
-      'Ethernet4/2': {'vrf': 'default'},
-      'Ethernet4/20': {'vrf': 'default'},
-      'Ethernet4/21': {'vrf': 'default'},
-      'Ethernet4/22': {'vrf': 'default'},
-      'Ethernet4/23': {'vrf': 'default'},
-      'Ethernet4/24': {'vrf': 'default'},
-      'Ethernet4/25': {'vrf': 'default'},
-      'Ethernet4/26': {'vrf': 'default'},
-      'Ethernet4/27': {'vrf': 'default'},
-      'Ethernet4/28': {'vrf': 'default'},
-      'Ethernet4/29': {'vrf': 'default'},
-      'Ethernet4/3': {'vrf': 'default'},
-      'Ethernet4/30': {'vrf': 'default'},
-      'Ethernet4/31': {'vrf': 'default'},
-      'Ethernet4/32': {'vrf': 'default'},
-      'Ethernet4/33': {'vrf': 'default'},
-      'Ethernet4/34': {'vrf': 'default'},
-      'Ethernet4/35': {'vrf': 'default'},
-      'Ethernet4/36': {'vrf': 'default'},
-      'Ethernet4/37': {'vrf': 'default'},
-      'Ethernet4/38': {'vrf': 'default'},
-      'Ethernet4/39': {'vrf': 'default'},
-      'Ethernet4/4': {'vrf': 'default'},
-      'Ethernet4/40': {'vrf': 'default'},
-      'Ethernet4/41': {'vrf': 'default'},
-      'Ethernet4/42': {'vrf': 'default'},
-      'Ethernet4/43': {'vrf': 'default'},
-      'Ethernet4/44': {'vrf': 'default'},
-      'Ethernet4/45': {'vrf': 'default'},
-      'Ethernet4/46': {'vrf': 'default'},
-      'Ethernet4/47': {'vrf': 'default'},
-      'Ethernet4/48': {'vrf': 'default'},
-      'Ethernet4/5': {'vrf': 'default'},
-      'Ethernet4/6': {'vrf': 'default'},
-      'Ethernet4/7': {'vrf': 'default'},
-      'Ethernet4/8': {'vrf': 'default'},
-      'Ethernet4/9': {'vrf': 'default'},
-      'Mgmt0': {'bandwidth': 1000000,
+      'mgmt0': {'bandwidth': 1000000,
                 'delay': 10,
                 'enabled': True,
                 'mac_address': '188b.9df3.2a98',
@@ -2041,6 +1897,5 @@ class InterfaceOutput(object):
                 'phys_address': '188b.9df3.2a98',
                 'port_channel': {'port_channel_member': False},
                 'type': 'GigabitEthernet',
-                'vrf': 'management'},
-      'Null0': {'vrf': 'default'}
-}
+                }
+    }

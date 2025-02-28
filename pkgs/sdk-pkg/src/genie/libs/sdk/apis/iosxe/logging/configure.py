@@ -40,6 +40,82 @@ def unconfigure_logging_console(device):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not unconfigure logging console on {device}. Error:\n{error}".format(device=device, error=e))
+
+
+def configure_logging_host(device, server_ip):
+    """ Configure logging host 
+        Args:
+            device ('obj'): Device object
+            server_ip ('str'):  IP address of the syslog server
+
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring logging host transport tcp port
+    """
+    cmd = f'logging host {server_ip}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure logging. Error:\n{e}")
+
+def unconfigure_logging_host(device, server_ip):
+    """ Configure logging host
+        Args:
+            device ('obj'): Device object
+            server_ip ('str'):  IP address of the syslog server
+
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring logging host transport tcp port
+    """
+    cmd = f'no logging host {server_ip}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure logging. Error:\n{e}")
+        
+
+def configure_logging_source_interface(device, interface):
+    """ Configure logging host
+        Args:
+            device ('obj'): Device object
+            interface ('str'):  Logging source interface
+
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring logging host transport tcp port
+    """
+    cmd = f'logging source-interface {interface}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure logging source interface. Error:\n{e}")
+
+def unconfigure_logging_source_interface(device, interface):
+    """ Configure logging host
+        Args:
+            device ('obj'): Device object
+            interface ('str'):  Logging source interface
+
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring logging host transport tcp port
+    """
+    cmd = f'no logging source-interface {interface}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure logging source interface. Error:\n{e}")
+
+        
            
 def configure_logging_monitor(device):
     """ logging monitor

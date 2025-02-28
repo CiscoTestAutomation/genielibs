@@ -8,7 +8,7 @@ class TestClearPlatformSoftwareFedSwitchActiveAccessSecurityTableCounters(TestCa
     def test_clear_platform_software_fed_switch_active_access_security_table_counters(self):
         self.device = Mock()
         results_map = {
-            'clear platform software fed switch active access-security table counters': '$orm software fed switch active access-security table counters',
+            'clear platform software fed switch standby access-security table counters': '(unlicensed)',
         }
         
         def results_side_effect(arg, **kwargs):
@@ -16,9 +16,9 @@ class TestClearPlatformSoftwareFedSwitchActiveAccessSecurityTableCounters(TestCa
         
         self.device.execute.side_effect = results_side_effect
         
-        result = clear_platform_software_fed_switch_active_access_security_table_counters(self.device)
+        result = clear_platform_software_fed_switch_active_access_security_table_counters(self.device, 'standby')
         self.assertIn(
-            'clear platform software fed switch active access-security table counters',
+            'clear platform software fed switch standby access-security table counters',
             self.device.execute.call_args_list[0][0]
         )
         expected_output = None

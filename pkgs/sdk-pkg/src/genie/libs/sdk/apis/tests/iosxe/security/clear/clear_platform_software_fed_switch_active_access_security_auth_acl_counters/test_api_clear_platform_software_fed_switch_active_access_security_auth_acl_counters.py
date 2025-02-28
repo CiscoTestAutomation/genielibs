@@ -8,7 +8,7 @@ class TestClearPlatformSoftwareFedSwitchActiveAccessSecurityAuthAclCounters(Test
     def test_clear_platform_software_fed_switch_active_access_security_auth_acl_counters(self):
         self.device = Mock()
         results_map = {
-            'clear platform software fed switch active access-security auth-acl counters': '$orm software fed switch active access-security auth-acl counters',
+            'clear platform software fed switch standby access-security auth-acl counters': '(unlicensed)',
         }
         
         def results_side_effect(arg, **kwargs):
@@ -16,9 +16,9 @@ class TestClearPlatformSoftwareFedSwitchActiveAccessSecurityAuthAclCounters(Test
         
         self.device.execute.side_effect = results_side_effect
         
-        result = clear_platform_software_fed_switch_active_access_security_auth_acl_counters(self.device)
+        result = clear_platform_software_fed_switch_active_access_security_auth_acl_counters(self.device, 'standby')
         self.assertIn(
-            'clear platform software fed switch active access-security auth-acl counters',
+            'clear platform software fed switch standby access-security auth-acl counters',
             self.device.execute.call_args_list[0][0]
         )
         expected_output = None

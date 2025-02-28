@@ -171,7 +171,7 @@ def configure_ignore_startup_config(device):
             cmd = 'SWITCH_IGNORE_STARTUP_CFG=1'
             device.execute(cmd)
         else:
-            cmd = 'system ignore startupconfig'
+            cmd = 'system ignore startupconfig switch all'
             device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(
@@ -192,7 +192,7 @@ def unconfigure_ignore_startup_config(device):
             cmd = 'SWITCH_IGNORE_STARTUP_CFG=0'
             device.execute(cmd)
         else:
-            cmd = 'no system ignore startupconfig'
+            cmd = 'no system ignore startupconfig switch all'
             device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(

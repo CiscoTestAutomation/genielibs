@@ -297,12 +297,12 @@ class Interface(genie.libs.conf.interface.Interface):
         configurations.append_line(
             attributes.format('switchport mode {switchport_mode}'))
 
-        if self.switchport_mode == L2_type.ACCESS:
+        if str(self.switchport_mode) == str(L2_type.ACCESS):
 
             configurations.append_line(
                 attributes.format('switchport access vlan {sw_acc_vlan}'))
 
-        elif self.switchport_mode == L2_type.TRUNK:
+        elif str(self.switchport_mode) == str(L2_type.TRUNK):
 
             configurations.append_line(
                 attributes.format('switchport trunk encapsulation {sw_trunk_encap}'))
@@ -424,20 +424,20 @@ class Interface(genie.libs.conf.interface.Interface):
                     apply=False, attributes=attributes2))
             else:
                 configurations.append_block(ipv6addr.build_config(
-                    apply=False, attributes=attributes2)) 
-        
+                    apply=False, attributes=attributes2))
+
         # fec <rs-fec>
         if attributes.value('fec'):
             configurations.append_line(
                 attributes.format('fec {fec}'),
                 unconfig_cmd='no fec')
-        
+
         # media_type <10g-tx>
         if attributes.value('media_type'):
             configurations.append_line(
                 attributes.format('media-type {media_type}'),
                 unconfig_cmd='no media-type')
-        
+
 
         # -- ETHER L2, L3, PC
         # nxos: interface <intf> / buffer-boost
@@ -578,7 +578,7 @@ class EthernetInterface(PhysicalInterface, genie.libs.conf.interface.EthernetInt
         trunk_native_vlan = None  # int
 
         primary_vlan = None # int
-        secondary_vlan = None # int 
+        secondary_vlan = None # int
 
         def build_config(self, apply=True, attributes=None, unconfig=False,
                          **kwargs):
@@ -889,7 +889,7 @@ class EthernetInterface(PhysicalInterface, genie.libs.conf.interface.EthernetInt
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-class VirtualInterface(EthernetInterface, genie.libs.conf.interface.VirtualInterface):
+class VirtualInterface(Interface, genie.libs.conf.interface.VirtualInterface):
     """ VirtualInterface class, presenting logical/virtual type of `Interface`
     objects
 
@@ -968,6 +968,17 @@ class SubInterface(VirtualInterface, genie.libs.conf.interface.SubInterface):
 
     first_dot1q = None
 
+    # mac_address
+    mac_address = managedattribute(
+        name='mac_address',
+        default=None,
+        type=(None, MAC))
+
+    burnin_mac_address = managedattribute(
+        name='burnin_mac_address',
+        default=None,
+        type=(None, MAC))
+
     def _build_config_interface_submode(self, configurations, attributes, unconfig):
         """internal method to build the configuration of a subinterface interface object
 
@@ -1009,10 +1020,22 @@ class SubInterface(VirtualInterface, genie.libs.conf.interface.SubInterface):
                 cmd = 'encapsulation {} {}'.format(encapsulation, first_dot1q)
                 uncmd = 'no encapsulation {}'.format(encapsulation)
                 configurations.append_line(cmd, unconfig_cmd=uncmd)
+        
+        if attributes.value('mac_address'):
+            configurations.append_line(
+                attributes.format('mac address {mac_address}'))
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        if 'mac_address' not in kwargs:
+            try:
+                self.mac_address
+            except AttributeError:
+                pass
+            else:
+                if self.mac_address:
+                    self.testbed.mac_cache.reserve(self.mac_address)
 
 class MgmtInterface(EthernetInterface, genie.libs.conf.interface.ManagementInterface):
     # -- MGMT
@@ -1081,7 +1104,7 @@ class VlanInterface(VirtualInterface, genie.libs.conf.interface.VlanInterface):
             unconfig_cmd='no mac address-table aging')
         configurations.append_line(
             attributes.format('private-vlan mapping {private_vlan_mapping}'),
-            unconfig_cmd='no private-vlan mapping')        
+            unconfig_cmd='no private-vlan mapping')
         # -- VLAN
         # nxos: interface <intf> / autostate
         # nxos: interface <intf> / carrier-delay <0-60>
@@ -1222,6 +1245,26 @@ class PortchannelInterface(VirtualInterface, genie.libs.conf.interface.Aggregate
                 self.device.configure(configurations, fail_invalid=True)
         else:
             return str(configurations)
+
+    def _build_config_interface_submode(self, configurations, attributes, unconfig):
+        super()._build_config_interface_submode(configurations, attributes, unconfig)
+
+        # Configures vpc peer-link for MCT port-channel
+        # Example:
+        # interface port-channel101
+        #   vpc peer-link
+        if attributes.value('vpc_peer_link'):
+            configurations.append_line(
+                attributes.format('vpc peer-link'),
+                unconfig_cmd='no vpc peer-link')
+        # Configures VPC id on vpc port-channel
+        # Sample:
+        #      interface port-channel102
+        #         vpc 102
+        if attributes.value('vpc_id'):
+            configurations.append_line(
+                attributes.format('vpc {vpc_id}'),
+                unconfig_cmd='no vpc {vpc_id}')
 
     def __init__(self, *args, **kwargs):
         self.members  # init!

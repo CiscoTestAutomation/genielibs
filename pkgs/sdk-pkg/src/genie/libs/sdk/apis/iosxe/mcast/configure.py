@@ -425,3 +425,36 @@ def unconfigure_ip_pim_vrf_ssm_range(device, vrf, acl_name):
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not unconfigures ip pim vrf {vrf} ssm range. Error: {e}')
+    
+def configure_pim_auto_rp_listener(device, loopback_number=None, ttl=None, announce=True, discovery=True):
+    
+    """ Config pim autorp listener
+        Args:
+            device ('obj'): Device object
+            loopback_number ('int') : Loopback number
+            ttl ('int'): TTL value
+            announce ('bool'): True or False
+            discovery ('bool'): True or False
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+  
+    '''
+    Configuring ip pim autorp listener
+    ip pim  send-rp-announce loopback {ttl} scope {ttl}
+    ip pim  send-rp-discovery loopback {ttl} scope {ttl}
+    '''
+    configs = [f"ip pim autorp listener"]
+               
+    if discovery and loopback_number and ttl:
+        configs.append(f"ip pim  send-rp-announce loopback {loopback_number} scope {ttl}")
+                       
+    if announce and loopback_number and ttl:
+        configs.append(f"ip pim  send-rp-discovery loopback {loopback_number} scope {ttl}")
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure pim autorp listener. Error:{e}")

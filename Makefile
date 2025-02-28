@@ -326,6 +326,66 @@ json:
 	@echo "Done."
 	@echo ""
 
+json_apis:
+	@echo ""
+	@echo "--------------------------------------------------------------------"
+	@echo "Generating Genie API json file"
+	@echo ""
+	@python3 -c "from genie.json.make_json import make_apis; make_apis()"
+	@echo ""
+	@echo "Done."
+	@echo ""
+
+json_ops:
+	@echo ""
+	@echo "--------------------------------------------------------------------"
+	@echo "Generating Genie OPS json file"
+	@echo ""
+	@python3 -c "from genie.json.make_json import make_ops; make_ops()"
+	@echo ""
+	@echo "Done."
+	@echo ""
+
+json_clean:
+	@echo ""
+	@echo "--------------------------------------------------------------------"
+	@echo "Generating Genie OPS json file"
+	@echo ""
+	@python3 -c "from genie.json.make_json import make_clean; make_clean()"
+	@echo ""
+	@echo "Done."
+	@echo ""
+
+json_models:
+	@echo ""
+	@echo "--------------------------------------------------------------------"
+	@echo "Generating Genie OPS json file"
+	@echo ""
+	@python3 -c "from genie.json.make_json import make_models; make_models()"
+	@echo ""
+	@echo "Done."
+	@echo ""
+
+json_triggers:
+	@echo ""
+	@echo "--------------------------------------------------------------------"
+	@echo "Generating Genie OPS json file"
+	@echo ""
+	@python3 -c "from genie.json.make_json import make_triggers; make_triggers()"
+	@echo ""
+	@echo "Done."
+	@echo ""
+
+json_verifications:
+	@echo ""
+	@echo "--------------------------------------------------------------------"
+	@echo "Generating Genie OPS json file"
+	@echo ""
+	@python3 -c "from genie.json.make_json import make_verifications; make_verifications()"
+	@echo ""
+	@echo "Done."
+	@echo ""
+
 changelogs:
 	@echo ""
 	@echo "--------------------------------------------------------------------"

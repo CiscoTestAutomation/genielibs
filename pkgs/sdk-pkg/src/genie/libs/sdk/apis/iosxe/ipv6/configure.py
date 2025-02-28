@@ -181,3 +181,38 @@ def configure_ipv6_flow_monitor_sampler(device, interface, monitor_name=None, sa
         raise SubCommandFailure(
             f"Could not configure IPv6 flow monitor sampler on {device} for {interface}. Error:\n{e}"
         )
+
+def unconfigure_ipv6_dhcp_pool_prefix_delegation_pool(device, pool_name, prefix_pool_name):
+    """ unconfigure ipv6 dhcp pool prefix delegation pool
+        Args:
+            device ('obj')    : device to use
+            pool_name ('str') : DHCP pool name
+            prefix_pool_name ('str'): IPv6 Prefix pool name.
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [f'ipv6 dhcp pool {pool_name}', f'no prefix-delegation pool {prefix_pool_name}']
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure ipv6 dhcp pool prefix delegation pool:\n{e}")
+
+def unconfigure_ipv6_local_pool(device, name):
+    """ Unconfigure ip6 local pool
+        Args:
+            device (`obj`): Device object
+            name ('str') : Name of local prefix pool
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [f'no ipv6 local pool {name}']
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure ipv6 local pool on {device}. Error:\n{e}")

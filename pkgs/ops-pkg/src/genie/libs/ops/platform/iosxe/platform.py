@@ -132,6 +132,11 @@ class Platform(SuperPlatform):
                       src='[slot][(?P<slot>.*)][rp][(?P<pid>.*)][name]',
                       dest='[slot][rp][(?P<slot>.*)][name]')
 
+        # Serial Number
+        self.add_leaf(cmd=show_platform.ShowPlatform,
+                      src='[slot][(?P<slot>.*)][rp][(?P<pid>.*)][sn]',
+                      dest='[slot][rp][(?P<slot>.*)][sn]')
+
         # rp_state
         self.add_leaf(cmd=show_platform.ShowPlatform,
                       src='[slot][(?P<slot>.*)][rp][(?P<pid>.*)][state]',

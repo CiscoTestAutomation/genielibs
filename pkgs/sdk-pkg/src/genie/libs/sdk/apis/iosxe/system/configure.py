@@ -106,3 +106,53 @@ def configure_terminal_settings(device, length=24, width=80, **kwargs):
         raise SubCommandFailure(
             f"Failed to configure terminal settings, Error:\n{e}"
         )
+
+def configure_preemption_easycli(device, preemption_type=None, preemption_value=None):
+    """ Config easy cli preemption command on Device
+    Args:
+        device ('obj'): Device object
+        preemption_type ('str'): Preemption type
+        preemption_value ('str'): Preemption value
+    Return:
+        True if success, False if failed
+    Raise:
+        SubCommandFailure: Failed configuring preemption command
+    """
+    log.debug(f"configure preemption easycli option")
+
+    cmd = f"preemption {preemption_type} {preemption_value}"
+        
+    try:
+        result = str(device.configure(cmd))
+        if "Error" in result or "already configured" in result:
+            return False
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure preemption command, Error:\n{e}"
+        )
+    return True
+
+def unconfigure_preemption_easycli(device, preemption_type=None, preemption_value=None):
+    """ Unconfig easy cli preemption command on Device
+    Args:
+        device ('obj'): Device object
+        preemption_type ('str'): Preemption type
+        preemption_value ('str'): Preemption value
+    Return:
+        True if success, False if failed
+    Raise:
+        SubCommandFailure: Failed configuring preemption command
+    """
+    log.debug(f"Unconfigure preemption easycli option")
+
+    cmd = f"no preemption {preemption_type} {preemption_value}"
+        
+    try:
+        result = str(device.configure(cmd))
+        if "Error" in result or "Invalid" in result:
+            return False
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure preemption command, Error:\n{e}"
+        )
+    return True

@@ -20,9 +20,9 @@ class TestConfigureInterfaces(unittest.TestCase):
         self.invalid_device = create_test_device(
             name='aDevice', os='invalid')
         self.detailed_devices = create_test_device(
-            name='aDevice', os='iosxe', platform='cat9k', 
+            name='aDevice', os='iosxe', platform='cat9k',
             model='c9500', pid='C9500X-28C8D')
-        
+
     def test_configure_interfaces(self):
         intf = PhysicalInterface(device=self.device, name='GigabitEthernet0/0')
         self.device.interfaces = {
@@ -33,8 +33,8 @@ class TestConfigureInterfaces(unittest.TestCase):
         self.cls.configure_interfaces(
             device=self.device,
             steps=steps)
-        
-        self.assertIsNone(intf.enabled)
+
+        self.assertTrue(intf.enabled)
 
     def test_configure_invalid_device(self):
         intf = BasePhysicalInterface(device=self.invalid_device, name='GigabitEthernet0/0')
@@ -46,7 +46,7 @@ class TestConfigureInterfaces(unittest.TestCase):
             device=self.invalid_device,
             steps=steps)
 
-        self.assertIsNone(intf.enabled)
+        self.assertTrue(intf.enabled)
 
     def test_configure_detailed_interfaces(self):
         intf = DetailedPhysicalInterface(device=self.device, name='GigabitEthernet0/0')
@@ -59,5 +59,5 @@ class TestConfigureInterfaces(unittest.TestCase):
         self.cls.configure_interfaces(
             device=self.detailed_devices,
             steps=steps)
-        
+
         self.assertEqual(self.device.custom_config_cli, '\nhw-module breakout 0')

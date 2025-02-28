@@ -1,34 +1,14 @@
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
 from genie.libs.sdk.apis.iosxe.interface.configure import configure_subinterface
+from unittest.mock import Mock
 
 
-class TestConfigureSubinterface(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = """
-        devices:
-          Stargazer:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: c9600
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Stargazer']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureSubinterface(TestCase):
 
     def test_configure_subinterface(self):
-        result = configure_subinterface(self.device, 'Ten 1/2/0/18', 999, '10.10.10.1', '255.255.255.0')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.device = Mock()
+        result = configure_subinterface(self.device, 'Te1/0/5', '301', '172.32.24.1', '255.255.255.252', 'native', 'FACTORY_VRF')
+        self.assertEqual(
+            self.device.configure.mock_calls[0].args,
+            (['interface Te1/0/5.301', 'encapsulation dot1q 301 native', 'vrf forwarding FACTORY_VRF', 'ip address 172.32.24.1 255.255.255.252'],)
+        )
