@@ -16,13 +16,7 @@ from pyats.datastructures import AttrDict
 from genie.abstract import Lookup
 
 # import pcall
-import importlib
-try:
-    pcall = importlib.import_module('pyats.async').pcall
-except ImportError:
-    from pyats.async_ import pcall
-# # import pcall
-# from pyats.async import pcall
+from pyats.async_ import pcall
 
 # unicon
 from unicon.eal.dialogs import Statement, Dialog

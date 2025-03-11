@@ -10,7 +10,7 @@ def is_management_interface(device, name):
         True or False
     '''
 
-    if re.match('^GigabitEthernet0$', name):
+    if re.match('^GigabitEthernet0(/0)?$', name):
         return True
 
     return False

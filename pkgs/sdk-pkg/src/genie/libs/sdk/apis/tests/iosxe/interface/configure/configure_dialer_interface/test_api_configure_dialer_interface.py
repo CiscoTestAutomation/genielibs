@@ -1,35 +1,14 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
 from genie.libs.sdk.apis.iosxe.interface.configure import configure_dialer_interface
+from unittest.mock import Mock
 
 
-class TestConfigureDialerInterface(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          C1113-8P_pkumarmu:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: router
-            type: iosxe
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['C1113-8P_pkumarmu']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureDialerInterface(TestCase):
 
     def test_configure_dialer_interface(self):
-        result = configure_dialer_interface(self.device, 'Dialer1', 'ppp', 'chap pap', 'negotiated', 10, None, 'cisco', 'sisco', 'cisco', 'sisco', True)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.device = Mock()
+        result = configure_dialer_interface(self.device, 'Dialer10', 'ppp', 'chap', 'negotiated', '10', None, None, None, None, None, False, True, True, True)
+        self.assertEqual(
+            self.device.configure.mock_calls[0].args,
+            (['interface Dialer10', 'encapsulation ppp', 'no shutdown', 'dialer pool 10', 'ip address negotiated', 'ppp authentication chap callin', 'dialer down-with-vInterface', 'ppp mtu adaptive', 'ppp ipcp address required'],)
+        )

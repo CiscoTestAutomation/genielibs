@@ -127,8 +127,8 @@ class test_interface(TestCase):
         cfg = intf2.build_config(apply=False)
         self.assertMultiLineEqual(str(cfg), '\n'.join([
             'interface FiftyGigE6/0/1',
-            ' ip address 10.20.30.40 255.255.255.0',
             ' no shutdown',
+            ' ip address 10.20.30.40 255.255.255.0',
             ' exit'
         ]))
         uncfg = intf2.build_unconfig(apply=False)
@@ -206,9 +206,9 @@ class test_interface(TestCase):
             str(cfg),
             '\n'.join([
                 'interface Vlan100',
+                ' mtu 500',
                 ' ip address 201.0.12.1 255.255.255.0',
                 ' ipv6 address 2001::12:1/128',
-                ' mtu 500',
                 ' exit',
             ]))
 
@@ -528,14 +528,14 @@ class test_interface(TestCase):
         intf2.lag_non_silent = True
         intf2.lag_pagp_port_priority = 50
 
-        # virtual lagInterface        
+        # virtual lagInterface
         intf3.lag_lacp_system_priority = 100
         intf3.lag_lacp_max_bundle = 20
         intf3.lag_lacp_min_bundle = 15
 
         # error assigned attributes, shouldn't in the configuration
         intf2.lag_lacp_max_bundle = 123
-        
+
         # Check config
         cfg1 = intf1.build_config(apply=False)
         self.assertMultiLineEqual(str(cfg1), '\n'.join([
@@ -578,7 +578,7 @@ class test_interface(TestCase):
         ]))
 
         # Check unconfig with attributes
-        uncfg1 = intf1.build_unconfig(apply=False, attributes={'lag_activity': None, 
+        uncfg1 = intf1.build_unconfig(apply=False, attributes={'lag_activity': None,
         	                                                   'lag_bundle_id': None})
         self.assertMultiLineEqual(str(uncfg1), '\n'.join([
 	        'interface GigabitEthernet1/0/1',

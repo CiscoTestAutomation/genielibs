@@ -9,7 +9,8 @@ from unittest import mock
 from genie.libs.clean.stages.tests.utils import create_test_device
 from genie.libs.sdk.apis.utils import (
     modify_filename, copy_from_device, copy_to_device, device_recovery_boot,
-    configure_management_console, configure_peripheral_terminal_server)
+    configure_management_console, configure_peripheral_terminal_server,
+    time_to_int)
 
 
 class TestUtilsApi(unittest.TestCase):
@@ -275,3 +276,16 @@ class TestUtilsApi(unittest.TestCase):
         configure_peripheral_terminal_server(dev1)
 
         terminal_device.configure.assert_not_called()
+
+def test_time_to_int(self):
+        time = '10:58'
+        result = time_to_int(time)
+        self.assertEqual(result, 658)
+
+        time = '10:20:30'
+        result = time_to_int(time)
+        self.assertEqual(result, 37230)
+
+        time = '6d14h'
+        result = time_to_int(time)
+        self.assertEqual(result, 568800)

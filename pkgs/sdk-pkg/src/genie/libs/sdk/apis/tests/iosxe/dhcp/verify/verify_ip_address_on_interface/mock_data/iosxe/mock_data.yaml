@@ -1,0 +1,128 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: S21-9300(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: S21-9300(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show ip interface brief:
+      response:
+      - "Interface              IP-Address      OK? Method Status                Protocol\r\
+        \nVlan1                  unassigned      YES NVRAM  up                   \
+        \ down    \r\nGigabitEthernet0/0     10.76.119.164   YES NVRAM  up       \
+        \             up      \r\nGigabitEthernet1/0/1   unassigned      YES unset\
+        \  up                    up      \r\nGigabitEthernet1/0/2   unassigned   \
+        \   YES unset  down                  down    \r\nGigabitEthernet1/0/3   unassigned\
+        \      YES unset  up                    up      \r\nGigabitEthernet1/0/4 \
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet1/0/5\
+        \   unassigned      YES unset  up                    up      \r\nGigabitEthernet1/0/6\
+        \   unassigned      YES unset  down                  down    \r\nGigabitEthernet1/0/7\
+        \   unassigned      YES unset  up                    up      \r\nGigabitEthernet1/0/8\
+        \   unassigned      YES unset  down                  down    \r\nGigabitEthernet1/0/9\
+        \   unassigned      YES unset  up                    up      \r\nGigabitEthernet1/0/10\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet1/0/11\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet1/0/12\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet1/0/13\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet1/0/14\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet1/0/15\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet1/0/16\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet1/0/17\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet1/0/18\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet1/0/19\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet1/0/20\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet1/0/21\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet1/0/22\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet1/0/23\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet1/0/24\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet1/1/1\
+        \   unassigned      YES unset  down                  down    \r\nGigabitEthernet1/1/2\
+        \   unassigned      YES unset  down                  down    \r\nGigabitEthernet1/1/3\
+        \   unassigned      YES unset  down                  down    \r\nGigabitEthernet1/1/4\
+        \   unassigned      YES unset  down                  down    \r\nTe1/1/1 \
+        \               unassigned      YES unset  down                  down    \r\
+        \nTe1/1/2                unassigned      YES unset  down                 \
+        \ down    \r\nTe1/1/3                unassigned      YES unset  down     \
+        \             down    \r\nTe1/1/4                unassigned      YES unset\
+        \  down                  down    \r\nTe1/1/5                unassigned   \
+        \   YES unset  down                  down    \r\nTe1/1/6                unassigned\
+        \      YES unset  down                  down    \r\nTe1/1/7              \
+        \  unassigned      YES unset  down                  down    \r\nTe1/1/8  \
+        \              unassigned      YES unset  down                  down    \r\
+        \nFo1/1/1                unassigned      YES unset  down                 \
+        \ down    \r\nFo1/1/2                unassigned      YES unset  down     \
+        \             down    \r\nTwentyFiveGigE1/1/1    unassigned      YES unset\
+        \  down                  down    \r\nTwentyFiveGigE1/1/2    unassigned   \
+        \   YES unset  down                  down    \r\nAp1/0/1                unassigned\
+        \      YES unset  up                    up      \r\nGigabitEthernet2/0/1 \
+        \  unassigned      YES unset  up                    up      \r\nGigabitEthernet2/0/2\
+        \   unassigned      YES unset  down                  down    \r\nGigabitEthernet2/0/3\
+        \   unassigned      YES unset  up                    up      \r\nGigabitEthernet2/0/4\
+        \   unassigned      YES unset  down                  down    \r\nGigabitEthernet2/0/5\
+        \   unassigned      YES unset  up                    up      \r\nGigabitEthernet2/0/6\
+        \   unassigned      YES unset  down                  down    \r\nGigabitEthernet2/0/7\
+        \   unassigned      YES unset  up                    up      \r\nGigabitEthernet2/0/8\
+        \   unassigned      YES unset  down                  down    \r\nGigabitEthernet2/0/9\
+        \   unassigned      YES unset  up                    up      \r\nGigabitEthernet2/0/10\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet2/0/11\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet2/0/12\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet2/0/13\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet2/0/14\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet2/0/15\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet2/0/16\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet2/0/17\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet2/0/18\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet2/0/19\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet2/0/20\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet2/0/21\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet2/0/22\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet2/0/23\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet2/0/24\
+        \  unassigned      YES unset  down                  down    \r\nGigabitEthernet2/1/1\
+        \   unassigned      YES unset  down                  down    \r\nGigabitEthernet2/1/2\
+        \   unassigned      YES unset  down                  down    \r\nGigabitEthernet2/1/3\
+        \   unassigned      YES unset  down                  down    \r\nGigabitEthernet2/1/4\
+        \   unassigned      YES unset  down                  down    \r\nTe2/1/1 \
+        \               unassigned      YES unset  down                  down    \r\
+        \nTe2/1/2                unassigned      YES unset  down                 \
+        \ down    \r\nTe2/1/3                unassigned      YES unset  down     \
+        \             down    \r\nTe2/1/4                unassigned      YES unset\
+        \  down                  down    \r\nTe2/1/5                unassigned   \
+        \   YES unset  down                  down    \r\nTe2/1/6                unassigned\
+        \      YES unset  down                  down    \r\nTe2/1/7              \
+        \  unassigned      YES unset  down                  down    \r\nTe2/1/8  \
+        \              unassigned      YES unset  down                  down    \r\
+        \nFo2/1/1                unassigned      YES unset  down                 \
+        \ down    \r\nFo2/1/2                unassigned      YES unset  down     \
+        \             down    \r\nTwentyFiveGigE2/1/1    unassigned      YES unset\
+        \  down                  down    \r\nTwentyFiveGigE2/1/2    unassigned   \
+        \   YES unset  down                  down    \r\nAp2/0/1                unassigned\
+        \      YES unset  up                    up"
+      response_type: circular
+    show version: ''
+    show version | include operating mode: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: S21-9300#

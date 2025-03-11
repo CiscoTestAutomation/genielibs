@@ -176,3 +176,45 @@ def configure_device_sensor_filter_spec(device, protocol, exclude=False,
         raise SubCommandFailure(
             f"Could not Configure Device sensor filter spec. Error\n{e}"
         )
+
+def configure_device_sensor_dhcpv6_snooping(device, interface):
+    """Configure device-sensor dhcpv6-snooping on an interface
+    Args:
+        device ('obj'): Device object
+        interface ('str'): Interface name
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed configuring device-sensor dhcpv6-snooping
+    """
+    cmd = [
+        f"interface {interface}",
+        "device-sensor dhcpv6-snooping"
+    ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure device-sensor dhcpv6-snooping on interface {interface}. Error:\n{e}"
+        )
+
+def unconfigure_device_sensor_dhcpv6_snooping(device, interface):
+    """Configure device-sensor dhcpv6-snooping on an interface
+    Args:
+        device ('obj'): Device object
+        interface ('str'): Interface name
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed configuring device-sensor dhcpv6-snooping
+    """
+    cmd = [
+        f"interface {interface}",
+        "no device-sensor dhcpv6-snooping"
+    ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure device-sensor dhcpv6-snooping on interface {interface}. Error:\n{e}"
+        )

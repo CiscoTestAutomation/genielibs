@@ -71,12 +71,14 @@ class TestIosXEConnect(unittest.TestCase):
 
     @patch('unicon.eal.backend.pty_backend.Spawn._read', Mock(return_value=b'\xcej'))
     def test_connect_speed_fail(self):
+        self.device.settings.UNICON_BACKEND_DECODE_ERROR_LIMIT = 3
         steps = Steps()
         self.device.api.configure_management_console = MagicMock()
         try:
             self.device.disconnect()
             self.connect = Connect()
             self.connect(steps=steps, device=self.device)
+            self.device.settings.UNICON_BACKEND_DECODE_ERROR_LIMIT = None
         except:
             ...
         self.device.api.configure_management_console.assert_called_once()

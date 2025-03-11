@@ -1888,14 +1888,14 @@ def platform_hardware_fed_switch_phy_debug(device, mode, port_num, debug_command
         device.execute(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to execute PHY debug command. Error:\n{e}")
-        
+
 def execute_diagnostic_start_switch_port(device, switch_number, test_id, port_num):
     """ execute diagnostic start switch 1 test
         Args:
             device ('obj'): Device object
             test_id ('str'): Test ID list (e.g. 1,3-6) or Test Name or minimal  or complete
               Interface port number WORD    Port number list (e.g. 2,4-7)
-            switch_number ('int'): Switch number on which diagnostic has to be performed            
+            switch_number ('int'): Switch number on which diagnostic has to be performed
             port ('str'): word (e.g. 1-8 or all)
         Returns:
             None
@@ -1910,7 +1910,7 @@ def execute_diagnostic_start_switch_port(device, switch_number, test_id, port_nu
         device.execute(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(
-    
+
         f"Could not execute diagnostic start switch {switch_number} test {test_id} on device. Error:\n{e}")
 
 def request_platform_hardware_pfu(device, mode, route_processor, slot, action):
@@ -1927,13 +1927,13 @@ def request_platform_hardware_pfu(device, mode, route_processor, slot, action):
             SubCommandFailure
     """
 
-    cmd = f'request platform hardware pfu switch {mode} {route_processor} set-power-slot {slot} {action}'   
-    
+    cmd = f'request platform hardware pfu switch {mode} {route_processor} set-power-slot {slot} {action}'
+
     try:
         output = device.execute(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to perform powerslot  off/on Error:\n{e}")
-        
+
 def request_platform_software_trace_archive(device):
     """Request platform software trace archive
     Args:
@@ -1950,5 +1950,19 @@ def request_platform_software_trace_archive(device):
         raise SubCommandFailure(f"Could not perform request platform software trace archive on {device}. Error:\n{e}")
 
 
+def execute_issu_set_rollback_timer(device, timer=0):
+    """
+    Performs issu set rollback-timer on device
+    Args:
+        device ('obj'): Device object
+		timer:	<0-7200>  Rollback timer in <seconds> format or hh:mm:ss  Rollback timer in hh:mm:ss format
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
 
-
+    try:
+        output = device.configure(f"issu set rollback-timer {timer}")
+    except SubCommandFailure:
+        raise SubCommandFailure("Rollback timer should be in <seconds> format (0-7200) or hh:mm:ss format")

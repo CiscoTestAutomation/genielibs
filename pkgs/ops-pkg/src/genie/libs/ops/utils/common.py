@@ -36,11 +36,10 @@ def get_state(item):
 
 def convert_to_seconds(item):
     # 15 hours, 4 minutes
-    p = re.compile(
-                r"((?P<day>\d+) +(day|days), *)?"
-                r"((?P<hour>\d+) +(hour|hours), *)?"
-                r"((?P<minute>\d+) +(minute|minutes))|"
-                r"((?P<second>\d+) +(seconds|seconds))$")
+    p = re.compile(r'((?P<day>\d+) +(day|days), *)?'
+                   r'((?P<hour>\d+) +(hour|hours), *)?'
+                   r'((?P<minute>\d+) +(minute|minutes),? *)?'
+                   r'((?P<second>\d+) +(seconds|seconds))?$')
     m = p.match(item)
     if m:
         time_in_seconds = 0

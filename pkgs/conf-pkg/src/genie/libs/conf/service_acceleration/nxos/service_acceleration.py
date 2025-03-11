@@ -16,7 +16,7 @@ from genie.conf.base.config import CliConfig
 # ServiceAcceleration
 #     +- DeviceAttributes
 #       +- ServiceAttributes
-#           +- VrfAttributes
+
 
 class ServiceAcceleration(ABC):
 
@@ -127,47 +127,17 @@ class ServiceAcceleration(ABC):
                     if attributes.value('in_service'):
                         configurations.append_line('in-service')
 
-                    # +- DeviceAttributes
-                    #   +- ServiceAttributes
-                    #     +- VrfAttributes
-                    for sub, attributes2 in attributes.mapping_values('vrf_attr',
-                                                                        sort=True,
-                                                                        keys=self.vrf_attr):
-                        configurations.append_block(
-                            sub.build_config(apply=False,
-                                                attributes=attributes2,
-                                                unconfig=unconfig))
+                    # ServiceVrf attributes config
+                    for servicevrf_key, attributes2 in attributes.sequence_values('servicevrf_keys', sort=True):
+                        if unconfig:
+                            configurations.append_block(servicevrf_key.build_unconfig(
+                                apply=False, attributes=attributes2, **kwargs))
+                        else:
+                            configurations.append_block(servicevrf_key.build_config(
+                                apply=False, attributes=attributes2, **kwargs))
 
                 return str(configurations)
 
             def build_unconfig(self, apply=True, attributes=None, **kwargs):
                 return self.build_config(apply=apply, attributes=attributes,
                                          unconfig=True, **kwargs)
-            class VrfAttributes(ABC):
-
-                def build_config(self, apply=True, attributes=None, unconfig=False,
-                                **kwargs):
-                    assert not apply
-                    assert not kwargs, kwargs
-                    attributes = AttributesHelper(self, attributes)
-                    configurations = CliConfigBuilder(unconfig=unconfig)
-
-                    with configurations.submode_context(
-                        attributes.format('vrf {service_vrf}', force=True)):
-
-                        if unconfig and attributes.iswildcard:
-                            configurations.submode_unconfig()
-
-                        # service system hypershield
-                        #   service firewall
-                        #     vrf <vrf>
-                        #       module-affinity <module_affinity>
-                        if attributes.value('module_affinity'):
-                            configurations.append_line(
-                                attributes.format('module-affinity {module_affinity}'))
-
-                    return str(configurations)
-
-                def build_unconfig(self, apply=True, attributes=None, **kwargs):
-                    return self.build_config(apply=apply, attributes=attributes,
-                                            unconfig=True, **kwargs)

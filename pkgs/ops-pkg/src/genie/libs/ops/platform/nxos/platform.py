@@ -9,6 +9,8 @@ from genie.libs.parser.nxos import show_platform
 from genie.metaparser import MetaParser
 from genie.metaparser.util import merge_dict
 
+from genie.libs.ops.utils.common import convert_to_seconds
+
 
 class Platform(SuperPlatform):
     '''Platform Ops Object'''
@@ -35,6 +37,15 @@ class Platform(SuperPlatform):
 
     def learn(self):
         '''Learn Platform object'''
+
+        # Attribute filtering is not working for "placeholder" info, disabling and restoring after
+
+        # save attributes
+        attrs = self.attributes
+        self.attributes = None
+        self.maker.attributes = None
+
+        # Store output in placeholder "Slot"
         self.add_leaf(cmd=show_platform.ShowInventory,
                       src='[name][(?P<slot>.*)][description]',
                       dest='Slot[(?P<slot>.*)][description]')
@@ -50,6 +61,10 @@ class Platform(SuperPlatform):
         self.add_leaf(cmd=show_platform.ShowInventory,
                       src='[name][(?P<slot>.*)][slot]',
                       dest='Slot[(?P<slot>.*)][slot]')
+
+        # restore attributes
+        self.attributes = attrs
+        self.maker.attributes = attrs
 
         # Place holder to make it more readable
         src_vdc_detail = '[vdc][(?P<id>.*)]'
@@ -82,11 +97,11 @@ class Platform(SuperPlatform):
         self.add_leaf(cmd=show_platform.ShowModule,
                       src='[xbar][(?P<xbar>.*)][status]',
                       dest='[slot][oc][(?P<xbar>.*)][state]')
-        
+
         self.add_leaf(cmd=show_platform.ShowModule,
                       src='[xbar][(?P<xbar>.*)][module_type]',
                       dest='[slot][oc][(?P<xbar>.*)][name]')
-        
+
         self.add_leaf(cmd=show_platform.ShowModule,
                       src='[xbar]',
                       dest='[xbar]')
@@ -164,7 +179,7 @@ class Platform(SuperPlatform):
         self.add_leaf(cmd=show_platform.ShowRedundancyStatus,
                       src='[active_supervisor_time]',
                       dest='[rp_uptime]',
-                      action=self.convert_to_seconds)
+                      action=convert_to_seconds)
 
         self.add_leaf(cmd=show_platform.ShowBoot,
                       src='[next_reload_boot_variable][sup_number][sup-1][kickstart_variable]',
@@ -188,7 +203,7 @@ class Platform(SuperPlatform):
             slot_value = None
             new_dict = {}
             new_dict['slot'] = {}
-            new_dict['chassis'] = self.Slot['Chassis']['description'].strip()
+            new_dict['chassis'] = self.Slot['Chassis']['pid'].strip()
             new_dict['chassis_sn'] = self.Slot['Chassis']['serial_number'].strip()
             for slot in self.Slot:
                 if 'Slot' in slot:
@@ -198,28 +213,28 @@ class Platform(SuperPlatform):
                         slot_dict.update({'name': self.Slot[slot]['description']})
                         if 'serial_number' in self.Slot[slot]:
                             slot_dict.update({'sn': self.Slot[slot]['serial_number']})
-                            
+
                     elif 'Supervisor' not in self.Slot[slot]['description']:
                         slot_dict = new_dict.setdefault('slot', {}).setdefault('lc', {}).setdefault(slot_value, {})
                         slot_dict.update({'name': self.Slot[slot]['description']})
                         if 'serial_number' in self.Slot[slot]:
                             slot_dict.update({'sn': self.Slot[slot]['serial_number']})
-                            
+
                 elif 'Module' in slot:
                     slot_value = self.Slot[slot]['slot']
                     if 'Nexus' in self.Slot[slot]['description']:
                         slot_dict = new_dict.setdefault('slot', {}).setdefault('oc', {}).setdefault(slot_value, {})
                         slot_dict.update({'name': self.Slot[slot]['description']})
                         slot_dict.update({'sn': self.Slot[slot]['serial_number']})
-                        
+
                     if 'Supervisor' not in self.Slot[slot]['description']:
                         slot_dict = new_dict.setdefault('slot', {}).setdefault('lc', {}).setdefault(slot_value, {})
                         slot_dict.update({'name': self.Slot[slot]['description']})
                         slot_dict.update({'sn': self.Slot[slot]['serial_number']})
-                        
+
             merge_dict(self.__dict__, new_dict)
             del self.Slot
-            for slot_number in self.slot['rp']:
+            for slot_number in self.slot.get('rp', {}):
                 try:
                     self.slot['rp'][str(slot_number)]['rp_boot_image'] = self.rp_boot_image
                 except Exception:
@@ -241,7 +256,7 @@ class Platform(SuperPlatform):
                         serial = self.slot['lc'][item]['sn']
                     else:
                         serial = None
-                    
+
                     if 'module' in self.__dict__:
 
                         for key in self.module['lc']:
@@ -262,15 +277,14 @@ class Platform(SuperPlatform):
                             if self.xbar[key]['serial_number'] == serial:
                                 linecard_status = self.xbar[key]['status']
                                 self.slot.setdefault('oc',{}).setdefault(item,{}).update({'state':linecard_status})
-                    
-                    if item in self.slot['rp'] and\
-                       (self.slot['rp'][item]['sn'] == serial):
+
+                    if self.slot.get('rp', {}).get(item, {}).get('sn') == serial:
                        delete_dup_lc.append(item)
 
                 for del_itm in delete_dup_lc:
                     del self.slot['lc'][del_itm]
 
-                if (not self.module['lc'] and 'lc' in self.slot) or \
+                if getattr(self, 'module', {}) and (not self.module['lc'] and 'lc' in self.slot) or \
                    ('lc' in self.slot and not self.slot['lc']):
                     self.slot.pop('lc')
 
@@ -294,13 +308,13 @@ class Platform(SuperPlatform):
                                 continue
                             if self.xbar[key]['serial_number'] == serial:
                                 linecard_status = self.xbar[key]['status']
-                                self.slot['oc'][item].update({'state':linecard_status})                                
-                    
+                                self.slot['oc'][item].update({'state':linecard_status})
+
                     if 'oc' in self.slot and 'lc' in self.slot:
                       if item in self.slot['oc'] and item in self.slot['lc']:
                         if self.slot['oc'][item] == self.slot['lc'][item]:
                           self.slot['lc'].pop(item)
-           
+
             try:
                 del self.rp_boot_image
             except Exception:
@@ -309,8 +323,9 @@ class Platform(SuperPlatform):
                 del self.rp_kickstart_boot_image
             except Exception:
                 pass
-            
-            del self.module
+
+            if hasattr(self, 'module'):
+                del self.module
             try:
                 del self.xbar
             except Exception:

@@ -76,6 +76,31 @@ class TestRecovery(unittest.TestCase):
         device.api.device_recovery_boot.assert_called_once()
         device.api.execute_power_cycle_device.assert_not_called()
 
+    def test_recovery_processor_device_in_quad(self):
+        section = Mock()
+        section.parent = Mock()
+        section.parent.history = ['Connect']
+        section.parent.parameters = {}
+        section.parameters = {}
+        device = section.parameters['device'] = MagicMock()
+        device.chassis_type = "quad"
+        device.is_ha = True
+        sub_con_1 = sub_con_2 = sub_con_3 = sub_con_4 = MagicMock()
+        sub_con_1.state_machine.current_state = sub_con_4.state_machine.current_state = 'rommon'
+        device.subconnections = [sub_con_1, sub_con_2, sub_con_3, sub_con_4]
+        device.api.device_boot_recovery = Mock()
+        device.api.execute_power_cycle_device = Mock()
+
+        recovery_processor(
+            section,
+            console_activity_pattern='Initializing Hardware',
+            console_breakboot_telnet_break=True,
+            break_count=1,
+            golden_image=['bootflash:asr1000_golden.bin'],
+            reconnect_delay=1)
+        device.api.device_recovery_boot.assert_called_once()
+        device.api.execute_power_cycle_device.assert_not_called()
+
     @patch('genie.libs.clean.recovery.recovery._disconnect_reconnect', new=mock_disconnect_reconnect)
     def test_recovery_processor_recovery_failed(self):
         section = Mock()

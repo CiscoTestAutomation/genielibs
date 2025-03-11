@@ -6,6 +6,7 @@ __all__ = (
 from enum import Enum
 
 # genie
+from genie.utils.cisco_collections import typedset
 from genie.decorator import managedattribute
 from genie.conf.base.base import DeviceFeature
 
@@ -17,12 +18,14 @@ from genie.conf.base.attributes import (
     KeyedSubAttributes
 )
 
+# multi-line config class
+from .service_vrf import ServiceVrf
+
 # service-acceleration Hierarchy
 # --------------
 # ServiceAcceleration
 #     +- DeviceAttributes
 #       +- ServiceAttributes
-#           +- VrfAttributes
 
 class ServiceAcceleration(DeviceFeature):
 
@@ -44,19 +47,24 @@ class ServiceAcceleration(DeviceFeature):
                     raise ValueError(f'service_type: {key} is not supported. Supported types are: {parent.SERVICE_TYPE._member_names_}')
                 super().__init__(parent)
             
-            class VrfAttributes(KeyedSubAttributes):
-                def __init__(self, parent, key):
-                    self.service_vrf = key
-                    super().__init__(parent)
+            # service vrf configs
+            servicevrf_keys = managedattribute(
+                name='servicevrf_keys',
+                finit=typedset(
+                    managedattribute.test_isinstance(ServiceVrf)).copy,
+                type=typedset(managedattribute.test_isinstance(
+                    ServiceVrf))._from_iterable,
+                doc='A `set` of ServiceVrf keys objects')
 
-            vrf_attr = managedattribute(
-                name='vrf_attr',
-                read_only=True,
-                doc=VrfAttributes.__doc__)
+            def add_servicevrf_key(self, servicevrf_key):
+                self.servicevrf_keys.add(servicevrf_key)
 
-            @vrf_attr.initter
-            def vrf_attr(self):
-                return SubAttributesDict(self.VrfAttributes, parent=self)
+            def remove_servicevrf_key(self, servicevrf_key):
+                servicevrf_key._device = None
+                try:
+                    self.servicevrf_keys.remove(servicevrf_key)
+                except:
+                    pass
 
         service_attr = managedattribute(
             name='service_attr',
@@ -140,16 +148,6 @@ class ServiceAcceleration(DeviceFeature):
         name="in_service", default=None, type=(None, managedattribute.test_istype(bool))
     )
 
-    # ==========================================================================
-    # +- DeviceAttributes
-    #   +- ServiceAttributes
-    #     +- VrfAttributes
-    # ==========================================================================
-
-    # module_affinity
-    module_affinity = managedattribute(
-        name="module_affinity", default=None, type=(None, managedattribute.test_istype(int))
-    )
 
     def __init__(self, service_vendor=None,*args, **kwargs):
         self.service_vendor = service_vendor

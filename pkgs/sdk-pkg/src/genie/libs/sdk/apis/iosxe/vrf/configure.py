@@ -1082,3 +1082,30 @@ def configure_mdt_auto_discovery_inter_as_mdt_type(device, vrf_name, address_fam
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not configure mdt auto-discovery inter-as mdt type on device vrf {vrf_name}. Error:\n{e}")
+    
+def configure_data_mdt(device, vrf_name, address_family, ip_address, wildcard_mask, threshold):
+    """ Configure Data MDT
+        Args:
+            device ('obj'): Device object
+            vrf_name ('str'): VRF name
+            address_family ('str'): Address family (e.g., ipv4, ipv6)
+            ip_address ('str'): IP address
+            wildcard_mask ('str'): Wildcard mask
+            threshold ('int'): Threshold value
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure Data MDT
+    """
+    config = [
+        f"vrf definition {vrf_name}",
+        f"address-family {address_family}",
+        f"mdt data {ip_address} {wildcard_mask} threshold {threshold}"
+    ]
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure Data MDT on device {device.name}. Error:\n{e}"
+        )    

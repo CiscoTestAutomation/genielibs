@@ -22,12 +22,16 @@ from unicon.eal.dialogs import Statement, Dialog
 log = logging.getLogger(__name__)
 
 
-def execute_clear_line(device, alias='cli'):
+def execute_clear_line(device, alias='cli', disconnect_termserver=False):
     ''' Executes 'clear line <port>' to clear busy console port on device
         Args:
             device ('obj'): Device object
             alias ('str'): Alias used for console port connection
                            Default: 'cli'
+            disconnect_termserver ('bool'): Boolean to indicate if the
+                               termserver connection should be closed.
+                               Default: False
+
         Returns:
             None
     '''
@@ -67,6 +71,12 @@ def execute_clear_line(device, alias='cli'):
             else:
                 log.info("Executed 'clear line {}' on terminal server '{}'".\
                          format(port, term_serv_dev.name))
+
+    if disconnect_termserver:
+        # Disconnect from terminal server
+        log.info("Disconnecting from terminal server...")
+        for item in connected:
+            item.destroy()
 
     # Disconnect from terminal server
     log.info("Disconnecting from terminal server...")
@@ -154,7 +164,7 @@ def execute_power_cycle_device(device, delay=30, destroy=True):
             device.destroy_all()
         except Exception as e:
             log.warning('could not destroy the device object continue with powercycle.')
-        
+
 
     device.api.execute_power_off_device()
     log.info(f"Waiting '{delay}' seconds before powercycling device on")

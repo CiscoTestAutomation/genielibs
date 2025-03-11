@@ -780,7 +780,7 @@ class test_nx_interface(TestCase):
 
 
     def test_single_line_config(self):
-        
+
         # For failures
         self.maxDiff = None
 
@@ -951,7 +951,7 @@ class test_nx_interface(TestCase):
                 ' shutdown',
                 ' switchport',
                 ' exit'
-                ]))        
+                ]))
 
     def test_ipv6_multiple_lines_confg(self):
         # For failures
@@ -1001,7 +1001,7 @@ class test_nx_interface(TestCase):
                 ' ipv6 address 2001:db1:2::2/64 tag 15',
                 ' no ipv6 redirects',
                 ' exit'
-                ]))        
+                ]))
 
         # Build unconfig
         uncfgs = intf1.build_unconfig(apply=False)
@@ -1013,7 +1013,7 @@ class test_nx_interface(TestCase):
                 ]))
 
     def test_uncfg_interface(self):
-        
+
         # For failures
         self.maxDiff = None
 
@@ -1070,7 +1070,7 @@ class test_nx_interface(TestCase):
                 ]))
 
     def test_switchport_enable_config(self):
-        
+
         # For failures
         self.maxDiff = None
 
@@ -1106,6 +1106,71 @@ class test_nx_interface(TestCase):
             '\n'.join([
                 'default interface Ethernet3/7',
                 ]))
+        
+    def test_subinterface(self):
+        # For failures
+        self.maxDiff = None
+
+        # Set Genie Tb
+        testbed = Testbed()
+        Genie.testbed = testbed
+
+        # Device
+        dev1 = Device(name='PE1', testbed=testbed, os='nxos')
+        intf1 = Interface(name='Ethernet1/1.10', device=dev1)
+        vrf = Vrf(name='test', testbed=testbed)
+        dev1.add_feature(vrf)
+
+        # Apply configuration
+        intf1.description = 'test'
+        intf1.enabled = True
+        # intf1.shutdown = False
+        intf1.vrf = vrf
+        intf1.mac_address = 'aabb.ccdd.eeff'
+
+        ipv4a = IPv4Addr(device=dev1)
+        ipv4a.ipv4 = IPv4Address('192.168.1.1')
+        ipv4a.prefix_length = '24'
+        intf1.add_ipv4addr(ipv4a)
+
+        ipv6a = IPv6Addr(device=dev1)
+        ipv6a.ipv6 = IPv6Address('2001:db1:1::1')
+        ipv6a.ipv6_prefix_length = '64'
+        intf1.add_ipv6addr(ipv6a)
+
+        # Build config
+        cfgs = intf1.build_config(apply=False)
+
+        self.assertMultiLineEqual(
+            str(cfgs),
+            '\n'.join([
+                'interface Ethernet1/1.10',
+                ' description test',
+                ' no shutdown',
+                ' vrf member test',
+                ' ip address 192.168.1.1/24',
+                ' no ip redirects',
+                ' ipv6 address 2001:db1:1::1/64',
+                ' no ipv6 redirects',
+                ' mac address aabb.ccdd.eeff',
+                ' exit'
+                ]))
+        # Build unconfig
+        uncfgs = intf1.build_unconfig(apply=False)
+        self.assertMultiLineEqual(
+            str(uncfgs),
+            '\n'.join([
+                'no interface Ethernet1/1.10']))
+
+        # partial unconfig for removing mac-address
+        uncfgs = intf1.build_unconfig(apply=False, attributes={'mac_address': False})
+        self.assertMultiLineEqual(
+            str(uncfgs),
+            '\n'.join([
+                'interface Ethernet1/1.10',
+                ' no mac address aabb.ccdd.eeff',
+                ' exit'
+                ]))
 
     def test_port_channel_interface(self):
         # For failures
@@ -1121,7 +1186,7 @@ class test_nx_interface(TestCase):
 
         # Apply configuration
         intf1.channel_group_mode = 'on'
-        intf1.switchport_enable = False         
+        intf1.switchport_enable = False
         intf1.ipv4 = '11.0.1.1/24'
         intf1.shutdown = False
         intf1.switchport_enable = False
@@ -1144,7 +1209,7 @@ class test_nx_interface(TestCase):
                 ' no switchport',
                 ' ip address 11.0.1.1 255.255.255.0',
                 ' exit'
-                ]))        
+                ]))
 
         # Build unconfig
         uncfgs = intf1.build_unconfig(apply=False)
@@ -1157,7 +1222,71 @@ class test_nx_interface(TestCase):
                 ' exit',
                 'no interface port-channel10'
                 ]))
+        
+    def test_port_channel_subinterface(self):
+        # For failures
+        self.maxDiff = None
 
+        # Set Genie Tb
+        testbed = Testbed()
+        Genie.testbed = testbed
+
+        # Device
+        dev1 = Device(name='PE1', testbed=testbed, os='nxos')
+        intf1 = Interface(name='port-channel10', device=dev1)
+        intf2 = Interface(name='port-channel10.1', device=dev1)
+
+        # Apply configuration
+        intf1.channel_group_mode = 'on'
+        intf1.shutdown = False
+        uut_int3 = Interface(name='Ethernet0/0/1',device=dev1)
+        intf1.add_member(uut_int3)
+
+        intf2.shutdown = False
+        intf2.ipv4 = '11.0.1.1/24'
+        intf2.ipv6 = '2001:db8:1::1/128'
+
+        # Build config
+        cfgs1 = intf1.build_config(apply=False)
+        cfgs2 = intf2.build_config(apply=False)
+        self.assertMultiLineEqual(
+            str(cfgs1), '\n'.join([
+                'interface Ethernet0/0/1',
+                ' channel-group 10 mode on',
+                ' exit',
+                'interface port-channel10',
+                ' no shutdown',
+                ' exit'
+                ]))
+        
+        self.assertMultiLineEqual(
+            str(cfgs2), '\n'.join([
+                'interface port-channel10.1',
+                ' no shutdown',
+                ' ip address 11.0.1.1 255.255.255.0',
+                ' ipv6 address 2001:db8:1::1/128',
+                ' exit'
+                ]))
+        
+        # Build unconfig
+        uncfgs1 = intf1.build_unconfig(apply=False)
+        self.assertMultiLineEqual(
+            str(uncfgs1),
+            '\n'.join([
+                'interface Ethernet0/0/1',
+                ' no channel-group 10 mode on',
+                ' exit',
+                'no interface port-channel10',
+                ]))
+        
+        # build unconfig for po subinterface
+        uncfgs2 = intf2.build_unconfig(apply=False)
+        self.assertMultiLineEqual(
+            str(uncfgs2),
+            '\n'.join([
+                'no interface port-channel10.1',
+                ]))
+        
     def test_port_channel_interface_l2(self):
         # For failures
         self.maxDiff = None
@@ -1175,7 +1304,7 @@ class test_nx_interface(TestCase):
         intf1.enabled = True
         intf1.switchport_enable = True
         intf1.switchport_mode = "access"
-        intf1.access_vlan = '10'
+        intf1.access_vlan = intf1.sw_acc_vlan = '10'
 
         uut1_int3 = Interface(name='Ethernet0/0/1',device=dev1)
         intf1.add_member(uut1_int3)
@@ -1226,7 +1355,7 @@ class test_nx_interface(TestCase):
         intf1.enabled = True
         intf1.switchport_enable = True
         intf1.switchport_mode = 'trunk'
-        intf1.trunk_vlans = "2-5,11-105,111-205"
+        intf1.trunk_vlans = intf1.trunk_allowed_vlan = intf1.sw_trunk_allowed_vlan = "2-5,11-105,111-205"
 
         uut1_int3 = Interface(name='Ethernet0/0/1',device=dev1)
         intf1.add_member(uut1_int3)
@@ -1265,11 +1394,11 @@ class test_nx_interface(TestCase):
         # Set Genie Tb
         testbed = Testbed()
         Genie.testbed = testbed
-        
+
          # Device
         dev1 = Device(name='BL1', testbed=testbed, os='nxos')
         intf1 = Interface(
-                    name='Ethernet2/22', 
+                    name='Ethernet2/22',
                     device=dev1,
                     description='Native vlan testing',
                     enabled=True,
@@ -1357,7 +1486,7 @@ class test_nx_interface(TestCase):
             ' no tunnel-encryption',
             ' exit',
         ]))
-            
+
     def test_ethernet_interface_private_vlan_access(self):
         testbed = Genie.testbed = Testbed()
         dev1 = Device(testbed=testbed, name='PE1', os='nxos')
@@ -1463,7 +1592,7 @@ class test_nx_interface(TestCase):
                 ' vpc 11',
                 ' exit'
                 ]))
-    
+
 if __name__ == '__main__':
     unittest.main()
 

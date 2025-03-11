@@ -181,30 +181,68 @@ def escape_ansi(line):
     return ansi_escape.sub("", line)
 
 
-def time_to_int(time):
-    """ Cast time string to int in second
+def time_to_int(timestr):
+    """ Cast time string to int in seconds
+
+        Support patterns like ['00:00', '00:00:00', '2d10h', '1w2d']
 
         Args:
-            time(`str`): time string
+            timestr (`str`): time string
         Returns:
-            out(`int`): time in second
+            `int`: time in seconds
     """
     out = 0
-    # support patterns like ['00:00:00', '2d10h', '1w2d']
-    p = re.compile(r"^(?P<time>(\d+):(\d+):(\d+))?(?P<dh>(\d+)d(\d+)h)?"
-                   r"(?P<wd>(\d+)w(\d)+d)?$")
-    m = p.match(time)
+
+    # support patterns like ['00:00', '00:00:00', '2d10h', '1w2d']
+    p = re.compile(r"""
+    ^(
+        # 00:00
+        ((?P<hours1>\d+):(?P<minutes1>\d+))|
+        # 00:00:00
+        ((?P<hours2>\d+):(?P<minutes2>\d+):(?P<seconds2>\d+))|
+        # 2d10h
+        ((?P<days3>\d+)d(?P<hours3>\d+)h)|
+        # 1w2d
+        ((?P<weeks4>\d+)w(?P<days4>\d+)d)|
+        # 1y3w
+        ((?P<years5>\d+)y(?P<weeks5>\d+)w)
+    )$
+    """, flags=re.VERBOSE)
+
+    # support patterns like '00:00', '00:00:00', '2d10h', '1w2d', '1y3w'
+    m = p.match(timestr)
     if m:
         group = m.groupdict()
-        if group["time"]:
-            out = (int(m.group(2)) * 3600 + int(m.group(3)) * 60 +
-                   int(m.group(4)))
-        elif group["dh"]:
-            out = int(m.group(6)) * 3600 * 24 + int(m.group(7)) * 3600
-        elif group["wd"]:
-            out = (int(m.group(9)) * 3600 * 24 * 7 +
-                   int(m.group(10)) * 3600 * 24)
-    return out
+    
+        h1 = group.get('hours1')
+        m1 = group.get('minutes1')
+        if None not in (h1, m1):
+            return int(h1) * 3600 + int(m1) * 60
+
+        h2 = group.get('hours2')
+        m2 = group.get('minutes2')
+        s2 = group.get('seconds2')
+        if None not in (h2, m2, s2):
+            return int(h2) * 3600 + int(m2) * 60 + int(s2)
+
+        d3 = group.get('days3')
+        h3 = group.get('hours3')
+        if None not in (d3, h3):
+            return int(d3) * 3600 * 24 + int(h3) * 3600
+
+        w4 = group.get('weeks4')
+        d4 = group.get('days4')
+        if None not in (w4, d4):
+            return int(w4) * 3600 * 24 * 7 + int(d4) * 3600 * 24
+
+        y5 = group.get('years5')
+        w5 = group.get('weeks5')
+        if None not in (y5, w5):
+            return int(y5) * 3600 * 24 * 365 + int(w5) * 3600 * 24 * 7
+
+    # If we reach here, we did not convert the time to seconds
+    log.warning(f'Unable to convert time string {timestr}')
+    return
 
 
 def get_unconfig_line(config_dict, line):
@@ -955,7 +993,7 @@ def copy_to_device(device,
     # Check if we are connected via proxy device
     proxy = device.connections[device.via].get('proxy') or \
         device.connections[device.via].get('sshtunnel', {}).get('host')
-    
+
     # check servers and devices for a proxy
     if proxy:
         proxy_dev = device.api.convert_server_to_linux_device(proxy) or \
@@ -4623,7 +4661,7 @@ def load_image(device, images, server=None, protocol=None, **kwargs):
         protocol (str): Protocol used for copy operation. Defaults to None
     '''
 
-    # default template is set to LOAD IMAGE because 
+    # default template is set to LOAD IMAGE because
     # it will not have the reset_configuration stage
     kwargs.setdefault("template_name", "LOAD_IMAGE")
 

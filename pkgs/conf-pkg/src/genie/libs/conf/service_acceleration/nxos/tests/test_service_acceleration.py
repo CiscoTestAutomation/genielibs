@@ -11,6 +11,7 @@ from genie.conf.base import Testbed, Device
 
 # Genie Conf
 from genie.libs.conf.service_acceleration import ServiceAcceleration
+from genie.libs.conf.service_acceleration.service_vrf import ServiceVrf
 
 
 class test_service_acceleration(TestCase):
@@ -133,8 +134,17 @@ class test_service_acceleration(TestCase):
         serv_acc= ServiceAcceleration(service_vendor='hypershield')
         serv_acc.device_attr[dev1].source_interface = 'loopback1'
         serv_acc.device_attr[dev1].service_attr['firewall'].in_service = True
-        serv_acc.device_attr[dev1].service_attr['firewall'].vrf_attr['vrfoci']
-        serv_acc.device_attr[dev1].service_attr['firewall'].vrf_attr['vrfazure'].module_affinity = 2
+
+        # Add service vrf1 configuration to firewall
+        vrf1 = ServiceVrf(device=dev1)
+        vrf1.service_vrf_name = 'vrfoci'
+        serv_acc.device_attr[dev1].service_attr['firewall'].add_servicevrf_key(vrf1)
+        # Add service vrf2 configuration to firewall
+        vrf2 = ServiceVrf(device=dev1)
+        vrf2.service_vrf_name = 'vrfazure'
+        vrf2.module_affinity = 1
+        serv_acc.device_attr[dev1].service_attr['firewall'].add_servicevrf_key(vrf2)
+
 
         # add feature to device
         dev1.add_feature(serv_acc)
@@ -150,11 +160,8 @@ class test_service_acceleration(TestCase):
                 ' source-interface loopback1\n'
                 ' service firewall\n'
                 '  in-service\n'
-                '  vrf vrfazure\n'
-                '   module-affinity 2\n'
-                '   exit\n'
-                '  vrf vrfoci\n'
-                '   exit\n'
+                '  vrf vrfazure module-affinity 1\n'
+                '  vrf vrfoci module-affinity dynamic\n'
                 '  exit\n'
                 ' exit'
                 ]
@@ -164,7 +171,7 @@ class test_service_acceleration(TestCase):
         partial_uncfg3 = serv_acc.build_unconfig(
                             apply=False,
                             attributes={'device_attr': {'*': {'service_attr':
-                                {'*': {'vrf_attr':'*'}}}}})
+                                {'*': 'servicevrf_keys'}}}})
 
         self.assertMultiLineEqual(
             str(partial_uncfg3[dev1.name]),
@@ -172,8 +179,8 @@ class test_service_acceleration(TestCase):
                 [
                 'service system hypershield\n'
                 ' service firewall\n'
-                '  no vrf vrfazure\n'
-                '  no vrf vrfoci\n'
+                '  no vrf vrfazure module-affinity 1\n'
+                '  no vrf vrfoci module-affinity dynamic\n'
                 '  exit\n'
                 ' exit'
                 ]
@@ -214,8 +221,16 @@ class test_service_acceleration(TestCase):
         serv_acc.device_attr[dev1].https_proxy_username = 'admin'
         serv_acc.device_attr[dev1].https_proxy_password = 'password'
         serv_acc.device_attr[dev1].service_attr['firewall'].in_service = True
-        serv_acc.device_attr[dev1].service_attr['firewall'].vrf_attr['vrfoci']
-        serv_acc.device_attr[dev1].service_attr['firewall'].vrf_attr['vrfoci'].module_affinity = 2
+
+        # Add service vrf1 configuration to firewall
+        vrf1 = ServiceVrf(device=dev1)
+        vrf1.service_vrf_name = 'vrfaws'
+        serv_acc.device_attr[dev1].service_attr['firewall'].add_servicevrf_key(vrf1)
+        # Add service vrf2 configuration to firewall
+        vrf2 = ServiceVrf(device=dev1)
+        vrf2.service_vrf_name = 'vrfazure'
+        vrf2.module_affinity = 1
+        serv_acc.device_attr[dev1].service_attr['firewall'].add_servicevrf_key(vrf2)
 
         # add feature to device
         dev1.add_feature(serv_acc)
@@ -235,9 +250,8 @@ class test_service_acceleration(TestCase):
                     " https-proxy username admin password password\n"
                     " service firewall\n"
                     "  in-service\n"
-                    "  vrf vrfoci\n"
-                    "   module-affinity 2\n"
-                    "   exit\n"
+                    "  vrf vrfaws module-affinity dynamic\n"
+                    "  vrf vrfazure module-affinity 1\n"
                     "  exit\n"
                     " exit"
                 ]
@@ -261,10 +275,10 @@ class test_service_acceleration(TestCase):
                 ]
             ),
         )
-        # remove module affinity attribute
+        # remove 1 vrf under firewall
         partial_uncfg3 = serv_acc.build_unconfig(
                             apply=False,
-                            attributes={'device_attr': {'*': {'service_attr':{'*': {'vrf_attr': {'*': {'module_affinity': None}}}}}}})
+                            attributes={'device_attr': {'*': {'service_attr':{'*': {'servicevrf_keys': vrf2}}}}})
 
         self.assertMultiLineEqual(
             str(partial_uncfg3[dev1.name]),
@@ -272,9 +286,7 @@ class test_service_acceleration(TestCase):
                 [
                 'service system hypershield\n'
                 ' service firewall\n'
-                '  vrf vrfoci\n'
-                '   no module-affinity 2\n'
-                '   exit\n'
+                '  no vrf vrfazure module-affinity 1\n'
                 '  exit\n'
                 ' exit'
                 ]

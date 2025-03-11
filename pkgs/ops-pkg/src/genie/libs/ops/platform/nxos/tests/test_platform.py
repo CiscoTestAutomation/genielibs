@@ -58,7 +58,7 @@ class test_platform_all(unittest.TestCase):
 
         f.learn()
 
-        self.assertEqual(f.chassis, 'Nexus7000 C7009 (9 Slot) Chassis')
+        self.assertEqual(f.chassis, 'N7K-C7009')
         self.assertEqual(f.chassis_sn, 'JAF1704ARQG')
         self.assertEqual(f.dir, 'bootflash:')
         self.assertEqual(f.disk_free_space, '1674481664')

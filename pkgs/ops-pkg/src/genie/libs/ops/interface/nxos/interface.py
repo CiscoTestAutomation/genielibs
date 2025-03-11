@@ -1,4 +1,4 @@
-''' 
+'''
 Interface Genie Ops Object for NXOS - CLI.
 '''
 
@@ -20,7 +20,7 @@ class Interface(SuperInterface):
     def convert_intf_name(self, item):
         return item.capitalize()
 
-    def learn(self, interface=None, vrf=None, address_family=None, brief=False, **kwargs ):
+    def learn(self, interface=None, vrf=None, address_family=None, brief=False, **kwargs):
         '''Learn Interface Ops'''
         ########################################################################
         #                               info
@@ -55,27 +55,27 @@ class Interface(SuperInterface):
             for intf in self.info:
                 for src_key_path, dest_key_path in req_keys_path.items():
                     if brief:
-                        self.add_leaf(cmd=show_interfaces,
+                        self.add_leaf(cmd='show interface {}'.format(intf or '').strip(),
                                     src=src + src_key_path,
                                     dest=dest + dest_key_path,
                                     interface=intf, include=show_interfaces_include)
                     else:
-                        self.add_leaf(cmd=show_interfaces,
+                        self.add_leaf(cmd='show interface {}'.format(intf or '').strip(),
                                     src=src + src_key_path,
                                     dest=dest + dest_key_path,
                                     interface=intf)
         else:
             for src_key_path, dest_key_path in req_keys_path.items():
                     if brief:
-                        self.add_leaf(cmd=show_interfaces,
+                        self.add_leaf(cmd='show interface {}'.format(interface or '').strip(),
                                     src=src + src_key_path,
                                     dest=dest + dest_key_path,
                                     interface=interface, include=show_interfaces_include)
                     else:
-                        self.add_leaf(cmd=show_interfaces,
+                        self.add_leaf(cmd='show interface {}'.format(interface or '').strip(),
                                     src=src + src_key_path,
                                     dest=dest + dest_key_path,
-                                    interface=interface)              
+                                    interface=interface)
 
 
         req_keys = ['access_vlan', 'trunk_vlans', 'switchport_mode',
@@ -94,13 +94,13 @@ class Interface(SuperInterface):
 
         # flow_control
                 if brief:
-                    self.add_leaf(cmd=show_interfaces,
+                    self.add_leaf(cmd='show interface {}'.format(intf or '').strip(),
                                 src=src + '[flow_control]',
                                 dest=dest + '[flow_control]', interface=intf, include=show_interfaces_include)
                 else:
-                    self.add_leaf(cmd=show_interfaces,
+                    self.add_leaf(cmd='show interface {}'.format(intf or '').strip(),
                                 src=src + '[flow_control]',
-                                dest=dest + '[flow_control]', interface=intf)                    
+                                dest=dest + '[flow_control]', interface=intf)
 
         # ======================================================================
         #                           accounting
@@ -114,11 +114,11 @@ class Interface(SuperInterface):
 
         # port_channel
                 if brief:
-                    self.add_leaf(cmd=show_interfaces,
+                    self.add_leaf(cmd='show interface {}'.format(intf or '').strip(),
                                 src=src + '[port_channel]',
                                 dest=dest + '[port_channel]', interface=intf, include=show_interfaces_include)
                 else:
-                    self.add_leaf(cmd=show_interfaces,
+                    self.add_leaf(cmd='show interface {}'.format(intf or '').strip(),
                                 src=src + '[port_channel]',
                                 dest=dest + '[port_channel]', interface=intf)
                 # ======================================================================
@@ -138,11 +138,11 @@ class Interface(SuperInterface):
 
                 for key in req_keys:
                     if brief:
-                        self.add_leaf(cmd=show_interfaces,
+                        self.add_leaf(cmd='show interface {}'.format(intf or '').strip(),
                                     src=src + '[{}]'.format(key),
                                     dest=dest + '[{}]'.format(key), interface=intf, include=show_interfaces_include )
                     else:
-                        self.add_leaf(cmd=show_interfaces,
+                        self.add_leaf(cmd='show interface {}'.format(intf or '').strip(),
                                     src=src + '[{}]'.format(key),
                                     dest=dest + '[{}]'.format(key), interface=intf )
 
@@ -157,11 +157,11 @@ class Interface(SuperInterface):
 
                 for key in req_keys:
                     if brief:
-                        self.add_leaf(cmd=show_interfaces,
+                        self.add_leaf(cmd='show interface {}'.format(intf or '').strip(),
                                     src=src + '[{}]'.format(key),
                                     dest=dest + '[{}]'.format(key), interface=intf, include=show_interfaces_include)
                     else:
-                        self.add_leaf(cmd=show_interfaces,
+                        self.add_leaf(cmd='show interface {}'.format(intf or '').strip(),
                                   src=src + '[{}]'.format(key),
                                   dest=dest + '[{}]'.format(key), interface=intf)
 
@@ -178,11 +178,11 @@ class Interface(SuperInterface):
 
                 for key in req_keys:
                     if brief:
-                        self.add_leaf(cmd=show_interfaces,
+                        self.add_leaf(cmd='show interface {}'.format(intf or '').strip(),
                                     src=src + '[{}]'.format(key),
                                     dest=dest + '[{}]'.format(key), interface=intf, include=show_interfaces_include)
                     else:
-                        self.add_leaf(cmd=show_interfaces,
+                        self.add_leaf(cmd='show interface {}'.format(intf or '').strip(),
                                   src=src + '[{}]'.format(key),
                                   dest=dest + '[{}]'.format(key), interface=intf)
         else:
@@ -198,13 +198,13 @@ class Interface(SuperInterface):
 
             # flow_control
             if brief:
-                self.add_leaf(cmd=show_interfaces,
+                self.add_leaf(cmd='show interface {}'.format(interface or '').strip(),
                             src=src + '[flow_control]',
                             dest=dest + '[flow_control]', interface=interface, include= show_interfaces_include)
             else:
-                self.add_leaf(cmd=show_interfaces,
+                self.add_leaf(cmd='show interface {}'.format(interface or '').strip(),
                             src=src + '[flow_control]',
-                            dest=dest + '[flow_control]', interface=interface)     
+                            dest=dest + '[flow_control]', interface=interface)
 
             # ======================================================================
             #                           accounting
@@ -218,11 +218,11 @@ class Interface(SuperInterface):
 
             # port_channel
             if brief:
-                self.add_leaf(cmd=show_interfaces,
+                self.add_leaf(cmd='show interface {}'.format(interface or '').strip(),
                             src=src + '[port_channel]',
                             dest=dest + '[port_channel]', interface=interface, include=show_interfaces_include)
             else:
-                self.add_leaf(cmd=show_interfaces,
+                self.add_leaf(cmd='show interface {}'.format(interface or '').strip(),
                             src=src + '[port_channel]',
                             dest=dest + '[port_channel]', interface=interface)
             # ======================================================================
@@ -242,13 +242,13 @@ class Interface(SuperInterface):
 
             for key in req_keys:
                 if brief:
-                    self.add_leaf(cmd=show_interfaces,
+                    self.add_leaf(cmd='show interface {}'.format(interface or '').strip(),
                                 src=src + '[{}]'.format(key),
                                 dest=dest + '[{}]'.format(key), interface=interface, include=show_interfaces_include)
                 else:
-                    self.add_leaf(cmd=show_interfaces,
+                    self.add_leaf(cmd='show interface {}'.format(interface or '').strip(),
                                 src=src + '[{}]'.format(key),
-                                dest=dest + '[{}]'.format(key), interface=interface)           
+                                dest=dest + '[{}]'.format(key), interface=interface)
 
             # Global source - counters | rate
             src = '[(?P<interface>{convert_intf_name})][counters][rate]'
@@ -259,11 +259,11 @@ class Interface(SuperInterface):
 
             for key in req_keys:
                 if brief:
-                    self.add_leaf(cmd=show_interfaces,
+                    self.add_leaf(cmd='show interface {}'.format(interface or '').strip(),
                                 src=src + '[{}]'.format(key),
                                 dest=dest + '[{}]'.format(key), interface=interface, include=show_interfaces_include)
                 else:
-                    self.add_leaf(cmd=show_interfaces,
+                    self.add_leaf(cmd='show interface {}'.format(interface or '').strip(),
                                 src=src + '[{}]'.format(key),
                                 dest=dest + '[{}]'.format(key), interface=interface)
 
@@ -280,18 +280,18 @@ class Interface(SuperInterface):
 
             for key in req_keys:
                 if brief:
-                    self.add_leaf(cmd=show_interfaces,
+                    self.add_leaf(cmd='show interface {}'.format(interface or '').strip(),
                                 src=src + '[{}]'.format(key),
                                 dest=dest + '[{}]'.format(key), interface=interface, include=show_interfaces_include)
                 else:
-                    self.add_leaf(cmd=show_interfaces,
+                    self.add_leaf(cmd='show interface {}'.format(interface or '').strip(),
                                 src=src + '[{}]'.format(key),
-                                dest=dest + '[{}]'.format(key), interface=interface)           
+                                dest=dest + '[{}]'.format(key), interface=interface)
 
         # ======================================================================
         #                           ipv4
         # ======================================================================
-        
+
         if not address_family or address_family.lower() == 'ipv4':
             # Global source
             src = '[(?P<interface>{convert_intf_name})][ipv4][(?P<ipv4>.*)]'
@@ -306,22 +306,22 @@ class Interface(SuperInterface):
             if vrf:
                 for intf in self.info:
                     if brief:
-                        self.add_leaf(cmd=show_interfaces,
+                        self.add_leaf(cmd='show interface {}'.format(intf or '').strip(),
                                     src=src + '[route_tag]',
                                     dest=dest + '[route_tag]', interface=intf, include=show_interfaces_include)
                     else:
-                        self.add_leaf(cmd=show_interfaces,
+                        self.add_leaf(cmd='show interface {}'.format(intf or '').strip(),
                                 src=src + '[route_tag]',
-                                dest=dest + '[route_tag]', interface=intf)                     
+                                dest=dest + '[route_tag]', interface=intf)
 
             else:
             # route_tag
                 if brief:
-                    self.add_leaf(cmd=show_interfaces,
+                    self.add_leaf(cmd='show interface {}'.format(interface or '').strip(),
                             src=src + '[route_tag]',
                             dest=dest + '[route_tag]', interface=interface, include=show_interfaces_include)
-                else:      
-                    self.add_leaf(cmd=show_interfaces,
+                else:
+                    self.add_leaf(cmd='show interface {}'.format(interface or '').strip(),
                             src=src + '[route_tag]',
                             dest=dest + '[route_tag]', interface=interface)
             # secondary_vrf   --- This is not supported on NXOS
@@ -363,7 +363,7 @@ class Interface(SuperInterface):
         # ======================================================================
         #                           ipv6
         # ======================================================================
-        
+
         if not address_family or address_family.lower() == 'ipv6':
             # Global source
             src = '[(?P<interface>{convert_intf_name})][ipv6][(?P<ipv6>.*)]'
@@ -410,7 +410,7 @@ class Interface(SuperInterface):
         # eui_64
         # if has ip like 2001:db8::5054:ff:fed5:63f9, eui_64 is True
         p = re.compile(r'([a-z0-9]+):([\w\:]+)?ff:([a-z0-9]+):([a-z0-9]+)')
-        if hasattr(self, 'info'): 
+        if hasattr(self, 'info'):
             for intf in self.info:
                 # check vrf
                 if 'vrf' in self.info[intf]:
@@ -451,7 +451,7 @@ class Interface(SuperInterface):
                             # Delete ret_dict
                             del self.ret_dict
 
-            # delete the routing attribute which is only used 
+            # delete the routing attribute which is only used
             # for getting route_tag and origin
             for key in ['routing_v4', 'routing_v6']:
                 if key in self.info:
@@ -472,5 +472,4 @@ class Interface(SuperInterface):
                     else:
                         self._match_keys(dic=dic[dic_key], match=match)
         return(self.ret_dict)
-
 

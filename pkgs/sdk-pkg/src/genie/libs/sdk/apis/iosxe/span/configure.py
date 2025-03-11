@@ -364,3 +364,78 @@ def config_erspan_monitor_session_filter(device, session_number, vlan):
          raise SubCommandFailure(
              f"Failed to configure filter on erspan monitor session :\n{e}"
          )
+
+def configure_remote_span_on_vlan(device, vlan):
+    """ Configure RSPAN on vlan
+        Args:
+            device ('obj'): Device object
+            vlan ('str'): vlan number
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+        Description:
+            configure RSPAN on vlan for remote monitor session configurations
+    """
+    configs = []
+    configs.append(f"vlan {vlan}")
+    configs.append(f"remote-span")
+    
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure RSPAN on vlan {vlan} :\n{e}"
+        )
+
+def configure_source_destination_remote_vlan(device, session_id, direction,vlan):
+    """ configure source destination remote vlan
+        Args:
+            device (`obj`): Device object
+            session_id ('int'): RSPAN session number
+            direction('str'): RSPAN {source|destination}
+            vlan('str'): SPAN source /destination remote VLAN ID
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+        Description:
+            configure source destination remote vlan
+    """
+    cmd = ""
+    if direction == 'source':
+        cmd = f"monitor session {session_id} source remote vlan {vlan}\n"
+    elif direction == 'destination':
+        cmd = f"monitor session {session_id} destination remote vlan {vlan}\n"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure source destination remote vlan. Error:\n{error}".format(error=e)
+        )
+
+def unconfigure_source_destination_remote_vlan(device, session_id, direction,vlan):
+    """ unconfigure source destination remote vlan
+        Args:
+            device (`obj`): Device object
+            session_id ('int'): RSPAN session number
+            direction('str'): RSPAN {source|destination}
+            vlan('str'): SPAN source /destination remote VLAN ID
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+        Description:
+            configure source destination remote vlan
+    """
+    cmd = ""
+    if direction == 'source':
+        cmd = f"no monitor session {session_id} source remote vlan {vlan}\n"
+    elif direction == 'destination':
+        cmd = f"no monitor session {session_id} destination remote vlan {vlan}\n"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure source destination remote vlan. Error:\n{error}".format(error=e)
+        )

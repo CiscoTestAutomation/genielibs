@@ -1,7 +1,7 @@
 import logging
 import unittest
 
-from unittest.mock import Mock, MagicMock, call, ANY
+from unittest.mock import Mock, MagicMock, call, ANY, patch
 from collections import OrderedDict
 
 from genie.libs.clean.stages.iosxe.stages import InstallImage
@@ -11,6 +11,9 @@ from genie.libs.clean.stages.tests.utils import CommonStageTests, create_test_de
 from pyats.aetest.steps import Steps
 from pyats.results import Passed, Failed, Skipped, Passx
 from pyats.aetest.signals import TerminateStepSignal, AEtestSkippedSignal, AEtestStepPassxSignal
+
+import unicon
+from unicon.eal.dialogs import Statement, Dialog
 
 # Disable logging. It may be useful to comment this out when developing tests.
 logging.disable(logging.CRITICAL)
@@ -383,8 +386,12 @@ class Installimage(unittest.TestCase):
         # Instantiate device object. This also sets up commonly needed
         # attributes and Mock objects associated with the device.
         self.device = create_test_device('PE1', os='iosxe')
+        self.device.spawn = Mock()
 
-    def test_pass(self):
+    @patch('genie.libs.clean.stages.iosxe.stages.Dialog')
+    def test_pass(self, dialog):
+        reload_dialog = Mock()
+        dialog.return_value = reload_dialog
         # Make sure we have a unique Steps() object for result verification
         steps = Steps()
         images = ['/auto/some-location/that-this/image/stay-isr-image.bin']
@@ -429,7 +436,10 @@ class Installimage(unittest.TestCase):
 
 class TestInstallImage(unittest.TestCase):
 
-    def test_iosxe_install_image_pass(self):
+    @patch('genie.libs.clean.stages.iosxe.stages.Dialog')
+    def test_iosxe_install_image_pass(self, dialog):
+        reload_dialog = Mock()
+        dialog.return_value = reload_dialog
         steps = Steps()
         cls = InstallImage()
         cls.history = MagicMock()
@@ -439,11 +449,23 @@ class TestInstallImage(unittest.TestCase):
         device.reload = Mock()
         cls.install_image(steps=steps, device=device, images=['sftp://server/image.bin'])
 
-        device.reload.assert_has_calls([
-            call('install add file sftp://server/image.bin activate commit prompt-level none', reply=ANY,
-                 reload_creds='default', prompt_recovery=True, error_pattern=['FAILED:.*?$'],
-                 timeout=500, device_recovery=False)
-        ])
+        expected_execute_call = [call('install add file sftp://server/image.bin activate commit prompt-level none',
+                                 reply=reload_dialog,
+                                 error_pattern=['FAILED:'],
+                                 timeout=500),
+                                 call('install commit')]
+
+        device.execute.assert_has_calls(expected_execute_call)
+        expected_reload_call = call(
+                '',
+                reload_creds='default',
+                prompt_recovery=True,
+                error_pattern=['FAILED:.*?$'],
+                device_recovery=False,
+                timeout=500,
+                reply=reload_dialog,
+            )
+        device.reload.assert_has_calls([expected_reload_call])
         self.assertEqual(Passed, steps.details[0].result)
 
     def test_iosxe_install_image_skip(self):
@@ -455,7 +477,10 @@ class TestInstallImage(unittest.TestCase):
         cls.install_image(steps=steps, device=device, images=['sftp://server/image.bin'])
         self.assertEqual(Skipped, steps.details[0].result)
 
-    def test_iosxe_install_image_grub_boot_image(self):
+    @patch('genie.libs.clean.stages.iosxe.stages.Dialog')
+    def test_iosxe_install_image_grub_boot_image(self, dialog):
+        reload_dialog = Mock()
+        dialog.return_value = reload_dialog
         steps = Steps()
         cls = InstallImage()
         cls.history = MagicMock()
@@ -466,11 +491,24 @@ class TestInstallImage(unittest.TestCase):
         cls.install_image(steps=steps, device=device, images=['sftp://server/image.bin'],
                           reload_service_args=dict(grub_boot_image='packages.conf'))
 
-        device.reload.assert_has_calls([
-            call('install add file sftp://server/image.bin activate commit prompt-level none', reply=ANY,
-                 reload_creds='default', prompt_recovery=True, error_pattern=['FAILED:.*?$'],
-                 grub_boot_image='packages.conf', device_recovery=False, timeout=500)
-        ])
+        expected_execute_call = [call('install add file sftp://server/image.bin activate commit prompt-level none',
+                                 reply=reload_dialog,
+                                 error_pattern=['FAILED:'],
+                                 timeout=500),
+                                 call('install commit')]
+
+        device.execute.assert_has_calls(expected_execute_call)
+        expected_reload_call = call(
+                '',
+                reload_creds='default',
+                prompt_recovery=True,
+                error_pattern=['FAILED:.*?$'],
+                device_recovery=False,
+                grub_boot_image='packages.conf',
+                timeout=500,
+                reply=reload_dialog,
+            )
+        device.reload.assert_has_calls([expected_reload_call])
         self.assertEqual(Passed, steps.details[0].result)
 
 class TestVerifyRunningImage(unittest.TestCase):

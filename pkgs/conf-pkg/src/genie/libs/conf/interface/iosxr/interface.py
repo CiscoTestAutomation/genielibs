@@ -434,7 +434,7 @@ class Interface(genie.libs.conf.interface.Interface):
                     apply=False, attributes=attributes2))
             else:
                 configurations.append_block(ipv6addr.build_config(
-                    apply=False, attributes=attributes2))        
+                    apply=False, attributes=attributes2))
 
         # iosxr: interface {name} / aaa radius attribute nas-identifier someword
         # iosxr: interface {name} / aaa radius attribute nas-port-type <0-44>
@@ -895,10 +895,10 @@ class Interface(genie.libs.conf.interface.Interface):
         medium = attributes.value('medium')
         if medium:
             if medium.name == 'p2p':
-                configurations.append_line('ipv4 point-to-point', 
+                configurations.append_line('ipv4 point-to-point',
                     unconfig_cmd='no ipv4 point-to-point')
             elif medium.name == 'broadcast':
-                configurations.append_line('no ipv4 point-to-point', 
+                configurations.append_line('no ipv4 point-to-point',
                     unconfig_cmd='ipv4 point-to-point')
 
         # delay : N/A
@@ -1702,7 +1702,7 @@ class PhysicalInterface(Interface, genie.libs.conf.interface.PhysicalInterface):
                              cli_config=configurations)
 
     def build_unconfig(self, apply=True, attributes=None, **kwargs):
-    
+
         # physical interfaces unconfigured
         attributes_unconfig = AttributesHelper(self, attributes)
         if attributes_unconfig.iswildcard:
@@ -1935,7 +1935,7 @@ class LoopbackInterface(VirtualInterface, genie.libs.conf.interface.LoopbackInte
 
     _interface_name_types = (
         'loopback',
-        'Loopback',
+        'Loopback'
     )
 
     def __init__(self, *args, **kwargs):
@@ -2040,6 +2040,36 @@ class EthernetInterface(PhysicalInterface, genie.libs.conf.interface.EthernetInt
         # flow_control_send
         if attributes.value('flow_control_send'):
             configurations.append_line('flow-control egress')
+
+
+class HundredGigabitEthernetInterface(EthernetInterface):
+
+    _interface_name_types = (
+        'ethernet',
+        'HundredGigE',
+    )
+
+    # bandwidth
+    bandwidth = managedattribute(
+        name='bandwidth',
+        default=100000000,
+        type=(None, managedattribute.test_istype(int)),
+        doc='Set bandwidth informational parameter')
+
+
+class FourHundredGigabitEthernetInterface(EthernetInterface):
+
+    _interface_name_types = (
+        'ethernet',
+        'FourHundredGigE',
+    )
+
+    # bandwidth
+    bandwidth = managedattribute(
+        name='bandwidth',
+        default=400000000,
+        type=(None, managedattribute.test_istype(int)),
+        doc='Set bandwidth informational parameter')
 
 
 class PosInterface(PhysicalInterface, genie.libs.conf.interface.PosInterface):
@@ -3610,7 +3640,7 @@ class BundleInterface(VirtualInterface, genie.libs.conf.interface.AggregatedInte
         default=None,
         type=(None, managedattribute.test_istype(int)))
 
-    @property    
+    @property
     def members(self):
         '''Member interfaces of this bundle'''
         return frozenset(

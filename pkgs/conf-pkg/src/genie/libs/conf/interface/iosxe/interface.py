@@ -312,14 +312,6 @@ class Interface(BaseInterface):
         # iosxe: interface {name} / bandwidth <0-4294967295>
         configurations.append_line(attributes.format('bandwidth {bandwidth}'))
 
-        # iosxe: interface {name} / ip address 1.1.1.1 255.255.255.255
-        configurations.append_line(
-            attributes.format('ip address {ipv4.ip} {ipv4.netmask}'))
-
-        # iosxe: interface {name} / ipv6 address 2001::1/128
-        configurations.append_line(
-            attributes.format('ipv6 address {ipv6.with_prefixlen}'))
-
         # iosxe: interface {name} / mtu 64
         configurations.append_line(
             attributes.format('mtu {mtu}'))
@@ -364,84 +356,6 @@ class Interface(BaseInterface):
         if attributes.value('load_interval'):
             configurations.append_line(
                 attributes.format('load-interval {load_interval}'))
-
-        # ipv6 enable
-        if attributes.value('ipv6_enabled'):
-            configurations.append_line('ipv6 enable')
-
-        # ipv6 address autoconfig [default]
-        if attributes.value('ipv6_autoconf'):
-            if attributes.value('ipv6_autoconf_default'):
-                configurations.append_line('ipv6 address autoconfig default')
-            else:
-                configurations.append_line('ipv6 address autoconfig')
-
-        # ip unnumbered <unnumbered_intf_ref>
-        configurations.append_line(
-            attributes.format('ip unnumbered {unnumbered_intf_ref}'),
-                unconfig_cmd='no ip unnumbered')
-
-        # ipv6 unnumbered <ipv6_unnumbered_intf_ref>
-        configurations.append_line(
-            attributes.format('ipv6 unnumbered {ipv6_unnumbered_intf_ref}'),
-                unconfig_cmd='no ipv6 unnumbered')
-
-        # speed <port_speed>
-        if attributes.value('port_speed'):
-            configurations.append_line(
-                attributes.format('speed {port_speed.value}'))
-
-        # negotiation auto
-        if attributes.value('auto_negotiate'):
-            configurations.append_line('negotiation auto')
-
-        # duplex <duplex_mode>
-        if attributes.value('duplex_mode'):
-            configurations.append_line(
-                attributes.format('duplex {duplex_mode.value}'))
-
-        # flowcontrol receive on|off
-        if attributes.value('flow_control_receive'):
-            configurations.append_line('flowcontrol receive on')
-        elif attributes.value('flow_control_receive') == False:
-            configurations.append_line('flowcontrol receive off')
-
-        # flowcontrol send on|off
-        if attributes.value('flow_control_send'):
-            configurations.append_line('flowcontrol send on')
-        elif attributes.value('flow_control_send') == False:
-            configurations.append_line('flowcontrol send off')
-
-        # ip address dhcp
-        # ip address dhcp client-id <dhcp_client_id>
-        # ip address dhcp client-id <dhcp_client_id> hostname <dhcp_hostname>
-        if attributes.value('dhcp'):
-
-            cfg_str = 'ip address dhcp'
-            if attributes.value('dhcp_client_id'):
-                cfg_str += ' client-id {dhcp_client_id}'
-            if attributes.value('dhcp_hostname'):
-                cfg_str += ' hostname {dhcp_hostname}'
-            configurations.append_line(
-                attributes.format(cfg_str))
-
-        # ip dhcp snooping trust
-        if attributes.value('dhcp_snooping'):
-            cfg_str = 'ip dhcp snooping trust'
-            configurations.append_line(
-                attributes.format(cfg_str))
-
-
-        # medium  <medium >
-        if attributes.value('medium'):
-            configurations.append_line(
-                attributes.format('medium {medium.value}'))
-
-        # delay  <delay >
-        if attributes.value('delay'):
-            configurations.append_line(
-                attributes.format('delay {delay}'))
-
 
         # ----- switchport configure ---------#
 
@@ -507,6 +421,91 @@ class Interface(BaseInterface):
             configurations.append_block(
                 ns.build_config(apply=False, attributes=attributes2,
                      unconfig=unconfig))
+
+        # ipv6 enable
+        if attributes.value('ipv6_enabled'):
+            configurations.append_line('ipv6 enable')
+
+        # ipv6 address autoconfig [default]
+        if attributes.value('ipv6_autoconf'):
+            if attributes.value('ipv6_autoconf_default'):
+                configurations.append_line('ipv6 address autoconfig default')
+            else:
+                configurations.append_line('ipv6 address autoconfig')
+
+        # ip unnumbered <unnumbered_intf_ref>
+        configurations.append_line(
+            attributes.format('ip unnumbered {unnumbered_intf_ref}'),
+                unconfig_cmd='no ip unnumbered')
+
+        # ipv6 unnumbered <ipv6_unnumbered_intf_ref>
+        configurations.append_line(
+            attributes.format('ipv6 unnumbered {ipv6_unnumbered_intf_ref}'),
+                unconfig_cmd='no ipv6 unnumbered')
+
+        # iosxe: interface {name} / ip address 1.1.1.1 255.255.255.255
+        configurations.append_line(
+            attributes.format('ip address {ipv4.ip} {ipv4.netmask}'))
+
+        # iosxe: interface {name} / ipv6 address 2001::1/128
+        configurations.append_line(
+            attributes.format('ipv6 address {ipv6.with_prefixlen}'))
+
+        # speed <port_speed>
+        if attributes.value('port_speed'):
+            configurations.append_line(
+                attributes.format('speed {port_speed.value}'))
+
+        # negotiation auto
+        if attributes.value('auto_negotiate'):
+            configurations.append_line('negotiation auto')
+
+        # duplex <duplex_mode>
+        if attributes.value('duplex_mode'):
+            configurations.append_line(
+                attributes.format('duplex {duplex_mode.value}'))
+
+        # flowcontrol receive on|off
+        if attributes.value('flow_control_receive'):
+            configurations.append_line('flowcontrol receive on')
+        elif attributes.value('flow_control_receive') == False:
+            configurations.append_line('flowcontrol receive off')
+
+        # flowcontrol send on|off
+        if attributes.value('flow_control_send'):
+            configurations.append_line('flowcontrol send on')
+        elif attributes.value('flow_control_send') == False:
+            configurations.append_line('flowcontrol send off')
+
+        # ip address dhcp
+        # ip address dhcp client-id <dhcp_client_id>
+        # ip address dhcp client-id <dhcp_client_id> hostname <dhcp_hostname>
+        if attributes.value('dhcp'):
+
+            cfg_str = 'ip address dhcp'
+            if attributes.value('dhcp_client_id'):
+                cfg_str += ' client-id {dhcp_client_id}'
+            if attributes.value('dhcp_hostname'):
+                cfg_str += ' hostname {dhcp_hostname}'
+            configurations.append_line(
+                attributes.format(cfg_str))
+
+        # ip dhcp snooping trust
+        if attributes.value('dhcp_snooping'):
+            cfg_str = 'ip dhcp snooping trust'
+            configurations.append_line(
+                attributes.format(cfg_str))
+
+
+        # medium  <medium >
+        if attributes.value('medium'):
+            configurations.append_line(
+                attributes.format('medium {medium.value}'))
+
+        # delay  <delay >
+        if attributes.value('delay'):
+            configurations.append_line(
+                attributes.format('delay {delay}'))
 
         # IPv4Addr attributes
         for ipv4addr, attributes2 in attributes.sequence_values(
@@ -1246,4 +1245,3 @@ class NveInterface(VirtualInterface, BaseNveInterface):
         super().__init__(*args, **kwargs)
 
 Interface._build_name_to_class_map()
-

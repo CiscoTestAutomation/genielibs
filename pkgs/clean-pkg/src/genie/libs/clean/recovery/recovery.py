@@ -281,12 +281,16 @@ def recovery_processor(
     # check if device is in any known state
     log.info(f'Check device {device.name} has valid unicon state.')
     try:
-        if hasattr(device, 'is_ha') and device.is_ha:
-            log.info('Device is HA! checking all the subconnections.')
+        if device.chassis_type == "quad":
             for index, connection in enumerate(device.subconnections,1):
                 if device.get_rp_state(target=connection.alias) != 'IN_CHASSIS_STANDBY':
                     bring_to_any_state(connection, connection_timeout)
                     log.info(f'subconnection {index} is in {connection.state_machine.current_state}')
+        elif hasattr(device, 'is_ha') and device.is_ha:
+            log.info('Device is HA! checking all the subconnections.')
+            for index, connection in enumerate(device.subconnections,1):
+                bring_to_any_state(connection, connection_timeout)
+                log.info(f'subconnection {index} is in {connection.state_machine.current_state}')
         else:
             bring_to_any_state(device, connection_timeout)
             log.info(f'Device is in {device.state_machine.current_state}')

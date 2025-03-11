@@ -3018,19 +3018,18 @@ configure_interfaces:
                                 if getattr(iface_obj, attr, None) is not None}
 
                     # enable interfaces if not breakout
-                    if hasattr(iface_obj, "breakout") and not iface_obj.breakout:
+                    if not getattr(iface_obj, "breakout", False) and \
+                            getattr(iface_obj, 'enabled') is not False:
                         iface_obj.enabled = True
                         attrs.update({'enabled': True})
 
                     # Get configuration lines from config builder
                     try:
                         config_lines = str(iface_obj.build_config(attributes=attrs, apply=False))
-                    except Exception as e:
-                        log.warning(f'Failed to build config for {iface_obj.name}: {e}')
-
-                    if hasattr(iface_obj, "breakout") and not iface_obj.breakout:
                         # Extend lines to configuration variable
                         configuration_lines.extend(config_lines.splitlines())
+                    except Exception as e:
+                        log.warning(f'Failed to build config for {iface_obj.name}: {e}')
 
         if getattr(device, "custom_config_cli", None):
             config_lines = str(device.build_config(apply=False))

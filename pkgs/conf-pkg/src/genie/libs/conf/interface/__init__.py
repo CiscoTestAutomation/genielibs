@@ -476,7 +476,7 @@ class Interface(BaseInterface):
         default=None,
         type=(None, managedattribute.test_istype(bool)),
         doc='Configure ipv6 forward')
-    
+
     fec = managedattribute(
         name='fec',
         default=None,
@@ -487,7 +487,7 @@ class Interface(BaseInterface):
         name='media_type',
         default=None,
         type=(None, managedattribute.test_istype(str)),
-        doc='Configure media type') 
+        doc='Configure media type')
 
 
     @abc.abstractmethod
@@ -1073,6 +1073,8 @@ class EthernetInterface(PhysicalInterface):
         sp4 = '10000'
         sp5 = '100000'
         sp6 = '40000'
+        sp7 = '25000'
+        sp8 = '50000'
         auto = 'auto'
 
     port_speed = managedattribute(
