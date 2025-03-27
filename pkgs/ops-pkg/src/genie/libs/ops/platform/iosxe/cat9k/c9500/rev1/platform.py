@@ -30,6 +30,14 @@ class Platform(SuperPlatform):
                       dest='chassis')
 
         self.add_leaf(cmd='show version',
+                      src=src_ver + '[system_sn]',
+                      dest='chassis_sn')
+
+        self.add_leaf(cmd='show version',
+                      src=src_ver + '[mb_sn]',
+                      dest='chassis_sn')
+
+        self.add_leaf(cmd='show version',
                       src=src_ver + '[chassis_sn]',
                       dest='chassis_sn')
 

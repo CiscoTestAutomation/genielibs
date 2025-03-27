@@ -22,7 +22,7 @@ from unicon.eal.dialogs import Statement, Dialog
 log = logging.getLogger(__name__)
 
 
-def execute_clear_line(device, alias='cli', disconnect_termserver=False):
+def execute_clear_line(device, alias: str = 'cli', disconnect_termserver: bool = True):
     ''' Executes 'clear line <port>' to clear busy console port on device
         Args:
             device ('obj'): Device object
@@ -30,12 +30,11 @@ def execute_clear_line(device, alias='cli', disconnect_termserver=False):
                            Default: 'cli'
             disconnect_termserver ('bool'): Boolean to indicate if the
                                termserver connection should be closed.
-                               Default: False
+                               Default: True
 
         Returns:
             None
     '''
-
 
     # Init
     connected = set()
@@ -77,11 +76,6 @@ def execute_clear_line(device, alias='cli', disconnect_termserver=False):
         log.info("Disconnecting from terminal server...")
         for item in connected:
             item.destroy()
-
-    # Disconnect from terminal server
-    log.info("Disconnecting from terminal server...")
-    for item in connected:
-        item.destroy()
 
     # Disconnect from actual device now that line has been successfully cleared
     log.info("Disconnecting from {} as line was cleared successfully".\

@@ -1381,6 +1381,17 @@
             },
             "uid": "platform",
             "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/platform/iosxe/rev1/platform.py#L13"
+          },
+          "rev2": {
+            "class": "Platform",
+            "doc": "Platform Ops Object",
+            "module_name": "platform.iosxe.rev2.platform",
+            "package": "genie.libs.ops",
+            "tokens": {
+              "revision": "2"
+            },
+            "uid": "platform",
+            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/platform/iosxe/rev2/platform.py#L13"
           }
         },
         "module_name": "platform.iosxe.platform",
@@ -1858,7 +1869,8 @@
       "yang"
     ],
     "revision": [
-      "1"
+      "1",
+      "2"
     ]
   },
   "vlan": {

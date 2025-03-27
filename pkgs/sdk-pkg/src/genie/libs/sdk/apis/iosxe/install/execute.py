@@ -258,7 +258,7 @@ def execute_install_remove(device, file_path=None, timeout=60, connect_timeout=1
 
 
 def execute_install_one_shot(device, file_path=None, prompt=True, issu=False,
-                             negative_test=False, timeout=900, connect_timeout=10, xfsu=False, reloadfast=False):
+                             negative_test=False, timeout=900, connect_timeout=10, xfsu=False, reloadfast=False, post_reload_wait_time=None, error_pattern=None):
     """
     Performs install one shot on the device
     Args:
@@ -273,6 +273,8 @@ def execute_install_one_shot(device, file_path=None, prompt=True, issu=False,
                                             (when pattern "Press RETURN to get 
                                             started" matches))
         reloadfast('bool, optional'):  Force the operation to use reloadfast.
+        post_reload_wait_time ('int, optional'): Time to wait after reload
+        error_pattern ('list, optional'): List of error patterns to check in the output
     Returns:
         True if install one shot is successful
         False if install one shot is not successful
@@ -329,9 +331,10 @@ def execute_install_one_shot(device, file_path=None, prompt=True, issu=False,
     if not prompt:
         cmd += " prompt-level none"
 
+    output = ""
     try:
         device.api.execute_write_memory()
-        _, output = device.reload(cmd, reply=dialog, timeout=timeout, return_output=True)
+        _, output = device.reload(cmd, reply=dialog, timeout=timeout, return_output=True, prompt_recovery=True, post_reload_wait_time=post_reload_wait_time, error_pattern=error_pattern)
     except Exception as e:
         log.error(f"Error while executing {cmd} on {device.name}: {e}")
 

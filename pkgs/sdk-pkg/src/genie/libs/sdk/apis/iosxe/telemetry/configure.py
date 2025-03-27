@@ -4,8 +4,8 @@
 from unicon.core.errors import SubCommandFailure
 
 
-def configure_pae(device):
-    """ pae
+def configure_product_analytics(device):
+    """ product-analytics
         Args:
             device (`obj`): Device object
         Returns:
@@ -14,7 +14,7 @@ def configure_pae(device):
             SubCommandFailure : Failed configuring device
     """
     try:
-        device.configure('pae')
+        device.configure('product-analytics')
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not enable product analytics on {device}. Error:\n{error}"
@@ -22,8 +22,8 @@ def configure_pae(device):
         )
 
 
-def unconfigure_pae(device):
-    """ no pae
+def unconfigure_product_analytics(device):
+    """ no product-analytics
         Args:
             device (`obj`): Device object
         Returns:
@@ -32,7 +32,7 @@ def unconfigure_pae(device):
             SubCommandFailure : Failed configuring device
     """
     try:
-        device.configure('no pae')
+        device.configure('no product-analytics')
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not disable product analytics on {device}. Error:\n{error}"

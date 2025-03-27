@@ -1207,3 +1207,19 @@ def enable_keepalive_on_interface(device, interface):
         raise SubCommandFailure(
             "Could not enable  keepalive on interface {interface}. Error:\n{error}".format(interface=interface, error=e)
         )
+
+def enable_ip_classless(device):
+    '''Enable ip classless on device
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed executing command
+    '''
+    log.debug('Enabling ip classless on device')
+    cmd = f'ip classless'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Failed to enable ip classless on device {device}. Error:\n{e}')

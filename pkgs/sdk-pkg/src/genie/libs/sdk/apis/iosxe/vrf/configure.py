@@ -1006,7 +1006,7 @@ def configure_mdt_auto_discovery_inter_as(device, vrf_name, address_family):
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not configure mdt auto-discovery inter-as on device vrf {vrf_name}. Error:\n{e}")
 
-    
+
 def configure_rd_address_family_vrf(device, vrf_name, rd_name, address_family):
 
     """ configure rd and address family on vrf
@@ -1016,7 +1016,7 @@ def configure_rd_address_family_vrf(device, vrf_name, rd_name, address_family):
             vrf_name ('str'): name of the vrf
             rd_name ('str'):  IP-address:nn or 4BASN:nn  VPN Route Distinguisher
             address_family ('str'):  mention the address-family ipv4 or ipv6
-            
+
         Return:
             None
         Raise:
@@ -1033,7 +1033,7 @@ def configure_rd_address_family_vrf(device, vrf_name, rd_name, address_family):
         raise SubCommandFailure(
             f"Could not configure rd and address family on vrf {vrf_name} on device.Error:\n{e}"
         )
-    
+
 def configure_mdt_default(device, vrf_name, address_family, ip_address):
     """Configure mdt default
        Args:
@@ -1056,7 +1056,7 @@ def configure_mdt_default(device, vrf_name, address_family, ip_address):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f'Failed to Configure mdt default on {device.name}\n{e}')
-    
+
 def configure_mdt_auto_discovery_inter_as_mdt_type(device, vrf_name, address_family, mdt_type=None):
     """ configure mdt auto-discovery inter-as mdt type
         Args:
@@ -1082,7 +1082,7 @@ def configure_mdt_auto_discovery_inter_as_mdt_type(device, vrf_name, address_fam
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not configure mdt auto-discovery inter-as mdt type on device vrf {vrf_name}. Error:\n{e}")
-    
+
 def configure_data_mdt(device, vrf_name, address_family, ip_address, wildcard_mask, threshold):
     """ Configure Data MDT
         Args:
@@ -1108,4 +1108,28 @@ def configure_data_mdt(device, vrf_name, address_family, ip_address, wildcard_ma
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Failed to configure Data MDT on device {device.name}. Error:\n{e}"
-        )    
+        )
+
+def configure_vrf_rd_rt(device, vrf_name, rd, rt):
+    """ Configure VRF RD and RT
+        Args:
+            device ('obj'): Device object
+            vrf_name ('str'): VRF name(Mgmt-vrf, VRF1, etc.)
+            rd ('str'): VPN Route Distinguisher(ASN:nn, IP-address:nn or 4BASN:nn)
+            rt ('str'): Target VPN Extended Community(both, import, export)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure VRF RD and RT
+    """
+    config = [
+        f'ip vrf {vrf_name}',
+        f'rd {rd}',
+        f'route-target {rt} {rd}'
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure VRF RD and RT on device {device.name}. Error:\n{e}"
+        )

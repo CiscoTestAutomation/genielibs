@@ -220,6 +220,8 @@ class test_service_acceleration(TestCase):
         serv_acc.device_attr[dev1].controller_token = '{"some dynamically generated token"}'
         serv_acc.device_attr[dev1].https_proxy_username = 'admin'
         serv_acc.device_attr[dev1].https_proxy_password = 'password'
+        serv_acc.device_attr[dev1].https_proxy = 'proxy.esl.cisco.com'
+        serv_acc.device_attr[dev1].https_proxy_port = 8080
         serv_acc.device_attr[dev1].service_attr['firewall'].in_service = True
 
         # Add service vrf1 configuration to firewall
@@ -248,6 +250,7 @@ class test_service_acceleration(TestCase):
                     " service peer ip address 1.2.3.4 interface Eth1/2\n"
                     ' controller connection-token {"some dynamically generated token"}\n'
                     " https-proxy username admin password password\n"
+                    " https-proxy proxy.esl.cisco.com port 8080\n"
                     " service firewall\n"
                     "  in-service\n"
                     "  vrf vrfaws module-affinity dynamic\n"

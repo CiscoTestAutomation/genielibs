@@ -1231,7 +1231,7 @@ def configure_dhcp_pool(device, pool_name, router_id=None, network=None, mask=No
             )
         ]
     )
-    
+
     config = [f'ip dhcp pool {pool_name}']
     if router_id:
         config.append(f'default-router {router_id}')
@@ -1277,7 +1277,7 @@ def unconfigure_dhcp_pool(device, pool_name, router_id=None, network=None, mask=
             )
         ]
     )
-    
+
     config = [f'ip dhcp pool {pool_name}']
     if router_id:
         config.append(f'no default-router {router_id}')
@@ -1343,7 +1343,7 @@ def unconfigure_exclude_ip_dhcp(device, ip, high_ip=None, vrf=None):
             device.configure([f"no ip dhcp excluded-address vrf {vrf} {ip}{f' {high_ip}' if high_ip else ''}"])
         else:
             device.configure([f"no ip dhcp excluded-address {ip}{f' {high_ip}' if high_ip else ''}"])
-            
+
     except SubCommandFailure:
         raise SubCommandFailure(f"Could not unconfigure exclude {ip} in DHCP config")
 
@@ -1654,7 +1654,7 @@ def configure_ip_dhcp_pool_address(device, name, address, client_id):
        Args:
             device ('obj'): device object
             name ('str'): name of the pool (eg. POOL_88, testpool)
-            address ('str'): device object 
+            address ('str'): device object
             client_id ('str'): client ID in hex formate
        Return:
             None
@@ -1664,8 +1664,8 @@ def configure_ip_dhcp_pool_address(device, name, address, client_id):
     log.debug(f"Configuring dhcp address and client_id")
 
     config_list = [f"ip dhcp pool {name}",
-        f"address {address} client-id {client_id}"]      
-    
+        f"address {address} client-id {client_id}"]
+
     try:
         device.configure(config_list)
     except SubCommandFailure as e:
@@ -1679,7 +1679,7 @@ def configure_dhcp_option43(device, pool, data_type='ascii', ascii_string=None):
             device ('obj'): device object
             pool ('str'): pool name to configure
             data_type ('str'): Data type can be any. Default is ascii
-            ascii_string ('str'):   Data as an NVT ASCII string  to configure    
+            ascii_string ('str'):   Data as an NVT ASCII string  to configure
        Return:
             None
        Raises:
@@ -1688,14 +1688,14 @@ def configure_dhcp_option43(device, pool, data_type='ascii', ascii_string=None):
     log.debug(f"configure option 43")
     config= [f'ip dhcp pool {pool}']
     if data_type == 'ascii' and ascii_string is not None:
-        config.append(f'option 43 {data_type} {ascii_string}') 
+        config.append(f'option 43 {data_type} {ascii_string}')
     try:
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f'Failed to configure dhcp option 43 for pool: {pool} on {device.name}\n{e}'
         )
-        
+
 def configure_pnp_startup_vlan(device, vlan):
     """ Configure pnp startup vlan
        Args:
@@ -1714,7 +1714,7 @@ def configure_pnp_startup_vlan(device, vlan):
         raise SubCommandFailure(
             f'Failed to configure pnp startup-vlan: {vlan} on {device.name}\n{e}'
         )
-        
+
 def unconfigure_pnp_startup_vlan(device, vlan):
     """ Unconfigure pnp startup vlan
        Args:
@@ -1776,7 +1776,7 @@ def unconfigure_interface_ip_dhcp_relay_information_option_insert(device, interf
 
 def configure_ip_ddns_update_method(
     device, method_name, method_option=None, dns_option=None, url=None):
-    """ Configure Ip DDNS update method 
+    """ Configure Ip DDNS update method
         Args:
             device ('obj'): device to use
             method_name ('str'): Method name for DDNS update
@@ -1786,7 +1786,7 @@ def configure_ip_ddns_update_method(
         Returns:
             None
         Raises:
-            SubCommandFailure: Failed to configure ip ddns update method 
+            SubCommandFailure: Failed to configure ip ddns update method
     """
     log.debug(f"Configuring ip ddns update method {method_name}")
 
@@ -1805,15 +1805,15 @@ def configure_ip_ddns_update_method(
             )
 
 def unconfigure_ip_ddns_update_method(device, method_name):
-    """ Configure Ip DDNS update method 
+    """ Configure Ip DDNS update method
         Args:
             device ('obj'): device to use
             method_name ('str'): name of the method to be created
-    
+
         Returns:
             None
         Raises:
-            SubCommandFailure: Failed to unconfigure ip ddns update method 
+            SubCommandFailure: Failed to unconfigure ip ddns update method
     """
     log.debug(f"Unconfiguring ip ddns update method {method_name}")
 
@@ -1824,9 +1824,9 @@ def unconfigure_ip_ddns_update_method(device, method_name):
         raise SubCommandFailure(
             f"Failed to unconfigure ip ddns update method {method_name}. Error\n{e}"
         )
-        
+
 def configure_dhcp_option(device, pool, data_type='ascii', dhcp_option=None, ascii_string=None):
-    """ Configure dhcp option 
+    """ Configure dhcp option
        Args:
             device ('obj'): device object
             pool ('str'): pool name to configure
@@ -1872,7 +1872,7 @@ def configure_interface_ip_ddns_update(device, interface, name, hostname=False):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Failed to configure ip ddns update on the interface {interface}. Error\n{e}"
-        ) 
+        )
 
 def unconfigure_interface_ip_ddns_update(device, interface, name, hostname=False):
     """ Unconfigure ip ddns update on the interface
@@ -1897,17 +1897,17 @@ def unconfigure_interface_ip_ddns_update(device, interface, name, hostname=False
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Failed to unconfigure ip ddns update on the interface {interface}. Error\n{e}"
-        )       
-    
+        )
+
 def configure_interface_ip_dhcp_client(device, interface, option, type, tag, update=False):
     """ Configure ip dhcp client on the interface
         Args:
             device ('obj'): device to use
-            interface ('str'): name of the interface to be configured # example  "interface vlan 100" 
+            interface ('str'): name of the interface to be configured # example  "interface vlan 100"
             option ('str'): it can be  class-id or client-id or default-router
-            type ('str'): it can be for example interface or ascii or hex 
-            tag ('str',Optional): it can be value of ascii or hex, interface or vlan name 
-            update ('bool',Optional): True or False ,default is False 
+            type ('str'): it can be for example interface or ascii or hex
+            tag ('str',Optional): it can be value of ascii or hex, interface or vlan name
+            update ('bool',Optional): True or False ,default is False
         Returns:
             None
         Raises:
@@ -1915,11 +1915,11 @@ def configure_interface_ip_dhcp_client(device, interface, option, type, tag, upd
     """
     log.debug("Configuring ip dhcp client on the interface")
     cmd =  [f"interface {interface}"]
-    cmd.append(f"ip dhcp client {option} {type}")   
+    cmd.append(f"ip dhcp client {option} {type}")
     if option in ['authentication', 'class-id', 'client-id', 'default-router', 'option', 'request', 'route', 'vendor-class']:
         cmd.append(f"ip dhcp client {option} {type} {tag}")
     elif update:
-        cmd.append(f"ip dhcp client update {option} {type} {tag}")   
+        cmd.append(f"ip dhcp client update {option} {type} {tag}")
 
     try:
         device.configure(cmd)
@@ -1932,11 +1932,11 @@ def unconfigure_interface_ip_dhcp_client(device, interface, option, type, tag, u
     """ Unonfigure ip dhcp client on the interface
         Args:
             device ('obj'): device to use
-            interface ('str'): name of the interface to be configured # example  "interface vlan 100" 
+            interface ('str'): name of the interface to be configured # example  "interface vlan 100"
             option ('str'): it can be  class-id or client-id or default-router
-            type ('str'): it can be for example interface or ascii or hex 
+            type ('str'): it can be for example interface or ascii or hex
             tag ('str',Optional): it can be value of ascii or hex, interface or vlan name
-            update ('bool',Optional): True or False ,default is False 
+            update ('bool',Optional): True or False ,default is False
         Returns:
             None
         Raises:
@@ -1944,12 +1944,12 @@ def unconfigure_interface_ip_dhcp_client(device, interface, option, type, tag, u
     """
     log.debug("Unconfiguring ip dhcp client on the interface")
     cmd =  [f"interface {interface}"]
-    cmd.append(f"no ip dhcp client {option} {type}")  
+    cmd.append(f"no ip dhcp client {option} {type}")
     if option in ['authentication', 'class-id', 'client-id', 'default-router', 'option', 'request', 'route', 'vendor-class']:
         cmd.append(f"no ip dhcp client {option} {type} {tag}")
     elif update:
-        cmd.append(f"no ip dhcp client update {option} {type} {tag}") 
-           
+        cmd.append(f"no ip dhcp client update {option} {type} {tag}")
+
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -1962,11 +1962,11 @@ def configure_ip_dhcp_ping_packets(device, packets_no):
         Args:
             device ('obj'): device to use
             packets_no ('int'): <0-10> , number of ping packets
-            
+
         Returns:
             None
         Raises:
-            SubCommandFailure: Failed to configure ip dhcp ping packets   
+            SubCommandFailure: Failed to configure ip dhcp ping packets
     """
     log.debug("Configuring ip dhcp ping packets")
     config =  f"ip dhcp ping packets {packets_no}"
@@ -1976,17 +1976,17 @@ def configure_ip_dhcp_ping_packets(device, packets_no):
         raise SubCommandFailure(
             f"Failed to configure ip dhcp ping packets on device {device}. Error\n{e}"
         )
-    
+
 def unconfigure_ip_dhcp_ping_packets(device, packets_no):
     """ Unconfigure ip dhcp ping packets
         Args:
             device ('obj'): device to use
             packets_no ('int'): <0-10> , number of ping packets
-            
+
         Returns:
             None
         Raises:
-            SubCommandFailure: Failed to unconfigure ip dhcp ping packets   
+            SubCommandFailure: Failed to unconfigure ip dhcp ping packets
     """
     log.debug("Unconfiguring ip dhcp ping packets")
     config =  f"no ip dhcp ping packets {packets_no}"
@@ -2001,11 +2001,11 @@ def configure_ip_dhcp_remember(device):
     """ Configure ip dhcp remember
         Args:
             device ('obj'): device to use
-            
+
         Returns:
             None
         Raises:
-            SubCommandFailure: Failed to configure ip dhcp remember  
+            SubCommandFailure: Failed to configure ip dhcp remember
     """
     log.debug("Configuring ip dhcp remember")
     config =  f"ip dhcp remember"
@@ -2015,16 +2015,16 @@ def configure_ip_dhcp_remember(device):
         raise SubCommandFailure(
             f"Failed to configure ip dhcp remember on device {device}. Error\n{e}"
         )
-    
+
 def unconfigure_ip_dhcp_remember(device):
     """ Unconfigure ip dhcp remember
         Args:
             device ('obj'): device to use
-            
+
         Returns:
             None
         Raises:
-            SubCommandFailure: Failed to unconfigure ip dhcp remember  
+            SubCommandFailure: Failed to unconfigure ip dhcp remember
     """
     log.debug("Unconfiguring ip dhcp remember")
     config =  f"no ip dhcp remember"
@@ -2034,7 +2034,7 @@ def unconfigure_ip_dhcp_remember(device):
         raise SubCommandFailure(
             f"Failed to Unconfigure ip dhcp remember on device {device}. Error\n{e}"
         )
-    
+
 def configure_interface_ip_dhcp_relay(device, interface, type, string = None, option = None):
     """ Configure ip dhcp relay on the interface
         Args:
@@ -2046,7 +2046,7 @@ def configure_interface_ip_dhcp_relay(device, interface, type, string = None, op
         Returns:
             None
         Raises:
-            SubCommandFailure: Failed to configure ip dhcp relay on the interface  
+            SubCommandFailure: Failed to configure ip dhcp relay on the interface
     """
     log.debug("Configuring ip dhcp relay on the interface")
     config = [f'interface {interface}']
@@ -2104,8 +2104,8 @@ def unconfigure_interface_ip_dhcp_relay(device, interface, type, string = None, 
 def configure_ip_dhcp_drop_inform(device):
     """ Configure ip dhcp drop-inform
         Args:
-            device ('obj'): device to use 
-        
+            device ('obj'): device to use
+
         Returns:
             None
         Raises:
@@ -2124,7 +2124,7 @@ def unconfigure_ip_dhcp_drop_inform(device):
     """ Unconfigure ip dhcp drop-inform
         Args:
             device ('obj'): device to use
-        
+
         Returns:
             None
         Raises:
@@ -2138,17 +2138,17 @@ def unconfigure_ip_dhcp_drop_inform(device):
         raise SubCommandFailure(
             f"Could not unconfigure ip dhcp drop-inform on {device}. Error\n{e}"
             )
-        
+
 def configure_ip_dhcp_binding_cleanup_interval(device, interval_time):
     """ Configure ip dhcp binding cleanup interval
         Args:
-            device ('obj') : device to use 
+            device ('obj') : device to use
             interval ('int'): <10-600> , cleanup interval in seconds
-            
+
             Returns:
                 None
             Raises:
-                SubCommandFailure: Failed to unconfigure ip dhcp binding cleanup interval     
+                SubCommandFailure: Failed to unconfigure ip dhcp binding cleanup interval
     """
     log.debug("Configuring ip dhcp binding cleanup interval {interval_time}")
     config =  f"ip dhcp binding cleanup interval {interval_time}"
@@ -2158,13 +2158,13 @@ def configure_ip_dhcp_binding_cleanup_interval(device, interval_time):
         raise SubCommandFailure(
             f"Failed to configure ip dhcp cleanup interval {interval_time} on device {device}. Error\n{e}"
         )
-    
+
 def unconfigure_ip_dhcp_binding_cleanup_interval(device, interval_time):
     """ Unconfigure ip dhcp binding cleanup interval
         Args:
-            device ('obj') : device to use 
+            device ('obj') : device to use
             interval ('int'): <10-600> , cleanup interval in seconds
-            
+
             Returns:
                 None
             Raises:
@@ -2178,11 +2178,11 @@ def unconfigure_ip_dhcp_binding_cleanup_interval(device, interval_time):
         raise SubCommandFailure(
             f"Failed to unconfigure ip dhcp cleanup interval {interval_time} on device {device}. Error\n{e}"
         )
-               
+
 def configure_ip_dhcp_database(device, database_path):
     """ Configure ip dhcp database {database_path}
         Args:
-            device ('obj') : device to use 
+            device ('obj') : device to use
             database_path ('int'): database path
             Returns:
                 None
@@ -2197,11 +2197,11 @@ def configure_ip_dhcp_database(device, database_path):
         raise SubCommandFailure(
             f"Failed to configure ip dhcp database {database_path} on device {device}. Error\n{e}"
         )
-    
+
 def unconfigure_ip_dhcp_database(device, database_path):
     """ UnConfigure ip dhcp database {database_path}
         Args:
-            device ('obj') : device to use 
+            device ('obj') : device to use
             database_path ('int'): database path
             Returns:
                 None
@@ -2217,7 +2217,40 @@ def unconfigure_ip_dhcp_database(device, database_path):
             f"Failed to unconfigure ip dhcp database {database_path} on device {device}. Error\n{e}"
         )
 
-def configure_interface_ip_subscriber(device, interface, ip_session, option=None, type=None, value=None, list_name=None,  initiator=False): 
+def configure_dhcp_pool_ztp(device, pool_name, network=None, mask=None, option_1=None, ascii_string=None, option_2=None, ip_address=None):
+    ''' Configure dhcp pool for ZTP
+        Args:
+            device ('obj'): device to use
+            pool_name('str'): Configure DHCP address pools
+            network('str', Optional): Network number in dotted-decimal notation
+            mask('str', Optional): Subnet mask in dotted-decimal notation
+            option_1('int', optional): DHCP option code
+            ascii_string('str'): NVT ASCII string, truncated to 225 characters
+            option_2('int'): DHCP option code
+            ip_address('str'): Server's name or IP address
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure dhcp pool for ZTP
+    '''
+
+    log.debug("Configuring dhcp pool for ZTP")
+
+    cmd = [f"ip dhcp pool {pool_name}"]
+    if network and mask:
+        cmd.append(f"network {network} {mask}")
+    if option_1 and ascii_string:
+        cmd.append(f"option {option_1} ascii {ascii_string}")
+    if option_2 and ip_address:
+        cmd.append(f"option {option_2} ip {ip_address}")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure dhcp pool for ZTP. Error:\n{e}"
+            )
+
+def configure_interface_ip_subscriber(device, interface, ip_session, option=None, type=None, value=None, list_name=None,  initiator=False):
     """ Configure ip subscriber on interface
         Args:
             device ('obj'): device to use
@@ -2240,14 +2273,14 @@ def configure_interface_ip_subscriber(device, interface, ip_session, option=None
             ]
     if option in ['arp', 'passthru']:
         config.append(f"{option} {type} {value}")
-    elif  initiator and type in ['dhcp', 'radius-proxy']:   
-        config.append(f"initiator {type}") 
-    elif list_name:   
-        config.append(f"initiator static ip subscriber list {list_name} ") 
+    elif  initiator and type in ['dhcp', 'radius-proxy']:
+        config.append(f"initiator {type}")
+    elif list_name:
+        config.append(f"initiator static ip subscriber list {list_name} ")
     elif type and option:
         config.append(f"initiator unclassified {option} {type} {list_name}" if list_name else f"initiator unclassified {option} {type}")
     elif initiator:
-        config.append(f"initiator unclassified {value}")      
+        config.append(f"initiator unclassified {value}")
     try:
         device.configure(config)
     except SubCommandFailure as e:
@@ -2314,7 +2347,7 @@ def unconfigure_ip_cef(device, option):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not unconfigure ip cef on device. Error\n{e}"
-            )   
+            )
 
 def config_ip_dhcp_client(device, option=None, value=None, inform_trans=None, discover_trans=None, timeout=None, dns=False, update=None):
     """ Configure ip dhcp-client on device
@@ -2322,7 +2355,7 @@ def config_ip_dhcp_client(device, option=None, value=None, inform_trans=None, di
             device ('obj'): device to use
             option ('str',Optional): option to configure (eg. broadcast-flag, forcerenew)
             value ('int',Optional): metric value to configure. Default is None
-            inform_trans ('int',Optional): Maximum number of DHCP Inform transmissions. 
+            inform_trans ('int',Optional): Maximum number of DHCP Inform transmissions.
             discover_trans ('int',Optional): Maximum number of DHCP Discover transmissions
             timeout ('int',Optional): Timeout (in seconds) between Inform/Discover retransmission
             dns ('bool',Optional): Configure DNS. Default is False
@@ -2345,12 +2378,12 @@ def config_ip_dhcp_client(device, option=None, value=None, inform_trans=None, di
             else:
                 config.append(f"ip dhcp-client network-discovery informs {inform_trans} discovers {discover_trans}")
         else:
-            config.append(f"ip dhcp-client network-discovery informs {inform_trans}")   
+            config.append(f"ip dhcp-client network-discovery informs {inform_trans}")
     elif dns:
         if update is not None:
             config.append(f"ip dhcp-client update dns server {update}")
         else:
-            config.append(f"ip dhcp-client update dns")        
+            config.append(f"ip dhcp-client update dns")
     try:
         device.configure(config)
     except SubCommandFailure as e:
@@ -2364,7 +2397,7 @@ def unconfig_ip_dhcp_client(device, option=None, value=None, inform_trans=None, 
             device ('obj'): device to use
             option ('str'): option to configure (eg. broadcast-flag, forcerenew)
             value ('int', optional): metric value to configure. Default is None
-            inform_trans ('int', optional): Maximum number of DHCP Inform transmissions. 
+            inform_trans ('int', optional): Maximum number of DHCP Inform transmissions.
             discover_trans ('int', optional): Maximum number of DHCP Discover transmissions
             timeout ('int', optional): Timeout (in seconds) between Inform/Discover retransmission
             dns ('bool', optional): Configure DNS. Default is False
@@ -2388,12 +2421,12 @@ def unconfig_ip_dhcp_client(device, option=None, value=None, inform_trans=None, 
             else:
                 config.append(f"no ip dhcp-client network-discovery informs {inform_trans} discovers {discover_trans}")
         else:
-            config.append(f"no ip dhcp-client network-discovery informs {inform_trans}")   
+            config.append(f"no ip dhcp-client network-discovery informs {inform_trans}")
     elif dns:
         if update is not None:
             config.append(f"no ip dhcp-client update dns server {update}")
         else:
-            config.append(f"no ip dhcp-client update dns")        
+            config.append(f"no ip dhcp-client update dns")
     try:
         device.configure(config)
     except SubCommandFailure as e:
@@ -2407,7 +2440,7 @@ def configure_ip_dhcp_server(device, tag=None, option=None, type=None, lease=Fal
             device ('obj'): device to use
             tag ('str'): options to configure (eg. name, query, vrf)
             option ('str'): option to configure (eg. check-source, retries, timeout)
-            type ('str'): value to configure 
+            type ('str'): value to configure
             lease ('bool', optional): Set global lease query parameters
         Returns:
             None
@@ -2421,7 +2454,7 @@ def configure_ip_dhcp_server(device, tag=None, option=None, type=None, lease=Fal
     elif lease:
         if option is not None:
             config.append(f"ip dhcp-server query lease {option} {type}")
-        else:    
+        else:
             config.append(f"ip dhcp-server query lease check-source")
     else:
         config.append(f"ip dhcp-server vrf {option} {type}")
@@ -2438,7 +2471,7 @@ def unconfigure_ip_dhcp_server(device, tag=None, option=None, type=None, lease=F
             device ('obj'): device to use
             tag ('str'): options to configure (eg. name, query, vrf)
             option ('str'): option to configure (eg. check-source, retries, timeout)
-            type ('str'): value to configure 
+            type ('str'): value to configure
             lease ('bool', optional): Set global lease query parameters
         Returns:
             None
@@ -2452,7 +2485,7 @@ def unconfigure_ip_dhcp_server(device, tag=None, option=None, type=None, lease=F
     elif lease:
         if option is not None:
             config.append(f"no ip dhcp-server query lease {option} {type}")
-        else:    
+        else:
             config.append(f"no ip dhcp-server query lease check-source")
     else:
         config.append(f"no ip dhcp-server vrf {option} {type}")
@@ -2461,7 +2494,7 @@ def unconfigure_ip_dhcp_server(device, tag=None, option=None, type=None, lease=F
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not unconfigure ip dhcp server on device. Error\n{e}"
-            )    
+            )
 
 def  configure_tftp_server(device, storage, config_file):
     """ Configure tftp-server on device
@@ -2481,7 +2514,7 @@ def  configure_tftp_server(device, storage, config_file):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not configure tftp-server on device. Error\n{e}"
-            )   
+            )
 
 def unconfigure_tftp_server(device, storage, config_file):
     """ Unconfigure tftp-server on device
@@ -2502,3 +2535,80 @@ def unconfigure_tftp_server(device, storage, config_file):
         raise SubCommandFailure(
             f"Could not unconfigure tftp-server on device. Error\n{e}"
             )
+
+def configure_interface_service_policy_type_control_default(device, interface, policy_name):
+    """ Configure interface service-policy type control default
+        Args:
+            device ('obj'): device to use
+            interface ('str'): name of the interface to be configured #example "interface vlan 100"
+            policy_name ('str'): name of the policy to be configured
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure service-policy type control default on the interface
+    """
+    log.debug("Configuring service-policy type control default on the interface")
+    config = [f'interface {interface}',
+              f'service-policy type control default {policy_name}']
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure interface service-policy type control default on the interface {interface}. Error\n{e}"
+        )
+
+def configure_ip_dhcp_class_static(device, option, description= None, relay=False, hex_string=None, bit_mask=None):
+    """ Configure ip dhcp class static
+        Args:
+            device ('obj'): device to use
+            option ('str'): option to configure
+            description ('str'): Up to 240 characters describing this class #example - ciscoworkspace
+            relay ('bool'): relay information #example - True, False
+            bit_mask ('str'): bit mask #example - ffffff
+            hex_string ('str'): hex string #example - aabbcc
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure ip dhcp class static
+    """
+    log.debug("Configuring ip dhcp class {option}")
+    config =  [f"ip dhcp class {option}"]
+    if description:
+        config.append(f'remark {description}')
+    elif relay:
+        config.append(f'relay agent information')
+        if hex_string and bit_mask:
+            config.append(f'relay-information hex {hex_string} mask {bit_mask}')
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure ip dhcp class static on {device}. Error\n{e}"
+        )
+
+def configure_ipv6_dhcp_pool(device, pool_name, address_prefix, bootfile_url):
+    """ Configure IPv6 DHCP pool
+        Args:
+            device ('obj'): device to use
+            pool_name ('str'): name of the DHCPv6 pool to be created
+            address_prefix ('str'): IPv6 address prefix
+            bootfile_url ('str'): URL for the bootfile
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure IPv6 DHCP pool
+    """
+    log.info(f"Configuring IPv6 DHCP pool {pool_name} with address prefix {address_prefix} and bootfile URL {bootfile_url}")
+
+    config_commands = [
+        f"ipv6 dhcp pool {pool_name}",
+        f"address prefix {address_prefix}",
+        f"bootfile-url {bootfile_url}"
+    ]
+
+    try:
+        device.configure(config_commands)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure IPv6 DHCP pool {pool_name}. Error: {e}"
+        )

@@ -93,3 +93,39 @@ def clear_ip_dhcp_snooping_track_server(device):
         raise SubCommandFailure(
             f'Failed to clear dhcp snooping track server\n{e}'
         )
+    
+def release_dhcp(device, interface):
+    """Release DHCP lease on interface
+       Args:
+            device('obj'): device object
+            interface('str'): Interface to release
+       Returns:
+            None
+       Raises:
+            SubCommandFailure
+    """
+    log.debug("Executing release_dhcp API")
+    try:
+        device.execute("release dhcp {interface}".format(interface=interface))
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to release DHCP lease\n{e}'
+        )
+
+def renew_dhcp(device, interface):
+    """Renew DHCP lease on interface
+       Args:
+            device('obj'): device object
+            interface('str'): Interface to renew
+       Returns:
+            None
+       Raises:
+            SubCommandFailure
+    """
+    log.debug("Executing renew_dhcp API")
+    try:
+        device.execute("renew dhcp {interface}".format(interface=interface))
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to renew DHCP lease\n{e}'
+        )

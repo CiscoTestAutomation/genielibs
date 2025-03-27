@@ -1178,4 +1178,54 @@ def configure_policy_map_parameters(device, policy_map_name, class_name=None, pr
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not configure policy-map parameters on device {device}.Error:\n{e}") 
-            
+
+def configure_policy_map_priority_express(device, policy_map_name, class_name=None):
+    """ Configure policy-map parameters on device
+        Args:
+             device ('obj'): device to use
+             policy_map_name('str'): Policy-map name
+             class_name('str',optional) : Class-name 
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configuring policy-map express config on device")
+
+    config = [
+            "policy-map {}".format(policy_map_name), 
+            "class {}".format(class_name), 
+            "priority level 1 express"
+            ]
+    try:
+        device.configure(config)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure policy-map express configuration on device {device}.Error:\n{e}") 
+
+def unconfigure_policy_map_priority_express(device, policy_map_name, class_name=None):
+    """ Unconfigure policy-map parameters on device
+        Args:
+             device ('obj'): device to use
+             policy_map_name('str'): Policy-map name
+             class_name('str',optional) : Class-name 
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Unconfiguring policy-map express config on device")
+
+    config = [
+            "policy-map {}".format(policy_map_name), 
+            "class {}".format(class_name), 
+            "no priority level 1 express"
+            ]
+    try:
+        device.configure(config)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure policy-map express configuration on device {device}.Error:\n{e}") 
+    

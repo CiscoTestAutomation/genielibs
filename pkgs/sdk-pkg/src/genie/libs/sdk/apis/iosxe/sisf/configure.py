@@ -2451,9 +2451,9 @@ def configure_device_tracking_policy_reachable(device, policy, tracking, time=No
     """ Device tracking configuration
         Args:
             device ('obj'): Device object
-            policy ('str'): Policy name 
+            policy ('str'): Policy name
             tracking ('str'): tracking is enable or disable
-            time ('str', Optional) : Reachable life time value 1-86400-seconds or infinite 
+            time ('str', Optional) : Reachable life time value 1-86400-seconds or infinite
         Returns:
             None
         Raises:
@@ -2516,3 +2516,27 @@ def unconfigure_device_tracking_binding_globally(device, vlan, address, interfac
             "Failed to unconfigure static entry globally on {device}. Error:\n{error}"
             .format(device=device, error=e))
 
+def configure_vlan_config_device_tracking(device, vlan, policy=None, priority=None):
+    """ Configure Device tracking on vlan
+        Args:
+            device ('obj'): Device object
+            vlan ('str'): vlan number 1-4094
+            policy ('str', optional): policy name for device-tracking
+            priority ('str', optional): priority value, 0: lowest, 255 highest, 128 default
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f"Configuring device tracking on vlan {device.name}")
+    config = [f"vlan configuration {vlan}"]
+    if policy:
+        config.append(f"device-tracking attach-policy {policy}")
+    elif priority:
+        config.append(f"device-tracking priority {priority}")
+    else:
+        config.append("device-tracking")
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configure device-tracking on vlan. Error:\n{e}')

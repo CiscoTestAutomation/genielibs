@@ -37,12 +37,12 @@ def configure_tacacs_server(device, server_config):
                             'key': '01239132C123',
                             'server': '192.168.21.2'
                         }
-                    ] 
-                        
+                    ]
+
         Returns:
             Response received from configuring the command
         Raises:
-            SubCommandFailure: Failed configuring tacacs server 
+            SubCommandFailure: Failed configuring tacacs server
     """
 
     config = []
@@ -50,7 +50,7 @@ def configure_tacacs_server(device, server_config):
         if "host" in sc:
             config.append("tacacs server {}\n".format(sc["host"]))
             config.append("address ipv4 {}\n".format(sc["server"]))
-                                                                                                                                                                                                                                                                                                                                                                     
+
         if "timeout" in sc:
             config.append("timeout {}\n".format(sc["timeout"]))
         if "key_type" in sc and "key" in sc:
@@ -93,8 +93,8 @@ def configure_radius_server(device, server_config):
             None
         Raises:
             SubCommandFailure
-        
-        ex.) 
+
+        ex.)
             {
                 'server_name': 'radius_server',
                 'ipv4': '11.15.23.213',
@@ -159,11 +159,11 @@ def configure_radius_server(device, server_config):
     # retransmit <retransmit>
     if 'retransmit' in server_config:
         config_list.append("retransmit {}".format(server_config['retransmit']))
-    
+
     # dscp auth <dscp_auth>
     if 'dscp_auth' in server_config:
         config_list.append(f"dscp auth {server_config['dscp_auth']}")
-    
+
     # dscp acct <dscp_acct>
     if 'dscp_acct' in server_config:
         config_list.append(f"dscp acct {server_config['dscp_acct']}")
@@ -204,18 +204,139 @@ def configure_radius_server_dtls_trustpoint(device, server_name=None, trustpoint
             SubCommandFailure
     """
     config_list = []
-    
+
     if server_name:
         config_list.append(f'radius server {server_name}')
     if trustpoint_server:
         config_list.append(f'dtls trustpoint server {trustpoint_server}')
     if trustpoint_client:
         config_list.append(f'dtls trustpoint client {trustpoint_client}')
-    
+
     if not config_list:
         raise ValueError("At least one of server_name, trustpoint_server, or trustpoint_client must be provided")
-    
+
     try:
         device.configure(config_list)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not configure radius server dtls trustpoint on device {device.name}. Error:\n{e}')
+
+def configure_radius_server_with_dtls(device, server_name='TMP_NAME', enable_dtls=False):
+    """ Configure radius server with optional DTLS
+
+        Args:
+            device ('obj'): Device object
+            server_name ('str', optional): Radius server name. Defaults to 'TMP_NAME'.
+            enable_dtls ('bool', optional): Flag to enable DTLS. Defaults to False.
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config_list = [f'radius server {server_name}']
+
+    if enable_dtls:
+        config_list.append('dtls')
+
+    config_list.append('exit')
+
+    try:
+        device.configure(config_list)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Failed to configure radius server with DTLS on device {device.name}. Error:\n{e}')
+
+def configure_radius_server_dtls_connection(device, server_name='TMP_NAME', dtls_connectiontimeout=None):
+    """ Configure radius server with optional DTLS and connection timeout
+
+        Args:
+            device ('obj'): Device object
+            server_name ('str', optional): Radius server name. Defaults to 'TMP_NAME'.
+            dtls_connectiontimeout ('int', optional): Connection timeout value for DTLS. Defaults to None.
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config_list = [f'radius server {server_name}']
+
+    if dtls_connectiontimeout is not None:
+        config_list.append(f'dtls connectiontimeout {dtls_connectiontimeout}')
+
+    config_list.append('exit')
+
+    log.info(f"Configuring radius server with the following commands: {config_list}")
+
+    try:
+        device.configure(config_list)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Failed to configure radius server with DTLS and connection timeout on device {device.name}. Error:\n{e}')
+
+def configure_radius_server_dtls_ip(device, server_name='TMP_NAME', source_interface='vlan 199'):
+    """ Configure radius server with DTLS and source interface
+
+        Args:
+            device ('obj'): Device object
+            server_name ('str', optional): Radius server name. Defaults to 'TMP_NAME'.
+            source_interface ('str', optional): Source interface for radius. Defaults to 'vlan 199'.
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config_list = [
+        f'radius server {server_name}',
+        'dtls',
+        f'ip radius source-interface {source_interface}',
+        'exit'
+    ]
+
+    try:
+        device.configure(config_list)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Failed to configure radius server with DTLS on device {device.name}. Error:\n{e}')
+
+def configure_radius_server_dtls_idletimeout(device, server_name='TMP_NAME', dtls_idletimeout=None):
+    """ Configure radius server with optional DTLS and idle timeout
+
+        Args:
+            device ('obj'): Device object
+            server_name ('str', optional): Radius server name. Defaults to 'TMP_NAME'.
+            dtls_idletimeout ('int', optional): Idle timeout value for DTLS. Defaults to None.
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config_list = [f'radius server {server_name}']
+
+    log.debug(f"Configuring radius server with the following commands: {config_list}")
+
+    try:
+        device.configure(config_list)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Failed to configure radius server with DTLS and idle timeout on device {device.name}. Error:\n{e}')
+
+def configure_radius_server_dtls_watchdoginterval(device, server_name=None, watchdoginterval=None):
+    """ Configure radius server dtls watchdoginterval
+        Args:
+            device ('obj'): Device object
+            server_name('str', optional): Radius server name
+            watchdoginterval('int', optional): DTLS watchdog interval
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config_list = []
+
+    if server_name:
+        config_list.append(f'radius server {server_name}')
+    if watchdoginterval:
+        config_list.append(f'dtls watchdoginterval {watchdoginterval}')
+
+    if not config_list:
+        raise ValueError("At least one of server_name or watchdoginterval must be provided")
+
+    try:
+        device.configure(config_list)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configure radius server dtls watchdoginterval on device {device.name}. Error:\n{e}')

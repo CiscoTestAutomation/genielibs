@@ -355,7 +355,7 @@ def config_interface_carrier_delay(device, interface, delay, delay_type=None):
                 error=e
             )
         )
-        
+
 
 
 def config_mpls_on_device(device, loopback_intf):
@@ -10507,7 +10507,7 @@ def configure_interface_speed_auto(device, interface, port_speed = None):
         config = [
         f'interface {interface}',
         f'speed auto {port_speed}'
-        ]  
+        ]
     else:
         config = [
             f'interface {interface}',
@@ -10530,7 +10530,7 @@ def configure_interface_macro_description(device, interface, trigger_name):
             SubCommandFailure
     """
     log.debug(f"Configuring macro description on interface {interface}")
-    
+
     config = [
         f'interface {interface}',
         f'macro description {trigger_name}'
@@ -10539,7 +10539,7 @@ def configure_interface_macro_description(device, interface, trigger_name):
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not configure macro description on {interface}. Error:\n{e}")
-        
+
 def unconfigure_interface_macro_description(device, interface, trigger_name):
     """unconfigure interface macro description
         Args:
@@ -10552,7 +10552,7 @@ def unconfigure_interface_macro_description(device, interface, trigger_name):
             SubCommandFailure
     """
     log.debug(f"UnConfiguring macro description on interface {interface}")
-    
+
     config = [
         f'interface {interface}',
         f'no macro description {trigger_name}'
@@ -10700,7 +10700,7 @@ def unconfigure_interface_speed_auto(device, interface, port_speed = None):
         config = [
         f'interface {interface}',
         f'no speed auto {port_speed}'
-        ]  
+        ]
     else:
         config = [
             f'interface {interface}',
@@ -10777,3 +10777,97 @@ def unconfig_svi_vlan_range(device, vlanid_start, vlanid_end, timeout=None):
         device.configure(f"no interface range vlan {vlanid_start}-{vlanid_end}", timeout=timeout)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not unconfigure svi vlan on device. Error:\n{e}")
+
+
+def config_preemption(device, interface):
+    """ Enable premption on the interface
+
+        Args:
+            device ('obj')    : device to use
+            interface ('str') : interface to configure
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configuring preemption on the interface")
+
+    cmd = [f'interface {interface}', f'preemption-enable']
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure preemption because of {e}"
+        )
+
+
+def unconfig_preemption(device, interface):
+    """ Enable premption on the interface
+
+        Args:
+             device ('obj')    : device to use
+            interface ('str') : interface to configure
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Unconfiguring preemption on the interface")
+
+    cmd = [f'interface {interface}', f'no preemption-enable']
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure preemption because of {e}"
+        )
+
+
+def configure_interface_media_type_backplane(device, interface):
+    """ Configure backplane media_type on interface
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(
+        f"Configuring media_type backplane on interface {interface}")
+
+    cmd = [f"interface {interface}",
+           f"media-type backplane"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure media_type on {interface}. Error:\n{e}"
+            )
+
+
+def unconfigure_interface_media_type_backplane(device, interface):
+    """Unconfigure backplane media_type on interface
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(
+        f"Unconfiguring media_type backplane on interface {interface}")
+
+    cmd = [f"interface {interface}",
+           f"no media-type"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure media_type on {interface}. Error:\n{e}"
+            )
+
+

@@ -331,8 +331,8 @@ def nxapi_method_restconf(device, action, commands,
     # if a convert action we need to do what the gui does
     if action == 'convert':
         # from the response get the dictionary with a result
-        if isinstance(output, list):
-            for item in output:
+        if isinstance(output.json(), list):
+            for item in output.json():
                 result = item.get('result')
                 if not result:
                     continue

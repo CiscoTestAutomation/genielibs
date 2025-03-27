@@ -3655,7 +3655,7 @@ class ResetConfiguration(BaseStage):
             "^interface Async": {},
             "^ip forward-protocol nd": {},
             "^ip ssh bulk-mode": {},
-            "^line con": {"^speed": {}},
+            "^line con": {"^speed": {}, "^stopbits": {}},
             "^line vty": {"^transport input": {}},
             "^ip http server": {},
             "^ip http secure-server": {},
