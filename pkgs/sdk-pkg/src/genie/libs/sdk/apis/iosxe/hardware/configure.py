@@ -95,37 +95,39 @@ def unconfigure_400g_mode_port_group_range(device, slot):
         )
 
 def configure_hw_module_breakout(device,
-        breakout_number,
+        breakout_number=None,
         breakout_number_end_range=None,
         switch_number = None,
+        module_number = None,
+        port_number = None        
         ):
     """ 
         Configures hw_module breakout
         Args:
              device ('obj'): device to use
-             breakout_number ('str'): breakout number
-             breakout_number_end_range ('str') : range end for breakout
-             switch_number('int') : switch number 1 or 2
-
+             breakout_number ('str', optional): breakout number
+             breakout_number_end_range ('str', optional) : range end for breakout
+             switch_number('int', optional) : switch number 1 or 2
+             module_number('int', optional) : module number 1 or 2
+             port_number('int', optional) : port number 1 or 2
         Returns:
             None
         Raises:
             SubCommandFailure
     """
-    log.debug(
-        "Configuring hw-module breakout {breakout_number} ".format(
-            breakout_number=breakout_number
-        )
-    )
+    log.debug("Configuring hw-module breakout")
 
-    if switch_number is not None:
-        if breakout_number_end_range is not None:
+    if module_number and port_number and switch_number and breakout_number is None:
+        cmd = [f"hw-module breakout module {module_number} port {port_number} switch {switch_number}"] 
+        
+    elif switch_number and breakout_number and port_number is None:
+        if breakout_number_end_range:
             cmd = [f"hw-module switch {switch_number} breakout range {breakout_number} {breakout_number_end_range}"]
         else:
-            cmd = [f"hw-module switch {switch_number} breakout {breakout_number}"]    
+            cmd = [f"hw-module switch {switch_number} breakout {breakout_number}"]
     else:
-        if breakout_number_end_range is not None:
-             cmd = [f"hw-module breakout range {breakout_number} {breakout_number_end_range}"]
+        if breakout_number_end_range and breakout_number and port_number is None:
+            cmd = [f"hw-module breakout range {breakout_number} {breakout_number_end_range}"]
         else:     
             cmd = [f"hw-module breakout {breakout_number}"]
     
@@ -140,38 +142,39 @@ def configure_hw_module_breakout(device,
         )
 
 def unconfigure_hw_module_breakout(device,
-        breakout_number,
+        breakout_number = None,
         breakout_number_end_range=None,
         switch_number = None,
+        module_number = None,
+        port_number = None        
         ):
     """
         Unconfigures hw_module breakout
         Args:
              device ('obj'): device to use
-             breakout_number ('str'): breakout number 
-             breakout_number_end_range ('str') : range end for breakout
-             switch_number('int') : switch number 1 or 2
-
+             breakout_number ('str', optional): breakout number 
+             breakout_number_end_range ('str', optional) : range end for breakout
+             switch_number('int', optional) : switch number 1 or 2
+             module_number('int', optional) : module number 1 or 2
+             port_number('int', optional) : port number 1 or 2
         Returns:
             None
         Raises:
             SubCommandFailure
     """
-    log.debug(
-        "Unconfiguring hw-module breakout {breakout_number} ".format(
-            breakout_number=breakout_number
-        )
-    )
+    log.debug("Unconfiguring hw-module breakout")
 
-    if switch_number is not None:
-        if breakout_number_end_range is not None:
+    if module_number and port_number and switch_number and breakout_number is None:
+        cmd = [f"no hw-module breakout module {module_number} port {port_number} switch {switch_number}"] 
+    elif switch_number and breakout_number and port_number is None:
+        if breakout_number_end_range:
             cmd = [f"no hw-module switch {switch_number} breakout range {breakout_number} {breakout_number_end_range}"]
         else:
             cmd = [f"no hw-module switch {switch_number} breakout {breakout_number}"]
     else:
-        if breakout_number_end_range is not None:
+        if breakout_number_end_range and breakout_number and port_number is None:
             cmd = [f"no hw-module breakout range {breakout_number} {breakout_number_end_range}"]
-        else:    
+        else:
             cmd = [f"no hw-module breakout {breakout_number}"]
 
     try:

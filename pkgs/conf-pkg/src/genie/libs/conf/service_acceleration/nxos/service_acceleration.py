@@ -85,6 +85,12 @@ class ServiceAcceleration(ABC):
                     configurations.append_line(
                         attributes.format('https-proxy username {https_proxy_username} password {https_proxy_password}'))
 
+                # service system hypershield
+                #   https-proxy <https_proxy> port <port>
+                if attributes.value('https_proxy') and attributes.value('https_proxy_port'):
+                    configurations.append_line(
+                        attributes.format('https-proxy {https_proxy} port {https_proxy_port}'))
+
                 #  +- DeviceAttributes
                 #      +- ServiceAttributes
                 for sub, attributes2 in attributes.mapping_values('service_attr',

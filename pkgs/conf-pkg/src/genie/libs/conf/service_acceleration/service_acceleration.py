@@ -46,7 +46,7 @@ class ServiceAcceleration(DeviceFeature):
                 else:
                     raise ValueError(f'service_type: {key} is not supported. Supported types are: {parent.SERVICE_TYPE._member_names_}')
                 super().__init__(parent)
-            
+
             # service vrf configs
             servicevrf_keys = managedattribute(
                 name='servicevrf_keys',
@@ -82,7 +82,7 @@ class ServiceAcceleration(DeviceFeature):
     @device_attr.initter
     def device_attr(self):
         return SubAttributesDict(self.DeviceAttributes, parent=self)
-    
+
     # ==========================================================================
     #                           GLOBAL ENUM TYPES
     # ==========================================================================
@@ -136,6 +136,16 @@ class ServiceAcceleration(DeviceFeature):
     # https_proxy_password
     https_proxy_password = managedattribute(
         name="https_proxy_password", default=None, type=(None, managedattribute.test_istype(str))
+    )
+
+    # https_proxy
+    https_proxy = managedattribute(
+        name="https_proxy", default=None, type=(None, managedattribute.test_istype(str))
+    )
+
+    # https_proxy_port
+    https_proxy_port = managedattribute(
+        name="https_proxy_port", default=80, type=(None, managedattribute.test_istype(int))
     )
 
     # ==========================================================================

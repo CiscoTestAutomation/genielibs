@@ -6320,7 +6320,7 @@ def configure_macro_auto_mac_address_group(device, mac_address_group_name, confi
         device ('obj'): device to use
         mac_address_group_name('str'): Auto Smart Ports MAC address-group name
         config_addr_grp_mac('str'):  MAC address group configuration commands mac-address or oui
-        list_of_addr('str'):  Configure a list of OUI or mac-addresses 
+        list_of_addr('str'):  Configure a list of OUI or mac-addresses
     Returns:
         None
     Raises:
@@ -6330,12 +6330,12 @@ def configure_macro_auto_mac_address_group(device, mac_address_group_name, confi
         f'macro auto mac-address-group {mac_address_group_name}',
         f'{config_addr_grp_mac} list {list_of_addr}',
     ]
-    
+
     try:
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure macro auto mac-address-group on this device. Error:\n{e}")
-        
+
 def unconfigure_macro_auto_mac_address_group(device, mac_address_group_name):
     """ UnConfigure macro auto sticky on this device
 
@@ -6372,7 +6372,7 @@ def configure_shell_trigger(device, trigger_name, trigger_description):
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not configure shell trigger. Error:\n{e}")
-        
+
 def unconfigure_shell_trigger(device, trigger_name, trigger_description):
     """" unconfigure shell trigger
 
@@ -6418,7 +6418,7 @@ def configure_macro_auto_trigger(device, trigger_name, device_name_from_device_c
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not configure macro auto trigger. Error:\n{e}")
-        
+
 def unconfigure_macro_auto_trigger(device, trigger_name):
     """unconfigure macro auto trigger
         Args:
@@ -6440,7 +6440,7 @@ def unconfigure_macro_auto_trigger(device, trigger_name):
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not unconfigure macro auto trigger. Error:\n{e}")
-        
+
 def configure_macro_auto_device_parameters(device, device_name, parameters):
     """configure macro auto device {device_name} {parameters}
         Args:
@@ -6481,7 +6481,7 @@ def unconfigure_macro_auto_device_parameters(device, device_name, parameters):
     try:
         device.configure(config)
     except SubCommandFailure as e:
-        raise SubCommandFailure(f"Could not unconfigure macro auto device parameters. Error:\n{e}")        
+        raise SubCommandFailure(f"Could not unconfigure macro auto device parameters. Error:\n{e}")
 
 def configure_macro_auto_execute(device, macro_name, input_macro_parameters, macro_configs_link_up=None, macro_configs_link_down=None):
     """configure macro auto execute
@@ -6516,12 +6516,12 @@ def configure_macro_auto_execute(device, macro_name, input_macro_parameters, mac
     config.extend(macro_configs_link_up)
     config.extend(macro_configs_link_down)
     config += ["}"]
-    
+
     try:
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not configure macro auto execute. Error:\n{e}")
-        
+
 def unconfigure_macro_auto_execute(device, macro_name):
     """unconfigure macro auto execute
         Args:
@@ -6533,14 +6533,14 @@ def unconfigure_macro_auto_execute(device, macro_name):
     log.debug(f"UnConfiguring macro auto execute")
 
     config = [f'no macro auto execute {macro_name}']
-     
+
     try:
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not unconfigure macro auto execute. Error:\n{e}")
-        
+
 def configure_macro_auto_fallback(device, fallback, parameters=None):
-    """configure macro auto global processing {fallback} 
+    """configure macro auto global processing {fallback}
         Args:
             device (`obj`): Device object
             fallback (`str`):  cdp-fallback or  Configure a fallback if dot1x fails
@@ -6562,7 +6562,7 @@ def configure_macro_auto_fallback(device, fallback, parameters=None):
         raise SubCommandFailure(f"Could not configure macro auto global processing fallback. Error:\n{e}")
 
 def unconfigure_macro_auto_fallback(device, fallback, parameters=None):
-    """unconfigure macro auto global processing {fallback} 
+    """unconfigure macro auto global processing {fallback}
         Args:
             device (`obj`): Device object
             fallback (`str`):  cdp-fallback or  Configure a fallback if dot1x fails
@@ -6582,7 +6582,7 @@ def unconfigure_macro_auto_fallback(device, fallback, parameters=None):
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not configure macro auto global processing fallback. Error:\n{e}")
-        
+
 def set_platform_software_selinux(device, selinux_mode=None):
     """
     Set SELinux mode on the device.
@@ -6602,3 +6602,153 @@ def set_platform_software_selinux(device, selinux_mode=None):
         raise SubCommandFailure(
             f"Failed to execute command '{cmd}' on device. Error:\n{e}"
         )
+
+def configure_power_redundancy_mode_redundant(device, redundancy_mode, slot_number):
+    """
+    Args:
+        device ('obj'): Device object
+        slot_number ('str'): Slot number (EX: 1 2 3 4)
+        redundancy_mode ('str'): redundancy_mode (EX: N+N)
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    log.debug(f"Configuring power redundancy")
+
+    cmd = f"power redundancy-mode redundant {redundancy_mode} {slot_number}"
+
+    try:
+        return device.configure(cmd) # Return the command output for verification
+    except SubCommandFailure as e:
+        log.error(f"Error configuring power redundancy: {e}")
+        raise SubCommandFailure(f"Could not configure power redundancy {device}. Error:\n{e}")
+
+def unconfigure_power_redundancy_mode_redundant(device, redundancy_mode, slot_number):
+    """
+    Args:
+        device ('obj'): Device object
+        slot_number ('str'): Slot number (EX: 1 2 3 4)
+        redundancy_mode ('str'): redundancy_mode (EX: N+N)
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    log.debug(f"Unconfiguring power redundancy")
+
+    cmd = f"no power redundancy-mode redundant {redundancy_mode} {slot_number}"
+
+    try:
+        device.configure(cmd)
+        log.debug(f"Power redundancy mode unconfigured successfully: {cmd}")
+    except SubCommandFailure as e:
+        log.error(f"Error unconfiguring power redundancy: {e}")
+        raise SubCommandFailure(f"Could not unconfigure power redundancy {device}. Error:\n{e}")
+
+def configure_power_redundancy_combined(device):
+    """
+    Args:
+        device ('obj'): Device object
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    log.debug("Configuring power redundancy combined")
+
+    cmd = "power redundancy combined"
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(f"Error configuring power redundancy combined: {e}")
+        raise SubCommandFailure(f"Could not configure power redundancy combined {device}. Error:\n{e}")
+
+def unconfigure_power_redundancy_combined(device):
+    """
+    Args:
+        device ('obj'): Device object
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    log.debug("Unconfiguring power redundancy combined")
+
+    cmd = "no power redundancy combined"
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(f"Error unconfiguring power redundancy combined: {e}")
+        raise SubCommandFailure(f"Could not unconfigure power redundancy combined {device}. Error:\n{e}")
+
+def unconfigure_boot_system_switch_all_flash(device, destination):
+    """ Unconfigures the boot system variable on all switches in the stack
+        Example : no boot system switch all flash:testAll
+
+        Args:
+            device ('obj'): device to use
+            destination('str'): destination (e.g. testAll)
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"Unconfiguring boot system variable on flash on {device.name}")
+    config = f"no boot system switch all flash:{destination}"
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(f"Failed to unconfigure boot system variable on device {device.name}. Error:\n{e}"
+        )
+
+def configure_interfaces_uplink(device, interfaces):
+    """Configure the listed interfaces as uplinks on the device.
+        Args:
+            device ('obj'): Device object.
+            interfaces (List['string']): List of interfaces to configure as uplinks.
+    """
+    config_cmd = []
+
+    # Ensure interfaces is a list
+    if not isinstance(interfaces, list):
+        interfaces = [interfaces]
+
+    for interface in interfaces:
+        config_cmd.extend([
+            f"interface {interface}",
+            "uplink"
+        ])
+
+    try:
+        device.configure(config_cmd)
+    except SubCommandFailure as e:
+        log.error('Failed to enable uplink interfaces on device {}: {}'.format(device.name, e))
+
+def configure_interfaces_no_uplink(device, interfaces):
+    """Configure the listed interfaces as no uplinks on the device.
+        Args:
+            device ('obj'): Device object.
+            interfaces (List['string']): List of interfaces to configure as no uplinks.
+    """
+    config_cmd = []
+
+    # Ensure interfaces is a list
+    if not isinstance(interfaces, list):
+        interfaces = [interfaces]
+
+    for interface in interfaces:
+        config_cmd.extend([
+            f"interface {interface}",
+            "no uplink"
+        ])
+
+    try:
+        device.configure(config_cmd)
+    except SubCommandFailure as e:
+        log.error('Failed to disable uplink interfaces on device {}: {}'.format(device.name, e))

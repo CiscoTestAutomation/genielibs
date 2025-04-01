@@ -2719,6 +2719,9 @@ power_cycle:
     connect_retry_wait (int, optional). Time to wait before retrying to
         connect to the device. Defaults to 60 seconds.
 
+    connection_timeout(int, optional): Time to wait during connect to the 
+        device, Default to 120 seconds
+
 Example
 -------
 power_cycle:
@@ -2735,6 +2738,7 @@ power_cycle:
     SLEEP_AFTER_CONNECT = 0
     CONNECT_ARGUMENTS = {}
     CONNECT_RETRY_WAIT = 60
+    CONNECTION_TIMEOUT = 120
 
     # ============
     # Stage Schema
@@ -2746,6 +2750,7 @@ power_cycle:
         Optional('sleep_after_connect'): int,
         Optional('connect_arguments'): dict,
         Optional('connect_retry_wait'): int,
+        Optional('connection_timeout'): int,
     }
 
     # ==============================
@@ -2768,7 +2773,8 @@ power_cycle:
                   sleep_before_connect=SLEEP_BEFORE_CONNECT,
                   sleep_after_connect=SLEEP_AFTER_CONNECT,
                   connect_arguments=CONNECT_ARGUMENTS,
-                  connect_retry_wait=CONNECT_RETRY_WAIT):
+                  connect_retry_wait=CONNECT_RETRY_WAIT,
+                  connection_timeout=CONNECTION_TIMEOUT):
 
         if sleep_before_connect:
             with steps.start(f"Sleeping for {sleep_before_connect} seconds before connect") as step:
@@ -2782,7 +2788,8 @@ power_cycle:
                 device.destroy()
 
                 try:
-                    device.connect(learn_hostname=True, **connect_arguments)
+                    device.connect(learn_hostname=True, **connect_arguments, connection_timeout=connection_timeout)
+                    
                 except Exception as e:
                     connect_exception = e
                     log.info(f"Could not reconnect {e}")

@@ -138,6 +138,7 @@ class ParsedInterfaceName(types.SimpleNamespace):
         ''', name, re.VERBOSE | re.IGNORECASE)
         if not m:
             log.warning('Unrecognized interface name %r' % (name,))
+            super().__init__(**d)
             return
 
         d.update(m.groupdict())

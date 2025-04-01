@@ -674,3 +674,45 @@ def get_next_reload_boot_image(device):
     image = out.q.contains('next_reload_boot_variable').get_values('system_variable')[0]
     
     return image.strip('bootflash:/') if image else ''
+
+def get_standby_systemcontroller_slot(device):
+    """Gets the standby systemcontroller slot number
+    Args:
+        device (obj): Device object
+    Returns:
+        int: standby systemcontroller slot number if present and in ha-standby state, 0 otherwise
+    """
+    try:
+        out = device.parse('show module')
+    except SubCommandFailure as e:
+        log.error('Failed to get slot model: {e}'.format(e=e))
+        raise Exception("Failed to get slot model") from e
+
+    return out.q.contains('.*System Controller',
+                          regex=True).\
+                    contains_key_value('status',
+                                       'standby',
+                                       value_regex=True).\
+                    get_values('lc')
+
+
+def get_active_systemcontroller_slot(device):
+    """Gets the active systemcontroller slot number
+    Args:
+        device (obj): Device object
+    Returns:
+        int: active systemcontroller slot number
+    """
+
+    try:
+        out = device.parse('show module')
+    except SubCommandFailure as e:
+        log.error('Failed to get slot model: {e}'.format(e=e))
+        raise Exception("Failed to get slot model") from e
+
+    return out.q.contains('.*System Controller',
+                          regex=True).\
+                    contains_key_value('status',
+                                       'active',
+                                       value_regex=True).\
+                    get_values('lc')

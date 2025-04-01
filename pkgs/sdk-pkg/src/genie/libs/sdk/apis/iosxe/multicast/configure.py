@@ -1843,14 +1843,14 @@ def configure_pim_register_source(device, interface, vrf_name=None, is_ipv6=Fals
     """
     ip_type = 'ipv6' if is_ipv6 else 'ip'
     vrf_cfg = f'vrf {vrf_name} ' if vrf_name else ''
-    
+
     configs = [f"{ip_type} pim {vrf_cfg}register-source {interface}"]
 
     try:
         device.configure(configs)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure register-source for pim on device {device.name}. Error:\n{e}")
-        
+
 def unconfigure_pim_register_source(device, interface, vrf_name=None, is_ipv6=False):
     """ Unconfigure pim register-source interface
 
@@ -1868,7 +1868,7 @@ def unconfigure_pim_register_source(device, interface, vrf_name=None, is_ipv6=Fa
     """
     ip_type = 'ipv6' if is_ipv6 else 'ip'
     vrf_cfg = f'vrf {vrf_name} ' if vrf_name else ''
-    
+
     configs = [f"no {ip_type} pim {vrf_cfg}register-source {interface}"]
 
     try:
@@ -1985,7 +1985,7 @@ def config_ip_pim_vrf(device, vrf_num, mode):
         Return:
             None
         Raise:
-            SubCommandFailure 
+            SubCommandFailure
     """
     log.info(f"Configuring ip pim vrf {mode} on {device}")
 
@@ -2007,7 +2007,7 @@ def unconfig_ip_pim_vrf(device, vrf_num, mode):
         Return:
             None
         Raise:
-            SubCommandFailure 
+            SubCommandFailure
     """
     log.info(f"Unconfiguring ip pim vrf {mode} on {device}")
 
@@ -2022,11 +2022,11 @@ def unconfig_ip_pim_vrf(device, vrf_num, mode):
 def config_ip_multicast_routing_vrf_distributed(device, vrf_name):
 
     """ configure ip multicast-routing vrf distributed on device
-        Example : 
+        Example :
 
         Args:
             device (`obj`): Device object
-            vrf_name('str'): name of the vrf 
+            vrf_name('str'): name of the vrf
         Returns:
             None
     """
@@ -2041,11 +2041,11 @@ def config_ip_multicast_routing_vrf_distributed(device, vrf_name):
 def unconfig_ip_multicast_routing_vrf_distributed(device, vrf_name):
 
     """Unconfigure ip multicast-routing vrf distributed on device
-        Example : 
+        Example :
 
         Args:
             device (`obj`): Device object
-            vrf_name('str'): name of the vrf 
+            vrf_name('str'): name of the vrf
         Returns:
             None
     """
@@ -2058,7 +2058,7 @@ def unconfig_ip_multicast_routing_vrf_distributed(device, vrf_name):
         )
 
 def configure_ip_msdp_vrf_peer(device, peer, vrf, intf=None):
-    
+
     """ Configures ip msdp vrf <> peer
         Args:
             device ('obj')    : device to use
@@ -2081,7 +2081,7 @@ def configure_ip_msdp_vrf_peer(device, peer, vrf, intf=None):
         raise SubCommandFailure(f'Could not configures ip msdp vrf peer. Error: {e}')
 
 def unconfigure_ip_msdp_vrf_peer(device, peer, vrf, intf=None):
-    
+
     """ Unconfigures ip msdp vrf <> peer
         Args:
             device ('obj')    : device to use
@@ -2102,7 +2102,7 @@ def unconfigure_ip_msdp_vrf_peer(device, peer, vrf, intf=None):
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not unconfigures ip msdp vrf peer. Error: {e}')
-    
+
 def configure_ipv6_pim_rp_vrf(device, vrf_name, address):
     """ Configure IPv6 PIM RP for a VRF
     Args:
@@ -2121,3 +2121,35 @@ def configure_ipv6_pim_rp_vrf(device, vrf_name, address):
         raise SubCommandFailure(
             f"Failed to configure IPv6 PIM RP for VRF {vrf_name}:\n{e}"
         )
+
+def configure_ip_pim_bsr_rp_candidate(device, vrf_name=None, interface_name=None):
+    """ Configure ip pim candidate rp or bsr for both global and VRF contexts.
+        Args:
+            device ('obj'): Device
+            vrf_name ('str', optional): VRF name
+            interface_name ('str', Optional): Interface name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: If the configuration fails on the device
+    """
+
+    log.debug(f"Configure ip pim candidate rp or bsr for both global and VRF contexts")
+
+    if vrf_name:
+        cmds = [
+            f"ip pim vrf {vrf_name} bsr-candidate {interface_name}",
+            f"ip pim vrf {vrf_name} rp-candidate {interface_name}"
+        ]
+    else:
+        cmds = [
+            f"ip pim bsr-candidate {interface_name}",
+            f"ip pim rp-candidate {interface_name}"
+        ]
+
+    try:
+        device.configure(cmds)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure ip pim candidate rp or bsr for both global and VRF contexts on device {device.name}. Error:\n{e}"
+            )

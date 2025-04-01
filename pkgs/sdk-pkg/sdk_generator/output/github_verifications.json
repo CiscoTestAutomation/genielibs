@@ -3747,6 +3747,15 @@
         },
         "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/rv1/show_platform.py"
       },
+      "rv2": {
+        "doc": "Parser for:\n    * 'show inventory'\n    ",
+        "groups": [],
+        "schema": "{Optional  (str) main: {Optional  (str) swstack: <class 'bool'>, Optional  (Any) Any  (str) *: {Any  (str) *: {Optional  (str) name: <class 'str'>, Optional  (str) descr: <class 'str'>, Optional  (str) pid: <class 'str'>, Optional  (str) vid: <class 'str'>, Optional  (str) sn: <class 'str'>}}}, Optional  (str) slot: {Any  (str) *: {Optional  (str) rp: {Any  (str) *: {Optional  (str) name: <class 'str'>, Optional  (str) descr: <class 'str'>, Optional  (str) pid: <class 'str'>, Optional  (str) vid: <class 'str'>, Optional  (str) sn: <class 'str'>, Optional  (str) swstack_power: <class 'str'>, Optional  (str) swstack_power_sn: <class 'str'>, Optional  (str) subslot: {Any  (str) *: {Any  (str) *: {Optional  (str) name: <class 'str'>, Optional  (str) descr: <class 'str'>, Optional  (str) pid: <class 'str'>, Optional  (str) vid: <class 'str'>, Optional  (str) sn: <class 'str'>}}}}}, Optional  (str) lc: {Any  (str) *: {Optional  (str) name: <class 'str'>, Optional  (str) descr: <class 'str'>, Optional  (str) pid: <class 'str'>, Optional  (str) vid: <class 'str'>, Optional  (str) sn: <class 'str'>, Optional  (str) swstack_power: <class 'str'>, Optional  (str) swstack_power_sn: <class 'str'>, Optional  (str) subslot: {Any  (str) *: {Any  (str) *: {Optional  (str) name: <class 'str'>, Optional  (str) descr: <class 'str'>, Optional  (str) pid: <class 'str'>, Optional  (str) vid: <class 'str'>, Optional  (str) sn: <class 'str'>}}}}}, Optional  (str) sp: {Any  (str) *: {Optional  (str) name: <class 'str'>, Optional  (str) descr: <class 'str'>, Optional  (str) pid: <class 'str'>, Optional  (str) vid: <class 'str'>, Optional  (str) sn: <class 'str'>}}, Optional  (str) pluggable: {Any  (str) *: {Optional  (str) name: <class 'str'>, Optional  (str) descr: <class 'str'>, Optional  (str) pid: <class 'str'>, Optional  (str) vid: <class 'str'>, Optional  (str) sn: <class 'str'>}}, Optional  (str) other: {Any  (str) *: {Optional  (str) name: <class 'str'>, Optional  (str) descr: <class 'str'>, Optional  (str) pid: <class 'str'>, Optional  (str) vid: <class 'str'>, Optional  (str) sn: <class 'str'>, Optional  (str) swstack_power: <class 'str'>, Optional  (str) swstack_power_sn: <class 'str'>, Optional  (str) subslot: {Any  (str) *: {Any  (str) *: {Optional  (str) name: <class 'str'>, Optional  (str) descr: <class 'str'>, Optional  (str) pid: <class 'str'>, Optional  (str) vid: <class 'str'>, Optional  (str) sn: <class 'str'>}}}}}}}}",
+        "source": {
+          "class": "genie.harness.base.Template"
+        },
+        "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/rv2/show_platform.py"
+      },
       "schema": "{Optional  (str) main: {Optional  (str) swstack: <class 'bool'>, Optional  (Any) Any  (str) *: {Any  (str) *: {Optional  (str) name: <class 'str'>, Optional  (str) descr: <class 'str'>, Optional  (str) pid: <class 'str'>, Optional  (str) vid: <class 'str'>, Optional  (str) sn: <class 'str'>}}}, Optional  (str) slot: {Any  (str) *: {Optional  (str) rp: {Any  (str) *: {Optional  (str) name: <class 'str'>, Optional  (str) descr: <class 'str'>, Optional  (str) pid: <class 'str'>, Optional  (str) vid: <class 'str'>, Optional  (str) sn: <class 'str'>, Optional  (str) swstack_power: <class 'str'>, Optional  (str) swstack_power_sn: <class 'str'>, Optional  (str) subslot: {Any  (str) *: {Any  (str) *: {Optional  (str) name: <class 'str'>, Optional  (str) descr: <class 'str'>, Optional  (str) pid: <class 'str'>, Optional  (str) vid: <class 'str'>, Optional  (str) sn: <class 'str'>}}}}}, Optional  (str) lc: {Any  (str) *: {Optional  (str) name: <class 'str'>, Optional  (str) descr: <class 'str'>, Optional  (str) pid: <class 'str'>, Optional  (str) vid: <class 'str'>, Optional  (str) sn: <class 'str'>, Optional  (str) swstack_power: <class 'str'>, Optional  (str) swstack_power_sn: <class 'str'>, Optional  (str) subslot: {Any  (str) *: {Any  (str) *: {Optional  (str) name: <class 'str'>, Optional  (str) descr: <class 'str'>, Optional  (str) pid: <class 'str'>, Optional  (str) vid: <class 'str'>, Optional  (str) sn: <class 'str'>}}}}}, Optional  (str) other: {Any  (str) *: {Optional  (str) name: <class 'str'>, Optional  (str) descr: <class 'str'>, Optional  (str) pid: <class 'str'>, Optional  (str) vid: <class 'str'>, Optional  (str) sn: <class 'str'>, Optional  (str) swstack_power: <class 'str'>, Optional  (str) swstack_power_sn: <class 'str'>, Optional  (str) subslot: {Any  (str) *: {Any  (str) *: {Optional  (str) name: <class 'str'>, Optional  (str) descr: <class 'str'>, Optional  (str) pid: <class 'str'>, Optional  (str) vid: <class 'str'>, Optional  (str) sn: <class 'str'>}}}}}}}}",
       "source": {
         "class": "genie.harness.base.Template"
@@ -3872,7 +3881,7 @@
       "devices": [
         "uut"
       ],
-      "doc": "\n    Parser for 'show ip igmp groups detail'\n    Parser for 'show ip igmp vrf <WORD> groups detail'\n    ",
+      "doc": "\n    Parser for 'show ip igmp groups detail'\n    Parser for 'show ip igmp vrf <WORD> groups detail'\n    Parser for 'show ip igmp groups  <WORD> detail'\n    ",
       "exclude": [],
       "groups": [],
       "iteration": {
@@ -3888,7 +3897,7 @@
   },
   "Verify_IpIgmpGroups_vrf_all": {
     "iosxe": {
-      "doc": "\n    Parser for 'show ip igmp groups'\n    ",
+      "doc": "\n    Parser for 'show ip igmp groups'\n    Parser for 'show ip igmp groups <WORD>'\n    ",
       "groups": [],
       "schema": "{'igmp_groups': {Any  (str) *: {'intf': <class 'str'>, 'uptime': <class 'str'>, 'expires': <class 'str'>, 'last_reporter': <class 'str'>}}}",
       "source": {
@@ -3919,7 +3928,7 @@
   },
   "Verify_IpIgmpGroups_vrf_default": {
     "iosxe": {
-      "doc": "\n    Parser for 'show ip igmp groups'\n    ",
+      "doc": "\n    Parser for 'show ip igmp groups'\n    Parser for 'show ip igmp groups <WORD>'\n    ",
       "groups": [],
       "schema": "{'igmp_groups': {Any  (str) *: {'intf': <class 'str'>, 'uptime': <class 'str'>, 'expires': <class 'str'>, 'last_reporter': <class 'str'>}}}",
       "source": {
@@ -3956,7 +3965,7 @@
       "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/ios/show_igmp.py"
     },
     "iosxe": {
-      "doc": "\n    Parser for 'show ip igmp interface'\n    Parser for 'show ip igmp vrf <WORD> interface'\n    ",
+      "doc": "\n    Parser for 'show ip igmp interface'\n    Parser for 'show ip igmp vrf <WORD> interface'\n    Parser for 'show ip igmp interface <WORD>'\n    ",
       "groups": [],
       "schema": "{'vrf': {Any  (str) *: {Optional  (str) global_max_groups: <class 'int'>, Optional  (str) global_active_groups: <class 'int'>, 'interface': {Any  (str) *: {Optional  (str) oper_status: <class 'str'>, 'interface_status': <class 'str'>, Optional  (str) internet_protocol_processing: <class 'bool'>, Optional  (str) interface_address: <class 'str'>, Optional  (str) enable: <class 'bool'>, Optional  (str) host_version: <class 'int'>, Optional  (str) router_version: <class 'int'>, Optional  (str) query_interval: <class 'int'>, Optional  (str) configured_query_interval: <class 'int'>, Optional  (str) querier_timeout: <class 'int'>, Optional  (str) configured_querier_timeout: <class 'int'>, Optional  (str) query_max_response_time: <class 'int'>, Optional  (str) last_member_query_interval: <class 'int'>, Optional  (str) last_member_query_count: <class 'int'>, Optional  (str) group_policy: <class 'str'>, Optional  (str) max_groups: <class 'int'>, Optional  (str) active_groups: <class 'int'>, Optional  (str) counters: {'joins': <class 'int'>, 'leaves': <class 'int'>}, Optional  (str) multicast: {Optional  (str) routing_enable: <class 'bool'>, Optional  (str) ttl_threshold: <class 'int'>, Optional  (str) designated_router: <class 'str'>, Optional  (str) routing_table: <class 'str'>, Optional  (str) dr_this_system: <class 'bool'>}, Optional  (str) querier: <class 'str'>, Optional  (str) query_this_system: <class 'bool'>, Optional  (str) joined_group: {Any  (str) *: {'number_of_users': <class 'int'>}}}}}}}",
       "source": {
@@ -3999,7 +4008,7 @@
       "devices": [
         "uut"
       ],
-      "doc": "\n    Parser for 'show ip igmp interface'\n    Parser for 'show ip igmp vrf <WORD> interface'\n    ",
+      "doc": "\n    Parser for 'show ip igmp interface'\n    Parser for 'show ip igmp vrf <WORD> interface'\n    Parser for 'show ip igmp interface <WORD>'\n    ",
       "exclude": [],
       "groups": [],
       "schema": "{'vrf': {Any  (str) *: {Optional  (str) global_max_groups: <class 'int'>, Optional  (str) global_active_groups: <class 'int'>, 'interface': {Any  (str) *: {Optional  (str) oper_status: <class 'str'>, 'interface_status': <class 'str'>, Optional  (str) internet_protocol_processing: <class 'bool'>, Optional  (str) interface_address: <class 'str'>, Optional  (str) enable: <class 'bool'>, Optional  (str) host_version: <class 'int'>, Optional  (str) router_version: <class 'int'>, Optional  (str) query_interval: <class 'int'>, Optional  (str) configured_query_interval: <class 'int'>, Optional  (str) querier_timeout: <class 'int'>, Optional  (str) configured_querier_timeout: <class 'int'>, Optional  (str) query_max_response_time: <class 'int'>, Optional  (str) last_member_query_interval: <class 'int'>, Optional  (str) last_member_query_count: <class 'int'>, Optional  (str) group_policy: <class 'str'>, Optional  (str) max_groups: <class 'int'>, Optional  (str) active_groups: <class 'int'>, Optional  (str) counters: {'joins': <class 'int'>, 'leaves': <class 'int'>}, Optional  (str) multicast: {Optional  (str) routing_enable: <class 'bool'>, Optional  (str) ttl_threshold: <class 'int'>, Optional  (str) designated_router: <class 'str'>, Optional  (str) routing_table: <class 'str'>, Optional  (str) dr_this_system: <class 'bool'>}, Optional  (str) querier: <class 'str'>, Optional  (str) query_this_system: <class 'bool'>, Optional  (str) joined_group: {Any  (str) *: {'number_of_users': <class 'int'>}}}}}}}",
@@ -4359,7 +4368,7 @@
     "ios": {
       "doc": "Parser for:\n        show ip mroute\n        show ip mroute vrf <vrf>",
       "groups": [],
-      "schema": "{'vrf': {Any  (str) *: {'address_family': {Any  (str) *: {Optional  (str) multicast_group: {Any  (str) *: {Optional  (str) source_address: {Any  (str) *: {Optional  (str) uptime: <class 'str'>, Optional  (str) expire: <class 'str'>, Optional  (str) flags: <class 'str'>, Optional  (str) rp_bit: <class 'bool'>, Optional  (str) msdp_learned: <class 'bool'>, Optional  (str) rp: <class 'str'>, Optional  (str) rpf_nbr: <class 'str'>, Optional  (str) rpf_info: <class 'str'>, Optional  (str) upstream_interface: {Any  (str) *: {'rpf_nbr': <class 'str'>}}, Optional  (str) incoming_interface_list: {Any  (str) *: {Optional  (str) rpf_nbr: <class 'str'>, Optional  (str) rpf_info: <class 'str'>, Optional  (str) state: <class 'str'>, Optional  (str) iif_lisp_rloc: <class 'str'>, Optional  (str) iif_lisp_group: <class 'str'>, Optional  (str) lisp_vrf: <class 'str'>}}, Optional  (str) outgoing_interface_list: {Any  (str) *: {'uptime': <class 'str'>, 'expire': <class 'str'>, 'state_mode': <class 'str'>, Optional  (str) flags: <class 'str'>, Optional  (str) pkts: <class 'int'>, Optional  (str) vcd: <class 'str'>, Optional  (str) lisp_mcast_source: <class 'str'>, Optional  (str) lisp_mcast_group: <class 'str'>, Optional  (str) vxlan_version: <class 'str'>, Optional  (str) vxlan_vni: <class 'str'>, Optional  (str) vxlan_nxthop: <class 'str'>, Optional  (str) lisp_join_sender_list: {Any  (str) *: {'uptime': <class 'str'>, 'expire': <class 'str'>}}}}, Optional  (str) extranet_rx_vrf_list: {Any  (str) *: {'e_src': <class 'str'>, 'e_grp': <class 'str'>, 'e_uptime': <class 'str'>, 'e_expire': <class 'str'>, Optional  (str) e_rp: <class 'str'>, 'e_oif_count': <class 'str'>, 'e_flags': <class 'str'>}}}}}}}}}}}",
+      "schema": "{'vrf': {Any  (str) *: {'address_family': {Any  (str) *: {Optional  (str) multicast_group: {Any  (str) *: {Optional  (str) source_address: {Any  (str) *: {Optional  (str) uptime: <class 'str'>, Optional  (str) expire: <class 'str'>, Optional  (str) flags: <class 'str'>, Optional  (str) rp_bit: <class 'bool'>, Optional  (str) msdp_learned: <class 'bool'>, Optional  (str) rp: <class 'str'>, Optional  (str) rpf_nbr: <class 'str'>, Optional  (str) rpf_info: <class 'str'>, Optional  (str) upstream_interface: {Any  (str) *: {'rpf_nbr': <class 'str'>}}, Optional  (str) incoming_interface_list: {Any  (str) *: {Optional  (str) rpf_nbr: <class 'str'>, Optional  (str) rpf_info: <class 'str'>, Optional  (str) state: <class 'str'>, Optional  (str) iif_lisp_rloc: <class 'str'>, Optional  (str) iif_lisp_group: <class 'str'>, Optional  (str) lisp_vrf: <class 'str'>, Optional  (str) iif_mdt_ip: <class 'str'>}}, Optional  (str) outgoing_interface_list: {Any  (str) *: {'uptime': <class 'str'>, 'expire': <class 'str'>, 'state_mode': <class 'str'>, Optional  (str) flags: <class 'str'>, Optional  (str) pkts: <class 'int'>, Optional  (str) vcd: <class 'str'>, Optional  (str) lisp_mcast_source: <class 'str'>, Optional  (str) lisp_mcast_group: <class 'str'>, Optional  (str) vxlan_version: <class 'str'>, Optional  (str) vxlan_vni: <class 'str'>, Optional  (str) vxlan_nxthop: <class 'str'>, Optional  (str) lisp_join_sender_list: {Any  (str) *: {'uptime': <class 'str'>, 'expire': <class 'str'>}}}}, Optional  (str) extranet_rx_vrf_list: {Any  (str) *: {'e_src': <class 'str'>, 'e_grp': <class 'str'>, 'e_uptime': <class 'str'>, 'e_expire': <class 'str'>, Optional  (str) e_rp: <class 'str'>, 'e_oif_count': <class 'str'>, 'e_flags': <class 'str'>}}}}}}}}}}}",
       "source": {
         "class": "genie.harness.base.Template"
       },
@@ -4376,7 +4385,7 @@
         "attempt": 5,
         "interval": 10
       },
-      "schema": "{'vrf': {Any  (str) *: {'address_family': {Any  (str) *: {Optional  (str) multicast_group: {Any  (str) *: {Optional  (str) source_address: {Any  (str) *: {Optional  (str) uptime: <class 'str'>, Optional  (str) expire: <class 'str'>, Optional  (str) flags: <class 'str'>, Optional  (str) rp_bit: <class 'bool'>, Optional  (str) msdp_learned: <class 'bool'>, Optional  (str) rp: <class 'str'>, Optional  (str) rpf_nbr: <class 'str'>, Optional  (str) rpf_info: <class 'str'>, Optional  (str) upstream_interface: {Any  (str) *: {'rpf_nbr': <class 'str'>}}, Optional  (str) incoming_interface_list: {Any  (str) *: {Optional  (str) rpf_nbr: <class 'str'>, Optional  (str) rpf_info: <class 'str'>, Optional  (str) state: <class 'str'>, Optional  (str) iif_lisp_rloc: <class 'str'>, Optional  (str) iif_lisp_group: <class 'str'>, Optional  (str) lisp_vrf: <class 'str'>}}, Optional  (str) outgoing_interface_list: {Any  (str) *: {'uptime': <class 'str'>, 'expire': <class 'str'>, 'state_mode': <class 'str'>, Optional  (str) flags: <class 'str'>, Optional  (str) pkts: <class 'int'>, Optional  (str) vcd: <class 'str'>, Optional  (str) lisp_mcast_source: <class 'str'>, Optional  (str) lisp_mcast_group: <class 'str'>, Optional  (str) vxlan_version: <class 'str'>, Optional  (str) vxlan_vni: <class 'str'>, Optional  (str) vxlan_nxthop: <class 'str'>, Optional  (str) lisp_join_sender_list: {Any  (str) *: {'uptime': <class 'str'>, 'expire': <class 'str'>}}}}, Optional  (str) extranet_rx_vrf_list: {Any  (str) *: {'e_src': <class 'str'>, 'e_grp': <class 'str'>, 'e_uptime': <class 'str'>, 'e_expire': <class 'str'>, Optional  (str) e_rp: <class 'str'>, 'e_oif_count': <class 'str'>, 'e_flags': <class 'str'>}}}}}}}}}}}",
+      "schema": "{'vrf': {Any  (str) *: {'address_family': {Any  (str) *: {Optional  (str) multicast_group: {Any  (str) *: {Optional  (str) source_address: {Any  (str) *: {Optional  (str) uptime: <class 'str'>, Optional  (str) expire: <class 'str'>, Optional  (str) flags: <class 'str'>, Optional  (str) rp_bit: <class 'bool'>, Optional  (str) msdp_learned: <class 'bool'>, Optional  (str) rp: <class 'str'>, Optional  (str) rpf_nbr: <class 'str'>, Optional  (str) rpf_info: <class 'str'>, Optional  (str) upstream_interface: {Any  (str) *: {'rpf_nbr': <class 'str'>}}, Optional  (str) incoming_interface_list: {Any  (str) *: {Optional  (str) rpf_nbr: <class 'str'>, Optional  (str) rpf_info: <class 'str'>, Optional  (str) state: <class 'str'>, Optional  (str) iif_lisp_rloc: <class 'str'>, Optional  (str) iif_lisp_group: <class 'str'>, Optional  (str) lisp_vrf: <class 'str'>, Optional  (str) iif_mdt_ip: <class 'str'>}}, Optional  (str) outgoing_interface_list: {Any  (str) *: {'uptime': <class 'str'>, 'expire': <class 'str'>, 'state_mode': <class 'str'>, Optional  (str) flags: <class 'str'>, Optional  (str) pkts: <class 'int'>, Optional  (str) vcd: <class 'str'>, Optional  (str) lisp_mcast_source: <class 'str'>, Optional  (str) lisp_mcast_group: <class 'str'>, Optional  (str) vxlan_version: <class 'str'>, Optional  (str) vxlan_vni: <class 'str'>, Optional  (str) vxlan_nxthop: <class 'str'>, Optional  (str) lisp_join_sender_list: {Any  (str) *: {'uptime': <class 'str'>, 'expire': <class 'str'>}}}}, Optional  (str) extranet_rx_vrf_list: {Any  (str) *: {'e_src': <class 'str'>, 'e_grp': <class 'str'>, 'e_uptime': <class 'str'>, 'e_expire': <class 'str'>, Optional  (str) e_rp: <class 'str'>, 'e_oif_count': <class 'str'>, 'e_flags': <class 'str'>}}}}}}}}}}}",
       "source": {
         "class": "genie.harness.base.Template"
       },
@@ -6151,7 +6160,7 @@
     "ios": {
       "doc": "Parser for:\n       show ipv6 mroute\n       show ipv6 mroute vrf <vrf>",
       "groups": [],
-      "schema": "{'vrf': {Any  (str) *: {'address_family': {Any  (str) *: {Optional  (str) multicast_group: {Any  (str) *: {Optional  (str) source_address: {Any  (str) *: {Optional  (str) uptime: <class 'str'>, Optional  (str) expire: <class 'str'>, Optional  (str) flags: <class 'str'>, Optional  (str) rp_bit: <class 'bool'>, Optional  (str) msdp_learned: <class 'bool'>, Optional  (str) rp: <class 'str'>, Optional  (str) rpf_nbr: <class 'str'>, Optional  (str) rpf_info: <class 'str'>, Optional  (str) upstream_interface: {Any  (str) *: {'rpf_nbr': <class 'str'>}}, Optional  (str) incoming_interface_list: {Any  (str) *: {Optional  (str) rpf_nbr: <class 'str'>, Optional  (str) rpf_info: <class 'str'>, Optional  (str) state: <class 'str'>, Optional  (str) iif_lisp_rloc: <class 'str'>, Optional  (str) iif_lisp_group: <class 'str'>, Optional  (str) lisp_vrf: <class 'str'>}}, Optional  (str) outgoing_interface_list: {Any  (str) *: {'uptime': <class 'str'>, 'expire': <class 'str'>, 'state_mode': <class 'str'>, Optional  (str) flags: <class 'str'>, Optional  (str) pkts: <class 'int'>, Optional  (str) vcd: <class 'str'>, Optional  (str) lisp_mcast_source: <class 'str'>, Optional  (str) lisp_mcast_group: <class 'str'>, Optional  (str) vxlan_version: <class 'str'>, Optional  (str) vxlan_vni: <class 'str'>, Optional  (str) vxlan_nxthop: <class 'str'>, Optional  (str) lisp_join_sender_list: {Any  (str) *: {'uptime': <class 'str'>, 'expire': <class 'str'>}}}}, Optional  (str) extranet_rx_vrf_list: {Any  (str) *: {'e_src': <class 'str'>, 'e_grp': <class 'str'>, 'e_uptime': <class 'str'>, 'e_expire': <class 'str'>, Optional  (str) e_rp: <class 'str'>, 'e_oif_count': <class 'str'>, 'e_flags': <class 'str'>}}}}}}}}}}}",
+      "schema": "{'vrf': {Any  (str) *: {'address_family': {Any  (str) *: {Optional  (str) multicast_group: {Any  (str) *: {Optional  (str) source_address: {Any  (str) *: {Optional  (str) uptime: <class 'str'>, Optional  (str) expire: <class 'str'>, Optional  (str) flags: <class 'str'>, Optional  (str) rp_bit: <class 'bool'>, Optional  (str) msdp_learned: <class 'bool'>, Optional  (str) rp: <class 'str'>, Optional  (str) rpf_nbr: <class 'str'>, Optional  (str) rpf_info: <class 'str'>, Optional  (str) upstream_interface: {Any  (str) *: {'rpf_nbr': <class 'str'>}}, Optional  (str) incoming_interface_list: {Any  (str) *: {Optional  (str) rpf_nbr: <class 'str'>, Optional  (str) rpf_info: <class 'str'>, Optional  (str) state: <class 'str'>, Optional  (str) iif_lisp_rloc: <class 'str'>, Optional  (str) iif_lisp_group: <class 'str'>, Optional  (str) lisp_vrf: <class 'str'>, Optional  (str) iif_mdt_ip: <class 'str'>}}, Optional  (str) outgoing_interface_list: {Any  (str) *: {'uptime': <class 'str'>, 'expire': <class 'str'>, 'state_mode': <class 'str'>, Optional  (str) flags: <class 'str'>, Optional  (str) pkts: <class 'int'>, Optional  (str) vcd: <class 'str'>, Optional  (str) lisp_mcast_source: <class 'str'>, Optional  (str) lisp_mcast_group: <class 'str'>, Optional  (str) vxlan_version: <class 'str'>, Optional  (str) vxlan_vni: <class 'str'>, Optional  (str) vxlan_nxthop: <class 'str'>, Optional  (str) lisp_join_sender_list: {Any  (str) *: {'uptime': <class 'str'>, 'expire': <class 'str'>}}}}, Optional  (str) extranet_rx_vrf_list: {Any  (str) *: {'e_src': <class 'str'>, 'e_grp': <class 'str'>, 'e_uptime': <class 'str'>, 'e_expire': <class 'str'>, Optional  (str) e_rp: <class 'str'>, 'e_oif_count': <class 'str'>, 'e_flags': <class 'str'>}}}}}}}}}}}",
       "source": {
         "class": "genie.harness.base.Template"
       },
@@ -6168,7 +6177,7 @@
         "attempt": 5,
         "interval": 10
       },
-      "schema": "{'vrf': {Any  (str) *: {'address_family': {Any  (str) *: {Optional  (str) multicast_group: {Any  (str) *: {Optional  (str) source_address: {Any  (str) *: {Optional  (str) uptime: <class 'str'>, Optional  (str) expire: <class 'str'>, Optional  (str) flags: <class 'str'>, Optional  (str) rp_bit: <class 'bool'>, Optional  (str) msdp_learned: <class 'bool'>, Optional  (str) rp: <class 'str'>, Optional  (str) rpf_nbr: <class 'str'>, Optional  (str) rpf_info: <class 'str'>, Optional  (str) upstream_interface: {Any  (str) *: {'rpf_nbr': <class 'str'>}}, Optional  (str) incoming_interface_list: {Any  (str) *: {Optional  (str) rpf_nbr: <class 'str'>, Optional  (str) rpf_info: <class 'str'>, Optional  (str) state: <class 'str'>, Optional  (str) iif_lisp_rloc: <class 'str'>, Optional  (str) iif_lisp_group: <class 'str'>, Optional  (str) lisp_vrf: <class 'str'>}}, Optional  (str) outgoing_interface_list: {Any  (str) *: {'uptime': <class 'str'>, 'expire': <class 'str'>, 'state_mode': <class 'str'>, Optional  (str) flags: <class 'str'>, Optional  (str) pkts: <class 'int'>, Optional  (str) vcd: <class 'str'>, Optional  (str) lisp_mcast_source: <class 'str'>, Optional  (str) lisp_mcast_group: <class 'str'>, Optional  (str) vxlan_version: <class 'str'>, Optional  (str) vxlan_vni: <class 'str'>, Optional  (str) vxlan_nxthop: <class 'str'>, Optional  (str) lisp_join_sender_list: {Any  (str) *: {'uptime': <class 'str'>, 'expire': <class 'str'>}}}}, Optional  (str) extranet_rx_vrf_list: {Any  (str) *: {'e_src': <class 'str'>, 'e_grp': <class 'str'>, 'e_uptime': <class 'str'>, 'e_expire': <class 'str'>, Optional  (str) e_rp: <class 'str'>, 'e_oif_count': <class 'str'>, 'e_flags': <class 'str'>}}}}}}}}}}}",
+      "schema": "{'vrf': {Any  (str) *: {'address_family': {Any  (str) *: {Optional  (str) multicast_group: {Any  (str) *: {Optional  (str) source_address: {Any  (str) *: {Optional  (str) uptime: <class 'str'>, Optional  (str) expire: <class 'str'>, Optional  (str) flags: <class 'str'>, Optional  (str) rp_bit: <class 'bool'>, Optional  (str) msdp_learned: <class 'bool'>, Optional  (str) rp: <class 'str'>, Optional  (str) rpf_nbr: <class 'str'>, Optional  (str) rpf_info: <class 'str'>, Optional  (str) upstream_interface: {Any  (str) *: {'rpf_nbr': <class 'str'>}}, Optional  (str) incoming_interface_list: {Any  (str) *: {Optional  (str) rpf_nbr: <class 'str'>, Optional  (str) rpf_info: <class 'str'>, Optional  (str) state: <class 'str'>, Optional  (str) iif_lisp_rloc: <class 'str'>, Optional  (str) iif_lisp_group: <class 'str'>, Optional  (str) lisp_vrf: <class 'str'>, Optional  (str) iif_mdt_ip: <class 'str'>}}, Optional  (str) outgoing_interface_list: {Any  (str) *: {'uptime': <class 'str'>, 'expire': <class 'str'>, 'state_mode': <class 'str'>, Optional  (str) flags: <class 'str'>, Optional  (str) pkts: <class 'int'>, Optional  (str) vcd: <class 'str'>, Optional  (str) lisp_mcast_source: <class 'str'>, Optional  (str) lisp_mcast_group: <class 'str'>, Optional  (str) vxlan_version: <class 'str'>, Optional  (str) vxlan_vni: <class 'str'>, Optional  (str) vxlan_nxthop: <class 'str'>, Optional  (str) lisp_join_sender_list: {Any  (str) *: {'uptime': <class 'str'>, 'expire': <class 'str'>}}}}, Optional  (str) extranet_rx_vrf_list: {Any  (str) *: {'e_src': <class 'str'>, 'e_grp': <class 'str'>, 'e_uptime': <class 'str'>, 'e_expire': <class 'str'>, Optional  (str) e_rp: <class 'str'>, 'e_oif_count': <class 'str'>, 'e_flags': <class 'str'>}}}}}}}}}}}",
       "source": {
         "class": "genie.harness.base.Template"
       },
@@ -8859,7 +8868,7 @@
           },
           "doc": " Parser for:\n        * 'show platform'\n    ",
           "groups": [],
-          "schema": "{'chassis': <class 'str'>, 'slot': {Any  (str) *: {Optional  (str) cpld_ver: <class 'str'>, Optional  (str) fw_ver: <class 'str'>, 'insert_time': <class 'str'>, 'name': <class 'str'>, 'slot': <class 'str'>, 'state': <class 'str'>, Optional  (str) subslot: {Any  (str) *: {'insert_time': <class 'str'>, 'name': <class 'str'>, 'state': <class 'str'>, 'subslot': <class 'str'>}}}}}",
+          "schema": "{Optional  (str) chassis: <class 'str'>, 'slot': {Any  (str) *: {Optional  (str) cpld_ver: <class 'str'>, Optional  (str) fw_ver: <class 'str'>, 'insert_time': <class 'str'>, 'name': <class 'str'>, 'slot': <class 'str'>, 'state': <class 'str'>, Optional  (str) subslot: {Any  (str) *: {'insert_time': <class 'str'>, 'name': <class 'str'>, 'state': <class 'str'>, 'subslot': <class 'str'>}}}}}",
           "source": {
             "class": "genie.harness.base.Template"
           },
@@ -9019,7 +9028,7 @@
         "c9500": {
           "doc": "Parser for show redundancy",
           "groups": [],
-          "schema": "{'red_sys_info': {'available_system_uptime': <class 'str'>, 'switchovers_system_experienced': <class 'str'>, 'standby_failures': <class 'str'>, 'last_switchover_reason': <class 'str'>, 'hw_mode': <class 'str'>, 'conf_red_mode': <class 'str'>, 'oper_red_mode': <class 'str'>, 'maint_mode': <class 'str'>, 'communications': <class 'str'>, Optional  (str) communications_reason: <class 'str'>}, 'slot': {Any  (str) *: {'curr_sw_state': <class 'str'>, 'uptime_in_curr_state': <class 'str'>, 'image_ver': <class 'str'>, Optional  (str) boot: <class 'str'>, Optional  (str) config_register: <class 'str'>, 'compiled_by': <class 'str'>, 'compiled_date': <class 'str'>}}}",
+          "schema": "{'red_sys_info': {'available_system_uptime': <class 'str'>, 'switchovers_system_experienced': <class 'str'>, 'standby_failures': <class 'str'>, 'last_switchover_reason': <class 'str'>, 'hw_mode': <class 'str'>, 'conf_red_mode': <class 'str'>, 'oper_red_mode': <class 'str'>, 'maint_mode': <class 'str'>, Optional  (str) communications: <class 'str'>, Optional  (str) communications_reason: <class 'str'>}, 'slot': {Any  (str) *: {'curr_sw_state': <class 'str'>, 'uptime_in_curr_state': <class 'str'>, 'image_ver': <class 'str'>, Optional  (str) boot: <class 'str'>, Optional  (str) config_register: <class 'str'>, 'compiled_by': <class 'str'>, 'compiled_date': <class 'str'>}}}",
           "source": {
             "class": "genie.harness.base.Template"
           },
@@ -10954,6 +10963,11 @@
       "v"
     ],
     [
+      "2",
+      "r",
+      "v"
+    ],
+    [
       "3",
       "a",
       "c",
@@ -11203,6 +11217,13 @@
       "i",
       "n",
       "r"
+    ],
+    [
+      "e",
+      "i",
+      "o",
+      "s",
+      "x"
     ],
     [
       "e",

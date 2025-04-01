@@ -1,0 +1,65 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console:
+      new_state: configure_line
+  prompt: Reg22-FX-EOR1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+    line vty: ''
+    terminal width 511: ''
+  prompt: Reg22-FX-EOR1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    show module:
+      response:
+      - "Mod Ports                  Module-Type                            Model \
+        \        \r\n  Status\r\n--- ----- ------------------------------------------------\
+        \ ---------------------\r\n --------\r\n1    52   48x10G + 4x40/100G Ethernet\
+        \ Module               N9K-X9788TC-FX       \r\n ok        \r\n2    52   48x10G\
+        \ + 4x40/100G Ethernet Module               N9K-X9788TC-FX       \r\n ok \
+        \       \r\n22   0    4-slot Fabric Module                             N9K-C9504-FM-E\
+        \       \r\n ok        \r\n26   0    4-slot Fabric Module                \
+        \             N9K-C9504-FM-E       \r\n ok        \r\n27   0    Supervisor\
+        \ Module                                N9K-SUP-A            \r\n ha-standby\r\
+        \n28   0    Supervisor Module                                N9K-SUP-A   \
+        \         \r\n active *  \r\n29   0    System Controller                 \
+        \               N9K-SC-A             \r\n standby   \r\n30   0    System Controller\
+        \                                N9K-SC-A             \r\n active    \r\n\r\
+        \nMod  Sw                       Hw    Slot\r\n---  -----------------------\
+        \ ------ ----\r\n\r1    10.5(2)IMG9(0.187)       0.1110 LC1 \r\n2    10.5(2)IMG9(0.187)\
+        \       0.1110 LC2 \r\n22   10.5(2)IMG9(0.187)       1.1    FM2 \r\n26   10.5(2)IMG9(0.187)\
+        \       1.1    FM6 \r\n27   10.5(2)IMG9(0.187)       2.2    SUP1\r\n28   10.5(2)IMG9(0.187)\
+        \       2.2    SUP2\r\n29   10.5(2)IMG9(0.187)       1.6    SC1 \r\n30   10.5(2)IMG9(0.187)\
+        \       1.6    SC2 \r\n\r\n\r\nMod  MAC-Address(es)                      \
+        \   Serial-Num\r\n---  --------------------------------------  ----------\r\
+        \n1    a0-23-9f-0c-82-70 to a0-23-9f-0c-82-b3  FOC21240U5N\r\n2    a0-23-9f-0c-82-f8\
+        \ to a0-23-9f-0c-83-3b  FOC21240U6A\r\n22   NA                           \
+        \           FOC21133KE9\r\n26   NA                                      FOC21174CJ0\r\
+        \n27   08-96-ad-9b-45-16 to 08-96-ad-9b-45-27  FOC21116QSD\r\n28   08-96-ad-9b-4c-54\
+        \ to 08-96-ad-9b-4c-65  FOC21121NR2\r\n29   NA                           \
+        \           FOC210131C6\r\n30   NA                                      FOC210130Z8\r\
+        \n\r\nMod  Online Diag Status\r\n---  ------------------\r\n\r1    Pass\r\n\
+        2    Pass\r\n22   Pass\r\n26   Pass\r\n27   Pass\r\n28   Pass\r\n29   Pass\r\
+        \n30   Pass"
+      response_type: circular
+    term length 0: ''
+    term width 511: ''
+    terminal session-timeout 0: ''
+  prompt: Reg22-FX-EOR1#

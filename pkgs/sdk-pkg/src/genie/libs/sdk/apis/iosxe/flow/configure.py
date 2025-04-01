@@ -1696,3 +1696,42 @@ def clear_monitor_capture(device, capture_name):
         device.execute(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not execute monitor capture {capture_name} clear. \nError: {e}")
+
+def unconfigure_exporter(device, exporter_name):
+    """ Unconfigure Flow Exporter on Device
+
+        Args:
+            device (`obj`): Device object
+            exporter_name (`str`): Flow exporter name
+
+        Return:
+            None
+
+        Raise:
+            SubCommandFailure: Failed unconfiguring flow exporter
+    """
+    log.debug(f"Unconfiguring flow exporter {exporter_name} on device {device.name}")
+    cmd = [f"no flow exporter {exporter_name}"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not unconfigure flow exporter {exporter_name}. Error:\n{e}')
+
+def unconfigure_device_sampler(device, sampler_name):
+    """ Unconfigure Sampler on Device
+        Args:
+            device (`obj`): Device object
+            sampler_name (`str`): Sampler name
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed unconfiguring sampler
+    """
+    log.debug(f"Unconfiguring sampler {sampler_name} on device {device.name}")
+    cmd = [f"no sampler {sampler_name}"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(f"Failed to unconfigure sampler {sampler_name} on device {device.name}. Error: {e}")
+        raise SubCommandFailure(f'Could not unconfigure sampler {sampler_name}. Error:\n{e}')
+    
