@@ -282,31 +282,6 @@ def route_map_unconfigure_description(device, route_map_name, permit, descriptio
             )
         )
 
-def unconfigure_route_map(device, route_map_name):
 
-    """ un configure route map
-
-        Args:
-            device ('obj'): device to execute on
-            route_map_name ('int'): route map name
-
-        Return:
-            None
-
-        Raises:
-            SubCommandFailure
-    """
-    # Build config string
-    cfg_str = [f"no route-map {route_map_name}"]
-
-    try:
-        device.configure(cfg_str)
-
-    except SubCommandFailure as e:
-        raise SubCommandFailure(
-            "Failed to un-configure route map {route_map_name}, Error: {error}"\
-                .format(route_map_name=route_map_name, error=e
-            )
-        )
 
 

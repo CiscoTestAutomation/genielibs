@@ -11,6 +11,8 @@ from unicon.plugins.tests.mock.mock_device_iosxe import MockDeviceTcpWrapperIOSX
 import unicon
 
 from unicon.core.errors import UniconBackendDecodeError
+from unicon.plugins.tests.mock.mock_device_iosxe_cat9k import MockDeviceTcpWrapperIOSXECat9k
+from textwrap import dedent
 
 unicon.settings.Settings.POST_DISCONNECT_WAIT_SEC = 0
 unicon.settings.Settings.GRACEFUL_DISCONNECT_WAIT_SEC = 0.2
@@ -82,3 +84,49 @@ class TestIosXEConnect(unittest.TestCase):
         except:
             ...
         self.device.api.configure_management_console.assert_called_once()
+
+
+class TestIosXEConnect_1(unittest.TestCase):
+
+    def test_connect(self):
+        steps = Steps()
+
+        md = MockDeviceTcpWrapperIOSXECat9k(port=0, state='general_exec', hostname='R1')
+        md.start()
+
+        testbed = dedent("""
+        devices:
+            R1:
+                os: iosxe
+                platform: cat9k
+                credentials:
+                    default:
+                        password: cisco
+                connections:
+                    cli:
+                        command: 'telnet 127.0.0.1 {}'
+            """.format(md.ports[0]))
+        tb = loader.load(testbed)
+        device = tb.devices.R1
+
+        cls = Connect()
+
+        # To mock the device recovery processor
+        mock_parent = Mock()
+        mock_parent.device_recovery_processor = True
+        # Create a mock section object with the mock parent
+        mock_section = Mock()
+        mock_section.parent = mock_parent
+        cls.parameters = {'section': mock_section}
+
+        try:
+            cls.connect(steps=steps, device=device)
+        except Exception:
+            raise
+        finally:
+            device.disconnect()
+            md.stop()
+
+        # STEP 1: Connecting to the device is set to false,
+        # if the recovery processor is enabled.
+        self.assertFalse(steps.steps[0].result_rollup)

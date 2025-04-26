@@ -842,6 +842,7 @@ install_image:
     VERIFY_RUNNING_IMAGE = True
     STACK_MEMBER_TIMEOUT = 300
     STACK_MEMBER_INTERVAL = 30
+    RELOAD_WAIT=30
     # ============
     # Stage Schema
     # ============
@@ -851,6 +852,7 @@ install_image:
         Optional('save_system_config'): bool,
         Optional('install_timeout'): int,
         Optional('reload_timeout'): int,
+        Optional("reload_wait"): int,
         Optional('issu'): bool,
         Optional('skip_boot_variable'): bool,
         Optional('skip_save_running_config'): bool,
@@ -887,7 +889,8 @@ install_image:
                       reload_args=RELOAD_SERVICE_ARGS,
                       issu=ISSU, stack_member_timeout=STACK_MEMBER_TIMEOUT,
                       stack_member_interval=STACK_MEMBER_INTERVAL,
-                      skip_save_running_config=SKIP_SAVE_RUNNING_CONFIG):
+                      skip_save_running_config=SKIP_SAVE_RUNNING_CONFIG,
+                      reload_wait=RELOAD_WAIT):
         # check if device is a stack device otherwise call the InstallImage for 
         # iosxe devices.
         if hasattr(device, 'chassis_type') and device.chassis_type == 'stack':
@@ -992,4 +995,5 @@ install_image:
                       install_timeout=install_timeout,
                       reload_service_args=None,
                       issu=issu,
+                      reload_wait=reload_wait
                       )

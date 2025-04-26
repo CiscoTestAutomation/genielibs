@@ -293,6 +293,8 @@ class CleanTestcase(Testcase):
             # use in __iter__()
             self.device_recovery_processor = partial(
                 recovery_processor, **self.device.clean['device_recovery'])
+            # To enable recovery processor report
+            self.device_recovery_processor.__report__ = True
 
         clean_json = load_clean_json()
         # Verify schema and load each stage

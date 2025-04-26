@@ -1,34 +1,14 @@
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
 from genie.libs.sdk.apis.iosxe.interface.configure import configure_span_monitor_session
+from unittest.mock import Mock
 
 
-class TestConfigureSpanMonitorSession(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = """
-        devices:
-          Startek:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: router
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Startek']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureSpanMonitorSession(TestCase):
 
     def test_configure_span_monitor_session(self):
-        result = configure_span_monitor_session(self.device, 1, 'po 10', 'both', 'HundredGigE1/0/29/1')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.device = Mock()
+        result = configure_span_monitor_session(self.device, '1', 'FiftyGigE1/0/3', 'both', 'FiftyGigE1/0/9')
+        self.assertEqual(
+            self.device.configure.mock_calls[0].args,
+            (['monitor session 1  source interface FiftyGigE1/0/3 both', 'monitor session 1  destination interface FiftyGigE1/0/9'],)
+        )

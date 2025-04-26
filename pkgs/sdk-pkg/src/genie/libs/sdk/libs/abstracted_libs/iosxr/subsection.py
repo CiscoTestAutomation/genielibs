@@ -44,8 +44,7 @@ def save_device_information(device, **kwargs):
         conn = device
 
     # Install commit ( when thre are package to bring up features)
-    # from admin prompt
-    conn.admin_execute('install commit')
+    conn.execute('install commit')
 
 
 def get_default_dir(device):

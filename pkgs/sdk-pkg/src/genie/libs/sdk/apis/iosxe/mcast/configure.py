@@ -458,3 +458,35 @@ def configure_pim_auto_rp_listener(device, loopback_number=None, ttl=None, annou
         device.configure(configs)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure pim autorp listener. Error:{e}")
+    
+def unconfigure_pim_auto_rp_listener(device, loopback_number=None, ttl=None, announce=True, discovery=True):
+    """ Unconfig pim autorp listener
+        Args:
+            device ('obj'): Device object
+            loopback_number ('int') : Loopback number
+            ttl ('int'): TTL value
+            announce ('bool'): True or False
+            discovery ('bool'): True or False
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+  
+    '''
+    Unconfiguring ip pim autorp listener
+    no ip pim send-rp-announce loopback {looback_number} scope {ttl}
+    no ip pim send-rp-discovery loopback {loppback_number} scope {ttl}
+    '''
+    configs = [f"no ip pim autorp listener"]
+               
+    if discovery and loopback_number and ttl:
+        configs.append(f"no ip pim send-rp-discovery loopback {loopback_number} scope {ttl}")
+                       
+    if announce and loopback_number and ttl:
+        configs.append(f"no ip pim send-rp-announce loopback {loopback_number} scope {ttl}")
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure pim autorp listener. Error:{e}")

@@ -1,8 +1,6 @@
-import re
-
 # Genie
 from genie.ops.base import Base
-from genie.metaparser.util.schemaengine import Any, ListOf
+from genie.metaparser.util.schemaengine import Any
 
 
 class Management(Base):

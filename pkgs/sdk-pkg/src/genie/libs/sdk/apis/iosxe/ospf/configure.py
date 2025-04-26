@@ -1033,7 +1033,7 @@ def configure_route_map(device, route_map_name, permit, prefix_list_name=None, a
 
         Args:
             device ('obj'): device to execute on
-            route_map_name ('int'): route map name
+            route_map_name ('str'): route map name
             permit ('int'): Sequence to insert to existing route-map entry
             prefix_list_name ('str',optional): prefix-list name to be used
             acl_name ('str',optional): IPv4 ACL to be used
@@ -1121,7 +1121,7 @@ def unconfigure_route_map(device, route_map_name, permit=None):
 
         Args:
             device (`obj`): device to execute on
-            route_map_name (`int`): route map name
+            route_map_name (`str`): route map name
             permit (`int`, optional): Sequence to insert to existing route-map entry
         Return:
             None

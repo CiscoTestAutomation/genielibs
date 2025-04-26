@@ -517,3 +517,13 @@ class TestYangSnapshot(unittest.TestCase):
             e.attrib['{urn:ietf:params:xml:ns:netconf:base:1.0}operation'],
             'remove',
         )
+
+    def test_get_pretty_xpath(self):
+        xpath = '/ios:native/ios:ntp/ios-ntp:peer' \
+            '/ios-ntp:ipv6[host-name="genericstring"]'
+        pretty_xpath = self.yang_snapshot.get_pretty_xpath(xpath)
+        self.assertEqual(
+            pretty_xpath,
+            '/ios:native/ios:ntp/ios-ntp:peer'
+            '/ios-ntp:ipv6[ios-ntp:host-name="genericstring"]'
+        )

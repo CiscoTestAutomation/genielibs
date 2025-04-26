@@ -1133,3 +1133,30 @@ def configure_vrf_rd_rt(device, vrf_name, rd, rt):
         raise SubCommandFailure(
             f"Failed to configure VRF RD and RT on device {device.name}. Error:\n{e}"
         )
+
+def unconfigure_data_mdt(device, vrf_name, address_family, ip_address, wildcard_mask, threshold=None):
+    """ Unconfigure Data MDT
+        Args:
+            device ('obj'): Device object
+            vrf_name ('str'): VRF name
+            address_family ('str'): Address family (e.g., ipv4, ipv6)
+            ip_address ('str'): IP address
+            wildcard_mask ('str'): Wildcard mask
+            threshold ('int', optional): Threshold value
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to unconfigure Data MDT
+    """
+    config = [
+        f"vrf definition {vrf_name}",
+        f"address-family {address_family}",
+        f"no mdt data {ip_address} {wildcard_mask}" + (f" threshold {threshold}" if threshold else "")
+    ]
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure Data MDT on device {device.name}. Error:\n{e}"
+        )

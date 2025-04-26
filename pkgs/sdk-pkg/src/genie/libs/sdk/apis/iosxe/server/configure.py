@@ -340,3 +340,53 @@ def configure_radius_server_dtls_watchdoginterval(device, server_name=None, watc
         device.configure(config_list)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not configure radius server dtls watchdoginterval on device {device.name}. Error:\n{e}')
+
+def configure_radius_server_with_dtls_ipv6(device, server_name='TMP_NAME', source_interface='vlan 199'):
+    """ Configure radius server with DTLS IPv6 source interface
+        Args:
+            device ('obj'): Device object
+            server_name('str'): Radius server name
+            source_interface('str'): Source interface for DTLS IPv6
+            vlan('str'): Vlan for source interface
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config_list = [
+        f'radius server {server_name}',
+        f'dtls ipv6 radius source-interface {source_interface}'
+    ]
+
+    try:
+        device.configure(config_list)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configure radius server with DTLS IPv6 on device {device.name}. Error:\n{e}')
+
+
+def configure_radius_server_dtls_port(device, server_name=None, dtls_port=None):
+    """ Configure radius server dtls port
+        Args:
+            device ('obj'): Device object
+            server_name('str', optional): Radius server name
+            dtls_port('int', optional): DTLS port number
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config_list = []
+    
+    if server_name:
+        config_list.append(f'radius server {server_name}')
+    if dtls_port:
+        config_list.append(f'dtls port {dtls_port}')
+    
+    if not config_list:
+        raise ValueError("At least one of server_name or dtls_port must be provided")
+    
+    try:
+        device.configure(config_list)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configure radius server dtls port on device {device.name}. Error:\n{e}')

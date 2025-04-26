@@ -1284,3 +1284,45 @@ def get_platform_component_firmware_info(device):
         }
 
     return output
+
+def show_tech_support_platform_interface(device, file_name, interface=None, port_id=None):
+    """
+    Redirect the interface-specific information from the command output to a file
+    Args:
+        device (`obj`): Device object
+        file_name (`str`): name of file to save the output in bootflash
+        interface ('str`, Optional): Interface name
+        port_id (`int`, Optional): Port ID of the port-channel interface
+    Returns:
+        Device output or None
+    """
+    try:
+        if not interface and not port_id:
+            raise ValueError("Either interface or port_id must be provided")
+        elif port_id and not interface:
+            device.execute(f"show tech-support platform interface port-channel {port_id} | redirect bootflash:{file_name}")
+        elif interface and not port_id:
+            device.execute(f"show tech-support platform interface {interface} | redirect bootflash:{file_name}")
+        else:
+            raise ValueError("Both interface and port_id cannot be provided")
+        return None
+    except SchemaEmptyParserError as e:
+        log.error("Command 'show tech-support platform interface {interface}' did not return any results: {e}".format(e=e))
+        return None
+
+def show_tech_support_platform_monitor(device, file_name, session_id):
+    """redirect show tech-support platform monitor for a specific session ID to a specific file in device bootflash
+
+        Args:
+            device    (`obj`): Device object
+            file_name (`str`): name of file to save the output in bootflash
+            session_id(`int`): <1-66>  SPAN session id
+        Returns:
+            None
+    """
+    
+    log.debug(f"Redirecting the output to bootflash:{file_name}")
+    try:
+        device.execute(f"show tech-support platform monitor {session_id} | redirect bootflash:{file_name}")
+    except SubCommandFailure as e:
+        log.error(f"Failed to redirect the output to bootflash: {e}")

@@ -818,7 +818,7 @@
       },
       "iosxe": {
         "class": "Management",
-        "doc": "Management Genie Ops Object",
+        "doc": "Management Genie Ops Object\n\n    Try to discovery management connectivity:\n\n    * management interface\n    * management VRF (if used)\n    * management address (IPv4 only)\n    * default gateway (IPv4 only)\n\n    This model assumes the default route (0.0.0.0) will point to the management interface.\n\n    ",
         "module_name": "management.iosxe.management",
         "package": "genie.libs.ops",
         "tokens": {
@@ -853,7 +853,7 @@
     "module_name": "management.management",
     "package": "genie.libs.ops",
     "uid": "management",
-    "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/management/management.py#L8"
+    "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/management/management.py#L6"
   },
   "mcast": {
     "class": "Mcast",

@@ -4,14 +4,16 @@ Routing entry for 0.0.0.0/0, supernet
   Known via "static", distance 1, metric 0, candidate default path
   Routing Descriptor Blocks:
   * 10.85.84.1
-      Route metric is 0, traffic share count is 1"""
+      Route metric is 0, traffic share count is 1
+"""
 
     ShowIpRouteDistributorIPOutput = """
 Routing entry for 10.85.84.0/24
   Known via "connected", distance 0, metric 0 (connected, via interface)
   Routing Descriptor Blocks:
   * directly connected, via Ethernet0
-      Route metric is 0, traffic share count is 1"""
+      Route metric is 0, traffic share count is 1
+"""
 
     ShowIpInterfaceEthernet0Output = """
 Ethernet0 is up, line protocol is up
@@ -46,8 +48,45 @@ Ethernet0 is up, line protocol is up
   Network address translation is disabled
   WCCP Redirect outbound is disabled
   WCCP Redirect exclude is disabled
-  BGP Policy Mapping is disabled"""
+  BGP Policy Mapping is disabled
+"""
 
-    ManagementOpsOutput = {'management': {'ipv4_gateway': '10.85.84.1',
-  'interface': 'Ethernet0',
-  'ipv4_address': '10.85.84.48/24'}}
+    ManagementOpsOutput = {
+        "management": {
+            "ipv4_gateway": "10.85.84.1",
+            "interface": "Ethernet0",
+            "ipv4_address": "10.85.84.48/24",
+        }
+    }
+
+
+class ManagementOutput2(object):
+    ShowIpRouteDistributor0000Output = """
+Default gateway is 172.27.147.1
+
+Host               Gateway           Last Use    Total Uses  Interface
+ICMP redirect cache is empty
+"""
+    ShowIpRouteDistributorIPOutput = """
+Default gateway is 172.27.147.1
+
+Host               Gateway           Last Use    Total Uses  Interface
+ICMP redirect cache is empty
+"""
+    ShowIpArpIPOutput = """
+Protocol  Address          Age (min)  Hardware Addr   Type   Interface
+Internet  172.27.147.1             0   aabb.cc00.0200  ARPA   Ethernet0/0
+"""
+    ShowIpInterfaceIfnameOutput = """
+Ethernet0/0 is up, line protocol is up
+  Internet address is 1.1.1.1/24
+  Broadcast address is 255.255.255.255
+"""
+
+    ManagementOpsOutput = {
+        "management": {
+            "ipv4_gateway": "172.27.147.1",
+            "interface": "Ethernet0/0",
+            "ipv4_address": "1.1.1.1/24",
+        }
+    }

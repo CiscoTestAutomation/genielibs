@@ -8,6 +8,9 @@ configure:
     snmp-server user snmp_user snmp_group v3 auth sha-2 256 cisco123 priv aes 256 cisco123: "snmp-server
       user snmp_user snmp_group v3 auth sha-2 256 cisco123 priv aes 256 cisco123\r\
       \n"
+    snmp-server user snmp_user_3des snmp_group v3 auth sha-2 256 cisco123 priv 3des 256 cisco123: "snmp-server
+      user snmp_user_3des snmp_group v3 auth sha-2 256 cisco123 priv 3des 256 cisco123\r\
+      \n"
   prompt: C1113-8P_pkumarmu(config)#
 configure_line:
   commands:

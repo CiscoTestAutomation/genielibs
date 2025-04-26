@@ -1717,6 +1717,31 @@ def unconfigure_exporter(device, exporter_name):
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not unconfigure flow exporter {exporter_name}. Error:\n{e}')
 
+
+def configure_vlan_and_no_shutdown(device, vlan_id):
+    """ Configure VLAN and No Shutdown
+        Args:
+            device (`obj`): Device object
+            vlan_id (`str`): VLAN ID
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring VLAN and no shutdown
+    """
+    cmd = [
+        f"interface vlan {vlan_id}",
+        "no shutdown",
+        f"vlan {vlan_id}",
+        "no shutdown"
+    ]
+    log.debug(f"Configuring VLAN {vlan_id} with commands: {cmd}")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(f"Failed to configure VLAN {vlan_id} and no shutdown. Error: {e}")
+        raise SubCommandFailure(f'Could not configure VLAN {vlan_id} and no shutdown. Error:\n{e}'
+        )
+        
 def unconfigure_device_sampler(device, sampler_name):
     """ Unconfigure Sampler on Device
         Args:
@@ -1735,3 +1760,4 @@ def unconfigure_device_sampler(device, sampler_name):
         log.error(f"Failed to unconfigure sampler {sampler_name} on device {device.name}. Error: {e}")
         raise SubCommandFailure(f'Could not unconfigure sampler {sampler_name}. Error:\n{e}')
     
+

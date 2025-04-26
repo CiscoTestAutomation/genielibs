@@ -464,10 +464,11 @@ class APIUTGenerator:
         os.environ['UNICON_RECORD'] = TEMP_DIR
 
         self.exclude_apis = []
-        self.apis = self._get_apis(
-            module, module_path, api, destination)
         self.test_arguments = self._load_arguments(
             test_arguments, test_arguments_yaml)
+        self.apis = self._get_apis(
+            module, module_path, api, destination)
+
         self.report = TestReport()
         self.template_env = Environment(loader=FileSystemLoader(TEMPLATE_FOLDER))
 
@@ -659,6 +660,9 @@ class APIUTGenerator:
                 with open(test_arguments_yaml) as f:
                     arguments = yaml.load(f, Loader=yaml.Loader)
                 self.exclude_apis = arguments.pop('exclude', [])
+                # Ensure it's always a list
+                if not isinstance(self.exclude_apis, list):
+                    self.exclude_apis = [self.exclude_apis]
             except Exception as e:
                 logger.error("Failed to load test arguments")
                 raise e

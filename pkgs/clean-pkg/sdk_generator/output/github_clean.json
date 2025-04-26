@@ -277,7 +277,7 @@
           "os": "iosxe"
         },
         "uid": "ConfigureReplace",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L3216"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L3222"
       }
     }
   },
@@ -332,7 +332,7 @@
           "os": "iosxe"
         },
         "uid": "Connect",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L3295"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L3301"
       },
       "linux": {
         "folders": {
@@ -386,7 +386,7 @@
           "os": "iosxe"
         },
         "uid": "CopyToDevice",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L2264"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L2270"
       }
     },
     "module_name": "stages.stages",
@@ -625,7 +625,7 @@
           "os": "iosxe"
         },
         "uid": "InstallPackages",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1524"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1530"
       }
     }
   },
@@ -653,7 +653,7 @@
           "os": "iosxe"
         },
         "uid": "InstallRemoveSmu",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1054"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1060"
       }
     }
   },
@@ -667,7 +667,7 @@
           "os": "iosxe"
         },
         "uid": "InstallSmu",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1297"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1303"
       }
     }
   },
@@ -768,7 +768,7 @@
           "os": "iosxe"
         },
         "uid": "Reload",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1622"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1628"
       }
     },
     "module_name": "stages.stages",
@@ -786,7 +786,7 @@
           "os": "iosxe"
         },
         "uid": "ResetConfiguration",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L3531"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L3544"
       }
     }
   },
@@ -830,7 +830,7 @@
           "os": "iosxe"
         },
         "uid": "RommonBoot",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1978"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1984"
       }
     }
   },
@@ -865,7 +865,7 @@
           "os": "iosxe"
         },
         "uid": "SetControllerMode",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L3748"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L3761"
       }
     }
   },

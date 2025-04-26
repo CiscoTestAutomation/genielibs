@@ -2611,4 +2611,25 @@ def configure_ipv6_dhcp_pool(device, pool_name, address_prefix, bootfile_url):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not configure IPv6 DHCP pool {pool_name}. Error: {e}"
+        )    
+
+def configure_tftp_server_boot(device, file_path):
+    """ Configure TFTP server
+        Args:
+            device ('obj'): device to use
+            file_path ('str'): path to the file to be served by TFTP
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure TFTP server
+    """
+    log.debug(f"Configuring TFTP server with file {file_path}")
+    config = [
+        f"tftp-server {file_path}"
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure TFTP server with file {file_path}. Error:\n{e}"
         )

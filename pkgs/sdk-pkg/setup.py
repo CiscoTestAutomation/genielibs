@@ -56,7 +56,7 @@ install_requires = [
     f'yang.connector{version_range}',
     f'rest.connector{version_range}',
     'pysnmp>=6.1.4,<6.2',
-    'pyasn1==0.4.8',
+    'pyasn1==0.6.0',
 ]
 
 # launch setup

@@ -1,8 +1,10 @@
 import logging
 from lxml import etree
 from ncclient import xml_
-from genie.libs.sdk.triggers.blitz import yangexec, rpcverify,\
-                                          netconf_util
+from genie.libs.sdk.triggers.blitz import yangexec
+from genie.libs.sdk.triggers.blitz import rpcverify
+from genie.libs.sdk.triggers.blitz import netconf_util
+from genie.libs.sdk.triggers.blitz.rpcbuilder import YSNetconfRPCBuilder
 
 
 log = logging.getLogger(__name__)
@@ -454,6 +456,29 @@ class YangSnapshot(object):
                         .format(root))
             return None
 
+    def get_pretty_xpath(self, xpath):
+        '''Get a pretty Xpath.'''
+
+        if not hasattr(self, "rpcbuilder"):
+            self.rpcbuilder = YSNetconfRPCBuilder(
+                prefix_namespaces='always',
+                nsmap=self.namespace,
+            )
+        if not hasattr(self, "container"):
+            self.container = self.rpcbuilder.netconf_element('config')
+        try:
+            child, pretty_xpath = self.rpcbuilder._get_nodes(
+                xpath,
+                self.container,
+                value=None,
+                xml_value=None,
+                edit_op=None,
+            )
+        except Exception:
+            return None
+        else:
+            return pretty_xpath
+
     def build_rpc(self, xpath_set):
         '''Build an edit-config to cleanup containers and/or list instances.'''
 
@@ -479,15 +504,23 @@ class YangSnapshot(object):
         if root is None or root not in self.pre_config[device.name]:
             return
 
+        # Get the pretty Xpath. Sometimes, the Xpath looks like this:
+        # /ios:native/ios:interface/ios:Async[name="0/1/0"], where 'name'
+        # is a key of the list instance 'ios:Async'. It should be 'ios:name'
+        # instead of 'name' to make the xpath() function work.
+        pretty_xpath = self.get_pretty_xpath(modified_xpath)
+        if pretty_xpath is None:
+            return
+
         # Make sure modified_xpath is a valid one. Otherwise it is ignored.
-        xpath_list = modified_xpath.split('/')
+        xpath_list = pretty_xpath.split('/')
         if xpath_list[0] != '':
             return
         xpath_list_length = len(xpath_list)
         if xpath_list_length < 2:
             return
 
-        for i in range(2, xpath_list_length):
+        for i in range(2, xpath_list_length + 1):
             ancestor_xpath = '/'.join(xpath_list[:i])
             if self.pre_config[device.name][root] is None:
                 xpath_set.add(ancestor_xpath)

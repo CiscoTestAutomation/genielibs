@@ -297,7 +297,7 @@ def configure_snmp_server_user(device,
             acl_name ('str'): name of the Standerd acl, acl list name, ipv6 named acl
             acl_type ('str'): specify IPv6 Named Access-List
         Returns:
-            None
+            str: CLI output from the device after applying the configuration
         Raises:
             SubCommandFailure
     """
@@ -314,7 +314,7 @@ def configure_snmp_server_user(device,
         if(priv_method == 'aes'):
             if aes_algorithm is not None and aes_password is not None:
                 cli = f"{cli} priv {priv_method} {aes_algorithm} {aes_password}"
-        elif(priv_method == 'des'):
+        elif(priv_method in ['des', '3des']):
             if des_algorithm is not None and des_password is not None:
                 cli = f"{cli} priv {priv_method} {des_algorithm} {des_password}"
 
@@ -325,7 +325,7 @@ def configure_snmp_server_user(device,
             cli = cli+' access'+acl_name
 
     try:
-        device.configure(cli)
+        return device.configure(cli)
     except SubCommandFailure as error:
         raise SubCommandFailure(
             f"Could not configure snmp user. Error:\n{error}"

@@ -2122,34 +2122,51 @@ def configure_ipv6_pim_rp_vrf(device, vrf_name, address):
             f"Failed to configure IPv6 PIM RP for VRF {vrf_name}:\n{e}"
         )
 
-def configure_ip_pim_bsr_rp_candidate(device, vrf_name=None, interface_name=None):
-    """ Configure ip pim candidate rp or bsr for both global and VRF contexts.
+def configure_ip_pim_bsr_rp_candidate(device, vrf_name=None, interface_name=None, bsr=False, rp=False, negate_bsr=False, negate_rp=False):
+    """ Configure or unconfigure ip pim candidate rp or bsr for both global and VRF contexts.
         Args:
             device ('obj'): Device
             vrf_name ('str', optional): VRF name
-            interface_name ('str', Optional): Interface name
+            interface_name ('str', optional): Interface name
+            bsr ('bool', optional): Flag to configure bsr-candidate. Default is False.
+            rp ('bool', optional): Flag to configure rp-candidate. Default is False.
+            negate_bsr ('bool', optional): Flag to unconfigure bsr-candidate. Default is False.
+            negate_rp ('bool', optional): Flag to unconfigure rp-candidate. Default is False.
         Returns:
             None
         Raises:
             SubCommandFailure: If the configuration fails on the device
     """
 
-    log.debug(f"Configure ip pim candidate rp or bsr for both global and VRF contexts")
+    log.debug(f"Configuring or unconfiguring ip pim candidate rp or bsr for both global and VRF contexts")
 
+    cmds = []
+
+    # Determine the base command based on VRF context
     if vrf_name:
-        cmds = [
-            f"ip pim vrf {vrf_name} bsr-candidate {interface_name}",
-            f"ip pim vrf {vrf_name} rp-candidate {interface_name}"
-        ]
+        base_bsr_cmd = f"ip pim vrf {vrf_name} bsr-candidate {interface_name}"
+        base_rp_cmd = f"ip pim vrf {vrf_name} rp-candidate {interface_name}"
     else:
-        cmds = [
-            f"ip pim bsr-candidate {interface_name}",
-            f"ip pim rp-candidate {interface_name}"
-        ]
+        base_bsr_cmd = f"ip pim bsr-candidate {interface_name}"
+        base_rp_cmd = f"ip pim rp-candidate {interface_name}"
 
+    # Add commands based on flags
+    if bsr:
+        cmds.append(base_bsr_cmd)
+    if rp:
+        cmds.append(base_rp_cmd)
+    if negate_bsr:
+        cmds.append(f"no {base_bsr_cmd}")
+    if negate_rp:
+        cmds.append(f"no {base_rp_cmd}")
+
+    # Execute the commands
     try:
-        device.configure(cmds)
+        if cmds:
+            device.configure(cmds)
+        else:
+            log.warning("No commands to execute. Please provide valid flags.")
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            f"Failed to configure ip pim candidate rp or bsr for both global and VRF contexts on device {device.name}. Error:\n{e}"
-            )
+            f"Failed to configure or unconfigure ip pim candidate rp or bsr for both global and VRF contexts on device {device.name}. Error:\n{e}"
+        )
