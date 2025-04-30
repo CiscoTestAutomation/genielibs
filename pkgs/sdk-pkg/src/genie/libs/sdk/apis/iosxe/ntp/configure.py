@@ -220,3 +220,118 @@ def unconfigure_ntp_server(device, ntp_config, vrf=None):
             "on device {device}, "
             "Error: {e}".format(device=device.name, e=str(e))
         ) from e
+
+
+def configure_ntp_auth_key(device, key_id, key_value, key_type, key_enc_type=0):
+    """ Configures ntp authentication key
+
+        Args:
+            device ('obj'): device to configure on
+            key_id ('str'): Key ID
+            key_value ('str'): Key value
+            key_type ('str'): Key type
+            key_enc_type ('str', optional): Key encryption type (default: 0)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure(
+            "ntp authentication-key {} {} {} {}".format(
+                key_id, key_type, key_value, key_enc_type
+            )
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed in configuring ntp authentication key "
+            "on device {device}, "
+            "Error: {e}".format(device=device.name, e=str(e))
+        ) from e
+
+
+def configure_ntp_authenticate(device):
+    """ Configures ntp authenticate
+
+        Args:
+            device ('obj'): device to configure on
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure("ntp authenticate")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed in configuring ntp authenticate "
+            "on device {device}, "
+            "Error: {e}".format(device=device.name, e=str(e))
+        ) from e
+
+
+def configure_ntp_trusted_key(device, key_id):
+    """ Configures ntp trusted key
+
+        Args:
+            device ('obj'): device to configure on
+            key_id ('str'): Key ID
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure("ntp trusted-key {}".format(key_id))
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed in configuring ntp trusted key "
+            "on device {device}, "
+            "Error: {e}".format(device=device.name, e=str(e))
+        ) from e
+
+
+def configure_ntp_server_with_auth(device, server_ip, key_id, vrf=None):
+    """
+    Configure ntp server with authentication
+        Args:
+            device ('obj'): device to configure on
+            server_ip ('str'): Server IP address
+            key_id ('str'): Key ID
+            vrf ('str', optional): Optional VRF to be used during configuration (default: None)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        if vrf:
+            device.configure("ntp server vrf {} {} key {}".format(vrf, server_ip, key_id))
+        else:
+            device.configure("ntp server {} key {}".format(server_ip, key_id))
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed in configuring ntp server with authentication "
+            "on device {device}, "
+            "Error: {e}".format(device=device.name, e=str(e))
+        ) from e
+
+
+def configure_no_ntp(device):
+    """
+    Configure no ntp
+        Args:
+            device ('obj'): device to configure on
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure("no ntp")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed in configuring no ntp "
+            "on device {device}, "
+            "Error: {e}".format(device=device.name, e=str(e))
+        ) from e

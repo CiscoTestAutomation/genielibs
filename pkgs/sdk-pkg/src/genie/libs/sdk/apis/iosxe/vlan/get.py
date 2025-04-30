@@ -7,6 +7,9 @@ import logging
 # Genie
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
+# Unicon
+from unicon.core.errors import SubCommandFailure
+
 log = logging.getLogger(__name__)
 
 def get_vlan_info(device):
@@ -71,3 +74,26 @@ def get_vlan_name_status(device):
         vlan_info['vrf'].append(vrf_name if vrf_name != 'default' else 'default')
 
     return vlan_info
+
+def show_tech_support_platform_l2(device, file_name, vlan_id, interface=None, po=None):
+    """
+    Redirect the VLAN, interface, or port-channel-specific information from the command output to a file in bootflash of the device.
+    Args:
+        device (`obj`): Device object
+        file_name (`str`): Name of file to save the output in bootflash
+        vlan_id (`int`): VLAN IDs from 1-4094
+        interface (`str`, Optional): Interface name
+        po (`str`, Optional): Layer2 vp interface value
+    Returns:
+        None
+    """
+    try:
+        if interface:
+            command = f"show tech-support platform layer2 vp interface {interface} vlan {vlan_id} | redirect bootflash:{file_name}"
+        elif po:
+            command = f"show tech-support platform layer2 vp {po} vlan {vlan_id} | redirect bootflash:{file_name}"
+        else:
+            command = f"show tech-support platform layer2 vlan {vlan_id} | redirect bootflash:{file_name}"
+        device.execute(command)
+    except SubCommandFailure as e:
+        log.error(f"Failed to redirect the output to bootflash: {e}")

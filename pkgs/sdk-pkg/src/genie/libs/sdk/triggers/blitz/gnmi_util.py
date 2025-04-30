@@ -413,6 +413,9 @@ class GnmiMessage:
             device.active_notifications[device] = subscribe_thread
             subscribe_thread.start()
 
+            # Wait for the thread to complete
+            subscribe_thread.join()
+
             return subscribe_thread
         except Exception as exc:
             log.error(traceback.format_exc())
@@ -1450,7 +1453,11 @@ class GnmiSubscriptionOnce(GnmiSubscription):
             # Subscribe response ends here
             if response.HasField('sync_response'):
                 self.log.info('Subscribe sync_response')
-                stop_receiver = True
+                self.result = self.verifier.end_subscription(self.errors)
+                self.log.info('Subscribe ONCE processed')
+                self.stop()
+                break
+
             elif self.transaction_time and delta_time > self.transaction_time:
                 self.errors.append(self.TransactionTimeExceeded(
                     delta_time, self.transaction_time))
@@ -1465,10 +1472,10 @@ class GnmiSubscriptionOnce(GnmiSubscription):
                     self.verifier.subscribe_verify(
                         response, 'ONCE', self.namespace)
 
-            if stop_receiver:
-                self.result = self.verifier.end_subscription(self.errors)
-                self.log.info('Subscribe ONCE processed')
-                self.stop()
+            if self.stopped():
+                self.log.info("Notification stream stopped has been stopped")
+                break
+
         self.result = self.verifier.end_subscription(self.errors)
         self.log.info('Subscribe ONCE processed')
         self.stop()

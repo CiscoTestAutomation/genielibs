@@ -4,7 +4,7 @@ import re
 import logging
 from collections import OrderedDict
 from html import unescape
-from pyats.log.utils import banner
+
 log = logging.getLogger(__name__)
 
 try:
@@ -20,6 +20,7 @@ WITH_DEFAULTS_NS = "urn:ietf:params:xml:ns:yang:ietf-netconf-with-defaults"
 NMDA_NS = "urn:ietf:params:xml:ns:yang:ietf-netconf-nmda"
 NMDA_DATASTORE_NS = "urn:ietf:params:xml:ns:yang:ietf-datastores"
 NMDA_ORIGIN = "urn:ietf:params:xml:ns:yang:ietf-origin"
+
 
 class RpcInputError(ValueError):
     """Raised by :meth:`YSNetconfRPCBuilder.get_payload` on invalid input."""
@@ -123,6 +124,8 @@ class YSNetconfRPCBuilder(object):
         self.edit_data = ElementMaker(namespace=NMDA_NS,
                                       nsmap={'ds': NMDA_DATASTORE_NS})
         """Factory to create "edit-data" element RFC 8526."""
+
+        self.pfxmap = {v: k for k, v in self.nsmap.items()}
 
     def add_netconf_attr(self, elem, attr, value):
         """Add an appropriately namespaced attribute to the given Element."""
@@ -364,6 +367,7 @@ https://tools.ietf.org/html/rfc6020#section-9.13
         if not xpath.startswith('/'):
             raise XPathError(xpath, "must start with '/'")
         xpath_base = xpath
+        pretty_xpath = ""
 
         parent = root_elem
         child = None
@@ -402,6 +406,7 @@ https://tools.ietf.org/html/rfc6020#section-9.13
                     'but got "{1}"'
                     .format(n, xpath))
             pfx, localname = identifier.groups()
+            pretty_xpath += f"/{pfx}:{localname}"
             xpath = xpath[identifier.end():]
             log.debug("  ...minus pfx/localname: %s", xpath)
 
@@ -499,6 +504,7 @@ https://tools.ietf.org/html/rfc6020#section-9.13
 
                     # Make sure keys are present and first if any
                     for k, v in keys_values.items():
+                        pretty_xpath += self._get_xpath_expression(ns, k, v)
                         self._make_element(child, self._qname(k, ns), value=v)
 
                 parent = child
@@ -553,11 +559,26 @@ https://tools.ietf.org/html/rfc6020#section-9.13
                         self.add_netconf_attr(child, 'operation', edit_op)
 
                 for k, v in keys_values.items():
+                    pretty_xpath += self._get_xpath_expression(ns, k, v)
                     self._make_element(child, self._qname(k, ns), value=v)
 
             n += 1
 
-        return child
+        return child, pretty_xpath
+
+    def _get_xpath_expression(self, ns, key, value):
+        """Return the Xpath expression like [prefix:key="value"] for the given
+        namespace, key and value.
+
+        Helper method to :meth:`_get_nodes`.
+        """
+        if ns in self.pfxmap:
+            if '"' in value:
+                return f"[{self.pfxmap[ns]}:{key}='{value}']"
+            else:
+                return f'[{self.pfxmap[ns]}:{key}="{value}"]'
+        else:
+            return ""
 
     def _qname(self, name, default_ns=None):
         """Make a name into a QName.

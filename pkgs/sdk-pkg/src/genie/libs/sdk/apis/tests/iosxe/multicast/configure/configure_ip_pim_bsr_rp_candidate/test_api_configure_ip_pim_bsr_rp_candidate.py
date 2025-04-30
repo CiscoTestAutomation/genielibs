@@ -7,8 +7,8 @@ class TestConfigureIpPimBsrRpCandidate(TestCase):
 
     def test_configure_ip_pim_bsr_rp_candidate(self):
         self.device = Mock()
-        result = configure_ip_pim_bsr_rp_candidate(self.device, 'vrf1', 'Loopback11')
+        result = configure_ip_pim_bsr_rp_candidate(self.device, 'Mgmt-vrf', 'GigabitEthernet0/0', 'True', 'True', 'False', 'False')
         self.assertEqual(
             self.device.configure.mock_calls[0].args,
-            (['ip pim vrf vrf1 bsr-candidate Loopback11', 'ip pim vrf vrf1 rp-candidate Loopback11'],)
+            (['ip pim vrf Mgmt-vrf bsr-candidate GigabitEthernet0/0', 'ip pim vrf Mgmt-vrf rp-candidate GigabitEthernet0/0', 'no ip pim vrf Mgmt-vrf bsr-candidate GigabitEthernet0/0', 'no ip pim vrf Mgmt-vrf rp-candidate GigabitEthernet0/0'],)
         )

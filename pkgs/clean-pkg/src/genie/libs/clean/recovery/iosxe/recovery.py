@@ -75,18 +75,21 @@ def device_recovery(spawn, timeout, golden_image, recovery_password=None, **kwar
             None
     """
     device = spawn.device
-    credentials = device.credentials
-    dialog = RommonDialog()
-    dialog.dialog.process(
-        spawn,
-        timeout=timeout,
-        context={'boot_image': golden_image[0],
-                 'password': to_plaintext(credentials.get('default',{}).get('password')),
-                 'username': to_plaintext(credentials.get('default',{}).get('username')),
-                 'en_password': to_plaintext(credentials.get('enable',{}).get('password')),
-                 'pass_login':1},
-        prompt_recovery=True)
+    # check for image to boot if we have a value store it and replace it with the golden image
+    image_to_boot = device.default.context.get('image_to_boot')
+    device.default.context['image_to_boot'] = golden_image[0]
+    # check for login creds and update the cred list 
+    login_creds = device.default.context.get('login_creds')
+    if login_creds:
+        device.default.context['cred_list'] = login_creds
 
+    device.state_machine.go_to('enable',
+                                spawn,
+                                timeout=timeout,
+                                context=device.default.context,
+                                prompt_recovery=True)
+
+    device.default.context['image_to_boot'] = image_to_boot
 
 def tftp_device_recovery(spawn, timeout, device, tftp_boot, item, recovery_password=None
                         ,recovery_username=None,recovery_en_password=None, **kwargs):

@@ -4945,23 +4945,25 @@ def unconfigure_vfi(device, vlan,vpls):
             "Could not configure VFI, VLAN {vlan} with the provided parameters".format(vlan=vlan)
         )
 
-def configure_span_monitor_session(device, session_number, source_int, source_option, destination_int):
+def configure_span_monitor_session(device, session_number, source_int = None, source_option = None, destination_int = None):
 
      """ Configure span monitor session
          Args:
              device ('obj'): Device object
              session_number ('int'): session number
-             source_int ('str') : source interface name
-             source_option ('str'): name of the source option
-             destination_int ('str'): name of the destination interface
+             source_int ('str', optional): source interface name to be configured, default value None
+             source_option ('str', optional): name of the source option to be configured, default value None
+             destination_int ('str', optional): name of the destination interface to be configured, default value None
          Returns:
              None
          Raises:
              SubCommandFailure
      """
      configs = []
-     configs.append(f"monitor session {session_number}  source interface {source_int} {source_option}")
-     configs.append(f"monitor session {session_number}  destination interface {destination_int}")
+     if source_int and source_option :
+         configs.append(f"monitor session {session_number}  source interface {source_int} {source_option}")
+     if destination_int :
+         configs.append(f"monitor session {session_number}  destination interface {destination_int}")
 
      try:
          device.configure(configs)
@@ -10868,6 +10870,34 @@ def unconfigure_interface_media_type_backplane(device, interface):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not configure media_type on {interface}. Error:\n{e}"
+            )
+
+
+
+def configure_fec_auto_off(device, interface, fec='auto'):
+    """ Configure fec_auto and fec off on interface
+         auto - Enable FEC Auto-Neg
+          off  - Turn FEC off
+           FEC is mandatory for speeds 50G or higher
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+            fec (`str`): fec auto/off
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(
+        f"Configuring fec {fec} on interface {interface}")
+
+    cmd = [f"interface {interface}",
+           f"fec {fec}"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure fec {fec} on {interface}. Error:\n{e}"
             )
 
 

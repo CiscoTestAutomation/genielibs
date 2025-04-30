@@ -216,3 +216,55 @@ def unconfigure_ipv6_local_pool(device, name):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not unconfigure ipv6 local pool on {device}. Error:\n{e}")
+
+def configure_logging_ipv6(device, syslog_host, transport=None):
+    """ Configure logging for an IPv6 syslog host
+        Args:
+            device (`obj`): Device object
+            syslog_host (`str`): IPv6 address of the syslog host
+            transport (`str`, optional): Transport method (e.g., "udp" or "tcp"). Default is None.
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [f"logging host ipv6 {syslog_host}"]
+
+    # Add transport method if specified
+    if transport:
+        cmd.append(f"logging host ipv6 {syslog_host} transport {transport}")
+
+    # Add logging trap level as a separate command
+    cmd.append("logging trap debugging")
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure logging for IPv6 syslog host {syslog_host}. Error:\n{e}"
+        )
+
+def configure_ipv6_logging_with_transport_and_facility(device, host_ip, transport_protocol, port):
+    """ Configure IPv6 logging with transport and facility on the device
+        Args:
+            device (`obj`): Device object
+            host_ip (`str`): IPv6 address of the logging host
+            transport_protocol (`str`): Transport protocol (e.g., 'udp' or 'tcp')
+            port (`int`): Port number for logging
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [
+        "no logging facility local0",
+        "no logging trap debugging",
+        f"logging host ipv6 {host_ip} transport {transport_protocol} port {port}",
+        "no logging count"
+    ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure IPv6 logging with transport and facility on {device}. Error:\n{e}"
+        )

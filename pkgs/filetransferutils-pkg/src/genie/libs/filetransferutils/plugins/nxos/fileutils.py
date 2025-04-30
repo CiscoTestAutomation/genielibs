@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 class FileUtils(FileUtilsDeviceBase):
 
-    def copyfile(self, source, destination, timeout_seconds=300,
+    def copyfile(self, source, destination, timeout_seconds=450,
         vrf=None, compact=False, use_kstack=False, *args, **kwargs):
         """ Copy a file to/from NXOS device
 
@@ -101,6 +101,7 @@ class FileUtils(FileUtilsDeviceBase):
                                                               t=destination,
                                                               vrf=vrf)
             else:
+                logger.info(f"Waiting time for to complete copy command : {timeout_seconds}")
                 cmd = 'copy {f} {t} vrf {vrf}'.format(f=source,
                                                       t=destination,
                                                       vrf=vrf)

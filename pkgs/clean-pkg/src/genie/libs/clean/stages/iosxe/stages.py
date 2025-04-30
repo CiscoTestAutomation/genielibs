@@ -1008,6 +1008,12 @@ class InstallImage(BaseStage):
                                     action=None,
                                     loop_continue=False,
                                     continue_timer=False,
+                                ),
+                                 Statement(
+                                    pattern=r".*Chassis [1|2] reloading, reason - Reload command",
+                                    action=None,
+                                    loop_continue=False,
+                                    continue_timer=False,
                                 )
                             ]
                         )
@@ -3365,6 +3371,13 @@ class Connect(BaseStage):
 
         with steps.start("Connecting to the device") as step:
 
+            # If recovery is enabled, ignore rollup
+            section = self.parameters.get('section')
+
+            # Check if 'section' exists and has a parent with 'device_recovery_processor'
+            if section and getattr(section.parent, 'device_recovery_processor', None):
+                step.result_rollup = False
+
             log.info("Checking connection to device: %s" % device.name)
             # Create a timeout that will loop
             retry_timeout = Timeout(float(retry_timeout), float(retry_interval))
@@ -3733,7 +3746,7 @@ class ResetConfiguration(BaseStage):
 
         with steps.start("Resetting configuration using config replace") as step:
             output = device.execute(
-                "config replace bootflash:base_config.txt",
+                "config replace flash:base_config.txt",
                 reply=dialog,
                 timeout=timeout,
             )

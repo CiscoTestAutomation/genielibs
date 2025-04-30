@@ -214,7 +214,6 @@ class FileUtils(FileUtilsBase):
                     append_error_pattern = device.testbed.custom.fileutils.get('append_error_pattern')
                     if isinstance(append_error_pattern, list):
                         error_pattern.extend(append_error_pattern)
-
         output = device.execute(cli,
                                 prompt_recovery=prompt_recovery,
                                 timeout=timeout_seconds,
