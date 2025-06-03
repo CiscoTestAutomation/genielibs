@@ -1,28 +1,18 @@
 '''IOSXE specific recovery functions'''
 
 # Python
-import re
-import time
 import logging
+import time
+from concurrent.futures import ThreadPoolExecutor, wait as wait_futures, ALL_COMPLETED
 
-# Unicon
-from unicon.eal.expect import Spawn
-from unicon.eal.dialogs import Statement
-
-# Genie
-from genie.libs.clean.utils import print_message
-from genie.libs.clean.recovery.iosxe.dialogs import (
-    BreakBootDialog,
-    RommonDialog,
-    TftpRommonDialog)
-
-#pyats
-from pyats.utils.secret_strings import to_plaintext
+#unicon
+from unicon.eal.dialogs import Dialog, Statement
+from unicon.plugins.iosxe.statements import grub_prompt_handler
 
 # Logger
 log = logging.getLogger(__name__)
 
-def recovery_worker(start, device, console_activity_pattern=None,
+def recovery_worker(device, console_activity_pattern=None,
                     console_breakboot_char=None, console_breakboot_telnet_break=None,
                     grub_activity_pattern=None, grub_breakboot_char=None,
                     break_count=10, timeout=600,
@@ -30,7 +20,6 @@ def recovery_worker(start, device, console_activity_pattern=None,
     """ Starts a Spawn and processes device dialogs during recovery of a device
 
         Args:
-            start (obj): Start method under device object
             device (obj): Device object
             console_activity_pattern (str): Pattern to send the break at
             console_breakboot_char (str): Character to send when console_activity_pattern is matched
@@ -43,7 +32,7 @@ def recovery_worker(start, device, console_activity_pattern=None,
         Returns:
             None
     """
-
+    log.info('Breaking out of auto boot!')
     device.api.send_break_boot(
         console_activity_pattern=console_activity_pattern,
         console_breakboot_char=console_breakboot_char,
@@ -52,93 +41,89 @@ def recovery_worker(start, device, console_activity_pattern=None,
         grub_breakboot_char=grub_breakboot_char,
         break_count=break_count,
         timeout=timeout)
+    if device.is_ha and hasattr(device, 'subconnections'):
+        conn_list = device.subconnections
+    else:
+        conn_list = [device.default]
+    
+    for con in conn_list:
+        if con.state_machine.current_state != 'rommon':
+            raise Exception(f'Device {device.name} is not in rommon state could not recover the device.')
+        else:
+            log.info('Device is in rommon, Booting the device!')
 
-    spawn = device.spawn
-    # Recover the device using the specified method
-    if kwargs.get('golden_image'):
-        device_recovery(spawn, timeout, *args, **kwargs)
+    # if there is golden image in the recovery info we should boot each connection using 
+    # golden image for that we need to boot each subconnetion in a separate process.
+    if golden_image:=kwargs.get('golden_image'):
+        futures = []
+        executor = ThreadPoolExecutor(max_workers=len(conn_list))
+        for con in conn_list:
+            futures.append(executor.submit(
+                device_recovery,
+                con,
+                timeout,
+                golden_image,
+                grub_activity_pattern
+            ))
+        wait_futures(futures, timeout=timeout, return_when=ALL_COMPLETED)
     elif kwargs.get('tftp_boot'):
         device.api.device_rommon_boot(tftp_boot=kwargs.get('tftp_boot'))
 
-    spawn.close()
 
-def device_recovery(spawn, timeout, golden_image, recovery_password=None, **kwargs):
+def device_recovery(con, timeout, golden_image, grub_activity_pattern):
     """ A method for processing a dialog that loads a local image onto a device
 
         Args:
-            spawn (obj): Spawn connection object
+            con (obj): connection object
+            timeout (int, optional): Recovery process timeout. Defaults to 600.
             golden_image (dict): Information to load golden image on the device
-            timeout (int): Recovery process timeout
-            recovery_password (str, optional): Device password after recovery
-
+            grub_activity_pattern (str): Grub activity pattern
         Returns:
             None
     """
-    device = spawn.device
+    # if we have grup activity pattern then we need to update the context with grub boot image
+    if grub_activity_pattern:
+        grub_image_to_boot = con.context.get('grub_boot_image')
+        con.context['grub_boot_image'] = golden_image[0]
     # check for image to boot if we have a value store it and replace it with the golden image
-    image_to_boot = device.default.context.get('image_to_boot')
-    device.default.context['image_to_boot'] = golden_image[0]
+    image_to_boot = con.context.get('image_to_boot')
+    con.context['image_to_boot'] = golden_image[0]
     # check for login creds and update the cred list 
-    login_creds = device.default.context.get('login_creds')
+    login_creds = con.context.get('login_creds')
     if login_creds:
-        device.default.context['cred_list'] = login_creds
+        con.context['cred_list'] = login_creds
+    
+    # these statments needed for booting from grub menu  
+    def _grub_boot_device(spawn, session, context):
+        # '\033' == <ESC>
+        spawn.send('\033')
+        time.sleep(0.5)
+        
+    grub_prompt_stmt = \
+        Statement(pattern=r'.*grub *>.*',
+                action=_grub_boot_device,
+                args=None,
+                loop_continue=True,
+                continue_timer=False)
 
-    device.state_machine.go_to('enable',
-                                spawn,
-                                timeout=timeout,
-                                context=device.default.context,
-                                prompt_recovery=True)
+    grub_boot_stmt = \
+        Statement(pattern=r'.*Use the UP and DOWN arrow keys to select.*',
+                action=grub_prompt_handler,
+                args=None,
+                loop_continue=True,
+                continue_timer=False)
+        
+    dialog = Dialog([grub_boot_stmt, grub_prompt_stmt])
 
-    device.default.context['image_to_boot'] = image_to_boot
+    con.state_machine.go_to('enable',
+                            con.spawn,
+                            timeout=timeout,
+                            context=con.context,
+                            dialog = dialog,
+                            prompt_recovery=True)
 
-def tftp_device_recovery(spawn, timeout, device, tftp_boot, item, recovery_password=None
-                        ,recovery_username=None,recovery_en_password=None, **kwargs):
-    """ A method for processing a dialog that loads a remote image onto a device
-
-        Args:
-            spawn (obj): Spawn connection object
-            device ('obj'): Device object
-            tftp_boot ('dict'): Tftp boot information
-            timeout ('int'): Recovery process timeout
-            recovery_password ('str'): Device password after recovery
-            item (int): Index of device connection
-
-        Returns:
-            None
-    """
-    dialog = TftpRommonDialog()
-
-    # Add a statement to the dialog which will match the device hostname
-    dialog.add_statement(
-        Statement(pattern=r'^(.*?)({hostname}|Router|Switch|ios|switch)(\\(standby\\))?(-stby)?(\\(boot\\))?(>)'
-                          r''.format(hostname=device.hostname),
-                  action=print_message,
-                  args={'message': 'Device has reached privileged exec prompt'}))
-
-    credentials = device.credentials
-
-    if recovery_username is None:
-        recovery_username = to_plaintext(credentials.get('default', {}).get('username'))
-
-    if recovery_password is None:
-        recovery_password = to_plaintext(credentials.get('default', {}).get('password'))
-
-    if recovery_en_password is None:
-        recovery_en_password = to_plaintext(credentials.get('enable', {}).get('password'))
-
-    dialog.dialog.process(
-        spawn,
-        timeout=timeout,
-        context={'device_name': device.name,
-                 'ip': tftp_boot['ip_address'][item],
-                 'password': recovery_password,
-                 'username': recovery_username,
-                 'en_password': recovery_en_password,
-                 'subnet_mask': tftp_boot['subnet_mask'],
-                 'gateway': tftp_boot['gateway'],
-                 'image': tftp_boot['image'],
-                 'tftp_server': tftp_boot['tftp_server'],
-                 'ether_port': tftp_boot['ether_port'],
-                 'hostname': device.hostname,
-                 'pass_login':1})
+    # we need to set the value of grub_boot_image and image_to_boot to original value 
+    if grub_activity_pattern:
+         con.context['grub_boot_image'] = grub_image_to_boot
+    con.context['image_to_boot'] = image_to_boot
 

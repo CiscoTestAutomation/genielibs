@@ -37,7 +37,7 @@ from genie.libs.clean.utils import (
 from unicon.eal.dialogs import Statement, Dialog
 from unicon.core.errors import SubCommandFailure
 from unicon.plugins.generic.statements import GenericStatements
-from unicon.core.errors import UniconAuthenticationError, UniconBackendDecodeError
+from unicon.core.errors import UniconAuthenticationError, UniconBackendDecodeError, CredentialsExhaustedError
 
 # Logger
 log = logging.getLogger(__name__)
@@ -1011,6 +1011,12 @@ class InstallImage(BaseStage):
                                 ),
                                  Statement(
                                     pattern=r".*Chassis [1|2] reloading, reason - Reload command",
+                                    action=None,
+                                    loop_continue=False,
+                                    continue_timer=False,
+                                ),
+                                Statement(
+                                    pattern=r".*Rebooting\/Shutting Down like normal.*",
                                     action=None,
                                     loop_continue=False,
                                     continue_timer=False,
@@ -2932,7 +2938,7 @@ class CopyToDevice(BaseStage):
 
                                         # Only calculate size of file being copied
                                         total_size = sum(
-                                            0 if file_data["exist"] else file_data["size"]
+                                            0 if file_data["exist"] else (file_data["size"] if file_data["size"] is not None else 0)
                                             for file_data in files_to_copy.values()
                                         )
 
@@ -3409,8 +3415,8 @@ class Connect(BaseStage):
                     log.info("Console speed mismatch. Trying to recover")
                     device.destroy_all()
                     device.api.configure_management_console()
-                    step.passed("Successfully connected".format(device.name))
-                except UniconAuthenticationError as e:
+                    step.passed("Successfully connected to {}".format(device.name))
+                except (UniconAuthenticationError, CredentialsExhaustedError) as e:
                     log.info(f"Could not connect to device because of {e}")
                     log.info("Starting device password recovery.")
                     try:
@@ -3418,14 +3424,14 @@ class Connect(BaseStage):
                     except Exception as e:
                         log.error("Password recovery failed", exc_info=True)
                     else:
-                        step.passed("Successfully connected".format(device.name))
+                        step.passed("Successfully connected to {}".format(device.name))
                         # Don't loop
                 except Exception:
                     log.error("Connection to the device failed", exc_info=True)
                     device.destroy_all()
                     # Loop
                 else:
-                    step.passed("Successfully connected".format(device.name))
+                    step.passed("Successfully connected to {}".format(device.name))
                     # Don't loop
 
                 retry_timeout.sleep()
@@ -3535,6 +3541,15 @@ class Connect(BaseStage):
 
             try:
                 device.connection_provider.init_connection()
+            except UniconAuthenticationError as e:
+                log.info(f"Could not connect to device because of {e}")
+                log.info("Starting device password recovery.")
+                try:
+                    device.api.password_recovery(timeout=timeout)
+                except Exception:
+                    log.error("Password recovery failed", exc_info=True)
+                else:
+                    step.passed("Successfully connected to {}".format(device.name))
             except Exception as e:
                 step.failed(f"Failed to initialize the connection. {e}")
             else:

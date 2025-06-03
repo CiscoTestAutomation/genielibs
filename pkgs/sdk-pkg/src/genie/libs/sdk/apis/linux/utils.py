@@ -190,7 +190,12 @@ def scp(device,
                    args=None,
                    loop_continue=True,
                    continue_timer=False)
-    dialog = Dialog([s1])
+    s2 = Statement(pattern=r".*Are you sure you want to continue connecting.*",
+                   action="sendline(yes)",
+                   loop_continue=True,
+                   continue_timer=False)
+
+    dialog = Dialog([s1, s2])
 
     try:
         out = device.execute("scp {lp} {rp}".format(lp=local_path,

@@ -9,10 +9,13 @@ Description:
 
 '''
 
-__version__ = '25.4'
+__version__ = "25.5"
 __author__ = 'Cisco Systems Inc.'
 __contact__ = ['pyats-support@cisco.com', 'pyats-support-ext@cisco.com']
 __copyright__ = 'Copyright (c) 2018, Cisco Systems Inc.'
 
 from .fileutils import FileUtils
 from .fileserver import FileServer
+
+from genie import abstract
+abstract.declare_package(feature="filetransferutils", order=["os", "protocol"])

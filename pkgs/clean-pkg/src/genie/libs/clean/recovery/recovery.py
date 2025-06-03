@@ -278,7 +278,7 @@ def recovery_processor(
     # Get device
     device = section.parameters['device']
     recovery_is_required = False
-    # check if device is in any known state
+    #check if device is in any known state
     log.info(f'Check device {device.name} has valid unicon state.')
     try:
         if device.chassis_type == "quad":

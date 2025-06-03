@@ -4975,6 +4975,10 @@ def copy_file_with_scp(device, host, file, username=None, password=None, path=No
             Statement(pattern=r'.*Destination filename.*$',
                 action='sendline()',
                 loop_continue=True,
+                continue_timer=False),
+            Statement(pattern=r'.*Destination username.*$',
+                action='sendline()',
+                loop_continue=True,
                 continue_timer=False)
             ])
         if path:
@@ -4995,7 +4999,7 @@ def copy_file_with_scp(device, host, file, username=None, password=None, path=No
             Statement(pattern=r'.*Password:\s*$',
                 action=f'sendline({password})',
                 loop_continue=True,
-                continue_timer=False),
+                continue_timer=False)
             ])
         if path:
             cmd = f"copy {file} scp://{host}/{file} {path}"
@@ -6752,3 +6756,31 @@ def configure_interfaces_no_uplink(device, interfaces):
         device.configure(config_cmd)
     except SubCommandFailure as e:
         log.error('Failed to disable uplink interfaces on device {}: {}'.format(device.name, e))
+
+def configure_file_verify_auto(device):
+    """Configures file verify auto on the device.
+        Args:
+            device ('obj'): Device object.
+    """
+    config_cmd = [
+        "file verify auto"
+    ]
+
+    try:
+        device.configure(config_cmd)
+    except SubCommandFailure as e:
+        log.error('Failed to configure file verify auto on device {}: {}'.format(device.name, e))
+
+def unconfigure_file_verify_auto(device):
+    """Unconfigures file verify auto on the device.
+        Args:
+            device ('obj'): Device object.
+    """
+    config_cmd = [
+        "no file verify auto"
+    ]
+
+    try:
+        device.configure(config_cmd)
+    except SubCommandFailure as e:
+        log.error('Failed to unconfigure file verify auto on device {}: {}'.format(device.name, e))

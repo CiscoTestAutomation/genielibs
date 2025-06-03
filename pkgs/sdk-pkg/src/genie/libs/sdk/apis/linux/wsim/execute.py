@@ -89,9 +89,12 @@ def configure_client_details(device,client_base_mac):
 def run_wsim_config(device, timeout=600):
     try:
         device.execute("configure client number total 1 ap 1", timeout=timeout)
-        device.execute("run wlc remove certs",timeout=timeout)
-        device.execute("run wlc apply certs",timeout=timeout)
-        device.execute("run wlc get capwap",timeout=timeout)
+        device.sendline("run wlc remove certs")
+        device.expect(r'.*vSTA#',timeout=timeout)
+        device.sendline("run wlc apply certs")
+        device.expect(r'.*vSTA#',timeout=timeout)
+        device.sendline("run wlc get capwap")
+        device.expect(r'.*vSTA#',timeout=timeout)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Failed to configure the controller configs on wsim"

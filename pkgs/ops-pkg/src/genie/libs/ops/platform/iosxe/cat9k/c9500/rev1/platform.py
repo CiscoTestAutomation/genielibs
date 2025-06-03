@@ -181,6 +181,11 @@ class Platform(SuperPlatform):
                       src='[slot][(?P<slot>.*)][rp][(?P<pid>.*)][sn]',
                       dest='[slot][rp][(?P<slot>.*)][sn]')
 
+        # rp_pid
+        self.add_leaf(cmd='show inventory', revision='1',
+                      src='[slot][(?P<slot>.*)][rp][(?P<pid>.*)][pid]',
+                      dest='[slot][rp][(?P<slot>.*)][pid]')
+
         # === SubSlotAttributes ===
         # === DaughterCardAttributes ===
 

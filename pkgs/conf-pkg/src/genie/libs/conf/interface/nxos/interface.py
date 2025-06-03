@@ -17,6 +17,7 @@ __all__ = (
 
 import re
 import abc
+import logging
 from abc import ABC
 from enum import Enum
 
@@ -37,6 +38,9 @@ from genie.libs.conf.base import \
 import genie.libs.conf.interface
 
 from genie.libs.conf.interface import Layer, L2_type
+
+
+logger = logging.getLogger(__name__)
 
 class ConfigurableInterfaceNamespace(ConfigurableBase):
 
@@ -73,6 +77,82 @@ class Duplex(Option):
     auto = 'auto'
 
 
+class ParsedInterfaceName(genie.libs.conf.interface.ParsedInterfaceName):
+    def __init__(self, name, device=None, **kwargs):
+        if device is None and isinstance(name, ParsedInterfaceName):
+            # copy constructor
+            return super().__init__(vars(name))
+        assert type(name) is str
+
+        d = dict(
+            # main parts
+            type=None,
+            number=None,
+            subintf_sep=None,
+            subintf=None,
+            # sub-parts
+            net_module=None,
+            module=None,
+            rack=None,
+            slot=None,
+            instance=None,
+            port=None,
+            subport=None,
+            cpu=None,
+            rsip=None,
+        )
+
+        m = re.match(r'''
+            ^
+            # ignore leading spaces
+            \s*
+            # not an empty string
+            (?=\S)
+            # optional <type>
+            (?P<type>
+                # generic: POS, tunnel-te, odu...
+                [A-Za-z]+(?:-[A-Za-z]+)*
+            )?
+            # optional spaces
+            \s*
+            # rest is optional too
+            (?:
+                # <number>
+                (?P<number>\d+(?:[/_]?\d+)*)
+                # optional <subintf>
+                (?:(?P<subintf_sep>[.:])(?P<subintf>\d+))?
+            )?
+            # ignore trailing spaces
+            \s*
+            $
+        ''', name, re.VERBOSE | re.IGNORECASE)
+        if not m:
+            logger.warning('Unrecognized interface name %r' % (name,))
+
+        d.update(m.groupdict())
+
+        # Ethernet1/53/1
+        p1 = re.compile(r'^(?P<rsip>(?P<slot>\d+)/(?P<port>\d+)/(?P<subport>\d+))$')
+        # Ethernet1/53
+        p2 = re.compile(r'^(?P<rsip>(?P<slot>\d+)/(?P<port>\d+))$')
+        # Ethernet1
+        p3 = re.compile(r'^(?P<rsip>(?P<port>\d+))$')
+
+
+        if (interface_number := d['number']):
+            for pattern in [p1, p2, p3]:
+                m = pattern.match(interface_number)
+                if m:
+                    d.update(m.groupdict())
+                    break
+            else:
+                logger.debug(f'{self}: Unsupported interface name: {name}')
+                super().__init__(name, device=None, **kwargs)
+                return
+
+        super().__init__(name=None, **d)
+
+        
 class Interface(genie.libs.conf.interface.Interface):
     '''Base class for NX-OS interfaces.
 
@@ -91,7 +171,7 @@ class Interface(genie.libs.conf.interface.Interface):
                 name = kwargs['name']
             except KeyError:
                 raise TypeError('\'name\' argument missing')
-            d_parsed = genie.libs.conf.interface.ParsedInterfaceName(
+            d_parsed = ParsedInterfaceName(
                 name, kwargs.get('device', None))
             if d_parsed.subintf:
                 factory_cls = SubInterface
@@ -1265,6 +1345,10 @@ class PortchannelInterface(VirtualInterface, genie.libs.conf.interface.Aggregate
             configurations.append_line(
                 attributes.format('vpc {vpc_id}'),
                 unconfig_cmd='no vpc {vpc_id}')
+
+        if attributes.value('mac_address'):
+            configurations.append_line(
+                attributes.format('mac-address {mac_address}'))
 
     def __init__(self, *args, **kwargs):
         self.members  # init!

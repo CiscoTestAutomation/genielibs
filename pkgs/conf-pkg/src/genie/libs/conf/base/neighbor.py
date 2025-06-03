@@ -6,6 +6,7 @@ __all__ = (
     # Abstract classes:
     'Neighbor',
     'IPNeighbor',
+    'IfNeighbor',
 )
 
 import functools
@@ -116,6 +117,54 @@ class IPNeighbor(Neighbor):
     def __hash__(self):
         return hash(self.ip)
 
+class IfNeighbor(Neighbor):
+
+    interface = managedattribute(
+        name='interface',
+        read_only=True,  # read-only hash key
+        doc='''Interface name (mandatory)''')
+
+    def __new__(cls, *args, **kwargs):
+        factory_cls = cls
+        if cls is IfNeighbor:
+            if not kwargs and len(args) == 1 and isinstance(args[0], IfNeighbor):
+                # Copy constructor
+                factory_cls = type(args[0])
+            else:
+                if not kwargs and len(args) == 1:
+                    interface = args[0]
+                else:
+                    try:
+                        interface = kwargs['interface']
+                    except KeyError:
+                        raise TypeError("'interface' argument missing")
+                # Additional logic can be added here if needed
+
+        if factory_cls is not cls:
+            self = factory_cls.__new__(factory_cls, *args, **kwargs)
+        elif super().__new__ is object.__new__:
+            self = super().__new__(factory_cls)
+        else:
+            self = super().__new__(factory_cls, *args, **kwargs)
+        return self
+
+    def __init__(self, interface, **kwargs):
+        self._interface = interface
+        super().__init__(**kwargs)
+
+    def __str__(self):
+        return str(self.interface)
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}('{self.interface}')"
+
+    def _neighbor_comparison_tokens(self):
+        return super()._neighbor_comparison_tokens() + (
+            'interface', str(self.interface),
+        )
+
+    def __hash__(self):
+        return hash(self.interface)
 
 class IPv4Neighbor(IPNeighbor):
 
@@ -292,6 +341,28 @@ class IPNeighborSubAttributes(KeyedSubAttributes):
             raise KeyError(
                     '{cls} only accepts IPNeighbor (v4/v6) types, not {key!r}'.
                     format(cls=cls.__name__, key=key))
+
+class NeighborSubAttributes(KeyedSubAttributes):
+
+    neighbor = managedattribute(
+        name='neighbor',
+        read_only=True,  # key
+        doc='''Neighbor (IPv4Neighbor or IPv6Neighbor or Interface) key''')
+
+    def __init__(self, parent, key):
+        self._neighbor = key
+        super().__init__(parent=parent)
+
+    @classmethod
+    def _sanitize_key(cls, key):
+        try:
+            key = IPv4Neighbor(key)
+        except ValueError:
+            try:
+                key = IPv6Neighbor(key)
+            except ValueError:
+                pass
+        return key
 
 
 class IPLsrNeighborSubAttributes(KeyedSubAttributes):

@@ -152,17 +152,21 @@ def verify_enable_password(device, password,privilege_level=None):
 
 
 def verify_pattern_in_show_logging(device, pattern_list, exclude='', include='',
-                                   output=None):
+                                   output=None, match_full_output=False):
     """Verifies the pattern in show logging output
-        Args:
-            device (`obj`): Device object
-            pattern_list (`list`): pattern list to be verified in the output
-            exclude (`str`, optional): String to exclude from show logging
-            include (`str`, optional): String to include from show logging
-            output (`list`, optional): output of show logging in list
-        Returns:
-            True if pattern list matches in show logging output
-            False if pattern list does not match in show logging output
+
+    Args:
+        device (obj): Device object
+        pattern_list (list): List of regex patterns to verify (as strings)
+        exclude (str, optional): String to exclude from show logging output
+        include (str, optional): String to include from show logging output
+        output (dict, optional): Parsed 'show logging' command output
+        match_full_output (bool, optional): 
+            If True, check patterns in the entire output dictionary.
+            If False, check only in output['logs']
+
+    Returns:
+        True if all patterns are found, False if any are missing
     """
     if exclude:
         cmd = f'show logging | exclude {exclude}'
@@ -171,25 +175,39 @@ def verify_pattern_in_show_logging(device, pattern_list, exclude='', include='',
     else:
         cmd = 'show logging'
 
-    # parse the command
-    output = device.parse(cmd, output=output)
+    # parse the command if output is not passed
+    if output is None:
+        if match_full_output:
+            output = device.execute(cmd)
+        else:
+            output = device.parse(cmd)
 
     matched_pattern_list = []
     unmatched_pattern_list = []
 
-    for p in pattern_list:
-        if len(list(filter(p.match, output['logs']))) >= 1:
-            matched_pattern_list.append(p)
-        else:
-            unmatched_pattern_list.append(p)
+    if match_full_output:
+        output_str = output if isinstance(output, str) else str(output)
+        for p in pattern_list:
+            pattern = re.compile(p)
+            if re.search(pattern, output_str):
+                matched_pattern_list.append(p)
+            else:
+                unmatched_pattern_list.append(p)
+    else:
+        # Use logs list for searching
+        logs = output.get('logs', [])
+        for p in pattern_list:
+            pattern = re.compile(p)
+            if any(re.search(pattern, line) for line in logs):
+                matched_pattern_list.append(p)
+            else:
+                unmatched_pattern_list.append(p)
 
-    if len(matched_pattern_list) == len(pattern_list):
-        logger.debug(f"Verified the following regex patterns exist "
-                    f"in show logging: {matched_pattern_list}")
+    if not unmatched_pattern_list:
+        logger.debug(f"Verified patterns in show logging: {matched_pattern_list}")
         return True
 
-    logger.debug(f"Failed to verify the following regex patterns exist "
-                f"in show logging: {unmatched_pattern_list}")
+    logger.debug(f"Failed to verify patterns in show logging: {unmatched_pattern_list}")
     return False
 
 

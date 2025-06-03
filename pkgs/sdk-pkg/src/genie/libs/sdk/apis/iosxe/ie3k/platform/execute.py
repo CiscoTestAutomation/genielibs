@@ -54,3 +54,49 @@ def execute_locate_switch(device, seconds, switch_number=None, switch_type=None)
         raise SubCommandFailure(
             f"Failed to execute locate switch on {device.name}. Error:\n{e}"
         )
+
+
+def execute_copy_verify(device, source, dest, timeout=300, file_name=None):
+    """ Execute copy verify
+        Args:
+            device ('obj'): Device object
+            source ('str'): Source file
+            dest ('str'): Destination file
+            timeout ('int'): Timeout for the copy operation in seconds. Default is 300s
+            file_name ('str'): Optional. If provided, appends the file name to source and destination.
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    dialog = Dialog([
+        # Handle destination filename prompt
+        Statement(
+            pattern=r"Destination filename \[.*\]\?",
+            action='sendline()',
+            loop_continue=True,
+            continue_timer=True
+        ),
+        # Handle overwrite confirmation prompt
+        Statement(
+            pattern=r"%Warning:.*existing with this name\s+Do you want to over write\? \[confirm\]",
+            action='sendline()',
+            loop_continue=True,
+            continue_timer=True
+        ),
+    ])
+
+    if file_name:
+        source = f"{source}:{file_name}"
+        dest = f"{dest}:{file_name}"
+
+    cmd = f"copy /verify {source} {dest}"
+
+    try:
+        device.execute(cmd, reply=dialog, timeout=timeout)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to execute copy verify on {device.name}. Error:\n{e}"
+        )
+

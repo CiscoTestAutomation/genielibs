@@ -48,7 +48,7 @@ RELATED_PKGS += genie.libs.filetransferutils
 # Adding pyasyncore pkg to fix pysnmp scripts for python 3.12
 DEPENDENCIES = restview psutil Sphinx wheel asynctest 'pysnmp>=6.1.4,<6.2' pyasn1==0.6.0
 DEPENDENCIES += sphinx-rtd-theme==1.1.0 pyftpdlib tftpy\<0.8.1 robotframework
-DEPENDENCIES += Cython==3.0.0 requests ruamel.yaml grpcio protobuf jinja2
+DEPENDENCIES += Cython requests ruamel.yaml grpcio protobuf jinja2
 # Internal variables.
 # (note - build examples & templates last because it will fail uploading to pypi
 #  due to duplicates, and we'll for now accept that error)

@@ -35,3 +35,22 @@ def configure_switch_priority(device, switch, priority):
         raise SubCommandFailure(
             f'Failed to configure switch {switch} priority {priority} on {device.name}. Error:\n{e}'
         )
+
+def execute_show_snmp(device, subcommand):
+    """
+    Executes a given 'show snmp' command on a device .
+
+    Args:
+        device ('obj'): device to execute the command on.
+        subcommand ('str'): Subcommand to append after 'show snmp'.
+
+    Returns:
+        str: Output from the device.
+    """
+    cmd = f'show snmp {subcommand}'
+    try:
+        return device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to execute command {cmd} on {device.name}. Error:\n{e}'
+        )

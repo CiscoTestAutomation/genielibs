@@ -1188,6 +1188,7 @@ class test_nx_interface(TestCase):
         intf1.channel_group_mode = 'on'
         intf1.switchport_enable = False
         intf1.ipv4 = '11.0.1.1/24'
+        intf1.mac_address = 'aabb.ccdd.eeff'
         intf1.shutdown = False
         intf1.switchport_enable = False
         intf1.mtu = 9111
@@ -1208,6 +1209,7 @@ class test_nx_interface(TestCase):
                 ' no shutdown',
                 ' no switchport',
                 ' ip address 11.0.1.1 255.255.255.0',
+                ' mac-address aabb.ccdd.eeff',
                 ' exit'
                 ]))
 

@@ -1760,4 +1760,24 @@ def unconfigure_device_sampler(device, sampler_name):
         log.error(f"Failed to unconfigure sampler {sampler_name} on device {device.name}. Error: {e}")
         raise SubCommandFailure(f'Could not unconfigure sampler {sampler_name}. Error:\n{e}')
     
-
+def unconfigure_flow_exporter_from_monitor(device, monitor_name, exporter_name):
+    """ Unconfigure Flow Exporter from Flow Monitor
+        Args:
+            device (`obj`): Device object
+            monitor_name (`str`): Flow monitor name
+            exporter_name (`str`): Flow exporter name
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed unconfiguring flow exporter
+    """
+    log.debug(f"Unconfiguring flow exporter {exporter_name} from flow monitor {monitor_name} on device {device.name}")
+    cmd = [
+        f"flow monitor {monitor_name}",
+        f"no exporter {exporter_name}",
+    ]
+        
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not unconfigure flow exporter {exporter_name}. Error:\n{e}')

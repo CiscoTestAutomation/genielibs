@@ -1231,6 +1231,97 @@ class test_bgp_config1(TestCase):
              '  exit',
              ' exit',
              ]))
+
+    def test_cfg_interface_as_neighbor(self):
+        Genie.testbed = testbed = Testbed()
+        dev1 = Device(testbed=testbed, name='PE1', os='nxos')
+        bgp = Bgp(bgp_id=100)
+
+        # Defining attributes
+        af_name = 'ipv4 unicast'
+        vrf = Vrf('default')
+        neighbor_id = 'Ethernet1/1'  # Using interface name as neighbor_id
+
+        bgp.device_attr[dev1].vrf_attr[vrf].neighbor_attr[neighbor_id]
+        bgp.device_attr[dev1].vrf_attr[vrf].neighbor_attr[neighbor_id].address_family_attr[af_name].nbr_af_allowas_in = True
+        bgp.device_attr[dev1].vrf_attr[vrf].neighbor_attr[neighbor_id].address_family_attr[af_name].nbr_af_suppress_inactive = True
+
+        self.assertIs(bgp.testbed, testbed)
+        dev1.add_feature(bgp)
+
+        cfgs = bgp.build_config(apply=False)
+        self.assertCountEqual(cfgs.keys(), [dev1.name])
+        self.assertMultiLineEqual(str(cfgs[dev1.name]), '\n'.join(
+            ['router bgp 100',
+             ' neighbor Ethernet1/1',
+             '  address-family ipv4 unicast',
+             '   allowas-in',
+             '   suppress-inactive',
+             '   exit',
+             '  exit',
+             ' exit',
+             ]))
+
+        uncfgs = bgp.build_unconfig(
+            apply=False,
+            attributes={'device_attr': {'*': {'vrf_attr': {'*': {'neighbor_attr': {
+                'Ethernet1/1': {'address_family_attr': {'*': "nbr_af_allowas_in"}}}}}}}})
+        self.assertCountEqual(uncfgs.keys(), [dev1.name])
+        self.assertMultiLineEqual(str(uncfgs[dev1.name]), '\n'.join(
+            ['router bgp 100',
+             ' neighbor Ethernet1/1',
+             '  address-family ipv4 unicast',
+             '   no allowas-in',
+             '   exit',
+             '  exit',
+             ' exit',
+             ]))
+
+    def test_cfg_port_channel_as_neighbor(self):
+        Genie.testbed = testbed = Testbed()
+        dev1 = Device(testbed=testbed, name='PE1', os='nxos')
+        bgp = Bgp(bgp_id=100)
+
+        # Defining attributes
+        af_name = 'ipv4 unicast'
+        vrf = Vrf('default')
+        neighbor_id = 'Port-channel10'  # Using port channel name as neighbor_id
+
+        bgp.device_attr[dev1].vrf_attr[vrf].neighbor_attr[neighbor_id]
+        bgp.device_attr[dev1].vrf_attr[vrf].neighbor_attr[neighbor_id].address_family_attr[af_name].nbr_af_allowas_in = True
+        bgp.device_attr[dev1].vrf_attr[vrf].neighbor_attr[neighbor_id].address_family_attr[af_name].nbr_af_suppress_inactive = True
+
+        self.assertIs(bgp.testbed, testbed)
+        dev1.add_feature(bgp)
+
+        cfgs = bgp.build_config(apply=False)
+        self.assertCountEqual(cfgs.keys(), [dev1.name])
+        self.assertMultiLineEqual(str(cfgs[dev1.name]), '\n'.join(
+            ['router bgp 100',
+             ' neighbor Port-channel10',
+             '  address-family ipv4 unicast',
+             '   allowas-in',
+             '   suppress-inactive',
+             '   exit',
+             '  exit',
+             ' exit',
+             ]))
+
+        uncfgs = bgp.build_unconfig(
+            apply=False,
+            attributes={'device_attr': {'*': {'vrf_attr': {'*': {'neighbor_attr': {
+                'Port-channel10': {'address_family_attr': {'*': "nbr_af_allowas_in"}}}}}}}})
+        self.assertCountEqual(uncfgs.keys(), [dev1.name])
+        self.assertMultiLineEqual(str(uncfgs[dev1.name]), '\n'.join(
+            ['router bgp 100',
+             ' neighbor Port-channel10',
+             '  address-family ipv4 unicast',
+             '   no allowas-in',
+             '   exit',
+             '  exit',
+             ' exit',
+             ]))
+
 if __name__ == '__main__':
     unittest.main()
 

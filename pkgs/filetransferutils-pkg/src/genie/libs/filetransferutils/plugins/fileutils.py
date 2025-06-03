@@ -1,36 +1,340 @@
 """ File utils common base class """
-# Logging
+import re
 import logging
+import contextlib
+import ipaddress
+import time
+import shlex
+import subprocess
+from functools import lru_cache
+from urllib.parse import urlparse
+from unicon.eal.dialogs import Statement, Dialog
+from unicon.core.errors import SubCommandFailure
 
 try:
-    from pyats.utils.fileutils import FileUtils as server
-    # Server FileUtils core implementation
-
-    # filemode_to_mode
-    from pyats.utils.fileutils.plugins.localhost.ftp.fileutils import \
-        filemode_to_mode
+    from genie.libs.filetransferutils.bases.fileutils import FileUtilsBase as server
+    from genie.libs.filetransferutils.ftp.fileutils import filemode_to_mode
 except ImportError:
-    try:
-        from pyats.utils.fileutils import FileUtils as server
-        # Server FileUtils core implementation
+    # For apidoc building only
+    from unittest.mock import Mock
+    server = Mock
+    filemode_to_mode = Mock
 
-        # filemode_to_mode
-        from pyats.utils.fileutils.plugins.localhost.ftp.fileutils import \
-            filemode_to_mode
-    except ImportError:
-        # For apidoc building only
-        from unittest.mock import Mock
-        server = Mock
-        filemode_to_mode = Mock()
+logger = logging.getLogger(__name__)
+
+# Error patterns to be caught when executing CLI on a device
+FAIL_MSG = [
+    'Permission denied[^,]', 'failed to copy', 'Unable to find',
+    r'Error(?! opening tftp://255\.255\.255\.255)', 'operation failed',
+    'Compaction is not supported', 'Copy failed', 'No route to host',
+    'Connection timed out', 'not found', 'No space', 'not a remote file',
+    'Could not resolve', 'Invalid URI', "couldn't connect to host",
+    "no such file or directory (invalid server)", ".*Cannot overwrite/delete.*",
+    "No such file or directory"
+]
 
 # Parent inheritance
 from .. import FileUtils as FileUtilsCommonDeviceBase
 
-# Initialize the logger
-logger = logging.getLogger(__name__)
-
 
 class FileUtils(FileUtilsCommonDeviceBase):
+
+    def send_cli_to_device(self, cli, used_server=None, invalid=None,
+                           timeout_seconds=300, prompt_recovery=True,
+                           destination='', **kwargs):
+        """ Send command to a particular device and deal with its result
+
+            Parameters
+            ----------
+                cli: `str`
+                  Full command to be executed on the device
+                invalid: `str`
+                  Any invalid patterns need to be caught during execution
+                timeout_seconds: `str`
+                  The number of seconds to wait before aborting the operation.
+                used_server: `str`
+                  Server address/name
+                destination: `str`
+                  Destination url/path
+
+            Returns
+            -------
+                `None`
+
+            Raises
+            ------
+                Exception
+                    When a device object is not present or device execution encountered
+                    an unexpected behavior.
+
+                ValueError
+                    When a device execution output shows one of the invalid patterns.
+
+            Examples
+            --------
+                # FileUtils
+                >>> from ..fileutils import FileUtils
+
+                  # copy flash:/memleak.tcl ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl
+                  >>> cmd = 'copy {f} {t}'.format(f=source, t=destination)
+
+                  >>> FileUtils.send_cli_to_device(cli=cmd,
+                  ...   timeout_seconds=timeout_seconds, **kwargs)
+        """
+
+        # Extract device from the keyword arguments, if not passed raise an
+        # AttributeError
+        device = kwargs.get('device') or getattr(self, 'device', None)
+        if not device:
+            raise AttributeError("Device object is missing, can't proceed with execution")
+
+        # Extracting username and password to be used during device calls
+        if used_server:
+            # Case when cli sent contains the username
+            # EX: admin@1.1.1.1
+
+            if 'username' in kwargs and kwargs['username'] and kwargs['username'] in used_server:
+                used_server = used_server.split('@')[1]
+            username, password = self.get_auth(used_server,
+                                               protocol=kwargs.get('protocol'))
+        else:
+            username = None
+            password = None
+
+        destination_filename = ''
+        if destination:
+            # proto://server:port//filename.bin -> /filename.bin
+            # bootflash:/filename.bin -> /filename.bin
+            try:
+                p = urlparse(destination)
+                # if destination ends with a slash, assume it's a directory
+                # rather than a filename
+                if not p.path.endswith('/'):
+                    destination_filename = p.path.replace('//', '/')
+            except Exception:
+                pass
+
+        # Checking if user passed any extra invalid patterns
+        if 'invalid' in kwargs:
+            invalid = kwargs['invalid']
+
+        # Create unicon dialog
+        dialog = Dialog([
+            Statement(pattern=r'Address or name of remote host.*$',
+                      action='sendline()',
+                      loop_continue=True,
+                      continue_timer=False),
+            Statement(pattern=r'Destination filename.*$',
+                      action=f'sendline({destination_filename})',
+                      loop_continue=True,
+                      continue_timer=False),
+            Statement(pattern=r'Abort Copy\? \[confirm\]\s*$',
+                      action='sendline(n)',
+                      loop_continue=True,
+                      continue_timer=False),
+            Statement(pattern=r'(?<!Abort Copy\? )\[confirm\]\s*$',
+                      action='sendline()',
+                      loop_continue=True,
+                      continue_timer=False),
+            Statement(pattern=r'Are you sure you want to continue connecting.*$',
+                      action='sendline(yes)',
+                      loop_continue=True,
+                      continue_timer=False),
+            Statement(pattern=r'Destination username.*$',
+                      action='sendline({username})'.format(username=username),
+                      loop_continue=True,
+                      continue_timer=False),
+            Statement(pattern=r'Destination password.*$',
+                      action='sendline({password})'.format(password=password),
+                      loop_continue=True,
+                      continue_timer=False),
+            Statement(pattern=r'.*[D|d]estination file *name.*$',
+                      action=f'sendline({destination_filename})',
+                      loop_continue=True,
+                      continue_timer=False),
+            Statement(pattern=r'Enter username:\s*$',
+                      action='sendline({username})'.format(username=username),
+                      loop_continue=True,
+                      continue_timer=False),
+            Statement(pattern=r'.*[P|p]assword:\s*$',
+                      action='sendline({password})'.format(password=password),
+                      loop_continue=True,
+                      continue_timer=False),
+            Statement(pattern=r'[P|p]assword for .*$',
+                      action='sendline({password})'.format(password=password),
+                      loop_continue=True,
+                      continue_timer=False),
+            Statement(pattern=r'Do you want to delete.*$',
+                      action='sendline()',
+                      loop_continue=True,
+                      continue_timer=False),
+            Statement(pattern=r'Host name or IP address.*$',
+                      action='sendline()',
+                      loop_continue=True,
+                      continue_timer=False),
+            Statement(pattern=r'Delete filename.*$',
+                      action='sendline()',
+                      loop_continue=True,
+                      continue_timer=False),
+            Statement(pattern=r'Source username.*$',
+                      action='sendline({username})'.format(username=username),
+                      loop_continue=True,
+                      continue_timer=False),
+            Statement(pattern=r'Source filename.*$',
+                      action='sendline()',
+                      loop_continue=True,
+                      continue_timer=False),
+            Statement(pattern=r' *[O|o]verwrite.*continu.*$',
+                      action='sendline({overwrite})'.format(overwrite='yes' if kwargs.get('overwrite', True) else 'no'),
+                      loop_continue=True,
+                      continue_timer=False),
+            Statement(pattern=r'.*Do you want to (overwrite|overwritte|overwrit).*$',
+                      action='sendline({overwrite})'.format(
+                          overwrite='y' if kwargs.get('overwrite', True) else 'n'),
+                      loop_continue=True,
+                      continue_timer=False),
+            Statement(pattern=r'Enter vrf.*$',
+                      action='sendline()',
+                      loop_continue=True,
+                      continue_timer=False),
+            Statement(pattern=r'.*This is a directory. +Do you want to continue.*$',
+                      action='sendline()',
+                      loop_continue=True,
+                      continue_timer=False)
+            ])
+
+        error_pattern = FAIL_MSG
+        # Check if user passed extra error/fail patterns to be caught
+        if invalid:
+            error_pattern.extend(invalid)
+
+        if hasattr(device, 'testbed'):
+            if hasattr(device.testbed, 'custom'):
+                if hasattr(device.testbed.custom, 'fileutils'):
+                    error_pattern = device.testbed.custom.fileutils.get('error_pattern')
+                    if isinstance(error_pattern, list):
+                        error_pattern = error_pattern
+                    append_error_pattern = device.testbed.custom.fileutils.get('append_error_pattern')
+                    if isinstance(append_error_pattern, list):
+                        error_pattern.extend(append_error_pattern)
+        output = device.execute(cli,
+                                prompt_recovery=prompt_recovery,
+                                timeout=timeout_seconds,
+                                reply=dialog,
+                                error_pattern=error_pattern)
+
+        return output
+
+    @contextlib.contextmanager
+    def file_transfer_config(self, server=None, interface=None, **kwargs):
+        """ Context manager to try configuring a device for an upcoming file
+            transfer. Saves a configuration checkpoint, applies configuration,
+            and upon exit reverts the configuration.
+
+            Arguments
+            ---------
+            server: `str`
+                The server address to copy files to or from.
+
+            interface: `str`
+                Device interface to use as source interface (will apply
+                protocol source interface configuration to the device if provided)
+
+        """
+        device = kwargs.get('device') or getattr(self, 'device', None)
+        if not device:
+            raise AttributeError("Device object is missing, can't proceed with"
+                                 " configuration")
+        # device might be a connection, get actual device
+        device = device.device
+
+        vrf = kwargs.get('vrf')
+        # Retrieve correct config template for this OS
+        if vrf:
+            copy_config = getattr(self, 'COPY_CONFIG_VRF_TEMPLATE', None)
+        else:
+            copy_config = getattr(self, 'COPY_CONFIG_TEMPLATE', None)
+
+        if not (interface and copy_config):
+            copy_config = None
+
+        config_restore = None
+        if copy_config:
+            try:
+                config_send = []
+                config_restore = []
+                for each_config in copy_config:
+                    cfg_include = each_config.split('{')[0]
+                    if interface:
+                        each_config = each_config.format(vrf=vrf,
+                                                         interface=interface,
+                                                         blocksize=8192)
+                    output = device.execute(
+                        'show running-config | include {}'.format(cfg_include))
+                    output = re.sub(r'.*Building configuration...',
+                                    '',
+                                    output,
+                                    flags=re.S)
+                    if cfg_include not in output:
+                        # prepare configure config and restore config
+                        config_send.append(each_config)
+                        config_restore.append('no ' + each_config)
+                if config_send:
+                    device.configure(config_send)
+            except Exception:
+                logger.warning(
+                    'Failed to apply configuration on %s' % str(device),
+                    exc_info=True)
+                config_restore = None
+
+        try:
+            # Inside context manager
+            yield
+
+        finally:
+            if config_restore:
+                try:
+                    device.configure(config_restore)
+                    # If specified, wait for a period of time after restoring
+                    # configuration to let it settle
+                    wait_time = kwargs.get('wait_after_restore', 1)
+                    time.sleep(wait_time)
+                except Exception:
+                    logger.warning(
+                        'Failed to restore configuration on %s' % str(device),
+                        exc_info=True)
+
+    @lru_cache(maxsize=32)
+    def is_valid_ip_cache(self, ip, device, vrf=None):
+        # check if ip is reachable from device by sending ping command,
+        # this one is cached that it only pings the first time
+        try:
+            if vrf:
+                device.ping(ip, vrf=vrf)
+            else:
+                device.ping(ip)
+            return True
+        except SubCommandFailure:
+            return False
+
+    def is_valid_ip_no_cache(self, ip, device, vrf=None):
+        # check if ip is reachable from device by sending ping command, not cached version
+        try:
+            if vrf:
+                device.ping(ip, vrf=vrf)
+            else:
+                device.ping(ip)
+            return True
+        except SubCommandFailure:
+            return False
+
+    def is_valid_ip(self, ip, device=None, vrf=None, cache_ip=True):
+        device = device or getattr(self, 'device')
+        if cache_ip:
+            return self.is_valid_ip_cache(ip, device, vrf)
+        else:
+            return self.is_valid_ip_no_cache(ip, device, vrf)
+
     def copyfile(self, source, destination, timeout_seconds, cmd, used_server,
                  *args, interface=None, **kwargs):
         """ Copy a file to/from device
@@ -95,8 +399,6 @@ class FileUtils(FileUtilsCommonDeviceBase):
                 used_server=used_server,
                 destination=destination,
                 **kwargs)
-
-
 
     def parsed_dir(self, target, timeout_seconds, dir_output, *args, **kwargs):
         """ Retrieve filenames contained in a directory.
@@ -477,3 +779,37 @@ class FileUtils(FileUtilsCommonDeviceBase):
                                 timeout_seconds=timeout_seconds,
                                 used_server=used_server,
                                 **kwargs)
+
+    def execute_in_subprocess(self, command, timeout_seconds, **kwargs):
+        """ Executes a command in a subprocess.
+
+        Parameters
+        ----------
+            command : `str`
+                The command to run
+
+            timeout_seconds : `int`
+                The maximum number of seconds to wait before aborting the
+                command execution.
+
+            kwargs : `dict`
+                Extra arguments to pass to Popen constructor
+
+
+        Returns
+        -------
+            `None`
+
+        Raises
+        ------
+            `subprocess.CalledProcessError` if error is encountered.
+
+            `subprocess.TimeoutExpired` if the timeout expires before the
+            command returns a result.
+        """
+        if command:
+            logger.info("Executing command %s" % command)
+            args = shlex.split(command)
+            subprocess.check_call(args, timeout=timeout_seconds, shell=False,
+                **kwargs)
+

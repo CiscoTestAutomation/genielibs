@@ -1408,3 +1408,56 @@ def verify_interface_config_no_speed(device, interface, max_time=60, check_inter
         timeout.sleep()
 
     return False
+
+
+def verify_backplane_optical_port_interface_config_media_type(device, interface, media_type, max_time=60, check_interval=10, flag=True):
+    """Verify interface configured media_type in - show running-config interface <interface-name>
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+            media_type ('str'): default: optical, if media_type is not set i.e., no media_type backplane
+                                backplane: if media_type is set to backplane
+            max_time (`int`): max time
+            check_interval (`int`): check interval
+        Returns:
+            result(`bool`): True if media_type is set as media_type backplane, no media-type backplane(optical)
+                            False if media_type is not set as expected
+    """
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        out = device.execute("show run interface {}".format(interface))
+        cfg_dict = get_config_dict(out)
+        key = f"interface {interface}"
+        if key in cfg_dict and media_type == 'optical':
+            if "media-type" not in cfg_dict[key]:
+                log.info(
+                    "interface config settings 'media_type' is set to default optical "
+                    f"settings 'media_type' as expected"
+                )
+                result = True
+            else:
+                log.info(
+                        "interface config settings 'media_type' is not set to default optical "
+                        f"settings 'media_type' not as expected"
+                )
+                result = False    
+        elif key in cfg_dict and f"media-type {media_type}" in cfg_dict[key]:
+            log.info(
+                    "interface config settings 'media_type' is set to expected"
+                    f"settings 'media_type {media_type}' "
+            )
+            result = True
+        else:
+            log.info(
+                    "interface config settings 'media_type' is not set to expected"
+                    f"settings 'media_type {media_type}' "
+            )
+            result = False
+            
+        if flag == result:
+            return True
+        timeout.sleep()
+
+    return False
+

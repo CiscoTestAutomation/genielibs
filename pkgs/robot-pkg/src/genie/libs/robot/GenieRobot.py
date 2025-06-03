@@ -6,13 +6,15 @@ from copy import deepcopy
 from collections import namedtuple
 
 from robot.api.deco import keyword
+from robot.api import logger
 from robot.libraries.BuiltIn import BuiltIn, RobotNotRunningError
+from robot.utils import is_truthy
 
 from pyats.utils.objects import find, R
 from pyats.aetest import executer
 from pyats.datastructures.logic import Or
 from pyats.results import (Passed, Failed, Aborted, Errored,
-                         Skipped, Blocked, Passx)
+                           Skipped, Blocked, Passx)
 
 from genie.utils.dq import Dq
 from genie.utils.diff import Diff
@@ -40,7 +42,24 @@ class GenieRobot(object):
 
     ROBOT_LIBRARY_DOC_FORMAT = 'reST'
 
-    def __init__(self):
+    def __init__(self, use_pass_fail=False):
+        '''
+        Please note that earlier versions of this keyword
+        library called Robot's pass_execution and fail keyword,
+        which can have undesired side effects on the robot testcase where
+        the keyword is used. The current versions no longer do this,
+        and raise an exception for failures instead and just log success
+        and return otherwise.
+        If you need the old behavior, you can set the use_pass_fail flag to ${TRUE}
+        when importing the library.
+
+            ::
+
+                Library     genie.libs.robot.GenieRobot   use_pass_fail=${TRUE}
+        '''
+
+        self.use_pass_fail = is_truthy(use_pass_fail)
+
         # save builtin so we dont have to re-create then everytime
         self.builtin = BuiltIn()
 
@@ -71,6 +90,18 @@ class GenieRobot(object):
             return self._genie_testscript
         except Exception:
             return self._pyats_testscript
+
+    def _pass_keyword(self, message):
+        if self.use_pass_fail:
+            self.builtin.pass_execution(message)
+        else:
+            logger.info(message)
+
+    def _fail_keyword(self, message, exception=AssertionError):
+        if self.use_pass_fail:
+            self.builtin.fail(message)
+        else:
+            raise exception(message)
 
     @keyword('use genie testbed "${testbed}"')
     def genie_testbed(self, testbed):
@@ -152,17 +183,17 @@ class GenieRobot(object):
     def genie_ops_on_device_context(self, feature, device, context):
         '''Learn Ops feature on device with a context (cli, xml, yang, ...)'''
         return self.genie_ops_on_device_alias_context(feature=feature,
-                                                        alias=None,
-                                                        context=context,
-                                                        device=device)
+                                                      alias=None,
+                                                      context=context,
+                                                      device=device)
 
     @keyword('learn "${feature:[^"]+}" on device "${device:[^"]+}" '
              'using alias "${alias:[^"]+}"')
     def genie_ops_on_device_alias(self, feature, device, alias):
         '''Learn Ops feature on device using a specific alias'''
         return self.genie_ops_on_device_alias_context(feature=feature,
-                                                        alias=alias,
-                                                        device=device)
+                                                      alias=alias,
+                                                      device=device)
 
     @keyword('learn "${feature:[^"]+}" on device "${device:[^"]+}" '
              'using alias "${alias:[^"]+}" with context "${context:[^"]+}"')
@@ -190,7 +221,7 @@ class GenieRobot(object):
         package = 'genie.libs.ops'
 
         try:
-            mod = importlib.import_module(package)
+            importlib.import_module(package)
         except ImportError as e:
             raise ImportError("package 'genie' and library 'genie.libs' "
                               "are mandatory to have to learn '{f}' "
@@ -211,8 +242,6 @@ class GenieRobot(object):
             device_handle.custom['abstraction']['order'].append('context')
             device_handle.custom['abstraction']['context'] = context
             added_context = True
-
-
 
         try:
             cls = load_attribute(package, attr_name, device=device_handle)
@@ -236,9 +265,9 @@ class GenieRobot(object):
            on device using a specific alias
         '''
         return self.genie_run_verification_alias_context(name=name,
-                                                             alias=alias,
-                                                             device=device,
-                                                             context='cli')
+                                                         alias=alias,
+                                                         device=device,
+                                                         context='cli')
 
     @keyword('Run verification "${name:[^"]+}" on device "${device:[^"]+}" '
              'with context "${context:[^"]+}"')
@@ -247,9 +276,9 @@ class GenieRobot(object):
            on device with a context (cli, xml, yang, ...)
         '''
         return self.genie_run_verification_alias_context(name=name,
-                                                               alias=None,
-                                                               device=device,
-                                                               context=context)
+                                                         alias=None,
+                                                         device=device,
+                                                         context=context)
 
     @keyword('Run verification "${name:[^"]+}" on device "${device:[^"]+}"')
     def genie_run_verification(self, name, device):
@@ -257,19 +286,19 @@ class GenieRobot(object):
            on device
         '''
         return self.genie_run_verification_alias_context(name=name,
-                                                               alias=None,
-                                                               device=device,
-                                                               context='cli')
+                                                         alias=None,
+                                                         device=device,
+                                                         context='cli')
 
     @keyword('Run verification "${name:[^"]+}" on device "${device:[^"]+}" '
              'using alias "${alias:[^"]+}" with context "${context:[^"]+}"')
     def genie_run_verification_alias_context(self, name, device, alias,
-                                                 context):
+                                             context):
         '''Call any verification defined in the verification datafile
            on device using a specific alias with a context (cli, xml, yang, ...)
         '''
         if not self.loaded_yamls:
-            self.builtin.fail("Could not load the yaml files - Make sure you "
+            self._fail_keyword("Could not load the yaml files - Make sure you "
                               "have an uut device")
 
         # Set the variables to find the verification
@@ -288,14 +317,14 @@ class GenieRobot(object):
                 for dev in self.testscript.verifications[name]['devices']:
                     # To shorten the variable
                     verf = self.testscript.verifications[name]
-                    if 'devices_attributes' not in verf or\
+                    if 'devices_attributes' not in verf or \
                         verf['devices_attributes'][dev] == 'None':
                         verf.setdefault('devices_attributes', {})
                         verf['devices_attributes'].setdefault(dev, {})
                         verf['devices_attributes'][dev] = {}
 
                     self.testscript.verifications[name]\
-                                ['devices_attributes'][dev]['context'] = context
+                        ['devices_attributes'][dev]['context'] = context
 
         self._run_genie_trigger_verification(name=name, alias=alias,
                                              device=device, context=context)
@@ -339,7 +368,7 @@ class GenieRobot(object):
         '''
 
         if not self.loaded_yamls:
-            self.builtin.fail("Could not load the yaml files - Make sure you "
+            self._fail_keyword("Could not load the yaml files - Make sure you "
                               "have an uut device")
 
         # Set the variables to find the trigger
@@ -358,7 +387,7 @@ class GenieRobot(object):
 
 
         self._run_genie_trigger_verification(name=name, alias=alias,
-                                                 device=device, context=context)
+                                             device=device, context=context)
 
     @keyword('verify count "${number:[^"]+}" "${structure:[^"]+}" on device "${device:[^"]+}"')
     def verify_count(self, number, structure, device):
@@ -421,8 +450,8 @@ class GenieRobot(object):
 
         count = len(find([ops], *rs, filter_=False, all_keys=True))
         if count != int(number):
-            self.builtin.fail("Expected '{e}', but found '{f}'".format(e=number,
-                                                                       f=count))
+            self._fail_keyword("Expected '{e}', but found '{f}'".format(e=number,
+                                                                        f=count))
 
     @keyword('Verify NTP is synchronized on device "${device:[^"]+}"')
     def verify_ntp_synchronized(self, device):
@@ -446,7 +475,7 @@ class GenieRobot(object):
         output = find([ops], *rs, filter_=False, all_keys=True)
 
         if not output:
-            self.builtin.fail("{} does not have NTP synchronized".format(device))
+            self._fail_keyword("{} does not have NTP synchronized".format(device))
 
     @keyword('Verify NTP is synchronized with "${server:[^"]+}" on '
              'device "${device:[^"]+}"')
@@ -471,11 +500,11 @@ class GenieRobot(object):
         output = find([ops], *rs, filter_=False, all_keys=True)
 
         if not output:
-            self.builtin.fail("No synchronized server could be found! Was "
+            self._fail_keyword("No synchronized server could be found! Was "
                               "expected '{}' to be synchronized".format(server))
 
         if output[0][0] != server:
-            self.builtin.fail("Expected synchronized server to be '{}', but "
+            self._fail_keyword("Expected synchronized server to be '{}', but "
                               "found '{}'".format(server, output[0][0]))
 
     @keyword('Profile the system for "${feature:[^"]+}" on devices '
@@ -503,7 +532,7 @@ class GenieRobot(object):
             msg = ["'{alias}' is not found in the testbed yaml file.".format(
                 alias=alias)]
 
-            self.builtin.fail('\n'.join(msg))
+            self._fail_keyword('\n'.join(msg))
 
         return self._profile_the_system(feature=feature,
                                         device=device,
@@ -557,10 +586,9 @@ class GenieRobot(object):
 
                     profiled[fet][dev] = learnt_feature
 
-
         if os.path.isdir(os.path.dirname(name)):
             # the user provided a file to save as pickle
-            pickle_file = pickle(profiled, pts_name = name)
+            pickle_file = pickle(profiled, pts_name=name)
             log.info('Saved system profile as file: %s' % pickle_file)
         else:
             self.testscript.parameters[name] = profiled
@@ -586,8 +614,6 @@ class GenieRobot(object):
             compare2 = unpickle(pts_compare)
         else:
             compare2 = self.testscript.parameters[pts_compare]
-
-
 
         exclude_list = [
             'device', 'maker', 'diff_ignore', 'callables',
@@ -625,7 +651,7 @@ class GenieRobot(object):
                     pass
 
                 diff = Diff(compare1[fet][dev], compare2[fet][dev],
-                    exclude=dev_exclude)
+                            exclude=dev_exclude)
 
                 diff.findDiff()
 
@@ -650,16 +676,15 @@ class GenieRobot(object):
                 log.info(message)
 
         if msg:
-            self.builtin.fail('\n'.join(msg))
-
-        message = 'All Feature were identical on all devices'
-        self.builtin.pass_execution(message)
+            self._fail_keyword('\n'.join(msg))
+        else:
+            self._pass_keyword('All Feature were identical on all devices')
 
     def _run_genie_trigger_verification(self, alias, device, context,
-                                            name):
+                                        name):
         try:
             device_handle = self._search_device(device)
-        except Exception as e:
+        except Exception:
             raise Exception("Could not find '{d}'".format(d=device))
 
         genie_discovery = GenieScriptDiscover(self.testscript)
@@ -718,7 +743,7 @@ class GenieRobot(object):
                     executer.execute(cls)
             else:
                 executer.execute(cls)
-        except Exception as e:
+        except Exception:
             # No need, as pyats has already logged the error
             pass
 
@@ -749,7 +774,7 @@ class GenieRobot(object):
         else:
             # This there is information at device level and abstraction is there
             # Then add at device level
-            self._add_abstraction_at_level(\
+            self._add_abstraction_at_level(
                     datafile=datafile[name]['devices_attributes'][dev],
                     context=context)
         return datafile
@@ -780,16 +805,16 @@ class GenieRobot(object):
         fail_group = [Failed, Aborted, Errored]
         pass_group = [Passed, Skipped, Blocked, Passx]
 
+        if tags:
+            self.builtin.set_tags(tags)
+
+        msg = '{n} has {r}'.format(n=name, r=result.name)
         if result in fail_group:
-            self.builtin.fail('{n} has {r}'.format(n=name, r=result.name),
-                              tags)
-
-        if result in pass_group:
-            self.builtin.pass_execution('{n} has {r}'.format(n=name,
-                                                             r=result.name),
-                                        tags)
-
-        raise Exception('{r} is not a supported result'.format(r=result.name))
+            self._fail_keyword(msg)
+        elif result in pass_group:
+            self._pass_keyword(msg)
+        else:
+            raise ValueError('{r} is not a supported result'.format(r=result.name))
 
     def _search_device(self, name):
         try:
@@ -804,19 +829,10 @@ class GenieRobot(object):
 
     def _load_genie_datafile(self):
         # Load the datafiles
-        variables = self.builtin.get_variables()
 
-        trigger_datafile = None
-        if '${trigger_datafile}' in variables:
-            trigger_datafile = variables['${trigger_datafile}']
-
-        verification_datafile = None
-        if '${verification_datafile}' in variables:
-            verification_datafile = variables['${verification_datafile}']
-
-        pts_datafile = None
-        if '${pts_datafile}' in variables:
-            pts_datafile = variables['${pts_datafile}']
+        trigger_datafile = self.builtin.get_variable_value('${trigger_datafile}')
+        verification_datafile = self.builtin.get_variable_value('${verification_datafile}')
+        pts_datafile = self.builtin.get_variable_value('${pts_datafile}')
 
         self.trigger_datafile, self.verification_datafile, pts_datafile, *_ =\
             self.testscript._validate_datafiles(self.testbed,

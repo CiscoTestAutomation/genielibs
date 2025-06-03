@@ -446,3 +446,214 @@ def configure_app_management_networking(device, app_name="guestshell", auto_star
     except SubCommandFailure as e:
         log.error(f"Couldn't configure app management networking. Error:\n{e}")
         return False 
+
+def configure_app_hosting_docker(device, appid, account_token, hostname, memory):
+    """
+    Configure AppHosting with Docker resource and run options.
+
+    Args:
+        device ('obj'): Device object
+        appid ('str'): App ID for the application
+        account_token ('str'): Account token for the application
+        hostname ('str'): Hostname for the application
+        memory ('str'): Memory allocation for the application (e.g., '1g')
+
+    Returns:
+        True if configuration is successful, False otherwise.
+
+    Raises:
+        SubCommandFailure: If the configuration fails.
+    """
+    log.debug(f"Configuring AppHosting for appid {appid} with Docker resource and run options.")
+
+    # Configuration commands
+    config = [
+        f"app-hosting appid {appid}",
+        "app-resource docker",
+        "prepend-pkg-opts",
+        f'run-opts 1 "-e TEAGENT_ACCOUNT_TOKEN={account_token}"',
+        f'run-opts 2 "--hostname={hostname} --memory={memory}"'
+    ]
+
+    try:
+        # Send configuration commands to the device
+        device.configure(config)
+        log.debug("AppHosting Docker configuration completed successfully.")
+        return True
+    except SubCommandFailure as e:
+        log.error(f"Failed to configure AppHosting Docker. Error:\n{e}")
+        return False
+
+def configure_app_hosting_custom_profile(device, appid, cpu, memory, persist_disk, name_server):
+    """
+    Configure AppHosting with a custom resource profile.
+
+    Args:
+        device ('obj'): Device object
+        appid ('str'): App ID for the application
+        cpu ('int'): CPU allocation for the application
+        memory ('int'): Memory allocation for the application (in MB)
+        persist_disk ('int'): Persistent disk size for the application (in MB)
+        name_server ('str'): Name server IP address for the application
+
+    Returns:
+        True if configuration is successful, False otherwise.
+
+    Raises:
+        SubCommandFailure: If the configuration fails.
+    """
+    log.info(f"Configuring AppHosting for appid {appid} with a custom resource profile.")
+
+    # Configuration commands
+    config = [
+        f"app-hosting appid {appid}",
+        "app-resource profile custom",
+        f"cpu {cpu}",
+        f"memory {memory}",
+        f"persist-disk {persist_disk}",
+        f"name-server0 {name_server}",
+        "start"
+    ]
+
+    try:
+        # Send configuration commands to the device
+        device.configure(config)
+        log.info("AppHosting custom profile configuration completed successfully.")
+        return True
+    except SubCommandFailure as e:
+        log.error(f"Failed to configure AppHosting custom profile. Error:\n{e}")
+        return False
+
+def configure_app_hosting(device, appid, vlan_id, app_ip, app_netmask, app_gateway_ip):
+    """
+    Configure AppHosting with the given parameters.
+
+    Args:
+        device ('obj'): Device object
+        appid ('str'): App ID for the application
+        vlan_id ('str'): VLAN ID for the application
+        app_ip ('str'): IP address for the application
+        app_netmask ('str'): Subnet mask for the application
+        app_gateway_ip ('str'): Default gateway for the application
+
+    Returns:
+        True if configuration is successful, False otherwise.
+
+    Raises:
+        SubCommandFailure: If the configuration fails.
+    """
+    log.info(f"Configuring AppHosting for appid {appid} with VLAN {vlan_id}, IP {app_ip}, and gateway {app_gateway_ip}")
+
+    # Configuration commands
+    config = [
+        f"app-hosting appid {appid}",
+        "app-vnic AppGigabitEthernet trunk",
+        f"vlan {vlan_id} guest-interface 0",
+        f"guest-ipaddress {app_ip} netmask {app_netmask}",
+        f"app-default-gateway {app_gateway_ip} guest-interface 0"
+    ]
+
+    try:
+        # Send configuration commands to the device
+        device.configure(config)
+        log.info("AppHosting configuration completed successfully.")
+        return True
+    except SubCommandFailure as e:
+        log.error(f"Failed to configure AppHosting. Error:\n{e}")
+        return False
+
+def configure_app_hosting_vlan(device, appid, vlan_id):
+    """
+    Configures app-hosting with VLAN and activates the VLAN interface.
+
+    Args:
+        device ('obj'): Device object
+        appid ('str'): App ID for the application
+        vlan_id ('int'): VLAN ID to configure
+
+    Returns:
+        True if configuration is successful, False otherwise.
+
+    Raises:
+        SubCommandFailure: If the configuration fails.
+    """
+    log.info(f"Configuring AppHosting for appid {appid} with VLAN {vlan_id}.")
+
+    # Configuration commands
+    config = [
+        f"app-hosting appid {appid}",
+        f"vlan {vlan_id}",
+        "state active",
+        f"interface vlan {vlan_id}",
+        "no shutdown"
+    ]
+
+    try:
+        # Send configuration commands to the device
+        device.configure(config)
+        log.info(f"AppHosting VLAN {vlan_id} configuration completed successfully.")
+        return True
+    except SubCommandFailure as e:
+        log.error(f"Failed to configure AppHosting VLAN {vlan_id}. Error:\n{e}")
+        return False
+
+def configure_app_hosting_docker_with_run_opts(device, appid, run_opts_index, run_opts_string):
+    """
+    Configure AppHosting with Docker resource and remove specific run options.
+
+    Args:
+        device ('obj'): Device object
+        appid ('str'): App ID for the application
+        run_opts_index ('int'): Index of the run option to remove
+        run_opts_string ('str'): Run-options string to remove
+
+    Returns:
+        True if configuration is successful, False otherwise.
+
+    Raises:
+        SubCommandFailure: If the configuration fails.
+    """
+    log.info(f"Configuring AppHosting for appid {appid} with Docker resource and run options.")
+
+    # Configuration commands
+    config = [
+        f"app-hosting appid {appid}",
+        "app-resource docker",
+        f'no run-opts {run_opts_index} {run_opts_string}',
+        "prepend-pkg-opts"
+    ]
+
+    try:
+        # Send configuration commands to the device
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure AppHosting Docker for appid {appid}. Error:\n{e}")
+
+def enable_app_hosting_verification(device):
+    """
+    Enable application signature verification.
+
+    Args:
+        device ('obj'): Device object
+
+    Returns:
+        True if the command is executed successfully, False otherwise.
+
+    Raises:
+        SubCommandFailure: If the command execution fails.
+    """
+    log.info("Enabling application signature verification.")
+
+    try:
+        # Execute the command on the device
+        output = device.execute("app-hosting verification enable")
+        if "Application signature verification is enabled" in output:
+            log.info("Application signature verification is successfully enabled.")
+            return None
+        else:
+            log.error("The process for the command is not responding or is otherwise unavailable")
+            return False
+    except SubCommandFailure as e:
+        log.error(f"Failed to enable application signature verification. Error:\n{e}")
+        return False

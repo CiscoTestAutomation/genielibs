@@ -1,35 +1,13 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
 from genie.libs.sdk.apis.iosxe.cts.configure import configure_ipv6_subnet_to_sgt_mapping
+from unittest.mock import Mock
 
-
-class TestConfigureIpv6SubnetToSgtMapping(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          UUT3-macallan:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: c9500
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['UUT3-macallan']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureIpv6SubnetToSgtMapping(TestCase):
 
     def test_configure_ipv6_subnet_to_sgt_mapping(self):
-        result = configure_ipv6_subnet_to_sgt_mapping(self.device, '2011:1::2', 64, 77)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.device = Mock()
+        result = configure_ipv6_subnet_to_sgt_mapping(self.device, '2011:1::2', '64', '77')
+        self.assertEqual(
+            self.device.configure.mock_calls[0].args,
+            ('cts role-based sgt-map 2011:1::2/64 sgt 77',)
+        )

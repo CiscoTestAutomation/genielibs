@@ -45,3 +45,12 @@ class TestVerifyPatternInShowLogging(unittest.TestCase):
         result = verify_pattern_in_show_logging(self.device, pattern_list)
         expected_output = True
         self.assertEqual(result, expected_output)
+
+    def test_verify_pattern_with_match_full_output(self):
+        patterns = ['No Active Message Discriminator', 'No Inactive Message Discriminator']
+        result = verify_pattern_in_show_logging(
+            self.device,
+            patterns,
+            match_full_output=True
+        )
+        self.assertEqual(result, True)

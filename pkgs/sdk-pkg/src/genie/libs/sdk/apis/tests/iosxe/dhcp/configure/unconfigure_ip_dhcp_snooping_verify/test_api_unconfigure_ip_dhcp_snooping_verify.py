@@ -1,35 +1,13 @@
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
 from genie.libs.sdk.apis.iosxe.dhcp.configure import unconfigure_ip_dhcp_snooping_verify
+from unittest.mock import Mock
 
-
-class TestUnconfigureIpDhcpSnoopingVerify(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = """
-        devices:
-          rep-sw2:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            model: c9300
-            type: c9300
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['rep-sw2']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigureIpDhcpSnoopingVerify(TestCase):
 
     def test_unconfigure_ip_dhcp_snooping_verify(self):
-        result = unconfigure_ip_dhcp_snooping_verify(self.device, 'no-relay-agent-address')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.device = Mock()
+        unconfigure_ip_dhcp_snooping_verify(self.device, 'no-relay-agent-address')
+        self.assertEqual(
+            self.device.configure.mock_calls[0].args,
+            ('no ip dhcp snooping verify no-relay-agent-address',)
+        )

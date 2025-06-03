@@ -997,3 +997,20 @@ def unconfigure_spanning_tree_portfast_bridge_assurance_on_interface(device, int
             "Could not Unconfigure the spanning-tree portfast bridge assurance on interface Error:\n{error}".format(error=e)
         )
 
+
+def configure_spanning_tree_extend_system_id(device):
+    """
+    Configures spanning-tree extend system-id
+    Args:
+        device ('obj'): Device object
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed to configure spanning-tree extend system-id
+    """
+    try:
+        device.configure("spanning-tree extend system-id")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure spanning-tree extend system-id. Error:\n{e}"
+        )

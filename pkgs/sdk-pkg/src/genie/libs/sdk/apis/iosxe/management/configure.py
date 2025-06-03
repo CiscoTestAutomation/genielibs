@@ -97,6 +97,7 @@ def configure_management_ip(device,
                             address=None,
                             interface=None,
                             vrf=None,
+                            no_switchport=False,
                             dhcp_timeout=30):
     '''
     Configure management ip on the device.
@@ -108,6 +109,7 @@ def configure_management_ip(device,
              ipv6 ('str') or ('list'): ipv6 address
         interface ('str'): management interface (optional)
         vrf ('str'): interface VRF (optional)
+        no_switchport ('bool'): default as False
         dchp_timeout ('int'): DHCP timeout in seconds (default: 30)
 
     Returns:
@@ -186,6 +188,8 @@ def configure_management_ip(device,
 
     if interface:
         interface_config = [f'interface {interface}']
+        if no_switchport:
+            interface_config.append('no switchport')
         if vrf:
             interface_config.append(f'vrf forwarding {vrf}')
     else:

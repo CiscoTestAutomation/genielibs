@@ -97,7 +97,7 @@ def configure_route_map_permit(
         device, route_map, seq, prefix_list=None, set_community=None,
         match_community=None, set_metric=None, set_weight=None,
         set_as_path_prepend=None, local_preference=None,
-        match_as_path=None, continue_id=None, match_interface=None):
+        match_as_path=None, continue_id=None, match_interface=None, vrf=None):
     """ Configures route-map on device
         Args:
             device('obj'): device to configure on
@@ -114,6 +114,7 @@ def configure_route_map_permit(
             local_preference ('int'): set local preference value
             match_as_path ('int'): set as path value
            continue_id ('int'): set continue id value
+            vrf ('str') set vrf values 
         Returns:
             None
         Raises:
@@ -140,6 +141,8 @@ def configure_route_map_permit(
         cmd.append(f"match as-path {match_as_path}")
     if continue_id:
         cmd.append(f"continue {continue_id}")
+    if vrf:
+        cmd.append(f"set vrf {vrf}")
 
     try:
         device.configure(cmd)
