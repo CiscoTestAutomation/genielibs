@@ -1966,3 +1966,23 @@ def execute_issu_set_rollback_timer(device, timer=0):
         output = device.configure(f"issu set rollback-timer {timer}")
     except SubCommandFailure:
         raise SubCommandFailure("Rollback timer should be in <seconds> format (0-7200) or hh:mm:ss format")
+
+def execute_diagnostic_start_module_port(device, module_number, test_id, port_num):
+    """ execute diagnostic start module test
+        Args:
+            device ('obj'): Device object
+            module_number ('int'): Module number on which diagnostic has to be performed 
+            test_id ('str'): Test ID list (e.g. 1,3-6) or Test Name or minimal or complete
+            port_num ('str'): word (e.g. 1-8 or all)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f"diagnostic start module {module_number} test {test_id} port {port_num}"
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not execute diagnostic start module {module_number} test {test_id} port {port_num} on device. Error:\n{e}")
+

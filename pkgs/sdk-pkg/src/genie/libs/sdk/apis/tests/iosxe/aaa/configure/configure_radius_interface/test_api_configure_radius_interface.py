@@ -1,35 +1,15 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
 from genie.libs.sdk.apis.iosxe.aaa.configure import configure_radius_interface
+from unittest.mock import Mock
 
 
-class TestConfigureRadiusInterface(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          PE-B:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: c9300
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['PE-B']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureRadiusInterface(TestCase):
 
     def test_configure_radius_interface(self):
-        result = configure_radius_interface(self.device, 'Loopback0', 'ipv4')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.device = Mock()
+        configure_radius_interface(self.device, 'Loopback0', 'ipv4')
+        self.assertEqual(
+            self.device.configure.mock_calls[0].args,
+            (['ip radius source-interface Loopback0'],)
+        )
+

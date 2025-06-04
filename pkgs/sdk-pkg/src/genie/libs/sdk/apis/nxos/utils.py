@@ -10,6 +10,7 @@ from genie.libs.sdk.apis.utils import get_config_dict
 from genie.libs.parser.nxos.ping import Ping
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 from genie.libs.sdk.apis.utils import copy_from_device as generic_copy_from_device
+from genie.utils.timeout import Timeout
 
 # unicon
 from unicon.eal.dialogs import Dialog, Statement
@@ -204,6 +205,70 @@ def ping(device,
         log.warning(e)
         return {}
 
+def verify_ping(device,
+                address,
+                ttl=None,
+                timeout=None,
+                tos=None,
+                dscp=None,
+                size=None,
+                count=None,
+                source=None,
+                rapid=False,
+                do_not_fragment=False,
+                validate=False,
+                vrf=None,
+                command=None,
+                output=None,
+                expected_max_success_rate=100,
+                expected_min_success_rate=1,
+                max_time=60,
+                check_interval=10):
+    """ execute ping and return True if ping is successful
+
+    Args:
+        device ('obj'): Device object
+        address ('str'): Address value
+        ttl ('int'): Not supported
+        timeout ('int'): timeout interval
+        tos ('int'): Not supported. type of service value
+        dscp (`str`): Not supported. DSCP value
+        size ('str'): data bytes expected
+        count ('int'): repeat count
+        source ('str'): source address or interface, default: None
+        rapid ('bool'): Not supported
+        do_not_fragment ('bool'): enable do not fragment bit in IP header, default: False
+        validate (`bool`): Not supported. validate reply data, default: False
+        vrf ('str'): VRF name
+        command (`str`): ping command. This will ignore all other arguments
+        output (`str`): ping command output. no parser call involved
+        expected_max_success_rate (int): Expected maximum success rate (default: 100)
+        expected_min_success_rate (int): Expected minimum success rate (default: 1)
+        max_time (`int`): Max time, default: 30
+        check_interval (`int`): Check interval, default: 10
+    """
+
+    _timeout = Timeout(max_time, check_interval)
+    while _timeout.iterate():
+        res = ping(
+            device, address, ttl, timeout, tos, dscp, size, count, source,
+            rapid, do_not_fragment, validate, vrf, command, output
+        )
+        if res == {}:
+            log.info('Ping failed')
+            _timeout.sleep()
+            continue
+        rate = res['ping']['statistics']['success_rate_percent']
+        if rate >= expected_min_success_rate and rate <= expected_max_success_rate:
+            return True
+        else:
+            log.info('Ping success rate is not in the expected range. Expected min: {em}, max: {ex}, actual: {a}'.format(
+                em=expected_min_success_rate,
+                ex=expected_max_success_rate,
+                a=rate
+            ))
+            _timeout.sleep()
+    return False
 
 def get_mgmt_src_ip_addresses(device):
     """ Get the source IP addresses connected via SSH to the device.

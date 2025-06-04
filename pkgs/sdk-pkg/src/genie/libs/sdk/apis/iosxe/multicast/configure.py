@@ -1667,12 +1667,13 @@ def unconfigure_ipv6_mld_access_group(device, interface=None, groupe_name=None):
         raise SubCommandFailure(
             f"Failed to unconfigure ipv6 mld access-group on device. Error:\n{e}")
 
-def unconfigure_ipv6_pim_bsr_candidate_bsr(device, ipv6_address, vrf=None):
+def unconfigure_ipv6_pim_bsr_candidate_bsr(device, ipv6_address, vrf=None, priority=None):
     """ Unconfigure ipv6 pim candidate bsr
     Args:
         device ('obj'): Device object
         ipv6_address ('str'): ipv6_address for candidate
         vrf ('str', optional): vrf name
+        priority ('int', optional): Priority value for the BSR candidate
     Returns:
         None
     Raises:
@@ -1681,10 +1682,15 @@ def unconfigure_ipv6_pim_bsr_candidate_bsr(device, ipv6_address, vrf=None):
 
     log.info(f"Unconfigure ipv6 pim candidate bsr")
 
+    # Determine the base command
     if vrf:
         cmd = f"no ipv6 pim vrf {vrf} bsr candidate bsr {ipv6_address}"
     else:
         cmd = f"no ipv6 pim bsr candidate bsr {ipv6_address}"
+
+    # Add priority if provided
+    if priority:
+        cmd += f" priority {priority}"
 
     try:
         device.configure(cmd)
@@ -1694,16 +1700,17 @@ def unconfigure_ipv6_pim_bsr_candidate_bsr(device, ipv6_address, vrf=None):
         )
 
 
-def unconfigure_ipv6_pim_bsr_candidate_rp(device, ipv6_address, vrf=None):
-    """ Configure ipv6 pim candidate rp
+def unconfigure_ipv6_pim_bsr_candidate_rp(device, ipv6_address, vrf=None, priority=None):
+    """ Unconfigure ipv6 pim candidate rp
     Args:
         device ('obj'): Device object
         ipv6_address ('str'): ipv6_address for candidate
         vrf ('str', optional): vrf name
+        priority ('int', optional): priority value for the candidate
     Returns:
         None
     Raises:
-        SubCommandFailure : Failed to configure ipv6 pim candidate rp
+        SubCommandFailure : Failed to unconfigure ipv6 pim candidate rp
     """
 
     log.info(f"Unconfigure ipv6 pim candidate rp")
@@ -1713,6 +1720,8 @@ def unconfigure_ipv6_pim_bsr_candidate_rp(device, ipv6_address, vrf=None):
     else:
         cmd = f"no ipv6 pim bsr candidate rp {ipv6_address}"
 
+    if priority is not None:
+        cmd += f" priority {priority}"
 
     try:
         device.configure(cmd)

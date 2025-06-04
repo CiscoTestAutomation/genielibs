@@ -439,6 +439,7 @@ def configure_pim_auto_rp_listener(device, loopback_number=None, ttl=None, annou
             None
         Raises:
             SubCommandFailure
+            
     """
   
     '''
@@ -449,10 +450,10 @@ def configure_pim_auto_rp_listener(device, loopback_number=None, ttl=None, annou
     configs = [f"ip pim autorp listener"]
                
     if discovery and loopback_number and ttl:
-        configs.append(f"ip pim  send-rp-announce loopback {loopback_number} scope {ttl}")
+        configs.append(f"ip pim  send-rp-discovery loopback {loopback_number} scope {ttl}")
                        
     if announce and loopback_number and ttl:
-        configs.append(f"ip pim  send-rp-discovery loopback {loopback_number} scope {ttl}")
+        configs.append(f"ip pim  send-rp-announce loopback {loopback_number} scope {ttl}")
 
     try:
         device.configure(configs)

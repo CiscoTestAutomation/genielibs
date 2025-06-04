@@ -208,7 +208,7 @@ def send_break_boot(device, console_activity_pattern= None,
     if device.is_ha and hasattr(device, 'subconnections'):
         conn_list = device.subconnections
     else:
-        conn_list = [device]
+        conn_list = [device.default]
 
     def get_connection_dialog(device, conn):
 
@@ -260,14 +260,16 @@ def send_break_boot(device, console_activity_pattern= None,
 
         dialog = get_connection_dialog(device, con)
 
+        # check for login creds and update the cred list 
+        login_creds = con.context.get('login_creds')
+        if login_creds:
+            con.context['cred_list'] = login_creds
+
+
         dialog.process(
             con.spawn,
             timeout=timeout,
-            context={
-                'password': to_plaintext(credentials.get('default', {}).get('password')),
-                'username': to_plaintext(credentials.get('default', {}).get('username')),
-                'enable_password': to_plaintext(credentials.get('enable', {}).get('password'))
-            },
+            context=con.context,
             prompt_recovery=True
         )
 
@@ -277,6 +279,9 @@ def send_break_boot(device, console_activity_pattern= None,
 
         if not con.state_machine.current_state == 'rommon':
             log.warning(f"The device {device.name} is not in rommon")
+
+        # send a new line in order to catch the buffer output in recovery process
+        con.sendline()
 
     futures = []
     executor = ThreadPoolExecutor(max_workers=len(conn_list))

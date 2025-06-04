@@ -278,3 +278,32 @@ def unconfigure_interface_rep_ztp(device, intfs, segment, vlan=None):
             device.configure(config)
         except SubCommandFailure as e:
             raise SubCommandFailure(f"Could not unconfigure rep ztp on {intf}. Error:\n{e}")
+
+def configure_rep_preempt_and_block(device, interface, delay, block_port, vlan_range):
+    """
+    Configures REP preempt delay and REP block port on an interface.
+
+    Args:
+        device ('obj'): Device object
+        interface ('str'): Interface to configure
+        delay ('int'): Preempt delay value
+        block_port ('int'): Block port value (-1 for all ports)
+        vlan_range ('str'): VLAN range to block
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: Failed to configure REP preempt delay or block port
+    """
+    config = [
+        f"interface {interface}",
+        f"rep preempt delay {delay}",
+        f"rep block port {block_port} vlan {vlan_range}"
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure REP preempt delay and block port on interface {interface}. Error:\n{e}"
+        )

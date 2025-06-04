@@ -1,35 +1,13 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
 from genie.libs.sdk.apis.iosxe.dhcp.configure import unconfigure_ip_dhcp_snooping_trust
+from unittest.mock import Mock 
 
-
-class TestUnconfigureIpDhcpSnoopingTrust(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          n08HA:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: c9500
-            type: c9500
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['n08HA']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigureIpDhcpSnoopingTrust(TestCase):
 
     def test_unconfigure_ip_dhcp_snooping_trust(self):
-        result = unconfigure_ip_dhcp_snooping_trust(self.device, 'g1/1/1')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.device = Mock()
+        unconfigure_ip_dhcp_snooping_trust(self.device, 'g1/1/1')
+        self.assertEqual(
+            self.device.configure.mock_calls[0].args,
+            (['interface g1/1/1', 'no ip dhcp snooping trust'],)
+        )

@@ -172,9 +172,15 @@ class TestUtilsApi(unittest.TestCase):
         device.clean = {'device_recovery':
                             {'golden_image':'bootflash:packages.conf',
                             'recovery_password':'lab'}}
-        with patch("genie.libs.sdk.apis.utils.pcall") as pcall_mock:
+        with patch("genie.libs.sdk.apis.utils.Lookup") as lookup_mock:
+            lookup_clean = mock.Mock()
+            lookup_clean.clean.recovery.recovery.recovery_worker = mock.Mock()
+            lookup_mock.from_device.return_value = lookup_clean
             device_recovery_boot(device)
-            pcall_mock.assert_called_once()
+            expected_calls = [call(device=device, console_activity_pattern=None, console_breakboot_char='\x03', console_breakboot_telnet_break=False,
+             grub_activity_pattern=None, grub_breakboot_char='c', break_count=15, timeout=750, golden_image='bootflash:packages.conf', tftp_boot={}, recovery_password='lab')]      
+            lookup_clean.clean.recovery.recovery.recovery_worker.mock_calls
+            self.assertEqual(lookup_clean.clean.recovery.recovery.recovery_worker.mock_calls, expected_calls)
 
     def test_configure_management_console(self):
         dev1 = MagicMock()

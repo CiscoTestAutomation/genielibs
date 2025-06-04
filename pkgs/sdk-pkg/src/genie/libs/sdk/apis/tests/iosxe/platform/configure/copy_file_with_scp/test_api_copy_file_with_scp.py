@@ -40,5 +40,18 @@ class TestCopyFileWithScp(unittest.TestCase):
  '3698 bytes copied in 0.304 secs (12164 bytes/sec)')
         # Device output inconsistently includes device prompt
         if result.endswith('#'):
-            expected_output += '\r\nT13-C9300-24T#'
+            expected_output += '\r\nRouter##'
+        self.assertEqual(sanitize(result), sanitize(expected_output))
+
+    def test_copy_file_with_scp_with_destination_username(self):
+        self.maxDiff = None
+        result = copy_file_with_scp(self.device, '10.64.69.167', 'request.pem.ca', 'navin', 'navin')
+        expected_output = ('Destination username [navin]? \r\n'
+ 'Destination filename [request.pem]? \r\n'
+ 'Writing request.pem  Sink: C0644 1309 request.pem \r\n'
+ '! \r\n'
+ '1309 bytes copied in 0.267 secs (4903 bytes/sec)')
+        # Device output inconsistently includes device prompt
+        if result.endswith('#'):
+            expected_output += '\r\nRouter##'
         self.assertEqual(sanitize(result), sanitize(expected_output))

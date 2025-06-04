@@ -5,6 +5,7 @@ import re
 
 # Unicon
 from unicon.core.errors import SubCommandFailure
+from unicon.eal.dialogs import Statement, Dialog
 
 # Steps
 from pyats.aetest.steps import Steps
@@ -490,10 +491,10 @@ def configure_policy_map_with_no_set_dscp(device, policy_map_name, class_map_nam
     
     try:
         device.configure(cli)
-        
     except SubCommandFailure as e:
-        raise SubCommandFailure
-        ("Could not configure policy map with no dscp value")
+        raise SubCommandFailure(
+            "Could not configure policy map with no dscp value"
+        ) from e 
 
 def configure_policy_map_with_dscp_police(device, policy_map_name, class_map_name, policy_var, table_map_mode, table_map_name):
     """ Configure policy-map type on Device
@@ -1228,4 +1229,75 @@ def unconfigure_policy_map_priority_express(device, policy_map_name, class_name=
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not unconfigure policy-map express configuration on device {device}.Error:\n{e}") 
+
+def default_policy_map(device, policy_map, policy_type=None):
+    """
+    Attempts to default (delete) a control subscriber policy-map.
+    If the policy is BUILTIN_AUTOCONF_POLICY, raise an error as it cannot be deleted.
+
+    Args:
+        device ('obj'): Device object
+        policy_map ('str'): policy-map name
+        policy_type ('str', optional): type of the policy-map (e.g., 'access-control', 'control', 'packet-service', 'umbrella')
+
+    Raises:
+        SubCommandFailure: If trying to delete BUILTIN_AUTOCONF_POLICY or if deletion fails
+    """
+    log.info(f"Attempting to default policy-map type control subscriber {policy_map}")
+    try:
+        if policy_type == "control":
+            if policy_map == "BUILTIN_AUTOCONF_POLICY":
+                log.error("Default policy BUILTIN_AUTOCONF_POLICY cannot be deleted")
+                raise SubCommandFailure("Default policy BUILTIN_AUTOCONF_POLICY cannot be deleted")
+            device.configure(f"default policy-map type {policy_type} subscriber {policy_map}")
+        elif policy_type in ["access-control", "packet-service", "umbrella"]:
+            device.configure(f"default policy-map type {policy_type} {policy_map}")
+        else:
+            device.configure(f"default policy-map {policy_map}")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not default policy-map type control subscriber {policy_map}. Error:\n{e}"
+        )
+
+def default_attribute_service_map(device, parameter_map=None, parameter_type=None, ):
+    """
+    Attempts to default (delete) paramater-map type on device
+
+    Args:
+        device ('obj'): Device object
+        parameter_map ('str'): parameter-map name (max 99 char)
+        parameter_type ('str', optional): type of the parameter-map (e.g., 'opendns', 'regex', 'subscriber', 'umbrella', 'webauth')
+    Raises:
+        SubCommandFailure: If command fails to execute on the device
+    """
     
+    log.debug(f"Attempting to default attribute parameter-map {parameter_map}")
+    cmd = []
+    if parameter_type == "subscriber":
+        cmd.append(f"default parameter-map type {parameter_type} attribute-to-service {parameter_map}")
+    elif parameter_type in ["regex", "webauth"]:
+        if parameter_map:
+            cmd.append(f"default parameter-map type {parameter_type} {parameter_map}")
+        else:
+            cmd.append(f"default parameter-map type {parameter_type} global")
+    elif parameter_type in ["opendns", "umbrella"]:
+        cmd.append(f"default parameter-map type {parameter_type} global")
+
+    try:
+        log.info(f"Attempting to default attribute parameter-map {parameter_map}")
+        if parameter_type == "subscriber":
+            dialog = Dialog([
+                Statement(
+                    pattern=r"Do you wish to continue\? \[yes\]:",
+                    action="sendline(yes)",
+                    loop_continue=True,
+                    continue_timer=False
+                )
+            ])
+            device.configure(cmd, reply=dialog)
+        else:
+            device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not default attribute parameter-map {parameter_map}. Error:\n{e}"
+        )

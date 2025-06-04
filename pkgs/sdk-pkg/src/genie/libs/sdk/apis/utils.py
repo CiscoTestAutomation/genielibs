@@ -4489,27 +4489,18 @@ def device_recovery_boot(device, console_activity_pattern=None, console_breakboo
         # Item is needed to be able to know in which parallel child
         # we are
 
-        if device.is_ha and hasattr(device, 'subconnections'):
-            start = [i.start[0] for i in device.subconnections]
-        else:
-            start = device.start
-
-        pcall(
-            abstract.clean.recovery.recovery.recovery_worker,
-            start=start,
-            ikwargs = [{'item': i} for i, _ in enumerate(start)],
-            ckwargs = {
-                'device': device,
-                'console_activity_pattern': console_activity_pattern,
-                'console_breakboot_char': console_breakboot_char,
-                'console_breakboot_telnet_break': console_breakboot_telnet_break,
-                'grub_activity_pattern': grub_activity_pattern or recovery_info.get('grub_activity_pattern'),
-                'grub_breakboot_char': grub_breakboot_char,
-                'break_count': break_count,
-                'timeout': timeout,
-                'golden_image': golden_image,
-                'tftp_boot': tftp_boot,
-                'recovery_password': recovery_password or recovery_info.get('recovery_password')}
+        abstract.clean.recovery.recovery.recovery_worker(
+                device=device,
+                console_activity_pattern=console_activity_pattern,
+                console_breakboot_char=console_breakboot_char,
+                console_breakboot_telnet_break=console_breakboot_telnet_break,
+                grub_activity_pattern=grub_activity_pattern or recovery_info.get('grub_activity_pattern'),
+                grub_breakboot_char=grub_breakboot_char,
+                break_count=break_count,
+                timeout=timeout,
+                golden_image=golden_image,
+                tftp_boot=tftp_boot,
+                recovery_password=recovery_password or recovery_info.get('recovery_password')
         )
     except Exception as e:
         log.error(str(e))

@@ -1,56 +1,49 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
 from genie.libs.sdk.apis.iosxe.server.configure import configure_tacacs_server
+from unittest.mock import Mock
 
 
-class TestConfigureTacacsServer(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          Router:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: c8kv
-            type: c8kv
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Router']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureTacacsServer(TestCase):
 
     def test_configure_tacacs_server(self):
-        result = configure_tacacs_server(self.device, [{'host': 'TACACS1',
-  'key': 'test',
-  'key_type': 0,
-  'server': '2.2.2.2',
-  'timeout': 10}])
-        seen = set()
-        result_lines = []
-        for line in result.splitlines():
-            line = line.strip()
-            if line and line not in seen:
-                seen.add(line)
-                result_lines.append(line)
-        
-        result_normalized = '\n'.join(result_lines) + '\n'
-
-        expected_output = (
-            'tacacs server TACACS1\n'
-            'address ipv4 2.2.2.2\n'
-            'timeout 10\n'
-            'key 0 test\n'
-            'exit\n'
+        self.device = Mock()
+        result = configure_tacacs_server(self.device, [{
+            'host': 'TAC',
+  'key': 'cisco',
+  'key_type': '7',
+  'server': '10.76.239.47',
+  'timeout': '5',
+  'tls_connection_timeout': '32',
+  'tls_idle_timeout': '61',
+  'tls_ip_tacacs_source_interface': 'GigabitEthernet1',
+  'tls_ip_vrf_forwarding': 'Mgmt-vrf',
+  'tls_ipv6_tacacs_source_interface': 'GigabitEthernet1',
+  'tls_ipv6_vrf_forwarding': 'Mgmt-vrf',
+  'tls_match_server_identity_dns_id': 'cisco.com',
+  'tls_match_server_identity_ip_address': 'cisco.com',
+  'tls_match_server_identity_srv_id': 'cisco.com',
+  'tls_port': '6049',
+  'tls_retries': '2',
+  'tls_trustpoint_client': 'TLS_IP_SELF_SIGNED',
+  'tls_trustpoint_server': 'TLS_IP_SELF_SIGNED'}])
+        self.assertEqual(
+            self.device.configure.mock_calls[0].args,
+            (('tacacs server TAC\n'
+ 'address ipv4 10.76.239.47\n'
+ 'timeout 5\n'
+ 'key 7 cisco\n'
+ 'tls port 6049\n'
+ 'tls idle-timeout 61\n'
+ 'tls connection-timeout 32\n'
+ 'tls retries 2\n'
+ 'tls trustpoint client TLS_IP_SELF_SIGNED\n'
+ 'tls trustpoint server TLS_IP_SELF_SIGNED\n'
+ 'tls ip tacacs source-interface GigabitEthernet1\n'
+ 'tls ip vrf forwarding Mgmt-vrf\n'
+ 'tls ipv6 tacacs source-interface GigabitEthernet1\n'
+ 'tls ipv6 vrf forwarding Mgmt-vrf\n'
+ 'tls match-server-identity dns-id cisco.com\n'
+ 'tls match-server-identity ip-address cisco.com\n'
+ 'tls match-server-identity srv-id cisco.com\n'
+ 'exit\n'),)
         )
-
-        self.assertEqual(result_normalized, expected_output)

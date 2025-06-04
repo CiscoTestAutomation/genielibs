@@ -20,8 +20,8 @@ from genie.libs.conf.address_family import AddressFamily, \
     AddressFamilySubAttributes
 from genie.libs.conf.base import Redistribution
 from genie.libs.conf.base import RouteDistinguisher, RouteTarget
-from genie.libs.conf.base import Routing, IPNeighbor
-from genie.libs.conf.base.neighbor import IPNeighborSubAttributes
+from genie.libs.conf.base import Routing, IPNeighbor, IfNeighbor
+from genie.libs.conf.base.neighbor import NeighborSubAttributes
 from genie.libs.conf.route_policy import RoutePolicy
 from genie.libs.conf.vrf import Vrf, VrfSubAttributes
 from genie.ops.base import Base as ops_Base
@@ -1293,7 +1293,7 @@ class Bgp(Routing, DeviceFeature):
                 return SubAttributesDict(self.AddressFamilyAttributes,
                                          parent=self)
 
-            class NeighborAttributes(IPNeighborSubAttributes):
+            class NeighborAttributes(NeighborSubAttributes):
                 address_families = managedattribute(
                     name='address_families',
                     finit=typedset(AddressFamily).copy,
@@ -1341,11 +1341,24 @@ class Bgp(Routing, DeviceFeature):
                 finit=typedset(IPNeighbor).copy,
                 type=typedset(IPNeighbor)._from_iterable)
 
+            interface_neighbors = managedattribute(
+                name='interface neighbors',
+                finit=typedset(IfNeighbor).copy,
+                type=typedset(IfNeighbor)._from_iterable)
+
             def add_neighbor(self, neighbor):  # TODO DEPRECATE
-                self.neighbors.add(neighbor)
+                if isinstance(neighbor, (ipaddress.IPv4Interface, ipaddress.IPv6Interface,
+                                          ipaddress.IPv4Address, ipaddress.IPv6Address)):
+                    self.neighbors.add(neighbor)
+                else:
+                    self.interface_neighbors.add(neighbor)
 
             def remove_neighbor(self, neighbor):  # TODO DEPRECATE
-                self.neighbors.remove(neighbor)
+                if isinstance(neighbor, (ipaddress.IPv4Interface, ipaddress.IPv6Interface,
+                                          ipaddress.IPv4Address, ipaddress.IPv6Address)):
+                    self.neighbors.remove(neighbor)
+                else:
+                    self.interface_neighbors.remove(neighbor)
 
         vrf_attr = managedattribute(
             name='vrf_attr',

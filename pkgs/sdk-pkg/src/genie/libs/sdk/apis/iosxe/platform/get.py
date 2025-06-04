@@ -1326,3 +1326,33 @@ def show_tech_support_platform_monitor(device, file_name, session_id):
         device.execute(f"show tech-support platform monitor {session_id} | redirect bootflash:{file_name}")
     except SubCommandFailure as e:
         log.error(f"Failed to redirect the output to bootflash: {e}")
+
+def get_logging_message_time(device, message):
+    """ Get message time from log message using regex
+        Args:
+            device ('obj'): device to run on
+            message ('str'): Line from show logging command
+            regex ('str'): Regex to extract time from line
+        Returns:
+            datetime: Time extracted from message or None if parsing fails
+    """    
+    # Apr  8 04:18:45.753
+    p0 = re.compile(r"(\*?)\s*(?P<month>\S+)\s+(?P<day>\d{1,2})\s+(?P<hour>\d{2}):(?P<minute>\d{2}):(?P<second>\d{2})\.(?P<millisecond>\d{3})")
+
+    # Apr  8 04:18:45.753
+    m = p0.match(message)
+    if m:
+        group = m.groupdict()
+        hour = int(group["hour"])
+        minute = int(group["minute"])
+        second = int(group["second"])
+        milliseconds = int(group["millisecond"])
+        month = datetime.strptime(group["month"], "%b").month
+        day = int(group["day"])
+        year = int(group.get("year", datetime.now().year))
+
+        return datetime(year, month, day, hour, minute, second, milliseconds)
+    else:
+        log.info(f"Regex did not match message: {message}")
+
+    return None

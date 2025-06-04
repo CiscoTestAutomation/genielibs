@@ -1,0 +1,2 @@
+class TimeLimitExceededOnFileTransfer(Exception):
+    pass

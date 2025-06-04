@@ -3707,15 +3707,6 @@
         "c9300": {
           "doc": "\n    Parser for :\n        * show inventory\n    ",
           "groups": [],
-          "rv1": {
-            "doc": "\n    Parser for :\n        * show inventory\n    ",
-            "groups": [],
-            "schema": "{Optional  (str) main: {Optional  (str) swstack: <class 'bool'>, Optional  (Any) Any  (str) *: {Any  (str) *: {Optional  (str) name: <class 'str'>, Optional  (str) descr: <class 'str'>, Optional  (str) pid: <class 'str'>, Optional  (str) vid: <class 'str'>, Optional  (str) sn: <class 'str'>}}}, Optional  (str) slot: {Any  (str) *: {Optional  (str) rp: {Any  (str) *: {Optional  (str) name: <class 'str'>, Optional  (str) descr: <class 'str'>, Optional  (str) pid: <class 'str'>, Optional  (str) vid: <class 'str'>, Optional  (str) sn: <class 'str'>, Optional  (str) swstack_power: <class 'str'>, Optional  (str) swstack_power_sn: <class 'str'>, Optional  (str) subslot: {Any  (str) *: {Any  (str) *: {Optional  (str) name: <class 'str'>, Optional  (str) descr: <class 'str'>, Optional  (str) pid: <class 'str'>, Optional  (str) vid: <class 'str'>, Optional  (str) sn: <class 'str'>}}}}}, Optional  (str) lc: {Any  (str) *: {Optional  (str) name: <class 'str'>, Optional  (str) descr: <class 'str'>, Optional  (str) pid: <class 'str'>, Optional  (str) vid: <class 'str'>, Optional  (str) sn: <class 'str'>, Optional  (str) swstack_power: <class 'str'>, Optional  (str) swstack_power_sn: <class 'str'>, Optional  (str) subslot: {Any  (str) *: {Any  (str) *: {Optional  (str) name: <class 'str'>, Optional  (str) descr: <class 'str'>, Optional  (str) pid: <class 'str'>, Optional  (str) vid: <class 'str'>, Optional  (str) sn: <class 'str'>}}}}}, Optional  (str) sp: {Any  (str) *: {Optional  (str) name: <class 'str'>, Optional  (str) descr: <class 'str'>, Optional  (str) pid: <class 'str'>, Optional  (str) vid: <class 'str'>, Optional  (str) sn: <class 'str'>}}, Optional  (str) pluggable: {Any  (str) *: {Optional  (str) name: <class 'str'>, Optional  (str) descr: <class 'str'>, Optional  (str) pid: <class 'str'>, Optional  (str) vid: <class 'str'>, Optional  (str) sn: <class 'str'>}}, Optional  (str) other: {Any  (str) *: {Optional  (str) name: <class 'str'>, Optional  (str) descr: <class 'str'>, Optional  (str) pid: <class 'str'>, Optional  (str) vid: <class 'str'>, Optional  (str) sn: <class 'str'>, Optional  (str) swstack_power: <class 'str'>, Optional  (str) swstack_power_sn: <class 'str'>, Optional  (str) subslot: {Any  (str) *: {Any  (str) *: {Optional  (str) name: <class 'str'>, Optional  (str) descr: <class 'str'>, Optional  (str) pid: <class 'str'>, Optional  (str) vid: <class 'str'>, Optional  (str) sn: <class 'str'>}}}}}}}}",
-            "source": {
-              "class": "genie.harness.base.Template"
-            },
-            "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/cat9k/c9300/rv1/show_platform.py"
-          },
           "schema": "{'index': {Any  (str) *: {'name': <class 'str'>, 'descr': <class 'str'>, Optional  (str) pid: <class 'str'>, Optional  (str) vid: <class 'str'>, Optional  (str) sn: <class 'str'>}}}",
           "source": {
             "class": "genie.harness.base.Template"
@@ -6273,7 +6264,7 @@
     "ios": {
       "doc": "Parser for:\n        show ipv6 pim bsr election\n        show ipv6 pim vrf <vrf> bsr election",
       "groups": [],
-      "schema": "{'vrf': {Any  (str) *: {'address_family': {Any  (str) *: {'rp': {'bsr': {Optional  (str) bsr_candidate: {Optional  (str) address: <class 'str'>, Optional  (str) hash_mask_length: <class 'int'>, Optional  (str) priority: <class 'int'>}, Optional  (str) bsr: {Optional  (str) address: <class 'str'>, Optional  (str) hash_mask_length: <class 'int'>, Optional  (str) scope_range_list: <class 'str'>, Optional  (str) priority: <class 'int'>, Optional  (str) up_time: <class 'str'>, Optional  (str) expires: <class 'str'>, Optional  (str) rpf_interface: <class 'str'>, Optional  (str) rpf_address: <class 'str'>}}}}}}}}",
+      "schema": "{'vrf': {Any  (str) *: {'address_family': {Any  (str) *: {'rp': {'bsr': {Optional  (str) bsr_system: <class 'str'>, Optional  (str) bsr_candidate: {Optional  (str) address: <class 'str'>, Optional  (str) hash_mask_length: <class 'int'>, Optional  (str) priority: <class 'int'>}, Optional  (str) bsr: {Optional  (str) address: <class 'str'>, Optional  (str) hash_mask_length: <class 'int'>, Optional  (str) scope_range_list: <class 'str'>, Optional  (str) priority: <class 'int'>, Optional  (str) up_time: <class 'str'>, Optional  (str) expires: <class 'str'>, Optional  (str) rpf_interface: <class 'str'>, Optional  (str) rpf_address: <class 'str'>}}}}}}}}",
       "source": {
         "class": "genie.harness.base.Template"
       },
@@ -6286,7 +6277,7 @@
       "doc": "Parser for:\n        show ipv6 pim bsr election\n        show ipv6 pim vrf <vrf> bsr election",
       "exclude": [],
       "groups": [],
-      "schema": "{'vrf': {Any  (str) *: {'address_family': {Any  (str) *: {'rp': {'bsr': {Optional  (str) bsr_candidate: {Optional  (str) address: <class 'str'>, Optional  (str) hash_mask_length: <class 'int'>, Optional  (str) priority: <class 'int'>}, Optional  (str) bsr: {Optional  (str) address: <class 'str'>, Optional  (str) hash_mask_length: <class 'int'>, Optional  (str) scope_range_list: <class 'str'>, Optional  (str) priority: <class 'int'>, Optional  (str) up_time: <class 'str'>, Optional  (str) expires: <class 'str'>, Optional  (str) rpf_interface: <class 'str'>, Optional  (str) rpf_address: <class 'str'>}}}}}}}}",
+      "schema": "{'vrf': {Any  (str) *: {'address_family': {Any  (str) *: {'rp': {'bsr': {Optional  (str) bsr_system: <class 'str'>, Optional  (str) bsr_candidate: {Optional  (str) address: <class 'str'>, Optional  (str) hash_mask_length: <class 'int'>, Optional  (str) priority: <class 'int'>}, Optional  (str) bsr: {Optional  (str) address: <class 'str'>, Optional  (str) hash_mask_length: <class 'int'>, Optional  (str) scope_range_list: <class 'str'>, Optional  (str) priority: <class 'int'>, Optional  (str) up_time: <class 'str'>, Optional  (str) expires: <class 'str'>, Optional  (str) rpf_interface: <class 'str'>, Optional  (str) rpf_address: <class 'str'>}}}}}}}}",
       "source": {
         "class": "genie.harness.base.Template"
       },
@@ -8170,7 +8161,7 @@
       "rv1": {
         "doc": "Parser for show module",
         "groups": [],
-        "schema": "{'slot': {Optional  (str) rp: {Any  (str) *: {Any  (str) *: {'ports': <class 'str'>, 'slot': <class 'str'>, Optional  (str) model: <class 'str'>, 'status': <class 'str'>, Optional  (str) software: <class 'str'>, Optional  (str) hardware: <class 'str'>, Optional  (str) mac_address: <class 'str'>, Optional  (str) serial_number: <class 'str'>, Optional  (str) online_diag_status: <class 'str'>, Optional  (str) slot/world_wide_name: <class 'str'>}}}, Optional  (str) lc: {Optional  (Any) Any  (str) *: {Optional  (Any) Any  (str) *: {Optional  (str) ports: <class 'str'>, 'slot': <class 'str'>, Optional  (str) model: <class 'str'>, Optional  (str) status: <class 'str'>, Optional  (str) software: <class 'str'>, Optional  (str) hardware: <class 'str'>, Optional  (str) mac_address: <class 'str'>, Optional  (str) serial_number: <class 'str'>, Optional  (str) online_diag_status: <class 'str'>, Optional  (str) slot/world_wide_name: <class 'str'>}}}}, Optional  (str) xbar: {Optional  (Any) Any  (str) *: {Optional  (str) ports: <class 'str'>, 'slot': <class 'str'>, Optional  (str) module_type: <class 'str'>, Optional  (str) model: <class 'str'>, Optional  (str) status: <class 'str'>, Optional  (str) software: <class 'str'>, Optional  (str) hardware: <class 'str'>, Optional  (str) mac_address: <class 'str'>, Optional  (str) serial_number: <class 'str'>}}, Optional  (str) lem: {Optional  (Any) Any  (str) *: {Optional  (str) ports: <class 'str'>, 'slot': <class 'str'>, Optional  (str) module_type: <class 'str'>, Optional  (str) model: <class 'str'>, Optional  (str) status: <class 'str'>, Optional  (str) software: <class 'str'>, Optional  (str) hardware: <class 'str'>, Optional  (str) mac_address: <class 'str'>, Optional  (str) online_diag_status: <class 'str'>, Optional  (str) slot/world_wide_name: <class 'str'>, Optional  (str) serial_number: <class 'str'>}}}",
+        "schema": "{'slot': {Optional  (str) rp: {Any  (str) *: {Any  (str) *: {'ports': <class 'str'>, 'slot': <class 'str'>, Optional  (str) model: <class 'str'>, 'status': <class 'str'>, Optional  (str) software: <class 'str'>, Optional  (str) hardware: <class 'str'>, Optional  (str) mac_address: <class 'str'>, Optional  (str) serial_number: <class 'str'>, Optional  (str) online_diag_status: <class 'str'>, Optional  (str) slot/world_wide_name: <class 'str'>}}}, Optional  (str) lc: {Optional  (Any) Any  (str) *: {Optional  (Any) Any  (str) *: {Optional  (str) ports: <class 'str'>, 'slot': <class 'str'>, Optional  (str) model: <class 'str'>, Optional  (str) status: <class 'str'>, Optional  (str) software: <class 'str'>, Optional  (str) hardware: <class 'str'>, Optional  (str) mac_address: <class 'str'>, Optional  (str) serial_number: <class 'str'>, Optional  (str) online_diag_status: <class 'str'>, Optional  (str) slot/world_wide_name: <class 'str'>}}}}, Optional  (str) xbar: {Optional  (Any) Any  (str) *: {Optional  (str) ports: <class 'str'>, 'slot': <class 'str'>, Optional  (str) module_type: <class 'str'>, Optional  (str) model: <class 'str'>, Optional  (str) status: <class 'str'>, Optional  (str) software: <class 'str'>, Optional  (str) hardware: <class 'str'>, Optional  (str) mac_address: <class 'str'>, Optional  (str) serial_number: <class 'str'>}}, Optional  (str) lem: {Optional  (Any) Any  (str) *: {Optional  (str) ports: <class 'str'>, 'slot': <class 'str'>, Optional  (str) module_type: <class 'str'>, Optional  (str) model: <class 'str'>, Optional  (str) status: <class 'str'>, Optional  (str) software: <class 'str'>, Optional  (str) hardware: <class 'str'>, Optional  (str) mac_address: <class 'str'>, Optional  (str) online_diag_status: <class 'str'>, Optional  (str) slot/world_wide_name: <class 'str'>, Optional  (str) serial_number: <class 'str'>}}, Optional  (str) sam: {Optional  (Any) Any  (str) *: {Optional  (Any) Any  (str) *: {Optional  (str) module_type: <class 'str'>, Optional  (str) model: <class 'str'>, Optional  (str) status: <class 'str'>, Optional  (str) software: <class 'str'>, Optional  (str) hardware: <class 'str'>, Optional  (str) online_diag_status: <class 'str'>, Optional  (str) serial_number: <class 'str'>}}}}",
         "source": {
           "class": "genie.harness.base.Template"
         },
@@ -10792,13 +10783,6 @@
     [
       "0",
       "0",
-      "3",
-      "9",
-      "c"
-    ],
-    [
-      "0",
-      "0",
       "4",
       "9",
       "c"
@@ -10937,11 +10921,6 @@
       "k",
       "r",
       "s"
-    ],
-    [
-      "1",
-      "r",
-      "v"
     ],
     [
       "1",
@@ -11178,13 +11157,6 @@
       "t"
     ],
     [
-      "9",
-      "a",
-      "c",
-      "k",
-      "t"
-    ],
-    [
       "a",
       "a",
       "g",
@@ -11245,13 +11217,6 @@
       "i",
       "n",
       "r"
-    ],
-    [
-      "e",
-      "i",
-      "o",
-      "s",
-      "x"
     ],
     [
       "e",

@@ -14,28 +14,69 @@ def configure_tacacs_server(device, server_config):
 
         Args:
             device ('obj'): Device object
-            server_config('list'): List of configuration for server
-                dictionary contains following 3 keys:
+            server_configs('list'): List of configuration for servers
+                Each dictionary in the list contains following keys:
                     host ('str'): host ip address
                     timeout ('int'): server time out value in seconds
                     key_type ('int'): key type for tacacs server
                     key ('str'): key value from tacacs server
-                    server ('str'): server ip address
+                    server ('str'): server ip address/ipv6/fqdn for address configuration
+                    address_type ('str'): Type of server address - 'ipv4', 'ipv6', or 'fqdn'. Default is 'ipv4'
+                    single_connection ('bool'): Enable single-connection
+                    tls_port ('int'): Port number for TLS connection
+                    tls_idle_timeout ('int'): Idle timeout for TLS connection
+                    tls_connection_timeout ('int'): Connection timeout for TLS
+                    tls_retries ('int'): Number of retries for TLS connection
+                    tls_trustpoint_client ('str'): Client trustpoint name
+                    tls_trustpoint_server ('str'): Server trustpoint name
+                    tls_source_interface ('str'): Source interface for TLS
+                    tls_ip_tacacs_source_interface ('str'): Source interface for IPv4 TLS
+                    tls_ip_vrf_forwarding ('str'): VRF forwarding for IPv4 TLS
+                    tls_ipv6_tacacs_source_interface ('str'): Source interface for IPv6 TLS
+                    tls_ipv6_vrf_forwarding ('str'): VRF forwarding for IPv6 TLS
+                    tls_match_server_identity_dns_id ('str'): TLS server identity DNS-ID
+                    tls_match_server_identity_ip_address ('str'): TLS server identity IP address
+                    tls_match_server_identity_srv_id ('str'): TLS server identity SRV-ID
                 ex.)
                     [
                         {
-                            'host': '192.168.21.1',
+                            'host': 'TACACS_SERVER',
                             'timeout': 10,
                             'key_type': 7,
                             'key': '01239132C123',
-                            'server': '192.168.21.1'
+                            'server': '192.168.21.1',
+                            'address_type': 'ipv4',
+                            'single_connection': True,
+                            'tls_port': 49,
+                            'tls_idle_timeout': 60,
+                            'tls_connection_timeout': 5,
+                            'tls_retries': 3,
+                            'tls_trustpoint_client': 'CLIENT_TP',
+                            'tls_trustpoint_server': 'SERVER_TP',
+                            'tls_source_interface': 'GigabitEthernet0/0',
+                            'tls_ip_tacacs_source_interface': 'GigabitEthernet1',
+                            'tls_ip_vrf_forwarding': 'Mgmt-vrf',
+                            'tls_ipv6_tacacs_source_interface': 'GigabitEthernet1',
+                            'tls_ipv6_vrf_forwarding': 'Mgmt-vrf',
+                            'tls_match_server_identity_dns_id': 'cisco.com',
+                            'tls_match_server_identity_ip_address': '10.0.0.1',
+                            'tls_match_server_identity_srv_id': 'cisco.com',
                         },
                         {
-                            'host': '192.168.21.2',
+                            'host': 'tacacs.cisco.com',
                             'timeout': 10,
                             'key_type': 7,
                             'key': '01239132C123',
-                            'server': '192.168.21.2'
+                            'server': 'tacacs.cisco.com',
+                            'address_type': 'fqdn'
+                        },
+                        {
+                            'host': 'TACACS_SERVER_IPV6',
+                            'timeout': 10,
+                            'key_type': 7,
+                            'key': '01239132C123',
+                            'server': '2001:db8::1',
+                            'address_type': 'ipv6'
                         }
                     ]
 
@@ -49,7 +90,18 @@ def configure_tacacs_server(device, server_config):
     for sc in server_config:
         if "host" in sc:
             config.append("tacacs server {}\n".format(sc["host"]))
-            config.append("address ipv4 {}\n".format(sc["server"]))
+            
+            # Handle different address types
+            address_type = sc.get("address_type", "ipv4")  # Default to ipv4 if not specified
+            if address_type == "ipv4":
+                config.append("address ipv4 {}\n".format(sc["server"]))
+            elif address_type == "ipv6":
+                config.append("address ipv6 {}\n".format(sc["server"]))
+            elif address_type == "fqdn":
+                config.append("address fqdn {}\n".format(sc["server"]))
+
+        if "single_connection" in sc and sc["single_connection"]:
+            config.append("single-connection\n")
 
         if "timeout" in sc:
             config.append("timeout {}\n".format(sc["timeout"]))
@@ -57,18 +109,61 @@ def configure_tacacs_server(device, server_config):
             config.append(
                 "key {} {}\n".format(sc["key_type"], sc["key"])
             )
+        
+        # Add TLS configuration options
+        if "tls_port" in sc:
+            config.append("tls port {}\n".format(sc["tls_port"]))
+
+        if "tls_idle_timeout" in sc:
+            config.append("tls idle-timeout {}\n".format(sc["tls_idle_timeout"]))
+
+        if "tls_connection_timeout" in sc:
+            config.append("tls connection-timeout {}\n".format(sc["tls_connection_timeout"]))
+
+        if "tls_retries" in sc:
+            config.append("tls retries {}\n".format(sc["tls_retries"]))
+
+        if "tls_trustpoint_client" in sc:
+            config.append("tls trustpoint client {}\n".format(sc["tls_trustpoint_client"]))
+
+        if "tls_trustpoint_server" in sc:
+            config.append("tls trustpoint server {}\n".format(sc["tls_trustpoint_server"]))
+        
+        # Add new IPv4 TLS configuration options
+        if "tls_ip_tacacs_source_interface" in sc:
+            config.append("tls ip tacacs source-interface {}\n".format(sc["tls_ip_tacacs_source_interface"]))
+
+        if "tls_ip_vrf_forwarding" in sc:
+            config.append("tls ip vrf forwarding {}\n".format(sc["tls_ip_vrf_forwarding"]))
+
+        # Add new IPv6 TLS configuration options
+        if "tls_ipv6_tacacs_source_interface" in sc:
+            config.append("tls ipv6 tacacs source-interface {}\n".format(sc["tls_ipv6_tacacs_source_interface"]))
+
+        if "tls_ipv6_vrf_forwarding" in sc:
+            config.append("tls ipv6 vrf forwarding {}\n".format(sc["tls_ipv6_vrf_forwarding"]))
+
+        # Add TLS match server identity configuration options
+        if "tls_match_server_identity_dns_id" in sc:
+            config.append("tls match-server-identity dns-id {}\n".format(sc["tls_match_server_identity_dns_id"]))
+
+        if "tls_match_server_identity_ip_address" in sc:
+            config.append("tls match-server-identity ip-address {}\n".format(sc["tls_match_server_identity_ip_address"]))
+
+        if "tls_match_server_identity_srv_id" in sc:
+            config.append("tls match-server-identity srv-id {}\n".format(sc["tls_match_server_identity_srv_id"]))
 
         config.append("exit\n")
 
-        try:
-            response = device.configure("".join(config))
-        except SubCommandFailure:
-            raise SubCommandFailure(
-                "Could not configure tacacs server on device {device}".format(
-                    device=device.name
-                )
+    try:
+        response = device.configure("".join(config))
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not configure tacacs server on device {device}".format(
+                device=device.name
             )
-        return response
+        )
+    return response
 
 
 def configure_radius_server(device, server_config):

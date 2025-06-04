@@ -268,3 +268,102 @@ def configure_ipv6_logging_with_transport_and_facility(device, host_ip, transpor
         raise SubCommandFailure(
             f"Could not configure IPv6 logging with transport and facility on {device}. Error:\n{e}"
         )
+def configure_ipv6_pim_on_interface(device, interface):
+    """ Configure ipv6 pim on an interface
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [
+        f"interface {interface}",
+        "ipv6 pim",
+        "end"
+    ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure ipv6 pim on interface {interface}. Error:\n{e}"
+        )
+
+def configure_ipv6_logging_with_discriminator(device, syslog_host, discriminator_name, transport_name=None):
+    """ Configure IPv6 logging with discriminator on the device
+        Args:
+            device (`obj`): Device object
+            syslog_host (`str`): IPv6 address of the syslog host
+            discriminator_name (`str`): Logging discriminator name
+            transport_name (`str`, optional): Transport name. Default is None.
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [
+        f"logging discriminator {discriminator_name}",
+        f"logging host ipv6 {syslog_host} discriminator {discriminator_name}"
+    ]
+    if transport_name:
+        cmd.append(f"logging host ipv6 {syslog_host} discriminator {discriminator_name} transport {transport_name}")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure IPv6 logging with discriminator on {device}. Error:\n{e}"
+        )
+def configure_logging_host_ipv6(device, ihost_ip, option=None):
+    """ Configure logging host IPv6 with a single optional argument
+        Args:
+            device (`obj`): Device object
+            ihost_ip (`str`): IPv6 address of the logging host
+            option (`str`, optional): Single option to configure after the IPv6 address.
+                                      Valid values: "xml", "sequence-num-session". Default is None.
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: If the configuration fails.
+    """
+    # Build the command
+    if option:
+        cmd = [f"logging host ipv6 {ihost_ip} {option}"]
+    else:
+        cmd = [f"logging host ipv6 {ihost_ip}"]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure logging host IPv6 with command '{cmd}'. Error:\n{e}"
+        )
+
+
+def unconfigure_logging_host_ipv6(device, syslog_host=None, transport_name=None, host_ip=None):
+    """ Unconfigure logging host IPv6
+        Args:
+            device (`obj`): Device object
+            syslog_host (`str`, optional): Syslog host IPv6 address. Default is None.
+            transport_name (`str`, optional): Transport protocol name. Default is None.
+            host_ip (`str`, optional): IPv6 address of the host. Default is None.
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = []
+
+    if syslog_host and transport_name:
+        cmd.append(f'no logging host ipv6 {syslog_host} transport {transport_name}')
+    elif host_ip and transport_name:
+        cmd.append(f'no logging host ipv6 {host_ip} transport udp port 123')
+    elif host_ip:
+        cmd.append(f'no logging host ipv6 {host_ip}')
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure logging host IPv6 with command(s): {cmd}. Error:\n{e}"
+        )

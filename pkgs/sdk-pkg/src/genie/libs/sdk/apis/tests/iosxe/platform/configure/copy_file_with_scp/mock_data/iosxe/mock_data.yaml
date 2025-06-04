@@ -30,6 +30,8 @@ execute:
       new_state: configure
     copy scp://root:cisco@172.163.128.3/sh_ver.txt .:
       new_state: destination_filename
+    copy request.pem.ca scp://navin:navin@10.64.69.167/request.pem.ca:
+      new_state: destination_username
     show version: ''
     term length 0: ''
     term width 0: ''
@@ -41,7 +43,17 @@ destination_filename:
     '':
       response: '%Warning:There is a file already existing with this name'
       new_state: copy_file_with_scp_overwrite
-
+destination_username:
+  prompt: Destination username [navin]?
+  commands:
+    '':
+      response: |
+        Destination filename [request.pem]?
+        Writing request.pem  Sink: C0644 1309 request.pem
+        !
+        1309 bytes copied in 0.267 secs (4903 bytes/sec)
+      new_state: execute
+ 
 copy_file_with_scp_overwrite:
   prompt: Do you want to over write? [confirm]
   commands:
