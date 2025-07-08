@@ -118,3 +118,4 @@ setup(
     # non zip-safe (never tested it)
     zip_safe = False,
 )
+

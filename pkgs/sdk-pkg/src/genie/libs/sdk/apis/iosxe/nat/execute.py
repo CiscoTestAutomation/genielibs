@@ -202,3 +202,18 @@ def execute_clear_ip_nat_translation(device, tcp=False, udp=False, forced=False,
         raise SubCommandFailure(f"Could not clear ip nat translation. Error:{e}")
 
     return out
+
+def execute_clear_ip_nat_statistics(device):
+    """ clear ip nat statistics
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.execute("clear ip nat statistics")
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not clear ip nat statistics")

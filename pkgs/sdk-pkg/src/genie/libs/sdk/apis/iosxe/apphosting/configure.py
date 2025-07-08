@@ -3,6 +3,7 @@
 import logging
 import time
 import inspect
+import re
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -657,3 +658,62 @@ def enable_app_hosting_verification(device):
     except SubCommandFailure as e:
         log.error(f"Failed to enable application signature verification. Error:\n{e}")
         return False
+
+def destroy_guestshell(device):
+    """Destroy guestshell on the device
+
+    Args:
+        device (`obj`): Device object
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure
+    """
+    try:
+        output = device.execute("guestshell destroy")
+        if ( "Guestshell destroyed successfully" in output
+            or "does not exist" in output ):
+
+            # Treat both as success
+            log.info("Guestshell destroyed successfully")
+        else:
+            # Unexpected output, raise error
+            raise SubCommandFailure(
+                f"Unexpected output while destroying guestshell: {output}"
+            )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to destroy guestshell on {device}. Error:\n{e}"
+        )
+
+def count_trace_in_logging(device):
+    """
+    Count the number of lines in the logging output that match the keyword 'Trace'.
+
+    Args:
+        device ('obj'): Device object
+
+    Returns:
+        int: Number of lines that match the keyword 'Trace', or None if no matching lines are found.
+
+    Raises:
+        SubCommandFailure: If the command execution fails.
+    """
+    log.info("Starting the process to count lines in the logging output that contain the keyword 'Trace'.")
+
+    try:
+        # Execute the command on the device
+        output = device.execute("sh logging | count Trace")
+
+        # Use regex to extract the count
+        match = re.search(r"Number of lines which match regexp\s*=\s*(\d+)", output)
+        if match:
+            count = int(match.group(1))
+            log.info(f"Number of lines matching 'Trace': {count}")
+            return count if count > 0 else None
+
+    except SubCommandFailure as e:
+        log.error(f"Failed to execute the command 'sh logging | count Trace'. Error:\n{e}")
+        raise SubCommandFailure(f"Could not count lines matching 'Trace'. Error: {e}")

@@ -63,12 +63,19 @@ def configure_rommon_tftp(device, use_ipv6=False):
        # To get ipv4 ip_address and subnet mask
        ip_address = str(address.ip)
        subnet_mask = str(address.netmask)
-    
 
     tftp.setdefault("IP_ADDRESS", ip_address)
     tftp.setdefault("IP_SUBNET_MASK", subnet_mask)
     tftp.setdefault("DEFAULT_GATEWAY", str(device.management.get('gateway', {}).get(ip, '')))
-    tftp.setdefault("TFTP_SERVER", str(device.testbed.servers.get('tftp', {}).get('address', '')))
+
+    if hasattr(device, 'clean') and hasattr(device.clean, 'device_recovery'):
+        tftp_server = device.clean.get('device_recovery', {}).get('tftp_boot', {}).get('tftp_server', '')
+    else:
+        log.warning(f'There is no recovery info for device {device.name} in clean yaml')
+        log.warning('Falling back to get the tftp server info from the testbed server')
+        tftp_server = device.testbed.servers.get('tftp', {}).get('address', '')
+
+    tftp.setdefault("TFTP_SERVER", str(tftp_server))
 
     # get the image from clean data
     image_handler = get_image_handler(device)
@@ -113,12 +120,12 @@ def configure_rommon_tftp_ha(device, use_ipv6=False):
                 # check the device is in rommon
                 raise Exception(f'The device is not in rommon state')
 
-    # Check if rommon attribute in device object, if not set to empty dict
-    if not hasattr(device, 'rommon'):
-        setattr(device, "rommon", {})
+    # Check if management attribute in device object, if not set to empty dict
+    if not hasattr(device, 'management'):
+        setattr(device, "management", {})
+    management_dict = device.management
+    rommon_dict = management_dict.setdefault('rommon', {})
 
-    # Getting the tftp information, if the info not provided by user, it takes from testbed
-    rommon_dict = device.rommon
 
     def _process_tftp_boot_details(rommon_dict):
         # To process the tftp information for each rp
@@ -159,11 +166,18 @@ def configure_rommon_tftp_ha(device, use_ipv6=False):
             else:
                 gateway_ip = str(gateway_dict.get('ipv4'))
 
+            if hasattr(device, 'clean') and hasattr(device.clean, 'device_recovery'):
+                tftp_server = device.clean.get('device_recovery', {}).get('tftp_boot', {}).get('tftp_server', '')
+            else:
+                log.warning(f'There is no recovery info for device {device.name} in clean yaml')
+                log.warning('Falling back to get the tftp server info from the testbed server')
+                tftp_server = device.testbed.servers.get('tftp', {}).get('address', '')
+
             tftp.update({
                 "IP_ADDRESS": ip_address,
                 "IP_SUBNET_MASK": subnet_mask,
                 "DEFAULT_GATEWAY": gateway_ip,
-                "TFTP_SERVER": str(device.testbed.servers.get('tftp', {}).get('address', '')),
+                "TFTP_SERVER": str(tftp_server),
             })
 
             # get the image from clean data

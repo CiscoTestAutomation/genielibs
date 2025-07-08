@@ -157,11 +157,12 @@ def unconfigure_ipv6_nd_cache_expire(device):
         raise SubCommandFailure(
             f"Could not unconfigure ipv6 nd cache expire on {device}. Error:\n{e}")
 
-def configure_ipv6_flow_monitor_sampler(device, interface, monitor_name=None, sampler_name=None):
+def configure_ipv6_flow_monitor_sampler(device, interface, direction="input", monitor_name=None, sampler_name=None):
     """ Configure IPv6 flow monitor sampler on the specified interface.
         Args:
             device (obj): Device object
             interface (str): Interface name
+            direction ('str'): Direction of monitor (input/output/both)
             monitor_name (str): The flow monitor name
             sampler_name (str): The sampler name
         Returns:
@@ -171,7 +172,7 @@ def configure_ipv6_flow_monitor_sampler(device, interface, monitor_name=None, sa
     """
     cmd = [
         f"interface {interface}",  
-        f"ipv6 flow monitor {monitor_name} sampler {sampler_name} input",
+        f"ipv6 flow monitor {monitor_name} sampler {sampler_name} {direction}",
         "end"
     ]
     try:
@@ -228,11 +229,13 @@ def configure_logging_ipv6(device, syslog_host, transport=None):
         Raises:
             SubCommandFailure
     """
-    cmd = [f"logging host ipv6 {syslog_host}"]
+    cmd = []
 
-    # Add transport method if specified
+    # Add logging host command based on conditions
     if transport:
         cmd.append(f"logging host ipv6 {syslog_host} transport {transport}")
+    else:
+        cmd.append(f"logging host ipv6 {syslog_host}")
 
     # Add logging trap level as a separate command
     cmd.append("logging trap debugging")
@@ -256,12 +259,13 @@ def configure_ipv6_logging_with_transport_and_facility(device, host_ip, transpor
         Raises:
             SubCommandFailure
     """
-    cmd = [
-        "no logging facility local0",
-        "no logging trap debugging",
-        f"logging host ipv6 {host_ip} transport {transport_protocol} port {port}",
-        "no logging count"
-    ]
+    cmd = []
+
+    if transport_protocol:
+        cmd.append(f"logging host ipv6 {host_ip} transport {transport_protocol} port {port}")
+    else:
+        cmd.append("no logging count")
+
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -302,12 +306,19 @@ def configure_ipv6_logging_with_discriminator(device, syslog_host, discriminator
         Raises:
             SubCommandFailure
     """
-    cmd = [
-        f"logging discriminator {discriminator_name}",
-        f"logging host ipv6 {syslog_host} discriminator {discriminator_name}"
-    ]
+    cmd = []
+
+    if discriminator_name:
+        if syslog_host:
+            cmd.append(f"logging host ipv6 {syslog_host} discriminator {discriminator_name}")
+        else:
+            cmd.append(f"logging discriminator {discriminator_name}")
+
     if transport_name:
         cmd.append(f"logging host ipv6 {syslog_host} discriminator {discriminator_name} transport {transport_name}")
+
+    # Add logging count as a separate command
+    cmd.append("logging count")
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -366,4 +377,52 @@ def unconfigure_logging_host_ipv6(device, syslog_host=None, transport_name=None,
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Failed to unconfigure logging host IPv6 with command(s): {cmd}. Error:\n{e}"
+        )
+        
+        
+def unconfigure_ipv6_flow_monitor_sampler(device, interface, direction, monitor_name, sampler_name):
+    """ UnConfigure IPv6 flow monitor sampler on the specified interface.
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+            direction (`str`): Direction of monitor (input/output/both)
+            monitor_name (`str`): The flow monitor name
+            sampler_name (`str`): The sampler name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure:
+    """
+    cmd = [
+        f"interface {interface}",  
+        f"no ipv6 flow monitor {monitor_name} sampler {sampler_name} {direction}",
+        "end"
+    ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(f"Failed to unconfigure IPv6 flow monitor sampler on {interface}. Error: {e}")
+        raise SubCommandFailure(
+            f"Could not unconfigure IPv6 flow monitor sampler on {device} for {interface}. Error:\n{e}"
+        )
+
+def unconfigure_logging_facility_and_trap(device):
+    """ Unconfigure logging facility and trap debugging
+        Args:
+            device (`obj`): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [
+        "no logging facility local0",
+        "no logging trap debugging"
+    ]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure logging facility and trap debugging on {device}. Error:\n{e}"
         )

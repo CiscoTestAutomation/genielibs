@@ -146,3 +146,20 @@ class TestRommonBoot(unittest.TestCase):
         #  with steps.start('...') as step_context:
         step_context = steps.start.return_value.__enter__.return_value
         step_context.failed.assert_called_with("Failed to reconnect")
+
+    @mock.patch('genie.libs.clean.recovery.iosxe.recovery.device_recovery')
+    def test_rommon_boot(self, device_recovery):
+        steps = mock.MagicMock()
+        recovery_info = {'timeout': 100, 'golden_image': ['GOLDEN IMAGE']}
+        device_recovery.return_value = recovery_info
+        self.device.clean = {'device_recovery': recovery_info}
+        self.device.rommon = mock.Mock()
+        self.device.rommon()
+        self.device.is_ha = mock.Mock()
+        self.device.default = mock.Mock()
+        self.device.state_machine = mock.Mock()
+        self.device.default.state_machine.current_state = 'rommon'
+        self.cls.rommon_boot(steps, self.device, image=['GOLDEN IMAGE'],timeout=100,
+                             grub_activity_pattern='The highlighted entry will be (?:booted|executed) automatically')
+        steps.start.assert_called_with("Boot device from rommon")
+        self.device.rommon.assert_called_once()

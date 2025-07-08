@@ -1,35 +1,14 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
 from genie.libs.sdk.apis.iosxe.acl.configure import unconfigure_as_path_acl
 
 
-class TestUnconfigureAsPathAcl(unittest.TestCase):
+class TestUnconfigureAsPathAcl(TestCase):
 
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          stack3-nyquist-1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: c9300
-            type: c9300
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['stack3-nyquist-1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
+    def test_configure_mac_acl(self):
+        self.device = Mock()
+        unconfigure_as_path_acl(self.device, '2', 'permit', '_300_')
+        self.assertEqual(
+            self.device.configure.mock_calls[0].args,
+            ('no ip as-path access-list 2 permit _300_' ,)
         )
-
-    def test_unconfigure_as_path_acl(self):
-        result = unconfigure_as_path_acl(self.device, '2', 'permit', '_300_')
-        expected_output = None
-        self.assertEqual(result, expected_output)

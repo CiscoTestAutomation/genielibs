@@ -609,9 +609,10 @@ Configuration register is 0x1
                          {'/path/asr1000-universalk9.BLD_MCP_DEV_LATEST_20110615_044519.SSA.bin':
                           'flash:/asr1000-universalk9.BLD_MCP_DEV_LATEST_20110615_044519.SSA.bin'})
     
-        self.device.api.verify_ignore_startup_config.assert_called_once()
+        # If install image is skipped. This api should not be called.
+        self.device.api.verify_ignore_startup_config.assert_not_called()
 
-    def test_iosxe_verify_running_image_failed(self):
+    def test_iosxe_verify_running_image_passx(self):
         self.device.api.unconfigure_ignore_startup_config = Mock()
         self.device.api.verify_ignore_startup_config = Mock()
         class MockExecute:
@@ -689,8 +690,9 @@ Configuration register is 0x1
 
         self.device.api.verify_ignore_startup_config.return_value = False
 
-        with self.assertRaises(TerminateStepSignal):
-            self.cls.verify_running_image(steps=steps,
-                                          device=self.device,
-                                          images=['/path/asr1000-universalk9.BLD_MCP_DEV_LATEST_20110615_044519.SSA.bin']
-        )
+        self.cls.verify_running_image(steps=steps,
+                                      device=self.device,
+                                      images=['/path/asr1000-universalk9.BLD_MCP_DEV_LATEST_20110615_044520.SSA.bin']
+                                      )
+        self.assertEqual(Passx, steps.details[1].result)
+        self.assertEqual("Verify the ignore startup config", steps.details[1].name)

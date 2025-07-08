@@ -1,17 +1,14 @@
 import logging
 import unittest
 
-from unittest.mock import Mock, MagicMock, patch
-from collections import OrderedDict
+from unittest.mock import Mock, call
 
 from genie.libs.clean.stages.stages import ApplyConfiguration
-from genie.libs.clean.stages.tests.utils import CommonStageTests, create_test_device
-
-from pyats.aetest.parameters import ParameterDict
+from genie.libs.clean.stages.tests.utils import  create_test_device
 
 from pyats.aetest.steps import Steps
 from pyats.results import Passed, Failed
-from pyats.aetest.signals import TerminateStepSignal, AEtestPassedSignal
+from pyats.aetest.signals import TerminateStepSignal
 
 
 # Disable logging. It may be useful to comment this out when developing tests.
@@ -41,6 +38,7 @@ class Applyconfiguration(unittest.TestCase):
         # This simulates the pass case.
         self.device.connect = Mock()
         self.device.configure = Mock()
+        self.device.execute = Mock()
 
         # Call the method to be tested (clean step inside class)
         self.cls.apply_configuration(
@@ -51,8 +49,11 @@ class Applyconfiguration(unittest.TestCase):
 
         # Check that the result is expected
         self.assertEqual(Passed, steps.details[1].result)
-    
-    
+        self.device.execute.assert_has_calls([
+            call('show running-config', error_pattern=[]),
+            call('show startup-config', error_pattern=[])])
+
+
     def test_fail_to_apply_configuration(self):
         # Make sure we have a unique Steps() object for result verification
         steps = Steps()
@@ -66,7 +67,7 @@ class Applyconfiguration(unittest.TestCase):
         # And we want the configure method to be mocked.
         # This simulates the fail case.
         self.device.configure = Mock(side_effect=Exception)
-        
+
         # Call the method to be tested (clean step inside class)
         # We expect this step to fail so make sure it raises the signal
         with self.assertRaises(TerminateStepSignal):
@@ -76,7 +77,7 @@ class Applyconfiguration(unittest.TestCase):
             )
         # Check that the result is expected
         self.assertEqual(Failed, steps.details[0].result)
-    
+
 
     def test_fail_to_execute_copy_run_start(self):
         # Make sure we have a unique Steps() object for result verification
@@ -93,7 +94,7 @@ class Applyconfiguration(unittest.TestCase):
         # And we want the execute_copy_run_api_to_start to be mocked to raise exception.
         # This simulates the fail case.
         self.device.api.execute_copy_run_to_start = Mock(side_effect=Exception)
-        
+
         # Call the method to be tested (clean step inside class)
         # We expect this step to fail so make sure it raises the signal
         with self.assertRaises(TerminateStepSignal):
@@ -101,7 +102,7 @@ class Applyconfiguration(unittest.TestCase):
                     steps=steps, device=self.device, config_stable_time=0,\
                     configuration=configuration, file="test.cfg", copy_vdc_all=True
                 )
-        
+
         # Check that the result is expected
         self.assertEqual(Failed, steps.details[1].result)
 

@@ -98,7 +98,7 @@ def device_rommon_boot(device, golden_image=None, tftp_boot=None, error_pattern=
                          'boot recovery and neither was provided')
 
     # Timeout for device to reload
-    timeout = device.clean.get('device_recovery', {}).get('timeout', 900)
+    timeout = device.clean.get('device_recovery', {}).get('timeout', 1800)
 
     try:
         # To boot the image from rommon
@@ -264,8 +264,9 @@ def send_break_boot(device, console_activity_pattern= None,
         login_creds = con.context.get('login_creds')
         if login_creds:
             con.context['cred_list'] = login_creds
-
-
+        # set the buffer for each subconnection to an empty string 
+        con.spawn.buffer = '' 
+        
         dialog.process(
             con.spawn,
             timeout=timeout,

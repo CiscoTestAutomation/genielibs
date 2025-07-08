@@ -1774,6 +1774,12 @@ apply_configuration:
             step.passed("Successfully applied configuration on device {}".format(
                 device.name))
 
+        with steps.start('Show running-config'):
+            device.execute('show running-config', error_pattern=[])
+
+        with steps.start('Show startup-config'):
+            device.execute('show startup-config', error_pattern=[])
+
 
 class VerifyRunningImage(BaseStage):
     """This stage verifies the current running image is the expected image.

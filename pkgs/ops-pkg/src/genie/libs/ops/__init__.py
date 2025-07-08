@@ -7,11 +7,10 @@
 '''
 
 # metadata
-__version__ = "25.5"
+__version__ = "25.6"
 __author__ = 'Cisco Systems Inc.'
 __contact__ = ['pyats-support@cisco.com', 'pyats-support-ext@cisco.com']
 __copyright__ = 'Copyright (c) 2018, Cisco Systems Inc.'
 
 from genie import abstract
 abstract.declare_package(feature="ops")
-

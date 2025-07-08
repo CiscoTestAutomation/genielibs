@@ -1,35 +1,25 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
 from genie.libs.sdk.apis.iosxe.debug.configure import debug_software_cpm_switch_pcap
+from unittest.mock import Mock
 
 
-class TestDebugSoftwareCpmSwitchPcap(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          SA-C9350-24P:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: None
-            type: None
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['SA-C9350-24P']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestDebugSoftwareCpmSwitchPcap(TestCase):
 
     def test_debug_software_cpm_switch_pcap(self):
-        result = debug_software_cpm_switch_pcap(self.device, 'active', 'disable')
+        self.device = Mock()
+        results_map = {
+            'debug platform software cpm switch 1 bp active pcap enable': 'Enabling CPM packet capture',
+        }
+        
+        def results_side_effect(arg, **kwargs):
+            return results_map.get(arg)
+        
+        self.device.execute.side_effect = results_side_effect
+        
+        result = debug_software_cpm_switch_pcap(self.device, '1', 'enable', True)
+        self.assertIn(
+            'debug platform software cpm switch 1 bp active pcap enable',
+            self.device.execute.call_args_list[0][0]
+        )
         expected_output = None
         self.assertEqual(result, expected_output)

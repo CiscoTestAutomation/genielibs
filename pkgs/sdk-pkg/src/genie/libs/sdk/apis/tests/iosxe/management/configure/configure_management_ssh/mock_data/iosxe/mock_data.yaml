@@ -1,20 +1,20 @@
 configure:
   commands:
-    aaa authentication login default local: "aaa authentication login default local\r\
-      \n"
-    aaa authorization exec default local: "aaa authorization exec default local\r\n"
-    aaa new-model: "aaa new-model\r\n"
-    crypto key generate rsa: "ip domain name cisco.com\r\n"
+    aaa authentication login default local: ""
+    aaa authorization exec default local: ""
+    aaa new-model: ""
+    crypto key generate rsa: ""
     end:
       new_state: execute
     ip domain name cisco.com: ''
     line console 0:
       new_state: configure_line
-    line vty 0 14: "line vty 0 14\r\n"
-    login authentication default: "login authentication default\r\n"
+    line vty 0 14: ""
+    login authentication default: ""
     no logging console: ''
-    transport input telnet ssh: "transport input telnet ssh\r\n"
-    username admin password 0 admin: "username admin password 0 admin\r\n"
+    transport input telnet ssh: ""
+    username admin password 0 admin: ""
+    "ip ssh source-interface GigabitEthernet0/0": ""
   prompt: vmtb-isr4451(config)#
 configure_line:
   commands:

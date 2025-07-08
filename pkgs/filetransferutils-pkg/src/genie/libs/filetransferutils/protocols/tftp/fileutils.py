@@ -101,3 +101,30 @@ class FileUtils(FileUtilsLinuxBase):
 
         self.execute_in_subprocess(
             command, timeout_seconds = timeout_seconds)
+
+
+    def stat(self, target, timeout_seconds, *args, **kwargs):
+        """ Retrieve file details such as length and permissions.
+
+        Parameters
+        ----------
+            target : `str`
+                The URL of the file whose details are to be retrieved.
+
+            timeout_seconds : `int`
+                The number of seconds to wait before aborting the operation.
+
+        Returns
+        -------
+            `os.stat_result` : Filename details including size.
+
+        Raises
+        ------
+            Exception : timeout exceeded
+
+            Exception : File was not found
+        """
+
+        raise NotImplementedError("The fileutils module {} "
+            "does not implement stat.".format(self.__module__))
+

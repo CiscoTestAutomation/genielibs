@@ -1084,3 +1084,174 @@ def configure_no_pki_enroll(device, tp_name):
         )
 
 
+def configure_crypto_pki_download_crl(
+                                        device,
+                                        schedule=False,
+                                        prepublish=False,
+                                        retries=False,
+                                        number_of_retries=None,
+                                        interval=False,
+                                        retry_time_in_minutes=None,
+                                        time=False,
+                                        day=None,
+                                        hh_mm=None,
+                                        trustpoint_name=None,
+                                        url=False,
+                                        http_or_ldap_url=None
+                                    ):
+    """
+    Configure 'crypto pki crl download' commands with schedule, trustpoint, or URL options.
+
+    Args:
+        device (`obj`): Device handle
+        schedule (`bool`): Enable schedule block
+        prepublish (`bool`): Enable prepublish schedule
+        retries (`bool`): Enable retries block
+        number_of_retries (`int`): Number of retries (1-15)
+        interval (`bool`): Enable interval block under retries
+        retry_time_in_minutes (`int`): Interval time in minutes (15-600)
+        time (`bool`): Enable schedule time block
+        day (`str`): Day of the week (e.g., "Monday")
+        hh_mm (`str`): Time string in "HH:MM" format
+        trustpoint_name (`str`): Name of trustpoint
+        url (`bool`): Enable URL block
+        http_or_ldap_url (`str`): HTTP/LDAP CRL download URL
+
+    Raises:
+        ValueError: If required values are missing or invalid
+        SubCommandFailure: If configuration fails
+    """
+    cmds = []
+
+    if trustpoint_name:
+        cmds.append(f"crypto pki crl download trustpoint {trustpoint_name}")
+        
+
+    if url:
+        if not http_or_ldap_url:
+            raise ValueError("http_or_ldap_url must be provided if url=True")
+        cmds.append(f"crypto pki crl download url {http_or_ldap_url}")
+
+    if schedule:
+        if prepublish:
+            cmds.append("crypto pki crl download schedule prepublish")
+
+        if retries:
+            if number_of_retries is None or not (1 <= number_of_retries <= 15):
+                raise ValueError("number_of_retries must be between 1 and 15")
+            cmds.append(f"crypto pki crl download schedule retries {number_of_retries}")
+
+        if interval:
+            if retry_time_in_minutes is None or not (15 <= retry_time_in_minutes <= 600):
+                raise ValueError("retry_time_in_minutes must be between 15 and 600")
+            cmds.append(f"crypto pki crl download schedule retries interval {retry_time_in_minutes}")
+
+        if time and day:
+            valid_days = {
+                "Monday", "Tuesday", "Wednesday", "Thursday",
+                "Friday", "Saturday", "Sunday"
+            }
+        
+            if day not in valid_days:
+                raise ValueError("`day` must be one of Monday to Sunday when `time` is specified")
+        
+            if not hh_mm:
+                raise ValueError("`hh_mm` must be provided when `time` is specified")
+        
+            cmd = f"no crypto pki crl download schedule time {day} {hh_mm}"
+            cmds.append(cmd)
+
+    if not cmds:
+        raise ValueError("No valid configuration arguments provided.")
+
+    try:
+        return device.configure(cmds)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure CRL download: {e}")
+
+
+def unconfigure_crypto_pki_download_crl(
+                                            device,
+                                            schedule=False,
+                                            prepublish=False,
+                                            retries=False,
+                                            number_of_retries=None,
+                                            interval=False,
+                                            retry_time_in_minutes=None,
+                                            time=False,
+                                            day=None,
+                                            hh_mm=None,
+                                            trustpoint_name=None,
+                                            url=False,
+                                            http_or_ldap_url=None
+                                        ):
+    """
+    Unconfigure 'crypto pki crl download' commands with schedule, trustpoint, or URL options.
+
+    Args:
+        device (`obj`): Device handle
+        schedule (`bool`): Enable schedule block
+        prepublish (`bool`): Unconfigure prepublish schedule
+        retries (`bool`): Unconfigure retries block
+        number_of_retries (`int`): Number of retries (1-15)
+        interval (`bool`): Unconfigure interval block under retries
+        retry_time_in_minutes (`int`): Interval time in minutes (15-600)
+        time (`bool`): Unconfigure schedule time block
+        day (`str`): Day of the week (e.g., "Monday")
+        hh_mm (`str`): Time string in "HH:MM" format
+        trustpoint_name (`str`): Name of trustpoint
+        url (`bool`): Unconfigure URL block
+        http_or_ldap_url (`str`): HTTP/LDAP CRL download URL
+
+    Raises:
+        ValueError: If required values are missing or invalid
+        SubCommandFailure: If unconfiguration fails
+    """
+    cmds = []
+
+    if trustpoint_name:
+        cmds.append(f"no crypto pki crl download trustpoint {trustpoint_name}")
+        
+    if url:
+        if not http_or_ldap_url:
+            raise ValueError("http_or_ldap_url must be provided if url=True")
+        cmds.append(f"no crypto pki crl download url {http_or_ldap_url}")
+
+    if schedule:
+        if prepublish:
+            cmds.append("no crypto pki crl download schedule prepublish")
+
+        if retries:
+            if number_of_retries is None or not (1 <= number_of_retries <= 15):
+                raise ValueError("number_of_retries must be between 1 and 15")
+            cmds.append(f"no crypto pki crl download schedule retries {number_of_retries}")
+
+        if interval:
+            if retry_time_in_minutes is None or not (15 <= retry_time_in_minutes <= 600):
+                raise ValueError("retry_time_in_minutes must be between 15 and 600")
+            cmds.append(f"no crypto pki crl download schedule retries interval {retry_time_in_minutes}")
+
+        if time and day:
+            valid_days = {
+                "Monday", "Tuesday", "Wednesday", "Thursday",
+                "Friday", "Saturday", "Sunday"
+            }
+
+            if day not in valid_days:
+                raise ValueError("`day` must be one of Monday to Sunday when `time` is specified")
+
+            if not hh_mm:
+                raise ValueError("`hh_mm` must be provided when `time` is specified")
+
+            cmd = f"no crypto pki crl download schedule time {day} {hh_mm}"
+            cmds.append(cmd)
+
+    if not cmds:
+        raise ValueError("No valid unconfiguration arguments provided.")
+
+    try:
+        return device.configure(cmds)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure CRL download: {e}")
+    
+

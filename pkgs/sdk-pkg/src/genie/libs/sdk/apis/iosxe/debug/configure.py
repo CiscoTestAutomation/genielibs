@@ -490,19 +490,23 @@ def set_platform_soft_trace_ptp_debug(device, sprocess, snumber, feature_type, d
         device.execute(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not set platform software trace fed debug {device}. Error:\n{e}")       
-def debug_software_cpm_switch_pcap(device, mode, enable_disable):
+def debug_software_cpm_switch_pcap(device, mode, enable_disable, bp_active=False):
     """ debug software cpm switch pcap
     Args:
         device ('obj'): device to use
         mode ('str'): active/standby
         enable_disable('str'): enable or disable
+        bp_active ('bool'): if True, uses 'bp active' path
         Returns
             None
         Raises:
             SubCommandFailure
     """
 
-    cmd = f"debug platform software cpm switch {mode} b0 pcap {enable_disable}"  
+    if bp_active:
+        cmd = f"debug platform software cpm switch {mode} bp active pcap {enable_disable}"
+    else:
+        cmd = f"debug platform software cpm switch {mode} b0 pcap {enable_disable}"  
     try:
         device.execute(cmd)
     except SubCommandFailure as e:
@@ -558,3 +562,67 @@ def set_platform_software_ilpower_mcu(device, mode, rp, action):
         raise SubCommandFailure(
             f"Failed to execute 'set platform software ilpower' with action {action}. Error:\n{e}"
         )
+        
+def debug_software_cpm_switch_pcap_count(device, mode, count, bp_active=False):
+    """Set CPM switch pcap count
+    Args:
+        device ('obj'): device to use
+        mode ('str'): active/standby
+        count ('int'): packet buffer size
+        bp_active ('bool'): if True, uses 'bp active' path
+
+    Raises:
+        SubCommandFailure
+    """
+    if bp_active:
+        cmd = f"debug platform software cpm switch {mode} bp active pcap count {count}"
+    else:
+        cmd = f"debug platform software cpm switch {mode} b0 pcap count {count}"
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not set pcap count. Error:\n{e}")
+        
+def debug_software_cpm_switch_pcap_drop(device, mode, enable_disable, bp_active=False):
+    """Enable/disable CPM switch pcap drop
+    Args:
+        device ('obj'): device to use
+        mode ('str'): switch number
+        enable_disable ('str'): 'enable' or 'disable'
+        bp_active ('bool'): if True, uses 'bp active' path
+
+    Raises:
+        SubCommandFailure
+    """
+    
+    if bp_active:
+        cmd = f"debug platform software cpm switch {mode} bp active pcap drop {enable_disable}"
+    else:
+        cmd = f"debug platform software cpm switch {mode} b0 pcap drop {enable_disable}"
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure pcap drop. Error:\n{e}")
+
+def debug_software_cpm_switch_feature(device, mode, feature, action, bp_active=False):
+    """Enable/disable other CPM features like ctrlerr, podrop, link_preference
+    Args:
+        device ('obj'): device to use
+        mode ('str'): switch number
+        feature ('str'): feature name ('ctrlerr', 'podrop', 'link_preference')
+        action ('str'): 'enable' or 'disable'
+        bp_active ('bool'): if True, uses 'bp active' path
+
+    Raises:
+        SubCommandFailure
+    """
+    try:
+        if bp_active:
+            cmd = f"debug platform software cpm switch {mode} bp active {feature} {action}"
+        else:
+            cmd = f"debug platform software cpm switch {mode} b0 {feature} {action}"
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure feature {feature}. Error:\n{e}")
+
+

@@ -1401,7 +1401,8 @@ def configure_fnf_flow_record(
     collect_type_mask = None,
     collect_length = None,
     collect_ipv4_ttl = None,
-    collect_udp_ports = None
+    collect_udp_ports = None,
+    match_vrf = False
     ):
 
     """ Config Flow Record on Device
@@ -1432,6 +1433,7 @@ def configure_fnf_flow_record(
             collect_length('str', optional): configure ipv4 length total or header, default value is None
             collect_ipv4_ttl('str', optional): ttl value minimum or maximum to be configured, default value is None
             collect_udp_ports('str', optional): udp source-port or destination port to be configured, default value is None
+            match_vrf('bool'): Configure match routing vrf input
         Return:
             None
 
@@ -1485,6 +1487,8 @@ def configure_fnf_flow_record(
         configs.extend([f'collect ipv4 ttl {collect_ipv4_ttl}'])
     if collect_udp_ports:
         configs.extend([f'collect transport udp {collect_udp_ports}'])
+    if match_vrf:
+        configs.extend(['match routing vrf input'])
 
     try:
         device.configure(configs)
@@ -1760,6 +1764,30 @@ def unconfigure_device_sampler(device, sampler_name):
         log.error(f"Failed to unconfigure sampler {sampler_name} on device {device.name}. Error: {e}")
         raise SubCommandFailure(f'Could not unconfigure sampler {sampler_name}. Error:\n{e}')
     
+def configure_ipv6_flow_monitor_on_interface(device, interface, monitor_name, sampler_name, direction):
+    """Configure IPv6 flow monitor with sampler on a interface
+
+    Args:
+        device (`obj`): Device object
+        interface (`str`): Subinterface name (e.g., 'Te3/1/2')
+        monitor_name (`str`): IPv6 flow monitor name (e.g., 'm6out')
+        sampler_name (`str`): Sampler name user defined (e.g., 'sampler_random')
+        direction (`str`): Apply Flow Monitor on input/output traffic (eg. 'input/output')
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed configuring IPv6 flow monitor with sampler on subinterface
+    """
+    try:
+        device.configure([
+            f"interface {interface}",
+            f"ipv6 flow monitor {monitor_name} sampler {sampler_name} {direction}"
+        ])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure ipv6 flow monitor {monitor_name} sampler {sampler_name} {direction} on {interface}. Error:\n{e}"
+        )
+
 def unconfigure_flow_exporter_from_monitor(device, monitor_name, exporter_name):
     """ Unconfigure Flow Exporter from Flow Monitor
         Args:
@@ -1781,3 +1809,27 @@ def unconfigure_flow_exporter_from_monitor(device, monitor_name, exporter_name):
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not unconfigure flow exporter {exporter_name}. Error:\n{e}')
+
+def unconfig_flow_monitor_on_vlan_interface(device, vlan_id,type,monitor_name,direction):
+    """ Unconfig Flow Monitor on vlan Interface
+
+        Args:
+            device (`obj`): Device object
+            vlan_id (`str`): Vlan Interface to be configured
+	    type (`str`): Type of flow monitor (eg. datalink,ip,ipv6)
+            monitor_name (`str`): Flow monitor name
+            direction (`str`): Direction of monitor (input/output)
+            
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring interface
+    """
+
+    try:
+        device.configure(["interface vlan {vlan_id}".format(vlan_id=vlan_id),
+                          "no {type} flow monitor {monitor_name} {direction}".format(type=type,monitor_name=monitor_name,direction=direction)])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not configure flow monitor {monitor_name} on vlan interface'.format(monitor_name=monitor_name)
+        )

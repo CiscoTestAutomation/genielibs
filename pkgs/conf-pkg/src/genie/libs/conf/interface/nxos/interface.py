@@ -518,6 +518,12 @@ class Interface(genie.libs.conf.interface.Interface):
                 attributes.format('media-type {media_type}'),
                 unconfig_cmd='no media-type')
 
+        # link_jitter <rs-fec>
+        if attributes.value('link_jitter'):
+            configurations.append_line(
+                attributes.format('link active-jitter-management'),
+                unconfig_cmd='no link active-jitter-management')
+
 
         # -- ETHER L2, L3, PC
         # nxos: interface <intf> / buffer-boost
@@ -1235,6 +1241,7 @@ class PortchannelInterface(VirtualInterface, genie.libs.conf.interface.Aggregate
         self.members -= {member}
 
     channel_group_mode = None
+    dot1q_access_vlan = None
 
     # XXXJST TODO interface_number
     @property
@@ -1349,6 +1356,11 @@ class PortchannelInterface(VirtualInterface, genie.libs.conf.interface.Aggregate
         if attributes.value('mac_address'):
             configurations.append_line(
                 attributes.format('mac-address {mac_address}'))
+            
+        if str(self.switchport_mode) == L2_type.DOT1Q_TUNNEL.value.lower():
+            configurations.append_line(
+                attributes.format('switchport access vlan {dot1q_access_vlan}'),
+                unconfig_cmd='no switchport access vlan')
 
     def __init__(self, *args, **kwargs):
         self.members  # init!

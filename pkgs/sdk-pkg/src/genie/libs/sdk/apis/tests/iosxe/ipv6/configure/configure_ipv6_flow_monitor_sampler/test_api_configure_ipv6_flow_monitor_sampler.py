@@ -7,8 +7,8 @@ class TestConfigureIpv6FlowMonitorSampler(TestCase):
 
     def test_configure_ipv6_flow_monitor_sampler(self):
         self.device = Mock()
-        result = configure_ipv6_flow_monitor_sampler(self.device, 'vlan100', 'm6', 's1')
+        result = configure_ipv6_flow_monitor_sampler(self.device, 'Port-channel10', 'input', 'ipv6_monitor_in', 'sampler_random')
         self.assertEqual(
             self.device.configure.mock_calls[0].args,
-            (['interface vlan100', 'ipv6 flow monitor m6 sampler s1 input', 'end'],)
+            (['interface Port-channel10', 'ipv6 flow monitor ipv6_monitor_in sampler sampler_random input', 'end'],)
         )

@@ -1182,3 +1182,23 @@ def unconfigure_interface_cts_role_based_sgt_map(device, interface, vlan, sgt):
         raise SubCommandFailure(
             "Could not unconfigure interface cts role-based sgt-map.Error:\n{}".format(str(e))
         )
+
+def unconfigure_vlan_to_sgt_mapping(device, vlan, sgt):
+    """ Unconfigure Vlan SGT
+        Args:
+            device ('obj'): device to use
+            vlan ('str'): vlan-id to configure
+            sgt (`int`): Security Group Tag (SGT) value
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to unconfigure Vlan SGT
+    """
+    log.info("Unconfigure vlan-to-sgt mapping")
+    try:
+        device.configure(["no cts role-based sgt-map vlan-list {} sgt {}".format(vlan, sgt)])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure vlan-to-sgt mapping for vlan {vlan},sgt {sgt}.Error:{err}"\
+            .format(vlan=vlan, sgt=sgt,err=str(e))
+        )

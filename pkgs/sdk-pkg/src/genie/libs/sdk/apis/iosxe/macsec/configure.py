@@ -139,6 +139,8 @@ def config_macsec_keychain_on_device(device, keychain_name, key,
         Args:
             device ('obj'): device to use
             keychain_name ('str'): keychain name to configure
+            key ('str'): key to configure
+            crypt_algorithm ('str'): cryptographic algorithm to configure
             key_string ('str'): key string to configure
             lifetime ('list'): start and end timings
         Returns:

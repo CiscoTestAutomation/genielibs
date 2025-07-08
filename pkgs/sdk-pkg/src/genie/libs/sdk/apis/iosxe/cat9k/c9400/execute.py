@@ -13,7 +13,7 @@ from unicon.core.errors import SubCommandFailure
 log = logging.getLogger(__name__)
 
 def execute_install_one_shot(device, file_path=None, prompt=True, issu=False,
-                             negative_test=False, timeout=900, connect_timeout=10, xfsu=False, reloadfast=False):
+                             negative_test=False, timeout=900, connect_timeout=10, xfsu=False, reloadfast=False, force=False):
     """
     Performs install one shot on the device
     Args:
@@ -27,6 +27,7 @@ def execute_install_one_shot(device, file_path=None, prompt=True, issu=False,
         connect_timeout ('int, optional'): Time to wait before sending the prompt. Default is 10.
         xfsu ('bool, optional'): Force the operation to use xfsu. Default is False.
         reloadfast ('bool, optional'): Force the operation to use reloadfast. Default is False.
+        force('bool, optional'):  Default is False.
     Returns:
         True if install one shot is successful
         False if install one shot is not successful
@@ -80,6 +81,9 @@ def execute_install_one_shot(device, file_path=None, prompt=True, issu=False,
 
     cmd += " commit"
 
+    if force:
+        cmd += f" force"
+
     if not prompt:
         cmd += " prompt-level none"
 
@@ -91,7 +95,7 @@ def execute_install_one_shot(device, file_path=None, prompt=True, issu=False,
         log.error(f"Error while executing {cmd} on {device.name}: {e}")
 
     pattern = 'SUCCESS' if negative_test else 'FAILED'
-    result = 'fail' if pattern in output else 'successful'
+    result = 'fail' if pattern in str(output) else 'successful'
     log.info(f"install one shot operation {result} on {device.name}")
     return (output if result == 'successful' else False)
 

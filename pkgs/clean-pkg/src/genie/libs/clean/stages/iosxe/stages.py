@@ -11,10 +11,12 @@ import os.path
 import logging
 from textwrap import dedent
 from ipaddress import IPv4Address, IPv6Address, IPv4Interface, IPv6Interface
+from concurrent.futures import ThreadPoolExecutor, wait as wait_futures, ALL_COMPLETED
 
 # pyATS
 from pyats.async_ import pcall
 from pyats.utils.fileutils import FileUtils
+from pyats.log.utils import banner
 
 # Genie
 from genie.abstract import Lookup
@@ -37,11 +39,11 @@ from genie.libs.clean.utils import (
 from unicon.eal.dialogs import Statement, Dialog
 from unicon.core.errors import SubCommandFailure
 from unicon.plugins.generic.statements import GenericStatements
+from unicon.plugins.iosxe.statements import grub_prompt_handler
 from unicon.core.errors import UniconAuthenticationError, UniconBackendDecodeError, CredentialsExhaustedError
 
 # Logger
 log = logging.getLogger(__name__)
-
 
 class ChangeBootVariable(BaseStage):
     """This stage configures boot variables of the device using the following steps:
@@ -654,6 +656,7 @@ class InstallRemoveInactive(BaseStage):
             # split the image on the [:/] and pick up the image name
             image = re.split(r"[:/]", images[0])[-1]
 
+            generic_statements = GenericStatements()
             install_remove_inactive_dialog = Dialog(
                 [
                     Statement(
@@ -663,6 +666,7 @@ class InstallRemoveInactive(BaseStage):
                         loop_continue=False,
                         continue_timer=False,
                     ),
+                    generic_statements.syslog_msg_stmt
                 ]
             )
 
@@ -821,7 +825,7 @@ class InstallImage(BaseStage):
                     # If neither is found, fail to match the image
                     xe_version = out.get("version", {}).get("xe_version", "")
                     build_label = out.get("version", {}).get("build_label", "")
-                    image_version = xe_version or build_label
+                    image_version = xe_version if len(xe_version) > 3 else build_label
                     image_match = re.search(image_version, images[0])
                     if image_match and image_match.group():
                         image_mapping = self.history[
@@ -829,22 +833,33 @@ class InstallImage(BaseStage):
                         ].parameters.setdefault("image_mapping", {})
                         system_image = device.api.get_running_image()
                         image_mapping.update({images[0]: system_image})
+                        self.skipped(
+                            f"The image file provided is same as the current running image {image_version} on the device.\n"
+                            "Skipping the install image stage."
+                        )
 
-                        log.info(f'Unconfigure the ignore startup config on {device.name}')
-                        try:
-                            device.api.unconfigure_ignore_startup_config()
-                        except Exception as e:
-                            step.passx(f"Failed to unconfigure ignore startup config on the device {device.name}",
-                                from_exception=e)
+            with steps.start("Verify the ignore startup config") as step:
+                try:
+                    # Attempt to unconfigure the ignore startup config
+                    device.api.unconfigure_ignore_startup_config()
+                except Exception as e:
+                    step.passx(
+                        f"Failed to unconfigure ignore startup config on the device {device.name}",
+                        from_exception=e
+                    )
 
-                        log.info(f'Verify the ignore startup config')
-                        if not device.api.verify_ignore_startup_config():
-                            step.failed(f"Failed to verify unconfigure the ignore startup config on {device.name}")
-                        else:
-                            self.skipped(
-                                f"The image file provided is same as the current running image {image_version} on the device.\n"
-                                "Skipping the install image stage."
-                            )
+                log.info(f'Verify the ignore startup config')
+                try:
+                    # Attempt to verify the ignore startup config
+                    if not device.api.verify_ignore_startup_config():
+                        step.passx(
+                            f"Failed to verify unconfigure of the ignore startup config on {device.name}"
+                        )
+                except Exception as e:
+                    step.passx(
+                        f"An error occurred while verifying the ignore startup config on {device.name}",
+                        from_exception=e
+                    )
 
     def delete_boot_variable(
         self, steps, device, issu=ISSU, skip_boot_variable=SKIP_BOOT_VARIABLE
@@ -1004,6 +1019,12 @@ class InstallImage(BaseStage):
                 check_reload_dialog = Dialog(
                             [
                                 Statement(
+                                    pattern=r".*reboot: Restarting system",
+                                    action=None,
+                                    loop_continue=False,
+                                    continue_timer=False,
+                                ),
+                                Statement(
                                     pattern=r".*Initializing Hardware",
                                     action=None,
                                     loop_continue=False,
@@ -1046,7 +1067,6 @@ class InstallImage(BaseStage):
                     # device did not auto reload.
                     device.execute("show version")
                     device.execute("show install summary")
-                    device.reload(**reload_args)
                 else:
                     device.reload(
                         "", **reload_args
@@ -1189,6 +1209,12 @@ class InstallRemoveSmu(BaseStage):
                                     [
                                         Statement(
                                             pattern=r".*reloading, reason - Reload command",
+                                            action=None,
+                                            loop_continue=False,
+                                            continue_timer=False,
+                                        ),
+                                        Statement(
+                                            pattern=r".*Initializing Hardware\.",
                                             action=None,
                                             loop_continue=False,
                                             continue_timer=False,
@@ -1995,7 +2021,7 @@ class RommonBoot(BaseStage):
     ------------
     rommon_boot:
 
-        image (list): Image to boot with
+        image (list, optional): Image to boot with
 
         tftp (optional): If specified boot via tftp otherwise boot using local
             image.
@@ -2008,19 +2034,12 @@ class RommonBoot(BaseStage):
             gateway (str, optional): Management gateway
 
             tftp_server (str, optional): Tftp server that is reachable with management interface
-
-
-        recovery_password (str): Enable password for device
-            required after bootup. Defaults to None.
-
-        recovery_enable_password (str): Enable password for device
-            required after bootup. Defaults to None.
-
-        recovery_username (str): Enable username for device
-            required after bootup. Defaults to None.
+            
 
         save_system_config (bool, optional): Whether or not to save the
             system config if it was modified. Defaults to True.
+
+        grub_activity_pattern (str): Break pattern on the device for grub boot mode
 
         timeout (int, optional): Max time allowed for the booting process.
             Defaults to 600.
@@ -2033,7 +2052,7 @@ class RommonBoot(BaseStage):
 
         rommon_timeout (int, optional): Timeout after bringing the device to rommon. Default to 15 sec.
 
-        reconnect_timeout (int, optional): Timeout to reconnect the device after booting. Default to 90 sec.
+        reconnect_timeout (int, optional): Timeout to reconnect the device after booting. Default to 120 sec.
 
     Example
     -------
@@ -2045,13 +2064,11 @@ class RommonBoot(BaseStage):
             gateway: 10.1.7.1
             subnet_mask: 255.255.255.0
             tftp_server: 11.1.7.251
-        recovery_password: nbv_12345
-        recovery_username: user_12345
-        recovery_enable_password: en
         save_system_config: False
         timeout: 600
         config_reg_timeout: 10
         config_register: 0x0
+        grub_activity_pattern: 'The highlighted entry will be (?:booted|executed) automatically'
 
     There is more than one ip address, one for each supervisor.
 
@@ -2087,21 +2104,21 @@ class RommonBoot(BaseStage):
     # =================
     # Argument Defaults
     # =================
-    RECOVERY_PASSWORD = None
-    RECOVERY_ENABLE_PASSWORD = None
-    RECOVERY_USERNAME = None
+    GRUB_ACTIVITY_PATTERN=None
     SAVE_SYSTEM_CONFIG = True
     TIMEOUT = 600
     ETHER_PORT = 0
     ROMMON_TIMEOUT = 15
-    RECONNECT_TIMEOUT = 90
+    RECONNECT_TIMEOUT = 120
     CONFIG_REGISTER = "0x0"
+    IMAGE = []
+    TFTP = {}
 
     # ============
     # Stage Schema
     # ============
     schema = {
-        "image": list,
+        Optional("image"): list,
         Optional("tftp"): {
             Optional("ip_address"): list,
             Optional("subnet_mask"): str,
@@ -2109,9 +2126,7 @@ class RommonBoot(BaseStage):
             Optional("tftp_server"): str,
         },
         Optional("save_system_config"): bool,
-        Optional("recovery_password"): str,
-        Optional("recovery_username"): str,
-        Optional("recovery_enable_password"): str,
+        Optional("grub_activity_pattern"): str,
         Optional("timeout"): int,
         Optional("ether_port"): int,
         Optional("rommon_timeout"): int,
@@ -2160,26 +2175,30 @@ class RommonBoot(BaseStage):
                 step.failed("Failed to bring device to rommon!", from_exception=e)
 
             log.info("Device is reloading")
-            device.destroy_all()
 
     def rommon_boot(
         self,
         steps,
         device,
-        image,
-        tftp=None,
+        image=IMAGE,
+        tftp=TFTP,
         timeout=TIMEOUT,
-        recovery_password=RECOVERY_PASSWORD,
-        recovery_username=RECOVERY_USERNAME,
-        recovery_enable_password=RECOVERY_ENABLE_PASSWORD,
-        ether_port=ETHER_PORT,
-    ):
+        grub_activity_pattern=GRUB_ACTIVITY_PATTERN
+        ):
         with steps.start("Boot device from rommon") as step:
-            if tftp is not None:
-                # Check if management attribute in device object, if not set to empty dict
+
+            log.info(f'Get the recovery details from clean for device {device.name}')
+            try:
+                recovery_info = device.clean.get('device_recovery', {})
+            except AttributeError:
+                log.info(f'There is no recovery info for device {device.name}')
+                recovery_info = {}
+                
+            if tftp:
+                log.warning('Passing TFTP information to rommon boot is deprecated. Use device recovery tftp information instead.')
+                                # Check if management attribute in device object, if not set to empty dict
                 if not hasattr(device, "management"):
                     setattr(device, "management", {})
-
                 # Getting the tftp information, if the info not provided by user, it takes from testbed
                 address = device.management.get("address", {}).get("ipv4", "")
                 if isinstance(address, IPv4Interface):
@@ -2194,57 +2213,119 @@ class RommonBoot(BaseStage):
                     "gateway", str(device.management.get("gateway", {}).get("ipv4"))
                 )
                 tftp.setdefault(
-                    "tftp_server", device.testbed.servers.get("tftp", {}).get("address")
-                )
+                    "tftp_server", device.testbed.servers.get("tftp", {}).get("address"))
 
-            log.info("checking if all the tftp information is given by the user")
-            if tftp and not all(tftp.values()):
-                log.warning(f"Some TFTP information is missing: {tftp}")
-                # setting tftp empty if ttfp information is missing
-                tftp = {}
+                log.info("checking if all the tftp information is given by the user")
+                if tftp and not all(tftp.values()):
+                    log.warning(f"Some TFTP information is missing: {tftp}")
+                    # setting tftp empty if ttfp information is missing
+                    tftp = {}
+                
+            tftp_boot = recovery_info.get('tftp_boot', {}) or tftp
+            
+            timeout = timeout or recovery_info.get('timeout') or 750
+            image = recovery_info.get('golden_image', []) or image
+            grub_activity_pattern = grub_activity_pattern or recovery_info.get('grub_activity_pattern', 'The highlighted entry will be (?:booted|executed) automatically')
+            
+            if image:
+                log.info(banner("Booting device '{}' with the Golden images".\
+                                format(device.name)))
+                log.info("Clean image information found:\n{}".format(image))
 
-            # Need to instantiate to get the device.start
-            # The device.start only works because of a|b
-            device.instantiate(connection_timeout=timeout)
+            elif tftp_boot:
+                log.info(banner("Booting device '{}' with the Tftp images".\
+                                format(device.name)))
+                log.info("Tftp boot information found:\n{}".format(tftp_boot))
+
+            else:
+                raise Exception('Global recovery only support golden image and tftp '
+                                'boot recovery and neither was provided')
+
+            if device.is_ha and hasattr(device, 'subconnections'):
+                conn_list = device.subconnections
+            else:
+                conn_list = [device.default]
+
+            for con in conn_list:
+                if con.state_machine.current_state != 'rommon':
+                    raise Exception(f'Device {device.name} is not in rommon state could not boot the device.')
+                else:
+                    log.info(f'Device {device.name} is in rommon state!')
 
             try:
-                abstract = Lookup.from_device(device, packages={"clean": clean})
-            except Exception as e:
-                step.failed("Abstraction lookup failed", from_exception=e)
-
-            # device.start only gets filled with single rp devices
-            # for multiple rp devices we need to use subconnections
-            if device.is_ha and hasattr(device, "subconnections"):
-                start = [i.start[0] for i in device.subconnections]
-            else:
-                start = device.start
-
-            common_kwargs = {"device": device, "timeout": timeout}
-
-            if tftp:
-                tftp.update({"image": image, "ether_port": ether_port})
-                common_kwargs.update({"tftp_boot": tftp})
-            else:
-                common_kwargs.update({"golden_image": image})
-
-            # Update recovery username and password
-            common_kwargs.update(
-                {
-                    "recovery_username": recovery_username,
-                    "recovery_en_password": recovery_enable_password,
-                    "recovery_password": recovery_password,
-                }
-            )
-
-            try:
-                pcall(
-                    targets=abstract.clean.recovery.recovery.recovery_worker,
-                    start=start,
-                    ikwargs=[{"item": i} for i, _ in enumerate(start)],
-                    ckwargs=common_kwargs,
-                )
+                # golden image for that we need to boot each subconnetion in a separate process.
+                if image:
+                    futures = []
+                    executor = ThreadPoolExecutor(max_workers=len(conn_list))
+                    for con in conn_list:
+                        futures.append(executor.submit(
+                            RommonBoot.task,
+                            con,
+                            timeout,
+                            image,
+                            grub_activity_pattern,
+                        ))
+                    log.info(f"The Timeout value to verify the grub prompt is {timeout}")
+                    wait_futures(futures, timeout=timeout, return_when=ALL_COMPLETED)
+                elif tftp_boot:
+                    device.api.device_rommon_boot(tftp_boot=tftp_boot)
             except Exception as e:
                 step.failed("Failed to boot the device from rommon", from_exception=e)
+
+    def task(con, timeout, image, grub_activity_pattern):
+        """
+        A method for processing a dialog that loads a local image onto a device
+
+        Args:
+            con (obj): connection object
+            timeout (int, optional): Recovery process timeout. Defaults to 600.
+            image (dict): Information to load golden image on the device
+            grub_activity_pattern (str): Grub activity pattern
+        Returns:
+            None
+        """
+        # if we have grup activity pattern then we need to update the context with grub boot image
+
+        if grub_activity_pattern:
+            image_to_boot = con.context.get('grub_boot_image')
+            con.context['grub_boot_image'] = image[0]
+
+        # check for image to boot if we have a value store it and replace it with the golden image
+        image_to_boot = con.context.get('image_to_boot')
+        con.context['image_to_boot'] = image[0]
+
+        # these statments needed for booting from grub menu
+        def _grub_boot_device(spawn, session, context):
+            # '\033' == <ESC>
+            spawn.send('\033')
+            time.sleep(0.8)
+
+        grub_prompt_stmt = \
+            Statement(pattern=r'.*grub *>.*',
+                    action=_grub_boot_device,
+                    args=None,
+                    loop_continue=True,
+                    continue_timer=False)
+
+        grub_boot_stmt = \
+            Statement(pattern=r'.*Use the UP and DOWN arrow keys to select.*',
+                    action=grub_prompt_handler,
+                    args=None,
+                    loop_continue=True,
+                    continue_timer=False)
+
+        dialog = Dialog([grub_boot_stmt, grub_prompt_stmt])
+
+        con.state_machine.go_to('enable',
+                                con.spawn,
+                                timeout=timeout,
+                                context=con.context,
+                                dialog=dialog,
+                                prompt_recovery=True)
+        # we need to set the value of grub_boot_image and image_to_boot to original value
+        if grub_activity_pattern:
+            con.context['grub_boot_image'] = image_to_boot
+        con.context['image_to_boot'] = image_to_boot
 
     def reconnect(self, steps, device, reconnect_timeout=RECONNECT_TIMEOUT):
         with steps.start("Reconnect to device") as step:
@@ -2701,7 +2782,7 @@ class CopyToDevice(BaseStage):
                             # If neither is found, fail to match the image
                             xe_version = out.get("version", {}).get("xe_version", "")
                             build_label = out.get("version", {}).get("build_label", "")
-                            image_version = build_label or xe_version
+                            image_version = xe_version if len(xe_version) > 3 else build_label
                             image_match = re.search(image_version, file)
                             if image_match and image_match.group():
                                 # update image mapping 'as-if' we had copied the file
@@ -3490,6 +3571,7 @@ class Connect(BaseStage):
                     else:
                         device.api.configure_rommon_tftp()
                 except Exception as e:
+                    log.exception(e)
                     step.passx(f"Failed to set rommon variables. {e}")
                 else:
                     log.info("Successfully set the rommon variables")
@@ -3530,7 +3612,7 @@ class Connect(BaseStage):
                     # Gets the recovery details from clean yaml
                     device.api.device_rommon_boot()
                 except Exception as e:
-                    step.passx(f"Failed to boot device from rommon. {e}")
+                    step.failed(f"Failed to boot device from rommon. {e}")
                 else:
                     log.info("Successfully booted the device from rommon.")
 
@@ -3618,7 +3700,16 @@ class ResetConfiguration(BaseStage):
     def _generate_config_text(self, config_dict):
         return self._recurse_config_dict_to_text(config_dict, level=0)
 
-    def _filter_config_dict(self, config_dict, new_config_dict, KEEP):
+    def _filter_config_dict(self, config_dict, new_config_dict, KEEP, REPLACE={}):
+        ''' Filter items from the configuration dictionary.
+
+        Only keep items that are defined in KEEP and replace items defined in REPLACE
+
+        config_dict (dict): existing config dictionary
+        new_config_dict (dict): new config dictionary
+        KEEP (dict): dict of regex to keep
+        REPLACE (dict): dict of string values to replace
+        '''
         for k in config_dict:
             for key in KEEP:
                 if re.search(key, k) and not KEEP[key]:
@@ -3632,6 +3723,8 @@ class ResetConfiguration(BaseStage):
                     break
             else:
                 new_config_dict.pop(k, None)
+                if k in REPLACE:
+                    new_config_dict[REPLACE[k]] = {}
 
     def _generate_default_config(self, device, config_dict):
 
@@ -3687,13 +3780,21 @@ class ResetConfiguration(BaseStage):
             "^line vty": {"^transport input": {}},
             "^ip http server": {},
             "^ip http secure-server": {},
+            "^platform console virtual": {},
+        }
+
+        REPLACE = {
+            'no aaa new-model': 'aaa new-model'
         }
 
         new_config_dict = copy.deepcopy(config_dict)
 
-        self._filter_config_dict(config_dict, new_config_dict, KEEP)
+        self._filter_config_dict(config_dict, new_config_dict, KEEP, REPLACE)
 
         config_text = self._generate_config_text(new_config_dict)
+
+        # explicitly set enable auth to none
+        config_text += '\naaa authentication enable default none'
 
         config_text = DEFAULTS + config_text + "\nend"
 
@@ -3859,7 +3960,7 @@ class SetControllerMode(BaseStage):
             # Confirm password:
             #
             # Router# pnpa service discovery stop
-            generic_statments = GenericStatements()
+            generic_statements = GenericStatements()
 
             controller_mode_dialog = Dialog(
                 [
@@ -3917,9 +4018,9 @@ class SetControllerMode(BaseStage):
                         loop_continue=True,
                         continue_timer=False,
                     ),
-                    generic_statments.syslog_msg_stmt,
-                    generic_statments.enable_secret_stmt,
-                    generic_statments.enter_your_selection_stmt,
+                    generic_statements.syslog_msg_stmt,
+                    generic_statements.enable_secret_stmt,
+                    generic_statements.enter_your_selection_stmt,
                 ]
             )
 

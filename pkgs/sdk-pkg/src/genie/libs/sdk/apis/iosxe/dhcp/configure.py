@@ -1696,43 +1696,66 @@ def configure_dhcp_option43(device, pool, data_type='ascii', ascii_string=None):
             f'Failed to configure dhcp option 43 for pool: {pool} on {device.name}\n{e}'
         )
 
-def configure_pnp_startup_vlan(device, vlan):
-    """ Configure pnp startup vlan
+def configure_pnp_startup_vlan(device, vlan, interface=None):
+    """Configure pnp startup-vlan globally or under interface mode
        Args:
             device ('obj'): device object
             vlan ('str'): vlan id to be configured
+            interface ('str', optional): Interface name (e.g., 'GigabitEthernet1/0/1'). Default is None (global config).
+
        Return:
             None
        Raises:
             SubCommandFailure
     """
-    log.debug(f"configure startup vlan {vlan}")
-    config= f'pnp startup-vlan {vlan}'
+    if interface is not None:
+        log.debug(f"Configuring 'pnp startup-vlan {vlan}' under interface {interface}")
+        config = [
+            f"interface {interface}",
+            f"pnp startup-vlan {vlan}"
+        ] 
+    else:
+        log.debug(f"Configuring global 'pnp startup-vlan {vlan}'")
+        config = [f"pnp startup-vlan {vlan}"]
+
     try:
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            f'Failed to configure pnp startup-vlan: {vlan} on {device.name}\n{e}'
+            f'Failed to configure pnp startup-vlan: {vlan}'
+            f"{'on interface ' + interface if interface else 'globally'} on {device.name}\n{e}"
         )
 
-def unconfigure_pnp_startup_vlan(device, vlan):
-    """ Unconfigure pnp startup vlan
+def unconfigure_pnp_startup_vlan(device, vlan, interface=None):
+    """ Unconfigure pnp startup vlan globally or under interface mode
        Args:
             device ('obj'): device object
             vlan ('str'): vlan id to be configured
+            interface ('str', optional): Interface name (e.g., 'GigabitEthernet1/0/1'). Default is None (global unconfig).
+
        Return:
             None
        Raises:
             SubCommandFailure
     """
-    log.debug(f"Unconfigure startup vlan")
-    config= f'no pnp startup-vlan {vlan}'
+    if interface:
+        log.debug(f"Unconfiguring 'pnp startup-vlan {vlan}' under interface {interface}")
+        config = [
+            f"interface {interface}",
+            f"no pnp startup-vlan {vlan}"
+        ]
+    else:
+        log.debug(f"Unconfiguring global 'pnp startup-vlan {vlan}'")
+        config = f'no pnp startup-vlan {vlan}'
+
     try:
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            f'Failed to Unconfigure pnp startup-vlan: {vlan} on {device.name}\n{e}'
+            f'Failed to Unconfigure pnp startup-vlan: {vlan}'
+            f"{' on interface ' + interface if interface else ' globally'} on {device.name}\n{e}"
         )
+            
 
 def configure_interface_ip_dhcp_relay_information_option_insert(device, interface):
     """ Configure ip dhcp relay information option-insert on the interface

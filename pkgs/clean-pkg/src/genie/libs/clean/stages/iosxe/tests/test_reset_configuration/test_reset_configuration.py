@@ -239,7 +239,7 @@ line vty 5 31
 !
 end
 """
-    
+
     def test_reset_configuration_pass(self):
 
         # Make sure we have a unique Steps() object for result verification
@@ -261,8 +261,8 @@ end
         self.assertEqual(Passed, steps.details[0].result)
         self.device.configure.assert_has_calls([call('hostname FW-9300-7')])
         self.device.execute.assert_has_calls([call('show running-config')])
-        self.device.sendline.assert_has_calls([call('puts [open "base_config.txt" w+] {')])
-        config_text = """
+        config_text = """\
+puts [open "base_config.txt" w+] {
 !
 ! Last configuration change
 !
@@ -270,6 +270,7 @@ hostname FW-9300-7
 no logging console
 service timestamps debug datetime msec
 service timestamps log datetime msec
+
 vrf definition Mgmt-vrf
  address-family ipv4
  exit-address-family
@@ -310,14 +311,17 @@ ip http secure-server
 ip ssh bulk-mode 131072
 control-plane
  service-policy input system-cpp-policy
+line con 0
 line vty 0 4
  transport input all
 line vty 5 31
  transport input telnet ssh
-end"""
+aaa authentication enable default none
+end
+}"""
         config_lines = config_text.splitlines()
-        for line in config_lines:
-            yield self.device.sendline.assert_has_calls([call(line),])
+        calls = [call(line) for line in config_lines]
+        self.device.sendline.assert_has_calls(calls)
 
     def test_reset_configuration_fail__1(self):
 

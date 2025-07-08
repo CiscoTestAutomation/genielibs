@@ -51,3 +51,48 @@ def unconfigure_ignore_startup_config(device):
         raise SubCommandFailure(
             f"Could not unconfigure ignore startup config on {device.name}. Error:\n{e}")
 
+def configure_interfaces_uplink(device, interfaces):
+    """Configure the listed interfaces as uplinks on the device.
+        Args:
+            device ('obj'): Device object.
+            interfaces (List['string']): List of interfaces to configure as uplinks.
+    """
+    config_cmd = []
+
+    # Ensure interfaces is a list
+    if not isinstance(interfaces, list):
+        interfaces = [interfaces]
+
+    for interface in interfaces:
+        config_cmd.extend([
+            f"interface {interface}",
+            "uplink"
+        ])
+
+    try:
+        device.configure(config_cmd)
+    except SubCommandFailure as e:
+        logger.error('Failed to enable uplink interfaces on device {}: {}'.format(device.name, e))
+
+def configure_interfaces_no_uplink(device, interfaces):
+    """Configure the listed interfaces as no uplinks on the device.
+        Args:
+            device ('obj'): Device object.
+            interfaces (List['string']): List of interfaces to configure as no uplinks.
+    """
+    config_cmd = []
+
+    # Ensure interfaces is a list
+    if not isinstance(interfaces, list):
+        interfaces = [interfaces]
+
+    for interface in interfaces:
+        config_cmd.extend([
+            f"interface {interface}",
+            "no uplink"
+        ])
+
+    try:
+        device.configure(config_cmd)
+    except SubCommandFailure as e:
+        logger.error('Failed to disable uplink interfaces on device {}: {}'.format(device.name, e))
