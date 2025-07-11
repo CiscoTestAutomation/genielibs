@@ -3,9 +3,9 @@ from genie.libs.sdk.apis.iosxe.ie3k.platform.execute import execute_copy_verify
 from unittest.mock import Mock
 
 
-class TestExecuteCopyVerify(TestCase):
+class TestExecuteCopyVerifyPassed(TestCase):
 
-    def test_execute_copy_verify(self):
+    def test_execute_copy_verify_passed(self):
         self.device = Mock()
         results_map = {
             'copy /verify flash:ie9k_iosxe.17.09.02.SPA.bin sdflash:ie9k_iosxe.17.09.02.SPA.bin': """\
@@ -38,6 +38,41 @@ Signature Verified""",
         self.assertIn(
             'copy /verify flash:ie9k_iosxe.17.09.02.SPA.bin sdflash:ie9k_iosxe.17.09.02.SPA.bin',
             self.device.execute.call_args_list[0][0]
+        )
+        expected_output = None
+        self.assertEqual(result, expected_output)
+
+class TestExecuteCopyVerifyFailure(TestCase):
+
+    def test_execute_copy_verify_failure(self):
+        self.device = Mock()
+        results_map = {
+            'copy /verify sdflash:ie3x00-universalk9.BLD_V1718_THROTTLE_LATEST_20250611_010633.SSA.bin flash:': """\
+copy /verify sdflash:ie3x00-universalk9.BLD_V1718_THROTTLE_LATEST_20250611_010633.SSA.bin flash:
+Destination filename [ie3x00-universalk9.BLD_V1718_THROTTLE_LATEST_20250611_010633.SSA.bin]?
+%Error opening sdflash:ie3x00-universalk9.BLD_V1718_THROTTLE_LATEST_20250611_010633.SSA.bin (No such file or directory)
+%ERROR: Not able to process Signature in flash:/ie3x00-universalk9.BLD_V1718_THROTTLE_LATEST_20250611_010633.SSA.bin.
+%ERROR: Aborting copy.
+%Error deleting flash:/ie3x00-universalk9.BLD_V1718_THROTTLE_LATEST_20250611_010633.SSA.bin (No such file or directory)
+"""
+        }
+
+        def results_side_effect(cmd, **kwargs):
+            return results_map.get(cmd)
+
+        self.device.execute.side_effect = results_side_effect
+
+        result = execute_copy_verify(
+            self.device,
+            source='sdflash',
+            dest='flash',
+            timeout=600,
+            file_name='ie3x00-universalk9.BLD_V1718_THROTTLE_LATEST_20250611_010633.SSA.bin'
+        )
+
+        self.assertIn(
+            'copy /verify sdflash:ie3x00-universalk9.BLD_V1718_THROTTLE',
+            self.device.execute.call_args_list[0][0][0]
         )
         expected_output = None
         self.assertEqual(result, expected_output)

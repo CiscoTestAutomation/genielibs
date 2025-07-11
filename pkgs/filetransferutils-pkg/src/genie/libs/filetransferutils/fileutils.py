@@ -12,7 +12,6 @@ import stat as libstat
 
 from urllib.parse import urlparse
 
-#from genie.libs.filetransferutils.plugins.fileutils import FileUtils as FileUtilsDeviceBase
 from genie.libs.filetransferutils.bases.fileutils import FileUtilsBase
 
 logger = logging.getLogger(__name__)

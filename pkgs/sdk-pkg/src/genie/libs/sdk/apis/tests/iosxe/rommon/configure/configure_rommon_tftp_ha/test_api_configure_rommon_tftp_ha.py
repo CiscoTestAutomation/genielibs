@@ -31,17 +31,17 @@ class TestConfigureRommonTftpHA_1(unittest.TestCase):
               gateway:
                 ipv4: 3.3.3.3
               interface: GigabitEthernet0/0
-            rommon:
-              rp0:
-                address:
-                  ipv4: 5.5.5.5/16
-                gateway:
-                  ipv4: 1.1.1.1
-              rp1:
-                address:
-                  ipv4: 6.6.6.6/16
-                gateway:
-                  ipv4: 2.2.2.2
+              rommon:
+                rp0:
+                  address:
+                    ipv4: 5.5.5.5/16
+                  gateway:
+                    ipv4: 1.1.1.1
+                rp1:
+                  address:
+                    ipv4: 6.6.6.6/16
+                  gateway:
+                    ipv4: 2.2.2.2
         testbed:
           servers:
             tftp:
@@ -96,17 +96,17 @@ class TestConfigureRommonTftpHA_2(unittest.TestCase):
               gateway:
                 ipv4: 3.3.3.3
               interface: GigabitEthernet0/0
-            rommon:
-              rp0:
-                address:
-                  ipv4: 5.5.5.5/16
-                gateway:
-                  ipv4: 1.1.1.1
-              rp1:
-                address:
-                  ipv4: 6.6.6.6/16
-                gateway:
-                  ipv4: 2.2.2.2
+              rommon:
+                rp0:
+                  address:
+                    ipv4: 5.5.5.5/16
+                  gateway:
+                    ipv4: 1.1.1.1
+                rp1:
+                  address:
+                    ipv4: 6.6.6.6/16
+                  gateway:
+                    ipv4: 2.2.2.2
         testbed:
           servers:
             tftp:
@@ -162,17 +162,17 @@ class TestConfigureRommonTftpHA_3(unittest.TestCase):
               gateway:
                 ipv4: 3.3.3.3
               interface: GigabitEthernet0/0
-            rommon:
-              rp0:
-                address:
-                  ipv4: 5.5.5.5/16
-                gateway:
-                  ipv4: 1.1.1.1
-              rp1:
-                address:
-                  ipv4: 6.6.6.6/16
-                gateway:
-                  ipv4: 2.2.2.2
+              rommon:
+                rp0:
+                  address:
+                    ipv4: 5.5.5.5/16
+                  gateway:
+                    ipv4: 1.1.1.1
+                rp1:
+                  address:
+                    ipv4: 6.6.6.6/16
+                  gateway:
+                    ipv4: 2.2.2.2
         testbed:
           servers:
             tftp:

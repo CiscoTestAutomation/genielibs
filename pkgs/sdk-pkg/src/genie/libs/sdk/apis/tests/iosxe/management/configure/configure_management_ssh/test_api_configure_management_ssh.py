@@ -21,6 +21,8 @@ class TestConfigureManagementSsh(unittest.TestCase):
             os: iosxe
             platform: iosxe
             type: iosxe
+            management:
+              interface: GigabitEthernet0/0
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['vmtb-isr4451']

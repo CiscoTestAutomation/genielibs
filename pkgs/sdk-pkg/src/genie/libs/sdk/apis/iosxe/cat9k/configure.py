@@ -83,7 +83,7 @@ def configure_tacacs_server(device, server_config):
     except SubCommandFailure as e:
         logger.error(f"Failed to configure tacacs server with error {e}")
         raise
-    return config 
+    return config
 
 
 def configure_ignore_startup_config(device):
@@ -103,6 +103,10 @@ def configure_ignore_startup_config(device):
             if con.state_machine.current_state == "rommon":
                 cmd = 'SWITCH_IGNORE_STARTUP_CFG=1'
                 con.execute(cmd)
+            elif con.role == "standby":
+                # If the device is in standby state, skip it since we're already applying the config with "switch all"
+                # Otherwise, the standby will fail if locked.
+                pass
             else:
                 cmd = 'system ignore startupconfig switch all'
                 con.configure(cmd)
@@ -119,18 +123,20 @@ def unconfigure_ignore_startup_config(device):
         Raises:
             SubCommandFailure : Failed to unconfigure the device
     """
-    
+
     try:
         connections = getattr(device, 'subconnections', None) or [device]
         for con in connections:
-            # If the device state is in rommon configure rommon variable
             if con.state_machine.current_state == "rommon":
                 cmd = 'SWITCH_IGNORE_STARTUP_CFG=0'
                 con.execute(cmd)
+            elif con.role == "standby":
+                # If the device is in standby state, skip it since we're already applying the config with "switch all"
+                # Otherwise, the standby will fail if locked.
+                pass
             else:
                 cmd = 'no system ignore startupconfig switch all'
                 con.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not unconfigure ignore startup config on {device.name}. Error:\n{e}")
-

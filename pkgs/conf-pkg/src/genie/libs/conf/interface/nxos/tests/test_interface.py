@@ -32,6 +32,7 @@ class test_interface(TestCase):
         intf1.ipv6_addr_use_link_local_only = True
         intf1.fec = 'rs-fec'
         intf1.media_type = '10g-sx'
+        intf1.link_jitter = 'link active-jitter-management'
 
         cfg = intf1.build_config(apply=False)
         self.assertMultiLineEqual(
@@ -46,6 +47,7 @@ class test_interface(TestCase):
                 ' ipv6 address use-link-local-only',
                 ' fec rs-fec',
                 ' media-type 10g-sx',
+                ' link active-jitter-management',
                 ' exit',
             ]))
         print('cfg: {0}'.format(cfg))
@@ -1390,6 +1392,60 @@ class test_nx_interface(TestCase):
                 ' exit',
                 'no interface port-channel10'
                 ]))
+        
+
+    def test_port_channel_interface_dot1q_tunnel(self):
+        # For failures
+        self.maxDiff = None
+
+        # Set Genie Tb
+        testbed = Testbed()
+        Genie.testbed = testbed
+
+        # Device
+        dev1 = Device(name='PE1', testbed=testbed, os='nxos')
+        intf1 = Interface(name='port-channel10', device=dev1)
+
+        # Apply configuration
+        intf1.channel_group_mode = 'active'
+        intf1.enabled = True
+        intf1.switchport_enable = True
+        intf1.switchport_mode = "dot1q-tunnel"
+        intf1.dot1q_access_vlan = '10'  # <-- You must have added support in PortchannelInterface
+        uut1_int3 = Interface(name='Ethernet0/0/1', device=dev1)
+        intf1.add_member(uut1_int3)
+
+        # Build config
+        cfgs = intf1.build_config(apply=False)
+
+        # Check config built correctly
+        self.assertMultiLineEqual(
+            str(cfgs),
+            '\n'.join([
+                'interface Ethernet0/0/1',
+                ' channel-group 10 mode active',
+                ' exit',
+                'interface port-channel10',
+                ' no shutdown',
+                ' switchport',
+                ' switchport mode dot1q-tunnel',
+                ' switchport access vlan 10',
+                ' exit'
+            ])
+        )
+
+        # Build unconfig
+        uncfgs = intf1.build_unconfig(apply=False)
+
+        self.assertMultiLineEqual(
+            str(uncfgs),
+            '\n'.join([
+                'interface Ethernet0/0/1',
+                ' no channel-group 10 mode active',
+                ' exit',
+                'no interface port-channel10'
+            ])
+        )
 
 
     def test_native_vlans(self):

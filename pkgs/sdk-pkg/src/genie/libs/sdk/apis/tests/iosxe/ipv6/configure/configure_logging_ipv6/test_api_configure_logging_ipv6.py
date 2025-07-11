@@ -10,5 +10,5 @@ class TestConfigureLoggingIpv6(TestCase):
         result = configure_logging_ipv6(self.device, '2001:db8::1', 'udp')
         self.assertEqual(
             self.device.configure.mock_calls[0].args,
-            (['logging host ipv6 2001:db8::1', 'logging host ipv6 2001:db8::1 transport udp', 'logging trap debugging'],)
+            (['logging host ipv6 2001:db8::1 transport udp', 'logging trap debugging'],)
         )

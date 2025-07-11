@@ -2830,3 +2830,28 @@ def configure_ospf_vrf_lite(device, ospf_process_id, vrf_name):
         raise SubCommandFailure(
             f"Failed to configure vrf-lite capability for OSPF process {ospf_process_id}. Error:\n{e}"
         )
+    
+def configure_ospf_retransmit_interval(device, interface, interval):
+    """Configure OSPF retransmit-interval on an interface
+
+    Args:
+        device (`obj`): Device object
+        interface (`str`): Interface name (e.g., 'TenGigabitEthernet1/1/2')
+        interval (`int`): OSPF retransmit interval in seconds
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure
+    """
+    config = [
+        f"interface {interface}",
+        f"ip ospf retransmit-interval {interval}"
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure OSPF retransmit-interval {interval} on {interface} on device {device.name}. Error: {e}"
+        )    

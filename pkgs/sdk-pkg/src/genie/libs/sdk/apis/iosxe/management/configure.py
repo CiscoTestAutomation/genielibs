@@ -498,7 +498,8 @@ def configure_management_ssh(device,
                              credentials='default',
                              username=None,
                              password=None,
-                             domain_name='cisco.com'):
+                             domain_name='cisco.com',
+                             interface=None):
     '''
     Configure device for management via ssh.
 
@@ -508,10 +509,13 @@ def configure_management_ssh(device,
         username ('str', optional): username to ssh
         password ('str', optional): password to ssh
         domain_name ('str'): domain name to ssh
+        interface: (str) Management interface to use
 
     Returns:
         None
     '''
+    management = getattr(device, 'management', {})
+
     ssh_config = []
 
     device.api.configure_management_credentials(credentials,
@@ -519,6 +523,11 @@ def configure_management_ssh(device,
 
     if domain_name:
         ssh_config.append(f'ip domain name {domain_name}')
+
+    interface = interface or management.get('interface')
+
+    if interface:
+        ssh_config.append(f'ip ssh source-interface {interface}')
 
     ssh_config.extend([
         'crypto key generate rsa',
@@ -528,6 +537,7 @@ def configure_management_ssh(device,
         [r'How many bits in the modulus \[\d+\]:\s*$', 'sendline()', None, True, False],
         [r'Do you really want to replace them\? \[yes/no\]:\s*$', 'sendline(yes)', None, True, False]
         ])
+
     device.configure(ssh_config, reply=dialog)
 
     device.api.configure_management_vty_lines(

@@ -488,13 +488,13 @@ def configure_policy_map_with_no_set_dscp(device, policy_map_name, class_map_nam
            f'class {class_map_name}',
            f'police {police_bit_rate}',
            f'no set {match_mode} {match_packets_precedence}']
-    
+
     try:
         device.configure(cli)
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            "Could not configure policy map with no dscp value"
-        ) from e 
+            f"Could not configure policy map with no dscp value: {str(e)}"
+        )
 
 def configure_policy_map_with_dscp_police(device, policy_map_name, class_map_name, policy_var, table_map_mode, table_map_name):
     """ Configure policy-map type on Device
@@ -1124,6 +1124,7 @@ def configure_policy_map_class(device,
             f"Could not configure class_map. Error:\n{e}"
         )
 
+
 def configure_policy_map_with_police_cir_percentage(device, policy_map_name, class_name=None, percent=None, action=None):
     """ Configure policy-map with police cir percentage
         Args:
@@ -1301,3 +1302,28 @@ def default_attribute_service_map(device, parameter_map=None, parameter_type=Non
         raise SubCommandFailure(
             f"Could not default attribute parameter-map {parameter_map}. Error:\n{e}"
         )
+
+def unconfigure_policy_map_shape_on_device(device, policy_map_name, class_map_name):
+    """ unconfigure policy-map shape on Device
+    Args:
+        device (`obj`): Device object
+        policy_map_name ('str'): policy-map name to configure
+        class_map_name ('str'): class map name to configure
+        
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed unconfiguring policy-map shape on device
+    """
+    log.debug("unconfiguring policy-map shape on device")
+
+    try:
+        device.configure(
+            [
+                f"policy-map type queueing {policy_map_name}",
+                f"class {class_map_name}",
+                "no shape average",
+            ]
+        )
+    except SubCommandFailure:
+        raise SubCommandFailure("Could not unconfigure policy-map shape on device")
