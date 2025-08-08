@@ -405,14 +405,41 @@ class Installimage(unittest.TestCase):
         # And we want the verify_boot_variable api to be mocked.
         # This simulates the pass case.
         self.device.reload = Mock()
-        self.device.execute = Mock()
+        # self.device.execute = Mock()
+        self.device.parse = Mock(return_value={
+                                 'location': {
+                                     'Switch 1': {
+                                         'pkg_state': {
+                                             1: {'type': 'IMG',
+                                                 'state': 'U',
+                                                 'filename_version': '17.17.01.0.207986'}},
+                                         'auto_abort_timer': 'inactive'
+                                         }}})
 
+        output = '''
+        install_commit: START Thu Jun 05 01:16:12 UTC 2025
+        --- Starting Commit ---
+        Performing Commit on all members
+        [1] Commit packages(s) on Switch 1
+        [1] Finished Commit packages(s) on Switch 1
+        Checking status of Commit on [1]
+        Commit: Passed on [1]
+        Finished Commit operation
+        SUCCESS: install_commit
+        '''
+        self.device.execute = Mock(return_value = output)
+
+        self.device.api.get_running_image = Mock()
         # Call the method to be tested (clean step inside class)
         self.cls.install_image(
             steps=steps, device=self.device, images=images
         )
         # Check that the result is expected
+
+        self.assertEqual('Check for previous uncommitted install operation', steps.details[0].name)
+        self.assertEqual("Installing image '/auto/some-location/that-this/image/stay-isr-image.bin'", steps.details[1].name)
         self.assertEqual(Passed, steps.details[0].result)
+        self.assertEqual(Passed, steps.details[1].result)
 
     def test_fail_to_install_image(self):
         # Make sure we have a unique Steps() object for result verification
@@ -447,6 +474,17 @@ class TestInstallImage(unittest.TestCase):
 
         device = Mock()
         device.reload = Mock()
+        device.parse = Mock(return_value={
+                                 'location': {
+                                     'Switch 1': {
+                                         'pkg_state': {
+                                             1: {'type': 'IMG',
+                                                 'state': 'C',
+                                                 'filename_version': '17.17.01.0.207986'}},
+                                         'auto_abort_timer': 'inactive'
+                                         }}})
+
+        device.api.get_running_image = Mock()
         cls.install_image(steps=steps, device=device, images=['sftp://server/image.bin'])
 
         expected_execute_call = [call('install add file sftp://server/image.bin activate commit prompt-level none',
@@ -473,9 +511,20 @@ class TestInstallImage(unittest.TestCase):
         cls = InstallImage()
         cls.history = MagicMock()
         device = Mock()
+        device.parse = Mock(return_value={
+                                 'location': {
+                                     'Switch 1': {
+                                         'pkg_state': {
+                                             1: {'type': 'IMG',
+                                                 'state': 'C',
+                                                 'filename_version': '17.17.01.0.207986'}},
+                                         'auto_abort_timer': 'inactive'
+                                         }}})
+
         device.api.get_running_image.return_value = 'sftp://server/image.bin'
         cls.install_image(steps=steps, device=device, images=['sftp://server/image.bin'])
-        self.assertEqual(Skipped, steps.details[0].result)
+        self.assertEqual(Passed, steps.details[0].result)
+        self.assertEqual(Skipped, steps.details[1].result)
 
     @patch('genie.libs.clean.stages.iosxe.stages.Dialog')
     def test_iosxe_install_image_grub_boot_image(self, dialog):
@@ -488,6 +537,18 @@ class TestInstallImage(unittest.TestCase):
 
         device = Mock()
         device.reload = Mock()
+        device.parse = Mock(return_value={
+                                 'location': {
+                                     'Switch 1': {
+                                         'pkg_state': {
+                                             1: {'type': 'IMG',
+                                                 'state': 'C',
+                                                 'filename_version': '17.17.01.0.207986'}},
+                                         'auto_abort_timer': 'inactive'
+                                         }}})
+
+        device.api.get_running_image = Mock()
+
         cls.install_image(steps=steps, device=device, images=['sftp://server/image.bin'],
                           reload_service_args=dict(grub_boot_image='packages.conf'))
 
@@ -518,8 +579,7 @@ class TestVerifyRunningImage(unittest.TestCase):
         self.device = create_test_device('PE1', os='iosxe', platform='cat9k')
 
     def test_iosxe_verify_running_image_skipped(self):
-        self.device.api.unconfigure_ignore_startup_config = Mock()
-        self.device.api.verify_ignore_startup_config = Mock()
+
         class MockExecute:
 
             def __init__(self, *args, **kwargs):
@@ -608,13 +668,9 @@ Configuration register is 0x1
         self.assertEqual(self.cls.history['InstallImage'].parameters['image_mapping'],
                          {'/path/asr1000-universalk9.BLD_MCP_DEV_LATEST_20110615_044519.SSA.bin':
                           'flash:/asr1000-universalk9.BLD_MCP_DEV_LATEST_20110615_044519.SSA.bin'})
-    
-        # If install image is skipped. This api should not be called.
-        self.device.api.verify_ignore_startup_config.assert_not_called()
 
     def test_iosxe_verify_running_image_passx(self):
-        self.device.api.unconfigure_ignore_startup_config = Mock()
-        self.device.api.verify_ignore_startup_config = Mock()
+
         class MockExecute:
             def __init__(self, *args, **kwargs):
                 self.data = {
@@ -688,11 +744,26 @@ Configuration register is 0x1
         self.cls.history.update({'InstallImage': self.cls.mock_value})
         self.cls.history['InstallImage'].parameters =  OrderedDict()
 
-        self.device.api.verify_ignore_startup_config.return_value = False
-
         self.cls.verify_running_image(steps=steps,
                                       device=self.device,
                                       images=['/path/asr1000-universalk9.BLD_MCP_DEV_LATEST_20110615_044520.SSA.bin']
                                       )
+
+        self.assertEqual(Passx, steps.details[0].result)
+
+
+class TestVerifyRunningImage(unittest.TestCase):
+
+    def test_iosxe_configure_and_verify_ignore_startup_config(self):
+        steps = Steps()
+        cls = InstallImage()
+        cls.history = MagicMock()
+        device = Mock()
+        device.api.unconfigure_ignore_startup_config = Mock()
+        device.api.verify_ignore_startup_config = False
+
+        cls.configure_and_verify_startup_config(steps=steps,
+                                                device=device)
+
+        self.assertEqual(Passed, steps.details[0].result)
         self.assertEqual(Passx, steps.details[1].result)
-        self.assertEqual("Verify the ignore startup config", steps.details[1].name)

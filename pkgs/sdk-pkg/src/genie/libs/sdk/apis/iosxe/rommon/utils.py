@@ -10,6 +10,7 @@ from pyats.utils.secret_strings import to_plaintext
 from unicon.core.errors import SubCommandFailure
 from unicon.eal.dialogs import Statement, Dialog
 from concurrent.futures import ThreadPoolExecutor, wait as wait_futures, ALL_COMPLETED
+from unicon.plugins.iosxe.statements import grub_prompt_handler, please_reset_handler, rommon_prompt_handler
 
 # Genie
 from genie.libs.clean.utils import print_message
@@ -98,17 +99,75 @@ def device_rommon_boot(device, golden_image=None, tftp_boot=None, error_pattern=
                          'boot recovery and neither was provided')
 
     # Timeout for device to reload
-    timeout = device.clean.get('device_recovery', {}).get('timeout', 1800)
+    timeout = device.clean.get('device_recovery', {}).get('timeout', 2000)
+
+    # Collect all connections to process
+    conn_list = getattr(device, 'subconnections', None) or [device.default]
+
+    def task(conn, cmd, timeout):
+        """
+        Sets the image to boot in the connection's context and transitions
+        the connection's state machine to 'enable' mode.
+        This function is designed to be executed concurrently for multiple connections and
+        handles the necessary steps to boot the device with that image.
+        """
+
+        # statments to handle grub menu.
+        def _grub_boot_device(spawn, session, context):
+            # '\033' == <ESC>
+            spawn.send('\033')
+            time.sleep(0.5)
+
+        grub_prompt_stmt = \
+            Statement(pattern=r'.*grub *>.*',
+                    action=_grub_boot_device,
+                    args=None,
+                    loop_continue=True,
+                    continue_timer=False)
+
+        grub_boot_stmt = \
+            Statement(pattern=r'.*Use the UP and DOWN arrow keys to select.*',
+                    action=grub_prompt_handler,
+                    args=None,
+                    loop_continue=True,
+                    continue_timer=False)
+
+        dialog = Dialog([grub_boot_stmt, grub_prompt_stmt])
+
+        # set image to boot
+        conn.context['image_to_boot'] = cmd
+        conn.context['grub_boot_image'] = cmd
+
+        # Execute config register in rommon state
+        conn.device.api.execute_set_config_register(config_register='0x0')
+        # Execute reset command, supported platforms: asr1k, isr4k
+        conn.device.api.execute_rommon_reset()
+
+        # bring rommon to enable state
+        conn.state_machine.go_to('enable',
+                            conn.spawn,
+                            timeout=timeout,
+                            context=conn.context,
+                            dialog=dialog,
+                            prompt_recovery=True)
 
     try:
-        # To boot the image from rommon
-        device.reload(image_to_boot=cmd, error_pattern=error_pattern, timeout=timeout)
+        futures = []
+        executor = ThreadPoolExecutor(max_workers=len(conn_list))
+        for conn in conn_list:
+            # Submit each connection's task to the executor.
+            futures.append(executor.submit(
+                task,
+                conn,
+                cmd,
+                timeout,
+            ))
+        wait_futures(futures, timeout=timeout, return_when=ALL_COMPLETED)
     except Exception as e:
         log.error(str(e))
         raise Exception(f"Failed to boot the device {device.name}")
     else:
         log.info(f"Successfully boot the device {device.name}")
-
 
 def send_break_boot(device, console_activity_pattern= None,
                     console_breakboot_char=None, console_breakboot_telnet_break=None,

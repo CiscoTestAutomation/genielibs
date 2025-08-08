@@ -1,40 +1,71 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
 from genie.libs.sdk.apis.iosxe.utils import perform_telnet
+from unittest.mock import Mock, call
 
-
-class TestPerformTelnet(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          SecG-A3-9410HA:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: c9600
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['SecG-A3-9410HA']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestPerformTelnet(TestCase):
 
     def test_perform_telnet(self):
-        result = perform_telnet(self.device, 'SecG-A3-9410HA', '10.8.12.26', 'admin1', 'cisco123', 'Mgmt-vrf', 'cisco123', 60)
-        expected_output = True
-        self.assertEqual(result, expected_output)
+        self.device = Mock()
+        perform_telnet(self.device, 'SecG-A3-9410HA', '10.8.12.26', 'admin1', 'cisco123', 'Mgmt-vrf', 'cisco123', 60)
+
+        self.assertEqual(
+            self.device.execute.call_args[0][0],
+            'telnet 10.8.12.26 /vrf Mgmt-vrf'
+        )
 
     def test_perform_telnet_1(self):
-        result = perform_telnet(self.device, 'SecG-A3-9410HA', '100.8.12.5', 'admin1', 'cisco123', None, 'cisco123', 60)
-        expected_output = True
-        self.assertEqual(result, expected_output)
+        self.device = Mock()
+        perform_telnet(self.device, 'SecG-A3-9410HA', '10.8.12.5', 'admin1', 'cisco123', None, 'cisco123', 60)
+
+        self.assertEqual(
+            self.device.execute.call_args[0][0],
+            'telnet 10.8.12.5'
+        )
+
+    def test_perform_telnet_authentication_failure(self):
+        device = Mock()
+        device.execute.return_value = """
+        Trying 192.168.1.47 ... Open
+
+          User Access Verification
+
+          Username: test
+          Password:
+
+          % Authentication failed
+
+          Username: test
+          Password:
+
+          % Authentication failed
+
+          Username: test
+          Password:
+
+          % Authentication failed
+        [Connection to 10.8.12.26 closed by foreign host]
+        """
+
+        result = perform_telnet(device, 'SecG-A3-9410HA', '10.8.12.26', 'admin1', 'cisco123', None, 'cisco123', 60)
+
+        self.assertEqual(
+            device.execute.call_args[0][0],
+            'telnet 10.8.12.26'
+        )
+        # Validate that the api returns False on authentication failure
+        self.assertFalse(result)
+
+    def test_perform_telnet_timeout_failure(self):
+        device = Mock()
+        device.execute.return_value = """
+        Password:
+        % Password: timeout expired!
+        """
+        result = perform_telnet(device, 'SecG-A3-9410HA', '10.8.12.26', 'admin1', 'cisco123', None, 'cisco123', 60)
+
+        self.assertEqual(
+            device.execute.call_args[0][0],
+            'telnet 10.8.12.26'
+        )
+        # Validate that the api returns False on timeout failure
+        self.assertFalse(result)

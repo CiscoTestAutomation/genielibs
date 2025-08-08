@@ -874,11 +874,12 @@ install_image:
     # Execution order of Stage steps
     # ==============================
     exec_order = [
-        'verify_running_image',
         'delete_boot_variable',
         'set_boot_variable',
+        'configure_and_verify_startup_config',
         'save_running_config',
         'verify_boot_variable',
+        'verify_running_image',
         'install_image'
     ]
 

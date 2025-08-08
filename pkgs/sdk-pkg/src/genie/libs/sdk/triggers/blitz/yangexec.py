@@ -310,7 +310,9 @@ def run_gnmi(operation: str,
              steps,
              datastore,
              rpc_data: dict,
-             returns: List[dict], **kwargs) -> Union[bool, Thread]:
+             returns: List[dict], 
+             async_: bool = False,
+             **kwargs) -> Union[bool, Thread]:
     """Form gNMI message and send to testbed.
 
     Args:
@@ -320,6 +322,7 @@ def run_gnmi(operation: str,
         datastore (_type_): _description_
         rpc_data (dict): _description_
         returns (List[dict]): Expected returns
+        async_ (bool): If True, run subscribe in async mode
 
     Returns:
         Union[bool, Thread]: For subscribe, returns a thread object for others returns a bool
@@ -383,7 +386,7 @@ def run_gnmi(operation: str,
             gmc = GnmiMessageConstructor('subscribe', rpc_data, **format)
             payload = gmc.payload
         # Returns subscribe thread and results are handled by caller
-        return GnmiMessage.run_subscribe(device, payload, **rpc_data)
+        return GnmiMessage.run_subscribe(device, payload, async_, **rpc_data)
     elif operation == 'capabilities':
         if not returns:
             log.error(banner('No gNMI data to compare to GET'))

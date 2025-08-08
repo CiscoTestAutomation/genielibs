@@ -5,7 +5,6 @@ from genie.libs.sdk.apis.iosxe.rommon.configure import configure_rommon_tftp
 
 
 class TestConfigureRommonTftp(unittest.TestCase):
-
     @classmethod
     def setUpClass(self):
         testbed = f"""
@@ -39,31 +38,35 @@ class TestConfigureRommonTftp(unittest.TestCase):
               protocol: tftp
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['ott-c9300-63']
-        self.device.connect(
-            mit=True
-        )
+        self.device = self.testbed.devices["ott-c9300-63"]
+        self.device.connect(mit=True)
 
     def tearDown(self):
         self.device.disconnect()
 
     def test_configure_rommon_tftp_1(self):
         # To test the TFTP_FILE rommon variable
-        self.device.clean.images = ['flash:/test.bin']
+        self.device.clean.images = ["flash:/test.bin"]
         result = configure_rommon_tftp(self.device)
         expected_output = None
         self.assertEqual(result, expected_output)
 
     def test_configure_rommon_tftp_2(self):
         # To test the TFTP_FILE rommon variable
-        self.device.clean.images = {'image': ['flash:/test.bin']}
+        self.device.clean.images = {"image": ["flash:/test.bin"]}
         result = configure_rommon_tftp(self.device)
         expected_output = None
         self.assertEqual(result, expected_output)
 
     def test_configure_rommon_tftp_3(self):
         # To test the TFTP_FILE rommon variable
-        self.device.clean.images = {'image': {'file': ['flash:/test.bin']}}
+        self.device.clean.images = {"image": {"file": ["flash:/test.bin"]}}
         result = configure_rommon_tftp(self.device)
+        expected_output = None
+        self.assertEqual(result, expected_output)
+
+    def test_configure_rommon_tftp_4(self):
+        self.device.clean.images = ["faulty_image.bin"]
+        result = configure_rommon_tftp(self.device, image_path="valid_image.bin")
         expected_output = None
         self.assertEqual(result, expected_output)

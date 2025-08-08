@@ -1,50 +1,26 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
 from genie.libs.sdk.apis.iosxe.bgp.configure import configure_ospf_internal_external_routes_into_bgp
+from unittest.mock import Mock
 
-
-class TestConfigureOspfInternalExternalRoutesIntoBgp(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          stack3-nyquist-1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: router
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['stack3-nyquist-1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureOspfInternalExternalRoutesIntoBgp(TestCase):
 
     def test_configure_ospf_internal_external_routes_into_bgp(self):
-        result = configure_ospf_internal_external_routes_into_bgp(self.device, 3, 3, 'green', 'ipv4', 10)
-        expected_output = None
-        self.assertEqual(result, expected_output)
-
+        self.device = Mock()
+        configure_ospf_internal_external_routes_into_bgp(self.device, 3, 3, 'green', 'ipv4', 10)
+        self.assertEqual(self.device.configure.mock_calls[0].args, (['router bgp 3', 'address-family ipv4 vrf green', 'redistribute ospf 3 match internal external 1 external 2 metric 10'],))  
+        
     def test_configure_ospf_internal_external_routes_into_bgp_1(self):
-        result = configure_ospf_internal_external_routes_into_bgp(self.device, 3, 3, None, 'ipv4', 10)
-        expected_output = None
-        self.assertEqual(result, expected_output)
-
+        self.device = Mock()
+        configure_ospf_internal_external_routes_into_bgp(self.device, 3, 3, None, 'ipv4', 10)
+        self.assertEqual(self.device.configure.mock_calls[0].args, (['router bgp 3',  'redistribute ospf 3 match internal external 1 external 2 metric 10'],))
+        
     def test_configure_ospf_internal_external_routes_into_bgp_2(self):
-        result = configure_ospf_internal_external_routes_into_bgp(self.device, 3, 3, 'green', 'ipv4', None)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.device = Mock()
+        configure_ospf_internal_external_routes_into_bgp(self.device, 3, 3, 'green', 'ipv4', None)
+        self.assertEqual(self.device.configure.mock_calls[0].args, (['router bgp 3','address-family ipv4 vrf green', 'redistribute ospf 3 match internal external 1 external 2'],))
+        
 
     def test_configure_ospf_internal_external_routes_into_bgp_3(self):
-        result = configure_ospf_internal_external_routes_into_bgp(self.device, 3, 3, None, 'ipv4', None)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.device = Mock()
+        configure_ospf_internal_external_routes_into_bgp(self.device, 3, 3, None, 'ipv4', None)
+        self.assertEqual(self.device.configure.mock_calls[0].args, ((['router bgp 3', 'redistribute ospf 3 match internal external 1 external 2'],)))

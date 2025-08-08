@@ -159,6 +159,9 @@ class SetConfigurationRegister(unittest.TestCase):
 
     def test_pass(self):
         steps = Steps()
+        self.device.default = Mock()
+        self.device.state_machine = Mock()
+        self.device.state_machine.current_state = "enable"
 
         self.cls.set_configuration_register(
             steps=steps, device=self.device, config_register='0x2102'

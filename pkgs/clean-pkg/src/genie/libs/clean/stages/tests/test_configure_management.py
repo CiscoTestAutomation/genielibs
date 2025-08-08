@@ -12,8 +12,9 @@ class TestConfigureManagement(unittest.TestCase):
 
     def setUp(self):
         self.cls = ConfigureManagement()
-        self.device = create_test_device(
-            name='aDevice', os='iosxe', alias="deviceAlias")
+        self.device = create_test_device(name='aDevice',
+                                         os='iosxe',
+                                         alias="deviceAlias")
 
     def test_configure_management(self):
         self.device.management = {
@@ -24,16 +25,25 @@ class TestConfigureManagement(unittest.TestCase):
             }
         }
         steps = Steps()
-        self.cls.configure_management(
-            device=self.device,
-            steps=steps)
+        self.cls.configure_management(device=self.device, steps=steps)
         # Check that the result is expected
         self.assertEqual(Passed, steps.details[0].result)
-        self.device.configure.assert_has_calls(
-            [call(['vrf definition Mgmt-vrf', 'address-family ipv4', 'exit-address-family', 'address-family ipv6', 'exit-address-family']),
-             call(['vrf definition Mgmt-vrf', 'address-family ipv4', 'exit-address-family', 'address-family ipv6', 'exit-address-family']),
-             call(['interface Gi0/0', 'vrf forwarding Mgmt-vrf', 'ip address 1.1.1.1 255.255.255.0', 'no shutdown'])]
-        )
+        self.device.configure.assert_has_calls([
+            call([
+                'vrf definition Mgmt-vrf', 'address-family ipv4',
+                'exit-address-family', 'address-family ipv6',
+                'exit-address-family'
+            ]),
+            call([
+                'vrf definition Mgmt-vrf', 'address-family ipv4',
+                'exit-address-family', 'address-family ipv6',
+                'exit-address-family'
+            ]),
+            call([
+                'interface Gi0/0', 'vrf forwarding Mgmt-vrf',
+                'ip address 1.1.1.1 255.255.255.0', 'no shutdown'
+            ])
+        ])
 
     def test_configure_management_2(self):
         self.device.management = {
@@ -47,27 +57,38 @@ class TestConfigureManagement(unittest.TestCase):
                 'ipv4': [{
                     'subnet': '192.168.1.0 255.255.255.0',
                     'next_hop': '172.16.1.1'
-                    }],
+                }],
             },
             'protocols': ['http'],
         }
         steps = Steps()
         self.device.execute = Mock()
-        self.cls.configure_management(
-            device=self.device,
-            steps=steps,
-            set_hostname=True
-            )
+        self.cls.configure_management(device=self.device,
+                                      steps=steps,
+                                      set_hostname=True)
         # Check that the result is expected
         self.assertEqual(Passed, steps.details[0].result)
-        self.device.configure.assert_has_calls(
-         [call('hostname aDevice'),
-          call(['vrf definition Mgmt-vrf', 'address-family ipv4', 'exit-address-family', 'address-family ipv6', 'exit-address-family']),
-          call(['vrf definition Mgmt-vrf', 'address-family ipv4', 'exit-address-family', 'address-family ipv6', 'exit-address-family']),
-          call(['interface Gi1/0', 'vrf forwarding Mgmt-vrf', 'ip address 2.2.2.2 255.255.255.0', 'no shutdown']),
-          call(['ip route vrf Mgmt-vrf 192.168.1.0 255.255.255.0 172.16.1.1']),
-          call(['ip http client source-interface Gi1/0'])]
-        )
+        self.device.configure.assert_has_calls([
+            call('hostname aDevice'),
+            call([
+                'vrf definition Mgmt-vrf', 'address-family ipv4',
+                'exit-address-family', 'address-family ipv6',
+                'exit-address-family'
+            ]),
+            call([
+                'vrf definition Mgmt-vrf', 'address-family ipv4',
+                'exit-address-family', 'address-family ipv6',
+                'exit-address-family'
+            ]),
+            call([
+                'interface Gi1/0', 'vrf forwarding Mgmt-vrf',
+                'ip address 2.2.2.2 255.255.255.0', 'no shutdown'
+            ]),
+            call([
+                'ip route vrf Mgmt-vrf 192.168.1.0 255.255.255.0 172.16.1.1'
+            ]),
+            call(['ip http client source-interface Gi1/0'])
+        ])
 
     def test_configure_management_alias_hostname(self):
         self.device.management = {
@@ -81,7 +102,7 @@ class TestConfigureManagement(unittest.TestCase):
                 'ipv4': [{
                     'subnet': '192.168.1.0 255.255.255.0',
                     'next_hop': '172.16.1.1'
-                    }],
+                }],
             },
             'protocols': ['http'],
         }
@@ -92,9 +113,118 @@ class TestConfigureManagement(unittest.TestCase):
             steps=steps,
             set_hostname=True,
             alias_as_hostname=True,
-            )
+        )
         # Check that the result is expected
         self.assertEqual(Passed, steps.details[0].result)
-        self.device.configure.assert_has_calls(
-         [call('hostname deviceAlias')]
+        self.device.configure.assert_has_calls([call('hostname deviceAlias')])
+
+    def test_configure_management_ping_gateway(self):
+        self.device.management = {
+            'interface': 'Gi1/0',
+            'vrf': 'Mgmt-vrf',
+            'dhcp_timeout': 15,
+            'address': {
+                'ipv4': '2.2.2.2/24'
+            },
+            'routes': {
+                'ipv4': [{
+                    'subnet': '192.168.1.0 255.255.255.0',
+                    'next_hop': '172.16.1.1'
+                }],
+            },
+            'gateway': {
+                'ipv4': '2.2.2.2'
+            },
+            'protocols': ['http'],
+        }
+        steps = Steps()
+        self.device.ping = Mock()
+        self.cls.ping_gateway(
+            device=self.device,
+            steps=steps,
         )
+        # Check that the result is expected
+        self.assertEqual(Passed, steps.details[0].result)
+        self.device.ping.assert_has_calls([
+            call(addr='2.2.2.2',
+                 vrf='Mgmt-vrf',
+                 source='Gi1/0',
+                 timeout=30,
+                 count=5)
+        ], )
+
+    def test_configure_management_check_management_interface_status(self):
+        self.device.management = {
+            'interface': 'Gi1/0',
+            'vrf': 'Mgmt-vrf',
+            'dhcp_timeout': 15,
+            'address': {
+                'ipv4': '2.2.2.2/24'
+            },
+            'routes': {
+                'ipv4': [{
+                    'subnet': '192.168.1.0 255.255.255.0',
+                    'next_hop': '172.16.1.1'
+                }],
+            },
+            'gateway': {
+                'ipv4': '2.2.2.2'
+            },
+            'protocols': ['http'],
+        }
+        steps = Steps()
+        self.device.parse = Mock()
+        self.device.parse = Mock(return_value={
+            'Gi1/0': {
+                'oper_status': 'up',
+                'protocol_status': 'up'
+            }
+        })
+        self.cls.check_management_interface_status(
+            device=self.device,
+            steps=steps,
+        )
+        # Check that the result is expected
+        self.assertEqual(Passed, steps.details[0].result)
+        self.device.parse.assert_has_calls([call('show interface Gi1/0')])
+
+    def test_configure_management_ping_gateway_ipv6(self):
+        self.device.management = {
+            'interface': 'Gi1/0',
+            'vrf': 'Mgmt-vrf',
+            'dhcp_timeout': 15,
+            'address': {
+                'ipv4': '2.2.2.2/24'
+            },
+            'routes': {
+                'ipv4': [{
+                    'subnet': '192.168.1.0 255.255.255.0',
+                    'next_hop': '172.16.1.1'
+                }],
+            },
+            'gateway': {
+                'ipv4': '2.2.2.2',
+                'ipv6': '1.1.1.1'
+            },
+            'protocols': ['http'],
+        }
+        steps = Steps()
+        self.device.ping = Mock()
+        self.cls.ping_gateway(
+            device=self.device,
+            steps=steps,
+        )
+        # Check that the result is expected
+        self.assertEqual(Passed, steps.details[0].result)
+        self.device.ping.assert_has_calls([
+            call(addr='2.2.2.2',
+                 vrf='Mgmt-vrf',
+                 source='Gi1/0',
+                 timeout=30,
+                 count=5),
+            call(addr='1.1.1.1',
+                 vrf='Mgmt-vrf',
+                 source='Gi1/0',
+                 timeout=30,
+                 count=5),
+        ], )

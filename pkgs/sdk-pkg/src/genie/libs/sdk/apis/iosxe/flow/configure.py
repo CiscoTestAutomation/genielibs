@@ -1833,3 +1833,94 @@ def unconfig_flow_monitor_on_vlan_interface(device, vlan_id,type,monitor_name,di
         raise SubCommandFailure(
             'Could not configure flow monitor {monitor_name} on vlan interface'.format(monitor_name=monitor_name)
         )
+
+def configure_flow_record_with_match(device, record_name, description=None, match_values=None):
+    """ Config Flow record with match values on Device
+        Args:
+            device ('obj'): Device object
+            record_name ('str'): Flow record name
+            description ('str',optional): Description
+            match_values (list of str, optional): List of match fields in hierarchy
+            e.g. ['connection', 'client', 'ipv4', 'address']
+
+        Return:
+            None
+
+        Raise:
+            SubCommandFailure: Failed configuring flow record with match values
+    """
+    log.debug("Configure Flow record with match values on Device")
+    cmd = []
+    cmd.append(f"flow record {record_name}")
+    if description:
+        cmd.append(f"description {description}") 
+    if match_values:
+        if not isinstance(match_values, list):
+            raise ValueError("match_values must be a list.")
+        elif isinstance(match_values, list):
+            match_cmd = "match " + " ".join(match_values)
+            cmd.append(match_cmd) 
+    try:
+        device.configure(cmd)
+    except SubCommandFailure:
+            raise SubCommandFailure(
+               f'Could not configure flow record {record_name} with match values'
+            )
+
+def configure_flow_record_with_collect(device, record_name, description=None, collect_values=None):
+    """ Config Flow record with collect values on Device
+        Args:
+            device ('obj'): Device object
+            record_name ('str'): Flow record name
+            description ('str',optional): Description
+            collect_values (list of list or list of str, optional): Each element is a collect command token list or string.
+            Examples:
+                ["counter", "bytes", "long"]
+                ["connection", "server", "counter", "packets", "long"]
+                "flow direction"
+
+        Return:
+            None
+
+        Raise:
+            SubCommandFailure: Failed configuring flow record with collect values
+    """
+    log.debug("Configure Flow record with collect values on Device")
+    cmd = []
+    cmd.append(f"flow record {record_name}")
+    if description:
+        cmd.append(f"description {description}")
+    if not isinstance(collect_values, list):
+        raise ValueError("collect_values must be a list.")
+    elif isinstance(collect_values, list):
+        collect_cmd = "collect " + " ".join(collect_values)
+        cmd.append(collect_cmd) 
+    try:
+        device.configure(cmd)
+    except SubCommandFailure:
+            raise SubCommandFailure(
+               f'Could not configure flow record {record_name} with collect values'
+            )
+
+def unconfigure_flow_record_from_monitor(device, monitor_name, record_name):
+    """ Unconfigure Flow record from Flow Monitor
+        Args:
+            device (`obj`): Device object
+            monitor_name (`str`): Flow monitor name
+            record_name (`str`): Flow record name
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed unconfiguring flow record
+    """
+    log.debug(f"Unconfiguring flow record {record_name} from flow monitor {monitor_name} on device {device.name}")
+    cmd = [
+        f"flow monitor {monitor_name}",
+        f"no record {record_name}",
+    ]
+        
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not unconfigure flow record {record_name}. Error:\n{e}')
+

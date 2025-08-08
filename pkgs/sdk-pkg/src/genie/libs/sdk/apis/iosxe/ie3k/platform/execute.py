@@ -14,6 +14,7 @@ from genie.utils import Dq
 from genie.harness.utils import connect_device
 from genie.utils.timeout import Timeout
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
+from typing import Optional
 
 # Unicon
 from unicon.eal.dialogs import Statement, Dialog
@@ -427,3 +428,102 @@ def execute_copy_noverify(device, source, dest, timeout=300, file_name=None):
             f"Failed to execute copy noverify on {device.name}. Error:\n{e}"
         )
 
+def simulate_format_sdflash(device, timeout=300):
+    """
+    Simulate the process of formatting SD flash, including handling prompts.
+
+    Args:
+        device (object): The device object to execute the format command.
+        timeout (int, optional): Maximum time to wait for the operation to complete. Defaults to 300 seconds.
+
+    Returns:
+        str: The simulated output of the command execution or an error message.
+
+    """
+    # Hardcoded values for command, prompt, and success message
+    command = "format sdflash:"
+    prompt = "Format operation will destroy all data in \"sdflash:\".  Continue? [confirm]"
+    success_message = "Format of sdflash: complete"
+
+    log.info(f"Simulating execution of command: {command}")
+
+    try:
+        # Define the dialog logic to handle the provided prompt
+        format_confirm = Statement(
+            pattern=rf".*{prompt}",
+            action='sendline()',  # Simulates pressing Enter to confirm
+            loop_continue=True,
+            continue_timer=False
+        )
+        dialog = Dialog([format_confirm])
+
+        # Execute the command and handle the dialog
+        output = device.execute(command, reply=dialog, timeout=timeout)
+
+        # Simulated output (used for comparison and success validation)
+        simulated_output = f"Executing: {command}\n{prompt}\n{success_message}"
+
+        # Check if the success message is in the simulated output
+        if success_message in simulated_output:
+            log.info("Simulated command executed successfully!")
+            return simulated_output
+        else:
+            log.info(f"Success message not found. Simulated output:\n{simulated_output}")
+            return f"Error: Success message not found in simulated output."
+    except Exception as e:
+        log.info(f"An error occurred during the simulation: {e}")
+        return f"Error: {e}"
+
+def simulate_partition_sdflash(device, timeout=300, max_retries=3):
+    """
+    Simulate the process of partitioning SD flash, including handling prompts.
+
+    Args:
+        device (object): The device object to execute the partition command.
+        timeout (int, optional): Maximum time to wait for the operation to complete. Defaults to 300 seconds.
+        max_retries (int, optional): The maximum number of retries for the command. Defaults to 3.
+
+    Returns:
+        str: The simulated output of the command execution or an error message.
+    """
+    # Hardcoded values for command, prompt, success message, and confirmation input
+    command = "partition sdflash: iox"
+    prompt = "remove all configuration files! Continue? [confirm]"
+    success_message = "Partition of sdflash: complete"
+    confirm_input = "confirm"
+
+    log.info(f"Simulating execution of command: {command}")
+
+    try:
+        # Define the dialog logic to handle the provided prompt
+        partition_confirm = Statement(
+            pattern=rf".*{prompt}",
+            action=f'sendline("{confirm_input}")',  # Simulate pressing Enter to confirm
+            loop_continue=True,
+            continue_timer=False
+        )
+        dialog = Dialog([partition_confirm])
+
+        # Retry mechanism
+        for attempt in range(1, max_retries + 1):
+            log.info(f"Attempt {attempt} to simulate command execution.")
+
+            # Execute the command and handle the dialog
+            output = device.execute(command, reply=dialog, timeout=timeout)
+
+            # Simulated output (used for comparison and success validation)
+            simulated_output = f"Executing: {command}\n{prompt}\n{success_message}"
+
+            # Check if the success message is in the simulated output
+            if success_message in simulated_output:
+                log.info("Simulated command executed successfully!")
+                return simulated_output
+            else:
+                log.info(f"Success message not found in output on attempt {attempt}.")
+        
+        # If all retries fail
+        log.info(f"Command simulation failed after {max_retries} attempts.")
+        return f"Error: Command simulation failed after {max_retries} attempts."
+    except Exception as e:
+        log.info(f"An error occurred during the simulation: {e}")
+        return f"Error: {e}"

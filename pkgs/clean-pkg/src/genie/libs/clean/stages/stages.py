@@ -11,12 +11,9 @@ from typing import List
 # Genie
 from genie.utils.timeout import Timeout
 from genie.libs.clean import BaseStage
-from genie.libs.clean.utils import (
-    _apply_configuration,
-    find_clean_variable,
-    verify_num_images_provided,
-    remove_string_from_image,
-    raise_)
+from genie.libs.clean.utils import (_apply_configuration, find_clean_variable,
+                                    verify_num_images_provided,
+                                    remove_string_from_image, raise_)
 from genie.metaparser.util.schemaengine import Optional, Required, Any, Or, ListOf
 
 # pyATS
@@ -68,29 +65,46 @@ connect:
     # Stage Schema
     # ============
     schema = {
-        Optional('via', description="Which connection to use from the testbed file. Uses the default connection if not specified."): str,
-        Optional('alias', description="Which connection alias to use."): str,
-        Optional('timeout', description=f"The timeout for the connection to complete in seconds. Defaults to {TIMEOUT}.", default=TIMEOUT): Or(str, int),
-        Optional('retry_timeout', description=f"Overall timeout for retry mechanism in seconds. Defaults to {RETRY_TIMEOUT} which means no retry.", default=RETRY_TIMEOUT): Or(str, int, float),
-        Optional('retry_interval', description=f"Interval for retry mechanism in seconds. Defaults to {RETRY_INTERVAL} which means no retry.", default=RETRY_INTERVAL): Or(str, int, float),
+        Optional('via',
+                 description="Which connection to use from the testbed file. Uses the default connection if not specified."):
+        str,
+        Optional('alias', description="Which connection alias to use."):
+        str,
+        Optional('timeout',
+                 description=f"The timeout for the connection to complete in seconds. Defaults to {TIMEOUT}.",
+                 default=TIMEOUT):
+        Or(str, int),
+        Optional('retry_timeout',
+                 description=f"Overall timeout for retry mechanism in seconds. Defaults to {RETRY_TIMEOUT} which means no retry.",
+                 default=RETRY_TIMEOUT):
+        Or(str, int, float),
+        Optional('retry_interval',
+                 description=f"Interval for retry mechanism in seconds. Defaults to {RETRY_INTERVAL} which means no retry.",
+                 default=RETRY_INTERVAL):
+        Or(str, int, float),
     }
 
     # ==============================
     # Execution order of Stage steps
     # ==============================
-    exec_order = [
-        'connect'
-    ]
+    exec_order = ['connect']
 
-    def connect(self, steps, device, via=VIA, alias=ALIAS, timeout=TIMEOUT,
-                retry_timeout=RETRY_TIMEOUT, retry_interval=RETRY_INTERVAL):
+    def connect(self,
+                steps,
+                device,
+                via=VIA,
+                alias=ALIAS,
+                timeout=TIMEOUT,
+                retry_timeout=RETRY_TIMEOUT,
+                retry_interval=RETRY_INTERVAL):
 
         with steps.start("Connecting to the device") as step:
 
             log.info('Checking connection to device: %s' % device.name)
 
             # Create a timeout that will loop
-            retry_timeout = Timeout(float(retry_timeout), float(retry_interval))
+            retry_timeout = Timeout(float(retry_timeout),
+                                    float(retry_interval))
             retry_timeout.one_more_time = True
             # Without this we see 'Performing the last attempt' even if retry
             # is not being used.
@@ -180,12 +194,16 @@ ping_server:
     # ==============================
     # Execution order of Stage steps
     # ==============================
-    exec_order = [
-        'ping_server'
-    ]
+    exec_order = ['ping_server']
 
-    def ping_server(self, steps, device, server, vrf=VRF, timeout=TIMEOUT,
-                    min_success_rate=MIN_SUCCESS_RATE, max_attempts=MAX_ATTEMPTS,
+    def ping_server(self,
+                    steps,
+                    device,
+                    server,
+                    vrf=VRF,
+                    timeout=TIMEOUT,
+                    min_success_rate=MIN_SUCCESS_RATE,
+                    max_attempts=MAX_ATTEMPTS,
                     interval=INTERVAL):
         with steps.start("Pinging server") as step:
 
@@ -222,14 +240,17 @@ ping_server:
                     else:
                         output = device.ping(server, timeout=timeout)
                 except SubCommandFailure as err:
-                    if 'Requested protocol was not running during ping' in str(err):
-                        step.failed('No IP routing (or other relevant protocol) '
-                                    'configured, not retrying')
+                    if 'Requested protocol was not running during ping' in str(
+                            err):
+                        step.failed(
+                            'No IP routing (or other relevant protocol) '
+                            'configured, not retrying')
                     else:
                         # Success rate is 0%
-                        log.warning(f"Unable to meet minimum ping success rate "
-                                    f"of {min_success_rate}. Retrying after "
-                                    f"{interval} seconds.")
+                        log.warning(
+                            f"Unable to meet minimum ping success rate "
+                            f"of {min_success_rate}. Retrying after "
+                            f"{interval} seconds.")
 
                         time.sleep(interval)
                         continue
@@ -272,8 +293,9 @@ ping_server:
                 time.sleep(interval)
 
             else:
-                step.failed(f"'{server}' is not reachable after {max_attempts} "
-                            f"attempts.")
+                step.failed(
+                    f"'{server}' is not reachable after {max_attempts} "
+                    f"attempts.")
 
 
 class CopyToLinux(BaseStage):
@@ -402,13 +424,18 @@ copy_to_linux:
     # ==============================
     # Execution order of Stage steps
     # ==============================
-    exec_order = [
-        'copy_to_linux'
-    ]
+    exec_order = ['copy_to_linux']
 
-    def copy_to_linux(self, steps, device, origin, destination, protocol=PROTOCOL,
-                      timeout=TIMEOUT, check_image_length=CHECK_IMAGE_LENGTH,
-                      overwrite=OVERWRITE, append_hostname=APPEND_HOSTNAME,
+    def copy_to_linux(self,
+                      steps,
+                      device,
+                      origin,
+                      destination,
+                      protocol=PROTOCOL,
+                      timeout=TIMEOUT,
+                      check_image_length=CHECK_IMAGE_LENGTH,
+                      overwrite=OVERWRITE,
+                      append_hostname=APPEND_HOSTNAME,
                       image_length_limit=IMAGE_LENGTH_LIMIT,
                       copy_attempts=COPY_ATTEMPTS,
                       copy_attempts_sleep=COPY_ATTEMPTS_SLEEP,
@@ -463,12 +490,13 @@ copy_to_linux:
         dest_dir = destination['directory']
 
         files_to_copy = {}
-        with steps.start(
-                "Collecting file info on origin and '{d}' "
-                "before copy".format(d=destination_hostname or dest_dir)) as step:
+        with steps.start("Collecting file info on origin and '{d}' "
+                         "before copy".format(
+                             d=destination_hostname or dest_dir)) as step:
             file_size = -1
             for index, file in enumerate(origin_path):
-                with step.start("Collecting '{f}' info".format(f=file)) as substep:
+                with step.start(
+                        "Collecting '{f}' info".format(f=file)) as substep:
                     # file to copy is remote
                     if server_from:
                         try:
@@ -487,8 +515,8 @@ copy_to_linux:
                                 .format(file, server_from))
                         except Exception as e:
                             log.warning(
-                                "Could not verify the size for file '{}'.\nError: {}".format(
-                                    file, e))
+                                "Could not verify the size for file '{}'.\nError: {}"
+                                .format(file, e))
 
                     # file to copy is local
                     else:
@@ -499,11 +527,12 @@ copy_to_linux:
                                         "Terminating clean".format(file))
                         except Exception as e:
                             log.warning(
-                                "Could not verify the size for file '{}' due to {}".format(
-                                    file, e))
+                                "Could not verify the size for file '{}' due to {}"
+                                .format(file, e))
 
                     if rename_images:
-                        new_filename = rename_images + '_' + str(index) if index else rename_images
+                        new_filename = rename_images + '_' + str(
+                            index) if index else rename_images
 
                     else:
                         new_filename = None
@@ -522,8 +551,8 @@ copy_to_linux:
                     except Exception as e:
                         log.exception('Cannot change filename')
                         step.failed(
-                            "Can not change file name. Terminating clean:\n{e}".
-                            format(e=e))
+                            "Can not change file name. Terminating clean:\n{e}"
+                            .format(e=e))
 
                     file_path = os.path.join(dest_dir, new_name)
 
@@ -543,8 +572,8 @@ copy_to_linux:
                             log.error(
                                 "Unable to verify if file '{}' already exists"
                                 " at {}\n{}".format(
-                                    file_path, destination_hostname or dest_dir,
-                                    str(e)))
+                                    file_path, destination_hostname
+                                    or dest_dir, str(e)))
                     else:
                         exist = False
 
@@ -578,8 +607,8 @@ copy_to_linux:
 
                 for file, file_data in files_to_copy.items():
 
-                    with step.start(
-                            "Verify stability of '{f}'".format(f=file)) as substep:
+                    with step.start("Verify stability of '{f}'".format(
+                            f=file)) as substep:
 
                         try:
                             stable = device.api.verify_file_size_stable_on_server(
@@ -622,8 +651,8 @@ copy_to_linux:
             except Exception as e:
                 step.skipped(str(e))
 
-        with steps.start("Copying the files to {}".format(destination_hostname
-                                                          or dest_dir)) as step:
+        with steps.start("Copying the files to {}".format(
+                destination_hostname or dest_dir)) as step:
             for file, file_data in files_to_copy.items():
                 with step.start("Copying '{}'".format(file)) as substep:
                     if not overwrite and file_data['exist']:
@@ -638,7 +667,8 @@ copy_to_linux:
                                 server_from_obj.api.copy_from_device(
                                     remote_path=file_data['dest_path'],
                                     local_path=file,
-                                    server=fu.get_hostname(destination_hostname),
+                                    server=fu.get_hostname(
+                                        destination_hostname),
                                     protocol=protocol,
                                     timeout=timeout,
                                     quiet=True)
@@ -647,7 +677,8 @@ copy_to_linux:
                                     testbed=device.testbed,
                                     remote_path=file_data['dest_path'],
                                     local_path=file,
-                                    server=fu.get_hostname(destination_hostname),
+                                    server=fu.get_hostname(
+                                        destination_hostname),
                                     protocol=protocol,
                                     timeout=timeout,
                                     fu_session=fu,
@@ -665,8 +696,9 @@ copy_to_linux:
                                         d=destination_hostname,
                                         e=e,
                                         iteration=i + 1))
-                                log.info("Sleeping for {} seconds before retrying"
-                                         .format(copy_attempts_sleep))
+                                log.info(
+                                    "Sleeping for {} seconds before retrying".
+                                    format(copy_attempts_sleep))
                                 time.sleep(copy_attempts_sleep)
                             else:
                                 substep.failed("Could not copy '{file}' to '{d}'\n{e}"\
@@ -679,11 +711,13 @@ copy_to_linux:
 
                     # save the file copied name and size info for future use
                     history = self.history[
-                        'CopyToLinux'].parameters.setdefault('files_copied', {})
+                        'CopyToLinux'].parameters.setdefault(
+                            'files_copied', {})
                     history.update({file: file_data})
 
         # verify file copied section below
-        with steps.start("Verify the files have been copied correctly") as step:
+        with steps.start(
+                "Verify the files have been copied correctly") as step:
             if protocol.lower() in ['tftp', 'scp']:
                 step.skipped(
                     'tftp protocol does not support check file size, skipping this step.'
@@ -691,7 +725,8 @@ copy_to_linux:
 
             if 'files_copied' not in self.history['CopyToLinux'].parameters:
                 step.skipped(
-                    'No files was copied in previous steps, skipping this step.')
+                    'No files was copied in previous steps, skipping this step.'
+                )
 
             for name, image_data in self.history['CopyToLinux'].parameters[
                     'files_copied'].items():
@@ -706,17 +741,19 @@ copy_to_linux:
                                 size=image_data['size'],
                                 timeout=timeout,
                                 fu_session=fu):
-                            step.failed("File size is not the same on the origin"
-                                        " and on the file server")
+                            step.failed(
+                                "File size is not the same on the origin"
+                                " and on the file server")
                         else:
                             step.passed("File size is the same on the origin "
-                                           "and on the file server")
+                                        "and on the file server")
                     except Exception as e:
                         step.failed("Failed to verify file. Error: {}".format(
                             str(e)))
                 else:
                     step.skipped("File has been copied correctly but cannot "
                                  "verify file size")
+
 
 class CopyToDevice(BaseStage):
     """This stage will copy an image to a device from a networked location.
@@ -851,46 +888,124 @@ copy_to_device:
     # ============
     schema = {
         'origin': {
-            Optional('files', description="Image files location on the server."): list,
-            Optional('hostname', description="Hostname or address of the server."): str
+            Optional('files',
+                     description="Image files location on the server."):
+            list,
+            Optional('hostname',
+                     description="Hostname or address of the server."):
+            str
         },
         'destination': {
-            Required('directory', description="Directory on the device to copy the images to."): str,
-            Optional('standby_directory', description="Standby directory on the device to copy the images to"): str,
-            Optional('stack_directory', description="Stack directories on the device to copy the images to"): list
+            Required('directory',
+                     description="Directory on the device to copy the images to."):
+            str,
+            Optional('standby_directory',
+                     description="Standby directory on the device to copy the images to"):
+            str,
+            Optional('stack_directory',
+                     description="Stack directories on the device to copy the images to"):
+            list
         },
-        Optional('protocol', description="Protocol used for copy operation.", default=PROTOCOL): str,
-        Optional('connection_alias', description='Connection alias to use', default='default'): str,
-        Optional('verify_num_images', description="Verify number of images provided by user for clean is correct.", default=VERIFY_NUM_IMAGES): bool,
-        Optional('expected_num_images', description="Number of images expected to be provided by user for clean.", default=EXPECTED_NUM_IMAGES): int,
-        Optional('vrf', description="Vrf used to copy. Defaults to an empty string.", default=VRF): str,
-        Optional('timeout', description="Copy operation timeout in seconds.", default=TIMEOUT): int,
-        Optional('compact', description="Compact copy mode if supported by the device.", default=COMPACT): bool,
-        Optional('use_kstack', description="Use faster version of copy with limited options.", default=USE_KSTACK): bool,
-        Optional('protected_files', description="File patterns that should not be deleted.", default=PROTECTED_FILES): list,
-        Optional('overwrite', description="Overwrite the file if a file with the same name already exists.", default=OVERWRITE): bool,
-        Optional('skip_deletion', description="Do not delete any files even if there isn't any space on device.", default=SKIP_DELETION): bool,
-        Optional('copy_attempts', description="Number of times to attempt copying image files.", default=COPY_ATTEMPTS): int,
-        Optional('copy_attempts_sleep', description="Number of seconds to sleep between copy_attempts.", default=COPY_ATTEMPTS_SLEEP): int,
-        Optional('check_file_stability', description="Verifies that the file size is not changing. This ensures the image is not actively being copied.", default=CHECK_FILE_STABILITY): bool,
-        Optional('stability_check_tries', description="Max number of checks that can be done when checking file stability.", default=STABILITY_CHECK_TRIES): int,
-        Optional('stability_check_delay', description="Delay between tries when checking file stability in seconds.", default=STABILITY_CHECK_DELAY): int,
-        Optional('min_free_space_percent', description="Percentage of total disk space that must be free. If specified the percentage is not free then the stage will attempt to delete unprotected files to reach the minimum percentage.", default=MIN_FREE_SPACE_PERCENT): int,
-        Optional('interface', description="The interface to use for file transfers, may be needed for copying files on some IOSXE platforms, such as ASR1K when using a VRF.", default=INTERFACE): str,
-        Optional('unique_file_name', description="Appends a random six-digit number to the end of the image name.", default=UNIQUE_FILE_NAME): bool,
-        Optional('unique_number', description="Appends the provided number to the end of the image name. Requires unique_file_name is True to be applied.", default=UNIQUE_NUMBER): int,
-        Optional('rename_images', description="Rename the image to the provided name. If multiple files exist then an incrementing number is also appended.", default=RENAME_IMAGES): str,
-        Optional('prompt_recovery', description="Enable the prompt recovery when the  execution command timeout.", default=PROMPT_RECOVERY): bool
+        Optional('protocol',
+                 description="Protocol used for copy operation.",
+                 default=PROTOCOL):
+        str,
+        Optional('connection_alias',
+                 description='Connection alias to use',
+                 default='default'):
+        str,
+        Optional('verify_num_images',
+                 description="Verify number of images provided by user for clean is correct.",
+                 default=VERIFY_NUM_IMAGES):
+        bool,
+        Optional('expected_num_images',
+                 description="Number of images expected to be provided by user for clean.",
+                 default=EXPECTED_NUM_IMAGES):
+        int,
+        Optional('vrf',
+                 description="Vrf used to copy. Defaults to an empty string.",
+                 default=VRF):
+        str,
+        Optional('timeout',
+                 description="Copy operation timeout in seconds.",
+                 default=TIMEOUT):
+        int,
+        Optional('compact',
+                 description="Compact copy mode if supported by the device.",
+                 default=COMPACT):
+        bool,
+        Optional('use_kstack',
+                 description="Use faster version of copy with limited options.",
+                 default=USE_KSTACK):
+        bool,
+        Optional('protected_files',
+                 description="File patterns that should not be deleted.",
+                 default=PROTECTED_FILES):
+        list,
+        Optional('overwrite',
+                 description="Overwrite the file if a file with the same name already exists.",
+                 default=OVERWRITE):
+        bool,
+        Optional('skip_deletion',
+                 description="Do not delete any files even if there isn't any space on device.",
+                 default=SKIP_DELETION):
+        bool,
+        Optional('copy_attempts',
+                 description="Number of times to attempt copying image files.",
+                 default=COPY_ATTEMPTS):
+        int,
+        Optional('copy_attempts_sleep',
+                 description="Number of seconds to sleep between copy_attempts.",
+                 default=COPY_ATTEMPTS_SLEEP):
+        int,
+        Optional('check_file_stability',
+                 description="Verifies that the file size is not changing. This ensures the image is not actively being copied.",
+                 default=CHECK_FILE_STABILITY):
+        bool,
+        Optional('stability_check_tries',
+                 description="Max number of checks that can be done when checking file stability.",
+                 default=STABILITY_CHECK_TRIES):
+        int,
+        Optional('stability_check_delay',
+                 description="Delay between tries when checking file stability in seconds.",
+                 default=STABILITY_CHECK_DELAY):
+        int,
+        Optional('min_free_space_percent',
+                 description="Percentage of total disk space that must be free. If specified the percentage is not free then the stage will attempt to delete unprotected files to reach the minimum percentage.",
+                 default=MIN_FREE_SPACE_PERCENT):
+        int,
+        Optional('interface',
+                 description="The interface to use for file transfers, may be needed for copying files on some IOSXE platforms, such as ASR1K when using a VRF.",
+                 default=INTERFACE):
+        str,
+        Optional('unique_file_name',
+                 description="Appends a random six-digit number to the end of the image name.",
+                 default=UNIQUE_FILE_NAME):
+        bool,
+        Optional('unique_number',
+                 description="Appends the provided number to the end of the image name. Requires unique_file_name is True to be applied.",
+                 default=UNIQUE_NUMBER):
+        int,
+        Optional('rename_images',
+                 description="Rename the image to the provided name. If multiple files exist then an incrementing number is also appended.",
+                 default=RENAME_IMAGES):
+        str,
+        Optional('prompt_recovery',
+                 description="Enable the prompt recovery when the  execution command timeout.",
+                 default=PROMPT_RECOVERY):
+        bool
     }
 
     # ==============================
     # Execution order of Stage steps
     # ==============================
-    exec_order = [
-        'copy_to_device'
-    ]
+    exec_order = ['copy_to_device']
 
-    def copy_to_device(self, steps, device, origin, destination,
+    def copy_to_device(self,
+                       steps,
+                       device,
+                       origin,
+                       destination,
                        protocol=PROTOCOL,
                        connection_alias=CONNECTION_ALIAS,
                        verify_num_images=VERIFY_NUM_IMAGES,
@@ -913,16 +1028,15 @@ copy_to_device:
                        unique_number=UNIQUE_NUMBER,
                        rename_images=RENAME_IMAGES,
                        prompt_recovery=PROMPT_RECOVERY,
-                       **kwargs
-                       ):
-        log.info("Section steps:\n1- Verify correct number of images provided"
-                 "\n2- Get filesize of image files"
-                 "\n3- Check if image files already exist on device"
-                 "\n4- (Optional) Verify stability of image files"
-                 "\n5- Verify free space on device else delete unprotected files"
-                 "\n6- Copy image files to device"
-                 "\n7- Verify copied image files are present on device")
-
+                       **kwargs):
+        log.info(
+            "Section steps:\n1- Verify correct number of images provided"
+            "\n2- Get filesize of image files"
+            "\n3- Check if image files already exist on device"
+            "\n4- (Optional) Verify stability of image files"
+            "\n5- Verify free space on device else delete unprotected files"
+            "\n6- Copy image files to device"
+            "\n7- Verify copied image files are present on device")
 
         if connection_alias:
             log.info(f'Using connection alias {connection_alias}')
@@ -947,9 +1061,10 @@ copy_to_device:
                         "Server '{}' was provided in the clean yaml file but "
                         "doesn't exist in the testbed file.\n".format(server))
 
-                string_to_remove = file_utils.get_server_block(server).get('path', '')
+                string_to_remove = file_utils.get_server_block(server).get(
+                    'path', '')
                 image_files = remove_string_from_image(images=origin['files'],
-                                                    string=string_to_remove)
+                                                       string=string_to_remove)
 
             # Set active node destination directory
             destination_act = destination['directory']
@@ -970,14 +1085,16 @@ copy_to_device:
             # Check image files provided
             if verify_num_images:
                 # Verify correct number of images provided
-                with steps.start("Verify correct number of images provided") as step:
+                with steps.start(
+                        "Verify correct number of images provided") as step:
                     if not verify_num_images_provided(
                             image_list=image_files,
                             expected_images=expected_num_images):
                         step.failed(
                             "Incorrect number of images provided. Please "
                             "provide {} expected image(s) under destination"
-                            ".path in clean yaml file.\n".format(expected_num_images))
+                            ".path in clean yaml file.\n".format(
+                                expected_num_images))
                     else:
                         step.passed("Correct number of images provided")
 
@@ -1009,8 +1126,8 @@ copy_to_device:
                                 fu_session=file_utils)
                         except FileNotFoundError:
                             step.failed(
-                                "Can not find file {} on server {}. Terminating clean".
-                                format(file, server))
+                                "Can not find file {} on server {}. Terminating clean"
+                                .format(file, server))
                         except Exception as e:
                             log.warning(str(e))
                             # Something went wrong, set file_size to -1
@@ -1032,8 +1149,10 @@ copy_to_device:
                     # Check if file with same name and size exists on device
                     dest_file_path = os.path.join(dest, os.path.basename(file))
                     image_mapping = self.history[
-                        'CopyToDevice'].parameters.setdefault('image_mapping', {})
-                    image_mapping.update({origin['files'][index]: dest_file_path})
+                        'CopyToDevice'].parameters.setdefault(
+                            'image_mapping', {})
+                    image_mapping.update(
+                        {origin['files'][index]: dest_file_path})
                     with steps.start("Check if file '{}' exists on device {} {}".\
                                     format(dest_file_path, device.name, dest)) as step:
                         # Execute 'dir' before copying image files
@@ -1047,13 +1166,14 @@ copy_to_device:
                                 dir_output=dir_before)
                         except Exception as e:
                             exist = False
-                            log.warning("Unable to check if image '{}' exists on device {} {}."
-                                        "Error: {}".format(dest_file_path,
-                                                        device.name,
-                                                        dest,
-                                                        str(e)))
+                            log.warning(
+                                "Unable to check if image '{}' exists on device {} {}."
+                                "Error: {}".format(dest_file_path, device.name,
+                                                   dest, str(e)))
 
-                        if (not exist) or (exist and overwrite) or (exist and (unique_file_name or unique_number or rename_images)):
+                        if (not exist) or (exist and overwrite) or (
+                                exist and (unique_file_name or unique_number
+                                           or rename_images)):
                             # Update list of files to copy
                             file_copy_info = {
                                 file: {
@@ -1069,7 +1189,8 @@ copy_to_device:
                         else:
                             step.passed(
                                 "Image '{}' already exists on device {} {}, "
-                                "skipping copy".format(file, device.name, dest))
+                                "skipping copy".format(file, device.name,
+                                                       dest))
 
                     # Check if any file copy is in progress
                     if check_file_stability:
@@ -1092,7 +1213,8 @@ copy_to_device:
                                             "stable\n".format(file), )
                                     else:
                                         step.passed(
-                                            "Size of file '{}' is stable".format(file))
+                                            "Size of file '{}' is stable".
+                                            format(file))
                                 except NotImplementedError:
                                     # cannot check using tftp
                                     step.passx(
@@ -1146,7 +1268,8 @@ copy_to_device:
                                         required_size=total_size,
                                         skip_deletion=skip_deletion,
                                         protected_files=protected_files,
-                                        min_free_space_percent=min_free_space_percent,
+                                        min_free_space_percent=
+                                        min_free_space_percent,
                                         dir_output=dir_before,
                                         allow_deletion_failure=True)
                                     if not free_space:
@@ -1156,15 +1279,17 @@ copy_to_device:
                                     else:
                                         step.passed(
                                             "Device {} {} has sufficient space to "
-                                            "copy images".format(device.name, dest))
+                                            "copy images".format(
+                                                device.name, dest))
                                 except Exception as e:
                                     log.error(str(e))
                                     step.failed("Error while creating free space for "
                                                 "image on device {} {}".\
                                                 format(device.name, dest))
                             else:
-                                step.skipped(f"Skip verifying free space on the device '{device.name}'"
-                                             " because skip_deletion is set to True")
+                                step.skipped(
+                                    f"Skip verifying free space on the device '{device.name}'"
+                                    " because skip_deletion is set to True")
 
                     # Copy the file to the devices
                     for file, file_data in files_to_copy.items():
@@ -1172,7 +1297,9 @@ copy_to_device:
                                         format(file, device.name, dest)) as step:
 
                             # Copy file unless overwrite is False
-                            if not overwrite and file_data['exist'] and not (unique_file_name or unique_number or rename_images):
+                            if not overwrite and file_data['exist'] and not (
+                                    unique_file_name or unique_number
+                                    or rename_images):
                                 step.skipped(
                                     "File with the same name size exists on "
                                     "the device {} {}, skipped copying".format(
@@ -1183,7 +1310,8 @@ copy_to_device:
 
                                     log.info('renaming files for copying')
                                     if rename_images:
-                                        rename_images = rename_images + '_' + str(index)
+                                        rename_images = rename_images + '_' + str(
+                                            index)
 
                                     try:
                                         new_name = device.api.modify_filename(
@@ -1196,16 +1324,26 @@ copy_to_device:
                                             new_name=rename_images)
                                     except Exception as e:
                                         step.failed(
-                                            "Can not change file name. Terminating clean:\n{e}".format(e=e))
+                                            "Can not change file name. Terminating clean:\n{e}"
+                                            .format(e=e))
 
-                                    log.info(f'Renamed {os.path.basename(file)} to {new_name}')
+                                    log.info(
+                                        f'Renamed {os.path.basename(file)} to {new_name}'
+                                    )
 
-                                    renamed_local_path = os.path.join(dest, new_name)
+                                    renamed_local_path = os.path.join(
+                                        dest, new_name)
 
-                                    renamed_file_data = {x: y for x,y in file_data.items()}
-                                    renamed_file_data['dest_path'] = renamed_local_path
+                                    renamed_file_data = {
+                                        x: y
+                                        for x, y in file_data.items()
+                                    }
+                                    renamed_file_data[
+                                        'dest_path'] = renamed_local_path
 
-                                    self.history['CopyToDevice'].parameters['image_mapping'][file] = renamed_local_path
+                                    self.history['CopyToDevice'].parameters[
+                                        'image_mapping'][
+                                            file] = renamed_local_path
 
                                     try:
                                         res = device.api.\
@@ -1222,22 +1360,25 @@ copy_to_device:
                                                         prompt_recovery=prompt_recovery,
                                                         **kwargs)
                                         if not res:
-                                            raise Exception('Failed to copy file to device')
+                                            raise Exception(
+                                                'Failed to copy file to device'
+                                            )
                                     except Exception as e:
                                         # Retry attempt if user specified
                                         if i < copy_attempts:
                                             log.warning("Attempt #{}: Unable to copy {} to '{} {}' due to:\n{}".\
                                                         format(i, file, device.name, dest, e))
-                                            log.info("Sleeping for {} seconds before retrying"
-                                                    .format(copy_attempts_sleep))
+                                            log.info(
+                                                "Sleeping for {} seconds before retrying"
+                                                .format(copy_attempts_sleep))
                                             time.sleep(copy_attempts_sleep)
                                             continue
                                         else:
                                             log.error(str(e))
                                             step.failed(
                                                 "Failed to copy image '{}' to '{}' on device"
-                                                " '{}'\n".format(file, dest,
-                                                                device.name), )
+                                                " '{}'\n".format(
+                                                    file, dest, device.name), )
                                 else:
                                     try:
                                         res = device.api. \
@@ -1254,27 +1395,30 @@ copy_to_device:
                                                         prompt_recovery=prompt_recovery,
                                                         **kwargs)
                                         if not res:
-                                            raise Exception('Failed to copy file to device')
+                                            raise Exception(
+                                                'Failed to copy file to device'
+                                            )
                                     except Exception as e:
                                         # Retry attempt if user specified
                                         if i < copy_attempts:
                                             log.warning("Attempt #{}: Unable to copy {} to '{} {}' due to:\n{}". \
                                                         format(i, file, device.name, dest, e))
-                                            log.info("Sleeping for {} seconds before retrying"
-                                                    .format(copy_attempts_sleep))
+                                            log.info(
+                                                "Sleeping for {} seconds before retrying"
+                                                .format(copy_attempts_sleep))
                                             time.sleep(copy_attempts_sleep)
                                             continue
                                         else:
                                             log.error(str(e))
                                             step.failed(
                                                 "Failed to copy image '{}' to '{}' on device"
-                                                " '{}'\n".format(file, dest,
-                                                                device.name), )
+                                                " '{}'\n".format(
+                                                    file, dest, device.name), )
 
                                 log.info(
                                     "File {} has been copied to {} on device {}"
-                                    " successfully".format(file, dest,
-                                                        device.name))
+                                    " successfully".format(
+                                        file, dest, device.name))
                                 success_copy_ha = True
                                 break
 
@@ -1287,13 +1431,15 @@ copy_to_device:
                             else:
                                 history.update({file: file_data})
 
-                    with steps.start("Verify images successfully copied") as step:
+                    with steps.start(
+                            "Verify images successfully copied") as step:
                         # If nothing copied don't need to verify, skip
                         if 'files_copied' not in self.history[
                                 'CopyToDevice'].parameters:
                             step.skipped(
                                 "Image files were not copied for {} {} in previous steps, "
-                                "skipping verification steps".format(device.name, dest))
+                                "skipping verification steps".format(
+                                    device.name, dest))
 
                         # Execute 'dir' after copying image files
                         dir_after = device.execute('dir {}'.format(dest))
@@ -1303,17 +1449,21 @@ copy_to_device:
                             with step.start("Verify image '{}' copied to {} on device {}".\
                                             format(image_data['dest_path'], dest, device.name)) as substep:
                                 # if size is -1 it means it failed to get the size
-                                if not device.api.verify_file_exists(file=image_data['dest_path'],
-                                                                    size=image_data['size'],
-                                                                    dir_output=dir_after):
+                                if not device.api.verify_file_exists(
+                                        file=image_data['dest_path'],
+                                        size=image_data['size'],
+                                        dir_output=dir_after):
                                     substep.failed(
                                         "Either the file failed to copy OR the local file size is different "
-                                        "than the origin file size on the device {}.".format(device.name))
+                                        "than the origin file size on the device {}."
+                                        .format(device.name))
                                 else:
                                     file_name = os.path.basename(file)
                                     if file_name not in protected_files:
                                         protected_files.append(file_name)
-                                    log.info('{file_name} added to protected list'.format(file_name=file_name))
+                                    log.info(
+                                        '{file_name} added to protected list'.
+                                        format(file_name=file_name))
                                     if image_data['size'] != -1:
                                         substep.passed(
                                             "File was successfully copied to device {}. "
@@ -1322,7 +1472,8 @@ copy_to_device:
                                     else:
                                         substep.skipped(
                                             "File has been copied to device {}.Cannot verify integrity as "
-                                            "the original file size is unknown.".format(device.name))
+                                            "the original file size is unknown."
+                                            .format(device.name))
 
 
 class WriteErase(BaseStage):
@@ -1355,9 +1506,7 @@ write_erase:
     # ==============================
     # Execution order of Stage steps
     # ==============================
-    exec_order = [
-        'write_erase'
-    ]
+    exec_order = ['write_erase']
 
     def write_erase(self, steps, device, timeout=TIMEOUT):
 
@@ -1366,7 +1515,8 @@ write_erase:
             try:
                 device.api.execute_write_erase(timeout=timeout)
             except Exception as e:
-                step.failed("Failed to execute 'write erase'", from_exception=e)
+                step.failed("Failed to execute 'write erase'",
+                            from_exception=e)
 
 
 class Reload(BaseStage):
@@ -1459,11 +1609,7 @@ reload:
     # ==============================
     # Execution order of Stage steps
     # ==============================
-    exec_order = [
-        'reload',
-        'disconnect_and_reconnect',
-        'check_modules'
-    ]
+    exec_order = ['reload', 'disconnect_and_reconnect', 'check_modules']
 
     def reload(self, steps, device, reload_service_args=None):
 
@@ -1483,10 +1629,15 @@ reload:
             try:
                 device.reload(**reload_service_args)
             except Exception as e:
-                step.failed(f"Failed to reload within {reload_service_args['timeout']} "
-                            f"seconds.", from_exception=e)
+                step.failed(
+                    f"Failed to reload within {reload_service_args['timeout']} "
+                    f"seconds.",
+                    from_exception=e)
 
-    def disconnect_and_reconnect(self, steps, device, reload_service_args=None,
+    def disconnect_and_reconnect(self,
+                                 steps,
+                                 device,
+                                 reload_service_args=None,
                                  reconnect_via=RECONNECT_VIA):
 
         if reload_service_args is None:
@@ -1504,12 +1655,14 @@ reload:
             try:
                 device.destroy()
             except Exception:
-                log.warning("Failed to destroy the device connection but "
-                            "attempting to continue", exc_info=True)
+                log.warning(
+                    "Failed to destroy the device connection but "
+                    "attempting to continue",
+                    exc_info=True)
             connect_kwargs = {
-                        'learn_hostname': True,
-                        'prompt_recovery': reload_service_args['prompt_recovery']
-                    }
+                'learn_hostname': True,
+                'prompt_recovery': reload_service_args['prompt_recovery']
+            }
 
             if reconnect_via:
                 connect_kwargs.update({'via': reconnect_via})
@@ -1518,7 +1671,6 @@ reload:
                 device.connect(**connect_kwargs)
             except Exception as e:
                 step.failed("Failed to reconnect", from_exception=e)
-
 
     def check_modules(self, steps, device, check_modules=None):
 
@@ -1534,8 +1686,9 @@ reload:
 
         if check_modules['check']:
 
-            with steps.start(f"Checking the modules on '{device.name}' are in a "
-                             f"stable state") as step:
+            with steps.start(
+                    f"Checking the modules on '{device.name}' are in a "
+                    f"stable state") as step:
 
                 try:
                     device.api.verify_module_status(
@@ -1545,6 +1698,7 @@ reload:
                 except Exception as e:
                     step.failed("Modules are not in a stable state",
                                 from_exception=e)
+
 
 class ExecuteCommand(BaseStage):
     """Executing commands on the device.
@@ -1588,11 +1742,12 @@ execute_command:
     # ==============================
     # Execution order of Stage steps
     # ==============================
-    exec_order = [
-        'execute_command'
-    ]
+    exec_order = ['execute_command']
 
-    def execute_command(self, steps, device, commands,
+    def execute_command(self,
+                        steps,
+                        device,
+                        commands,
                         execute_timeout=EXECUTE_TIMEOUT,
                         sleep_time=SLEEP_TIME):
 
@@ -1611,6 +1766,7 @@ execute_command:
             step.passed(
                 "Successfully executed commands on the device {} ".format(
                     device.name))
+
 
 class ApplyConfiguration(BaseStage):
     """Apply configuration on the device, either by providing a file or a
@@ -1708,11 +1864,11 @@ apply_configuration:
     # ==============================
     # Execution order of Stage steps
     # ==============================
-    exec_order = [
-        'apply_configuration'
-    ]
+    exec_order = ['apply_configuration']
 
-    def apply_configuration(self, steps, device,
+    def apply_configuration(self,
+                            steps,
+                            device,
                             configuration=CONFIGURATION,
                             configuration_from_file=CONFIGURATION_FROM_FILE,
                             file=FILE,
@@ -1755,24 +1911,28 @@ apply_configuration:
             with steps.start("Copy running-config to startup-config on device {}".\
                             format(device.name)) as step:
                 try:
-                    device.api.execute_copy_run_to_start(command_timeout=config_timeout,
-                                                        max_time=max_time,
-                                                        check_interval=check_interval,
-                                                        copy_vdc_all=copy_vdc_all)
+                    device.api.execute_copy_run_to_start(
+                        command_timeout=config_timeout,
+                        max_time=max_time,
+                        check_interval=check_interval,
+                        copy_vdc_all=copy_vdc_all)
                 except Exception as e:
-                    step.failed("Failed to copy running-config to startup-config on "
-                                   "{}\n{}".format(device.name, str(e)))
+                    step.failed(
+                        "Failed to copy running-config to startup-config on "
+                        "{}\n{}".format(device.name, str(e)))
                 else:
-                    step.passed("Successfully copied running-config to startup-config "
-                                "on {}".format(device.name))
+                    step.passed(
+                        "Successfully copied running-config to startup-config "
+                        "on {}".format(device.name))
 
         # Allow configuration to stabilize
         with steps.start("Allow configuration to stabilize on device {}".\
                          format(device.name)) as step:
             log.info("Sleeping for '{}' seconds".format(config_stable_time))
             time.sleep(config_stable_time)
-            step.passed("Successfully applied configuration on device {}".format(
-                device.name))
+            step.passed(
+                "Successfully applied configuration on device {}".format(
+                    device.name))
 
         with steps.start('Show running-config'):
             device.execute('show running-config', error_pattern=[])
@@ -1837,11 +1997,14 @@ verify_running_image:
     # ==============================
     # Execution order of Stage steps
     # ==============================
-    exec_order = [
-        'verify_running_image'
-    ]
+    exec_order = ['verify_running_image']
 
-    def verify_running_image(self, steps, device, images, verify_md5=VERIFY_MD5, ignore_flash=IGNORE_FLASH,
+    def verify_running_image(self,
+                             steps,
+                             device,
+                             images,
+                             verify_md5=VERIFY_MD5,
+                             ignore_flash=IGNORE_FLASH,
                              regex_search=REGEX_SEARCH):
         if verify_md5:
             # Set default if not provided
@@ -1852,7 +2015,7 @@ verify_running_image:
                 server = device.api.convert_server_to_linux_device(hostname)
             except AttributeError:
                 self.failed("The hostname '{}' provided does not exist in the "
-                               "testbed servers block".format(hostname))
+                            "testbed servers block".format(hostname))
 
             with steps.start("Generate the MD5 hash of the image(s) on {}"
                              "".format(server.name)) as step:
@@ -1860,7 +2023,8 @@ verify_running_image:
                 try:
                     server.connect()
                 except Exception as e:
-                    step.failed("Failed to connect to {}.\nError: {}".format(hostname, e))
+                    step.failed("Failed to connect to {}.\nError: {}".format(
+                        hostname, e))
 
                 server_hashes = {}
 
@@ -1874,11 +2038,12 @@ verify_running_image:
 
                         if hash_:
                             server_hashes[image] = hash_
-                            substep.passed("The MD5 has for '{}' is '{}'"
-                                           .format(image, hash_))
+                            substep.passed(
+                                "The MD5 has for '{}' is '{}'".format(
+                                    image, hash_))
                         else:
-                            substep.failed("Failed to get MD5 hash for {}"
-                                           .format(image))
+                            substep.failed(
+                                "Failed to get MD5 hash for {}".format(image))
 
             with steps.start("Get the running image(s) on {}"
                              "".format(device.name)) as step:
@@ -1890,7 +2055,8 @@ verify_running_image:
                 if not isinstance(running_images, list):
                     running_images = [running_images]
 
-                step.passed("The running image(s) are: {}".format(running_images))
+                step.passed(
+                    "The running image(s) are: {}".format(running_images))
 
             with steps.start("Generate the MD5 hash of the running image(s) "
                              "on {}".format(device.name)) as step:
@@ -1906,36 +2072,42 @@ verify_running_image:
 
                         if hash_:
                             running_image_hashes[image] = hash_
-                            substep.passed("The MD5 hash for '{}' is '{}'"
-                                           .format(image, hash_))
+                            substep.passed(
+                                "The MD5 hash for '{}' is '{}'".format(
+                                    image, hash_))
                         else:
-                            substep.failed("Failed to get MD5 hash for {}"
-                                           .format(image))
+                            substep.failed(
+                                "Failed to get MD5 hash for {}".format(image))
 
-            with steps.start("Compare the hashes from the origin to the running "
-                             "images") as step:
+            with steps.start(
+                    "Compare the hashes from the origin to the running "
+                    "images") as step:
 
                 # Values must be compared since the path or name
                 # of the image can be different
-                if set(server_hashes.values()) == set(running_image_hashes.values()):
-                    step.passed("The hashes from the running image(s) match the "
-                                "hashes from the origin server.\n"
-                                "Server hash(es): {}\n"
-                                "Running image hash(es): {}".format(server_hashes,
-                                                                    running_image_hashes))
+                if set(server_hashes.values()) == set(
+                        running_image_hashes.values()):
+                    step.passed(
+                        "The hashes from the running image(s) match the "
+                        "hashes from the origin server.\n"
+                        "Server hash(es): {}\n"
+                        "Running image hash(es): {}".format(
+                            server_hashes, running_image_hashes))
                 else:
-                    step.failed("The hashes from the running image(s) do not match "
-                                "the hashes from the origin server\n"
-                                "Server hash(es): {}\n"
-                                "Running image hash(es): {}".format(server_hashes,
-                                                                    running_image_hashes))
+                    step.failed(
+                        "The hashes from the running image(s) do not match "
+                        "the hashes from the origin server\n"
+                        "Server hash(es): {}\n"
+                        "Running image hash(es): {}".format(
+                            server_hashes, running_image_hashes))
         else:
 
             # Verify via filename comparison
             with steps.start("Verify running image on device {}". \
                                      format(device.name)) as step:
                 try:
-                    device.api.verify_current_image(images=images, ignore_flash=ignore_flash,
+                    device.api.verify_current_image(images=images,
+                                                    ignore_flash=ignore_flash,
                                                     regex_search=regex_search)
                 except Exception as e:
                     step.failed("Unable to verify running image on device {}\n{}". \
@@ -1988,23 +2160,25 @@ backup_file_on_device:
     # ==============================
     # Execution order of Stage steps
     # ==============================
-    exec_order = [
-        'verify_enough_available_disk_space',
-        'create_backup'
-    ]
+    exec_order = ['verify_enough_available_disk_space', 'create_backup']
 
-    def verify_enough_available_disk_space(self, steps, device, copy_dir, copy_file):
+    def verify_enough_available_disk_space(self, steps, device, copy_dir,
+                                           copy_file):
 
-        with steps.start("Verify there is enough disk space to create a backup "
-                         "of '{copy_dir}/{copy_file}'") as step:
+        with steps.start(
+                "Verify there is enough disk space to create a backup "
+                "of '{copy_dir}/{copy_file}'") as step:
 
-            file_size = device.api.get_file_size(file=f'{copy_dir}/{copy_file}')
+            file_size = device.api.get_file_size(
+                file=f'{copy_dir}/{copy_file}')
             if file_size is None:
-                step.failed(f"Could not get the size of '{copy_dir}/{copy_file}'")
+                step.failed(
+                    f"Could not get the size of '{copy_dir}/{copy_file}'")
 
             avail_space = device.api.get_available_space(directory=copy_dir)
             if not avail_space:
-                step.failed(f"Could not get the remaining disk space of '{copy_dir}'")
+                step.failed(
+                    f"Could not get the remaining disk space of '{copy_dir}'")
 
             if avail_space <= file_size:
                 step.failed(f"Cannot create backup - not enough disk space.\n"
@@ -2014,18 +2188,23 @@ backup_file_on_device:
             step.passed(f"There is enough disk space available to backup "
                         f"'{copy_dir}/{copy_file}'")
 
-    def create_backup(self, steps, device, copy_dir, copy_file, overwrite=OVERWRITE,
+    def create_backup(self,
+                      steps,
+                      device,
+                      copy_dir,
+                      copy_file,
+                      overwrite=OVERWRITE,
                       timeout=TIMEOUT):
 
-        with steps.start(f"Create a backup of '{copy_dir}/{copy_file}'") as step:
+        with steps.start(
+                f"Create a backup of '{copy_dir}/{copy_file}'") as step:
 
             overwrite_dialog = Dialog([
                 Statement(
                     pattern=r'.*over\s*write.*',
                     action='sendline({})'.format('y' if overwrite else 'n'),
                     loop_continue=True,
-                    continue_timer=False
-                )
+                    continue_timer=False)
             ])
 
             try:
@@ -2095,11 +2274,7 @@ delete_backup_from_device:
     # ==============================
     # Execution order of Stage steps
     # ==============================
-    exec_order = [
-        'restore_backup',
-        'delete_file',
-        'delete_file_on_stby'
-    ]
+    exec_order = ['restore_backup', 'delete_file', 'delete_file_on_stby']
 
     delete_dialog = Dialog([
         Statement(pattern=r'.*Do you want to delete.*',
@@ -2108,23 +2283,28 @@ delete_backup_from_device:
                   continue_timer=False)
     ])
 
-    def restore_backup(self, steps, device, delete_dir, delete_file,
-                       restore_from_backup=RESTORE_FROM_BACKUP, overwrite=OVERWRITE,
+    def restore_backup(self,
+                       steps,
+                       device,
+                       delete_dir,
+                       delete_file,
+                       restore_from_backup=RESTORE_FROM_BACKUP,
+                       overwrite=OVERWRITE,
                        timeout=TIMEOUT):
 
         if restore_from_backup:
             original_file = delete_file.strip("backup_")
 
-            with steps.start(f"Restoring '{delete_dir}/{original_file}' from the "
-                             f"backup") as step:
+            with steps.start(
+                    f"Restoring '{delete_dir}/{original_file}' from the "
+                    f"backup") as step:
 
                 overwrite_dialog = Dialog([
-                    Statement(
-                        pattern=r'.*over\s*write.*',
-                        action='sendline({})'.format('y' if overwrite else 'n'),
-                        loop_continue=True,
-                        continue_timer=False
-                    )
+                    Statement(pattern=r'.*over\s*write.*',
+                              action='sendline({})'.format(
+                                  'y' if overwrite else 'n'),
+                              loop_continue=True,
+                              continue_timer=False)
                 ])
 
                 try:
@@ -2135,11 +2315,13 @@ delete_backup_from_device:
                                 reply=overwrite_dialog,
                                 timeout=timeout)
                 except Exception as e:
-                    step.failed("Failed to restore the original file.", from_exception=e)
+                    step.failed("Failed to restore the original file.",
+                                from_exception=e)
 
     def delete_file(self, steps, device, delete_dir, delete_file):
 
-        with steps.start(f"Delete '{delete_dir}/{delete_file}' from the device") as step:
+        with steps.start(f"Delete '{delete_dir}/{delete_file}' from the device"
+                         ) as step:
 
             try:
                 device.execute(f"delete {delete_dir}{delete_file}",
@@ -2148,7 +2330,11 @@ delete_backup_from_device:
             except Exception as e:
                 step.failed("Failed to delete the file.", from_exception=e)
 
-    def delete_file_on_stby(self, steps, device, delete_dir, delete_file,
+    def delete_file_on_stby(self,
+                            steps,
+                            device,
+                            delete_dir,
+                            delete_file,
                             delete_dir_stby=DELETE_DIR_STBY):
 
         if device.is_ha:
@@ -2164,6 +2350,7 @@ delete_backup_from_device:
                                    append_error_pattern=['.*%Error.*'])
                 except Exception as e:
                     step.failed("Failed to delete the file.", from_exception=e)
+
 
 class DeleteFilesFromServer(BaseStage):
     """This stage deletes files from a server.
@@ -2210,11 +2397,13 @@ delete_files_from_server:
     # ==============================
     # Execution order of Stage steps
     # ==============================
-    exec_order = [
-        'delete_files'
-    ]
+    exec_order = ['delete_files']
 
-    def delete_files(self, steps, device, server=SERVER, files=FILES,
+    def delete_files(self,
+                     steps,
+                     device,
+                     server=SERVER,
+                     files=FILES,
                      protocol=PROTOCOL):
 
         # pyats FU only support sftp or ftp delete
@@ -2223,9 +2412,10 @@ delete_files_from_server:
             if not files:
                 # Get list of files from copy_to_linux stage
                 if 'CopyToLinux' in self.history:
-                    log.warning("No files to delete have been specified. Will "
-                                "delete the files copied from the 'copy_to_linux' "
-                                "stage.")
+                    log.warning(
+                        "No files to delete have been specified. Will "
+                        "delete the files copied from the 'copy_to_linux' "
+                        "stage.")
 
                     files = getattr(self.history['CopyToLinux'], 'parameters', {}).\
                         get('files_copied', {})
@@ -2236,32 +2426,61 @@ delete_files_from_server:
                 else:
                     step.skipped("No files to delete")
 
+            is_local_deletion = False
+            # If 'server' was not explicitly passed to DeleteFilesFromServer/CopyToLinux
+
             if not server:
                 # Get server from copy_to_linux stage
                 log.warning("No server has been specified. Will use the same "
                             "server from the 'copy_to_linux' stage.")
 
                 if 'CopyToLinux' in self.history:
-                    server = getattr(self.history['CopyToLinux'], 'parameters', {}).\
+                    server_from_copy = getattr(self.history['CopyToLinux'], 'parameters', {}).\
                         get('destination', {}).get('hostname')
-
+                    if server_from_copy:
+                        # If server not provided in stage
+                        server = server_from_copy
+                    else:
+                        is_local_deletion = True
                 else:
-                    step.skipped("No server has been specified. Cannot delete files.")
+                    step.skipped(
+                        "No server has been specified. Cannot delete files.")
 
-            # establish a FileUtils session for all FileUtils operations
-            fu = FileUtils(testbed=device.testbed)
+            fu_session = None
+            if not is_local_deletion:
 
-            for file in files:
-                with step.start(f"Deleting {file}") as substep:
+                if not server:
+                    step.skipped(
+                        "Cannot perform remote deletion as no valid server was identified."
+                    )
+                    return
+
+                # establish a FileUtils session for all FileUtils operations
+                fu_session = FileUtils(testbed=device.testbed)
+
+            for file_path in files:
+                with step.start(f"Deleting {file_path}") as substep:
                     try:
-                        device.api.delete_file_on_server(
-                            testbed=device.testbed,
-                            path=file,
-                            server=server,
-                            protocol=protocol,
-                            fu_session=fu)
+                        if is_local_deletion:
+                            if os.path.exists(file_path):
+                                os.remove(file_path)
+                                log.info(
+                                    f"Successfully deleted local file: {file_path}"
+                                )
+                            else:
+                                log.warning(
+                                    f"Local file not found, skipping deletion: {file_path}"
+                                )
+                        else:
+                            device.api.delete_file_on_server(
+                                testbed=device.testbed,
+                                path=file_path,
+                                server=server,
+                                protocol=protocol,
+                                fu_session=fu_session)
                     except Exception as e:
-                        substep.passx(f"Failed to delete '{file}'", from_exception=e)
+                        substep.passx(f"Failed to delete '{file_path}'",
+                                      from_exception=e)
 
 
 class DeleteFiles(BaseStage):
@@ -2312,24 +2531,29 @@ delete_files:
                 # if the filename as a location specified as bootflash:filename, use location1 as "bootflash:"
                 location1 = fn.split(':')[0] + ':' if ':' in fn else ''
                 # if the filename has a slash specified, e.g. flash:/directory/filename, use location2 as "flash:/directory"
-                location2 = '/'.join(fn.split('/')[:-1]) if len(fn.split('/')) > 1 else ''
+                location2 = '/'.join(fn.split('/')[:-1]) if len(
+                    fn.split('/')) > 1 else ''
                 location = location2 or location1
 
                 # Get the filename portion of the expression
                 # if only ':' in the filename, use filenames1
                 filenames1 = fn.split(':')[-1] if ':' in fn else fn
                 # if '/' in filename, get the part after the /
-                filenames = fn.split('/')[-1] if len(fn.split('/')) > 1 else filenames1
+                filenames = fn.split('/')[-1] if len(
+                    fn.split('/')) > 1 else filenames1
 
                 # If user did not specify regex to be used, assume unix filename matching
                 # Translate the expresion to a regex one to pass to the API
                 if not regex:
                     filenames = fnmatch.translate(filenames)
 
-                log.debug(f'Delete files - Location: {location} filenames: {filenames}')
+                log.debug(
+                    f'Delete files - Location: {location} filenames: {filenames}'
+                )
 
                 try:
-                    device.api.delete_files(locations=[location], filenames=[filenames])
+                    device.api.delete_files(locations=[location],
+                                            filenames=[filenames])
                 except Exception as e:
                     step.failed("Failed to delete the file.", from_exception=e)
 
@@ -2399,16 +2623,19 @@ revert_vm_snapshot:
     # ==============================
     # Execution order of Stage steps
     # ==============================
-    exec_order = [
-        'revert_vm_snapshot'
-    ]
+    exec_order = ['revert_vm_snapshot']
 
-    def revert_vm_snapshot(self, steps, device, esxi_server, recovery_snapshot_name,
-                           max_recovery_attempts=MAX_RECOVERY_ATTEMPTS,
-                           vm_hostname=VM_HOSTNAME,
-                           sleep_time_after_powering_off=SLEEP_TIME_AFTER_POWERING_OFF,
-                           sleep_time_stabilize_device=SLEEP_TIME_STABILIZE_DEVICE,
-                           sleep_time_after_powering_on=SLEEP_TIME_AFTER_POWERING_ON):
+    def revert_vm_snapshot(
+            self,
+            steps,
+            device,
+            esxi_server,
+            recovery_snapshot_name,
+            max_recovery_attempts=MAX_RECOVERY_ATTEMPTS,
+            vm_hostname=VM_HOSTNAME,
+            sleep_time_after_powering_off=SLEEP_TIME_AFTER_POWERING_OFF,
+            sleep_time_stabilize_device=SLEEP_TIME_STABILIZE_DEVICE,
+            sleep_time_after_powering_on=SLEEP_TIME_AFTER_POWERING_ON):
         tb = device.testbed
 
         # If vm_hostname is not provided, set it as the device name
@@ -2424,8 +2651,9 @@ revert_vm_snapshot:
                     format(esxi_server))
             else:
                 server = tb.devices[esxi_server]
-                step.passed("Verified that {esxi_server} is specified in testbed "
-                            "YAML file".format(esxi_server=server.name))
+                step.passed(
+                    "Verified that {esxi_server} is specified in testbed "
+                    "YAML file".format(esxi_server=server.name))
 
         # Start snapshot recovery
         with steps.start("Launching snapshot recovery on server: {server}".\
@@ -2460,9 +2688,10 @@ revert_vm_snapshot:
                             format(server=server.name))
 
                 if not connected_to_esxi_server and attempt == max_recovery_attempts + 1:
-                    step.failed("Failed to connect to ESXi server {server} with "
-                                "error: {err}".format(server=server.name,
-                                                      err=error_msg))
+                    step.failed(
+                        "Failed to connect to ESXi server {server} with "
+                        "error: {err}".format(server=server.name,
+                                              err=error_msg))
                 elif not connected_to_esxi_server:
                     continue
 
@@ -2545,10 +2774,11 @@ revert_vm_snapshot:
                     step.failed("Failed to get power state of VM {vm}".\
                         format(vm=vm_hostname))
                 elif power_switch_errored and attempt == max_recovery_attempts + 1:
-                    step.failed("Failed to power {state} of VM {vm} with error: "
-                                "{err}".format(state='off',
-                                               vm=vm_hostname,
-                                               err=error_msg))
+                    step.failed(
+                        "Failed to power {state} of VM {vm} with error: "
+                        "{err}".format(state='off',
+                                       vm=vm_hostname,
+                                       err=error_msg))
                 elif not dev_power_state or power_switch_errored:
                     continue
 
@@ -2662,8 +2892,8 @@ revert_vm_snapshot:
                         connected_to_dev = False
                         error_msg = str(err)
                         substep.failed('Could not connect to {dev} after '
-                                       'recovery: {err}'.format(dev=device.name,
-                                                                err=str(err)))
+                                       'recovery: {err}'.format(
+                                           dev=device.name, err=str(err)))
 
                     # Disconnect from device
                     log.info("Disconnect from {dev}".format(dev=device.name))
@@ -2762,20 +2992,24 @@ power_cycle:
     # ==============================
     # Execution order of Stage steps
     # ==============================
-    exec_order = [
-        'powercycle',
-        'reconnect'
-    ]
+    exec_order = ['powercycle', 'reconnect']
 
-    def powercycle(self, steps, device, sleep_after_power_off=SLEEP_AFTER_POWER_OFF):
+    def powercycle(self,
+                   steps,
+                   device,
+                   sleep_after_power_off=SLEEP_AFTER_POWER_OFF):
 
         with steps.start(f"Powercycling '{device.name}'") as step:
             try:
-                device.api.execute_power_cycle_device(delay=sleep_after_power_off)
+                device.api.execute_power_cycle_device(
+                    delay=sleep_after_power_off)
             except Exception as e:
                 step.failed("Failed to powercycle", from_exception=e)
 
-    def reconnect(self, steps, device, boot_timeout=BOOT_TIMEOUT,
+    def reconnect(self,
+                  steps,
+                  device,
+                  boot_timeout=BOOT_TIMEOUT,
                   sleep_before_connect=SLEEP_BEFORE_CONNECT,
                   sleep_after_connect=SLEEP_AFTER_CONNECT,
                   connect_arguments=CONNECT_ARGUMENTS,
@@ -2783,7 +3017,9 @@ power_cycle:
                   connection_timeout=CONNECTION_TIMEOUT):
 
         if sleep_before_connect:
-            with steps.start(f"Sleeping for {sleep_before_connect} seconds before connect") as step:
+            with steps.start(
+                    f"Sleeping for {sleep_before_connect} seconds before connect"
+            ) as step:
                 time.sleep(sleep_before_connect)
                 step.passed(f'Waited {sleep_before_connect} seconds')
 
@@ -2794,8 +3030,10 @@ power_cycle:
                 device.destroy()
 
                 try:
-                    device.connect(learn_hostname=True, **connect_arguments, connection_timeout=connection_timeout)
-                    
+                    device.connect(learn_hostname=True,
+                                   **connect_arguments,
+                                   connection_timeout=connection_timeout)
+
                 except Exception as e:
                     connect_exception = e
                     log.info(f"Could not reconnect {e}")
@@ -2804,10 +3042,13 @@ power_cycle:
 
                 timeout.sleep()
 
-            step.failed("Could not reconnect", from_exception=connect_exception)
+            step.failed("Could not reconnect",
+                        from_exception=connect_exception)
 
         if sleep_after_connect:
-            with steps.start(f"Sleeping for {sleep_after_connect} seconds after connect") as step:
+            with steps.start(
+                    f"Sleeping for {sleep_after_connect} seconds after connect"
+            ) as step:
                 time.sleep(sleep_after_connect)
                 step.passed(f'Waited {sleep_after_connect} seconds')
 
@@ -2848,18 +3089,25 @@ copy_run_to_flash:
     # ==============================
     # Execution order of Stage steps
     # ==============================
-    exec_order = [
-        'copy_run_to_flash'
-    ]
+    exec_order = ['copy_run_to_flash']
 
-    def copy_run_to_flash(self, steps, device, file_name, timeout=TIMEOUT, overwrite=OVERWRITE):
+    def copy_run_to_flash(self,
+                          steps,
+                          device,
+                          file_name,
+                          timeout=TIMEOUT,
+                          overwrite=OVERWRITE):
 
         with steps.start("Copying running config to flash") as step:
 
             try:
-                device.copy(source='running-config', dest=file_name, timeout=timeout, overwrite=overwrite)
+                device.copy(source='running-config',
+                            dest=file_name,
+                            timeout=timeout,
+                            overwrite=overwrite)
             except Exception as e:
-                step.failed("Failed to copy running-config to flash:", from_exception=e)
+                step.failed("Failed to copy running-config to flash:",
+                            from_exception=e)
 
 
 class ConfigureManagement(BaseStage):
@@ -2925,8 +3173,14 @@ configure_management:
         Optional('vrf'): str,
         Optional('interface'): str,
         Optional('routes'): {
-           Optional('ipv4'): ListOf({'subnet': str, 'next_hop': str}),
-           Optional('ipv6'):  ListOf({'subnet': str, 'next_hop': str})
+            Optional('ipv4'): ListOf({
+                'subnet': str,
+                'next_hop': str
+            }),
+            Optional('ipv6'): ListOf({
+                'subnet': str,
+                'next_hop': str
+            })
         },
         Optional('dhcp_timeout'): int,
         Optional('protocols'): ListOf(str),
@@ -2938,25 +3192,93 @@ configure_management:
     # Execution order of Stage steps
     # ==============================
     exec_order = [
-        'configure_management'
+        'configure_management',
+        'check_management_interface_status',
+        'ping_gateway',
     ]
 
-    def configure_management(self, steps, device, set_hostname=SET_HOSTNAME, **kwargs):
-
-        if 'configure_management' not in dir(device.api):
-            self.passx('No support for configure_management API')
+    def configure_management(self,
+                             steps,
+                             device,
+                             set_hostname=SET_HOSTNAME,
+                             **kwargs):
+        if "configure_management" not in dir(device.api):
+            self.passx("No support for configure_management API")
 
         with steps.start("Configuring device management") as step:
+            config_kwargs = {
+                k: v
+                for k, v in kwargs.items()
+                if k in [k.schema for k in self.schema.keys()]
+            }
 
-            config_kwargs = {k: v for k, v in kwargs.items() if k in \
-                [k.schema for k in self.schema.keys()]}
+            config_kwargs["set_hostname"] = set_hostname
 
-            config_kwargs['set_hostname'] = set_hostname
-
-            if hasattr(device, 'management') and device.management:
+            if hasattr(device, "management") and device.management:
                 device.api.configure_management(**config_kwargs)
             else:
-                step.passx('No management info for device')
+                step.passx("No management info for device")
+
+    def check_management_interface_status(self, steps, device, **kwargs):
+        """Check if the management interface is up and running."""
+        management = getattr(device, "management", {})
+        config_kwargs = {
+            k: v
+            for k, v in kwargs.items()
+            if k in [k.schema for k in self.schema.keys()]
+        }
+        interface = config_kwargs.get("interface") or management.get(
+            "interface")
+
+        with steps.start("Check management interface status") as step:
+            try:
+                output = device.parse(f"show interface {interface}")
+            except Exception as e:
+                step.failed(
+                    f"Failed to verify the interface {interface} status",
+                    from_exception=e,
+                )
+
+            if output and output.get(interface, {}).get("oper_status") == "up":
+                step.passed("Management interface is up")
+            else:
+                step.failed("Management interface is down")
+
+    def ping_gateway(self, steps, device, **kwargs):
+        """Ping the gateway to ensure connectivity."""
+        management = getattr(device, "management", {})
+        config_kwargs = {
+            k: v
+            for k, v in kwargs.items()
+            if k in [k.schema for k in self.schema.keys()]
+        }
+        ip4_gateway = config_kwargs.get("gateway",
+                                        {}).get("ipv4") or management.get(
+                                            "gateway", {}).get("ipv4")
+        ip6_gateway = config_kwargs.get("gateway",
+                                        {}).get("ipv6") or management.get(
+                                            "gateway", {}).get("ipv6")
+        interface = config_kwargs.get("interface") or management.get(
+            "interface")
+
+        vrf = config_kwargs.get("vrf") or management.get("vrf")
+
+        if not ip4_gateway and not ip6_gateway:
+            steps.failed("No gateway configured for management interface")
+            return
+
+        for gateway in [ip4_gateway, ip6_gateway]:
+            if gateway:
+                with steps.start(f"Ping gateway {gateway}") as step:
+                    try:
+                        device.ping(addr=gateway,
+                                    vrf=vrf,
+                                    source=interface,
+                                    timeout=30,
+                                    count=5)
+                        step.passed("Ping to gateway successful")
+                    except Exception as e:
+                        step.failed("Ping to gateway failed", from_exception=e)
 
 
 class ConfigureInterfaces(BaseStage):
@@ -3014,17 +3336,21 @@ configure_interfaces:
     # ==============================
     # Execution order of Stage steps
     # ==============================
-    exec_order = [
-        'configure_interfaces'
-    ]
+    exec_order = ['configure_interfaces']
 
-    def configure_interfaces(self, steps, device, interfaces=INTERFACES, **kwargs):
+    def configure_interfaces(self,
+                             steps,
+                             device,
+                             interfaces=INTERFACES,
+                             **kwargs):
         configuration_lines = []
         for iface_regex in interfaces:
             for _, iface_obj in device.interfaces.items():
                 if re.match(iface_regex, iface_obj.name):
-                    log.info(f'Preparing interface config for: {iface_obj.name}')
-                    attributes = interfaces.get(iface_regex, {}).get('attributes', {})
+                    log.info(
+                        f'Preparing interface config for: {iface_obj.name}')
+                    attributes = interfaces.get(iface_regex,
+                                                {}).get('attributes', {})
 
                     # Create dictionary of attributes to configure
                     attrs = {attr: getattr(iface_obj, attr) for attr in attributes \
@@ -3038,15 +3364,20 @@ configure_interfaces:
 
                     # Get configuration lines from config builder
                     try:
-                        config_lines = str(iface_obj.build_config(attributes=attrs, apply=False))
+                        config_lines = str(
+                            iface_obj.build_config(attributes=attrs,
+                                                   apply=False))
                         # Extend lines to configuration variable
                         configuration_lines.extend(config_lines.splitlines())
                     except Exception as e:
-                        log.warning(f'Failed to build config for {iface_obj.name}: {e}')
+                        log.warning(
+                            f'Failed to build config for {iface_obj.name}: {e}'
+                        )
 
         if getattr(device, "custom_config_cli", None):
             config_lines = str(device.build_config(apply=False))
-            configuration_lines = config_lines.splitlines() + configuration_lines
+            configuration_lines = config_lines.splitlines(
+            ) + configuration_lines
 
         # Configure all interfaces
         if configuration_lines:

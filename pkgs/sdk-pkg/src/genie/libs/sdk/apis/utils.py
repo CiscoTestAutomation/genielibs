@@ -941,7 +941,7 @@ def copy_to_device(device,
         fu = FileUtils.from_device(device, protocol=protocol)
 
     if server:
-        server_block = fu.get_server_block(server)
+        server_block = fu.get_server_block(server, protocol=protocol)
         protocol = server_block.get('protocol', protocol)
 
         # re-instantiate FileUtils object now we have protocol

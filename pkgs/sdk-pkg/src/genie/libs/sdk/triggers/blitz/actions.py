@@ -764,6 +764,7 @@ def yang(self,
          exclude=None,
          max_time=None,
          check_interval=None,
+         async_=False,
          *args,
          **kwargs):
 
@@ -812,6 +813,7 @@ def yang(self,
                                      datastore=datastore,
                                      rpc_data=content,
                                      returns=returns,
+                                     async_=async_,
                                      **kwargs)
 
         msg = kwargs.pop('custom_substep_message',

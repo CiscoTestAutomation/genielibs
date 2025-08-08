@@ -102,13 +102,11 @@ class PowerCycler(metaclass=PowerCyclerMeta):
 
     def disconnect(self):
         """
-        Disconnect from pc and socat
+        Disconnect from socat
         """
         if self.proxy_dev and self.socat_pid:
             # Stop the socat relay process
             self.proxy_dev.api.stop_socat_relay(self.socat_pid)
-            # disconnect from pc
-            self.proxy_dev.disconnect()
 
     def proxy_connect(self):
         """

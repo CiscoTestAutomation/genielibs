@@ -2730,6 +2730,15 @@
       "doc": "Parser for show crypto pki certificates <WORD>",
       "exclude": [],
       "groups": [],
+      "rv1": {
+        "doc": "Parser for show crypto pki certificates <WORD>",
+        "groups": [],
+        "schema": "{'trustpoints': {Any  (str) *: {'associated_trustpoints': {Any  (str) *: ListOf  (dict) {'status': <class 'str'>, 'serial_number_in_hex': <class 'str'>, 'usage': <class 'str'>, Optional  (str) storage: <class 'str'>, 'issuer': {Optional  (str) cn: <class 'str'>, Optional  (str) o: <class 'str'>}, 'subject': {Optional  (str) name: <class 'str'>, Optional  (str) serial_number: <class 'str'>, Optional  (str) pid: <class 'str'>, Optional  (str) cn: <class 'str'>, Optional  (str) o: <class 'str'>}, Optional  (str) crl_distribution_points: <class 'str'>, 'validity_date': {'start_date': <class 'str'>, 'end_date': <class 'str'>}}}}}}",
+        "source": {
+          "class": "genie.harness.base.Template"
+        },
+        "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/rv1/show_crypto.py"
+      },
       "schema": "{'trustpoints': {Any  (str) *: {'associated_trustpoints': {Any  (str) *: {'status': <class 'str'>, 'serial_number_in_hex': <class 'str'>, 'usage': <class 'str'>, Optional  (str) storage: <class 'str'>, 'issuer': {Optional  (str) cn: <class 'str'>, Optional  (str) o: <class 'str'>}, 'subject': {Optional  (str) name: <class 'str'>, Optional  (str) serial_number: <class 'str'>, Optional  (str) pid: <class 'str'>, Optional  (str) cn: <class 'str'>, Optional  (str) o: <class 'str'>}, Optional  (str) crl_distribution_points: <class 'str'>, 'validity_date': {'start_date': <class 'str'>, 'end_date': <class 'str'>}}}}}}",
       "source": {
         "class": "genie.harness.base.Template"
@@ -3007,6 +3016,15 @@
       "doc": "Parser for show environment all'\n    ",
       "exclude": [],
       "groups": [],
+      "ie3k": {
+        "doc": "Parser for show environment all",
+        "groups": [],
+        "schema": "{'alarms': {Any  (str) *: {'status': <class 'str'>, 'description': <class 'str'>, 'severity': <class 'str'>, 'trigger': <class 'str'>}}, 'temperatures': {'supervisor_temp_value': <class 'str'>, 'supervisor_temp_state': <class 'str'>, 'system_temperature_thresholds': {'minor_threshold': <class 'str'>, 'major_threshold': <class 'str'>, 'critical_threshold': <class 'str'>}}, 'power_supplies': {Any  (str) *: {'type': <class 'str'>, 'status': <class 'str'>, Optional  (str) voltage: <class 'str'>}}}",
+        "source": {
+          "class": "genie.harness.base.Template"
+        },
+        "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/ie3k/show_platform.py"
+      },
       "schema": "{'switch': {Any  (str) *: {Optional  (str) fan: {Any  (str) *: {Optional  (str) speed: <class 'int'>, Optional  (str) direction: <class 'str'>, Optional  (str) state: <class 'str'>}}, Optional  (str) power_supply: {Any  (str) *: {Optional  (str) state: <class 'str'>, Optional  (str) pid: <class 'str'>, Optional  (str) serial_number: <class 'str'>, Optional  (str) status: <class 'str'>, Optional  (str) system_power: <class 'str'>, Optional  (str) poe_power: <class 'str'>, Optional  (str) watts: <class 'str'>, Optional  (str) temperature: <class 'str'>, Optional  (str) power_source: <class 'str'>, Optional  (str) type: <class 'str'>, Optional  (str) mode: <class 'str'>}}, Optional  (str) sensors_details: {Any  (str) *: {Optional  (str) location: <class 'str'>, Optional  (str) state: <class 'str'>, Optional  (str) reading: <class 'int'>, Optional  (str) unit: <class 'str'>, Optional  (str) range: <class 'str'>}}, Optional  (str) system_temperature_state: <class 'str'>, Optional  (str) inlet_temperature: {'value': Or (<class 'int'>, <class 'str'>), 'state': <class 'str'>, 'yellow_threshold': <class 'str'>, 'red_threshold': <class 'str'>}, Optional  (str) hotspot_temperature: {'value': <class 'str'>, 'state': <class 'str'>, 'yellow_threshold': <class 'str'>, 'red_threshold': <class 'str'>}, Optional  (str) asic_temperature: {'value': <class 'str'>, 'state': <class 'str'>, 'yellow_threshold': <class 'str'>, 'red_threshold': <class 'str'>}, Optional  (str) outlet_temperature: {'value': <class 'str'>, 'state': <class 'str'>, 'yellow_threshold': <class 'str'>, 'red_threshold': <class 'str'>}, Optional  (str) system_temperature: {'value': <class 'str'>, 'state': <class 'str'>, 'yellow_threshold': <class 'str'>, 'red_threshold': <class 'str'>}, Optional  (str) redundant_power_system: {<class 'str'>: {'status': <class 'str'>, Optional  (str) serial_num: <class 'str'>, Optional  (str) port_num: <class 'str'>}}}}}",
       "source": {
         "class": "genie.harness.base.Template"
@@ -3707,6 +3725,15 @@
         "c9300": {
           "doc": "\n    Parser for :\n        * show inventory\n    ",
           "groups": [],
+          "rv1": {
+            "doc": "\n    Parser for :\n        * show inventory\n    ",
+            "groups": [],
+            "schema": "{Optional  (str) main: {Optional  (str) swstack: <class 'bool'>, Optional  (Any) Any  (str) *: {Any  (str) *: {Optional  (str) name: <class 'str'>, Optional  (str) descr: <class 'str'>, Optional  (str) pid: <class 'str'>, Optional  (str) vid: <class 'str'>, Optional  (str) sn: <class 'str'>}}}, Optional  (str) slot: {Any  (str) *: {Optional  (str) rp: {Any  (str) *: {Optional  (str) name: <class 'str'>, Optional  (str) descr: <class 'str'>, Optional  (str) pid: <class 'str'>, Optional  (str) vid: <class 'str'>, Optional  (str) sn: <class 'str'>, Optional  (str) swstack_power: <class 'str'>, Optional  (str) swstack_power_sn: <class 'str'>, Optional  (str) subslot: {Any  (str) *: {Any  (str) *: {Optional  (str) name: <class 'str'>, Optional  (str) descr: <class 'str'>, Optional  (str) pid: <class 'str'>, Optional  (str) vid: <class 'str'>, Optional  (str) sn: <class 'str'>}}}}}, Optional  (str) lc: {Any  (str) *: {Optional  (str) name: <class 'str'>, Optional  (str) descr: <class 'str'>, Optional  (str) pid: <class 'str'>, Optional  (str) vid: <class 'str'>, Optional  (str) sn: <class 'str'>, Optional  (str) swstack_power: <class 'str'>, Optional  (str) swstack_power_sn: <class 'str'>, Optional  (str) subslot: {Any  (str) *: {Any  (str) *: {Optional  (str) name: <class 'str'>, Optional  (str) descr: <class 'str'>, Optional  (str) pid: <class 'str'>, Optional  (str) vid: <class 'str'>, Optional  (str) sn: <class 'str'>}}}}}, Optional  (str) sp: {Any  (str) *: {Optional  (str) name: <class 'str'>, Optional  (str) descr: <class 'str'>, Optional  (str) pid: <class 'str'>, Optional  (str) vid: <class 'str'>, Optional  (str) sn: <class 'str'>}}, Optional  (str) pluggable: {Any  (str) *: {Optional  (str) name: <class 'str'>, Optional  (str) descr: <class 'str'>, Optional  (str) pid: <class 'str'>, Optional  (str) vid: <class 'str'>, Optional  (str) sn: <class 'str'>}}, Optional  (str) other: {Any  (str) *: {Optional  (str) name: <class 'str'>, Optional  (str) descr: <class 'str'>, Optional  (str) pid: <class 'str'>, Optional  (str) vid: <class 'str'>, Optional  (str) sn: <class 'str'>, Optional  (str) swstack_power: <class 'str'>, Optional  (str) swstack_power_sn: <class 'str'>, Optional  (str) subslot: {Any  (str) *: {Any  (str) *: {Optional  (str) name: <class 'str'>, Optional  (str) descr: <class 'str'>, Optional  (str) pid: <class 'str'>, Optional  (str) vid: <class 'str'>, Optional  (str) sn: <class 'str'>}}}}}}}}",
+            "source": {
+              "class": "genie.harness.base.Template"
+            },
+            "url": "https://github.com/CiscoTestAutomation/genieparser/tree/master/src/genie/libs/parser/iosxe/cat9k/c9300/rv1/show_platform.py"
+          },
           "schema": "{'index': {Any  (str) *: {'name': <class 'str'>, 'descr': <class 'str'>, Optional  (str) pid: <class 'str'>, Optional  (str) vid: <class 'str'>, Optional  (str) sn: <class 'str'>}}}",
           "source": {
             "class": "genie.harness.base.Template"
@@ -5978,7 +6005,7 @@
       "devices": [
         "uut"
       ],
-      "doc": "Parser for:\n        show ipv6 mld groups detail\n        show ipv6 mld vrf <vrf> groups detail",
+      "doc": "Parser for:\n        show ipv6 mld groups detail\n        show ipv6 mld vrf <vrf> groups detail\n        show ipv6 mld groups <group> <interface> detail\n    ",
       "exclude": [],
       "groups": [],
       "schema": "{'vrf': {Any  (str) *: {'interface': {Any  (str) *: {Optional  (str) join_group: {Any  (str) *: {'group': <class 'str'>, 'source': <class 'str'>}}, Optional  (str) static_group: {Any  (str) *: {'group': <class 'str'>, 'source': <class 'str'>}}, 'group': {Any  (str) *: {'up_time': <class 'str'>, 'filter_mode': <class 'str'>, 'host_mode': <class 'str'>, 'last_reporter': <class 'str'>, Optional  (str) expire: <class 'str'>, Optional  (str) source: {Any  (str) *: {Optional  (str) expire: <class 'str'>, 'forward': <class 'bool'>, Optional  (str) flags: <class 'str'>, 'up_time': <class 'str'>}}}}}}}}}",
@@ -10783,6 +10810,13 @@
     [
       "0",
       "0",
+      "3",
+      "9",
+      "c"
+    ],
+    [
+      "0",
+      "0",
       "4",
       "9",
       "c"
@@ -10963,6 +10997,16 @@
       "v"
     ],
     [
+      "1",
+      "r",
+      "v"
+    ],
+    [
+      "1",
+      "r",
+      "v"
+    ],
+    [
       "2",
       "r",
       "v"
@@ -10975,11 +11019,10 @@
       "t"
     ],
     [
-      "4",
-      "a",
-      "c",
-      "k",
-      "t"
+      "3",
+      "e",
+      "i",
+      "k"
     ],
     [
       "4",
@@ -10989,6 +11032,13 @@
       "t"
     ],
     [
+      "4",
+      "a",
+      "c",
+      "k",
+      "t"
+    ],
+    [
       "6",
       "a",
       "c",
@@ -11053,6 +11103,13 @@
     ],
     [
       "7",
+      "a",
+      "c",
+      "k",
+      "t"
+    ],
+    [
+      "9",
       "a",
       "c",
       "k",
@@ -11217,6 +11274,27 @@
       "i",
       "n",
       "r"
+    ],
+    [
+      "e",
+      "i",
+      "o",
+      "s",
+      "x"
+    ],
+    [
+      "e",
+      "i",
+      "o",
+      "s",
+      "x"
+    ],
+    [
+      "e",
+      "i",
+      "o",
+      "s",
+      "x"
     ],
     [
       "e",

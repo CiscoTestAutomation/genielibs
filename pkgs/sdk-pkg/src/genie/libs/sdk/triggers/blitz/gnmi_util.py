@@ -368,7 +368,7 @@ class GnmiMessage:
         return leaf_list_val
 
     @classmethod
-    def run_subscribe(self, device: Gnmi, payload: proto.gnmi_pb2.SubscribeRequest, **request) -> Thread:
+    def run_subscribe(self, device: Gnmi, payload: proto.gnmi_pb2.SubscribeRequest, async_: bool = False, **request) -> Thread:
         """Run gNMI subscribe service.
 
         Args:
@@ -414,7 +414,8 @@ class GnmiMessage:
             subscribe_thread.start()
 
             # Wait for the thread to complete
-            subscribe_thread.join()
+            if not async_:
+                subscribe_thread.join()
 
             return subscribe_thread
         except Exception as exc:

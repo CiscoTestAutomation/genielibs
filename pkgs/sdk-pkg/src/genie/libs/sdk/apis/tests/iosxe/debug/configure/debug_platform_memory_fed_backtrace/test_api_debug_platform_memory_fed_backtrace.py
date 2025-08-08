@@ -1,35 +1,12 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
 from genie.libs.sdk.apis.iosxe.debug.configure import debug_platform_memory_fed_backtrace
+from unittest.mock import Mock
 
 
-class TestDebugPlatformMemoryFedBacktrace(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          stack3-1-3Q-1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: c9600
-            type: c9600
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['stack3-1-3Q-1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestDebugPlatformMemoryFedBacktrace(TestCase):
 
     def test_debug_platform_memory_fed_backtrace(self):
+        self.device = Mock()
         result = debug_platform_memory_fed_backtrace(self.device, 'stop', '1', None, None, 10)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.assertIsNone(result)
+        self.device.execute.assert_called_with("debug platform software memory fed switch 1 alloc backtrace stop")

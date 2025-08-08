@@ -117,3 +117,21 @@ def configure_crypto_map_entry(device,ctag,sentry,peerip=None,ptag=None,ike=None
         raise SubCommandFailure(
             f"Unable to configure crypto map entry. Error:\n{e}"
         )
+    
+def unconfigure_crypto_map_xauthmap(device):
+    """ Unconfigure crypto map xauthmap
+    Args:
+        device('obj'): Device object
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed unconfiguring  
+    """
+    try:
+        device.configure([
+            "no crypto map xauthmap"
+        ])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"unable to unconfigure crypto map xauthmap \n{e}"
+        )  

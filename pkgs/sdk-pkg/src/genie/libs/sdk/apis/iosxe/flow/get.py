@@ -3,6 +3,9 @@
 # Python
 import logging
 
+# Unicon
+from unicon.core.errors import SubCommandFailure
+
 # Genie
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
@@ -39,3 +42,26 @@ def get_flows_src_dst_address_pairs(device, flow_monitor):
             pairs.append((src, dst))
 
     return pairs
+
+
+def get_show_flow_monitor_cache_format_table_output(device, monitor_name):
+    """ Find the lines which are match from show command.
+        Args:
+            device (`obj`): Device object
+            monitor_name (`str`): Flow monitor name
+        Returns:
+            output('str') : Output returned
+        Raises:
+            SubCommandFailure: Failed to get cache format table output
+    """
+    command = f"show flow monitor {monitor_name} cache format table"
+    output = ""
+    try:
+        output= device.execute(command)
+        if output == "":
+            log.error('No match found')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Could not get cache format table output. Error:\n{e}')
+
+    return output

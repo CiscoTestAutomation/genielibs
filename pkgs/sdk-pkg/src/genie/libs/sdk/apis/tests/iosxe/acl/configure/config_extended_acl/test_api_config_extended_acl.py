@@ -1,35 +1,14 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
 from genie.libs.sdk.apis.iosxe.acl.configure import config_extended_acl
+from unittest.mock import Mock
 
 
-class TestConfigExtendedAcl(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          stack3-nyq-PE1#:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: c9500
-            type: c9500
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['stack3-nyq-PE1#']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigExtendedAcl(TestCase):
 
     def test_config_extended_acl(self):
-        result = config_extended_acl(self.device, 'TIME_BASED_ACL_permit', 'permit', 'tcp', 'any', '', '', 'any', '', '', 'telnet', 0, None, 10, '', 'time1', 'eq')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.device = Mock()
+        result = config_extended_acl(self.device, 'test', 'permit', 'tcp', '1.1.1.1', None, None, '2.2.2.2', None, None, '800', None, 'host', '10', 'log', None, 'eq')
+        self.assertEqual(
+            self.device.configure.mock_calls[0].args,
+            (['ip access-list extended test', '10 permit tcp host 1.1.1.1 host 2.2.2.2 eq 800 log'],)
+        )

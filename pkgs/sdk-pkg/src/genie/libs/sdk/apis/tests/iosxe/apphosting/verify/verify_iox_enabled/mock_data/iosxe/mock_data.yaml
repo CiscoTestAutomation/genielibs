@@ -1,0 +1,42 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: Q11-2042_1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: Q11-2042_1(config-line)#
+connect:
+  commands:
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
+    Connected to mock_device.
+    Escape character is '^]'.
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show iox-service:
+      response:
+      - "\r\nIOx Infrastructure Summary:\r\n---------------------------\r\nIOx service\
+        \ (CAF)              : Running\r\nIOx service (HA)               : Not Supported\
+        \ \r\nIOx service (IOxman)           : Running \r\nIOx service (Sec storage)\
+        \      : Not Supported \r\nLibvirtd 5.5.0                 : Running\r\nDockerd\
+        \ v19.03.13-ce           : Running\r\nRedundancy Status              : Non-Redundant"
+      response_type: circular
+    show version: ''
+    show version | include operating mode: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: Q11-2042_1#

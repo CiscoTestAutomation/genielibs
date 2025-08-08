@@ -4945,7 +4945,7 @@ def unconfigure_vfi(device, vlan,vpls):
             "Could not configure VFI, VLAN {vlan} with the provided parameters".format(vlan=vlan)
         )
 
-def configure_span_monitor_session(device, session_number, source_int = None, source_option = None, destination_int = None):
+def configure_span_monitor_session(device, session_number, source_int = None, source_option = None, destination_int = None, vlan_id = None):
 
      """ Configure span monitor session
          Args:
@@ -4954,6 +4954,7 @@ def configure_span_monitor_session(device, session_number, source_int = None, so
              source_int ('str', optional): source interface name to be configured, default value None
              source_option ('str', optional): name of the source option to be configured, default value None
              destination_int ('str', optional): name of the destination interface to be configured, default value None
+             vlan_id ('str', optional): vlan to be configured, default value None
          Returns:
              None
          Raises:
@@ -4962,9 +4963,10 @@ def configure_span_monitor_session(device, session_number, source_int = None, so
      configs = []
      if source_int and source_option :
          configs.append(f"monitor session {session_number}  source interface {source_int} {source_option}")
+     if vlan_id :
+         configs.append(f"monitor session {session_number}  source vlan {vlan_id}")
      if destination_int :
          configs.append(f"monitor session {session_number}  destination interface {destination_int}")
-
      try:
          device.configure(configs)
      except SubCommandFailure as e:
@@ -10899,5 +10901,80 @@ def configure_fec_auto_off(device, interface, fec='auto'):
         raise SubCommandFailure(
             f"Could not configure fec {fec} on {interface}. Error:\n{e}"
             )
+def configure_loopdetect(device, interface):
+    """ Enable loop detection on an interface   
+    Args:
+        device (`obj`): Device object
+        interface (`str`): Interface name
 
+    Returns:
+        None
 
+    Raises:
+        SubCommandFailure
+    """
+
+    try:
+        device.configure(
+            ["interface {interface}".format(interface=interface), "loopdetect"]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not enable loop detection on interface {intf} on device {dev}. Error:\n{error}".format(
+                intf=interface, dev=device.name, error=e
+            )
+        )
+def unconfigure_loopdetect(device, interface):
+    """ Disable loop detection and bounce (shut/no shut) an interface
+
+    Args:
+        device (`obj`): Device object
+        interface (`str`): Interface name
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure
+    """
+    try:
+        device.configure(
+            [
+                "interface {interface}".format(interface=interface),
+                "no loopdetect",
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not disable loop detection and bounce interface {interface} on device {dev}. Error:\n"
+            "{error}".format(interface=interface, dev=device.name, error=e)
+        )    
+        
+def configure_remote_span_monitor_session(device, session_number, direction_type, direction_int=None, source_option=None, vlan_id=None):        
+     """ Configure remote span monitor session
+     
+         Args:
+             device ('obj'): Device object
+             session_number ('int'): session number
+             direction_type ('str', optional): source or destination interface name to be configured
+             direction_int ('str', optional): name of the destination interface to be configured, default value None
+             source_option ('str', optional): name of the source option to be configured, default value None             
+             vlan_id ('str', optional): vlan to be configured, default value None
+         Returns:
+             None
+         Raises:
+             SubCommandFailure
+     """
+     configs = []
+     if source_option :
+         configs.append(f"monitor session {session_number} {direction_type} interface {direction_int} {source_option}")
+     elif vlan_id :
+         configs.append(f"monitor session {session_number} {direction_type} remote vlan {vlan_id}")
+     else:
+         configs.append(f"monitor session {session_number} {direction_type} interface {direction_int}")     
+     try:
+         device.configure(configs)
+     except SubCommandFailure as e:
+         raise SubCommandFailure(
+             f"Failed to configure remote span monitor session on interface:\n{e}"
+         )
