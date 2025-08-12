@@ -1174,9 +1174,6 @@ def perform_ssh(device,hostname, ip_address, username, password, vrf=None, enabl
                 'enable_pass_flag': False
                 }
 
-    def pass_timeout_expire():
-        ssh_dict['pass_timeout_expire_flag'] = True
-
     def send_pass(spawn):
         if ssh_dict['enable_pass_flag']:
             spawn.sendline(enable_pass)
@@ -1208,10 +1205,6 @@ def perform_ssh(device,hostname, ip_address, username, password, vrf=None, enabl
         spawn.sendline('enable')
 
     dialog = Dialog([
-
-            Statement(pattern=r"Password:\s*timeout expired!",
-                      action=pass_timeout_expire,
-                      loop_continue=False),
             Statement(pattern=r"Password:",
                       action=send_pass,
                       loop_continue=True),
@@ -1250,10 +1243,8 @@ def perform_ssh(device,hostname, ip_address, username, password, vrf=None, enabl
     except Exception as e:
         log.info(f"Error occurred while performing ssh : {e}")
 
-    if ssh_dict['pass_timeout_expire_flag']:
-        return False
-    if ssh_dict['ssh_pass_case_flag']:
-        return True
+    # Return True only if prompt was reached, else False (e.g., auth failed, connection closed, timeout)
+    return ssh_dict['ssh_pass_case_flag']
 
 
 def concurrent_ssh_sessions(concurrent_sessions, device, ip_address, username, password,
@@ -1519,9 +1510,6 @@ def perform_telnet(device, hostname, ip_address, username, password, vrf=None, e
                 'enable_pass_flag': False
                 }
 
-    def pass_timeout_expire():
-        telnet_dict['pass_timeout_expire_flag'] = True
-
     def send_pass(spawn):
         if telnet_dict['enable_pass_flag']:
             spawn.sendline(enable_pass)
@@ -1541,10 +1529,6 @@ def perform_telnet(device, hostname, ip_address, username, password, vrf=None, e
         spawn.sendline('enable')
 
     dialog = Dialog([
-
-            Statement(pattern=r".*timeout expired!",
-                      action=pass_timeout_expire,
-                      loop_continue=False),
             Statement(pattern=r"Password:",
                       action=send_pass,
                       loop_continue=True),
@@ -1572,11 +1556,8 @@ def perform_telnet(device, hostname, ip_address, username, password, vrf=None, e
 
     except Exception as e:
         log.info(f"Error occurred while performing telnet : {e}")
-
-    if telnet_dict['pass_timeout_expire_flag']:
-        return False
-    if telnet_dict['telnet_pass_case_flag']:
-        return True
+    # Return True only if prompt was reached, else False (e.g., auth failed, connection closed, timeout)
+    return telnet_dict['telnet_pass_case_flag']
 
 
 def verify_ospf_icmp_ping(
@@ -2135,3 +2116,17 @@ def password_recovery(device, console_activity_pattern='',
     # step:8 Execute write memory
     log.info(f'Executing write memory {device.name}')
     device.api.execute_write_memory()
+
+def configure_generic_command(device,cmd):
+    """
+    Configure a command and return the output.
+    Args:
+        cmd (str): The command to configure.
+    Returns:
+        The output of the configured command.
+    """
+    try:
+        output=device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure command '{cmd}' on {device}. Error:\n{e}")
+    return output

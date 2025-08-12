@@ -7,13 +7,13 @@ configure:
     no logging console: ''
     no system ignore startupconfig switch all: "no system ignore startupconfig switch\
       \ all\r\nApplying config on Switch 1...[DONE]\r\n"
-  prompt: ott-c9300-66(config)#
+  prompt: ott-c9300-64(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: ott-c9300-66(config-line)#
+  prompt: ott-c9300-64(config-line)#
 connect:
   commands:
     ? ''
@@ -34,4 +34,4 @@ execute:
     show version | include operating mode: ''
     term length 0: ''
     term width 0: ''
-  prompt: ott-c9300-66#
+  prompt: ott-c9300-64#

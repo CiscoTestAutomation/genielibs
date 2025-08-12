@@ -1255,3 +1255,64 @@ def unconfigure_crypto_pki_download_crl(
         raise SubCommandFailure(f"Failed to unconfigure CRL download: {e}")
     
 
+def configure_trustpool_clean(device):
+    """
+    Clean up the CA Trustpool on a Cisco device.
+        Args:
+            device (obj): Device object
+
+        Raises:
+            SubCommandFailure: On failure to clean trustpool
+    """
+    try:
+        device.configure(["crypto pki trustpool clean"])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to clean CA Trustpool: {e}")
+
+def unconfigure_trustpool_clean(device):
+    """
+    Execute 'no crypto pki trustpool clean'.
+        Args:
+            device (obj): Device object
+
+        Raises:
+            SubCommandFailure: If command execution fails
+    """
+    try:
+        device.configure(["no crypto pki trustpool clean"])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to execute 'no crypto pki trustpool clean': {e}")
+
+def remove_pki_certificate_chain(device, tpname):
+    """Unconfigure (remove) PKI certificate chain for a server.
+        Args:
+            device (`obj`): Device object
+            tpname (`str|int`): Trustpoint name or ID for the certificate chain
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: If unconfiguration fails
+            ValueError: If tpname is empty
+    """
+
+    if not tpname:
+        raise ValueError("server_name must be provided and non-empty")
+    
+    error_pattern = [f"Certificate server '{tpname}' is not known"]
+
+    dialog = Dialog([
+        Statement(pattern=r'This will remove all certificates for trustpoint',
+        action=f'sendline(yes)',
+        loop_continue=True,
+        continue_timer=False)
+    ])
+
+    cmd = f"no crypto pki certificate chain {tpname}"
+    logger.debug(cmd)
+
+    try:
+        device.configure(cmd, reply=dialog, error_pattern=error_pattern)
+    except SubCommandFailure as e:
+        logger.error("Failed to remove cert chain")
+        raise SubCommandFailure(f"Could not unconfigure certificate chain for '{tpname}': {e}")
+    

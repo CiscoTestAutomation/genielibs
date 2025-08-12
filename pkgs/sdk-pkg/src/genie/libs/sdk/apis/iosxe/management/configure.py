@@ -4,7 +4,7 @@ import atexit
 import logging
 import ipaddress
 import tempfile
-from unicon.eal.dialogs import Dialog
+from unicon.eal.dialogs import Statement, Dialog
 from genie.utils.timeout import Timeout
 from unicon.core.errors import SubCommandFailure
 from pyats.utils.secret_strings import to_plaintext
@@ -39,12 +39,22 @@ def configure_management_credentials(device, credentials='default', username=Non
             'aaa new-model',
             'aaa authentication login default local',
             'aaa authorization exec default local',
+            f'no username {username} secret',
             f'username {username} password 0 {password}',
             f'username {username} privilege 15'
         ])
 
+    configure_dialog = Dialog([
+        Statement(
+            pattern=r".*This operation will remove all username related configurations with same name.Do you want to continue\?\s*\[confirm\]\s*$",
+            action='sendline()',
+            loop_continue=True,
+            continue_timer=False,
+        ),
+    ])
+
     if config:
-        device.configure(config)
+        device.configure(config, reply=configure_dialog)
 
 
 def configure_management_vrf(device, vrf=None, protocols=None):

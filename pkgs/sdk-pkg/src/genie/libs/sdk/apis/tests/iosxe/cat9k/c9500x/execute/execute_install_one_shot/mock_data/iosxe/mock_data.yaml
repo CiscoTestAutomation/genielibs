@@ -1,0 +1,108 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: Q9-9500X-2003(config)#
+
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: Q9-9500X-2003(config-line)#
+
+connect:
+  commands:
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
+    Connected to mock_device.
+    Escape character is '^]'.
+  prompt: ''
+
+execute:
+  commands:
+    show version | include operating mode: ''
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    show install summary: ''
+    term length 0: ''
+    term width 0: ''
+    write memory:
+      response:
+        - |-
+          Building configuration...
+          [OK]
+      response_type: circular
+    install add file bootflash:c9500x_BLD_LUX_DEV_LATEST_20250613_000857.SSA.bin activate commit:
+      new_state: install_image_state
+  prompt: Q9-9500X-2003#
+
+install_image_state:
+  prompt: "Q9-9500X-2003#"
+  preface: |
+      install_add_activate_commit: START Tue Jun 24 13:33:49 UTC 2025
+      install_add: START Tue Jun 24 13:33:49 UTC 2025
+      install_add: Adding IMG
+      --- Starting initial file syncing ---
+      Copying bootflash:c9500x_BLD_LUX_DEV_LATEST_20250613_000857.SSA.bin from Chassis 1/R0 to Chassis 1/R0 2/R0
+      Info: Finished copying to the selected Chassis
+      Finished initial file syncing
+
+      --- Starting Add ---
+      Performing Add on all members
+      Checking status of Add on [1/R0 2/R0]
+      Add: Passed on [1/R0 2/R0]
+      Image added. Version: 27.0.1.0.4582
+
+      Finished Add
+
+      install_activate: START Tue Jun 24 13:35:16 UTC 2025
+      install_activate: Activating IMG
+      Following packages shall be activated:
+      /bootflash/c9500x_COMPUTE_CAT9K.empty.BLD_LUX_DEV_LATEST_20250613_000857.SSA.pkg
+      /bootflash/c9500x_COMPUTE_CAT9K.rpboot.BLD_LUX_DEV_LATEST_20250613_000857.SSA.pkg
+
+      This operation may require a reload of the system. Do you want to proceed? [y/n]y
+
+
+      --- Starting Activate ---
+      Performing Activate on all members
+      [1] Activate package(s) on Chassis 1/R0
+      [2] Activate package(s) on Chassis 2/R0
+      [1] Finished Activate on Chassis 1/R0
+      [2] Finished Activate on Chassis 2/R0
+      Checking status of Activate on [1/R0 2/R0]
+      Activate: Passed on [1/R0 2/R0]
+      Finished Activate
+
+      --- Starting Commit ---
+      Performing Commit on all members
+      [1] Commit package(s) on Chassis 1/R0
+      [2] Commit package(s) on Chassis 2/R0
+      [1] Finished Commit on Chassis 1/R0
+      [2] Finished Commit on Chassis 2/R0
+      Checking status of Commit on [1/R0 2/R0]
+      Commit: Passed on [1/R0 2/R0]
+      Finished Commit operation
+
+      SUCCESS: install_add_activate_commit Tue Jun 24 13:36:47 UTC 2025
+  commands:
+    '':
+      new_state: install_image_reload_state
+
+install_image_reload_state:
+  prompt: ""
+  preface: file|iosxe/install_image_reload.txt
+  timing:
+    - 0:,0,0.005
+  commands:
+    '':
+      new_state: execute

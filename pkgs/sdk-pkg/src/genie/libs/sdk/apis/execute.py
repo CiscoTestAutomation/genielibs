@@ -107,6 +107,11 @@ def execute_power_off_device(device):
 
         log.debug(f"Powercycled device '{device.name}' to 'off' state")
 
+    # Disconnect from proxy
+    for pc, outlets in pcs:
+        if pc.proxy_dev and pc.proxy_dev.connected:
+            pc.proxy_dev.disconnect()
+
 
 def execute_power_on_device(device):
     '''Power on a device
@@ -132,6 +137,11 @@ def execute_power_on_device(device):
             raise Exception(f"Failed to powercycle device on:\n{repr(e)}")
 
         log.debug(f"Powercycled device '{device.name}' to 'on' state")
+
+    # Disconnect from proxy
+    for pc, outlets in pcs:
+        if pc.proxy_dev and pc.proxy_dev.connected:
+            pc.proxy_dev.disconnect()
 
 
 def execute_power_cycle_device(device, delay=30, destroy=True):

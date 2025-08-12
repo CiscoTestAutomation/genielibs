@@ -117,16 +117,20 @@ def acm_save(device, path=None, file=None, vrf=None, timeout=60):
         Raises:
             SubCommandFailure: If the save operation fails
         """
-        dialog = Dialog(
-            [
-                Statement(
-                    pattern=r".*[confirm]",
-                    action="sendline()",
-                    loop_continue=True,
-                    continue_timer=False,
-                )
-            ]
-        )
+        dialog = Dialog([
+            Statement(
+                pattern=r"(?i)do you wish to overwrite.*\[confirm\]",
+                action="sendline()",
+                loop_continue=True,
+                continue_timer=False
+            ),
+            Statement(
+                pattern=r"\[confirm\]",
+                action="sendline()",
+                loop_continue=True,
+                continue_timer=False
+            )
+        ])
         try:
             if path and file:
                 command = f"acm save {path}{file}"

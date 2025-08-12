@@ -16,4 +16,5 @@ rommon:
       IP_ADDRESS=6.6.6.6: ''
       IP_SUBNET_MASK=255.255.0.0: ''
       TFTP_SERVER=2.2.2.2: ''
-      TFTP_FILE=flash:/test.bin: ''     
+      TFTP_FILE=flash:/test.bin: ''
+      TFTP_FILE=valid_image.bin: ''     

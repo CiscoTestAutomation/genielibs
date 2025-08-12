@@ -119,6 +119,9 @@ def health_cpu(device,
     # if we have more than one parser we use the one with biggest value of the the 2 commands for the check_key_total
     if len(parsed_output) == 2 and parsed_output[1].get('cpu_utilization', {}).get(check_key_total):
         total = max(float(parsed_output[0][check_key_total]), float(parsed_output[1]['cpu_utilization'][check_key_total]))
+
+    elif len(parsed_output) == 1 and parsed_output[0].get('cpu_utilization', {}).get(check_key_total):
+        total = float(parsed_output[0]['cpu_utilization'][check_key_total])
     else:
         total = float(parsed_output[0][check_key_total])
     if health:

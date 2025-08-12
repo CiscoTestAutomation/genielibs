@@ -663,7 +663,7 @@ class InstallRemoveInactive(BaseStage):
                         pattern=r".*Do you want to remove the above files\? \[y\/n\]",
                         action=_check_for_system_image,
                         args={"system_image": image, "force_remove": force_remove},
-                        loop_continue=False,
+                        loop_continue=True,
                         continue_timer=False,
                     ),
                     generic_statements.syslog_msg_stmt
@@ -787,11 +787,12 @@ class InstallImage(BaseStage):
     # Execution order of Stage steps
     # ==============================
     exec_order = [
-        "verify_running_image",
         "delete_boot_variable",
         "set_boot_variable",
+        "configure_and_verify_startup_config",
         "save_running_config",
         "verify_boot_variable",
+        "verify_running_image",
         "install_image",
     ]
 
@@ -837,29 +838,6 @@ class InstallImage(BaseStage):
                             f"The image file provided is same as the current running image {image_version} on the device.\n"
                             "Skipping the install image stage."
                         )
-
-            with steps.start("Verify the ignore startup config") as step:
-                try:
-                    # Attempt to unconfigure the ignore startup config
-                    device.api.unconfigure_ignore_startup_config()
-                except Exception as e:
-                    step.passx(
-                        f"Failed to unconfigure ignore startup config on the device {device.name}",
-                        from_exception=e
-                    )
-
-                log.info(f'Verify the ignore startup config')
-                try:
-                    # Attempt to verify the ignore startup config
-                    if not device.api.verify_ignore_startup_config():
-                        step.passx(
-                            f"Failed to verify unconfigure of the ignore startup config on {device.name}"
-                        )
-                except Exception as e:
-                    step.passx(
-                        f"An error occurred while verifying the ignore startup config on {device.name}",
-                        from_exception=e
-                    )
 
     def delete_boot_variable(
         self, steps, device, issu=ISSU, skip_boot_variable=SKIP_BOOT_VARIABLE
@@ -919,6 +897,30 @@ class InstallImage(BaseStage):
                 except Exception as e:
                     step.passx(f"Unable to unconfigure ignore startup config on the device {device.name}")
 
+    def configure_and_verify_startup_config(self, steps, device):
+        with steps.start("Unconfigure ignore startup config") as step:
+            try:
+                # Attempt to unconfigure the ignore startup config
+                device.api.unconfigure_ignore_startup_config()
+            except Exception as e:
+                step.passx(
+                    f"Failed to unconfigure ignore startup config on the device {device.name}",
+                    from_exception=e
+                )
+
+        with steps.start("Verify ignore startup config") as step:
+            try:
+                # Attempt to verify the ignore startup config
+                if not device.api.verify_ignore_startup_config():
+                    step.passx(
+                        f"Failed to verify unconfigure of the ignore startup config on {device.name}"
+                    )
+            except Exception as e:
+                step.passx(
+                    f"An error occurred while verifying the ignore startup config on {device.name}",
+                    from_exception=e
+                )
+
     def save_running_config(self, steps, device, skip_save_running_config=SKIP_SAVE_RUNNING_CONFIG):
         with steps.start("Save the running config to the startup config") as step:
             if skip_save_running_config:
@@ -928,7 +930,6 @@ class InstallImage(BaseStage):
                 device.api.execute_copy_run_to_start(max_time=60, check_interval=30)
             except Exception as e:
                 step.failed("Failed to save the running config", from_exception=e)
-
 
     def verify_boot_variable(self, steps, device, issu=ISSU, skip_boot_variable=SKIP_BOOT_VARIABLE):
         # Verify next reload boot variables are correctly set
@@ -967,6 +968,22 @@ class InstallImage(BaseStage):
         # provided.
         if reload_service_args:
             reload_args.update(reload_service_args)
+
+        with steps.start("Check for previous uncommitted install operation") as step:
+            try:
+                output = device.parse("show install active")
+                location = list(output.get("location").keys())[0]
+                for pkg in output.get("location").get(location).get("pkg_state"):
+                    file_state = output["location"][location]["pkg_state"][pkg][
+                        "state"
+                    ]
+                    if file_state == "U":
+                        output = device.execute("install commit")
+                        if "SUCCESS:" in output:
+                            log.info("The image is activated and committed")
+                        break
+            except Exception as e:
+                step.failed("Failed to execute install commit", from_exception=e)
 
         with steps.start(f"Installing image '{images[0]}'") as step:
             current_image = device.api.get_running_image()
@@ -1026,6 +1043,12 @@ class InstallImage(BaseStage):
                                 ),
                                 Statement(
                                     pattern=r".*Initializing Hardware",
+                                    action=None,
+                                    loop_continue=False,
+                                    continue_timer=False,
+                                ),
+                                Statement(
+                                    pattern=r".*reload action requested",
                                     action=None,
                                     loop_continue=False,
                                     continue_timer=False,
@@ -2024,7 +2047,7 @@ class RommonBoot(BaseStage):
         image (list, optional): Image to boot with
 
         tftp (optional): If specified boot via tftp otherwise boot using local
-            image.
+            image (list): image to boot
 
             ip_address (list, optional): Management ip address to configure to reach to the
                 tftp server
@@ -2079,7 +2102,6 @@ class RommonBoot(BaseStage):
 
     testbed:
       name:
-      name:
       passwords:
         tacacs: test
         enable: test
@@ -2131,6 +2153,7 @@ class RommonBoot(BaseStage):
         Optional("ether_port"): int,
         Optional("rommon_timeout"): int,
         Optional("config_register"): str,
+        Optional("reconnect_timeout"): int,
     }
 
     # ==============================
@@ -2683,7 +2706,7 @@ class CopyToDevice(BaseStage):
             # Get args
             server = origin.get("hostname")
 
-            image_files = origin["files"]
+            image_files = origin.get("files", [])
 
             # check for smu images in image files, defaults to False
             smu_in_image_files = False
@@ -2698,7 +2721,7 @@ class CopyToDevice(BaseStage):
 
                 string_to_remove = file_utils.get_server_block(server).get("path", "")
                 image_files = remove_string_from_image(
-                    images=origin["files"], string=string_to_remove
+                    images=origin.get("files", []), string=string_to_remove
                 )
 
             # Set active node destination directory
@@ -3615,6 +3638,21 @@ class Connect(BaseStage):
                     step.failed(f"Failed to boot device from rommon. {e}")
                 else:
                     log.info("Successfully booted the device from rommon.")
+        else:
+            with steps.start("Log out from the device") as step:
+                try:
+                    device.logout()
+                    # To handle the login prompt and ssh connection issues after logout
+                    if not device.connected:
+                        device.disconnect()
+                        device.connect()
+                    else:
+                        device.connection_provider.connect()
+                except Exception as e:
+                    log.error(f"Failed to log out from the device. {e}", exc_info=True)
+                    step.failed(f"Failed to log out from the device. {e}")
+                else:
+                    step.passed("Successfully logged out from the device")
 
         # set mit to False to initialize the connection
         device.default.mit = False
@@ -3652,6 +3690,10 @@ class ResetConfiguration(BaseStage):
     reset_configuration:
         timeout (int, optional): The timeout for device configuration to complete in seconds.
             Defaults to 120.
+        bulk_chunk_lines(int, optional): The number of chunks to be processed at a time
+            Defaults to 20.
+        bulk_chunk_sleep(float, optional): Time gap for the next chuck to processed
+            Defaults to 0.5 seconds
 
     Example:
 
@@ -3666,6 +3708,8 @@ class ResetConfiguration(BaseStage):
     # Argument Defaults
     # =================
     TIMEOUT = 120
+    BULK_CHUNK_LINES = 20
+    BULK_CHUNK_SLEEP = 0.5
 
     # ============
     # Stage Schema
@@ -3675,6 +3719,14 @@ class ResetConfiguration(BaseStage):
             "timeout",
             description="Timeout for device configuration. Default: 120 seconds.",
         ): int,
+        Optional(
+            "bulk_chunk_lines",
+            description="Number of chunks to be processed.",
+            ): int,
+        Optional(
+            "bulk_chunk_sleep",
+            description="Interval between the chunks"
+            ): float,
     }
 
     exec_order = ["create_config_file", "reset_configuration", "show_running_config"]
@@ -3780,11 +3832,12 @@ class ResetConfiguration(BaseStage):
             "^line vty": {"^transport input": {}},
             "^ip http server": {},
             "^ip http secure-server": {},
-            "^platform console virtual": {},
+            "^platform console serial": {},
         }
 
         REPLACE = {
-            'no aaa new-model': 'aaa new-model'
+            'no aaa new-model': 'aaa new-model',
+            'platform console virtual': 'platform console serial'
         }
 
         new_config_dict = copy.deepcopy(config_dict)
@@ -3800,7 +3853,9 @@ class ResetConfiguration(BaseStage):
 
         return config_text
 
-    def create_config_file(self, steps, device, timeout=TIMEOUT):
+    def create_config_file(self, steps, device, timeout=TIMEOUT,
+                           bulk_chunk_lines=BULK_CHUNK_LINES,
+                           bulk_chunk_sleep=BULK_CHUNK_SLEEP):
         with steps.start("Getting current config") as step:
             # Use lstrip to avoid stripping trailing whitespace from config lines,
             # this is required for config replace to work with pki certs.
@@ -3813,6 +3868,7 @@ class ResetConfiguration(BaseStage):
 
             # Write the configuration into a file on the device using TCL shell.
             device.tclsh()
+
             lines = (
                 [
                     'puts [open "base_config.txt" w+] {',
@@ -3820,13 +3876,20 @@ class ResetConfiguration(BaseStage):
                 + config_lines
                 + ["}"]
             )
-            for line in lines:
-                device.sendline(line)
-                # Instead of waiting for each line to be processed, just keep
-                # reading the buffer. This is a lot faster and testing has shown
-                # this to work fine. This could be changed using a bulk approach
-                # like unicon configure() service if needed.
-                device.spawn.read_update_buffer()
+
+            # process the lines into chunks
+            chunks = [lines[i:i + bulk_chunk_lines]
+                              for i in range(0, len(lines), bulk_chunk_lines)]
+            # Iterate through the chunks
+            for idx, chunk in enumerate(chunks, 1):
+                # Send and read the buffer for each chunk
+                for line in chunk:
+                    device.sendline(line)
+                    device.spawn.read_update_buffer()
+                if idx != len(chunks):
+                    # Sleep between chunks
+                    time.sleep(bulk_chunk_sleep)
+
             # Wait until all config data has been processed by the device
             device.expect(
                 device.state_machine.get_state(

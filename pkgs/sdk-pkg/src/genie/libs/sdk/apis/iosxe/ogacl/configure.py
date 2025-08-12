@@ -239,7 +239,9 @@ def configure_ipv6_ogacl(
         rule,
         service_type=None,
         log_option=None,
-        sequence_num=None
+        sequence_num=None,
+        port_type=None,
+        port_number=None
 ):
     """ Configure IPv6 Object-Group ACL
 
@@ -253,6 +255,8 @@ def configure_ipv6_ogacl(
             service_type ('str',optional): service type to configure,default value is None
             log_option ('str',optional): Option to log ACL match,default value is None
             sequence_num ('str',optional): specific sequence number,default value is None
+            port_type ('str',optional): type of port,default value is None
+            port_number ('str',optional): specific port number,default value is None
 
         Returns:
             None
@@ -273,7 +277,8 @@ def configure_ipv6_ogacl(
     elif service_og == 'any':
         cmd += 'any '
     else:
-        cmd += f'object-group {service_og} '
+        if service_og:
+            cmd += f'object-group {service_og} '
 
     if src_nw == 'any':
         cmd += 'any '
@@ -284,6 +289,9 @@ def configure_ipv6_ogacl(
         cmd += 'any '
     else:
         cmd += f'object-group {dst_nw} '
+
+    if port_type and port_number:
+        cmd += f" {port_type} {port_number} " 
 
     if log_option:
         cmd += f'{log_option}'
@@ -506,7 +514,6 @@ def configure_object_group(device, group, object_group_name, protocol=None, opti
         config.append(f"{network_option} {ip_address_1}")
     elif group=="network" and network_option==None:
         config.append(f"{ip_address_1} {ip_address_2}")
-
     try:
         device.configure(config)
     except SubCommandFailure as e:
@@ -633,7 +640,7 @@ def unconfigure_ipv4_object_group_service(device, og_name):
             )
         )
 
-def configure_ipv4_ogacl_src_dst_nw(device, ogacl_name, rule, src_nw, dst_nw):
+def configure_ipv4_ogacl_src_dst_nw(device, ogacl_name, rule, src_nw, dst_nw,protocol=None,port_type=None,port_number=None,log_option=None):
     """ Configure IPv4 ogacl src dst network
 
         Args:
@@ -642,6 +649,10 @@ def configure_ipv4_ogacl_src_dst_nw(device, ogacl_name, rule, src_nw, dst_nw):
             rule ('str'): ACL rule permit/deny
             src_nw ('str'): name of source network object-group or any
             dst_nw ('str'): name of destination network object-group or any
+            protocol ('str',optional): protocol to configure,default value is None
+            port_type ('str',optional): port type to configure,default value is None
+            port_number ('str',optional): Port number to configure,default value is None
+            log_option ('str',optional): Option to log ACL match,default value is None
 
         Returns:
             None
@@ -651,7 +662,16 @@ def configure_ipv4_ogacl_src_dst_nw(device, ogacl_name, rule, src_nw, dst_nw):
     """
     configs = []
     configs.append("ip access-list extended {}".format(ogacl_name))
-    configs.append("{rule} ip object-group {src_nw} object-group {dst_nw}".format(rule=rule, src_nw=src_nw, dst_nw=dst_nw))
+    if protocol:
+        cmd = f"{rule} {protocol} object-group {src_nw} object-group {dst_nw}"
+    else:
+        cmd = f"{rule} ip object-group {src_nw} object-group {dst_nw}"
+    if port_type and port_number:
+        cmd += f" {port_type} {port_number}" 
+    if log_option:
+        cmd += f" {log_option}"  
+    
+    configs.append(cmd)          
     try:
         device.configure(configs)
     except SubCommandFailure as e:

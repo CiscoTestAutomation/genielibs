@@ -11,7 +11,6 @@ import json
 import importlib
 from functools import wraps
 from unittest.mock import patch
-from pkg_resources import iter_entry_points
 
 # Genie
 from genie.libs import clean
@@ -29,6 +28,7 @@ from genie.metaparser.util import merge_dict
 from pyats.topology.loader import load as testbed_loader
 from pyats.topology.loader.markup import TestbedMarkupProcessor
 from pyats.utils.yaml import Loader
+from pyats.utils.import_utils import get_entry_points
 from pyats.utils.yaml.markup import Processor as MarkupProcessor
 from pyats.utils.schemaengine import Use as PyatsUse
 from pyats.utils.commands import do_lint
@@ -230,16 +230,17 @@ def load_clean_json():
         clean_json = AbstractTree.from_json(json_data,
                                               package=CLEAN_MODULE_NAME)
 
-    for entry in iter_entry_points(group=CLEAN_PLUGIN_ENTRYPOINT):
-        log.info('Loading clean APIs from {}'.format(entry.module_name))
+    eps = get_entry_points(CLEAN_PLUGIN_ENTRYPOINT)
+    for entry in eps:
+        log.info('Loading clean APIs from {}'.format(entry.module))
 
-        ext = ExtendClean(entry.module_name)
+        ext = ExtendClean(entry.module)
         ext.extend()
         log.info("{} clean API count: {}".format(
-            entry.module_name,
+            entry.module,
             len(ext.output.keys()) - 1))
         log.debug('{} clean APIs {}'.format(
-            entry.module_name,
+            entry.module,
             json.dumps(ext.output, indent=4)
         ))
 
@@ -605,7 +606,8 @@ def get_clean_template(device, template='DEFAULT'):
     """API to return the clean template as a loaded dictionary."""
 
     # Check for other clean packages, if not fall back to generic clean
-    for entrypoint in iter_entry_points(group=CLEAN_PLUGIN_ENTRYPOINT):
+    eps = get_entry_points(CLEAN_PLUGIN_ENTRYPOINT)
+    for entrypoint in eps:
         try:
             # Load the clean entry point
             clean_entry = entrypoint.load()

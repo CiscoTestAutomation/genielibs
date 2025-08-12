@@ -59,7 +59,7 @@ def verify_app_requested_state(device, app_list=None, requested_state='RUNNING',
     
     return all_apps_achieved_requested_state
 
-def verify_iox_enabled(device, max_time=600, interval=10):
+def verify_iox_enabled(device, max_time=600, interval=10, services=None):
     ''' 
     verify_iox_enabled
     Check show iox and confirm all services are up and running
@@ -67,6 +67,8 @@ def verify_iox_enabled(device, max_time=600, interval=10):
         device ('obj') : Device object
         max_time ('int') : max time to wait
         interval ('int') : interval timer
+        services ('list') : List of services to check for 'running'
+
     Returns:
         True
         False
@@ -88,6 +90,13 @@ def verify_iox_enabled(device, max_time=600, interval=10):
             output.get('dockerd', '').strip().lower() == 'running':
                 log.info("IOX is enabled")
                 return True
+
+        elif services:
+        
+            if all(output.get(service, '').strip().lower() == 'running' for service in services):
+                log.info(f"IOX is enabled")
+                return True
+            
         else:
             timeout.sleep()        
 

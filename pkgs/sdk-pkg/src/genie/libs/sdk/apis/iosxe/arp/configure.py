@@ -487,3 +487,36 @@ def unconfigure_arp_access_list(device, list_type, word):
         raise SubCommandFailure(
             f"Failed to clear ip arp inspection  {device} .Error:\n{e}"
             )
+
+def unconfigure_static_arp(device, ip_address, mac_address):
+    """ unconfigure static arp
+
+        Args:
+            device (`obj`): Device object
+            ip_address (`str`): IP address
+            mac_address (`str`): MAC address
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info("unconfiguring static arp")
+    try:
+        device.configure(
+            "no arp {ip_address} {mac_address} arpa".format(
+                ip_address=ip_address, mac_address=mac_address
+            )
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed in unconfiguring static arp "
+            "with IP address {ip_address} "
+            "and MAC address {mac_address} "
+            "on device {device}, "
+            "Error: {e}".format(
+                ip_address=ip_address,
+                mac_address=mac_address,
+                device=device.name,
+                e=str(e),
+            )
+        ) from e

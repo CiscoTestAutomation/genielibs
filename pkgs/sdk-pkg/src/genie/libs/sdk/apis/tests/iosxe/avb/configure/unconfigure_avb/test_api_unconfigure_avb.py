@@ -1,35 +1,14 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
 from genie.libs.sdk.apis.iosxe.avb.configure import unconfigure_avb
+from unittest.mock import Mock, call
 
 
-class TestUnconfigureAvb(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          Ram_Gry_CR:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: c9500
-            type: c9500
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Ram_Gry_CR']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigureAvb(TestCase):
 
     def test_unconfigure_avb(self):
+        self.device = Mock()
+        self.device.configure.return_value = None
         result = unconfigure_avb(self.device)
+        self.device.configure.assert_called_once_with('no avb')
         expected_output = None
         self.assertEqual(result, expected_output)

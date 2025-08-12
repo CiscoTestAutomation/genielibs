@@ -15,9 +15,17 @@ configure:
     netconf-yang: "netconf-yang\r\n"
     no logging console: ''
     transport input ssh: "transport input ssh\r\n"
+    no username admin secret:
+      new_state: re-configure
     username admin password 0 admin: "username admin password 0 admin\r\n"
     username admin privilege 15: "username admin privilege 15\r\n"
   prompt: vmtb-isr4451(config)#
+
+re-configure:
+  prompt: This operation will remove all username related configurations with same name.Do you want to continue? [confirm]
+  commands:
+    "":
+      new_state: configure
 configure_line:
   commands:
     end:
@@ -47,6 +55,22 @@ execute:
            transport input ssh
           line vty 5 14
            transport input ssh
+      response_type: circular
+    show install summary:
+      response:
+        - |-
+          [ Switch 1 2 3 ] Installed Package(s) Information:
+          State (St): I - Inactive, U - Activated & Uncommitted,
+                      C - Activated & Committed, D - Deactivated & Uncommitted
+          --------------------------------------------------------------------------------
+          Type  St   Filename/Version
+          --------------------------------------------------------------------------------
+          IMG   C    17.10.01.0.160408
+          SMU   C    flash:cat9k_iosxe.2022-06-06_12.21_mcpre.24042.CSCvq24042.SSA.smu.bin
+          
+          --------------------------------------------------------------------------------
+          Auto abort timer: inactive
+          --------------------------------------------------------------------------------
       response_type: circular
     show version: ''
     term length 0: ''

@@ -219,3 +219,21 @@ def unconfigure_cdp_holdtime(device):
             "Could not unconfigure CDP holdtime"
             "Error: {error}".format(error=e)
         )
+
+def configure_default_cdp_timer(device):
+    """ Configure default cdp timer on target device globally on the device
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+    """
+    command_list = ['default cdp timer']
+    try:
+        device.configure(command_list)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure default cdp timer Globally"
+            "Error: {error}".format(error=e)
+        )
+
+    

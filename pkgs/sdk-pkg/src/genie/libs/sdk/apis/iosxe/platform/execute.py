@@ -74,15 +74,31 @@ def execute_set_config_register(device, config_register, timeout=300):
             config_reg ('str'): Hexadecimal value to set the config register to
             timeout ('int'): Max time to set config-register in seconds
     '''
+    # Collect all connections to process
+    conn_list = getattr(device, 'subconnections', None) or [device.default]
 
-    try:
-        device.configure("config-register {}".format(config_register),
-                         timeout=timeout)
-    except Exception as e:
-        raise Exception("Failed to set config register for '{d}'\n{e}".\
-                        format(d=device.name, e=str(e)))
-    else:
-        log.info("Set config-register to '{}'".format(config_register))
+    # Iterate through each connection to apply the configuration.
+    for conn in conn_list:
+        # Not implemented for rommon state
+        if conn.state_machine.current_state == 'rommon':
+            continue
+        try:
+            conn.configure("config-register {}".format(config_register),
+                            timeout=timeout)
+        except Exception as e:
+            raise Exception("Failed to set config register for '{d}'\n{e}".\
+                            format(d=device.name, e=str(e)))
+        else:
+            log.info("Set config-register to '{}'".format(config_register))
+
+
+def execute_rommon_reset(device, timeout=300):
+    '''To execute the reset command in rommon mode
+        Args:
+            device ('obj'): Device object
+            timeout ('int'): Max time to set config-register in seconds
+    '''
+    log.info("API is not implemented.")
 
 
 def _execute_write_erase(device, timeout=300):
@@ -1986,3 +2002,18 @@ def execute_diagnostic_start_module_port(device, module_number, test_id, port_nu
         raise SubCommandFailure(
             f"Could not execute diagnostic start module {module_number} test {test_id} port {port_num} on device. Error:\n{e}")
 
+def execute_show_clear_sip_l7_alg_statistics(device):
+    """execute 'show platform hardware qfp active feature alg statistics sip l7data clear*' on device
+       Args:
+            device('obj'): device object
+       Returns:
+            None
+       Raises:
+            SubCommandFailure
+    """
+    try:
+        device.execute("show platform hardware qfp active feature alg statistics sip l7data clear")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to execute show platform hardware qfp active feature alg statistics sip l7data clear\n{e}'
+        )

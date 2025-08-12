@@ -1181,12 +1181,14 @@ def configure_policy_map_parameters(device, policy_map_name, class_name=None, pr
         raise SubCommandFailure(
             f"Could not configure policy-map parameters on device {device}.Error:\n{e}") 
 
-def configure_policy_map_priority_express(device, policy_map_name, class_name=None):
+def configure_policy_map_priority_express(device, policy_map_name, class_name=None, rate_kbps=None, percent=None):
     """ Configure policy-map parameters on device
         Args:
              device ('obj'): device to use
              policy_map_name('str'): Policy-map name
              class_name('str',optional) : Class-name 
+             rate_kbps('int', optional): Rate in Kilo Bits per second (8-100000000)
+             percent('int', optional): Percentage of total bandwidth
         Returns:
             None
         Raises:
@@ -1197,8 +1199,16 @@ def configure_policy_map_priority_express(device, policy_map_name, class_name=No
     config = [
             "policy-map {}".format(policy_map_name), 
             "class {}".format(class_name), 
-            "priority level 1 express"
             ]
+    
+    # Build the priority command based on parameters
+    priority_cmd = "priority level 1 express"
+    if rate_kbps is not None:
+        priority_cmd += f" {rate_kbps}"
+    elif percent is not None:
+        priority_cmd += f" percent {percent}"
+    
+    config.append(priority_cmd)
     try:
         device.configure(config)
 

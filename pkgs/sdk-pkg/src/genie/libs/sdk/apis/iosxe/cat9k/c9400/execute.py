@@ -99,3 +99,21 @@ def execute_install_one_shot(device, file_path=None, prompt=True, issu=False,
     log.info(f"install one shot operation {result} on {device.name}")
     return (output if result == 'successful' else False)
 
+def execute_diagnostic_start_module_port(device, module_number, test_id, port_num):
+    """ execute diagnostic start module test
+        Args:
+            device ('obj'): Device object
+            module_number ('int'): Module number on which diagnostic has to be performed 
+            test_id ('str'): Test ID list (e.g. 1,3-6) or Test Name or minimal or complete
+            port_num ('str'): word (e.g. 1-8 or all)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f"diagnostic start module {module_number} test {test_id} port {port_num}"
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not execute diagnostic start module {module_number} test {test_id} port {port_num} on device. Error:\n{e}")

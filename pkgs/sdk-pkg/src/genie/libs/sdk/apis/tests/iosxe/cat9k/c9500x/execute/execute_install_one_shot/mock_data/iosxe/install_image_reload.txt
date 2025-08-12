@@ -1,0 +1,361 @@
+Q9-9500X-2003#Jun 27 06:45:05.694: %ACE-3-RELOAD_SYSTEM: R0/0: ceo: Reloading: reload action requested
+
+Chassis 2 reloading, reason - Image Install
+Jun 27 06:45:05.833: %ACE-3-RELOAD_SYSTEM: R0/0: ceo: Reloading: Critical process clustermgr fault on bp_0_0 (exitcode = 0)
+
+
+Q9-9500X-2003#Jun 27 06:45:07.253: %ACE-5-EXITACTION: R0/0: ceo: exiting: ReloadReason=Image Install
+
+
+
+
+Chassis 1 reloading, reason - Reload in progress: Received remote down, reloading local node now.
+
+Jun 27 06:45:15.602: %ACE-5-EXITACTION: R0/0: ceo: exiting: ReloadReason=Image Install
+
+
+
+
+Initializing Hardware...
+
+Initializing Hardware......
+
+Initializing Hardware...
+
+Initializing Hardware......
+
+System Bootstrap, Version 17.12.1r[FC1], RELEASE SOFTWARE (P)
+Compiled Tue May  2 23:11:01 2023 by rel
+
+
+Current ROMMON image : Primary
+Last reset cause     : PowerCycleRequest
+
+C9500X-60L4D platform with 33554432 Kbytes of main memory
+
+Preparing to autoboot. [Press Ctrl-C to interrupt]  1     1     /-\|/-\|/-0
+boot: attempting to boot from [bootflash:packages.conf]
+boot: reading file packages.conf
+#
+####################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################
+System Bootstrap, Version 17.12.1r[FC1], RELEASE SOFTWARE (P)
+Compiled Tue May  2 23:11:01 2023 by rel
+
+
+Current ROMMON image : Primary
+Last reset cause     : PowerCycleRequest
+
+####################################################################################################C9500X-60L4D platform with 33554432 Kbytes of main memory
+
+#################################################################
+
+
+Preparing to autoboot. [Press Ctrl-C to interrupt]  1     1     /-\|/-\|/-0
+boot: attempting to boot from [bootflash:packages.conf]
+boot: reading file packages.conf
+#
+############################################################################################################################################################################################################################################################################################################
+#############################################################################################################################################################################################################################################################################################################################################################################
+
+
+
+Jun 27 06:47:43.829: %SRVMAN-3-RELOAD_RP: F0/0: hman_fp: Reloading: RP will be reloaded
+Jun 27 06:47:43.920: %SRVMAN-3-PROCFAIL: F0/0: hman_fp: The process hman_fp has failed (rc 134)
+
+              Restricted Rights Legend
+
+Use, duplication, or disclosure by the Government is
+subject to restrictions as set forth in subparagraph
+(c) of the Commercial Computer Software - Restricted
+Rights clause at FAR sec. 52.227-19 and subparagraph
+(c) (1) (ii) of the Rights in Technical Data and Computer
+Software clause at DFARS sec. 252.227-7013.
+
+           Cisco Systems, Inc.
+           170 West Tasman Drive
+           San Jose, California 95134-1706
+
+
+
+Cisco IOS Software [Lux], Catalyst L3 Switch Software (CAT9K_IOSXE), Experimental Version 27.0.20250612:003808 [BLD_LUX_DEV_LATEST_20250612_000701:/nobackup/build 102]
+Copyright (c) 1986-2025 by Cisco Systems, Inc.
+Compiled Thu 12-Jun-25 00:41 by mcpre
+
+
+This software version supports only Smart Licensing as the software licensing mechanism.
+
+
+Please read the following carefully before proceeding. By downloading,
+installing, and/or using any Cisco software product, application, feature,
+license, or license key (collectively, the "Software"), you accept and
+agree to the following terms. If you do not agree, do not proceed and do not
+use this Software.
+
+This Software and its use are governed by Cisco's General Terms and any
+relevant supplemental terms found at
+https://www.cisco.com/site/us/en/about/legal/contract-experience/index.html.
+If you have a negotiated agreement with Cisco that includes this Software, the
+terms of that agreement apply as well. In the event of a conflict, the order
+of precedence stated in your negotiated agreement controls.
+
+Cisco Software is licensed on a term and/or subscription-basis. The license to
+the Software is valid only for the duration of the specified term, or in the
+case of a subscription-based license, only so long as all required subscription
+payments are current and fully paid-up. While Cisco may provide you
+licensing-related alerts, it is your sole responsibility to monitor your usage.
+Using Cisco Software without a valid license is not permitted and may result in
+fees charged to your account. Cisco reserves the right to terminate access to,
+or restrict the functionality of, any Cisco Software, or any features thereof,
+that are being used without a valid license.
+
+
+
+FIPS: Crimson DB Key Check : Key Not Found, FIPS Mode Not Enabled
+cisco C9500X-60L4D (X86) processor (revision V02) with 238142K bytes of memory.
+Processor board ID FDO28411A05
+0 Virtual Ethernet interface
+60 Fifty Gigabit Ethernet interfaces
+4 Four Hundred Gigabit Ethernet interfaces
+16K bytes of non-volatile configuration memory.
+33554432K bytes of physical memory.
+11161600K bytes of Bootflash at bootflash:.
+1638400K bytes of Crash Files at crashinfo:.
+
+Base Ethernet MAC Address          : 04:e3:87:40:a4:00
+
+Motherboard Assembly Number        : 4DBE
+Motherboard Serial Number          : FDO28410X28
+Model Revision Number              : V02
+Motherboard Revision Number        : 3
+Model Number                       : C9500X-60L4D
+System Serial Number               : FDO28411A05
+
+
+              Restricted Rights Legend
+
+Use, duplication, or disclosure by the Government is
+subject to restrictions as set forth in subparagraph
+(c) of the Commercial Computer Software - Restricted
+Rights clause at FAR sec. 52.227-19 and subparagraph
+(c) (1) (ii) of the Rights in Technical Data and Computer
+Software clause at DFARS sec. 252.227-7013.
+
+           Cisco Systems, Inc.
+           170 West Tasman Drive
+           San Jose, California 95134-1706
+
+
+
+Cisco IOS Software [Lux], Catalyst L3 Switch Software (CAT9K_IOSXE), Experimental Version 27.0.20250612:003808 [BLD_LUX_DEV_LATEST_20250612_000701:/nobackup/build 102]
+Copyright (c) 1986-2025 by Cisco Systems, Inc.
+Compiled Thu 12-Jun-25 00:41 by mcpre
+
+
+This software version supports only Smart Licensing as the software licensing mechanism.
+
+
+Please read the following carefully before proceeding. By downloading,
+installing, and/or using any Cisco software product, application, feature,
+license, or license key (collectively, the "Software"), you accept and
+agree to the following terms. If you do not agree, do not proceed and do not
+use this Software.
+
+This Software and its use are governed by Cisco's General Terms and any
+relevant supplemental terms found at
+https://www.cisco.com/site/us/en/about/legal/contract-experience/index.html.
+If you have a negotiated agreement with Cisco that includes this Software, the
+terms of that agreement apply as well. In the event of a conflict, the order
+of precedence stated in your negotiated agreement controls.
+
+Cisco Software is licensed on a term and/or subscription-basis. The license to
+the Software is valid only for the duration of the specified term, or in the
+case of a subscription-based license, only so long as all required subscription
+payments are current and fully paid-up. While Cisco may provide you
+licensing-related alerts, it is your sole responsibility to monitor your usage.
+Using Cisco Software without a valid license is not permitted and may result in
+fees charged to your account. Cisco reserves the right to terminate access to,
+or restrict the functionality of, any Cisco Software, or any features thereof,
+that are being used without a valid license.
+
+
+
+FIPS: Crimson DB Key Check : Key Not Found, FIPS Mode Not Enabled
+cisco C9500X-60L4D (X86) processor (revision V02) with 238142K bytes of memory.
+Processor board ID FDO28411A0A
+0 Virtual Ethernet interface
+60 Fifty Gigabit Ethernet interfaces
+4 Four Hundred Gigabit Ethernet interfaces
+16K bytes of non-volatile configuration memory.
+33554432K bytes of physical memory.
+11161600K bytes of Bootflash at bootflash:.
+1638400K bytes of Crash Files at crashinfo:.
+
+Base Ethernet MAC Address          : 04:e3:87:40:a0:00
+
+Motherboard Assembly Number        : 4DBE
+Motherboard Serial Number          : FDO28410X1D
+Model Revision Number              : V02
+Motherboard Revision Number        : 3
+Model Number                       : C9500X-60L4D
+System Serial Number               : FDO28411A0A
+
+
+
+
+Press RETURN to get started!
+
+
+
+Press RETURN to get started!
+
+
+sw.04E38740A400-bp>
+sw.04E38740A400-bp>
+              Restricted Rights Legend
+
+Use, duplication, or disclosure by the Government is
+subject to restrictions as set forth in subparagraph
+(c) of the Commercial Computer Software - Restricted
+Rights clause at FAR sec. 52.227-19 and subparagraph
+(c) (1) (ii) of the Rights in Technical Data and Computer
+Software clause at DFARS sec. 252.227-7013.
+
+           Cisco Systems, Inc.
+           170 West Tasman Drive
+           San Jose, California 95134-1706
+
+
+
+Cisco IOS Software [Lux], Catalyst L3 Switch Software (CAT9K_IOSXE), Experimental Version 27.0.20250612:003751 [BLD_LUX_DEV_LATEST_20250612_000701:/nobackup/build 101]
+Copyright (c) 1986-2025 by Cisco Systems, Inc.
+Compiled Thu 12-Jun-25 00:41 by mcpre
+
+
+This software version supports only Smart Licensing as the software licensing mechanism.
+
+
+Please read the following carefully before proceeding. By downloading,
+installing, and/or using any Cisco software product, application, feature,
+license, or license key (collectively, the "Software"), you accept and
+agree to the following terms. If you do not agree, do not proceed and do not
+use this Software.
+
+This Software and its use are governed by Cisco's General Terms and any
+relevant supplemental terms found at
+https://www.cisco.com/site/us/en/about/legal/contract-experience/index.html.
+If you have a negotiated agreement with Cisco that includes this Software, the
+terms of that agreement apply as well. In the event of a conflict, the order
+of precedence stated in your negotiated agreement controls.
+
+Cisco Software is licensed on a term and/or subscription-basis. The license to
+the Software is valid only for the duration of the specified term, or in the
+case of a subscription-based license, only so long as all required subscription
+payments are current and fully paid-up. While Cisco may provide you
+licensing-related alerts, it is your sole responsibility to monitor your usage.
+Using Cisco Software without a valid license is not permitted and may result in
+fees charged to your account. Cisco reserves the right to terminate access to,
+or restrict the functionality of, any Cisco Software, or any features thereof,
+that are being used without a valid license.
+
+
+
+FIPS: Crimson DB Key Check : Key Not Found, FIPS Mode Not Enabled
+cisco C9500X-60L4D (X86) processor (revision V02) with 5765990K/6147K bytes of memory.
+Processor board ID FDO28411A05
+0 Virtual Ethernet interface
+120 Fifty Gigabit Ethernet interfaces
+8 Four Hundred Gigabit Ethernet interfaces
+32768K bytes of non-volatile configuration memory.
+33554432K bytes of physical memory.
+11161600K bytes of Bootflash at bootflash:.
+1638400K bytes of Crash Files at crashinfo:.
+
+Base Ethernet MAC Address          : 04:e3:87:40:a4:00
+
+Motherboard Assembly Number        : 4DBE
+Motherboard Serial Number          : FDO28410X28
+Model Revision Number              : V02
+Motherboard Revision Number        : 3
+Model Number                       : C9500X-60L4D
+System Serial Number               : FDO28411A05
+
+ WARNING: Configured enable password CLI with weak encryption type 0 will be deprecated in future. Hence please migrate to enable secret CLI which accomplishes same functionality as enable password CLI and which also supports strong irreversible encryption type 9
+ WARNING: Command has been added to the configuration using a type 0 password. However, recommended to migrate to strong type-6 encryption
+
+
+Press RETURN to get started!
+
+
+              Restricted Rights Legend
+
+Use, duplication, or disclosure by the Government is
+subject to restrictions as set forth in subparagraph
+(c) of the Commercial Computer Software - Restricted
+Rights clause at FAR sec. 52.227-19 and subparagraph
+(c) (1) (ii) of the Rights in Technical Data and Computer
+Software clause at DFARS sec. 252.227-7013.
+
+           Cisco Systems, Inc.
+           170 West Tasman Drive
+           San Jose, California 95134-1706
+
+
+
+Cisco IOS Software [Lux], Catalyst L3 Switch Software (CAT9K_IOSXE), Experimental Version 27.0.20250612:003751 [BLD_LUX_DEV_LATEST_20250612_000701:/nobackup/build 101]
+Copyright (c) 1986-2025 by Cisco Systems, Inc.
+Compiled Thu 12-Jun-25 00:41 by mcpre
+
+
+This software version supports only Smart Licensing as the software licensing mechanism.
+
+
+Please read the following carefully before proceeding. By downloading,
+installing, and/or using any Cisco software product, application, feature,
+license, or license key (collectively, the "Software"), you accept and
+agree to the following terms. If you do not agree, do not proceed and do not
+use this Software.
+
+This Software and its use are governed by Cisco's General Terms and any
+relevant supplemental terms found at
+https://www.cisco.com/site/us/en/about/legal/contract-experience/index.html.
+If you have a negotiated agreement with Cisco that includes this Software, the
+terms of that agreement apply as well. In the event of a conflict, the order
+of precedence stated in your negotiated agreement controls.
+
+Cisco Software is licensed on a term and/or subscription-basis. The license to
+the Software is valid only for the duration of the specified term, or in the
+case of a subscription-based license, only so long as all required subscription
+payments are current and fully paid-up. While Cisco may provide you
+licensing-related alerts, it is your sole responsibility to monitor your usage.
+Using Cisco Software without a valid license is not permitted and may result in
+fees charged to your account. Cisco reserves the right to terminate access to,
+or restrict the functionality of, any Cisco Software, or any features thereof,
+that are being used without a valid license.
+
+
+
+FIPS: Crimson DB Key Check : Key Not Found, FIPS Mode Not Enabled
+cisco C9500X-60L4D (X86) processor (revision V02) with 5765990K/6147K bytes of memory.
+Processor board ID FDO28411A0A
+0 Virtual Ethernet interface
+120 Fifty Gigabit Ethernet interfaces
+8 Four Hundred Gigabit Ethernet interfaces
+32768K bytes of non-volatile configuration memory.
+33554432K bytes of physical memory.
+11161600K bytes of Bootflash at bootflash:.
+1638400K bytes of Crash Files at crashinfo:.
+
+Base Ethernet MAC Address          : 04:e3:87:40:a0:00
+
+Motherboard Assembly Number        : 4DBE
+Motherboard Serial Number          : FDO28410X1D
+Model Revision Number              : V02
+Motherboard Revision Number        : 3
+Model Number                       : C9500X-60L4D
+System Serial Number               : FDO28411A0A
+
+ WARNING: Configured enable password CLI with weak encryption type 0 will be deprecated in future. Hence please migrate to enable secret CLI which accomplishes same functionality as enable password CLI and which also supports strong irreversible encryption type 9
+ WARNING: Command has been added to the configuration using a type 0 password. However, recommended to migrate to strong type-6 encryption
+
+
+Press RETURN to get started!

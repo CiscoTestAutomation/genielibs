@@ -30,4 +30,8 @@ execute:
       response:
       - ''
       response_type: circular
+    TFTP_FILE=valid_image.bin:
+      response:
+      - ''
+      response_type: circular
   prompt: 'switch:'

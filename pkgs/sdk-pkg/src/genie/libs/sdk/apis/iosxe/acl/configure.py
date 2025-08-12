@@ -9,7 +9,7 @@ from unicon.core.errors import SubCommandFailure
 
 log = logging.getLogger(__name__)
 
-
+                                                                                                                                                                                            
 def config_extended_acl(
     device,
     acl_name,
@@ -64,6 +64,8 @@ def config_extended_acl(
                 protocol=protocol,
                 src_ip=src_ip,
                 dst_ip=dst_ip)
+            if port_type and dst_port:
+                cmd += port_type + " " + dst_port + " "
             if log_option:
                 cmd += log_option
             if time_range:
@@ -431,7 +433,8 @@ def configure_ipv6_acl(
         dst_port=None,
         log_option=None,
         sequence_num=None,
-        time_range=None
+        time_range=None,
+        port_type=None,
 ):
     """ Configure IPv6 ACL
 
@@ -476,7 +479,9 @@ def configure_ipv6_acl(
     else:
         cmd += f'{dst_nw}/{prefix} '
 
-    if dst_port:
+    if port_type and dst_port:
+        cmd += f'{port_type} {dst_port} '
+    elif dst_port and port_type is None:
         cmd += f'eq {dst_port} '
 
     if log_option:
@@ -1872,7 +1877,7 @@ def unconfigure_mac_access_group_mac_acl_in_out(device, interface_id, acl_name, 
         )
     )
 
-def configure_ip_acl(device, name, action, source, dest):
+def configure_ip_acl(device, name, action, source, dest, log=False):
     """ Configuring ip ACL
         Example: ip access-lists extended ip_acl
                 permit ip host 100.1.1.2 host 150.1.1.2
@@ -1890,8 +1895,11 @@ def configure_ip_acl(device, name, action, source, dest):
     action = action.strip().lower()
     if action not in ('permit', 'deny'):
         log.info("Invalid action type")
-    config = [f"ip access-list extended {name}",
-              f"{action} ip host {source} host {dest}"]
+    config = [f"ip access-list extended {name}"]
+    if log:
+        config.append(f"{action} ip host {source} host {dest} log")
+    else:
+        config.append(f"{action} ip host {source} host {dest}")
     try:
         device.configure(config)
     except SubCommandFailure as e:
@@ -2085,7 +2093,7 @@ def configure_arp_acl(device, name, action, source, sender_mac='', mac_mask='', 
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure arp acl on the device {device.name}. Error:\n{e}")
 
-def configure_access_map_match_ip_mac_address(device, vlan_access_name, value, acl_name, action):
+def configure_access_map_match_ip_mac_address(device, vlan_access_name, value=None, acl_name=None, action=None):
     """ Configuring access map match ip mac address
 
         Args:
@@ -2100,17 +2108,20 @@ def configure_access_map_match_ip_mac_address(device, vlan_access_name, value, a
         Raises: 
             SubCommandFailure
     """
-    cmd = [
-        f"vlan access-map {vlan_access_name}",
-        f"match {value} address {acl_name}",
-        f"action {action}",
-    ]
+    cmd = []
+    if vlan_access_name:
+        cmd.append(f"vlan access-map {vlan_access_name}")
+    if value and acl_name:
+        cmd.append(f"match {value} address {acl_name}")
+    if action:
+        cmd.append(f"action {action}")
+
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure access map match ip mac address on the device {device.name}. Error:\n{e}")
 
-def configure_acl_protocol_port(device, ip_protocol_version, acl_name, acl_action, protocol, port_operation, src_port, dst_port):
+def configure_acl_protocol_port(device, ip_protocol_version, acl_name, acl_action, protocol, port_operation, src_port, dst_port, log=False):
     """ Configure acl protocol port
 
         Args:
@@ -2133,13 +2144,16 @@ def configure_acl_protocol_port(device, ip_protocol_version, acl_name, acl_actio
         cmd.append(f"{ip_protocol_version} access-list extended {acl_name}")
     else:
         cmd.append(f"{ip_protocol_version} access-list {acl_name}")
-    cmd.append(f"{acl_action} {protocol} any any {port_operation} {src_port} {dst_port}")
+    if log:
+        cmd.append(f"{acl_action} {protocol} any any {port_operation} {src_port} {dst_port} log")
+    else:
+        cmd.append(f"{acl_action} {protocol} any any {port_operation} {src_port} {dst_port}")
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure acl protocol port {device.name}. Error:\n{e}")
 
-def configure_ip_acl_with_any(device, acl_name, acl_action):
+def configure_ip_acl_with_any(device, acl_name, acl_action, log=False):
     """ Configuring ip ACL with any
         Example: ip access-lists extended ip_acl
                 permit ip any any
@@ -2154,8 +2168,11 @@ def configure_ip_acl_with_any(device, acl_name, acl_action):
     """
     acl_action = acl_action.strip().lower()
     assert acl_action in ('permit', 'deny'), f"{acl_action} is an invalid action type"
-    config = [f"ip access-list extended {acl_name}",
-              f"{acl_action} ip any any"]
+    config = [f"ip access-list extended {acl_name}"]
+    if log:
+        config.append(f"{acl_action} ip any any log")
+    else:
+        config.append(f"{acl_action} ip any any")
     try:
         device.configure(config)
     except SubCommandFailure as e:

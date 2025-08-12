@@ -1,34 +1,10 @@
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
 from genie.libs.sdk.apis.iosxe.cts.configure import cts_refresh_pac
+from unittest.mock import Mock
 
-
-class TestCtsRefreshPac(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = """
-        devices:
-          CTS-AUTO-C9500:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: switch
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['CTS-AUTO-C9500']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestCtsRefreshPac(TestCase):
 
     def test_cts_refresh_pac(self):
-        result = cts_refresh_pac(self.device)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.device = Mock()
+        cts_refresh_pac(self.device)
+        self.device.execute.assert_called_once_with('cts refresh pac')

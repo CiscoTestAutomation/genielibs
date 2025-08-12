@@ -169,3 +169,39 @@ def execute_monitor_capture_vlan_in_match_any(device, capture_name, vlan_id):
         device.execute(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not execute monitor capture {capture_name} vlan {vlan_id} in match any. \nError: {e}")
+
+def execute_monitor_capture_match_any_interface_both(device, capture_name, interface):
+    """
+    Execute monitor capture {capture_name} match any interface {interface} both
+    Example: monitor capture test match any interface GigabitEthernet1/0/1 both
+    Args:
+        device ('obj'): Device Object
+        capture_name ('str'): Name of Capture
+        interface ('str'): Interface name
+    """
+    cmd = f"monitor capture {capture_name} match any interface {interface} both"
+
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not execute monitor capture {capture_name} match any interface {interface} both. \nError: {e}")
+    
+def execute_show_monitor_capture_buffer_brief(device, capture_name):
+    """
+    Execute show monitor capture {capture_name} buffer brief
+    Example: show monitor capture test buffer brief
+    Args:
+        device ('obj'): Device Object
+        capture_name ('str'): Name of Capture
+    Returns:
+        str: Command output
+    Raises:
+        SubCommandFailure
+    """
+    cmd = f"show monitor capture {capture_name} buffer brief"
+    try:
+        return device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not execute show monitor capture {capture_name} buffer brief. \nError: {e}")

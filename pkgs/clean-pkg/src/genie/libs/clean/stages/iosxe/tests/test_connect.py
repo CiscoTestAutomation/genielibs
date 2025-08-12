@@ -58,6 +58,7 @@ class TestIosXEConnect(unittest.TestCase):
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['R1']
         self.device.connect(mit=True)
+        self.device.logout = MagicMock()
 
     @classmethod
     def tearDownClass(self):
@@ -108,6 +109,7 @@ class TestIosXEConnect_1(unittest.TestCase):
             """.format(md.ports[0]))
         tb = loader.load(testbed)
         device = tb.devices.R1
+        device.logout = MagicMock()
 
         cls = Connect()
 

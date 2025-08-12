@@ -82,6 +82,75 @@ class TestHealthCpu(unittest.TestCase):
                 }
             }
         }
+        output3 = {
+            "cpu_utilization": {
+                "five_sec_cpu_total": 0.01,
+                "one_min_cpu": 0.02,
+                "five_min_cpu": 0.15,
+                "core": {
+                    "Core 0": {
+                        "core_cpu_util_five_secs": 0.02,
+                        "core_cpu_util_one_min": 0.01,
+                        "core_cpu_util_five_min": 0.12
+                    },
+                    "Core 1": {
+                        "core_cpu_util_five_secs": 0.01,
+                        "core_cpu_util_one_min": 0.01,
+                        "core_cpu_util_five_min": 0.13
+                    },
+                    "Core 2": {
+                        "core_cpu_util_five_secs": 0.03,
+                        "core_cpu_util_one_min": 0.01,
+                        "core_cpu_util_five_min": 0.14
+                    },
+                    "Core 4": {
+                        "core_cpu_util_five_secs": 0.02,
+                        "core_cpu_util_one_min": 0.02,
+                        "core_cpu_util_five_min": 0.15
+                    },
+                    "Core 6": {
+                        "core_cpu_util_five_secs": 0.02,
+                        "core_cpu_util_one_min": 0.02,
+                        "core_cpu_util_five_min": 0.18
+                    },
+                    "Core 7": {
+                        "core_cpu_util_five_secs": 0.04,
+                        "core_cpu_util_one_min": 0.02,
+                        "core_cpu_util_five_min": 0.15
+                    }
+                }
+            },
+            "sort": {
+                "0": {
+                    "ppid": 16358,
+                    "five_sec_cpu": 0.02,
+                    "one_min_cpu": 0.02,
+                    "five_min_cpu": 0.06,
+                    "status": "S",
+                    "size": 297280,
+                    "process": "fed main event"
+                },
+                "1": {
+                    "ppid": 6649,
+                    "five_sec_cpu": 0.02,
+                    "one_min_cpu": 0.01,
+                    "five_min_cpu": 0.14,
+                    "status": "S",
+                    "size": 909712,
+                    "process": "linux_iosd-imag"
+                },
+                "2": {
+                    "ppid": 6960,
+                    "five_sec_cpu": 0.01,
+                    "one_min_cpu": 0.01,
+                    "five_min_cpu": 0.02,
+                    "status": "S",
+                    "size": 76160,
+                    "process": "sif_mgr"
+                }
+            }
+        }
+
         dev1.parse = Mock()
         dev1.parse.side_effect = [output1, output2]
         result = health_cpu(dev1, processes=['process1', 'process2', 'process3'])
@@ -103,3 +172,12 @@ class TestHealthCpu(unittest.TestCase):
         result = health_cpu(dev3, command='test_command', processes=['process1', 'process2', 'process3'])
         expected_output = {'health_data': [{'process': 'process1', 'value': 0.07}, {'process': 'process2', 'value': 0.07}]}
         self.assertEqual(result, expected_output)
+
+        dev4 = Device('r4', os='iosxe', platform='iosxe')
+        dev4.parse = Mock()
+        dev4.parse.side_effect = [output3]
+        result = health_cpu(dev4, command='test_command', processes=['fed', 'linux_iosd-imag', 'sif_mgr'])
+        expected_output = {'health_data': [{'process': 'linux_iosd-imag', 'value': 0.02}, {'process': 'sif_mgr', 'value': 0.01}]}
+        self.assertEqual(result, expected_output)
+      
+     

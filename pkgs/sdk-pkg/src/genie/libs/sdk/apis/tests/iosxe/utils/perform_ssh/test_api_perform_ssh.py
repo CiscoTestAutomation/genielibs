@@ -1,35 +1,53 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
 from genie.libs.sdk.apis.iosxe.utils import perform_ssh
+from unittest.mock import Mock, call
 
-
-class TestPerformSsh(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          Switch:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: c9200
-            type: c9200
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Switch']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestPerformSsh(TestCase):
 
     def test_perform_ssh(self):
-        result = perform_ssh(self.device, 'Switch', '1.1.1.1', 'test-user', 'cisco@123', None, 'cisco@123', 60, 22, None, None)
-        expected_output = True
-        self.assertEqual(result, expected_output)
+        self.device = Mock()
+        perform_ssh(self.device, 'Switch', '1.1.1.1', 'test-user', 'cisco@123', None, 'cisco@123', 60, 22, None, None)
+        self.assertEqual(
+            self.device.execute.call_args[0][0],
+            'ssh -l test-user -p 22 1.1.1.1'
+        )
+
+
+    def test_perform_ssh_authentication_failure(self):
+        device = Mock()
+        device.execute.return_value = """
+        ssh -l test -p 1.1.1.1
+        Password:
+
+        Password:
+
+        Password:
+
+        Password:
+
+        [Connection to 1.1.1.1 closed by foreign host]
+        """
+
+        result = perform_ssh(device, 'Switch', '1.1.1.1', 'test-user', 'cisco@123', None, 'cisco@123', 60, 22, None, None)
+
+        self.assertEqual(
+            device.execute.call_args[0][0],
+            'ssh -l test-user -p 22 1.1.1.1'
+        )
+        # Validate that the api returns False on authentication failure
+        self.assertFalse(result)
+
+    def test_perform_ssh_timeout_failure(self):
+        device = Mock()
+        device.execute.return_value = """
+        Password:
+        % Password: timeout expired!
+        """
+        result = perform_ssh(device, 'Switch', '1.1.1.1', 'test-user', 'cisco@123', None, 'cisco@123', 60, 22, None, None)
+
+        self.assertEqual(
+            device.execute.call_args[0][0],
+            'ssh -l test-user -p 22 1.1.1.1'
+        )
+        # Validate that the api returns False on timeout failure
+        self.assertFalse(result)
