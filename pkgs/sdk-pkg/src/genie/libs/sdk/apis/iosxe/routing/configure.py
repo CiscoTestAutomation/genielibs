@@ -1223,3 +1223,32 @@ def enable_ip_classless(device):
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Failed to enable ip classless on device {device}. Error:\n{e}')
+
+def configure_ip_route_cache_on_interface(device, interface, cef=False):
+    """ Configure 'ip route-cache' or 'ip route-cache cef' on a specific interface
+
+    Args:
+        device ('obj'): Device object
+        interface ('str'): Interface name (e.g., GigabitEthernet0/1/1)
+        cef ('bool'): If True, configures 'ip route-cache cef' else 'ip route-cache'
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure
+    """
+    cmd = "ip route-cache cef" if cef else "ip route-cache"
+    log.info(f"Configuring '{cmd}' on interface {interface}")
+
+    try:
+        device.configure([
+            f"interface {interface}",
+            cmd
+        ])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure '{cmd}' on interface {interface}. Error:\n{e}"
+        )
+
+

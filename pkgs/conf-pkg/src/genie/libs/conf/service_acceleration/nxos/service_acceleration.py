@@ -142,6 +142,15 @@ class ServiceAcceleration(ABC):
                             configurations.append_block(servicevrf_key.build_config(
                                 apply=False, attributes=attributes2, **kwargs))
 
+                    # ServiceVlan attributes config
+                    for servicevlan_key, attributes2 in attributes.sequence_values('servicevlan_keys', sort=True):
+                        if unconfig:
+                            configurations.append_block(servicevlan_key.build_unconfig(
+                                apply=False, attributes=attributes2, **kwargs))
+                        else:
+                            configurations.append_block(servicevlan_key.build_config(
+                                apply=False, attributes=attributes2, **kwargs))
+
                 return str(configurations)
 
             def build_unconfig(self, apply=True, attributes=None, **kwargs):

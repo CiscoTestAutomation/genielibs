@@ -262,3 +262,84 @@ def unconfigure_ip_prefix_list_seq(device, prefix_list_name, ip_address,
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not unconfigure ip prefix-list on device. Error:\n{e}")
+        
+def configure_ipv6_prefix_list_with_permit_deny(device, prefix_list_name, option, 
+                                       ipv6_address, prefix_length, seq_num = None,
+                                       match_option=None, match_length=None):
+    """ configure ipv6 prefix-list with sequence number on device
+        Args:
+            device (`obj`): device to execute on
+            prefix_list_name (`str`): prefix list name to be used
+            seq_num (`int`, optional): sequence number for the prefix list entry
+            option (`str`): option for prefix list
+                ex:)
+                    deny         Specify packets to reject
+                    permit       Specify packets to forward
+            ipv6_address (`str`): IPv6 address to be used
+            prefix_length (`int`): prefix length to be used (0-128 for IPv6)
+            match_option (`str`, optional): prefix matching option
+                ex:)
+                    le           Less than or equal to
+                    ge           Greater than or equal to
+            match_length (`int`, optional): prefix matching length
+                ex:)
+                    <0-128>      Prefix length for IPv6
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    
+    cmd = []
+    if match_option and match_length and seq_num is not None:
+        cmd.append(f'ipv6 prefix-list {prefix_list_name} seq {seq_num} {option} {ipv6_address}/{prefix_length} {match_option} {match_length}')
+    elif seq_num is not None:
+        cmd.append(f'ipv6 prefix-list {prefix_list_name} seq {seq_num} {option} {ipv6_address}/{prefix_length}')
+    else:
+        cmd.append(f'ipv6 prefix-list {prefix_list_name} {option} {ipv6_address}/{prefix_length}')
+    
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure ipv6 prefix-list on device. Error:\n{e}")
+        
+
+def unconfigure_ipv6_prefix_list_with_permit_deny(device, prefix_list_name, option, 
+                                       ipv6_address, prefix_length, seq_num = None,
+                                       match_option=None, match_length=None):
+    """ configure ipv6 prefix-list with sequence number on device
+        Args:
+            device (`obj`): device to execute on
+            prefix_list_name (`str`): prefix list name to be used
+            seq_num (`int`, optional): sequence number for the prefix list entry
+            option (`str`): option for prefix list
+                ex:)
+                    deny         Specify packets to reject
+                    permit       Specify packets to forward
+            ipv6_address (`str`): IPv6 address to be used
+            prefix_length (`int`): prefix length to be used (0-128 for IPv6)
+            match_option (`str`, optional): prefix matching option
+                ex:)
+                    le           Less than or equal to
+                    ge           Greater than or equal to
+            match_length (`int`, optional): prefix matching length
+                ex:)
+                    <0-128>      Prefix length for IPv6
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    
+    cmd = []
+    if match_option and match_length and seq_num is not None:
+        cmd.append(f'no ipv6 prefix-list {prefix_list_name} seq {seq_num} {option} {ipv6_address}/{prefix_length} {match_option} {match_length}')
+    elif seq_num is not None:
+        cmd.append(f'no ipv6 prefix-list {prefix_list_name} seq {seq_num} {option} {ipv6_address}/{prefix_length}')
+    else:
+        cmd.append(f'no ipv6 prefix-list {prefix_list_name} {option} {ipv6_address}/{prefix_length}')
+    
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not unconfigure ipv6 prefix-list on device. Error:\n{e}")

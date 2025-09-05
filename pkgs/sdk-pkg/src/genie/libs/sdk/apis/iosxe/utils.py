@@ -2100,22 +2100,28 @@ def password_recovery(device, console_activity_pattern='',
     else:
         device.enable()
 
-    # step:5 Configure the login credentials
+    # step:5 Init connection settings (term length, etc.)
+    log.info('Initialize connection settings')
+    device.connection_provider.init_connection()
+
+    # step:6 Configure the login credentials
     log.info(f'Configure the login credentials {device.name}')
     device.api.configure_management_credentials()
 
-    # step:6 Unconfigure the ignore startup config
+    # step:7 Unconfigure the ignore startup config
     log.info(f'Unconfigure the ignore startup config {device.name}')
     device.api.unconfigure_ignore_startup_config()
 
-    # step:7 verify the rommon variable
+    # step:8 verify the rommon variable
     log.info(f'verify the ignore startup config {device.name}')
     if not device.api.verify_ignore_startup_config():
         raise Exception(f"Failed to unconfigure the ignore startup config on {device.name}")
 
-    # step:8 Execute write memory
+    # step:9 Execute write memory
     log.info(f'Executing write memory {device.name}')
     device.api.execute_write_memory()
+
+
 
 def configure_generic_command(device,cmd):
     """

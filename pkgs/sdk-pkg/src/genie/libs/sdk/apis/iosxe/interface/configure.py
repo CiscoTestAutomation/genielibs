@@ -10901,6 +10901,7 @@ def configure_fec_auto_off(device, interface, fec='auto'):
         raise SubCommandFailure(
             f"Could not configure fec {fec} on {interface}. Error:\n{e}"
             )
+
 def configure_loopdetect(device, interface):
     """ Enable loop detection on an interface   
     Args:
@@ -10924,6 +10925,129 @@ def configure_loopdetect(device, interface):
                 intf=interface, dev=device.name, error=e
             )
         )
+        
+def configure_pvlan_for_input_service_policy(device, interface, native_vlan, allowed_vlans, association_trunk_numbers, mapping_trunk_numbers, mode, policy_name):
+    """ Configures private VLAN settings on an input interface
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface to configure
+            native_vlan ('int'): native VLAN ID
+            allowed_vlans ('str'): allowed VLANs in the trunk
+            association_trunk_numbers ('str'): trunk numbers for private-vlan association 
+            mapping_trunk_numbers ('str'): trunk numbers for private-vlan mapping
+            mode ('str'): private VLAN mode
+            policy_name ('str'): policy-name to apply
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    log.debug(f"Configuring private VLAN on input interface {interface} on device {device.name}")
+
+    cmd = [
+        f'interface {interface}',
+        f'switchport private-vlan trunk native vlan {native_vlan}',
+        f'switchport private-vlan trunk allowed vlan {allowed_vlans}',
+        f'switchport private-vlan association trunk {association_trunk_numbers}',
+        f'switchport private-vlan mapping trunk {mapping_trunk_numbers}',
+        f'switchport mode private-vlan {mode}',
+        f'service-policy input {policy_name}'
+    ]
+
+    try:
+        device.configure(cmd)
+        log.info(f"Successfully configured private VLAN for input service-policy on {interface}")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure private VLAN for input service-policy on {interface}. Error:\n{e}")
+
+def configure_pvlan_for_output_service_policy(device, interface, allowed_vlans, primary_mapping_vlans, secondary_mapping_vlans, policy_name, queue_policy_name):
+    """ Configures private VLAN settings on an output interface
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface to configure
+            allowed_vlans ('str'): allowed VLANs in the trunk
+            primary_mapping_vlans ('str'): primary VLAN ID of the private VLAN promiscuous port mapping
+            secondary_mapping_vlans ('str'): secondary VLAN ID of the private VLAN promiscuous port mapping
+            policy_name ('str'): policy-name to apply
+            queue_policy_name ('str'): queue policy-name to apply
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"Configuring private VLAN on output interface {interface} on device {device.name}")
+    cmd = [
+        f'interface {interface}',
+        f'switchport private-vlan trunk allowed vlan {allowed_vlans}',
+        f'switchport private-vlan mapping trunk {primary_mapping_vlans} {secondary_mapping_vlans}',
+        f'switchport mode private-vlan trunk promiscuous',
+        f'service-policy output {policy_name}',
+        f'service-policy type queueing output {queue_policy_name}'
+    ]
+
+    try:
+        device.configure(cmd)
+        log.info(f"Successfully configured private VLAN for output service-policy on {interface}")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure private VLAN for output service-policy on {interface}. Error:\n{e}")
+            
+def unconfigure_loopdetect(device, interface):
+    """ Disable loop detection and bounce (shut/no shut) an interface
+    Args:
+        device (`obj`): Device object
+        interface (`str`): Interface name
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure
+    """
+    try:
+        device.configure(
+            [
+                "interface {interface}".format(interface=interface),
+                "no loopdetect",
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not disable loop detection and bounce interface {interface} on device {dev}. Error:\n"
+            "{error}".format(interface=interface, dev=device.name, error=e)
+        )    
+        
+def configure_remote_span_monitor_session(device, session_number, direction_type, direction_int=None, source_option=None, vlan_id=None):        
+     """ Configure remote span monitor session
+     
+         Args:
+             device ('obj'): Device object
+             session_number ('int'): session number
+             direction_type ('str', optional): source or destination interface name to be configured
+             direction_int ('str', optional): name of the destination interface to be configured, default value None
+             source_option ('str', optional): name of the source option to be configured, default value None             
+             vlan_id ('str', optional): vlan to be configured, default value None
+         Returns:
+             None
+         Raises:
+             SubCommandFailure
+     """
+     configs = []
+     if source_option :
+         configs.append(f"monitor session {session_number} {direction_type} interface {direction_int} {source_option}")
+     elif vlan_id :
+         configs.append(f"monitor session {session_number} {direction_type} remote vlan {vlan_id}")
+     else:
+         configs.append(f"monitor session {session_number} {direction_type} interface {direction_int}")     
+     try:
+         device.configure(configs)
+     except SubCommandFailure as e:
+         raise SubCommandFailure(
+             f"Failed to configure remote span monitor session on interface:\n{e}"
+         )
+
 def unconfigure_loopdetect(device, interface):
     """ Disable loop detection and bounce (shut/no shut) an interface
 

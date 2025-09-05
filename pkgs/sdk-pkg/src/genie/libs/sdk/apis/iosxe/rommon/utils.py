@@ -33,66 +33,41 @@ def device_rommon_boot(device, golden_image=None, tftp_boot=None, error_pattern=
     '''
 
     log.info(f'Get the recovery details from clean for device {device.name}')
-    try:
-        recovery_info = device.clean.get('device_recovery', {})
-    except AttributeError:
-        log.warning(f'There is no recovery info for device {device.name}')
-        recovery_info = {}
+    recovery_info = device.api.get_recovery_details(golden_image, tftp_boot)
+    cmd = ""
 
-    # golden_image info from device recovery
-    if not golden_image:
-        golden_image = recovery_info.get('golden_image', [])
+    # Execute config register in rommon state
+    log.info(f"Setting config register for device {device.name}")
+    device.api.execute_set_config_register(config_register='0x0')
 
-    # tftp info from device recovery
-    tftp_boot = tftp_boot or recovery_info.get('tftp_boot', {})
-    # get the image and tftp server info
-    image = tftp_boot.get('image', [])
-    tftp_server = tftp_boot.get('tftp_server', "")
+    # Execute reset command, supported platforms: asr1k, isr4k
+    log.info(f"Executing ROMMON reset for device {device.name}")
+    device.api.execute_rommon_reset()
 
     # To boot using golden image
-    if golden_image:
+    if recovery_info['golden_image']:
         log.info(banner("Booting device '{}' with the Golden images".\
                         format(device.name)))
-        log.info("Golden image information found:\n{}".format(golden_image))
-        golden_image = golden_image[0]
+        log.info("Golden image information found:\n{}".format(recovery_info['golden_image']))
+        golden_image = recovery_info['golden_image'][0]
         cmd = f"{golden_image}"
 
     # To boot using tftp information
-    elif tftp_server and image:
+    elif recovery_info['tftp_image']:
         log.info(banner("Booting device '{}' with the Tftp images".\
                         format(device.name)))
-        log.info("Tftp boot information found:\n{}".format(tftp_boot))
-
-        # To process the image path
-        if image[0][0] != '/':
-            image[0] = '/' + image[0]
-
-        # To build the tftp command
-        cmd_info = ("tftp://", tftp_server, image[0])
-        cmd = ''.join(cmd_info)
-
-        # If the length of the TFTP path is greater than the
-        # imposed limit on IOSXE, boot from TFTP_FILE instead
-        if len(cmd) > 199:
-            log.info(f"TFTP path `{cmd}` is too long, will boot from TFTP_FILE instead")
-            cmd = "tftp:"
-
-            # Set ROMMON variables
-            log.info('Setting the rommon variables for TFTP boot (device_rommon_boot)')
-            try:
-                if device.is_ha and hasattr(device, 'subconnections'):
-                    device.api.configure_rommon_tftp_ha()
-                else:
-                    device.api.configure_rommon_tftp()
-            except Exception as e:
-                log.warning(f'Failed to set the rommon variables for device {device.name}')
-
-    # To boot using tftp rommon variable
-    # In this case, we assume the rommon variable TFTP_FILE is set already
-    # and booting it using the "boot tftp:" command
-    elif getattr(device.clean, 'images', []):
-        log.warning('Assuming the rommon variable TFTP_FILE is set and boot using "boot tftp:" command')
+        log.info("Tftp boot information found:\n{}".format(recovery_info['tftp_boot']))
         cmd = "tftp:"
+
+        # Setting rommon variables for booting
+        log.info(f'Setting the rommon variables for TFTP boot device {device.name}')
+        try:
+            if device.is_ha and hasattr(device, 'subconnections'):
+                device.api.configure_rommon_tftp_ha()
+            else:
+                device.api.configure_rommon_tftp()
+        except Exception as e:
+            log.warning(f'Failed to set the rommon variables for device {device.name}')
 
     else:
         raise Exception('Global recovery only support golden image and tftp '
@@ -137,11 +112,6 @@ def device_rommon_boot(device, golden_image=None, tftp_boot=None, error_pattern=
         # set image to boot
         conn.context['image_to_boot'] = cmd
         conn.context['grub_boot_image'] = cmd
-
-        # Execute config register in rommon state
-        conn.device.api.execute_set_config_register(config_register='0x0')
-        # Execute reset command, supported platforms: asr1k, isr4k
-        conn.device.api.execute_rommon_reset()
 
         # bring rommon to enable state
         conn.state_machine.go_to('enable',

@@ -11,13 +11,15 @@ from genie.metaparser.util.exceptions import (SchemaEmptyParserError,
 from genie.libs.parser.iosxe.show_logging import ShowLogging
 from genie.utils import Dq
 
-
 # Logger
 log = logging.getLogger(__name__)
 
 
 def health_cpu(device,
-               command=['show processes cpu sorted | exclude 0.00%', 'show processes cpu platform sorted | exclude 0%'],
+               command=[
+                   'show processes cpu sorted | exclude 0.00%',
+                   'show processes cpu platform sorted | exclude 0%'
+               ],
                processes=None,
                check_key='five_sec_cpu',
                check_key_total='five_sec_cpu_total',
@@ -71,21 +73,23 @@ def health_cpu(device,
         except SchemaEmptyParserError as e:
             log.error(f"Command '{cmd}' did not return any output\n{e}")
         except InvalidCommandError as e:
-            log.warning(f"Command '{cmd}' is not supported on the device {device.name}")
+            log.warning(
+                f"Command '{cmd}' is not supported on the device {device.name}"
+            )
     if not parsed_output:
         return None
 
     if processes:
         for ps_item in processes:
             for output in parsed_output:
-            # To get process id based on check_key
-            # {
-            #   (snip))
-            #   "sort": {
-            #     "1": {
-            #       "process": "Chunk Manager",
-            #       (snip)
-            #       "five_sec_cpu": 0.0,
+                # To get process id based on check_key
+                # {
+                #   (snip))
+                #   "sort": {
+                #     "1": {
+                #       "process": "Chunk Manager",
+                #       (snip)
+                #       "five_sec_cpu": 0.0,
                 indexes = Dq(output).contains_key_value(
                     'process', ps_item, value_regex=True).get_values('sort')
                 for index in indexes:
@@ -93,10 +97,8 @@ def health_cpu(device,
                         process = output['sort'][index]['process']
                     else:
                         process = output['sort'][index]['process'] + '_1'
-                    cpu_load_dict.update({
-                        process:
-                        output['sort'][index][check_key]
-                    })
+                    cpu_load_dict.update(
+                        {process: output['sort'][index][check_key]})
     # if health is True, change the dict
     # from:
     # cpu_load_dict = {
@@ -117,10 +119,14 @@ def health_cpu(device,
     #   ]
     # }
     # if we have more than one parser we use the one with biggest value of the the 2 commands for the check_key_total
-    if len(parsed_output) == 2 and parsed_output[1].get('cpu_utilization', {}).get(check_key_total):
-        total = max(float(parsed_output[0][check_key_total]), float(parsed_output[1]['cpu_utilization'][check_key_total]))
+    if len(parsed_output) == 2 and parsed_output[1].get(
+            'cpu_utilization', {}).get(check_key_total):
+        total = max(
+            float(parsed_output[0][check_key_total]),
+            float(parsed_output[1]['cpu_utilization'][check_key_total]))
 
-    elif len(parsed_output) == 1 and parsed_output[0].get('cpu_utilization', {}).get(check_key_total):
+    elif len(parsed_output) == 1 and parsed_output[0].get(
+            'cpu_utilization', {}).get(check_key_total):
         total = float(parsed_output[0]['cpu_utilization'][check_key_total])
     else:
         total = float(parsed_output[0][check_key_total])
@@ -129,10 +135,8 @@ def health_cpu(device,
         health_data.setdefault('health_data', [])
         if add_total:
             health_data['health_data'].append({
-                'process':
-                'ALL_PROCESSES',
-                'value':
-                total
+                'process': 'ALL_PROCESSES',
+                'value': total
             })
         for k, v in cpu_load_dict.items():
             health_data['health_data'].append({'process': k, 'value': v})
@@ -203,14 +207,18 @@ def health_memory(device,
     default_command = 'show processes memory | section ^Processor'
 
     # check if total usage exceeds threshold or not
-    if command == default_command and (parsed[check_key]['used'] / parsed[check_key]['total'])*100 > threshold:
+    if command == default_command and (
+            parsed[check_key]['used'] /
+            parsed[check_key]['total']) * 100 > threshold:
         threshold_exceed = True
 
     # get each of processes usage only when exceeding threshold
     if threshold_exceed or command != default_command:
 
         try:
-            parsed = device.parse("show processes memory", output=output, timeout=timeout)
+            parsed = device.parse("show processes memory",
+                                  output=output,
+                                  timeout=timeout)
         except SchemaEmptyParserError as e:
             log.error("Command '{cmd}' did not return any output\n{msg}".\
                       format(cmd=command, msg=str(e)))
@@ -260,17 +268,20 @@ def health_memory(device,
                     for pid in pids:
                         # use `sum` because it's possible one pid returns multiple `holding`
                         for idx in parsed['pid'][pid]['index']:
-                            if parsed['pid'][pid]['index'][idx]['process'] == ps_item:
-                                memory_holding += parsed['pid'][pid]['index'][idx][
-                                    'holding']
+                            if parsed['pid'][pid]['index'][idx][
+                                    'process'] == ps_item:
+                                memory_holding += parsed['pid'][pid]['index'][
+                                    idx]['holding']
 
                 if parsed.get(check_key, {}).get('total', 0) == 0:
                     memory_usage = 0
                 else:
                     try:
-                        memory_usage = memory_holding / parsed[check_key]['total']
+                        memory_usage = memory_holding / parsed[check_key][
+                            'total']
                     except Exception:
-                        memory_usage = parsed[check_key]['used'] / parsed[check_key]['total']
+                        memory_usage = parsed[check_key]['used'] / parsed[
+                            check_key]['total']
 
                 memory_usage_dict.update({ps_item: memory_usage * 100})
 
@@ -298,8 +309,10 @@ def health_memory(device,
         health_data.setdefault('health_data', [])
         if add_total:
             health_data['health_data'].append({
-                'process': 'ALL_PROCESSES',
-                'value': (parsed[check_key]['used'] / parsed[check_key]['total']) * 100
+                'process':
+                'ALL_PROCESSES',
+                'value':
+                (parsed[check_key]['used'] / parsed[check_key]['total']) * 100
             })
         for k, v in memory_usage_dict.items():
             health_data['health_data'].append({'process': k, 'value': v})
@@ -401,6 +414,7 @@ def health_logging(device,
 
     return logs
 
+
 def health_core(device,
                 default_dir=['bootflash:/core/', 'harddisk:/core/'],
                 output=None,
@@ -469,24 +483,33 @@ def health_core(device,
     '''
     all_corefiles = []
     dirs = []
-    stby_dirs = []
     health_corefiles = {}
+
     if isinstance(default_dir, str):
-        dirs = [default_dir]
-    elif isinstance(default_dir, list):
-        dirs = default_dir
-    else:
+        default_dir = [default_dir]
+
+    elif not isinstance(default_dir, list):
         raise Exception(
             "'default_dir {dd} is not string or list".format(dd=default_dir))
 
-    # check if device is HA
-    if device.is_ha:
-        log.info('Detected device is HA configuration.')
-        for storage in dirs:
-            stby_dirs.append('stby-{dd}'.format(dd=storage))
+    # check if device is stack
+    if getattr(device, 'chassis_type', None) in ['stack', 'stackwise_virtual']:
+        log.info('Detected device is stack configuration.')
+        switch_info = device.parse('show switch')
+        switch_ids = switch_info.get('switch', {}).get('stack', {}).keys()
+        if switch_ids:
+            for switch_id in switch_ids:
+                dirs.append(f'flash-{switch_id}:/core/')
 
-    # add standby location `stby_dirs` to main `dirs`
-    dirs.extend(stby_dirs)
+    # check if device is HA
+    elif device.is_ha and not dirs:
+        log.info('Detected device is HA configuration.')
+        for storage in default_dir:
+            dirs.append(storage)
+            dirs.append(f'stby-{storage}')
+
+    else:
+        dirs = default_dir
 
     # convert from device name to device object
     fileutils = False
@@ -536,12 +559,12 @@ def health_core(device,
                         # corefiles in current storage
                         log.debug(
                             'core file {file} is found'.format(file=file))
-                        corefiles.append(file)
+                        corefiles.append(storage + file)
                         # corefiles in all storages
-                        all_corefiles.append(file)
+                        all_corefiles.append(storage + file)
                         # add health_corefiles for health_data
                         if health:
-                            health_corefiles.setdefault(file, {})
+                            health_corefiles.setdefault(storage + file, {})
 
         # in case of HTTP, will use FileUtils
         if protocol == 'http':
@@ -561,7 +584,7 @@ def health_core(device,
                 if not fileutils and (not remote_device or not remote_path):
                     log.warn(
                         '`remote_device` or/and `remote_path` are missing')
-                local_path = "{lp}{fn}".format(lp=storage, fn=corefile)
+                local_path = corefile
                 # execute by FileUtils
                 if fileutils:
                     try:
@@ -571,11 +594,12 @@ def health_core(device,
                         if protocol == 'http':
                             device.api.copy_from_device(local_path)
                         else:
-                            device.api.copy_from_device(protocol=protocol,
-                                                        server=remote_device,
-                                                        remote_path=remote_path,
-                                                        local_path=local_path,
-                                                        vrf=vrf)
+                            device.api.copy_from_device(
+                                protocol=protocol,
+                                server=remote_device,
+                                remote_path=remote_path,
+                                local_path=local_path,
+                                vrf=vrf)
 
                         copy_success = True
                     except Exception as e:
@@ -654,8 +678,10 @@ def health_core(device,
                                                 fn='core_decode_{file}'.format(
                                                     file=corefile)))
                                     if health:
-                                        health_corefiles[corefile].setdefault(
-                                            'decode', decode_output)
+                                        health_corefiles[storage +
+                                                         corefile].setdefault(
+                                                             'decode',
+                                                             decode_output)
                         except Exception as e:
                             log.warning(
                                 'decode core file is failed : {e}'.format(e=e))
@@ -695,25 +721,34 @@ def health_core(device,
 
         runtime_health_data.setdefault('corefiles', [])
         # get existing core files from health data
-        existing_core_files = [hf.get('filename') for hf in runtime_health_data.get('corefiles', [])]
+        existing_core_files = [
+            hf.get('filename')
+            for hf in runtime_health_data.get('corefiles', [])
+        ]
         if existing_core_files:
             log.info(f'Existing core files: {existing_core_files}')
 
         # create list of new core files
-        new_core_files = [cf for cf in health_corefiles if cf not in existing_core_files]
+        new_core_files = [
+            cf for cf in health_corefiles if cf not in existing_core_files
+        ]
 
         # init health_data
         health_data = {'health_data': {}}
-        health_data['health_data'].setdefault('num_of_cores', len(new_core_files))
+        health_data['health_data'].setdefault('num_of_cores',
+                                              len(new_core_files))
         health_data['health_data'].setdefault('corefiles', [])
 
         # process core files, add to existing health data
         for filename in new_core_files:
             file_data = {'filename': filename}
             if 'decode' in health_corefiles[filename]:
-                file_data.update({'decode': health_corefiles[filename]['decode']})
+                file_data.update(
+                    {'decode': health_corefiles[filename]['decode']})
 
-            log.info(f'Adding file {filename} to health core info for device {device.name}')
+            log.info(
+                f'Adding file {filename} to health core info for device {device.name}'
+            )
             health_data['health_data']['corefiles'].append(file_data)
             runtime_health_data['corefiles'].append(file_data)
 

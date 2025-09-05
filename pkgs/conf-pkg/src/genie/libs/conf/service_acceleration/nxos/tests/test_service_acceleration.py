@@ -12,6 +12,7 @@ from genie.conf.base import Testbed, Device
 # Genie Conf
 from genie.libs.conf.service_acceleration import ServiceAcceleration
 from genie.libs.conf.service_acceleration.service_vrf import ServiceVrf
+from genie.libs.conf.service_acceleration.service_vlan import ServiceVlan
 
 
 class test_service_acceleration(TestCase):
@@ -145,6 +146,10 @@ class test_service_acceleration(TestCase):
         vrf2.module_affinity = 1
         serv_acc.device_attr[dev1].service_attr['firewall'].add_servicevrf_key(vrf2)
 
+        vlan1 = ServiceVlan(device=dev1)
+        vlan1.service_vlan_name = 2
+        vlan1.module_affinity = 1
+        serv_acc.device_attr[dev1].service_attr['firewall'].add_servicevlan_key(vlan1)
 
         # add feature to device
         dev1.add_feature(serv_acc)
@@ -162,6 +167,25 @@ class test_service_acceleration(TestCase):
                 '  in-service\n'
                 '  vrf vrfazure module-affinity 1\n'
                 '  vrf vrfoci module-affinity dynamic\n'
+                '  vlan id 2 bridged-traffic module-affinity 1\n'
+                '  exit\n'
+                ' exit'
+                ]
+            ),
+        )
+
+        # remove 1 vrf under firewall
+        partial_uncfg2 = serv_acc.build_unconfig(
+                            apply=False,
+                            attributes={'device_attr': {'*': {'service_attr':{'*': {'servicevlan_keys': vlan1}}}}})
+
+        self.assertMultiLineEqual(
+            str(partial_uncfg2[dev1.name]),
+            "\n".join(
+                [
+                'service system hypershield\n'
+                ' service firewall\n'
+                '  no vlan id 2 bridged-traffic module-affinity 1\n'
                 '  exit\n'
                 ' exit'
                 ]
@@ -234,6 +258,11 @@ class test_service_acceleration(TestCase):
         vrf2.module_affinity = 1
         serv_acc.device_attr[dev1].service_attr['firewall'].add_servicevrf_key(vrf2)
 
+        vlan1 = ServiceVlan(device=dev1)
+        vlan1.service_vlan_name = 2
+        vlan1.module_affinity = "dynamic"
+        serv_acc.device_attr[dev1].service_attr['firewall'].add_servicevlan_key(vlan1)
+
         # add feature to device
         dev1.add_feature(serv_acc)
 
@@ -255,6 +284,7 @@ class test_service_acceleration(TestCase):
                     "  in-service\n"
                     "  vrf vrfaws module-affinity dynamic\n"
                     "  vrf vrfazure module-affinity 1\n"
+                    "  vlan id 2 bridged-traffic module-affinity dynamic\n"
                     "  exit\n"
                     " exit"
                 ]

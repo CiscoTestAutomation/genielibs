@@ -3145,6 +3145,9 @@ configure_management:
         alias_as_hostname (bool): When used with `set_hostname`, will use the
             alias as the hostname. (default: False)
 
+        config_stable_time (int, optional): Max time in seconds allowed for the
+            configuration to stabilize. Defaults to 10.
+
 
 Example
 -------
@@ -3157,6 +3160,7 @@ configure_management:
     # Argument Defaults
     # =================
     SET_HOSTNAME = True
+    CONFIG_STABLE_TIME = 10
 
     # ============
     # Stage Schema
@@ -3186,6 +3190,7 @@ configure_management:
         Optional('protocols'): ListOf(str),
         Optional('set_hostname'): bool,
         Optional('alias_as_hostname'): bool,
+        Optional('config_stable_time'): int,
     }
 
     # ==============================
@@ -3201,6 +3206,7 @@ configure_management:
                              steps,
                              device,
                              set_hostname=SET_HOSTNAME,
+                             config_stable_time=CONFIG_STABLE_TIME,
                              **kwargs):
         if "configure_management" not in dir(device.api):
             self.passx("No support for configure_management API")
@@ -3216,6 +3222,8 @@ configure_management:
 
             if hasattr(device, "management") and device.management:
                 device.api.configure_management(**config_kwargs)
+                log.info(f"Waiting {config_stable_time} seconds for the configuration to be applied")
+                time.sleep(config_stable_time)
             else:
                 step.passx("No management info for device")
 

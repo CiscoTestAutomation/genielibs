@@ -7,8 +7,12 @@ class TestConfigureInterfaceRepZtp(TestCase):
 
     def test_configure_interface_rep_ztp(self):
         self.device = Mock()
-        result = configure_interface_rep_ztp(self.device, ['GigabitEthernet1/0/1'], 1, None)
+        result = configure_interface_rep_ztp(self.device, ['Gi1/6', 'Gi1/7'], '25')
         self.assertEqual(
             self.device.configure.mock_calls[0].args,
-            (['interface GigabitEthernet1/0/1', 'switchport mode trunk', 'rep segment 1', 'rep ztp-enable'],)
+            (['interface Gi1/6', 'switchport mode trunk', 'rep segment 25', 'rep ztp-enable'],)
+        )
+        self.assertEqual(
+            self.device.configure.mock_calls[1].args,
+            (['interface Gi1/7', 'switchport mode trunk', 'rep segment 25', 'rep ztp-enable'],)
         )

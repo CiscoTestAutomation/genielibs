@@ -20,6 +20,7 @@ from genie.conf.base.attributes import (
 
 # multi-line config class
 from .service_vrf import ServiceVrf
+from .service_vlan import ServiceVlan
 
 # service-acceleration Hierarchy
 # --------------
@@ -63,6 +64,25 @@ class ServiceAcceleration(DeviceFeature):
                 servicevrf_key._device = None
                 try:
                     self.servicevrf_keys.remove(servicevrf_key)
+                except:
+                    pass
+                
+            # service vlan configs
+            servicevlan_keys = managedattribute(
+                name='servicevlan_keys',
+                finit=typedset(
+                    managedattribute.test_isinstance(ServiceVlan)).copy,
+                type=typedset(managedattribute.test_isinstance(
+                    ServiceVlan))._from_iterable,
+                doc='A `set` of ServiceVlan keys objects')
+
+            def add_servicevlan_key(self, servicevlan_key):
+                self.servicevlan_keys.add(servicevlan_key)
+
+            def remove_servicevrf_key(self, servicevlan_key):
+                servicevlan_key._device = None
+                try:
+                    self.servicevlan_keys.remove(servicevlan_key)
                 except:
                     pass
 

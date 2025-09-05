@@ -2187,3 +2187,41 @@ def configure_nat_setting_gatekeeper_size(device, size, enable=True):
             "Could not configure nat gatekeeper size on "
             "device. Error:\n{e}".format(e=e)
         )
+
+def configure_ip_nat_switchover_http(device):
+    """ Configure ip nat switchover http
+        Args:
+            device ('obj'): device to use
+        Returns:
+            console output
+        Raises:
+            SubCommandFailure: IP Nat switchover http not configured
+    """
+    cmd = f'ip nat switchover replication http'
+    out = None
+    try:
+        out = device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not Configure  IP Nat switchover http. Error:\n{error}".format(error=e)
+        )
+    return out
+
+def unconfigure_ip_nat_switchover_http(device):
+    """ Configure ip nat switchover http
+        Args:
+            device ('obj'): device to use
+        Returns:
+            console output
+        Raises:
+            SubCommandFailure: IP Nat switchover http not unconfigured
+    """
+    cmd = f'no ip nat switchover replication http'
+    out = None
+    try:
+        out = device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not UnConfigure  IP Nat switchover http. Error:\n{error}".format(error=e)
+        )
+    return out

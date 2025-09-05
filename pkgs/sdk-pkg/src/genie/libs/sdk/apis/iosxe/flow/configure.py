@@ -1177,7 +1177,7 @@ def configure_flow_record_match_collect_interface(device, record_name, direction
         raise SubCommandFailure(f'Could not configure flow record {record_name} interface. Error: {e}')
 
 
-def configure_flow_record_match_datalink(device, record_name, field_type, mac_type=None, direction=None):
+def configure_flow_record_match_datalink(device, record_name, field_type, mac_type=None, direction=None, vlan=False):
     """ Config Flow Record with match parameters on Device
         Args:
             device ('obj'): Device object
@@ -1185,6 +1185,7 @@ def configure_flow_record_match_datalink(device, record_name, field_type, mac_ty
             field_type ('str'): Field type. Ex: source, protocol etc.
             mac_type ('str', optional): source or destination mac type. Default is None.
             direction ('str', optional): input or output direction. Default is None.
+            vlan ('bool', optional): For datalink dot1q vlan {direction}. Default is False.
         Return:
             None
         Raise:
@@ -1198,7 +1199,10 @@ def configure_flow_record_match_datalink(device, record_name, field_type, mac_ty
     elif direction is None and mac_type is None:
         config.append(f'match datalink {field_type}')
     elif direction is not None and mac_type is None:
-        config.append(f'match datalink {field_type} {direction}')
+        if vlan:
+            config.append(f'match datalink {field_type} vlan {direction}')
+        else:
+            config.append(f'match datalink {field_type} {direction}')
     elif direction:
         config.append(f'match datalink {field_type} {mac_type} {direction}')
 
@@ -1682,6 +1686,36 @@ def configure_fnf_flow_record_match_flow(device, record_name, flow_name, cts_typ
         config.append(f'match flow observation point')
     elif flow_name == 'cts' and cts_type:
         config.append(f'match flow cts {cts_type} group-tag')
+    else:
+        config.append(f'match flow {flow_name}')
+    try:
+        device.configure(config)
+    except SubCommandFailure:
+        raise SubCommandFailure(f'Could not configure flow record {record_name}')
+    
+def configure_flow_record_transport(device, record_name, action="collect", transport_type="tcp flags", flags=None):
+
+    """ Configure Flow Record collect/match transport on Device
+        Args:
+            device ('obj'): Device object
+            record_name ('str'): Flow record name
+            action ('str'): collect or match. Default is collect
+            transport_type ('str'): source-port or destination-port or tcp flags. Default is tcp flags
+            flags ('list', optional): List object of flags. Default is None
+
+        Return:
+            None
+
+        Raise:
+            SubCommandFailure: Failed configuring Flow Record on Device
+    """
+
+    config = [f'flow record {record_name}']
+    if flags:
+        flags_str = " ".join(flags)
+        config.append(f'{action} transport {transport_type} {flags_str}')
+    else:
+        config.append(f'{action} transport {transport_type}')
     try:
         device.configure(config)
     except SubCommandFailure:
