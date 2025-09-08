@@ -468,6 +468,55 @@ def unconfigure_ip_arp_inspection_filter(device, arp_name, vlan_id):
         raise SubCommandFailure(
             f"Failed to clear ip arp inspection  {device} . Error:\n{e}"
             )
+
+def configure_ip_arp_inspection_trust(device, interface):
+    ''' Enable ARP inspection trust on interface
+        Configure 'ip arp inspection trust' on interface
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed enabling ARP inspection trust on interface
+    '''
+    try:
+        device.configure(
+            [
+             "interface {}".format(interface),
+	         "ip arp inspection trust",
+            ]
+        )
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not enable ARP inspection trust on interface {interface}".format(
+                interface=interface
+            )
+        )
+
+def unconfigure_ip_arp_inspection_trust(device, interface):
+    ''' Unconfigures ip arp inspection trust on interface
+
+       Args:
+            device ('obj'): device object
+            interface ('str'): name of interface
+
+       Return:
+            None
+
+       Raises:
+            SubCommandFailure
+    '''
+    cmd = [
+        f"interface {interface}",
+        "no ip arp inspection trust"
+    ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to unconfigure no ip arp inspection trust on {interface} of {device.name}\n{e}'
+        )
     
 def unconfigure_arp_access_list(device, list_type, word):
     ''' unconfigures arp access-list
