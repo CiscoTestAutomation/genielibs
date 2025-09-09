@@ -34,6 +34,7 @@ class TestPasswordRecovery(unittest.TestCase):
         self.device.api.configure_ignore_startup_config.assert_called_once()
         self.device.api.unconfigure_ignore_startup_config.assert_called_once()
         self.device.api.verify_ignore_startup_config.assert_called_once()
+        self.device.connection_provider.init_connection.assert_called_once()
 
 
     def test_password_recovery_failure(self):
@@ -48,6 +49,7 @@ class TestPasswordRecovery(unittest.TestCase):
         self.device.api.send_break_boot.assert_called_once()
         self.device.api.configure_ignore_startup_config.assert_called_once()
         self.device.enable.assert_called_once()
+        self.device.connection_provider.init_connection.assert_called_once()
         self.device.api.configure_management_credentials.assert_called_once()
         self.device.api.unconfigure_ignore_startup_config.assert_called_once()
         self.device.api.verify_ignore_startup_config.assert_called_once()
@@ -67,3 +69,4 @@ class TestPasswordRecovery(unittest.TestCase):
         self.device.api.configure_ignore_startup_config.assert_called_once()
         self.device.api.unconfigure_ignore_startup_config.assert_called_once()
         self.device.api.verify_ignore_startup_config.assert_called_once()
+        self.device.connection_provider.init_connection.assert_called_once()

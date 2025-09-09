@@ -152,3 +152,139 @@ def unconfigure_facility_alarm_power_supply_syslog(device):
     except SubCommandFailure as e:
         log.error(f"Failed to unconfigure alarm for power supply syslog: {e}")
         return False
+    
+
+def configure_facility_alarm_temp_primary(device, threshold=None, value=None, notify=False, syslog=False, relay=False):
+    ''' Configures facility alarm for temperature
+        Args:
+            device ('obj'): Device object
+            threshold ('str'): Temperature threshold value(e.g., 'high', 'low')
+            value ('int'): Temperature value
+            notify ('bool'): If True, configure notify
+            syslog ('bool'): If True, configure syslog
+            relay ('bool'): If True, configure relay
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure           
+    '''
+
+    log.debug(f"Configuring alarm for temperature primary")
+    try:
+        cmds = []
+        if threshold and value is not None:
+            cmds.append(f"alarm facility temperature primary {threshold} {value}")
+        if notify:
+            cmds.append("alarm facility temperature primary notifies")
+        if syslog:
+            cmds.append("alarm facility temperature primary syslog")
+        if relay:
+            cmds.append("alarm facility temperature primary relay major")
+        if cmds:
+            device.configure(cmds)
+    except SubCommandFailure as e:
+        log.error(f"Failed to configure alarm for temperature primary: {e}")
+        return False
+    
+
+def unconfigure_facility_alarm_temp_primary(device, threshold=None, value=None, notify=False, syslog=False, relay=False):
+    ''' Unconfigures facility alarm for temperature
+        Args:
+            device ('obj'): Device object
+            threshold ('str'): Temperature threshold value(e.g., 'high', 'low')
+            value ('int'): Temperature value
+            notify ('bool'): If True, unconfigure notify
+            syslog ('bool'): If True, unconfigure syslog
+            relay ('bool'): If True, unconfigure relay  
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure           
+    '''
+
+    log.debug(f"Unconfiguring alarm for temperature primary")
+    try:
+        cmds = []
+        if threshold and value is not None:
+            cmds.append(f"no alarm facility temperature primary {threshold} {value}")
+        if notify:
+            cmds.append("no alarm facility temperature primary notifies")
+        if syslog:
+            cmds.append("no alarm facility temperature primary syslog")
+        if relay:
+            cmds.append("no alarm facility temperature primary relay major")
+        if cmds:
+            device.configure(cmds)
+    except SubCommandFailure as e:
+        log.error(f"Failed to unconfigure alarm for temperature primary: {e}")
+        return False
+    
+
+def configure_facility_alarm_temp_secondary(device, threshold=None, value=None, notify=False, syslog=False, relay=False):
+    ''' Configures facility alarm for temperature secondary
+        Args:
+            device ('obj'): Device object
+            threshold ('str'): Temperature threshold value(e.g., 'high', 'low')
+            value ('int'): Temperature value
+            notify ('bool'): If True, configure notify
+            syslog ('bool'): If True, configure syslog
+            relay ('bool'): If True, configure relay
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure           
+    '''
+
+    log.debug(f"Configuring alarm for temperature secondary")
+    try:
+        cmds = []
+        if threshold and value is not None:
+            cmds.append(f"alarm facility temperature secondary {threshold} {value}")
+        if notify:
+            cmds.append("alarm facility temperature secondary notifies")
+        if syslog:
+            cmds.append("alarm facility temperature secondary syslog")
+        if relay:
+            cmds.append("alarm facility temperature secondary relay major")
+        if cmds:
+            device.configure(cmds)
+    except SubCommandFailure as e:
+        log.error(f"Failed to configure alarm for temperature secondary: {e}")
+        return False
+    
+
+def unconfigure_facility_alarm_temp_secondary(device, threshold=None, value=None, notify=False, syslog=False, relay=False):
+    ''' Unconfigures facility alarm for temperature secondary
+        Args:
+            device ('obj'): Device object
+            threshold ('str'): Temperature threshold value(e.g., 'high', 'low')
+            value ('int'): Temperature value
+            notify ('bool'): If True, unconfigure notify
+            syslog ('bool'): If True, unconfigure syslog
+            relay ('bool'): If True, unconfigure relay
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    '''
+
+    log.debug(f"Unconfiguring alarm for temperature secondary")
+    try:
+        cmds = []
+        if threshold and value is not None:
+            cmds.append(f"no alarm facility temperature secondary {threshold} {value}")
+        if notify:
+            cmds.append("no alarm facility temperature secondary notifies")
+        if syslog:
+            cmds.append("no alarm facility temperature secondary syslog")
+        if relay:
+            cmds.append("no alarm facility temperature secondary relay major")
+        if cmds:
+            device.configure(cmds)
+    except SubCommandFailure as e:
+        log.error(f"Failed to unconfigure alarm for temperature secondary: {e}")
+        return False

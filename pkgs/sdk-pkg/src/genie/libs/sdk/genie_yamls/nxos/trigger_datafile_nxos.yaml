@@ -2888,3 +2888,23 @@ TriggerIssuLxc:
        interval: 60
     devices: ['uut']
 
+TriggerIssuMinimallyDisruptive:
+    groups: ['ha', 'issu', 'L3']
+    update_verifications: ['Verify_Boot',
+                           'Verify_Dir',
+                           'Verify_Inventory',
+                           'Verify_Platform',
+                           'Verify_Redundancy',
+                           'Verify_Version']
+    update_pts_features: ['platform']
+    mode: 'lxc'
+    ctrlplane_downtime: 120
+    issu_timeout: 1800
+    cfg_transfer: False
+    disrupt_flag: True
+    min_disrupt: True
+    cfg_timeout: 600
+    timeout:
+       max_time: 3600
+       interval: 60
+    devices: ['uut']

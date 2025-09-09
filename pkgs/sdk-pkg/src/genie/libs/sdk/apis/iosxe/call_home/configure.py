@@ -729,3 +729,25 @@ def configure_call_home_profile(device, dest_add, profile_name="CiscoTAC-1"):
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure call home profile. Error\n{e}")
+
+def unconfigure_call_home_profile_destination_transport_method(device, profile, address):
+    """ Unconfigures call home profile destination address transport-method
+        Args:
+            device ('obj'): device to use
+            profile ('str'): call home profile
+            address ('str'): address to profile email or http
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [
+        "call-home",
+        f"profile {profile}",
+        f"no destination transport-method {address}"
+    ]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigurecall home profile destination transport-method on device {device.name}. Error:\n{e}")

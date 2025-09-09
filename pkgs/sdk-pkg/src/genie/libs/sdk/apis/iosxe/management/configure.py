@@ -962,6 +962,113 @@ def configure_ip_ssh_version(device, version):
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure ip ssh version on device {device}. Error:\n{e}")
 
+def configure_line_vty_ipv4_access_class(device, firstline_id, lastline_id, access_list_name=None, access_mode=None, acl_no=None, expanded_acl_no=None):
+    """ configure_line_vty_ipv4_access_class
+        Args:
+            device ('obj'): device to execute on
+            firstline_id ('int') : firstline identifier
+            lastline_id ('int') :  lastline identifier
+            access_list_name ('str') : access list name
+            access_mode ('str') : access mode (in or out)
+            acl_no ('str') : acl number
+            expanded_acl_no ('str') : expanded acl number
+
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [f"line vty {firstline_id} {lastline_id}"]
+    if access_list_name:
+        cmd.append(f"access-class {access_list_name} {access_mode}")
+    elif acl_no:
+        cmd.append(f"access-class {acl_no} {access_mode}")
+    elif expanded_acl_no:
+        cmd.append(f"access-class {expanded_acl_no} {access_mode}")
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure_line_vty_ipv4_access_class Error {e}")
+
+def configure_line_vty_ipv6_access_class(device, firstline_id, lastline_id, access_list_name, access_mode):
+    """ configure_line_vty_ipv6_access_class
+        Args:
+            device ('obj'): device to execute on
+            firstline_id ('int') : firstline identifier
+            lastline_id ('int') :  lastline identifier
+            access_list_name ('str') : access list name 
+            access_mode ('str') : access mode (in or out)
+
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [
+        f"line vty {firstline_id} {lastline_id}",
+        f"ipv6 access-class {access_list_name} {access_mode}"
+    ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure_line_vty_ipv6_access_class Error {e}")
+
+def unconfigure_line_vty_ipv4_access_class(device, firstline_id, lastline_id, access_list_name=None, access_mode=None, acl_no=None, expanded_acl_no=None):
+    """ unconfigure_line_vty_ipv4_access_class
+        Args:
+            device ('obj'): device to execute on
+            firstline_id ('int'): firstline identifier
+            lastline_id ('int'): lastline identifier
+            access_list_name ('str'): access list name
+            access_mode ('str'): access mode (in or out)
+            acl_no ('str'): access list number
+            expanded_acl_no ('str'): expanded access list number
+
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [f"line vty {firstline_id} {lastline_id}"]
+    if access_list_name:
+        cmd.append(f"no access-class {access_list_name} {access_mode}")
+    elif acl_no:
+        cmd.append(f"no access-class {acl_no} {access_mode}")
+    elif expanded_acl_no:
+        cmd.append(f"no access-class {expanded_acl_no} {access_mode}")
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure_line_vty_ipv4_access_class Error {e}")
+
+def unconfigure_line_vty_ipv6_access_class(device, firstline_id, lastline_id, access_list_name, access_mode):
+    """ unconfigure_line_vty_ipv6_access_class
+        Args:
+            device ('obj'): device to execute on
+            firstline_id ('int') : firstline identifier
+            lastline_id ('int') : lastline identifier
+            access_list_name ('str') : access list name 
+            access_mode ('str') : access mode (in or out)
+
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [
+        f"line vty {firstline_id} {lastline_id}",
+        f"no ipv6 access-class {access_list_name} {access_mode}"
+    ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure_line_vty_ipv6_access_class Error {e}")
 
 def unconfigure_ip_ssh_version(device, version):
 

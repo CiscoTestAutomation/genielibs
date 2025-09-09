@@ -777,30 +777,56 @@ def get_platform_model_number(device):
     Args:
         device (obj): Device object
 
-    Return:
+    Returns:
         str: Device model number or chassis type
     """
-
     try:
-        out_inventory = device.parse('show inventory').q.contains('chassis').get_values('pid', 0)
-        output_detail=out_inventory
+        inventory_parsed = device.parse('show inventory')
     except SubCommandFailure:
-        log.info('Could not get device chassis type from inventory information')
+        log.info('Could not parse "show inventory" on device')
         return None
 
-    try:
-        out_version = device.parse('show version').q.contains('version').get_values('chassis', 0)
-    except SubCommandFailure:
-        log.info('Could not get device chassis type from version information')
-        return None
+    # Collect chassis PID from inventory
+    chassis_pids = inventory_parsed.q.contains('chassis').get_values('pid')
 
-    if out_inventory == out_version:
-        return output_detail
+    # Collect fallback PIDs if chassis missing
+    pids_to_check = []
+    if not chassis_pids:
+        slots = inventory_parsed.get('slot', {})
+        for slot_data in slots.values():
+            other_items = slot_data.get('other', {})
+            for item in other_items.values():
+                pid = item.get('pid')
+                if pid:
+                    pids_to_check.append(pid)
     else:
+        pids_to_check = chassis_pids  # initially just the chassis PID
+
+    if not pids_to_check:
+        log.info('No PIDs found in inventory')
+        return None
+
+    # Get chassis PID from show version
+    try:
+        version_chassis = device.parse('show version').q.contains('version').get_values('chassis')
+    except SubCommandFailure:
+        version_chassis = None
+
+    # Compare inventory PID(s) with version chassis PID
+    if version_chassis:
+        for pid in pids_to_check:
+            if pid in version_chassis:
+                return pid
         log.info(
-            'Could not get device "platform model number", mismatch in chassis type in "inventory" and "version" information'
+            'No matching PID found between inventory (%s) and version chassis (%s)',
+            pids_to_check, version_chassis
         )
         return None
+    else:
+        # show version failed, cannot verify, log fallback
+        log.info('No version chassis info available. Inventory PIDs found: %s', pids_to_check)
+        return None
+
 
 def get_number_of_interfaces(device):
     """ Gets the device number of interfaces

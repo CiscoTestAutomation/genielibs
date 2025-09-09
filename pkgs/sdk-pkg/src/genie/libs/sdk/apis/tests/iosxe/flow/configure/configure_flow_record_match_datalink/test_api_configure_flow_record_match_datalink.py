@@ -1,35 +1,14 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
 from genie.libs.sdk.apis.iosxe.flow.configure import configure_flow_record_match_datalink
+from unittest.mock import Mock
 
 
-class TestConfigureFlowRecordMatchDatalink(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          stack3-nyquist-1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: router
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['stack3-nyquist-1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureFlowRecordMatchDatalink(TestCase):
 
     def test_configure_flow_record_match_datalink(self):
-        result = configure_flow_record_match_datalink(self.device, 'r2out', 'mac', 'source', 'input')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.device = Mock()
+        result = configure_flow_record_match_datalink(self.device, 'r2out', 'dot1q', None, 'output', True)
+        self.assertEqual(
+            self.device.configure.mock_calls[0].args,
+            (['flow record r2out', 'match datalink dot1q vlan output'],)
+        )

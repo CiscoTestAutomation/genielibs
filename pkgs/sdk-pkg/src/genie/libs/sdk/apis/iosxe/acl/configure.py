@@ -2439,4 +2439,41 @@ def unconfigure_protocol_acl_any_any(device, acl_name, permission, protocol):
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not unconfigure permit/deny protocol any any on acl {acl_name}. Error:\n{e}")   
-  
+
+def configure_extended_acl_with_dscp(
+    device,
+    acl_name, 
+    sequence_number=None,
+    permission=None,
+    src_ip=None,
+    dest_ip=None,
+    dscp_value=None
+):
+    """ configure extended access-list with dscp configure
+        Args:
+            device ('obj'): device to execute on
+            acl_name ('str'): acl name
+            sequence_number('int'): Sequence Number (1-2147483647)
+            permission ('str'): permit|deny
+            src_ip ('str'): source ip
+            dest_ip('str'): destination ip
+            dscp_value ('int'): Differentiated services codepoint value (dscp value)
+            
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"Configure extended access-list {acl_name} with dscp configure")
+    configs=[]
+    configs.append(f"ip access-list extended {acl_name}")
+   
+    if sequence_number and dscp_value:
+        configs.append(f"{sequence_number} {permission} ip host {src_ip} host {dest_ip} dscp {dscp_value}")
+        
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not Configure extended access-list with dscp configure") 
+           

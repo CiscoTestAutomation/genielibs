@@ -21,6 +21,10 @@ def execute_set_config_register(device, config_register, timeout=300):
             if conn.state_machine.current_state == 'rommon':
                 cmd = f'confreg {config_register}'
                 conn.execute(cmd, timeout=timeout)
+            # If the device is in standby state, skip it.
+            # Otherwise, the standby will fail if locked.
+            elif conn.role == "standby":
+                continue
             else:
                 cmd = f'config-register {config_register}'
                 conn.configure(cmd, timeout=timeout)

@@ -94,9 +94,9 @@ def execute_test_opssl_nonblockingsession_server_stop(device, session_mode, vers
         raise SubCommandFailure(
             f"Could not execute test opssl nonblockingsession. Error:\n{e}")
 
-def execute_test_opssl_nonblockingsession_server_start(device, version, test_server,
-                                                       host_ip_addr, port_number,pre_key, 
-                                                       identity_check,identity_label, verfiy_label):
+def execute_test_opssl_nonblockingsession_server_start(device, version=None, test_server=None,
+                                                       host_ip_addr=None, port_number=None,pre_key=None, 
+                                                       identity_check=None,identity_label=None, verfiy_label=None):
     """ Execute opssl nonblockingsession server tls1.2 start
         Args:
             device ('obj'): device object
@@ -113,7 +113,10 @@ def execute_test_opssl_nonblockingsession_server_start(device, version, test_ser
         Raises:
             SubCommandFailure: Failed execute device
    """
-    cmd = f"test opssl nonblockingsession server {version} {test_server} {host_ip_addr} {port_number} {pre_key} {identity_check} {identity_label} {verfiy_label}"
+    if identity_label and verfiy_label:
+        cmd = f"test opssl nonblockingsession server {version} {test_server} {host_ip_addr} {port_number} {pre_key} {identity_check} {identity_label} {verfiy_label}"
+    if identity_label:
+        cmd = f"test opssl nonblockingsession server {version} {test_server} {host_ip_addr} {port_number} {pre_key} {identity_check} {identity_label}"
     try:
         device.execute(cmd)
     except SubCommandFailure as e:

@@ -82,6 +82,10 @@ def execute_set_config_register(device, config_register, timeout=300):
         # Not implemented for rommon state
         if conn.state_machine.current_state == 'rommon':
             continue
+        # If the device is in standby state, skip it.
+        # Otherwise, the standby will fail if locked.
+        elif conn.role == "standby":
+            continue
         try:
             conn.configure("config-register {}".format(config_register),
                             timeout=timeout)
@@ -781,6 +785,24 @@ def hardware_qfp_active_statistics_drop_clear(device):
     except SubCommandFailure as e:
         log.error(e)
         raise SubCommandFailure(f"Could not execute cler qfp stats drop command")
+
+def hardware_qfp_active_feature_alg_statistics_sip_clear(device):
+    """ execute clear harware qfp active feature alg stats sip clear command
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = "show platform hardware qfp active feature alg statistics sip clear"
+
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(f"Could not execute cler qfp stats sip command")
 
 def hardware_qfp_active_ipsec_data_drop_clear(device):
     """ execute clear harware active ipsec data drop clear command

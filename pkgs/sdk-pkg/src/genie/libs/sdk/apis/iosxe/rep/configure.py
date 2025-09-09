@@ -307,3 +307,128 @@ def configure_rep_preempt_and_block(device, interface, delay, block_port, vlan_r
         raise SubCommandFailure(
             f"Could not configure REP preempt delay and block port on interface {interface}. Error:\n{e}"
         )
+
+def configure_rep_segment_auto(
+    device,
+    intfs,
+    segmentnum,
+    vlan=None,
+    edge_port=False,
+    no_neighbor=False,
+    edge_primary=False,
+    edge_pref=False,
+):
+    """
+    Configures REP segment with auto option.
+
+    Args:
+        device (obj): Switch object
+        intfs (list): List of interfaces to configure
+        segmentnum (str): Segment number to configure
+        vlan (str, optional): VLAN to configure
+        edge_port (bool, optional): Configure edge port
+        no_neighbor (bool, optional): Configure no neighbor
+        edge_primary (bool, optional): Configure edge primary
+        edge_pref (bool, optional): Configure edge primary preferred
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: If configuration fails
+    """
+    log.info("Configuring REP segment %s on interfaces %s", segmentnum, intfs)
+
+    # rep segment cli construction
+    if no_neighbor:
+        rep_command = f"rep segment {segmentnum} edge no-neighbor"
+    elif edge_port:
+        rep_command = f"rep segment {segmentnum} edge"
+    elif edge_primary and edge_pref:
+        rep_command = f"rep segment {segmentnum} primary preferred"
+    elif edge_primary:
+        rep_command = f"rep segment {segmentnum} primary"
+    else:
+        rep_command = "rep segment auto"
+
+    for intf in intfs:
+        config_list = [
+            f"interface {intf}",
+            "switchport mode trunk",
+            rep_command,
+            "shut",
+            "no shut",
+        ]
+        # Check if vlan is provided and add to config
+        if vlan is not None and isinstance(vlan, str):
+            config_list.append(f"switchport trunk allowed vlan {vlan}")
+            config_list.append(f"vlan {vlan}")
+        try:
+            device.configure(config_list)
+        except SubCommandFailure as e:
+            raise SubCommandFailure(
+                f"Error configuring interface {intf}: {e}"
+            ) from e
+    
+def configure_fastrep_segment_auto(
+    device,
+    intfs,
+    segmentnum,
+    vlan=None,
+    edge_port=False,
+    no_neighbor=False,
+    edge_primary=False,
+    edge_pref=False,
+):
+    """
+    Configures fastREP segment with auto option.
+
+    Args:
+        device (obj): Switch object
+        intfs (list): List of interfaces to configure
+        segmentnum (str): Segment number to configure
+        vlan (str, optional): VLAN to configure
+        edge_port (bool, optional): Configure edge port
+        no_neighbor (bool, optional): Configure no neighbor
+        edge_primary (bool, optional): Configure edge primary
+        edge_pref (bool, optional): Configure edge primary preferred
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: If configuration fails
+    """
+    log.info("Configuring fastREP segment %s on interfaces %s", segmentnum, intfs)
+
+    # rep segment cli construction
+    if no_neighbor:
+        rep_command = f"rep segment {segmentnum} edge no-neighbor"
+    elif edge_port:
+        rep_command = f"rep segment {segmentnum} edge"
+    elif edge_primary and edge_pref:
+        rep_command = f"rep segment {segmentnum} primary preferred"
+    elif edge_primary:
+        rep_command = f"rep segment {segmentnum} primary"
+    else:
+        rep_command = "rep segment auto"
+
+    for intf in intfs:
+        config_list = [
+            f"interface {intf}",
+            "switchport mode trunk",
+            rep_command,
+            "rep fastmode",
+            "shut",
+            "no shut",
+        ]
+        # Check if vlan is provided and add to config
+        if vlan is not None and isinstance(vlan, str):
+            config_list.append(f"switchport trunk allowed vlan {vlan}")
+            config_list.append(f"vlan {vlan}")
+        try:
+            device.configure(config_list)
+        except SubCommandFailure as e:
+            raise SubCommandFailure(
+                f"Error configuring interface {intf}: {e}"
+            ) from e

@@ -114,7 +114,6 @@ def unconfigure_logging_source_interface(device, interface):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Failed to unconfigure logging source interface. Error:\n{e}")
-
         
            
 def configure_logging_monitor(device):
@@ -495,3 +494,49 @@ def unconfigure_logging(device, mode, severity=None):
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not unconfigure logging {mode} on {device}. Error:\n{e}")
+
+
+def configure_logging_alarm(device, severity_level=None):
+    """ logging alarm
+        Args:
+            device (`obj`): Device object
+            severity_level ('str'/`int`): Severity or level for logging alarm (severity:critical, informational, etc;          
+                                          level:1-4, where 1 is the highest severity and 4 is the lowest)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    try:
+        if severity_level is not None:
+            device.configure(f'logging alarm {severity_level}')
+        else:
+            # Default configuration if no severity or level is provided
+            device.configure('logging alarm')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure logging alarm on {device}. Error:\n{error}".format(device=device, error=e))
+
+
+def unconfigure_logging_alarm(device, severity_level=None):
+    """ no logging alarm
+        Args:
+            device (`obj`): Device object
+            severity_level ('str', optional): Severity or level for logging alarm (severity:critical, informational, etc.
+                                        level: 1-4, where 1 is the highest severity and 4 is the lowest)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    try:
+        if severity_level is not None:
+            device.configure(f'no logging alarm {severity_level}')
+        else:
+            # Default unconfiguration if no severity or level is provided
+            device.configure('no logging alarm')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure logging alarm on {device}. Error:\n{error}".format(device=device, error=e))

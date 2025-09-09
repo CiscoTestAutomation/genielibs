@@ -1315,4 +1315,120 @@ def remove_pki_certificate_chain(device, tpname):
     except SubCommandFailure as e:
         logger.error("Failed to remove cert chain")
         raise SubCommandFailure(f"Could not unconfigure certificate chain for '{tpname}': {e}")
+        
+        
+def configure_crypto_pki_crl_request(device, ca_name):
+    """
+        Execute 'crypto pki crl request <CA_NAME>' command.
+            Args:
+                device (obj): pyATS device object.
+                ca_name (str): CA server name.
+            Returns:
+                None
+            Raises:
+                SubCommandFailure: If device.execute fails.
+    """
+    try:
+        device.configure(f"crypto pki crl request {ca_name}")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure CRL request for CA '{ca_name}': {e}")
+
+
+def unconfigure_crypto_pki_crl_request(device, ca_name):
+    """
+    Execute 'no crypto pki crl request <CA_NAME>' command to remove configuration.
+        Args:
+            device (obj): pyATS device object.
+            ca_name (str): CA server name.
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: If device.execute fails.
+    """
+    try:
+        device.configure(f"no crypto pki crl request {ca_name}")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure CRL request for CA '{ca_name}': {e}")
+
+
+def configure_crypto_isakmp_profile(
+                                    device,
+                                    profile_name=None,
+                                    ca_trustpoint=False,
+                                    ca_trustpoint_name=None,
+                                    match_certificate=False,
+                                    certificate_name=None
+                                ):
+    """ Configure crypto ISAKMP profile on device
+        Args:
+            device (`obj`): Device object
+            profile_name (`str`): Name of the ISAKMP profile
+            ca_trustpoint (`bool`): Flag to enable CA trustpoint configuration. Default is False.
+            ca_trustpoint_name (`str`): CA trustpoint name (required if ca_trustpoint=True)
+            match_certificate (`bool`): Flag to enable match certificate configuration. Default is False.
+            certificate_name (`str`): Certificate name (required if match_certificate=True)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: If configuration fails
+    """
+    cmds = []
+    cmds.append(f"crypto isakmp profile {profile_name}") 
+
+    if ca_trustpoint and ca_trustpoint_name:
+        cmds.append(f"ca trust-point {ca_trustpoint_name}")
+    if match_certificate and certificate_name:
+        cmds.append(f"match certificate {certificate_name}")
     
+    try:
+        device.configure(cmds)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure crypto isakmp profile {profile_name}: {e}")
+
+
+def unconfigure_crypto_isakmp_profile(device, profile_name):
+    """ Unconfigure crypto ISAKMP profile from device
+        Args:
+            device (`obj`): Device object
+            profile_name (`str`): Name of the ISAKMP profile to remove
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: If unconfiguration fails
+    """
+    cmds = [f"no crypto isakmp profile {profile_name}"]
+    try:
+        device.configure(cmds)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure crypto isakmp profile {profile_name}: {e}")
+
+def configure_crypto_pki_http_max_buffer_size(device, size):
+    """
+        Configure the maximum HTTP buffer size for PKI operations.
+        Args:
+            device (obj): Device object
+            size (int): Buffer size value to set
+        Raises:
+            SubCommandFailure: If configuration fails
+    """
+    cmds = [f"crypto pki http max-buffer-size {size}"]
+    try:
+        device.configure(cmds)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure crypto pki http max buffer size {size}: {e}")
+
+def unconfigure_crypto_pki_http_max_buffer_size(device):
+    """
+        Unonfigure the maximum HTTP buffer size for PKI operations.
+        Args:
+            device (obj): Device object
+        Raises:
+            SubCommandFailure: If configuration fails
+    """
+    cmds = [f"no crypto pki http max-buffer-size"]
+    try:
+        device.configure(cmds)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure crypto pki http max buffer size: {e}")
+        
+ 

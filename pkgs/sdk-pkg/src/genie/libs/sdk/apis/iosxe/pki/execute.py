@@ -122,3 +122,51 @@ def execute_monitor_event_trace_crypto_pki(
         device.execute(cmds)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to execute monitor event-trace crypto pki command: {e}")
+        
+
+def clear_crypto_pki(device, benchmarks=False, counters=False, crl=False):
+    """
+    Execute 'clear crypto pki <option>' commands based on flags.
+
+        Args:
+            device (obj): pyATS device object.
+            benchmarks (bool): Clear PKI Benchmark Data if True.
+            counters (bool): Clear PKI Counters if True.
+            crl (bool): Clear Certificate Revocation List (CRL) if True.
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: If device.execute fails.
+    """
+    cmds = []
+
+    if benchmarks:
+        cmds.append("clear crypto pki benchmarks")
+    if counters:
+        cmds.append("clear crypto pki counters")
+    if crl:
+        cmds.append("clear crypto pki crl")
+
+    try:
+        for cmd in cmds:
+            device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to execute clear crypto pki command(s): {e}")
+
+
+def execute_crypto_pki_certificate_validate(device, tp_name):
+    """
+    Execute 'crypto pki certificate validate <tp_name>' command.
+        Args:
+            device (obj): Device object on which to run the command.
+            tp_name (str): Trustpoint name whose certificate needs validation.
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: If command execution fails.
+    """
+    cmd = [f'crypto pki certificate validate {tp_name}']
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to validate crypto pki certificate: {e}")

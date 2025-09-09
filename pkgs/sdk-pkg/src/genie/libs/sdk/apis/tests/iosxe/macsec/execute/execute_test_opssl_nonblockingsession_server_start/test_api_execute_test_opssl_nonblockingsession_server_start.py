@@ -1,35 +1,25 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
 from genie.libs.sdk.apis.iosxe.macsec.execute import execute_test_opssl_nonblockingsession_server_start
+from unittest.mock import Mock
 
 
-class TestExecuteTestOpsslNonblockingsessionServerStart(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          MSFT_9500H_SPINE:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: c9500
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['MSFT_9500H_SPINE']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestExecuteTestOpsslNonblockingsessionServerStart(TestCase):
 
     def test_execute_test_opssl_nonblockingsession_server_start(self):
+        self.device = Mock()
+        results_map = {
+            'test opssl nonblockingsession server tls1.2 start 192.168.1.1 9001 134217727 0 server': '',
+        }
+        
+        def results_side_effect(arg, **kwargs):
+            return results_map.get(arg)
+        
+        self.device.execute.side_effect = results_side_effect
+        
         result = execute_test_opssl_nonblockingsession_server_start(self.device, 'tls1.2', 'start', '192.168.1.1', '9001', '134217727', '0', 'server', 'server')
+        self.assertIn(
+            'test opssl nonblockingsession server tls1.2 start 192.168.1.1 9001 134217727 0 server',
+            self.device.execute.call_args_list[0][0]
+        )
         expected_output = None
         self.assertEqual(result, expected_output)

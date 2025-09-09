@@ -29,7 +29,6 @@ from pyats.utils.fileutils import FileUtils
 from pyats.easypy import runtime
 
 # unicon
-from unicon.eal.dialogs import Statement, Dialog
 from unicon.plugins.generic.statements import authentication_statement_list
 
 # Parsergen
@@ -361,6 +360,7 @@ class HA(HA_main):
         ctrlplane_downtime = self.parameters.get('ctrlplane_downtime')
         user_boot_mode = self.parameters.get('mode')
         disrupt_flag = self.parameters.get('disrupt_flag', False)
+        min_disrupt = self.parameters.get('min_disrupt', False)
         allow_disruptive = self.parameters.get('allow_disruptive', True)
         issu_timeout = self.parameters.get('issu_timeout')
         cfg_transfer = self.parameters.get('cfg_transfer')
@@ -420,9 +420,14 @@ class HA(HA_main):
         if disrupt_flag:
             with steps.start("Performing issu on the device {}".format(self.device.hostname)):
                 image_name = basename(upgrade_image)
-                self.device.execute(
-                    'install all nxos bootflash:{}'.format(image_name), timeout=issu_timeout,
-                    reply=dialog)
+                if min_disrupt:
+                    self.device.execute(
+                        'install all nxos bootflash:{} minimally-disruptive'.format(image_name), timeout=issu_timeout,
+                        reply=dialog)
+                else:
+                    self.device.execute(
+                        'install all nxos bootflash:{}'.format(image_name), timeout=issu_timeout,
+                        reply=dialog)
         else:
             with steps.start("Performing ISSU impact only check on the device {}".format(self.device.hostname)) as step:
                 image_name = basename(upgrade_image)

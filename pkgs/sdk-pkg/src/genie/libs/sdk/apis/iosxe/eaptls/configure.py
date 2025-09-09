@@ -133,28 +133,6 @@ def configure_pki_enroll_certificate(device, label_name):
 
     return output
 
-def unconfigure_crypto_pki_server(device, server_name):
-    """ Unconfigures crypto pki server on device
-
-        Args:
-            device (`obj`): Device object
-            server_name ('str'): Name of the server
-
-        Returns:
-            None
-
-        Raise:
-            SubCommandFailure: Failed to unconfigure crypto pki server on device
-    """
-
-    try:
-        device.configure([f"no crypto pki server {server_name}"])
-
-    except SubCommandFailure:
-        raise SubCommandFailure(
-            "Could not unconfigure crypto pki server on device"
-        )
-
 
 def configure_crypto_pki_server(
     device,
