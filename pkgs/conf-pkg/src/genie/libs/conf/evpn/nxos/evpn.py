@@ -21,6 +21,7 @@ from genie.conf.base.cli import CliConfigBuilder
 import genie.conf.base.interface
 from genie.conf.base.config import CliConfig
 from genie.decorator import managedattribute
+from genie.libs.conf.base import IPv4Address
 
 class Evpn(ABC):
 
@@ -244,6 +245,20 @@ class Evpn(ABC):
             doc = 'EVPN Multi homing system mac configured at global level'
         )
 
+        evpn_multihoming_frr_ip = managedattribute(
+            name = 'evpn_multihoming_frr_ip',
+            default=None,
+            type=(None, managedattribute.test_istype(bool)),
+            doc = 'EVPN Multi homing FRR IP configured at global level mandatory for PIP'
+        )
+
+        evpn_multihoming_ead_evi = managedattribute(
+            name = 'evpn_multihoming_ead_evi',
+            type = (None, managedattribute.test_isinstance(IPv4Address)),
+            default = None,
+            doc = 'EVPN Multi homing EAD EVI type 1 route advertisement configured at global level'
+        )
+
         def build_config(self, apply=True, attributes=None, unconfig=False, **kwargs):
             attributes = AttributesHelper(self, attributes)
             configurations = CliConfigBuilder(unconfig=unconfig)
@@ -270,7 +285,15 @@ class Evpn(ABC):
                     if attributes.value('evpn_multihoming_global_system_mac'):
                         # nxos: evpn multihoming / system-mac aaaa.deaf.beef
                         configurations.append_line(attributes.format('system-mac {evpn_multihoming_global_system_mac}'), unconfig_cmd=attributes.format('no system-mac {evpn_multihoming_global_system_mac}'))
-                
+
+                    if attributes.value('evpn_multihoming_frr_ip'):
+                        # nxos: evpn multihoming / frr anycast source-ip 1.1.1.1
+                        configurations.append_line(attributes.format('frr anycast source-ip {evpn_multihoming_frr_ip}'), unconfig_cmd=attributes.format('no frr anycast source-ip {evpn_multihoming_frr_ip}'))
+
+                    if attributes.value('evpn_multihoming_ead_evi'):
+                        # nxos: evpn multihoming / ead-evi route
+                        configurations.append_line(attributes.format('ead-evi route'), unconfig_cmd=attributes.format('no ead-evi route'))
+
                 for sub, attributes2 in attributes.mapping_values('interface_attr',
                     sort=True, keys=self.interface_attr):
                     configurations.append_block(

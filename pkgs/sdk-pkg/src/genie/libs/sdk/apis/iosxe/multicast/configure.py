@@ -2179,3 +2179,40 @@ def configure_ip_pim_bsr_rp_candidate(device, vrf_name=None, interface_name=None
         raise SubCommandFailure(
             f"Failed to configure or unconfigure ip pim candidate rp or bsr for both global and VRF contexts on device {device.name}. Error:\n{e}"
         )
+        
+def configure_platform_ip_multicast_ssdp(device):
+    """ Configure platform ip multicast ssdp on device
+        Example : platform ip multicast ssdp
+    Args:
+        device (`obj`): Device object
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    cmd = f"platform ip multicast ssdp"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure platform ip multicast ssdp:\n{e}"
+        )
+
+def unconfigure_platform_ip_multicast_ssdp(device):
+    """ Unconfigure platform ip multicast ssdp on device
+        Example : no platform ip multicast ssdp
+    Args:
+        device (`obj`): Device object
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed unconfiguring
+    """
+    cmd = f"no platform ip multicast ssdp"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure platform ip multicast ssdp:\n{e}"
+        )
+

@@ -2656,3 +2656,41 @@ def configure_tftp_server_boot(device, file_path):
         raise SubCommandFailure(
             f"Failed to configure TFTP server with file {file_path}. Error:\n{e}"
         )
+    
+def configure_ipv6_cef(device, option):
+    """ Configure ipv6 cef on device
+        Args:
+            device ('obj'): device to use
+            option ('str'): option to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring ipv6 cef on device
+    """
+    log.debug("Configure ipv6 cef on device")
+    config = [f"ipv6 cef {option}"]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure ipv6 cef on device. Error\n{e}"
+            )
+
+def unconfigure_ipv6_cef(device, option):
+    """ Unconfigure ipv6 cef on device
+        Args:
+            device ('obj'): device to use
+            option ('str'): option to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed unconfiguring ipv6 cef on device
+    """
+    log.debug("Unconfigure ipv6 cef on device")
+    config = [f"no ipv6 cef {option}"]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure ipv6 cef on device. Error\n{e}"
+            )

@@ -1878,8 +1878,8 @@ def upgrade_hw_module_subslot_sfp(device, slot , sfp, image=None,timeout=180):
         cmd =f'upgrade hw-module subslot {slot} sfp {sfp} {image}'
         try:
             output = device.execute(cmd,reply=dialog,timeout=timeout)
-            m = re.search('(firmware update success!!)',output)
-            m1 = re.search('.*(Firmware already up to date)',output)
+            m = re.search(r'(firmware update success!!)',output)
+            m1 = re.search(r'.*(Firmware already up to date)',output)
             if m:
                 return True
             elif m1:
@@ -1896,8 +1896,8 @@ def upgrade_hw_module_subslot_sfp(device, slot , sfp, image=None,timeout=180):
         cmd =f'upgrade hw-module subslot {slot} sfp {sfp}'
         try:
             output = device.execute(cmd,reply=dialog,timeout=timeout)
-            m = re.search('(firmware update success!!)',output)
-            m1 = re.search('.*(Firmware already up to date)',output)
+            m = re.search(r'(firmware update success!!)',output)
+            m1 = re.search(r'.*(Firmware already up to date)',output)
             if m:
                 return True
             elif m1:
@@ -1982,12 +1982,12 @@ def upgrade_rom_monitor_capsule_golden(device, switch_type, rp, timeout=420):
         log.warning(e)
         return None
     else:
-        if re.search('.*([DONE])',output):
+        if re.search(r'.*([DONE])',output):
             return True
-        if re.search('.*(Golden Upgrade not supported)',output):
+        if re.search(r'.*(Golden Upgrade not supported)',output):
             log.info('Golden Upgrade not supported!')
             return True
-        if re.search('.*(Press RETURN to get started.)',output):
+        if re.search(r'.*(Press RETURN to get started.)',output):
             log.info('Golden Upgrade is Successful!')
             return True
 

@@ -54,4 +54,3 @@ class TestInstallImage(unittest.TestCase):
                     dialog_mock.side_effect = Exception
                     cls.install_image(steps=steps, device=device, images=['sftp://server/image.bin'])
         self.assertEqual(Failed, steps.details[0].result)
-

@@ -597,3 +597,37 @@ def unconfigure_ptp_neighbor_propagation_delay_threshold(device):
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not unconfigure ptp neighbor-propagation-delay-threshold on device. Error:\n{e}')
+
+def configure_ptp_ttl(device, ptp_ttl=1):
+    """ Configure ptp enable on interface
+        Args:
+            device (`obj`): Device object
+            ptp_ttl ('int'): PTP ttl value, default is 1
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f"Configuring ptp ttl value on {device.name} {ptp_ttl}")
+    cmd = [f"ptp ttl {ptp_ttl}"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configure ptp ttl on device. Error:\n{e}')
+
+def unconfigure_ptp_ttl(device, ptp_ttl=1):
+    """ Unconfigure ptp enable on interface
+        Args:
+            device (`obj`): Device object
+            ptp_ttl ('int'): PTP ttl value, default is 1
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f"Unconfiguring ptp ttl value on {device.name} {ptp_ttl}")
+    cmd = [f"no ptp ttl {ptp_ttl}"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not unconfigure ptp ttl on device. Error:\n{e}')

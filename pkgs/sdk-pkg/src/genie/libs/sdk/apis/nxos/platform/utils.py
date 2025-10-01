@@ -150,6 +150,6 @@ def is_connected_via_vty(device, alias=None):
     else:
         conn = device
     show_users = conn.execute(r'show users | inc \*')
-    if re.search(' pts', show_users):
+    if re.search(r' pts', show_users):
         return True
     return False

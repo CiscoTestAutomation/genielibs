@@ -97,7 +97,7 @@ class TopologyMarkupProcessor(Processor):
 
     #     elif isinstance(content, str):
     #         # only string can be processed:
-    #         for match in re.findall('%{ *(.+?) *}', content):
+    #         for match in re.findall(r'%{ *(.+?) *}', content):
     #             if match == 'self' or match.startswith('self.'):
     #                 if index[0] != 'devices':
     #                     raise MarkupError(
@@ -108,15 +108,15 @@ class TopologyMarkupProcessor(Processor):
 
     #             try:
     #                 if match == 'self':
-    #                         content = re.sub('%%{ *%s *}' % match, index[1] , content)
+    #                         content = re.sub(r'%%{ *%s *}' % match, index[1] , content)
     #                 elif match.startswith('self.'):
     #                     match_list = index[0:2] + match.split('.')[1:]
 
-    #                     content = re.sub('%%{ *%s *}' % match,
+    #                     content = re.sub(r'%%{ *%s *}' % match,
     #                                   str(self.chain_get(match_list, original)),
     #                                   content)
     #                 else:
-    #                     content = re.sub('%%{ *%s *}' % match,
+    #                     content = re.sub(r'%%{ *%s *}' % match,
     #                                   str(self.chain_get(match.split('.'),
     #                                                      original)),
     #                                   content)

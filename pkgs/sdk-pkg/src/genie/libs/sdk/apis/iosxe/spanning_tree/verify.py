@@ -27,7 +27,7 @@ def verify_portfast_state(device, interface):
     except SubCommandFailure as e:
         raise SubCommandFailure('Could not execute CLI on {device}. Error: {error}'.format(device = device, error = e))
 
-    state = re.search('enabled', sh_spanint_portfast)
+    state = re.search(r'enabled', sh_spanint_portfast)
     if state:
         log.info('Portfast is enabled on interface {}'.format(interface))
         return True
@@ -58,7 +58,7 @@ def verify_spanning_tree_root_inc(device, vlan_id, interface):
     except SubCommandFailure as e:
         raise SubCommandFailure('Could not execute CLI on {device}. Error: {error}'.format(device = device, error = e))
 
-    inconsistancy = re.search('Root', sh_root_inc)
+    inconsistancy = re.search(r'Root', sh_root_inc)
     if inconsistancy:
         log.info('Root inconsistancy is enabled on interface {}'.format(interface))
         return True
@@ -88,7 +88,7 @@ def verify_spanning_tree_loop_inc(device, vlan_id, interface):
     except SubCommandFailure as e:
         raise SubCommandFailure('Could not execute CLI on {device}. Error: {error}'.format(device = device, error = e))
 
-    inconsistancy = re.search('Loop', sh_loop_inc)
+    inconsistancy = re.search(r'Loop', sh_loop_inc)
     if inconsistancy:
         log.info('Loop inconsistancy is enabled on interface {}'.format(interface))
         return True

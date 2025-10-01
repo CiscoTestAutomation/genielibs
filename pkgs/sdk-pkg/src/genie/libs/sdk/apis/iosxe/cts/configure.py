@@ -944,7 +944,12 @@ def configure_ip_role_based_acl(
     device,acl_name,ip_type,protocol=None,permission=None,log=None,
     prec_value=None,dscp_value=None,port_type=None,
     port_match_condition=None,port_match_value=None,
-    port_range_start=None,port_range_end=None
+    port_range_start=None,port_range_end=None,
+    dst_port_range_start=None,
+    dst_port_range_end=None,
+    dst_port_type=None,
+    dst_match_condition=None,
+    dst_match_value=None
 ):
     """ Configure ip role based ACL on device
         Args:
@@ -961,6 +966,11 @@ def configure_ip_role_based_acl(
             port_match_value ('str'): Port number value
             port_range_start ('str'): Start Port number range
             port_range_end ('int'): End Port number range
+            dst_port_range_start ('int', Optional): Destination port start
+            dst_port_range_end ('int', Optional): Destination port end
+            dst_port_type('str', Optional): Destination port type
+            dst_match_condition ('str', Optional): Match condition for destination port
+            dst_match_value ('str', Optional): Match value for destination port
         Returns:
             config
         Raises:
@@ -979,8 +989,12 @@ def configure_ip_role_based_acl(
     elif protocol in ['tcp', 'udp']:
         if port_match_condition:
             sub_cmnd += f' {port_type} {port_match_condition} {port_match_value}'
-        elif port_range_start:
-            sub_cmnd += f' {port_type} range {port_range_start} {port_range_start}'
+        if dst_port_type and dst_match_condition and dst_match_value:
+            sub_cmnd += f' {dst_port_type} {dst_match_condition} {dst_match_value}'
+        if port_range_start:
+            sub_cmnd += f' {port_type} range {port_range_start} {port_range_end}'
+        if dst_port_type and dst_port_range_start and dst_port_range_end:
+            sub_cmnd += f' {dst_port_type} range {dst_port_range_start} {dst_port_range_end}'
     cmd.append(sub_cmnd)
     try:
         device.configure(cmd)
@@ -1202,3 +1216,126 @@ def unconfigure_vlan_to_sgt_mapping(device, vlan, sgt):
             "Could not unconfigure vlan-to-sgt mapping for vlan {vlan},sgt {sgt}.Error:{err}"\
             .format(vlan=vlan, sgt=sgt,err=str(e))
         )
+
+def configure_cts_sxp(device):
+    """ Enable cts sxp
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to enable cts sxp
+    """
+    log.debug("Enable CTS SXP")
+    try:
+        device.configure(["cts sxp enable"])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not enable CTS SXP.Error:\n{}".format(str(e))
+        )
+
+def unconfigure_cts_sxp(device):
+    """ Disable cts sxp
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to disable cts sxp
+    """
+    log.debug("Disable CTS SXP")
+    try:
+        device.configure(["no cts sxp enable"])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not disable CTS SXP.Error:\n{}".format(str(e))
+        )
+
+def configure_cts_sxp_default_password(device, password):
+    """ Assign a default static SGACL(ipv4)
+        Args:
+            device ('obj'): device to use
+             password ('str'): password
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure default password
+    """
+    log.debug("Assign default cts sxp password")
+    try:
+        device.configure(["cts sxp default password {}".format(password)])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure default password {}.Error: {}".format(password,str(e))
+        )
+
+def unconfigure_cts_sxp_default_password(device):
+    """ Disable cts sxp
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to unconfigure default password
+    """
+    log.debug("Unconfigure default CTS SXP password")
+    try:
+        device.configure(["no cts sxp default password"])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure default CTS SXP password.Error:\n{}".format(str(e))
+        )
+    
+def configure_cts_sxp_connection(device, ip_address, mode='both'):
+    """ Configure CTS SXP connection
+        Args:
+            device ('obj'): device to use
+            ip_address ('str'): ip address of the peer device
+            mode ('str'): mode of the connection (default is 'both' can be configured listener or speaker)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to enable sxp connection
+    """
+    log.debug("Enable CTS SXP connection")
+    try:
+        device.configure(["cts sxp connection peer {} password default mode local {}".format(ip_address, mode)])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Not able to enable sxp connection on {ip_address}.Error:{err}"\
+            .format(ip_address=ip_address, err=str(e))
+        )
+
+def unconfigure_cts_sxp_connection(device, ip_address, mode='both'):
+    """ Unconfigure CTS SXP connection
+        Args:
+            device ('obj'): device to use
+            ip_address ('str'): ip address of the peer device
+            mode ('str'): mode of the connection (default is 'both' can be configured listener or speaker)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to disable sxp connection
+    """
+    log.debug("Disable CTS SXP connection")
+    try:
+        device.configure(["no cts sxp connection peer {} password default mode local {}".format(ip_address, mode)])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Not able to disable sxp connection on {ip_address}.Error:{err}"\
+            .format(ip_address=ip_address, err=str(e))
+        )
+
+def clear_cts_environment_data(device):
+    """ Clear CTS environment-data
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to clear CTS environment-data
+    """
+    try:
+        device.execute('clear cts environment-data')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not clear CTS environment-data. Error:\n {e}") 

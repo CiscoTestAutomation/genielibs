@@ -574,7 +574,7 @@ def verify_routing_route(device,
                     else:
                         community_str=expected_community
                     
-                    regexp = re.compile('Communities: +{community}'.format(
+                    regexp = re.compile(r'Communities: +{community}'.format(
                         community=community_str))
                     if op(not regexp.search(rt.get('tsi', {}).get("#text", None)), True):
                         continue
@@ -2345,7 +2345,7 @@ def verify_communities_in_route(device,
             timeout.sleep()
             continue
         
-        regexp = re.compile('Communities: +{community}'.format(
+        regexp = re.compile(r'Communities: +{community}'.format(
                  community=expected_community))
         for table_entry in out.q.get_values('route-table'):           
 

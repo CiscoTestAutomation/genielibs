@@ -97,7 +97,7 @@ install_image:
                           loop_continue=True,
                           continue_timer=False),
 
-                Statement(pattern='Press RETURN to get started.*',
+                Statement(pattern=r'Press RETURN to get started.*',
                           action='sendline()',
                           args=None,
                           loop_continue=False,

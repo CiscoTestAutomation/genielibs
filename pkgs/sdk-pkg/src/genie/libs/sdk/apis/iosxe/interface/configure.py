@@ -11102,3 +11102,23 @@ def configure_remote_span_monitor_session(device, session_number, direction_type
          raise SubCommandFailure(
              f"Failed to configure remote span monitor session on interface:\n{e}"
          )
+         
+def unconfigure_interface_speed_number(device, interface, speed=None):
+    """Unconfigure speed on interface with a different API name
+    Args:
+        device (`obj`): Device object
+        interface (`str`): Interface name
+        speed (`str`, optional): Speed value to remove (e.g., '10', '100', '1000'). If None, removes any speed setting.
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    config = [
+        f'interface {interface}',
+        f'no speed {speed}'
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not unconfigure speed on {interface}. Error:\n{e}")

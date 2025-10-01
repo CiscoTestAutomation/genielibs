@@ -809,6 +809,10 @@ install_image:
 
         post_reload_timeout(int, optional): maximum time before accessing the device after
             reload. Default to 60 seconds.
+            
+        rommon_vars (dict, optional): Dictionary of rommon variables to set during
+            the reload process. Default: {"DEBUG_CONF": ""}
+
         <Key>: <Value>
             Any other arguments that the Unicon reload service supports
 
@@ -834,7 +838,10 @@ install_image:
         'prompt_recovery': True,
         'error_pattern': [r"FAILED:.*?$",],
         'post_reload_wait': 15,
-        'post_reload_timeout': 60
+        'post_reload_timeout': 60,
+        "rommon_vars": {
+            "DEBUG_CONF": ""
+        }
     }
     ISSU = False
     SKIP_BOOT_VARIABLE = False
@@ -866,6 +873,7 @@ install_image:
             Optional('error_pattern'): list,
             Optional('post_reload_wait'): int,
             Optional('post_reload_timeout'):int,
+            Optional('rommon_vars'): dict,
             Any(): Any()
         }
     }
@@ -874,15 +882,34 @@ install_image:
     # Execution order of Stage steps
     # ==============================
     exec_order = [
+        'configure_no_boot_manual',
         'delete_boot_variable',
         'set_boot_variable',
         'configure_and_verify_startup_config',
         'save_running_config',
         'verify_boot_variable',
+        'check_start_up_config_variables',
         'verify_running_image',
         'install_image'
     ]
 
+
+    def check_start_up_config_variables(self, steps, device):
+        """ Check if debug config is set in rommon variables
+        """
+        with steps.start("Check for debug config in rommon variables") as step:
+            cmd = 'show romvar' 
+            try:
+                output = device.parse(cmd)
+                if debug_conf:=output.get('rommon_variables', {}).get('debug_conf'):
+                    log.info(f"DEBUG_CONF {debug_conf} is set in rommon variables")
+                    self.image_to_boot = "bootflash:packages.conf"
+                else:
+                    self.image_to_boot = None
+                    log.info("DEBUG_CONF is not set in rommon variables")
+            except Exception as e:
+                step.failed("Failed to check for debug config in rommon variables",
+                            from_exception=e)
 
     def install_image(self, steps, device, images,
                       install_timeout=INSTALL_TIMEOUT,
@@ -948,11 +975,12 @@ install_image:
                               continue_timer=False)
                 ])
                 
+                install_cmd = 'install add file {} activate commit'
                 if issu:
-                    device.sendline('install add file {} activate issu commit'.format(images[0]))
-                else:
-                    device.sendline('install add file {} activate commit'.format(images[0]))
+                    install_cmd = 'install add file {} activate issu commit'
                     
+                device.sendline(install_cmd.format(images[0]))
+                
                 try:
                     dialog.process(device.spawn,
                                    timeout = install_timeout,

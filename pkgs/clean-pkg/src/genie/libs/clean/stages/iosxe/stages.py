@@ -716,6 +716,9 @@ class InstallImage(BaseStage):
             image version on device. If a match is found, the stage will be skipped.
             Defaults to True.
 
+        install_retry_attempts (int, optional): Number of times to retry install.
+            Defaults to 2.
+
         reload_wait (int, optional): The maximum time allowed, in seconds,
             to check the auto reload. Defaults to 30.
 
@@ -763,6 +766,7 @@ class InstallImage(BaseStage):
     SKIP_SAVE_RUNNING_CONFIG = False
     VERIFY_RUNNING_IMAGE = True
     RELOAD_WAIT = 30
+    INSTALL_RETRY_ATTEMPTS = 2
 
     # ============
     # Stage Schema
@@ -804,13 +808,14 @@ class InstallImage(BaseStage):
     # Execution order of Stage steps
     # ==============================
     exec_order = [
+        "configure_no_boot_manual",
         "delete_boot_variable",
         "set_boot_variable",
         "configure_and_verify_startup_config",
         "save_running_config",
         "verify_boot_variable",
         "verify_running_image",
-        "install_image",
+        "install_image"
     ]
 
     def __call__(self, **parameters):
@@ -997,6 +1002,7 @@ class InstallImage(BaseStage):
         reload_service_args=None,
         issu=ISSU,
         reload_wait=RELOAD_WAIT,
+        install_retry_attempts=INSTALL_RETRY_ATTEMPTS,
     ):
 
         # Set default reload args
@@ -1030,6 +1036,36 @@ class InstallImage(BaseStage):
             if current_image == images[0]:
                 step.skipped("Images is already installed on the device.")
 
+            def handle_issu_dialog(spawn, context):
+                """Handle ISSU in progress dialog by aborting the operation"""
+
+                # copy running-config startup-config
+                device.api.execute_copy_run_to_start()
+
+                # Execute install abort issu
+                log.warning("ISSU is in progress. Aborting the ISSU upgrade to proceed.")
+                output = device.execute("install abort issu", timeout=30)
+
+                # Check if the failure is due to "Nothing to Abort"
+                if "Nothing to Abort" in str(output) or "FAILED" in str(output):
+                    log.info("No ISSU operation to abort, Need to clean install state")
+
+                # Execute show issu detail to check current state
+                device.execute("show issu state detail", timeout=30)
+
+                # Configure service internal and clear install state
+                try:
+                    device.configure("service internal")
+                    log.info("Successfully configured service internal")
+                    device.api.execute_clear_install_state()
+                    log.info("Successfully cleared install state")
+                except Exception as e:
+                    log.warning(f"Failed to configure service internal or clear install state: {e}")
+
+                # Raise exception to indicate ISSU is in progress
+                setattr(device, 'issu_in_progress', True)
+                raise Exception("ISSU operation detected - device marked as in progress")
+
             install_add_one_shot_dialog = Dialog([
                 Statement(
                     pattern=r".*Press Quit\(q\) to exit, you may save "
@@ -1059,9 +1095,10 @@ class InstallImage(BaseStage):
                     loop_continue=True,
                     continue_timer=False,
                 ),
+                # Add handler for ISSU dialog
                 Statement(
-                    pattern=r"FAILED:.*?$",
-                    action=None,
+                    pattern=r".*Install ISSU in progress\. Abort the ISSU upgrade to proceed.*",
+                    action=handle_issu_dialog,
                     loop_continue=False,
                     continue_timer=False,
                 ),
@@ -1113,16 +1150,37 @@ class InstallImage(BaseStage):
                     ),
                 ])
 
+                install_cmd = "install add file {} activate commit prompt-level none"
                 if issu:
                     install_cmd = "install add file {} activate issu commit prompt-level none"
-                install_cmd = "install add file {} activate commit prompt-level none"
 
-                device.execute(
-                    install_cmd.format(images[0]),
-                    reply=install_add_one_shot_dialog,
-                    error_pattern=["FAILED:"],
-                    timeout=install_timeout,
-                )
+                retry_count = 0
+                while retry_count < install_retry_attempts:
+                    try:
+                        device.execute(
+                            install_cmd.format(images[0]),
+                            reply=install_add_one_shot_dialog,
+                            error_pattern=["FAILED:"],
+                            timeout=install_timeout,
+                        )
+                        break  # Success, exit the retry loop
+                    except Exception as e:
+                        if getattr(device, 'issu_in_progress', None):
+                            retry_count += 1
+                            if retry_count < install_retry_attempts:
+                                log.warning(f"ISSU in progress detected, retrying ({retry_count}/{install_retry_attempts})")
+                                # Remove the flag
+                                delattr(device, 'issu_in_progress')
+                                continue
+                            else:
+                                log.error("Max retries reached for ISSU in progress")
+                                step.failed(
+                                    f"Failed to install image after {install_retry_attempts} attempts due to "
+                                    f"ongoing ISSU operations on device {device.name}. "
+                                    f"Please ensure no ISSU operations are in progress and retry.")
+                        else:
+                             step.failed("Failed to install the image due to an unexpected error", from_exception=e)
+
                 # Usually the device does auto reload after install operation
                 # This logic is to handle if the device did not reload
                 try:
@@ -1140,7 +1198,14 @@ class InstallImage(BaseStage):
                     device.execute("show version")
                     device.execute("show install summary")
                 else:
-                    device.reload("", **reload_args)
+                    if hasattr(self, "image_to_boot") and self.image_to_boot:
+                        log.info(
+                            f"Set image to boot to {self.image_to_boot} for reload"
+                        )
+                        device.reload(image_to_boot=self.image_to_boot, **reload_args)
+                    else:
+                        device.reload("", **reload_args)
+
                 device.execute("install commit")
 
             except Exception as e:
@@ -1150,6 +1215,20 @@ class InstallImage(BaseStage):
                 "image_mapping", {})
             if hasattr(self, "new_boot_var"):
                 image_mapping.update({images[0]: self.new_boot_var})
+
+    def configure_no_boot_manual(self,
+                                 steps,
+                                 device):
+
+        # Configure no boot manual on the device to prevent the device from booting into manual mode after reload
+        with steps.start(
+                "Configure no boot manual on device") as step:
+            try:
+                device.api.configure_no_boot_manual()
+            except Exception:
+                step.passx(
+                    f"Unable to configure no boot manual on device {device.name}"
+                )   
 
 
 class InstallRemoveSmu(BaseStage):
@@ -1161,7 +1240,7 @@ class InstallRemoveSmu(BaseStage):
     install_remove_smu:
         smu_reload_wait (int, optional): The maximum time allowed, in seconds,
             to differentiate between a hot SMU and a cold SMU.
-            Defaults to 30.
+            Defaults to 180.
 
         timeout (int, optional): Maximum time to wait for remove process to
             finish. Defaults to 800.
@@ -1234,10 +1313,16 @@ class InstallRemoveSmu(BaseStage):
                         file_state = output["location"][each]["pkg_state"][pkg]["state"]
                         file_type = output["location"][each]["pkg_state"][pkg]["type"]
                         filename_version = output["location"][each]["pkg_state"][pkg]["filename_version"]
-                        # Check images is in activated & committed state
+                        # Check if image state is activated & committed
                         if file_state == "C" and file_type == "SMU":
                             active_image.append(filename_version)
-                        # Check images is in deactivated & uncommitted state
+                        # Check if image state is uncommitted
+                        if file_state == "U" and file_type == "SMU":
+                            # Previously used image was left in uncommitted state
+                            output = device.execute("install commit")
+                            if "SUCCESS:" in output:
+                                active_image.append(filename_version)
+                        # Check if image state is deactivated & uncommitted
                         elif file_state == "D" and file_type == "SMU":
                             deactivate_image.append(filename_version)
 
@@ -1286,7 +1371,8 @@ class InstallRemoveSmu(BaseStage):
                                 # address the reload dialog prompt when encountering a cold SMU scenario
                                 device.execute(
                                     "install deactivate file {}".format(image),
-                                    reply=install_smu_dialog)
+                                    reply=install_smu_dialog,
+                                    timeout=smu_reload_wait)
                                 # The key difference between hot and cold SMUs is that a reload occurs
                                 # with cold SMUs, whereas it does not with hot SMUs.
                                 try:
@@ -1360,7 +1446,7 @@ class InstallRemoveSmu(BaseStage):
                                 for each in location:
                                     for pkg in (output.get("location").get(each).get("pkg_state")):
                                         file_state = output["location"][each]["pkg_state"][pkg]["state"]
-                                        # check image is deactivated & uncommitted state
+                                        # check if image state is deactivated & uncommitted
                                         if file_state == "D":
                                             device.execute("install commit")
                                             device.execute("show install summary")
@@ -1415,7 +1501,7 @@ class InstallSmu(BaseStage):
 
         smu_reload_wait (int, optional): The maximum time allowed, in seconds,
             to differentiate between a hot SMU and a cold SMU.
-            Defaults to 30.
+            Defaults to 180.
 
         reload_service_args (optional):
 
@@ -1549,7 +1635,7 @@ class InstallSmu(BaseStage):
                                 file_type = output["location"][each]["pkg_state"][pkg]["type"]
                                 filename_version = output["location"][each]["pkg_state"][pkg]["filename_version"]
                                 try:
-                                    # Check image is in inactive state
+                                    # Check if image state is inactive
                                     if file_state == "I" and file_type == "SMU" and filename_version in image:
                                         log.info("The installed SMU image is in inactive state")
                                 except Exception as e:
@@ -1578,7 +1664,8 @@ class InstallSmu(BaseStage):
                         # address the reload dialog prompt when encountering a cold SMU scenario
                         device.execute(
                             "install activate file {}".format(image),
-                            reply=install_smu_dialog)
+                            reply=install_smu_dialog,
+                            timeout=smu_reload_wait)
                         # The key difference between hot and cold SMUs is that a reload occurs
                         # with cold SMUs, whereas it does not with hot SMUs.
                         try:
@@ -1606,7 +1693,7 @@ class InstallSmu(BaseStage):
                         for each in location:
                             for pkg in output.get("location").get(each).get("pkg_state"):
                                 file_state = output["location"][each]["pkg_state"][pkg]["state"]
-                                # check image is activated & uncommitted state
+                                # check if image state is activated and uncommitted
                                 if file_state == "U":
                                     device.execute("install commit")
                                     log.info("The image is activated and uncommitted")
@@ -1625,7 +1712,7 @@ class InstallSmu(BaseStage):
                                 filename_version = output["location"][each]["pkg_state"][pkg]["filename_version"]
                                 # get_image name
                                 image_name = re.split(r"[:/]", filename_version)[-1]
-                                # check image is activated & committed state
+                                # check if image state is activated and committed
                                 if file_state == "C" and image_name in image:
                                     log.info(f"Applied SMU image {filename_version} successfully")
 
@@ -3741,10 +3828,12 @@ class Connect(BaseStage):
             Defaults to 0 which means no retry.
         retry_interval (int, optional): Interval for retry mechanism in seconds. Defaults
             to 0 which means no retry.
+        logout (bool, optional): To log out from the device after connection. Defaults to True.
     Example
     -------
     connect:
         timeout: 60
+        logout: False
     """
 
     # =================
@@ -3755,6 +3844,7 @@ class Connect(BaseStage):
     TIMEOUT = 200
     RETRY_TIMEOUT = 0
     RETRY_INTERVAL = 0
+    LOGOUT = True
 
     # ============
     # Stage Schema
@@ -3785,6 +3875,11 @@ class Connect(BaseStage):
             default=RETRY_INTERVAL,
         ):
         Or(str, int, float),
+        Optional(
+            "logout",
+            description="To log out from the device after connection. Defaults to True.",
+            default=LOGOUT,
+        ): bool,
     }
 
     # ==============================
@@ -3801,6 +3896,7 @@ class Connect(BaseStage):
         timeout=TIMEOUT,
         retry_timeout=RETRY_TIMEOUT,
         retry_interval=RETRY_INTERVAL,
+        logout=LOGOUT
     ):
 
         with steps.start("Connecting to the device") as step:
@@ -3913,33 +4009,6 @@ class Connect(BaseStage):
 
         if state == "rommon":
 
-            with steps.start("Configuring the manual boot") as step:
-
-                log.info("Configuring the manual boot")
-
-                try:
-
-                    if device.is_ha and hasattr(device, "subconnections"):
-                        states_list = []
-                        # Switch to enable mode if one of the rps are disable mode.
-                        for con in device.subconnections:
-                            if con.state_machine.current_state == "disable":
-                                con.state_machine.go_to("enable", con.spawn)
-                            states_list.append(con.state_machine.current_state)
-
-                        # if one rp in enable mode and another rp in rommon set boot manual on enable rp.
-                        if "enable" in states_list and "rommon" in states_list:
-                            device.subconnections[states_list.index(
-                                "enable")].configure("boot manual")
-                        else:
-                            log.info(
-                                "Both rps are in rommon mode. Skipping the manual boot configuration"
-                            )
-                except Exception as e:
-                    step.passx(f"Failed to configure manual boot. {e}")
-                else:
-                    log.info("Successfully configured manual boot")
-
             with steps.start(
                     "Setting the rommon variables and Booting the device from rommon"
             ) as step:
@@ -3957,20 +4026,25 @@ class Connect(BaseStage):
                     log.info("Successfully booted the device from rommon.")
         else:
             with steps.start("Log out from the device") as step:
-                try:
-                    device.logout()
-                    # To handle the login prompt and ssh connection issues after logout
-                    if not device.connected:
-                        device.disconnect()
-                        device.connect()
+                # by default logout set as true
+                if logout:
+                    try:
+                        device.logout()
+                        # To handle the login prompt and ssh connection issues after logout
+                        if not device.connected:
+                            device.disconnect()
+                            device.connect()
+                        else:
+                            device.connection_provider.connect()
+                    except Exception as e:
+                        log.error(f"Failed to log out from the device. {e}", exc_info=True)
+                        step.failed(f"Failed to log out from the device. {e}")
                     else:
-                        device.connection_provider.connect()
-                except Exception as e:
-                    log.error(f"Failed to log out from the device. {e}",
-                              exc_info=True)
-                    step.failed(f"Failed to log out from the device. {e}")
+                        step.passed("Successfully logged out from the device")
                 else:
-                    step.passed("Successfully logged out from the device")
+                    step.skipped(
+                        "skipping this step, as the user set logout as false"
+                    )
 
         # set mit to False to initialize the connection
         device.default.mit = False

@@ -317,7 +317,7 @@ class Restore(object):
                               'checkpoint {} verbose'.format(name)) from e
 
         # Check if rollback failed and execute supporting commands
-        if re.search('Rollback failed', r_output):
+        if re.search(r'Rollback failed', r_output):
             log.info("Rollback failed for checkpoint '{}':\n Collecting data".
                      format(name))
             device.execute('show rollback log verify')

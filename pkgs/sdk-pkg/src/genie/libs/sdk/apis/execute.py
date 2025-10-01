@@ -428,7 +428,7 @@ def execute_copy_to_running_config(device, file, copy_config_timeout=60):
         raise Exception("Failed to apply config file {} to running-config\n{}".\
                         format(file, str(e)))
     else:
-        if re.search('^0 bytes.*', output):
+        if re.search(r'^0 bytes.*', output):
             raise Exception("Config file {} not applied to "\
                             "running-config - 0 bytes was copied".\
                             format(file))
@@ -451,7 +451,7 @@ def execute_copy_to_startup_config(device, file, dest='startup-config', copy_con
         raise Exception("Failed to apply config file {} to startup-config\n{}".\
                         format(file, str(e)))
     else:
-        if re.search('^0 bytes.*', output):
+        if re.search(r'^0 bytes.*', output):
             raise Exception("Config file {} not applied to "\
                             "startup-config - 0 bytes was copied".\
                             format(file))

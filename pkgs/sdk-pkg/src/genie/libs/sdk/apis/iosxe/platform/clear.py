@@ -147,4 +147,32 @@ def clear_platform_qos_statistics_iif_id(device, state, iif_id, switch=None):
         raise SubCommandFailure(
             "Could not clear qos statistics iif_id on {device}. Error:\n{error}".format(device=device, error=e)
         )
-        
+
+def execute_clear(device, parameter):
+    """ Execute clear for the mentioned parameter
+        Args:
+            device ('obj'): device to use
+            parameter ('str'): parameter for which clear command has to be executed.
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed executing clear
+    """
+    log.debug(
+        "Executing clear for name={parameter} "
+        .format(parameter=parameter)
+    )
+
+    try:
+        device.execute(
+            [
+            "clear {parameter}".format(parameter=parameter)
+            ]
+        )
+
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not execute clear for {parameter}".format(
+                parameter=parameter
+            )
+         )

@@ -422,7 +422,7 @@ class HA(HA_main):
                 image_name = basename(upgrade_image)
                 if min_disrupt:
                     self.device.execute(
-                        'install all nxos bootflash:{} minimally-disruptive'.format(image_name), timeout=issu_timeout,
+                        'install all nxos bootflash:{} min-disruptive'.format(image_name), timeout=issu_timeout,
                         reply=dialog)
                 else:
                     self.device.execute(
@@ -435,7 +435,7 @@ class HA(HA_main):
                     "show install all impact nxos bootflash:{} non-disruptive".format(image_name), timeout=600)
                 #Parses impact after compatibility check is done
                 compatibility_table = re.findall(
-                    '(?s)(?<=Compatibility check is done:)(.*?)(?=\r\n\r\n|\n\n)', impact_output)[0]
+                    r'(?s)(?<=Compatibility check is done:)(.*?)(?=\r\n\r\n|\n\n)', impact_output)[0]
                 upgrade_will_be_disruptive = True if len(re.findall(
                     r"[^-]disruptive", compatibility_table)) else False
                 if upgrade_will_be_disruptive and not allow_disruptive:

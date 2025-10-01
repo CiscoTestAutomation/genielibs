@@ -61,7 +61,7 @@ def verify_no_access_session(device, interface):
     except SubCommandFailure as e:
         raise SubCommandFailure('Could not execute CLI on {device}. Error: {error}'.format(device = device, error = e))
 
-    access_session = re.search('no access-session monitor', sh_derived_conf)
+    access_session = re.search(r'no access-session monitor', sh_derived_conf)
     if access_session:
         log.info('No Access session monitor present on the interface {}'.format(interface))
         return True

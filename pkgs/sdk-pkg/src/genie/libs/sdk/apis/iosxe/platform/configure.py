@@ -6784,3 +6784,24 @@ def unconfigure_file_verify_auto(device):
         device.configure(config_cmd)
     except SubCommandFailure as e:
         log.error('Failed to unconfigure file verify auto on device {}: {}'.format(device.name, e))
+
+def test_platform_hardware_powersupply_oir(device, slot_number, action):
+        """
+        Args:
+            device (obj): Device object
+            slot_number (int): Slot number
+            action (str): Action to perform ('insert' or 'remove')
+        Returns:
+            str: Output of the command
+        """    
+        log.debug(f"Performing PSU OIR {action} on slot {slot_number}...")
+
+        dialog = Dialog([Statement(pattern=r'(?s).\bsuccess\b.', action='sendline(\r)',loop_continue=False, continue_timer=False)])
+
+        command = f"test platform hardware chassis power-supply {slot_number} oir {action}"
+
+        try:
+            device.execute(command,reply=dialog)
+        except SubCommandFailure as e:
+            log.error(f"Failed to perform PSU OIR {action}: {command}")
+            raise SubCommandFailure(f"Error executing command: {e}")

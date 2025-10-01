@@ -170,3 +170,36 @@ def execute_crypto_pki_certificate_validate(device, tp_name):
         device.execute(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to validate crypto pki certificate: {e}")
+
+
+def execute_trim_crypto_pki_certificate(device, server_name=None, generate_expired_list=False, url=None, trim_url=False):
+    """
+    Execute crypto pki server trim commands to manage certificate trimming operations.
+        Args:
+            device (`obj`): Device object
+            server_name (`str`): Name of the PKI server
+            generate_expired_list (`bool`): Generate expired certificate list. Default is False.
+            url (`str`): URL for trim operations (required if generate_expired_list or trim_url is True)
+            trim_url (`bool`): Execute trim operation with URL. Default is False.
+        Returns:
+            str: Command execution output
+        Raises:
+            ValueError: If URL is required but not provided
+            SubCommandFailure: If command execution fails
+    """
+    cmds = []
+    
+    if generate_expired_list and url:
+        cmds.append(f"crypto pki server {server_name} trim generate expired-list url {url}")
+
+    if trim_url and url:
+        cmds.append(f"crypto pki server {server_name} trim url {url}")
+
+    if not cmds:
+        raise ValueError("No valid trim operation specified. Enable generate_expired_list or trim_url.")
+
+    try:
+        output = device.execute(cmds)
+        return output
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to execute crypto pki server trim commands: {e}")

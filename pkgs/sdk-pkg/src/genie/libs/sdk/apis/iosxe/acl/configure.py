@@ -2475,5 +2475,41 @@ def configure_extended_acl_with_dscp(
         device.configure(configs)
     except SubCommandFailure as e:
         log.error(e)
-        raise SubCommandFailure("Could not Configure extended access-list with dscp configure") 
+        raise SubCommandFailure("Could not Configure extended access-list with dscp configure")
+
+def configure_extended_access_list(
+    device,
+    acl_name, 
+    sequence_number=None,
+    permission=None,
+    src_ip=None,
+    dest_ip=None,
+    dscp_value=None
+):
+    """ configure extended access-list
+        Args:
+            device ('obj'): device to execute on
+            acl_name ('str'): acl name
+            sequence_number('int'): Sequence Number (1-2147483647)
+            permission ('str'): permit|deny
+            src_ip ('str'): source ip
+            dest_ip('str'): destination ip
+            dscp_value ('int'): Differentiated services codepoint value (dscp value)
+            
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    configs=[]
+    configs.append(f"ip access-list extended {acl_name}")
+   
+    if sequence_number and dscp_value:
+        configs.append(f"{sequence_number} {permission} ip host {src_ip} host {dest_ip} dscp {dscp_value}")
+        
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not Configure extended access-list") 
            

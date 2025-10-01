@@ -229,7 +229,7 @@ def get_file_timestamp(device, root_path, file):
             timestamp = file_info_dict.get('file-date', {}).get('@junos:format')
             if not timestamp:
                 return None
-            timestamp = re.sub(' +', ' ', timestamp)
+            timestamp = re.sub(r' +', ' ', timestamp)
             return datetime.datetime.strptime(timestamp, "%b %d %H:%M")\
                             .replace(year=datetime.datetime.now().year)
 
