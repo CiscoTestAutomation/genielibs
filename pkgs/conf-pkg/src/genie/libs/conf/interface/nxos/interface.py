@@ -363,7 +363,7 @@ class Interface(genie.libs.conf.interface.Interface):
                 configurations.append_line(cmd)
 
         # enable switchport configuration when attribute is True
-        if not re.match('[V|v]lan', self.name):
+        if not re.match(r'[V|v]lan', self.name):
             if attributes.value('switchport_enable'):
                 configurations.append_line(
                     attributes.format('switchport'))

@@ -40,6 +40,8 @@ class test_evpn(TestCase):
         self.evpn.device_attr[self.dev].evpn_mutihoming_df_election = 'modulo'
         self.evpn.device_attr[self.dev].evpn_multihoming_es_delay_restore_time = 45
         self.evpn.device_attr[self.dev].evpn_multihoming_global_system_mac = 'aaaa.deaf.beef'
+        self.evpn.device_attr[self.dev].evpn_multihoming_frr_ip = "1.2.3.4"
+        self.evpn.device_attr[self.dev].evpn_multihoming_ead_evi = True
         intf1 = self.intf1.name
         self.evpn.device_attr[self.dev].interface_attr[intf1].evpn_multihoming_core_tracking = True
         intf2 = self.intf2.name
@@ -64,6 +66,8 @@ class test_evpn(TestCase):
                     ' df-election mode modulo',
                     ' ethernet-segment delay-restore time 45',
                     ' system-mac aaaa.deaf.beef',
+                    ' frr anycast source-ip 1.2.3.4',
+                    ' ead-evi route',
                     ' exit',
                     'interface Ethernet1/1',
                     ' evpn multihoming core-tracking',

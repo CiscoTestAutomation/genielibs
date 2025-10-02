@@ -5,13 +5,13 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-  prompt: ott-c9300-67(config)#
+  prompt: T1-9300-SP1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: ott-c9300-67(config-line)#
+  prompt: T1-9300-SP1(config-line)#
 connect:
   commands:
     '':
@@ -23,21 +23,16 @@ connect:
   prompt: ''
 execute:
   commands:
+    clear ipv6 pim reset:
+      response:
+        - ''
+      response_type: circular
     config term:
       new_state: configure
     config-transaction:
       new_state: configure
     show version: ''
-    show vrf:
-      response:
-        - |2-
-            Name                             Default RD            Protocols   Interfaces
-            Mgmt-vrf                         <not set>             ipv4,ipv6   Gi0/0
-          
-            Platform iVRF Name               iVRF Id               Interfaces
-            __Platform_iVRF:_ID00_           0                     LI18/2
-      response_type: circular
     term length 0: ''
     term width 0: ''
     show version | include operating mode: ''
-  prompt: ott-c9300-67#
+  prompt: T1-9300-SP1#

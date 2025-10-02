@@ -524,7 +524,7 @@ install_image_and_packages:
             cmd = 'install activate id {id}'.format(id=self.operation_id)
 
             install_activate_dialog = Dialog([
-                Statement(pattern='.*This install operation will reload the '
+                Statement(pattern=r'.*This install operation will reload the '
                                   r'system\, continue\?.*\[yes[:\/]no\]\:\[yes\].*',
                           action='sendline(yes)',
                           loop_continue=False,

@@ -1,0 +1,108 @@
+connect: &connect
+  preface: |
+    Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.
+  prompt: "%N#"
+
+execute: &execute
+  config term:
+    new_state: c9k_config
+  show version | include operating mode: ''
+  show install summary: ''
+  show version: ''
+  show install active:
+    response: |
+      [ Switch 1 ] Active Package(s) Information:
+      State (St): I - Inactive, U - Activated & Uncommitted,
+                  C - Activated & Committed, D - Deactivated & Uncommitted
+      --------------------------------------------------------------------------------
+      Type  St   Filename/Version
+      --------------------------------------------------------------------------------
+      IMG   C    26.01.01.0.228502
+
+      --------------------------------------------------------------------------------
+      Auto abort timer: inactive
+      --------------------------------------------------------------------------------
+  install add file image.bin activate commit prompt-level none:
+    response: |
+      install_add_activate_commit: START Sat Apr 11 20:33:55 UTC 2015
+      install_add: START Sat Apr 11 20:33:55 UTC 2015
+      install_add: Adding IMG
+        [1]  R0 FAILED: System configuration has been modified. Please save configuration and resubmit command.
+        [1]  R1 FAILED: Install ISSU in progress. Abort the ISSU upgrade to proceed
+      FAILED: add_activate_commit image.bin Sat Apr 11 20:33:55 UTC 2015
+  install abort issu:
+    response: |
+      install_abort: START Sat Apr 11 20:34:13 UTC 2015
+      FAILED: install_abort : System configuration has been modified. Please save configuration and resubmit command.
+  show issu state detail:
+    response: |
+      Current ISSU Status: Enabled
+      Previous ISSU Operation: Failed
+      =======================================================
+      System Check                        Status
+      -------------------------------------------------------
+      Platform ISSU Support               Yes
+      Standby Online                      Yes
+      Autoboot Enabled                    Yes
+      SSO Mode                            Yes
+      Install Boot                        Yes
+      Valid Boot Media                    Yes
+      Operational Mode                    HA-STANDALONE
+      =======================================================
+      No ISSU operation is in progress
+  copy running-config startup-config:
+    response: |
+      Destination filename [startup-config]?
+      Building configuration...
+      [OK]
+
+install_add_activate_commit_error:
+  <<: *connect
+  commands:
+    ? ''
+    : new_state: execute1
+
+execute1:
+  commands:
+    <<: *execute
+  prompt: "%N#"
+
+c9k_config:
+    prompt: "%N(config)#"
+    commands:
+      "service internal": ""
+      "end":
+        new_state: execute2
+
+execute2:
+  prompt: "%N#"
+  commands:
+    write memory: |
+      Building configuration...
+      [OK]
+    show install summary: ''
+    show version: ''
+    clear install state: ""
+    install commit: ""
+    install add file image.bin activate commit prompt-level none:
+      response: |
+        --- Starting Commit ---
+
+        Performing Commit on all members
+
+        [1] Commit package(s) on Switch 1
+
+        [1] Finished Commit on Switch 1
+
+        Checking status of Commit on [1]
+
+        Commit: Passed on [1]
+
+        Finished Commit operation
+
+        SUCCESS: install_add_activate_commit Mon Sep 15 21:29:46 UTC 2025
+

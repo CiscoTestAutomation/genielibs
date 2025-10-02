@@ -796,8 +796,8 @@ class Interface(BaseInterface):
         d_parsed = cls.parse_interface_name(interface_name)
         # When a dash is present, take the first letter of each word.
         # Otherwise, take the first 2 letters
-        m = re.match('^([a-z])[a-z]*-([a-z])[a-z]*$', d_parsed.type, re.IGNORECASE) \
-            or re.match('^([a-z])([a-z])[a-z]*$', d_parsed.type, re.IGNORECASE)
+        m = re.match(r'^([a-z])[a-z]*-([a-z])[a-z]*$', d_parsed.type, re.IGNORECASE) \
+            or re.match(r'^([a-z])([a-z])[a-z]*$', d_parsed.type, re.IGNORECASE)
         if m:
             d_parsed.type = m.group(1) + m.group(2)
             return d_parsed.reconstruct()

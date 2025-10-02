@@ -217,3 +217,64 @@ def execute_test_sfp_port_lpn_fake_remove(device, mode, lpn_num):
         raise SubCommandFailure('Failed to perform sfp port lpn Fake-remove.Error:\n{e}')
     return out
     
+def test_platform_hardware_chassis_fantray_action(device, fantray_number, fan_number, in_out, action):
+        """
+        Args:
+            device (obj): Device object
+            fantray_number (int): Fan tray slot number
+            fan_number (int): Fan number
+            in_out (str): inlet or outlet
+            action (str): Action to perform ('lock-speed' or 'over-speed' or 'resume' or 'stop' or 'under-speed')
+        Returns:
+            str: Output of the command
+        """    
+        log.debug(f"Performing {action} on fantray {fantray_number} on Fan {fan_number}...")
+
+        dialog = Dialog([Statement(pattern=r'(?s).\bsuccess\b.', action='sendline(\r)',loop_continue=False, continue_timer=False)])
+
+        command = f"test platform hardware chassis fantray {fantray_number} fan {fan_number} {in_out} {action}"
+
+        try:
+            device.execute(command,reply=dialog)
+        except SubCommandFailure as e:
+            log.error(f"Failed to perform fantray {action}: {command}")
+            raise SubCommandFailure(f"Error executing command: {e}")
+
+def configure_autolc_shutdown_priority(device, priority_order):
+        """
+        Args:
+            device (obj): Device object
+            priority_order (str): Line card priority order
+        Returns:
+            str: Output of the command
+        """
+        log.debug(f"Configuring autoLC shutdown priority")
+
+        cmd = f"power supply autoLC priority {priority_order}"
+
+        try:
+            device.configure(cmd)
+        except SubCommandFailure as e:
+            log.error(f"Error configuring Auto LC shutdown: {e}")
+            raise SubCommandFailure(f"Could not configure power supply autoLC priority on {device}. Error:\n{e}")
+
+def execute_test_platform_hardware_sensor_value(device, slot_num, sensor_id,override_value=None):
+    """ 
+        Args:
+            device ('obj'): device to use  
+            slot_num ('str'): Specify the slot Number
+            sensor_id ('int'): <0-4294967295>  Sensor id
+	        override_value ('str'): Specify an override value
+    """
+
+    if override_value:
+        command= f"test platform hardware slot {slot_num} sensor {sensor_id} override value {override_value}"
+    else:
+        command= f"test platform hardware slot {slot_num} sensor {sensor_id} override off"
+
+    try:
+        device.execute(command)
+
+    except SubCommandFailure as e:
+        log.error(f"Failed to perform sensor override : {command}")
+        raise SubCommandFailure(f"Error executing command: {e}")

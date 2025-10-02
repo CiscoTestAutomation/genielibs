@@ -274,7 +274,7 @@ https://tools.ietf.org/html/rfc6020#section-9.13
     # Private APIs below
     #
     _XPATH_PREFIX_IDENTIFIER_RE = re.compile(
-        '''([a-zA-Z_][-a-zA-Z0-9_.]*):([a-zA-Z_][-a-zA-Z0-9_.]*)''')
+        r'''([a-zA-Z_][-a-zA-Z0-9_.]*):([a-zA-Z_][-a-zA-Z0-9_.]*)''')
     """Regex matching a prefixed identifier in an XPath.
 
     Matches strings like ``ocif:interface`` and returns the prefix and

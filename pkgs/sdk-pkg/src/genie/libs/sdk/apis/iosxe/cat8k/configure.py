@@ -117,3 +117,17 @@ def configure_mode_change(device, sub_slot, mode_type, timeout=60):
         device.configure(cmd, reply=dialog, timeout=timeout)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not configure mode change on {device.name} device. Error:\n{e}')
+
+
+def configure_no_boot_manual(device):
+    """ Configure no boot manual
+        Args:
+            device (`obj`): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    # Configuring no boot manual is not supported in c8kv
+    # devices hence using config register
+    return configure_autoboot(device=device)

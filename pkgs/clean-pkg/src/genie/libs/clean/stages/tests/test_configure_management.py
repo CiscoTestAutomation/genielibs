@@ -4,6 +4,7 @@ from unittest.mock import call, Mock
 from pyats.results import Passed
 from pyats.aetest.steps import Steps
 
+from genie.libs.clean.stages.stages import ConfigureInterfaces
 from genie.libs.clean.stages.tests.utils import create_test_device
 from genie.libs.clean.stages.stages import ConfigureManagement
 
@@ -228,3 +229,51 @@ class TestConfigureManagement(unittest.TestCase):
                  timeout=30,
                  count=5),
         ], )
+
+class TestConfigureInterfaces(unittest.TestCase):
+
+    def setUp(self):
+        self.cls = ConfigureInterfaces()
+        self.device = Mock()
+        self.device.interfaces = {}
+        self.device.custom_config_cli = None
+        self.device.build_config = None
+
+    def test_configure_interfaces_name_match(self):
+        # Mock interface object
+        iface_obj = Mock()
+        iface_obj.name = 'GigabitEthernet0/1'
+        iface_obj.alias = 'mgmt0'
+        iface_obj.enabled = None
+        iface_obj.breakout = False
+        iface_obj.build_config = Mock(return_value='interface Gi0/1\n no shutdown')
+
+        self.device.interfaces = {'GigabitEthernet0/1': iface_obj}
+
+        # Interface matches by name
+        interfaces = {'GigabitEthernet0/1': {'attributes': ['enabled']}}
+        steps = Steps()
+        self.cls.configure_interfaces(device=self.device, steps=steps, interfaces=interfaces)
+
+        iface_obj.build_config.assert_called_once_with(attributes={'enabled': True}, apply=False)
+        self.device.configure.assert_called_once_with(['interface Gi0/1', ' no shutdown'])
+
+    def test_configure_interfaces_alias_match(self):
+        # Mock interface object
+        iface_obj = Mock()
+        iface_obj.name = 'GigabitEthernet0/2'
+        iface_obj.alias = 'mgmt0'
+        iface_obj.enabled = None
+        iface_obj.breakout = False
+        iface_obj.build_config = Mock(return_value='interface Gi0/2\n no shutdown')
+
+        self.device.interfaces = {'GigabitEthernet0/2': iface_obj}
+
+        # Interface matches by alias
+        interfaces = {'mgmt0': {'attributes': ['enabled']}}
+        steps = Steps()
+        self.cls.configure_interfaces(device=self.device, steps=steps, interfaces=interfaces)
+
+        iface_obj.build_config.assert_called_once_with(attributes={'enabled': True}, apply=False)
+        self.device.configure.assert_called_once_with(['interface Gi0/2', ' no shutdown'])
+

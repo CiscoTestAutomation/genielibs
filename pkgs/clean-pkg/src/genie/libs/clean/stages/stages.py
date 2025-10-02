@@ -2499,8 +2499,9 @@ delete_files:
 Example
 -------
 delete_files:
-    - flash:core/*.gz
-    - crashinfo/*.tar.gz
+    files:
+        - flash:core/*.gz
+        - crashinfo/*.tar.gz
 """
 
     # =================
@@ -3222,7 +3223,9 @@ configure_management:
 
             if hasattr(device, "management") and device.management:
                 device.api.configure_management(**config_kwargs)
-                log.info(f"Waiting {config_stable_time} seconds for the configuration to be applied")
+                log.info(
+                    f"Waiting {config_stable_time} seconds for the configuration to be applied"
+                )
                 time.sleep(config_stable_time)
             else:
                 step.passx("No management info for device")
@@ -3354,7 +3357,8 @@ configure_interfaces:
         configuration_lines = []
         for iface_regex in interfaces:
             for _, iface_obj in device.interfaces.items():
-                if re.match(iface_regex, iface_obj.name):
+                if re.match(iface_regex, iface_obj.name) or \
+                    (isinstance(getattr(iface_obj, "alias", None), str) and re.match(iface_regex, iface_obj.alias)):
                     log.info(
                         f'Preparing interface config for: {iface_obj.name}')
                     attributes = interfaces.get(iface_regex,

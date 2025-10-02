@@ -257,7 +257,7 @@
     "module_name": "stages.stages",
     "package": "genie.libs.clean",
     "uid": "ConfigureInterfaces",
-    "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L3292"
+    "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L3295"
   },
   "ConfigureManagement": {
     "doc": "This stage configures the management IP settings on the device.\n\nStage Schema\n------------\nconfigure_management:\n\n        address ('dict', optional):  Address(es) to configure on the device (syntax: address/mask) (optional)\n            ipv4 ('str') or ('list'): ipv4 address\n            ipv6 ('str') or ('list'): ipv6 address\n\n        gateway: (dict, optional) Gateway address(es) for default route\n            ipv4 ('str') or ('list'): ipv4 gateway address\n            ipv6 ('str') or ('list'): ipv6 gateway address\n\n        vrf (str, optional): VRF to use for management interface\n\n        interface (str, optional): Management interface to use\n\n        routes ('dict', optional):\n           ipv4 (list of 'dict'): ipv4 routes\n              - subnet: (str) subnet including mask\n                next_hop: (str) next_hop for this subnet\n           ipv6 (list of 'dict'): ipv6 routes\n              - subnet: (str) subnet including mask\n                next_hop: (str) next_hop for this subnet\n\n        dhcp_timeout ('int', optional): DHCP timeout in seconds (default: 30)\n\n        protocols ('list', optional): [list of protocols]\n\n        set_hostname (bool): Configure device hostname (default: True)\n        alias_as_hostname (bool): When used with `set_hostname`, will use the\n            alias as the hostname. (default: False)\n\n        config_stable_time (int, optional): Max time in seconds allowed for the\n            configuration to stabilize. Defaults to 10.\n\n\nExample\n-------\nconfigure_management:\n    vrf: Mgmt-vrf\n\n",
@@ -265,7 +265,7 @@
     "module_name": "stages.stages",
     "package": "genie.libs.clean",
     "uid": "ConfigureManagement",
-    "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L3113"
+    "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L3114"
   },
   "ConfigureReplace": {
     "folders": {
@@ -277,7 +277,7 @@
           "os": "iosxe"
         },
         "uid": "ConfigureReplace",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L3653"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L3740"
       }
     }
   },
@@ -313,7 +313,7 @@
     "doc": "This stage connects to the device that is being cleaned.\n\nStage Schema\n------------\nconnect:\n\n    via (str, optional): Which connection to use from the testbed file. Uses the\n        default connection if not specified.\n\n    timeout (int, optional): The timeout for the connection to complete in seconds.\n        Defaults to 200.\n\n    retry_timeout (int, optional): Overall timeout for retry mechanism in seconds.\n        Defaults to 0 which means no retry.\n\n    retry_interval (int, optional): Interval for retry mechanism in seconds. Defaults\n        to 0 which means no retry.\n\nExample\n-------\nconnect:\n    timeout: 60\n",
     "folders": {
       "iosxe": {
-        "doc": "This stage connects to the device that is being cleaned.\n    Stage Schema\n    ------------\n    connect:\n        via (str, optional): Which connection to use from the testbed file. Uses the\n            default connection if not specified.\n        alias (str, optional): Which connection alias to use from the testbed file.\n        timeout (int, optional): The timeout for the connection to complete in seconds.\n            Defaults to 200.\n        retry_timeout (int, optional): Overall timeout for retry mechanism in seconds.\n            Defaults to 0 which means no retry.\n        retry_interval (int, optional): Interval for retry mechanism in seconds. Defaults\n            to 0 which means no retry.\n    Example\n    -------\n    connect:\n        timeout: 60\n    ",
+        "doc": "This stage connects to the device that is being cleaned.\n    Stage Schema\n    ------------\n    connect:\n        via (str, optional): Which connection to use from the testbed file. Uses the\n            default connection if not specified.\n        alias (str, optional): Which connection alias to use from the testbed file.\n        timeout (int, optional): The timeout for the connection to complete in seconds.\n            Defaults to 200.\n        retry_timeout (int, optional): Overall timeout for retry mechanism in seconds.\n            Defaults to 0 which means no retry.\n        retry_interval (int, optional): Interval for retry mechanism in seconds. Defaults\n            to 0 which means no retry.\n        logout (bool, optional): To log out from the device after connection. Defaults to True.\n    Example\n    -------\n    connect:\n        timeout: 60\n        logout: False\n    ",
         "folders": {
           "sdwan": {
             "doc": "This stage connects to the device that is being cleaned.\n\nStage Schema\n------------\nconnect:\n\n    via (str, optional): Which connection to use from the testbed file. Uses the\n        default connection if not specified.\n\n    timeout (int, optional): The timeout for the connection to complete in seconds.\n        Defaults to 200.\n\n    retry_timeout (int, optional): Overall timeout for retry mechanism in seconds.\n        Defaults to 0 which means no retry.\n\n    retry_interval (int, optional): Interval for retry mechanism in seconds. Defaults\n        to 0 which means no retry.\n\nExample\n-------\nconnect:\n    timeout: 60\n",
@@ -332,7 +332,7 @@
           "os": "iosxe"
         },
         "uid": "Connect",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L3730"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L3817"
       },
       "linux": {
         "folders": {
@@ -363,7 +363,7 @@
     "module_name": "stages.stages",
     "package": "genie.libs.clean",
     "uid": "CopyRunToFlash",
-    "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L3056"
+    "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L3057"
   },
   "CopyToDevice": {
     "doc": "This stage will copy an image to a device from a networked location.\n\nStage Schema\n------------\ncopy_to_device:\n\n    origin:\n\n        files (list): Image files location on the server.\n\n        hostname (str): Hostname or address of the server.\n\n    destination:\n\n        directory (str): Directory on the device to copy the images to.\n\n        standby_directory (str, optional): Standby directory on the device\n            to copy the images to. Defaults to None.\n\n    protocol (str): Protocol used for copy operation.\n\n    connection_alias (str): Connection alias to use\n\n    verify_num_images (bool, optional): Verify number of images provided by\n        user for clean is correct. Defaults to True.\n\n    expected_num_images (int, optional): Number of images expected to be\n        provided by user for clean. Defaults to 1.\n\n    vrf (str, optional): Vrf used to copy. Defaults to an empty string.\n\n    timeout (int, optional): Copy operation timeout in seconds. Defaults to 300.\n\n    compact (bool, optional): Compact copy mode if supported by the device.\n        Defaults to False.\n\n    protected_files (list, optional): File patterns that should not be deleted.\n        Defaults to None.\n\n    overwrite (bool, optional): Overwrite the file if a file with the same\n        name already exists. Defaults to False.\n\n    skip_deletion (bool, optional): Do not delete any files even if there isn't\n        any space on device. Defaults to False.\n\n    copy_attempts (int, optional): Number of times to attempt copying image\n        files. Defaults to 1 (no retry).\n\n    copy_attempts_sleep (int, optional): Number of seconds to sleep between\n        copy_attempts. Defaults to 30.\n\n    check_file_stability (bool, optional): Verifies that the file size is not\n        changing. This ensures the image is not actively being copied.\n        Defaults to False.\n\n    stability_check_tries (int, optional): Max number of checks that can be\n        done when checking file stability. Defaults to 3.\n\n    stability_check_delay (int, optional): Delay between tries when checking\n        file stability in seconds. Defaults to 2.\n\n    min_free_space_percent ('int', optional) : Percentage of total disk space\n        that must be free. If specified the percentage is not free then the\n        stage will attempt to delete unprotected files to reach the minimum\n        percentage. Defaults to None.\n\n    use_kstack (bool, optional): Use faster version of copy with limited options.\n        Defaults to False.\n\n    interface (str, optional): The interface to use for file transfers, may be needed\n        for copying files on some IOSXE platforms, such as ASR1K when using a VRF\n        Defaults to None\n\n    unique_file_name (bool, optional): Appends a random six-digit number to\n        the end of the image name. Defaults to False.\n\n    unique_number: (int, optional): Appends the provided number to the end of\n        the image name. Defaults to None. Requires unique_file_name is True\n        to be applied.\n\n    rename_images: (str, optional): Rename the image to the provided name.\n        If multiple files exist then an incrementing number is also appended.\n        Defaults to None\n\n    prompt_recovery(bool, optional): Enable the prompt recovery when the  execution\n        command timeout. Defaults to False.\n\nExample\n-------\ncopy_to_device:\n    origin:\n        hostname: server-1\n        files:\n            - /home/cisco/asr1k.bin\n    destination:\n        directory: harddisk:/\n    protocol: sftp\n    timeout: 300\n",
@@ -386,7 +386,7 @@
           "os": "iosxe"
         },
         "uid": "CopyToDevice",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L2501"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L2588"
       }
     },
     "module_name": "stages.stages",
@@ -411,7 +411,7 @@
     "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L2223"
   },
   "DeleteFiles": {
-    "doc": "Delete files from the device.\n\nUses the `delete_files` device API.\n\nStage Schema\n------------\ndelete_files:\n\n    files (list): List of files including location.\n\n    regex (bool, optional): If regex is used in the file names, set to True. Default False.\n\nExample\n-------\ndelete_files:\n    - flash:core/*.gz\n    - crashinfo/*.tar.gz\n",
+    "doc": "Delete files from the device.\n\nUses the `delete_files` device API.\n\nStage Schema\n------------\ndelete_files:\n\n    files (list): List of files including location.\n\n    regex (bool, optional): If regex is used in the file names, set to True. Default False.\n\nExample\n-------\ndelete_files:\n    files:\n        - flash:core/*.gz\n        - crashinfo/*.tar.gz\n",
     "folders": {},
     "module_name": "stages.stages",
     "package": "genie.libs.clean",
@@ -524,7 +524,7 @@
   "InstallImage": {
     "folders": {
       "iosxe": {
-        "doc": "This stage installs a provided image onto the device using the install\n    CLI. It also handles the automatic reloading of your device after the\n    install is complete.\n\n    Stage Schema\n    ------------\n    install_image:\n        images (list): Image to install\n\n        directory (str): directory where packages.conf is created\n\n\n        save_system_config (bool, optional): Whether or not to save the system\n            config if it was modified. Defaults to False.\n\n        skip_save_running_config (bool, optional): Skip the step to save the the running\n                                            configuration to the startup config.\n\n        install_timeout (int, optional): Maximum time in seconds to wait for install\n            process to finish. Defaults to 500.\n\n        reload_timeout (int, optional): Maximum time in seconds to wait for reload\n            process to finish. Defaults to 800.\n\n        verify_running_image (bool, optional): Compare the image filename with the running\n            image version on device. If a match is found, the stage will be skipped.\n            Defaults to True.\n\n        reload_wait (int, optional): The maximum time allowed, in seconds,\n            to check the auto reload. Defaults to 30.\n\n        reload_service_args (optional):\n\n            reload_creds (str, optional): The credential to use after the reload is\n                complete. The credential name comes from the testbed yaml file.\n                Defaults to the 'default' credential.\n\n            prompt_recovery (bool, optional): Enable or disable the prompt recovery\n                feature of unicon. Defaults to True.\n\n            error_pattern (list, optional): List of regex strings to check for errors.\n                Default: [r\"FAILED:.*?$\",]\n\n            <Key>: <Value>\n                Any other arguments that the Unicon reload service supports\n\n    Example\n    -------\n    install_image:\n        images:\n          - /auto/some-location/that-this/image/stay-isr-image.bin\n        save_system_config: True\n        install_timeout: 1000\n        reload_timeout: 1000\n\n    ",
+        "doc": "This stage installs a provided image onto the device using the install\n    CLI. It also handles the automatic reloading of your device after the\n    install is complete.\n\n    Stage Schema\n    ------------\n    install_image:\n        images (list): Image to install\n\n        directory (str): directory where packages.conf is created\n\n\n        save_system_config (bool, optional): Whether or not to save the system\n            config if it was modified. Defaults to False.\n\n        skip_save_running_config (bool, optional): Skip the step to save the the running\n                                            configuration to the startup config.\n\n        install_timeout (int, optional): Maximum time in seconds to wait for install\n            process to finish. Defaults to 500.\n\n        reload_timeout (int, optional): Maximum time in seconds to wait for reload\n            process to finish. Defaults to 800.\n\n        verify_running_image (bool, optional): Compare the image filename with the running\n            image version on device. If a match is found, the stage will be skipped.\n            Defaults to True.\n\n        install_retry_attempts (int, optional): Number of times to retry install.\n            Defaults to 2.\n\n        reload_wait (int, optional): The maximum time allowed, in seconds,\n            to check the auto reload. Defaults to 30.\n\n        reload_service_args (optional):\n\n            reload_creds (str, optional): The credential to use after the reload is\n                complete. The credential name comes from the testbed yaml file.\n                Defaults to the 'default' credential.\n\n            prompt_recovery (bool, optional): Enable or disable the prompt recovery\n                feature of unicon. Defaults to True.\n\n            error_pattern (list, optional): List of regex strings to check for errors.\n                Default: [r\"FAILED:.*?$\",]\n\n            <Key>: <Value>\n                Any other arguments that the Unicon reload service supports\n\n    Example\n    -------\n    install_image:\n        images:\n          - /auto/some-location/that-this/image/stay-isr-image.bin\n        save_system_config: True\n        install_timeout: 1000\n        reload_timeout: 1000\n\n    ",
         "folders": {
           "cat3k": {
             "doc": "This stage installs a provided image onto the device using the install\nCLI. It also handles the automatic reloading of your device after the\ninstall is complete.\n\nStage Schema\n------------\ninstall_image:\n    images (list): Image to install\n\n    save_system_config (bool, optional): Whether or not to save the system\n        config if it was modified. Defaults to False.\n\n    install_timeout (int, optional): Maximum time in seconds to wait for install\n        process to finish. Defaults to 500.\n\n    reload_timeout (int, optional): Maximum time in seconds to wait for reload\n        process to finish. Defaults to 800.\n\nExample\n-------\ninstall_image:\n    images:\n      - /auto/some-location/that-this/image/stay-isr-image.bin\n    save_system_config: True\n    install_timeout: 1000\n    reload_timeout: 1000\n\n",
@@ -537,7 +537,7 @@
             "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/cat3k/stages.py#L12"
           },
           "cat9k": {
-            "doc": "This stage installs a provided image onto the device using the install\nCLI. It also handles the automatic reloading of your device after the\ninstall is complete.\n\nStage Schema\n------------\ninstall_image:\n    images (list): Image to install\n\n    directory (str): directory where packages.conf is created\n    save_system_config (bool, optional): Whether or not to save the system\n        config if it was modified. Defaults to False.\n\n    install_timeout (int, optional): Maximum time in seconds to wait for install\n        process to finish. Defaults to 500.\n\n    reload_timeout (int, optional): Maximum time in seconds to wait for reload\n        process to finish. Defaults to 800.\n\n    skip_boot_variable (bool, optional): \n    \n    skip_save_running_config (bool, optional): Skip the step to save the the running\n                                        configuration to the startup config.\n\n    issu (bool, optional): set the issu for installing image.\n        Defaults to False \n\n    verify_running_image (bool, optional): Compare the image filename with the running\n        image version on device. If a match is found, the stage will be skipped.\n        Defaults to True.\n    \n    stack_member_timeout(optional, int): maximum time to to wait for all the members of a stack device \n        to be ready. Default to 180 seconds\n\n    stack_member_interval(optional, int): the interval to check if all the members of a stack device \n        are ready. Default to 30 seconds\n\n    reload_service_args (optional):\n\n        reload_creds (str, optional): The credential to use after the reload is\n            complete. The credential name comes from the testbed yaml file.\n            Defaults to the 'default' credential.\n\n        prompt_recovery (bool, optional): Enable or disable the prompt recovery\n            feature of unicon. Defaults to True.\n\n        error_pattern (list, optional): List of regex strings to check for errors.\n            Default: [r\"FAILED:.*?$\",]\n        \n        post_reload_wait(int, optional): the time after for before buffer to settle down.\n            . Default to 30 seconds\n\n        post_reload_timeout(int, optional): maximum time before accessing the device after\n            reload. Default to 60 seconds.\n        <Key>: <Value>\n            Any other arguments that the Unicon reload service supports\n\nExample\n-------\ninstall_image:\n    images:\n      - /auto/some-location/that-this/image/stay-isr-image.bin\n    save_system_config: True\n    install_timeout: 1000\n    reload_timeout: 1000\n\n",
+            "doc": "This stage installs a provided image onto the device using the install\nCLI. It also handles the automatic reloading of your device after the\ninstall is complete.\n\nStage Schema\n------------\ninstall_image:\n    images (list): Image to install\n\n    directory (str): directory where packages.conf is created\n    save_system_config (bool, optional): Whether or not to save the system\n        config if it was modified. Defaults to False.\n\n    install_timeout (int, optional): Maximum time in seconds to wait for install\n        process to finish. Defaults to 500.\n\n    reload_timeout (int, optional): Maximum time in seconds to wait for reload\n        process to finish. Defaults to 800.\n\n    skip_boot_variable (bool, optional): \n    \n    skip_save_running_config (bool, optional): Skip the step to save the the running\n                                        configuration to the startup config.\n\n    issu (bool, optional): set the issu for installing image.\n        Defaults to False \n\n    verify_running_image (bool, optional): Compare the image filename with the running\n        image version on device. If a match is found, the stage will be skipped.\n        Defaults to True.\n    \n    stack_member_timeout(optional, int): maximum time to to wait for all the members of a stack device \n        to be ready. Default to 180 seconds\n\n    stack_member_interval(optional, int): the interval to check if all the members of a stack device \n        are ready. Default to 30 seconds\n\n    reload_service_args (optional):\n\n        reload_creds (str, optional): The credential to use after the reload is\n            complete. The credential name comes from the testbed yaml file.\n            Defaults to the 'default' credential.\n\n        prompt_recovery (bool, optional): Enable or disable the prompt recovery\n            feature of unicon. Defaults to True.\n\n        error_pattern (list, optional): List of regex strings to check for errors.\n            Default: [r\"FAILED:.*?$\",]\n        \n        post_reload_wait(int, optional): the time after for before buffer to settle down.\n            . Default to 30 seconds\n\n        post_reload_timeout(int, optional): maximum time before accessing the device after\n            reload. Default to 60 seconds.\n            \n        rommon_vars (dict, optional): Dictionary of rommon variables to set during\n            the reload process. Default: {\"DEBUG_CONF\": \"\"}\n\n        <Key>: <Value>\n            Any other arguments that the Unicon reload service supports\n\nExample\n-------\ninstall_image:\n    images:\n      - /auto/some-location/that-this/image/stay-isr-image.bin\n    save_system_config: True\n    install_timeout: 1000\n    reload_timeout: 1000\n\n",
             "module_name": "stages.iosxe.cat9k.stages",
             "package": "genie.libs.clean",
             "tokens": {
@@ -625,7 +625,7 @@
           "os": "iosxe"
         },
         "uid": "InstallPackages",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1637"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1724"
       }
     }
   },
@@ -646,28 +646,28 @@
   "InstallRemoveSmu": {
     "folders": {
       "iosxe": {
-        "doc": "This stage removes inactive smu images from the device.\n    If the SMU is installed, it will be de-activated first.\n\n    Stage Schema\n    ------------\n    install_remove_smu:\n        smu_reload_wait (int, optional): The maximum time allowed, in seconds,\n            to differentiate between a hot SMU and a cold SMU.\n            Defaults to 30.\n\n        timeout (int, optional): Maximum time to wait for remove process to\n            finish. Defaults to 800.\n\n    Example\n    -------\n    install_remove_smu:\n        timeout: 800\n\n    ",
+        "doc": "This stage removes inactive smu images from the device.\n    If the SMU is installed, it will be de-activated first.\n\n    Stage Schema\n    ------------\n    install_remove_smu:\n        smu_reload_wait (int, optional): The maximum time allowed, in seconds,\n            to differentiate between a hot SMU and a cold SMU.\n            Defaults to 180.\n\n        timeout (int, optional): Maximum time to wait for remove process to\n            finish. Defaults to 800.\n\n    Example\n    -------\n    install_remove_smu:\n        timeout: 800\n\n    ",
         "module_name": "stages.iosxe.stages",
         "package": "genie.libs.clean",
         "tokens": {
           "os": "iosxe"
         },
         "uid": "InstallRemoveSmu",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1155"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1234"
       }
     }
   },
   "InstallSmu": {
     "folders": {
       "iosxe": {
-        "doc": "This stage installs a provided smu image onto the device using the install\n    CLI. It also handles the automatic reloading of your device after the\n    install is complete.\n\n    Stage Schema\n    ------------\n    install_smu:\n        images (list): Image to install\n\n        install_timeout (int, optional): Maximum time in seconds to wait for install\n            process to finish. Defaults to 800.\n\n        smu_reload_wait (int, optional): The maximum time allowed, in seconds,\n            to differentiate between a hot SMU and a cold SMU.\n            Defaults to 30.\n\n        reload_service_args (optional):\n\n            reload_creds (str, optional): The credential to use after the reload is\n                complete. The credential name comes from the testbed yaml file.\n                Defaults to the 'default' credential.\n\n            prompt_recovery (bool, optional): Enable or disable the prompt recovery\n                feature of unicon. Defaults to True.\n\n            error_pattern (list, optional): List of regex strings to check for errors.\n                Default: [r\"FAILED:.*?$\",]\n\n            <Key>: <Value>\n                Any other arguments that the Unicon reload service supports\n\n    Example\n    -------\n    install_smu:\n        images:\n          - /auto/some-location/that-this/image/smu-image.bin\n        install_timeout: 1000\n\n    ",
+        "doc": "This stage installs a provided smu image onto the device using the install\n    CLI. It also handles the automatic reloading of your device after the\n    install is complete.\n\n    Stage Schema\n    ------------\n    install_smu:\n        images (list): Image to install\n\n        install_timeout (int, optional): Maximum time in seconds to wait for install\n            process to finish. Defaults to 800.\n\n        smu_reload_wait (int, optional): The maximum time allowed, in seconds,\n            to differentiate between a hot SMU and a cold SMU.\n            Defaults to 180.\n\n        reload_service_args (optional):\n\n            reload_creds (str, optional): The credential to use after the reload is\n                complete. The credential name comes from the testbed yaml file.\n                Defaults to the 'default' credential.\n\n            prompt_recovery (bool, optional): Enable or disable the prompt recovery\n                feature of unicon. Defaults to True.\n\n            error_pattern (list, optional): List of regex strings to check for errors.\n                Default: [r\"FAILED:.*?$\",]\n\n            <Key>: <Value>\n                Any other arguments that the Unicon reload service supports\n\n    Example\n    -------\n    install_smu:\n        images:\n          - /auto/some-location/that-this/image/smu-image.bin\n        install_timeout: 1000\n\n    ",
         "module_name": "stages.iosxe.stages",
         "package": "genie.libs.clean",
         "tokens": {
           "os": "iosxe"
         },
         "uid": "InstallSmu",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1403"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1489"
       }
     }
   },
@@ -734,7 +734,7 @@
     "module_name": "stages.stages",
     "package": "genie.libs.clean",
     "uid": "PowerCycle",
-    "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L2934"
+    "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L2935"
   },
   "PrimeAp": {
     "folders": {
@@ -768,7 +768,7 @@
           "os": "iosxe"
         },
         "uid": "Reload",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1731"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1818"
       }
     },
     "module_name": "stages.stages",
@@ -786,7 +786,7 @@
           "os": "iosxe"
         },
         "uid": "ResetConfiguration",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L3998"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L4072"
       }
     }
   },
@@ -796,7 +796,7 @@
     "module_name": "stages.stages",
     "package": "genie.libs.clean",
     "uid": "RevertVmSnapshot",
-    "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L2561"
+    "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L2562"
   },
   "RommonBoot": {
     "folders": {
@@ -830,7 +830,7 @@
           "os": "iosxe"
         },
         "uid": "RommonBoot",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L2090"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L2177"
       }
     }
   },
@@ -865,7 +865,7 @@
           "os": "iosxe"
         },
         "uid": "SetControllerMode",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L4263"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L4337"
       }
     }
   },

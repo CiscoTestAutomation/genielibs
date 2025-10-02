@@ -248,7 +248,7 @@ class Health(Blitz):
         # before running health check, analyze actions and check/resolve
         # device name from %VARIABLES and loop_variable_name for device connectivity check
         for device in Dq(each_data).get_values('device'):
-            m = re.search('%VARIABLES{(?P<var_name>.*)}',
+            m = re.search(r'%VARIABLES{(?P<var_name>.*)}',
                           device.name if hasattr(device, 'name') else device)
             if m:
                 var_name = m.groupdict()['var_name']
@@ -275,7 +275,7 @@ class Health(Blitz):
                     if var_name == Dq(each_data).get_values(
                             'loop_variable_name', 0):
                         loop_value = Dq(each_data).get_values('value', 0)
-                        m = re.search('%VARIABLES{(?P<dev_var_name>.*)}',
+                        m = re.search(r'%VARIABLES{(?P<dev_var_name>.*)}',
                                       loop_value)
                         if m:
                             dev_var_name = m.groupdict()['dev_var_name']
@@ -310,7 +310,7 @@ class Health(Blitz):
                             '._values',
                     ]:
                         loop_value = Dq(each_data).get_values('value', 0)
-                        m = re.search('%VARIABLES{(?P<dev_var_name>.*)}',
+                        m = re.search(r'%VARIABLES{(?P<dev_var_name>.*)}',
                                       loop_value)
                         if m:
                             dev_var_name = m.groupdict()['dev_var_name']

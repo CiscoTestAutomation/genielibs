@@ -10,7 +10,7 @@ def is_management_interface(device, name):
         True or False
     '''
 
-    if re.match('^mgmt0$', name):
+    if re.match(r'^mgmt0$', name):
         return True
 
     return False

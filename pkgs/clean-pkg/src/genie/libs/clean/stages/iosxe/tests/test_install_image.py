@@ -767,3 +767,30 @@ class TestVerifyRunningImage(unittest.TestCase):
 
         self.assertEqual(Passed, steps.details[0].result)
         self.assertEqual(Passx, steps.details[1].result)
+
+class TestConfigureBootManual(unittest.TestCase):
+
+    def test_iosxe_boot_manual_pass(self):
+        steps = Steps()
+        cls = InstallImage()
+        cls.history = MagicMock()
+        device = Mock()
+        device.api.no_boot_manual = Mock()
+
+        cls.configure_no_boot_manual(steps=steps,
+                                    device=device)
+
+        self.assertEqual(Passed, steps.details[0].result)
+        device.api.configure_no_boot_manual.assert_called_once()
+
+    def test_iosxe_boot_manual_passx(self):
+        steps = Steps()
+        cls = InstallImage()
+        cls.history = MagicMock()
+        device = Mock()
+        device.api.configure_no_boot_manual = Mock(side_effect=Exception)
+
+        cls.configure_no_boot_manual(steps=steps,
+                                    device=device)
+        self.assertEqual(Passx, steps.details[0].result)
+        device.api.configure_no_boot_manual.assert_called_once()

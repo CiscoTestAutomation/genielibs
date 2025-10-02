@@ -176,7 +176,7 @@ def configure_mode_to_eEdge(device):
     """
     cmd = 'authentication convert-to new-style forced'
     out = device.execute('authentication display config-mode')
-    matchout = re.search('legacy',out)
+    matchout = re.search(r'legacy',out)
     if matchout is not None:
         log.info("convert-to new-style")
         try:
@@ -198,7 +198,7 @@ def enable_autoconf(device):
             SubCommandFailure: Failed to enable autoconf
     """
     out = device.execute('authentication display config-mode')
-    matchout = re.search('legacy', out)
+    matchout = re.search(r'legacy', out)
     if matchout is not None:
         log.info('Switch is in legacy mode, converting to new-style')
         cmd = ''
@@ -226,7 +226,7 @@ def configure_access_session_monitor(device):
             SubCommandFailure: Failed to enable access-session monitor
     """
     out = device.execute('authentication display config-mode')
-    matchout = re.search('legacy', out)
+    matchout = re.search(r'legacy', out)
     if matchout is not None:
         log.info('Switch is in legacy mode, converting to new-style')
         cmd = ''
@@ -255,7 +255,7 @@ def configure_access_session_sticky(device, timer):
             SubCommandFailure: Failed to configure interface-template sticky timer
     """
     out = device.execute('authentication display config-mode')
-    matchout = re.search('legacy', out)
+    matchout = re.search(r'legacy', out)
     if matchout is not None:
         log.info('Switch is in legacy mode, converting to new-style')
         cmd = ''

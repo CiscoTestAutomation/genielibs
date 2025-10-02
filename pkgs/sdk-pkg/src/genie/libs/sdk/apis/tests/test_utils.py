@@ -10,7 +10,8 @@ from genie.libs.clean.stages.tests.utils import create_test_device
 from genie.libs.sdk.apis.utils import (
     modify_filename, copy_from_device, copy_to_device, device_recovery_boot,
     configure_management_console, configure_peripheral_terminal_server,
-    time_to_int)
+    time_to_int, question_mark_retrieve, question_mark
+)
 
 
 class TestUtilsApi(unittest.TestCase):
@@ -281,7 +282,8 @@ class TestUtilsApi(unittest.TestCase):
         dev2.testbed.devices = {'terminal_1':terminal_device}
         configure_peripheral_terminal_server(dev1)
 
-        terminal_device.configure.assert_not_called()
+        terminal_device.configure.assert_not_called()       
+
 
 def test_time_to_int(self):
         time = '10:58'
@@ -295,3 +297,79 @@ def test_time_to_int(self):
         time = '6d14h'
         result = time_to_int(time)
         self.assertEqual(result, 568800)
+
+
+class TestQuestionMark(unittest.TestCase):
+
+    def setUp(self):
+        # Create a mock device object
+        self.mock_device = MagicMock()
+
+        # Define a sample command and expected output
+        self.sample_cmd = 'alarm facility temperature secondary '
+        self.expected_output = "high      Temperature High threshold\nlow       Temperature Low threshold\n  notifies  Enable notification sent to server\n  relay     Relay settings\n  syslog    Enable system logger\n"
+
+        # Configure the mock device's execute method to return the expected output
+        self.mock_device.execute.return_value = self.expected_output
+        self.mock_device.os = 'iosxe'
+        self.mock_device.name = 'TestDevice'
+        self.mock_device.state_machine.current_state = 'enable'
+        self.mock_device.api = MagicMock()
+        self.mock_device.api.get_prompt = MagicMock(return_value='TestDevice#')
+        self.mock_device.configure = MagicMock()
+        self.mock_device.execute = MagicMock(return_value=self.expected_output)
+        self.mock_device.parse = MagicMock(return_value={
+            'alarm': {
+                'facility': {
+                    'temperature': {
+                        'secondary': {
+                            'high': {
+                                'description': 'Temperature High threshold'
+                            },
+                            'low': {
+                                'description': 'Temperature Low threshold'
+                            }
+                        }
+                    }
+                }
+            }
+        })
+        self.mock_device.configure = MagicMock()
+        self.mock_device.sendline = MagicMock()
+        self.mock_device.expect = MagicMock(return_value=(0, None))
+        self.mock_device.exit_config_mode = MagicMock()
+        self.mock_device.enter_config_mode = MagicMock()
+        self.mock_device.is_connected = MagicMock(return_value=True)
+        self.mock_device.connect = MagicMock()
+        self.mock_device.disconnect = MagicMock()
+        self.mock_device.api.get_prompt = MagicMock(return_value='TestDevice#')
+        self.mock_device.api.get_configure_mode_prompt = MagicMock(return_value='(config)#')
+        self.mock_device.api.get_configure_terminal_prompt = MagicMock(return_value='(config-terminal)#')
+        self.mock_device.api.get_configure_line_prompt = MagicMock(return_value='(config-line)#')   
+
+        def test_question_mark_retrieve(self):
+            result = question_mark_retrieve(self.mock_device, self.sample_cmd)
+            self.assertEqual(result, self.expected_output)
+            self.mock_device.execute.assert_called_with(self.sample_cmd + '?', timeout=2)
+
+
+        def test_question_mark(self):
+            result = question_mark(self.mock_device, self.sample_cmd)
+            self.assertEqual(result, {
+                'high': 'Temperature High threshold',
+                'low': 'Temperature Low threshold'
+            })
+            self.mock_device.execute.assert_called_with(self.sample_cmd + '?', timeout=2)
+            self.mock_device.parse.assert_called_with(self.sample_cmd + '?')
+            self.mock_device.configure.assert_not_called()
+            self.mock_device.sendline.assert_not_called()
+            self.mock_device.expect.assert_not_called()
+            self.mock_device.exit_config_mode.assert_not_called()
+            self.mock_device.enter_config_mode.assert_not_called()
+            self.mock_device.is_connected.assert_not_called()
+            self.mock_device.connect.assert_not_called()
+            self.mock_device.disconnect.assert_not_called()
+            self.mock_device.api.get_prompt.assert_not_called()
+            self.mock_device.api.get_configure_mode_prompt.assert_not_called()
+            self.mock_device.api.get_configure_terminal_prompt.assert_not_called()
+            self.mock_device.api.get_configure_line_prompt.assert_not_called()        

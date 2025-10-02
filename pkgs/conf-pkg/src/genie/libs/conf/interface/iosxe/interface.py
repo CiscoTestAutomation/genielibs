@@ -363,8 +363,8 @@ class Interface(BaseInterface):
         # iosxe: interface {name} / switchport
         # Switchport mode configuration can't be applied
         #  on loopback and Vlan interfaces attribute definition
-        if not re.match('[V|v]lan', self.name) and \
-           not re.match('[L|l]oopback', self.name):
+        if not re.match(r'[V|v]lan', self.name) and \
+           not re.match(r'[L|l]oopback', self.name):
 
             switchport = attributes.value('switchport')
             switchport_enable = attributes.value('switchport_enable')

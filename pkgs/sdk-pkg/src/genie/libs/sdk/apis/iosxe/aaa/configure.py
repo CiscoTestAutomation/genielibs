@@ -140,6 +140,7 @@ def configure_radius_group(device, server_config):
                 server_name ('str'): Radius server name
                 vrf('str'):  vrf name
                 mgmt_intf('str'):  Management interface
+                ipv6_intf('str'):  IPv6 interface
                 retransmit('int'):  <1-100>  Number of retries for a transaction (default is 3)
                 timeout('int'): <1-1000>  Wait time (default 5 seconds)
                 ip_addr ('str'): ISE IP
@@ -156,6 +157,7 @@ def configure_radius_group(device, server_config):
                     server_name = "sname1",
                     vrf = "vrf1",
                     mgmt_intf = "GigabitEthernet0/0",
+                    ipv6_intf = "vlan999",
                     retransmit = 0,
                     timeout = 10,
                     ip_addr = "11.19.99.99",
@@ -182,6 +184,10 @@ def configure_radius_group(device, server_config):
     # ip radius source-interface GigabitEthernet0/0
     if 'mgmt_intf' in server_config:
         config_list.append("ip radius source-interface {}".format(server_config['mgmt_intf']))
+
+    # ipv6 radius source-interface vlan999
+    if 'ipv6_intf' in server_config:
+        config_list.append("ipv6 radius source-interface {}".format(server_config['ipv6_intf']))
 
     # radius server sname1
     if 'server_name' in server_config:

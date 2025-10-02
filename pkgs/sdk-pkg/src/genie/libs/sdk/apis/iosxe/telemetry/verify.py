@@ -30,7 +30,7 @@ def verify_telemetry_enabled(device, supported):
         raise SubCommandFailure("Failed to show PAE non-default running-config on {device}. Error:\n{error}".format(device=device, error=e))
 
     if out_1:
-        match = re.search('pae', out_1)
+        match = re.search(r'pae', out_1)
         if match:
             log.info("telemetry is enabled")
             ret_v =True
@@ -38,7 +38,7 @@ def verify_telemetry_enabled(device, supported):
             supported[0] = 'no'
             log.info("verification failed: unexpected error1!")   
     elif out_2:
-        match = re.search('no pae', out_2)
+        match = re.search(r'no pae', out_2)
         if match:           
             log.info("telemetry is disabled")
         else:
@@ -159,7 +159,7 @@ def verify_license_boot_level_configured(device):
     except SubCommandFailure as e:
         raise SubCommandFailure("Failed to show license boot level running-config on {device}. Error:\n{error}".format(device=device, error=e))
     if out:
-        m = re.search("license boot level", out)
+        m = re.search(r"license boot level", out)
         if m:
             log.info("verify_license_boot_level_configured: Yes")
             ret_v = True
@@ -183,7 +183,7 @@ def verify_license_smart_transport_configured(device):
     except SubCommandFailure as e:
         raise SubCommandFailure("Failed to show transport running-config on {device}. Error:\n{error}".format(device=device, error=e))
     if out:
-        m = re.search("license smart transport smart", out)
+        m = re.search(r"license smart transport smart", out)
         if m:
             log.info("verify_license_smart_transport_configured: Yes")
             ret_v = True

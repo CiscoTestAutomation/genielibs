@@ -1302,10 +1302,10 @@ def get_interface_oper_yang_status(device, interface):
     out_detail = device.execute("show interfaces {}".format(interface))
     operStatus = out[interface]["oper_status"]
     if operStatus == "down":
-        if re.search("Hardware is not present", out_detail):
+        if re.search(r"Hardware is not present", out_detail):
             operStatus = "NOT_PRESENT"
         elif out[interface]["line_protocol"] == "down"  and re.search(
-        "(notconnect)", out_detail):
+        r"(notconnect)", out_detail):
             operStatus = "LOWER_LAYER_DOWN"
         else:
             operStatus = "DOWN"
@@ -1329,7 +1329,7 @@ def get_interface_admin_status(device, interface):
     out_detail = device.execute("show interfaces {}".format(interface))
     status = out[interface]["oper_status"]
     if status == "down":
-        if re.search("administratively down", out_detail):
+        if re.search(r"administratively down", out_detail):
             log.info("### Interface is administratively down ###")
         else:
             log.info("### Interface is up ###")
@@ -1373,7 +1373,7 @@ def get_interface_last_state_timestamp(device, interface):
     date_time = new_str.split('.')[0]
     pattern = '%Y-%b %d %H:%M:%S'
     epoch = int(time.mktime(time.strptime(date_time, pattern)))
-    if re.search("UTC", my_clock):
+    if re.search(r"UTC", my_clock):
         TIME_UTC_DIFF = 19800*1000000000 + 55000000000
     else:
         TIME_UTC_DIFF = 0 #it is local time
@@ -1415,14 +1415,14 @@ def get_interface_counter(device, interface, counter_name,
 
     out = device.parse("show interfaces {}".format(interface))
 
-    if re.search("total_output_drop", counter_name):
+    if re.search(r"total_output_drop", counter_name):
         my_count = out[interface]["queues"]["total_output_drop"]
-    elif re.search("input_queue_drops", counter_name):
+    elif re.search(r"input_queue_drops", counter_name):
         my_count = out[interface]["queues"]["input_queue_drops"]
     else:
         my_count = get_interface_packet_counter(device, interface, counter_name, None)
-        if re.search("in_pkts", counter_name) or re.search(
-        "out_pkts", counter_name):
+        if re.search(r"in_pkts", counter_name) or re.search(
+        r"out_pkts", counter_name):
             my_count = my_count + variation
 
     return int(my_count)

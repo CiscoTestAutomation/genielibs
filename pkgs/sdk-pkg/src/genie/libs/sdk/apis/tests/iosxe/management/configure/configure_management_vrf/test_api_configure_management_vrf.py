@@ -1,35 +1,15 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
 from genie.libs.sdk.apis.iosxe.management.configure import configure_management_vrf
+from unittest.mock import Mock, MagicMock
 
 
-class TestConfigureManagementVrf(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          ott-c9300-67:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: cat9k
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['ott-c9300-67']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureManagementVrf(TestCase):
 
     def test_configure_management_vrf(self):
-        result = configure_management_vrf(self.device)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.device = Mock()
+        self.device.parse = Mock(return_value={'vrf': {'Mgmt-intf': {'route_distinguisher': '<not set>', 'protocols': ['ipv4']}}})
+        result = configure_management_vrf(self.device, vrf='Mgmt-intf')
+        self.assertEqual(
+            self.device.configure.mock_calls[0].args,
+            (['vrf definition Mgmt-intf','address-family ipv6', 'exit-address-family'],)
+        )

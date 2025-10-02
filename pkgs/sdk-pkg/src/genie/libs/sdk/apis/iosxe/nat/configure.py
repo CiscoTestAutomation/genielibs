@@ -470,7 +470,7 @@ def configure_standard_access_list(
     acl_number,
     permission,
     source_ip,
-    wild_mask    
+     wild_mask= None    
 ):
     """ Configure standard access-list
         Args:
@@ -478,14 +478,17 @@ def configure_standard_access_list(
             acl_number ('str'): Acl number
             permission ('str'): (permit | deny)
             source_ip ('str'): Source ip
-            wild_mask ('str'): Wild mask
+             wild_mask ('str',optional): Wild mask
         Returns:
             None
         Raises:
             SubCommandFailure: standard access-list not configured
     """
-    cmd = ["access-list {} {} {} {}".format(
+    if wild_mask:
+        cmd = ["access-list {} {} {} {}".format(
               acl_number,permission,source_ip,wild_mask)]
+    else:
+        cmd = ["access-list {} {} {}".format(acl_number,permission,source_ip)]
 
     try:
         device.configure(cmd)
@@ -498,7 +501,7 @@ def unconfigure_standard_access_list(
     acl_number,
     permission,
     source_ip,
-    wild_mask    
+    wild_mask= None     
 ):
     """ UnConfigure standard access-list
         Args:
@@ -506,15 +509,17 @@ def unconfigure_standard_access_list(
             acl_number ('str'): Acl number
             permission ('str'): (permit | deny)
             source_ip ('str'): Source ip
-            wild_mask ('str'): Wild mask
+            wild_mask ('str',optional): Wild mask
         Returns:
             None
         Raises:
             SubCommandFailure: standard access-list not unconfigured
     """
-    cmd = ["no access-list {} {} {} {}".format(
+    if wild_mask:
+        cmd = ["no access-list {} {} {} {}".format(
               acl_number,permission,source_ip,wild_mask)]
-
+    else:
+        cmd = ["no access-list {} {} {}".format(acl_number,permission,source_ip)]
     try:
         device.configure(cmd)
     except SubCommandFailure as e:

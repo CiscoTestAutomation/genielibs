@@ -312,6 +312,11 @@ def execute_install_one_shot(device, file_path=None, prompt=True, issu=False,
                   args = None,
                   loop_continue = False,
                   continue_timer = False),
+        Statement(pattern=r".*%PMAN-5-EXITACTION.*",
+                  action = None,
+                  args = None,
+                  loop_continue = True,
+                  continue_timer = False)
         ])
 
     log.info(f"Perform install one shot {device.name}")
@@ -584,7 +589,7 @@ def execute_clear_install_state(device, timeout=900, connect_timeout=10):
         ])
 
     log.info(f"Performing clear install state on {device.name}")
-    cmd = "clear install state "
+    cmd = "clear install state"
     try:
         device.api.execute_write_memory()
         device.execute(cmd, reply=dialog, prompt_recovery=True, error_pattern=[],
@@ -614,7 +619,7 @@ def execute_install_auto_abort_timer_stop(device, timeout=120):
     except Exception as e:
         log.error("Error thrown while executing is {0}".format(e))
 
-    match = re.search('.*SUCCESS.*', output)
+    match = re.search(r'.*SUCCESS.*', output)
     result = 'successful' if match else 'failed'
     log.info(f"ISSU auto-abort timer stop command execution is {result} on {device.name}")
     return(True if result == 'successful' else False )

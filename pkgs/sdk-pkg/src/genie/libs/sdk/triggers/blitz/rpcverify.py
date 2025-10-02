@@ -88,6 +88,7 @@ class OptFields:
         'any': lambda x, y: True,
         'deleted': 'deleted'
     }
+    edit_op: str = '' 
 
     def __post_init__(self):
         if not isinstance(self.datatype, str):
@@ -137,6 +138,7 @@ class OperationalFieldsNode:
         )
         self.default_value = default_value
         self.edit_op = edit_op
+        self.opfields.edit_op = edit_op
 
 
 @dataclass
@@ -736,6 +738,7 @@ class RpcVerify():
 
         log_msg = 'ERROR: "{0} value: {1}" Not found.'.format(
             xpath, str(field.value))
+        edit_op = getattr(field, 'edit_op', '')
         datatype = ''
         result = False
 
@@ -808,8 +811,14 @@ class RpcVerify():
                     xpath
                 )
             )
-        # Dont log non matched returns for on_change
-        log.error(log_msg)
+
+        if edit_op in ['delete', 'remove']:
+            # For delete/remove, treat absence as expected and log INFO only
+            info_msg = 'INFO: "{0} value: {1}" Not present.'.format(
+                xpath, str(field.value))
+            log.info(info_msg)
+        else:
+            log.error(log_msg)
         return result
 
     def pre_process_keys(self,
@@ -856,7 +865,7 @@ class RpcVerify():
                 # Eg: '[Key1=Val1]'
                 # key_val = Val1
                 key_val = key.split('=')[1].strip(']')
-                key_val = re.sub('"', '', key_val)
+                key_val = re.sub(r'"', '', key_val)
                 # Extract the key path from xpath
                 # Eg: /Sys/Cont/Lis[Key1=Val1]
                 # key_path = /Sys/Cont/Lis/Key1
@@ -954,7 +963,7 @@ class RpcVerify():
                 # Eg: '[Key1=Val1]'
                 # key_val = Val1
                 key_val = key.split('=')[1].strip(']')
-                key_val = re.sub('"', '', key_val)
+                key_val = re.sub(r'"', '', key_val)
                 # Extract the key path from xpath
                 # Eg: /Sys/Cont/Lis[Key1=Val1]
                 # key_path = /Sys/Cont/Lis/Key1
@@ -969,7 +978,8 @@ class RpcVerify():
                                              selected=True,
                                              key=True,
                                              sequence=sequence_no,
-                                             nodetype='leaf'))
+                                             nodetype='leaf',
+                                             edit_op=getattr(field, 'edit_op', '')))
             field.sequence = sequence_no
             field.default_xpath = field.xpath
             field.xpath = re.sub(self.RE_FIND_KEYS, '', field.xpath)
@@ -1206,12 +1216,20 @@ class RpcVerify():
             # Check if sequence is running or broken
             # If broken then skip all the values in that sequence
             # by logging Not Found.
+            # Check whether the field has an edit operation (e.g., delete/remove).
+            # If the operation is delete/remove, then it is expected that the value
+            # is not present in the device response, so log it as INFO with wording
             if sequence_no == sequence_broke_no:
-                log_msg = 'ERROR: "{0} value: {1}" Not found.'.format(
-                    xpath, str(field.value))
-                log.error(log_msg)
+                edit_op = getattr(field, 'edit_op', '')
+                if edit_op in ['delete', 'remove']:
+                    log_msg = 'INFO: "{0} value: {1}" Not present.'.format(xpath, str(field.value))
+                    log.info(log_msg)
+                else:
+                    log_msg = 'ERROR: "{0} value: {1}" Not found.'.format(xpath, str(field.value))
+                    log.error(log_msg)
                 results.append(False)
                 continue
+
             else:
                 sequence_broke_no = 0
             # Get the new response by trimming the actual response
@@ -1266,12 +1284,19 @@ class RpcVerify():
 
                 # If a key-value is not found in the entire response
                 # then the sequence is broken
+                # For normal operations, this is an ERROR (value expected but missing).
+                # For delete/remove operations, the absence is expected -> downgrade to INFO.
                 if isKey and not key_found:
-                    log_msg = 'ERROR: "{0} value: {1}" Not found.'.format(
-                        xpath, str(field.value))
+                    edit_op = getattr(field, 'edit_op', '')
+                    if edit_op in ['delete', 'remove']:
+                        log_msg = 'INFO: "{0} value: {1}" Not present.'.format(xpath, str(field.value))
+                        log.info(log_msg)
+                    else:
+                        log_msg = 'ERROR: "{0} value: {1}" Not found.'.format(xpath, str(field.value))
+                        log.error(log_msg)
                     results.append(False)
-                    log.error(log_msg)
                     sequence_broke_no = sequence_no
+
                 else:
                     if not isKey:
                         # Validation of leaf with the trimmed response

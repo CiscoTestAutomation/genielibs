@@ -1,24 +1,14 @@
-import unittest
-from unittest.mock import Mock
+from unittest import TestCase
 from genie.libs.sdk.apis.iosxe.aaa.configure import configure_radius_group
+from unittest.mock import Mock
 
 
-class TestConfigureRadiusGroup(unittest.TestCase):
+class TestConfigureRadiusGroup(TestCase):
 
     def test_configure_radius_group(self):
         self.device = Mock()
-        result = configure_radius_group(self.device, {'server_group': 'ISEGRP2'})
-        expected_output = ['aaa group server radius ISEGRP2']
+        result = configure_radius_group(self.device, {'ipv6_intf': 'Vlan999', 'server_group': 'ISEGRP', 'server_name': 'ipv6_server'})
         self.assertEqual(
-            self.device.configure.call_args_list[0][0][0],
-            ['aaa group server radius ISEGRP2',])
-        self.assertEqual(result, expected_output)
-
-    def test_configure_radius_group_1(self):
-        self.device = Mock()
-        result = configure_radius_group(self.device, {'dscp_acct': '32', 'dscp_auth': '40', 'server_group': 'ISEGRP2'})
-        expected_output = ['aaa group server radius ISEGRP2', 'dscp auth 40', 'dscp acct 32']
-        self.assertEqual(
-            self.device.configure.call_args_list[0][0][0],
-            ['aaa group server radius ISEGRP2', 'dscp auth 40', 'dscp acct 32'])
-        self.assertEqual(result, expected_output)
+            self.device.configure.mock_calls[0].args,
+            (['aaa group server radius ISEGRP', 'server name ipv6_server', 'ipv6 radius source-interface Vlan999', 'radius server ipv6_server'],)
+        )

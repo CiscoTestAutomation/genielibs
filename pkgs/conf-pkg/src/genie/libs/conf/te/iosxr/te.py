@@ -92,7 +92,7 @@ class Te(ABC):
                         configurations.append_line(attributes.format('logging events frr-protection backup-tunnel'))
                     elif v == 'primary-lsp':
                         v = attributes.value('log_events_frr_protection_primary_lsp_type')
-                        if re.search('active-state|ready-state', str(v)):
+                        if re.search(r'active-state|ready-state', str(v)):
                             configurations.append_line(attributes.format('logging events frr-protection primary-lsp {log_events_frr_protection_primary_lsp_type}'))
                         else:
                             configurations.append_line(attributes.format('logging events frr-protection primary-lsp'))
@@ -1037,7 +1037,7 @@ class Te(ABC):
                     #   only one of these three can be set at one time, so one attribute used
                     if attributes.value('auto_tun_backup_exclude_srlg'):
                         v = attributes.value('auto_tun_backup_exclude_srlg_type')
-                        if re.search('preferred|weighted', str(v)):
+                        if re.search(r'preferred|weighted', str(v)):
                             configurations.append_line(attributes.format('auto-tunnel backup exclude srlg {auto_tun_backup_exclude_srlg_type}'))
                         else:
                             # auto_tun_backup_exclude_srlg is "True"

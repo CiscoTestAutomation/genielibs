@@ -1431,7 +1431,8 @@ def unconfigure_modify_ikev2_profile(device,
                             local_auth = None,
                             keyring_type = None,
                             keyring_name = None,
-                            lifetime = None):
+                            lifetime = None,
+                            trustpoint = None):
     """ Unconfigures IKEV2 keyring or Preshared Key (PSK)
         Args:
             device (`obj`): Device object
@@ -1441,6 +1442,7 @@ def unconfigure_modify_ikev2_profile(device,
             local_auth ('str'): local authentication method
             keyring ('str'): ikev2 keyring name
             lifetime ('int') : configuring session lifetime
+            trustpoint ('str'): pki trustpoint name
         Returns:
             None
         Raises:
@@ -1463,6 +1465,8 @@ def unconfigure_modify_ikev2_profile(device,
         configs.append(f"no keyring {keyring_type} {keyring_name}")        
     if lifetime is not None:
         configs.append(f"no lifetime {lifetime}")
+    if trustpoint is not None:
+        configs.append(f"no pki trustpoint {trustpoint}")
 
     try:
         device.configure(configs)
@@ -1475,3 +1479,61 @@ def unconfigure_modify_ikev2_profile(device,
             )
         )
 
+def configure_ikev2_disconnect_revoked_peers(device):
+    """Configures 'crypto ikev2 disconnect-revoked-peers'
+        Args:
+            device (`obj`): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: If the configuration fails
+    """
+    config = ['crypto ikev2 disconnect-revoked-peers']
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        log.error("Failed to configure ikev2 disconnect-revoked-peers, Error:\n{error}".format(error=e))
+        raise
+        
+def configure_isakmp_key_simple(device, key=None, address="0.0.0.0"):
+    """ Configures simple ISAKMP key with address
+        Args:
+            device (`obj`): Device object
+            key ('str'): Preshared key
+            address ('str', optional): IP address, defaults to "0.0.0.0"
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configuring simple ISAKMP Key")
+
+    configs = [f"crypto isakmp key {key} address {address}"]
+    
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        log.error(f"Failed to configure isakmp key, Error:\n{e}")
+        raise
+
+def unconfigure_isakmp_key_simple(device, key=None, address="0.0.0.0"):
+    """ Unconfigures simple ISAKMP key with address
+        Args:
+            device (`obj`): Device object
+            key ('str'): Preshared key
+            address ('str', optional): IP address, defaults to "0.0.0.0"
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Unconfiguring simple ISAKMP Key")
+
+    configs = [f"no crypto isakmp key {key} address {address}"]
+    
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        log.error(f"Failed to unconfigure isakmp key, Error:\n{e}")
+        raise
+        
