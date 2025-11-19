@@ -2141,3 +2141,130 @@ def config_pseudowire_class_interworking(device, pw_class, interworking):
             "Could not configure pseudowire class {pw_class}. Error:\n{error}"\
                 .format(pw_class=pw_class, error=e)
         )
+
+def configure_mpls_ldp_session_protection(device, vrf=None):
+    """Configure MPLS LDP session protection optionally under a VRF
+
+    Args:
+        device (obj): Device object
+        vrf (str, optional): VRF name. If provided, configures
+            'mpls ldp session protection vrf <vrf>'. If omitted, configures
+            global 'mpls ldp session protection'.
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: If configuration fails
+    """
+    if vrf:
+        cmd = f"mpls ldp session protection vrf {vrf}"
+        log.debug(
+            "Configuring MPLS LDP session protection for VRF {vrf} on device {device}".format(
+                vrf=vrf, device=device.name)
+        )
+    else:
+        cmd = "mpls ldp session protection"
+        log.debug(
+            "Configuring global MPLS LDP session protection on device {device}".format(
+                device=device.name)
+        )
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Couldn't configure MPLS LDP session protection{scope} on device {device}. Error:\n{error}".format(
+                scope=(f" VRF {vrf}" if vrf else ""), device=device.name, error=e)
+        )
+
+def unconfigure_mpls_ldp_session_protection(device, vrf=None):
+    """Unconfigure MPLS LDP session protection optionally under a VRF
+
+    Args:
+        device (obj): Device object
+        vrf (str, optional): VRF name. If provided, removes
+            'mpls ldp session protection vrf <vrf>'. If omitted, removes
+            global 'mpls ldp session protection'.
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: If unconfiguration fails
+    """
+    if vrf:
+        cmd = f"no mpls ldp session protection vrf {vrf}"
+        log.debug(
+            "Unconfiguring MPLS LDP session protection for VRF {vrf} on device {device}".format(
+                vrf=vrf, device=device.name)
+        )
+    else:
+        cmd = "no mpls ldp session protection"
+        log.debug(
+            "Unconfiguring global MPLS LDP session protection on device {device}".format(
+                device=device.name)
+        )
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Couldn't unconfigure MPLS LDP session protection{scope} on device {device}. Error:\n{error}".format(
+                scope=(f" VRF {vrf}" if vrf else ""), device=device.name, error=e)
+        )
+
+def configure_mpls_ldp_neighbor_labels_accept(device, neighbor_ip, acl):
+    """Configure MPLS LDP neighbor label acceptance ACL
+
+    Executes: mpls ldp neighbor <ip_address> labels accept <acl>
+
+    Args:
+        device (obj): Device object
+        neighbor_ip (str): LDP neighbor IP address
+        acl (str): ACL name or number to filter accepted labels
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: If configuration fails
+    """
+    cmd = f"mpls ldp neighbor {neighbor_ip} labels accept {acl}"
+    log.debug(
+        "Configuring LDP neighbor labels accept on {device}: {cmd}".format(
+            device=device.name, cmd=cmd)
+    )
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Couldn't configure LDP neighbor labels accept on {device}. Error:\n{error}".format(
+                device=device.name, error=e)
+        )
+
+def unconfigure_mpls_ldp_neighbor_labels_accept(device, neighbor_ip, acl=None):
+    """Remove MPLS LDP neighbor label acceptance ACL
+
+    Args:
+        device (obj): Device object
+        neighbor_ip (str): LDP neighbor IP address
+        acl (str, optional): ACL name or number (if required)
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: If removal fails
+    """
+    base = f"no mpls ldp neighbor {neighbor_ip} labels accept"
+    cmd = base if not acl else f"{base} {acl}"
+    log.debug(
+        "Unconfiguring LDP neighbor labels accept on {device}: {cmd}".format(
+            device=device.name, cmd=cmd)
+    )
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Couldn't unconfigure LDP neighbor labels accept on {device}. Error:\n{error}".format(
+                device=device.name, error=e)
+        )

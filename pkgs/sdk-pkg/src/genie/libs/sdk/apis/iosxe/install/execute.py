@@ -74,7 +74,8 @@ def execute_install_remove_version(device, version=None, timeout=60, connect_tim
 
     
 def execute_install_activate(device, abort_timer=None, prompt=True, issu=False,
-                     smu=False, file_name=None, timeout=900, connect_timeout=10):
+                     smu=False, file_name=None, timeout=900, connect_timeout=10,
+                     post_reload_wait_time=None, error_pattern=None, install_reload=False):
     """
         Performs install activate with auto abort timer on the device
         Args:
@@ -88,10 +89,12 @@ def execute_install_activate(device, abort_timer=None, prompt=True, issu=False,
             timeout ('int, optional'): Timeout value
             connect_timeout ('int, optional'): Time to wait before sending the prompt
                                                (when pattern "Press RETURN to get 
-                                                started" matches)
+                                                started" matches). Default is 10.
+            post_reload_wait_time ('int, optional'): Time to wait after reload completes. Default is None.
+            error_pattern ('list, optional'): List of regex patterns to check for errors. Default is None.
+            install_reload('bool, optional'): True if device Reloads post install activate. Default is False.
         Returns:
-            True if install activate is successful
-            False if install activate is not successful
+            Output string if install activate is successful, False otherwise.
         Raises:
             SubCommandFailure
     """
@@ -179,8 +182,19 @@ def execute_install_activate(device, abort_timer=None, prompt=True, issu=False,
     log.info(f"Performing {cmd} on device {device.name}")
     try:
         device.api.execute_write_memory()
-        output = device.execute(cmd, reply=dialog, timeout=timeout)
-        log.info(f"{cmd} is successful on device {device.name}")
+        if install_reload:
+            log.info(f"Initiating device reload on {device.name} after install activate.")
+            _, output = device.reload(cmd, reply=dialog, timeout=timeout, return_output=True,
+                                    prompt_recovery=True, post_reload_wait_time=post_reload_wait_time,
+                                    error_pattern=error_pattern)
+            log.info(f"Device {device.name} reloaded successfully after install activate.")
+        else:
+            log.info(f"Executing '{cmd}' on {device.name} without reload handling.")
+            output = device.execute(cmd, reply=dialog, timeout=timeout, error_pattern=error_pattern)
+
+    except SubCommandFailure as e:
+        log.error(f"Command '{cmd}' failed on {device.name} with SubCommandFailure: {e}")
+        return False
     except Exception as e:
         log.error(f"Error while executing {cmd} on {device.name}: {e}")
         return False
@@ -258,7 +272,8 @@ def execute_install_remove(device, file_path=None, timeout=60, connect_timeout=1
 
 
 def execute_install_one_shot(device, file_path=None, prompt=True, issu=False,
-                             negative_test=False, timeout=900, connect_timeout=10, xfsu=False, reloadfast=False, post_reload_wait_time=None, error_pattern=None):
+                             negative_test=False, timeout=900, connect_timeout=10, xfsu=False, reloadfast=False,
+                             post_reload_wait_time=None, error_pattern=None, install_timeout=30):
     """
     Performs install one shot on the device
     Args:
@@ -275,6 +290,7 @@ def execute_install_one_shot(device, file_path=None, prompt=True, issu=False,
         reloadfast('bool, optional'):  Force the operation to use reloadfast.
         post_reload_wait_time ('int, optional'): Time to wait after reload
         error_pattern ('list, optional'): List of error patterns to check in the output
+        install_timeout ('int, optional'): Time to wait post install. Default is 30.
     Returns:
         True if install one shot is successful
         False if install one shot is not successful
@@ -285,6 +301,9 @@ def execute_install_one_shot(device, file_path=None, prompt=True, issu=False,
     def slow_sendline(spawn):
         time.sleep(connect_timeout)
         spawn.sendline('')
+
+    def install_sendline():
+        time.sleep(install_timeout)
 
     dialog = Dialog ([
         Statement(pattern = r".*\[y/n\]\s*$",
@@ -303,7 +322,7 @@ def execute_install_one_shot(device, file_path=None, prompt=True, issu=False,
                   loop_continue = False,
                   continue_timer = False),
         Statement(pattern = r".*SUCCESS\: install_add_activate_commit.*",
-                  action = None,
+                  action = install_sendline,
                   args = None,
                   loop_continue = False,
                   continue_timer = False),
@@ -339,7 +358,9 @@ def execute_install_one_shot(device, file_path=None, prompt=True, issu=False,
     output = ""
     try:
         device.api.execute_write_memory()
-        _, output = device.reload(cmd, reply=dialog, timeout=timeout, return_output=True, prompt_recovery=True, post_reload_wait_time=post_reload_wait_time, error_pattern=error_pattern)
+        _, output = device.reload(cmd, reply=dialog, timeout=timeout, return_output=True, 
+                                  prompt_recovery=True, post_reload_wait_time=post_reload_wait_time, 
+                                  error_pattern=error_pattern, install_timeout=install_timeout)
     except Exception as e:
         log.error(f"Error while executing {cmd} on {device.name}: {e}")
 

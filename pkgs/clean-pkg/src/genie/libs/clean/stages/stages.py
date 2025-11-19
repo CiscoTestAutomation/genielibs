@@ -880,7 +880,7 @@ copy_to_device:
     UNIQUE_NUMBER = None
     RENAME_IMAGES = None
     PROMPT_RECOVERY = False
-    PROTOCOL = 'http'
+    PROTOCOL = 'https'
     CONNECTION_ALIAS = 'default'
 
     # ============
@@ -3156,12 +3156,13 @@ configure_management:
     vrf: Mgmt-vrf
 
 """
-
     # =================
     # Argument Defaults
     # =================
     SET_HOSTNAME = True
     CONFIG_STABLE_TIME = 10
+    PING_ATTEMPTS = 1
+    PING_SLEEP = 10
 
     # ============
     # Stage Schema
@@ -3192,6 +3193,8 @@ configure_management:
         Optional('set_hostname'): bool,
         Optional('alias_as_hostname'): bool,
         Optional('config_stable_time'): int,
+        Optional('ping_attempts'): int,
+        Optional('ping_sleep'): int,
     }
 
     # ==============================
@@ -3213,10 +3216,11 @@ configure_management:
             self.passx("No support for configure_management API")
 
         with steps.start("Configuring device management") as step:
+            exclude_keys = {'ping_attempts', 'ping_sleep'}
             config_kwargs = {
                 k: v
                 for k, v in kwargs.items()
-                if k in [k.schema for k in self.schema.keys()]
+                if k in [k.schema for k in self.schema.keys()] and k not in exclude_keys
             }
 
             config_kwargs["set_hostname"] = set_hostname
@@ -3255,7 +3259,12 @@ configure_management:
             else:
                 step.failed("Management interface is down")
 
-    def ping_gateway(self, steps, device, **kwargs):
+    def ping_gateway(self,
+                     steps,
+                     device,
+                     ping_attempts=PING_ATTEMPTS,
+                     ping_sleep=PING_SLEEP,
+                     **kwargs):
         """Ping the gateway to ensure connectivity."""
         management = getattr(device, "management", {})
         config_kwargs = {
@@ -3281,16 +3290,29 @@ configure_management:
         for gateway in [ip4_gateway, ip6_gateway]:
             if gateway:
                 with steps.start(f"Ping gateway {gateway}") as step:
-                    try:
-                        device.ping(addr=gateway,
-                                    vrf=vrf,
-                                    source=interface,
-                                    timeout=30,
-                                    count=5)
-                        step.passed("Ping to gateway successful")
-                    except Exception as e:
-                        step.failed("Ping to gateway failed", from_exception=e)
+                    ping_successful = False
+                    last_exception = None
+                    for attempt in range(1, ping_attempts + 1):
+                        try:
+                            device.ping(addr=gateway,
+                                        vrf=vrf,
+                                        source=interface,
+                                        timeout=30,
+                                        count=5)
+                            step.passed("Ping to gateway successful")
+                            ping_successful = True
+                            break 
+                        except Exception as e:
+                            last_exception = e
+                            if attempt < ping_attempts:
+                                log.warning(
+                                    f"Ping to gateway '{gateway}' failed (attempt #{attempt} of {ping_attempts}): {e}\n"
+                                    f"Retrying in {ping_sleep} seconds."
+                                )
+                                time.sleep(ping_sleep)
 
+                    if not ping_successful:
+                        step.failed(f"Ping to gateway {gateway} failed after {ping_attempts} attempts", from_exception=last_exception)
 
 class ConfigureInterfaces(BaseStage):
     """This stage configures interfaces on the device.

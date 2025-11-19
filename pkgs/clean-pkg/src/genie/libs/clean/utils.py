@@ -626,3 +626,23 @@ def raise_(ex):
         ex(exception): the exeption to be raised.
     """
     raise ex
+
+
+def get_protected_files(device, image):
+    '''
+    Get a list of protected files from the packages.conf file.
+    '''
+    protected_files = [image.split(":")[1]]
+    try:
+        output = device.execute(f"more bootflash:packages.conf")
+    except Exception as e:
+        log.error(
+            f"Failed to check contents of packages.conf because of {e}"
+        )
+        return None
+    for line in output.splitlines():
+        if line.startswith("boot") or line.startswith("iso"):
+            package = line.split()[-1]
+            if package not in protected_files:
+                protected_files.append(package)
+    return protected_files 

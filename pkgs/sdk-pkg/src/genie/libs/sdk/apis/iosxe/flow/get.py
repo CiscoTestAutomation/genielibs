@@ -44,11 +44,12 @@ def get_flows_src_dst_address_pairs(device, flow_monitor):
     return pairs
 
 
-def get_show_flow_monitor_cache_format_table_output(device, monitor_name):
+def get_show_flow_monitor_cache_format_table_output(device, monitor_name, timeout=120):
     """ Find the lines which are match from show command.
         Args:
             device (`obj`): Device object
             monitor_name (`str`): Flow monitor name
+            timeout (`int`): Timeout value for command execution , default is 120 seconds
         Returns:
             output('str') : Output returned
         Raises:
@@ -57,7 +58,7 @@ def get_show_flow_monitor_cache_format_table_output(device, monitor_name):
     command = f"show flow monitor {monitor_name} cache format table"
     output = ""
     try:
-        output= device.execute(command)
+        output= device.execute(command, timeout=timeout)
         if output == "":
             log.error('No match found')
     except SubCommandFailure as e:

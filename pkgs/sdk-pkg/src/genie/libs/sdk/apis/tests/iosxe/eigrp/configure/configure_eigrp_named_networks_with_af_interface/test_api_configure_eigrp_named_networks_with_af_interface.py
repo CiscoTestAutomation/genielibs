@@ -1,35 +1,14 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
 from genie.libs.sdk.apis.iosxe.eigrp.configure import configure_eigrp_named_networks_with_af_interface
+from unittest.mock import Mock
 
 
-class TestConfigureEigrpNamedNetworksWithAfInterface(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          mac-gen2:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: C9400
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['mac-gen2']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureEigrpNamedNetworksWithAfInterface(TestCase):
 
     def test_configure_eigrp_named_networks_with_af_interface(self):
-        result = configure_eigrp_named_networks_with_af_interface(self.device, 'test', '1', None, None, '1.1.1.1', 'ipv6', '', '', 'default')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.device = Mock()
+        result = configure_eigrp_named_networks_with_af_interface(self.device, 'EIGRP_NAME3', 300, ['10.0.0.0'], '255.255.255.0', '10.0.0.1', 'ipv4', '', 'unicast', 'TwoGigabitEthernet0/0/1', False, True, False)
+        self.assertEqual(
+            self.device.configure.mock_calls[0].args,
+            (['router eigrp EIGRP_NAME3', 'address-family ipv4 unicast autonomous-system 300', 'network 10.0.0.0 255.255.255.0', 'eigrp router-id 10.0.0.1', 'af-interface TwoGigabitEthernet0/0/1', 'bfd', 'passive-interface', 'no split-horizon', 'no shutdown', 'exit-af-interface'],)
+        )

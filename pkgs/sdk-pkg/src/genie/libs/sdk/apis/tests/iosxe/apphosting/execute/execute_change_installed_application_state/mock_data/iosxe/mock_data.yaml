@@ -82,3 +82,10 @@ execute:
     term width 0: ''
     show version | include operating mode: ''
   prompt: dut1#
+
+configure:
+  prompt: dut1(config)#
+  commands:
+    end:
+        new_state: execute
+

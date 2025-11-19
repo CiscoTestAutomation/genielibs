@@ -1,34 +1,16 @@
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
 from genie.libs.sdk.apis.iosxe.dot1x.configure import configure_dot1x_cred_profile
+from unittest.mock import Mock
 
 
-class TestConfigureDot1xCredProfile(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = """
-        devices:
-          stack-12m:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: c9300
-            type: c9300
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['stack-12m']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureDot1xCredProfile(TestCase):
 
     def test_configure_dot1x_cred_profile(self):
-        result = configure_dot1x_cred_profile(self.device, 'data_client', 'data_user1', 'cisco123', 'UNENCRYPTED')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.device = Mock()
+        result = configure_dot1x_cred_profile(self.device, 'dot1x_prof', 'dotxuser', ']hc[ZbOgC[X[_JV_cbCgIUbSAGK', 'ENCRYPTED')
+        self.assertEqual(
+            self.device.configure.mock_calls[0].args,
+            (('dot1x credentials dot1x_prof\n'
+ 'username dotxuser\n'
+ 'password 6 ]hc[ZbOgC[X[_JV_cbCgIUbSAGK\n'),)
+        )

@@ -132,4 +132,30 @@ def configure_traffic_class_for_class_map(device, class_map_name, matching_state
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not configure traffic-class for class-map on device {device}. Error:\n{e}")       
+
+def configure_class_map_match_protocol_attribute(device, class_match_type, class_name, attribute_name, attribute_value):
+    """ Configures a class-map with a 'match protocol attribute' statement.
+        Args:
+            device ('obj'): device to use
+            class_match_type ('str'): The class match type (e.g., 'match-all').
+            class_name ('str'): The name of the class-map (e.g., 'c-attr').
+            attribute_name ('str'): The name of the protocol attribute (e.g., 'business-relevance').
+            attribute_value ('str'): The value of the protocol attribute (e.g., 'business-relevant').
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(
+        f"Configuring class-map {class_name} with match protocol attribute {attribute_name} {attribute_value}"
+    )
+    cmd = [f"class-map {class_match_type} {class_name}"]
+    cmd.append(f"match protocol attribute {attribute_name} {attribute_value}")
+    
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure class-map. Error:\n{e}"
+        )       
             

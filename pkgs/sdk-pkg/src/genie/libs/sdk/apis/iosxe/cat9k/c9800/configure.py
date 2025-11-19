@@ -117,3 +117,18 @@ def configure_management_ip(device,
                              no_switchport=no_switchport,
                              dhcp_timeout=dhcp_timeout)
 
+
+def configure_autoboot(device):
+    """ Configure autoboot
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = 'config-reg 0x2102'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configure Autoboot on c9800 device. Error:\n{e}')

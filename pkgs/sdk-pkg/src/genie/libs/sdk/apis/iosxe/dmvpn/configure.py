@@ -727,3 +727,155 @@ def unconfigure_ip_nhrp_map_multicast_dynamic(device, tunnel_intf):
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not unconfigure ip nhrp map multicast dynamic on {tunnel_intf}. Error: {e}')
 
+def configure_dmvpn_tunnel(device,
+                            tunnel,
+                            bandwidth=None,
+                            delay=None,
+                            ivrf=None,
+                            fvrf=None,
+                            ip_type="ipv4",
+                            address_ipv4=None,
+                            mask_ipv4=None,
+                            address_ipv6=None,
+                            mask_ipv6=None,
+                            tunnel_source=None,
+                            tunnel_key=None,
+                            tunnel_mode=None,
+                            tunnel_pmtu=False,
+                            tunnel_protection_profile=None,
+                            tunnel_protection_profile_shared=False,
+                            nhrp_holdtime=None,
+                            nhrp_authentication=None,
+                            nhrp_network_id=None,
+                            nhrp_redirect=True,
+                            nhrp_nhs=None,
+                            nhrp_nbma=None,
+                            nhrp_nhs_nbma_multicast=None,
+                            nhrp_nhs_nbma_cluster=None,
+                            nhrp_nhs_nbma_priority=None,
+                            nhrp_map_group=None,
+                            nhrp_map_group_service_policy=None,
+                            nhrp_group=None,
+                            bfd_enable=False,
+                            bfd_interval=None,
+                            bfd_min_rx=None,
+                            bfd_multiplier=None,
+                            ):
+    """ Configures DMVPN tunnel interface
+        Args:
+            device ('obj'): Device object
+            tunnel ('str'): Tunnel interface name
+            bandwidth ('int', optional): Bandwidth in kbps
+            delay ('int', optional): Delay in microseconds
+            ivrf ('str', optional): Internal VRF name(vrf forwarding)
+            fvrf ('str', optional): Forwarding VRF name(tunnel vrf)
+            ip_type ('str', optional): IP type, either 'ipv4', 'ipv6' or 'dual'
+            address_ipv4 ('str', optional): IPv4 address
+            mask_ipv4 ('str', optional): IPv4 mask
+            address_ipv6 ('str', optional): IPv6 address
+            mask_ipv6 ('str', optional): IPv6 mask
+            tunnel_source ('str', optional): Tunnel source interface or IP address
+            tunnel_key ('int', optional): Tunnel key
+            tunnel_mode ('str', optional): Tunnel mode, either 'gre multipoint', gre multipoint ipv6', 'ipsec dual-overlay', 'ipsec ipv4 v6-overlay', or 'ipsec ipv6 v4-overlay'
+            tunnel_pmtu ('bool', optional): Enable PMTU discovery
+            tunnel_protection_profile ('str', optional): IPSEC profile name for tunnel protection
+            tunnel_protection_profile_shared ('bool', optional): Use shared IPSEC profile for tunnel protection
+            nhrp_holdtime ('int', optional): NHRP hold time in seconds
+            nhrp_authentication ('str', optional): NHRP authentication string
+            nhrp_network_id ('int', optional): NHRP network ID
+            nhrp_redirect ('bool', optional): Enable NHRP redirects
+            nhrp_nhs ('str', optional): NHRP Next Hop Server IP address
+            nhrp_nbma ('str', optional): NHRP NBMA address
+            nhrp_nhs_nbma_multicast ('str', optional): NHRP NHS NBMA multicast address
+            nhrp_nhs_nbma_cluster ('str', optional): NHRP NHS NBMA cluster address
+            nhrp_nhs_nbma_priority ('int', optional): NHRP NHS NBMA priority
+            nhrp_map_group ('str', optional): NHRP map group name(qos)
+            nhrp_map_group_service_policy ('str', optional): NHRP map group service policy name(qos)
+            nhrp_group ('str', optional): NHRP group name(qos)
+            bfd_enable ('bool', optional): Enable BFD
+            bfd_interval ('int', optional): BFD interval in milliseconds
+            bfd_min_rx ('int', optional): BFD minimum receive interval in milliseconds
+            bfd_multiplier ('int', optional): BFD multiplier
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info("Configuring DMVPN tunnel interface")
+    configs = [f"interface {tunnel}"]
+    if bandwidth:
+        configs.append(f"bandwidth {bandwidth}")
+    if delay:
+        configs.append(f"delay {delay}")
+    if ivrf:
+        configs.append(f"vrf forwarding {ivrf}")
+    if fvrf:
+        configs.append(f"tunnel vrf {fvrf}")
+    if ip_type == "ipv6" or ip_type == "dual":
+        configs.append("ipv6 enable")
+    if address_ipv4 and mask_ipv4:
+        configs.append(f"ip address {address_ipv4} {mask_ipv4}")
+    if address_ipv6 and mask_ipv6:
+        configs.append(f"ipv6 address {address_ipv6}/{mask_ipv6}")
+    if tunnel_source:
+        configs.append(f"tunnel source {tunnel_source}")
+    if tunnel_key:
+        configs.append(f"tunnel key {tunnel_key}")
+    if tunnel_mode:
+        configs.append(f"tunnel mode {tunnel_mode}")
+    if tunnel_pmtu:
+        configs.append("tunnel path-mtu-discovery")
+    if tunnel_protection_profile:
+        if tunnel_protection_profile_shared:
+            configs.append(f"tunnel protection ipsec profile {tunnel_protection_profile} shared")
+        else:
+            configs.append(f"tunnel protection ipsec profile {tunnel_protection_profile}")
+        
+    if nhrp_holdtime:
+        if ip_type == "ipv4" or ip_type == "dual":
+            configs.append(f"ip nhrp holdtime {nhrp_holdtime}")
+        elif ip_type == "ipv6" or ip_type == "dual":
+            configs.append(f"ipv6 nhrp holdtime {nhrp_holdtime}")
+    if nhrp_authentication:
+        if ip_type == "ipv4" or ip_type == "dual":
+            configs.append(f"ip nhrp authentication {nhrp_authentication}")
+        elif ip_type == "ipv6" or ip_type == "dual":
+            configs.append(f"ipv6 nhrp authentication {nhrp_authentication}")
+    if nhrp_network_id:
+        if ip_type == "ipv4" or ip_type == "dual":
+            configs.append(f"ip nhrp network-id {nhrp_network_id}")
+        elif ip_type == "ipv6" or ip_type == "dual":
+            configs.append(f"ipv6 nhrp network-id {nhrp_network_id}")
+    if nhrp_redirect:
+        if ip_type == "ipv4" or ip_type == "dual":
+            configs.append("ip nhrp redirect")
+        elif ip_type == "ipv6" or ip_type == "dual":
+            configs.append("ipv6 nhrp redirect")
+    if nhrp_nhs:
+        if nhrp_nbma:
+            cluster = ""
+            multicast = ""
+            priority = ""
+            if nhrp_nhs_nbma_cluster:
+                cluster = f"nbma {nhrp_nhs_nbma_cluster}"
+            if nhrp_nhs_nbma_multicast:
+                multicast = "multicast"
+            if nhrp_nhs_nbma_priority:
+                priority = f"priority {nhrp_nhs_nbma_priority}"
+            if ip_type == "ipv4" or ip_type == "dual":
+                configs.append(f"ip nhrp nhs {nhrp_nhs} nbma {nhrp_nbma} {multicast} {cluster} {priority}")
+            elif ip_type == "ipv6" or ip_type == "dual":
+                configs.append(f"ipv6 nhrp nhs {nhrp_nhs} nbma {nhrp_nbma} {multicast} {cluster} {priority}")
+    if nhrp_map_group and nhrp_map_group_service_policy:
+        configs.append(f"nhrp map group {nhrp_map_group} service-policy output {nhrp_map_group_service_policy}")
+    if nhrp_group:
+        configs.append(f"nhrp group {nhrp_group}")
+    if bfd_enable:
+        configs.append("bfd enable")
+    if bfd_interval and bfd_min_rx and bfd_multiplier:
+        configs.append(f"bfd interval {bfd_interval} min_rx {bfd_min_rx} multiplier {bfd_multiplier}")
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        log.error(f"Failed to configure DMVPN tunnel interface {tunnel}, Error:\n{e}")
+        raise SubCommandFailure(f"Failed to configure DMVPN tunnel interface {tunnel}. Error:\n{e}")

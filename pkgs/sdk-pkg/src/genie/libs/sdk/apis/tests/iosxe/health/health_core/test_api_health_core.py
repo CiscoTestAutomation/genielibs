@@ -2,7 +2,7 @@ import unittest
 from pyats.topology import loader
 from genie.libs.sdk.apis.iosxe.health.health import health_core
 from unicon.plugins.tests.mock.mock_device_iosxe import MockDeviceTcpWrapperIOSXE
-
+from unittest.mock import MagicMock, patch, Mock
 
 class TestHealthCore(unittest.TestCase):
 
@@ -180,3 +180,71 @@ class TestHealthCoreHA(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         cls.md.stop()
+
+class TestHealthCoreNewFiles(unittest.TestCase):
+
+    @patch('genie.libs.sdk.apis.iosxe.health.health.runtime')
+    @patch('genie.libs.sdk.apis.iosxe.health.health.log')
+    def test_health_core_new_files_detection(self, mock_log, mock_runtime):
+        self.device = Mock()
+        self.device.parse = MagicMock()
+        self.device.name = 'R1'
+        self.device.hostname = 'R1'
+        self.device.os = 'iosxe'
+        self.device.type = 'router'
+        self.device.platform = 'iosxe'
+        self.device.is_connected = True
+
+        self.device.is_ha = False
+
+        self.device.cli = MagicMock()
+        self.device.cli.is_connected = True
+        self.device.filesystems = {'bootflash:/': {}}
+
+        self.device.api = MagicMock()
+        self.device.api.get_core_directories.return_value = ['bootflash:/core/']
+        mock_runtime.health_data = {}
+        mock_runtime.synchro.dict.return_value = {}
+        mock_runtime.directory = "/tmp"
+
+        mock_runtime.health_data = {}
+        mock_runtime.synchro.dict.return_value = {}
+        mock_runtime.directory = "/tmp"
+
+        base_dir = 'bootflash:/core/'
+
+        known_filename = 'existing_core_1.core.gz'
+        known_core_full_path = base_dir + known_filename
+
+        mock_runtime.health_data.setdefault(self.device.name, {'core': {'corefiles': []}})
+        mock_runtime.health_data[self.device.name]['core']['corefiles'].append(
+            {'filename': known_core_full_path}
+        )
+
+        new_filename = 'new_core_2.core.gz'
+        mock_parsed_output = MagicMock()
+        mock_parsed_output.q.get_values.return_value = [known_filename, new_filename]
+        self.device.parse = MagicMock(return_value=mock_parsed_output)
+
+        mock_log.info.reset_mock()
+
+        result = health_core(self.device, default_dir=[base_dir])
+
+        expected_result = {
+            'health_data': {
+                'num_of_cores': 1,
+                'corefiles': [{
+                    'filename': base_dir + new_filename
+                }]
+            }
+        }
+        self.assertEqual(result, expected_result)
+
+        expected_notification_message = f"Notify: New core files detected on device '{self.device.name}':\n- {base_dir + new_filename}"
+        mock_log.info.assert_any_call(expected_notification_message)
+
+        self.assertEqual(
+            mock_runtime.health_data[self.device.name]['core']['corefiles'],
+            [{'filename': known_core_full_path},
+             {'filename': base_dir + new_filename}]
+        )

@@ -17,16 +17,20 @@ def set_platform_soft_trace_debug(device, sprocess, snumber, rp, feature_type, d
         Args:
             device ('obj'): Device object
             sprocess ('str'): process for trace logs
-            rp ('str'): route processor r0/r1/rp
+            snumber ('str', optional): switch number 1/2/active/standby
+            rp ('str'): route processor r0/r1/RP
             feature_type ('str'): feature name
             debug_type ('str'): type of the debugs warning/debug etc
             switch ('str', optional): switch for SVL/Stack devices
-            snumber ('str', optional): switch number 1/2/active/standby
     '''
+
     if switch:
         cmd = f"set platform software trace {sprocess} {switch} {snumber} {rp} {feature_type} {debug_type}"
     else:
-        cmd = f"set platform software trace {sprocess} {rp} {feature_type} {debug_type}"
+        if rp == "RP":
+            cmd = f"set platform software trace {sprocess} {rp} active {feature_type} {debug_type}"
+        else:
+            cmd = f"set platform software trace {sprocess} {rp} {feature_type} {debug_type}"
     try:
         device.execute(cmd)
     except SubCommandFailure as e:

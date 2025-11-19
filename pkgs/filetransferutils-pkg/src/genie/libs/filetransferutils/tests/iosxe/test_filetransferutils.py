@@ -152,6 +152,22 @@ class test_filetransferutils(unittest.TestCase):
         104260 bytes copied in 0.396 secs (263283 bytes/sec)
     '''
 
+    raw11 = '''
+        copy http://myuser:mypw@1.1.1.1//auto/tftp-ssr/memleak.tcl flash:/memleak.tcl
+        Address or name of remote host [1.1.1.1]?
+        Destination filename [/memleak.tcl]?
+        !!
+        104260 bytes copied in 0.396 secs (263283 bytes/sec)
+    '''
+
+    raw12 = '''
+        copy https://myuser:mypw@1.1.1.1//auto/tftp-ssr/memleak.tcl flash:/memleak.tcl
+        Address or name of remote host [1.1.1.1]?
+        Destination filename [/memleak.tcl]?
+        !!
+        104260 bytes copied in 0.396 secs (263283 bytes/sec)
+    '''
+
     outputs = {}
     outputs['copy flash:/memleak.tcl '
             'ftp://myuser:mypw@1.1.1.1//auto/tftp-ssr/memleak.tcl']\
@@ -170,6 +186,10 @@ class test_filetransferutils(unittest.TestCase):
       raw9
     outputs['copy flash:/memleak.tcl ftp://foo@bar//auto/tftp-ssr/memleak.tcl'] = \
       raw10
+    outputs['copy http://myuser:mypw@1.1.1.1//auto/tftp-ssr/memleak.tcl flash:/memleak.tcl'] = \
+      raw11
+    outputs['copy https://myuser:mypw@1.1.1.1//auto/tftp-ssr/memleak.tcl flash:/memleak.tcl'] = \
+      raw12
 
     def mapper(self, key, timeout=None, reply= None, prompt_recovery=False, error_pattern=None):
         return self.outputs[key]
@@ -186,6 +206,49 @@ class test_filetransferutils(unittest.TestCase):
 
         self.device.execute.assert_called_once_with(
             'copy flash:/memleak.tcl ftp://myuser:mypw@1.1.1.1//auto/tftp-ssr/memleak.tcl',
+            prompt_recovery=True, timeout='300', reply=ANY, error_pattern=ANY)
+        
+    def test_copyfile_http(self):
+
+        self.device.execute = Mock()
+        self.device.execute.side_effect = self.mapper
+
+        # Call copyfiles
+        self.fu_device.copyfile(source='http://myuser:mypw@1.1.1.1//auto/tftp-ssr/memleak.tcl',
+            destination='flash:/memleak.tcl', protocol='http',
+            timeout_seconds='300', device=self.device)
+
+        self.device.execute.assert_called_once_with(
+            'copy http://myuser:mypw@1.1.1.1//auto/tftp-ssr/memleak.tcl flash:/memleak.tcl',
+            prompt_recovery=True, timeout='300', reply=ANY, error_pattern=ANY)
+        
+    def test_copyfile_https(self):
+
+        self.device.execute = Mock()
+        self.device.execute.side_effect = self.mapper
+
+        # Call copyfiles
+        self.fu_device.copyfile(source='https://myuser:mypw@1.1.1.1//auto/tftp-ssr/memleak.tcl',
+            destination='flash:/memleak.tcl', protocol='https',
+            timeout_seconds='300', device=self.device)
+
+        self.device.execute.assert_called_once_with(
+            'copy https://myuser:mypw@1.1.1.1//auto/tftp-ssr/memleak.tcl flash:/memleak.tcl',
+            prompt_recovery=True, timeout='300', reply=ANY, error_pattern=ANY)
+        
+    def test_copyfile_https_fallback(self):
+
+        self.device.execute = Mock(side_effect=[Exception("HTTPS failed"), self.raw11])
+
+        # Call copyfiles
+        self.fu_device.copyfile(source='https://myuser:mypw@1.1.1.1//auto/tftp-ssr/memleak.tcl',
+            destination='flash:/memleak.tcl', protocol='https',
+            timeout_seconds='300', device=self.device)
+
+        self.assertEqual(self.device.execute.call_count, 2)
+
+        self.device.execute.assert_called_with(
+            'copy http://myuser:mypw@1.1.1.1//auto/tftp-ssr/memleak.tcl flash:/memleak.tcl',
             prompt_recovery=True, timeout='300', reply=ANY, error_pattern=ANY)
 
     def test_copyfile_with_hostname(self):

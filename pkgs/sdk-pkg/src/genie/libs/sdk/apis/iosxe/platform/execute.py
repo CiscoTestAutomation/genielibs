@@ -1972,20 +1972,27 @@ def request_platform_hardware_pfu(device, mode, route_processor, slot, action):
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to perform powerslot  off/on Error:\n{e}")
 
-def request_platform_software_trace_archive(device):
-    """Request platform software trace archive
-    Args:
-        device (`obj`): Device object
-    Return:
-        None
-    Raise:
-        SubCommandFailure: Failed configuring
-    """
+def request_platform_software_trace_archive(device, timeout=300):
+    ''' Request platform software trace archive
+
+        Args:
+            device ('obj'): Device object
+            timeout ('int'): Max time to wait for command to complete (in seconds)
+
+        Returns:
+            None
+
+        Raises:
+            Exception: If command fails
+    '''
     cmd = "request platform software trace archive"
+
     try:
-        device.execute(cmd)
-    except SubCommandFailure as e:
-        raise SubCommandFailure(f"Could not perform request platform software trace archive on {device}. Error:\n{e}")
+        device.execute(cmd, timeout=timeout)
+    except Exception as e:
+        raise Exception(f"Failed to execute '{cmd}' on '{device.name}'\n{str(e)}")
+    else:
+        log.info(f"Successfully executed '{cmd}' on device {device.name}")
 
 
 def execute_issu_set_rollback_timer(device, timer=0):
@@ -2038,4 +2045,148 @@ def execute_show_clear_sip_l7_alg_statistics(device):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f'Failed to execute show platform hardware qfp active feature alg statistics sip l7data clear\n{e}'
+        )
+
+def execute_hardware_qfp_active_feature_nat_datapath_pap_laddrpergaddr(device):
+    """execute 'show platform hardware qfp active feature nat datapath pap laddrpergaddr' on device
+       Args:
+            device('obj'): device object
+       Returns:
+            None
+       Raises:
+            SubCommandFailure
+    """
+    try:
+        device.execute("show platform hardware qfp active feature nat datapath pap laddrpergaddr")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to execute show platform hardware qfp active feature nat datapath pap laddrpergaddr on device. Error: {e}'
+        )
+
+def execute_test_platform_software_process_exit_forwarding_manager(device, processor, state):
+    """
+    Execute 'test platform software process exit forwarding-manager <RP/FP> <active/standby>' command on the device.
+
+    Args:
+        device (obj): Device object
+        processor (str): Route processor/Embedded-Service-Processor identifier,  (e.g., 'RP' or 'FP')
+        state (str): processor state instance ('active' or 'standby')
+
+    Returns:
+        None
+        
+    Raises:
+        SubCommandFailure: Failed to execute the command
+    """
+    log.info(f"Executing test platform software process exit forwarding-manager {processor} {state} on {device}")
+
+    command = f"test platform software process exit forwarding-manager {processor} {state}"
+
+    try:
+        device.execute(command)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to execute test platform software process exit forwarding-manager. Error:\n{e}")
+
+def execute_platform_hardware_chassis_fantray_oir(device, fantray_number, action, timeout=60):
+    """ Execute 'test platform hardware chassis fantray <fantray_number> oir <action>' on the device
+
+    Args:
+        device ('obj'): Device object
+        fantray_number ('int', optional): Fantray number (default: 1)
+        action ('str', optional): OIR action, e.g. 'remove', 'insert' (default: 'remove')
+        timeout ('int', optional): Max time for command execution (default: 60)
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure
+    """
+    cmd = f"test platform hardware chassis fantray {fantray_number} oir {action}"
+    try:
+        device.execute(cmd, timeout=timeout)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to execute '{cmd}' on device {device.name}. Error:\n{e}"
+        )
+
+def execute_show_policy_firewall_config_platform(device, filter_option=None):
+    """Execute 'show policy-firewall config platform' on device
+       Args:
+            device('obj'): device object
+            filter_option('str', optional): Filter option to append to the command.
+                                          Examples: 'include <pattern>', 'exclude <pattern>', 
+                                          'begin <pattern>', 'section <pattern>'
+       Returns:
+            str: Command output
+       Raises:
+            SubCommandFailure
+    """
+    cmd = "show policy-firewall config platform"
+
+    # Add filter option if provided
+    if filter_option:
+        cmd = f"{cmd} | {filter_option}"
+
+    try:
+        output = device.execute(cmd)
+        return output
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to execute {cmd} on device. Error: {e}'
+        )
+
+def execute_test_voice_port_detector_ring_trip(device, port, action):
+    """execute 'test voice port {port} detector ring-trip {action}' on device
+       Args:
+            device('obj'): device object
+            port ('str'): port number Ex: 1/0/0
+            action ('str'): on/off/disable
+       Returns:
+            None
+       Raises:
+            SubCommandFailure
+    """
+    cmd = f"test voice port {port} detector ring-trip {action}"
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to execute {cmd} on device. Error:\n{e}"
+        )
+
+def execute_show_platform_hardware_qfp_active_feature_td_datapath_statistics_clear(device):
+    """Execute 'show platform hardware qfp active feature td datapath statistics clear' on device
+       Args:
+            device('obj'): device object
+       Returns:
+            None
+       Raises:
+            SubCommandFailure
+    """
+    cmd = "show platform hardware qfp active feature td datapath statistics clear"
+
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to execute {cmd} on device. Error: {e}'
+        )
+
+def execute_show_platform_hardware_qfp_active_feature_nat_datapath_bind(device):
+    """Execute 'show platform hardware qfp active feature nat datapath bind' on device
+       Args:
+            device ('obj'): Device object
+       Returns:
+            str: Command output
+       Raises:
+            SubCommandFailure
+    """
+    cmd = "show platform hardware qfp active feature nat datapath bind"
+    try:
+        output = device.execute(cmd)
+        return output
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to execute {cmd} on device. Error:\n{e}"
         )

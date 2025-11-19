@@ -81,12 +81,20 @@ c9k_config:
 execute2:
   prompt: "%N#"
   commands:
+    <<: *execute
     write memory: |
       Building configuration...
       [OK]
     show install summary: ''
     show version: ''
+    show platform software install-manager r0 operation current detail: ''
     clear install state: ""
+    show platform software install-manager r0 operation history detail: ''
+    show tech-support install | append show_tech_support_20250101T000000.txt: ''
+    request platform software trace archive: ''
+    dir: 
+      response: |
+        Directory of flash:/
     install commit: ""
     install add file image.bin activate commit prompt-level none:
       response: |
@@ -105,4 +113,3 @@ execute2:
         Finished Commit operation
 
         SUCCESS: install_add_activate_commit Mon Sep 15 21:29:46 UTC 2025
-

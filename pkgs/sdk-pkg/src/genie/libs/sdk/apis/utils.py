@@ -62,7 +62,6 @@ from unicon.core.errors import SubCommandFailure
 
 log = logging.getLogger(__name__)
 
-
 def _cli(device, cmd, timeout, prompt):
     """ Send command to device and get the output
 
@@ -123,10 +122,6 @@ def tabber(device, cmd, expected, timeout=20):
         raise Exception("'{e}' is not in output".format(e=expected))
 
 
-# Assuming _cli is an internal helper function that sends the command
-# and processes the dialog, returning an object with a 'match_output' attribute
-# containing the full buffer.
-
 def question_mark(device, cmd, expected, timeout=20, state="enable"):
     """ Verify if ? works as expected on device
 
@@ -137,16 +132,13 @@ def question_mark(device, cmd, expected, timeout=20, state="enable"):
             timeout (`int`): Timeout in second
             state (`str`): Cli state
         Returns:
-            output (`str`): Output
+            None
     """
-    
     output = question_mark_retrieve(device, cmd, timeout, state)
 
     # Find if expected exists in the output
     if expected not in output:
         raise Exception("'{e}' is not in output".format(e=expected))
-
-    return output
 
 
 def question_mark_retrieve(device, cmd, timeout=20, state="enable"):
@@ -160,78 +152,31 @@ def question_mark_retrieve(device, cmd, timeout=20, state="enable"):
         Returns:
             output (`str`): Output
     """
-    full_cmd = cmd + '?' # The complete command to send
-
-    # Get the base prompt pattern from Unicon's state machine.
-    # This pattern typically ends with '\s?$' (optional whitespace and end of line).
-    base_prompt_regex = device.state_machine.get_state(state).pattern
-
-    # Modify the pattern to be flexible:
-    # Remove the trailing '\s?$' and append '.*' to match any characters
-    # that might follow the prompt (like the echoed partial command).
-    if base_prompt_regex.endswith(r'\\s?$'):
-        flexible_prompt_pattern = base_prompt_regex[:-4] + '.*'
+    # Create a new state for prompt# cmd
+    pattern = device.state_machine.get_state(state).pattern
+    if state == "config":
+        # then remove all except last line
+        tmp_cmd = cmd.splitlines()[-1]
+        pattern_mark = pattern[:-1] + tmp_cmd + pattern[-1]
     else:
-        # Fallback if the pattern doesn't end as expected, though unlikely for Unicon
-        flexible_prompt_pattern = base_prompt_regex + '.*'
+        pattern_mark = pattern[:-1] + cmd + pattern[-1]
 
-    # Create a Statement for the final prompt.
-    # - The 'pattern' now accounts for the echoed command after the prompt.
-    # - 'action' should be None (no Ctrl+C needed here).
-    # - 'loop_continue' should be False for a single final prompt match.
-    # - 'continue_timer' should be True to keep the timer running until the prompt is matched.
-    final_prompt_statement = Statement(
-        pattern=flexible_prompt_pattern,
-        action=None,
+    prompt = Statement(
+        pattern=pattern_mark,
+        action="send(\x03)",
         args=None,
-        loop_continue=False,
-        continue_timer=True,
+        loop_continue=True,
+        continue_timer=False,
     )
+    output = _cli(device, cmd + "?", timeout, prompt)
 
-    # Ensure the device is in the correct CLI state before sending the command.
-    device.state_machine.go_to(state,
-                                device.spawn,
-                                context=device.context,
-                                timeout=device.connection_timeout,
-                                prompt_recovery=device.prompt_recovery)
-
-    # Call the internal _cli function with the full command and the corrected prompt statement.
-    # _cli is expected to return an object where .match_output contains the full buffer.
-    output_obj = _cli(device, full_cmd, timeout, final_prompt_statement)
-
-    # The raw buffer might be in .match_output or .match_output.output depending on Unicon version/context
-    raw_output_buffer = output_obj.match_output.output if hasattr(output_obj.match_output, 'output') else output_obj.match_output
-
-    lines = raw_output_buffer.splitlines()
-
-    extracted_help_lines = []
-    if len(lines) >= 2: # Ensure there's at least a command echo and a prompt line
-        # Take all lines from the second line (index 1) up to, but not including, the last line.
-        # This range captures the help text and any intermediate empty lines.
-        extracted_help_lines = lines[1:-1]
-
-    processed_lines = []             
-    for index, line in enumerate(extracted_help_lines):
-        # Apply specific stripping logic based on the 'expected' format from the traceback.
-        # The first two lines ('high', 'low') are expected without leading spaces.
-        # Subsequent lines ('notifies', 'relay', 'syslog') are expected with leading spaces.
-        if index == 0 or index == 1:
-            processed_lines.append(line.lstrip()) # Remove leading spaces from these specific lines
-        else:
-            processed_lines.append(line) # Keep leading spaces for other lines
-
-    # Join the processed lines back into a single string, preserving newlines.
-    # This will include the empty line if it was present in the raw output,
-    # which aligns with the trailing newline in the 'expected' string.
-    extracted_help_text = "\n".join(processed_lines)
-
-    # Apply escape_ansi to the final extracted text to remove any control characters.
-    cleaned_output = escape_ansi(extracted_help_text)    
-    return cleaned_output
+    # Remove sent command
+    output = output.match_output.replace(cmd, "", 1).replace("^C", "")
+    output = escape_ansi(output)
+    return output
 
 
 def escape_ansi(line):
-    """Removes ANSI escape codes from a string."""
     ansi_escape = re.compile(r"(?:\x1B[@-_]|[\x80-\x9F])[0-?]*[ -/]*[@-~]")
     return ansi_escape.sub("", line)
 
@@ -952,7 +897,7 @@ def copy_to_device(device,
                    remote_path,
                    local_path=None,
                    server=None,
-                   protocol='http',
+                   protocol=None,
                    vrf=None,
                    timeout=300,
                    compact=False,
@@ -969,7 +914,7 @@ def copy_to_device(device,
         remote_path (str): remote file path on the server
         local_path (str): local file path to copy to on the device (default: flash:)
         server (str): hostname or address of the server (default: None)
-        protocol(str): file transfer protocol to be used (default: http)
+        protocol(str): file transfer protocol to be used (default: https)
         vrf (str): vrf to use (optional)
         timeout(int): timeout value in seconds, default 300
         compact(bool): compress image option for n9k, defaults False
@@ -997,7 +942,7 @@ def copy_to_device(device,
 
     if server:
         server_block = fu.get_server_block(server, protocol=protocol)
-        protocol = server_block.get('protocol', protocol)
+        protocol = protocol or server_block.get('protocol')
 
         # re-instantiate FileUtils object now we have protocol
         fu = FileUtils.from_device(device, protocol=protocol)
@@ -1060,26 +1005,35 @@ def copy_to_device(device,
     if proxy_dev:
         proxy_dev.connect()
         local_ip = proxy_dev.api.get_local_ip()
+
+        if ipv4_address := device.management.get('address', {}).get('ipv4'):
+            mgmt_ip = str(ipv4_address.ip)
+            _, mgmt_src_ip = proxy_dev.api.get_route_iface_source_ip(destination_ip=mgmt_ip)
+            mgmt_src_ip_addresses = [mgmt_src_ip] if mgmt_src_ip else []
+            mgmt_interface = device.management.get('interface', None)
+        else:
+            raise Exception('Device management IPv4 address not found')
     else:
         local_ip = device.api.get_local_ip()
+        mgmt_ip, mgmt_src_ip_addresses = device.api.get_mgmt_ip_and_mgmt_src_ip_addresses()
+        mgmt_interface = kwargs.pop('interface', None) or device.api.get_mgmt_interface(mgmt_ip=mgmt_ip)
+
+        if local_ip in mgmt_src_ip_addresses:
+            mgmt_src_ip = local_ip
+        else:
+            mgmt_src_ip = None
 
     if local_ip is None:
         log.error('Unable to determine local IP address, cannot copy file')
         return
 
-    mgmt_ip, mgmt_src_ip_addresses = device.api.get_mgmt_ip_and_mgmt_src_ip_addresses()
-
-    mgmt_interface = kwargs.pop('interface', None) or device.api.get_mgmt_interface(mgmt_ip=mgmt_ip)
-
-    if local_ip in mgmt_src_ip_addresses:
-        mgmt_src_ip = local_ip
-    else:
-        mgmt_src_ip = None
-
     remote_path_parent = str(pathlib.PurePath(remote_path).parent)
     remote_filename = pathlib.PurePath(remote_path).name
 
     protocol = protocol or 'http'
+    # TODO: Remove once https is supported in FileServer
+    if protocol == 'https':
+        protocol = 'http'
 
     with FileServer(protocol=protocol,
                     address=local_ip,
@@ -1092,21 +1046,8 @@ def copy_to_device(device,
 
         if proxy_dev:
             log.info('Setting up port relay via proxy')
-            proxy_dev = proxy_dev or device.testbed.devices.get(proxy)
-            if proxy_dev is None and device.testbed.servers.get(proxy):
-                 proxy_dev = device.api.convert_server_to_linux_device('proxy')
-
-            proxy_dev.connect()
             socat_protocol = 'UDP4' if protocol == 'tftp' else 'TCP4'
             proxy_port = proxy_dev.api.socat_relay(remote_ip=local_ip, remote_port=local_port, protocol=socat_protocol)
-
-            ifconfig_output = proxy_dev.execute('ifconfig')
-            proxy_ip_addresses = re.findall(r'inet (?:addr:)?(\S+)', ifconfig_output)
-            mgmt_src_ip = None
-            for proxy_ip in proxy_ip_addresses:
-                if proxy_ip in mgmt_src_ip_addresses:
-                    mgmt_src_ip = proxy_ip
-                    break
 
         if protocol.startswith('http') and http_auth:
             username = fs.get('credentials', {}).get('http', {}).get('username', '')
@@ -1238,22 +1179,27 @@ def copy_from_device(device,
     if proxy_dev:
         proxy_dev.connect()
         local_ip = proxy_dev.api.get_local_ip()
+
+        if ipv4_address := device.management.get('address', {}).get('ipv4'):
+            mgmt_ip = str(ipv4_address.ip)
+            _, mgmt_src_ip = proxy_dev.api.get_route_iface_source_ip(destination_ip=mgmt_ip)
+            mgmt_src_ip_addresses = [mgmt_src_ip] if mgmt_src_ip else []
+            mgmt_interface = device.management.get('interface', None)
+        else:
+            raise Exception('Device management IPv4 address not found')
     else:
         local_ip = device.api.get_local_ip()
+        mgmt_ip, mgmt_src_ip_addresses = device.api.get_mgmt_ip_and_mgmt_src_ip_addresses(mgmt_src_ip=local_ip)
+        mgmt_interface = device.api.get_mgmt_interface(mgmt_ip=mgmt_ip)
+
+        if local_ip in mgmt_src_ip_addresses:
+            mgmt_src_ip = local_ip
+        else:
+            mgmt_src_ip = None
 
     if local_ip is None:
         log.error('Unable to determine local IP address, cannot copy file')
         return
-
-    # Try to determine connectivity to device
-    mgmt_ip, mgmt_src_ip_addresses = device.api.get_mgmt_ip_and_mgmt_src_ip_addresses(mgmt_src_ip=local_ip)
-
-    mgmt_interface = device.api.get_mgmt_interface(mgmt_ip=mgmt_ip)
-
-    if local_ip in mgmt_src_ip_addresses:
-        mgmt_src_ip = local_ip
-    else:
-        mgmt_src_ip = None
 
     # Determine filename and path
     remote_path = remote_path or '.'
@@ -1265,11 +1211,7 @@ def copy_from_device(device,
         filename = None
 
     if not filename:
-        filename = pathlib.Path(os.path.basename(local_path.split(':')[-1]))
-        if device.hostname not in str(filename):
-            filename = '{}_{}'.format(device.hostname, slugify(filename.stem) + filename.suffix)
-        else:
-            filename = '{}'.format(slugify(filename.stem) + filename.suffix)
+        filename = slugify_filename(device, local_path)
 
     if timestamp:
         ts = datetime.utcnow().strftime('%Y%m%dT%H%M%S%f')[:-3]
@@ -1286,18 +1228,8 @@ def copy_from_device(device,
 
         if proxy_dev:
             log.info('Setting up port relay via proxy')
-            proxy_dev = proxy_dev or device.testbed.devices[proxy]
-            proxy_dev.connect()
             socat_protocal = 'UDP4' if protocol == 'tftp' else 'TCP4'
             proxy_port = proxy_dev.api.socat_relay(remote_ip=local_ip, remote_port=local_port, protocol=socat_protocal)
-
-            ifconfig_output = proxy_dev.execute('ifconfig')
-            proxy_ip_addresses = re.findall(r'inet (?:addr:)?(\S+)', ifconfig_output)
-            mgmt_src_ip = None
-            for proxy_ip in proxy_ip_addresses:
-                if proxy_ip in mgmt_src_ip_addresses:
-                    mgmt_src_ip = proxy_ip
-                    break
 
         if protocol.startswith('http') and http_auth:
             username = fs.get('credentials', {}).get('http', {}).get('username', '')
@@ -2297,6 +2229,34 @@ def slugify(word):
 
     """
     return re.sub(r'\W+', '_', word)
+
+def slugify_filename(device, local_path, suffixes=None):
+    """
+    Build a safe export filename from a device local_path.
+
+    Preserves multi-part suffixes (e.g. .tar.gz) if in suffixes list
+    but still slugifies base. Hostname is prepended if not already in filename.
+    """
+    if suffixes is None:
+        suffixes = [".tar.gz", ".tar.bz2", ".tar.xz", ".tar.zst"]
+
+    device_hostname = device.hostname 
+    filename = pathlib.Path(local_path.split(':')[-1])
+
+    # Determine if we have a multi-part suffix
+    full_suffix = ''.join(filename.suffixes)
+    if full_suffix in suffixes:
+        base = slugify(filename.name.split(full_suffix)[0])
+        preserved_suffix = full_suffix
+    else:
+        base = slugify(filename.stem)
+        preserved_suffix = filename.suffix
+
+    # Add hostname if missing
+    if device_hostname not in str(filename):
+        base = f"{device_hostname}_{base}"
+
+    return f"{base}{preserved_suffix}"
 
 
 def repeat_command_save_output(device, command, command_interval,

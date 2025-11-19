@@ -21,7 +21,15 @@ execute1:
     <<: *execute
     install remove inactive:
       new_state: do_you_want_to_remove1
+    config term:
+        new_state: configure
   prompt: "%N#"
+
+configure:
+  prompt: "%N(config)#"
+  commands:
+    end:
+        new_state: execute1
 
 do_you_want_to_remove1:
   preface:
@@ -74,7 +82,16 @@ execute2:
     <<: *execute
     install remove inactive:
       new_state: do_you_want_to_remove2
+    config term:
+        new_state: configure2
   prompt: "%N#"
+
+configure2:
+  prompt: "%N(config)#"
+  commands:
+    end:
+        new_state: execute2
+
 
 do_you_want_to_remove2:
   preface:
@@ -129,7 +146,15 @@ execute3:
     <<: *execute
     install remove inactive:
       new_state: do_you_want_to_remove3
+    config term:
+        new_state: configure3
   prompt: "%N#"
+
+configure3:
+  prompt: "%N(config)#"
+  commands:
+    end:
+        new_state: execute3
 
 do_you_want_to_remove3:
   preface:

@@ -1,6 +1,10 @@
 import re
 import logging
 import time
+from pyVim import connect
+from pyVmomi import vim
+import ssl
+from pyats.utils.secret_strings import SecretString, to_plaintext
 
 log = logging.getLogger(__name__)
 
@@ -529,4 +533,237 @@ class BaseCliPowerCycler(PowerCycler):
             raise Exception(
                 "Turning off the powercycler ", f"failed. Error: {str(e)}"
             ) from e
+
+
+class BaseVCenterPowerCycler(PowerCycler):
+    """
+    vCenter PowerCycler for managing VM power states via VMware vSphere API
+
+    This class provides power control functionality for virtual machines through
+    VMware vCenter Server using the pyVmomi library. Unlike traditional power cyclers
+    that use outlet numbers, this implementation uses VM instance UUIDs for identification.
+    
+    Key Features:
+    - VM identification via instance UUID
+    - Asynchronous task monitoring with configurable timeouts
+    - SSL certificate bypass for lab environments
+
+    Example powercycler schema:
+    ---------------------------
+    peripherals:
+      power_cycler:
+      - host: vcenter
+        interval: 10
+        polling_timeout: 50
+        connection_type: soap
+        outlets:
+        - 50387317-ed7a-ad43-890f-6822xxxxxxx
+        type: vcenter_pdu
+    """
+
+    def __init__(self, testbed, interval=5, polling_timeout=60, **kwargs):
+        """
+        Initialize vCenter PowerCycler for VM power management
+        Args:
+            testbed: pyATS testbed object.
+            interval (int, optional): Polling interval in seconds for task monitoring. Defaults to 5.
+            polling_timeout (int, optional): Maximum time in seconds to wait for power operations. Defaults to 60.
+            **kwargs: Additional arguments passed to parent PowerCycler class
+
+        Raises:
+            Exception: If vCenter server is not properly configured in testbed
+        """
+        super().__init__(**kwargs)
+        self.testbed = testbed
+        self.si = None           # ServiceInstance for vSphere connection
+        self.content = None      # ServiceContent for API operations
+        self.interval = interval
+        self.polling_timeout = polling_timeout
+        self.connect()
+
+    def connect(self):
+        """
+        Connect to vCenter using pyVmomi SOAP API
+
+        Establishes connection to vCenter server using credentials from testbed configuration.
+        Uses unverified SSL context for lab environments where certificates may be self-signed.
+        
+        Returns:
+            bool: True if connection successful, False otherwise
+
+        Raises:
+            Exception: If vCenter host not found in testbed or connection fails
+        """
+        # Validate that vCenter server is defined in testbed
+        if self.host not in self.testbed.servers:
+            raise Exception(f"The vCenter server '{self.host}' does not exist in testbed.servers")
+
+        # Extract connection parameters from testbed configuration
+        server_config = self.testbed.servers.get(self.host)
+        credentials = server_config['credentials']['default']
+        vcenter_address = server_config['address']
+        vcenter_user = credentials['username']
+        
+        # Handle SecretString objects by converting to plaintext
+        vcenter_password = credentials['password']
+        if isinstance(vcenter_password, SecretString):
+            vcenter_password = to_plaintext(vcenter_password)
+
+        try:
+            # Create unverified SSL context for lab environments
+            # This bypasses SSL certificate verification which is common in lab setups
+            context = ssl.create_default_context()
+            context.check_hostname = False
+            context.verify_mode = ssl.CERT_NONE
+
+            log.info(f"Connecting to vCenter: {self.host} ({vcenter_address})")
+
+            # Establish connection to vCenter using pyVmomi SmartConnect
+            self.si = connect.SmartConnect(
+                host=vcenter_address,
+                user=vcenter_user,
+                pwd=vcenter_password,
+                sslContext=context
+            )
+
+            # Get ServiceContent for API operations
+            self.content = self.si.RetrieveContent()
+
+            log.info("vCenter connection established successfully")
+            return True
+
+        except Exception as e:
+            log.error(f"Failed to connect to vCenter {self.host}: {e}")
+            return False
+
+    def disconnect(self):
+        """
+        Disconnect from vCenter server
+        
+        Cleanly closes the vSphere API connection and releases resources.
+        Should be called when powercycler operations are complete.
+        """
+        connect.Disconnect(self.si)
+        log.info("Disconnected from vCenter")
+
+    def find_vm_by_instance_uuid(self, instance_uuid):
+        """
+        Find virtual machine by instance UUID
+        
+        Uses vCenter's SearchIndex to locate VM by instance UUID, which is more
+        efficient than iterating through all VMs in the datacenter.
+
+        Args:
+            instance_uuid (str): VM instance UUID (not BIOS UUID)
+
+        Returns:
+            vim.VirtualMachine: VM managed object reference
+
+        Raises:
+            Exception: If not connected to vCenter or VM not found
+        """
+        if not self.content:
+            raise Exception("Not connected to vCenter")
+
+        try:
+            # Use SearchIndex.FindByUuid for efficient VM lookup
+            # Parameters: datacenter=None, uuid=instance_uuid, vmSearch=True, instanceUuid=True
+            vm = self.content.searchIndex.FindByUuid(None, instance_uuid, True, True)
+        except Exception as e:
+            raise Exception(f"Error finding VM by instance UUID: {e}")
+
+        if not vm:
+            raise Exception(f"VM with instance UUID '{instance_uuid}' not found")
+
+        log.info(f"Found VM: {vm.name} (MoRef ID: {vm._moId})")
+        return vm
+
+    def on(self, *outlets):
+        """
+        Power on virtual machines using instance UUIDs
+
+        Initiates power-on tasks for one or more VMs and monitors completion.
+        Each "outlet" represents a VM instance UUID rather than a physical outlet.
+
+        Args:
+            *outlets: Variable number of VM instance UUIDs to power on
+
+        Raises:
+            Exception: If VM not found, task fails, or operation times out
+        """
+        # Process each VM instance UUID (referred to as "outlet" for framework compatibility)
+        for outlet in outlets:
+            # Locate the VM by its instance UUID
+            vm = self.find_vm_by_instance_uuid(outlet)
+
+            # Check if VM is already powered on to avoid unnecessary operations
+            if vm.runtime.powerState == vim.VirtualMachinePowerState.poweredOn:
+                log.info(f"VM {vm.name} is already powered on")
+                continue
+
+            log.info(f"Initiating power-on operation for VM {vm.name}...")
+
+            # Start the power-on task asynchronously
+            task = vm.PowerOnVM_Task()
+
+            # Monitor task completion with timeout protection
+            start_time = time.time()
+            while task.info.state in [vim.TaskInfo.State.running, vim.TaskInfo.State.queued]:
+                # Check for timeout to prevent indefinite waiting
+                if time.time() - start_time > self.polling_timeout:
+                    raise Exception(f"Power on task timed out after {self.polling_timeout} seconds for VM {vm.name}")
+                log.info(f"Polling timeout: {self.polling_timeout}s, interval: {self.interval}s")
+                log.info(f"Polling power-on task for VM {vm.name}, state: {task.info.state}")
+                time.sleep(self.interval)
+
+            # Verify task completed successfully
+            if task.info.state != vim.TaskInfo.State.success:
+                raise Exception(f"Power on task failed for VM {vm.name}: {task.info.error.localizedMessage if task.info.error else 'Unknown error'}")
+
+            log.info(f"VM {vm.name} powered on successfully")
+
+    def off(self, *outlets):
+        """Power off VMs using instance UUIDs.
+
+        This method powers off one or more virtual machines identified by their instance UUIDs.
+        If a VM is already powered off, it will be skipped. The method waits for each power-off
+        task to complete and handles timeouts and failures appropriately.
+
+        Args:
+            *outlets: Variable number of VM instance UUIDs to power off
+        Raises:
+            Exception: If power-off task times out after polling_timeout seconds
+            Exception: If power-off task fails for any reason
+        """
+        # Process each VM instance UUID (referred to as "outlet" for framework compatibility)
+        for outlet in outlets:
+            # Locate the VM by its instance UUID
+            vm = self.find_vm_by_instance_uuid(outlet)
+
+            # Check if VM is already powered off to avoid unnecessary operations
+            if vm.runtime.powerState == vim.VirtualMachinePowerState.poweredOff:
+                log.info(f"VM {vm.name} is already powered off")
+                continue
+
+            log.info(f"Powering off VM {vm.name}...")
+
+            # Start the power-off task asynchronously
+            task = vm.PowerOffVM_Task()
+
+            # Monitor task completion with timeout protection
+            start_time = time.time()
+
+            while task.info.state in [vim.TaskInfo.State.running, vim.TaskInfo.State.queued]:
+                # Check for timeout to prevent indefinite waiting
+                if time.time() - start_time > self.polling_timeout:
+                    raise Exception(f"Power off task timed out after {self.polling_timeout} seconds for VM {vm.name}")
+                log.info(f"Polling timeout: {self.polling_timeout}s, interval: {self.interval}s")
+                log.info(f"Polling power-off task for VM {vm.name}, state: {task.info.state}")
+                time.sleep(self.interval)
+
+            # Verify task completed successfully
+            if task.info.state != vim.TaskInfo.State.success:
+                raise Exception(f"Power off task failed for VM {vm.name}: {task.info.error}")
+
+            log.info(f"VM {vm.name} powered off successfully")
 

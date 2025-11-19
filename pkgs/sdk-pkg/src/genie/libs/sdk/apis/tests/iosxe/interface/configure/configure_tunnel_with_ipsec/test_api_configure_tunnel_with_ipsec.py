@@ -1,35 +1,14 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
 from genie.libs.sdk.apis.iosxe.interface.configure import configure_tunnel_with_ipsec
+from unittest.mock import Mock
 
 
-class TestConfigureTunnelWithIpsec(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          PE-A:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: c9300
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['PE-A']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureTunnelWithIpsec(TestCase):
 
     def test_configure_tunnel_with_ipsec(self):
-        result = configure_tunnel_with_ipsec(self.device, 'Tunnel50', 'ipv4', '11.11.11.1', '255.255.255.0', '2.2.2.1', '2.2.2.2', '5 2', None, None, None, 'gre', 'ipsec', 'ipsec_profile_v4_lo', None, None, None)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.device = Mock()
+        result = configure_tunnel_with_ipsec(self.device, 'Tunnel1', 'ipv4', '1.1.1.1', '255.255.255.255', 'Te0/0/2', '17.17.17.2', None, None, '1::1', 128, 'gre', 'ipsec', 'IPSEC_PROFILE', None, None, None, 1, True, 'virtual-template 1')
+        self.assertEqual(
+            self.device.configure.mock_calls[0].args,
+            (['interface Tunnel1', 'ip address 1.1.1.1 255.255.255.255', 'ipv6 enable', 'ipv6 address 1::1/128', 'tunnel mode gre ip', 'tunnel source Te0/0/2', 'tunnel destination 17.17.17.2', 'tunnel protection ipsec profile IPSEC_PROFILE', 'ip nhrp network-id 1', 'ip nhrp redirect', 'ip nhrp shortcut virtual-template 1'],)
+        )

@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch
 from pyats.results import Passed
 from pyats.topology import loader
 from pyats.aetest.steps import Steps
@@ -16,7 +17,9 @@ class TestInstallImage(unittest.TestCase):
         cls.install_image = InstallImage()
 
 
-    def test_issu_in_progress(self):
+    @patch('genie.libs.sdk.apis.iosxe.support.tech_support.datetime')
+    def test_issu_in_progress(self, mock_datetime):
+        mock_datetime.utcnow.return_value.strftime.return_value = '20250101T000000000'
         testbed = """
         devices:
             router:
@@ -46,9 +49,9 @@ class TestInstallImage(unittest.TestCase):
             })()
         }
 
+
         with self.assertLogs(level='DEBUG') as log:
             self.cls.install_image(steps=self.steps, device=self.device, images=[self.image])
 
         # Check the results is as expected.
         self.assertEqual(Passed, self.steps.details[0].result)
-

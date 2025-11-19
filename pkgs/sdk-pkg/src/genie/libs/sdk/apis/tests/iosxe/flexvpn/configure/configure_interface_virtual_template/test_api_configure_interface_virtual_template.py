@@ -1,34 +1,14 @@
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
 from genie.libs.sdk.apis.iosxe.flexvpn.configure import configure_interface_virtual_template
+from unittest.mock import Mock
 
 
-class TestConfigureInterfaceVirtualTemplate(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = """
-        devices:
-          ike-hub:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: iosxe
-            type: iosxe
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['ike-hub']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureInterfaceVirtualTemplate(TestCase):
 
     def test_configure_interface_virtual_template(self):
-        result = configure_interface_virtual_template(self.device, 1, 'tunnel', 'GigabitEthernet', '0/0/2', 'GigabitEthernet', 0, 'vpnprof', False, 'ipv4', True, 1, True)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.device = Mock()
+        result = configure_interface_virtual_template(self.device, 200, 'tunnel', 'loopback', 100, None, None, 'IPSEC_PROFILE', False, '', True, None, False, None, None, None, None)
+        self.assertEqual(
+            self.device.configure.mock_calls[0].args,
+            (['interface Virtual-Template 200 type tunnel', 'ip unnumbered loopback 100', 'tunnel protection ipsec profile IPSEC_PROFILE', 'ipv6 enable'],)
+        )

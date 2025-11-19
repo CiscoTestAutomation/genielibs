@@ -22,6 +22,7 @@ from pyats.log.utils import banner
 # Genie
 from genie.abstract import Lookup
 from genie.libs import clean
+from genie.libs.clean.utils import get_protected_files
 from genie.libs.clean.recovery.recovery import _disconnect_reconnect
 from genie.utils import Dq
 from genie.utils.config import Config
@@ -720,7 +721,7 @@ class InstallImage(BaseStage):
             Defaults to 2.
 
         reload_wait (int, optional): The maximum time allowed, in seconds,
-            to check the auto reload. Defaults to 30.
+            to check the auto reload. Defaults to 150.
 
         reload_service_args (optional):
 
@@ -765,7 +766,7 @@ class InstallImage(BaseStage):
     SKIP_BOOT_VARIABLE = False
     SKIP_SAVE_RUNNING_CONFIG = False
     VERIFY_RUNNING_IMAGE = True
-    RELOAD_WAIT = 30
+    RELOAD_WAIT = 150
     INSTALL_RETRY_ATTEMPTS = 2
 
     # ============
@@ -960,8 +961,13 @@ class InstallImage(BaseStage):
                 step.skipped()
                 return
             try:
-                device.api.execute_copy_run_to_start(max_time=60,
+                output = device.api.execute_copy_run_to_start(max_time=60,
                                                      check_interval=30)
+                if output:
+                    step.passed("Save running config has passed")
+                else:
+                    step.failed("Save running config has failed")
+
             except Exception as e:
                 step.failed("Failed to save the running config",
                             from_exception=e)
@@ -1017,6 +1023,8 @@ class InstallImage(BaseStage):
         with steps.start("Check for previous uncommitted install operation") as step:
             try:
                 output = device.parse("show install active")
+                if not output.get("location"):
+                    step.skipped("No active packages found to commit.")
                 location = list(output.get("location").keys())
                 for each in location:
                     for pkg in output.get("location").get(each).get("pkg_state"):
@@ -1035,6 +1043,15 @@ class InstallImage(BaseStage):
             current_image = device.api.get_running_image()
             if current_image == images[0]:
                 step.skipped("Images is already installed on the device.")
+                
+            not_enough_space_pattern =  r".*FAILED: /(flash|bootflash) requires (\d+) KB of free space.*"
+            
+            def _check_disk_space(spawn, context, session):
+                """Match the required space from the error message and set the flag to clean up space"""
+                match = re.search(not_enough_space_pattern, spawn.buffer, re.DOTALL)
+                if match:
+                    spawn.device.space_required = int(match.group(2))
+                    device.clean_space = True
 
             def handle_issu_dialog(spawn, context):
                 """Handle ISSU in progress dialog by aborting the operation"""
@@ -1065,6 +1082,20 @@ class InstallImage(BaseStage):
                 # Raise exception to indicate ISSU is in progress
                 setattr(device, 'issu_in_progress', True)
                 raise Exception("ISSU operation detected - device marked as in progress")
+
+            def install_image_failing(device, step, context):
+                """
+                Handle install image failure by collecting install logs and
+                failing the step.
+                """
+                exception = context.get('exception')
+                try:
+                    device.api.collect_install_log()
+                except Exception as log_exc:
+                    log.error("Exception during collect_install_log: %s", log_exc, exc_info=True)
+                    step.failed("Failed to install the image (and collect_install_log also failed)", from_exception=exception)
+                else:
+                    step.failed("Failed to install the image", from_exception=exception)
 
             install_add_one_shot_dialog = Dialog([
                 Statement(
@@ -1102,114 +1133,169 @@ class InstallImage(BaseStage):
                     loop_continue=False,
                     continue_timer=False,
                 ),
+                # Add statement for not enough space
+                Statement(
+                    pattern=not_enough_space_pattern,
+                    action=_check_disk_space,
+                    loop_continue=False,
+                    continue_timer=False,
+                    trim_buffer=False,
+                ),
+                Statement(
+                    pattern=r".*FAILED: install_add_activate_commit",
+                    action=install_image_failing,
+                    args={'device': device, 'step': step},
+                    loop_continue=False,
+                    continue_timer=False,
+                ),
+                Statement(
+                    pattern=r".*FAILED: Install Operation failed as one or more package file\(s\) for running image is not present in the device",
+                    action=install_image_failing,
+                    args={'device': device, 'step': step},
+                    loop_continue=False,
+                    continue_timer=False,
+                ),
             ])
 
-            try:
-                reload_args.update({
-                    "timeout": install_timeout,
-                    "reply": install_add_one_shot_dialog
-                })
 
-                check_reload_dialog = Dialog([
-                    Statement(
-                        pattern=r".*reboot: Restarting system",
-                        action=None,
-                        loop_continue=False,
-                        continue_timer=False,
-                    ),
-                    Statement(
-                        pattern=r".*Initializing Hardware",
-                        action=None,
-                        loop_continue=False,
-                        continue_timer=False,
-                    ),
-                    Statement(
-                        pattern=r".*reload action requested",
-                        action=None,
-                        loop_continue=False,
-                        continue_timer=False,
-                    ),
-                    Statement(
-                        pattern=
-                        r".*Chassis [1|2] reloading, reason - Reload command",
-                        action=None,
-                        loop_continue=False,
-                        continue_timer=False,
-                    ),
-                    Statement(
-                        pattern=r".*Rebooting\/Shutting Down like normal.*",
-                        action=None,
-                        loop_continue=False,
-                        continue_timer=False,
-                    ),
-                    Statement(
-                        pattern=r".*Press RETURN to get started!*",
-                        action="sendline('')",
-                        loop_continue=False,
-                        continue_timer=False,
-                    ),
-                ])
+            reload_args.update({
+                "timeout": install_timeout,
+                "reply": install_add_one_shot_dialog
+            })
 
-                install_cmd = "install add file {} activate commit prompt-level none"
-                if issu:
-                    install_cmd = "install add file {} activate issu commit prompt-level none"
+            check_reload_dialog = Dialog([
+                Statement(
+                    pattern=r".*reboot: Restarting system",
+                    action=None,
+                    loop_continue=False,
+                    continue_timer=False,
+                ),
+                Statement(
+                    pattern=r".*Initializing Hardware",
+                    action=None,
+                    loop_continue=False,
+                    continue_timer=False,
+                ),
+                Statement(
+                    pattern=r".*reload action requested",
+                    action=None,
+                    loop_continue=False,
+                    continue_timer=False,
+                ),
+                Statement(
+                    pattern=
+                    r".*Chassis [1|2] reloading, reason - Reload command",
+                    action=None,
+                    loop_continue=False,
+                    continue_timer=False,
+                ),
+                Statement(
+                    pattern=r".*Rebooting\/Shutting Down like normal.*",
+                    action=None,
+                    loop_continue=False,
+                    continue_timer=False,
+                ),
+                Statement(
+                    pattern=r".*Press RETURN to get started!*",
+                    action="sendline('')",
+                    loop_continue=False,
+                    continue_timer=False,
+                ),
+            ])
 
-                retry_count = 0
-                while retry_count < install_retry_attempts:
-                    try:
-                        device.execute(
-                            install_cmd.format(images[0]),
-                            reply=install_add_one_shot_dialog,
-                            error_pattern=["FAILED:"],
-                            timeout=install_timeout,
-                        )
-                        break  # Success, exit the retry loop
-                    except Exception as e:
-                        if getattr(device, 'issu_in_progress', None):
-                            retry_count += 1
-                            if retry_count < install_retry_attempts:
-                                log.warning(f"ISSU in progress detected, retrying ({retry_count}/{install_retry_attempts})")
-                                # Remove the flag
-                                delattr(device, 'issu_in_progress')
-                                continue
-                            else:
-                                log.error("Max retries reached for ISSU in progress")
-                                step.failed(
-                                    f"Failed to install image after {install_retry_attempts} attempts due to "
-                                    f"ongoing ISSU operations on device {device.name}. "
-                                    f"Please ensure no ISSU operations are in progress and retry.")
-                        else:
-                             step.failed("Failed to install the image due to an unexpected error", from_exception=e)
+            install_cmd = "install add file {} activate commit prompt-level none"
+            if issu:
+                install_cmd = "install add file {} activate issu commit prompt-level none"
 
-                # Usually the device does auto reload after install operation
-                # This logic is to handle if the device did not reload
+            retry_count = 0
+            while retry_count < install_retry_attempts:
                 try:
-                    # dialog processor to identify reload patterns
-                    # upon detection of such a pattern, we perform reload and
-                    # update the timeout, which is managed in the subsequent steps
-                    log.debug(
-                        "Check if the device reloaded after installing the image"
+                    device.execute(
+                        install_cmd.format(images[0]),
+                        reply=install_add_one_shot_dialog,
+                        error_pattern=["FAILED:"],
+                        timeout=install_timeout,
                     )
-                    check_reload_dialog.process(device.spawn,
-                                                timeout=reload_wait)
-                except TimeoutError:
-                    # We deliberately trigger a timeout error under the assumption that the
-                    # device did not auto reload.
-                    device.execute("show version")
-                    device.execute("show install summary")
-                else:
-                    if hasattr(self, "image_to_boot") and self.image_to_boot:
-                        log.info(
-                            f"Set image to boot to {self.image_to_boot} for reload"
-                        )
-                        device.reload(image_to_boot=self.image_to_boot, **reload_args)
+                    break  # Success, exit the retry loop
+                except Exception as e:
+                    device.api.collect_install_log()
+                    if getattr(device, 'issu_in_progress', None):
+                        retry_count += 1
+                        if retry_count < install_retry_attempts:
+                            log.warning(f"ISSU in progress detected, retrying ({retry_count}/{install_retry_attempts})")
+                            # Remove the flag
+                            delattr(device, 'issu_in_progress')
+                            continue
+                        else:
+                            log.error("Max retries reached for ISSU in progress")
+                            step.failed(
+                                f"Failed to install image after {install_retry_attempts} attempts due to "
+                                f"ongoing ISSU operations on device {device.name}. "
+                                f"Please ensure no ISSU operations are in progress and retry.")
+                    elif getattr(device, 'clean_space', None):
+                        retry_count += 1
+                        if retry_count < install_retry_attempts:
+                            log.info("Attempting to free up space by deleting unprotected files.")
+                            log.info(f"Getting the default directory on device {device.name}")
+                            for attempt in range(2):
+                                try:
+                                    if device.is_ha:
+                                        device_default_dir = device.api.get_platform_default_dir(all_rp=True)
+                                    else:
+                                            device_default_dir = device.api.get_platform_default_dir()
+                                    break
+                                except Exception as e:
+                                    if attempt == 1:
+                                        raise
+                            log.info("Add image and package.conf packages to protected files")
+                            protected_files = get_protected_files(device, images[0])
+                            if device.is_ha:
+                                protected_files = {def_dir:protected_files for def_dir in device_default_dir}
+                            log.debug(f"Protected files are {protected_files}")
+                            try:
+                                free_space = device.api.free_up_disk_space(
+                                    destination=device_default_dir,
+                                    required_size=device.space_required * 1000, # the size in kb needs to be updated to bytes
+                                    protected_files=protected_files,
+                                    allow_deletion_failure=True,
+                                    skip_deletion=False)
+                                if not free_space:
+                                    step.failed("Unable to create enough space for "
+                                                f"image on device {device.name} .")
+                                else:
+                                    del device.clean_space
+                                    log.info(f"Successfully created enough space for image on device {device.name}")
+                            except Exception as e:
+                                step.failed(f"Could not free up space on the device {device.name} beacuse of {e}")
                     else:
-                        device.reload("", **reload_args)
+                        step.failed("Failed to install the image due to an unexpected error", from_exception=e)
 
-                device.execute("install commit")
+            # Usually the device does auto reload after install operation
+            # This logic is to handle if the device did not reload
+            try:
+                # dialog processor to identify reload patterns
+                # upon detection of such a pattern, we perform reload and
+                # update the timeout, which is managed in the subsequent steps
+                log.debug(
+                    "Check if the device reloaded after installing the image"
+                )
+                check_reload_dialog.process(device.spawn,
+                                            timeout=reload_wait)
+            except TimeoutError:
+                # We deliberately trigger a timeout error under the assumption that the
+                # device did not auto reload.
+                device.execute("show version")
+                device.execute("show install summary")
+            else:
+                if hasattr(self, "image_to_boot") and self.image_to_boot:
+                    log.info(
+                        f"Set image to boot to {self.image_to_boot} for reload"
+                    )
+                    device.reload(image_to_boot=self.image_to_boot, **reload_args)
+                else:
+                    device.reload("", **reload_args)
 
-            except Exception as e:
-                step.failed("Failed to install the image", from_exception=e)
+            device.execute("install commit")
 
             image_mapping = self.history["InstallImage"].parameters.setdefault(
                 "image_mapping", {})
@@ -1228,7 +1314,7 @@ class InstallImage(BaseStage):
             except Exception:
                 step.passx(
                     f"Unable to configure no boot manual on device {device.name}"
-                )   
+                )
 
 
 class InstallRemoveSmu(BaseStage):
@@ -2723,7 +2809,7 @@ class CopyToDevice(BaseStage):
     UNIQUE_NUMBER = None
     RENAME_IMAGES = None
     PROMPT_RECOVERY = False
-    PROTOCOL = "http"
+    PROTOCOL = "https"
     CONNECTION_ALIAS = "default"
     VERIFY_MD5_TIMEOUT = 60
 

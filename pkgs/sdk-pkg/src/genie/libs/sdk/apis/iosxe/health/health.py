@@ -733,6 +733,12 @@ def health_core(device,
             cf for cf in health_corefiles if cf not in existing_core_files
         ]
 
+        if new_core_files:
+            notification_message = f"Notify: New core files detected on device '{device.name}':\n"
+            for core_file_path in new_core_files:
+                notification_message += f"- {core_file_path}\n"
+            log.info(notification_message.strip())
+
         # init health_data
         health_data = {'health_data': {}}
         health_data['health_data'].setdefault('num_of_cores',

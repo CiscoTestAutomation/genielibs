@@ -325,3 +325,49 @@ def get_hardware_interface_sfp_descr(device, interface, sfp_slot_dict=""):
     slot = re.sub(p, "", interface)
     if slot in sfp_slot_dict:
         return sfp_slot_dict[slot].get("descr")
+
+
+def get_hardware_led_status(device, alarm_num=None, alarm_out=False):
+    """ Get LED status
+
+        Args:
+            device (`obj`): Device object
+            alarm_num (`int`): Alarm IN number
+            alarm_out (`bool`): Alarm out
+        Returns:
+            led_in_status (`str`): LED IN status
+            led_out_status (`str`): LED OUT status
+            None
+        Raises:
+            Exception: Failed to get LED status
+    """
+    
+    try:
+        output = device.parse("show hardware led")
+    except SchemaEmptyParserError as e:
+        log.error(f"Failed to get LED status on {device.name} becasue of {e}")
+        return e
+
+    led_state_in = None
+    led_state_out = None
+
+    # Check if the key is present in the output
+    if alarm_num is not None and f'alarm-in{alarm_num}' not in output:
+        log.error(f"Alarm IN{alarm_num} not found on {device.name}")
+        return Exception(f"Alarm IN{alarm_num} not found")
+    if alarm_out and 'alarm-out' not in output:
+        log.error(f"Alarm OUT not found on {device.name}")
+        return Exception("Alarm OUT not found")
+    
+    if alarm_num is not None:
+        led_state_in = output[f'alarm-in{alarm_num}']        
+    if alarm_out:
+        led_state_out = output['alarm-out']
+    
+    if alarm_num and alarm_out:
+        return led_state_in, led_state_out
+    elif alarm_num :
+        return led_state_in
+    elif alarm_out:
+        return led_state_out    
+    

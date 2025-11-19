@@ -4,6 +4,7 @@ import time
 import logging
 from datetime import datetime
 from threading import Thread
+from importlib.metadata import version
 
 # from pyats
 from pyats.easypy import runtime
@@ -16,7 +17,6 @@ from genie.utils.diff import Diff
 from genie.ops.utils import get_ops_exclude
 from genie.harness.standalone import run_genie_sdk
 
-from pkg_resources import get_distribution
 from .maple import maple, maple_search
 from .yangexec import run_netconf, run_gnmi, run_restconf
 from .actions_helper import (configure_handler, api_handler, learn_handler,
@@ -189,9 +189,9 @@ def add_result_as_extra(func):
                     python_env = runtime.env.prefix
                     python_ver = runtime.env.python.version
                     try:
-                        pyats_ver = get_distribution('ats').version
+                        pyats_ver = version('ats')
                     except Exception:
-                        pyats_ver = get_distribution('pyats').version
+                        pyats_ver = version('pyats')
                     # Build payload
                     # Device        : {device_name}
                     # Health Name   : {health_name}

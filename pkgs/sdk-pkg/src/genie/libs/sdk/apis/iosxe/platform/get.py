@@ -1352,3 +1352,41 @@ def show_tech_support_platform_monitor(device, file_name, session_id):
         device.execute(f"show tech-support platform monitor {session_id} | redirect bootflash:{file_name}")
     except SubCommandFailure as e:
         log.error(f"Failed to redirect the output to bootflash: {e}")
+
+
+def get_environment_alarm_contact(device, contact_number):
+    """
+    Get the contact information for a specific alarm contact.
+
+    Args:
+        device (`obj`): Device object
+        contact_number (`int`): Alarm contact number
+
+    Returns:
+        dict: A dictionary containing the contact information
+
+    Raises:
+        Exception: If the command output is empty or the contact number is not found.      
+    """
+    log.info(f"Getting environment alarm contact {contact_number} on device {device.name}")
+    try:
+        output = device.parse("show environment alarm-contact")
+    
+        alarm_contact_info = {
+            'status': output.get(f'ALARM CONTACT {contact_number}', {}).get('status', ''),
+            'trigger': output.get(f'ALARM CONTACT {contact_number}', {}).get('trigger', ''),
+            'severity': output.get(f'ALARM CONTACT {contact_number}', {}).get('severity', '')
+        }
+        if not alarm_contact_info['status'] and not alarm_contact_info['trigger'] and not alarm_contact_info['severity']:
+            raise KeyError(f"ALARM CONTACT {contact_number} not found")
+        
+    except SchemaEmptyParserError as e:
+        log.error(f"No alarm contact information found on device {device.name}: {e}")
+        raise Exception("No alarm contact information found")
+    
+    except KeyError as e:
+        log.error(f"Alarm contact {contact_number} not found on device {device.name}: {e}")
+        raise Exception(f"Alarm contact {contact_number} not found")
+    
+    return alarm_contact_info
+    

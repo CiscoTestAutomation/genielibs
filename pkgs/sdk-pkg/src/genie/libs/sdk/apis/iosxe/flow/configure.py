@@ -1958,3 +1958,67 @@ def unconfigure_flow_record_from_monitor(device, monitor_name, record_name):
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not unconfigure flow record {record_name}. Error:\n{e}')
 
+def configure_stealthwatch_cloud_monitor(device, sensor_name=None, service_key=None, url=None):
+    """Configure Stealthwatch Cloud Monitor on Device
+        Args:
+            device (`obj`): Device object
+            sensor_name (`str`, optional): Sensor name
+            service_key (`str`, optional): Service key
+            url (`str`, optional): Sensor URL
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring stealthwatch cloud monitor
+    """
+    cmd = ["stealthwatch-cloud-monitor"]
+    if sensor_name:
+        cmd.append(f" sensor-name {sensor_name}")
+    if service_key:
+        cmd.append(f" service-key {service_key}")
+    if url:
+        cmd.append(f" url {url}")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Could not configure stealthwatch cloud monitor. Error:\n{e}'
+        )
+
+def unconfigure_stealthwatch_cloud_monitor(device, sensor_name=None, service_key=None, url=None):
+    """Unconfigure Stealthwatch Cloud Monitor on Device
+        Args:
+            device (`obj`): Device object
+            sensor_name (`str`, optional): Sensor name
+            service_key (`str`, optional): Service key
+            url (`str`, optional): Sensor URL
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed unconfiguring stealthwatch cloud monitor
+    """
+    # If no specific argument is given, remove the whole monitor
+    if not sensor_name and not service_key and not url:
+        cmd = ["no stealthwatch-cloud-monitor"]
+        try:
+            device.configure(cmd)
+        except SubCommandFailure as e:
+            raise SubCommandFailure(
+                f'Could not unconfigure stealthwatch cloud monitor. Error:\n{e}'
+            )
+        return
+
+    # Selectively remove parameters (do not send "no stealthwatch-cloud-monitor" as a prefix)
+    cmd = ["stealthwatch-cloud-monitor"]
+    if sensor_name:
+        cmd.append(f"no sensor-name {sensor_name}")
+    if service_key:
+        cmd.append(f"no service-key {service_key}")
+    if url:
+        cmd.append(f"no url {url}")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Could not unconfigure stealthwatch cloud monitor parameters. Error:\n{e}'
+        )
+

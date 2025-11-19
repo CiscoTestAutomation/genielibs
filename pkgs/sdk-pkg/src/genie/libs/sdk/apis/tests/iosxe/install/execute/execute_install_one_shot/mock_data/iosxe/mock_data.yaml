@@ -58,31 +58,10 @@ execute:
           [OK]
       response_type: circular
     show version | include operating mode: ''
-  prompt: AMZ-Acc-4#
-
-connect1:
-  commands:
-    '':
-      new_state: execute1
-  preface: |-
-    Trying mock_device ...
-    Connected to mock_device.
-    Escape character is '^]'.
-  prompt: ''
-
-execute1:
-  prompt: "AMZ-Acc-4#"
-  commands:
-    show version | include operating mode: ''
-    config term:
-      new_state: configure
-    config-transaction:
-      new_state: configure
-    write memory: |
-      Building configuration...
-      [OK]
     install add file bootflash:c8500x_COMPUTE_ASR1K.image.BLD_LUX_DEV_LATEST_20241029_211620.SSA.bin activate commit prompt-level none:
       new_state: install_image_state
+
+  prompt: AMZ-Acc-4#
 
 install_image_state:
   prompt: "AMZ-Acc-4#"
@@ -138,4 +117,4 @@ install_image_reload_state:
     - 0:,0,0.005
   commands:
     '':
-      new_state: execute1
+      new_state: execute

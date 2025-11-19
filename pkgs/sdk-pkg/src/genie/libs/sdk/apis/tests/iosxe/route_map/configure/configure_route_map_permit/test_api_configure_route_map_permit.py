@@ -7,8 +7,8 @@ class TestConfigureRouteMapPermit(TestCase):
 
     def test_configure_route_map_permit(self):
         self.device = Mock()
-        result = configure_route_map_permit(self.device, 'TEST_GENIE', '10', None, None, None, None, None, None, None, None, None, None, 'RECURSIVE1', None, '1', '10.106.16.20')
+        result = configure_route_map_permit(self.device, 'TEST_RECURSIVE', '40', None, None, None, None, None, None, None, None, None, None, 'Mgmt-vrf', None, 'True', None, '10.106.16.20')
         self.assertEqual(
             self.device.configure.mock_calls[0].args,
-            (['route-map TEST_GENIE permit 10', 'set vrf RECURSIVE1', 'set ip default next-hop recursive vrf RECURSIVE1 10.106.16.20'],)
+            (['route-map TEST_RECURSIVE permit 40', 'set ip vrf Mgmt-vrf next-hop 10.106.16.20'],)
         )

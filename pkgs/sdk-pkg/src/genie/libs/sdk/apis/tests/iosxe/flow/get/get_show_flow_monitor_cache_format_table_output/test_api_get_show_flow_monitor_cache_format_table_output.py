@@ -28,7 +28,7 @@ class TestGetShowFlowMonitorCacheFormatTableOutput(TestCase):
 
         self.device.execute.side_effect = results_side_effect
 
-        result = get_show_flow_monitor_cache_format_table_output(self.device, 'ipv4_monitor_in')
+        result = get_show_flow_monitor_cache_format_table_output(self.device, 'ipv4_monitor_in', 180)
         self.assertIn(
             'show flow monitor ipv4_monitor_in cache format table',
             self.device.execute.call_args_list[0][0]

@@ -5,6 +5,8 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
+    end:
+      new_state: execute
   prompt: R1_xe(config)#
 configure_line:
   commands:

@@ -7,8 +7,8 @@ class TestUnconfigureAlarmContact(TestCase):
 
     def test_unconfigure_alarm_contact(self):
         self.device = Mock()
-        result = unconfigure_alarm_contact(self.device, '1', True, False, False)
+        result = unconfigure_alarm_contact(self.device, '1', False, 'major', False, 'major', None)
         self.assertEqual(
             self.device.configure.mock_calls[0].args,
-            (['no alarm contact 1 description'],)
+            (['no alarm contact 1 severity major'],)
         )

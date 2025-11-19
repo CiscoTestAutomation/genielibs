@@ -341,7 +341,7 @@ def configure_eigrp_redistributed_connected(device, eigrp_process_id):
             )
         )
 
-def configure_eigrp_named_networks_with_af_interface(device, name, autonomous_system, ip_address=None, netmask=None, router_id=None, address_family=None, vrf='', af_action='',af_interface=None):
+def configure_eigrp_named_networks_with_af_interface(device, name, autonomous_system, ip_address=None, netmask=None, router_id=None, address_family=None, vrf='', af_action='',af_interface=None, split_horizon=True, passive_interface=False, af_interface_shutdown =False):
     """ Configures eigrp on networks
         Args:
             device ('obj'): Device to use
@@ -354,6 +354,9 @@ def configure_eigrp_named_networks_with_af_interface(device, name, autonomous_sy
             vrf ('str', optional): vrf to configure ( Default is '' )
             af_action ('str',optional): unicast or multicast (Default is '')
             af_interface('str'optional): interface name ( Default is None )
+            split_horizon ('bool', optional): Set to False to Configure no split-horizon. (Default is True)
+            passive_interface ('bool', optional): Set to True to Configure passive-interface. (Default is False)
+            af_interface_shutdown ('bool', optional): Set to True to Configure af-interface shutdown. (Default is False)
         Returns:
             N/A
         Raises:
@@ -376,8 +379,18 @@ def configure_eigrp_named_networks_with_af_interface(device, name, autonomous_sy
     if router_id:
         cmd.append('eigrp router-id {router_id}'.format(router_id=router_id))
     if af_interface:
-        cmd.append('af-interface {af_interface}\n'.format(af_interface=af_interface))
-        cmd.append('bfd\n')
+        cmd.append('af-interface {af_interface}'.format(af_interface=af_interface))
+        cmd.append('bfd')
+        if passive_interface:
+            cmd.append('passive-interface')
+        if split_horizon:
+            cmd.append('split-horizon')
+        else:
+            cmd.append('no split-horizon')
+        if af_interface_shutdown:
+            cmd.append('shutdown')
+        else:
+            cmd.append('no shutdown')
         cmd.append('exit-af-interface')
     try:
         device.configure(cmd)

@@ -1,35 +1,14 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
 from genie.libs.sdk.apis.iosxe.pki.configure import unconfigure_crypto_pki_profile
+from unittest.mock import Mock
 
 
-class TestUnconfigureCryptoPkiProfile(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          dut1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: c8000v
-            type: c8000v
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['dut1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigureCryptoPkiProfile(TestCase):
 
     def test_unconfigure_crypto_pki_profile(self):
+        self.device = Mock()
         result = unconfigure_crypto_pki_profile(self.device, 'API_PROF')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.assertEqual(
+            self.device.configure.mock_calls[0].args,
+            ('no crypto pki profile enrollment API_PROF',)
+        )

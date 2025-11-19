@@ -203,3 +203,126 @@ def execute_trim_crypto_pki_certificate(device, server_name=None, generate_expir
         return output
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to execute crypto pki server trim commands: {e}")
+
+def execute_crypto_pki_server_advanced(
+                                        device,
+                                        server_name,
+                                        grant=False,
+                                        reject=False,
+                                        revoke=False,
+                                        remove=False,
+                                        unrevoke=False,
+                                        serial_number=None,
+                                        pending_request_id=None,
+                                        all=False,
+                                        request=False,
+                                        pkcs10=False,
+                                        path_name=None,
+                                        base64=False,
+                                        hex=False,
+                                        transaction_id=None,
+                                        nonce=None,
+                                        transaction_request_id=None,
+                                        pem=False,
+                                        password=False,
+                                        generate=False,
+                                        validity_time=None,
+                                        start=False,
+                                        stop=False,
+                                    ):
+    '''
+    Executes advanced PKI server operations on the device.
+
+    Args:
+        device ('obj'): Device object.
+        server_name ('str'): Name of the PKI server instance.
+        grant ('bool', optional): Grant pending certificate requests.
+        reject ('bool', optional): Reject pending certificate requests.
+        revoke ('bool', optional): Revoke a certificate by serial number.
+        remove ('bool', optional): Remove a request.
+        unrevoke ('bool', optional): Unrevoke a certificate by serial number.
+        serial_number ('str', optional): Certificate serial number for revoke/unrevoke operations.
+        pending_request_id ('str', optional): Specific pending request ID to grant/reject/remove.
+        all ('bool', optional): Apply grant/reject/remove to all requests.
+        request ('bool', optional): Initiate a PKCS#10 certificate request.
+        pkcs10 ('bool', optional): Indicate PKCS#10 request type.
+        path_name ('str', optional): Path to file for PKCS#10 request.
+        base64 ('bool', optional): Format PKCS#10 output in Base64.
+        hex ('bool', optional): Format PKCS#10 output in Hex.
+        transaction_id ('str', optional): Transaction ID for hex PKCS#10 request.
+        nonce ('str', optional): Nonce value for hex PKCS#10 request.
+        transaction_request_id ('str', optional): Transaction request ID for hex PKCS#10 request.
+        pem ('bool', optional): Format PKCS#10 output in PEM format.
+        password ('bool', optional): Perform password operations.
+        generate ('bool', optional): Generate new password.
+        validity_time ('int', optional): Validity time in minutes when generating password.
+        start ('bool', optional): Start the PKI server.
+        stop ('bool', optional): Stop the PKI server.
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: If execution fails on the device.
+    '''
+    if not server_name:
+        raise ValueError("server_name must be provided.")
+
+    cmds = []
+    base_cmd = f"crypto pki server {server_name}"
+    
+    if grant:
+        if all:
+            cmds.append(f"{base_cmd} grant all")
+        if pending_request_id:
+            cmds.append(f"{base_cmd} grant {pending_request_id}")
+
+    if reject:
+        if all:
+            cmds.append(f"{base_cmd} reject all")
+        if pending_request_id:
+            cmds.append(f"{base_cmd} reject {pending_request_id}")
+
+    if remove:
+        if all:
+            cmds.append(f"{base_cmd} remove all")
+        if pending_request_id:
+            cmds.append(f"{base_cmd} remove {pending_request_id}")
+
+    if revoke:
+        if serial_number:
+            cmds.append(f"{base_cmd} revoke {serial_number}")
+
+    if unrevoke:
+        if serial_number:
+            cmds.append(f"{base_cmd} unrevoke {serial_number}")
+
+    if request:
+        if pkcs10:
+            if path_name:
+                if base64:
+                    cmds.append(f"{base_cmd} request pkcs10 {path_name} base64")
+                if pem:
+                    cmds.append(f"{base_cmd} request pkcs10 {path_name} pem")
+                if hex:
+                    if transaction_id and nonce and transaction_request_id:
+                        cmds.append(f"{base_cmd} request pkcs10 {path_name} hex {transaction_id} {nonce} {transaction_request_id}")
+
+    if password:
+        if generate:
+            if validity_time:
+                cmds.append(f"{base_cmd} password generate {validity_time}")
+            else:
+                cmds.append(f"{base_cmd} password generate")
+
+    if start:
+        cmds.append(f"{base_cmd} start")
+
+    if stop:
+        cmds.append(f"{base_cmd} stop")
+
+    if not cmds:
+        raise ValueError("No valid command arguments provided.")
+
+    try:
+        device.execute(cmds)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure crypto pki server: {e}")
