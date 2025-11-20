@@ -10,8 +10,7 @@ from genie.libs.clean.stages.tests.utils import create_test_device
 from genie.libs.sdk.apis.utils import (
     modify_filename, copy_from_device, copy_to_device, device_recovery_boot,
     configure_management_console, configure_peripheral_terminal_server,
-    time_to_int, question_mark_retrieve, question_mark
-)
+    time_to_int, slugify_filename)
 
 
 class TestUtilsApi(unittest.TestCase):
@@ -59,12 +58,14 @@ class TestUtilsApi(unittest.TestCase):
         device.hostname = 'router'
         device.os = 'iosxe'
         device.via = 'cli'
+        device.connections['cli'] = Mock()
         device.connections['cli'].get = Mock(return_value='js')
         device.testbed.devices = {}
         device.testbed.devices['js'] = MagicMock()
         device.testbed.devices['js'].api.socat_relay = Mock(return_value=2000)
         device.testbed.devices['js'].api.get_local_ip = Mock(return_value='127.0.0.1')
         device.testbed.devices['js'].execute = Mock(return_value='inet 127.0.0.2')
+        device.testbed.devices['js'].api.get_route_iface_source_ip = Mock(return_value=(None, '127.0.0.2'))
         device.api.get_mgmt_ip_and_mgmt_src_ip_addresses = Mock(return_value=('127.0.0.1', ['127.0.0.2']))
         device.api.get_local_ip = Mock(return_value='127.0.0.1')
         device.api.convert_server_to_linux_device = Mock(return_value=None)
@@ -87,6 +88,7 @@ class TestUtilsApi(unittest.TestCase):
         server.api.socat_relay = Mock(return_value=2000)
         server.api.get_local_ip = Mock(return_value='127.0.0.1')
         server.execute = Mock(return_value='inet 127.0.0.2')
+        server.api.get_route_iface_source_ip = Mock(return_value=(None, '127.0.0.2'))
         device.testbed.servers = {}
         device.testbed.servers['proxy'] = {}
         device.api.convert_server_to_linux_device = Mock(return_value=server)
@@ -112,12 +114,13 @@ class TestUtilsApi(unittest.TestCase):
         device.os = 'iosxe'
         device.via = 'cli'
         device_1 = MagicMock()
+        device.connections['cli'] = Mock()
         device.connections['cli'].get = Mock(return_value='js')
         device.testbed.devices = {'js':device_1}
         device_1.api.socat_relay = Mock(return_value=2000)
         device_1.api.get_local_ip  = Mock(return_value='127.0.0.1')
         device_1.execute = Mock(return_value='inet 127.0.0.2')
-        device.api.get_mgmt_ip_and_mgmt_src_ip_addresses = Mock(return_value=('127.0.0.1', ['127.0.0.2']))
+        device_1.api.get_route_iface_source_ip = Mock(return_value=(None, '127.0.0.2'))
         device.api.get_local_ip = Mock(return_value='127.0.0.1')
         device.api.convert_server_to_linux_device = Mock(return_value=None)
         device.execute = Mock()
@@ -135,7 +138,7 @@ class TestUtilsApi(unittest.TestCase):
         device_1.api.socat_relay = Mock(return_value=2000)
         device_1.api.get_local_ip  = Mock(return_value='127.0.0.1')
         device_1.execute = Mock(return_value='inet 127.0.0.2')
-        device.api.get_mgmt_ip_and_mgmt_src_ip_addresses = Mock(return_value=('127.0.0.1', ['127.0.0.2']))
+        device_1.api.get_route_iface_source_ip = Mock(return_value=(None, '127.0.0.2'))
         device.api.get_local_ip = Mock(return_value='127.0.0.1')
         device.api.convert_server_to_linux_device = Mock(return_value=None)
         device.execute = Mock()
@@ -157,6 +160,7 @@ class TestUtilsApi(unittest.TestCase):
         server.api.socat_relay = Mock(return_value=2000)
         server.api.get_local_ip = Mock(return_value='127.0.0.1')
         server.execute = Mock(return_value='inet 127.0.0.2')
+        server.api.get_route_iface_source_ip = Mock(return_value=(None, '127.0.0.2'))
         device.testbed.servers = Mock(return_value=server)
         device.testbed.servers = {}
         device.testbed.servers['proxy'] = {}
@@ -282,13 +286,12 @@ class TestUtilsApi(unittest.TestCase):
         dev2.testbed.devices = {'terminal_1':terminal_device}
         configure_peripheral_terminal_server(dev1)
 
-        terminal_device.configure.assert_not_called()       
+        terminal_device.configure.assert_not_called()
 
-
-def test_time_to_int(self):
+    def test_time_to_int(self):
         time = '10:58'
         result = time_to_int(time)
-        self.assertEqual(result, 658)
+        self.assertEqual(result, 39480)
 
         time = '10:20:30'
         result = time_to_int(time)
@@ -298,78 +301,12 @@ def test_time_to_int(self):
         result = time_to_int(time)
         self.assertEqual(result, 568800)
 
+class TestSlugifyFilename(unittest.TestCase):
 
-class TestQuestionMark(unittest.TestCase):
+    def test_slugify_filename_double_suffix_hostname_present(self):
+        device = MagicMock()
+        device.hostname = "Lime1_GX"
 
-    def setUp(self):
-        # Create a mock device object
-        self.mock_device = MagicMock()
-
-        # Define a sample command and expected output
-        self.sample_cmd = 'alarm facility temperature secondary '
-        self.expected_output = "high      Temperature High threshold\nlow       Temperature Low threshold\n  notifies  Enable notification sent to server\n  relay     Relay settings\n  syslog    Enable system logger\n"
-
-        # Configure the mock device's execute method to return the expected output
-        self.mock_device.execute.return_value = self.expected_output
-        self.mock_device.os = 'iosxe'
-        self.mock_device.name = 'TestDevice'
-        self.mock_device.state_machine.current_state = 'enable'
-        self.mock_device.api = MagicMock()
-        self.mock_device.api.get_prompt = MagicMock(return_value='TestDevice#')
-        self.mock_device.configure = MagicMock()
-        self.mock_device.execute = MagicMock(return_value=self.expected_output)
-        self.mock_device.parse = MagicMock(return_value={
-            'alarm': {
-                'facility': {
-                    'temperature': {
-                        'secondary': {
-                            'high': {
-                                'description': 'Temperature High threshold'
-                            },
-                            'low': {
-                                'description': 'Temperature Low threshold'
-                            }
-                        }
-                    }
-                }
-            }
-        })
-        self.mock_device.configure = MagicMock()
-        self.mock_device.sendline = MagicMock()
-        self.mock_device.expect = MagicMock(return_value=(0, None))
-        self.mock_device.exit_config_mode = MagicMock()
-        self.mock_device.enter_config_mode = MagicMock()
-        self.mock_device.is_connected = MagicMock(return_value=True)
-        self.mock_device.connect = MagicMock()
-        self.mock_device.disconnect = MagicMock()
-        self.mock_device.api.get_prompt = MagicMock(return_value='TestDevice#')
-        self.mock_device.api.get_configure_mode_prompt = MagicMock(return_value='(config)#')
-        self.mock_device.api.get_configure_terminal_prompt = MagicMock(return_value='(config-terminal)#')
-        self.mock_device.api.get_configure_line_prompt = MagicMock(return_value='(config-line)#')   
-
-        def test_question_mark_retrieve(self):
-            result = question_mark_retrieve(self.mock_device, self.sample_cmd)
-            self.assertEqual(result, self.expected_output)
-            self.mock_device.execute.assert_called_with(self.sample_cmd + '?', timeout=2)
-
-
-        def test_question_mark(self):
-            result = question_mark(self.mock_device, self.sample_cmd)
-            self.assertEqual(result, {
-                'high': 'Temperature High threshold',
-                'low': 'Temperature Low threshold'
-            })
-            self.mock_device.execute.assert_called_with(self.sample_cmd + '?', timeout=2)
-            self.mock_device.parse.assert_called_with(self.sample_cmd + '?')
-            self.mock_device.configure.assert_not_called()
-            self.mock_device.sendline.assert_not_called()
-            self.mock_device.expect.assert_not_called()
-            self.mock_device.exit_config_mode.assert_not_called()
-            self.mock_device.enter_config_mode.assert_not_called()
-            self.mock_device.is_connected.assert_not_called()
-            self.mock_device.connect.assert_not_called()
-            self.mock_device.disconnect.assert_not_called()
-            self.mock_device.api.get_prompt.assert_not_called()
-            self.mock_device.api.get_configure_mode_prompt.assert_not_called()
-            self.mock_device.api.get_configure_terminal_prompt.assert_not_called()
-            self.mock_device.api.get_configure_line_prompt.assert_not_called()        
+        path = "bootflash:/ctc_Lime1_GX_2025_09_19_active.tar.gz"
+        result = slugify_filename(device, path)
+        self.assertEqual(result, "ctc_Lime1_GX_2025_09_19_active.tar.gz")

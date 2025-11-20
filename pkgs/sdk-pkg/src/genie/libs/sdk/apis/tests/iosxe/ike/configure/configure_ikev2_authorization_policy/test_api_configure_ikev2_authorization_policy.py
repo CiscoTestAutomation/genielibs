@@ -1,34 +1,14 @@
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
 from genie.libs.sdk.apis.iosxe.ike.configure import configure_ikev2_authorization_policy
+from unittest.mock import Mock
 
 
-class TestConfigureIkev2AuthorizationPolicy(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = """
-        devices:
-          TLS_Mad2:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: iosxe
-            type: iosxe
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['TLS_Mad2']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureIkev2AuthorizationPolicy(TestCase):
 
     def test_configure_ikev2_authorization_policy(self):
-        result = configure_ikev2_authorization_policy(self.device, 'IKEv2_AUTH_POLICY', True, None, 'ipv4_acl', 'ipv6_acl', '20.20.20.0', '255.255.255.0', '2001::', '64', '30.30.30.0', '255.255.255.255', '3001::', '64', '100.100.100.1', '50.50.50.1', '30', 'ppool', '100', '1.1.1.1', '2.2.2.2', 'test', '255.255.255.0', True, '5001::1', 'ipv6_pool', '128', '1200', None, '5', '200.200.200.1', 'cisco.com', '1.1.1.1')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.device = Mock()
+        result = configure_ikev2_authorization_policy(self.device, 'flex', False, None, None, None, None, None, None, None, None, None, '197:16:1::', 64, None, None, None, None, None, None, None, None, None, False, None, None, None, None, None, None, None, None, None)
+        self.assertEqual(
+            self.device.configure.mock_calls[0].args,
+            (['crypto ikev2 authorization policy flex', 'route set remote ipv6 197:16:1::/64'],)
+        )

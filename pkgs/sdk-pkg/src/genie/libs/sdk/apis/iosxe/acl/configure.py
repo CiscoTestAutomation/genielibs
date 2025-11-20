@@ -2093,13 +2093,14 @@ def configure_arp_acl(device, name, action, source, sender_mac='', mac_mask='', 
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure arp acl on the device {device.name}. Error:\n{e}")
 
-def configure_access_map_match_ip_mac_address(device, vlan_access_name, value=None, acl_name=None, action=None):
+def configure_access_map_match_ip_mac_address(device, vlan_access_name, value=None, acl_name=None, action=None, match_type="address"):
     """ Configuring access map match ip mac address
 
         Args:
             device ('obj'): device to use
             vlan_access_name ('str'): name of vlan to access 
             vlaue ('str'): describe mac (or) ip
+            match_type ('str'): Type of match keyword. Default is 'address'.
             acl_name ('str'): name of acl_name
             action ('str'): forward (or) drop
         Returns:
@@ -2112,7 +2113,7 @@ def configure_access_map_match_ip_mac_address(device, vlan_access_name, value=No
     if vlan_access_name:
         cmd.append(f"vlan access-map {vlan_access_name}")
     if value and acl_name:
-        cmd.append(f"match {value} address {acl_name}")
+        cmd.append(f"match {value} {match_type} {acl_name}")
     if action:
         cmd.append(f"action {action}")
 

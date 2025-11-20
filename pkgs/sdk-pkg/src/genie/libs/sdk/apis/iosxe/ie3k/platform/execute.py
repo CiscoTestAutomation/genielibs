@@ -23,8 +23,14 @@ from unicon.core.errors import StateMachineError,SubCommandFailure
 # Logger
 log = logging.getLogger(__name__)
 
-def execute_set_config_register():
+def execute_set_config_register(device, config_register=None, timeout=None):
     '''Set config register to load image in boot variable        
+       Args:
+           device ('obj'): Device object
+           config_register ('str'): Hexadecimal value to set the config register to (unused)
+           timeout ('int'): Max time to set config-register in seconds (unused)
+       Returns:
+           None
     '''
 
     log.info("Config register configuration not supported on IOT platforms")

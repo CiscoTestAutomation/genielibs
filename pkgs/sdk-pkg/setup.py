@@ -57,6 +57,7 @@ install_requires = [
     f'rest.connector{version_range}',
     'pysnmp>=6.1.4,<6.2',
     'pyasn1==0.6.0',
+    'pyVmomi',
 ]
 
 # launch setup

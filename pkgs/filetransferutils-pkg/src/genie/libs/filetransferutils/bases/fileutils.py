@@ -26,7 +26,14 @@ DEFAULT_CHECK_FILE_MAX_TRIES = 3
 DEFAULT_CHECK_FILE_DELAY_SECONDS = 2
 DEFAULT_TIMEOUT_SECONDS = 60
 
-DEFAULT_PORTS = {'ftp': 21, 'tftp': 69, 'scp': 22, 'sftp': 22, 'http': 80}
+DEFAULT_PORTS = {
+    'ftp': 21, 
+    'tftp': 69, 
+    'scp': 22, 
+    'sftp': 22, 
+    'http': 80, 
+    'https': 443,
+}
 
 class FileUtilsBase(object):
     """ Base class for all FileUtils implementations.
@@ -54,7 +61,7 @@ class FileUtilsBase(object):
                 even if specified, is ignored.
 
             protocol : `str`
-                Protocol name (ftp, scp, sftp, http, tftp)
+                Protocol name (ftp, scp, sftp, http, https, tftp)
 
         """
         testbed = device.testbed if hasattr(device, 'testbed') \
@@ -485,7 +492,7 @@ class FileUtilsBase(object):
             username, password = self.get_auth(
                 parsed_url.hostname, protocol, device)
             if username and not parsed_url.username:
-                if protocol in ['ftp', 'http']:
+                if protocol in ['ftp', 'http', 'https']:
                     if password:
                         hostname = '{u}:{p}@{h}'.format(u=username,
                                                         p=password,

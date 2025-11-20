@@ -129,7 +129,15 @@ execute1:
 
 
       Configuration register is 0x2102
+    config term:
+        new_state: configure
   prompt: "%N#"
+
+configure:
+  prompt: "%N(config)#"
+  commands:
+    end:
+        new_state: execute1
 
 do_you_want_to_remove1:
   preface:

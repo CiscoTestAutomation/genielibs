@@ -120,7 +120,9 @@ def configure_ikev2_proposal(device,
                             encr_algos,
                             dh_group,
                             integrity_algos=None,
-                            prf_algos=None
+                            prf_algos=None,
+                            ake_algos=None,
+                            ake_required=False
                         ):
     """ Configures IKEV2 Proposal
         Args:
@@ -130,6 +132,8 @@ def configure_ikev2_proposal(device,
             integrity_algos ('str'): integrity or authentication algorithms
             dh_group ('str'): Diffie Hellman group
             prf_algos ('str'): Psuedo random number function
+            ake ('str'): ake algo
+            ake_required ('boolean',optional): Required option for AKE
         Returns:
             True/False
         Raises:
@@ -147,6 +151,8 @@ def configure_ikev2_proposal(device,
     configs.append(f"group {dh_group}")
     if prf_algos is not None:
         configs.append(f"prf {prf_algos}")
+    if ake_algos is not None:
+        configs.append(f"ake {ake_algos} {'required' if ake_required else ''}")
     
     try:
         device.configure(configs)
@@ -293,10 +299,10 @@ def configure_ikev2_authorization_policy(device,
         configs.append(f"route set local ipv6 {local_ipv6_prefix}/{local_ipv6_netmask}")
     
     if remote_prefix is not None and remote_netmask is not None:
-        configs.append(f"route set local ipv4 {remote_prefix} {remote_netmask}")
+        configs.append(f"route set remote ipv4 {remote_prefix} {remote_netmask}")
     
     if remote_ipv6_prefix is not None and remote_ipv6_netmask is not None:
-        configs.append(f"route set local ipv6 {remote_ipv6_prefix}/{remote_ipv6_netmask}")
+        configs.append(f"route set remote ipv6 {remote_ipv6_prefix}/{remote_ipv6_netmask}")
 
     if dhcp_giaddr is not None:
         configs.append(f"dhcp giaddr {dhcp_giaddr}")
@@ -1373,7 +1379,11 @@ def configure_modify_ikev2_profile(device,
                             local_auth = None,
                             keyring_type = None,
                             keyring_name = None,
-                            lifetime = None):
+                            lifetime = None,
+                            nat_encap=False,
+                            match_fvrf=None,
+                            vt_number=None,
+                            aaa_authorization=None,):
 
     """ Configures IKEV2 keyring or Preshared Key (PSK)
         Args:
@@ -1387,6 +1397,10 @@ def configure_modify_ikev2_profile(device,
             dpd_retry_time ('int'): DPD Retry Interval
             dpd_query ('str'): DPD queires on-demand or periodic
             lifetime ('int') Optional : configuring session lifetime
+            nat_encap ('Boolean') : NAT encapsulation force
+            match_fvrf ('str') : match fvrf
+            vt_number ('int') : virtual template number
+            aaa_authorization ('str') : aaa authorization method
         Returns:
             None
         Raises:
@@ -1411,6 +1425,15 @@ def configure_modify_ikev2_profile(device,
         configs.append(f"keyring {keyring_type} {keyring_name}")        
     if lifetime is not None:
         configs.append(f"lifetime {lifetime}")
+    if nat_encap:
+        configs.append(f"nat force-encap")
+    if match_fvrf:
+        configs.append(f"match fvrf {match_fvrf}")
+    if vt_number is not None:
+        configs.append(f"virtual-template {vt_number}")
+    
+    if aaa_authorization is not None:
+        configs.append(f"aaa authorization {aaa_authorization}")
 
     try:
         device.configure(configs)
@@ -1432,6 +1455,10 @@ def unconfigure_modify_ikev2_profile(device,
                             keyring_type = None,
                             keyring_name = None,
                             lifetime = None,
+                            nat_encap=False,
+                            match_fvrf=None,
+                            vt_number=None,
+                            aaa_authorization=None,
                             trustpoint = None):
     """ Unconfigures IKEV2 keyring or Preshared Key (PSK)
         Args:
@@ -1443,6 +1470,10 @@ def unconfigure_modify_ikev2_profile(device,
             keyring ('str'): ikev2 keyring name
             lifetime ('int') : configuring session lifetime
             trustpoint ('str'): pki trustpoint name
+            nat_encap ('Boolean') : NAT encapsulation force
+            match_fvrf ('str') : match fvrf
+            vt_number ('int') : virtual template number
+            aaa_authorization ('str') : aaa authorization method
         Returns:
             None
         Raises:
@@ -1467,6 +1498,15 @@ def unconfigure_modify_ikev2_profile(device,
         configs.append(f"no lifetime {lifetime}")
     if trustpoint is not None:
         configs.append(f"no pki trustpoint {trustpoint}")
+    if not nat_encap:
+        configs.append(f"no nat force-encap")
+    if match_fvrf is not None:
+        configs.append(f"no match fvrf {match_fvrf}")
+    if vt_number is not None:
+        configs.append(f"no virtual-template {vt_number}")
+    
+    if aaa_authorization is not None:
+        configs.append(f"no aaa authorization {aaa_authorization}")
 
     try:
         device.configure(configs)
@@ -1537,3 +1577,19 @@ def unconfigure_isakmp_key_simple(device, key=None, address="0.0.0.0"):
         log.error(f"Failed to unconfigure isakmp key, Error:\n{e}")
         raise
         
+def unconfigure_keyring(device, keyring_name):
+    '''
+    Removes a crypto keyring from the device.
+    Args:
+        device ('obj'): Device object.
+        keyring_name ('str'): Name of the keyring to remove.
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: If unconfiguration fails on the device.
+    '''
+    cmds = [f"no crypto keyring {keyring_name}"]
+    try:
+        device.configure(cmds)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure keyring {keyring_name}: {e}")

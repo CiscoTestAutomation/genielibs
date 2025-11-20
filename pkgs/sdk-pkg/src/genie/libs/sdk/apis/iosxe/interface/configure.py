@@ -7406,7 +7406,10 @@ def configure_tunnel_with_ipsec(
     ipsec_profile_name=None,
     vrf=None,
     tunnel_vrf=None,
-    v6_overlay=None
+    v6_overlay=None,
+    network_id = None,
+    nhrp_redirect = False,
+    nhrp_shortcut=None
 ):
     """ Configure ipsec on Tunnel interface
         Args:
@@ -7427,6 +7430,9 @@ def configure_tunnel_with_ipsec(
             vrf ('str',optional): client vrf for  the tunnel
             tunnel_vrf ('str',optional): wan vrf for  the tunnel
             v6_overlay:('boolean', optional): True if v6-over-ipv4. Default is False
+            network_id  ('int',optional): Network Identifier
+            nhrp_redirect ('boolean',optional): Setting ip redirects. Defaults to False.
+            nhrp_shortcut ('str',optional): NHRP shortcut. Defaults to None. 
             """
     configs = []
     configs.append("interface {intf}".format(intf=tunnel_intf))
@@ -7463,6 +7469,25 @@ def configure_tunnel_with_ipsec(
                        format(tunnel_protection=tunnel_protection,profile=ipsec_profile_name))
     if v6_overlay:
         configs.append("tunnel mode ipsec {tunnel_mode} v6-overlay".format(tunnel_mode=tunnel_mode))
+    
+    if network_id is not None:
+        if overlay == 'ipv6':
+            configs.append("ipv6 nhrp network-id {network_id}".format(network_id=network_id))
+        else:
+            configs.append("ip nhrp network-id {network_id}".format(network_id=network_id))      
+    
+    if nhrp_redirect:
+        if overlay == 'ipv6':
+            configs.append("ipv6 nhrp redirect")
+        else:
+            configs.append("ip nhrp redirect")
+
+    if nhrp_shortcut is not None:
+        if overlay == 'ipv6':
+            configs.append("ipv6 nhrp shortcut {nhrp_shortcut}".format(nhrp_shortcut=nhrp_shortcut))
+        else:
+            configs.append("ip nhrp shortcut {nhrp_shortcut}".format(nhrp_shortcut=nhrp_shortcut))
+
     try:
         device.configure(configs)
     except SubCommandFailure as e:
@@ -11122,3 +11147,150 @@ def unconfigure_interface_speed_number(device, interface, speed=None):
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not unconfigure speed on {interface}. Error:\n{e}")
+    
+
+def attach_alarm_profile_to_interface(device, interface, profile_name):
+    """ Attach alarm profile to interface
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+            profile_name ('str'): Profile name to be attached
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(
+        f"Attaching alarm profile {profile_name} to interface {interface}"
+    )
+    cmd = [f"interface {interface}", f"alarm-profile {profile_name}"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not attach alarm profile {profile_name} to {interface}. Error:\n{e}"
+        )
+    
+
+def detach_alarm_profile_from_interface(device, interface, profile_name):
+    """ Detach alarm profile from interface
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+            profile_name ('str'): Profile name to be detached
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(
+        f"Detaching alarm profile {profile_name} from interface {interface}"
+    )
+    cmd = [f"interface {interface}", f"no alarm-profile {profile_name}"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not detach alarm profile {profile_name} from {interface}. Error:\n{e}"
+        )
+    
+def configure_dynamic_tunnel(
+                                device, 
+                                virtual_template_id, 
+                                loopback_id, 
+                                ikev2_profile,
+                                ip=None, 
+                                mask=None, 
+                                ipv6=None, 
+                                ipv6_mask=None,
+                                tunnel_source_interface="GigabitEthernet2",
+                                ipsec_profile="dmvpn-hub",
+                                overlayIpVersion='ipv4'
+                            ):
+    """
+    Configure dynamic tunnel interface with Virtual-Template and loopback interface.
+    
+    This function configures a dynamic tunnel setup using Virtual-Template interface
+    for DMVPN or similar VPN technologies with IPsec protection.
+    
+    Args:
+        device (obj): Device connection object (pyATS/unicon object) used to send commands.
+        virtual_template_id (int): Virtual-Template interface number.
+        loopback_id (int): Loopback interface number to be used as tunnel source.
+        ikev2_profile (str): IKEv2 profile name for tunnel protection.
+        ip (str, optional): Tunnel IPv4 address for loopback interface.
+        mask (str, optional): Tunnel IPv4 netmask for loopback interface.
+        ipv6 (str, optional): Tunnel IPv6 address for loopback interface.
+        ipv6_mask (str, optional): Tunnel IPv6 prefix length.
+        tunnel_source_interface (str, optional): Source interface for tunnel. Defaults to "GigabitEthernet2".
+        ipsec_profile (str, optional): IPsec profile name. Defaults to "dmvpn-hub".
+        overlayIpVersion (str, optional): Overlay IP version ('ipv4' or 'ipv6'). Defaults to 'ipv4'.
+    
+    Returns:
+        bool: True if configuration succeeded.
+    
+    Raises:
+        ValueError: If required parameters are missing for the selected IP version.
+        SubCommandFailure: If unable to configure the dynamic tunnel.
+    """
+
+    if overlayIpVersion.lower() == 'ipv4':
+        if not ip or not mask:
+            raise ValueError("IPv4 address and mask are required for IPv4 overlay")
+    elif overlayIpVersion.lower() == 'ipv6':
+        if not ipv6 or not ipv6_mask:
+            raise ValueError("IPv6 address and prefix length are required for IPv6 overlay")
+    else:
+        raise ValueError(f"Invalid overlayIpVersion: {overlayIpVersion}. Must be 'ipv4' or 'ipv6'")
+    
+    cmd = []
+
+    cmd.append(f"interface Loopback{loopback_id}")
+    if overlayIpVersion.lower() == 'ipv4':
+        cmd.append(f"ip address {ip} {mask}")
+    else:  # ipv6
+        cmd.append(f"ipv6 address {ipv6}/{ipv6_mask}")
+        cmd.append("ipv6 enable")
+
+    cmd.append(f"interface Virtual-Template{virtual_template_id} type tunnel")
+    if overlayIpVersion.lower() == 'ipv4':
+        cmd.append(f"ip unnumbered Loopback{loopback_id}")
+        cmd.append(f"tunnel mode ipsec ipv4")
+    else:
+        cmd.append(f"ipv6 unnumbered Loopback{loopback_id}")
+        cmd.append(f"tunnel mode ipsec ipv6")
+    
+    cmd.append(f"tunnel source {tunnel_source_interface}")
+    cmd.append(f"tunnel destination dynamic")
+    cmd.append(f"tunnel protection ipsec profile {ipsec_profile}")
+    cmd.append(f"crypto ikev2 profile {ikev2_profile}")
+    cmd.append(f"virtual-template {virtual_template_id}")
+    
+    try:
+        device.configure(cmd)
+        return True
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Unable to configure dynamic tunnel. Error:\n{e}"
+        )
+
+def configure_trust_device_on_interface(device, interface, device_type):
+    """ configure trust device on the interface
+        Args:
+            device ('obj'): Device object
+            interface ('str'): interface name to configure trust device
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"configure trust device on the interface {interface}")
+    cmd = []
+    cmd.append(f"interface {interface}")
+    cmd.append(f"trust device {device_type}")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"configure trust device on the interface {interface}. Error:\n{e}"
+        )

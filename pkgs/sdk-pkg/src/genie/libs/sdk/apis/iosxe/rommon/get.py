@@ -40,3 +40,26 @@ def get_recovery_details(device, golden_image: list = None, tftp_boot: dict = No
     })
 
     return recovery_details
+
+def get_tftp_boot_command(device, recovery_info):
+    """
+    Build the TFTP boot command and image to boot for generic IOS-XE platforms.
+
+    This helper returns the ROMMON TFTP boot command "tftp:" and
+    the image filename from the recovery_info.
+
+    Args:
+        device: device object
+        recovery_info (dict):
+           tftp_boot (dict):
+               image (list): List of image filenames/paths
+
+    Returns:
+        cmd : ROMMON TFTP command, always "tftp:" for generic IOS-XE platforms.
+        image_to_boot : The image filename.
+
+    """
+    tftp_image_list = recovery_info['tftp_boot'].get('image', [])
+    image_to_boot = tftp_image_list[0] if tftp_image_list else None
+    cmd = "tftp:"
+    return cmd, image_to_boot

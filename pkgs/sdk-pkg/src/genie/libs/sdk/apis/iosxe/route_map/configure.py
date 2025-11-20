@@ -98,7 +98,8 @@ def configure_route_map_permit(
         match_community=None, set_metric=None, set_weight=None,
         set_as_path_prepend=None, local_preference=None,
         match_as_path=None, continue_id=None, match_interface=None, vrf=None,
-        global_nhop=None, default_recursive=None, default_nhop_ip=None):
+        global_nhop=None, default_recursive=None, default_nhop_ip=None,
+        normal_nhop_ip=None):
     """ Configures route-map on device
         Args:
             device('obj'): device to configure on
@@ -119,6 +120,7 @@ def configure_route_map_permit(
             global_nhop ('int'): set default recursive global next hop
             default_recursive ('int'): set default recursive next hop
             default_nhop_ip ('str'): ip address for default recursive next hop
+            normal_nhop_ip ('str'): ip address for normal direct next hop
         Returns:
             None
         Raises:
@@ -145,7 +147,7 @@ def configure_route_map_permit(
         cmd.append(f"match as-path {match_as_path}")
     if continue_id:
         cmd.append(f"continue {continue_id}")
-    if vrf:
+    if vrf and (default_recursive is None) and (normal_nhop_ip is None):
         cmd.append(f"set vrf {vrf}")
     if default_recursive and default_nhop_ip:
         if vrf:
@@ -154,6 +156,11 @@ def configure_route_map_permit(
             cmd.append(f"set ip default next-hop recursive global {default_nhop_ip}")
         else:
             cmd.append(f"set ip default next-hop recursive {default_nhop_ip}")
+    if normal_nhop_ip:
+        if vrf:
+            cmd.append(f"set ip vrf {vrf} next-hop {normal_nhop_ip}")
+        else:
+            cmd.append(f"set ip next-hop next-hop {normal_nhop_ip}")
 
     try:
         device.configure(cmd)
@@ -168,7 +175,7 @@ def unconfigure_route_map_permit(
         match_community=None, set_metric=None, set_weight=None,
         set_as_path_prepend=None, local_preference=None,
         match_as_path=None, continue_id=None, vrf=None, global_nhop=None,
-        default_recursive=None, default_nhop_ip=None):
+        default_recursive=None, default_nhop_ip=None, normal_nhop_ip=None):
     """ unconfigures route-map on device
         Args:
             device('obj'): device to configure on
@@ -188,6 +195,7 @@ def unconfigure_route_map_permit(
             global_nhop ('int'): set default recursive global next hop
             default_recursive ('int'): set default recursive next hop
             default_nhop_ip ('str'): ip address for default recursive next hop
+            normal_nhop_ip ('str'): ip address for normal direct next hop
         Returns:
             None
         Raises:
@@ -219,6 +227,12 @@ def unconfigure_route_map_permit(
             cmd.append(f"no set ip default next-hop recursive global {default_nhop_ip}")
         else:
             cmd.append(f"no set ip default next-hop recursive {default_nhop_ip}")
+    if normal_nhop_ip:
+        if vrf:
+            cmd.append(f"no set ip vrf {vrf} next-hop {normal_nhop_ip}")
+        else:
+            cmd.append(f"no set ip next-hop next-hop {normal_nhop_ip}")
+
 
     try:
         device.configure(cmd)

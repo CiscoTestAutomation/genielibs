@@ -231,8 +231,8 @@ def configure_alarm_contact(device, contact=None, description=False, severity=Fa
             severity ('bool'): If True, configure severity
             trigger ('bool'): If True, configure trigger
             description_text ('str'): Description text
-            severity_level ('str'): Severity level
-            trigger_condition ('str'): Trigger condition
+            severity_level ('str'): Severity level(major/minor/none)
+            trigger_condition ('str'): Trigger condition(open/close)
         Returns:
             None
         Raises:
@@ -253,10 +253,11 @@ def configure_alarm_contact(device, contact=None, description=False, severity=Fa
             device.configure(cmds)
     except SubCommandFailure as e:
         log.error(f"Failed to configure alarm contact: {e}")
-        return False
+        return e
 
 
-def unconfigure_alarm_contact(device, contact=None, description=False, severity=False, trigger=False):
+def unconfigure_alarm_contact(device, contact=None, description=False, severity=False, trigger=False, 
+                                severity_level=None, trigger_condition=None):
     ''' Unconfigures alarm contact
         Args:
             device ('obj'): Device object
@@ -264,12 +265,14 @@ def unconfigure_alarm_contact(device, contact=None, description=False, severity=
             description ('bool'): If True, unconfigure description
             severity ('bool'): If True, unconfigure severity
             trigger ('bool'): If True, unconfigure trigger
+            severity_level ('str'): Severity level(major/minor/none)
+            trigger_condition ('str'): Trigger condition(open/close)
         Returns:
-            None
+            output ('str'): Command output
         Raises:
             SubCommandFailure
     '''
-    
+        
     log.debug(f"Unconfiguring alarm contact")
     try:
         cmds = []
@@ -277,15 +280,17 @@ def unconfigure_alarm_contact(device, contact=None, description=False, severity=
             if description:
                 cmds.append(f"no alarm contact {contact} description")
             if severity:
-                cmds.append(f"no alarm contact {contact} severity")
+                cmds.append(f"no alarm contact {contact} severity {severity_level}")
             if trigger:
-                cmds.append(f"no alarm contact {contact} trigger")
+                cmds.append(f"no alarm contact {contact} trigger {trigger_condition}")
         if cmds:
-            device.configure(cmds)
+            output = device.configure(cmds)
+            return output
+        
     except SubCommandFailure as e:
         log.error(f"Failed to unconfigure alarm contact: {e}")
-        return False
-      
+        return str(e)  
+
 
 def configure_facility_alarm_temp_secondary(device, threshold=None, value=None, notify=False, syslog=False, relay=False):
     ''' Configures facility alarm for temperature secondary
@@ -317,7 +322,7 @@ def configure_facility_alarm_temp_secondary(device, threshold=None, value=None, 
             device.configure(cmds)
     except SubCommandFailure as e:
         log.error(f"Failed to configure alarm for temperature secondary: {e}")
-        return False
+        return e
     
 
 def unconfigure_facility_alarm_temp_secondary(device, threshold=None, value=None, notify=False, syslog=False, relay=False):
@@ -350,7 +355,7 @@ def unconfigure_facility_alarm_temp_secondary(device, threshold=None, value=None
             device.configure(cmds)
     except SubCommandFailure as e:
         log.error(f"Failed to unconfigure alarm for temperature secondary: {e}")
-        return False
+        return e
 
 
 def configure_alarm_relay_mode(device, mode: str='negative'):
@@ -370,7 +375,7 @@ def configure_alarm_relay_mode(device, mode: str='negative'):
         device.configure(cmd)
     except SubCommandFailure as e:
         log.error(f"Failed to configure alarm relay mode: {e}")
-        return False
+        return e
 
 
 def unconfigure_alarm_relay_mode(device, mode: str = 'negative'):
@@ -390,7 +395,7 @@ def unconfigure_alarm_relay_mode(device, mode: str = 'negative'):
         device.configure(cmd)
     except SubCommandFailure as e:
         log.error(f"Failed to unconfigure alarm relay mode: {e}")
-        return False
+        return e
 
 
 def configure_alarm_profile(device, name, config_option, triggers, type=None):
@@ -446,4 +451,64 @@ def unconfigure_alarm_profile(device, name):
         device.configure(cmds)
     except SubCommandFailure as e:
         log.error(f"Failed to unconfigure alarm profile {name}: {e}")
+        raise e
+    
+
+def configure_facility_input_alarm(device, contact_num, notify=False, syslog=False, relay=False):
+    ''' Configures facility input alarm
+        Args:
+            device ('obj'): Device object
+            contact_num ('int'): Contact number
+            notify ('bool'): If True, configure notify
+            syslog ('bool'): If True, configure syslog
+            relay ('bool'): If True, configure relay
+        Returns:
+            None
+        Raises:
+            SubCommandFailure           
+    '''
+
+    log.debug(f"Configuring facility input alarm")
+    cmds = []
+    if notify:
+        cmds.append(f"alarm facility input-alarm {contact_num} notifies")
+    if syslog:
+        cmds.append(f"alarm facility input-alarm {contact_num} syslog")
+    if relay:
+       cmds.append(f"alarm facility input-alarm {contact_num} relay major")
+    try:
+        if cmds:
+            device.configure(cmds)
+    except SubCommandFailure as e:
+        log.error(f"Failed to configure facility input alarm: {e}")
+        raise e
+    
+
+def unconfigure_facility_input_alarm(device, contact_num, notify=False, syslog=False, relay=False):
+    ''' Unconfigures facility input alarm
+        Args:
+            device ('obj'): Device object
+            contact_num ('int'): Contact number
+            notify ('bool'): If True, unconfigure notify
+            syslog ('bool'): If True, unconfigure syslog
+            relay ('bool'): If True, unconfigure relay            
+        Returns:
+            None
+        Raises:
+            SubCommandFailure           
+    '''
+
+    log.debug(f"Unconfiguring facility input alarm")
+    cmds = []
+    if notify:
+        cmds.append(f"no alarm facility input-alarm {contact_num} notifies")
+    if syslog:
+        cmds.append(f"no alarm facility input-alarm {contact_num} syslog")
+    if relay:
+        cmds.append(f"no alarm facility input-alarm {contact_num} relay major")
+    try:
+        if cmds:
+            device.configure(cmds)
+    except SubCommandFailure as e:
+        log.error(f"Failed to unconfigure facility input alarm: {e}")
         raise e

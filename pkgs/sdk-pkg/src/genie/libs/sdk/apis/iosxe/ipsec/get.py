@@ -2,6 +2,7 @@
 import logging
 from genie.libs.parser.utils.common import Common
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
+from unicon.core.errors import SubCommandFailure
 log = logging.getLogger(__name__)
 
 
@@ -39,3 +40,26 @@ def get_crypto_ipsec_tunnel_counter(
                 "Error:\n{error}".format(error=e)
         )
         return None
+
+def get_monitor_event_trace_crypto_ipsec_event_from_boot_detail(device, timeout=30):
+    """Execute 'show monitor event-trace crypto ipsec event from-boot detail' command
+    
+    Args:
+        device (obj): Device object
+        timeout (int, optional): Timeout for command execution in seconds. Default is 30
+        
+    Returns:
+        str: Command output string
+        
+    Raises:
+        SubCommandFailure: If command execution fails
+    """
+    cmd = "show monitor event-trace crypto ipsec event from-boot detail"
+    try:
+        output = device.execute(cmd, timeout=timeout)
+        return output
+    except SubCommandFailure as e:
+        log.error(f"Failed to execute '{cmd}' command on {device}. Error:\n{e}")
+        raise SubCommandFailure(
+            f"Failed to execute '{cmd}' command on {device}. Error:\n{e}"
+        )

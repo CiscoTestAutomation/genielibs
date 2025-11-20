@@ -2,6 +2,7 @@
 
 # Python
 import re
+import os
 import logging
 import subprocess
 import time
@@ -464,18 +465,21 @@ def delete_files(device, locations, filenames):
 
             # find target files by using Dq with regex
             matched_files = parsed.q.contains_key_value(
-                'files', filename, value_regex=True).get_values('files')
+                'files', os.path.basename(filename), value_regex=True).get_values('files')
             log.debug('Matched files to delete: {matched_files}'.format(
                 matched_files=matched_files))
             # delete files which were found
             for file in matched_files:
-                if location[-1] != '/':
-                    location += '/'
-                device.execute('delete /force {location}{file}'.format(
-                    location=location, file=file))
+                # Detect if filename is already an absolute path
+                if ':' in file:
+                    full_path = file
+                else:
+                    if location[-1] != '/':
+                        location += '/'
+                    full_path = '{location}{file}'.format(location=location, file=file)
+                device.execute('delete /force {full_path}'.format(full_path=full_path))
                 # build up list for return
-                deleted_files.append('{location}{file}'.format(
-                    location=location, file=file))
+                deleted_files.append(full_path)
 
     return deleted_files
 

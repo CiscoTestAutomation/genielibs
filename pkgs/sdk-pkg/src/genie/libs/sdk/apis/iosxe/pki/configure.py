@@ -27,6 +27,8 @@ def configure_crypto_pki_server(device,
                                 eku_options=None, 
                                 grant_mode=None, 
                                 grant_rollover_cert=None,
+                                grant_rollover_ca_cert=None,
+                                grant_rollover_ra_cert=None,
                                 grant_tp_list=None, 
                                 grant_trustpoint=None, 
                                 hash_type=None, 
@@ -43,47 +45,112 @@ def configure_crypto_pki_server(device,
                                 revoke_chk=None,
                                 key_len=None,
                                 port=80,
+                                database_p12_location = False,
+                                p12_storage_location =None,
+                                p12_storage_username = None,
+                                p12_storage_password = None,
+                                database_cnm_location = False,
+                                cnm_storage_location =None,
+                                cnm_storage_username = None,
+                                cnm_storage_password = None,
+                                database_crt_location = False,
+                                crt_storage_location =None,
+                                crt_storage_username = None,
+                                crt_storage_password = None,
+                                database_pem_location = False,
+                                pem_storage_location =None,
+                                pem_storage_username = None,
+                                pem_storage_password = None,
+                                database_ser_location = False,
+                                ser_storage_location =None,
+                                ser_storage_username = None,
+                                ser_storage_password = None,
+                                database_crl_location = False,
+                                crl_storage_location =None,
+                                crl_storage_username = None,
+                                crl_storage_password = None,
+                                crl_publish = False,
+                                pem_publish = False,
+                                ser_publish = False,
+                                cnm_publish = False,
+                                crt_publish = False,
+                                p12_publish = False,
+                                ECDSA_cdp_url =None,
                                 **kwargs):
 
-    ''' 
+    '''
         Configure crypto pki server
         Args:
             device ('obj'): Device object
-            server_name ('str'): Name for the pki server
-            auto_rollover_time('str'): Auto rollover time <days> <hours> <minutes>
-            cdp_url_server ('str') : cdp url server (http | ldap)
-            cdp_url_ip_path ('str') : cdp url ip path 
-            database_archive_type ('str') : Database archive type either pem or pkcs12
-            archive_password ('str') : Database archive password
-            archive_encryption_type ('int') : Database archive encryption type (0-9)
-            database_level ('str') : Database level (complete|minimum|names)
-            database_url_server ('str') : Database server (http | ldap) 
-            database_ip_path ('str') : Exact path for database file
-            database_url_storage_location ('str') : Database url storage location (cnm|crl|crt etc.)
-            database_url_publish ('bool') : Database url publish option for cnm, crl,crt
-            database_user ('str') : Database username
-            eku_options ('str') : eku options that needs to be configured (1 or more)
-            grant_mode ('str') : Grant request mode (auto | none | ra-auto)
-            grant_rollover_cert ('str') : Grant auto rollover certificate (ca-cert | ra-cert)
-            grant_tp_list ('str') : grant trustpoints (upto 5 trustpoints)
-            grant_trustpoint ('str') : Label of trustpoint holding trusted CA cert
-            hash_type ('str') : Hash algorithm type (md5, sha1, sha256, sha384, sha512)
-            issuer_name ('str') : Issuer name to be configured
-            ca_cert_life ('str') : Ca certificate lifetime in format <days(0-7305)> <hours(0-23)> or  <days(0-7305)> <hours(0-23)> <minutes(0-59)>
-            cert_life ('str') : Certificate lifetime in format <days(0-7305)> <hours(0-23)> or  <days(0-7305)> <hours(0-23)> <minutes(0-59)>
-            crl_life ('str') : crl lifetime in format <hours(0-336)> or  <hours(0-336)> <minutes(0-59)>
-            enrol_req_life ('str') : enrollment request lifetime in format <hours(0-1000)> or  <hours(0-1000)> <minutes(0-59)>
-            mode ('str') : Modes (ra|sub-cs)
-            mode_ra_transparent ('bool') : True if want to enable transparent in ra mode
-            serial_number ('str') : serial number of last issued ceritificate 
-            enrollment_ip ('str') : Ip address for CA server enrollment URL
-            enrollment_path ('str') : Path for CA server enrollment URL
-            revoke_chk ('str') : Type of revocation check (none|crl|ocsp)
-            key_len ('int') : Key length for RSA keypair 
-            port ('int') : Port number for CA server enrollment
+            server_name ('str'): Name for the PKI server
+            password ('str'): Password for the server key or database encryption
+            auto_rollover_time ('str'): Auto rollover interval for CA key in format <days> <hours> <minutes>
+            cdp_url_type ('str'): Type of CDP URL (http | ldap)
+            cdp_url_ip_path ('str'): Path or IP for the CDP URL
+            crl_file_name ('str'): File name for the CRL (Certificate Revocation List)
+            database_archive_type ('str'): Archive type for the CA database (pem | pkcs12)
+            archive_password ('str'): Password for encrypting/decrypting the archived database
+            database_level ('str'): Level of database details stored (complete | minimum | names)
+            database_url_server ('str'): Server type for database URL (http | ldap)
+            database_ip_path ('str'): Path to the database files on the specified server
+            database_url_storage_location ('str'): Database storage location (cnm | crl | crt | pem | ser | p12)
+            database_url_publish ('bool'): Whether to publish the database URL (used when storage_location is cnm, crl, crt, etc.)
+            eku_options ('str'): Extended Key Usage options to include in issued certificates
+            grant_mode ('str'): Mode for granting certificate requests (auto | none | ra-auto)
+            grant_rollover_cert ('str'): Enables automatic rollover of certificate (ca-cert | ra-cert)
+            grant_rollover_ca_cert ('str'): Enables automatic rollover for the CA certificate
+            grant_rollover_ra_cert ('str'): Enables automatic rollover for the RA certificate
+            grant_tp_list ('str'): List of trusted trustpoints for RA mode (up to 5)
+            grant_trustpoint ('str'): Label of trustpoint holding the trusted CA certificate
+            hash_type ('str'): Hash algorithm for signing operations (md5 | sha1 | sha256 | sha384 | sha512)
+            issuer_name ('str'): Issuer name (Distinguished Name) for the CA certificate
+            ca_cert_life ('str'): Lifetime for the CA certificate, e.g. "3650 0" (days hours)
+            cert_life ('str'): Lifetime for issued certificates, e.g. "365 0"
+            crl_life ('str'): CRL validity duration, e.g. "168" (hours) or "168 30" (hours minutes)
+            enrol_req_life ('str'): Enrollment request lifetime, e.g. "24" (hours)
+            mode ('str'): CA server operating mode (ra | sub-ca)
+            mode_ra_transparent ('bool'): Enable transparent RA mode (no client authentication required)
+            serial_number ('str'): Last used certificate serial number for resuming CA state
+            enrollment_ip ('str'): IP address for enrollment URL
+            enrollment_path ('str'): Path for enrollment URL (used with enrollment_ip)
+            revoke_chk ('str'): Type of revocation check (none | crl | ocsp)
+            key_len ('int'): Key length for generated RSA keypair (e.g., 2048)
+            port ('int'): Port for CA server enrollment (default: 80)
+            database_p12_location ('bool'): Enable PKCS12 (.p12) database storage
+            p12_storage_location ('str'): Location or URL for storing .p12 database files
+            p12_storage_username ('str'): Username for .p12 storage authentication
+            p12_storage_password ('str'): Password for .p12 storage authentication
+            database_cnm_location ('bool'): Enable CNM database storage
+            cnm_storage_location ('str'): Location or URL for CNM database storage
+            cnm_storage_username ('str'): Username for CNM storage
+            cnm_storage_password ('str'): Password for CNM storage
+            database_crt_location ('bool'): Enable CRT (certificate) database storage
+            crt_storage_location ('str'): Location or URL for CRT storage
+            crt_storage_username ('str'): Username for CRT storage
+            crt_storage_password ('str'): Password for CRT storage
+            database_pem_location ('bool'): Enable PEM-format database storage
+            pem_storage_location ('str'): Location or URL for PEM storage
+            pem_storage_username ('str'): Username for PEM storage
+            pem_storage_password ('str'): Password for PEM storage
+            database_ser_location ('bool'): Enable serial-number database storage
+            ser_storage_location ('str'): Location or URL for serial number database
+            ser_storage_username ('str'): Username for SER storage
+            ser_storage_password ('str'): Password for SER storage
+            database_crl_location ('bool'): Enable CRL (Certificate Revocation List) storage
+            crl_storage_location ('str'): Location or URL for CRL storage
+            crl_storage_username ('str'): Username for CRL storage
+            crl_storage_password ('str'): Password for CRL storage
+            crl_publish ('bool'): Publish CRL database to configured CRL URL
+            pem_publish ('bool'): Publish PEM database to configured location
+            ser_publish ('bool'): Publish serial-number database to configured location
+            cnm_publish ('bool'): Publish CNM database to configured location
+            crt_publish ('bool'): Publish CRT database to configured location
+            p12_publish ('bool'): Publish P12 database to configured location
+            ECDSA_cdp_url ('str'): URL for ECDSA-specific CRL distribution point
         Returns:
-            True/False
+            bool: True if configuration is successful, False otherwise
     '''
+
 
     if kwargs:
         from genie.libs.sdk.apis.iosxe.eaptls.configure import configure_crypto_pki_server as eaptls_configure_crypto_pki_server
@@ -102,7 +169,19 @@ def configure_crypto_pki_server(device,
                 Statement(pattern=r'.*Do you accept this certificate.*',
                     action=f'sendline(yes)',
                     loop_continue=True,
-                    continue_timer=False)
+                    continue_timer=False),
+                Statement(pattern=r'.*Include the router serial number in the subject name*',
+                    action=f'sendline(no)',
+                    loop_continue=True,
+                    continue_timer=False),
+                Statement(pattern=r'.*Include an IP address in the subject name*',
+                    action=f'sendline(no)',
+                    loop_continue=True,
+                    continue_timer=False),
+                Statement(pattern=r'.*Request certificate from CA*',
+                    action=f'sendline(yes)',
+                    loop_continue=True,
+                    continue_timer=False),
             ])
 
     logger.info("Configuring crypto pki server")
@@ -136,7 +215,8 @@ def configure_crypto_pki_server(device,
     
     if cdp_url_type and cdp_url_ip_path and crl_file_name:
         server_config.append(f"cdp-url {cdp_url_type}://{cdp_url_ip_path}/{crl_file_name}.crl")
-
+    if ECDSA_cdp_url:
+        server_config.append(f"cdp-url {ECDSA_cdp_url}")
     if database_archive_type:
         server_config.append(f"database archive {database_archive_type}")
         if archive_password:
@@ -145,10 +225,12 @@ def configure_crypto_pki_server(device,
     if database_level:
         server_config.append(f"database level {database_level}")
 
-    if database_url_storage_location:
+    if database_url_storage_location and database_url_server:
         server_config.append(
             f"database url {database_url_storage_location} {database_url_server}")
-
+    if database_url_storage_location:
+        server_config.append(
+            f"database url {database_url_storage_location}")
     if database_url_server and database_ip_path:
         if database_url_storage_location:
             if database_url_publish:
@@ -157,7 +239,42 @@ def configure_crypto_pki_server(device,
                 server_config.append(f"database url {database_url_storage_location} {database_url_server}://{database_ip_path}")
         else:
             server_config.append(f"database url {database_url_server}://{database_ip_path}")
-
+    if database_p12_location and p12_storage_location and p12_storage_username and p12_storage_password:
+        server_config.append(f"database url p12 {p12_storage_location} username {p12_storage_username} password {p12_storage_password}")
+    if database_p12_location and p12_publish:
+        server_config.append(f"database url p12 publish  {p12_storage_location}")
+    if database_p12_location and p12_storage_location:
+        server_config.append(f"database url p12 {p12_storage_location}")
+    if database_cnm_location and cnm_storage_location and cnm_storage_username and cnm_storage_password:
+        server_config.append(f"database url cnm {cnm_storage_location} username {cnm_storage_username} password {cnm_storage_password}")
+    if database_cnm_location and cnm_publish:
+        server_config.append(f"database url cnm publish  {cnm_storage_location}")
+    if database_cnm_location and cnm_storage_location:
+        server_config.append(f"database url cnm {cnm_storage_location}")
+    if database_crt_location and crt_storage_location and crt_storage_username and crt_storage_password:
+        server_config.append(f"database url crt {crt_storage_location} username {crt_storage_username} password {crt_storage_password}")
+    if database_crt_location and crt_publish:
+        server_config.append(f"database url crt publish  {crt_storage_location}")
+    if database_crt_location and crt_storage_location:
+        server_config.append(f"database url crt {crt_storage_location}")
+    if database_pem_location and pem_storage_location and pem_storage_username and pem_storage_password:
+        server_config.append(f"database url pem {pem_storage_location} username {pem_storage_username} password {pem_storage_password}")
+    if database_pem_location and pem_publish:
+        server_config.append(f"database url pem publish  {pem_storage_location}")
+    if database_pem_location and pem_storage_location:
+        server_config.append(f"database url pem {pem_storage_location}")
+    if database_ser_location and ser_storage_location and ser_storage_username and ser_storage_password:
+        server_config.append(f"database url ser {ser_storage_location} username {ser_storage_username} password {ser_storage_password}")
+    if database_ser_location and ser_publish:
+        server_config.append(f"database url ser publish  {ser_storage_location}")
+    if database_ser_location and ser_storage_location:
+        server_config.append(f"database url ser {ser_storage_location}")
+    if database_crl_location and crl_storage_location and crl_storage_username and crl_storage_password:
+        server_config.append(f"database url crl {crl_storage_location} username {crl_storage_username} password {crl_storage_password}")
+    if database_crl_location and crl_publish:
+        server_config.append(f"database url crl publish  {crl_storage_location}")
+    if database_crl_location and crl_storage_location:
+        server_config.append(f"database url crl {crl_storage_location}")
     if eku_options:
         server_config.append(f"eku {eku_options}")
     
@@ -166,6 +283,12 @@ def configure_crypto_pki_server(device,
 
     if grant_rollover_cert:
         server_config.append(f"grant auto rollover {grant_rollover_cert}")
+    
+    if grant_rollover_ca_cert:
+        server_config.append(f"grant auto rollover ca-cert")
+    
+    if grant_rollover_ra_cert:
+        server_config.append(f"grant auto rollover ra-cert")
     
     if grant_tp_list:
         server_config.append(f"grant auto tp-list {grant_tp_list}")
@@ -278,7 +401,12 @@ def configure_trustpoint(device,
                       vrf=None,
                       sub_name=None,
                       ike=None,
-                      is_ec_key=None):
+                      is_ec_key=None,
+                      scepencrypt = None,
+                      chain_validation_continue_tp_name=None,
+                      rsa_key_size1=None,
+                      auto_enroll_timer = None,
+                      enrollment_profile = None):
     
     '''
     configure crypto pki trustpoint
@@ -289,33 +417,38 @@ def configure_trustpoint(device,
             revoke_check ('string'): revocation-check config to be used
             rsa_key_size ('int'): rsa_key_size value to be used for rsakeypair generation
         optional:
-            authorization ('string'): authorization config options to be used with variuos options
-            auth_list_name('string'): authorization list name
-            auth_password('string'): authorization password
-            alt_auth_username('string'): alternate authorization username config; example we can use "yes"
-            alt_auth_username_sec('string'): configure authorization username alt-subjectname userprinciplename secondary; example we can use "yes"
-            auth_username_subjectname_opt('string'): used to configure authorization username subject name option
-            auto_enroll ('bool'): auto enroll needs to be configured or not
+            rsa_key_size1 ('int'): secondary RSA key size value (used when two RSA keypairs are configured)
+            rsa_key_usage ('bool'): used to configure rsakeypair 
             auto_enroll_regen ('string'): used for auto-enroll regenerate configuration
-            auto_enroll_regen_timer('int'): used for auto enroll regenerate timer configuration
-            auto_trigger ('bool'): if auton trigger needs to be configured
+            auto_enroll ('bool'): auto enroll needs to be configured or not
+            auto_enroll_timer ('int'): used to configure auto-enroll timer
+            authorization ('string'): authorization config options to be used with various options
+            auth_list_name ('string'): authorization list name
+            auth_password ('string'): authorization password
+            alt_auth_username ('string'): alternate authorization username config; example we can use "yes"
+            alt_auth_username_sec ('string'): configure authorization username alt-subjectname userprinciplename secondary; example we can use "yes"
+            auth_username_subjectname_opt ('string'): used to configure authorization username subject name option
+            auto_enroll_regen_timer ('int'): used for auto enroll regenerate timer configuration
+            auto_trigger ('bool'): if auto trigger needs to be configured
+            ca_type ('string'): used to select enrollment CA server type and config 
             ca_ip ('string'): enrollment url ip-address
-            certificate_chain_location ('string'): used for certificate chain configuration
+            certificate_chain_location ('string'): location for storing the certificate chain (e.g., bootflash:, tftp:)
             chain_valid_count ('bool'): used chain valid count with value configuration
             chain_valid_stop ('bool'): if chain validation needs to be stopped
             common_name ('string'): crypto pki subject common name to be used
-            crl_cache ('bool'): used for crl cache config is none
-            crl_cache_delete_timer('int'): used for crl cache delete timer configuration
-            crl_cache_extend_timer('int'): used for crl cache extended timer configuration
+            crl_cache ('bool'): used for crl cache config if none
+            crl_cache_delete_timer ('int'): used for crl cache delete timer configuration
+            crl_cache_extend_timer ('int'): used for crl cache extended timer configuration
             default_options ('string'): if any tp_config needs to be defaulted
             eckeypair ('string'): used for eckeypair configuration
+            enrollment_profile ('string'): enrollment profile name to be used for trustpoint
             eku_req_option ('string'): used for eku request configuration
             enrollment_mode ('bool'): used to enable enrollment mode config
-            enrollment_option('string'): used to configure enrollment except mode, retry timer and enrollment url
+            enrollment_option ('string'): used to configure enrollment except mode, retry timer and enrollment url
+            enrollment_url_path ('string'): used to configure enrollment path except CA server type config ex: to take from tftp, bootflash
             enrol_retry_count ('int'): used to configure enrollment retry counter
             enrol_retry_period ('int'): used to configure enrollment retry period
-            ca_type ('string'): used to select enrollment ca server type and config 
-            enrollment_url_path ('string'): used to configure enrollment path except ca server type config ex: to take from tftp, bootflash
+            exit_flag ('bool'): used for exit
             fingerprint ('string'): used to configure fingerprint configuration
             fqdn_value ('string'): used to configure fully-qualified domain name
             hash_value ('string'): used to configure hash algorithm to be used
@@ -323,27 +456,29 @@ def configure_trustpoint(device,
             ip_address ('string'): if none variable is set ip address with none option will be configured \
                                     else specified ip address will be getting configured
             ip_ext ('string'): used to configure ip-extension
-            match_value('string'): to configure match a certificate attibutes/maps
+            match_value ('string'): to configure match a certificate attribute/map
+            no_config ('string'): used for unconfiguration of sub configs used in trustpoint
             ocsp_url ('string'): to configure certificate using Online Certificate Status Protocol
-            ocsp_port('int'): ocsp port to be configured
+            ocsp_port ('int'): ocsp port to be configured
             ocsp_disable ('bool'): to disable ocsp
             on_config ('string'): to create keypair on device
             password_config ('string'): to configure password
             primary_flag ('bool'): used to enable primary config
             regenerate_flag ('bool'): used to configure regenerate
             revocation_check ('string'): used to configure revocation-check config
-            rsa_key_usage('bool'): used to configure rsakeypair 
-            ser_number('string'): serial number to be used
-            show_tp_config('bool'): to display the trustpoint configs
-            source_interface('string'): soure interface to be used
-            storage_location('string'): storage location like bootflash: tftp: 
-            sub_alt_name('string'): used for subject-alt-name configuration
-            usage_option('string'): used for usage config
-            vrf('string'): used for crf config
-            no_config('string'): used for unconfiguration of sub configs used in trustpoint
-            exit_flag('bool'): used for exit
-            is_ec_key('bool'): used for ec key pair
-        
+            root_config ('string'): used to specify root CA configuration or enable root certificate-related parameters
+            ser_number ('string'): serial number to be used
+            show_tp_config ('bool'): to display the trustpoint configs
+            source_interface ('string'): source interface to be used
+            storage_location ('string'): storage location like bootflash:, tftp:
+            sub_alt_name ('string'): used for subject-alt-name configuration
+            sub_name ('string'): used for subject-name configuration
+            usage_option ('string'): used for usage config
+            vrf ('string'): used for vrf config
+            ike ('string'): used to configure IKE identity or usage for VPN certificates
+            is_ec_key ('bool'): used for EC key pair
+            scepencrypt ('string'): used to configure SCEP encryption type (e.g., 3DES, AES)
+            chain_validation_continue_tp_name ('string'): specifies another trustpoint name to continue chain validation with
     Returns: 
         None
     Raises:
@@ -369,8 +504,10 @@ def configure_trustpoint(device,
             tp_config.append("authorization username alt-subjectname userprinciplename secondary")
         if auth_username_subjectname_opt is not None:
             tp_config.append(f"authorization username subjectname {auth_username_subjectname_opt}")
-    if auto_enroll:
+    if auto_enroll and not auto_enroll_timer:
         tp_config.append("auto-enroll")
+    if auto_enroll and auto_enroll_timer:
+        tp_config.append(f"auto-enroll {auto_enroll_timer}")
     if auto_enroll_regen is not None:
         if auto_enroll_regen ==  "regenerate":
             tp_config.append("auto-enroll regenerate")
@@ -382,6 +519,8 @@ def configure_trustpoint(device,
         tp_config.append(f"certificate chain {certificate_chain_location}")
     if chain_valid_count:
        tp_config.append(f"chain-validation continue {chain_valid_count}")
+    if chain_validation_continue_tp_name:
+        tp_config.append(f"chain-validation continue {chain_validation_continue_tp_name}")
     if chain_valid_stop:
         tp_config.append("chain-validation stop")
     if common_name is not None:
@@ -398,6 +537,8 @@ def configure_trustpoint(device,
         tp_config.append(f"eckeypair {eckeypair}")
     if eku_req_option is not None:
         tp_config.append(f"eku request {eku_req_option}")
+    if enrollment_profile:
+        tp_config.append(f"enrollment profile {enrollment_profile} ")
     if enrollment_mode:
         tp_config.append("enrollment mode  ra")
     if enrollment_option is not None:
@@ -454,6 +595,8 @@ def configure_trustpoint(device,
         tp_config.append(f"root {root_config}")
     if rsa_key_usage:      
        tp_config.append(f"rsakeypair {tp_name} {rsa_key_size} {rsa_key_size}")
+    if rsa_key_usage and rsa_key_size1:      
+       tp_config.append(f"rsakeypair {tp_name} {rsa_key_size} {rsa_key_size1}")
     if ser_number is not None:
         if ser_number ==  "none":
             tp_config.append("serial-number none")
@@ -477,6 +620,8 @@ def configure_trustpoint(device,
        tp_config.append(f"vrf {vrf}")
     if no_config is not None:
         tp_config.append(f"no {no_config}")
+    if scepencrypt:
+        tp_config.append(f"scepencrypt {scepencrypt}")
     if exit_flag:
         tp_config.append("exit")
     
@@ -495,6 +640,7 @@ def configure_trustpoint(device,
         )
     )
 
+
 def configure_crypto_pki_profile(device,
                       prof_name,
                       method_est=False,
@@ -505,28 +651,33 @@ def configure_crypto_pki_profile(device,
                       source_interface=None,
                       exit_flag=False,
                       no_config=None,
-                      vrf=None
+                      vrf=None,
+                      authentication_url=None,
+                      reenrollment_url=None
 ):
 
     '''
     configure crypto pki enrollment profile
     Args:
-         device('obj'): Device object
-         prof_name('string'): crypto pki enrollment profile name
-         method_est('bool'): use EST method
-         enrollment_http_username('string'): http authentication username
-         enrollment_http_password_type('bool'): http password type
-         enrollment_http_password('string'): http authentication password 
-         enrollment_url('string'): http or tftp url used for enrollment to CA
-         source_interface('string'): source interface for enrollment
-         vrf('string'): used for crf config
-         no_config('string'): used for unconfiguration of sub configs used in trustpoint
-         exit_flag('bool'): used for exit
+         device ('obj'): Device object
+         prof_name ('string'): crypto pki enrollment profile name
+         method_est ('bool'): if True, uses EST (Enrollment over Secure Transport) as the enrollment method
+         enrollment_http_username ('string'): HTTP authentication username for enrollment
+         enrollment_http_password_type ('string'): type of HTTP password to configure (e.g., 0 for plaintext, 7 for encrypted)
+         enrollment_http_password ('string'): HTTP authentication password for enrollment
+         enrollment_url ('string'): HTTP or TFTP URL used for certificate enrollment to the CA server
+         authentication_url ('string'): URL used for authentication to the CA server
+         source_interface ('string'): source interface to be used for enrollment communication
+         exit_flag ('bool'): if True, exits the profile configuration mode after setup
+         no_config ('string'): used to unconfigure specific subcommands under the profile
+         reenrollment_url ('string'): URL used for reenrollment of certificates
+         vrf ('string'): VRF name used for enrollment connectivity
     Returns: 
         None
     Raises:
         SubCommandFailure
     '''
+
     
     logger.debug("configuring crypto pki profile enrollment")
 
@@ -547,9 +698,19 @@ def configure_crypto_pki_profile(device,
             tp_config.append(f"enrollment url {enrollment_url} vrf {vrf}")
         else:
             tp_config.append(f"enrollment url {enrollment_url}")
-
+    if authentication_url is not None:
+        if vrf is not None:
+            tp_config.append(f"authentication url {authentication_url} vrf {vrf}")
+        else:
+            tp_config.append(f"authentication url {authentication_url}")
     if source_interface is not None:
-        tp_config.append(f"source interface {source_interface}")
+        tp_config.append(f"source-interface {source_interface}")
+
+    if reenrollment_url is not None:
+        if vrf is not None:
+            tp_config.append(f"reenrollment url {reenrollment_url} vrf {vrf}")
+        else:
+            tp_config.append(f"reenrollment url {reenrollment_url}")
 
     if no_config is not None:
         tp_config.append(f"no {no_config}")
@@ -680,6 +841,10 @@ def configure_pki_enroll(device,
     serial_sub_name_value = 'yes' if serial_sub_name else 'no'
 
     dialog = Dialog([
+                Statement(pattern=r'.*Do you accept this certificate\? \[yes/no\].*',
+                    action=f'sendline(yes)',
+                    loop_continue=True,
+                    continue_timer=False),
                 Statement(pattern=r'.*Do you want to continue with re\-enrollment\? \[yes/no\].*',
                     action=f'sendline(yes)',
                     loop_continue=True,
@@ -719,8 +884,6 @@ def configure_pki_enroll(device,
 
                 ])
     error_patterns = ["CA server trustpoint is not known",
-                       "% You must authenticate the Certificate Authority before you can enroll with it.",
-                       "% Attempting authentication first.",
                        "% Error in receiving Certificate Authority certificate: status = FAIL, cert length = 0"]
 
     logger.debug("Configuring crypto pki enroll server")
@@ -1000,13 +1163,19 @@ def change_pki_server_state(device,
         Raises:
             SubCommandFailure
     '''
-
+    dialog = Dialog([
+                Statement(pattern=r'.*bytes*',
+                    action=f'sendline(yes)',
+                    loop_continue=True,
+                    continue_timer=False)
+            ])
     logger.info("Changing crypto pki server state")
     server_config = []
     server_config.append(f"crypto pki server {server_name}")
     server_config.append(f"{state}")
+    error_pattern = ["% Please delete your existing CA certificate first."]
     try:
-        device.configure(server_config)
+        device.configure(server_config,reply=dialog, error_pattern=error_pattern)
         time.sleep(10)
     except SubCommandFailure as e:
         raise SubCommandFailure(
@@ -1084,6 +1253,7 @@ def configure_no_pki_enroll(device, tp_name):
         )
 
 
+
 def configure_crypto_pki_download_crl(
                                         device,
                                         schedule=False,
@@ -1149,7 +1319,7 @@ def configure_crypto_pki_download_crl(
         if time and day:
             valid_days = {
                 "Monday", "Tuesday", "Wednesday", "Thursday",
-                "Friday", "Saturday", "Sunday"
+                "Friday", "Saturday", "Sunday","Mon","Tue","Wed","Thu","Fri","Sat","Sun"
             }
         
             if day not in valid_days:
@@ -1158,7 +1328,7 @@ def configure_crypto_pki_download_crl(
             if not hh_mm:
                 raise ValueError("`hh_mm` must be provided when `time` is specified")
         
-            cmd = f"no crypto pki crl download schedule time {day} {hh_mm}"
+            cmd = f"crypto pki crl download schedule time {day} {hh_mm}"
             cmds.append(cmd)
 
     if not cmds:
@@ -1234,7 +1404,7 @@ def unconfigure_crypto_pki_download_crl(
         if time and day:
             valid_days = {
                 "Monday", "Tuesday", "Wednesday", "Thursday",
-                "Friday", "Saturday", "Sunday"
+                "Friday", "Saturday", "Sunday","Mon","Tue","Wed","Thu","Fri","Sat","Sun"
             }
 
             if day not in valid_days:
@@ -1431,4 +1601,417 @@ def unconfigure_crypto_pki_http_max_buffer_size(device):
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure crypto pki http max buffer size: {e}")
         
+def configure_trustpool_policy(device, source_interface=None, vrf_name=None, ca_bundle_url=None):
+    '''
+    Configures CA Trustpool policy on the device.
+    Args:
+        device ('obj'): Device object.
+        source_interface ('str', optional): Interface to use as source address for downloads.
+        vrf_name ('str', optional): VRF to use for enrollment and obtaining CRLs.
+        ca_bundle_url ('str', optional): The CA server bundle URL.
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: If configuration fails on the device.
+    '''
+    dialog = Dialog([
+                Statement(pattern=r'.*bytes*',
+                    action=f'sendline(yes)',
+                    loop_continue=True,
+                    continue_timer=False)
+            ])
+    cmds = []
+    cmds.append("crypto pki trustpool policy")
+    if ca_bundle_url:
+        cmds.append(f"cabundle url {ca_bundle_url}")
+    if source_interface:
+        cmds.append(f"source interface {source_interface}")
+    if vrf_name:
+        cmds.append(f"vrf {vrf_name}")
+
+    error_patterns = ['failed']
+    try:
+        device.configure(cmds, reply=dialog, error_pattern=error_patterns)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure trustpool policy: {e}")
+
+
+def unconfigure_trustpool_policy(device):
+    '''
+    Removes the CA Trustpool policy configuration from the device.
+    Args:
+        device ('obj'): Device object.
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: If unconfiguration fails on the device.
+    '''
+    cmds = ["no crypto pki trustpool policy"]
+    try:
+        device.configure(cmds, timeout=60)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure trustpool policy: {e}")
+         
+def configure_pki_vrf_trustpoint(device, trustpoint, vrf_name):
+    """
+    Configure IP VRF and bind it under a PKI trustpoint.
+
+    Args:
+        device ('obj'): Device object
+        trustpoint ('str'): Trustpoint name (e.g., 'client')
+        vrf_name ('str'): VRF name (e.g., 'pki')
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure
+    """
+    try:
+        cmds = [
+            f"ip vrf {vrf_name}",
+            f"crypto pki trustpoint {trustpoint}",
+            f"vrf {vrf_name}",
+        ]
+        device.configure(cmds)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure PKI trustpoint {trustpoint} with VRF {vrf_name}: {e}")
+
+
+def unconfigure_pki_vrf_trustpoint(device, trustpoint, vrf_name):
+    """
+    Remove VRF and unbind it from the PKI trustpoint.
+
+    Args:
+        device ('obj'): Device object
+        trustpoint ('str'): Trustpoint name (e.g., 'client')
+        vrf_name ('str'): VRF name (e.g., 'pki')
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure
+    """
+    try:
+        cmds = [
+            f"no ip vrf {vrf_name}",
+            f"crypto pki trustpoint {trustpoint}",
+            f"no vrf {vrf_name}",
+        ]
+        device.configure(cmds)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure PKI trustpoint {trustpoint} or remove VRF {vrf_name}: {e}")
  
+def configure_crypto_pki_export_pkcs12_terminal(device, tp_name, password):
+    """
+    Exports a PKCS#12 certificate bundle to the terminal.
+    This method uses the `crypto pki export <trustpoint> pkcs12 terminal password <pwd>` 
+    command to print/export the PKCS#12 data directly to the terminal.
+    Args:
+        device: Device connection object (pyATS/unicon object) used to send commands.
+        tp_name (str): Trustpoint name to be exported.
+        password (str): Password to protect the PKCS#12 file.
+    Returns:
+        str | bool:
+            - String output containing the PKCS#12 encoded data if successful.
+            - False if the export fails.
+    """
+    cmd = f"crypto pki export {tp_name} pkcs12 terminal password {password}"
+    try:
+        output = device.configure(cmd)
+    except Exception as e:
+        logger.error("Error: {}".format(str(e)))
+        return False
+
+    return output
+
+def crypto_pki_trustpool_import(device, ca_bundle=False):
+    '''
+    Imports CA bundle into the PKI trustpool on the device.
+    Args:
+        device ('obj'): Device object.
+        ca_bundle ('bool', optional): Flag to import the CA bundle. Default is False.
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: If the trustpool CA bundle import fails on the device.
+    '''
+    dialog = Dialog([
+                Statement(pattern=r'.*bytes*',
+                          action=f'sendline(yes)',
+                          loop_continue=True,
+                          continue_timer=False)
+            ])
+    error_patterns = ['failed']
+    cmds = []
+    if ca_bundle:
+        cmds.append("crypto pki trustpool import ca-bundle")
+
+    try:
+        device.configure(cmds, reply=dialog, error_pattern=error_patterns)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to import trustpool CA bundle: {e}")
+    
+def remove_grant_auto(device, wait_time=10):
+    '''
+    Remove the "grant auto" configuration from the currently configured crypto pki server.
+
+    This function identifies the active PKI server on the device, temporarily shuts it down,
+    removes the "grant auto" configuration, and then re-enables the server. It ensures that
+    the server is restored to an operational state after configuration changes.
+
+    Steps:
+        Step 1: Identify the active PKI server on the device.
+        Step 2: Check the current PKI server state (enabled/disabled).
+        Step 3: Shut down the PKI server if it is enabled.
+        Step 4: Remove the "grant auto" configuration.
+        Step 5: Re-enable (no shutdown) the PKI server.
+        Step 6: Verify that the server is up and configuration is updated.
+    Args:
+        device ('obj'): Device object representing the target router or switch.
+        wait_time ('int', optional): Time in seconds to wait after shutting down
+                                     and re-enabling the PKI server. Default is 10 seconds.
+    Returns:
+        bool:
+            - True: If the server is successfully re-enabled and configuration is updated.
+            - False: If no PKI server is configured or the server fails to re-enable.
+    Raises:
+        SubCommandFailure: If configuration commands fail to execute on the device.
+    '''
+
+    dialog = Dialog([
+        Statement(pattern=r'.*bytes*',
+                  action='sendline(yes)',
+                  loop_continue=True,
+                  continue_timer=False)
+    ])
+
+    try:
+        op = device.parse("show crypto pki server")
+        server_name = list(op['server'].keys())
+        if not server_name:
+            logger.info("No server configured")
+            return False
+    except Exception as e:
+        logger.error(f"Failed to parse PKI server configuration: {e}")
+        return False
+
+    try:
+        server_state = op['server'][str(server_name[0])]['status']
+        
+        if server_state == 'enabled':
+            try:
+                device.api.change_pki_server_state(server_name[0], "shutdown")
+                time.sleep(wait_time)
+            except Exception as e:
+                logger.error(f"Failed to shutdown PKI server {server_name[0]}: {e}")
+                return False
+
+        server_config = [
+            f"crypto pki server {server_name[0]}",
+            "no grant auto"
+        ]
+        
+        error_pattern = ["% Please delete your existing CA certificate first."]
+        logger.info(server_config)
+        
+        try:
+            device.configure(server_config, reply=dialog, error_pattern=error_pattern)
+        except SubCommandFailure as e:
+            logger.error(f"Failed to configure 'no grant auto' for server {server_name[0]}: {e}")
+            return False
+
+        try:
+            device.api.change_pki_server_state(server_name[0], "no shutdown")
+            time.sleep(wait_time)
+        except Exception as e:
+            logger.error(f"Failed to re-enable PKI server {server_name[0]}: {e}")
+            return False
+
+        # Re-parse to verify server state
+        try:
+            op = device.parse("show crypto pki server")
+            server_state = op['server'][str(server_name[0])]['status']
+            if server_state == 'enabled':
+                logger.info("Server is enabled and configs are changed")
+                return True
+            else:
+                logger.info("Server is not enabled")
+                return False
+        except Exception as e:
+            logger.error(f"Failed to verify server state after configuration: {e}")
+            return False
+            
+    except Exception as e:
+        logger.error(f"Unexpected error during PKI server configuration: {e}")
+        return False
+
+
+ 
+def import_pkcs12_tftp(device, tftp_ip, file_name, tp_name, format_type, password):
+    """
+    Imports a PKCS#12 certificate bundle into a Cisco device from a TFTP server.
+    This function uses the `crypto pki import` command to import a PKCS#12 
+    file over TFTP into a specified trustpoint on the device.
+    Args:
+        device: Device connection object (pyATS/unicon object) used to send commands.
+        tftp_ip (str): IP address of the TFTP server hosting the PKCS#12 file.
+        file_name (str): Name of the PKCS#12 file on the TFTP server.
+        tp_name (str): Trustpoint name where the certificate will be imported.
+        format_type (str): File format type (e.g., 'pkcs12').
+        password (str): Password for the PKCS#12 file.
+    Returns:
+        bool: 
+            - True if the import operation succeeded.
+            - False if the operation failed.
+    Raises:
+        ValueError: If password is less than 8 characters long.
+    """
+
+    
+    try:
+        dialog = Dialog([
+            Statement(pattern=r'.*Address or name of remote host', action=f'sendline({tftp_ip})',
+                      loop_continue=True, continue_timer=False),         
+            Statement(pattern=r'.*Source filename', action=f'sendline({file_name})',
+                      loop_continue=True, continue_timer=False),
+            Statement(pattern=r'.*Do you really want to replace them', action=f'sendline(yes)',
+                      loop_continue=True, continue_timer=False),
+            Statement(pattern=r'.*hierarchy\?*', action=f'sendline(yes)',
+                      loop_continue=True, continue_timer=False)
+        ])
+
+        cmd = [f"crypto pki import {tp_name} {format_type} tftp://{tftp_ip}/{file_name} password {password}"]
+
+        error_patterns = [
+            'Failed',
+            'Possible causes: bad password or corrupted PKCS12',
+            'CRYPTO_PKI: Import PKCS12 operation failed, bad HMAC',
+            'Error: failed to open file.'
+        ]
+
+        op = device.configure(cmd, reply=dialog, error_pattern=error_patterns)
+        return True
+    except Exception as e:
+        logger.error(f"Failed to import PKCS12 from TFTP server {tftp_ip}: {e}")
+        return False
+
+def export_pkcs12_tftp(device, tftp_ip, file_name, tp_name, format_type):
+    """
+        Exports a PKCS#12 certificate bundle from a Cisco device to a TFTP server.
+    
+        This function uses the `crypto pki export` command to export a PKCS#12 file 
+        over TFTP from a specified trustpoint on the device.
+    
+        Args:
+            device: Device connection object (pyATS/unicon object) used to send commands.
+            tftp_ip (str): IP address of the TFTP server where the PKCS#12 file will be saved.
+            file_name (str): Destination file name for the PKCS#12 bundle on the TFTP server.
+            tp_name (str): Trustpoint name from which the certificate is exported.
+            format_type (str): File format type (e.g., 'pkcs12').
+    
+        Returns:
+            bool:
+                - True if the export operation succeeded.
+                - False if the operation failed.
+    """
+    try:
+        password = "cisco123"
+        dialog = Dialog([
+            Statement(pattern=r'.*Address or name of remote host',
+                action=f'sendline({tftp_ip})',
+                loop_continue=True,
+                continue_timer=False),
+            Statement(pattern=r'.*Destination filename',
+                action=f'sendline({file_name})',
+                loop_continue=True,
+                continue_timer=False),
+            Statement(pattern=r'.*Do you really want to overwrite it',
+                action=f'sendline(yes)',
+                loop_continue=True,
+                continue_timer=False),
+        ])
+
+        cmd = [f"crypto pki export {tp_name} {format_type} tftp://{tftp_ip}/{file_name} password {password}"]
+
+        error_patterns = ['Failed']
+
+        op = device.configure(cmd, reply=dialog, error_pattern=error_patterns)
+        return [True, op]
+    except Exception as e:
+        logger.error(f"Failed to export PKCS12 to TFTP server {tftp_ip}: {e}")
+        return [False, str(e)]
+
+def configure_crypto_pki_certificate_map(device,
+                                          map_name,
+                                          sequence,
+                                          issuer_name=False,
+                                          subject_check=None,
+                                          issuer_check=None,
+                                          issuer_check_str=None,
+                                          subject_name=False,
+                                          subject_check_str=None,
+                                          subject_alt_name=False,
+                                          subject_alt_check=None,
+                                          subject_alt_check_str=None):
+    '''
+    Configures a crypto PKI certificate map on the device.
+    Args:
+        device ('obj'): Device object.
+        map_name ('str'): Name of the certificate map.
+        sequence ('int'): Sequence number for the certificate map entry.
+        issuer_name ('bool', optional): Flag to include issuer-name configuration.
+        subject_check ('str', optional): Operator for subject-name check (e.g., 'co', 'eq').
+        issuer_check ('str', optional): Operator for issuer-name check (e.g., 'co', 'eq').
+        issuer_check_str ('str', optional): String to match against the issuer-name field.
+        subject_name ('bool', optional): Flag to include subject-name configuration.
+        subject_check_str ('str', optional): String to match against the subject-name field.
+        subject_alt_name ('bool', optional): Flag to include alt-subject-name configuration.
+        subject_alt_check ('str', optional): Operator for alt-subject-name check (e.g., 'co', 'eq').
+        subject_alt_check_str ('str', optional): String to match against the alt-subject-name field.
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: If configuration fails on the device.
+    '''
+    cmds = [
+        f"crypto pki certificate map {map_name} {sequence}"
+    ]
+
+    if issuer_name:
+        if issuer_check and issuer_check_str:
+            cmds.append(f"issuer-name {issuer_check} {issuer_check_str}")
+
+    if subject_name:
+        if subject_check and subject_check_str:
+            cmds.append(f"subject-name {subject_check} {subject_check_str}")
+
+    if subject_alt_name:
+        if subject_alt_check and subject_alt_check_str:
+            cmds.append(f"alt-subject-name {subject_alt_check} {subject_alt_check_str}")
+
+    try:
+        device.configure(cmds)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure crypto pki certificate map {map_name}: {e}")
+
+
+def unconfigure_crypto_pki_certificate_map(device, map_name, sequence):
+    '''
+    Removes a crypto PKI certificate map from the device.
+    Args:
+        device ('obj'): Device object.
+        map_name ('str'): Name of the certificate map to remove.
+        sequence ('int'): Sequence number of the certificate map entry to remove.
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: If unconfiguration fails on the device.
+    '''
+    cmds = [f"no crypto pki certificate map {map_name} {sequence}"]
+    try:
+        device.configure(cmds)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure crypto pki certificate map {map_name}: {e}")
+

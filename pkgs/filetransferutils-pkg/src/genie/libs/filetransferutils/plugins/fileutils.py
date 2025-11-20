@@ -393,12 +393,23 @@ class FileUtils(FileUtilsCommonDeviceBase):
         """
 
         with self.file_transfer_config(used_server, interface=interface, **kwargs):
-            return self.send_cli_to_device(
-                cli=cmd,
-                timeout_seconds=timeout_seconds,
-                used_server=used_server,
-                destination=destination,
-                **kwargs)
+            try:
+                return self.send_cli_to_device(
+                    cli=cmd,
+                    timeout_seconds=timeout_seconds,
+                    used_server=used_server,
+                    destination=destination,
+                    **kwargs)
+            except Exception as e:
+                if "https" in cmd:
+                    logger.warning("HTTPS transfer failed, retrying with HTTP")
+                    return self.send_cli_to_device(
+                        cli=cmd.replace("https", "http"),
+                        timeout_seconds=timeout_seconds,
+                        used_server=used_server,
+                        destination=destination,
+                        **kwargs)
+                raise e
 
     def parsed_dir(self, target, timeout_seconds, dir_output, *args, **kwargs):
         """ Retrieve filenames contained in a directory.

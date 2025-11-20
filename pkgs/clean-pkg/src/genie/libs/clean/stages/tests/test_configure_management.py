@@ -230,6 +230,50 @@ class TestConfigureManagement(unittest.TestCase):
                  count=5),
         ], )
 
+
+    def test_configure_management_ping_gateway_attempts(self):
+        self.device.management = {
+            'interface': 'Gi1/0',
+            'vrf': 'Mgmt-vrf',
+            'dhcp_timeout': 15,
+            'address': {
+                'ipv4': '2.2.2.2/24'
+            },
+            'routes': {
+                'ipv4': [{
+                    'subnet': '192.168.1.0 255.255.255.0',
+                    'next_hop': '172.16.1.1'
+                }],
+            },
+            'gateway': {
+                'ipv4': '2.2.2.2',
+                'ipv6': '1.1.1.1'
+            },
+            'protocols': ['http'],
+            'ping_attempts': 5,
+            'ping_sleep': 5,
+        }
+        steps = Steps()
+        self.device.ping = Mock()
+        self.cls.ping_gateway(
+            device=self.device,
+            steps=steps,
+        )
+        # Check that the result is expected
+        self.assertEqual(Passed, steps.details[0].result)
+        self.device.ping.assert_has_calls([
+            call(addr='2.2.2.2',
+                 vrf='Mgmt-vrf',
+                 source='Gi1/0',
+                 timeout=30,
+                 count=5),
+            call(addr='1.1.1.1',
+                 vrf='Mgmt-vrf',
+                 source='Gi1/0',
+                 timeout=30,
+                 count=5),
+        ], )
+
 class TestConfigureInterfaces(unittest.TestCase):
 
     def setUp(self):
@@ -276,4 +320,3 @@ class TestConfigureInterfaces(unittest.TestCase):
 
         iface_obj.build_config.assert_called_once_with(attributes={'enabled': True}, apply=False)
         self.device.configure.assert_called_once_with(['interface Gi0/2', ' no shutdown'])
-

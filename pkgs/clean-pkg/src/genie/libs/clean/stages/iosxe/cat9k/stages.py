@@ -5,7 +5,6 @@ import logging
 import time
 from datetime import datetime, timedelta
 
-
 from pyats.async_ import pcall
 
 from genie.abstract import Lookup
@@ -35,7 +34,6 @@ from unicon.plugins.generic.statements import buffer_settled
 
 # Logger
 log = logging.getLogger(__name__)
-
 
 class ChangeBootVariable(IOSXEChangeBootVariable):
     """This stage configures boot variables of the device using the following steps:
@@ -910,119 +908,3 @@ install_image:
             except Exception as e:
                 step.failed("Failed to check for debug config in rommon variables",
                             from_exception=e)
-
-    def install_image(self, steps, device, images,
-                      install_timeout=INSTALL_TIMEOUT,
-                      save_system_config=SAVE_SYSTEM_CONFIG,
-                      reload_args=RELOAD_SERVICE_ARGS,
-                      issu=ISSU, stack_member_timeout=STACK_MEMBER_TIMEOUT,
-                      stack_member_interval=STACK_MEMBER_INTERVAL,
-                      skip_save_running_config=SKIP_SAVE_RUNNING_CONFIG,
-                      reload_wait=RELOAD_WAIT):
-        # check if device is a stack device otherwise call the InstallImage for 
-        # iosxe devices.
-        if hasattr(device, 'chassis_type') and device.chassis_type == 'stack':
-            with steps.start(f"Installing image '{images[0]}'") as step:
-                # create a new instance for stackutils which include some utility 
-                # apis for working with stack devices
-                stack_utils = StackUtils()
-                # get tredundancy info of the stack device 
-                stack_redundency_info = stack_utils.get_redundancy_details(device)
-                number_of_stack_members = len(stack_redundency_info)
-                # make sure device is do not manual boot
-                device.api.configure_no_boot_manual()
-                # write to memory 
-                device.api.execute_write_memory()
-
-                def _update_counter_for_member_config(spawn, context, session):
-                    """ Handles the number of apply configure message seen after install image """
-                    if not session.get("member_config"):
-                        session['member_config'] = 1
-                        spawn.log.debug(f"member config {session['member_config']}")
-                    else:
-                        session['member_config'] += 1
-                        spawn.log.debug(f"member config {session['member_config']}")
-                    if session['member_config'] == number_of_stack_members - 1:
-                        # this is raised when all the member are done for configuration
-                        raise StackMemberConfigException
-                    
-                def _failed_to_install_image(spawn):
-                    raise Exception
-                
-                def _check_for_member_config(spawn, session):
-                    # check the session for member_config, if this is not the spawn of 
-                    # active connection we will not see the member config in buffer so
-                    # we should get out of the dialog loop after seeing press return.
-                    if not session.get('member_config'):
-                        raise StackMemberConfigException
-
-                dialog = Dialog([
-                    Statement(pattern=r"Do you want to proceed\? \[y\/n\]",
-                            action='sendline(y)',
-                            loop_continue=True,
-                            continue_timer=False),
-                    Statement(pattern=r".*Applying config on Switch \d+.*\[DONE\]$",
-                            action= _update_counter_for_member_config,
-                            loop_continue=True,
-                            continue_timer=False),
-                    Statement(pattern=r".*FAILED:.*?",
-                            action=_failed_to_install_image,
-                            loop_continue=False,
-                            continue_timer=False),
-                    Statement(pattern=r'Press RETURN to get started.*',
-                              action=_check_for_member_config,
-                              loop_continue=True,
-                              continue_timer=False)
-                ])
-                
-                install_cmd = 'install add file {} activate commit'
-                if issu:
-                    install_cmd = 'install add file {} activate issu commit'
-                    
-                device.sendline(install_cmd.format(images[0]))
-                
-                try:
-                    dialog.process(device.spawn,
-                                   timeout = install_timeout,
-                                   context=device.context)
-                except StackMemberConfigException:
-                    log.debug("Expected exception continue with the stage")
-                    log.info('Waiting for buffer to settle down')
-                    post_reload_wait_time = reload_args.get('post_reload_wait', 15)
-                    post_reload_timeout = reload_args.get('post_reload_timeout', 60)
-                    start_time = current_time = datetime.now()
-                    timeout_time = timedelta(seconds=post_reload_timeout)
-                    settle_time = current_time = datetime.now()
-                    while (current_time - settle_time) < timeout_time:
-                        if buffer_settled(device.spawn, post_reload_wait_time):
-                            log.info('Buffer settled, accessing device..')
-                            break
-                        current_time = datetime.now()
-                        if (current_time - start_time) > timeout_time:
-                            log.info('Time out, trying to access device..')
-                            break
-                    device.enable()
-                except Exception as e:
-                    step.failed("Failed to install the image", from_exception=e)
-
-                # Check all the members are ready and then try to disconnect and connect to device.
-                if stack_utils.is_all_member_ready(device, stack_member_timeout, stack_member_interval):
-                    log.info('Disconnecting and reconnecting')
-                    device.disconnect()
-                    device.connect()
-                else:
-                    step.failed("Stack members are not ready")
-
-                image_mapping = self.history['InstallImage'].parameters.setdefault(
-                    'image_mapping', {})
-                if hasattr(self, 'new_boot_var'):
-                    image_mapping.update({images[0]: self.new_boot_var})
-        else:
-            # if device is not a stack device we all the install image for iosxe 
-            super().install_image(steps, device, images,
-                      save_system_config=save_system_config,
-                      install_timeout=install_timeout,
-                      reload_service_args=None,
-                      issu=issu,
-                      reload_wait=reload_wait
-                      )

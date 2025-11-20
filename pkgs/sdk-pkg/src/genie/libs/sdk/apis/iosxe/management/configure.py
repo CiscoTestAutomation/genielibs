@@ -4,6 +4,7 @@ import atexit
 import logging
 import ipaddress
 import tempfile
+import time
 from unicon.eal.dialogs import Statement, Dialog
 from genie.utils.timeout import Timeout
 from unicon.core.errors import SubCommandFailure
@@ -1515,159 +1516,174 @@ def configure_ip_ssh_server_algorithm_hostkey(device, hostkey):
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure ip ssh server algorithm hostkey on device {device}. Error:\n{e}")
 
-def configure_ip_ssh_pubkey_chain(device, username=None, server=None, key_string=None, key_hash=None):
+def configure_ip_ssh_pubkey_chain(device, username=None, server=None, key_string=None, key_hash=None, chunk_size=None):
     """ Configure SSH public key chain for a user or server
         Args:
             device ('obj'): Device object
             username ('str', optional): Username for SSH public key authentication
             server ('str', optional): Server IP address for SSH public key authentication
             key_string ('str', optional): SSH public key string (can be single line or multi-line)
-            key_hash ('str', optional): SSH public key hash
+            key_hash ('str', optional): SSH public key hash (can include key type prefix or just the hash)
         Returns:
             None
         Raises:
             SubCommandFailure
-        Examples:
-            # Single line key using key-string for username
-            device.api.configure_ip_ssh_pubkey_chain(
-                username='cisco', 
-                key_string='ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAB...'
-            )
-            
-            # Multi-line key using key-string for username
-            device.api.configure_ip_ssh_pubkey_chain(
-                username='cisco',
-                key_string='ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAB\\nAAAABAAIBAQC...'
-            )
-            
-            # Using key-hash for username
-            device.api.configure_ip_ssh_pubkey_chain(
-                username='cisco',
-                key_hash='ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAB...'
-            )
-            
-            # Using key-string for server
-            device.api.configure_ip_ssh_pubkey_chain(
-                server='192.168.1.100',
-                key_string='ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAB...'
-            )
-            
-            # Using key-hash for server
-            device.api.configure_ip_ssh_pubkey_chain(
-                server='192.168.1.100',
-                key_hash='ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAB...'
-            )
     """
     # Validate that either username or server is provided, but not both
     if not username and not server:
         raise SubCommandFailure("Either username or server must be provided")
     if username and server:
         raise SubCommandFailure("Cannot provide both username and server, choose one")
-    
+
     # Validate that either key_string or key_hash is provided, but not both
     if not key_string and not key_hash:
         raise SubCommandFailure("Either key_string or key_hash must be provided")
     if key_string and key_hash:
         raise SubCommandFailure("Cannot provide both key_string and key_hash, choose one")
-    
+
     # Determine the target (username or server)
     target_type = "username" if username else "server"
     target_value = username if username else server
-    
-    log.info("Configuring SSH public key chain for {} {}".format(target_type, target_value))
-    
+
+    log.debug("Configuring SSH public key chain for {} {}".format(target_type, target_value))
+
     if key_string:
-        # Handle key-string configuration
-        def send_key_string(spawn, context, session):
-            """Send the SSH key string in folded format (72 chars per line)"""
-            # Handle both single line and multi-line keys
-            # First, join all lines if it's already multi-line
-            full_key = ' '.join(key_string.strip().split())
-            
-            # Fold the key to 72 characters per line (like fold -b -w 72)
-            folded_lines = []
-            for i in range(0, len(full_key), 72):
-                folded_lines.append(full_key[i:i+72])
-            
-            # Send each folded line
-            for line in folded_lines:
-                spawn.sendline(line)
-            
-            # Send exit to exit from key-string mode
-            spawn.sendline('exit')
+        normalized_key = ' '.join(key_string.strip().split())
         
+        folded_lines = []
+        for i in range(0, len(normalized_key), chunk_size):
+            folded_lines.append(normalized_key[i:i+chunk_size])
+        
+        def send_key_string(spawn, context, session):
+            """Send the SSH key string in folded format"""
+            try:
+                # Send each folded line with small delays to prevent buffer overflow
+                for i, line in enumerate(folded_lines):
+                    log.debug("Sending line {}/{}: {}...".format(i+1, len(folded_lines), line[:30]))
+                    spawn.sendline(line)
+                
+                # Send exit to exit from key-string mode
+                spawn.sendline('exit')
+                
+            except Exception as e:
+                log.error("Error in send_key_string dialog: {}".format(str(e)))
+                raise SubCommandFailure("Failed to send key string: {}".format(str(e)))
+
         # Create dialog to handle key-string input
         dialog = Dialog([
             Statement(
                 pattern=r'.*\(conf-ssh-pubkey-data\)#\s*$',
                 action=send_key_string,
-                loop_continue=True,
+                loop_continue=False,
                 continue_timer=False
             )
         ])
-        
+
+        # Configuration commands to enter key-string mode
         config = [
             'ip ssh pubkey-chain',
             '{} {}'.format(target_type, target_value),
             'key-string'
         ]
-        
+
         try:
-            device.configure(config, reply=dialog)
-            log.info("Successfully configured SSH public key chain (key-string) for {} {}".format(target_type, target_value))
+            output = device.configure(config, reply=dialog, timeout=120)
+            
         except SubCommandFailure as e:
+            log.error("Configuration failed: {}".format(str(e)))
             raise SubCommandFailure("Failed to configure SSH public key chain (key-string) for {} {} on device {}. Error:\n{}".format(target_type, target_value, device, e))
-    
+
     elif key_hash:
-        # Handle key-hash configuration
+        
+        if key_hash.startswith('ssh-rsa ') or key_hash.startswith('ecdsa-sha2-') or key_hash.startswith('ssh-ed25519 '):
+            # Key type already specified - use as-is
+            formatted_key_hash = key_hash
+            
+        else:
+            # Just a hash provided - need to detect/assume key type
+            detected_key_type = "ssh-rsa"
+            formatted_key_hash = "{} {}".format(detected_key_type, key_hash)
+    
         config = [
             'ip ssh pubkey-chain',
             '{} {}'.format(target_type, target_value),
-            'key-hash {}'.format(key_hash),
-            'exit',
-            'exit'
+            'key-hash {}'.format(formatted_key_hash)
         ]
-        
+
         try:
-            device.configure(config)
-            log.info("Successfully configured SSH public key chain (key-hash) for {} {}".format(target_type, target_value))
+            device.configure(config, timeout=30)
+            
         except SubCommandFailure as e:
+            log.error("Key-hash configuration failed: {}".format(str(e)))
             raise SubCommandFailure("Failed to configure SSH public key chain (key-hash) for {} {} on device {}. Error:\n{}".format(target_type, target_value, device, e))
 
+
 def unconfigure_ip_ssh_pubkey_chain(device, username=None, server=None):
-    """ Remove SSH public key chain configuration for a user or server
+    """ Unconfigure SSH public key chain for a user or server
         Args:
             device ('obj'): Device object
-            username ('str', optional): Username to remove SSH public key authentication
-            server ('str', optional): Server IP address to remove SSH public key authentication
+            username ('str', optional): Username to remove from SSH public key authentication
+            server ('str', optional): Server IP address to remove from SSH public key authentication
         Returns:
             None
         Raises:
             SubCommandFailure
-        Examples:
-            device.api.unconfigure_ip_ssh_pubkey_chain(username='cisco')
-            device.api.unconfigure_ip_ssh_pubkey_chain(server='192.168.1.100')
     """
     # Validate that either username or server is provided, but not both
     if not username and not server:
         raise SubCommandFailure("Either username or server must be provided")
     if username and server:
         raise SubCommandFailure("Cannot provide both username and server, choose one")
-    
+
     # Determine the target (username or server)
     target_type = "username" if username else "server"
     target_value = username if username else server
-    
-    log.info("Removing SSH public key chain for {} {}".format(target_type, target_value))
-    
+
+    log.debug("Unconfiguring SSH public key chain for {} {}".format(target_type, target_value))
+
     config = [
         'ip ssh pubkey-chain',
-        'no {} {}'.format(target_type, target_value),
-        'exit'
+        'no {} {}'.format(target_type, target_value)
     ]
-    
+
     try:
         device.configure(config)
-        log.info("Successfully removed SSH public key chain for {} {}".format(target_type, target_value))
+        
     except SubCommandFailure as e:
-        raise SubCommandFailure("Failed to remove SSH public key chain for {} {} on device {}. Error:\n{}".format(target_type, target_value, device, e))
+        raise SubCommandFailure("Failed to unconfigure SSH public key chain for {} {} on device {}. Error:\n{}".format(target_type, target_value, device, e))
+
+
+def configure_ip_ssh_stricthostkeycheck(device):
+    """ Configure ip ssh stricthostkeycheck
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = 'ip ssh stricthostkeycheck'
+    try:
+        log.debug("Configuring SSH strict host key checking on device {}".format(device))
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error("Failed to configure SSH strict host key checking on device {}. Error: {}".format(device, e))
+        raise SubCommandFailure("Failed to configure ip ssh stricthostkeycheck on device {}. Error:\n{}".format(device, e))
+
+
+def unconfigure_ip_ssh_stricthostkeycheck(device):
+    """ Unconfigure ip ssh stricthostkeycheck
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = 'no ip ssh stricthostkeycheck'
+    try:
+        log.debug("Unconfiguring SSH strict host key checking on device {}".format(device))
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error("Failed to unconfigure SSH strict host key checking on device {}. Error: {}".format(device, e))
+        raise SubCommandFailure("Failed to unconfigure ip ssh stricthostkeycheck on device {}. Error:\n{}".format(device, e))

@@ -54,6 +54,8 @@ def configure_dot1x_cred_profile(device, profile_name, user_name, passwd, passwd
         cmd += 'password 7 {}\n'.format(passwd)
     elif passwd_type == 'UNENCRYPTED':
         cmd += 'password 0 {}\n'.format(passwd)
+    elif passwd_type == 'ENCRYPTED':
+        cmd += 'password 6 {}\n'.format(passwd)
     else:
         cmd += 'password {}\n'.format(passwd)
     #cmd += 'password {}\n'.format(passwd)
@@ -2443,3 +2445,4 @@ def unconfigure_access_session_tls_version(device):
         raise SubCommandFailure(
             "Could not unconfigure access-session tls-version. Error: {}".format(str(e))
         )
+

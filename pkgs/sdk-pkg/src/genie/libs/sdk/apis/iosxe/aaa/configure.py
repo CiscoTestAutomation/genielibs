@@ -324,12 +324,14 @@ def configure_coa(device, config_dict):
         logger.error('Failed configuring COA on device {}'.format(device))
         raise
 
-def configure_enable_aes_encryption(device, master_key):
+def configure_enable_aes_encryption(device, master_key, old_key=None, proceed_without_old_key=False):
     """
         enables aes password encryption
         Args:
             device ('obj'): Device object
             master_key ('str'): Master key(New key with minimum length of 8 chars)
+            old_key ('str', optional): Existing key already configured on device.
+            proceed_without_old_key ('bool', optional): Proceed without providing old key if bool is True
         Returns:
             None
         Raises:
@@ -343,9 +345,24 @@ def configure_enable_aes_encryption(device, master_key):
                 loop_continue=True,
                 continue_timer=False,
             ),
+
             Statement(
                 pattern=r".*Confirm\s*key.*",
                 action=f"sendline({master_key})",
+                loop_continue=True,
+                continue_timer=False,
+            ),
+
+            Statement(
+                pattern=r"Old\s*key.*",
+                action=lambda spawn: spawn.sendline(old_key if old_key else ''),
+                loop_continue=True,
+                continue_timer=False,
+            ),
+
+            Statement(
+                pattern=r".*Do you want to proceed without providing old key\?.*",
+                action=lambda spawn: spawn.sendline('yes' if proceed_without_old_key else 'no'),
                 loop_continue=True,
                 continue_timer=False,
             )
@@ -361,11 +378,12 @@ def configure_enable_aes_encryption(device, master_key):
         )
 
 
-def configure_disable_aes_encryption(device):
+def configure_disable_aes_encryption(device, new_key=None):
     """
         removes aes password encryption
         Args:
             device ('obj'): Device object
+            new_key ('str'): Optional new master key to set 
         Returns:
             None
         Raises:
@@ -378,7 +396,29 @@ def configure_disable_aes_encryption(device):
                 action="sendline(yes)",
                 loop_continue=True,
                 continue_timer=False,
+            ),
+            
+             Statement(
+                pattern=r".*Do you want to proceed with setting a new master key.*",
+                action="sendline(yes)",
+                loop_continue=True,
+                continue_timer=False,
+            ),
+            
+            Statement(
+                pattern=r".*New\s*key.*",
+                action=f"sendline({new_key})",
+                loop_continue=True,
+                continue_timer=False,
+            ),
+            
+            Statement(
+                pattern=r".*Confirm\s*key.*",
+                action=f"sendline({new_key})",
+                loop_continue=True,
+                continue_timer=False,
             )
+        
         ]
     )
     try:
@@ -3404,3 +3444,151 @@ def configure_aaa_accounting_system_default_start_stop_group_tacacs_group(device
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Failed to configure aaa accounting system default start-stop group tacacs+ group {server_group_name}. Error:\n{e}')
+
+def configure_eap_fast_method_profile(device, profile_name):
+    """ Configure eap fast method profile
+        Args:
+            device ('obj'): Device object
+            profile_name ('str'): Profile name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config = f"eap method fast profile {profile_name}"
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure eap fast method profile. Error:\n{e}"
+        )
+
+def unconfigure_eap_fast_method_profile(device, profile_name):
+    """ Unconfigure eap fast method profile
+        Args:
+            device ('obj'): Device object
+            profile_name ('str'): Profile name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config = f"no eap method fast profile {profile_name}"
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure eap fast method profile. Error:\n{e}"
+        )
+
+def configure_eap_fast_method_password(device, profile_name, local_key=None, local_key_type=None,
+                                        pac_passwd=None, pac_passwd_type=None):
+    """ Configure eap fast method password
+        Args:
+            device ('obj'): Device object
+            local_key ('str', optional): Local key password
+            local_key_type ('str', optional): Type of local key password. Accepted values are 'ENCRYPTED', 'UNENCRYPTED', '7', '0'
+            pac_passwd ('str', optional): PAC password
+            pac_passwd_type ('str', optional): Type of PAC password. Accepted values are 'ENCRYPTED', 'UNENCRYPTED', '7', '0'
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config = []
+    config.append(f"eap method fast profile {profile_name}")
+    if local_key:
+        if local_key_type:
+            config.append(f"local-key {local_key_type} {local_key}")
+        else:
+            config.append(f"local-key {local_key}")
+    if pac_passwd:
+        if pac_passwd_type:
+            config.append(f"pac-password {pac_passwd_type} {pac_passwd}")
+        else:
+            config.append(f"pac-password {pac_passwd}")
+    
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure eap fast method password. Error:\n{e}"
+        )
+
+def unconfigure_eap_fast_method_password(device, profile_name, local_key=None, local_key_type=None,
+                                        pac_passwd=None, pac_passwd_type=None):
+    """ Unconfigure eap fast method password
+        Args:
+            device ('obj'): Device object
+            local_key ('str', optional): Local key password
+            local_key_type ('str', optional): Type of local key password. Accepted values are 'ENCRYPTED', 'UNENCRYPTED', '7', '0'
+            pac_passwd ('str', optional): PAC password
+            pac_passwd_type ('str', optional): Type of PAC password. Accepted values are 'ENCRYPTED', 'UNENCRYPTED', '7', '0'
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config = []
+    config.append(f"eap method fast profile {profile_name}")
+    if local_key:
+        if local_key_type:
+            config.append(f"no local-key {local_key_type} {local_key}")
+        else:
+            config.append(f"no local-key {local_key}")
+    if pac_passwd:
+        if pac_passwd_type:
+            config.append(f"no pac-password {pac_passwd_type} {pac_passwd}")
+        else:
+            config.append(f"no pac-password {pac_passwd}")
+    
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure eap fast method password. Error:\n{e}"
+        )
+
+def configure_mab_request_attribute_2_passwd(device, password, password_type=None):
+    """ Configure mab request attribute 2 password
+        Args:
+            device ('obj'): Device object
+            password ('str'): Password
+            password_type ('str', optional): Type of password. Accepted values are 'ENCRYPTED', 'UNENCRYPTED', '7', '0'
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    if password_type:
+        config = f"mab request format attribute 2 {password_type} {password}"
+    else:
+        config = f"mab request format attribute 2 {password}"
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure mab request attribute 2 password. Error:\n{e}"
+        )
+
+def unconfigure_mab_request_attribute_2_passwd(device, password, password_type=None):
+    """ Unconfigure mab request attribute 2 password
+        Args:
+            device ('obj'): Device object
+            password ('str'): Password
+            password_type ('str', optional): Type of password. Accepted values are 'ENCRYPTED', 'UNENCRYPTED', '7', '0'
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    if password_type:
+        config = f"no mab request format attribute 2 {password_type} {password}"
+    else:
+        config = f"no mab request format attribute 2 {password}"
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure mab request attribute 2 password. Error:\n{e}"
+        )

@@ -57,15 +57,15 @@ def device_rommon_boot(device, golden_image=None, tftp_boot=None, error_pattern=
         log.info(banner("Booting device '{}' with the Tftp images".\
                         format(device.name)))
         log.info("Tftp boot information found:\n{}".format(recovery_info['tftp_boot']))
-        cmd = "tftp:"
+        cmd, image_to_boot = device.api.get_tftp_boot_command(recovery_info)
 
         # Setting rommon variables for booting
         log.info(f'Setting the rommon variables for TFTP boot device {device.name}')
         try:
             if device.is_ha and hasattr(device, 'subconnections'):
-                device.api.configure_rommon_tftp_ha()
+                device.api.configure_rommon_tftp_ha(image_path=image_to_boot)
             else:
-                device.api.configure_rommon_tftp()
+                device.api.configure_rommon_tftp(image_path=image_to_boot)
         except Exception as e:
             log.warning(f'Failed to set the rommon variables for device {device.name}')
 
@@ -205,11 +205,12 @@ def send_break_boot(device, console_activity_pattern= None,
             spawn.send(break_char)
             time.sleep(1)
 
-    def grub_breakboot(spawn, break_char):
+    def grub_breakboot(spawn, context, break_char):
         """ Breaks the booting process on a device
 
             Args:
                 spawn (obj): Spawn connection object
+                context (dict): Context dictionary
                 break_char (str): Char to send
 
             Returns:
@@ -220,11 +221,14 @@ def send_break_boot(device, console_activity_pattern= None,
                  f"by sending {repr(break_char)}")
 
         spawn.send(break_char)
+        # Set boot_cmd to ESC+ENTER for C8KV grub> mode
+        # ESC returns to grub menu, ENTER boots the highlighted entry
+        context['boot_cmd'] = '\033'
 
     # Set a target for each recovery session
     # so it's easier to distinguish expect debug logs on the console.
-    if (device.is_ha and not getattr(device, "subconnections", None)) or \
-            (not device.is_ha and not getattr(device, "spawn", None)):
+    if (getattr(device, "is_ha", False) and not getattr(device, "subconnections", None)) or \
+            (not getattr(device, "is_ha", False) and not getattr(device, "spawn", None)):
         device.instantiate(connection_timeout=timeout)
 
     if not device.connected:
@@ -243,6 +247,22 @@ def send_break_boot(device, console_activity_pattern= None,
 
         # connection dialog to handle the booting process
         connection_dialog = device.connection_provider.get_connection_dialog()
+
+        log.debug(f'Get connection dialog {connection_dialog}')
+
+        # Remove unwanted patterns from the dialog
+        # These patterns can interfere with break boot detection
+        filtered_statements = []
+        for stmt in connection_dialog:
+            # Check if this is a pattern we want to filter out
+            pattern_str = str(getattr(stmt, 'pattern', ''))
+            if 'Escape character is' in pattern_str:
+                log.debug(f"Removing 'Escape character' pattern from connection dialog")
+            else:
+                filtered_statements.append(stmt)
+
+        # Replace dialog contents with filtered list
+        connection_dialog = Dialog(filtered_statements)
 
         # Either use break character or telnet escape break
         # break character is ctrl-c by default
@@ -279,9 +299,10 @@ def send_break_boot(device, console_activity_pattern= None,
                 Statement(
                     state.pattern,
                     action=print_message,
-                    args={'message': f'Device reached {state} state in break boot stage'},
+                    args={'message': f'Device reached {state.name} state in break boot stage'},
                 )
             )
+        log.debug(f'Final connection dialog {connection_dialog}')
 
         return connection_dialog
 
@@ -289,13 +310,13 @@ def send_break_boot(device, console_activity_pattern= None,
 
         dialog = get_connection_dialog(device, con)
 
-        # check for login creds and update the cred list 
+        # check for login creds and update the cred list
         login_creds = con.context.get('login_creds')
         if login_creds:
             con.context['cred_list'] = login_creds
-        # set the buffer for each subconnection to an empty string 
-        con.spawn.buffer = '' 
-        
+        # set the buffer for each subconnection to an empty string
+        con.spawn.buffer = ''
+
         dialog.process(
             con.spawn,
             timeout=timeout,
@@ -309,9 +330,6 @@ def send_break_boot(device, console_activity_pattern= None,
 
         if not con.state_machine.current_state == 'rommon':
             log.warning(f"The device {device.name} is not in rommon")
-
-        # send a new line in order to catch the buffer output in recovery process
-        con.sendline()
 
     futures = []
     executor = ThreadPoolExecutor(max_workers=len(conn_list))

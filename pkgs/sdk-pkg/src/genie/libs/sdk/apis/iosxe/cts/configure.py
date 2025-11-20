@@ -995,6 +995,8 @@ def configure_ip_role_based_acl(
             sub_cmnd += f' {port_type} range {port_range_start} {port_range_end}'
         if dst_port_type and dst_port_range_start and dst_port_range_end:
             sub_cmnd += f' {dst_port_type} range {dst_port_range_start} {dst_port_range_end}'
+        if log:
+            sub_cmnd += f' {log}'            
     cmd.append(sub_cmnd)
     try:
         device.configure(cmd)
@@ -1338,4 +1340,135 @@ def clear_cts_environment_data(device):
     try:
         device.execute('clear cts environment-data')
     except SubCommandFailure as e:
-        raise SubCommandFailure(f"Could not clear CTS environment-data. Error:\n {e}") 
+        raise SubCommandFailure(f"Could not clear CTS environment-data. Error:\n {e}")
+    
+def unconfigure_device_sgt(device):
+    """ Unconfigure Device SGT
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to unconfigure Device SGT
+    """
+    log.debug("Unconfiguring Device SGT")
+    try:
+        device.configure(["no cts sgt"])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not unconfigure Device SGT. Error: {str(e)}")
+
+def configure_cts_retry_period(device, period):
+    """ Configure CTS retry period
+        Args:
+            device ('obj'): device to use
+            period ('int'): retry period in seconds. <0-64000>  Enter Conn Retry Period in seconds (0 = forever)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure cts sxp retry period
+    """
+    log.debug("Configure CTS SXP retry period")
+    try:
+        device.configure([f"cts sxp retry period {period}"])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure CTS SXP retry period.Error:\n{}".format(str(e))
+        )
+
+def unconfigure_cts_retry_period(device, period):
+    """ Unconfigure CTS retry period
+        Args:
+            device ('obj'): device to use
+            period ('int'): retry period in seconds. <0-64000>  Enter Conn Retry Period in seconds (0 = forever)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to unconfigure cts sxp retry period
+    """
+    log.debug("Unconfigure CTS SXP retry period")
+    try:
+        device.configure([f"no cts sxp retry period {period}"])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure CTS SXP retry period.Error:\n{str(e)}"
+        )
+
+def configure_cts_reconciliation_period(device, period):
+    """ Configure CTS reconciliation period
+        Args:
+            device ('obj'): device to use
+            period ('int'): reconciliation period in seconds. <0-64000>  Enter Conn Reconciliation Period in seconds (0 = forever)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure cts sxp reconciliation period
+    """
+    log.debug("Configure CTS SXP reconciliation period")
+    try:
+        device.configure([f"cts sxp reconciliation period {period}"])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure CTS SXP reconciliation period.Error:\n{str(e)}"
+        )
+
+def unconfigure_cts_reconciliation_period(device, period):
+    """ Unconfigure CTS reconciliation period
+        Args:
+            device ('obj'): device to use
+            period ('int'): reconciliation period in seconds. <0-64000>  Enter Conn Reconciliation Period in seconds (0 = forever)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to unconfigure cts sxp reconciliation period
+    """
+    log.debug("Unconfigure CTS SXP reconciliation period")
+    try:
+        device.configure([f"no cts sxp reconciliation period {period}"])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure CTS SXP reconciliation period.Error:\n{str(e)}"
+        )
+
+def configure_cts_sxp_default_source(device, source_ipv4=None, source_ipv6=None):
+    """ Configure cts sxp default source
+        Args:
+            device ('obj'): device to use
+            source_ipv4 ('str', Optional): source ipv4 address
+            source_ipv6 ('str', Optional): source ipv6 address
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure default source
+    """
+    log.debug("Assign default cts sxp source")
+    try:
+        if source_ipv4:
+            device.configure([f"cts sxp default source-ip {source_ipv4}"])
+        if source_ipv6:
+            device.configure([f"cts sxp default source-ipv6 {source_ipv6}"])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure default source. Error: {str(e)}"
+        )
+
+def unconfigure_cts_sxp_default_source(device, source_ipv4=None, source_ipv6=None):
+    """ Disable cts sxp default source
+        Args:
+            device ('obj'): device to use
+            source_ipv4 ('str', Optional): source ipv4 address
+            source_ipv6 ('str', Optional): source ipv6 address
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to unconfigure default source
+    """
+    log.debug("Unconfigure default CTS SXP source")
+    try:
+        if source_ipv4:
+            device.configure([f"no cts sxp default source-ip {source_ipv4}"])
+        if source_ipv6:
+            device.configure([f"no cts sxp default source-ipv6 {source_ipv6}"])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure default CTS SXP source.Error:\n{str(e)}"
+        )

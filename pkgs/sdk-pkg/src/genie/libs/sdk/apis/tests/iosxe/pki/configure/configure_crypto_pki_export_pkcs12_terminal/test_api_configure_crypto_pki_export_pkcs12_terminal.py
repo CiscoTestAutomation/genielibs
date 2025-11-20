@@ -1,0 +1,101 @@
+from unittest import TestCase
+from genie.libs.sdk.apis.iosxe.pki.configure import configure_crypto_pki_export_pkcs12_terminal
+from unittest.mock import Mock
+
+
+class TestConfigureCryptoPkiExportPkcs12Terminal(TestCase):
+
+    def test_configure_crypto_pki_export_pkcs12_terminal(self):
+        self.device = Mock()
+        result = configure_crypto_pki_export_pkcs12_terminal(self.device, 'client', 'cisco123')
+        self.assertEqual(
+            self.device.configure.mock_calls[0].args,
+            ('crypto pki export client pkcs12 terminal password cisco123',)
+        )
+
+    def test_configure_crypto_pki_export_pkcs12_terminal_return_output(self):
+        self.device = Mock()
+        
+        # Mock the expected output
+        expected_output = """Exported pkcs12 follows:
+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
+iT69kkRSMgQI5E76tJTz9RICAggA
+
+---End - This line not part of the pkcs12---
+
+CRYPTO_PKI: Exported PKCS12 file successfully."""
+        
+        self.device.configure.return_value = expected_output
+        
+        result = configure_crypto_pki_export_pkcs12_terminal(self.device, 'client', 'cisco123')
+        self.assertEqual(
+            self.device.configure.mock_calls[0].args,
+            ('crypto pki export client pkcs12 terminal password cisco123',)
+        )
+        
+        self.assertEqual(result, expected_output)

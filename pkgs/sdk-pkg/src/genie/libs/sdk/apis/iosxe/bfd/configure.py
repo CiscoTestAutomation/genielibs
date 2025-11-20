@@ -488,3 +488,51 @@ def rp_bfd_all_interfaces(device, routing_protocol, process_id=None, system_numb
         raise SubCommandFailure(
             f"Could not enable BFD on all interfaces for routing protocol {routing_protocol}. Error:\n{e}"
         )
+
+def disable_bfd_static_route(device, interface, ip_address):
+    """ Disables bfd static route on device
+
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface to configure under
+            ip_address ('str'): ip address of destination
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed enabling bfd static rout on device
+    """
+    log.info(
+        "Disabling bfd static route on {} to {}".format(interface, ip_address)
+    )
+    try:
+        device.configure(
+            ["no ip route static bfd {} {}".format(interface, ip_address)]
+        )
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not configure bfd static route on interface {interface}".format(
+                interface=interface
+            )
+        )
+
+def disable_ospf_bfd_all_interfaces(device, process_id):
+    """ Enable BFD on all interfaces for OSPF
+        Args:
+            device ('obj'): device to use
+            process_id ('str'): OSPF process id
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed enabling BFD on all interfaces for OSPF
+    """
+    log.debug("Enable BFD on all interfaces for OSPF")
+    try:
+        device.configure([
+            f"router ospf {process_id}",
+            "no bfd all-interfaces"
+        ])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not enable BFD on all interfaces for OSPF. Error:\n{e}"
+        )
+

@@ -3,6 +3,7 @@ from .base import (BaseSNMPPowerCycler,
                    BaseCyberSwitchingPowerCycler,
                    BaseEsxiPowerCycler,
                    BaseCliPowerCycler,
+                   BaseVCenterPowerCycler,
                    )
 
 
@@ -76,3 +77,8 @@ class RaritanPowerCycler(BaseCliPowerCycler):
         'power_on': 'power outlets {outlet} on',
         'power_off': 'power outlets {outlet} off',
     }
+
+
+class VCenterPowerCycler(BaseVCenterPowerCycler):
+    type = 'vcenter_pdu'
+    connection_type = 'soap'

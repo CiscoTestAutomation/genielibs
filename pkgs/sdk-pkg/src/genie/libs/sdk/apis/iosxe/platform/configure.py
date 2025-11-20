@@ -3075,8 +3075,12 @@ def configure_key_config_key_password_encrypt(device, password):
     """
     log.info("Configuring key config-key password encrypt on device")
     cmd = [f'key config-key password encrypt {password}']
+    dialog = Dialog([
+        Statement(pattern=r"Old key:", action="sendline()", loop_continue=True, continue_timer=False),
+        Statement(pattern=r"Do you want to proceed without providing old key\? \[yes\/no\]:", action="sendline(yes)", loop_continue=True, continue_timer=False),
+    ])
     try:
-        device.configure(cmd)
+        device.configure(cmd, reply=dialog)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not configure key config-key password encrypt on {device}. Error:\n{error}"
@@ -3099,6 +3103,10 @@ def unconfigure_key_config_key_password_encrypt(device, password):
     dialog = Dialog([
         Statement(pattern=r"Continue with master key deletion \? \[yes\/no\]\:\s*$",
                   action='sendline(yes)',
+                  loop_continue=True,
+                  continue_timer=False),
+        Statement(pattern=r"Do you want to proceed with setting a new master key\? \[yes\/no\]\:\s*$",
+                  action='sendline(no)',
                   loop_continue=True,
                   continue_timer=False)
         ])
@@ -6805,3 +6813,87 @@ def test_platform_hardware_powersupply_oir(device, slot_number, action):
         except SubCommandFailure as e:
             log.error(f"Failed to perform PSU OIR {action}: {command}")
             raise SubCommandFailure(f"Error executing command: {e}")
+
+def configure_diagnostic_schedule_module_test_all_daily(device, module_num, time, card_index_num, job_index):
+    """Configure diagnostic schedule module test
+        Args:
+            device ('obj'): Device object
+            module_num ('int'): Module number
+            time ('str'): Time in format hh:mm
+            card_index_num ('int'): Card index number (1-65535)
+            job_index ('int'): Job index (1-65535)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    config = f"diagnostic schedule module {module_num} test all daily {time} cardindex {card_index_num} jobindex {job_index}"
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure diagnostic schedule module test on device {device.name}. Error:\n{e}")
+
+def unconfigure_diagnostic_schedule_module_test_all_daily(device, module_num, time, card_index_num, job_index):
+    """Unconfigure diagnostic schedule module test
+        Args:
+            device ('obj'): Device object
+            module_num ('int'): Module number
+            time ('str'): Time in format hh:mm
+            card_index_num ('int'): Card index number (1-65535)
+            job_index ('int'): Job index (1-65535)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    config = f"no diagnostic schedule module {module_num} test all daily {time} cardindex {card_index_num} jobindex {job_index}"
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure diagnostic schedule module test on device {device.name}. Error:\n{e}")
+
+def configure_ipv6_local_pool(device,name,pool_prefix,prefix_len):
+    """ ipv6 local pool
+        Args:
+            device (`obj`): Device object
+            name ('str') : pool name
+            pool_prefix ('str') : IPv6 pool prefix x:x::y/<z>
+            prefix_len ('str') : Prefix length to assign from pool
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    try:
+        device.configure(f'ipv6 local pool {name} {pool_prefix} {prefix_len}')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure local pool on {device}. Error:\n{error}"
+                .format(device=device, error=e)
+        )
+
+def unconfigure_ipv6_local_pool(device,name):
+    """ ipv6 local pool
+        Args:
+            device ('obj'): Device object
+            name ('str') : pool name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = f'no ipv6 local pool {name}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure local pool on {device}. Error:\n{error}"
+                .format(device=device, error=e)
+        )
