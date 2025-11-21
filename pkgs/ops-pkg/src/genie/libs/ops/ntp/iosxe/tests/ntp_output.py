@@ -192,7 +192,7 @@ class NtpOutput(object):
                         'local_mode': {
                             'client': {
                                 'isconfigured': {
-                                    True: {
+                                    'True': {
                                         'address': '10.4.1.1',
                                         'delay': 0.0,
                                         'isconfigured': True,
@@ -212,7 +212,7 @@ class NtpOutput(object):
                         'local_mode': {
                             'client': {
                                 'isconfigured': {
-                                    False: {
+                                    'False': {
                                         'address': '127.127.1.1',
                                         'delay': 0.0,
                                         'isconfigured': False,
@@ -232,7 +232,7 @@ class NtpOutput(object):
                         'local_mode': {
                             'client': {
                                 'isconfigured': {
-                                    True: {
+                                    'True': {
                                         'address': '10.16.2.2',
                                         'delay': 0.0,
                                         'isconfigured': True,
@@ -325,7 +325,7 @@ class NtpOutputNoConfig(object):
                             'local_mode': {
                                 'client': {
                                     'isconfigured': {
-                                        False: {
+                                        'False': {
                                             'address': '127.127.1.1',
                                             'delay': 0.0,
                                             'isconfigured': False,
