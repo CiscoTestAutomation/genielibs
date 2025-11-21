@@ -55,6 +55,14 @@ class RaritanSnmpv3PX2(BaseSNMPv3PowerCycler):
     off_state = 0
 
 
+class Sentry4SnmpPDU(BaseSNMPPowerCycler):
+    type = 'sentry4'
+    connection_type = 'snmp'
+    oid = '1.3.6.1.4.1.1718.4.1.8.5.1.2.1.1'
+    on_state = 1
+    off_state = 2
+
+
 class CyberSwitching(BaseCyberSwitchingPowerCycler):
     type = 'cyberswitching'
     connection_type = 'telnet'
