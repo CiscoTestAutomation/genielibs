@@ -341,4 +341,3 @@ class FileUtils(FileUtilsBase):
             args = shlex.split(command)
             subprocess.check_call(args, timeout=timeout_seconds, shell=False,
                 **kwargs)
-

@@ -1,40 +1,41 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
 from genie.libs.sdk.apis.iosxe.management.configure import configure_management_protocols
+from unittest.mock import Mock, patch
 
 
-class TestConfigureManagementProtocols(unittest.TestCase):
+class TestConfigureManagementProtocols(TestCase):
 
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          ott-c9300-67:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: cat9k
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['ott-c9300-67']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+    def setUp(self):
+        self.device = Mock()
+        self.device.name = 'xyz'
+        self.device.management = {}
+        
+        # Mock all the API methods that might be called
+        self.device.api.configure_management_ssh = Mock()
+        self.device.api.configure_management_telnet = Mock()
+        self.device.api.configure_management_netconf = Mock()
+        self.device.api.configure_management_gnmi = Mock()
 
     def test_configure_management_protocols(self):
         result = configure_management_protocols(self.device, ['ssh', 'telnet', 'netconf', 'gnmi'])
+        
+        # Verify each protocol configuration was called
+        self.device.api.configure_management_ssh.assert_called_once()
+        self.device.api.configure_management_telnet.assert_called_once()
+        self.device.api.configure_management_netconf.assert_called_once()
+        self.device.api.configure_management_gnmi.assert_called_once()
+        
         expected_output = None
         self.assertEqual(result, expected_output)
 
     def test_configure_management_protocols_1(self):
         result = configure_management_protocols(self.device, ['ssh', 'telnet', 'netconf', {'gnmi': {'enable': True, 'server': True}}])
+        
+        # Verify each protocol configuration was called
+        self.device.api.configure_management_ssh.assert_called_once()
+        self.device.api.configure_management_telnet.assert_called_once()
+        self.device.api.configure_management_netconf.assert_called_once()
+        self.device.api.configure_management_gnmi.assert_called_once_with(enable=True, server=True)
+        
         expected_output = None
         self.assertEqual(result, expected_output)

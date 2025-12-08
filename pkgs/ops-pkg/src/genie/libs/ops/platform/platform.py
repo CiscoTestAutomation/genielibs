@@ -23,6 +23,7 @@ class Platform(Base):
             'swstack': Any(),
             'issu_rollback_timer_state': Any(),
             'issu_rollback_timer_reason': Any(),
+            'hw_revision': Any(),
             'virtual_device': {
                 Any(): {
                     'name': Any(),
@@ -67,6 +68,7 @@ class Platform(Base):
                         'name': Any(),
                         'state': Any(),
                         'sn': Any(),
+                        'hw_revision': Any(),
                         'subslot': {
                             Any(): {
                                 'name': Any(),

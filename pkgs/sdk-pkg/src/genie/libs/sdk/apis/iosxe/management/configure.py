@@ -40,14 +40,14 @@ def configure_management_credentials(device, credentials='default', username=Non
             'aaa new-model',
             'aaa authentication login default local',
             'aaa authorization exec default local',
-            f'no username {username} secret',
-            f'username {username} password 0 {password}',
+            f'no username {username} password',
+            f'username {username} secret {password}',
             f'username {username} privilege 15'
         ])
 
     configure_dialog = Dialog([
         Statement(
-            pattern=r".*This operation will remove all username related configurations with same name.Do you want to continue\?\s*\[confirm\]\s*$",
+            pattern=r".*[C|c]ontinue\?\s*\[confirm\]\s*$",
             action='sendline()',
             loop_continue=True,
             continue_timer=False,
@@ -512,7 +512,8 @@ def configure_management_ssh(device,
                              username=None,
                              password=None,
                              domain_name='cisco.com',
-                             interface=None):
+                             interface=None,
+                             timeout=120):
     '''
     Configure device for management via ssh.
 
@@ -523,6 +524,7 @@ def configure_management_ssh(device,
         password ('str', optional): password to ssh
         domain_name ('str'): domain name to ssh
         interface: (str) Management interface to use
+        timeout ('int'): timeout for rsa key generation. Default: 120 seconds
 
     Returns:
         None
@@ -547,11 +549,11 @@ def configure_management_ssh(device,
     ])
 
     dialog = Dialog([
-        [r'How many bits in the modulus \[\d+\]:\s*$', 'sendline()', None, True, False],
+        [r'How many bits in the modulus \[\d+\]:\s*$', 'sendline(4096)', None, True, False],
         [r'Do you really want to replace them\? \[yes/no\]:\s*$', 'sendline(yes)', None, True, False]
         ])
 
-    device.configure(ssh_config, reply=dialog)
+    device.configure(ssh_config, reply=dialog, timeout=timeout)
 
     device.api.configure_management_vty_lines(
         authentication='default',
@@ -1139,7 +1141,7 @@ def configure_management_gnmi(device,
                               enable=True,
                               server=True,
                               port=None,
-                              secure_server=False,
+                              secure_server=True,
                               secure_client_auth=False,
                               secure_trustpoint='trustpoint1',
                               password='',
@@ -1181,7 +1183,10 @@ def configure_management_gnmi(device,
                     'credentials': {'default': {'username': ''}},
                     'connections': {
                         'cli': {
-                            'command': 'bash'
+                            'command': 'bash',
+                            'settings': {
+                                'LINUX_INIT_EXEC_COMMANDS': []
+                            }
                         }
                     }
                 }
@@ -1298,8 +1303,18 @@ def unconfigure_management_credentials(device, credentials='default', username=N
             f'no username {username}',
             'no aaa new-model'
         ])
+
+    configure_dialog = Dialog([
+        Statement(
+            pattern=r".*[C|c]ontinue\?\s*\[confirm\]\s*$",
+            action='sendline()',
+            loop_continue=True,
+            continue_timer=False,
+        ),
+    ])
+
     try:
-        device.configure(config)
+        device.configure(config, reply=configure_dialog)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Failed to unconfigure_management_credentials Error {e}")
@@ -1431,6 +1446,26 @@ def configure_ip_ssh_client_algorithm_kex(device, kex):
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure ip ssh client algorithm kex on device {device}. Error:\n{e}")
 
+def unconfigure_ip_ssh_client_algorithm_kex(device, kex=None):
+
+    """ Unconfigure ip ssh client algorith kex
+        Args:
+            device ('obj'): Device object
+            kex('str', optional): Key Exchange algorithm
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    if kex:
+        cmd = f'no ip ssh client algorithm kex {kex}'
+    else:
+        cmd = f'no ip ssh client algorithm kex'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure ip ssh client algorithm kex on device {device}. Error:\n{e}")
+
 def configure_ip_ssh_client_algorithm_encryption(device, encryption):
 
     """ Configure ip ssh client algorith encryption
@@ -1481,6 +1516,26 @@ def configure_ip_ssh_server_algorithm_kex(device, kex):
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure ip ssh server algorithm kex on device {device}. Error:\n{e}")
+
+def unconfigure_ip_ssh_server_algorithm_kex(device, kex=None):
+
+    """ Unconfigure ip ssh server algorith kex
+        Args:
+            device ('obj'): Device object
+            kex('str', optional): Key Exchange algorithm
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    if kex:
+        cmd = f'no ip ssh server algorithm kex {kex}'
+    else:
+        cmd = f'no ip ssh server algorithm kex'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure ip ssh server algorithm kex on device {device}. Error:\n{e}")
 
 def configure_ip_ssh_server_algorithm_encryption(device, encryption):
 

@@ -1,4 +1,4 @@
 repo_path_conf: 'https://github.com/CiscoTestAutomation/genielibs/tree/{branch}/pkgs/conf-pkg/src/genie/libs/'
 repo_path_ops: 'https://github.com/CiscoTestAutomation/genielibs/tree/{branch}/pkgs/ops-pkg/src/genie/libs/'
 style: 'github'
-branch: 'master'
+branch: 'main'

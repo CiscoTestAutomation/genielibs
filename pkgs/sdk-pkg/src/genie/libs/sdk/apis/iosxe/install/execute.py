@@ -75,7 +75,7 @@ def execute_install_remove_version(device, version=None, timeout=60, connect_tim
     
 def execute_install_activate(device, abort_timer=None, prompt=True, issu=False,
                      smu=False, file_name=None, timeout=900, connect_timeout=10,
-                     post_reload_wait_time=None, error_pattern=None, install_reload=False):
+                     post_reload_wait_time=None, error_pattern=None, install_reload=False, install_timeout=30):
     """
         Performs install activate with auto abort timer on the device
         Args:
@@ -93,6 +93,7 @@ def execute_install_activate(device, abort_timer=None, prompt=True, issu=False,
             post_reload_wait_time ('int, optional'): Time to wait after reload completes. Default is None.
             error_pattern ('list, optional'): List of regex patterns to check for errors. Default is None.
             install_reload('bool, optional'): True if device Reloads post install activate. Default is False.
+            install_timeout ('int, optional'): Time to wait post install. Default is 30.
         Returns:
             Output string if install activate is successful, False otherwise.
         Raises:
@@ -102,6 +103,9 @@ def execute_install_activate(device, abort_timer=None, prompt=True, issu=False,
     def slow_sendline(spawn):
         time.sleep(connect_timeout)
         spawn.sendline('')
+
+    def install_sendline():
+        time.sleep(install_timeout)
 
     dialog = Dialog([
         Statement(pattern=r".*\[y/n\]",
@@ -130,7 +134,7 @@ def execute_install_activate(device, abort_timer=None, prompt=True, issu=False,
                   loop_continue=False,
                   continue_timer=False),
         Statement(pattern = r".*SUCCESS: install_activate.*",
-                  action = None,
+                  action = install_sendline,
                   args = None,
                   loop_continue = False, 
                   continue_timer = False),
@@ -186,7 +190,7 @@ def execute_install_activate(device, abort_timer=None, prompt=True, issu=False,
             log.info(f"Initiating device reload on {device.name} after install activate.")
             _, output = device.reload(cmd, reply=dialog, timeout=timeout, return_output=True,
                                     prompt_recovery=True, post_reload_wait_time=post_reload_wait_time,
-                                    error_pattern=error_pattern)
+                                    error_pattern=error_pattern, install_timeout=install_timeout)
             log.info(f"Device {device.name} reloaded successfully after install activate.")
         else:
             log.info(f"Executing '{cmd}' on {device.name} without reload handling.")
@@ -321,6 +325,11 @@ def execute_install_one_shot(device, file_path=None, prompt=True, issu=False,
                   args = None,
                   loop_continue = False,
                   continue_timer = False),
+        Statement(pattern=r".*Same Image File\-No Change.*",
+                  action = None,
+                  args = None,
+                  loop_continue=False,
+                  continue_timer=False),
         Statement(pattern = r".*SUCCESS\: install_add_activate_commit.*",
                   action = install_sendline,
                   args = None,
@@ -331,6 +340,11 @@ def execute_install_one_shot(device, file_path=None, prompt=True, issu=False,
                   args = None,
                   loop_continue = False,
                   continue_timer = False),
+        Statement(pattern=r".*FAILED:\s*add_activate_commit.*",
+                  action=None,
+                  args=None,
+                  loop_continue=False,
+                  continue_timer=False),
         Statement(pattern=r".*%PMAN-5-EXITACTION.*",
                   action = None,
                   args = None,
@@ -365,7 +379,7 @@ def execute_install_one_shot(device, file_path=None, prompt=True, issu=False,
         log.error(f"Error while executing {cmd} on {device.name}: {e}")
 
     pattern = 'SUCCESS' if negative_test else 'FAILED'
-    result = 'fail' if pattern in output else 'successful'
+    result = 'fail' if pattern in str(output) else 'successful'
     log.info(f"install one shot operation {result} on {device.name}")
     return (output if result == 'successful' else False)
 

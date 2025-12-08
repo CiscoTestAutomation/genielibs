@@ -24,7 +24,7 @@ def find_version(*paths):
     raise RuntimeError("Unable to find version string.")
 
 # generate package dependencies
-install_requires=['unicon', 'pyftpdlib', 'tftpy<0.8.1']
+install_requires=['unicon', 'pyftpdlib', 'tftpy<0.8.1', 'asyncssh']
 
 entry_points = {
     'pyats.utils.fileutils.plugins' : [

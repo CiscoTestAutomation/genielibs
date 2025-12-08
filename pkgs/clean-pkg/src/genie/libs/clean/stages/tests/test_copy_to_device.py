@@ -409,3 +409,57 @@ class VerifyCopyToDevice(unittest.TestCase):
                  error_pattern=ANY),
             call('dir bootflash:')
         ])
+
+
+    def test_copy_to_device_and_with_different_size_and_overwrite_false(self):
+        """Name exists with different size, overwrite=False fail early, no copy attempted"""
+        # prepare device API to return remote filesize, but verify_file_exists returns False (size mismatch)
+        self.device.api.get_file_size_from_server = Mock(return_value=1234)
+        self.device.api.verify_file_exists = Mock(return_value=False)
+
+        # Mock execute: dir shows test.bin present
+        class MockExecute:
+            def __init__(self, *args, **kwargs):
+                self.data = {
+                    'dir bootflash:': iter([
+                        '''
+                            Directory of bootflash:/
+                                    11  drwx            16384  Nov 25 2016 19:32:53 -07:00  lost+found
+                                    12  -rw-                0  Dec 13 2016 11:36:36 -07:00  ds_stats.txt
+                                    8033  drwx             4096  Nov 25 2016 18:42:07 -07:00  test.bin
+                                    1940303872 bytes total (1036210176 bytes free)
+                        '''
+                    ])
+                }
+
+            def __call__(self, cmd, *args, **kwargs):
+                return next(self.data[cmd])
+
+        self.device.execute = Mock(side_effect=MockExecute())
+
+        steps = Steps()
+        testbed = Testbed('mytb', servers={
+            'server1': {
+                'address': '127.0.0.1',
+                'protocol': 'scp'
+            }
+        })
+        self.device.testbed = testbed
+
+        with self.assertRaises(TerminateStepSignal):
+            self.cls.copy_to_device(
+                steps=steps, device=self.device,
+                origin=dict(files=['/path/test.bin'], hostname='server1'),
+                destination=dict(directory='bootflash:'),
+                protocol='scp',
+                overwrite=False
+            )
+
+        self.assertTrue(any(d.result == Failed for d in steps.details))
+
+        self.device.execute.assert_has_calls([call('dir bootflash:')])
+        self.assertNotIn(
+            call(f'copy scp://127.0.0.1//path/test.bin bootflash:/test.bin',
+                prompt_recovery=False, timeout=300, reply=ANY, error_pattern=ANY),
+            self.device.execute.mock_calls
+        )

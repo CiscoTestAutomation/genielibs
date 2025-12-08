@@ -1,39 +1,14 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
 from genie.libs.sdk.apis.iosxe.management.configure import configure_management_netconf
+from unittest.mock import Mock
 
 
-class TestConfigureManagementNetconf(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          vmtb-isr4451:
-            credentials:
-                default:
-                    username: admin
-                    password: admin
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: iosxe
-            type: iosxe
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['vmtb-isr4451']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureManagementNetconf(TestCase):
 
     def test_configure_management_netconf(self):
-        result = configure_management_netconf(self.device)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.device = Mock()
+        result = configure_management_netconf(self.device, None, None, None, 'cisco.com')
+        self.assertEqual(
+            self.device.configure.mock_calls[0].args,
+            (['netconf-yang'],)
+        )

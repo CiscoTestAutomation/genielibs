@@ -1587,3 +1587,33 @@ def get_interface_traffic_packet_counters(device, interface, counter_fields):
     for counter_field in counter_fields:
         packet_counters[counter_field] = device.api.get_interface_packet_counter(interface=interface, counter_field=counter_field, output=None)
     return packet_counters
+
+
+def get_interfaces_connect_status(device):
+    """ Get interfaces with unknown status
+
+        Args:
+            device ('obj'): Device object
+            
+        Returns:
+            interface_status : A dictionary where keys are interface names and values are their statuses.
+              Returns an empty dictionary if no interfaces are found.
+
+        Raises:
+            exception: If no interface status information is found on the device.
+    """
+    # Return True for connected, False for notconnected
+    interface_status = {}
+    try:
+        out = device.parse("show interfaces status")
+        if "interfaces" in out and isinstance(out["interfaces"], dict):
+            for interface_name, details in out["interfaces"].items():
+                status = details.get("status", "unknown")
+                interface_status[interface_name] = True if status == "connected" else False
+
+    except SchemaEmptyParserError as e:
+        log.error("No interface status information found on the device.")
+        raise e        
+
+    return interface_status
+    

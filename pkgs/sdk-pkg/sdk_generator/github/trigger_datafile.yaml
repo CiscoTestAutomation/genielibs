@@ -11,6 +11,6 @@ root_directories:
      root: 'genie.libs.sdk'
      mod_name: 'sdk'
      url:
-         link: 'https://github.com/CiscoTestAutomation/genielibs/tree/{branch}/pkgs/'
-         branch: 'master'
+         link: 'https://github.com/CiscoTestAutomation/genielibs/tree/{branch}/pkgs/sdk-pkg/'
+         branch: 'main'
          style: 'github'

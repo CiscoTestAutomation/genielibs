@@ -69,3 +69,49 @@ class TestPerformTelnet(TestCase):
         )
         # Validate that the api returns False on timeout failure
         self.assertFalse(result)
+
+    def test_perform_telnet_with_remote_cmd(self):
+        device = Mock()
+        remote_device = Mock()
+
+        hostname = 'SecG-A3-9410HA'
+
+        remote_device.execute.return_value = "remote command output"
+        # Define side effect function for device.execute
+        def execute_side_effect(cmd, *args, **kwargs):
+            dialog = kwargs.get('reply')
+            if dialog is not None:
+                for stmt in dialog:
+                    if stmt.pattern == hostname + "#":
+                        fake_spawn = Mock()
+                        # This calls telnet_pass_case(fake_spawn)
+                        stmt.action(fake_spawn)
+                        break
+            return hostname + "#"
+
+        device.execute.side_effect = execute_side_effect
+
+        result = perform_telnet(
+            device,
+            hostname,
+            '10.8.12.26',
+            'admin1',
+            'cisco123',
+            None,
+            'cisco123',
+            60,
+            remote_device=remote_device,
+            remote_cmd='show version'
+        )
+
+        # Validate telnet command
+        self.assertEqual(
+            device.execute.call_args[0][0],
+            'telnet 10.8.12.26'
+        )
+
+        # Validate remote device command call
+        remote_device.execute.assert_called_once_with('show version')
+
+        # API returns (True, "If remote command output")
+        self.assertEqual(result, (True, "remote command output"))

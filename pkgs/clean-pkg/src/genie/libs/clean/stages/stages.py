@@ -102,6 +102,14 @@ connect:
 
             log.info('Checking connection to device: %s' % device.name)
 
+            # If recovery is enabled, ignore rollup
+            section = self.parameters.get('section')
+
+            # Check if 'section' exists and has a parent with 'device_recovery_processor'
+            if section and getattr(section.parent, 'device_recovery_processor',
+                                   None):
+                step.result_rollup = False
+
             # Create a timeout that will loop
             retry_timeout = Timeout(float(retry_timeout),
                                     float(retry_interval))
@@ -1170,8 +1178,36 @@ copy_to_device:
                                 "Unable to check if image '{}' exists on device {} {}."
                                 "Error: {}".format(dest_file_path, device.name,
                                                    dest, str(e)))
-
-                        if (not exist) or (exist and overwrite) or (
+                        name_exists = False
+                        try:
+                            if os.path.basename(dest_file_path) in dir_before:
+                                name_exists = True
+                        except Exception:
+                            name_exists = False
+                        if name_exists and not exist and not (unique_file_name or unique_number or rename_images):
+                            if not overwrite:
+                                step.failed(
+                                    "Destination file '{}' already exists on device {} {} with a different size. "
+                                    "overwrite is set to False will not overwrite. Remove the file manually or set overwrite=True to replace.".format(
+                                        dest_file_path, device.name, dest
+                                    )
+                                )
+                            else:
+                                file_copy_info = {
+                                    file: {
+                                        'size': file_size,
+                                        'dest_path': dest_file_path,
+                                        'exist': True
+                                    }
+                                }
+                                files_to_copy.update(file_copy_info)
+                                step.passed(
+                                    "Destination file '{}' exists with different size on device {} {}. "
+                                    "overwrite=True, will attempt copy and replace.".format(
+                                        dest_file_path, device.name, dest
+                                    )
+                                )
+                        elif (not exist) or (exist and overwrite) or (
                                 exist and (unique_file_name or unique_number
                                            or rename_images)):
                             # Update list of files to copy
@@ -3266,26 +3302,27 @@ configure_management:
                      ping_sleep=PING_SLEEP,
                      **kwargs):
         """Ping the gateway to ensure connectivity."""
-        management = getattr(device, "management", {})
-        config_kwargs = {
-            k: v
-            for k, v in kwargs.items()
-            if k in [k.schema for k in self.schema.keys()]
-        }
-        ip4_gateway = config_kwargs.get("gateway",
-                                        {}).get("ipv4") or management.get(
-                                            "gateway", {}).get("ipv4")
-        ip6_gateway = config_kwargs.get("gateway",
-                                        {}).get("ipv6") or management.get(
-                                            "gateway", {}).get("ipv6")
-        interface = config_kwargs.get("interface") or management.get(
-            "interface")
+        with steps.start("Verify Gateway Configuration") as step:
+            management = getattr(device, "management", {})
+            config_kwargs = {
+                k: v
+                for k, v in kwargs.items()
+                if k in [k.schema for k in self.schema.keys()]
+            }
+            ip4_gateway = config_kwargs.get("gateway",
+                                            {}).get("ipv4") or management.get(
+                                                "gateway", {}).get("ipv4")
+            ip6_gateway = config_kwargs.get("gateway",
+                                            {}).get("ipv6") or management.get(
+                                                "gateway", {}).get("ipv6")
+            interface = config_kwargs.get("interface") or management.get(
+                "interface")
 
-        vrf = config_kwargs.get("vrf") or management.get("vrf")
+            vrf = config_kwargs.get("vrf") or management.get("vrf")
 
-        if not ip4_gateway and not ip6_gateway:
-            steps.failed("No gateway configured for management interface")
-            return
+            if not ip4_gateway and not ip6_gateway:
+                step.failed("No gateway configured for management interface")
+                return
 
         for gateway in [ip4_gateway, ip6_gateway]:
             if gateway:

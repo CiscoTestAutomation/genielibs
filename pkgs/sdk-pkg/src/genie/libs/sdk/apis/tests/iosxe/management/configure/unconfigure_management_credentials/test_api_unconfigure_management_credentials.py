@@ -1,35 +1,18 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
 from genie.libs.sdk.apis.iosxe.management.configure import unconfigure_management_credentials
+from unittest.mock import Mock
 
 
-class TestUnconfigureManagementCredentials(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          Switch:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: c9200
-            type: c9200
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Switch']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigureManagementCredentials(TestCase):
 
     def test_unconfigure_management_credentials(self):
-        result = unconfigure_management_credentials(self.device, 'default', 'admin', 'admin')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.device = Mock()
+        result = unconfigure_management_credentials(self.device, None, 'test-user', 'cisco@123')
+        self.assertEqual(
+            self.device.configure.mock_calls[0].args,
+            (['no aaa authentication login default local',
+            'no aaa authorization exec default local',
+            f'no username test-user',
+            'no aaa new-model'],)
+        )
+

@@ -34,3 +34,31 @@ def get_alarm_max_min_temp(device):
         )
 
     return [max_temp, min_temp]
+
+
+def get_alarm_contact_relay_mode(device):
+    """ Get the contact relay mode from the device from alarm settings
+
+        Args:
+            device (`obj`): Device object
+
+        Returns:
+            str: contact relay mode
+
+        Raises:
+            SubCommandFailure: Failed to get the contact relay mode
+    """
+    
+    try:
+        output = device.parse('show alarm settings')
+        contact_relay_mode = output.get('alarm_relay_mode', 'N/A')
+
+        if contact_relay_mode == 'N/A':
+            raise KeyError
+        
+    except KeyError:
+        raise SubCommandFailure(
+            f"Could not find contact relay mode in output of 'show alarm settings' on device {device.name}."
+        )
+
+    return contact_relay_mode

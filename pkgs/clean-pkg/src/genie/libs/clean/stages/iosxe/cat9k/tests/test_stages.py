@@ -118,7 +118,6 @@ class TestRommonBoot(unittest.TestCase):
         self.device.is_ha = False
         self.device.subconnections = mock.MagicMock()
         self.device.expect = mock.Mock()
-        self.device.destroy_all = mock.Mock()
 
         reload_dialog = mock.Mock()
         dialog.return_value = reload_dialog
@@ -140,12 +139,14 @@ class TestRommonBoot(unittest.TestCase):
                       continue_timer=False)
         ])
 
-        self.device.sendline.assert_called_with("reload")
+        # Check both sendline calls
+        self.device.sendline.assert_has_calls([
+            mock.call("reload"),
+            mock.call()
+        ])
         reload_dialog.process.assert_called_with(self.device.spawn)
         self.device.expect.assert_called_with(
             ['(.*Initializing Hardware.*|^(.*)((rommon(.*))+>|switch *:).*$)'], timeout=60)
-
-        self.device.destroy_all.assert_called_once()
 
         #  step_context comes from the following snippet
         #  with steps.start('...') as step_context:

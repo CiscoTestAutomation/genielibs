@@ -144,6 +144,7 @@ def configure_radius_group(device, server_config):
                 retransmit('int'):  <1-100>  Number of retries for a transaction (default is 3)
                 timeout('int'): <1-1000>  Wait time (default 5 seconds)
                 ip_addr ('str'): ISE IP
+                ipv6_addr ('str'): ISE IPv6 address
                 key('str'): Server key
                 dscp_auth (<1-63>): Radius DSCP (Differentiated Services Code Point) marking value for Authentication
                 dscp_acct (<1-63>): Radius DSCP (Differentiated Services Code Point) marking value for Accounting
@@ -161,6 +162,7 @@ def configure_radius_group(device, server_config):
                     retransmit = 0,
                     timeout = 10,
                     ip_addr = "11.19.99.99",
+                    ipv6_addr = "2001::1",
                     key = "cisco123',
                     dscp_auth = '20',
                     dscp_acct = '10'
@@ -197,6 +199,10 @@ def configure_radius_group(device, server_config):
     if 'ip_addr' in server_config:
        config_list.append("address ipv4 {} auth-port 1812 acct-port 1813".format(server_config['ip_addr']))
 
+    # address ipv6 2001::1 auth-port 1812 acct-port 1813
+    if 'ipv6_addr' in server_config:
+        config_list.append("address ipv6 {} auth-port 1812 acct-port 1813".format(server_config['ipv6_addr']))
+        
     # key cisco123
     if 'key' in server_config:
        config_list.append("key {}".format(server_config['key']))
@@ -901,13 +907,14 @@ def unconfigure_radius_automate_tester(device, server_name, username):
             "Could not unconfigure Radius automate tester"
         )
 
-def configure_radius_interface_vrf(device, interface, vrf):
+def configure_radius_interface_vrf(device, interface, vrf, protocol='ip'):
 
     """ Configure Radius Interface via vrf
     Args:
         device ('obj'): device to use
         interface('str'): Interface to be configured
         vrf('str'): VRF name
+        protocol ('str',optional): Protocol type. Default 'ip'
 
     Returns:
         None
@@ -918,19 +925,20 @@ def configure_radius_interface_vrf(device, interface, vrf):
     """
 
     try:
-        device.configure(["ip radius source-interface {interface} vrf {vrf}".format(interface=interface, vrf=vrf)])
+        device.configure(["{protocol} radius source-interface {interface} vrf {vrf}".format(protocol=protocol,interface=interface, vrf=vrf)])
     except SubCommandFailure:
         raise SubCommandFailure(
             "Could not Configure Radius Interface via vrf"
         )
 
-def unconfigure_radius_interface_vrf(device, interface, vrf):
+def unconfigure_radius_interface_vrf(device, interface, vrf, protocol='ip'):
 
     """ Unconfigure Radius Interface via vrf
     Args:
         device ('obj'): device to use
         interface('str'): Interface to be configured
         vrf('str'): VRF name
+        protocol ('str',optional): Protocol type. Default 'ip'
 
     Returns:
         None
@@ -941,7 +949,7 @@ def unconfigure_radius_interface_vrf(device, interface, vrf):
     """
 
     try:
-        device.configure(["no ip radius source-interface {interface} vrf {vrf}".format(interface=interface, vrf=vrf)])
+        device.configure(["no {protocol} radius source-interface {interface} vrf {vrf}".format(protocol=protocol, interface=interface, vrf=vrf)])
     except SubCommandFailure:
         raise SubCommandFailure(
             "Could not Unconfigure Radius Interface via vrf"
@@ -3592,3 +3600,61 @@ def unconfigure_mab_request_attribute_2_passwd(device, password, password_type=N
         raise SubCommandFailure(
             f"Could not unconfigure mab request attribute 2 password. Error:\n{e}"
         )
+
+def configure_aaa_group_radius_interface(device, servergrp, interface, protocol='ip',vrf=None,forwarding=False):
+    """ Configure Radius Interface under aaa group server radius
+    Args:
+        device ('obj'): device to use
+        servergrp ('str'): Server-group (i.e group)
+        interface('str'): Interface to be configured
+        protocol ('str',optional): Protocol type. Default 'ipv4'
+        vrf ('str',optional): VRF name
+        forwarding ('bool',optional): Enable/disable forwarding
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed configuring Radius Interface
+    """
+    try:
+        configs = []
+        configs.append(f"aaa group server radius {servergrp}")
+        if vrf and forwarding:
+            configs.append(f"{protocol} vrf forwarding {vrf}")
+        cmd = f"{protocol} radius source-interface {interface}"
+        if vrf:
+            cmd += f" vrf {vrf}"
+        configs.append(cmd)
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure radius interface. Error:\n{e}"
+        )
+
+def unconfigure_aaa_group_radius_interface(device, servergrp, interface, protocol='ip',vrf=None,forwarding=False):
+    """ Unconfigure Radius Interface under aaa group server radius
+    Args:
+        device ('obj'): device to use
+        servergrp ('str'): Server-group (i.e group)
+        interface('str'): Interface to be configured
+        protocol ('str',optional): Protocol type. Default 'ipv4'
+        vrf ('str',optional): VRF name
+        forwarding ('bool',optional): Enable/disable forwarding
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed unconfiguring Radius Interface
+    """
+    try:
+        configs = []
+        configs.append(f"aaa group server radius {servergrp}")
+        if vrf and forwarding:
+            configs.append(f"no {protocol} vrf forwarding {vrf}")        
+        cmd = f"no {protocol} radius source-interface {interface}"
+        if vrf:
+            cmd += f" vrf {vrf}"
+        configs.append(cmd)
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure radius interface. Error:\n{e}"
+        )        

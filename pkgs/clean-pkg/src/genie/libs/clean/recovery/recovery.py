@@ -59,7 +59,8 @@ def _disconnect_reconnect(device):
 
 
 def _recovery_steps(device, clear_line=True, powercycler=True,
-                    powercycler_delay=30, reconnect_delay=60, **kwargs):
+                    powercycler_delay=30, reconnect_delay=60, configure_console_speed=False,
+                    **kwargs):
 
     '''Steps to recover device
     1. First step clear line
@@ -99,29 +100,40 @@ def _recovery_steps(device, clear_line=True, powercycler=True,
     else:
         log.info('Clear line is not provided!')
 
-    # Step-3: Powercycle device
+    # Step-3&4: Powercycle device
     if powercycler:
-        log.info(banner("Powercycling device '{}'".format(device.name)))
-
-        try:
+        power_cycle_retry = 1
+        if configure_console_speed:
+            power_cycle_retry = 2
+        for powercycler_attempt in range(power_cycle_retry):
+            log.info(banner(f" Powercycling device '{device.name}'"))
             device.api.execute_power_cycle_device(delay=powercycler_delay)
+            log.info(f"Successfully powercycled device '{device.name}' during recovery")
+            try:
+                device.api.device_recovery_boot()
+            except Exception as e:
+                log.error(str(e))
+                if configure_console_speed and powercycler_attempt + 1 < power_cycle_retry:
+                    log.info(f"Device '{device.name}' failed to boot. Updating the console speed.")
+                    log.info(banner(f"Attempting to configure management console speed on device '{device.name}'"))
+                    device.destroy()
+                    device.api.configure_management_console()
+                    log.info(f"Successfully configured management console speed on device '{device.name}'")
+                    device.disconnect()
+                    continue
+                else:
+                    raise Exception(f"Failed to boot device '{device.name}' after powercycle")
+            else:
+                log.info(f"Successfully booted device '{device.name}' after powercycle")
+                break
+    else:
+        # Powercycler not provided do only step-4:
+        log.info('Powercycler is not provided!')
+        try:
+            device.api.device_recovery_boot()
         except Exception as e:
             log.error(str(e))
-            raise Exception("Failed to powercycle device '{}'".format(device.name))
-        else:
-            log.info("Successfully powercycled device '{}' during recovery".\
-                     format(device.name))
-    else:
-        log.info("powercycle is not provided!")
-
-    # Step-4: Boot device with given golden image or by tftp boot
-    try:
-        device.api.device_recovery_boot()
-    except Exception as e:
-        log.error(e)
-        raise Exception(f"Failed to boot the device {device.name}")
-    else:
-        log.info(f"successfully booted the device {device.name}")
+            raise Exception(f"Failed to boot device '{device.name}' after powercycle")
 
     log.info('Sleeping for {r} before reconnection'.format(r=reconnect_delay))
     time.sleep(reconnect_delay)
@@ -158,6 +170,7 @@ def _recovery_steps(device, clear_line=True, powercycler=True,
     },
     Optional('recovery_password'): str,
     Optional('clear_line'): bool,
+    Optional('configure_console_speed'): bool,
     Optional('powercycler'): bool,
     Optional('powercycler_delay'): int,
     Optional('reconnect_delay'): int,
@@ -181,7 +194,8 @@ def recovery_processor(
         powercycler_delay=30,
         reconnect_delay=60,
         post_recovery_configuration=None,
-        connection_timeout=45
+        connection_timeout=45,
+        configure_console_speed=True,
         ):
 
     '''
@@ -195,6 +209,7 @@ def recovery_processor(
           console_breakboot_char: <Character to send when console_activity_pattern is matched, 'str'>
           console_breakboot_telnet_break: Use telnet `send break` to interrupt device boot
           grub_activity_pattern: <Break pattern on the device for grub boot mode, 'str'>
+          configure_console_speed: <Should configure console speed during recovery, 'bool'> (Default: False)
           grub_breakboot_char: <Character to send when grub_activity_pattern is matched, 'str'>
           timeout: <Timeout in seconds to recover the device, 'int'>
           recovery_password: <Device password after coming up, 'str'>
@@ -364,7 +379,7 @@ Recovery Steps:
 
         try:
             _recovery_steps(device, clear_line, powercycler,
-                          powercycler_delay, reconnect_delay)
+                          powercycler_delay, reconnect_delay, configure_console_speed)
         except Exception as e:
             # Could not recover the device!
             log.error(banner("*** Terminating Genie Clean ***"))

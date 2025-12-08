@@ -66,11 +66,24 @@ class TestFileServer(unittest.TestCase):
                     'mypass')
 
     def test_scp(self):
-        with FileServer(protocol='scp', subnet='127.0.0.1/32') as fs:
-            self.assertEqual(fs['address'], '127.0.0.1')
-            self.assertNotIn('port', fs)
-            self.assertNotIn('path', fs)
-            self.assertEqual(fs['protocol'], 'scp')
+        """Test core SCP server functionality"""
+        with tempfile.TemporaryDirectory() as td:
+            with FileServer(protocol='scp', subnet='127.0.0.1/32', path=td) as fs:
+                self.assertEqual(fs['address'], '127.0.0.1')
+                self.assertNotEqual(fs['port'], 0)
+                self.assertEqual(fs['path'], td)
+                self.assertEqual(fs['protocol'], 'scp')
+                self.assertIsInstance(fs['credentials']['scp']['password'], SecretString)
+                self.assertIn('username', fs['credentials']['scp'])
+
+    def test_scp_directory_creation(self):
+        """Test SCP server creates directories"""
+        with tempfile.TemporaryDirectory() as td:
+            scp_dir = os.path.join(td, 'scp_files')
+            with FileServer(protocol='scp', subnet='127.0.0.1/32', path=scp_dir) as fs:
+                self.assertEqual(fs['path'], scp_dir)
+                self.assertTrue(os.path.exists(scp_dir))
+                self.assertTrue(os.path.isdir(scp_dir))
 
     def test_add_to_testbed(self):
         testbed = AttrDict(servers=AttrDict())

@@ -60,7 +60,7 @@ class TestCopyToDevice(unittest.TestCase):
     def test_copy_to_device(self):
         self.device.api.get_mgmt_ip_and_mgmt_src_ip_addresses = Mock(return_value=('127.0.0.1', ['127.0.0.1']))
         self.device.execute = Mock(return_value='')
-        copy_to_device(self.device, 'test.txt')
+        copy_to_device(self.device, 'test.txt', protocol='http')
         assert re.search(r'copy http://\w+:\w+@127.0.0.1:\d+/test.txt flash:', str(self.device.execute.call_args))
 
     def test_copy_to_device_http_server(self):
@@ -120,7 +120,7 @@ class TestCopyToDevice(unittest.TestCase):
     def test_copy_to_device_path(self):
         self.device.api.get_mgmt_ip_and_mgmt_src_ip_addresses = Mock(return_value=('127.0.0.1', ['127.0.0.1']))
         self.device.execute = Mock(return_value='')
-        copy_to_device(self.device, '/tmp/test.txt')
+        copy_to_device(self.device, '/tmp/test.txt', protocol='http')
         assert re.search(r'copy http://\w+:\w+@127.0.0.1:\d+/test.txt flash:', str(self.device.execute.call_args))
 
     def test_copy_to_device_http_server_path(self):

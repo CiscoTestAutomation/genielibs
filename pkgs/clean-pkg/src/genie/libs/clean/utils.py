@@ -632,7 +632,10 @@ def get_protected_files(device, image):
     '''
     Get a list of protected files from the packages.conf file.
     '''
-    protected_files = [image.split(":")[1]]
+    protected_image = image.split(":")[1]
+    if protected_image.startswith("/"):
+        protected_image = protected_image[1:]
+    protected_files = [protected_image]
     try:
         output = device.execute(f"more bootflash:packages.conf")
     except Exception as e:
