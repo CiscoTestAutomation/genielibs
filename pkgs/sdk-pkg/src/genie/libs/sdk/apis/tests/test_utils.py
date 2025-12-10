@@ -1,7 +1,8 @@
 
 import re
 import unittest
-from unittest.mock import MagicMock, Mock, call, patch
+from unittest.mock import MagicMock, Mock, call, patch, PropertyMock
+
 
 from ats.topology import Device
 from unittest import mock
@@ -105,7 +106,7 @@ class TestUtilsApi(unittest.TestCase):
         device.api.get_local_ip = Mock(return_value='127.0.0.1')
         device.api.convert_server_to_linux_device = Mock(return_value=None)
         device.execute = Mock()
-        copy_to_device(device, remote_path='/tmp/test.txt')
+        copy_to_device(device, remote_path='/tmp/test.txt', protocol='http')
         assert re.search(r'copy http://\w+:\w+@127.0.0.1:\d+/test.txt flash:', str(device.execute.call_args))
 
     def test_copy_to_device_via_proxy(self):
@@ -124,7 +125,7 @@ class TestUtilsApi(unittest.TestCase):
         device.api.get_local_ip = Mock(return_value='127.0.0.1')
         device.api.convert_server_to_linux_device = Mock(return_value=None)
         device.execute = Mock()
-        copy_to_device(device, remote_path='/tmp/test.txt')
+        copy_to_device(device, remote_path='/tmp/test.txt', protocol='http')
         assert re.search(r'copy http://\w+:\w+@127.0.0.2:2000/test.txt flash:', str(device.execute.call_args))
 
     def test_copy_to_device_via_proxy_ha(self):
@@ -142,7 +143,7 @@ class TestUtilsApi(unittest.TestCase):
         device.api.get_local_ip = Mock(return_value='127.0.0.1')
         device.api.convert_server_to_linux_device = Mock(return_value=None)
         device.execute = Mock()
-        copy_to_device(device, remote_path='/tmp/test.txt')
+        copy_to_device(device, remote_path='/tmp/test.txt', protocol='http')
         assert re.search(r'copy http://\w+:\w+@127.0.0.2:2000/test.txt flash:', str(device.execute.call_args))
 
     def test_copy_to_device_via_testbed_servers_proxy(self):
@@ -165,7 +166,7 @@ class TestUtilsApi(unittest.TestCase):
         device.testbed.servers = {}
         device.testbed.servers['proxy'] = {}
         device.api.convert_server_to_linux_device = Mock(return_value=server)
-        copy_to_device(device, remote_path='/tmp/test.txt')
+        copy_to_device(device, remote_path='/tmp/test.txt', protocol='http')
         assert re.search(r'copy http://\w+:\w+@127.0.0.2:2000/test.txt flash:', str(device.execute.call_args))
 
     def test_device_recovery_boot(self):
@@ -194,10 +195,13 @@ class TestUtilsApi(unittest.TestCase):
         dev1.api.configure_terminal_line_speed = MagicMock()
         dev1.parse.return_value = {'baud_rate':{'tx':115200}}
         dev1.connect = MagicMock()
+        dev1.spawn = MagicMock()
+        dev1.spawn.buffer = '\\x86'
+        
         dev1.connect.side_effect = [Exception, Exception, True]
         dev1.peripherals = {'terminal_server': {'terminal_1': [{'line': 14}]}}
         dev1.testbed.devices = {'terminal_1':terminal_device_1}
-        configure_management_console(dev1)
+        configure_management_console(dev1, max_time=1, check_interval=1)
         expected_calls = [
             call(terminal_device_1, 14, 9600),
             call(terminal_device_1, 14, 115200)]
@@ -208,12 +212,13 @@ class TestUtilsApi(unittest.TestCase):
         terminal_device_2.is_connected.side_effect =[False, True, True, True]
         dev2.connect = MagicMock()
         dev2.api.configure_terminal_line_speed = MagicMock()
-        dev2.connect.side_effect = [Exception, Exception, True]
+        dev2.connect.side_effect = [Exception, Exception, True, True]
         dev2.peripherals = {'terminal_server': {'terminal_2': [{'line': 14, 'speed': 9600}, {'line': 15, 'speed': 9600}]}}
-        dev1.parse.return_value = {'baud_rate':{'tx':115200}}
+        dev2.parse.return_value = {'baud_rate':{'tx':115200}}
         dev2.testbed.devices = {'terminal_2':terminal_device_2}
         dev2.state_machine.current_state = 'enable'
-        configure_management_console(dev2)
+        dev2.spawn.buffer = '\\x86'
+        configure_management_console(dev2, max_time=1, check_interval=1)
         expected_calls = [
             call(terminal_device_2, 14, 9600),
             call(terminal_device_2, 15, 9600),
@@ -227,31 +232,33 @@ class TestUtilsApi(unittest.TestCase):
         terminal_device_3 =  MagicMock()
         terminal_device_3.is_connected.side_effect =[False, True]
         dev3.connect = MagicMock()
-        dev3.connect.side_effect = [True]
+        dev3.connect.side_effect = [True, True]
         dev3.api.configure_terminal_line_speed = MagicMock()
         dev3.parse.return_value = {'baud_rate':{'tx':19200}}
         dev3.peripherals = {'terminal_server': {'terminal_3': [{'line': 14, 'speed': 9600}]}}
         dev3.testbed.devices = {'terminal_3':terminal_device_3}
         dev3.state_machine.current_state = 'enable'
-        configure_management_console(dev3)
+        configure_management_console(dev3, max_time=30, check_interval=10)
         expected_calls = [
             call(terminal_device_3,14, 9600)]
         self.assertEqual(dev3.api.configure_terminal_line_speed.mock_calls, expected_calls)
 
         dev4 = MagicMock()
         terminal_device_4 =  MagicMock()
-        terminal_device_4.is_connected.side_effect =[False, True, True, True]
+        terminal_device_4.is_connected.side_effect =[False, True, True, True, True]
         terminal_device_5 =  MagicMock()
-        terminal_device_5.is_connected.side_effect =[False, True, True, True]
+        terminal_device_5.is_connected.side_effect =[False, True, True, True, True]
         dev4.connect = MagicMock()
-        dev4.connect.side_effect = [Exception, Exception, True]
+        dev4.connect.side_effect = [Exception, Exception, True, True]
+        dev4.spawn = MagicMock()
+        type(dev4.spawn).buffer = PropertyMock(side_effect=['\\x86', '\\xfe', '\\x86', '\\xfe', '\\x86','\\xfe86','Router>'])
         dev4.parse.return_value = {'baud_rate':{'tx':19200}}
         dev4.api.configure_terminal_line_speed = MagicMock()
         dev4.peripherals = {'terminal_server': {'terminal_4': [{'line': 14, 'speed': 9600}],
                                                 'terminal_5': [{'line': 15, 'speed': 9600}]}}
         dev4.testbed.devices = {'terminal_4':terminal_device_4, 'terminal_5':terminal_device_5 }
         dev4.state_machine.current_state = 'enable'
-        configure_management_console(dev4)
+        configure_management_console(dev4, max_time=1, check_interval=1)
         expected_calls = [
             call(terminal_device_4, 14, 9600),
             call(terminal_device_5, 15, 9600),

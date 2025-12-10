@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 class MockDisconnectReconnect:
 
     def __init__(self, *args, **kwargs):
-        self.state = iter([False, True, False, True])
+        self.state = iter([False, True, False, False, False])
 
     def __call__(self, *arg, **kwargs):
         state = next(self.state)
@@ -49,7 +49,8 @@ class TestRecovery(unittest.TestCase):
             console_breakboot_telnet_break=True,
             break_count=1,
             golden_image=['bootflash:asr1000_golden.bin'],
-            reconnect_delay=1)
+            reconnect_delay=1,
+            configure_console_speed=False)
         device.api.device_recovery_boot.assert_called_once()
         device.api.execute_power_cycle_device.assert_not_called()
 
@@ -72,7 +73,8 @@ class TestRecovery(unittest.TestCase):
             console_breakboot_telnet_break=True,
             break_count=1,
             golden_image=['bootflash:asr1000_golden.bin'],
-            reconnect_delay=1)
+            reconnect_delay=1,
+            configure_console_speed=False)
         device.api.device_recovery_boot.assert_called_once()
         device.api.execute_power_cycle_device.assert_not_called()
 
@@ -97,7 +99,8 @@ class TestRecovery(unittest.TestCase):
             console_breakboot_telnet_break=True,
             break_count=1,
             golden_image=['bootflash:asr1000_golden.bin'],
-            reconnect_delay=1)
+            reconnect_delay=1,
+            configure_console_speed=False)
         device.api.device_recovery_boot.assert_called_once()
         device.api.execute_power_cycle_device.assert_not_called()
 
@@ -109,6 +112,7 @@ class TestRecovery(unittest.TestCase):
         section.parent.parameters = {}
         section.parameters = {}
         device = section.parameters['device'] = MagicMock()
+        device.api.device_recovery_boot = Mock()
         device.state_machine.go_to = Mock(side_effect=Exception)
         device.os = 'iosxe'
         device.api.device_boot_recovery = Mock()
@@ -122,7 +126,8 @@ class TestRecovery(unittest.TestCase):
             console_breakboot_telnet_break=True,
             break_count=1,
             golden_image=['bootflash:asr1000_golden.bin'],
-            reconnect_delay=1)
+            reconnect_delay=1,
+            configure_console_speed=False)
         device.api.device_recovery_boot.assert_called_once()
         device.api.execute_clear_console.assert_called_once()
         device.api.execute_power_cycle_device.assert_called_once()
@@ -136,6 +141,7 @@ class TestRecovery(unittest.TestCase):
         section.parent.parameters = {}
         section.parameters = {}
         device = section.parameters['device'] = MagicMock()
+        device.api.device_recovery_boot = Mock()
         device.state_machine.go_to = Mock(side_effect=Exception)
         device.os = 'iosxe'
         device.api.device_boot_recovery = Mock()
@@ -154,8 +160,44 @@ class TestRecovery(unittest.TestCase):
             console_breakboot_telnet_break=True,
             break_count=1,
             golden_image=['bootflash:asr1000_golden.bin'],
-            reconnect_delay=1)
+            reconnect_delay=1,
+            configure_console_speed=False)
         device.api.device_recovery_boot.assert_called_once()
         device.api.execute_clear_console.assert_called_once()
         device.api.execute_power_cycle_device.assert_called_once()
         self.assertTrue(section.parent.parameters['block_section'])
+        
+
+    @patch('genie.libs.clean.recovery.recovery._disconnect_reconnect', new=mock_disconnect_reconnect)
+    def test_recovery_processor_recovery_configure_console_speed(self):
+        section = Mock()
+        section.parent = Mock()
+        section.parent.history = ['Connect']
+        section.parent.parameters = {}
+        section.parameters = {}
+        device = section.parameters['device'] = MagicMock()
+        device.state_machine.go_to = Mock(side_effect=Exception)
+        device.os = 'iosxe'
+        device.name = 'test_device'
+        device.api.device_recovery_boot = Mock(side_effect=[Exception("Boot recovery failed"), None])
+        device.api.configure_management_console = Mock()
+        device.api.execute_clear_console = Mock()
+        device.api.execute_power_cycle_device = Mock()
+        device.log = logger
+        device.is_ha = True
+        device.api.execute_clear_console = Mock()
+        sub_con_1 = sub_con_2 = MagicMock()
+        sub_con_1.state_machine.go_to = Mock(side_effect=Exception)
+        device.subconnections = [sub_con_1, sub_con_2]
+        recovery_processor(
+            section,
+            console_activity_pattern='Initializing Hardware',
+            console_breakboot_telnet_break=True,
+            break_count=1,
+            golden_image=['bootflash:asr1000_golden.bin'],
+            reconnect_delay=1,
+            configure_console_speed=True)
+        assert device.api.device_recovery_boot.call_count == 2
+        assert device.api.execute_power_cycle_device.call_count == 2
+        device.api.execute_clear_console.assert_called_once()
+        device.api.configure_management_console.assert_called_once()

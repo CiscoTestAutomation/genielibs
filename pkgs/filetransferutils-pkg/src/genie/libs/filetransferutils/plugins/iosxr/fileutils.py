@@ -25,6 +25,7 @@ class FileUtils(FileUtilsDeviceBase):
                  destination,
                  timeout_seconds=300,
                  vrf=None,
+                 cmd=None,
                  *args,
                  **kwargs):
         """ Copy a file to/from IOSXR device
@@ -42,7 +43,8 @@ class FileUtils(FileUtilsDeviceBase):
                     The number of seconds to wait before aborting the operation
                 vrf: `str`
                     Vrf to be used during copy operation
-
+                cmd: `str`
+                    Optional command to use for copying
             Returns
             -------
                 `str` : Output of copy command
@@ -97,30 +99,18 @@ class FileUtils(FileUtilsDeviceBase):
 
         # Extract the server address to be used later for authentication
         used_server = self.get_server(source, destination)
-        ssh_protocol = {'scp', 'sftp'}
+        ssh_protocol = {'sftp'}
 
-        # if protocol is scp or sftp
-        # get_protocol will not return both result from source and destination
-        # so checking both here.
-        p = self.get_protocol(source)
-        if p not in ssh_protocol:
-            p = self.get_protocol(destination)
-        if p in ssh_protocol:
-            s = source.replace('{}://'.format(p), '').replace('//', ':/')
-            d = destination.replace('{}://'.format(p), '').replace('//', ':/')
-            if vrf:
-                cmd = '{p} {s} {d} vrf {vrf_value}'.format(p=p,
-                                                           s=s,
-                                                           d=d,
-                                                           vrf_value=vrf)
+        # Build copy command if not provided
+        if not cmd:
+            protocol = self.get_protocol(source) or self.get_protocol(destination)
+            s = source.replace(f'{protocol}://', '').replace('//', ':/')
+            d = destination.replace(f'{protocol}://', '').replace('//', ':/')
+
+            if protocol in ssh_protocol:
+                cmd = f"{protocol} {s} {d}" + (f" vrf {vrf}" if vrf else "")
             else:
-                cmd = '{p} {s} {d}'.format(p=p, s=s, d=d)
-        elif vrf:
-            cmd = 'copy {f} {t} vrf {vrf_value}'.format(f=source,
-                                                        t=destination,
-                                                        vrf_value=vrf)
-        else:
-            cmd = 'copy {f} {t}'.format(f=source, t=destination)
+                cmd = f"copy {source} {destination}" + (f" vrf {vrf}" if vrf else "")
 
         return super().copyfile(source=source,
                          destination=destination,

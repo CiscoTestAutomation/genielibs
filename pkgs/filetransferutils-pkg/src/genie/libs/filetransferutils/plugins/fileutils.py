@@ -11,6 +11,15 @@ from urllib.parse import urlparse
 from unicon.eal.dialogs import Statement, Dialog
 from unicon.core.errors import SubCommandFailure
 
+import contextlib
+
+from functools import cache
+from datetime import datetime
+from urllib.parse import urlparse
+
+from cryptography import x509
+from cryptography.hazmat.backends import default_backend
+
 try:
     from genie.libs.filetransferutils.bases.fileutils import FileUtilsBase as server
     from genie.libs.filetransferutils.ftp.fileutils import filemode_to_mode
@@ -98,8 +107,8 @@ class FileUtils(FileUtilsCommonDeviceBase):
             username, password = self.get_auth(used_server,
                                                protocol=kwargs.get('protocol'))
         else:
-            username = None
-            password = None
+            username = kwargs.get('username', '')
+            password = kwargs.get('password', '')
 
         destination_filename = ''
         if destination:
@@ -392,7 +401,8 @@ class FileUtils(FileUtilsCommonDeviceBase):
                 ...     timeout_seconds='300', device=device)
         """
 
-        with self.file_transfer_config(used_server, interface=interface, **kwargs):
+        with self.file_transfer_config(used_server, interface=interface, **kwargs, 
+                                       source=source, destination=destination):
             try:
                 return self.send_cli_to_device(
                     cli=cmd,
@@ -824,3 +834,165 @@ class FileUtils(FileUtilsCommonDeviceBase):
             subprocess.check_call(args, timeout=timeout_seconds, shell=False,
                 **kwargs)
 
+class HTTPFileUtilsBase(FileUtilsCommonDeviceBase):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.url_mapping = {}
+
+    @cache
+    def get_certificate_details(self, device, hostname, port):
+        """Retrieve SSL/TLS certificate details from a server.
+        This method connects to a server at the specified hostname and port to retrieve
+        its SSL/TLS certificate in PEM format and extract the Common Name (CN) from the
+        certificate's subject field.
+        If a URL mapping exists for the provided hostname, the method will recursively
+        call itself with the mapped hostname instead.
+
+        Args:
+            device: The device object that provides the API interface for certificate retrieval.
+            hostname (str): The hostname or IP address of the server to connect to.
+            port (int): The port number on which to establish the SSL/TLS connection.
+
+        Returns:
+            tuple: A tuple containing:
+                - cert (str): The PEM-encoded certificate string.
+                - cn (str): The Common Name (CN) extracted from the certificate's subject.
+
+        Raises:
+            Exception: May raise exceptions related to network connectivity, certificate
+                parsing, or if the certificate doesn't contain a Common Name field.
+        """
+        if self.url_mapping.get(hostname):
+            hostname = self.url_mapping.get(hostname)
+            return self.get_certificate_details(device, hostname, port)
+        cert = device.api.get_server_certificate_pem(hostname, port).strip()
+
+        # Extract CN from certificate
+        x_509_cert = x509.load_pem_x509_certificate(cert.encode(), default_backend())
+        cn = x_509_cert.subject.get_attributes_for_oid(x509.oid.NameOID.COMMON_NAME)[0].value
+
+        return cert, cn
+
+    @contextlib.contextmanager
+    def file_transfer_config(self, server=None, interface=None, **kwargs):
+        """
+        Context manager to configure device for file transfer operations.
+        This method configures the device with necessary settings to perform file transfers,
+        particularly for HTTPS-based transfers. It sets up DNS host entries, trustpoints, and
+        PKI authentication, then cleans up these configurations after the transfer completes.
+
+        Args:
+            server (str, optional): Server address for file transfer. Defaults to None.
+            interface (str, optional): Interface to use for file transfer. Defaults to None.
+            **kwargs: Additional keyword arguments including:
+                - device: Device object to configure (required)
+                - source (str): Source URL for file transfer
+                - destination (str): Destination URL for file transfer
+
+        Yields:
+            None: Control is yielded back to caller to perform file transfer operations
+
+        Raises:
+            AttributeError: If device object is not provided or cannot be found
+
+        Notes:
+            - Sets the device clock to current time
+            - For HTTPS URLs, retrieves server certificates and configures trustpoints
+            - Configures DNS host entries for certificate common names
+            - Automatically cleans up all configurations in the finally block
+            - Uses temporary trustpoint named "pyats_temp_trustpoint"
+            - Supports VRF-aware configurations through device.management.vrf
+        """
+        
+        # Get device object
+        device = kwargs.get('device') or getattr(self, 'device', None)
+        if not device:
+            raise AttributeError("Device object is missing, can't proceed with"
+                                " configuration")
+    
+        # device might be a connection, get actual device
+        device = device.device
+        
+        # Get current time in format 'hh:mm:ss d MMM'
+        current_time = datetime.now().strftime('%H:%M:%S %-d %b %Y').lower()
+        device.execute('clock set {}'.format(current_time))
+
+        # Need the source URL to extract hostname and port
+        source = kwargs.get('source')
+        destination = kwargs.get('destination')
+        for loc in (source, destination):
+            parsed_url = urlparse(loc)
+            if parsed_url.scheme.lower() != 'https':
+                continue
+            hostname = parsed_url.hostname
+            port = parsed_url.port if parsed_url.port else 443
+
+            # Retrieve server certificate
+            cert, cn = self.get_certificate_details(device, hostname, port)
+
+            mgmt = getattr(device, 'management', {})
+
+            # Configure DNS host entry
+            device.api.configure_ip_host(
+                hostname=cn,
+                ip_address=self.url_mapping.get(cn, hostname),
+                vrf=mgmt.get('vrf')
+            )
+
+            # Configure trustpoint and PKI authenticate
+            device.api.configure_trustpoint(
+                revoke_check="none", 
+                tp_name="pyats_temp_trustpoint",
+                enrollment_option="terminal")
+            device.api.configure_pki_authenticate_certificate(cert, "pyats_temp_trustpoint")
+
+        try:
+            yield
+        finally:
+            # Unconfigure trustpoint
+            device.api.unconfigure_trustpoint("pyats_temp_trustpoint")
+            device.api.unconfigure_ip_host(
+                hostname=cn,
+                ip_address=self.url_mapping.get(cn, hostname),
+                vrf=mgmt.get('vrf')
+            )
+
+    def validate_and_update_url(self, url, device=None, **kwargs):
+        """
+        Validates and updates a URL by replacing the hostname with the CN from the server's SSL certificate.
+        This method parses the provided URL and, if it uses HTTPS, retrieves the SSL certificate
+        from the server to extract the Common Name (CN). It then rebuilds the URL using the CN
+        instead of the original hostname, which can be useful for certificate validation scenarios.
+        The mapping between CN and original hostname is stored for later reference.
+
+        Args:
+            url (str): The URL to validate and potentially update.
+            device: Optional device object used to retrieve certificate details. Defaults to None.
+            **kwargs: Additional keyword arguments passed to certificate retrieval.
+
+        Returns:
+            str: The updated URL with CN as hostname (for HTTPS), or the original URL (for non-HTTPS).
+            
+        Note:
+            - Only HTTPS URLs are modified; other schemes are returned unchanged.
+            - The original hostname is stored in self.url_mapping with CN as the key.
+            - If no port is specified in the URL, port 443 is used by default for certificate retrieval.
+        """
+        
+        parsed_url = urlparse(url)
+        if parsed_url.scheme.lower() != 'https':
+            return url
+        _cert, cn = self.get_certificate_details(
+            device, 
+            parsed_url.hostname, 
+            parsed_url.port if parsed_url.port else 443)
+        
+        # Rebuild URL with CN instead of hostname
+        netloc = cn
+        if parsed_url.port:
+            netloc += f":{parsed_url.port}"
+        rebuilt_url = parsed_url._replace(netloc=netloc)
+
+        self.url_mapping[cn] = parsed_url.hostname
+
+        return rebuilt_url.geturl()

@@ -227,6 +227,34 @@ class test_filetransferutils(unittest.TestCase):
                                 destination='ftp://1.1.1.1//home/virl',
                                 device=self.device)
 
+    def test_copyfile_scp_with_port(self):
+        """Test SCP copyfile functionality with custom port"""
+
+        # Create SCP-specific FileUtils instance
+        scp_device = FileUtils.from_device(self.device, protocol='scp')
+
+        raw_scp_with_port = '''
+            scp myuser@1.1.1.1:home/virl/backup_config.txt disk0:/backup_config.txt port 2222
+            Thu Oct 10 15:45:18.989 UTC
+            Connecting to 1.1.1.1...
+            Password:
+
+            Transferred 11332 Bytes
+            11332 bytes copied in 1 sec (11332)bytes/sec
+        '''
+
+        # Fix the key to match the actual command format (without leading slash)
+        self.outputs['scp myuser@1.1.1.1:home/virl/backup_config.txt disk0:/backup_config.txt port 2222'] = raw_scp_with_port
+
+        self.device.execute = Mock()
+        self.device.execute.side_effect = self.mapper
+        self.device.parse = Mock()
+        self.device.parse.return_value = {'software_version':'7.1.2'}
+
+        # Test SCP from server to device with custom port using SCP-specific instance
+        scp_device.copyfile(source='scp://myuser@1.1.1.1:2222/home/virl/backup_config.txt',
+                        destination='disk0:/backup_config.txt',
+                        device=self.device)
 
 if __name__ == '__main__':
     unittest.main()

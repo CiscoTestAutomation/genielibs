@@ -2190,3 +2190,25 @@ def execute_show_platform_hardware_qfp_active_feature_nat_datapath_bind(device):
         raise SubCommandFailure(
             f"Failed to execute {cmd} on device. Error:\n{e}"
         )
+
+
+def execute_test_platform_hardware_led_switch(device, switch_type, switch_num, led_state):
+    """ execute test platform hardware led switch <switch_num> mode <mode>
+        Args:
+            device ('obj'): Device object
+            switch_type ('int/str'): Switch type(e.g., 'active', 'standby', or switch number)
+            switch_num ('int'): Switch number
+            led_state ('int'): led state (1: GREEN, 2: FLASH_GREEN, 3: AMBER, 4: FLASH_AMBER, 5: RED, 
+            6: FLASH_RED, 7: ALT_GREEN_RED, 8: BLACK)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to execute the command
+    """
+
+    cmd = f'test platform hardware led switch {switch_type} {switch_num} {led_state}'
+
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to execute command '{cmd}' on device. Error:\n{e}")

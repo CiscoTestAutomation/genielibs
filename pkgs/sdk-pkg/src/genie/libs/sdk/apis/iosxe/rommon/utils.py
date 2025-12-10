@@ -314,8 +314,6 @@ def send_break_boot(device, console_activity_pattern= None,
         login_creds = con.context.get('login_creds')
         if login_creds:
             con.context['cred_list'] = login_creds
-        # set the buffer for each subconnection to an empty string
-        con.spawn.buffer = ''
 
         dialog.process(
             con.spawn,

@@ -11,6 +11,12 @@ from genie.libs.parser.nxos.ping import Ping
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 from genie.libs.sdk.apis.utils import copy_from_device as generic_copy_from_device
 from genie.utils.timeout import Timeout
+from genie.libs import clean
+from genie.abstract import Lookup
+
+# PyATS
+from pyats.async_ import pcall
+from pyats.log.utils import banner
 
 # unicon
 from unicon.eal.dialogs import Dialog, Statement
@@ -468,3 +474,105 @@ def copy_from_device(device,
         http_auth=http_auth,
         use_kstack=use_kstack,
         **kwargs)
+
+def device_recovery_boot(device, console_activity_pattern=None, console_breakboot_char=None,
+                        console_breakboot_telnet_break=None, grub_activity_pattern=None,
+                        grub_breakboot_char=None, break_count=None, timeout=None, golden_image=None, tftp_boot=None,
+                        recovery_password=None):
+    '''Boot device using golden image or using tftp server
+        Args:
+            device: device object
+            break_count: <Send break count, 'int'>
+            console_activity_pattern: <Break pattern on the device for normal boot mode, 'str'>
+            console_breakboot_char: <Character to send when console_activity_pattern is matched, 'str'>
+            console_breakboot_telnet_break: Use telnet `send break` to interrupt device boot
+            grub_activity_pattern: <Break pattern on the device for grub boot mode, 'str'>
+            grub_breakboot_char: <Character to send when grub_activity_pattern is matched, 'str'>
+            timeout: <Timeout in seconds to recover the device, 'int'>
+            recovery_password: <Device password after coming up, 'str'>
+            golden_image: <Golden image to boot the device with, 'list' or 'dict' in the format below>
+                kickstart: <Golden kickstart image, 'str'>
+                system: <Golden system image, 'str'>
+            tftp_boot:
+                image: <Image to boot with `list`> (Mandatory)
+                ip_address: <Management ip address to configure to reach to the TFTP server `list`> (Mandatory)
+                subnet_mask: <Management subnet mask `str`> (Mandatory)
+                gateway: <Management gateway `str`> (Mandatory)
+                tftp_server: <tftp server is reachable with management interface> (Mandatory)
+        Return:
+            None
+        Raise:
+            Exception
+            '''
+    log.info(f'Get the recovery details from clean for device {device.name}')
+    try:
+        recovery_info = device.clean.get('device_recovery')
+    except AttributeError:
+        log.info(f'There is no recovery info for device {device.name}')
+        recovery_info = {}
+
+    console_activity_pattern = console_activity_pattern or recovery_info.get('console_activity_pattern') or "\\.\\.\\.\\."
+    console_breakboot_char = console_breakboot_char or recovery_info.get('console_breakboot_char') or '\x03'
+    console_breakboot_telnet_break =  console_breakboot_telnet_break or recovery_info.get('console_breakboot_telnet_break') or False
+    grub_breakboot_char = grub_breakboot_char or recovery_info.get('grub_breakboot_char') or 'c'
+    break_count = break_count or recovery_info.get('break_count') or 15
+    timeout = timeout or recovery_info.get('timeout') or 750
+
+    log.info('Destroy device connection.')
+    try:
+        device.destroy()
+    except Exception:
+        log.warning("Failed to destroy the device connection but "
+                    "attempting to continue", exc_info=True)
+
+    if golden_image or recovery_info.get('golden_image'):
+        log.info(banner("Booting device '{}' with the Golden images".\
+                        format(device.name)))
+        log.info("Golden image information found:\n{}".format(golden_image))
+
+    elif tftp_boot or recovery_info.get('tftp_boot'):
+        log.info(banner("Booting device '{}' with the Tftp images".\
+                        format(device.name)))
+        log.info("Tftp boot information found:\n{}".format(tftp_boot))
+
+    else:
+        raise Exception('Global recovery only support golden image and tftp '
+                         'boot recovery and neither was provided')
+
+    # Need to instantiate to get the device.start
+    # The device.start only works because of a|b
+    device.instantiate(connection_timeout=timeout)
+
+    # For each default connection, start a fork to try to recover the device
+    try:
+        abstract = Lookup.from_device(device, packages={'clean': clean})
+        # Item is needed to be able to know in which parallel child
+        # we are
+
+        if device.is_ha and hasattr(device, 'subconnections'):
+            start = [i.start[0] for i in device.subconnections]
+        else:
+            start = device.start
+
+        pcall(
+            abstract.clean.recovery.recovery.recovery_worker,
+            start=start,
+            ikwargs = [{'item': i} for i, _ in enumerate(start)],
+            ckwargs = {
+                'device': device,
+                'console_activity_pattern': console_activity_pattern,
+                'console_breakboot_char': console_breakboot_char,
+                'console_breakboot_telnet_break': console_breakboot_telnet_break,
+                'grub_activity_pattern': grub_activity_pattern or recovery_info.get('grub_activity_pattern'),
+                'grub_breakboot_char': grub_breakboot_char,
+                'break_count': break_count,
+                'timeout': timeout,
+                'golden_image': golden_image or recovery_info.get('golden_image'),
+                'tftp_boot': tftp_boot or recovery_info.get('tftp_boot'),
+                'recovery_password': recovery_password or recovery_info.get('recovery_password')}
+        )
+    except Exception as e:
+        log.error(str(e))
+        raise Exception(f"Failed to boot the device {device.name}", from_exception=e)
+    else:
+        log.info(f"Successfully boot the device {device.name}")

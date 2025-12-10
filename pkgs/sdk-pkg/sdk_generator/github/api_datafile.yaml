@@ -3,6 +3,6 @@ root_directories:
      root: 'genie.libs.sdk.apis'
      mod_name: 'apis'
      url:
-         link: 'https://github.com/CiscoTestAutomation/genielibs/tree/{branch}/'
-         branch: 'master'
+         link: 'https://github.com/CiscoTestAutomation/genielibs/blob/{branch}/pkgs/sdk-pkg/'
+         branch: 'main'
          style: 'github'

@@ -13,7 +13,7 @@ class TestConfigureManagementCredentials(TestCase):
             (['aaa new-model',
               'aaa authentication login default local',
               'aaa authorization exec default local',
-              'no username test-user secret',
-              'username test-user password 0 cisco@123',
+              'no username test-user password',
+              'username test-user secret cisco@123',
               'username test-user privilege 15'],)
         )

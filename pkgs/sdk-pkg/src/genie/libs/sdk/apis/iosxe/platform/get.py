@@ -1389,4 +1389,36 @@ def get_environment_alarm_contact(device, contact_number):
         raise Exception(f"Alarm contact {contact_number} not found")
     
     return alarm_contact_info
+
+
+def get_power_supply_status(device):
+    """
+    Get the power supply status information.
+
+    Args:
+        device (`obj`): Device object
+
+    Returns:
+        dict: A dictionary containing power supply status information
+
+    Raises:
+        Exception: If the command output is empty.      
+    """
+    log.info(f"Getting power supply status on device {device.name}")
+    try:
+        output = device.parse("show environment power")
+        power_supplies = output.get('power_supplies', {})
+        power_supply_status = {}
+
+        for ps_name, ps_info in power_supplies.items():
+            power_supply_status[ps_name] = {
+                'status': ps_info.get('status', 'unknown'),
+                'type': ps_info.get('type', 'unknown'),
+                'voltage': ps_info.get('voltage', 'unknown'),
+            }
+
+    except SchemaEmptyParserError as e:
+        log.error(f"No power supply information found on device {device.name}: {e}")
+        raise Exception("No power supply information found")
     
+    return power_supply_status

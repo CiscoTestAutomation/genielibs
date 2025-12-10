@@ -96,7 +96,8 @@ class TestExecuteInstallActivateReload(unittest.TestCase):
             return_output=True,
             prompt_recovery=True,
             post_reload_wait_time=300,
-            error_pattern=['Error', 'Failed to install']
+            error_pattern=['Error', 'Failed to install'],
+            install_timeout=30
         )
         self.assertEqual(result, full_mock_reload_output)
         self.assertIn("SUCCESS: install_activate", result)

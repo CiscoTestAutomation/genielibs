@@ -486,7 +486,8 @@ def delete_files(device, locations, filenames):
 
 def verify_ping(
     device, address, expected_max_success_rate=100, expected_min_success_rate=1,
-    count=None, source=None, vrf=None, max_time=60, check_interval=10, size=None):
+    count=None, source=None, vrf=None, max_time=60, check_interval=10, size=None, protocol=None,
+    port=None):
     """Verify ping
 
     Args:
@@ -500,6 +501,8 @@ def verify_ping(
             max_time (`int`,optional): Max time ( Default is 60 )
             check_interval (`int`,optional): Check interval ( Default is 10 )
             size ('int',optional): Datagram size ( Default is None )
+            protocol ('str',optional): Protocol type (tcp or None)
+            port ('int',optional): Port number ( Default is None )
     """
 
     p = re.compile(r"Success +rate +is +(?P<rate>\d+) +percent.*")
@@ -511,12 +514,21 @@ def verify_ping(
             log.info('Need to pass address as argument')
             return False
         if vrf:
-            cmd = "ping vrf {vrf} {address}".format(vrf=vrf,address=address)
+            if protocol is not None:
+                cmd = "ping vrf {vrf} {protocol} {address}".format(vrf=vrf,address=address, protocol=protocol)
+            else:
+                cmd = "ping vrf {vrf} {address}".format(vrf=vrf,address=address)
         else:
-            cmd = "ping {address}".format(address=address)
+            if protocol is not None:
+                cmd = "ping {protocol} {address}".format(address=address,
+                        protocol=protocol)
+            else:
+                cmd = "ping {address}".format(address=address)
 
         if source:
             cmd += " source {source}".format(source=source)
+        if port:
+            cmd += " port {port}".format(port=port)
         if count:
             cmd += " repeat {count}".format(count=count)
         if size:
@@ -1488,7 +1500,7 @@ def clear_port_security(device,interface=None):
 
     return output
 
-def perform_telnet(device, hostname, ip_address, username, password, vrf=None, enable_pass='lab', timeout=60):
+def perform_telnet(device, hostname, ip_address, username, password, vrf=None, enable_pass='lab', timeout=60, remote_device=None, remote_cmd=None):
     """
     Restore config from local file using copy function
         Args:
@@ -1502,16 +1514,21 @@ def perform_telnet(device, hostname, ip_address, username, password, vrf=None, e
             timeout (int): Optional timeout value
                            default value 60
             vrf (`str1`) : vrf id if applicable
+            remote_device('obj'): Remote device object
+            remote_cmd('str'): command to be executed on remote device
 
         Returns:
             True : When the connection establishment and termination succeeds
             False : When either the connection establishment or termination or both fail
+            bool,output('str') : True/False, remote command execution output
+
     """
 
     telnet_dict = {
                 'pass_timeout_expire_flag': False,
                 'telnet_pass_case_flag': False,
-                'enable_pass_flag': False
+                'enable_pass_flag': False,
+                'output': None
                 }
 
     def send_pass(spawn):
@@ -1526,6 +1543,8 @@ def perform_telnet(device, hostname, ip_address, username, password, vrf=None, e
 
     def telnet_pass_case(spawn):
         telnet_dict['telnet_pass_case_flag'] = True
+        if remote_cmd and remote_device:
+            telnet_dict['output'] = remote_device.execute(remote_cmd)
         spawn.sendline(' exit')
 
     def send_enable(spawn):
@@ -1561,6 +1580,8 @@ def perform_telnet(device, hostname, ip_address, username, password, vrf=None, e
     except Exception as e:
         log.info(f"Error occurred while performing telnet : {e}")
     # Return True only if prompt was reached, else False (e.g., auth failed, connection closed, timeout)
+    if remote_cmd:
+        return (telnet_dict['telnet_pass_case_flag'], telnet_dict['output'])
     return telnet_dict['telnet_pass_case_flag']
 
 

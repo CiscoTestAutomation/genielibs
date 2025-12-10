@@ -3,6 +3,6 @@ root_directories:
      root: 'genie.libs.ops'
      mod_name: 'ops'
      url:
-         link: 'https://github.com/CiscoTestAutomation/genielibs/tree/{branch}/'
-         branch: 'master'
+         link: 'https://github.com/CiscoTestAutomation/genielibs/tree/{branch}/pkgs/ops-pkg/'
+         branch: 'main'
          style: 'github'

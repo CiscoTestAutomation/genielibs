@@ -2,7 +2,9 @@
 
 # Python
 import os
+import ssl
 import ast
+import socket
 import logging
 import re
 import json
@@ -26,7 +28,6 @@ from urllib.parse import urlparse
 from functools import wraps
 
 
-
 # pyATS
 from pyats.easypy import runtime
 from pyats.utils.email import EmailMsg
@@ -47,7 +48,7 @@ from genie.conf.base import Device
 from genie.utils import Dq
 from genie.libs.sdk.libs.utils.normalize import merge_dict
 from genie.libs.sdk.libs.utils.utils import connect_to_device, get_terminal_server, get_lines, ensure_connection, get_speed, \
-                                            device_connection_provider_connect
+                                            device_connection_provider_connect, verify_device_connection
 from genie.libs.sdk.powercycler import powercyclers
 from genie.libs.sdk.powercycler.base import PowerCycler
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
@@ -58,7 +59,7 @@ from unicon.eal.dialogs import Dialog, Statement
 from unicon.core.errors import ConnectionError
 from unicon.plugins.generic.statements import default_statement_list
 from unicon import Connection
-from unicon.core.errors import SubCommandFailure
+from unicon.core.errors import SubCommandFailure, UniconBackendDecodeError
 
 log = logging.getLogger(__name__)
 
@@ -1030,7 +1031,7 @@ def copy_to_device(device,
     remote_path_parent = str(pathlib.PurePath(remote_path).parent)
     remote_filename = pathlib.PurePath(remote_path).name
 
-    protocol = protocol or 'http'
+    protocol = protocol or 'scp'
     # TODO: Remove once https is supported in FileServer
     if protocol == 'https':
         protocol = 'http'
@@ -1049,9 +1050,10 @@ def copy_to_device(device,
             socat_protocol = 'UDP4' if protocol == 'tftp' else 'TCP4'
             proxy_port = proxy_dev.api.socat_relay(remote_ip=local_ip, remote_port=local_port, protocol=socat_protocol)
 
-        if protocol.startswith('http') and http_auth:
-            username = fs.get('credentials', {}).get('http', {}).get('username', '')
-            password = to_plaintext(fs.get('credentials', {}).get('http', {}).get('password', ''))
+        if protocol in ['scp', 'http', 'https']:
+            fs_credentials = fs.get('credentials', {}).get(protocol, {})
+            username = fs_credentials.get('username', '')
+            password = to_plaintext(fs_credentials.get('password', ''))
             source = f'{protocol}://{username}:{password}@'
         else:
             source = f'{protocol}://'
@@ -1231,9 +1233,10 @@ def copy_from_device(device,
             socat_protocal = 'UDP4' if protocol == 'tftp' else 'TCP4'
             proxy_port = proxy_dev.api.socat_relay(remote_ip=local_ip, remote_port=local_port, protocol=socat_protocal)
 
-        if protocol.startswith('http') and http_auth:
-            username = fs.get('credentials', {}).get('http', {}).get('username', '')
-            password = to_plaintext(fs.get('credentials', {}).get('http', {}).get('password', ''))
+        if protocol in ['scp', 'http', 'https']:
+            fs_credentials = fs.get('credentials', {}).get(protocol, {})
+            username = fs_credentials.get('username', '')
+            password = to_plaintext(fs_credentials.get('password', ''))
             destination = f'{protocol}://{username}:{password}@'
         else:
             destination = f'{protocol}://'
@@ -4561,19 +4564,23 @@ def check_and_wait(expect, max_time, poll_time, call_on_fail_func=None, **call_o
     return decorator
 
 
-def configure_management_console(device):
+def configure_management_console(device, connection_timeout=30, check_interval=5, max_time=30):
     ''' Configure and verify serial console speed on device and terminal server peripheral
     Args:
         device('obj'): device object
+        connection_timeout('int'): connection timeout seconds
+        check_interval('int'): check interval seconds
+        max_time('int'): maximum time to keep checking seconds
     '''
     SPEEDS = [9600, 115200, 19200]
     connected = False
     terminal_servers = get_terminal_server(device)
     try:
         log.info(f'Connecting to device {device.name}')
-        device.connect(connection_timeout=30, settings=dict(GRACEFUL_DISCONNECT_WAIT_SEC=0, POST_DISCONNECT_WAIT_SEC=0))
+        device.connect(connection_timeout=connection_timeout, settings=dict(GRACEFUL_DISCONNECT_WAIT_SEC=0, POST_DISCONNECT_WAIT_SEC=0))
         connected = True
     except Exception:
+        device.disconnect()
         log.info(f'Could not connect to device {device}, updating the line speed and trying again.')
         for speed in SPEEDS:
             for terminal_server, terminal_server_lines in terminal_servers.items():
@@ -4586,10 +4593,16 @@ def configure_management_console(device):
                 for line in lines:
                     log.debug(f'Configure speed {speed} for line {line}')
                     device.api.configure_terminal_line_speed(device.testbed.devices[terminal_server], line, speed)
-            if connect_to_device(device):
-                connected = True
+            try:
+                connected = verify_device_connection(device, timeout=max_time, interval=check_interval)
+            except (UniconBackendDecodeError, ConnectionError):
+                log.info(f'Could not connect to device {device} at speed {speed}')
+                continue
+            if connected:
+                log.info(f'Successfully configured {device.name} at speed {speed}')
                 break
-    if connected:
+
+    if connect_to_device(device):
         try:
             out = device.parse('show terminal')
         except SchemaEmptyParserError as e:
@@ -4686,3 +4699,43 @@ def load_image(device, images, server=None, protocol=None, **kwargs):
                         **kwargs)
     else:
         device.api.clean(images=images, **kwargs)
+
+def get_server_certificate_pem(device, hostname, port=443):
+    """ Retrieve server certificate in PEM format from a server.
+    
+    Args:
+        device (obj): Device object.
+        hostname (str): Hostname or IP address of the server.
+        port (int, optional): Port number of the server. Default is 443.
+    
+    Returns:
+        str: Server certificate in PEM format.
+    """
+    server_hostname = hostname
+
+    # Check if a proxy is configured for the device
+    # If so, establish a socat relay through the proxy
+    dev_con = device.connections[device.via]
+    proxy = dev_con.get('proxy') or dev_con.get('sshtunnel', {}).get('host')
+    if proxy:
+        proxy_dev = device.api.convert_server_to_linux_device(proxy) or \
+            device.testbed.devices.get(proxy)
+        proxy_dev.connect()
+        proxy_port, proxy_pid = proxy_dev.api.start_socat_relay(
+            remote_ip=hostname, remote_port=port)
+        
+        hostname = device.testbed.servers[proxy]['address']
+        port = proxy_port
+
+    # Fetch the PEM cert and return it, then close the socat relay if created
+    context = ssl._create_unverified_context()
+    try:
+        with socket.create_connection((hostname, port)) as sock:
+            with context.wrap_socket(sock, server_hostname=server_hostname) as ssock:
+                der_cert = ssock.getpeercert(binary_form=True)
+                # Convert DER to PEM (base64 encoded with header/footer)
+                pem_cert = ssl.DER_cert_to_PEM_cert(der_cert)
+                return pem_cert
+    finally:
+        if proxy:
+            proxy_dev.api.stop_socat_relay(proxy_pid)

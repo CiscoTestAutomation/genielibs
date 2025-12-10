@@ -215,7 +215,7 @@ def unconfigure_crypto_transform_set(device, transform_name):
 
 def configure_ipsec_profile(device,
                             profile_name,
-                            transform_set_name,
+                            transform_set_name=None,
                             ikev2_profile_name=None,
                             isakmp_profile_name=None,
                             is_responder_only=False,
@@ -612,14 +612,16 @@ def unconfigure_ikev2_profile_pre_share(device, profile_name):
 def configure_crypto_ikev2_proposal(device, proposal_name,
                                     encryption_name=None,
                                     integrity_name=None,
-                                    group_number=None):
-    """ Configure Cryto Ikev2 proposal
+                                    group_number=None,
+                                    prf_name=None):
+    """ Configure Crypto Ikev2 proposal
     Args:
         device (`obj`): Device object
         proposal_name (`str`): proposal name
         encryption_name (`str`,optional): name of encryption (Default None)
         integrity_name (`str`,optional): name of integrity (Default None)
         group_number (`str`,optional): group number (Default None)
+        prf_name (`str`,optional): PRF (Pseudo Random Function) algorithm (Default None)
     Return:
         None
     Raise:
@@ -627,18 +629,20 @@ def configure_crypto_ikev2_proposal(device, proposal_name,
     """
     config_list = []
     config_list.append(f'crypto ikev2 proposal {proposal_name}')
-    # Configure Peer Attributes
+    # Configure Proposal Attributes
     if encryption_name:
         config_list.append(f'encryption {encryption_name}')
     if integrity_name:
         config_list.append(f'integrity {integrity_name}')
+    if prf_name:
+        config_list.append(f'prf {prf_name}')
     if group_number:
         config_list.append(f'group {group_number}')
     try:
         device.configure(config_list)
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            f'Could not configure Crypto Ikev2 Keyring. Error: {e}'
+            f'Could not configure Crypto Ikev2 Proposal. Error: {e}'
         )
 
 def unconfigure_crypto_ikev2_proposal(device, proposal_name):

@@ -1,34 +1,14 @@
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
 from genie.libs.sdk.apis.iosxe.ipsec.configure import configure_crypto_ikev2_proposal
+from unittest.mock import Mock
 
 
-class TestConfigureCryptoIkev2Proposal(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = """
-        devices:
-          VCR:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: c9200
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['VCR']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureCryptoIkev2Proposal(TestCase):
 
     def test_configure_crypto_ikev2_proposal(self):
-        result = configure_crypto_ikev2_proposal(self.device, 'newproposal', 'aes-cbc-128', 'sha1', '16')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.device = Mock()
+        result = configure_crypto_ikev2_proposal(self.device, 'my_ikev2_proposal', 'aes-cbc-256', 'sha256', 14, 'sha256')
+        self.assertEqual(
+            self.device.configure.mock_calls[0].args,
+            (['crypto ikev2 proposal my_ikev2_proposal', 'encryption aes-cbc-256', 'integrity sha256', 'prf sha256', 'group 14'],)
+        )

@@ -2744,3 +2744,370 @@ def configure_bgp_best_path_as_path_multipath_relax(device, bgp_as):
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not configure bgp redistribute internal on device {device}. Error:\n{e}")
+
+
+def configure_bgp_md5(device, bgp_as, neighbor_ip, password, address_family=None, vrf_name=None):
+    """ Configures BGP authentication on BGP router
+        Args:
+            device('obj'): device to configure on
+            bgp_as('str'): bgp_as to configure
+            neighbor_ip('str'): neighbor IP address to configure
+            password('str'): MD5 password for authentication
+            address_family('str',optional): address family to configure, default None, ipv4 or ipv6
+            vrf_name('str',optional): VRF name to configure, default None
+    """
+    config = [
+        f'router bgp {bgp_as}'
+    ]
+    if address_family and vrf_name:
+        config.append(f'address-family {address_family} unicast vrf {vrf_name}')
+    config.append(f'neighbor {neighbor_ip} password {password}')
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure BGP MD5 authentication on device {device}. Error:\n{e}")
+
+def unconfigure_bgp_md5(device, bgp_as, neighbor_ip, password, address_family=None, vrf_name=None):
+    """ Unconfigures BGP MD5 authentication on BGP router
+        Args:
+            device('obj'): device to configure on
+            bgp_as('str'): bgp_as to configure
+            neighbor_ip('str'): neighbor IP address to configure
+            password('str'): MD5 password for authentication  
+            address_family('str',optional): address family to configure, default None, ipv4 or ipv6
+            vrf_name('str',optional): VRF name to configure, default None
+    """
+    config = [
+        f'router bgp {bgp_as}'
+    ]
+    if address_family and vrf_name:
+        config.append(f'address-family {address_family} unicast vrf {vrf_name}')
+    config.append(f'no neighbor {neighbor_ip} password {password}')
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not unconfigure BGP MD5 authentication on device {device}. Error:\n{e}")
+
+def configure_bgp_tcpao(device, bgp_as, neighbor_ip, keychain_name, option=None, address_family=None, vrf_name=None):
+    """ Configures BGP TCP Authentication Option for bgp neighbor
+    Args:
+        device('obj'): device to configure on
+        bgp_as('str'): bgp_as to configure
+        neighbor_ip('str'): neighbor IP address to configure
+        keychain_name('str'): keychain name for authentication
+        option('str',optional): can be 'None','include-tcp-options','accept-ao-mismatch-connections', default None
+        address_family('str',optional): address family to configurecan be ipv4 or ipv6, default is None
+        vrf_name('str',optional): VRF name to configure, default None
+    """
+    if option is None:
+        option=str('')
+    config = [
+        f'router bgp {bgp_as}',
+    ]
+    if address_family and vrf_name:
+        config.append(f'address-family {address_family} unicast vrf {vrf_name}')
+    config.append(f'neighbor {neighbor_ip} ao {keychain_name} {option}')
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure BGP TCP-AO authentication on device {device}. Error:\n{e}")
+
+def unconfigure_bgp_tcpao(device, bgp_as, neighbor_ip, keychain_name, option=None, address_family=None, vrf_name=None):
+    """ Removes BGP BGP TCP Authentication Option for bgp neighbor
+    Args:
+        device('obj'): device to configure on
+        bgp_as('str'): bgp_as to configure
+        neighbor_ip('str'): neighbor IP address to configure
+        keychain_name('str'): keychain name for authentication
+        option('str'): can be 'None','include-tcp-options','accept-ao-mismatch-connections', default None
+        address_family('str',optional): address family to configurecan be ipv4 or ipv6, default is None
+        vrf_name('str',optional): VRF name to configure, default None
+    """
+    if option is None:
+        option=str('')
+    config = [
+        f'router bgp {bgp_as}',
+    ]
+    if address_family and vrf_name:
+        config.append(f'address-family {address_family} unicast vrf {vrf_name}')
+    config.append(f'no neighbor {neighbor_ip} ao {keychain_name} {option}')
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not remove BGP TCP-AO authentication on device {device}. Error:\n{e}")
+
+def configure_tcp_keychain(device, keychain_name, keyinfo={}):
+    """ Configures Keychain on device
+        Args:
+            device ('obj'): Device object
+            keychain_name ('str'): Name of the keychain
+            keyinfo ('dict'): Dictionary containing key parameters
+                Example:
+                    {
+                        'id': '1',
+                        'send_id': '1001',
+                        'recv_id': '1001',
+                        'string': 'MySecretKey',
+                        'accept_lifetime': "00:00:00 Jan 1 2025 infinite",
+                        'send_lifetime': '"00:00:00 Jan 1 2025 infinite"',
+                        'algorithm': 'hmac-sha256',
+                        'include_tcp_options': True,
+                        'accept-ao-mismatch': False
+                    }
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring keychain
+    """
+    if not keyinfo:
+        log.error("Key information dictionary is empty")
+        raise ValueError("Key information dictionary cannot be empty")
+
+    config = [
+        f"key chain {keychain_name} tcp",
+        f"key {keyinfo['id']}",
+        f"send-id {keyinfo['send_id']}",
+        f"recv-id {keyinfo['recv_id']}",
+        f"key-string {keyinfo['string']}",
+        f"accept-lifetime {keyinfo['accept_lifetime']}",
+        f"send-lifetime {keyinfo['send_lifetime']}",
+        f"cryptographic-algorithm {keyinfo['algorithm']}"
+    ]
+    if keyinfo.get('include_tcp_options') is True:
+        config.append(f"include-tcp-options")
+
+    if keyinfo.get('accept-ao-mismatch') is True:
+        config.append(f"accept-ao-mismatch")
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure TCP-AO keychain on device {device}. Error:\n{e}")
+
+def remove_tcp_keychain(device, keychain_name):
+    """ Removes Keychain from device
+        Args:            
+            device ('obj'): Device object
+            keychain_name ('str'): Name of the keychain to remove
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed removing keychain
+    """
+
+    config = f"no key chain {keychain_name}"
+    try:
+        device.configure([config])
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not remove TCP-AO keychain on device {device}. Error:\n{e}")
+
+
+def configure_bgp_md5(device, bgp_as, neighbor_ip, password, address_family=None, vrf_name=None):
+    """ Configures BGP authentication on BGP router
+        Args:
+            device('obj'): device to configure on
+            bgp_as('str'): bgp_as to configure
+            neighbor_ip('str'): neighbor IP address to configure
+            password('str'): MD5 password for authentication
+            address_family('str',optional): address family to configure, default None, ipv4 or ipv6
+            vrf_name('str',optional): VRF name to configure, default None
+    """
+    config = [
+        f'router bgp {bgp_as}'
+    ]
+    if address_family and vrf_name:
+        config.append(f'address-family {address_family} unicast vrf {vrf_name}')
+    config.append(f'neighbor {neighbor_ip} password {password}')
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure BGP MD5 authentication on device {device}. Error:\n{e}")
+
+def unconfigure_bgp_md5(device, bgp_as, neighbor_ip, password, address_family=None, vrf_name=None):
+    """ Unconfigures BGP MD5 authentication on BGP router
+        Args:
+            device('obj'): device to configure on
+            bgp_as('str'): bgp_as to configure
+            neighbor_ip('str'): neighbor IP address to configure
+            password('str'): MD5 password for authentication  
+            address_family('str',optional): address family to configure, default None, ipv4 or ipv6
+            vrf_name('str',optional): VRF name to configure, default None
+    """
+    config = [
+        f'router bgp {bgp_as}'
+    ]
+    if address_family and vrf_name:
+        config.append(f'address-family {address_family} unicast vrf {vrf_name}')
+    config.append(f'no neighbor {neighbor_ip} password {password}')
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not unconfigure BGP MD5 authentication on device {device}. Error:\n{e}")
+
+def configure_bgp_tcpao(device, bgp_as, neighbor_ip, keychain_name, option=None, address_family=None, vrf_name=None):
+    """ Configures BGP TCP Authentication Option for bgp neighbor
+    Args:
+        device('obj'): device to configure on
+        bgp_as('str'): bgp_as to configure
+        neighbor_ip('str'): neighbor IP address to configure
+        keychain_name('str'): keychain name for authentication
+        option('str',optional): can be 'None','include-tcp-options','accept-ao-mismatch-connections', default None
+        address_family('str',optional): address family to configurecan be ipv4 or ipv6, default is None
+        vrf_name('str',optional): VRF name to configure, default None
+    """
+    if option is None:
+        option=str('')
+    config = [
+        f'router bgp {bgp_as}',
+    ]
+    if address_family and vrf_name:
+        config.append(f'address-family {address_family} unicast vrf {vrf_name}')
+    config.append(f'neighbor {neighbor_ip} ao {keychain_name} {option}')
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure BGP TCP-AO authentication on device {device}. Error:\n{e}")
+
+def unconfigure_bgp_tcpao(device, bgp_as, neighbor_ip, keychain_name, option=None, address_family=None, vrf_name=None):
+    """ Removes BGP BGP TCP Authentication Option for bgp neighbor
+    Args:
+        device('obj'): device to configure on
+        bgp_as('str'): bgp_as to configure
+        neighbor_ip('str'): neighbor IP address to configure
+        keychain_name('str'): keychain name for authentication
+        option('str'): can be 'None','include-tcp-options','accept-ao-mismatch-connections', default None
+        address_family('str',optional): address family to configurecan be ipv4 or ipv6, default is None
+        vrf_name('str',optional): VRF name to configure, default None
+    """
+    if option is None:
+        option=str('')
+    config = [
+        f'router bgp {bgp_as}',
+    ]
+    if address_family and vrf_name:
+        config.append(f'address-family {address_family} unicast vrf {vrf_name}')
+    config.append(f'no neighbor {neighbor_ip} ao {keychain_name} {option}')
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not remove BGP TCP-AO authentication on device {device}. Error:\n{e}")
+
+def configure_tcp_keychain(device, keychain_name, keyinfo={}):
+    """ Configures Keychain on device
+        Args:
+            device ('obj'): Device object
+            keychain_name ('str'): Name of the keychain
+            keyinfo ('dict'): Dictionary containing key parameters
+                Example:
+                    {
+                        'id': '1',
+                        'send_id': '1001',
+                        'recv_id': '1001',
+                        'string': 'MySecretKey',
+                        'accept_lifetime': "00:00:00 Jan 1 2025 infinite",
+                        'send_lifetime': '"00:00:00 Jan 1 2025 infinite"',
+                        'algorithm': 'hmac-sha256',
+                        'include_tcp_options': True,
+                        'accept-ao-mismatch': False
+                    }
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring keychain
+    """
+    if not keyinfo:
+        log.error("Key information dictionary is empty")
+        raise ValueError("Key information dictionary cannot be empty")
+
+    config = [
+        f"key chain {keychain_name} tcp",
+        f"key {keyinfo['id']}",
+        f"send-id {keyinfo['send_id']}",
+        f"recv-id {keyinfo['recv_id']}",
+        f"key-string {keyinfo['string']}",
+        f"accept-lifetime {keyinfo['accept_lifetime']}",
+        f"send-lifetime {keyinfo['send_lifetime']}",
+        f"cryptographic-algorithm {keyinfo['algorithm']}"
+    ]
+    if keyinfo.get('include_tcp_options') is True:
+        config.append(f"include-tcp-options")
+
+    if keyinfo.get('accept-ao-mismatch') is True:
+        config.append(f"accept-ao-mismatch")
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure TCP-AO keychain on device {device}. Error:\n{e}")
+
+def remove_tcp_keychain(device, keychain_name):
+    """ Removes Keychain from device
+        Args:            
+            device ('obj'): Device object
+            keychain_name ('str'): Name of the keychain to remove
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed removing keychain
+    """
+
+    config = f"no key chain {keychain_name}"
+    try:
+        device.configure([config])
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not remove TCP-AO keychain on device {device}. Error:\n{e}")
+
+def configure_bgp_ipv6_dampening(device, bgp_as, dampening_params=None):
+    """ Configure BGP dampening for IPv6 address family
+    
+        Args:
+            device ('obj'): Device object
+            bgp_as ('str'): BGP AS number
+            dampening_params ('str', optional): dampening parameters in format 
+                                               "half-life reuse suppress max-suppress-time"
+                                               Example: "15 750 2000 60". Default is None
+        Returns:
+            N/A
+        Raises:
+            SubCommandFailure: Failed executing configure commands
+    """
+    log.info(
+        "Configuring BGP dampening for IPv6 on {hostname}\n"
+        "    -BGP AS: {bgp_as}\n"
+        "    -dampening params: {dampening_params}".format(
+            hostname=device.hostname,
+            bgp_as=bgp_as,
+            dampening_params=dampening_params or "default"
+        )
+    )
+    
+    config = [
+        f"router bgp {bgp_as}",
+        "address-family ipv6",
+    ]
+    
+    if dampening_params:
+        config.append(f"bgp dampening {dampening_params}")
+    else:
+        config.append("bgp dampening")  # Use default parameters
+    
+    config.append("exit-address-family")
+    
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure BGP dampening for IPv6 on BGP router {bgp_as}. "
+            f"Error:\n{e}"
+        )
+        

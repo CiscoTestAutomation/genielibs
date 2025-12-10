@@ -278,3 +278,26 @@ def execute_test_platform_hardware_sensor_value(device, slot_num, sensor_id,over
     except SubCommandFailure as e:
         log.error(f"Failed to perform sensor override : {command}")
         raise SubCommandFailure(f"Error executing command: {e}")
+    
+
+def execute_test_platform_hardware_sensor_value_cm(device, slot_num, sensor_id,override_value=None):
+    """ 
+        Args:
+            device ('obj'): device to use  
+            slot_num ('str'): Specify the slot Number
+            sensor_id ('int'): <0-4294967295>  Sensor id
+	        cm-override_value ('str'): Specify an override value
+    """
+
+    if override_value:
+        command= f"test platform hardware slot {slot_num} sensor {sensor_id} cm-override value {override_value}"
+    else:
+        command= f"test platform hardware slot {slot_num} sensor {sensor_id} cm-override off"
+
+    try:
+        device.execute(command)
+
+    except SubCommandFailure as e:
+        log.error(f"Failed to perform sensor cm-override : {command}")
+        raise SubCommandFailure(f"Error executing command: {e}")
+

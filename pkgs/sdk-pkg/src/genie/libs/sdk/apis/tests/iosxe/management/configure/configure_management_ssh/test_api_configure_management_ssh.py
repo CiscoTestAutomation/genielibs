@@ -1,39 +1,16 @@
-import os
-import unittest
-from unittest.mock import Mock
-from pyats.topology import loader
+from unittest import TestCase
 from genie.libs.sdk.apis.iosxe.management.configure import configure_management_ssh
+from unittest.mock import Mock
 
 
-class TestConfigureManagementSsh(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          vmtb-isr4451:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: iosxe
-            type: iosxe
-            management:
-              interface: GigabitEthernet0/0
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['vmtb-isr4451']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureManagementSsh(TestCase):
 
     def test_configure_management_ssh(self):
-        self.device.api.configure_management_vty_lines = Mock()
-        result = configure_management_ssh(self.device)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.device = Mock()
+        result = configure_management_ssh(self.device, None, None, None, 'cisco.com', 'GigabitEthernet0/0')
+        self.assertEqual(
+            self.device.configure.mock_calls[0].args,
+            (['ip domain name cisco.com',
+            'ip ssh source-interface GigabitEthernet0/0',
+            f'crypto key generate rsa'],)
+        )

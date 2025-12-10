@@ -2591,61 +2591,6 @@ class RommonBoot(BaseStage):
             con.context['grub_boot_image'] = image_to_boot
         con.context['image_to_boot'] = image_to_boot
 
-    def task(con, timeout, image, grub_activity_pattern):
-        """
-        A method for processing a dialog that loads a local image onto a device
-
-        Args:
-            con (obj): connection object
-            timeout (int, optional): Recovery process timeout. Defaults to 600.
-            image (dict): Information to load golden image on the device
-            grub_activity_pattern (str): Grub activity pattern
-        Returns:
-            None
-        """
-        # if we have grup activity pattern then we need to update the context with grub boot image
-
-        if grub_activity_pattern:
-            image_to_boot = con.context.get('grub_boot_image')
-            con.context['grub_boot_image'] = image[0]
-
-        # check for image to boot if we have a value store it and replace it with the golden image
-        image_to_boot = con.context.get('image_to_boot')
-        con.context['image_to_boot'] = image[0]
-
-        # these statments needed for booting from grub menu
-        def _grub_boot_device(spawn, session, context):
-            # '\033' == <ESC>
-            spawn.send('\033')
-            time.sleep(0.8)
-
-        grub_prompt_stmt = \
-            Statement(pattern=r'.*grub *>.*',
-                    action=_grub_boot_device,
-                    args=None,
-                    loop_continue=True,
-                    continue_timer=False)
-
-        grub_boot_stmt = \
-            Statement(pattern=r'.*Use the UP and DOWN arrow keys to select.*',
-                    action=grub_prompt_handler,
-                    args=None,
-                    loop_continue=True,
-                    continue_timer=False)
-
-        dialog = Dialog([grub_boot_stmt, grub_prompt_stmt])
-
-        con.state_machine.go_to('enable',
-                                con.spawn,
-                                timeout=timeout,
-                                context=con.context,
-                                dialog=dialog,
-                                prompt_recovery=True)
-        # we need to set the value of grub_boot_image and image_to_boot to original value
-        if grub_activity_pattern:
-            con.context['grub_boot_image'] = image_to_boot
-        con.context['image_to_boot'] = image_to_boot
-
     def reconnect(self, steps, device, reconnect_timeout=RECONNECT_TIMEOUT):
         with steps.start("Reconnect to device") as step:
 

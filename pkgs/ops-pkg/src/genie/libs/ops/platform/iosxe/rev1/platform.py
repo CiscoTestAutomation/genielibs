@@ -107,6 +107,11 @@ class Platform(SuperPlatform):
                       src='[main][swstack]',
                       dest='swstack')
 
+        # hw_revision
+        self.add_leaf(cmd=show_version_command,
+                      src=src_ver + '[switch_num][(?P<switch_num>.*)][model_rev_num]',
+                      dest='[hw_revision][(?P<switch_num>.*)]')
+
         # sdr_owner
         # N/A
 
@@ -236,6 +241,11 @@ class Platform(SuperPlatform):
         self.add_leaf(cmd=show_inventory_command, revision='1',
                       src='[slot][(?P<slot>.*)][lc][(?P<pid>.*)][sn]',
                       dest='[slot][lc][(?P<slot>.*)][sn]')
+
+        # lc_hw_revision
+        self.add_leaf(cmd=show_platform.ShowModule,
+                      src='[module][(?P<slot>.*)][hw]',
+                      dest='mod[lc][(?P<slot>.*)][hw_revision]')
 
         # === SubSlotAttributes ===
         # === DaughterCardAttributes ===
@@ -376,3 +386,11 @@ class Platform(SuperPlatform):
             # change the os type to alias
             if 'IOS-XE' in self.os:
                 self.os = 'iosxe'
+
+        # 'show module' has slot numbers as integers,
+        # need to convert to strings to match rest of ops structure
+        if hasattr(self, 'mod'):
+            slots = self.mod['lc'].keys()
+            for slot in slots:
+                self.slot['lc'][str(slot)]['hw_revision'] = self.mod['lc'][slot]['hw_revision']
+            del self.mod

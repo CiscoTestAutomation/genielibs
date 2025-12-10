@@ -4,6 +4,7 @@ import logging
 
 # Parent inheritance
 from .. import FileUtils as FileUtilsDeviceBase
+from urllib.parse import urlparse
 
 # Dir parser
 try:
@@ -76,6 +77,34 @@ class FileUtils(FileUtilsDeviceBase):
         # use a device passed as an argument, or the device saved as an
         # attribute
         device = kwargs.get('device') or getattr(self, 'device', None)
+        # Initialize scp_port
+        scp_port = None
+
+        # Parse URLs once to check for SCP protocol and extract credentials
+        source_parsed = urlparse(source)
+        dest_parsed = urlparse(destination)
+
+        # Extract credentials from SCP URLs and store in kwargs for authentication
+        if source_parsed.scheme == 'scp':
+            if source_parsed.username:
+                kwargs['username'] = source_parsed.username
+            if source_parsed.password:
+                kwargs['password'] = source_parsed.password
+            if source_parsed.port:  # Add this line
+                scp_port = source_parsed.port
+                # Remove port from URL
+                source = source.replace(f':{scp_port}', '')
+
+
+        if dest_parsed.scheme == 'scp':
+            if dest_parsed.username:
+                kwargs['username'] = dest_parsed.username
+            if dest_parsed.password:
+                kwargs['password'] = dest_parsed.password
+            if dest_parsed.port:
+                scp_port = dest_parsed.port
+                # Remove port from URL
+                destination = destination.replace(f':{scp_port}', '')
 
         # update source and destination with the valid address from testbed
         source = self.validate_and_update_url(source,
@@ -110,6 +139,10 @@ class FileUtils(FileUtilsDeviceBase):
                 cmd = 'copy {f} {t} compact'.format(f=source, t=destination)
             else:
                 cmd = 'copy {f} {t}'.format(f=source, t=destination)
+
+        # Add SCP port if specified
+        if scp_port:
+            cmd += f' port {scp_port}'
 
         # for n9k only
         if use_kstack:

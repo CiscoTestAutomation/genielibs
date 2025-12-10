@@ -288,5 +288,31 @@ class test_filetransferutils(unittest.TestCase):
                                     destination='bootflash:/fake_extrafake2_n7000-s2-kickstart.8.4.4.bin',
                                     vrf='management')
 
+    def test_copyfile_scp_with_port(self):
+        """Test SCP copyfile functionality with custom port for destination"""
+
+        raw_scp_with_port = '''
+            copy bootflash:/test_file.txt scp://myuser@1.1.1.1/home/virl/test_file.txt vrf management port 2222
+            2023-03-15 10:30:45.123 UTC
+            Connecting to 1.1.1.1...
+            Password:
+
+            Transferred 5120 Bytes
+            5120 bytes copied in 1 sec (5120 bytes/sec)
+        '''
+
+        # Add the NXOS SCP command format to outputs
+        self.outputs['copy bootflash:/test_file.txt scp://myuser@1.1.1.1/home/virl/test_file.txt vrf management port 2222'] = raw_scp_with_port
+
+        self.device.execute = Mock()
+        self.device.execute.side_effect = self.mapper
+        self.device.parse = Mock()
+        self.device.parse.return_value = {'software_version':'9.3.8'}
+
+        # Test SCP from device to server with custom port (port in destination URL)
+        self.fu_device.copyfile(source='bootflash:/test_file.txt',
+                                destination='scp://myuser@1.1.1.1:2222/home/virl/test_file.txt',
+                                device=self.device)
+
 if __name__ == '__main__':
     unittest.main()

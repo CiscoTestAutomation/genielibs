@@ -540,11 +540,11 @@ iso   rp 0 0   rp_base cat9k-2.pkg'''
         device.api.get_running_image = Mock()
         device.api.collect_install_log = Mock()
         device.api.free_up_disk_space = Mock(return_value=True)
-        cls.install_image(steps=steps, device=device, images=['sftp://server/image.bin'])
+        cls.install_image(steps=steps, device=device, images=['bootflash:/image.bin'])
 
-        expected_execute_call = [call('install add file sftp://server/image.bin activate commit prompt-level none', reply=reload_dialog, error_pattern=['FAILED:'], timeout=500),
+        expected_execute_call = [call('install add file bootflash:/image.bin activate commit prompt-level none', reply=reload_dialog, error_pattern=['FAILED:'], timeout=500),
                                 call('more bootflash:packages.conf'),
-                                call('install add file sftp://server/image.bin activate commit prompt-level none', reply=reload_dialog, error_pattern=['FAILED:'], timeout=500),
+                                call('install add file bootflash:/image.bin activate commit prompt-level none', reply=reload_dialog, error_pattern=['FAILED:'], timeout=500),
                                 call('install commit')]
 
         device.execute.assert_has_calls(expected_execute_call)
@@ -559,7 +559,7 @@ iso   rp 0 0   rp_base cat9k-2.pkg'''
             )
         device.reload.assert_has_calls([expected_reload_call])
         device.api.free_up_disk_space.assert_called_with(destination='', required_size=5000,
-                                                         protected_files=['//server/image.bin'], allow_deletion_failure=True, skip_deletion=False)
+                                                         protected_files=['image.bin'], allow_deletion_failure=True, skip_deletion=False)
         device.api.get_running_image.assert_called_once()
         self.assertEqual(Passed, steps.details[0].result)
 

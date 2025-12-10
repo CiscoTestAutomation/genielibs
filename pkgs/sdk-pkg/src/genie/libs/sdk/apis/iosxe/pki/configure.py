@@ -491,7 +491,7 @@ def configure_trustpoint(device,
     tp_config.append(f"revocation-check {revoke_check}")
     if is_ec_key:
         tp_config.append(f"eckeypair {tp_name}")
-    else:
+    elif rsa_key_size:
         tp_config.append(f"rsakeypair {tp_name} {rsa_key_size}")
     if authorization is not None:
         if auth_list_name is not None:
@@ -2014,4 +2014,218 @@ def unconfigure_crypto_pki_certificate_map(device, map_name, sequence):
         device.configure(cmds)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure crypto pki certificate map {map_name}: {e}")
+        
+def configure_pki_export_advanced(device,
+                                tp_name,
+                                export_type,
+                                file_password,
+                                pkcs_media_type=None,
+                                pkcs_file=None,
+                                pkcs_url=None,
+                                pem_option=None,
+                                pem_media_type=None,
+                                pem_file=None,
+                                pem_url=None,
+                                prvt_key_encry=None
+                         ):
+    """
+    Configure crypto pki export (supports PKCS12 and PEM)
+        Args:
+            device ('obj'): Device object
+            tp_name ('str'): Name of the trustpoint to export
+            export_type ('str'): Type of export ('pkcs12' or 'pem')
+            file_password ('str'): Password to protect the exported file
+            pkcs_media_type ('str', optional): Media type for PKCS12 export (e.g., 'bootflash:', 'tftp:')
+            pkcs_file ('str', optional): PKCS12 file name for file system export
+            pkcs_url ('str', optional): PKCS12 URL for network export
+            pem_option ('str', optional): PEM export option ('url' or 'terminal')
+            pem_media_type ('str', optional): Media type for PEM export (e.g., 'bootflash:', 'tftp:')
+            pem_file ('str', optional): PEM file name for file system export
+            pem_url ('str', optional): PEM URL for network export
+            prvt_key_encry ('str', optional): Private key encryption option (e.g., 'rollover')
+        Returns:
+            str: Output from the export command
+        Raises:
+            ValueError: If invalid or incomplete parameters are provided
+            SubCommandFailure: If the export operation fails
+    """
 
+
+    logger.info(f"Starting PKI export for trustpoint '{tp_name}' as {export_type.upper()}")
+
+    dialog = Dialog([
+        Statement(pattern=r'.*Address or name of remote host',
+                  action='sendline()',
+                  loop_continue=True,
+                  continue_timer=False),
+        Statement(pattern=r'.*Destination filename',
+                  action='sendline()',
+                  loop_continue=True,
+                  continue_timer=False),
+        Statement(pattern=r'.*Do you really want to overwrite it',
+                  action='sendline(yes)',
+                  loop_continue=True,
+                  continue_timer=False),
+    ])
+
+    media_url = ['cns:', 'ftp:', 'http:', 'https:',
+                 'null:', 'pram:', 'rcp:', 'scp:', 'sftp:', 'tftp:']
+    media_file = ['bootflash:', 'crashinfo:',
+                  'flash:', 'nvram:', 'system:', 'tmpsys', 'webui']
+
+    error_patterns = [
+        f"% RSA keypair {tp_name} is not exportable.",
+        f"% Please delete it or use a different label.",
+        f"% Trustpoint {tp_name} is in use."
+    ]
+
+    export_config = None
+
+    if export_type.lower() == 'pkcs12':
+        if pkcs_media_type in media_file:
+            export_config = (
+                f"crypto pki export {tp_name} pkcs12 {pkcs_media_type}{pkcs_file} password {file_password}")
+        elif pkcs_media_type in media_url:
+            export_config = (
+                f"crypto pki export {tp_name} pkcs12 {pkcs_media_type}{pkcs_url} password {file_password}")
+
+    elif export_type.lower() == 'pem':
+        if pem_option == 'url':
+            if pem_media_type in media_file:
+                export_config = (
+                    f"crypto pki export {tp_name} pem url {pem_media_type}{pem_file} {prvt_key_encry} password {file_password}")
+            elif pem_media_type in media_url:
+                export_config = (
+                    f"crypto pki export {tp_name} pem url {pem_media_type}{pem_url} {prvt_key_encry} password {file_password}")
+
+
+        elif pem_option == 'terminal':
+            if prvt_key_encry == 'rollover':
+                export_config = (
+                    f"crypto pki export {tp_name} pem terminal {prvt_key_encry}")
+            else:
+                export_config = (
+                    f"crypto pki export {tp_name} pem terminal {prvt_key_encry} password {file_password}")
+
+    if not export_config:
+        raise ValueError("Invalid or incomplete parameters for crypto pki export command")
+    logger.info(f"Executing command: {export_config}")
+    try:
+        output = device.configure(export_config, reply=dialog, error_pattern=error_patterns, timeout=90)
+        logger.info(f"Successfully exported {export_type.upper()} for trustpoint '{tp_name}'")
+        return output
+    except SubCommandFailure as e:
+        logger.error(f"Failed to configure crypto pki export for {tp_name}: {e}")
+        raise SubCommandFailure(f"Failed to export PKI certificate: {e}")
+
+
+def configure_pki_import_advanced(device,
+                                tp_name,
+                                import_type,
+                                file_password,
+                                pem_option=None,
+                                pem_media_type=None,
+                                pem_url=None,
+                                pkcs_media_type=None,
+                                pkcs_url=None
+                            ):
+    """
+    Configure 'crypto pki import' to import certificates or bundles from a TFTP/FTP server.
+        Args:
+            device ('obj'): Device connection object
+            tp_name ('str'): Trustpoint name to import into
+            import_type ('str'): 'pem' or 'pkcs12'
+            file_password ('str'): Password used to protect the imported file
+            pem_option ('str'): Type of PEM import ['url', 'terminal']
+            pem_media_type ('str'): Media type for PEM import ['tftp:', 'ftp:', 'scp:', etc.]
+            pem_url ('str'): URL or path for PEM import
+            pkcs_media_type ('str'): Media type for PKCS12 import ['tftp:', 'ftp:', etc.]
+            pkcs_url ('str'): URL or path for PKCS12 import
+        Returns:
+            str: Device output
+        Raises:
+            SubCommandFailure: If the import operation fails
+    """
+
+    logger.info(f"Starting crypto pki import for trustpoint '{tp_name}' ({import_type})")
+
+    dialog = Dialog([
+        Statement(pattern=r'.*Address or name of remote host',
+                  action='sendline()',
+                  loop_continue=True,
+                  continue_timer=False),
+        Statement(pattern=r'.*Source filename',
+                  action='sendline()',
+                  loop_continue=True,
+                  continue_timer=False),
+        Statement(pattern=r'.*Do you want to replace',
+                  action='sendline(yes)',
+                  loop_continue=True,
+                  continue_timer=False),
+        Statement(pattern=r'.*Do you accept this certificate',
+                  action='sendline(yes)',
+                  loop_continue=True,
+                  continue_timer=False),
+        Statement(pattern=r'.*Password:',
+                  action=f'sendline("{file_password}")',
+                  loop_continue=True,
+                  continue_timer=False)
+    ])
+
+    media_url = ['cns:', 'ftp:', 'http:', 'https:',
+                 'null:', 'pram:', 'rcp:', 'scp:', 'sftp:', 'tftp:']
+
+    error_patterns = [
+        "% Error",
+        "% Failed",
+        "Certificate import failed",
+        "Invalid password",
+        "timed out"
+    ]
+
+    import_config = None
+
+    if import_type.lower() == "pem":
+        if pem_option == "url" and pem_media_type in media_url:
+            import_config = f"crypto pki import {tp_name} pem url {pem_media_type}{pem_url} password {file_password}"
+        elif pem_option == "terminal":
+            import_config = f"crypto pki import {tp_name} pem terminal password {file_password}"
+    elif import_type.lower() == "pkcs12":
+        if pkcs_media_type in media_url:
+            import_config = f"crypto pki import {tp_name} pkcs12 {pkcs_media_type}{pkcs_url} password {file_password}"
+    if not import_config:
+        raise ValueError("Invalid or missing parameters for crypto pki import command")
+    logger.info(f"Executing import command: {import_config}")
+    try:
+        output = device.configure(import_config, reply=dialog, error_pattern=error_patterns, timeout=120)
+        logger.info(f"Successfully imported {import_type.upper()} certificate for trustpoint '{tp_name}'")
+        return output
+    except SubCommandFailure as e:
+        logger.error(f"Failed to import PKI certificate for {tp_name}: {e}")
+        raise SubCommandFailure(f"Failed PKI import: {e}")
+
+def change_pki_certificate_hash(device, hash_algorithm=None):
+    """
+    Change PKI certificate hash algorithm for self-signed certificates
+        Args:
+            device ('obj'): Device object
+            hash_algorithm ('str'): Hash algorithm (sha1, sha256, sha384, sha512, md5)
+        Returns:
+            True/False
+    """
+    logger.info(f"Configuring PKI certificate hash algorithm: {hash_algorithm or 'default'}")
+    
+    try:
+        config_commands = []
+        if hash_algorithm:
+            config_commands.append(f"crypto pki certificate self-signed hash {hash_algorithm}")
+            logger.debug(f"Setting hash algorithm to: {hash_algorithm}")
+        else:
+            config_commands.append("crypto pki certificate self-signed")
+            logger.debug("Using default hash algorithm configuration")
+        device.configure(config_commands)
+        logger.info("Successfully configured PKI certificate hash algorithm")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to configure PKI certificate hash algorithm: {e}")
+        return False

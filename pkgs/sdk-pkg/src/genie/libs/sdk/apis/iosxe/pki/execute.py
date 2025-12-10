@@ -326,3 +326,65 @@ def execute_crypto_pki_server_advanced(
         device.execute(cmds)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure crypto pki server: {e}")
+
+def execute_return_crypto_pki_server(device, certificate_req, server_name, 
+                              copy_certificate=None, sleep_time=5):
+    """ 
+    Execute 'crypto pki server' actions on the device.
+    
+    Args:
+        device ('obj'): Device object
+        certificate_req ('str'): PKI server action 
+                                 (e.g., 'server rootca grant all', 'authenticate', 'revoke', etc.)
+        server_name ('str'): Name of the CA server
+        copy_certificate ('str', optional): Certificate content to be sent (for authenticate)
+        sleep_time ('int', optional): Time (in seconds) to wait before sending certificate data
+
+
+    Returns:
+        str: Output of the executed command
+
+
+    Raises:
+        SubCommandFailure: If the command execution fails
+    """
+
+    def send_certificate(spawn):
+        time.sleep(sleep_time)
+        if copy_certificate:
+            logger.info("Sending certificate content to device...")
+            spawn.sendline(copy_certificate)
+        spawn.sendline()
+
+    dialog = Dialog([
+        Statement(
+            pattern=r'.*End with a blank line or the word \"quit\" on a line by itself.*',
+            action=send_certificate,
+            loop_continue=True,
+            continue_timer=False
+        )
+    ])
+
+
+    # Construct full command
+    cmd = f"crypto pki {certificate_req} {server_name}".strip()
+
+
+    try:
+        logger.info(f"Executing PKI command on device: {cmd}")
+
+        if "authenticate" in certificate_req:
+            output = device.execute(cmd, reply=dialog)
+        else:
+            output = device.execute(cmd)
+
+
+        logger.debug(f"PKI command output:\n{output}")
+        return output
+
+
+    except SubCommandFailure as e:
+        logger.error(f"Failed to execute PKI server command '{cmd}': {e}")
+        raise SubCommandFailure(
+            f"Could not execute crypto pki action '{certificate_req}' on server '{server_name}'.\nError: {e}"
+)

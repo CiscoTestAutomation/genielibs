@@ -2,6 +2,7 @@
 
 from ..fileutils import FileUtils as FileUtilsNXBase
 
+from genie.libs.filetransferutils.plugins.fileutils import HTTPFileUtilsBase
 
-class FileUtils(FileUtilsNXBase):
-	pass
+class FileUtils(HTTPFileUtilsBase, FileUtilsNXBase):
+    ...
