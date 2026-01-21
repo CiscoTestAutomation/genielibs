@@ -1,7 +1,14 @@
 '''IOSXE implementation of ManagementInterface class'''
 
+from ipaddress import ip_address, IPv6Address
+
 # parser
 from genie.libs.parser.iosxe.show_interface import ShowIpInterfaceBriefPipeIp
+
+try:
+    from genie.libs.parser.iosxe.show_interface import ShowIpv6InterfaceBriefPipeIp
+except ModuleNotFoundError:
+    pass
 
 # ManagementInterface
 from ..management_interface import ManagementInterface as ManagementInterface_main
@@ -49,6 +56,11 @@ class ManagementInterface(ManagementInterface_main):
 
         # Create parser object
         parser_obj = ShowIpInterfaceBriefPipeIp(device=device)
+        try:
+            if isinstance(ip_address(ipaddress), IPv6Address):
+                parser_obj = ShowIpv6InterfaceBriefPipeIp(device=device)
+        except NameError:
+            pass
 
         intf_name = super().get_interface_name(device, ipaddress, parser_obj)
 
