@@ -19,9 +19,6 @@ def create_dhcp_pool(
             network ('str'): IP of the network pool
             mask ('str'): Subnet mask of the network pool
             router_id ('str'): Default router ID
-            lease_days ('str'): Number of days for the lease
-            lease_hrs ('str'): Number of hours for the lease
-            lease_mins ('str'): Number of minutes for the lease
         Returns:
             None
         Raises:
