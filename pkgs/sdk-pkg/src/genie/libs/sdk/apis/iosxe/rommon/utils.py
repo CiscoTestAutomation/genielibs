@@ -14,6 +14,7 @@ from unicon.plugins.iosxe.statements import grub_prompt_handler, please_reset_ha
 
 # Genie
 from genie.libs.clean.utils import print_message
+from genie.libs.clean.exception import FailedToBootException
 
 log = logging.getLogger(__name__)
 
@@ -44,6 +45,10 @@ def device_rommon_boot(device, golden_image=None, tftp_boot=None, error_pattern=
     log.info(f"Executing ROMMON reset for device {device.name}")
     device.api.execute_rommon_reset()
 
+    # Configure ignore startup config
+    log.info(f"Setting ignore startup config for device {device.name}")
+    device.api.configure_ignore_startup_config()
+
     # To boot using golden image
     if recovery_info['golden_image']:
         log.info(banner("Booting device '{}' with the Golden images".\
@@ -61,20 +66,17 @@ def device_rommon_boot(device, golden_image=None, tftp_boot=None, error_pattern=
 
         # Setting rommon variables for booting
         log.info(f'Setting the rommon variables for TFTP boot device {device.name}')
-        try:
-            if device.is_ha and hasattr(device, 'subconnections'):
-                device.api.configure_rommon_tftp_ha(image_path=image_to_boot)
-            else:
-                device.api.configure_rommon_tftp(image_path=image_to_boot)
-        except Exception as e:
-            log.warning(f'Failed to set the rommon variables for device {device.name}')
-
+        if device.is_ha and hasattr(device, 'subconnections'):
+            device.api.configure_rommon_tftp_ha(image_path=image_to_boot)
+        else:
+            device.api.configure_rommon_tftp(image_path=image_to_boot)
     else:
         raise Exception('Global recovery only support golden image and tftp '
                          'boot recovery and neither was provided')
 
     # Timeout for device to reload
     timeout = device.clean.get('device_recovery', {}).get('timeout', 2000)
+    boot_timeout = 60
 
     # Collect all connections to process
     conn_list = getattr(device, 'subconnections', None) or [device.default]
@@ -113,13 +115,12 @@ def device_rommon_boot(device, golden_image=None, tftp_boot=None, error_pattern=
         conn.context['image_to_boot'] = cmd
         conn.context['grub_boot_image'] = cmd
 
-        # bring rommon to enable state
-        conn.state_machine.go_to('enable',
+        # bring rommon to disable state
+        conn.state_machine.go_to('disable',
                             conn.spawn,
                             timeout=timeout,
                             context=conn.context,
-                            dialog=dialog,
-                            prompt_recovery=True)
+                            dialog=dialog)
 
     try:
         futures = []
@@ -135,9 +136,38 @@ def device_rommon_boot(device, golden_image=None, tftp_boot=None, error_pattern=
         wait_futures(futures, timeout=timeout, return_when=ALL_COMPLETED)
     except Exception as e:
         log.error(str(e))
-        raise Exception(f"Failed to boot the device {device.name}")
+        raise FailedToBootException(f"Failed to boot the device {device.name}")
     else:
         log.info(f"Successfully boot the device {device.name}")
+        log.info(f"Waiting for {boot_timeout} seconds for device to stabilize after booting")
+        time.sleep(boot_timeout)
+
+    if device.is_ha:
+        # designate handle method will bring the device to enable mode
+        device.connection_provider.designate_handles()
+    else:
+        device.enable()
+
+    # Init connection settings (term length, etc.)
+    log.info('Initialize connection settings')
+    device.connection_provider.init_connection()
+
+    # Configure the login credentials
+    log.info(f'Configure the login credentials {device.name}')
+    device.api.configure_management_credentials()
+
+    # Unconfigure the ignore startup config
+    log.info(f'Unconfigure the ignore startup config {device.name}')
+    device.api.unconfigure_ignore_startup_config()
+
+    # verify the rommon variable
+    log.info(f'verify the ignore startup config {device.name}')
+    if not device.api.verify_ignore_startup_config():
+        raise Exception(f"Failed to unconfigure the ignore startup config on {device.name}")
+
+    # Execute write memory
+    log.info(f'Executing write memory {device.name}')
+    device.api.execute_write_memory()
 
 def send_break_boot(device, console_activity_pattern= None,
                     console_breakboot_char=None, console_breakboot_telnet_break=None,
@@ -221,9 +251,9 @@ def send_break_boot(device, console_activity_pattern= None,
                  f"by sending {repr(break_char)}")
 
         spawn.send(break_char)
-        # Set boot_cmd to ESC+ENTER for C8KV grub> mode
-        # ESC returns to grub menu, ENTER boots the highlighted entry
-        context['boot_cmd'] = '\033'
+        # Set boot_cmd to ENTER for C8KV grub> mode
+        # ENTER boots the highlighted entry
+        context['boot_cmd'] = '\r'
 
     # Set a target for each recovery session
     # so it's easier to distinguish expect debug logs on the console.
@@ -258,6 +288,8 @@ def send_break_boot(device, console_activity_pattern= None,
             pattern_str = str(getattr(stmt, 'pattern', ''))
             if 'Escape character is' in pattern_str:
                 log.debug(f"Removing 'Escape character' pattern from connection dialog")
+            elif 'Connected.' in pattern_str:
+                log.debug(f"Removing 'Connected.' pattern from connection dialog")
             else:
                 filtered_statements.append(stmt)
 

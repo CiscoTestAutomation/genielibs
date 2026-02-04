@@ -119,6 +119,10 @@ def _recovery_steps(device, clear_line=True, powercycler=True,
                     device.destroy()
                     device.api.configure_management_console()
                     log.info(f"Successfully configured management console speed on device '{device.name}'")
+
+                    log.info(banner(f"Verify if manual boot is configured on device '{device.name}'"))
+                    device.api.verify_no_boot_manual()
+
                     device.disconnect()
                     continue
                 else:

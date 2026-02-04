@@ -1472,3 +1472,155 @@ def unconfigure_cts_sxp_default_source(device, source_ipv4=None, source_ipv6=Non
         raise SubCommandFailure(
             f"Could not unconfigure default CTS SXP source.Error:\n{str(e)}"
         )
+
+def clear_cts_pac_all(device):
+    """ Clear all CTS PACs
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to clear all CTS PACs
+    """
+    log.info("Clear all CTS PACs")
+    confirm_statement = Statement(
+        pattern=r'.*Are you sure you want to delete all PACs\? \[confirm\]',
+        action='sendline()',
+        loop_continue=True,
+        continue_timer=False
+    )
+    try:
+        device.execute("clear cts pac all", reply=Dialog([confirm_statement]))
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to clear all CTS PACs. Error: {str(e)}"
+        )
+        
+def configure_cts_sxp_connection_peer(device, peer_ip, source_ip, password='default',
+                                      mode='local', direction='both', vrf=None,
+                                      hold_time=False, min_time=None, max_time=None):
+    """
+    Configure CTS SXP connection peer
+
+    Args:
+        device ('obj'): Device object
+        peer_ip ('str'): SXP peer IP address (IPv4 or IPv6)
+        source_ip ('str'): Source IP address (IPv4 or IPv6)
+        password ('str', optional): Password for the connection. Default is 'default'
+        mode ('str', optional): Mode for the connection. Default is 'local'
+        direction ('str', optional): Direction for the connection. Default is 'both'
+        vrf ('str', optional): VRF name
+        hold_time ('bool', optional): Enable hold-time configuration. Default is False
+        min_time ('int', optional): Minimum hold-time (for listener mode)
+        max_time ('int', optional): Maximum hold-time (for speaker and listener modes)
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: Failed to configure CTS SXP connection peer
+    """
+    cmd = f"cts sxp connection peer {peer_ip} source {source_ip} password {password} mode {mode} {direction}"
+
+    if vrf:
+        cmd += f" vrf {vrf}"
+
+    # Add hold-time configuration based on direction
+    if hold_time:
+        if direction.lower() == 'speaker' and max_time is not None:
+            cmd += f" hold-time {max_time}"
+        elif direction.lower() == 'listener' and min_time is not None and max_time is not None:
+            cmd += f" hold-time {min_time} {max_time}"
+
+    try:
+        device.configure([cmd])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure CTS SXP connection peer on device {device.name}. Error:\n{e}"
+        )
+        
+def configure_cts_sxp_list_option(device, list_type, list_name, option_type, option_value):
+    """
+    Configure CTS SXP export-list or import-list with vrf or binding-source-type
+
+    Args:
+        device ('obj'): Device object
+        list_type ('str'): 'export-list' or 'import-list'
+        list_name ('str'): Name of the list
+        option_type ('str'): 'vrf' or 'binding-source-type'
+        option_value ('str'): Value for vrf or binding-source-type
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: Failed to configure CTS SXP list
+    """
+    cmds = [
+        f"cts sxp {list_type} {list_name}",
+        f"{option_type} {option_value}"
+    ]
+    try:
+        device.configure(cmds)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure CTS SXP {list_type} {list_name} with {option_type} {option_value} on device {device.name}. Error:\n{e}"
+        )
+
+def unconfigure_cts_sxp_list_option(device, list_type, list_name):
+    """
+    unconfigure CTS SXP export-list or import-list with vrf or binding-source-type
+
+    Args:
+        device ('obj'): Device object
+        list_type ('str'): 'export-list' or 'import-list'
+        list_name ('str'): Name of the list
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: Failed to configure CTS SXP list
+    """
+    cmds = [
+        f"no cts sxp {list_type} {list_name}",
+    ]
+    try:
+        device.configure(cmds)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure CTS SXP {list_type} {list_name} on device {device.name}. Error:\n{e}"
+        )
+
+def configure_cts_sxp_export_import_group_option(device, role, group_name, list_type, list_name, peer_ip=None, peer_ipv6=None):
+    """
+    Configure CTS SXP export-import-group for speaker or listener with option (export-list, import-list, vrf, binding-source-type) and peer
+
+    Args:
+        device ('obj'): Device object
+        role ('str'): 'speaker' or 'listener'
+        group_name ('str'): Group name
+        list_type ('str'): Option type (e.g., 'export-list', 'import-list', 'vrf', 'binding-source-type')
+        list_name ('str'): Value for the option type
+        peer_ip ('str', optional): IPv4 peer address
+        peer_ipv6 ('str', optional): IPv6 peer address
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: Failed to configure CTS SXP export-import-group
+    """
+    cmds = [
+        f"cts sxp export-import-group {role} {group_name}",
+        f"{list_type} {list_name}"
+    ]
+    if peer_ip:
+        cmds.append(f"peer {peer_ip}")
+    if peer_ipv6:
+        cmds.append(f"peer-ipv6 {peer_ipv6}")
+    try:
+        device.configure(cmds)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure CTS SXP export-import-group {role} {group_name} on device {device.name}. Error:\n{e}"
+        )

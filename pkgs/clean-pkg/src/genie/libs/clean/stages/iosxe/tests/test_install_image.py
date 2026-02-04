@@ -691,7 +691,7 @@ iso   rp 0 0   rp_base cat9k-2.pkg'''
             # Assert all expected calls inside collect_install_log
             device.execute.assert_any_call("show platform software install-manager r0 operation current detail")
             device.execute.assert_any_call("show platform software install-manager r0 operation history detail")
-            device.execute.assert_any_call("show tech-support install | append show_tech_support_20250101T000000.txt")
+            device.execute.assert_any_call("show tech-support install | append show_tech_support_20250101T000000.txt", timeout=600)
             device.execute.assert_any_call("request platform software trace archive")
             device.api.copy_from_device.assert_any_call(local_path="flash:show_tech_support_20250101T000000.txt", remote_path="/tmp")
             device.api.copy_from_device.assert_any_call(local_path="flash:archive.tar.gz", remote_path="/tmp")

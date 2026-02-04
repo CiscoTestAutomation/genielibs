@@ -1,35 +1,15 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
 from genie.libs.sdk.apis.iosxe.csdl.execute import execute_set_memory_debug_incremental_starting_time
 
 
-class TestExecuteSetMemoryDebugIncrementalStartingTime(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          3850-48XS-CE3:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: c9300
-            type: c9300
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['3850-48XS-CE3']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
-
+class TestExecuteSetMemoryDebugIncrementalStartingTime(TestCase):
     def test_execute_set_memory_debug_incremental_starting_time(self):
-        result = execute_set_memory_debug_incremental_starting_time(self.device, None)
+        device = Mock()
+        result = execute_set_memory_debug_incremental_starting_time(device, None)
         expected_output = None
         self.assertEqual(result, expected_output)
+        self.assertEqual(
+            device.execute.mock_calls[0].args,
+            ('set memory debug incremental starting-time',)
+        )

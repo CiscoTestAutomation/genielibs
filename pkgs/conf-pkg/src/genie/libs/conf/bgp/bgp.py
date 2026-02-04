@@ -1018,6 +1018,15 @@ class Bgp(Routing, DeviceFeature):
         name='nbr_af_import_vpn_unicast_reoriginate',
         default=None,
         type=(None, managedattribute.test_istype(bool)))
+    nbr_af_advertise_local_labeled_route_control = managedattribute(
+        name='nbr_af_advertise_local_labeled_route_control',
+        default=None,
+        type=(None, managedattribute.test_istype(bool)))
+
+    nbr_af_advertise_local_labeled_route_enable = managedattribute(
+        name='nbr_af_advertise_local_labeled_route_enable',
+        default=None,
+        type=(None, managedattribute.test_istype(bool)))
 
     ha_mode = managedattribute(
         name='ha_mode',

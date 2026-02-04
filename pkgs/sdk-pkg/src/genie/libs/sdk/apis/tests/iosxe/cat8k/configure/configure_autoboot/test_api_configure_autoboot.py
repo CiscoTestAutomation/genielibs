@@ -1,35 +1,16 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
 from genie.libs.sdk.apis.iosxe.cat8k.configure import configure_autoboot
 
 
-class TestConfigureAutoboot(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          ott-c8000v-67:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat8k
-            type: c8kv
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['ott-c8000v-67']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureAutoboot(TestCase):
 
     def test_configure_autoboot(self):
-        result = configure_autoboot(self.device)
+        device = Mock()
+        result = configure_autoboot(device)
         expected_output = None
         self.assertEqual(result, expected_output)
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            ('config-reg 0x2102',)
+        )

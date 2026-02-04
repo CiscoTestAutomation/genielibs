@@ -5023,6 +5023,10 @@ def copy_file_with_scp(device, host, file, username=None, password=None, path=No
             Statement(pattern=r'.*Destination filename.*$',
                 action='sendline()',
                 loop_continue=True,
+                continue_timer=False),
+            Statement(pattern=r'.*Source filename.*$',
+                action='sendline()',
+                loop_continue=True,
                 continue_timer=False)
             ])
         if path:

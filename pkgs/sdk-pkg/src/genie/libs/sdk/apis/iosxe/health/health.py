@@ -564,7 +564,7 @@ def health_core(device,
                         all_corefiles.append(storage + file)
                         # add health_corefiles for health_data
                         if health:
-                            health_corefiles.setdefault(storage + file, {})
+                            health_corefiles.setdefault(file, {})
 
         # in case of HTTP, will use FileUtils
         if protocol == 'http':

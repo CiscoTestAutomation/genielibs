@@ -2212,3 +2212,299 @@ def execute_test_platform_hardware_led_switch(device, switch_type, switch_num, l
         device.execute(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to execute command '{cmd}' on device. Error:\n{e}")
+
+def execute_test_pppoe(device, initiator_sessions, responder_sessions, interface, timeout=60):
+    """ Execute test pppoe command
+        Args:
+            device (`obj`): Device object
+            initiator_sessions (`str`): Number of initiator sessions
+            responder_sessions (`str`): Number of responder sessions
+            interface (`str`): Interface name (e.g., GigabitEthernet0/0/3)
+            timeout (`int`, optional): Max time in seconds allowed for command execution.
+                Defaults to 60.
+        Returns:
+            Command output
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"Executing test pppoe {initiator_sessions} {responder_sessions} {interface} on {device}")
+
+    cmd = f"test pppoe {initiator_sessions} {responder_sessions} {interface}"
+
+    try:
+        return device.execute(cmd, timeout=timeout)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not execute test pppoe command on {device}. Error:\n{e}')
+
+def hardware_sublot_module_interface_statistics(device, subslot, interface):
+    """ execute harware subslot module interface statistics command
+        Args:
+            device ('obj'): Device object
+            subslot('str'): subslot
+            interface('str'): interface
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = f"show platform hardware subslot {subslot} module interface {interface} statistics"
+
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to execute '{cmd}' on device {device}. Error:\n{e}")
+
+
+def hardware_qfp_active_datapath_infrastructure_sw_cio(device):
+    """ execute harware qfp active datapath infrastructure sw cio command
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = "show platform hardware qfp active datapath infrastructure sw-cio"
+
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to execute '{cmd}' on device {device}. Error:\n{e}")
+
+
+def hardware_qfp_active_datapath_utilization(device):
+    """ execute harware qfp active datapath utilization command
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = "show platform hardware qfp active datapath utilization"
+
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to execute '{cmd}' on device {device}. Error:\n{e}")
+
+
+def execute_setup(device, enable_secret, enable_password, 
+                  vty_password, custom_dialog=None, timeout=600):
+    """ execute setup command
+        Args:
+            device ('obj'): Device object
+            enable_secret('str'): Enable secret
+            enable_password('str'): Enable password
+            vty_password('str'): Vty password
+            custom_dialog('Dialog', Optional): dialog overrides the execute service dialog, default: None
+            timeout(`int`, Optional): timeout value for setup command execution, default: 600 seconds
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    dialog_pattern_list = [
+            Statement(pattern=r'Continue with configuration dialog.*\[yes/no\]:',
+                      action='sendline(yes)', loop_continue=True),
+            Statement(pattern=r'Would you like to enter basic management setup.*\[yes/no\]:',
+                      action='sendline(no)', loop_continue=True),
+            Statement(pattern=r'First, would you like to see the current interface summary.*\[yes\]:',
+                      action='sendline(no)', loop_continue=True),
+            Statement(pattern=r'.*Enter host name.*:',
+                      action='sendline()', loop_continue=True),
+            Statement(pattern=r'.*Enter enable secret.*:',
+                      action=f'sendline({enable_secret})', loop_continue=True),
+            Statement(pattern=r'.*Confirm enable secret.*:',
+                      action=f'sendline({enable_secret})', loop_continue=True),
+            Statement(pattern=r'Enter enable password.*:',
+                      action=f'sendline({enable_password})', loop_continue=True),
+            Statement(pattern=r'Enter virtual terminal password.*:',
+                      action=f'sendline({vty_password})', loop_continue=True),
+            Statement(pattern=r'Setup account for accessing HTTP server\?',
+                      action='sendline(no)', loop_continue=True),
+            Statement(pattern=r'Username|Password',
+                      action='sendline()', loop_continue=True),
+            Statement(pattern=r'Configure .*\?',
+                      action='sendline(no)', loop_continue=True),
+            Statement(pattern=r'Enter your selection.*',
+                      action='sendline(2)', loop_continue=False),
+            Statement(pattern=r'Would you like to go through AutoSecure configuration.*',
+                      action='sendline(no)', loop_continue=True),
+            Statement(pattern=r'Do you want to configure .*',
+                      action='sendline(no)', loop_continue=True)
+        ]
+
+    dialog = Dialog(dialog_pattern_list)
+
+    service_dialog = dialog if custom_dialog is None else custom_dialog
+
+    try:
+        device.execute("setup", service_dialog=service_dialog, prompt_recovery=True, timeout=timeout)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to execute setup on device {device}. Error:\n{e}")
+
+def execute_ingress_ping_sweep(
+    device,
+    destination_ip,
+    ingress_interface,
+    sweep_min,
+    sweep_max,
+    sweep_interval,
+    repeat_count,
+    datagram_size,
+    dscp,
+    timeout,
+    ping_timeout_secs,
+    type_of_service,
+    validate_reply=False,
+    set_df_bit=False,
+    data_pattern=None
+):
+    """
+    Execute extended ping with ingress interface and packet size sweep
+    Args:
+        device (obj): Device object (required)
+        destination_ip (str): Target IP address to ping (required)
+        ingress_interface (str): Ingress interface name (required)
+        sweep_min (int): Minimum sweep size in bytes (required)
+        sweep_max (int): Maximum sweep size in bytes (required)
+        sweep_interval (int): Sweep interval in bytes (required)
+        repeat_count (int): Number of pings per size (required)
+        datagram_size (int): Datagram size (required)
+        dscp (int): DSCP value (required)
+        timeout (int): Command timeout in seconds (required)
+        ping_timeout_secs (int): Timeout in seconds per ping (required)
+        type_of_service (int): Type of service value (required)
+        validate_reply (bool): Validate reply data (optional, default: False)
+        set_df_bit (bool): Set DF bit in IP header (optional, default: False)
+        data_pattern (str): Hex data pattern 0x0000-0xFFFF (optional, default: None)
+    Returns:
+        str: Raw ping command output from router
+    
+    Raises:
+        Exception: If ping execution fails or times out
+    """
+    dialog = Dialog([
+        Statement(
+            pattern=r'.*Protocol \[ip\]:.*',
+            action='sendline(ip)',
+            loop_continue=True,
+            continue_timer=False
+        ),
+        Statement(
+            pattern=r'.*Target IP address:.*',
+            action=f'sendline({destination_ip})',
+            loop_continue=True,
+            continue_timer=False
+        ),
+        Statement(
+            pattern=r'.*Repeat count \[5\]:.*',
+            action=f'sendline({repeat_count})',
+            loop_continue=True,
+            continue_timer=False
+        ),
+        Statement(
+            pattern=r'.*Datagram size \[100\]:.*',
+            action=f'sendline({datagram_size})',
+            loop_continue=True,
+            continue_timer=False
+        ),
+        Statement(
+            pattern=r'.*Timeout in seconds \[2\]:.*',
+            action=f'sendline({ping_timeout_secs})' if ping_timeout_secs != 2 else 'sendline()',
+            loop_continue=True,
+            continue_timer=False
+        ),
+        Statement(
+            pattern=r'.*Extended commands \[n\]:.*',
+            action='sendline(y)',
+            loop_continue=True,
+            continue_timer=False
+        ),
+        Statement(
+            pattern=r'.*Ingress ping \[n\]:.*',
+            action='sendline(y)',
+            loop_continue=True,
+            continue_timer=False
+        ),
+        Statement(
+            pattern=r'.*Ingress interface:.*',
+            action=f'sendline({ingress_interface})',
+            loop_continue=True,
+            continue_timer=False
+        ),
+        Statement(
+            pattern=r'.*DSCP Value \[0\]:.*',
+            action=f'sendline({dscp})',
+            loop_continue=True,
+            continue_timer=False
+        ),
+        Statement(
+            pattern=r'.*Type of service \[0\]:.*',
+            action=f'sendline({type_of_service})' if type_of_service != 0 else 'sendline()',
+            loop_continue=True,
+            continue_timer=False
+        ),
+        Statement(
+            pattern=r'.*Set DF bit in IP header\? \[no\]:.*',
+            action=f'sendline({"yes" if set_df_bit else ""})',
+            loop_continue=True,
+            continue_timer=False
+        ),
+        Statement(
+            pattern=r'.*Validate reply data\? \[no\]:.*',
+            action=f'sendline({"yes" if validate_reply else ""})',
+            loop_continue=True,
+            continue_timer=False
+        ),
+        Statement(
+            pattern=r'.*Data pattern \[0x.*\]:.*',
+            action=f'sendline({data_pattern})' if data_pattern else 'sendline()',
+            loop_continue=True,
+            continue_timer=False
+        ),
+        Statement(
+            pattern=r'.*Loose, Strict, Record, Timestamp, Verbose\[none\]:.*',
+            action='sendline()',
+            loop_continue=True,
+            continue_timer=False
+        ),
+        Statement(
+            pattern=r'.*Sweep range of sizes \[n\]:.*',
+            action='sendline(y)',
+            loop_continue=True,
+            continue_timer=False
+        ),
+        Statement(
+            pattern=r'.*Sweep min size \[36\]:.*',
+            action=f'sendline({sweep_min})',
+            loop_continue=True,
+            continue_timer=False
+        ),
+        Statement(
+            pattern=r'.*Sweep max size \[18024\]:.*',
+            action=f'sendline({sweep_max})',
+            loop_continue=True,
+            continue_timer=False
+        ),
+        Statement(
+            pattern=r'.*Sweep interval \[1\]:.*',
+            action=f'sendline({sweep_interval})',
+            loop_continue=True,
+            continue_timer=False
+        ),
+    ])
+    try:
+        log.info(f"Starting extended ping with sweep (timeout: {timeout} seconds)...")
+        output = device.execute('ping', reply=dialog, timeout=timeout)
+        log.info("Ping sweep command completed successfully")
+        return output
+    except Exception as e:
+        error_msg = f"Ping sweep execution failed: {e}"
+        log.error(error_msg)
+        raise Exception(error_msg) from e

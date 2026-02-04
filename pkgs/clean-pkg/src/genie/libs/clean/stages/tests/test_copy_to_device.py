@@ -1,6 +1,6 @@
 import unittest
 
-from unittest.mock import Mock, call, ANY
+from unittest.mock import Mock, call, ANY, patch
 
 from genie.libs.clean.stages.stages import CopyToDevice
 from genie.libs.clean.stages.tests.utils import create_test_device
@@ -411,8 +411,8 @@ class VerifyCopyToDevice(unittest.TestCase):
         ])
 
 
-    def test_copy_to_device_and_with_different_size_and_overwrite_false(self):
-        """Name exists with different size, overwrite=False fail early, no copy attempted"""
+    def test_copy_to_device_and_with_different_size_and_overwrite_if_size_different_false(self):
+        """Name exists with different size, overwrite_if_size_different=False -> skip copy and mark step as failed"""
         # prepare device API to return remote filesize, but verify_file_exists returns False (size mismatch)
         self.device.api.get_file_size_from_server = Mock(return_value=1234)
         self.device.api.verify_file_exists = Mock(return_value=False)
@@ -452,7 +452,8 @@ class VerifyCopyToDevice(unittest.TestCase):
                 origin=dict(files=['/path/test.bin'], hostname='server1'),
                 destination=dict(directory='bootflash:'),
                 protocol='scp',
-                overwrite=False
+                overwrite=False,
+                overwrite_if_size_different=False,
             )
 
         self.assertTrue(any(d.result == Failed for d in steps.details))
@@ -463,3 +464,166 @@ class VerifyCopyToDevice(unittest.TestCase):
                 prompt_recovery=False, timeout=300, reply=ANY, error_pattern=ANY),
             self.device.execute.mock_calls
         )
+
+    # Mock os.stat to return a specific file size
+    @patch('genie.libs.clean.stages.stages.os.stat')
+    def test_copy_to_device_with_different_size_and_overwrite_if_size_different_true(
+        self, mock_stat
+    ):
+        """Test copy_to_device with different size and overwrite_if_size_different=True"""
+        # Mock local file size (correct size)
+        stat_result = Mock()
+        stat_result.st_size = 1234
+        mock_stat.return_value = stat_result
+        self.device.api.get_file_size_from_server = Mock(return_value=1234)
+
+        # Mock verify_file_exists:
+        # First call (BEFORE copy): Returns False because size mismatch (expecting 1234, found 4096)
+        # Second call (AFTER copy): Returns True because size matches (1234 == 1234)
+        self.device.api.verify_file_exists = Mock(side_effect=[False, True])
+        self.device.api.free_up_disk_space = Mock(return_value=True)
+
+        class MockExecute:
+            def __init__(self):
+                self.call_count = 0
+
+            def __call__(self, cmd, *args, **kwargs):
+                if cmd == 'dir bootflash:':
+                    self.call_count += 1
+                    if self.call_count == 1:
+                        # First dir call (BEFORE copy): File exists with WRONG size (4096)
+                        return '''
+                            Directory of bootflash:/
+                                    11  drwx            16384  Nov 25 2016 19:32:53 -07:00  lost+found
+                                    12  -rw-                0  Dec 13 2016 11:36:36 -07:00  ds_stats.txt
+                                    8033  -rw-            4096  Nov 25 2016 18:42:07 -07:00  test.bin
+                                    1940303872 bytes total (1036210176 bytes free)
+                        '''
+                    else:
+                        # Second dir call (AFTER copy): File has CORRECT size (1234)
+                        return '''
+                            Directory of bootflash:/
+                                    11  drwx            16384  Nov 25 2016 19:32:53 -07:00  lost+found
+                                    12  -rw-                0  Dec 13 2016 11:36:36 -07:00  ds_stats.txt
+                                    8033  -rw-            1234  Nov 25 2016 18:42:07 -07:00  test.bin
+                                    1940303872 bytes total (1036210176 bytes free)
+                        '''
+                return ''
+
+        self.device.execute = Mock(side_effect=MockExecute())
+        self.device.api.copy_to_device = Mock(return_value=True)
+        testbed = Testbed(
+            'mytb',
+            servers={
+                'server1': {
+                    'address': '127.0.0.1',
+                    'protocol': 'scp',
+                }
+            },
+        )
+        self.device.testbed = testbed
+        steps = Steps()
+        # Run the copy_to_device stage
+        self.cls.copy_to_device(
+            steps=steps,
+            device=self.device,
+            origin=dict(files=['/path/test.bin'], hostname='server1'),
+            destination=dict(directory='bootflash:'),
+            protocol='scp',
+            overwrite=False,
+            overwrite_if_size_different=True,  # But DO overwrite if size is different
+        )
+
+        self.assertTrue(any(s.result == Passed for s in steps.details),
+                    "Stage should pass when overwrite_if_size_different=True")
+        dir_calls = [c for c in self.device.execute.call_args_list if c[0][0] == 'dir bootflash:']
+        self.assertEqual(len(dir_calls), 2, 
+                        "dir should be called twice: before copy and after copy")
+        self.device.api.copy_to_device.assert_called_once()
+
+        # Even though user set overwrite=False, it should be True due to size_mismatch
+        call_kwargs = self.device.api.copy_to_device.call_args.kwargs
+        self.assertTrue(
+            call_kwargs.get('overwrite', False),
+            "overwrite must be True when size mismatch is detected and overwrite_if_size_different=True"
+        )
+
+        self.assertGreaterEqual(self.device.api.verify_file_exists.call_count, 2,
+                            "verify_file_exists should be called at least twice: before and after copy")
+
+        first_verify_call = self.device.api.verify_file_exists.call_args_list[0]
+        self.assertEqual(first_verify_call.kwargs.get('size'), 1234,
+                        "First verification should check for expected size 1234")
+
+        last_verify_call = self.device.api.verify_file_exists.call_args_list[-1]
+        self.assertEqual(last_verify_call.kwargs.get('size'), 1234,
+                        "Final verification should check for expected size 1234")
+
+        self.device.api.free_up_disk_space.assert_called_once()
+
+        self.assertTrue(mock_stat.called, "os.stat should be called to get local file size")
+
+    def test_copy_to_device_with_permission_denied_retry(self):
+        """Test that copy retries with unique filename when permission denied error occurs"""
+        
+        copy_attempt = {'count': 0}
+        verify_call_count = {'count': 0}
+        
+        class MockExecute:
+            def __init__(self, *args, **kwargs):
+                self.data = {
+                    'dir bootflash:': iter([
+                        '''
+                            Directory of bootflash:/
+                                    11  drwx            16384  Nov 25 2016 19:32:53 -07:00  lost+found
+                                    1940303872 bytes total (1036210176 bytes free)
+                        ''',
+                        '''
+                            Directory of bootflash:/
+                                    11  drwx            16384  Nov 25 2016 19:32:53 -07:00  lost+found
+                                    8034  drwx             4096  Nov 25 2016 18:45:10 -07:00  test_123456.bin
+                                    1940303872 bytes total (1036210176 bytes free)
+                        '''
+                    ])
+                }
+
+            def __call__(self, cmd, *args, **kwargs):
+                if 'dir' in cmd:
+                    return next(self.data['dir bootflash:'])
+                
+                # First copy attempt raises permission denied error
+                if copy_attempt['count'] == 0:
+                    copy_attempt['count'] += 1
+                    raise Exception('Permission denied. Cannot overwrite existing file.')
+                
+                # Second attempt with unique filename succeeds
+                return 'Copied file successfully'
+
+        def mock_verify_file_exists(*args, **kwargs):
+            """Return False initially to trigger copy, True after retry for verification"""
+            verify_call_count['count'] += 1
+            # First call: return False to trigger copy
+            # Second call (after retry): return True for verification
+            return verify_call_count['count'] > 1
+
+        self.device.execute = Mock(side_effect=MockExecute())
+        self.device.api.modify_filename = Mock(return_value='test_123456.bin')
+        self.device.api.verify_file_exists = Mock(side_effect=mock_verify_file_exists)
+
+        steps = Steps()
+        testbed = Testbed('mytb', servers={'server1': {'address': '127.0.0.1', 'protocol': 'scp'}})
+        self.device.testbed = testbed
+
+        self.cls.copy_to_device(
+            steps=steps, device=self.device,
+            origin=dict(files=['/path/test.bin'], hostname='server1'),
+            destination=dict(directory='bootflash:'),
+            protocol='scp',
+        )
+
+        # Verify successful retry
+        self.assertEqual(Passed, steps.details[0].result)
+        self.assertEqual(copy_attempt['count'], 1)
+        # Verify modify_filename was called for retry
+        self.device.api.modify_filename.assert_called()
+

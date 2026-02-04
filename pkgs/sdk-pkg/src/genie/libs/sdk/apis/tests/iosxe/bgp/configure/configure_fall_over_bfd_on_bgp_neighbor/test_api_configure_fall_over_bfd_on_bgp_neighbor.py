@@ -1,35 +1,15 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
 from genie.libs.sdk.apis.iosxe.bgp.configure import configure_fall_over_bfd_on_bgp_neighbor
 
-
-class TestConfigureFallOverBfdOnBgpNeighbor(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          R1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: iosxe
-            type: switch
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['R1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureFallOverBfdOnBgpNeighbor(TestCase):
 
     def test_configure_fall_over_bfd_on_bgp_neighbor(self):
-        result = configure_fall_over_bfd_on_bgp_neighbor(self.device, 1, 'pg-ibgp-rc')
+        device = Mock()
+        result = configure_fall_over_bfd_on_bgp_neighbor(device, 1, 'pg-ibgp-rc')
         expected_output = None
         self.assertEqual(result, expected_output)
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            (['router bgp 1', 'neighbor pg-ibgp-rc fall-over bfd'],)
+        )

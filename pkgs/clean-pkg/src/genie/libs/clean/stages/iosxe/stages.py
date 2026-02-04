@@ -36,6 +36,7 @@ from genie.libs.clean.utils import (
     remove_string_from_image,
     raise_,
 )
+from genie.libs.clean.exception import FailedToBootException
 
 # Unicon
 from unicon.eal.dialogs import Statement, Dialog
@@ -2301,6 +2302,11 @@ class RommonBoot(BaseStage):
 
         reconnect_timeout (int, optional): Timeout to reconnect the device after booting. Default to 120 sec.
 
+        tftp_boot_max_attempts (int, optional): Maximum number of TFTP rommon boot attempts. Defaults to 3.
+
+        tftp_boot_sleep_interval (int, optional): Number of seconds to sleep between TFTP rommon boot
+            retry attempts. Defaults to 30 seconds.
+
     Example
     -------
     rommon_boot:
@@ -2316,6 +2322,8 @@ class RommonBoot(BaseStage):
         config_reg_timeout: 10
         config_register: 0x0
         grub_activity_pattern: 'The highlighted entry will be (?:booted|executed) automatically'
+        tftp_boot_max_attempts: 3
+        tftp_boot_sleep_interval: 30
 
     There is more than one ip address, one for each supervisor.
 
@@ -2359,6 +2367,8 @@ class RommonBoot(BaseStage):
     CONFIG_REGISTER = "0x0"
     IMAGE = []
     TFTP = {}
+    ROMMON_TFTP_BOOT_MAX_ATTEMPTS = 3
+    ROMMON_TFTP_BOOT_SLEEP_INTERVAL = 30
 
     # ============
     # Stage Schema
@@ -2378,6 +2388,8 @@ class RommonBoot(BaseStage):
         Optional("rommon_timeout"): int,
         Optional("config_register"): str,
         Optional("reconnect_timeout"): int,
+        Optional("tftp_boot_max_attempts"): int,
+        Optional("tftp_boot_sleep_interval"): int,
     }
 
     # ==============================
@@ -2429,7 +2441,9 @@ class RommonBoot(BaseStage):
                     image=IMAGE,
                     tftp=TFTP,
                     timeout=TIMEOUT,
-                    grub_activity_pattern=GRUB_ACTIVITY_PATTERN):
+                    grub_activity_pattern=GRUB_ACTIVITY_PATTERN,
+                    tftp_boot_max_attempts=ROMMON_TFTP_BOOT_MAX_ATTEMPTS,
+                    tftp_boot_sleep_interval=ROMMON_TFTP_BOOT_SLEEP_INTERVAL):
         with steps.start("Boot device from rommon") as step:
 
             log.info(
@@ -2531,7 +2545,28 @@ class RommonBoot(BaseStage):
                                  timeout=timeout,
                                  return_when=ALL_COMPLETED)
                 elif tftp_boot:
-                    device.api.device_rommon_boot(tftp_boot=tftp_boot)
+                    # Retry loop for TFTP boot
+                    retry_count = 0
+                    while retry_count < tftp_boot_max_attempts:
+                        try:
+                            log.info(f"TFTP rommon boot attempt {retry_count + 1}/{tftp_boot_max_attempts}")
+                            device.api.device_rommon_boot(tftp_boot=tftp_boot)
+                            log.info(f"TFTP rommon boot successful on attempt {retry_count + 1}")
+                            break
+                        except FailedToBootException as e:
+                            retry_count += 1
+                            if retry_count < tftp_boot_max_attempts:
+                                log.warning(
+                                    f"TFTP rommon boot failed on attempt {retry_count}/{tftp_boot_max_attempts}. "
+                                    f"Error: {str(e)}. Retrying in {tftp_boot_sleep_interval} seconds..."
+                                )
+                                time.sleep(tftp_boot_sleep_interval)
+                            else:
+                                log.error(
+                                    f"TFTP rommon boot failed after {tftp_boot_max_attempts} attempts. "
+                                    f"Last error: {str(e)}"
+                                )
+                                raise
             except Exception as e:
                 step.failed("Failed to boot the device from rommon",
                             from_exception=e)
@@ -4359,6 +4394,12 @@ class ResetConfiguration(BaseStage):
             )
             if "Rollback aborted" in output:
                 step.passx("Rollback aborted")
+
+        # Re-initialize init commands in case they were removed
+        try:
+            device.connectionmgr.cli.connection_provider.execute_init_commands()
+        except Exception as e:
+            log.warning(f"Attempt to re-initialize init commands failed: {e}")
 
     def show_running_config(self, steps, device):
         with steps.start("Capturing running config") as step:

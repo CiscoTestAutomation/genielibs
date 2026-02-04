@@ -442,7 +442,7 @@ def scp(device,
     return 'bytes copied in' in out
 
 
-def delete_files(device, locations, filenames):
+def delete_files(device, locations, filenames, timeout=500):
     """ Delete local file
 
         Args:
@@ -450,6 +450,7 @@ def delete_files(device, locations, filenames):
             locations (`list`): list of locations
                                   ex.) bootflash:/core/
             filenames (`list`): file name. regular expression is supported
+            timeout (`int`, optional): Timeout for delete operation in seconds. Default is 500
         Returns:
             deleted_files (`list`): list of deleted files
     """
@@ -458,7 +459,7 @@ def delete_files(device, locations, filenames):
     # loop by given locations
     for location in locations:
         log.info('Checking {location}...'.format(location=location))
-        parsed = device.parse('dir {location}'.format(location=location))
+        parsed = device.parse('dir {location}'.format(location=location), timeout=timeout)
 
         # loop by given filenames
         for filename in filenames:
@@ -477,7 +478,7 @@ def delete_files(device, locations, filenames):
                     if location[-1] != '/':
                         location += '/'
                     full_path = '{location}{file}'.format(location=location, file=file)
-                device.execute('delete /force {full_path}'.format(full_path=full_path))
+                device.execute('delete /force {full_path}'.format(full_path=full_path), timeout=timeout)
                 # build up list for return
                 deleted_files.append(full_path)
 
@@ -2113,36 +2114,43 @@ def password_recovery(device, console_activity_pattern='',
             f'manual recovery is needed. Error:\n{e}'
             )
 
-    # Device is assumed to be in rommon mode
-    # step:3 Configure the ignore startup config
+    # step:3 Execute config register in rommon state
+    log.info(f"Setting config register for device {device.name}")
+    device.api.execute_set_config_register(config_register='0x0')
+
+    # step:4 Execute reset command
+    log.info(f"Executing ROMMON reset for device {device.name}")
+    device.api.execute_rommon_reset()
+
+    # step:5 Configure the ignore startup config
     log.info(f'Configure the ignore startup config on the device {device.name}')
     device.api.configure_ignore_startup_config()
 
-    # step:4 Bring the device to enable mode
+    # step:6 Bring the device to enable mode
     if device.is_ha:
         # designate handle method will bring the device to enable mode
         device.connection_provider.designate_handles()
     else:
         device.enable()
 
-    # step:5 Init connection settings (term length, etc.)
+    # step:7 Init connection settings (term length, etc.)
     log.info('Initialize connection settings')
     device.connection_provider.init_connection()
 
-    # step:6 Configure the login credentials
+    # step:8 Configure the login credentials
     log.info(f'Configure the login credentials {device.name}')
     device.api.configure_management_credentials()
 
-    # step:7 Unconfigure the ignore startup config
+    # step:9 Unconfigure the ignore startup config
     log.info(f'Unconfigure the ignore startup config {device.name}')
     device.api.unconfigure_ignore_startup_config()
 
-    # step:8 verify the rommon variable
+    # step:10 verify the rommon variable
     log.info(f'verify the ignore startup config {device.name}')
     if not device.api.verify_ignore_startup_config():
         raise Exception(f"Failed to unconfigure the ignore startup config on {device.name}")
 
-    # step:9 Execute write memory
+    # step:11 Execute write memory
     log.info(f'Executing write memory {device.name}')
     device.api.execute_write_memory()
 

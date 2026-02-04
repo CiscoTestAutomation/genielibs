@@ -426,3 +426,37 @@ def unconfigure_logging_facility_and_trap(device):
         raise SubCommandFailure(
             f"Failed to unconfigure logging facility and trap debugging on {device}. Error:\n{e}"
         )
+
+
+def configure_ipv6_nd_reachable_time(device, reachable_time):
+    """ Configure ipv6 nd reachable-time
+        Args:
+            device (`obj`): Device object
+            reachable_time ('int') : Reachability time in milliseconds
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f'ipv6 nd reachable-time {reachable_time}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure ipv6 nd reachable-time on {device}. Error:\n{e}")
+
+
+def unconfigure_ipv6_nd_reachable_time(device):
+    """ Unconfigure ipv6 nd reachable-time
+        Args:
+            device (`obj`): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure('no ipv6 nd reachable-time')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure ipv6 nd reachable-time on {device}. Error:\n{e}")

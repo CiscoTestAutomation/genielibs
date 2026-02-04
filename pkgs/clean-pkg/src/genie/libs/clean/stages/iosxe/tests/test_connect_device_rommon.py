@@ -33,7 +33,7 @@ class TestRommonConnect(unittest.TestCase):
                         settings:
                             POST_DISCONNECT_WAIT_SEC: 0
                             GRACEFUL_DISCONNECT_WAIT_SEC: 0.2
-                            FIND_BOOT_IMAGE: False,
+                            FIND_BOOT_IMAGE: False
                             ROMMON_INIT_COMMANDS:
                                 - set
                                 - ping 1.1.1.1

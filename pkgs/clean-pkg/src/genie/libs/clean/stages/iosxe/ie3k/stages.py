@@ -246,6 +246,11 @@ rommon_boot:
     config_reg_timeout (int, optional): Max time to set config-register.
         Defaults to 30.
 
+    tftp_boot_max_attempts (int, optional): Maximum number of TFTP rommon boot attempts. Defaults to 3.
+
+    tftp_boot_sleep_interval (int, optional): Number of seconds to sleep between TFTP rommon boot
+        retry attempts. Defaults to 30 seconds.
+
 Example
 -------
 rommon_boot:
@@ -299,6 +304,8 @@ devices:
     SAVE_SYSTEM_CONFIG = True
     TIMEOUT = 600
     ETHER_PORT = 0
+    ROMMON_TFTP_BOOT_MAX_ATTEMPTS = 3
+    ROMMON_TFTP_BOOT_SLEEP_INTERVAL = 30
 
     # ============
     # Stage Schema
@@ -316,7 +323,9 @@ devices:
         Optional('recovery_username'): str,
         Optional('recovery_enable_password'): str,
         Optional('timeout'): int,
-        Optional('ether_port'): int
+        Optional('ether_port'): int,
+        Optional('tftp_boot_max_attempts'): int,
+        Optional('tftp_boot_sleep_interval'): int
     }
 
     # ==============================
@@ -387,7 +396,8 @@ devices:
             device.destroy_all()
 
     def rommon_boot(self, steps, device, image, tftp=None, timeout=TIMEOUT, recovery_password=RECOVERY_PASSWORD,
-                  recovery_username=RECOVERY_USERNAME, recovery_enable_password=RECOVERY_ENABLE_PASSWORD, ether_port=ETHER_PORT):
+                  recovery_username=RECOVERY_USERNAME, recovery_enable_password=RECOVERY_ENABLE_PASSWORD, ether_port=ETHER_PORT,
+                  tftp_boot_max_attempts=ROMMON_TFTP_BOOT_MAX_ATTEMPTS, tftp_boot_sleep_interval=ROMMON_TFTP_BOOT_SLEEP_INTERVAL):
 
         with steps.start("Boot device from rommon") as step:
             if tftp is not None:
@@ -431,7 +441,11 @@ devices:
 
             if tftp:
                 tftp.update({'image': image, 'ether_port': ether_port})
-                common_kwargs.update({'tftp_boot': tftp})
+                common_kwargs.update({
+                    'tftp_boot': tftp,
+                    'tftp_boot_max_attempts': tftp_boot_max_attempts,
+                    'tftp_boot_sleep_interval': tftp_boot_sleep_interval
+                })
             else:
                 common_kwargs.update({'golden_image': image})
 

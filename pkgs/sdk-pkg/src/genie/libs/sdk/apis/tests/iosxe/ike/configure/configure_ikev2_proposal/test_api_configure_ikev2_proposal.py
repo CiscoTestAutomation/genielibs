@@ -10,5 +10,5 @@ class TestConfigureIkev2Proposal(TestCase):
         result = configure_ikev2_proposal(self.device, 'ikev2proposal', 'aes-cbc-256', 21, 'sha512', None, 'mlkem1024', True)
         self.assertEqual(
             self.device.configure.mock_calls[0].args,
-            (['crypto ikev2 proposal ikev2proposal', 'encryption aes-cbc-256', 'integrity sha512', 'group 21', 'ake mlkem1024 required'],)
+            (['crypto ikev2 proposal ikev2proposal', 'encryption aes-cbc-256', 'integrity sha512', 'group 21', 'pqc mlkem1024 optional'],)
         )

@@ -15,6 +15,9 @@ from pyats.utils.objects import R, find
 # PLATFORM
 from genie.libs.sdk.apis.iosxe.platform.get import get_diffs_platform
 
+# unicon
+from unicon.core.errors import SubCommandFailure
+
 # Logger
 log = logging.getLogger(__name__)
 
@@ -781,3 +784,28 @@ def verify_yang_is_syncing_done(
                 log.debug('ERROR - rpc-reply is unknown')
                 return False
     return False
+
+def verify_no_boot_manual(device):
+    """ To verify if manual boot is not set
+        Args:
+            device (`obj`): Device object
+        Returns:
+            True or False
+        Raises:
+            SubCommandFailure : Failed to verify boot manual on the device
+    """
+    cmd = 'show boot'
+
+    try:
+        output = device.parse(cmd)
+        manual_boot = output.q.get_values('manual_boot',0)
+        if manual_boot == False:
+            device.api.configure_boot_manual()
+        else:
+            log.info("Manual boot is not set, no need to configure")
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not verify the boot manual on {device.name}. Error:\n{e}")
+
+    return True

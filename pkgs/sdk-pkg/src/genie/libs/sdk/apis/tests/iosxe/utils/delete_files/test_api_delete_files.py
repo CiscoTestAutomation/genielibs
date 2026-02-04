@@ -15,12 +15,12 @@ class TestDeleteFiles(unittest.TestCase):
 
     def test_delete_files_relative_path(self):
         result = delete_files(self.device, ['bootflash:/core'], ['file1.core'])
-        self.device.execute.assert_called_with('delete /force bootflash:/core/file1.core')
+        self.device.execute.assert_called_with('delete /force bootflash:/core/file1.core', timeout=500)
         self.assertEqual(result, ['bootflash:/core/file1.core'])
 
     def test_delete_files_absolute_path(self):
         result = delete_files(self.device, ['bootflash:/core'], ['bootflash:/core/file1.core'])
-        self.device.execute.assert_called_with('delete /force bootflash:/core/file1.core')
+        self.device.execute.assert_called_with('delete /force bootflash:/core/file1.core', timeout=500)
         self.assertEqual(result, ['bootflash:/core/file1.core'])
 
 

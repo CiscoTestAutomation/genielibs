@@ -181,6 +181,7 @@ class TestRecovery(unittest.TestCase):
         device.name = 'test_device'
         device.api.device_recovery_boot = Mock(side_effect=[Exception("Boot recovery failed"), None])
         device.api.configure_management_console = Mock()
+        device.api.verify_no_boot_manual = Mock()
         device.api.execute_clear_console = Mock()
         device.api.execute_power_cycle_device = Mock()
         device.log = logger
@@ -201,3 +202,4 @@ class TestRecovery(unittest.TestCase):
         assert device.api.execute_power_cycle_device.call_count == 2
         device.api.execute_clear_console.assert_called_once()
         device.api.configure_management_console.assert_called_once()
+        device.api.verify_no_boot_manual.assert_called_once()

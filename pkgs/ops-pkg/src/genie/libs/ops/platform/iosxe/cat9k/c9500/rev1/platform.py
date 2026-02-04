@@ -341,9 +341,9 @@ class Platform(SuperPlatform):
                 for k1 in self.slot.keys():
                     for k2 in self.slot[k1].keys():
                                 for k, v in self.slot[k1][k2].items():
-                                    if 'rp' in k1 and 'active' in v:
+                                    if 'rp' in k1 and 'active' in v and 'active' in red2:
                                         name2[k1][k2].update(red2['active'])
-                                    if 'rp' in k1 and 'standby' in v:
+                                    if 'rp' in k1 and 'standby' in v and 'standby' in red2:
                                         name2[k1][k2].update(red2['standby'])
                 self.slot = name2
                 del name2

@@ -1,34 +1,23 @@
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
 from genie.libs.sdk.apis.iosxe.cdp.configure import unconfigure_cdp_interface
 
 
-class TestUnconfigureCdpInterface(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = """
-        devices:
-          FUGAZI:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: iosxe
-            type: iosxe
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['FUGAZI']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigureCdpInterface(TestCase):
 
     def test_unconfigure_cdp_interface(self):
-        result = unconfigure_cdp_interface(self.device, 'Te0/1/1')
+        device = Mock()
+        result = unconfigure_cdp_interface(device, 'Te0/1/1')
         expected_output = None
         self.assertEqual(result, expected_output)
+
+        # Verify configure was called with the correct commands
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            (['interface Te0/1/1', 'no cdp enable', 'no cdp run'],)
+        )
+
+
+if __name__ == '__main__':
+    import unittest
+    unittest.main()

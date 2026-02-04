@@ -992,8 +992,7 @@ def copy_to_device(device,
                 raise
 
     # Check if we are connected via proxy device
-    proxy = device.connections[device.via].get('proxy') or \
-        device.connections[device.via].get('sshtunnel', {}).get('host')
+    proxy = device.api.get_proxy()
 
     # check servers and devices for a proxy
     if proxy:
@@ -1167,8 +1166,7 @@ def copy_from_device(device,
                                **kwargs)
 
     # Check if we are connected via proxy device
-    proxy = device.connections[device.via].get('proxy') or \
-        device.connections[device.via].get('sshtunnel', {}).get('host')
+    proxy = device.api.get_proxy()
 
     # check servers and devices for a proxy
     if proxy:
@@ -4715,8 +4713,7 @@ def get_server_certificate_pem(device, hostname, port=443):
 
     # Check if a proxy is configured for the device
     # If so, establish a socat relay through the proxy
-    dev_con = device.connections[device.via]
-    proxy = dev_con.get('proxy') or dev_con.get('sshtunnel', {}).get('host')
+    proxy = device.api.get_proxy()
     if proxy:
         proxy_dev = device.api.convert_server_to_linux_device(proxy) or \
             device.testbed.devices.get(proxy)
@@ -4739,3 +4736,87 @@ def get_server_certificate_pem(device, hostname, port=443):
     finally:
         if proxy:
             proxy_dev.api.stop_socat_relay(proxy_pid)
+
+
+def check_config_options(device, cmd, options, timeout=30):
+    """ Return True if all expected options are present in '<cmd> ?' help in config mode.
+    Suppresses '% Incomplete command.' so we can parse the help text.
+    
+    Args:
+        device (obj): Device object.
+        cmd (str): Command to retrieve configuration options.
+        options (list): List of configuration options to look for.
+        timeout (int, optional): Timeout for command execution. Default is 30 seconds.
+    
+    Returns:
+        bool: True if all expected options are present, False otherwise.
+    """
+    base_cmd = cmd.strip()
+
+    try:
+        # Issue '<cmd> ?' in config mode and disable error matching to avoid SubCommandFailure.
+        output = device.configure(
+            f"{base_cmd} ?",
+            timeout=timeout,
+            state='config',
+            error_pattern=[]  # critical: ignore '% Incomplete command.'
+        )
+    except SubCommandFailure as e:
+        # Should not happen with error_pattern=[], but keep for completeness.
+        log.error(f"Failed to get help for '{base_cmd}' on {device.name}: {e}")
+        return False
+
+    # Normalize output to a string (older Unicon may return dict when list is passed)
+    if isinstance(output, dict):
+        output = "\n".join(str(v) for v in output.values())
+
+    # Collect only help lines that look like: "  token    description"
+    help_lines = [ln for ln in output.splitlines()
+                  if re.match(r'^\s+[A-Za-z0-9._-]+\s+', ln)]
+
+    if not help_lines:
+        log.error("No help lines captured; try increasing timeout or disabling paging (terminal length 0).")
+        return False
+
+    # Verify each expected option appears at start of a help line.
+    # log all options that aren't found before returning False.
+    i = 0
+    for opt in options:
+        pat = rf'^\s*{re.escape(opt)}\s+'
+        if not any(re.match(pat, ln) for ln in help_lines):
+            log.error(f"Option '{opt}' not found in output")
+            i += 1
+
+    if i > 0:
+        log.error(f"Total options not found: {i} out of {len(options)}")
+        return False
+
+    log.debug("All options found in output")
+    return True
+
+  
+def get_proxy(device):
+    """ Retrieve proxy server for the device if configured.
+
+    Args:
+        device (obj): Device object.
+
+    Returns:
+        str: Proxy server hostname or IP address, or None if not configured.
+    """
+
+    proxy = None
+
+    # Check if a proxy is configured for the device
+    if device.via:
+        conn_info = device.connections[device.via]
+        proxy = conn_info.get('proxy') or conn_info.get('sshtunnel', {}).get('host')
+    else:
+        # Loop through all connections to find a proxy
+        for conn_name, conn_info in device.connections.items():
+            if conn_name == 'defaults':
+                continue
+            proxy = conn_info.get('proxy') or conn_info.get('sshtunnel', {}).get('host')
+            if proxy:
+                break
+    return proxy

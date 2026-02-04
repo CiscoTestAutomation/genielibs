@@ -1037,7 +1037,6 @@ class Bgp(ABC):
                                 address_family_sub.build_config(apply=False,
                                     attributes=address_family_attributes,
                                     unconfig=unconfig))
-
                     return str(configurations)
 
                 def build_unconfig(self, apply=True, attributes=None,
@@ -1245,6 +1244,14 @@ class Bgp(ABC):
                                 configurations.append_line(
                                     attributes.format('import vpn unicast reoriginate'))
 
+                            #advertise local-labeled-route
+                            if attributes.value('nbr_af_advertise_local_labeled_route_control') is True:
+                              if attributes.value('nbr_af_advertise_local_labeled_route_enable') is False:
+                                configurations.append_line(attributes.format(
+                                'no advertise local-labeled-route'))
+                              elif attributes.value('nbr_af_advertise_local_labeled_route_enable') is True:
+                                configurations.append_line(attributes.format(
+                                 'advertise local-labeled-route'))
                         return str(configurations)
 
                     def build_unconfig(self, apply=True, attributes=None,

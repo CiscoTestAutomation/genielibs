@@ -1,4 +1,5 @@
 """ File utils common base class """
+import os
 import re
 import logging
 import contextlib
@@ -411,6 +412,9 @@ class FileUtils(FileUtilsCommonDeviceBase):
                     destination=destination,
                     **kwargs)
             except Exception as e:
+                error_str = str(e)
+
+                # Retry with HTTP if HTTPS fails
                 if "https" in cmd:
                     logger.warning("HTTPS transfer failed, retrying with HTTP")
                     return self.send_cli_to_device(
@@ -419,6 +423,56 @@ class FileUtils(FileUtilsCommonDeviceBase):
                         used_server=used_server,
                         destination=destination,
                         **kwargs)
+
+                # Retry with timestamp appended filename if permission denied to overwrite
+                if "Permission denied" in error_str and "Cannot overwrite existing file" in error_str:
+                    
+                    device = kwargs.get('device') or getattr(self, 'device', None)
+                    if not device:
+                        logger.error("Device object not available for modify_filename")
+                        raise e
+
+                    # Extract directory and filename from destination
+                    if ':' in destination:
+                        dest_parts = destination.rsplit(':', 1)
+                        prefix = dest_parts[0] + ':'
+                        filepath = dest_parts[1].lstrip('/')  # Remove leading slash
+                    else:
+                        prefix = ''
+                        filepath = destination
+
+                    # Split into directory and filename
+                    directory = os.path.dirname(filepath) if os.path.dirname(filepath) else ''
+                    filename = os.path.basename(filepath)
+
+                    # Use modify_filename API to generate unique name with timestamp
+                    # This handles image length validation and consistent naming
+                    new_filename = device.api.modify_filename(
+                        file=filename,
+                        directory=prefix + directory if directory else prefix,
+                        protocol=used_server.get('protocol', 'https') if isinstance(used_server, dict) else 'https',
+                        unique_file_name=True,
+                        check_image_length=True
+                    )
+
+                    # Construct new destination
+                    if directory:
+                        new_destination = f"{prefix}{directory}/{new_filename}"
+                    else:
+                        # Avoid double slash when prefix already ends with ':'
+                        new_destination = f"{prefix}{new_filename}"
+
+                    # Update cmd with new destination
+                    new_cmd = cmd.replace(destination, new_destination)
+
+                    logger.warning(f"Permission denied to overwrite, retrying with new filename: {new_destination}")
+                    return self.send_cli_to_device(
+                        cli=new_cmd,
+                        timeout_seconds=timeout_seconds,
+                        used_server=used_server,
+                        destination=new_destination,
+                        **kwargs)
+
                 raise e
 
     def parsed_dir(self, target, timeout_seconds, dir_output, *args, **kwargs):

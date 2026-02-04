@@ -1,35 +1,63 @@
-import os
 import unittest
-from pyats.topology import loader
+from unittest.mock import Mock
 from genie.libs.sdk.apis.iosxe.cdp.configure import unconfigure_cdp
 
 
 class TestUnconfigureCdp(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          9300-24UX-1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: c9300
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['9300-24UX-1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
-
     def test_unconfigure_cdp(self):
-        result = unconfigure_cdp(self.device, None, 300)
+        # Create mock device
+        device = Mock()
+        
+        # Mock the parse method to return interface data with proper structure
+        device.parse.return_value = {
+            'TenGigabitEthernet1/0/1': {
+                'type': 'TenGigabitEthernet',
+                'oper_status': 'up',
+                'enabled': True,
+                'port_channel': {
+                    'port_channel_member': False
+                }
+            },
+            'TenGigabitEthernet1/0/2': {
+                'type': 'TenGigabitEthernet',
+                'oper_status': 'up',
+                'enabled': True,
+                'port_channel': {
+                    'port_channel_member': False
+                }
+            },
+            'GigabitEthernet0/0': {
+                'type': 'GigabitEthernet',
+                'oper_status': 'up',
+                'enabled': True,
+                'port_channel': {
+                    'port_channel_member': False
+                }
+            },
+            'Vlan1': {
+                'type': 'Vlan',
+                'oper_status': 'up',
+                'enabled': True
+            }
+        }
+        
+        # Mock the configure method
+        device.configure.return_value = None
+        
+        # Call the function with None for interface_list and timer=300
+        result = unconfigure_cdp(device, None, 300)
+        
+        # Assertions
         expected_output = None
         self.assertEqual(result, expected_output)
+        
+        # Verify parse was called with timeout parameter
+        device.parse.assert_called_once_with('show interfaces', timeout=300)
+        
+        # Verify configure was called
+        self.assertTrue(device.configure.called, "device.configure was not called")
+
+
+if __name__ == '__main__':
+    unittest.main()

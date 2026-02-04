@@ -2268,3 +2268,155 @@ def unconfigure_mpls_ldp_neighbor_labels_accept(device, neighbor_ip, acl=None):
             "Couldn't unconfigure LDP neighbor labels accept on {device}. Error:\n{error}".format(
                 device=device.name, error=e)
         )
+
+def configure_mpls_ldp_label(device, prefix_list=None, host_routes=False):
+    """Configure MPLS LDP label allocation options
+
+    CLI forms::
+
+        mpls ldp label
+        mpls ldp label
+          allocate global prefix-list <prefix_list>
+        mpls ldp label
+          allocate global host-routes
+        mpls ldp label
+          allocate global prefix-list <prefix_list>
+          allocate global host-routes
+
+    Both prefix_list and host_routes can be configured together.
+
+    Args:
+        device (obj): Device object
+        prefix_list (str, optional): Prefix-list name to use when allocating labels
+        host_routes (bool, optional): Set True to allocate global host-routes
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: If device configuration fails
+    """
+
+    cmd = ["mpls ldp label"]
+    if prefix_list:
+        cmd.append(f"allocate global prefix-list {prefix_list}")
+    if host_routes:
+        cmd.append("allocate global host-routes")
+
+    log.debug(
+        "Configuring MPLS LDP label settings on {device}: {commands}".format(
+            device=device.name,
+            commands="; ".join(cmd),
+        )
+    )
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Couldn't configure MPLS LDP label settings on {device}. Error:\n{error}".format(
+                device=device.name, error=e)
+        )
+
+def unconfigure_mpls_ldp_label(device, prefix_list=None, host_routes=False, ldp_label=False):
+    """Unconfigure MPLS LDP label allocation options
+
+    CLI forms::
+
+        mpls ldp label 
+        no allocate global prefix-list <prefix_list>
+        no allocate global host-routes
+
+    Both prefix_list and host_routes can be removed together.
+
+    Args:
+        device (obj): Device object
+        prefix_list (str, optional): Prefix-list name to remove
+        host_routes (bool, optional): Set True to remove global host-routes
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: If device configuration fails
+    """
+    cmd = []
+    if ldp_label:
+        cmd.append("no mpls ldp label")
+    else:
+        cmd.append("mpls ldp label")
+        if prefix_list:
+            cmd.append(f"no allocate global prefix-list {prefix_list}")
+        if host_routes:
+            cmd.append("no allocate global host-routes")
+
+    log.debug(
+        "Unconfiguring MPLS LDP label settings on {device}: {commands}".format(
+            device=device.name,
+            commands="; ".join(cmd),
+        )
+    )
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Couldn't unconfigure MPLS LDP label settings on {device}. Error:\n{error}".format(
+                device=device.name, error=e)
+        )
+        
+def configure_mpls_static_binding_ipv4(device, prefix, mask, binding_args):
+    """Configure MPLS static binding for an IPv4 prefix
+
+    Example::
+
+        mpls static binding ipv4 10.2.2.0 255.255.255.255 input 17
+
+    Args:
+        device (obj): Device object
+        prefix (str): Prefix to bind
+        mask (str): Network mask
+        binding_args (str): Remaining CLI string after prefix/mask
+    """
+
+    command = f"mpls static binding ipv4 {prefix} {mask} {binding_args}".strip()
+    log.debug(
+        "Configuring MPLS static binding on {device}: {command}".format(
+            device=device.name, command=command)
+    )
+
+    try:
+        device.configure(command)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Couldn't configure MPLS static binding on {device}. Error:\n{error}".format(
+                device=device.name, error=e)
+        )
+
+def unconfigure_mpls_static_binding_ipv4(device, prefix, mask, bindingargs=None):
+    """Remove MPLS static binding for an IPv4 prefix
+
+    Args:
+        device (obj): Device object
+        prefix (str): Prefix to unbind
+        mask (str): Network mask
+        bindingargs (str, optional): Remaining CLI string after prefix/mask
+    """
+
+    command = f"no mpls static binding ipv4 {prefix} {mask}"
+    if bindingargs:
+        command = f"{command} {bindingargs}".rstrip()
+
+    log.debug(
+        "Unconfiguring MPLS static binding on {device}: {command}".format(
+            device=device.name, command=command)
+    )
+
+    try:
+        device.configure(command)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Couldn't unconfigure MPLS static binding on {device}. Error:\n{error}".format(
+                device=device.name, error=e)
+        )
+

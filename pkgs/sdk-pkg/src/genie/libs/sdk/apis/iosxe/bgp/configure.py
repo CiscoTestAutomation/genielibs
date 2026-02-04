@@ -3110,4 +3110,42 @@ def configure_bgp_ipv6_dampening(device, bgp_as, dampening_params=None):
             f"Could not configure BGP dampening for IPv6 on BGP router {bgp_as}. "
             f"Error:\n{e}"
         )
-        
+
+def configure_bgp_aggregate_address(device, bgp_as, address_family, aggregate_address, as_set=False, suppress_map=None, summary_only=False):        
+    """
+    Configure BGP aggregate address on device
+    
+    Args:
+        device: Device object
+        bgp_as: BGP AS number
+        address_family: Address family (ipv4/ipv6)
+        aggregate_address: Aggregate address (e.g., "65::/48")
+        as_set: Include AS-SET in aggregate (True/False)
+        suppress_map: Route-map name for suppression
+        summary_only: Advertise summary only (True/False)
+    """
+    
+    config = [
+        f"router bgp {bgp_as}",
+        f"address-family {address_family}",
+    ]
+    
+    # Build aggregate-address command
+    agg_cmd = f"aggregate-address {aggregate_address}"
+    
+    if as_set:
+        agg_cmd += " as-set"
+    
+    if suppress_map:
+        agg_cmd += f" suppress-map {suppress_map}"
+    
+    if summary_only:
+        agg_cmd += " summary-only"
+    
+    config.append(agg_cmd)
+    
+    try:
+        config.append("exit-address-family")
+        device.configure(config)
+    except Exception as e:
+        raise Exception(f"Failed to configure BGP aggregate address: {e}")      

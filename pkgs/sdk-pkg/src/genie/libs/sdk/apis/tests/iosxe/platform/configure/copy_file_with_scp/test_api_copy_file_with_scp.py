@@ -27,3 +27,12 @@ class TestCopyFileWithScp(unittest.TestCase):
             self.device.execute.mock_calls[0].args,
             ('copy request.pem.ca scp://navin:navin@10.64.69.167/request.pem.ca',)
         )
+
+    def test_copy_file_with_scp_with_source_filename(self):
+        copy_file_with_scp(
+            self.device, '11.1.1.22', '/auto/mcp-abs-cluster-101/POLARIS/BLD-BLD_POLARIS_DEV_LATEST_20251028_003204/binos/linkfarm/ie9k_universalk9-iso1/ie9k_iosxe.BLD_POLARIS_DEV_LATEST_20251028_003204.SSA.bin', None, None, 'sdflash:/', 1800
+        )
+        self.assertEqual(
+            self.device.execute.mock_calls[0].args,
+            ('copy scp://11.1.1.22//auto/mcp-abs-cluster-101/POLARIS/BLD-BLD_POLARIS_DEV_LATEST_20251028_003204/binos/linkfarm/ie9k_universalk9-iso1/ie9k_iosxe.BLD_POLARIS_DEV_LATEST_20251028_003204.SSA.bin sdflash:/',)
+        )

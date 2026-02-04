@@ -533,3 +533,91 @@ def simulate_partition_sdflash(device, timeout=300, max_retries=3):
     except Exception as e:
         log.info(f"An error occurred during the simulation: {e}")
         return f"Error: {e}"
+
+def execute_locate_switch(device, duration, switch_number=None, switch_role=None):
+    """ execute locate switch <switch_number> role <switch_role> duration <duration>
+        Args:
+            device ('obj'): Device object
+            duration ('int'): Duration in seconds (Range: 9-255)
+            switch_number ('int', optional): Switch number (Range: 1-16)
+            switch_role ('str', optional): Switch role. Ex: active, standby
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+        Example:
+                device.api.execute_stop_locate_switch(100, switch_number=2)
+                device.api.execute_stop_locate_switch(100, switch_role='active')
+                device.api.execute_stop_locate_switch(100)
+    """
+    # Validate duration
+    if not (9 <= duration <= 255):
+        raise ValueError("Duration should be in range 9-255 seconds")
+    
+    # Validate switch_number if provided
+    if switch_number is not None and not (1 <= switch_number <= 16):
+        raise ValueError("Switch number should be in range 1-16")
+    
+    # Validate switch_role if provided
+    if switch_role is not None and switch_role not in ['active', 'standby']:
+        raise ValueError("Switch role should be 'active' or 'standby'")
+
+    # Build the command based on provided parameters
+    if switch_number is not None:
+        cmd = f'locate-switch switch {switch_number} {duration}'
+        log.info(f"Executing 'locate-switch {switch_number} {duration}' on the device")
+    elif switch_role is not None:
+        cmd = f'locate-switch switch {switch_role} {duration}'
+        log.info(f"Executing 'locate-switch {switch_role} {duration}' on the device")
+    else:
+        cmd = f'locate-switch {duration}'
+        log.info(f"Executing 'locate-switch {duration}' on the device")
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to execute {cmd} on {device.name}. Error:\n{e}'
+        )
+    
+def execute_stop_locate_switch(device, switch_number=None, switch_role=None):
+    """
+    Stops the locate operation on a specified switch or switch role in an IOS-XE device.
+    This function constructs and executes the appropriate CLI command to stop the locate operation
+    on a switch, based on the provided switch number or switch role. If neither is specified,
+    the command is executed globally.
+    Args:
+        device (Device): The device object on which to execute the command.
+        switch_number (int, optional): The switch number (1-16) to stop the locate operation on.
+        switch_role (str, optional): The switch role ('active' or 'standby') to stop the locate operation on.
+    Raises:
+        ValueError: If switch_number is not in the range 1-16, or if switch_role is not 'active' or 'standby'.
+        SubCommandFailure: If the command execution fails on the device.
+    Example:
+        dut.api.execute_stop_locate_switch(switch_number=2)
+        dut.api.execute_stop_locate_switch(switch_role='active')
+        dut.api.execute_stop_locate_switch()
+    """
+    
+    # Validate switch_number if provided
+    if switch_number is not None and not (1 <= switch_number <= 16):
+        raise ValueError("Switch number should be in range 1-16")
+    
+    # Validate switch_role if provided
+    if switch_role is not None and switch_role not in ['active', 'standby']:
+        raise ValueError("Switch role should be 'active' or 'standby'")
+    # Build the command based on provided parameters
+    if switch_number is not None:
+        cmd = f'locate-switch switch {switch_number} 0'
+        log.info(f"Executing 'stop locate switch {switch_number}' on the device")
+    elif switch_role is not None:
+        cmd = f'locate-switch switch {switch_role} 0'
+        log.info(f"Executing 'stop locate switch {switch_role}' on the device")
+    else:
+        cmd = 'locate-switch 0'
+        log.info(f"Executing 'stop locate switch' on the device")
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to execute {cmd} on {device.name}. Error:\n{e}'
+        )

@@ -89,6 +89,7 @@ class test_platform(unittest.TestCase):
                     'config_state': 'PWR,NSHUT,MON',
                     'name': 'A9K-MOD80-SE',
                     'state': 'IOS XR RUN',
+                    'full_slot': '0/0',
                     'subslot': {
                         '0': {
                             'config_state': 'PWR,NSHUT,MON',
@@ -110,12 +111,14 @@ class test_platform(unittest.TestCase):
                     'config_state': 'PWR,NSHUT,MON',
                     'name': 'A9K-RSP440-TR',
                     'redundancy_state': 'Active',
-                    'state': 'IOS XR RUN'},
+                    'state': 'IOS XR RUN',
+                    'full_slot': '0/RSP0/CPU0'},
                 '0/RSP1': {
                     'config_state': 'PWR,NSHUT,MON',
                     'name': 'A9K-RSP440-TR',
                     'redundancy_state': 'Standby',
-                    'state': 'IOS XR RUN'},
+                    'state': 'IOS XR RUN',
+                    'full_slot': '0/RSP1/CPU0'},
                 'rp_config_register': '0x1922'}}
         self.assertEqual(p.slot, slots)
         virtual_device_dict = {
@@ -227,6 +230,46 @@ class test_platform(unittest.TestCase):
         self.assertIn('IOSXR', p.os)
         self.assertNotIn('IOSXE', p.os)
 
+
+    def test_full_slot_attribute(self):
+        self.maxDiff = None
+        p = Platform(device=self.device)
+        # Get 'show version' output
+        p.maker.outputs[ShowVersion] = {'':PlatformOutput.showVersionOutput}
+        # Get 'show sdr detail' output
+        p.maker.outputs[ShowSdrDetail] = {'':PlatformOutput.showSdrDetailOutput}
+        # Get 'show platform' output
+        p.maker.outputs[ShowPlatform] = {'':PlatformOutput.showPlatformOutput}
+        # Get 'show platform vm' output
+        p.maker.outputs[ShowPlatformVm] = {'':PlatformOutput.showPlatformVmOutput}
+        # Get 'show install active summar' output
+        p.maker.outputs[ShowInstallActiveSummary] = \
+            {'':PlatformOutput.showInstallActiveSummaryOutput}
+        # Get 'show inventory' output
+        p.maker.outputs[ShowInventory] = {'':PlatformOutput.showInventoryOutput}
+        # Get 'show redundancy summary' output
+        p.maker.outputs[ShowRedundancySummary] = \
+            {'':PlatformOutput.showRedundancySummaryOutput}
+        # Get 'show redundancy' output
+        p.maker.outputs[ShowRedundancy] = \
+            {'':PlatformOutput.showRedundancyOutput}
+        # Get 'admin show diag chassis' output
+        p.maker.outputs[AdminShowDiagChassis] = \
+            {'':PlatformOutput.adminShowDiagChassisOutput}
+        # Get 'dir' output
+        p.maker.outputs[Dir] = {'':PlatformOutput.dirOutput}
+        # Get 'show diag details' output
+        p.maker.outputs[ShowDiagDetails] = \
+            {'':PlatformOutput.showDiagDetailsOutput}
+        # Learn the feature
+        p.learn()
+
+        # Check full_slot attribute exists and has correct values
+        # Verify full_slot is present in rp (Active/Standby ports)
+        self.assertIn('full_slot', p.slot['rp']['0/RSP0'])
+        self.assertEqual(p.slot['rp']['0/RSP0']['full_slot'], '0/RSP0/CPU0')
+        self.assertIn('full_slot', p.slot['rp']['0/RSP1'])
+        self.assertEqual(p.slot['rp']['0/RSP1']['full_slot'], '0/RSP1/CPU0')
 
     def test_ignored(self):
         self.maxDiff = None

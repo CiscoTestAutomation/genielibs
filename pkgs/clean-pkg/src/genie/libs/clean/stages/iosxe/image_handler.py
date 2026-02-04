@@ -225,6 +225,14 @@ class ImageHandler(BaseImageHandler, ImageLoader):
         else:
             tftp_boot.setdefault("image", self.image)
 
+    def update_rommon_boot(self, number=""):
+        """Update clean section 'rommon_boot' with image information"""
+        rommon_boot = self.device.clean.setdefault("rommon_boot" + number, {})
+        if self.override_stage_images:
+            rommon_boot.update({"image": self.image})
+        else:
+            rommon_boot.setdefault("image", self.image)
+
     def update_copy_to_linux(self, number=""):
         """Update clean section 'copy_to_linux' with image information"""
 

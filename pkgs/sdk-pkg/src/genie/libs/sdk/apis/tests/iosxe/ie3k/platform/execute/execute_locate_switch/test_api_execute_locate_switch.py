@@ -8,7 +8,7 @@ class TestExecuteLocateSwitch(TestCase):
     def test_execute_locate_switch(self):
         self.device = Mock()
         results_map = {
-            'locate-switch 10': '',
+            'locate-switch switch active 200': '',
         }
         
         def results_side_effect(arg, **kwargs):
@@ -16,9 +16,9 @@ class TestExecuteLocateSwitch(TestCase):
         
         self.device.execute.side_effect = results_side_effect
         
-        result = execute_locate_switch(self.device, 10, None, None)
+        result = execute_locate_switch(self.device, 200, None, 'active')
         self.assertIn(
-            'locate-switch 10',
+            'locate-switch switch active 200',
             self.device.execute.call_args_list[0][0]
         )
         expected_output = None

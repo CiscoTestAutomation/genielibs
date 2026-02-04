@@ -45,7 +45,8 @@ class Restore(object):
             method,
             abstract,
             default_dir,
-            copy_to_standby=False):
+            copy_to_standby=False,
+            **kwargs):
         if method == 'checkpoint':
             # compose checkpoint name
             self.ckname = self.__class__.__name__ + \
