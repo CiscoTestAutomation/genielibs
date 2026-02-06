@@ -121,8 +121,8 @@ def configure_ikev2_proposal(device,
                             dh_group,
                             integrity_algos=None,
                             prf_algos=None,
-                            ake_algos=None,
-                            ake_required=False
+                            pqc_algos=None,
+                            pqc_optional=True
                         ):
     """ Configures IKEV2 Proposal
         Args:
@@ -132,8 +132,8 @@ def configure_ikev2_proposal(device,
             integrity_algos ('str'): integrity or authentication algorithms
             dh_group ('str'): Diffie Hellman group
             prf_algos ('str'): Psuedo random number function
-            ake ('str'): ake algo
-            ake_required ('boolean',optional): Required option for AKE
+            pqc_algos ('str'): pqc algo
+            pqc_optional ('boolean',optional): Required option for PQC
         Returns:
             True/False
         Raises:
@@ -151,8 +151,8 @@ def configure_ikev2_proposal(device,
     configs.append(f"group {dh_group}")
     if prf_algos is not None:
         configs.append(f"prf {prf_algos}")
-    if ake_algos is not None:
-        configs.append(f"ake {ake_algos} {'required' if ake_required else ''}")
+    if pqc_algos is not None:
+        configs.append(f"pqc {pqc_algos} {'optional' if pqc_optional else ''}")
     
     try:
         device.configure(configs)

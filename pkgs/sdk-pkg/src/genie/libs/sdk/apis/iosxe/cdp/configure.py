@@ -236,4 +236,102 @@ def configure_default_cdp_timer(device):
             "Error: {error}".format(error=e)
         )
 
-    
+def configure_cdp_advertise_v2(device):
+    """ Configure cdp advertise version 2 on target device globally on the device
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+    """
+    command_list = ['cdp advertise-v2']
+    try:
+        device.configure(command_list)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure cdp advertise version 2 Globally"
+            "Error: {error}".format(error=e)
+        )
+
+def unconfigure_cdp_advertise_v2(device):
+    """ Disable cdp advertise version 2 on target device globally on the device
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+    """ 
+    command_list = ['no cdp advertise-v2']
+    try:
+        device.configure(command_list)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure cdp advertise version 2 Globally"
+            "Error: {error}".format(error=e)
+        )
+
+def configure_interface_cdp_enable(device, interface):
+    """ Enable cdp on interface
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Interface name
+        Returns:
+            None
+    """
+    command_list = [f'interface {interface}', 'cdp enable']
+    try:
+        device.configure(command_list)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not enable cdp on interface {interface}"
+            "Error: {error}".format(interface=interface, error=e)
+        )
+
+def unconfigure_interface_cdp_enable(device, interface):
+    """ Disable cdp on interface
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Interface name
+        Returns:
+            None
+    """
+    command_list = [f'interface {interface}', 'no cdp enable']
+    try:
+        device.configure(command_list)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not disable cdp on interface {interface}"
+            "Error: {error}".format(interface=interface, error=e)
+        )
+
+
+def configure_cdp_log_mismatch_duplex(device):
+    """ Configure cdp log mismatch duplex on target device globally on the device
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+    """
+    command_list = ['cdp log mismatch duplex']
+    try:
+        device.configure(command_list)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure cdp log mismatch duplex Globally"
+            "Error: {error}".format(error=e)
+        )
+
+
+def unconfigure_cdp_log_mismatch_duplex(device):
+    """ Disable cdp log mismatch duplex on target device globally on the device
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+    """ 
+    command_list = ['no cdp log mismatch duplex']
+    try:
+        device.configure(command_list)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure cdp log mismatch duplex Globally"
+            "Error: {error}".format(error=e)
+        )

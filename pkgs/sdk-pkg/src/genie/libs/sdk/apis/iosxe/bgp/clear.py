@@ -133,3 +133,28 @@ def clear_bgp_all_as(device, as_number):
    except SubCommandFailure as err:
         raise SubCommandFailure(
             f"Could not clear bgp all as {as_number} on device. Error:\n{err}")
+
+def clear_bgp_ipv6_dampening(device, prefix=None, neighbor=None):
+    """
+    Clear BGP IPv6 dampening statistics
+    
+    Args:
+        device: Device object
+        prefix: Optional specific IPv6 prefix to clear (e.g., "2001:db8::/32")
+        neighbor: Optional specific neighbor to clear dampening for
+    """
+    
+    
+    clear_cmd = "clear bgp ipv6 unicast dampening"
+    
+    if prefix:
+        clear_cmd += f" {prefix}"
+    elif neighbor:
+        clear_cmd += f" neighbor {neighbor}"
+    
+    try:
+        device.execute(clear_cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not clear BGP IPv6 dampening on device {device}. Error:\n{e}"
+        )

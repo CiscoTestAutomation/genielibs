@@ -1321,6 +1321,54 @@ class test_bgp_config1(TestCase):
              '  exit',
              ' exit',
              ]))
+        
+    def test_cfg_labelled_route_in_neighbor(self):
+        Genie.testbed = testbed = Testbed()
+        dev1 = Device(testbed=testbed, name='PE1', os='nxos')
+        bgp = Bgp(bgp_id=100)
+
+        # Defining attributes
+        af_name = 'ipv4 unicast'
+        vrf = Vrf('default')
+        neighbor_id = '150.101.50.50'  # Using port channel name as neighbor_id
+
+        bgp.device_attr[dev1].vrf_attr[vrf].neighbor_attr[neighbor_id]
+        bgp.device_attr[dev1].vrf_attr[vrf].neighbor_attr[neighbor_id].address_family_attr[af_name].nbr_af_advertise_local_labeled_route_control = True
+        bgp.device_attr[dev1].vrf_attr[vrf].neighbor_attr[neighbor_id].address_family_attr[af_name].nbr_af_advertise_local_labeled_route_enable = True
+
+        self.assertIs(bgp.testbed, testbed)
+        dev1.add_feature(bgp)
+
+        cfgs = bgp.build_config(apply=False)
+        self.assertCountEqual(cfgs.keys(), [dev1.name])
+        self.assertMultiLineEqual(str(cfgs[dev1.name]), '\n'.join(
+            ['router bgp 100',
+             ' neighbor 150.101.50.50',
+             '  address-family ipv4 unicast',
+             '   advertise local-labeled-route',
+             '   exit',
+             '  exit',
+             ' exit',
+             ]))
+        print('cfg of bgp new args')
+        print(cfgs[dev1.name])
+        uncfgs = bgp.build_unconfig(
+            apply=False,
+            attributes={'device_attr': {'*': {'vrf_attr': {'*': {'neighbor_attr': {
+                '150.101.50.50': {'address_family_attr': {'ipv4 unicast': { 'nbr_af_advertise_local_labeled_route_control': True, 'nbr_af_advertise_local_labeled_route_enable': None }
+                                } } } } } } } } )
+        print('ucfg of bgp args')
+        print(uncfgs[dev1.name])
+        self.assertCountEqual(uncfgs.keys(), [dev1.name])
+        self.assertMultiLineEqual(str(uncfgs[dev1.name]), '\n'.join(
+            ['router bgp 100',
+             ' neighbor 150.101.50.50',
+             '  address-family ipv4 unicast',
+             '   no advertise local-labeled-route',
+             '   exit',
+             '  exit',
+             ' exit',
+             ]))
 
 if __name__ == '__main__':
     unittest.main()

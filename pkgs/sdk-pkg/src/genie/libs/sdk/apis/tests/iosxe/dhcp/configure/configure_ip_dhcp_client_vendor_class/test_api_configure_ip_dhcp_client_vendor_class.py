@@ -1,50 +1,59 @@
-import os
 import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
 from genie.libs.sdk.apis.iosxe.dhcp.configure import configure_ip_dhcp_client_vendor_class
 
 
-class TestConfigureIpDhcpClientVendorClass(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          Fei-Elixir2:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: router
-            type: router
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Fei-Elixir2']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureIpDhcpClientVendorClass(TestCase):
 
     def test_configure_ip_dhcp_client_vendor_class(self):
-        result = configure_ip_dhcp_client_vendor_class(self.device, 'GigabitEthernet0/0/1', 'mac-address', None)
+        device = Mock()
+        result = configure_ip_dhcp_client_vendor_class(device, 'GigabitEthernet0/0/1', 'mac-address', None)
         expected_output = None
         self.assertEqual(result, expected_output)
+        
+        # Verify configure was called with the correct command
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            (['interface GigabitEthernet0/0/1', 'ip dhcp client vendor-class mac-address'],)
+        )
 
     def test_configure_ip_dhcp_client_vendor_class_1(self):
-        result = configure_ip_dhcp_client_vendor_class(self.device, 'GigabitEthernet0/0/1', 'disable', None)
+        device = Mock()
+        result = configure_ip_dhcp_client_vendor_class(device, 'GigabitEthernet0/0/1', 'disable', None)
         expected_output = None
         self.assertEqual(result, expected_output)
+        
+        # Verify configure was called with the correct command
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            (['interface GigabitEthernet0/0/1', 'ip dhcp client vendor-class disable'],)
+        )
 
     def test_configure_ip_dhcp_client_vendor_class_2(self):
-        result = configure_ip_dhcp_client_vendor_class(self.device, 'GigabitEthernet0/0/1', 'ascii', 'abcDEF123')
+        device = Mock()
+        result = configure_ip_dhcp_client_vendor_class(device, 'GigabitEthernet0/0/1', 'ascii', 'abcDEF123')
         expected_output = None
         self.assertEqual(result, expected_output)
+        
+        # Verify configure was called with the correct command
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            (['interface GigabitEthernet0/0/1', 'ip dhcp client vendor-class ascii abcDEF123'],)
+        )
 
     def test_configure_ip_dhcp_client_vendor_class_3(self):
-        result = configure_ip_dhcp_client_vendor_class(self.device, 'GigabitEthernet0/0/1', 'hex', '0102030a0b0c')
+        device = Mock()
+        result = configure_ip_dhcp_client_vendor_class(device, 'GigabitEthernet0/0/1', 'hex', '0102030a0b0c')
         expected_output = None
         self.assertEqual(result, expected_output)
+        
+        # Verify configure was called with the correct command
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            (['interface GigabitEthernet0/0/1', 'ip dhcp client vendor-class hex 0102030a0b0c'],)
+        )
+
+
+if __name__ == '__main__':
+    unittest.main()

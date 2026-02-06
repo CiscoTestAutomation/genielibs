@@ -137,10 +137,11 @@ def show_tech_support_firewall(device, timeout=300):
     return True
 
 
-def collect_install_log(device):
+def collect_install_log(device, timeout=600):
     """ Collect install failure logs from the device.
     Args:
         device (obj): Device object (required)
+        timeout (int): timeout for show tech-support command (default: 600s)
     Returns
         None
     """
@@ -156,36 +157,33 @@ def collect_install_log(device):
     commands = [
         "show platform software install-manager r0 operation current detail",
         "show platform software install-manager r0 operation history detail",
-        f"show tech-support install | append {file_name}"
     ]
 
     for command in commands:
         device.execute(command)
+
+    show_tech_commands = [
+        f"show tech-support install | append {file_name}"
+    ]
+
+    for command in show_tech_commands:
+        device.execute(command, timeout=timeout)
 
     output = device.execute("request platform software trace archive")
     match = re.search(r'Done with creation of the archive file:\s*\[(.*?)\]', output)
     if match:
         archive_filename = match.group(1)
 
-    # check if device has a telent connection to copy the files over to runinfo directory
-    if 'telnet' not in device.connections.keys():
-        log.info("Could not copy the install failure logs to runinfo directory")
+    try:
+        # Get default directory to copy the files
+        log.info("Getting default directory to copy the files")
+        default_dir = get_default_dir(device)
 
-    else:
-        # Capture the connection alias
-        conn_alias = device.default_connection_alias
-        try:
-            # Make sure the connection alias is telnet
-            device.default_connection_alias = 'telnet'
+        log.info(f"Copying file {file_name} to runinfo directory: {runtime.directory}")
+        device.api.copy_from_device(local_path=f"{default_dir}{file_name}", remote_path=runtime.directory)
+        if archive_filename:
+            log.info(f"Copying archive file {archive_filename} to runinfo directory: {runtime.directory}")
+            device.api.copy_from_device(local_path=f"{archive_filename}", remote_path=runtime.directory)
 
-            # Get default directory to copy the files
-            default_dir = get_default_dir(device)
-
-            device.api.copy_from_device(local_path=f"{default_dir}{file_name}", remote_path=runtime.directory)
-            if archive_filename:
-                device.api.copy_from_device(local_path=f"{archive_filename}", remote_path=runtime.directory)
-        except Exception as e:
-            log.error(f"Failed to copy the install failure logs to runinfo directory: {e}")
-        finally:
-            # Reassign the default connection alias to the original alias
-            device.default_connection_alias = conn_alias
+    except Exception as e:
+        log.error(f"Failed to copy the install failure logs to runinfo directory: {e}", exc_info=True)

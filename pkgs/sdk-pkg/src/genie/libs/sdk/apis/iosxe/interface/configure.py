@@ -7219,12 +7219,13 @@ def configure_ipv6_address_on_hsrp_interface(device, interface, groupnumber, ver
              f"Failed to configure ipv6 address on hsrp interface. Error:\n{e}"
          )
 
-def configure_interface_ip_tcp_adjust_mss(device, interface, mss_size):
+def configure_interface_ip_tcp_adjust_mss(device, interface, mss_size, no_switchport=True):
     """ Configure ip tcp adjust-mss on interface
         Args:
             device ('obj')    : device to use
             interface ('str') : interface to configure
             mss_size('int')   : Maximum segment size in bytes
+            no_switchport ('bool', optional): configure no switchport. Default is True
         Returns:
             None
         Raises:
@@ -7233,7 +7234,8 @@ def configure_interface_ip_tcp_adjust_mss(device, interface, mss_size):
 
     cmd = []
     cmd.append(f'interface {interface}')
-    cmd.append('no switchport')
+    if no_switchport:
+        cmd.append('no switchport')
     cmd.append(f'ip tcp adjust-mss {mss_size}')
     try:
         device.configure(cmd)
@@ -7259,12 +7261,13 @@ def unconfigure_interface_ip_tcp_adjust_mss(device, interface):
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure ip tcp adjust-mss on interface. Error:\n{e}")
 
-def configure_interface_ipv6_tcp_adjust_mss(device, interface, mss_size):
+def configure_interface_ipv6_tcp_adjust_mss(device, interface, mss_size, no_switchport=True):
     """ Configure ipv6 tcp adjust-mss on interface
         Args:
             device ('obj')    : device to use
             interface ('str') : interface to configure
             mss_size('int')   : Maximum segment size in bytes
+            no_switchport ('bool', optional): configure no switchport. Default is True
         Returns:
             None
         Raises:
@@ -7273,7 +7276,8 @@ def configure_interface_ipv6_tcp_adjust_mss(device, interface, mss_size):
 
     cmd = []
     cmd.append(f'interface {interface}')
-    cmd.append('no switchport')
+    if no_switchport:
+        cmd.append('no switchport')
     cmd.append(f'ipv6 tcp adjust-mss {mss_size}')
     try:
         device.configure(cmd)
@@ -11294,3 +11298,48 @@ def configure_trust_device_on_interface(device, interface, device_type):
         raise SubCommandFailure(
             f"configure trust device on the interface {interface}. Error:\n{e}"
         )
+    
+
+def configure_interface_fcs_threshold(device, interface, threshold_value):
+    """ configure fcs threshold on interface
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Interface name
+            threshold_value ('int'): threshold value to be configured
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"Configuring fcs threshold on interface {interface}")
+    cmd = [f"interface {interface}", f"fcs-threshold {threshold_value}"]
+    
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure fcs threshold on interface, Error:\n{e}"
+        )   
+
+
+def unconfigure_interface_media_type(device, interface):
+    """Unconfigure media_type on interface
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(
+        f"Unconfiguring media_type on interface {interface}")
+
+    cmd = [f"interface {interface}",
+           f"no media-type"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure media_type on {interface}. Error:\n{e}"
+            )

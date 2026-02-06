@@ -111,6 +111,169 @@ def unconfigure_eap_profile(device, profile_name):
             "Could not unconfigure profile: {profile_name}".format(profile_name=profile_name)
         )
 
+def configure_eap_profile_advanced(device, profile_name, method=None, ciphersuites=None, 
+                                   description=None, pki_trustpoint=None, no_method=None, 
+                                   no_ciphersuites=None, no_pki_trustpoint=False):
+    """Configure advanced EAP profile with comprehensive options including 'no' configurations
+        Args:
+            device ('obj'): device to use
+            profile_name (`str`): eap profile name
+            method (`str` or `list`, optional): EAP method(s) to configure
+                Supported methods: 'md5', 'tls', 'peap', 'fast', 'leap', 'gtc', 'mschapv2'
+            ciphersuites (`str` or `list`, optional): Ciphersuite(s) to allow
+            description (`str`, optional): Description for the EAP profile
+            pki_trustpoint (`str`, optional): PKI trustpoint name
+            no_method (`str` or `list`, optional): EAP method(s) to remove
+            no_ciphersuites (`str` or `list`, optional): Ciphersuite(s) to remove
+            no_pki_trustpoint (`bool`, optional): Remove PKI trustpoint from profile
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure advanced eap profile
+    """
+    # Validate EAP methods if provided
+    supported_methods = ['md5', 'tls', 'peap', 'fast', 'leap', 'gtc', 'mschap2']
+    
+    cmd = []
+    cmd.append('eap profile {}'.format(profile_name))
+    
+    # Add description if provided
+    if description:
+        cmd.append('description {}'.format(description))
+    
+    # Add method(s)
+    if method:
+        if isinstance(method, str):
+            methods = [method]
+        else:
+            methods = method
+            
+        for m in methods:
+            if m not in supported_methods:
+                raise ValueError("Invalid EAP method '{}'. Supported methods: {}".format(
+                    m, ', '.join(supported_methods)))
+            cmd.append('method {}'.format(m))
+    
+    # Add ciphersuite(s)
+    if ciphersuites:
+        if isinstance(ciphersuites, str):
+            cipher_list = [ciphersuites]
+        else:
+            cipher_list = ciphersuites
+            
+        for cipher in cipher_list:
+            cmd.append('ciphersuite {}'.format(cipher))
+    
+    # Add PKI trustpoint
+    if pki_trustpoint:
+        cmd.append('pki-trustpoint {}'.format(pki_trustpoint))
+    
+    # Handle 'no' configurations
+    # Remove method(s)
+    if no_method:
+        if isinstance(no_method, str):
+            no_methods = [no_method]
+        else:
+            no_methods = no_method
+            
+        for m in no_methods:
+            if m not in supported_methods:
+                raise ValueError("Invalid EAP method '{}'. Supported methods: {}".format(
+                    m, ', '.join(supported_methods)))
+            cmd.append('no method {}'.format(m))
+    
+    # Remove ciphersuite(s)
+    if no_ciphersuites:
+        if isinstance(no_ciphersuites, str):
+            no_cipher_list = [no_ciphersuites]
+        else:
+            no_cipher_list = no_ciphersuites
+            
+        for cipher in no_cipher_list:
+            cmd.append('no ciphersuite {}'.format(cipher))
+    
+    # Remove PKI trustpoint
+    if no_pki_trustpoint:
+        cmd.append('no pki-trustpoint')
+    
+    log.info("Configuring advanced eap profile {} with methods: {}, ciphersuites: {}, trustpoint: {}, removals: methods={}, ciphers={}, trustpoint={}".format(
+        profile_name, method, ciphersuites, pki_trustpoint, no_method, no_ciphersuites, no_pki_trustpoint))
+    
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure advanced eap profile {}.Error: {}".format(profile_name, str(e))
+        )
+
+def configure_dot1x_eap_profile_on_interface(device, interface, profile_name, mode):
+    """Configure dot1x authenticator or supplicant EAP profile assignment on interface
+        Args:
+            device ('obj'): device to use
+            interface (`str`): Interface name to configure
+            profile_name (`str`): EAP profile name to assign
+            mode (`str`): Configuration mode - 'authenticator' or 'supplicant'
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure dot1x EAP profile assignment
+    """
+    # Validate mode parameter
+    valid_modes = ['authenticator', 'supplicant']
+    if mode not in valid_modes:
+        raise ValueError("Invalid mode '{}'. Supported modes: {}".format(mode, ', '.join(valid_modes)))
+    
+    # Convert interface name to standard format
+    converted_interface = Common.convert_intf_name(interface)
+    
+    cmd = []
+    cmd.append('interface {}'.format(converted_interface))
+    cmd.append('dot1x {} eap profile {}'.format(mode, profile_name))
+    
+    log.info("Configuring dot1x {} eap profile {} on interface {}".format(mode, profile_name, converted_interface))
+    
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure dot1x {} eap profile {} on interface {}.Error: {}".format(
+                mode, profile_name, converted_interface, str(e))
+        )
+
+def unconfigure_dot1x_eap_profile_on_interface(device, interface, profile_name, mode):
+    """Unconfigure dot1x authenticator or supplicant EAP profile assignment on interface
+        Args:
+            device ('obj'): device to use
+            interface (`str`): Interface name to unconfigure
+            profile_name (`str`): EAP profile name to remove
+            mode (`str`): Configuration mode - 'authenticator' or 'supplicant'
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to unconfigure dot1x EAP profile assignment
+    """
+    # Validate mode parameter
+    valid_modes = ['authenticator', 'supplicant']
+    if mode not in valid_modes:
+        raise ValueError("Invalid mode '{}'. Supported modes: {}".format(mode, ', '.join(valid_modes)))
+    
+    # Convert interface name to standard format
+    converted_interface = Common.convert_intf_name(interface)
+    
+    cmd = []
+    cmd.append('interface {}'.format(converted_interface))
+    cmd.append('no dot1x {} eap profile {}'.format(mode, profile_name))
+    
+    log.info("Unconfiguring dot1x {} eap profile {} on interface {}".format(mode, profile_name, converted_interface))
+    
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure dot1x {} eap profile {} on interface {}.Error: {}".format(
+                mode, profile_name, converted_interface, str(e))
+        )
+
 def configure_eap_profile_md5(device, profile_name):
     """Configure EAP Md5 profile
         Args:
@@ -2444,5 +2607,49 @@ def unconfigure_access_session_tls_version(device):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not unconfigure access-session tls-version. Error: {}".format(str(e))
+        )
+
+def configure_access_session_pqc_type(device, pqc_type):
+    """Configure access-session pqc-type
+        Args:
+            device ('obj'): device to use
+            pqc_type (`str`): PQC type to configure ('all', 'hybrid', 'non-pqc', 'pqc')
+                - all: All pqc, non-pqc and hybrid algorithms will be supported
+                - hybrid: Combined PQC and NON-PQC algorithms (Key derived with combination of both)
+                - non-pqc: Classic cryptographic algorithms
+                - pqc: Post-Quantum Cryptographic algorithms
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure access-session pqc-type
+    """
+    if pqc_type not in ['all', 'hybrid', 'non-pqc', 'pqc']:
+        raise ValueError("Invalid PQC type. Accepted values are 'all', 'hybrid', 'non-pqc', 'pqc'.")
+
+    cmd = 'access-session pqc-type {}'.format(pqc_type)
+    log.info("Configuring access-session pqc-type to {}".format(pqc_type))
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure access-session pqc-type {}.Error: {}".format(pqc_type, str(e))
+        )
+
+def unconfigure_access_session_pqc_type(device):
+    """Unconfigure access-session pqc-type
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to unconfigure access-session pqc-type
+    """
+    cmd = 'no access-session pqc-type'
+    log.info("Unconfiguring access-session pqc-type")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure access-session pqc-type. Error: {}".format(str(e))
         )
 

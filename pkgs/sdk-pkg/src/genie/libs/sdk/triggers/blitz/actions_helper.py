@@ -52,6 +52,12 @@ def configure_handler(step, device, command, expected_failure=False, **kwargs):
         else:
             output = getattr(device, action)(command, **kwargs)
 
+        if expected_failure and step.result == Passed:
+            step.failed(
+                f"{action} did not fail as expected, but completed successfully"
+            )
+
+
     except Exception as e:
         if 'maple' in kwargs:
             step.passx("Invalid config command executed")

@@ -243,7 +243,8 @@ def configure_ipsec_profile(device,
                             rr_static=False,
                             redundancy_name=None,
                             stateful=False,
-                            rr_enable=None
+                            rr_enable=None,
+                            pqc_algo=None
                             ):
     """ Configures ipsec transform set
         Args:
@@ -278,6 +279,7 @@ def configure_ipsec_profile(device,
             redundancy_name ('str') : Redundancy group name
             stateful ('boolean') : enable stateful failover
             rr_enable ('str') : Create routes based on ACLs permanently            
+            pqc_algo ('str') : PQC algorithms
         Returns:
             None
         Raises:
@@ -345,7 +347,7 @@ def configure_ipsec_profile(device,
         configs.append("set mixed-mode")
 
     if pfs_group is not None:
-        configs.append(f"set pfs {pfs_group}")
+        configs.append(f"set pfs {pfs_group} {'pqc ' + pqc_algo if pqc_algo is not None else ''}")
 
     if rr_distance is not None:
         configs.append(f"set reverse-route distance {rr_distance}")

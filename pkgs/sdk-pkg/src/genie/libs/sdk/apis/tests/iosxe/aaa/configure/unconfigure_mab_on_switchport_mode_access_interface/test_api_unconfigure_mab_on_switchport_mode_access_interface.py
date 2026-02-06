@@ -1,35 +1,25 @@
-import os
-import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.aaa.configure import unconfigure_mab_on_switchport_mode_access_interface
+from unittest import TestCase
+from unittest.mock import Mock
+from genie.libs.sdk.apis.iosxe.aaa.configure import (
+    unconfigure_mab_on_switchport_mode_access_interface,
+)
 
 
-class TestUnconfigureMabOnSwitchportModeAccessInterface(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          9400-ha:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: iosxe
-            type: iosxe
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['9400-ha']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigureMabOnSwitchportModeAccessInterface(TestCase):
 
     def test_unconfigure_mab_on_switchport_mode_access_interface(self):
-        result = unconfigure_mab_on_switchport_mode_access_interface(self.device, 'TenGigabitEthernet1/2/0/2')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.configure.return_value = ""
+
+        result = unconfigure_mab_on_switchport_mode_access_interface(
+            device, "TenGigabitEthernet1/2/0/2"
+        )
+        self.assertIsNone(result)
+
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            ([
+                "interface TenGigabitEthernet1/2/0/2",
+                "no mab",
+            ],)
+        )

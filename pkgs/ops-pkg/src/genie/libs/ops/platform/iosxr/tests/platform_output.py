@@ -50,6 +50,7 @@ class PlatformOutput(object):
                     'config_state': 'PWR,NSHUT,MON',
                     'name': 'A9K-MOD80-SE',
                     'state': 'IOS XR RUN',
+                    'full_slot': '0/0',
                     'subslot': {
                         '0': {
                             'config_state': 'PWR,NSHUT,MON',
@@ -71,12 +72,14 @@ class PlatformOutput(object):
                     'config_state': 'PWR,NSHUT,MON',
                     'name': 'A9K-RSP440-TR',
                     'redundancy_state': 'Active',
-                    'state': 'IOS XR RUN'},
+                    'state': 'IOS XR RUN',
+                    'full_slot': '0/RSP0/CPU0'},
                 '0/RSP1': {
                     'config_state': 'PWR,NSHUT,MON',
                     'name': 'A9K-RSP440-TR',
                     'redundancy_state': 'Standby',
-                    'state': 'IOS XR RUN'}}}}
+                    'state': 'IOS XR RUN',
+                    'full_slot': '0/RSP1/CPU0'}}}}
 
     # 'show platform vm' output
     showPlatformVmOutput = {
@@ -281,6 +284,7 @@ class PlatformOutput(object):
                     'config_state': 'PWR,NSHUT,MON',
                     'name': 'A9K-MOD80-SE',
                     'state': 'IOS XR RUN',
+                    'full_slot': '0/0',
                     'subslot': {
                         '0': {
                             'config_state': 'PWR,NSHUT,MON',
@@ -302,12 +306,14 @@ class PlatformOutput(object):
                     'config_state': 'PWR,NSHUT,MON',
                     'name': 'A9K-RSP440-TR',
                     'redundancy_state': 'Active',
-                    'state': 'IOS XR RUN'},
+                    'state': 'IOS XR RUN',
+                    'full_slot': '0/RSP0/CPU0'},
                 '0/RSP1': {
                     'config_state': 'PWR,NSHUT,MON',
                     'name': 'A9K-RSP440-TR',
                     'redundancy_state': 'Standby',
-                    'state': 'IOS XR RUN'},
+                    'state': 'IOS XR RUN',
+                    'full_slot': '0/RSP1/CPU0'},
                 'rp_config_register': '0x1922'}},
         'version': '6.1.4.10I',
         'virtual_device': {

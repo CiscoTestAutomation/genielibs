@@ -7,6 +7,7 @@ class TestConfigureAaaAuthorizationNetworkDefaultGroup(TestCase):
 
     def test_configure_mab_eap_on_switchport_mode_access_interface(self):
         self.device = Mock()
+        
         configure_mab_eap_on_switchport_mode_access_interface(self.device, 'TenGigabitEthernet1/2/0/2')
         self.assertEqual(
             self.device.configure.mock_calls[0].args,

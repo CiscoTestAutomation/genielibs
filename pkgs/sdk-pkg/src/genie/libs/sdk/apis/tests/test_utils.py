@@ -47,6 +47,7 @@ class TestUtilsApi(unittest.TestCase):
         device.via = 'telnet'
         device.connections = {}
         device.connections[device.via] = {}
+        device.api.get_proxy = Mock(return_value=None)
         device.api.get_mgmt_ip_and_mgmt_src_ip_addresses = Mock(return_value=('127.0.0.1', ['127.0.0.1']))
         device.api.get_local_ip = Mock(return_value='127.0.0.1')
         device.api.convert_server_to_linux_device = Mock(return_value=None)
@@ -66,6 +67,7 @@ class TestUtilsApi(unittest.TestCase):
         device.testbed.devices['js'].api.socat_relay = Mock(return_value=2000)
         device.testbed.devices['js'].api.get_local_ip = Mock(return_value='127.0.0.1')
         device.testbed.devices['js'].execute = Mock(return_value='inet 127.0.0.2')
+        device.api.get_proxy = Mock(return_value='js')
         device.testbed.devices['js'].api.get_route_iface_source_ip = Mock(return_value=(None, '127.0.0.2'))
         device.api.get_mgmt_ip_and_mgmt_src_ip_addresses = Mock(return_value=('127.0.0.1', ['127.0.0.2']))
         device.api.get_local_ip = Mock(return_value='127.0.0.1')
@@ -102,6 +104,7 @@ class TestUtilsApi(unittest.TestCase):
         device.via = 'cli'
         device.connections = {}
         device.connections[device.via] = {}
+        device.api.get_proxy = Mock(return_value=None)
         device.api.get_mgmt_ip_and_mgmt_src_ip_addresses = Mock(return_value=('127.0.0.1', ['127.0.0.1']))
         device.api.get_local_ip = Mock(return_value='127.0.0.1')
         device.api.convert_server_to_linux_device = Mock(return_value=None)
@@ -118,6 +121,7 @@ class TestUtilsApi(unittest.TestCase):
         device.connections['cli'] = Mock()
         device.connections['cli'].get = Mock(return_value='js')
         device.testbed.devices = {'js':device_1}
+        device.api.get_proxy = Mock(return_value='js')
         device_1.api.socat_relay = Mock(return_value=2000)
         device_1.api.get_local_ip  = Mock(return_value='127.0.0.1')
         device_1.execute = Mock(return_value='inet 127.0.0.2')
@@ -136,6 +140,7 @@ class TestUtilsApi(unittest.TestCase):
         device_1 = MagicMock()
         device.connections['cli'].get = Mock(return_value='js')
         device.testbed.devices = {'js':device_1}
+        device.api.get_proxy = Mock(return_value='js')
         device_1.api.socat_relay = Mock(return_value=2000)
         device_1.api.get_local_ip  = Mock(return_value='127.0.0.1')
         device_1.execute = Mock(return_value='inet 127.0.0.2')

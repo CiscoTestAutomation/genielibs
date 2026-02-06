@@ -419,6 +419,7 @@ class Health(Blitz):
                         reconnect_interval=reconnect.get('interval', 60))
                 # verify_device_connection returns True(device connected)/False
                 if state:
+                    dev_obj.enable()
                     return dev_obj.name
             return ''
 

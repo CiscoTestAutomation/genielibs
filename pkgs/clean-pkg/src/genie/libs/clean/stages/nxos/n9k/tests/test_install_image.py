@@ -58,3 +58,31 @@ class Installimage(unittest.TestCase):
         # Check the overall result is as expected
         self.assertEqual(Failed, steps.details[0].result)
 
+def test_reload_detected_and_recovered(self):
+    steps = Steps()
+
+    # Mock install success
+    self.device.execute = Mock()
+
+    # Simulate device disconnect after install
+    self.device.is_connected = False
+
+    # Mock reload() to succeed
+    self.device.reload = Mock()
+
+    # Create a fake spawn buffer that triggers reload detection
+    self.device.spawn = Mock()
+    self.device.spawn.buffer = "Finishing the upgrade, switch will reboot in 10 seconds."
+
+    # Call the stage
+    self.cls.install_image(
+        steps=steps,
+        device=self.device,
+        images=['bootflash:nxos.9.3.5.bin']
+    )
+
+    # Reload should be called (because reload is detected)
+    self.device.reload.assert_called_once()
+
+    # Step must pass
+    self.assertEqual(Passed, steps.details[0].result)

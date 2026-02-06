@@ -398,7 +398,8 @@ class TestActions(unittest.TestCase):
                                        'action': 'sendline(y)'}]})
 
         configure(**self.kwargs)
-        self.assertEqual(steps.result, Passed)
+        # configure passed but expected failure is True, so result should be Failed
+        self.assertEqual(steps.result, Failed)
 
     def test_configure_dual_pass(self):
 
@@ -1656,6 +1657,39 @@ class TestActions(unittest.TestCase):
           check_yang_subscribe(**kwargs_1)
           # saved thread is found and result recorded
           self.assertEqual(step.result, Passed)
+
+    def test_configure_expected_failure_should_fail_on_configure_success(self):
+
+        self.dev.configure = Mock(return_value="Password/key should not be more than 8 characters for Type-0")
+        steps = Steps()
+
+        self.kwargs.update({
+            'device': self.dev,
+            'steps': steps,
+            'command': 'conf t',
+            'expected_failure': True,
+        })
+
+        configure(**self.kwargs)
+        self.assertEqual(steps.result, Failed)
+
+
+    def test_configure_expected_failure_on_configure_fail(self):
+        self.dev.configure = Mock(side_effect=Exception("Invalid config"))
+
+        steps = Steps()
+        self.kwargs.update({
+            'device': self.dev,
+            'steps': steps,
+            'command': 'conf t',
+            'expected_failure': True,
+        })
+
+        configure(**self.kwargs)
+
+        # Because failure happened AND expected_failure=True
+        self.assertEqual(steps.result, Passed)
+
 
 if __name__ == '__main__':
     unittest.main()

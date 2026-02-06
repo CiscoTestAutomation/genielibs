@@ -202,6 +202,11 @@ class Platform(SuperPlatform):
                       src='[slot][(?P<slot_type>.*)][(?P<slot_name>.*)][subslot][(?P<subslot>.*)]',
                       dest='[slot][(?P<slot_type>.*)][(?P<slot_name>.*)][subslot][(?P<subslot>.*)]')
 
+        # full_slot
+        self.add_leaf(cmd=ShowPlatform, revision=None,
+                      src='[slot][(?P<slot_type>.*)][(?P<slot_name>.*)][full_slot][(?P<full_slot>.*)]',
+                      dest='[slot][(?P<slot_type>.*)][(?P<slot_name>.*)][full_slot][(?P<full_slot>.*)]')
+
         # rp_config_register
         self.add_leaf(cmd=ShowVersion,
                       src='[rp_config_register][(?P<rp_config_register>.*)]',

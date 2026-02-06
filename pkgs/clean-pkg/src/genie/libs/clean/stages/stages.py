@@ -806,6 +806,9 @@ copy_to_device:
     overwrite (bool, optional): Overwrite the file if a file with the same
         name already exists. Defaults to False.
 
+    overwrite_if_size_different (bool, optional): Overwrite the file if a file with
+        the same name exists but size is different. Defaults to False.
+
     skip_deletion (bool, optional): Do not delete any files even if there isn't
         any space on device. Defaults to False.
 
@@ -876,6 +879,7 @@ copy_to_device:
     USE_KSTACK = False
     PROTECTED_FILES = None
     OVERWRITE = False
+    OVERWRITE_IF_SIZE_DIFFERENT = False
     SKIP_DELETION = False
     COPY_ATTEMPTS = 1
     COPY_ATTEMPTS_SLEEP = 30
@@ -954,6 +958,10 @@ copy_to_device:
                  description="Overwrite the file if a file with the same name already exists.",
                  default=OVERWRITE):
         bool,
+        Optional('overwrite_if_size_different',
+                 description="Overwrite the file if a file with the same name exists but size is different.",
+                 default=OVERWRITE_IF_SIZE_DIFFERENT):
+        bool,
         Optional('skip_deletion',
                  description="Do not delete any files even if there isn't any space on device.",
                  default=SKIP_DELETION):
@@ -1024,6 +1032,7 @@ copy_to_device:
                        use_kstack=USE_KSTACK,
                        protected_files=PROTECTED_FILES,
                        overwrite=OVERWRITE,
+                       overwrite_if_size_different=OVERWRITE_IF_SIZE_DIFFERENT,
                        skip_deletion=SKIP_DELETION,
                        copy_attempts=COPY_ATTEMPTS,
                        copy_attempts_sleep=COPY_ATTEMPTS_SLEEP,
@@ -1145,6 +1154,8 @@ copy_to_device:
                                     "remote server {}".format(file, server)
                             if overwrite:
                                 err_msg += " - will copy file to device"
+                            if overwrite_if_size_different:
+                                err_msg += " - will copy file to device if size is different"
                             step.passx(err_msg)
                         else:
                             step.passed("Verified filesize of file '{}' to be "
@@ -1185,27 +1196,24 @@ copy_to_device:
                         except Exception:
                             name_exists = False
                         if name_exists and not exist and not (unique_file_name or unique_number or rename_images):
-                            if not overwrite:
+                            if not overwrite_if_size_different:
                                 step.failed(
-                                    "Destination file '{}' already exists on device {} {} with a different size. "
-                                    "overwrite is set to False will not overwrite. Remove the file manually or set overwrite=True to replace.".format(
-                                        dest_file_path, device.name, dest
-                                    )
+                                    f"The file '{dest_file_path}' already exists on device {device.name} {dest} with a different size. "
+                                    f"Set overwrite_if_size_different as True to proceed with copying the image to the device."
                                 )
                             else:
                                 file_copy_info = {
                                     file: {
                                         'size': file_size,
                                         'dest_path': dest_file_path,
-                                        'exist': True
+                                        'size_mismatch': True, # Flag to indicate this is a size mismatch scenario
+                                        'exist': False,
                                     }
                                 }
                                 files_to_copy.update(file_copy_info)
                                 step.passed(
-                                    "Destination file '{}' exists with different size on device {} {}. "
-                                    "overwrite=True, will attempt copy and replace.".format(
-                                        dest_file_path, device.name, dest
-                                    )
+                                    f"Destination file '{dest_file_path}' exists with different size on device {device.name} {dest}. "
+                                    "overwrite_if_size_different is True, Proceeding with copying image to device."
                                 )
                         elif (not exist) or (exist and overwrite) or (
                                 exist and (unique_file_name or unique_number
@@ -1335,7 +1343,7 @@ copy_to_device:
                             # Copy file unless overwrite is False
                             if not overwrite and file_data['exist'] and not (
                                     unique_file_name or unique_number
-                                    or rename_images):
+                                    or rename_images) and not file_data.get('size_mismatch', False):
                                 step.skipped(
                                     "File with the same name size exists on "
                                     "the device {} {}, skipped copying".format(
@@ -1382,6 +1390,7 @@ copy_to_device:
                                             file] = renamed_local_path
 
                                     try:
+                                        force_overwrite = overwrite or file_data.get('size_mismatch', False)
                                         res = device.api.\
                                             copy_to_device(protocol=protocol,
                                                         server=file_utils.get_hostname(server) if server else None,
@@ -1392,7 +1401,7 @@ copy_to_device:
                                                         compact=compact,
                                                         use_kstack=use_kstack,
                                                         interface=interface,
-                                                        overwrite=overwrite,
+                                                        overwrite=force_overwrite,
                                                         prompt_recovery=prompt_recovery,
                                                         **kwargs)
                                         if not res:
@@ -1417,6 +1426,7 @@ copy_to_device:
                                                     file, dest, device.name), )
                                 else:
                                     try:
+                                        force_overwrite = overwrite or file_data.get('size_mismatch', False)
                                         res = device.api. \
                                             copy_to_device(protocol=protocol,
                                                         server=file_utils.get_hostname(server) if server else None,
@@ -1427,7 +1437,7 @@ copy_to_device:
                                                         compact=compact,
                                                         use_kstack=use_kstack,
                                                         interface=interface,
-                                                        overwrite=overwrite,
+                                                        overwrite=force_overwrite,
                                                         prompt_recovery=prompt_recovery,
                                                         **kwargs)
                                         if not res:
@@ -2532,6 +2542,8 @@ delete_files:
 
     regex (bool, optional): If regex is used in the file names, set to True. Default False.
 
+    timeout (int, optional): Timeout in seconds for deleting files. Defaults to 500.
+
 Example
 -------
 delete_files:
@@ -2544,6 +2556,7 @@ delete_files:
     # Argument Defaults
     # =================
     REGEX = False
+    TIMEOUT = 500
 
     # ============
     # Stage Schema
@@ -2560,7 +2573,7 @@ delete_files:
         'delete_files',
     ]
 
-    def delete_files(self, steps, device, files, regex=REGEX):
+    def delete_files(self, steps, device, files, regex=REGEX, timeout=TIMEOUT):
 
         for fn in files:
             with steps.start(f"Delete '{fn}' from the device") as step:
@@ -2590,7 +2603,8 @@ delete_files:
 
                 try:
                     device.api.delete_files(locations=[location],
-                                            filenames=[filenames])
+                                            filenames=[filenames],
+                                            timeout=timeout)
                 except Exception as e:
                     step.failed("Failed to delete the file.", from_exception=e)
 

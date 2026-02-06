@@ -1,35 +1,14 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
 from genie.libs.sdk.apis.iosxe.ipsec.configure import configure_ipsec_profile
+from unittest.mock import Mock
 
 
-class TestConfigureIpsecProfile(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          fugazi:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: iosxe
-            type: iosxe
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['fugazi']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureIpsecProfile(TestCase):
 
     def test_configure_ipsec_profile(self):
-        result = configure_ipsec_profile(self.device, 'test1', 'test1', None, None, False, False, False, False, False, False, None, False, None, False, None, None, False, None, None, False, None, None, None, None, None, None, False, None, False)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.device = Mock()
+        result = configure_ipsec_profile(self.device, 'dmvpn-hub', 'tset1', 'ikev2profile', None, False, False, False, False, False, False, None, False, None, False, None, None, False, None, None, False, 'group21', None, None, None, None, None, False, None, False, None, 'mlkem1024')
+        self.assertEqual(
+            self.device.configure.mock_calls[0].args,
+            (['crypto ipsec profile dmvpn-hub', 'set transform-set tset1', 'set ikev2-profile ikev2profile', 'set pfs group21 pqc mlkem1024'],)
+        )

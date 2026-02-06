@@ -724,6 +724,8 @@ def configure_management(device,
                          protocols=None,
                          set_hostname=False,
                          alias_as_hostname=False,
+                         switchport=None,
+                         vlan=None
                          ):
     ''' Configure management connectivity on the device.
 
@@ -750,6 +752,11 @@ def configure_management(device,
                    ipv6 (list of 'dict'): ipv6 routes
                       - subnet: (str) subnet including mask
                         next_hop: (str) next_hop for this subnet
+                switchport: (str) switchport mode (access, trunk, no) or None
+                   - None: No such thing as switchport for this device (Router)
+                   - 'no': Its a switch, so for routed ports we need "no switchport" configuration
+                   - 'access'/'trunk': Its a switch & its a switched port, mode specifies the switch port type
+                vlan: (int) VLAN ID to use if switchport is access or trunk
 
     Args:
         device ('obj'):  device object
@@ -772,6 +779,11 @@ def configure_management(device,
         protocols ('list', optional): [list of protocols]
         set_hostname (bool): Configure hostname on the device (default: False)
         alias_as_hostname (bool): Whether to use the alias to configure the hostname (default: False)
+        switchport (str): switchport mode (access, trunk, no) or None
+           - None: No such thing as switchport for this device (Router)
+           - 'no': Its a switch, so for routed ports we need "no switchport" configuration
+           - 'access'/'trunk': Its a switch & its a switched port, mode specifies the switch port type
+        vlan (int): VLAN ID to use if switchport is access or trunk
     '''
     management = getattr(device, 'management', {})
 
@@ -780,6 +792,8 @@ def configure_management(device,
     interface = interface or management.get('interface')
     routes = routes or management.get('routes')
     vrf = vrf or management.get('vrf')
+    switchport = switchport or management.get('switchport')
+    vlan = vlan or management.get('vlan')
 
     if set_hostname:
         if alias_as_hostname:
@@ -789,11 +803,50 @@ def configure_management(device,
 
     device.api.configure_management_vrf(vrf)
 
-    device.api.configure_management_ip(
-        interface=interface,
-        address=address,
-        vrf=vrf,
-        dhcp_timeout=dhcp_timeout)
+    if not switchport or (switchport == 'no'):
+        # Configure the IP on the management interface
+        if switchport == 'no':
+            device.api.configure_management_ip(
+                interface=interface,
+                address=address,
+                vrf=vrf,
+                dhcp_timeout=dhcp_timeout,
+                no_switchport=True)
+        else:
+            device.api.configure_management_ip(
+                interface=interface,
+                address=address,
+                vrf=vrf,
+                dhcp_timeout=dhcp_timeout)
+    else:
+        # Configure IP on vlan interface & add vlan to interface
+        if not vlan:
+            raise Exception(
+                "VLAN ID must be specified "
+                "when switchport is configured as access or trunk"
+            )
+        device.api.configure_management_ip(
+            interface=f"Vlan{vlan}",
+            address=address,
+            vrf=vrf,
+            dhcp_timeout=dhcp_timeout
+        )
+        if switchport == "trunk":
+            device.api.configure_interface_switchport_trunk(
+                interfaces=[interface],
+                vlan_id=vlan,
+                oper="add"
+            )
+        elif switchport == "access":
+            device.api.configure_interface_switchport_access_vlan(
+                interface=interface,
+                vlan=vlan,
+                mode="access"
+            )
+        else:
+            raise Exception(
+                "Invalid switchport mode. Expected 'access', 'trunk', or 'no'."
+            )
 
     device.api.configure_management_gateway(
         gateway=gateway,
@@ -1708,36 +1761,50 @@ def unconfigure_ip_ssh_pubkey_chain(device, username=None, server=None):
         raise SubCommandFailure("Failed to unconfigure SSH public key chain for {} {} on device {}. Error:\n{}".format(target_type, target_value, device, e))
 
 
-def configure_ip_ssh_stricthostkeycheck(device):
-    """ Configure ip ssh stricthostkeycheck
+def configure_ip_ssh_stricthostkeycheck(device, accept_new=False):
+    """ Configure ip ssh stricthostkeycheck with optional accept-new
         Args:
             device ('obj'): Device object
+            accept_new ('bool', optional): Enable accept-new option. Default is False.
         Returns:
             None
         Raises:
             SubCommandFailure
     """
-    cmd = 'ip ssh stricthostkeycheck'
-    try:
+    cmd = ""
+    if accept_new:
+        cmd = 'ip ssh stricthostkeycheck accept-new'
+        log.debug("Configuring SSH strict host key checking accept-new on device {}".format(device))
+    else:
+        cmd = 'ip ssh stricthostkeycheck'
         log.debug("Configuring SSH strict host key checking on device {}".format(device))
+    
+    try:
         device.configure(cmd)
     except SubCommandFailure as e:
         log.error("Failed to configure SSH strict host key checking on device {}. Error: {}".format(device, e))
         raise SubCommandFailure("Failed to configure ip ssh stricthostkeycheck on device {}. Error:\n{}".format(device, e))
 
 
-def unconfigure_ip_ssh_stricthostkeycheck(device):
-    """ Unconfigure ip ssh stricthostkeycheck
+def unconfigure_ip_ssh_stricthostkeycheck(device, accept_new=False):
+    """ Unconfigure ip ssh stricthostkeycheck with optional accept-new
         Args:
             device ('obj'): Device object
+            accept_new ('bool', optional): Unconfigure accept-new option. Default is False.
         Returns:
             None
         Raises:
             SubCommandFailure
     """
-    cmd = 'no ip ssh stricthostkeycheck'
-    try:
+    cmd = ""
+    if accept_new:
+        cmd = 'no ip ssh stricthostkeycheck accept-new'
+        log.debug("Unconfiguring SSH strict host key checking accept-new on device {}".format(device))
+    else:
+        cmd = 'no ip ssh stricthostkeycheck'
         log.debug("Unconfiguring SSH strict host key checking on device {}".format(device))
+    
+    try:
         device.configure(cmd)
     except SubCommandFailure as e:
         log.error("Failed to unconfigure SSH strict host key checking on device {}. Error: {}".format(device, e))

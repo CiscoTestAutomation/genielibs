@@ -9,6 +9,9 @@ from concurrent.futures import ThreadPoolExecutor, wait as wait_futures, ALL_COM
 from unicon.eal.dialogs import Dialog, Statement
 from unicon.plugins.iosxe.statements import grub_prompt_handler
 
+# Genie
+from genie.libs.clean.exception import FailedToBootException
+
 # Logger
 log = logging.getLogger(__name__)
 
@@ -67,7 +70,33 @@ def recovery_worker(device, console_activity_pattern=None,
             ))
         wait_futures(futures, timeout=timeout, return_when=ALL_COMPLETED)
     elif kwargs.get('tftp_boot'):
-        device.api.device_rommon_boot(tftp_boot=kwargs.get('tftp_boot'))
+        tftp_boot = kwargs.get('tftp_boot')
+
+        # Retry for TFTP rommon boot if clean stage provides retry parameters
+        max_attempts = kwargs.get('tftp_boot_max_attempts', 1)
+        sleep_interval = kwargs.get('tftp_boot_sleep_interval', 30)
+
+        retry_count = 0
+        while retry_count < max_attempts:
+            try:
+                log.info(f"TFTP rommon boot attempt {retry_count + 1}/{max_attempts}")
+                device.api.device_rommon_boot(tftp_boot=tftp_boot)
+                log.info(f"TFTP rommon boot successful on attempt {retry_count + 1}")
+                break
+            except FailedToBootException as e:
+                retry_count += 1
+                if retry_count < max_attempts:
+                    log.warning(
+                        f"TFTP rommon boot failed on attempt {retry_count}/{max_attempts}. "
+                        f"Error: {str(e)}. Retrying in {sleep_interval} seconds..."
+                    )
+                    time.sleep(sleep_interval)
+                else:
+                    log.error(
+                        f"TFTP rommon boot failed after {max_attempts} attempts. "
+                        f"Last error: {str(e)}"
+                    )
+                    raise
 
 
 def device_recovery(con, timeout, golden_image, grub_activity_pattern):

@@ -48,7 +48,7 @@ class TestHealthCore(unittest.TestCase):
                 1,
                 'corefiles': [{
                     'filename':
-                    'bootflash:/core/kernel.NA_CAT9K_NA_20220519205207.core.gz'
+                    'kernel.NA_CAT9K_NA_20220519205207.core.gz'
                 }]
             }
         }
@@ -98,23 +98,20 @@ class TestHealthCoreStack(unittest.TestCase):
         expected_output = {
             'health_data': {
                 'num_of_cores':
-                5,
+                4,
                 'corefiles': [{
                     'filename':
-                    'flash-1:/core/CAT3K_CAA-1-UNIVERSALK9_20150104-042336-UTC.core.gz'
+                    'CAT3K_CAA-1-UNIVERSALK9_20150104-042336-UTC.core.gz'
                 }, {
                     'filename':
-                    'flash-2:/core/CAT3K_CAA-2-UNIVERSALK9_20150104-042336-UTC.core.gz'
+                    'CAT3K_CAA-2-UNIVERSALK9_20150104-042336-UTC.core.gz'
                 }, {
                     'filename':
-                    'flash-2:/core/CAT3K_CAA-UNIVERSALK9-042336-UTC.core.gz.coregen.dbg'
+                    'CAT3K_CAA-UNIVERSALK9-042336-UTC.core.gz.coregen.dbg'
                 }, {
                     'filename':
-                    'flash-3:/core/CAT3K_CAA-3-UNIVERSALK9_20150104-042336-UTC.core.gz'
-                }, {
-                    'filename':
-                    'flash-3:/core/CAT3K_CAA-UNIVERSALK9-042336-UTC.core.gz.coregen.dbg'
-                }]
+                    'CAT3K_CAA-3-UNIVERSALK9_20150104-042336-UTC.core.gz'
+                }],
             }
         }
         self.assertEqual(result, expected_output)
@@ -168,11 +165,11 @@ class TestHealthCoreHA(unittest.TestCase):
                 2,
                 'corefiles': [{
                     'filename':
-                    'bootflash:/core/UNIVERSALK9_20150104-042336-UTC.core.gz'
+                    'UNIVERSALK9_20150104-042336-UTC.core.gz'
                 }, {
                     'filename':
-                    'stby-bootflash:/core/UNIVERSALK9_20150105-042336-UTC.core.gz'
-                }]
+                    'UNIVERSALK9_20150105-042336-UTC.core.gz'
+                }],
             }
         }
         self.assertEqual(result, expected_output)
@@ -214,7 +211,7 @@ class TestHealthCoreNewFiles(unittest.TestCase):
         base_dir = 'bootflash:/core/'
 
         known_filename = 'existing_core_1.core.gz'
-        known_core_full_path = base_dir + known_filename
+        known_core_full_path = known_filename
 
         mock_runtime.health_data.setdefault(self.device.name, {'core': {'corefiles': []}})
         mock_runtime.health_data[self.device.name]['core']['corefiles'].append(
@@ -234,17 +231,13 @@ class TestHealthCoreNewFiles(unittest.TestCase):
             'health_data': {
                 'num_of_cores': 1,
                 'corefiles': [{
-                    'filename': base_dir + new_filename
-                }]
+                    'filename': 'new_core_2.core.gz'
+                }],
             }
         }
         self.assertEqual(result, expected_result)
 
-        expected_notification_message = f"Notify: New core files detected on device '{self.device.name}':\n- {base_dir + new_filename}"
-        mock_log.info.assert_any_call(expected_notification_message)
-
         self.assertEqual(
             mock_runtime.health_data[self.device.name]['core']['corefiles'],
-            [{'filename': known_core_full_path},
-             {'filename': base_dir + new_filename}]
+            [{'filename': known_core_full_path}, {'filename': new_filename}]
         )

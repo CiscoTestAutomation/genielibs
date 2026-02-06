@@ -1422,3 +1422,33 @@ def get_power_supply_status(device):
         raise Exception("No power supply information found")
     
     return power_supply_status
+  
+def get_active_rp_info(device):
+    """ Get active RP info from device
+
+        Args:
+            device (`obj`): Device object
+        Returns:
+            result (`dict`): Active RP info
+            None
+        Raises:
+            Exception: If the command output is empty.
+    """
+    log.info(
+        "Getting active RP info on device {dev}".format(dev=device.name)
+    )
+
+    try:
+        out = device.parse("show platform")
+    except SchemaEmptyParserError as e:
+        log.error(f"Failed to parse 'show platform' on device {device.name}, giving error {e}")
+        raise e
+
+    for slot, slot_data in out.get('slot', {}).items():
+        for rp_name, rp_data in slot_data.get('rp', {}).items():
+            if rp_data.get('swstack_role') == 'Active':
+                log.info(f"Found active RP {rp_name} on slot {slot} of device {device.name}")
+                return slot
+
+    log.error(f"No active RP found on device {device.name}")
+    return None

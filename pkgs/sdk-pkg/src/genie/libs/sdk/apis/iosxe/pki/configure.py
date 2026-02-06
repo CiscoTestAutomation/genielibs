@@ -1056,11 +1056,26 @@ def configure_pki_import(device,
                          error_pattern=error_patterns)
 
     except SubCommandFailure as e:
-        raise SubCommandFailure(
-            logger.error("failed to configure crypto pki import"
-                         "Error:\n{error}".format(error=e)
-                         )
-        )
+        error_msg = str(e)
+        # Check if the error is due to trustpoint already being in use
+        if "Trustpoint" in error_msg and "is in use" in error_msg:
+            logger.warning(f"Trustpoint {tp_name} is already in use. Deleting it first...")
+            try:
+                # Delete the existing trustpoint
+                unconfigure_trustpoint(device, tp_name)
+                logger.info(f"Successfully deleted trustpoint {tp_name}. Retrying import...")
+                # Retry the import
+                device.configure(import_config, reply=dialog,
+                               error_pattern=error_patterns)
+            except Exception as retry_error:
+                raise SubCommandFailure(
+                    f"Failed to configure crypto pki import after deleting trustpoint. "
+                    f"Error: {retry_error}"
+                )
+        else:
+            raise SubCommandFailure(
+                f"failed to configure crypto pki import. Error: {e}"
+            )
 
 
 def configure_pki_export(device,
@@ -1601,39 +1616,110 @@ def unconfigure_crypto_pki_http_max_buffer_size(device):
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure crypto pki http max buffer size: {e}")
         
-def configure_trustpool_policy(device, source_interface=None, vrf_name=None, ca_bundle_url=None):
-    '''
-    Configures CA Trustpool policy on the device.
+def configure_trustpool_policy(device, source_interface=None, vrf_name=None, ca_bundle_url=None, 
+                             ca_bundle_urls=None, revocation_check=None, storage_path=None,
+                             chain_validation=None, auto_update=None):
+    """
+    Configure CA Trustpool policy with mandatory CA URL and optional parameters.
+
     Args:
-        device ('obj'): Device object.
-        source_interface ('str', optional): Interface to use as source address for downloads.
-        vrf_name ('str', optional): VRF to use for enrollment and obtaining CRLs.
-        ca_bundle_url ('str', optional): The CA server bundle URL.
-    Returns:
-        None
+        device (obj): Device object
+        ca_bundle_url (str, optional): Single CA server bundle URL (for backward compatibility)
+        ca_bundle_urls (list, optional): List of CA server bundle URLs for multiple URLs
+        source_interface (str, optional): Interface to use as source address for downloads
+        vrf_name (str, optional): VRF to use for enrollment and obtaining CRLs
+        revocation_check (str, optional): Revocation check method ('crl', 'none', 'ocsp')
+        storage_path (str, optional): Storage location for certificates (e.g., 'flash:abc/')
+        chain_validation (bool, optional): Enable/disable chain validation
+        auto_update (bool, optional): Enable/disable auto-update
+
     Raises:
-        SubCommandFailure: If configuration fails on the device.
-    '''
+        ValueError: If neither ca_bundle_url nor ca_bundle_urls is provided
+        Exception: If command execution fails on the device
+    """
+    
+    # Normalize URLs to a list for consistent processing
+    urls_to_configure = []
+    if ca_bundle_url:
+        urls_to_configure.append(ca_bundle_url)
+    if ca_bundle_urls:
+        if isinstance(ca_bundle_urls, str):
+            urls_to_configure.append(ca_bundle_urls)
+        elif isinstance(ca_bundle_urls, list):
+            urls_to_configure.extend(ca_bundle_urls)
+        else:
+            raise ValueError("ca_bundle_urls must be a string or list of strings")
+    
+    # Remove duplicates while preserving order
+    seen = set()
+    unique_urls = []
+    for url in urls_to_configure:
+        if url not in seen:
+            seen.add(url)
+            unique_urls.append(url)
+    
     dialog = Dialog([
-                Statement(pattern=r'.*bytes*',
-                    action=f'sendline(yes)',
-                    loop_continue=True,
-                    continue_timer=False)
-            ])
+        Statement(pattern=r'.*bytes*',
+            action='sendline(yes)',
+            loop_continue=True,
+            continue_timer=False),
+        Statement(pattern=r'.*[Cc]onfirm.*',
+            action='sendline(y)',
+            loop_continue=True,
+            continue_timer=False),
+        Statement(pattern=r'.*[Yy]/[Nn].*',
+            action='sendline(y)',
+            loop_continue=True,
+            continue_timer=False)
+    ])
+    
     cmds = []
     cmds.append("crypto pki trustpool policy")
-    if ca_bundle_url:
-        cmds.append(f"cabundle url {ca_bundle_url}")
+    
+    # Add all CA bundle URLs
+    for url in unique_urls:
+        cmds.append(f"cabundle url {url}")
+    
+    # Add optional configurations
     if source_interface:
         cmds.append(f"source interface {source_interface}")
+    
     if vrf_name:
         cmds.append(f"vrf {vrf_name}")
-
-    error_patterns = ['failed']
+    
+    if revocation_check:
+        if revocation_check.lower() in ['crl', 'none', 'ocsp']:
+            if revocation_check.lower() == 'none':
+                cmds.append("revocation-check none")
+            elif revocation_check.lower() == 'crl':
+                cmds.append("revocation crl")
+            elif revocation_check.lower() == 'ocsp':
+                cmds.append("revocation ocsp")
+        else:
+            raise ValueError("revocation_check must be 'crl', 'none', or 'ocsp'")
+    
+    if storage_path:
+        cmds.append(f"storage {storage_path}")
+    
+    if chain_validation is True:
+        cmds.append("chain-validation")
+    elif chain_validation is False:
+        cmds.append("no chain-validation")
+    
+    if auto_update is True:
+        cmds.append("auto-update")
+    elif auto_update is False:
+        cmds.append("no auto-update")
+    
+    error_patterns = ['failed', 'error', 'invalid']
+    
     try:
+        logger.info(f"Configuring trustpool policy with {len(unique_urls)} CA bundle URL(s)")
         device.configure(cmds, reply=dialog, error_pattern=error_patterns)
-    except SubCommandFailure as e:
-        raise SubCommandFailure(f"Failed to configure trustpool policy: {e}")
+        logger.info("Trustpool policy configured successfully")
+    except Exception as e:
+        urls_str = ', '.join(unique_urls)
+        raise Exception(f"Failed to configure trustpool policy with URL(s) '{urls_str}': {e}")
 
 
 def unconfigure_trustpool_policy(device):
@@ -2229,3 +2315,66 @@ def change_pki_certificate_hash(device, hash_algorithm=None):
     except Exception as e:
         logger.error(f"Failed to configure PKI certificate hash algorithm: {e}")
         return False
+
+def configure_trustpool_import_terminal(device, certificate_content):
+    """
+    Configure 'crypto pki trustpool import terminal' to import certificates into trustpool.
+
+    Args:
+        device ('obj'): Device object
+        certificate_content ('str'): PEM certificate content to import
+
+    Returns:
+        str: Device output
+
+    Raises:
+        SubCommandFailure: If the import operation fails
+    """
+    
+    logger.info("Starting crypto pki trustpool import terminal")
+
+    def send_certificate(spawn):
+        time.sleep(5)
+        if certificate_content:
+            logger.info("Sending certificate content to device...")
+            spawn.sendline(certificate_content)
+        spawn.sendline()
+
+    dialog = Dialog([
+        Statement(
+            pattern=r'.*End with a blank line or \"quit\" on a line by itself.*',
+            action=send_certificate,
+            loop_continue=True,
+            continue_timer=False
+        ),
+        Statement(
+            pattern=r'.*Do you accept this certificate.*\[yes/no\].*',
+            action='sendline(yes)',
+            loop_continue=True,
+            continue_timer=False
+        ),
+        Statement(
+            pattern=r'.*[Cc]onfirm.*',
+            action='sendline(y)',
+            loop_continue=True,
+            continue_timer=False
+        )
+    ])
+    
+    error_patterns = [
+        '% Error',
+        '% Failed',
+        'Certificate import failed',
+        'Invalid certificate'
+    ]
+    
+    cmd = "crypto pki trustpool import terminal"
+    
+    try:
+        logger.info("Executing crypto pki trustpool import terminal")
+        output = device.configure(cmd, reply=dialog, error_pattern=error_patterns, timeout=120)
+        logger.info("Successfully imported certificate into trustpool via terminal")
+        return output
+    except SubCommandFailure as e:
+        logger.error(f"Failed to import certificate into trustpool: {e}")
+        raise SubCommandFailure(f"Failed trustpool terminal import: {e}")

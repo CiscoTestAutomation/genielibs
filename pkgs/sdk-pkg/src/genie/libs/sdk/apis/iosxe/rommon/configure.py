@@ -206,13 +206,13 @@ def configure_rommon_tftp_ha(device, use_ipv6=False, image_path=None):
     # rp counter to incrementally configure each rp with rommon variables
     for rp_number, con in enumerate(device.subconnections):
         for set_command, value in tftp_details_list[rp_number].items():
-            # To set rommon variables
             cmd = f'{set_command}={value}'
             try:
                 if con.state_machine.current_state == 'rommon':
+                    log.info(f"{device.name} rp{rp_number}: executing ROMMON cmd: {cmd}")
                     con.execute(cmd)
                 else:
                     break
             except Exception as e:
-                raise SubCommandFailure(
-                    f"Failed to set the rommon variable {set_command}. Error:\n{e}")
+                log.error(f"{device.name} rp{rp_number}: ROMMON cmd failed: {cmd} ({e})")
+                raise

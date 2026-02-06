@@ -279,11 +279,9 @@ class HA(HA_main):
     def _prepare_issu(self, steps, upgrade_image):
         """Prepare the device for ISSU:
 
-            1. Check currect image version and upgrade image version
-            2. Copy upgrade image to standby RP
-
             NXOS:
-            1. Copy image onto the device
+            1. If image is not locally saved on disk, copy image to the device
+            2. Validate that image is found on disk
 
         Raises:
             Unicon errors
@@ -293,7 +291,7 @@ class HA(HA_main):
             >>> _prepare_issu(steps=steps, upgrade_image='someimage')
         """
 
-        # # Init
+        # Init
         device = self.device
 
         filetransfer = FileUtils.from_device(self.device)
@@ -303,34 +301,41 @@ class HA(HA_main):
         disk = "bootflash:"
         timeout_seconds = 600
 
-        with steps.start('Check available diskspace') as step:
-            dir_output = filetransfer.parsed_dir(disk, timeout_seconds, Dir)
+        if disk not in upgrade_image:
+            with steps.start('Check available diskspace') as step:
+                dir_output = filetransfer.parsed_dir(disk, timeout_seconds, Dir)
 
-            if int(dir_output['disk_free_space']) < 4500000000:
-                step.failed(
-                    "Not enough free space available to copy over the image.Free up atleast 4.5GB of space on {}".format(disk))
+                if int(dir_output['disk_free_space']) < 4500000000:
+                    step.failed(
+                        "Not enough free space available to copy over the image.Free up atleast 4.5GB of space on {}".format(disk))
 
-        with steps.start('Copy over the issu image') as step:
-            # Copy ISSU upgrade image to disk
+            with steps.start('Copy over the ISSU image') as step:
+                # Copy ISSU upgrade image to disk
 
-            from_url = '{protocol}://{address}/{upgrade_image}'.format(
-                protocol=device.filetransfer_attributes['protocol'],
-                address=device.filetransfer_attributes['server_address'],
-                upgrade_image=upgrade_image)
-            #File copy operations have the option of running through a different network stack by using the use-kstack option
-            use_kstack = self.parameters.get('use_kstack', False)
-            filetransfer.copyfile(source=from_url, destination=disk,
-                                  device=device, vrf='management', use_kstack=use_kstack, timeout_seconds=1800)
+                from_url = '{protocol}://{address}/{upgrade_image}'.format(
+                        protocol=device.filetransfer_attributes['protocol'],
+                        address=device.filetransfer_attributes['server_address'],
+                        upgrade_image=upgrade_image)
+                #File copy operations have the option of running through a different network stack by using the use-kstack option
+                use_kstack = self.parameters.get('use_kstack', False)
+                filetransfer.copyfile(source=from_url, destination=disk,
+                                      device=device, vrf='management', 
+                                      use_kstack=use_kstack, timeout_seconds=1800)
 
+        # Remove disk name if upgrade_image is a local disk file
+        upgrade_image = upgrade_image.split(':')[-1]
+        with steps.start('Check ISSU image on disk') as step:
             # Verify location:<filename> exists
+
             output = device.execute('dir {disk}{image}'.format(disk=disk,
                                                                image=basename(upgrade_image)))
 
             if 'No such file or directory' not in output:
-                log.info("Copied ISSU image to '{}'".format(disk))
+                log.info("Found ISSU image on '{}'".format(disk))
             else:
-                step.failed('Required ISSU image {} not found on disk. Transfer failed.'.format(
+                step.failed('Required ISSU image {} not found on disk.'.format(
                     basename(upgrade_image)))
+
 
     def _perform_issu(self, steps, upgrade_image, timeout=300):
         """Perform the ND-ISSU  and Disruptive ISSU on NXOS device:
@@ -346,7 +351,6 @@ class HA(HA_main):
         Example:
             >>> _perform_issu(steps=steps, upgrade_image='someimage')
         """
-
         # Init
         lookup = Lookup.from_device(self.device)
         filetransfer = FileUtils.from_device(self.device)
@@ -417,15 +421,20 @@ class HA(HA_main):
                 pre_trig_config = get_config_dict(out)
         with steps.start("Perform copy run start on {}".format(self.device.hostname)):
             execute_copy_run_to_start(self.device)
+
+        # Remove disk name if upgrade_image is a local bootflash: file
+        upgrade_image = upgrade_image.split(':')[-1]
+
+        out = ''
         if disrupt_flag:
-            with steps.start("Performing issu on the device {}".format(self.device.hostname)):
+            with steps.start("Performing ISSU on the device {}".format(self.device.hostname)):
                 image_name = basename(upgrade_image)
                 if min_disrupt:
-                    self.device.execute(
+                    out = self.device.execute(
                         'install all nxos bootflash:{} min-disruptive'.format(image_name), timeout=issu_timeout,
                         reply=dialog)
                 else:
-                    self.device.execute(
+                    out = self.device.execute(
                         'install all nxos bootflash:{}'.format(image_name), timeout=issu_timeout,
                         reply=dialog)
         else:
@@ -443,10 +452,15 @@ class HA(HA_main):
                         "Upgrade will be disruptive and disruptive ISSU is not allowed")
             #Allows previous install all instance to complete before proceeding
             time.sleep(5)
-            with steps.start("Performing non disruptive issu on the device {}".format(self.device.hostname)):
+            with steps.start("Performing non disruptive ISSU on the device {}".format(self.device.hostname)):
                 image_name = basename(upgrade_image)
-                self.device.execute(
+                out = self.device.execute(
                     'install all nxos bootflash:{} non-disruptive'.format(image_name), timeout=issu_timeout, reply=dialog)
+
+        if not (re.search('Saving supervisor runtime state', out) \
+             or re.search('Finishing the (up|down)grade, switch will reboot', out)):
+            step.failed("Failed to complete ISSU on device {}... Aborting.".format(self.device.hostname))
+            return
 
         with steps.start("Reconnect back to device {} after ISSU".format(self.device.hostname)):
             reconnect_timeout = Timeout(max_time=1200, interval=120)
@@ -542,4 +556,4 @@ class HA(HA_main):
                 pre_trig_config, post_trig_config, [r'(boot|version)']+config_ver_exclude)
             if output:
                 step.failed(
-                    "Inconsistencies in running config post trigger:{}".format(output))
+                    "Inconsistencies in running config post trigger:\n{}".format(output))

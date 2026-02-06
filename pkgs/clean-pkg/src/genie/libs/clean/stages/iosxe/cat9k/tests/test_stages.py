@@ -255,3 +255,45 @@ class TestRommonBoot(unittest.TestCase):
         #  with steps.start('...') as step_context:
         step_context = steps.start.return_value.__enter__.return_value
         step_context.failed.assert_called_with("Failed to reconnect")
+
+    @mock.patch('genie.libs.clean.stages.iosxe.cat9k.stages.pcall')
+    def test_rommon_boot_tftp_with_retry_params(self, pcall):
+        """Test that TFTP boot retry parameters are passed to recovery_worker"""
+        steps = mock.MagicMock()
+        self.device.instantiate = mock.Mock()
+        self.device.is_ha = False
+        self.device.start = 'telnet 127.0.0.1 0000'
+        
+        tftp_config = {
+            'ip_address': ['10.1.1.1'],
+            'subnet_mask': '255.255.255.0',
+            'gateway': '10.1.1.254',
+            'tftp_server': '10.1.1.100'
+        }
+
+        self.cls.rommon_boot(
+            steps=steps,
+            device=self.device,
+            image=['bootflash:/test.bin'],
+            tftp=tftp_config,
+            tftp_boot_max_attempts=5,
+            tftp_boot_sleep_interval=45
+        )
+
+        steps.start.assert_called_with("Boot device from rommon")
+        self.device.instantiate.assert_called_once()
+        pcall.assert_called_once()
+        
+        # Verify retry parameters were passed in common_kwargs
+        call_kwargs = pcall.call_args[1]['ckwargs']
+        assert call_kwargs['tftp_boot_max_attempts'] == 5
+        assert call_kwargs['tftp_boot_sleep_interval'] == 45
+        assert 'tftp_boot' in call_kwargs
+
+        #  step_context comes from the following snippet
+        #  with steps.start('...') as step_context:
+        step_context = steps.start.return_value.__enter__.return_value
+
+        # Verify no step_context methods called
+        for result in RESULT_METHODS:
+            getattr(step_context, result).assert_not_called()

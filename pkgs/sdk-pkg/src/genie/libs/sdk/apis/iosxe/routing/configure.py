@@ -299,10 +299,10 @@ def unconfigure_routing_static_route(
             f"no ip route {route} {mask} {interface} {destination_address}")
     elif vrf and destination_address:
         configs.append(
-            f"no ip route {vrf} {route} {mask} {destination_address}")
+            f"no ip route vrf {vrf} {route} {mask} {destination_address}")
     elif vrf and interface:
         configs.append(
-            f"no ip route {vrf} {route} {mask} {interface}")
+            f"no ip route vrf {vrf} {route} {mask} {interface}")
     elif interface:
         configs.append(
             f"no ip route {route} {mask} {interface}")

@@ -1461,3 +1461,41 @@ def verify_backplane_optical_port_interface_config_media_type(device, interface,
 
     return False
 
+
+def verify_subslot_state(device, subslot, expected_state="ok", max_time=120,
+                         interval=10):
+    """Verify subslot state
+        Args:
+            device (`obj`): Device object
+            subslot (`str`): Subslot name
+            expected_state (`str`, Optional): Expected subslot state, default: "ok"
+            max_time (`int`, Optional): Max time, default: 120 seconds
+            interval (`int`, Optional): Check interval, default: 10 seconds
+        Returns:
+            result (`bool`): True if subslot state matches expected
+    """
+
+    timeout = Timeout(max_time=max_time, interval=interval)
+
+    while timeout.iterate():
+        try:
+            output = device.parse(f"show hw-module subslot {subslot} oir")
+        except Exception:
+            state = None
+            timeout.sleep()
+            continue
+
+        if Dq(output).contains('operational_status'):
+            state = Dq(output).get_values('operational_status', 0)
+        else:
+            timeout.sleep()
+            continue
+
+        if state == expected_state:
+            return True
+        else:
+            timeout.sleep()
+            continue
+    log.info(f'subslot {subslot} expected state is {expected_state}, but real state is {state}')
+
+    return False

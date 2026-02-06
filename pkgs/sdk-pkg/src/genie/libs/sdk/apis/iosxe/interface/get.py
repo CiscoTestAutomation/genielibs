@@ -1616,4 +1616,85 @@ def get_interfaces_connect_status(device):
         raise e        
 
     return interface_status
-    
+
+
+def get_interface_switchport_output(device, interface):
+    """ Get interface switchport output
+
+        Args:
+            device ('obj'): Device object
+            interface ('str'): interface name
+        Return:
+            String with interface switchport output
+        Raises:
+            None
+    """
+    try:
+        return device.execute(f"show interfaces {interface} switchport")
+    except SubCommandFailure as e:
+        log.error("Could not get device show interface switchport: {e}".format(e=e))
+        return None
+
+
+def get_interface_controller_output(device, interface):
+    """ Get interface controller output
+
+        Args:
+            device ('obj'): Device object
+            interface ('str'): interface name
+        Return:
+            String with interface controller output
+        Raises:
+            None
+    """
+    try:
+        return device.execute(f"show interface {interface} controller")
+    except SubCommandFailure as e:
+        log.error("Could not get device show interface controller: {e}".format(e=e))
+        return None
+
+
+def get_interface_speed_config_range(device, interface):
+    """ Get speed config range
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+
+        Returns:
+            speed_config_range (`list`): speed config range
+
+    """
+    speed_config_range = []
+
+    cmd = "conf t\ninterface {interface}\nspeed ".format(interface=interface)
+    out = device.api.question_mark_retrieve(cmd, state="config")
+
+    # 10    Force 10 Mbps operation
+    # auto  Enable AUTO speed configuration
+    p = re.compile(r"(?P<speed_value>\d+|auto) +.+")
+    for line in out.splitlines():
+        line = line.strip()
+        # 10    Force 10 Mbps operation
+        # auto  Enable AUTO speed configuration
+        m = p.search(line)
+        if m:
+            speed_config_range.append(m.groupdict()['speed_value'])
+
+    return speed_config_range
+
+
+def get_interface_type_name(interface):
+    """
+    Get interface type by interface
+    Args:
+        interface(`str`): Interface name, example GigabitEthernet0/0/0
+    Returns:
+        intf_type(`str`): Interface type, example GigabitEthernet
+        None
+    """
+    # GigabitEthernet0/0/0
+    pattern = re.compile(r'\d+')
+    match = pattern.search(interface)
+    intf_type = interface[:match.start()] if match and interface[:match.start()] else None
+    return intf_type

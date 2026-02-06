@@ -66,3 +66,32 @@ def get_cdp_neighbour_port_id(device, interface):
     except Exception as e:
         log.error(f"Could not get device show cdp neighbors detail: {e}")
         return None
+
+
+def get_cdp_neighbors_output(device):
+    """ Get show cdp neighbors output from device
+        Args:
+            device ('obj'): Device object
+        Returns:
+            String with cdp neighbors output
+    """
+    try:
+        return device.execute('show cdp neighbors')
+    except SchemaEmptyParserError as e:
+        log.error("Could not get device show cdp neighbors: {e}".format(e=e))
+        return None
+
+
+def get_cdp_neighbors_intf_detail_output(device, interface):
+    """ Get details about cdp neighbors from device for a specific interface
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Interface name
+        Returns:
+            String with cdp neighbors interface detail output
+    """
+    try:
+        return device.execute(f'show cdp neighbors {interface} detail')
+    except SchemaEmptyParserError as e:
+        log.error("Could not get device show cdp neighbors {interface} detail: {e}".format(interface=interface, e=e))
+        return None
