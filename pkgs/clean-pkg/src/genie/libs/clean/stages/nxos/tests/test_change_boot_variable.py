@@ -355,7 +355,8 @@ class VerifyBootVariable(unittest.TestCase):
             )
 
         # Check the overall result is as expected
-        self.assertEqual(Failed, steps.details[0].result)
+        self.assertEqual(Passed, steps.details[0].result)
+        self.assertEqual(Failed, steps.details[1].result)
 
 
 class VerifyHaFileTransfer(unittest.TestCase):

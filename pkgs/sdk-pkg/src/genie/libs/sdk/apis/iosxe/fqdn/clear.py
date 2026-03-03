@@ -43,3 +43,21 @@ def clear_fqdn_packet_stats(device):
             "Could not clear fqdn packet statistics on {device}. Error:\n{error}".format(device=device, error=e)
         )
 
+def clear_fqdn_database_fqdn(device, fqdn):
+    """ clear fqdn database fqdn
+        Args:
+            device ('obj'): Device object
+            fqdn ('str'): FQDN to clear from database
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info("clear fqdn database on {device} for fqdn {fqdn}".format(device=device, fqdn=fqdn))
+
+    try:
+        device.execute(f"clear fqdn database fqdn {fqdn}")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not clear fqdn database entries on {device}. Error:\n{error}".format(device=device, error=e)
+        )

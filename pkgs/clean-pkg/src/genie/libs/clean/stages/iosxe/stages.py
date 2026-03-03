@@ -37,6 +37,7 @@ from genie.libs.clean.utils import (
     raise_,
 )
 from genie.libs.clean.exception import FailedToBootException
+from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
 # Unicon
 from unicon.eal.dialogs import Statement, Dialog
@@ -813,7 +814,7 @@ class InstallImage(BaseStage):
         "configure_no_boot_manual",
         "delete_boot_variable",
         "set_boot_variable",
-        "configure_and_verify_startup_config",
+        "unconfigure_and_verify_startup_config",
         "save_running_config",
         "verify_boot_variable",
         "verify_running_image",
@@ -921,16 +922,7 @@ class InstallImage(BaseStage):
                     step.failed("Failed to configure the boot variable",
                                 from_exception=e)
 
-                log.info(
-                    f'Unconfigure the ignore startup config on {device.name}')
-                try:
-                    device.api.unconfigure_ignore_startup_config()
-                except Exception as e:
-                    step.passx(
-                        f"Unable to unconfigure ignore startup config on the device {device.name}"
-                    )
-
-    def configure_and_verify_startup_config(self, steps, device):
+    def unconfigure_and_verify_startup_config(self, steps, device):
         with steps.start("Unconfigure ignore startup config") as step:
             try:
                 # Attempt to unconfigure the ignore startup config
@@ -941,16 +933,18 @@ class InstallImage(BaseStage):
                     from_exception=e)
 
         with steps.start("Verify ignore startup config") as step:
+
+            log.info(f'verify the ignore startup config on {device.name}')
             try:
-                # Attempt to verify the ignore startup config
-                if not device.api.verify_ignore_startup_config():
-                    step.passx(
-                        f"Failed to verify unconfigure of the ignore startup config on {device.name}"
+                if device.api.verify_ignore_startup_config():
+                    step.failed(
+                        f"Failed to verify unconfigure the ignore startup config on {device.name}"
                     )
             except Exception as e:
-                step.passx(
-                    f"An error occurred while verifying the ignore startup config on {device.name}",
-                    from_exception=e)
+                step.failed(
+                    f"Failed to verify ignore startup config on {device.name}",
+                    from_exception=e
+                )
 
     def save_running_config(self,
                             steps,
@@ -988,15 +982,17 @@ class InstallImage(BaseStage):
                         boot_images=[self.new_boot_var]):
                     step.failed(f"Boot variables are not correctly set to "
                                 f"{self.new_boot_var}")
-            log.info('verify the ignore startup config')
+
+            log.info(f'verify the ignore startup config on {device.name}')
             try:
-                if not device.api.verify_ignore_startup_config():
+                if device.api.verify_ignore_startup_config():
                     step.failed(
                         f"Failed to verify unconfigure the ignore startup config on {device.name}"
                     )
             except Exception as e:
-                step.passx(
-                    f"Unable to verify unconfigure the ignore startup config on {device.name}"
+                step.failed(
+                    f"Failed to verify ignore startup config on {device.name}",
+                    from_exception=e
                 )
 
     def install_image(
@@ -1023,7 +1019,13 @@ class InstallImage(BaseStage):
 
         with steps.start("Check for previous uncommitted install operation") as step:
             try:
-                output = device.parse("show install active")
+                try:
+                    output = device.parse("show install active")
+                except SchemaEmptyParserError:
+                    step.skipped(
+                        "'show install active' returned no output. "
+                        "Assuming no uncommitted install operation."
+                    )
                 if not output.get("location"):
                     step.skipped("No active packages found to commit.")
                 location = list(output.get("location").keys())
@@ -1214,7 +1216,7 @@ class InstallImage(BaseStage):
                     device.execute(
                         install_cmd.format(images[0]),
                         reply=install_add_one_shot_dialog,
-                        error_pattern=["FAILED:"],
+                        append_error_pattern=["FAILED:"],
                         timeout=install_timeout,
                     )
                     break  # Success, exit the retry loop
@@ -2272,7 +2274,6 @@ class RommonBoot(BaseStage):
         image (list, optional): Image to boot with
 
         tftp (optional): If specified boot via tftp otherwise boot using local
-            image (list): image to boot
 
             ip_address (list, optional): Management ip address to configure to reach to the
                 tftp server
@@ -2446,16 +2447,21 @@ class RommonBoot(BaseStage):
                     tftp_boot_sleep_interval=ROMMON_TFTP_BOOT_SLEEP_INTERVAL):
         with steps.start("Boot device from rommon") as step:
 
-            log.info(
-                f'Get the recovery details from clean for device {device.name}'
-            )
-            try:
-                recovery_info = device.clean.get('device_recovery', {})
-            except AttributeError:
-                log.info(f'There is no recovery info for device {device.name}')
-                recovery_info = {}
+            golden_image = None
 
-            if tftp:
+            # Check if image name has path or tftp:
+            if image:
+                img_str = image[0]
+                if img_str.startswith('/') or 'tftp:' in img_str:
+                    log.info(f"Detected network path or TFTP prefix. Using TFTP boot for: {img_str}")
+                    if not tftp.get('image'):
+                        tftp['image'] = image
+                else:
+                    log.info(f"Detected local image name. Using Golden Image boot for: {img_str}")
+                    golden_image = image
+
+            # If identified as TFTP boot (via image content or explicit tftp block)
+            if tftp.get('image'):
                 log.warning(
                     'Passing TFTP information to rommon boot is deprecated. Use device recovery tftp information instead.'
                 )
@@ -2464,167 +2470,81 @@ class RommonBoot(BaseStage):
                     setattr(device, "management", {})
                 # Getting the tftp information, if the info not provided by user, it takes from testbed
                 address = device.management.get("address", {}).get("ipv4", "")
+                ip_address = None
+                subnet_mask = None
+
                 if isinstance(address, IPv4Interface):
                     ip_address = [str(address.ip)]
                     subnet_mask = str(address.netmask)
                 elif isinstance(address, IPv6Interface):
                     ip_address = [str(address.ip)]
                     subnet_mask = str(address.netmask)
+
                 tftp.setdefault("ip_address", ip_address)
                 tftp.setdefault("subnet_mask", subnet_mask)
-                tftp.setdefault(
-                    "gateway",
-                    str(device.management.get("gateway", {}).get("ipv4")))
-                tftp.setdefault(
-                    "tftp_server",
-                    device.testbed.servers.get("tftp", {}).get("address"))
 
-                log.info(
-                    "checking if all the tftp information is given by the user"
+                gateway = device.management.get("gateway", {}).get("ipv4")
+                tftp.setdefault("gateway", str(gateway) if gateway else None)
+
+                tftp_server = getattr(device.testbed, 'servers', {}).get("tftp", {}).get("address")
+                tftp.setdefault("tftp_server", str(tftp_server) if tftp_server else None)
+
+                # Validate all required TFTP information is present
+                required_fields = ["image", "ip_address", "subnet_mask", "gateway", "tftp_server"]
+                missing_fields = [field for field in required_fields if not tftp.get(field)]
+
+                if missing_fields:
+                    log.warning(
+                        f"Missing required TFTP information: {missing_fields}. "
+                        f"Current TFTP config: {tftp}"
+                    )
+
+            # Get grub_activity_pattern from recovery_info if not provided
+            if not grub_activity_pattern:
+                recovery_info = device.clean.get('device_recovery', {})
+                grub_activity_pattern = recovery_info.get(
+                    'grub_activity_pattern',
+                    'The highlighted entry will be (?:booted|executed) automatically'
                 )
-                if tftp and not all(tftp.values()):
-                    log.warning(f"Some TFTP information is missing: {tftp}")
-                    # setting tftp empty if ttfp information is missing
-                    tftp = {}
 
-            tftp_boot = recovery_info.get('tftp_boot', {}) or tftp
-
-            timeout = timeout or recovery_info.get('timeout') or 750
-            image = recovery_info.get('golden_image', []) or image
-            grub_activity_pattern = grub_activity_pattern or recovery_info.get(
-                'grub_activity_pattern',
-                'The highlighted entry will be (?:booted|executed) automatically'
-            )
-
-            if image:
-                log.info(banner("Booting device '{}' with the Golden images".\
-                                format(device.name)))
-                log.info("Clean image information found:\n{}".format(image))
-
-            elif tftp_boot:
-                log.info(banner("Booting device '{}' with the Tftp images".\
-                                format(device.name)))
-                log.info("Tftp boot information found:\n{}".format(tftp_boot))
-
-            else:
-                raise Exception(
-                    'Global recovery only support golden image and tftp '
-                    'boot recovery and neither was provided')
-
-            if device.is_ha and hasattr(device, 'subconnections'):
-                conn_list = device.subconnections
-            else:
-                conn_list = [device.default]
-
-            for con in conn_list:
-                if con.state_machine.current_state != 'rommon':
-                    raise Exception(
-                        f'Device {device.name} is not in rommon state could not boot the device.'
-                    )
-                else:
-                    log.info(f'Device {device.name} is in rommon state!')
-
+            # Boot the device using the API with retry logic
             try:
-                # golden image for that we need to boot each subconnetion in a separate process.
-                if image:
-                    futures = []
-                    executor = ThreadPoolExecutor(max_workers=len(conn_list))
-                    for con in conn_list:
-                        futures.append(
-                            executor.submit(
-                                RommonBoot.task,
-                                con,
-                                timeout,
-                                image,
-                                grub_activity_pattern,
-                            ))
-                    log.info(
-                        f"The Timeout value to verify the grub prompt is {timeout}"
-                    )
-                    wait_futures(futures,
-                                 timeout=timeout,
-                                 return_when=ALL_COMPLETED)
-                elif tftp_boot:
-                    # Retry loop for TFTP boot
-                    retry_count = 0
-                    while retry_count < tftp_boot_max_attempts:
-                        try:
-                            log.info(f"TFTP rommon boot attempt {retry_count + 1}/{tftp_boot_max_attempts}")
-                            device.api.device_rommon_boot(tftp_boot=tftp_boot)
-                            log.info(f"TFTP rommon boot successful on attempt {retry_count + 1}")
-                            break
-                        except FailedToBootException as e:
-                            retry_count += 1
-                            if retry_count < tftp_boot_max_attempts:
-                                log.warning(
-                                    f"TFTP rommon boot failed on attempt {retry_count}/{tftp_boot_max_attempts}. "
-                                    f"Error: {str(e)}. Retrying in {tftp_boot_sleep_interval} seconds..."
-                                )
-                                time.sleep(tftp_boot_sleep_interval)
-                            else:
-                                log.error(
-                                    f"TFTP rommon boot failed after {tftp_boot_max_attempts} attempts. "
-                                    f"Last error: {str(e)}"
-                                )
-                                raise
+                retry_count = 0
+                while retry_count < tftp_boot_max_attempts:
+                    try:
+                        if retry_count > 0:
+                            log.info(f"Rommon boot attempt {retry_count + 1}/{tftp_boot_max_attempts}")
+                        
+                        # Call the device_rommon_boot API
+                        # API will use get_recovery_details to merge stage params with device_recovery
+                        device.api.device_rommon_boot(
+                            tftp_boot=tftp,
+                            golden_image=golden_image,
+                            grub_activity_pattern=grub_activity_pattern,
+                            timeout=timeout
+                        )
+                        
+                        if retry_count > 0:
+                            log.info(f"Rommon boot successful on attempt {retry_count + 1}")
+                        break
+                        
+                    except FailedToBootException as e:
+                        retry_count += 1
+                        if retry_count < tftp_boot_max_attempts:
+                            log.warning(
+                                f"Rommon boot failed on attempt {retry_count}/{tftp_boot_max_attempts}. "
+                                f"Error: {str(e)}. Retrying in {tftp_boot_sleep_interval} seconds..."
+                            )
+                            time.sleep(tftp_boot_sleep_interval)
+                        else:
+                            log.error(
+                                f"Rommon boot failed after {tftp_boot_max_attempts} attempts. "
+                                f"Last error: {str(e)}"
+                            )
+                            raise
             except Exception as e:
                 step.failed("Failed to boot the device from rommon",
                             from_exception=e)
-
-    def task(con, timeout, image, grub_activity_pattern):
-        """
-        A method for processing a dialog that loads a local image onto a device
-
-        Args:
-            con (obj): connection object
-            timeout (int, optional): Recovery process timeout. Defaults to 600.
-            image (dict): Information to load golden image on the device
-            grub_activity_pattern (str): Grub activity pattern
-        Returns:
-            None
-        """
-        # if we have grup activity pattern then we need to update the context with grub boot image
-
-        if grub_activity_pattern:
-            image_to_boot = con.context.get('grub_boot_image')
-            con.context['grub_boot_image'] = image[0]
-
-        # check for image to boot if we have a value store it and replace it with the golden image
-        image_to_boot = con.context.get('image_to_boot')
-        con.context['image_to_boot'] = image[0]
-
-        # these statments needed for booting from grub menu
-        def _grub_boot_device(spawn, session, context):
-            # '\033' == <ESC>
-            spawn.send('\033')
-            time.sleep(0.8)
-
-        grub_prompt_stmt = \
-            Statement(pattern=r'.*grub *>.*',
-                    action=_grub_boot_device,
-                    args=None,
-                    loop_continue=True,
-                    continue_timer=False)
-
-        grub_boot_stmt = \
-            Statement(pattern=r'.*Use the UP and DOWN arrow keys to select.*',
-                    action=grub_prompt_handler,
-                    args=None,
-                    loop_continue=True,
-                    continue_timer=False)
-
-        dialog = Dialog([grub_boot_stmt, grub_prompt_stmt])
-
-        con.state_machine.go_to('enable',
-                                con.spawn,
-                                timeout=timeout,
-                                context=con.context,
-                                dialog=dialog,
-                                prompt_recovery=True)
-        # we need to set the value of grub_boot_image and image_to_boot to original value
-        if grub_activity_pattern:
-            con.context['grub_boot_image'] = image_to_boot
-        con.context['image_to_boot'] = image_to_boot
 
     def reconnect(self, steps, device, reconnect_timeout=RECONNECT_TIMEOUT):
         with steps.start("Reconnect to device") as step:
@@ -4082,7 +4002,6 @@ class Connect(BaseStage):
                 log.info(
                     "Setting the rommon variables and Booting the device from rommon"
                 )
-
                 try:
                     # Gets the recovery details from clean yaml
                     device.api.device_rommon_boot()
@@ -4090,6 +4009,19 @@ class Connect(BaseStage):
                     step.failed(f"Failed to boot device from rommon. {e}")
                 else:
                     log.info("Successfully booted the device from rommon.")
+                    
+        elif state == "shell":
+            log.info("Device is in shell state, transitioning to enable mode")
+            try:
+                device.state_machine.go_to('enable', 
+                                           device.spawn,
+                                           timeout=timeout,
+                                           prompt_recovery=True)
+            except Exception as e:
+                log.error(f"Failed to exit from shell state: {e}")
+            else:
+                log.info("Successfully transited from shell state to enable mode")
+                    
         else:
             with steps.start("Log out from the device") as step:
                 # by default logout set as true

@@ -1624,3 +1624,173 @@ def configure_cts_sxp_export_import_group_option(device, role, group_name, list_
         raise SubCommandFailure(
             f"Failed to configure CTS SXP export-import-group {role} {group_name} on device {device.name}. Error:\n{e}"
         )
+        
+def configure_role_based_access_list(device, acl_name, ip_type, permission):
+    """
+    Configure role-based access-list
+    Args:
+        device ('obj'): Device object
+        acl_name ('str'): Access-list name (e.g., 'SGACL-V4', 'SGACL-V6')
+        ip_type ('str'): 'ip' or 'ipv6'
+        permission ('str'): 'permit' or 'deny'
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed to configure access-list
+    """
+    cmd = [
+        f"{ip_type} access-list role-based {acl_name}",
+        f"{permission} {ip_type}"
+    ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure role-based access-list {acl_name} on device {device.name}. Error:\n{e}"
+        )
+
+def configure_cts_role_based_sgt_map_vrf(device, vrf, ip_address, sgt):
+    """
+    Configure CTS role-based SGT map for a specific VRF
+    Args:
+        device ('obj'): Device object
+        vrf ('str'): VRF name (e.g., 'VRF250')
+        ip_address ('str'): IP address to map
+        sgt ('int' or 'str'): Security Group Tag value
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed to configure CTS role-based SGT map
+    """
+    cmd = f"cts role-based sgt-map vrf {vrf} {ip_address} sgt {sgt}"
+    try:
+        device.configure([cmd])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure CTS role-based SGT map on device {device.name}. Error:\n{e}"
+        )		
+
+def unconfigure_cts_role_based_sgt_map_vrf(device, vrf, ip_address, sgt):
+    """
+    Unconfigure CTS role-based SGT map for a specific VRF
+    Args:
+        device ('obj'): Device object
+        vrf ('str'): VRF name (e.g., 'VRF250')
+        ip_address ('str'): IP address to unmap
+        sgt ('int' or 'str'): Security Group Tag value
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed to unconfigure CTS role-based SGT map
+    """
+    cmd = f"no cts role-based sgt-map vrf {vrf} {ip_address} sgt {sgt}"
+    try:
+        device.configure([cmd])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure CTS role-based SGT map on device {device.name}. Error:\n{e}"
+        )
+
+def unconfigure_cts_sxp_export_import_group_option(device, role, group_name):
+    """
+    unconfigure CTS SXP export-import-group option
+    Args:
+        device ('obj'): Device object
+        role ('str'): 'speaker' or 'listener'
+        group_name ('str'): Group name
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed to configure CTS SXP export-import-group
+    """
+    assert role is not None, "Role must be provided"
+    assert role.lower() in ['speaker', 'listener'], "Role must be either `speaker` or `listener`"
+    assert group_name, "Group name must be provided"
+
+    cmds = [
+        f"no cts sxp export-import-group {role} {group_name}",
+    ]
+    try:
+        device.configure(cmds)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure CTS SXP export-import-group {role} {group_name} on device {device.name}. Error:\n{e}"
+        )
+
+def unconfigure_cts_sxp_connection_peer(device, peer_ip, source_ip, password='default', 
+                                        mode='local', direction='both',vrf=None,
+                                        hold_time=False, min_time=None, max_time=None):
+    """
+    Unconfigure CTS SXP connection peer
+    Args:
+        device ('obj'): Device object
+        peer_ip ('str'): SXP peer IP address (IPv4 or IPv6)
+        source_ip ('str'): Source IP address (IPv4 or IPv6)
+        password ('str', optional): Password for the connection. Default is 'default'
+        mode ('str', optional): Mode for the connection. Default is 'local'
+        direction ('str', optional): Direction for the connection. Default is 'both'
+        vrf ('str', optional): VRF name
+        hold_time ('bool', optional): Enable hold-time configuration. Default is False
+        min_time ('int', optional): Minimum hold-time (for listener mode)
+        max_time ('int', optional): Maximum hold-time (for speaker and listener modes)        
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed to unconfigure CTS SXP connection peer
+    """
+    cmd = f"no cts sxp connection peer {peer_ip} source {source_ip} password {password} mode {mode} {direction}"
+    if vrf:
+        cmd += f" vrf {vrf}"   
+
+    if hold_time:
+        if direction.lower() == 'speaker' and max_time is not None:
+            cmd += f" hold-time {max_time}"
+        elif direction.lower() == 'listener' and min_time is not None and max_time is not None:
+            cmd += f" hold-time {min_time} {max_time}"
+
+    try:
+        device.configure([cmd])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure CTS SXP connection peer on device {device.name}. Error:\n{e}"
+        )
+
+def configure_cts_sxp_node_id(device, id_type, address):
+    """
+    Configure CTS SXP node-id with IPv4 or IPv6 address
+    Args:
+        device ('obj'): Device object
+        id_type ('str'): 'ipv4' or 'ipv6'
+        address ('str'): IPv4 or IPv6 address
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed to configure CTS SXP node-id
+    """
+    cmd = f"cts sxp node-id {id_type} {address}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure CTS SXP node-id {id_type} {address} on device {device.name}. Error:\n{e}"
+        )
+
+def unconfigure_cts_sxp_node_id(device, id_type, address):
+    """
+    Unconfigure CTS SXP node-id with IPv4 or IPv6 address
+    Args:
+        device ('obj'): Device object
+        id_type ('str'): 'ipv4' or 'ipv6'
+        address ('str'): IPv4 or IPv6 address
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed to unconfigure CTS SXP node-id
+    """
+    cmd = f"no cts sxp node-id {id_type} {address}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure CTS SXP node-id {id_type} {address} on device {device.name}. Error:\n{e}"
+        )    

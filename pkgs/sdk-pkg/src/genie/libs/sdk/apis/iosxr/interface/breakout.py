@@ -23,8 +23,8 @@ def breakout_interface_names(device, interface, breakout_mode):
         '10': 'TenGigE',
         '25': 'TwentyFiveGigE',
         '50': 'FiftyGigE',
-        '100': 'HunderdGigE',
-        '200': 'TwoHunderdGigE'
+        '100': 'HundredGigE',
+        '200': 'TwoHundredGigE'
     }
     ifname = ifname_map.get(ifspeed)
 

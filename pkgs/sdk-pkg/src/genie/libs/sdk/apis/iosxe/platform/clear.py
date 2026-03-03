@@ -176,3 +176,21 @@ def execute_clear(device, parameter):
                 parameter=parameter
             )
          )
+    
+def clear_platform_software_fed_matm_stats(device, switch='active'):
+    """ Clear MATM statistics on the device
+        Args:
+            device (`obj`): Device object
+            switch (str, optional): Switch mode (active/standby). Default is 'active'
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f"Clearing MATM stats on {device.name} for switch {switch}")
+    try:
+        device.execute(f'clear platform software fed switch {switch} matm stats')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not clear MATM stats on {device.name}. Error:\n{e}"
+        )

@@ -1,35 +1,27 @@
-import os
 import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock, ANY
 from genie.libs.sdk.apis.iosxe.dhcp.configure import unconfigure_dhcp_pool
 
 
-class TestUnconfigureDhcpPool(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          Switch:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: c9200
-            type: c9200
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Switch']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigureDhcpPool(TestCase):
 
     def test_unconfigure_dhcp_pool(self):
-        result = unconfigure_dhcp_pool(self.device, 'vlan501', None, '1.1.1.0', '255.255.255.0', 'Mgmt-vrf', None)
+        device = Mock()
+        result = unconfigure_dhcp_pool(device, 'vlan501', None, '1.1.1.0', '255.255.255.0', 'Mgmt-vrf', None)
         expected_output = None
         self.assertEqual(result, expected_output)
+        
+        # Verify configure was called with the correct command
+        device.configure.assert_called_once_with(
+            [
+                'ip dhcp pool vlan501',
+                'no network 1.1.1.0 255.255.255.0',
+                'no vrf Mgmt-vrf'
+            ],
+            reply=ANY
+        )
+
+
+if __name__ == '__main__':
+    unittest.main()

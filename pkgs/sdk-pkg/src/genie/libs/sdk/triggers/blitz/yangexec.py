@@ -282,7 +282,7 @@ def run_netconf(operation: str,
         if pause:
             sleep(pause)
         return verifier.edit_config_verify(result, ds_state)
-    elif rpc_data['operation'] in ['get', 'get-config']:
+    elif rpc_data['operation'] in ['get', 'get-config','rpc']:
         return verifier.get_config_verify(result)
     elif rpc_data['operation'] == 'edit-data':
         # TODO: get-data return may not be relevent depending on datastore

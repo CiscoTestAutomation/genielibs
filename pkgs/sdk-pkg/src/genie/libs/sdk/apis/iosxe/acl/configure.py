@@ -1544,7 +1544,14 @@ def configure_mac_acl(device, name, action, source, dest, ethertype=''):
     config = [f"mac access-list extended {name}"]
     action = action.strip().lower()
     if action in ('permit', 'deny'):
-        config.append(f"{action} host {source} host {dest} {ethertype}")
+        if source == 'any' and dest == 'any':
+            config.append(f"{action} any any {ethertype}")
+        elif source == 'any' and dest != 'any':
+            config.append(f"{action} any host {dest} {ethertype}")
+        elif source != 'any' and dest == 'any':
+            config.append(f"{action} host {source} any {ethertype}")
+        elif source != 'any' and dest != 'any':
+            config.append(f"{action} host {source} host {dest} {ethertype}")        
     else:
         raise SubCommandFailure("Invalid action type")
     try:
@@ -1804,7 +1811,7 @@ def unconfigure_as_path_acl(device, acces_list_number=None, action=None, reg_exp
                 dev=device.name, error=e,))
 
     
-def unconfigure_mac_acl(device, name, action, source, dest, ethertype=None):
+def unconfigure_mac_acl(device, name, action, source, dest, ethertype=''):
     """ Un configuring MAC ACL
         Example: mac access-list extended MAC-ACL
                 no permit host 001.00a.00a host 001.00b.00b etype-6000
@@ -1815,7 +1822,7 @@ def unconfigure_mac_acl(device, name, action, source, dest, ethertype=None):
             action ('str'): (permit | deny) permits or denies Layer 2 traffic
             source ('str'): (src-MAC-addr) defines a source MAC address (e.g. 001.00a.00a)
             dest ('str'): (dst-MAC-addr) defines a destination MAC address (e.g. 001.00b.00b)
-            ethertype ('str'): ethertype
+            ethertype ('str', optional): ethertype to be configured. Default is ''.
 
         Returns:
             None
@@ -1826,7 +1833,14 @@ def unconfigure_mac_acl(device, name, action, source, dest, ethertype=None):
     config = [f"mac access-list extended {name}"]
     action = action.strip().lower()
     if action in ('permit', 'deny'):
-        config.append(f"no {action} host {source} host {dest} {ethertype}")
+        if source == 'any' and dest == 'any':
+            config.append(f"no {action} any any {ethertype}")
+        elif source == 'any' and dest != 'any':
+            config.append(f"no {action} any host {dest} {ethertype}")
+        elif source != 'any' and dest == 'any':
+            config.append(f"no {action} host {source} any {ethertype}")
+        elif source != 'any' and dest != 'any':
+            config.append(f"no {action} host {source} host {dest} {ethertype}")
     else:
         raise SubCommandFailure("Invalid action type")
     try:
@@ -1897,7 +1911,12 @@ def configure_ip_acl(device, name, action, source, dest, log=False):
         log.info("Invalid action type")
     config = [f"ip access-list extended {name}"]
     if log:
-        config.append(f"{action} ip host {source} host {dest} log")
+        if source == 'any':
+            config.append(f"{action} ip {source} host {dest} log")
+        else:
+            config.append(f"{action} ip host {source} host {dest} log")
+    elif source == 'any':
+        config.append(f"{action} ip {source} host {dest}")
     else:
         config.append(f"{action} ip host {source} host {dest}")
     try:
@@ -2514,3 +2533,137 @@ def configure_extended_access_list(
         log.error(e)
         raise SubCommandFailure("Could not Configure extended access-list") 
            
+def configure_ip_fqdn_acl(
+        device,
+        ip_type,
+        acl_name,
+        service_type,
+        src_nw,
+        dst_nw,
+        rule,
+        sequence_num,
+        src_host_option=False,
+        src_dynamic=False,
+        dst_host_option=False,
+        dst_dynamic=False,
+        prefix=None,
+        src_port_type=None,
+        src_port=None,
+        dst_port_type=None,
+        dst_port=None,
+        log_option=None,
+        icmp_options=None,
+        time_range=None,        
+):
+    """ Configure IP ACL
+
+        Args:
+            device (`obj`): Device object
+            ip_type ('str'): ip version ip/ipv6
+            acl_name ('str'): access-list name
+            service_type ('str'): service type to configure ex: tcp, udp etc
+            src_nw ('str'): name of the source network object-group or any
+            dst_nw ('str'): name of the destination network object-group or any
+            rule ('str'): ACL rule permit/deny     
+            sequence_num ('str'): specific sequence number
+            src_host_option ('bool',optional): Host option for source network,default value is False
+            dst_host_option ('bool',optional): Host option for destination network,default value is False   
+            prefix('str',optional): Prefix value in case of network,default value is None
+            src_port_type ('str',optional): source port type ex: eq, gt, lt etc, default value is None
+            src_port ('str',optional): Acl source port, default value is None
+            dst_port_type ('str',optional): destination port type ex: eq, gt, lt etc, default value is None 
+            dst_port ('str',optional): Acl destination port, default value is None
+            log_option ('str',optional): Option to log ACL match,default value is None
+            time_range ('str',optional): name of the time-range, default value is None
+            icmp_options ('str',optional): name of icmp options ex:nd-na,nd-ns,redirect etc.., default value is None
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    if ip_type=='ipv6':
+        cmd = f'ipv6 access-list fqdn {acl_name}\n'
+    else:
+        cmd = f'ip access-list fqdn {acl_name}\n'
+        
+    if sequence_num:
+        if ip_type=='ipv6':
+            cmd += f'sequence {sequence_num} '
+        else:
+            cmd += f'{sequence_num} '
+            
+    cmd += f'{rule} {service_type} '
+
+    if src_nw == 'any':
+        cmd += 'any '
+    elif src_host_option and src_nw != 'any':
+        if src_dynamic:
+            cmd += f'host dynamic {src_nw} '
+        else:
+            cmd += f'host {src_nw} '
+    else:
+        cmd += f'{src_nw}/{prefix} '
+
+    if src_port_type and src_port:
+        cmd += f'{src_port_type} {src_port} '
+
+    if dst_nw == 'any':
+        cmd += 'any '
+    elif dst_host_option and dst_nw != 'any':
+        if dst_dynamic:
+            cmd += f'host dynamic {dst_nw} '
+        else:
+            cmd += f'host {dst_nw} '
+    else:
+        cmd += f'{dst_nw}/{prefix} '
+   
+    if dst_port_type and dst_port:
+        cmd += f'{dst_port_type} {dst_port} '
+
+    if service_type=='icmp' and icmp_options:
+        cmd += f'{icmp_options} '
+
+    if time_range:
+        cmd += f'time-range {time_range} '
+        
+    if log_option:
+        cmd += f'{log_option} '
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure IP Fqdn ACL {acl} on device {dev}. Error:\n{error}".format(
+                acl=acl_name,
+                dev=device.name,
+                error=e,
+            )
+        )
+
+def unconfigure_fqdn_acl(device, acl_name, ip_type='ip'):
+    '''Unconfigure FQDN ACL
+        Args:
+            device (`obj`): Device object
+            acl_name ('str'): access-list name
+            ip_type ('str', optional): ip version ip/ipv6. Default is 'ip'
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed unconfigure FQDN ACL
+    '''
+    if ip_type=='ipv6':
+        cmd = f'no ipv6 access-list fqdn {acl_name}'
+    else:
+        cmd = f'no ip access-list fqdn {acl_name}'
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfigure FQDN ACL {acl} on device {dev}. Error:\n{error}".format(
+                acl=acl_name,
+                dev=device.name,
+                error=e,
+            )
+        )        

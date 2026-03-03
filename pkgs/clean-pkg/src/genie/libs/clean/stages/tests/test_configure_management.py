@@ -150,7 +150,7 @@ class TestConfigureManagement(unittest.TestCase):
             call(addr='2.2.2.2',
                  vrf='Mgmt-vrf',
                  source='Gi1/0',
-                 timeout=30,
+                 timeout=120,
                  count=5)
         ], )
 
@@ -221,12 +221,12 @@ class TestConfigureManagement(unittest.TestCase):
             call(addr='2.2.2.2',
                  vrf='Mgmt-vrf',
                  source='Gi1/0',
-                 timeout=30,
+                 timeout=120,
                  count=5),
             call(addr='1.1.1.1',
                  vrf='Mgmt-vrf',
                  source='Gi1/0',
-                 timeout=30,
+                 timeout=120,
                  count=5),
         ], )
 
@@ -265,12 +265,12 @@ class TestConfigureManagement(unittest.TestCase):
             call(addr='2.2.2.2',
                  vrf='Mgmt-vrf',
                  source='Gi1/0',
-                 timeout=30,
+                 timeout=120,
                  count=5),
             call(addr='1.1.1.1',
                  vrf='Mgmt-vrf',
                  source='Gi1/0',
-                 timeout=30,
+                 timeout=120,
                  count=5),
         ], )
 

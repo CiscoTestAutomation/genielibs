@@ -28,10 +28,11 @@ def clear_access_session_intf(device, intf):
                 .format(device=device, error=e)
         )
 
-def clear_authentication_session(device):
+def clear_authentication_session(device, interface=None):
     """ clear all authenticated sessions
     Args:
         device ('obj'): Device object
+        interface ('str', optional): Interface to clear authenticated sessions on
     Return:
         None
     Raise:
@@ -40,6 +41,8 @@ def clear_authentication_session(device):
     log.info(f"Clear authenticated sessions")
 	
     cmd=f"clear authentication sessions"
+    if interface:
+        cmd += f" interface {interface}"
     try:
         device.execute(cmd)
     except SubCommandFailure as e:

@@ -1,35 +1,23 @@
-import os
 import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
 from genie.libs.sdk.apis.iosxe.dot1x.configure import configure_access_session_mac_move
 
-
-class TestConfigureAccessSessionMacMove(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          T1-9300-SW1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: c9500
-            type: c9500
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['T1-9300-SW1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureAccessSessionMacMove(TestCase):
 
     def test_configure_access_session_mac_move(self):
-        result = configure_access_session_mac_move(self.device, 'mac-move', 'deny-uncontrolled')
+        device = Mock()
+        device.state_machine.current_state = 'enable'  # Simulate enable mode
+
+        result = configure_access_session_mac_move(device, 'mac-move', 'deny-uncontrolled')
         expected_output = None
         self.assertEqual(result, expected_output)
+
+        # Check that the correct command was sent
+        self.assertIn(
+            'access-session mac-move deny-uncontrolled',
+            device.configure.mock_calls[0].args[0]
+        )
+
+if __name__ == '__main__':
+    unittest.main()

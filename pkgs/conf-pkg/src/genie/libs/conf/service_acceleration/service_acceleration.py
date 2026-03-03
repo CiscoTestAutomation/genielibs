@@ -79,7 +79,7 @@ class ServiceAcceleration(DeviceFeature):
             def add_servicevlan_key(self, servicevlan_key):
                 self.servicevlan_keys.add(servicevlan_key)
 
-            def remove_servicevrf_key(self, servicevlan_key):
+            def remove_servicevlan_key(self, servicevlan_key):
                 servicevlan_key._device = None
                 try:
                     self.servicevlan_keys.remove(servicevlan_key)
@@ -133,16 +133,6 @@ class ServiceAcceleration(DeviceFeature):
         name="source_interface", default=None, type=(None, managedattribute.test_istype(str))
     )
 
-    # peer_ip
-    peer_ip = managedattribute(
-        name="peer_ip", default=None, type=(None, managedattribute.test_istype(str))
-    )
-
-    # peer_interface
-    peer_interface = managedattribute(
-        name="peer_interface", default=None, type=(None, managedattribute.test_istype(str))
-    )
-
     # controller_token
     controller_token = managedattribute(
         name="controller_token", default=None, type=(None, managedattribute.test_istype(str))
@@ -168,6 +158,24 @@ class ServiceAcceleration(DeviceFeature):
         name="https_proxy_port", default=80, type=(None, managedattribute.test_istype(int))
     )
 
+    # ha_enabled
+    ha_enabled = managedattribute(
+        name="ha_enabled", default=None, type=(None, managedattribute.test_istype(bool))
+    )
+    # ha_peer_ip
+    ha_peer_ip = managedattribute(
+        name="ha_peer_ip", default=None, type=(None, managedattribute.test_istype(str))
+    )
+
+    # ha_shutdown
+    ha_shutdown = managedattribute(
+        name="ha_shutdown", default=None, type=(None, managedattribute.test_istype(bool))
+    )
+
+    # ha_peer_interface
+    ha_peer_interface = managedattribute(
+        name="ha_peer_interface", default=None, type=(None, managedattribute.test_istype(str))
+    )
     # ==========================================================================
     # +- DeviceAttributes
     #   +- ServiceAttributes

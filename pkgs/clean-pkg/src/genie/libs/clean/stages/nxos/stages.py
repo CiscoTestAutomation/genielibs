@@ -175,13 +175,25 @@ change_boot_variable:
                 step.failed('Failed to save the running configuration',
                             from_exception=e)
 
-    def verify_boot_variable(self, steps, device, images):
+    def verify_boot_variable(self, steps, device, images, current_running_image=CURRENT_RUNNING_IMAGE):
 
-        kickstart = images.get('kickstart')
-        kickstart = kickstart[0] if kickstart else None
+        with steps.start("Get kickstart and system images") as step:
+            if current_running_image:
+                try:
+                    output = device.parse('show version')
+                    kickstart = output['platform']['software'].get('kickstart_image_file', None)
+                    system = output['platform']['software'].get('system_image_file')
+                    system = system.replace(':///', ':/')
+                except Exception as e:
+                    step.failed("Failed to retrieve the running image. Cannot "
+                                "verify boot variables",
+                                from_exception=e)
+            else:
+                kickstart = images.get('kickstart')
+                kickstart = kickstart[0] if kickstart else None
 
-        system = images.get('system')
-        system = system[0] if system else None
+                system = images.get('system')
+                system = system[0] if system else None
 
         with steps.start("Verify next boot variables") as step:
             try:

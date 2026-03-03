@@ -525,9 +525,14 @@ def _check_parallel_msg(self, each_return):
     """Set the proper message for actions ran under parallel"""
 
     if each_return.get('device'):
+        if 'custom_start_step_message' in each_return:
+            msg = each_return['custom_start_step_message']
+        elif 'description' in each_return:
+            msg = each_return['description']
+        else:
+            msg = 'Executed action {a} on {d} in parallel'.format(
+                a=each_return['action'], d=each_return['device'])
 
-        msg = 'Executed action {a} on {d} in parallel'.format(
-            a=each_return['action'], d=each_return['device'])
     elif each_return.get('run_condition_skipped') and\
          each_return.get('advanced_action'):
 
@@ -538,9 +543,13 @@ def _check_parallel_msg(self, each_return):
 
         msg = "Executed actions in loop with loop_until in parallel"
     else:
-
-        msg = 'Executed action {a} in parallel'.format(
-                                a=each_return['action'])
+        if 'custom_start_step_message' in each_return:
+            msg = each_return['custom_start_step_message']
+        elif 'description' in each_return:
+            msg = each_return['description']
+        else:
+            msg = 'Executed action {a} on {d} in parallel'.format(
+                a=each_return['action'], d=each_return['device'])
     return msg
 
 

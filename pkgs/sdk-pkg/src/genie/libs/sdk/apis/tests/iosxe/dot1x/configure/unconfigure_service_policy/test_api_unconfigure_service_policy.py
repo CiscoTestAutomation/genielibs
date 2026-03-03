@@ -1,35 +1,34 @@
-import os
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.dot1x.configure import unconfigure_service_policy
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.dot1x.configure import (
+    unconfigure_service_policy
+)
 
 
-class TestUnconfigureServicePolicy(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          LG-PK:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: c9200
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['LG-PK']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigureServicePolicy(TestCase):
 
     def test_unconfigure_service_policy(self):
-        result = unconfigure_service_policy(self.device)
+        device = Mock()
+        device.state_machine.current_state = 'enable'  # Assume device is in enable mode
+
+        result = unconfigure_service_policy(device)
+
         expected_output = None
         self.assertEqual(result, expected_output)
+
+        # Ensure configure was called
+        device.configure.assert_called_once()
+
+        # Validate commands sent to the device
+        sent_commands = device.configure.mock_calls[0].args[0]
+
+        self.assertIn(
+            'no service-policy type control subscriber',
+            sent_commands
+        )
+
+
+if __name__ == '__main__':
+    unittest.main()

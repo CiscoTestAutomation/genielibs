@@ -4,6 +4,7 @@ from .base import (BaseSNMPPowerCycler,
                    BaseEsxiPowerCycler,
                    BaseCliPowerCycler,
                    BaseVCenterPowerCycler,
+                   BaseProxmoxPowerCycler,
                    )
 
 
@@ -82,3 +83,7 @@ class RaritanPowerCycler(BaseCliPowerCycler):
 class VCenterPowerCycler(BaseVCenterPowerCycler):
     type = 'vcenter_pdu'
     connection_type = 'soap'
+
+class Proxmox(BaseProxmoxPowerCycler):
+    type = 'proxmox'
+    connection_type = 'ssh'

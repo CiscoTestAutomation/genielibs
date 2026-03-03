@@ -2146,8 +2146,8 @@ def password_recovery(device, console_activity_pattern='',
     device.api.unconfigure_ignore_startup_config()
 
     # step:10 verify the rommon variable
-    log.info(f'verify the ignore startup config {device.name}')
-    if not device.api.verify_ignore_startup_config():
+    log.info(f'verify the ignore startup config on {device.name}')
+    if device.api.verify_ignore_startup_config():
         raise Exception(f"Failed to unconfigure the ignore startup config on {device.name}")
 
     # step:11 Execute write memory
@@ -2169,3 +2169,83 @@ def configure_generic_command(device,cmd):
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not configure command '{cmd}' on {device}. Error:\n{e}")
     return output
+
+
+def sweep_ping(device, addr, proto="ip",
+               expected_max_success_rate=100,
+               expected_min_success_rate=1,
+               df_bit="n", sweep_min_size=36,
+               sweep_max_size=18024, sweep_interval=1,
+               sweep_timeout=300, verbose="n"):
+    """
+    Sweep ping
+    Args:
+        device(obj): Device object.
+        addr(str): Destination ip address.
+        proto('str', optional): Protocol, Default is 'ip'.
+        expected_max_success_rate ('int', optional): Expected max success rate. Default is 100.
+        expected_min_success_rate ('int', optional): Expected min success rate. Default is 1.
+        df_bit (str, optional): Don't fragment, Default is 'n'.
+        sweep_min_size('int', optional): Sweep ping min size, Default is 36.
+        sweep_max_size('int', optional): Sweep max size, Default is 18024.
+        sweep_interval('int', optional): Sweep interval, Default is 1.
+        sweep_timeout('int', optional):  Sweep timeout, Default is 300.
+        verbose('str', optional): Enable verbose or not, Default is 'n'.
+    Returns:
+        sweep_result_flag ('bool'): Sweep ping result, success: True, fail: False
+    """
+    log.info(f"sweep ping for ip {addr} on {device.name}")
+
+    sweep_result_flag = False
+    sweep_ping_para = {
+        "addr": addr,
+        "proto": proto,
+        "count": 1,
+        "extd_ping": "y",
+        "sweep_interval": sweep_interval,
+        "sweep_min": sweep_min_size,
+        "sweep_max": sweep_max_size,
+        "ping_packet_timeout": 5,
+        "sweep_ping": "y",
+        "timeout": sweep_timeout,
+        "df_bit": df_bit,
+        "prompt_recovery": True
+    }
+
+    if proto == "ip" and verbose == "y":
+        sweep_ping_para["extended_verbose"] = "y"
+    if proto == "ipv6":
+        if verbose == "y":
+            sweep_ping_para["verbose"] = "y"
+        else:
+            sweep_ping_para["verbose"] = "n"
+
+    try:
+        output = device.ping(**sweep_ping_para)
+    except Exception as e:
+        # terminate sweep ping if exception
+        for _ in range(5):
+            device.transmit("")
+        log.error(f"sweep ping abnormal. Error:{e}")
+        return sweep_result_flag
+
+    # Success rate is 100 percent
+    p = re.compile(r"Success +rate +is +(?P<rate>\d+) +percent.*")
+
+    if p.search(output):
+        rate = int(p.search(output).groupdict().get('rate'))
+    else:
+        log.error("Failed to get success rate after sweep ping.")
+        return sweep_result_flag
+
+    if expected_max_success_rate >= rate >= expected_min_success_rate:
+        sweep_result_flag = True
+        log.info(f"Sweep ping {rate} percent, matched expected result, "
+                 f"expected max success rate is {expected_max_success_rate}"
+                 f"expected min success rate is {expected_min_success_rate}")
+    else:
+        log.error(f"Sweep ping {rate} percent, not matched expected result, "
+                  f"expected max success rate is {expected_max_success_rate}"
+                  f"expected min success rate is {expected_min_success_rate}")
+
+    return sweep_result_flag

@@ -18,7 +18,7 @@ class TestPasswordRecovery(unittest.TestCase):
         self.device.api.execute_write_memory = MagicMock()
         self.device.api.configure_ignore_startup_config.return_value = None
         self.device.api.unconfigure_ignore_startup_config.return_value = None
-        self.device.api.verify_ignore_startup_config.return_value = True
+        self.device.api.verify_ignore_startup_config.return_value = False
 
 
     def test_password_recovery_success(self):
@@ -39,7 +39,7 @@ class TestPasswordRecovery(unittest.TestCase):
 
     def test_password_recovery_failure(self):
         # Mock the device API methods to simulate a failure in verify_ignore_startup_config
-        self.device.api.verify_ignore_startup_config.return_value = False
+        self.device.api.verify_ignore_startup_config.return_value = True
 
         with self.assertRaises(Exception) as context:
             password_recovery(self.device)

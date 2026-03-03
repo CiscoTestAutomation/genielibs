@@ -97,12 +97,13 @@ def configure_cdp_interface(device, interface):
             "Error: {error}".format(error=e)
             )
 
-def unconfigure_cdp_interface(device, interface):
+def unconfigure_cdp_interface(device, interface, no_cdp_run_flag=True):
     """ Unconfigure CDP on interface
 
         Args:
             device ('obj'): Device object
             interface ('str'): interface on which CDP to be configured
+            no_cdp_run_flag('bool', optional): Whether 'no cdp run' configured or not, Default is True
         Returns:
             None
         Raises:
@@ -112,7 +113,8 @@ def unconfigure_cdp_interface(device, interface):
     configs = []
     configs.append(f"interface {interface}")
     configs.append("no cdp enable")
-    configs.append("no cdp run")
+    if no_cdp_run_flag:
+        configs.append("no cdp run")
     try:
         device.configure(configs)
     except SubCommandFailure as e:

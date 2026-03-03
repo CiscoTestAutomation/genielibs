@@ -21,5 +21,5 @@ class TestHwModuleSubSlotOirPowerCycle(TestCase):
             'hw-module subslot 0/1 oir power-cycle',
             self.device.execute.call_args_list[0][0]
         )
-        expected_output = None
+        expected_output = 'Proceed with power cycle of module? [confirm]'
         self.assertEqual(result, expected_output)

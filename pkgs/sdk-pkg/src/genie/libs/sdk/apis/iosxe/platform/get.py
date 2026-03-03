@@ -1391,12 +1391,13 @@ def get_environment_alarm_contact(device, contact_number):
     return alarm_contact_info
 
 
-def get_power_supply_status(device):
+def get_power_supply_status(device, all_switches=False):
     """
     Get the power supply status information.
 
     Args:
         device (`obj`): Device object
+        all_switches (`bool`): If True, retrieves detailed power supply information for all switches.
 
     Returns:
         dict: A dictionary containing power supply status information
@@ -1406,16 +1407,32 @@ def get_power_supply_status(device):
     """
     log.info(f"Getting power supply status on device {device.name}")
     try:
-        output = device.parse("show environment power")
-        power_supplies = output.get('power_supplies', {})
-        power_supply_status = {}
+        if not all_switches:
+            output = device.parse("show environment power")
+            power_supplies = output.get('power_supplies', {})
+            power_supply_status = {}
 
-        for ps_name, ps_info in power_supplies.items():
-            power_supply_status[ps_name] = {
-                'status': ps_info.get('status', 'unknown'),
-                'type': ps_info.get('type', 'unknown'),
-                'voltage': ps_info.get('voltage', 'unknown'),
-            }
+            for ps_name, ps_info in power_supplies.items():
+                power_supply_status[ps_name] = {
+                    'status': ps_info.get('status', 'unknown'),
+                    'type': ps_info.get('type', 'unknown'),
+                    'voltage': ps_info.get('voltage', 'unknown'),
+                }
+
+        else:
+            output = device.parse("show environment power all")
+            switches = output.get('switch', {})
+            power_supply_status = {}
+            for switch_num, switch_details in switches.items():
+                power_supplies = switch_details.get('power_supplies', {})
+                for ps_name, ps_details in power_supplies.items():
+                    power_supply_status[f'Switch {switch_num} - {ps_name}'] = {
+                        'status': ps_details.get('status', 'unknown'),
+                        'pid': ps_details.get('pid', 'unknown'),
+                        'serial': ps_details.get('serial', 'unknown'),
+                        'sys_pwr': ps_details.get('sys_pwr', 'unknown'),
+                        'watts': ps_details.get('watts', 'unknown'),
+                    }
 
     except SchemaEmptyParserError as e:
         log.error(f"No power supply information found on device {device.name}: {e}")

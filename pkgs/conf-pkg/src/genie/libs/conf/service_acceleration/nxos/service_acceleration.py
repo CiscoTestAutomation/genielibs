@@ -28,7 +28,7 @@ class ServiceAcceleration(ABC):
             attributes = AttributesHelper(self, attributes)
             configurations = CliConfigBuilder(unconfig=unconfig)
 
-            # feature urpf
+            # feature sas
             if attributes.value('enabled'):
                 if unconfig is False:
                     configurations.append_line(
@@ -61,14 +61,28 @@ class ServiceAcceleration(ABC):
                         attributes.format('source-interface {source_interface}'))
 
                 # service system hypershield
-                #   service peer ip address <ip> [interface <interface>]
-                if attributes.value('peer_ip'):
-                    type_str = 'service peer ip address {peer_ip}'
+                #   high-availability
+                #     source-interface loopback3
+                #     peer 1.1.1.1
+                #     no shutdown
+                if attributes.value('ha_enabled'):
+                    if unconfig is False:
+                        with configurations.submode_context('high-availability'):
 
-                    if attributes.value('peer_interface'):
-                        type_str += ' interface {peer_interface}'
-                    configurations.append_line(
-                        attributes.format(type_str))
+                            if attributes.value('ha_peer_ip'):
+                                configurations.append_line(
+                                    attributes.format('peer {ha_peer_ip}'))
+
+                            if attributes.value('ha_peer_interface'):
+                                configurations.append_line(
+                                    attributes.format('source-interface {ha_peer_interface}'))
+
+                            if attributes.value('ha_shutdown'):
+                                configurations.append_line('shutdown')
+                            elif attributes.value('ha_shutdown') is not None:
+                                configurations.append_line('no shutdown')
+                    elif unconfig is True and attributes.attributes == {'ha_enabled': None} or attributes.attributes == {'ha_enabled': True} or attributes.iswildcard:
+                        configurations.append_block('no high-availability')
 
                 # service system hypershield
                 #  controller connection-token <token>

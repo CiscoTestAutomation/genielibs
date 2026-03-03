@@ -3348,7 +3348,7 @@ configure_management:
                             device.ping(addr=gateway,
                                         vrf=vrf,
                                         source=interface,
-                                        timeout=30,
+                                        timeout=120,
                                         count=5)
                             step.passed("Ping to gateway successful")
                             ping_successful = True

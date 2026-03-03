@@ -6,6 +6,7 @@ import os
 import time
 import logging
 import json
+import functools
 
 # pyATS
 from pyats.async_ import pcall
@@ -204,7 +205,9 @@ def change_power_cycler_state(device, powercycler, state, outlets):
     except Exception as e:
         log.debug(f"Failed to disconnect from powercycler. {e}")
 
-def free_up_disk_space(device, destination, required_size, skip_deletion,
+
+
+def _free_up_disk_space(device, destination, required_size, skip_deletion,
     protected_files, compact=False, min_free_space_percent=None,
     dir_output=None, allow_deletion_failure=False):
 
@@ -331,6 +334,32 @@ def free_up_disk_space(device, destination, required_size, skip_deletion,
         log.error('There is still not enough space on the device after '
                   'deleting unprotected files.')
         return False
+
+@functools.wraps(_free_up_disk_space)
+def free_up_disk_space(device, destination, required_size, skip_deletion,
+    protected_files, compact=False, min_free_space_percent=None,
+    dir_output=None, allow_deletion_failure=False):
+
+    free_up_result = _free_up_disk_space(
+        device, destination, required_size, skip_deletion,
+        protected_files, compact, min_free_space_percent,
+        dir_output, allow_deletion_failure
+    )
+
+    if hasattr(device, 'swap_roles'):
+        device.swap_roles()
+        try:
+            free_up_result_other = _free_up_disk_space(
+                device, destination, required_size, skip_deletion,
+                protected_files, compact, min_free_space_percent,
+                dir_output, allow_deletion_failure
+            )
+        finally:
+            device.swap_roles()
+        return free_up_result or free_up_result_other
+    
+    return free_up_result
+
 
 def execute_reload(device,
                    prompt_recovery=True,

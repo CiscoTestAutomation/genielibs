@@ -392,6 +392,43 @@ Loading somefile.bin from 127.0.0.1 (via GigabitEthernet0/0): !!
             destination='ftp://1.1.1.1//auto/tftp-ssr/',
             timeout_seconds='300', device=self.device)
 
+    def test_scp_copy_config_template_stricthostkeycheck(self):
+        """Test that SCP COPY_CONFIG_TEMPLATE includes 'no ip ssh stricthostkeycheck'"""
+        from genie.libs.filetransferutils.plugins.iosxe.scp.fileutils import FileUtils as SCPFileUtils
+        
+        # Verify COPY_CONFIG_TEMPLATE contains stricthostkeycheck
+        self.assertIn('no ip ssh stricthostkeycheck', SCPFileUtils.COPY_CONFIG_TEMPLATE)
+        
+        # Verify COPY_CONFIG_VRF_TEMPLATE contains stricthostkeycheck
+        self.assertIn('no ip ssh stricthostkeycheck', SCPFileUtils.COPY_CONFIG_VRF_TEMPLATE)
+
+    def test_multiple_scp_copy_operations(self):
+        """Test multiple consecutive SCP copy operations"""
+        from genie.libs.filetransferutils.plugins.iosxe.scp.fileutils import FileUtils as SCPFileUtils
+        
+        self.device.execute = Mock()
+        self.device.execute.return_value = '''
+            copy flash:/test.txt scp://myuser@1.1.1.1//tmp/test.txt
+            !!
+            100 bytes copied in 1.0 secs (100 bytes/sec)
+        '''
+        
+        # Perform first copy operation
+        self.fu_device.copyfile(destination='flash:/test1.txt',
+            source='scp://1.1.1.1//tmp/test1.txt',
+            timeout_seconds='300', device=self.device)
+        
+        # Perform second copy operation  
+        self.fu_device.copyfile(destination='flash:/test2.txt',
+            source='scp://1.1.1.1//tmp/test2.txt',
+            timeout_seconds='300', device=self.device)
+        
+        # Verify execute was called for both copy operations
+        self.assertEqual(self.device.execute.call_count, 2)
+        
+        # Verify COPY_CONFIG_TEMPLATE has stricthostkeycheck disabled
+        self.assertIn('no ip ssh stricthostkeycheck', SCPFileUtils.COPY_CONFIG_TEMPLATE)
+
 if __name__ == '__main__':
     unittest.main()
 

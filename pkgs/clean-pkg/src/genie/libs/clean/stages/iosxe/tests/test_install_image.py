@@ -173,14 +173,12 @@ class SetBootVariable(unittest.TestCase):
         # And we want the execute_set_boot_variable
         self.device.api.execute_set_boot_variable = Mock()
         
-        self.device.api.unconfigure_ignore_startup_config= Mock(side_effect=Exception)
-        
         self.cls.set_boot_variable(
                 steps=steps, device=self.device
             )
 
         # Check the overall result is as expected
-        self.assertEqual(Passx, steps.details[0].result)
+        self.assertEqual(Passed, steps.details[0].result)
 
 class SaveRunningConfig(unittest.TestCase):
 
@@ -274,7 +272,8 @@ class VerifyBootVariable(unittest.TestCase):
         # And we want the verify_boot_variable api to be mocked.
         # This simulates the pass case.
         self.device.execute = Mock(return_value=data1['show boot'])
-        self.device.api.verify_ignore_startup_config = Mock()
+        self.device.api.verify_boot_variable = Mock(return_value=True)
+        self.device.api.verify_ignore_startup_config = Mock(return_value=False)
 
         # Call the method to be tested (clean step inside class)
         self.cls.verify_boot_variable(
@@ -302,9 +301,10 @@ class VerifyBootVariable(unittest.TestCase):
         }
 
         # And we want the verify_boot_variable api to be mocked.
-        # This simulates the pass case.
+        # This simulates the fail case where ignore-startup-config is still configured.
         self.device.execute = Mock(return_value=data1['show boot'])
-        self.device.api.verify_ignore_startup_config = Mock(return_value=False)
+        self.device.api.verify_boot_variable = Mock(return_value=True)
+        self.device.api.verify_ignore_startup_config = Mock(return_value=True)
 
         # Call the method to be tested (clean step inside class)
         with self.assertRaises(TerminateStepSignal):
@@ -367,15 +367,16 @@ class VerifyBootVariable(unittest.TestCase):
         }
 
         # And we want the verify_boot_variable api to be mocked.
-        # This simulates the pass case.
+        # This simulates the exception case.
         self.device.execute = Mock(return_value=data1['show boot'])
         self.device.api.verify_ignore_startup_config = Mock(side_effect=Exception)
 
-        # Call the method to be tested (clean step inside class)
-        self.cls.verify_boot_variable(
-                steps=steps, device=self.device)
+        # We expect this step to fail so make sure it raises the signal
+        with self.assertRaises(TerminateStepSignal):
+            self.cls.verify_boot_variable(
+                    steps=steps, device=self.device)
         # Check the overall result is as expected
-        self.assertEqual(Passx, steps.details[0].result)
+        self.assertEqual(Failed, steps.details[0].result)
 
 
 class Installimage(unittest.TestCase):
@@ -490,7 +491,7 @@ class TestInstallImage(unittest.TestCase):
 
         expected_execute_call = [call('install add file sftp://server/image.bin activate commit prompt-level none',
                                  reply=reload_dialog,
-                                 error_pattern=['FAILED:'],
+                                 append_error_pattern=['FAILED:'],
                                  timeout=500),
                                  call('install commit')]
 
@@ -542,9 +543,9 @@ iso   rp 0 0   rp_base cat9k-2.pkg'''
         device.api.free_up_disk_space = Mock(return_value=True)
         cls.install_image(steps=steps, device=device, images=['bootflash:/image.bin'])
 
-        expected_execute_call = [call('install add file bootflash:/image.bin activate commit prompt-level none', reply=reload_dialog, error_pattern=['FAILED:'], timeout=500),
+        expected_execute_call = [call('install add file bootflash:/image.bin activate commit prompt-level none', reply=reload_dialog, append_error_pattern=['FAILED:'], timeout=500),
                                 call('more bootflash:packages.conf'),
-                                call('install add file bootflash:/image.bin activate commit prompt-level none', reply=reload_dialog, error_pattern=['FAILED:'], timeout=500),
+                                call('install add file bootflash:/image.bin activate commit prompt-level none', reply=reload_dialog, append_error_pattern=['FAILED:'], timeout=500),
                                 call('install commit')]
 
         device.execute.assert_has_calls(expected_execute_call)
@@ -611,7 +612,7 @@ iso   rp 0 0   rp_base cat9k-2.pkg'''
 
         expected_execute_call = [call('install add file sftp://server/image.bin activate commit prompt-level none',
                                  reply=reload_dialog,
-                                 error_pattern=['FAILED:'],
+                                 append_error_pattern=['FAILED:'],
                                  timeout=500),
                                  call('install commit')]
 
@@ -885,19 +886,19 @@ Configuration register is 0x1
 
 class TestVerifyRunningImage(unittest.TestCase):
 
-    def test_iosxe_configure_and_verify_ignore_startup_config(self):
+    def test_iosxe_unconfigure_and_verify_ignore_startup_config(self):
         steps = Steps()
         cls = InstallImage()
         cls.history = MagicMock()
         device = Mock()
         device.api.unconfigure_ignore_startup_config = Mock()
-        device.api.verify_ignore_startup_config = False
+        device.api.verify_ignore_startup_config = Mock(return_value=False)
 
-        cls.configure_and_verify_startup_config(steps=steps,
+        cls.unconfigure_and_verify_startup_config(steps=steps,
                                                 device=device)
 
         self.assertEqual(Passed, steps.details[0].result)
-        self.assertEqual(Passx, steps.details[1].result)
+        self.assertEqual(Passed, steps.details[1].result)
 
 class TestConfigureBootManual(unittest.TestCase):
 

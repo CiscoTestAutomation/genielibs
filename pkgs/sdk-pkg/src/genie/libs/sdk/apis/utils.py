@@ -4820,3 +4820,18 @@ def get_proxy(device):
             if proxy:
                 break
     return proxy
+
+
+def get_slot_num_by_interface(interface):
+    """
+    Get slot num by interface
+    Args:
+        interface(`str`): Interface name, example GigabitEthernet0/1/2
+    Returns:
+        slot_num(`str`): slot num, example 0/1
+    """
+    # GigabitEthernet0/1/2
+    pattern = re.compile(r"(?P<slot_num>\d+/\d+)")
+    match = pattern.search(interface)
+    slot_num = match.groupdict().get('slot_num') if match else None
+    return slot_num

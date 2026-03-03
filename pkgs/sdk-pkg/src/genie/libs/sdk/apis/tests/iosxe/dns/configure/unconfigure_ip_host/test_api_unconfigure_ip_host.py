@@ -7,8 +7,8 @@ class TestUnconfigureIpHost(TestCase):
 
     def test_unconfigure_ip_host(self):
         self.device = Mock()
-        result = unconfigure_ip_host(self.device, 'test.com', '1.1.1.1')
+        result = unconfigure_ip_host(self.device, 'host1', ['1.1.1.1', '2.2.2.2', '3.3.3.3'], None)
         self.assertEqual(
             self.device.configure.mock_calls[0].args,
-            ('no ip host test.com 1.1.1.1',)
+            ('no ip host host1 1.1.1.1 2.2.2.2 3.3.3.3',)
         )

@@ -2652,4 +2652,45 @@ def unconfigure_access_session_pqc_type(device):
         raise SubCommandFailure(
             "Could not unconfigure access-session pqc-type. Error: {}".format(str(e))
         )
+    
+def configure_radius_server_accounting_system_host_config(device):
+    """ Configure radius-server accounting system host-config
+    Args:
+        device ('obj'): Device object
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring radius-server accounting system host-config
+    """
+    log.info("Configuring radius-server accounting system host-config")
+
+    cmd = "radius-server accounting system host-config"
+    
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure radius-server accounting system host-config. Error:\n{e}"
+        )
+
+
+def unconfigure_radius_server_accounting_system_host_config(device):
+    """ unonfigure radius-server accounting system host-config
+    Args:
+        device ('obj'): Device object
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed unconfiguring radius-server accounting system host-config
+    """
+    log.info("unConfiguring radius-server accounting system host-config")
+
+    cmd = "no radius-server accounting system host-config"
+    
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure radius-server accounting system host-config. Error:\n{e}"
+        )		        
 

@@ -7,8 +7,8 @@ class TestConfigureIpHost(TestCase):
 
     def test_configure_ip_host(self):
         self.device = Mock()
-        result = configure_ip_host(self.device, 'test.com', '1.1.1.1')
+        result = configure_ip_host(self.device, 'host1', ['1.1.1.1', '2.2.2.2', '3.3.3.3'], None)
         self.assertEqual(
             self.device.configure.mock_calls[0].args,
-            ('ip host test.com 1.1.1.1',)
+            ('ip host host1 1.1.1.1 2.2.2.2 3.3.3.3',)
         )

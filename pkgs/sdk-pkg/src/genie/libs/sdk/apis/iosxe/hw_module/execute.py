@@ -101,7 +101,7 @@ def hw_module_sub_slot_stop(device, sub_slot):
                  command,
                  reply=dialog,
                  append_error_pattern=['.*Command cannot be executed.*'])
-    except SubCommandFailure as err:
+    except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not stop hw-module subslot {sub_slot}. Error:\n{error}"
             .format(sub_slot=sub_slot, error=e)
@@ -127,7 +127,7 @@ def hw_module_sub_slot_start(device, sub_slot):
         device.execute(
                  command,
                  append_error_pattern=['.*Command cannot be executed.*'])
-    except SubCommandFailure as err:
+    except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not start hw-module subslot {sub_slot}. Error:\n{error}"
             .format(sub_slot=sub_slot, error=e)
@@ -140,7 +140,7 @@ def hw_module_sub_slot_oir_power_cycle(device, sub_slot):
             device ('obj'): Device object
             sub_slot (`str`): sub_slot
         Returns:
-            None
+            Oir power cycle Status
         Raises:
             SubCommandFailure
     """
@@ -158,11 +158,11 @@ def hw_module_sub_slot_oir_power_cycle(device, sub_slot):
     command = f'hw-module subslot {sub_slot} oir power-cycle'
 
     try:
-        device.execute(
+        return device.execute(
                  command,
                  reply=dialog,
                  append_error_pattern=['.*Command cannot be executed.*'])
-    except SubCommandFailure as err:
+    except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not oir power-cycle hw-module subslot {sub_slot}. Error:\n{error}"
             .format(sub_slot=sub_slot, error=e)

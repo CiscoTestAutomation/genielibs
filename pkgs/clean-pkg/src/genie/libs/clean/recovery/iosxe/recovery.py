@@ -48,27 +48,57 @@ def recovery_worker(device, console_activity_pattern=None,
         conn_list = device.subconnections
     else:
         conn_list = [device.default]
-    
-    for con in conn_list:
-        if con.state_machine.current_state != 'rommon':
-            raise Exception(f'Device {device.name} is not in rommon state could not recover the device.')
-        else:
-            log.info('Device is in rommon, Booting the device!')
+
+    for idx, con in enumerate(conn_list):
+        con_id = getattr(con, 'alias', f'connection-{idx}')
+        state = con.state_machine.current_state
+        if state != 'rommon':
+            raise FailedToBootException(
+                f'Device {device.name} ({con_id}) is in {state} state '
+                f'after break boot, expected rommon. '
+                f'Could not recover the device.')
+        log.info(f'{con_id}: in rommon state. Ready to boot.')
+
+    log.info('Device is in rommon, Booting the device!')
 
     # if there is golden image in the recovery info we should boot each connection using 
     # golden image for that we need to boot each subconnetion in a separate process.
     if golden_image:=kwargs.get('golden_image'):
-        futures = []
-        executor = ThreadPoolExecutor(max_workers=len(conn_list))
-        for con in conn_list:
-            futures.append(executor.submit(
-                device_recovery,
-                con,
-                timeout,
-                golden_image,
-                grub_activity_pattern
-            ))
-        wait_futures(futures, timeout=timeout, return_when=ALL_COMPLETED)
+        with ThreadPoolExecutor(max_workers=len(conn_list)) as executor:
+            futures = {
+                executor.submit(
+                    device_recovery, con, timeout, golden_image,
+                    grub_activity_pattern
+                ): getattr(con, 'alias', f'con-{i}')
+                for i, con in enumerate(conn_list)
+            }
+            done, not_done = wait_futures(futures, timeout=timeout,
+                                          return_when=ALL_COMPLETED)
+
+            errors = []
+            for fut in not_done:
+                con_id = futures[fut]
+                log.error(f'{con_id}: golden image boot timed out '
+                          f'after {timeout}s.')
+                fut.cancel()
+                errors.append(TimeoutError(
+                    f'{con_id}: timed out after {timeout}s'))
+
+            for fut in done:
+                con_id = futures[fut]
+                exc = fut.exception()
+                if exc:
+                    log.error(f'{con_id}: golden image boot failed: {exc}')
+                    errors.append(exc)
+
+            if errors:
+                raise FailedToBootException(
+                    f'Golden image boot failed on {len(errors)} '
+                    f'connection(s) for device {device.name}: '
+                    f'{"; ".join(str(e) for e in errors)}'
+                )
+
+
     elif kwargs.get('tftp_boot'):
         tftp_boot = kwargs.get('tftp_boot')
 

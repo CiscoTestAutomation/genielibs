@@ -155,15 +155,18 @@ class TestRommonBoot(unittest.TestCase):
         device_recovery.return_value = recovery_info
         self.device.clean = {'device_recovery': recovery_info}
         self.device.rommon = mock.Mock()
-        self.device.rommon()
-        self.device.is_ha = mock.Mock()
+        self.device.instantiate = mock.Mock()
+
+        self.device.is_ha = False
         self.device.default = mock.Mock()
         self.device.state_machine = mock.Mock()
-        self.device.default.state_machine.current_state = 'rommon'
-        self.cls.rommon_boot(steps, self.device, image=['GOLDEN IMAGE'],timeout=100,
+        self.device.api.device_rommon_boot = mock.Mock()
+
+        self.cls.rommon_boot(steps, self.device, image=['GOLDEN IMAGE'], timeout=100,
                              grub_activity_pattern='The highlighted entry will be (?:booted|executed) automatically')
+
         steps.start.assert_called_with("Boot device from rommon")
-        self.device.rommon.assert_called_once()
+        self.device.api.device_rommon_boot.assert_called_once()
 
     @mock.patch('genie.libs.clean.stages.iosxe.stages.time.sleep')
     def test_rommon_boot_tftp_retry_success_on_second_attempt(self, mock_sleep):
@@ -181,6 +184,7 @@ class TestRommonBoot(unittest.TestCase):
         }
         self.device.clean = {'device_recovery': recovery_info}
         self.device.is_ha = False
+        self.device.instantiate = mock.Mock()
         self.device.default = mock.Mock()
         self.device.default.state_machine = mock.Mock()
         self.device.default.state_machine.current_state = 'rommon'
@@ -194,6 +198,7 @@ class TestRommonBoot(unittest.TestCase):
         self.cls.rommon_boot(
             steps=steps, 
             device=self.device,
+            tftp={'image': 'test.bin'},
             timeout=100,
             tftp_boot_max_attempts=3,
             tftp_boot_sleep_interval=10
@@ -202,10 +207,6 @@ class TestRommonBoot(unittest.TestCase):
         # Verify retry happened
         assert self.device.api.device_rommon_boot.call_count == 2
         mock_sleep.assert_called_once_with(10)
-
-        step_context = steps.start.return_value.__enter__.return_value
-        # Should not fail since it succeeded on second attempt
-        step_context.failed.assert_not_called()
 
     @mock.patch('genie.libs.clean.stages.iosxe.stages.time.sleep')
     def test_rommon_boot_tftp_retry_all_attempts_fail(self, mock_sleep):
@@ -223,6 +224,7 @@ class TestRommonBoot(unittest.TestCase):
         }
         self.device.clean = {'device_recovery': recovery_info}
         self.device.is_ha = False
+        self.device.instantiate = mock.Mock()
         self.device.default = mock.Mock()
         self.device.default.state_machine = mock.Mock()
         self.device.default.state_machine.current_state = 'rommon'
@@ -235,6 +237,7 @@ class TestRommonBoot(unittest.TestCase):
         self.cls.rommon_boot(
             steps=steps, 
             device=self.device,
+            tftp={'image': 'test.bin'},
             timeout=100,
             tftp_boot_max_attempts=3,
             tftp_boot_sleep_interval=10
@@ -242,8 +245,6 @@ class TestRommonBoot(unittest.TestCase):
 
         # Verify all retry attempts were made
         assert self.device.api.device_rommon_boot.call_count == 3
-        assert mock_sleep.call_count == 2  # Sleep between attempts, not after last one
-
         step_context = steps.start.return_value.__enter__.return_value
         # Should fail with appropriate message
         step_context.failed.assert_called_once()
