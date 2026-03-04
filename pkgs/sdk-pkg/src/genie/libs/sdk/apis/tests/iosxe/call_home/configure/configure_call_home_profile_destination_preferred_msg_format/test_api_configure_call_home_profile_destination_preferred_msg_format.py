@@ -1,35 +1,24 @@
-import os
 import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
 from genie.libs.sdk.apis.iosxe.call_home.configure import configure_call_home_profile_destination_preferred_msg_format
 
 
-class TestConfigureCallHomeProfileDestinationPreferredMsgFormat(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          n10SVL:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: c9500
-            type: c9500
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['n10SVL']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureCallHomeProfileDestinationPreferredMsgFormat(TestCase):
 
     def test_configure_call_home_profile_destination_preferred_msg_format(self):
-        result = configure_call_home_profile_destination_preferred_msg_format(self.device, 'test', 'xml')
+        device = Mock()
+        result = configure_call_home_profile_destination_preferred_msg_format(device, 'test', 'xml')
         expected_output = None
         self.assertEqual(result, expected_output)
+        
+        # Verify configure was called with the correct commands
+        device.configure.assert_called_once_with([
+            "call-home",
+            "profile test",
+            "destination preferred-msg-format xml",
+        ])
+
+
+if __name__ == '__main__':
+    unittest.main()

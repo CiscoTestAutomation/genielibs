@@ -11,6 +11,7 @@ from unicon.core.errors import SubCommandFailure
 from unicon.eal.dialogs import Statement, Dialog
 from concurrent.futures import ThreadPoolExecutor, wait as wait_futures, ALL_COMPLETED
 from unicon.plugins.iosxe.statements import grub_prompt_handler, please_reset_handler, rommon_prompt_handler
+from unicon.plugins.generic.patterns import GenericPatterns
 
 # Genie
 from genie.libs.clean.utils import print_message
@@ -18,7 +19,8 @@ from genie.libs.clean.exception import FailedToBootException
 
 log = logging.getLogger(__name__)
 
-def device_rommon_boot(device, golden_image=None, tftp_boot=None, error_pattern=[]):
+def device_rommon_boot(device, golden_image=None, tftp_boot=None, error_pattern=[],
+                       grub_activity_pattern=None, timeout=None):
     '''Boot device using golden image or using tftp image
         Args:
             device: device object
@@ -26,6 +28,11 @@ def device_rommon_boot(device, golden_image=None, tftp_boot=None, error_pattern=
             tftp_boot:
                 image(`list`): Image to boot.
                 tftp_server('str'): tftp server information.
+            error_pattern(`list`): Error patterns to check for during boot.
+            grub_activity_pattern(`str`): Custom grub activity pattern.
+                Defaults to '.*Use the UP and DOWN arrow keys to select.*'
+            timeout(`int`, optional): Timeout for boot operation. If not provided,
+                uses device_recovery timeout or defaults to 2000 seconds.
 
         Return:
             None
@@ -74,14 +81,15 @@ def device_rommon_boot(device, golden_image=None, tftp_boot=None, error_pattern=
         raise Exception('Global recovery only support golden image and tftp '
                          'boot recovery and neither was provided')
 
-    # Timeout for device to reload
-    timeout = device.clean.get('device_recovery', {}).get('timeout', 2000)
+    # Timeout for device to reload - use provided timeout or get from device_recovery
+    if timeout is None:
+        timeout = device.clean.get('device_recovery', {}).get('timeout', 2000)
     boot_timeout = 60
 
     # Collect all connections to process
     conn_list = getattr(device, 'subconnections', None) or [device.default]
 
-    def task(conn, cmd, timeout):
+    def task(conn, cmd, timeout, grub_activity_pattern):
         """
         Sets the image to boot in the connection's context and transitions
         the connection's state machine to 'enable' mode.
@@ -89,7 +97,16 @@ def device_rommon_boot(device, golden_image=None, tftp_boot=None, error_pattern=
         handles the necessary steps to boot the device with that image.
         """
 
-        # statments to handle grub menu.
+        # if we have grub activity pattern then we need to update the context with grub boot image
+        if grub_activity_pattern:
+            image_to_boot = conn.context.get('grub_boot_image')
+            conn.context['grub_boot_image'] = cmd
+
+        # check for image to boot if we have a value store it and replace it with the golden image
+        image_to_boot = conn.context.get('image_to_boot')
+        conn.context['image_to_boot'] = cmd
+
+        # these statments needed for booting from grub menu
         def _grub_boot_device(spawn, session, context):
             # '\033' == <ESC>
             spawn.send('\033')
@@ -109,11 +126,33 @@ def device_rommon_boot(device, golden_image=None, tftp_boot=None, error_pattern=
                     loop_continue=True,
                     continue_timer=False)
 
-        dialog = Dialog([grub_boot_stmt, grub_prompt_stmt])
+        def _mark_switch_conflict(spawn, session, context):
+            log.info('Detected switch number conflict with peer. Will resend boot command at switch prompt.')
 
-        # set image to boot
-        conn.context['image_to_boot'] = cmd
-        conn.context['grub_boot_image'] = cmd
+        def _rommon_switch_boot(spawn, session, context):
+            log.info('Reached switch prompt. Sending boot command to boot the device.')
+            log.info(f'Boot command to send: {context.get("image_to_boot")}')
+            boot_cmd = context.get('image_to_boot')
+            if boot_cmd is None:
+                log.info('No image to boot specified in context, skipping boot command')
+                return
+            spawn.sendline(f"boot {str(boot_cmd).strip()}")
+
+        switch_conflict_stmt = \
+            Statement(pattern=r'.*switch num conflicts with peer.*',
+                    action=_mark_switch_conflict,
+                    args=None,
+                    loop_continue=True,
+                    continue_timer=False)
+
+        switch_prompt_stmt = \
+            Statement(pattern=GenericPatterns().rommon_prompt,
+                    action=_rommon_switch_boot,
+                    args=None,
+                    loop_continue=True,
+                    continue_timer=False)
+
+        dialog = Dialog([grub_boot_stmt, grub_prompt_stmt, switch_conflict_stmt, switch_prompt_stmt])
 
         # bring rommon to disable state
         conn.state_machine.go_to('disable',
@@ -122,6 +161,10 @@ def device_rommon_boot(device, golden_image=None, tftp_boot=None, error_pattern=
                             context=conn.context,
                             dialog=dialog)
 
+        # we need to set the value of grub_boot_image and image_to_boot to original value
+        if grub_activity_pattern:
+            conn.context['grub_boot_image'] = image_to_boot
+        conn.context['image_to_boot'] = image_to_boot
     try:
         futures = []
         executor = ThreadPoolExecutor(max_workers=len(conn_list))
@@ -132,12 +175,22 @@ def device_rommon_boot(device, golden_image=None, tftp_boot=None, error_pattern=
                 conn,
                 cmd,
                 timeout,
+                grub_activity_pattern,
             ))
         wait_futures(futures, timeout=timeout, return_when=ALL_COMPLETED)
     except Exception as e:
         log.error(str(e))
         raise FailedToBootException(f"Failed to boot the device {device.name}")
+    
     else:
+        # Verify that all connections have left rommon state before
+        # declaring the boot successful.
+        for conn in conn_list:
+            state_machine = getattr(conn, 'state_machine', None)
+            current_state = getattr(state_machine, 'current_state', None)
+            if current_state == 'rommon':
+                log.error(f"Device {device.name} remained in rommon state after boot attempt")
+                raise FailedToBootException(f"Failed to boot the device {device.name}")
         log.info(f"Successfully boot the device {device.name}")
         log.info(f"Waiting for {boot_timeout} seconds for device to stabilize after booting")
         time.sleep(boot_timeout)
@@ -161,8 +214,8 @@ def device_rommon_boot(device, golden_image=None, tftp_boot=None, error_pattern=
     device.api.unconfigure_ignore_startup_config()
 
     # verify the rommon variable
-    log.info(f'verify the ignore startup config {device.name}')
-    if not device.api.verify_ignore_startup_config():
+    log.info(f'verify the ignore startup config on {device.name}')
+    if device.api.verify_ignore_startup_config():
         raise Exception(f"Failed to unconfigure the ignore startup config on {device.name}")
 
     # Execute write memory

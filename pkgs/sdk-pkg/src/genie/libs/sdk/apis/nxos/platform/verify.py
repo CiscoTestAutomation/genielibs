@@ -114,8 +114,22 @@ def verify_file_exists(device, file, size=None, dir_output=None):
 
     filename = os.path.basename(file)
     directory = ''.join([os.path.dirname(file), '/'])
-    dir_out = device.parse('dir {}'.format(directory), output=dir_output)
-    exist = filename in dir_out.get('files',{})
+    try:
+        dir_out = device.parse('dir {}'.format(directory), output=dir_output)
+    except SchemaEmptyParserError:
+        dir_out = {}
+
+    dir_out_other = {}
+    if hasattr(device, 'swap_roles'):
+        device.swap_roles()
+        try:
+            dir_out_other = device.parse('dir {}'.format(directory), output=dir_output)
+        except SchemaEmptyParserError:
+            dir_out_other = {}
+        finally:
+            device.swap_roles()
+
+    exist = filename in dir_out.get('files',{}) or filename in dir_out_other.get('files',{})
 
     # size not provided, just check if file exists
     if not exist:

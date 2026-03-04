@@ -156,3 +156,45 @@ def revert_vm_snapshot(device, vm_name, vm_id, vm_snapshot_id,
     
     if 'doesnt exist' in output:
         raise Exception("Snapshot not found on {dev}".format(dev=vm_name))
+
+def switch_proxmox_vm_power(device, vm_id, state):
+    """ Switch power of VM On/Off
+        Args:
+            vm_id ('str'): The id of the VM
+            state ('str'): Power state to be switched to, eg. 'stop' / 'start'
+        Raises:
+            N/A
+        Returns:
+            N/A
+    """
+    output = device.execute("qm {state} {vm_id}".\
+        format(state=state,
+               vm_id=vm_id))
+    if 'unable to find configuration file' in output or 'does not exist' in output:
+        raise ValueError("The given vm_id: {vmid} does not exist.".\
+            format(vmid=vm_id))
+    
+
+def get_proxmox_vm_power_state(device, vm_name, vm_id):
+    """ Get the power state of VM
+        Args:
+            vm_name ('str'): Name of the VM
+            vm_id ('str'): The id of the VM
+        Raises:
+            N/A
+        Returns:
+            ('str'): "on" or "off"
+    """
+    try:
+        log.info("Getting power state of VM {vm}".format(vm=vm_name))
+        output = device.execute("qm status {vm_id}".format(vm_id=vm_id))
+    except Exception as err:
+        log.error("Could not get power state of VM {vm} with error: {err}".\
+            format(vm=vm_name,
+                   err=str(err)))
+        return None
+        
+    if 'running' in output:
+        return 'ON'
+    else:
+        return 'OFF'

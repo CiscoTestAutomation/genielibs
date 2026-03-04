@@ -1,35 +1,41 @@
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.dot1x.configure import configure_dot1x_supplicant
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.dot1x.configure import (
+    configure_dot1x_supplicant
+)
 
 
-class TestConfigureDot1xSupplicant(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = """
-        devices:
-          g24c:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat3k
-            model: c3650
-            type: c3650
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['g24c']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureDot1xSupplicant(TestCase):
 
     def test_configure_dot1x_supplicant(self):
-        result = configure_dot1x_supplicant(device=self.device, interface='ten1/0/7', cred_profile_name='credentialsDemo', eap_profile='eapProfile', auth_port_control='auto')
+        device = Mock()
+        device.state_machine.current_state = 'enable'  # Assume device is in enable mode
+
+        result = configure_dot1x_supplicant(
+            device,
+            'ten1/0/7',
+            'credentialsDemo',
+            'eapProfile',
+            'auto'
+        )
+
         expected_output = None
         self.assertEqual(result, expected_output)
+
+        # Ensure configure was called
+        device.configure.assert_called_once()
+
+        # Validate commands sent to device
+        sent_commands = device.configure.mock_calls[0].args[0]
+
+        self.assertIn('interface Ten1/0/7', sent_commands)
+        self.assertIn('dot1x pae supplicant', sent_commands)
+        self.assertIn('dot1x credentials credentialsDemo', sent_commands)
+        self.assertIn('dot1x supplicant eap profile eapProfile', sent_commands)
+        self.assertIn('authentication port-control auto', sent_commands)
+
+
+if __name__ == '__main__':
+    unittest.main()

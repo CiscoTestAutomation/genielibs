@@ -70,8 +70,10 @@ class test_service_acceleration(TestCase):
         # Create service acceleration object
         serv_acc= ServiceAcceleration(service_vendor='hypershield')
         serv_acc.device_attr[dev1].source_interface = 'loopback1'
-        serv_acc.device_attr[dev1].peer_ip = '1.2.3.4'
-        serv_acc.device_attr[dev1].peer_interface = 'Eth1/2'
+        serv_acc.device_attr[dev1].ha_enabled = True
+        serv_acc.device_attr[dev1].ha_peer_ip = '1.2.3.4'
+        serv_acc.device_attr[dev1].ha_peer_interface = 'Looopback2'
+        serv_acc.device_attr[dev1].ha_shutdown = False
         serv_acc.device_attr[dev1].controller_token = '{"some dynamically generated token"}'
         serv_acc.device_attr[dev1].https_proxy_username = 'admin'
         serv_acc.device_attr[dev1].https_proxy_password = 'password'
@@ -88,7 +90,11 @@ class test_service_acceleration(TestCase):
                 [
                     "service system hypershield\n"
                     " source-interface loopback1\n"
-                    " service peer ip address 1.2.3.4 interface Eth1/2\n"
+                    " high-availability\n"
+                    "  peer 1.2.3.4\n"
+                    "  source-interface Looopback2\n"
+                    "  no shutdown\n"
+                    "  exit\n"
                     ' controller connection-token {"some dynamically generated token"}\n'
                     " https-proxy username admin password password\n"
                     " exit"
@@ -239,8 +245,10 @@ class test_service_acceleration(TestCase):
         serv_acc= ServiceAcceleration(service_vendor='hypershield')
         serv_acc.device_attr[dev1].enabled = True
         serv_acc.device_attr[dev1].source_interface = 'loopback1'
-        serv_acc.device_attr[dev1].peer_ip = '1.2.3.4'
-        serv_acc.device_attr[dev1].peer_interface = 'Eth1/2'
+        serv_acc.device_attr[dev1].ha_enabled = True
+        serv_acc.device_attr[dev1].ha_peer_ip = '1.2.3.4'
+        serv_acc.device_attr[dev1].ha_peer_interface = 'Eth1/2'
+        serv_acc.device_attr[dev1].ha_shutdown = False
         serv_acc.device_attr[dev1].controller_token = '{"some dynamically generated token"}'
         serv_acc.device_attr[dev1].https_proxy_username = 'admin'
         serv_acc.device_attr[dev1].https_proxy_password = 'password'
@@ -276,7 +284,11 @@ class test_service_acceleration(TestCase):
                     "feature service-acceleration\n"
                     "service system hypershield\n"
                     " source-interface loopback1\n"
-                    " service peer ip address 1.2.3.4 interface Eth1/2\n"
+                    " high-availability\n"
+                    "  peer 1.2.3.4\n"
+                    "  source-interface Eth1/2\n"
+                    "  no shutdown\n"
+                    "  exit\n"
                     ' controller connection-token {"some dynamically generated token"}\n'
                     " https-proxy username admin password password\n"
                     " https-proxy proxy.esl.cisco.com port 8080\n"
@@ -333,6 +345,91 @@ class test_service_acceleration(TestCase):
             "\n".join(
                 [
                 'no service system hypershield'
+                ]
+            ),
+        )
+
+    def test_service_acceleration_ha_attributes(self):
+
+        # For failures
+        self.maxDiff = None
+
+        # Set testbed
+        Genie.testbed = testbed = Testbed()
+        dev1 = Device(testbed=testbed, name="PE1", os="nxos")
+
+        # Create service acceleration object
+        serv_acc= ServiceAcceleration(service_vendor='hypershield')
+        serv_acc.device_attr[dev1].source_interface = 'loopback1'
+        serv_acc.device_attr[dev1].ha_enabled = True
+        serv_acc.device_attr[dev1].ha_peer_ip = '1.2.3.4'
+        serv_acc.device_attr[dev1].ha_peer_interface = 'Eth1/2'
+        serv_acc.device_attr[dev1].ha_shutdown = False
+
+        # add feature to device
+        dev1.add_feature(serv_acc)
+
+        # Build config
+        cfgs = serv_acc.build_config(apply=False)
+        # Check config strings built correctly
+        self.assertMultiLineEqual(
+            str(cfgs[dev1.name]),
+            "\n".join(
+                [
+                    "service system hypershield\n"
+                    " source-interface loopback1\n"
+                    " high-availability\n"
+                    "  peer 1.2.3.4\n"
+                    "  source-interface Eth1/2\n"
+                    "  no shutdown\n"
+                    "  exit\n"
+                    " exit"
+                ]
+            ),
+        )
+
+        partial_uncfg1 = serv_acc.build_unconfig(
+            apply=False, attributes={"device_attr": {"*":{"ha_enabled": None}}}
+        )
+
+        self.assertMultiLineEqual(
+            str(partial_uncfg1[dev1.name]),
+            "\n".join(
+                [
+                'service system hypershield\n'
+                ' no high-availability\n'
+                ' exit'
+                ]
+            ),
+        )
+
+        serv_acc.device_attr[dev1].ha_shutdown = True
+        uncfgs = serv_acc.build_config(apply=False, attributes={"device_attr": {"*":{'ha_enabled': None, 'ha_shutdown': None}}})
+        self.assertMultiLineEqual(
+            str(uncfgs[dev1.name]),
+            "\n".join(
+                [
+                    "service system hypershield\n"
+                    " high-availability\n"
+                    "  shutdown\n"
+                    "  exit\n"
+                    " exit"
+                ]
+            ),
+        )
+
+        # change peer ip
+        serv_acc.device_attr[dev1].ha_peer_ip = '1.2.3.6'
+        uncfgs = serv_acc.build_config(apply=False, attributes={"device_attr": {"*":{'ha_enabled': None, 'ha_peer_ip': None}}})
+        self.assertMultiLineEqual(
+            str(uncfgs[dev1.name]),
+            "\n".join(
+                [
+                    "service system hypershield\n"
+                    " high-availability\n"
+                    "  peer 1.2.3.6\n"
+                    "  exit\n"
+                    " exit"
                 ]
             ),
         )

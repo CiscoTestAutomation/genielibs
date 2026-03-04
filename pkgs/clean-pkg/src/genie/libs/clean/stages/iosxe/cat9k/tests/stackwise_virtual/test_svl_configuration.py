@@ -205,7 +205,8 @@ class ConfigureStackwiseVirtualTest(unittest.TestCase):
 
         self.device.api.execute_power_cycle_device = Mock()
         self.device.api.device_recovery_boot = Mock()
-
+        self.device.clean.device_recovery = {
+            'golden_image': 'image',}
         # Mock is_active_standby_ready utility
         with patch('unicon.plugins.iosxe.stack.utils.StackUtils.is_active_standby_ready', return_value=True) as mock_is_ready:
             # We expect this step to fail so make sure it raises the signal
@@ -218,7 +219,7 @@ class ConfigureStackwiseVirtualTest(unittest.TestCase):
             self.device.api.execute_power_cycle_device.assert_called_once()
             mock_is_ready.assert_called_once()
 
-    def test_boot_recovery_with_reload(self):
+    def test_boot_failed_recovery_with_reload(self):
         # Make sure we have a unique Steps() object for result verification
         steps = Steps()
 
@@ -227,22 +228,45 @@ class ConfigureStackwiseVirtualTest(unittest.TestCase):
         self.device.api.device_recovery_boot = Mock()
         self.device.reload = Mock()
         self.device.connect = Mock()
+        self.device.clean.device_recovery = {
+            'golden_image': 'image'}
 
-        # Mock is_active_standby_ready utility
-        with patch('unicon.plugins.iosxe.stack.utils.StackUtils.is_active_standby_ready', return_value=True) as mock_is_ready:
-            # We expect this step to fail so make sure it raises the signal
-            self.cls.boot_stack(steps=steps, device=self.device, wait_time=1)
 
-            # Check the overall result is as expected
-            self.assertEqual(Passed, steps.details[0].result)
+        self.cls.boot_stack(steps=steps, device=self.device, wait_time=1)
 
-            self.subcon1.sendline.assert_called_once()
-            self.subcon2.sendline.assert_called_once()
+        # Check the overall result is as expected
+        self.assertEqual(Passed, steps.details[0].result)
 
-            self.device.api.execute_power_cycle_device.assert_called_once()
-            mock_is_ready.assert_called_once()
-            # Check the overall result is as expected
-            self.assertEqual(Passed, steps.details[0].result)
+        self.subcon1.sendline.assert_called_once()
+        self.subcon2.sendline.assert_called_once()
+
+        self.device.api.execute_power_cycle_device.assert_called_once()
+        # Check the overall result is as expected
+        self.assertEqual(Passed, steps.details[0].result)
+        
+
+    def test_boot_no_recovery_info_reload_instead(self):
+        # Make sure we have a unique Steps() object for result verification
+        steps = Steps()
+
+        self.device.api.execute_power_cycle_device = Mock(
+            side_effect=Exception("Power cycle failed"))
+        self.device.api.device_recovery_boot = Mock()
+        self.device.reload = Mock()
+        self.device.connect = Mock()
+        self.device.clean.device_recovery = False  # No recovery info provided
+
+        self.cls.boot_stack(steps=steps, device=self.device, wait_time=1)
+
+        # Check the overall result is as expected
+        self.assertEqual(Passed, steps.details[0].result)
+
+        self.subcon1.sendline.assert_called_once()
+        self.subcon2.sendline.assert_called_once()
+
+        self.device.reload.assert_called_once()
+        # Check the overall result is as expected
+        self.assertEqual(Passed, steps.details[0].result)
 
     def test_check_stackwise_virtual_config_with_switch_output(self):
         # Make sure we have a unique Steps() object for result verification
@@ -257,8 +281,8 @@ class ConfigureStackwiseVirtualTest(unittest.TestCase):
                             1: {
                                 'ports': {
                                     'TenGigabitEthernet1/0/1': {
-                                        'link_status': 'U',
-                                        'protocol_status': 'R'
+                                        'link_status': 'Up',
+                                        'protocol_status': 'Ready'
                                     }
                                 }
                             }
@@ -269,8 +293,8 @@ class ConfigureStackwiseVirtualTest(unittest.TestCase):
                             1: {
                                 'ports': {
                                     'TenGigabitEthernet2/0/1': {
-                                        'link_status': 'U',
-                                        'protocol_status': 'R'
+                                        'link_status': 'Up',
+                                        'protocol_status': 'Ready'
                                     }
                                 }
                             }
@@ -299,8 +323,8 @@ class ConfigureStackwiseVirtualTest(unittest.TestCase):
                             1: {
                                 'ports': {
                                     'TenGigabitEthernet1/0/1': {
-                                        'link_status': 'U',
-                                        'protocol_status': 'D'
+                                        'link_status': 'Up',
+                                        'protocol_status': 'Error'
                                     }
                                 }
                             }
@@ -311,8 +335,8 @@ class ConfigureStackwiseVirtualTest(unittest.TestCase):
                             1: {
                                 'ports': {
                                     'TenGigabitEthernet2/0/1': {
-                                        'link_status': 'U',
-                                        'protocol_status': 'R'
+                                        'link_status': 'Up',
+                                        'protocol_status': 'Ready'
                                     }
                                 }
                             }

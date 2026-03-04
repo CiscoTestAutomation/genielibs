@@ -1499,3 +1499,67 @@ def verify_subslot_state(device, subslot, expected_state="ok", max_time=120,
     log.info(f'subslot {subslot} expected state is {expected_state}, but real state is {state}')
 
     return False
+
+
+def verify_interface_state(
+        device, interface, proto="ip", expected_state="admin up", max_time=60, check_interval=10
+):
+    """Verify interface state
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+            proto('str', optional): Protocol 'ip' or 'ipv6', Default is 'ip'
+            expected_state('str', optional): Four types, 'admin up', 'up', 'admin down', 'down'
+                                             admin up: administratively up and line protocol is up
+                                             up: line protocol is up
+                                             admin down: administratively down and line protocol is down
+                                             down: line protocol is down
+            max_time (`int`, optional): check max time, Default is 60
+            check_interval (`int`): check interval, , Default is 10
+        Returns:
+            result(`bool`): True if matched expected state else False
+    """
+    intf = Common.convert_intf_name(interface)
+
+    log.debug(
+        "Verify interface {} state on device {}, "
+        "protocol is {}, expected state is {}".format(
+            intf, device.name, proto, expected_state
+        )
+    )
+
+    assert proto in ["ip", "ipv6"], "proto must be 'ip' or 'ipv6'"
+    assert expected_state in ["admin up", "up", "admin down", "down"],\
+        "expected state must be 'admin up' or 'up' or 'admin down' or 'down'"
+
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        try:
+            cmd = "show {} interface {}".format(
+                proto, intf)
+            out = device.parse(cmd)
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        oper_status = out[intf]["oper_status"]
+        enabled = out[intf]["enabled"]
+
+        if expected_state == "admin up":
+            if oper_status == "up" and enabled == True:
+                return True
+        if expected_state == "up":
+            if oper_status == "up":
+                return True
+        if expected_state == "admin down":
+            if oper_status == "down" and enabled == False:
+                return True
+        if expected_state == "down":
+            if oper_status == "down":
+                return True
+
+        timeout.sleep()
+
+    return False

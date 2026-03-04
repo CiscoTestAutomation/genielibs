@@ -49,7 +49,7 @@ configure_stackwise_virtual:
     # =================
     # Argument Defaults
     WAIT_TIME = 180
-    RELOAD_TIME = 300
+    RELOAD_TIME = 600
     TIMEOUT_FOR_STANDBY_READY = 300
     INTERVAL_CHECK = 30
     SVL_LINK_INTERFACES = {}
@@ -60,10 +60,10 @@ configure_stackwise_virtual:
     # ============
     schema = {
         Optional('wait_time',
-                 description="Wait time in seconds before accessing device after svl configuration. Default to 60 seconds"):
+                 description="Wait time in seconds before accessing device after svl configuration. Default to 180 seconds"):
         int,
         Optional('reload_time',
-                 description="Reload time in seconds for device reload after svl configuration. Default to 300 seconds"):
+                 description="Reload time in seconds for device reload after svl configuration. Default to 600 seconds"):
         int,
         Optional('timeout_for_standby_ready',
                  description="Waiting time in seconds for standby RP to be ready after device reload. Default to 300 seconds"):
@@ -96,15 +96,28 @@ configure_stackwise_virtual:
         with steps.start(
                 "Checking for existing StackWise Virtual configuration"
         ) as step:
-            try:
-                device.parse("show stackwise-virtual link")
-            except SchemaEmptyParserError:
+            svl_configured = False
+            for subconnection in device.subconnections:
+                try:
+                    output = subconnection.execute('show stackwise-virtual link')
+                    device.parse('show stackwise-virtual link', output=output)
+                    svl_configured = True
+                except SchemaEmptyParserError:
+                    log.info(
+                        f"No StackWise Virtual link on {subconnection.via}."
+                    )
+                except Exception as e:
+                    step.failed(
+                        f"Failed to check StackWise Virtual link on {subconnection.via}: {e}"
+                    )
+
+            if svl_configured:
+                self.skipped(
+                    f"StackWise Virtual configuration exists on {device.name}.")
+            else:
                 step.passed(
                     f"No StackWise Virtual link on {device.name}. Continue with configuration."
                 )
-
-            self.skipped(
-                f"StackWise Virtual configuration exists on {device.name}.")
 
     def configure_stackwise_virtual(self,
                                     device,
@@ -228,54 +241,75 @@ configure_stackwise_virtual:
                 error_patterns (list): List of error patterns to check during reload, defaults to empty list.
         """
         utils = StackUtils()
-        with steps.start("Power cycle device") as step:
-            try:
-                device.api.execute_power_cycle_device()
-            except Exception as e:
-                log.error(f"Power cycle failed: {e}")
-                with step.start(f"Connecting to device {device.name} after power cycle failure") as connect_attempt:
-                    try:
+        log.info(f'Get the recovery details from clean for device {device.name}')
+        try:
+            recovery_info = device.clean.get('device_recovery')
+        except AttributeError:
+            log.info(f'There is no recovery info for device {device.name}')
+            recovery_info = {}
+            
+        if recovery_info:
+            log.info(f"Recovery info found for device {device.name}")
+            with steps.start("Power cycle device") as step:
+                try:
+                    device.api.execute_power_cycle_device()
+                except Exception as e:
+                    log.error(f"Power cycle failed: {e}")
+                    with step.start(f"Connecting to device {device.name} after power cycle failure") as connect_attempt:
+                        try:
+                            device.connect()
+                        except Exception as e:
+                            log.exception(f"Failed to connect to device {device.name}")
+                            connect_attempt.failed(
+                                f"Failed to connect to device {device.name} after power cycle: {e}"
+                            )
+                        connect_attempt.passed('Successfully connected to device.')
+                    log.info("Attempting to reload device!")
+                    with step.start(f"Attempting to reload device {device.name}") as reload_step:
                         device.connect()
-                    except Exception as e:
-                        log.exception(f"Failed to connect to device {device.name}")
-                        connect_attempt.failed(
-                            f"Failed to connect to device {device.name} after power cycle: {e}"
-                        )
-                    connect_attempt.passed('Successfully connected to device.')
-                log.info("Attempting to reload device!")
-                with step.start(f"Attempting to reload device {device.name}") as reload_step:
-                    device.connect()
-                    for subconnection in device.subconnections:
-                        subconnection.sendline('reload')
-                    try:
-                        device.reload(reload_command='', error_pattern=error_pattern, timeout=reload_time)
-                    except Exception as e:
-                        step.failed(
-                            f"Failed to boot device {device.name} using reload: {e}"
-                        )
-                    else:
-                        reload_step.passed(
-                            f"Device {device.name} reloaded successfully."
-                        )
-                        step.passx(f"Device {device.name}  successfully booted.")
-            else:
-                device.api.device_recovery_boot()
+                        for subconnection in device.subconnections:
+                            subconnection.sendline('reload')
+                        try:
+                            device.reload(reload_command='', error_pattern=error_pattern, timeout=reload_time)
+                        except Exception as e:
+                            step.failed(
+                                f"Failed to boot device {device.name} using reload: {e}"
+                            )
+                        else:
+                            reload_step.passed(
+                                f"Device {device.name} reloaded successfully."
+                            )
+                            step.passx(f"Device {device.name}  successfully booted.")
+                else:
+                    device.api.device_recovery_boot()
 
-            log.info(f"Waiting for {wait_time} seconds before reconnecting to the device.")
-            time.sleep(wait_time)  # Wait for a while to allow the device to stabilize
-            # Reconnect to the device
-            try:
-                _disconnect_reconnect(device)
-            except Exception as e:
-                log.exception(f"Failed to reconnect to device {device.name}")
-                step.failed(
-                    f"Failed to reconnect to device {device.name}: {e}")
-            # check active and standby
-            log.info('Wait for Standby RP to be ready.')
-            if utils.is_active_standby_ready(device, timeout=timeout, interval=interval):
-                step.passed(f"Device {device.name} booted successfully.")
-            else:
-                step.failed(f"Standby RP is not ready on device {device.name} after boot.")
+                    # Reconnect to the device
+                    try:
+                        _disconnect_reconnect(device)
+                    except Exception as e:
+                        log.exception(f"Failed to reconnect to device {device.name}")
+                        step.failed(
+                            f"Failed to reconnect to device {device.name}: {e}")
+                    # check active and standby
+                    log.info('Wait for Standby RP to be ready.')
+                    if utils.is_active_standby_ready(device, timeout=timeout, interval=interval):
+                        step.passed(f"Device {device.name} booted successfully.")
+                    else:
+                        step.failed(f"Standby RP is not ready on device {device.name} after boot.")
+        else:
+            log.info(f"No recovery info found for device {device.name}, proceeding with reload.")
+            with steps.start(f"Reloading device {device.name}") as step:
+                for subconnection in device.subconnections:
+                    subconnection.sendline('reload')
+                try:
+                    device.reload(reload_command='', error_pattern=error_pattern, timeout=reload_time)
+                except Exception as e:
+                    step.failed(
+                        f"Failed to boot device {device.name} using reload: {e}"
+                    )
+                else:
+                    step.passed(
+                        f"Device {device.name} reloaded successfully.")
 
     def verify_stack_wise_virtual_config(self, device, steps):
         """ Verify StackWise Virtual configuration on the device
@@ -298,8 +332,10 @@ configure_stackwise_virtual:
             for switch , switch_info in link_output.get('switch', {}).items():
                 for link_num, link_info in switch_info.get('svl', {}).items():
                     for intf, intf_info in link_info.get('ports', {}).items():
-                        # check link status is UP and protocol status is READY
-                        if intf_info.get('link_status') != 'U' or intf_info.get('protocol_status') != 'R':
+                        # check link status is UP and protocol status is READY or BUNDLED
+                        if intf_info.get('link_status') != 'Up' or \
+                            intf_info.get('protocol_status') not in ('Ready', 'Bundled'):
+
                             step.failed(
                                 f"StackWise Virtual link interface {intf} on switch {switch} with link number {link_num} is not up.")
                         log.info(f"StackWise Virtual link interface {intf} on switch {switch} with link number {link_num} is up.")

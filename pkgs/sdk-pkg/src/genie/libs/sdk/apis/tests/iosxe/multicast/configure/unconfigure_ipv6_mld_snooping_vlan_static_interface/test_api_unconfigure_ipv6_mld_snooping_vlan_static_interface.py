@@ -1,35 +1,14 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
 from genie.libs.sdk.apis.iosxe.multicast.configure import unconfigure_ipv6_mld_snooping_vlan_static_interface
 
-
-class TestUnconfigureIpv6MldSnoopingVlanStaticInterface(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          n08HA:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: c9500
-            type: c9500
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['n08HA']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigureIpv6MldSnoopingVlanStaticInterface(TestCase):
 
     def test_unconfigure_ipv6_mld_snooping_vlan_static_interface(self):
-        result = unconfigure_ipv6_mld_snooping_vlan_static_interface(self.device, '1', 'FF08::10', ' gi0/0')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        result = unconfigure_ipv6_mld_snooping_vlan_static_interface(device, '1', 'FF08::10', ' gi0/0')
+        self.assertEqual(result, None)
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            (('no ipv6 mld snooping vlan 1 static FF08::10 interface  gi0/0',))
+        )

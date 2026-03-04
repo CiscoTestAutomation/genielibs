@@ -24,7 +24,7 @@ def verify_ignore_startup_config(device):
     # first check the next config register if its not there check the current config register
     config_reg = output['version'].get('next_config_register') or output['version'].get('curr_config_register')
 
-    if config_reg != '0x2102':
-        return False
+    if config_reg == '0x2142':
+        return True
 
-    return True
+    return False

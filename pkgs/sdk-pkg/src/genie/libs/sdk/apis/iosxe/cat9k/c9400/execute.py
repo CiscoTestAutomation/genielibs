@@ -46,7 +46,7 @@ def execute_install_one_shot(device, file_path=None, prompt=True, issu=False,
     def install_sendline():
         time.sleep(install_timeout)
 
-    dialog = Dialog ([
+    execute_dialog = Dialog ([
         Statement(pattern = r".*\[y/n\]\s*$",
                   action = "sendline(y)",
                   args = None,
@@ -79,6 +79,30 @@ def execute_install_one_shot(device, file_path=None, prompt=True, issu=False,
                   continue_timer = False),
         ])
 
+    # Dialog for reload during install one shot
+    reload_dialog = Dialog ([
+        Statement(pattern = r".*Press Quit\(q\) to exit.*\[y\/n\/q\]",
+                  action = "sendline(y)",
+                  args = None,
+                  loop_continue = True,
+                  continue_timer = False),
+        Statement(pattern = r".*you may save configuration and re-enter the command\. \[y/n/q\]",
+                  action = "sendline(y)",
+                  args = None,
+                  loop_continue = True,
+                  continue_timer = False),
+        Statement(pattern = r".*This operation may require a reload of the system\. Do you want to proceed\?\s*\[y\/n\]",
+                  action = "sendline(y)",
+                  args = None,
+                  loop_continue = True,
+                  continue_timer = False),
+        Statement(pattern = r".*Please confirm you have changed boot config to .*\/packages\.conf \[y/n\]",
+                  action = "sendline(y)",
+                  args = None,
+                  loop_continue = True,
+                  continue_timer = False),
+        ])
+
     log.info(f"Perform install one shot {device.name}")
 
     cmd = f"install add file {file_path} activate"
@@ -102,12 +126,16 @@ def execute_install_one_shot(device, file_path=None, prompt=True, issu=False,
     output = ""
     try:
         device.api.execute_write_memory()
+
         if install_reload:
-            _, output = device.reload(cmd, reply=dialog, timeout=timeout, return_output=True, prompt_recovery=True,
+            _, output = device.reload(cmd, reply=reload_dialog, timeout=timeout,
+                                      return_output=True,
                                       post_reload_wait_time=post_reload_wait_time,
-                                      install_timeout=install_timeout,error_pattern=error_pattern)
+                                      prompt_recovery=True,
+                                      error_pattern=error_pattern or [],
+      )
         else:
-            output = device.execute(cmd, reply=dialog, timeout=timeout)
+            output = device.execute(cmd, reply=execute_dialog, timeout=timeout)
     except Exception as e:
         log.error(f"Error while executing {cmd} on {device.name}: {e}")
 
@@ -135,37 +163,6 @@ def execute_diagnostic_start_module_port(device, module_number, test_id, port_nu
         raise SubCommandFailure(
             f"Could not execute diagnostic start module {module_number} test {test_id} port {port_num} on device. Error:\n{e}")
 
-
-def execute_set_config_register(device, config_register, timeout=300):
-    '''Set config register to load image in boot variable
-        Args:
-            device ('obj'): Device object
-            config_register ('str'): Hexadecimal value to set the config register to
-            timeout ('int'): Max time to set config-register in seconds
-    '''
-    # Collect all connections to process
-    conn_list = getattr(device, 'subconnections', None) or [device.default]
-
-    log.warning("Setting manual boot on device instead of executing config register")
-
-    # config register won't work on c9400 device hence using boot manual
-    # Iterate through each connection to apply the configuration.
-    for conn in conn_list:
-        try:
-            # If the device state is in rommon configure rommon variable
-            if conn.state_machine.current_state == 'rommon':
-                cmd = f'MANUAL_BOOT=YES'
-                conn.execute(cmd, timeout=timeout)
-            # If the device is in standby state, skip it.
-            # Otherwise, the standby will fail if locked.
-            elif conn.role == "standby":
-                continue
-            else:
-                cmd = f'boot manual'
-                conn.configure(cmd, timeout=timeout)
-        except Exception as e:
-            raise Exception("Failed to set boot manual for '{d}'\n{e}".\
-                            format(d=device.name, e=str(e)))
 
 def execute_clear_install_state(device, timeout=900, connect_timeout=10):
     """

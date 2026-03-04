@@ -388,3 +388,83 @@ testbed:
                     call(oid='1.3.6.1.4.1.13742.6.4.1.2.1.2.1.11', value=1, type='Integer')
                 ]
                 self.assertEqual(set_mock.call_args_list, expected_calls)
+
+
+
+class TestExecutePowerCyclerApisProxmox(unittest.TestCase):
+    """
+    To test the Proxmox powercycler ssh implementation
+    """
+    @classmethod
+    def setUpClass(self):
+        testbed = """
+devices:
+    FW-9800-7:
+        connections:
+            defaults:
+                class: unicon.Unicon
+            a:
+                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
+                protocol: unknown
+        peripherals:
+            power_cycler:
+              - type: proxmox
+                connection_type: ssh
+                host: localhost
+                outlets: [101]
+        os: iosxe
+        platform: c9800
+        type: c9800
+
+    localhost:
+      os: linux
+      connections:
+          a:
+              ip: localhost
+              protocol: ssh
+      credentials:
+         default:
+             username: test
+             password: test
+
+        """
+        self.testbed = loader.load(testbed)
+        self.device = self.testbed.devices["FW-9800-7"]
+        self.server = self.testbed.devices["localhost"]
+
+
+    def test_execute_power_on_device(self):
+        with patch("time.sleep"):
+            self.server.connect = Mock()
+            self.server.execute = Mock(return_value="")
+
+            execute_power_on_device(self.device)
+
+            expected_calls = [
+                call('qm start 101'),
+            ]
+            self.assertEqual(self.server.execute.call_args_list, expected_calls)
+
+
+    def test_execute_power_off_device(self):
+        with patch("time.sleep"):
+            self.server.connect = Mock()
+            self.server.execute = Mock(return_value="")
+
+            execute_power_off_device(self.device)
+
+            expected_calls = [
+                call('qm stop 101'),
+            ]
+            self.assertEqual(self.server.execute.call_args_list, expected_calls)
+    
+    def test_execute_power_on_device_vm_not_exist(self):
+        with patch("time.sleep"):
+            self.server.connect = Mock()
+            self.server.execute = Mock(return_value="Configuration file 'nodes/cisco/qemu-server/101.conf' does not exist")
+
+            with self.assertRaises(Exception) as cm:
+                execute_power_on_device(self.device)
+
+            self.assertIn("does not exist", str(cm.exception))
+            self.assertIn("Failed to powercycle device on", str(cm.exception))

@@ -767,3 +767,71 @@ class BaseVCenterPowerCycler(PowerCycler):
 
             log.info(f"VM {vm.name} powered off successfully")
 
+class BaseProxmoxPowerCycler(PowerCycler):
+
+    def __init__(self, testbed, **kwargs):
+         """
+        Constructs all the necessary attributes for the Proxmox powercycler object.
+
+        Parameters
+        ----------
+            testbed ('str'): testbed object.
+            *kwargs: Additional arguments passed to parent PowerCycler class
+        """
+         super().__init__(**kwargs)
+         self.testbed=testbed
+         self.connect()
+
+    def connect(self):
+        """
+        Connect to Proxmox server
+
+        """
+        if self.host not in self.testbed.devices:
+            raise Exception("The device '{}' does not exist in the testbed"
+                            .format(self.host))
+
+        self.host = self.testbed.devices[self.host]
+
+        self.host.connect(learn_hostname=True)
+
+    def off(self, *outlets, after=None):
+        """
+         Power off virtual machines using VM IDs
+         Parameters
+          ----------
+            *outlets: Variable number of VM IDs to power off
+            after (int, optional): Delay in seconds before executing power off. Defaults to None.
+            Raises:
+                Exception: If power-off operation fails for any reason
+        """
+        if isinstance(after, int):
+            raise TypeError('"after" should be an int')
+
+        if after:
+            time.sleep(after)
+
+        for outlet in outlets:
+            try:
+                self.host.api.switch_proxmox_vm_power(vm_id=outlet, state='stop')
+                log.info(f"VM with ID {outlet} has been powered off.")
+            except Exception as e:
+                raise Exception("Turning off outlet '{}' on the powercycler "
+                                "failed. Error: {}".format(outlet, str(e)))
+
+    def on(self, *outlets):
+        """
+         Power on virtual machines using VM IDs
+         Parameters
+          ----------
+            *outlets: Variable number of VM IDs to power on
+            Raises:
+                Exception: If power-on operation fails for any reason
+        """
+        for outlet in outlets:
+            try:
+                self.host.api.switch_proxmox_vm_power(vm_id=outlet, state='start')
+                log.info(f"VM with ID {outlet} has been powered on.")
+            except Exception as e:
+                raise Exception("Turning on outlet '{}' on the powercycler "
+                                "failed. Error: {}".format(outlet, str(e)))

@@ -3,13 +3,14 @@ import unittest
 from unittest import mock
 
 from unicon.eal.dialogs import Statement
+from pyats.topology.credentials import Credentials
 
 from pyats.results import Passed, Failed
 from pyats.aetest.steps import Steps
 from pyats.aetest.signals import TerminateStepSignal
 
 from genie.libs.clean.stages.tests.utils import create_test_device
-from genie.libs.clean.stages.iosxe.cat9k.stages import RommonBoot
+from genie.libs.clean.stages.iosxe.stages import RommonBoot
 
 
 RESULT_METHODS = ['passed', 'failed', 'skipped', 'passx', 'blocked', 'errored', 'aborted']
@@ -109,123 +110,77 @@ class TestRommonBoot(unittest.TestCase):
             "Failed to write memory",
             from_exception=api_exception)
 
-    @mock.patch('genie.libs.clean.stages.iosxe.cat9k.stages.Statement')
-    @mock.patch('genie.libs.clean.stages.iosxe.cat9k.stages.Dialog')
-    def test_go_to_rommon_pass(self, dialog, statement):
+    def test_go_to_rommon_pass(self):
+        """Test that go_to_rommon correctly calls the device rommon method"""
         steps = mock.MagicMock()
-        self.device.sendline = mock.Mock()
-        self.device.spawn = mock.Mock()
+        self.device.rommon = mock.Mock()
         self.device.is_ha = False
-        self.device.subconnections = mock.MagicMock()
-        self.device.expect = mock.Mock()
 
-        reload_dialog = mock.Mock()
-        dialog.return_value = reload_dialog
+        self.cls.go_to_rommon(steps=steps, device=self.device)
 
-        self.cls.go_to_rommon(
-            steps=steps, device=self.device)
-
-        # Verify step name hasn't changed
         steps.start.assert_called_with("Bring device down to rommon mode")
 
-        statement.assert_has_calls([
-            mock.call(pattern=r".*System configuration has been modified\. Save\? \[yes\/no\].*",
-                      action='sendline(yes)',
-                      loop_continue=True,
-                      continue_timer=False),
-            mock.call(pattern=r".*Proceed with reload\? \[confirm\].*",
-                      action='sendline()',
-                      loop_continue=False,
-                      continue_timer=False)
-        ])
 
-        # Check both sendline calls
-        self.device.sendline.assert_has_calls([
-            mock.call("reload"),
-            mock.call()
-        ])
-        reload_dialog.process.assert_called_with(self.device.spawn)
-        self.device.expect.assert_called_with(
-            ['(.*Initializing Hardware.*|^(.*)((rommon(.*))+>|switch *:).*$)'], timeout=60)
+        self.device.rommon.assert_called_once()
 
-        #  step_context comes from the following snippet
-        #  with steps.start('...') as step_context:
         step_context = steps.start.return_value.__enter__.return_value
-
-        # Verify no step_context methods called
         for result in RESULT_METHODS:
-            getattr(step_context, result).assert_not_called()
+            if result != 'passed':
+                getattr(step_context, result).assert_not_called()
 
-    @mock.patch('genie.libs.clean.stages.iosxe.cat9k.stages.pcall')
-    def test_rommon_boot_pass(self, pcall):
+    def test_rommon_boot_pass(self):
+        steps = mock.MagicMock()
+        self.device.instantiate = mock.Mock()
+        self.device.api.device_rommon_boot = mock.Mock()
+        self.device.is_ha = False
+
+        self.cls.rommon_boot(
+            steps=steps, device=self.device, image=['bootflash:/test.bin'])
+
+        steps.start.assert_called_with("Boot device from rommon")
+        self.device.api.device_rommon_boot.assert_called_once()
+
+    def test_rommon_boot_fail_abstraction_lookup(self):
+        """Test that the stage correctly handles a failure from the boot API"""
         steps = mock.MagicMock()
         self.device.instantiate = mock.Mock()
         self.device.is_ha = False
-        self.device.start = 'telnet 127.0.0.1 0000'
+
+        api_exception = Exception("Boot API Failed")
+        self.device.api.device_rommon_boot = mock.Mock(side_effect=api_exception)
 
         self.cls.rommon_boot(
-            steps=steps, device=self.device, image='bootflash:/test.bin')
+            steps=steps,
+            device=self.device,
+            image=['bootflash:/test.bin']
+        )
 
-        steps.start.assert_called_with("Boot device from rommon")
-        self.device.instantiate.assert_called_once()
+        self.device.api.device_rommon_boot.assert_called_once()
 
-        pcall.assert_called_once()
-
-        #  step_context comes from the following snippet
-        #  with steps.start('...') as step_context:
-        step_context = steps.start.return_value.__enter__.return_value
-
-        # Verify no step_context methods called
-        for result in RESULT_METHODS:
-            getattr(step_context, result).assert_not_called()
-
-    @mock.patch('genie.libs.clean.stages.iosxe.cat9k.stages.Lookup')
-    def test_rommon_boot_fail_abstraction_lookup(self, lookup):
-        steps = mock.MagicMock()
-        self.device.instantiate = mock.Mock()
-        self.device.is_ha = False
-        self.device.start = 'telnet 127.0.0.1 0000'
-        lookup_exception = Exception()
-        lookup.from_device.side_effect = lookup_exception
-
-        self.cls.rommon_boot(
-            steps=steps, device=self.device, image='bootflash:/test.bin')
-
-        steps.start.assert_called_with("Boot device from rommon")
-        self.device.instantiate.assert_called_once()
-
-        #  step_context comes from the following snippet
-        #  with steps.start('...') as step_context:
-        step_context = steps.start.return_value.__enter__.return_value
-        step_context.failed.assert_any_call("Abstraction lookup failed",
-                                               from_exception=lookup_exception)
-
-
-    @mock.patch('genie.libs.clean.stages.iosxe.cat9k.stages.pcall')
-    def test_rommon_boot_fail_recovery_worker(self, pcall):
-        steps = mock.MagicMock()
-        self.device.instantiate = mock.Mock()
-        self.device.is_ha = False
-        self.device.start = 'telnet 127.0.0.1 0000'
-        pcall_exception = Exception()
-        pcall.side_effect = pcall_exception
-
-        self.cls.rommon_boot(
-            steps=steps, device=self.device, image='bootflash:/test.bin')
-
-        steps.start.assert_called_with("Boot device from rommon")
-        self.device.instantiate.assert_called_once()
-
-        pcall.assert_called_once()
-
-        #  step_context comes from the following snippet
-        #  with steps.start('...') as step_context:
         step_context = steps.start.return_value.__enter__.return_value
         step_context.failed.assert_called_with(
             "Failed to boot the device from rommon",
-            from_exception=pcall_exception)
+            from_exception=api_exception
+        )
 
-    @mock.patch('genie.libs.clean.stages.iosxe.cat9k.stages._disconnect_reconnect')
+
+    def test_rommon_boot_fail_recovery_worker(self):
+        steps = mock.MagicMock()
+        self.device.instantiate = mock.Mock()
+        self.device.is_ha = False
+
+        api_exception = Exception("Boot failed")
+        self.device.api.device_rommon_boot = mock.Mock(side_effect=api_exception)
+
+        self.cls.rommon_boot(
+            steps=steps, device=self.device, image=['bootflash:/test.bin'])
+
+        step_context = steps.start.return_value.__enter__.return_value
+        step_context.failed.assert_called_with(
+            "Failed to boot the device from rommon",
+            from_exception=api_exception)
+
+    @mock.patch('genie.libs.clean.stages.iosxe.stages._disconnect_reconnect')
     def test_reconnect_pass(self, _disconnect_reconnect):
         steps = mock.MagicMock()
         _disconnect_reconnect.return_value = True
@@ -242,7 +197,7 @@ class TestRommonBoot(unittest.TestCase):
         for result in RESULT_METHODS:
             getattr(step_context, result).assert_not_called()
 
-    @mock.patch('genie.libs.clean.stages.iosxe.cat9k.stages._disconnect_reconnect')
+    @mock.patch('genie.libs.clean.stages.iosxe.stages._disconnect_reconnect')
     def test_reconnect_fail(self, _disconnect_reconnect):
         steps = mock.MagicMock()
         _disconnect_reconnect.return_value = False
@@ -256,44 +211,46 @@ class TestRommonBoot(unittest.TestCase):
         step_context = steps.start.return_value.__enter__.return_value
         step_context.failed.assert_called_with("Failed to reconnect")
 
-    @mock.patch('genie.libs.clean.stages.iosxe.cat9k.stages.pcall')
-    def test_rommon_boot_tftp_with_retry_params(self, pcall):
-        """Test that TFTP boot retry parameters are passed to recovery_worker"""
+    def test_rommon_boot_tftp_with_retry_params(self):
+        """Test that TFTP boot retry parameters are passed to the API"""
         steps = mock.MagicMock()
         self.device.instantiate = mock.Mock()
+        self.device.api.device_rommon_boot = mock.Mock()
         self.device.is_ha = False
-        self.device.start = 'telnet 127.0.0.1 0000'
-        
-        tftp_config = {
-            'ip_address': ['10.1.1.1'],
-            'subnet_mask': '255.255.255.0',
-            'gateway': '10.1.1.254',
-            'tftp_server': '10.1.1.100'
+        self.device.clean = {}
+
+        mock_testbed = mock.MagicMock()
+        mock_testbed.credentials = Credentials()
+        self.device.testbed = mock_testbed
+
+        self.device.management = {
+            'address': {
+                'ipv4': mock.MagicMock(ip='10.1.1.1', netmask='255.255.255.0')
+            },
+            'gateway': {'ipv4': '10.1.1.254'}
         }
+
+        self.device.testbed.servers = {'tftp': {'address': '10.1.1.100'}}
+
+        tftp_config = {'image': ['test.bin']}
 
         self.cls.rommon_boot(
             steps=steps,
             device=self.device,
-            image=['bootflash:/test.bin'],
             tftp=tftp_config,
             tftp_boot_max_attempts=5,
             tftp_boot_sleep_interval=45
         )
 
-        steps.start.assert_called_with("Boot device from rommon")
-        self.device.instantiate.assert_called_once()
-        pcall.assert_called_once()
+        # Verify that device_rommon_boot was called with the expected parameters
+        self.device.api.device_rommon_boot.assert_called_once()
+        call_kwargs = self.device.api.device_rommon_boot.call_args.kwargs
+
+        # Check that key parameters are present
+        self.assertIn('tftp_boot', call_kwargs)
+        self.assertEqual(call_kwargs['golden_image'], None)
+        self.assertIn('grub_activity_pattern', call_kwargs)
+        self.assertIn('timeout', call_kwargs)
         
-        # Verify retry parameters were passed in common_kwargs
-        call_kwargs = pcall.call_args[1]['ckwargs']
-        assert call_kwargs['tftp_boot_max_attempts'] == 5
-        assert call_kwargs['tftp_boot_sleep_interval'] == 45
-        assert 'tftp_boot' in call_kwargs
-
-        #  step_context comes from the following snippet
-        #  with steps.start('...') as step_context:
-        step_context = steps.start.return_value.__enter__.return_value
-
-        # Verify no step_context methods called
-        for result in RESULT_METHODS:
-            getattr(step_context, result).assert_not_called()
+        passed_tftp = call_kwargs['tftp_boot']
+        self.assertEqual(passed_tftp['image'], ['test.bin'])

@@ -1,4 +1,5 @@
 import unittest
+import fnmatch
 
 from unittest.mock import Mock, call
 
@@ -38,8 +39,9 @@ class TestDeleteFiles(unittest.TestCase):
         self.assertEqual(Passed, steps.details[0].result)
 
         # Check if the API was called with the matching location and filename regex
+        expected_pattern = fnmatch.translate('*.bin')
         self.device.api.delete_files.assert_has_calls(
-            [call(locations=['/home/cisco'], filenames=['(?s:.*\\.bin)\\Z'], timeout=500)])
+            [call(locations=['/home/cisco'], filenames=[expected_pattern], timeout=500)])
 
     def test_delete_files_regex(self):
         steps = Steps()

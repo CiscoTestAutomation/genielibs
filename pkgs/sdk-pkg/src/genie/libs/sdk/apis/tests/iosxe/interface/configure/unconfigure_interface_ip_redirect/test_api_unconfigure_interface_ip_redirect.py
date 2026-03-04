@@ -1,0 +1,14 @@
+from unittest import TestCase
+from genie.libs.sdk.apis.iosxe.interface.configure import unconfigure_interface_ip_redirect
+from unittest.mock import Mock
+
+
+class TestUnconfigureInterfaceIpRedirect(TestCase):
+
+    def test_unconfigure_interface_ip_redirect(self):
+        self.device = Mock()
+        result = unconfigure_interface_ip_redirect(self.device, 'Port-channel1')
+        self.assertEqual(
+            self.device.configure.mock_calls[0].args,
+            (['interface Port-channel1', 'no ip redirects'],)
+        )

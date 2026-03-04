@@ -1311,7 +1311,7 @@ def unconfigure_ospfv3_network(device, interface):
             )
         )
 
-def configure_ipv6_ospf_bfd(device, interface):
+def configure_ipv6_ospf_bfd(device, interface, disable=False):
     """configure ipv6 ospf bfd
 
         Args:
@@ -1319,6 +1319,7 @@ def configure_ipv6_ospf_bfd(device, interface):
             interface (`str`): interface to configure
             ex.)
                 interface = 'tenGigabitEthernet0/4/0'
+            disable (`bool`): whether to disable bfd, default is False
         Return:
             None
 
@@ -1329,7 +1330,7 @@ def configure_ipv6_ospf_bfd(device, interface):
         device.configure(
             [
                "interface {interface}".format(interface=interface),
-               "ipv6 ospf bfd"
+               f"ipv6 ospf bfd{' disable' if disable else ''}"
             ]
         )
     except SubCommandFailure as e:
@@ -1340,7 +1341,7 @@ def configure_ipv6_ospf_bfd(device, interface):
             )
         )
 
-def unconfigure_ipv6_ospf_bfd(device, interface):
+def unconfigure_ipv6_ospf_bfd(device, interface, disable=False):
     """unconfigure ipv6 ospf bfd
 
         Args:
@@ -1348,6 +1349,7 @@ def unconfigure_ipv6_ospf_bfd(device, interface):
             interface (`str`): interface to configure
             ex.)
                 interface = 'tenGigabitEthernet0/4/0'
+            disable (`bool`): whether to disable bfd, default is False
         Return:
             None
 
@@ -1358,7 +1360,7 @@ def unconfigure_ipv6_ospf_bfd(device, interface):
         device.configure(
             [
                "interface {interface}".format(interface=interface),
-               "no ipv6 ospf bfd"
+               f"no ipv6 ospf bfd{' disable' if disable else ''}"
             ]
         )
     except SubCommandFailure as e:
@@ -2586,7 +2588,7 @@ def clear_ospfv3_process_all(device):
 
 
 def configure_ospfv3_network_range(device, pid, router_id, address_family=None,
-    traffic_type=None, adjacency=None, area=None, network_range=None):
+    traffic_type=None, adjacency=None, area=None, network_range=None, bfd_all=None):
     """configure_ospfv3_network_range
 
         Args:
@@ -2599,7 +2601,7 @@ def configure_ospfv3_network_range(device, pid, router_id, address_family=None,
             adjacency('bool' optional): option to log adjacency changes
             area ('str',optional): Area to configure under. default value is None
             network_range ('str',optional) : network_range ip address . default value is None
-
+            bfd_all ('bool',optional): Enable BFD on all interfaces. default value is None
         Return:
             None
 
@@ -2611,11 +2613,13 @@ def configure_ospfv3_network_range(device, pid, router_id, address_family=None,
     if adjacency:
         config.append("log-adjacency-changes")
     if address_family and traffic_type:
-        config.append([f'address-family {address_family} {traffic_type}'])
+        config.append(f'address-family {address_family} {traffic_type}')
     elif address_family:
-        config.append([f'address-family {address_family}'])
+        config.append(f'address-family {address_family}')
     if area and network_range:
-        config.append([f'area {area} range {network_range}'])
+        config.append(f'area {area} range {network_range}')
+    if bfd_all:
+        config.append('bfd all-interfaces')        
     try:
         device.configure(config)
     except SubCommandFailure as e:

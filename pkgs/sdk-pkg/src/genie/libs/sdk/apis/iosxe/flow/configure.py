@@ -116,6 +116,7 @@ def clear_flow_monitor_statistics(device, monitor_name, switch=''):
             'Could not clear flow monitor statistics'
         )
 
+
 def configure_fnf_exporter(device, exporter_name, dest_ip, udp_port, source_int=None,
                            timeout=None):
 
@@ -2022,3 +2023,19 @@ def unconfigure_stealthwatch_cloud_monitor(device, sensor_name=None, service_key
             f'Could not unconfigure stealthwatch cloud monitor parameters. Error:\n{e}'
         )
 
+def clear_stealthwatch_cloud_data(device,switch):
+    """Clear Stealthwatch Cloud (SWC) data on a switch.
+
+    Args:
+        device ('obj'): Device object
+        switch ('str'): Switch identifier (required)
+    Raises:
+        SubCommandFailure: If the clear command fails
+        
+    """
+    try:
+        device.execute(f"clear platform software fed switch {switch} swc data")
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            f'Could not clear swc data for switch {switch}'
+        )

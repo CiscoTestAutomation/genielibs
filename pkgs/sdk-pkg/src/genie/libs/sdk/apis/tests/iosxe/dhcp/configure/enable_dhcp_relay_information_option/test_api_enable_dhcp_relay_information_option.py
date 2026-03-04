@@ -1,34 +1,29 @@
 import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
 from genie.libs.sdk.apis.iosxe.dhcp.configure import enable_dhcp_relay_information_option
 
 
-class TestEnableDhcpRelayInformationOption(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = """
-        devices:
-          BB_1HX:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: iosxe
-            type: iosxe
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['BB_1HX']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestEnableDhcpRelayInformationOption(TestCase):
 
     def test_enable_dhcp_relay_information_option(self):
-        result = enable_dhcp_relay_information_option(self.device)
+        device = Mock()
+        result = enable_dhcp_relay_information_option(device)
         expected_output = None
         self.assertEqual(result, expected_output)
+        
+        # Verify configure was called with the correct command
+        device.configure.assert_called_once_with('ip dhcp relay information option')
+
+    def test_enable_dhcp_relay_information_option_with_vpn(self):
+        device = Mock()
+        result = enable_dhcp_relay_information_option(device, vpn=True)
+        expected_output = None
+        self.assertEqual(result, expected_output)
+        
+        # Verify configure was called with the correct command
+        device.configure.assert_called_once_with('ip dhcp relay information option vpn')
+
+
+if __name__ == '__main__':
+    unittest.main()

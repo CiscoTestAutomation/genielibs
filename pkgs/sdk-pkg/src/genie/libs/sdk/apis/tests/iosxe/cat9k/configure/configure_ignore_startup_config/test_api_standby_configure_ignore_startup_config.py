@@ -1,56 +1,34 @@
-import os
-import unittest
-from unittest.mock import MagicMock
+from unittest import TestCase
+from unittest.mock import Mock
 from genie.libs.sdk.apis.iosxe.cat9k.configure import configure_ignore_startup_config
 
-
-class TestConfigureIgnoreStartupConfigStandby(unittest.TestCase):
-
-    def setUp(self):
-        # Create a mock device and connection
-        self.device = MagicMock()
-        self.device.name = "mock_device"
-        
-        # Create standby connection
-        self.standby_connection = MagicMock()
-        self.standby_connection.state_machine.current_state = "any_state"
-        self.standby_connection.role = "standby"
-        
-        # Create active connection
-        self.active_connection = MagicMock()
-        self.active_connection.state_machine.current_state = "any_state"
-        self.active_connection.role = "active"
-        
-        # Create rommon connection
-        self.rommon_connection = MagicMock()
-        self.rommon_connection.state_machine.current_state = "rommon"
-        
-        # Mock configure method
-        self.standby_connection.configure = MagicMock()
-        self.active_connection.configure = MagicMock()
-        self.rommon_connection.execute = MagicMock()
+class TestConfigureIgnoreStartupConfigStandby(TestCase):
 
     def test_standby_connection_is_skipped(self):
-        """Test that standby connection is skipped"""
-        # Set the device to have both standby and active connections
-        self.device.subconnections = [self.active_connection, self.standby_connection]
-        
-        # Call the actual function (not a mock)
-        configure_ignore_startup_config(self.device)
-        
-        # Verify active connection's configure method was called
-        self.active_connection.configure.assert_called_once_with('system ignore startupconfig switch all')
-        
-        # Verify standby connection's configure method was NOT called
-        self.standby_connection.configure.assert_not_called()
-
+        device = Mock()
+        device.name = "mock_device"
+        active_con = Mock()
+        active_con.state_machine.current_state = "any_state"
+        active_con.role = "active"
+        standby_con = Mock()
+        standby_con.state_machine.current_state = "any_state"
+        standby_con.role = "standby"
+        device.subconnections = [active_con, standby_con]
+        configure_ignore_startup_config(device)
+        self.assertEqual(
+            active_con.configure.mock_calls[0].args,
+            ('system ignore startupconfig switch all',)
+        )
+        self.assertEqual(standby_con.configure.mock_calls, [])
     def test_rommon_connection_is_handled(self):
-        """Test that rommon connection works correctly"""
-        # Set the device to have rommon connection
-        self.device.subconnections = [self.rommon_connection]
-        
-        # Call the actual function (not a mock)
-        configure_ignore_startup_config(self.device)
-        
-        # Verify rommon connection's execute method was called with right parameter
-        self.rommon_connection.execute.assert_called_once_with('SWITCH_IGNORE_STARTUP_CFG=1')
+        device = Mock()
+        device.name = "mock_device"
+        rommon_con = Mock()
+        rommon_con.state_machine.current_state = "rommon"
+        rommon_con.role = "active"
+        device.subconnections = [rommon_con]
+        configure_ignore_startup_config(device)
+        self.assertEqual(
+            rommon_con.execute.mock_calls[0].args,
+            ('SWITCH_IGNORE_STARTUP_CFG=1',)
+        )

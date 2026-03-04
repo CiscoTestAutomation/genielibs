@@ -11343,3 +11343,96 @@ def unconfigure_interface_media_type(device, interface):
         raise SubCommandFailure(
             f"Could not unconfigure media_type on {interface}. Error:\n{e}"
             )
+
+
+def config_interface_default_mtu(device, interface):
+    """ Config interface default mtu
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f"Config interface {interface} default mtu")
+
+    try:
+        device.configure(
+            [f"interface {interface}", "default mtu"]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not config default mtu on {interface}. Error:\n{error}".format(
+                interface=interface, error=e
+            )
+        )
+
+def unconfigure_interface_ip_redirect(device, interface):
+    """Unconfigure ip redirect on interface
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Interface name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(
+        f"Unconfiguring ip redirect on interface {interface}")
+
+    cmd = [f"interface {interface}",
+           "no ip redirects"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure ip redirect on {interface}. Error:\n{e}"
+            )
+
+def unconfigure_interface_ip_proxy_arp(device, interface):
+    """Unconfigure ip proxy-arp on interface
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Interface name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(
+        f"Unconfiguring ip proxy-arp on interface {interface}")
+
+    cmd = [f"interface {interface}",
+           "no ip proxy-arp"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure ip proxy-arp on {interface}. Error:\n{e}"
+            )
+
+def unconfigure_interface_ip_unreachables(device, interface):
+    """Unconfigure ip unreachables on interface
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Interface name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(
+        f"Unconfiguring ip unreachables on interface {interface}")
+
+    cmd = [f"interface {interface}",
+           "no ip unreachables"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure ip unreachables on {interface}. Error:\n{e}"
+            )

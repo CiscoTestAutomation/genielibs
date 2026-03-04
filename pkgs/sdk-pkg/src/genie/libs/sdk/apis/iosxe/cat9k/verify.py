@@ -30,10 +30,11 @@ def verify_ignore_startup_config(device):
     
     try:
         output = device.parse(cmd)
-        if output.get('rommon_variables', {}).get('switch_ignore_startup_config', 0) != 0:
-            return False
+        if output.get('rommon_variables', {}).get('switch_ignore_startup_config', 0) == 1:
+            return True
+
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not verify the ignore startup config on {device.name}. Error:\n{e}")
 
-    return True
+    return False

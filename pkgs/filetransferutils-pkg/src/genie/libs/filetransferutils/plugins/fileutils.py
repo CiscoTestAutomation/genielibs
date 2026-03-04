@@ -288,7 +288,10 @@ class FileUtils(FileUtilsCommonDeviceBase):
                     if cfg_include not in output:
                         # prepare configure config and restore config
                         config_send.append(each_config)
-                        config_restore.append('no ' + each_config)
+                        if each_config.startswith('no '):
+                            config_restore.append(each_config[3:])
+                        else:
+                            config_restore.append('no ' + each_config)
                 if config_send:
                     device.configure(config_send)
             except Exception:

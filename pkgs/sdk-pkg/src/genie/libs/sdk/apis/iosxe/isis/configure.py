@@ -919,3 +919,23 @@ def configure_isis_nsf_xfsu(device, network_entity, area_tag=None, router_id=Non
         raise SubCommandFailure(
             f"Could not configure router ISIS nsf . Error:\n{e}"
         )
+
+def configure_isis_passive_interface(device, interface):
+    """ Configure ISIS passive interface
+        Args:
+            device ('obj'): device to configure on
+            interface ('str'): Interface to make passive
+        Return:
+            N/A
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    config = [
+        'router isis',
+        f'passive-interface {interface}'
+    ]
+    try:
+        device.configure(config)
+    except Exception as e:
+        raise Exception(f"Could not configure ISIS passive interface:\nError:{e}")
+        

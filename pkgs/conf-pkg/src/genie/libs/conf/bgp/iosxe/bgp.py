@@ -1124,7 +1124,16 @@ class Bgp(ABC):
                                     attributes.obj.neighbor_attr.keys():
                                     neighbor_key = neighbor
 
-                                if neighbor_key.ip._version == 4:
+                                ip_version = getattr(neighbor_key.ip,
+                                                     'version', None)
+                                if ip_version is None:
+                                    ip_version = getattr(neighbor_key.ip,
+                                                         '_version', None)
+                                if ip_version is None:
+                                    ip_version = 6 if ':' in str(
+                                        neighbor_key.ip) else 4
+
+                                if ip_version == 4:
                                     add_family_value = 'ipv4 unicast'
                                 else:
                                     add_family_value = 'ipv6 unicast'
