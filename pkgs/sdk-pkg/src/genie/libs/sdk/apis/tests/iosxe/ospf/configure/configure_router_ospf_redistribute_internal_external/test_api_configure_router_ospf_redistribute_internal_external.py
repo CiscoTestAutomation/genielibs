@@ -1,35 +1,24 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
 from genie.libs.sdk.apis.iosxe.ospf.configure import configure_router_ospf_redistribute_internal_external
 
 
-class TestConfigureRouterOspfRedistributeInternalExternal(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          stack3-nyquist-1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: c9300
-            type: c9300
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['stack3-nyquist-1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureRouterOspfRedistributeInternalExternal(TestCase):
 
     def test_configure_router_ospf_redistribute_internal_external(self):
-        result = configure_router_ospf_redistribute_internal_external(self.device, '2', 'external', '1', '2')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        result = configure_router_ospf_redistribute_internal_external(
+            device,
+            '2',
+            'external',
+            '1',
+            '2'
+        )
+        self.assertEqual(result, None)
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            ([
+                'router ospf 2',
+                'redistribute ospf 2 match internal external             1 external 2'
+            ],)
+        )

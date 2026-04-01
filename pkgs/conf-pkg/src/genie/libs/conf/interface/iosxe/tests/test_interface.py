@@ -718,6 +718,49 @@ class test_interface(TestCase):
                 ' exit'
             ]))
 
+    def test_EthernetInterface_breakout(self):
+    
+        Genie.testbed = Testbed()
+        dev1 = Device(name='Switch', os='iosxe')
+
+        parent_intf = Interface(device=dev1, name='FourHundredGigE1/0/31')
+        parent_intf.breakout = 'enabled'
+
+        cfg = parent_intf.build_config(apply=False)
+        self.assertMultiLineEqual(str(cfg), '')
+
+      
+        self.assertIn('hw breakout 31', dev1.custom_config_cli)
+
+        
+        uncfg = parent_intf.build_unconfig(apply=False)
+        self.assertIsNone(uncfg)
+
+      
+        subport_intf = Interface(device=dev1, name='FourHundredGigE1/0/31/1')
+        subport_intf.switchport = False
+        subport_intf.ipv4 = '169.254.0.2/16'
+        subport_intf.enabled = True
+
+       
+        sub_cfg = subport_intf.build_config(apply=False)
+        self.assertMultiLineEqual(str(sub_cfg), '\n'.join([
+            'interface FourHundredGigE1/0/31/1',
+            ' no shutdown',
+            ' no switchport',
+            ' ip address 169.254.0.2 255.255.0.0',
+            ' exit',
+        ]))
+
+       
+        sub_uncfg = subport_intf.build_unconfig(apply=False)
+        self.assertMultiLineEqual(str(sub_uncfg), '\n'.join([
+            'default interface FourHundredGigE1/0/31/1',
+            'interface FourHundredGigE1/0/31/1',
+            'shutdown',
+        ]))
+
+
 if __name__ == '__main__':
     unittest.main()
 

@@ -1,35 +1,50 @@
-import os
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.flow.configure import configure_flow_monitor
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.flow.configure import (
+    configure_flow_monitor
+)
 
 
-class TestConfigureFlowMonitor(unittest.TestCase):
+def _flatten_cmds(cmds):
+    flat = []
+    for item in cmds:
+        if isinstance(item, (list, tuple)):
+            flat.extend(_flatten_cmds(item))
+        else:
+            flat.append(item)
+    return flat
 
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          javelin-morph-sj-full3-dut2:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: c9300
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['javelin-morph-sj-full3-dut2']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+
+class TestConfigureFlowMonitor(TestCase):
 
     def test_configure_flow_monitor(self):
-        result = configure_flow_monitor(self.device, 'm2in1', 'FNF-EXP', 'r2in', 60)
+        device = Mock()
+        device.state_machine.current_state = 'enable'  # Assume device is in enable mode
+
+        result = configure_flow_monitor(
+            device,
+            'm2in1',
+            'FNF-EXP',
+            'r2in',
+            60
+        )
+
         expected_output = None
         self.assertEqual(result, expected_output)
+
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.mock_calls[0].args[0]
+        flat_commands = _flatten_cmds(sent_commands)
+
+        self.assertIn('flow monitor m2in1', flat_commands)
+        self.assertIn('exporter FNF-EXP', flat_commands)
+        self.assertIn('record r2in', flat_commands)
+        self.assertIn('cache timeout active 60', flat_commands)
+        self.assertIn('cache timeout inactive 60', flat_commands)
+
+
+if __name__ == '__main__':
+    unittest.main()

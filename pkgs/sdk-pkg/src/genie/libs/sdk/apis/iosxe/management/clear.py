@@ -48,3 +48,37 @@ def clear_idle_vty_sessions(device, idle_timeout=60):
     else:
         log.info("No idle sessions, not clearing vty sessions")
         return
+
+def clear_ip_ssh_pubkey_server(device, target='all'):
+    """ clear ip ssh pubkey server
+        Args:
+            device ('obj'): device to execute on
+            target ('str'): 'all' or IPv4/IPv6 address
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    target = str(target or '').strip()
+    if not target:
+        raise SubCommandFailure("target is required: use 'all' or an IPv4/IPv6 address")
+
+    if target == 'all':
+        cmd = 'clear ip ssh pubkey server all'
+    else:
+        cmd = 'clear ip ssh pubkey server {target}'.format(target=target)
+
+    log.debug(f"Executing {cmd} on device {device.name}")
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        if 'entry not found' in str(e).lower():
+            log.warning("No SSH pubkey entry found for target '{target}' on {device}. Nothing to clear.".format(
+                target=target, device=device.name
+            ))
+            return
+        raise SubCommandFailure(
+            'Could not execute {cmd} on {device}, Error: {error}'.format(
+                cmd=cmd, device=device.name, error=e
+            )
+        )

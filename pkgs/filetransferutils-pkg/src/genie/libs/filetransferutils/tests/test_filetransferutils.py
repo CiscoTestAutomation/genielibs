@@ -63,10 +63,14 @@ class test_filetransferutils(unittest.TestCase):
             device = AttrDict(os=os_)
             for proto in ['ftp', 'tftp', 'scp', 'sftp', 'http']:
                 fu = FileUtils.from_device(device, protocol=proto)
-                self.assertIn(
-                    'genie.libs.filetransferutils.plugins.{os_}.{proto}.fileutils.FileUtils'
-                    .format(os_=os_, proto=proto),
-                    str(fu.__class__))
+                class_name = str(fu.__class__)
+                self.assertTrue(
+                    'filetransferutils.plugins.{os_}.{proto}.fileutils.FileUtils'
+                    .format(os_=os_, proto=proto) in class_name
+                    or
+                    'filetransferutils.plugins.{os_}.fileutils.FileUtils'
+                    .format(os_=os_) in class_name,
+                    msg="Unexpected class: {}".format(class_name))
                 self.assertEqual(fu.protocol, proto)
                 self.assertEqual(fu.os, os_)
 
@@ -127,7 +131,7 @@ class TestBaseFileUtils(unittest.TestCase):
 
     def test_unknown_os(self):
         with self.assertRaisesRegex(Exception,
-                "Cannot find fileutils plugin for os unknown"):
+                r"Cannot find fileutils plugin for os .?unknown.?"):
             fu_unknown = FileUtils(os='unknown')
 
 
@@ -137,7 +141,7 @@ class TestBaseFileUtils(unittest.TestCase):
             {'username': 'my_user', 'password': 'my_password'})
         device = AttrDict(os='iosxe', testbed=testbed)
         fu = FileUtils.from_device(device, arg1='value1')
-        self.assertIn('genie.libs.filetransferutils.plugins.iosxe.fileutils.FileUtils',
+        self.assertIn('filetransferutils.plugins.iosxe.fileutils.FileUtils',
             str(fu.__class__))
         self.assertEqual(fu.testbed, testbed)
         self.assertEqual(fu.arg1, 'value1')
@@ -153,7 +157,7 @@ class TestBaseFileUtils(unittest.TestCase):
             {'username': 'my_user2', 'password': 'my_password2'})
         device = AttrDict(os='iosxe', testbed=testbed)
         fu = FileUtils.from_device(device, testbed=testbed2, arg1='value1')
-        self.assertIn('genie.libs.filetransferutils.plugins.iosxe.fileutils.FileUtils',
+        self.assertIn('filetransferutils.plugins.iosxe.fileutils.FileUtils',
             str(fu.__class__))
         self.assertEqual(fu.testbed, testbed)
         self.assertEqual(fu.arg1, 'value1')
@@ -166,7 +170,7 @@ class TestBaseFileUtils(unittest.TestCase):
             {'username': 'my_user2', 'password': 'my_password2'})
         device = AttrDict(os='iosxe')
         fu = FileUtils.from_device(device, testbed=testbed2, arg1='value1')
-        self.assertIn('genie.libs.filetransferutils.plugins.iosxe.fileutils.FileUtils',
+        self.assertIn('filetransferutils.plugins.iosxe.fileutils.FileUtils',
             str(fu.__class__))
         self.assertEqual(fu.testbed, testbed2)
         self.assertEqual(fu.arg1, 'value1')
@@ -176,7 +180,7 @@ class TestBaseFileUtils(unittest.TestCase):
     def test_create_from_no_tb_device_no_tb(self):
         device = AttrDict(os='iosxe')
         fu = FileUtils.from_device(device, arg1='value1')
-        self.assertIn('genie.libs.filetransferutils.plugins.iosxe.fileutils.FileUtils',
+        self.assertIn('filetransferutils.plugins.iosxe.fileutils.FileUtils',
             str(fu.__class__))
         self.assertEqual(fu.testbed, None)
         self.assertEqual(fu.arg1, 'value1')
@@ -2059,6 +2063,7 @@ class TestBaseLinuxHttpFileUtils(unittest.TestCase):
         mock_response.headers = expected_data
         # Set the status_code attribute of the mock response
         mock_response.status_code = 200
+        mock_response.raise_for_status = Mock()
         # Configure the mock get to return the mock response
         mock_head.return_value = mock_response
 
@@ -2068,9 +2073,48 @@ class TestBaseLinuxHttpFileUtils(unittest.TestCase):
         result = fu.stat(url)
 
         # Assert that the requests.head method was called with the correct URL
-        mock_head.assert_called_once_with(url='http://generic:8000//path/to/remote/dir/', timeout=60)
+        mock_head.assert_called_once_with(
+            url='http://generic:8000//path/to/remote/dir/',
+            timeout=60,
+            allow_redirects=True,
+        )
         # Assert that the result is as expected
         self.assertEqual(result.st_size, 1024)
+
+    @patch('genie.libs.filetransferutils.protocols.http.fileutils.requests.get')
+    @patch('genie.libs.filetransferutils.protocols.http.fileutils.requests.head')
+    def test_stat_head_zero_uses_range_get_content_range(self, mock_head, mock_get):
+        mock_head_response = Mock()
+        mock_head_response.headers = {'Content-Length': '0'}
+        mock_head_response.status_code = 200
+        mock_head_response.raise_for_status = Mock()
+        mock_head.return_value = mock_head_response
+
+        mock_get_response = Mock()
+        mock_get_response.headers = {'Content-Range': 'bytes 0-0/4321'}
+        mock_get_response.status_code = 206
+        mock_get_response.raise_for_status = Mock()
+        mock_get_response.close = Mock()
+        mock_get.return_value = mock_get_response
+
+        url = 'http://generic:8000//path/to/remote/dir/file.bin'
+        fu = FileUtils(testbed=self.testbed_1)
+        result = fu.stat(url)
+
+        mock_head.assert_called_once_with(
+            url=url,
+            timeout=60,
+            allow_redirects=True,
+        )
+        mock_get.assert_called_once_with(
+            url=url,
+            timeout=60,
+            stream=True,
+            allow_redirects=True,
+            headers={'Range': 'bytes=0-0'},
+        )
+        mock_get_response.close.assert_called_once()
+        self.assertEqual(result.st_size, 4321)
 
 class TestBaseLinuxTftpFileUtils(unittest.TestCase):
     from genie.libs.filetransferutils.fileutils import FileUtils

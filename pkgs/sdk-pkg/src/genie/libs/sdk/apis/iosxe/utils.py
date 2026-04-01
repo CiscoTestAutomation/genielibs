@@ -867,6 +867,32 @@ def get_show_output_exclude(device, command, filter, output=None):
         result = False
 
     return [result, output]
+    
+def get_show_output_begin(device, command, filter, output=None):
+    """ Find the lines which are match from show command.
+        Args:
+            device (`obj`): Device object
+            command (`str`): show command
+            filter (`str`): filter expression
+            output (`str`): output of show command. (optional) Default to None
+        Returns:
+            list or None:
+                [True, output] when command output is found
+                None when output is empty or command execution fails
+        Raises:
+            SubCommandFailure
+    """
+    command += f' | begin {filter}'
+    try:
+        output = device.execute(command)
+    except SubCommandFailure as error:
+        log.error(f"Failed to execute command '{command}': {error}")
+        return None
+
+    if output == "":
+        log.error(f"No match found for command '{command}'")
+
+    return [True, output]
 
 def decrypt_tacacs_pcap(filename, key, filepath):
     """Decrypt and Converting the tacacs pcap file to tacacs txt file

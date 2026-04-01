@@ -1,35 +1,28 @@
-import os
 import unittest
-from pyats.topology import loader
+from unittest.mock import Mock
 from genie.libs.sdk.apis.iosxe.flow.configure import start_monitor_capture
 
 
 class TestStartMonitorCapture(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          Vishal_C9600_SP:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: c9600
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Vishal_C9600_SP']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
-
     def test_start_monitor_capture(self):
-        result = start_monitor_capture(self.device, 'test')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        # Create mock device
+        device = Mock()
+
+        # start_monitor_capture typically uses EXEC (device.execute) for this command
+        device.execute.return_value = "Started capture point : test"
+
+        # Call the API
+        result = start_monitor_capture(device, 'test')
+
+        # Assertions
+        self.assertIsNone(result)
+
+        # Verify execute was called and sent the expected CLI
+        device.execute.assert_called_once()
+        sent_cmd = device.execute.call_args[0][0]
+        self.assertIn('monitor capture test start', str(sent_cmd))
+
+
+if __name__ == '__main__':
+    unittest.main()

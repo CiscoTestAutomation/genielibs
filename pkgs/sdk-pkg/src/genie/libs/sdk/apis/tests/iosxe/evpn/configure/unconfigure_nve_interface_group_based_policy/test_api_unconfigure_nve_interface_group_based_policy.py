@@ -1,35 +1,32 @@
-import os
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.evpn.configure import unconfigure_nve_interface_group_based_policy
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.evpn.configure import (
+    unconfigure_nve_interface_group_based_policy
+)
 
 
-class TestUnconfigureNveInterfaceGroupBasedPolicy(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          VTEP1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: c9500
-            type: c9500
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['VTEP1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigureNveInterfaceGroupBasedPolicy(TestCase):
 
     def test_unconfigure_nve_interface_group_based_policy(self):
-        result = unconfigure_nve_interface_group_based_policy(self.device, '1')
+        device = Mock()
+        device.state_machine.current_state = 'enable'  # Assume device is in enable mode
+
+        result = unconfigure_nve_interface_group_based_policy(device, '1')
+
         expected_output = None
         self.assertEqual(result, expected_output)
+
+        # Ensure configure was called
+        device.configure.assert_called_once()
+
+        # Validate commands sent to the device
+        sent_commands = device.configure.mock_calls[0].args[0]
+
+        self.assertIn('interface nve 1', sent_commands)
+        self.assertIn('no group-based-policy', sent_commands)
+
+
+if __name__ == '__main__':
+    unittest.main()

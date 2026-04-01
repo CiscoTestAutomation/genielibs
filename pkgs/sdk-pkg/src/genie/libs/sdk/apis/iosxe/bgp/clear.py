@@ -158,3 +158,32 @@ def clear_bgp_ipv6_dampening(device, prefix=None, neighbor=None):
         raise SubCommandFailure(
             f"Could not clear BGP IPv6 dampening on device {device}. Error:\n{e}"
         )
+
+def clear_bgp_ipv6_neighbor_soft(device, neighbor_address, direction="out"):
+    """
+    Clear BGP IPv6 unicast neighbor soft reconfiguration
+    
+    Args:
+        device ('obj'): Device object
+        neighbor_address ('str'): Neighbor IPv6 address (e.g., "2::2")
+        direction ('str'): Direction - 'in' or 'out' (default: 'out')
+    
+    Returns:
+        str: Command output
+        
+    Raises:
+        SubCommandFailure: Failed executing clear command
+    """
+    
+    if direction not in ["in", "out"]:
+        raise ValueError("Direction must be 'in' or 'out'")
+        
+    clear_cmd = f"clear bgp ipv6 unicast {neighbor_address} soft {direction}"
+    
+    try:
+        output = device.execute(clear_cmd)
+        return output
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not clear BGP IPv6 neighbor {neighbor_address} soft {direction} on device {device.name}. Error: {str(e)}"
+        )

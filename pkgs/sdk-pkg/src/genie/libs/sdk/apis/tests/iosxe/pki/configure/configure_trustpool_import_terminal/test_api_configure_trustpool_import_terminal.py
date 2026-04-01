@@ -1,21 +1,368 @@
 from unittest import TestCase
-from genie.libs.sdk.apis.iosxe.pki.configure import configure_trustpool_import_terminal
 from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.pki.configure import (
+    configure_trustpool_import_terminal,
+)
 
 
 class TestConfigureTrustpoolImportTerminal(TestCase):
 
     def test_configure_trustpool_import_terminal(self):
         self.device = Mock()
-        result = configure_trustpool_import_terminal(self.device, ('-----BEGIN CERTIFICATE-----\n'
- 'MIIDXTCCAkWgAwIBAgIJAKoK/OvD/XjIMA0GCSqGSIb3DQEBBQUAMEUxCzAJBgNV\n'
- 'BAYTAkFVMRMwEQYDVQQIDApTb21lLVN0YXRlMSEwHwYDVQQKDBhJbnRlcm5ldCBX\n'
- 'aWRnaXRzIFB0eSBMdGQwHhcNMTMxMjMwMTY1NzUwWhcNMjMxMjI4MTY1NzUwWjBF\n'
- 'MQswCQYDVQQGEwJBVTETMBEGA1UECAwKU29tZS1TdGF0ZTEhMB8GA1UECgwYSW50\n'
- 'ZXJuZXQgV2lkZ2l0cyBQdHkgTHRkMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIB\n'
- 'CgKCAQEAwU8/q3W0y9DGF5Z4BPQvNvNnUo4DEk+zM7ZXBh2LZwLSxF8MhAwLmWgn\n'
- '-----END CERTIFICATE-----'))
+
+        verify_output = """CA Certificate
+  Status: Available
+  Certificate Serial Number (hex): 01
+  Certificate Usage: Signature
+  Issuer: 
+    cn=ios_rootca
+  Subject: 
+    cn=ios_rootca
+  Validity Date: 
+    start date: 23:48:46 IST Mar 12 2026
+    end   date: 00:48:46 IST Mar 13 2026
+  Associated Trustpoints: Trustpool 
+  Trustpool: Downloaded
+
+CA Certificate
+  Status: Available
+  Certificate Serial Number (hex): 0B1D839976B135A6A1
+  Certificate Usage: Signature
+  Issuer: 
+    cn=TRS Bundle Root CA
+    o=Cisco
+  Subject: 
+    cn=TRS Bundle Root CA
+    o=Cisco
+  Validity Date: 
+    start date: 22:41:50 IST Nov 29 2023
+    end   date: 22:41:50 IST Nov 29 2099
+  Associated Trustpoints: Trustpool 
+  Trustpool: Built-In
+
+CA Certificate
+  Status: Available
+  Certificate Serial Number (hex): 04302A0B364CE2DA93
+  Certificate Usage: Signature
+  Issuer: 
+    cn=Cisco Basic Assurance Root CA 2099
+    o=Cisco
+  Subject: 
+    cn=Cisco Manufacturing CA III
+    o=Cisco
+  CRL Distribution Points: 
+    http://www.cisco.com/security/pki/crl/cbarc2099.crl
+  Validity Date: 
+    start date: 00:58:06 IST Jul 6 2017
+    end   date: 00:49:28 IST May 27 2099
+  Associated Trustpoints: Trustpool 
+  Trustpool: Built-In
+
+CA Certificate
+  Status: Available
+  Certificate Serial Number (hex): 01A65AF15EE994EBE1
+  Certificate Usage: Signature
+  Issuer: 
+    cn=Cisco Basic Assurance Root CA 2099
+    o=Cisco
+  Subject: 
+    cn=Cisco Basic Assurance Root CA 2099
+    o=Cisco
+  Validity Date: 
+    start date: 00:49:29 IST May 27 2017
+    end   date: 00:49:29 IST May 27 2099
+  Associated Trustpoints: Trustpool 
+  Trustpool: Built-In
+
+CA Certificate
+  Status: Available
+  Certificate Serial Number (hex): 0A6475524CD8617C62
+  Certificate Usage: Signature
+  Issuer: 
+    cn=Cisco Root CA 2099
+    o=Cisco
+  Subject: 
+    o=Cisco
+    cn=High Assurance SUDI CA
+  CRL Distribution Points: 
+    http://www.cisco.com/security/pki/crl/crca2099.crl
+  Validity Date: 
+    start date: 01:58:08 IST Aug 12 2016
+    end   date: 02:28:27 IST Aug 10 2099
+  Associated Trustpoints: Trustpool 
+  Trustpool: Built-In
+
+CA Certificate
+  Status: Available
+  Certificate Serial Number (hex): 019A335878CE16C1C1
+  Certificate Usage: Signature
+  Issuer: 
+    cn=Cisco Root CA 2099
+    o=Cisco
+  Subject: 
+    cn=Cisco Root CA 2099
+    o=Cisco
+  Validity Date: 
+    start date: 02:28:28 IST Aug 10 2016
+    end   date: 02:28:28 IST Aug 10 2099
+  Associated Trustpoints: Trustpool 
+  Trustpool: Built-In
+
+CA Certificate
+  Status: Available
+  Certificate Serial Number (hex): 0A0142800000014523C844B500000002
+  Certificate Usage: Signature
+  Issuer: 
+    cn=IdenTrust Commercial Root CA 1
+    o=IdenTrust
+    c=US
+  Subject: 
+    cn=IdenTrust Commercial Root CA 1
+    o=IdenTrust
+    c=US
+  Validity Date: 
+    start date: 23:42:23 IST Jan 16 2014
+    end   date: 23:42:23 IST Jan 16 2034
+  Associated Trustpoints: RXC_Trustpool2 
+  Trustpool: Built-In
+
+CA Certificate
+  Status: Available
+  Certificate Serial Number (hex): 0509
+  Certificate Usage: Signature
+  Issuer: 
+    cn=QuoVadis Root CA 2
+    o=QuoVadis Limited
+    c=BM
+  Subject: 
+    cn=QuoVadis Root CA 2
+    o=QuoVadis Limited
+    c=BM
+  Validity Date: 
+    start date: 23:57:00 IST Nov 24 2006
+    end   date: 23:53:33 IST Nov 24 2031
+  Associated Trustpoints: Trustpool 
+  Trustpool: Built-In
+
+CA Certificate
+  Status: Available
+  Certificate Serial Number (hex): 18DAD19E267DE8BB4A2158CDCC6B3B4A
+  Certificate Usage: Signature
+  Issuer: 
+    cn=VeriSign Class 3 Public Primary Certification Authority - G5
+    ou=(c) 2006 VeriSign
+     Inc. - For authorized use only
+    ou=VeriSign Trust Network
+    o=VeriSign
+     Inc.
+    c=US
+  Subject: 
+    cn=VeriSign Class 3 Public Primary Certification Authority - G5
+    ou=(c) 2006 VeriSign
+     Inc. - For authorized use only
+    ou=VeriSign Trust Network
+    o=VeriSign
+     Inc.
+    c=US
+  Validity Date: 
+    start date: 05:30:00 IST Nov 8 2006
+    end   date: 05:29:59 IST Jul 17 2036
+  Associated Trustpoints: Trustpool 
+  Trustpool: Built-In
+
+CA Certificate
+  Status: Available
+  Certificate Serial Number (hex): 01
+  Certificate Usage: Signature
+  Issuer: 
+    cn=Cisco RXC-R2
+    o=Cisco Systems
+    c=US
+  Subject: 
+    cn=Cisco RXC-R2
+    o=Cisco Systems
+    c=US
+  Validity Date: 
+    start date: 03:16:56 IST Jul 10 2014
+    end   date: 03:16:56 IST Jul 10 2034
+  Associated Trustpoints: RXC_Trustpool 
+  Trustpool: Built-In
+
+CA Certificate
+  Status: Available
+  Certificate Serial Number (hex): 61096E7D00000000000C
+  Certificate Usage: Signature
+  Issuer: 
+    cn=Cisco Root CA 2048
+    o=Cisco Systems
+  Subject: 
+    cn=ACT2 SUDI CA
+    o=Cisco
+  CRL Distribution Points: 
+    http://www.cisco.com/security/pki/crl/crca2048.crl
+  Validity Date: 
+    start date: 23:26:57 IST Jun 30 2011
+    end   date: 01:55:42 IST May 15 2029
+  Associated Trustpoints: Trustpool 
+  Trustpool: Built-In
+
+CA Certificate
+  Status: Available
+  Certificate Serial Number (hex): 01
+  Certificate Usage: Signature
+  Issuer: 
+    cn=Licensing Root - DEV
+    o=Cisco
+  Subject: 
+    cn=Licensing Root - DEV
+    o=Cisco
+  Validity Date: 
+    start date: 03:25:43 IST Apr 25 2013
+    end   date: 03:25:43 IST Apr 25 2033
+  Associated Trustpoints: Trustpool 
+  Trustpool: Built-In
+
+CA Certificate
+  Status: Available
+  Certificate Serial Number (hex): 02
+  Certificate Usage: Signature
+  Issuer: 
+    cn=Cisco Root CA M2
+    o=Cisco
+  Subject: 
+    cn=Cisco Manufacturing CA SHA2
+    o=Cisco
+  CRL Distribution Points: 
+    http://www.cisco.com/security/pki/crl/crcam2.crl
+  Validity Date: 
+    start date: 19:20:58 IST Nov 12 2012
+    end   date: 18:30:17 IST Nov 12 2037
+  Associated Trustpoints: Trustpool 
+  Trustpool: Built-In
+
+CA Certificate
+  Status: Available
+  Certificate Serial Number (hex): 01
+  Certificate Usage: Signature
+  Issuer: 
+    cn=Cisco Root CA M2
+    o=Cisco
+  Subject: 
+    cn=Cisco Root CA M2
+    o=Cisco
+  Validity Date: 
+    start date: 18:30:18 IST Nov 12 2012
+    end   date: 18:30:18 IST Nov 12 2037
+  Associated Trustpoints: Trustpool 
+  Trustpool: Built-In
+
+CA Certificate
+  Status: Available
+  Certificate Serial Number (hex): 6A6967B3000000000003
+  Certificate Usage: Signature
+  Issuer: 
+    cn=Cisco Root CA 2048
+    o=Cisco Systems
+  Subject: 
+    cn=Cisco Manufacturing CA
+    o=Cisco Systems
+  CRL Distribution Points: 
+    http://www.cisco.com/security/pki/crl/crca2048.crl
+  Validity Date: 
+    start date: 03:46:01 IST Jun 11 2005
+    end   date: 01:55:42 IST May 15 2029
+  Associated Trustpoints: Trustpool 
+  Trustpool: Built-In
+
+CA Certificate
+  Status: Available
+  Certificate Serial Number (hex): 5FF87B282B54DC8D42A315B568C9ADFF
+  Certificate Usage: Signature
+  Issuer: 
+    cn=Cisco Root CA 2048
+    o=Cisco Systems
+  Subject: 
+    cn=Cisco Root CA 2048
+    o=Cisco Systems
+  Validity Date: 
+    start date: 01:47:12 IST May 15 2004
+    end   date: 01:55:42 IST May 15 2029
+  Associated Trustpoints: Trustpool 
+  Trustpool: Built-In
+
+CA Certificate
+  Status: Available
+  Certificate Serial Number (hex): 2ED20E7347D333834B4FDD0DD7B6967E
+  Certificate Usage: Signature
+  Issuer: 
+    cn=Cisco Root CA M1
+    o=Cisco
+  Subject: 
+    cn=Cisco Root CA M1
+    o=Cisco
+  Validity Date: 
+    start date: 03:20:24 IST Nov 19 2008
+    end   date: 03:29:46 IST Nov 19 2033
+  Associated Trustpoints: Trustpool 
+  Trustpool: Built-In
+
+CA Certificate
+  Status: Available
+  Certificate Serial Number (hex): 01
+  Certificate Usage: Signature
+  Issuer: 
+    cn=Cisco Licensing Root CA
+    o=Cisco
+  Subject: 
+    cn=Cisco Licensing Root CA
+    o=Cisco
+  Validity Date: 
+    start date: 01:18:47 IST May 31 2013
+    end   date: 01:18:47 IST May 31 2038
+  Associated Trustpoints: Trustpool 
+  Storage: nvram:CiscoLicensi#1CA.cer
+  Trustpool: Built-In"""
+
+        def results_side_effect(arg, **kwargs):
+            return verify_output if arg == "show crypto pki trustpool" else None
+
+        self.device.configure.return_value = ""
+        self.device.execute.side_effect = results_side_effect
+
+        certificate = """-----BEGIN CERTIFICATE-----
+MIIDCDCCAfCgAwIBAgIBATANBgkqhkiG9w0BAQ0FADAVMRMwEQYDVQQDDAppb3Nf
+cm9vdGNhMB4XDTI2MDMxMjE4MTg0NloXDTI2MDMxMjE5MTg0NlowFTETMBEGA1UE
+AwwKaW9zX3Jvb3RjYTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAJ90
+dKdzGzMbg34mLu0JoMhUM2ma546ZU/UJ7C9kJD/E1I9JiHiiLxGwv55Wozx0h8JP
+fv9jdXMMqktD/TuC8XWYFvEWYiOzrD55Bqe9YkrPdietQp1e4/XALW45Vj2dCyPe
+H7diHEULZVTqesX5Rl6Vh8ISVW3COJ2VXCWuXOue9AELlDFEaePPqF8Pc/j1otX4
+2cftlsJVWZ0ZEixKOJrCpVmMBL3MYEsrnZopK1n3ThDXBrWMCbQnz82zmdYQuj5L
+Zcqlbcd6SXn7F8UbzBMMTcQcAl+RmRveu1S2eh/LZ6mAk44I5AT7c65Am50awfbl
+kLtuNcqjr5WFzh0bZP0CAwEAAaNjMGEwHQYDVR0OBBYEFPdIqyrayCu6NVfYp91y
+6/mEEMBdMB8GA1UdIwQYMBaAFPdIqyrayCu6NVfYp91y6/mEEMBdMA4GA1UdDwEB
+/wQEAwIBhjAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3DQEBDQUAA4IBAQBuSw4m
+70sWmLHHQmWKeC/CR4QAK13C2ujEVro2nMLvW84zsN9J3lYqhvq9Hr65moVEDSPj
+8KgNx2EOpg5jWFfa/MgOOxXU9kyEPWHTpimF35b2lFRnSHJiPKohgKy5FUROwUfp
+AfO0BTNRKfK1FJql+lWe9hhisRhM/zsXjus+t3ZMgK2rhsY0AsLwwuZ92BExqHEY
+d7Vn/QSqL9zlZEkFGTdxOY4mBe32oDQ+IDbi2irjQ6ewBI+BspC+sJ4rKyetAnu4
+FN5pAiYQzlLD98lovJagXvxI4dXDB8CdO5wjR4y++ssd3zg3rkdVbbb0JP/dpKD+
+WlIXNrGI9VMrEZBn
+-----END CERTIFICATE-----
+"""
+
+        result = configure_trustpool_import_terminal(self.device, certificate, None)
+
+        self.device.configure.assert_called_once()
         self.assertEqual(
-            self.device.configure.mock_calls[0].args,
-            ('crypto pki trustpool import terminal',)
+            self.device.configure.call_args[0][0],
+            "crypto pki trustpool import terminal",
         )
+
+        self.assertIn(
+            "show crypto pki trustpool",
+            self.device.execute.call_args_list[0][0],
+        )
+
+        expected_output = f"\n\n{verify_output}"
+        self.assertEqual(result, expected_output)

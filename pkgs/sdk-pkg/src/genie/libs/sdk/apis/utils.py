@@ -24,7 +24,7 @@ from time import strptime
 from datetime import datetime
 from netaddr import IPAddress, INET_ATON
 from ipaddress import IPv4Interface
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlsplit, urlunsplit
 from functools import wraps
 
 
@@ -915,7 +915,7 @@ def copy_to_device(device,
         remote_path (str): remote file path on the server
         local_path (str): local file path to copy to on the device (default: flash:)
         server (str): hostname or address of the server (default: None)
-        protocol(str): file transfer protocol to be used (default: https)
+        protocol(str): file transfer protocol to be used (default: None)
         vrf (str): vrf to use (optional)
         timeout(int): timeout value in seconds, default 300
         compact(bool): compress image option for n9k, defaults False
@@ -976,7 +976,16 @@ def copy_to_device(device,
                                    protocol=protocol,
                                    **kwargs)
         except Exception as e:
-            log.info(f'Failed to copy file to device: {e}')
+            copy_context = (
+                "Failed to copy remote file '{}' to '{}' on device '{}' "
+                "using protocol '{}' from server '{}' with timeout {} seconds"
+                .format(remote_path,
+                        local_path,
+                        device.name,
+                        protocol,
+                        server,
+                        timeout))
+            log.exception(f'{copy_context}: {e}')
 
             if compact or use_kstack:
                 log.info("Failed to copy with compact/use-kstack option, "
@@ -1035,6 +1044,9 @@ def copy_to_device(device,
     if protocol == 'https':
         protocol = 'http'
 
+    # Re-instantiate FileUtils so it loads the correct implementation
+    fu = FileUtils.from_device(device, protocol=protocol)
+
     with FileServer(protocol=protocol,
                     address=local_ip,
                     path=remote_path_parent,
@@ -1078,6 +1090,7 @@ def copy_to_device(device,
                 interface=mgmt_interface,
                 compact=compact,
                 use_kstack=use_kstack,
+                protocol=protocol,
                 **kwargs)
 
         except Exception:
@@ -1089,7 +1102,7 @@ def copy_from_device(device,
                      local_path,
                      remote_path=None,
                      server=None,
-                     protocol='http',
+                     protocol=None,
                      vrf=None,
                      timeout=300,
                      timestamp=False,
@@ -1104,7 +1117,7 @@ def copy_from_device(device,
         local_path (str): local path from the device (path including filename)
         remote_path (str): Path on the server (default: .) (optionally include filename)
         server (str): Server to copy file to (optional)
-        protocol (str): Protocol to use to copy (default: http)
+        protocol (str): Protocol to use to copy (default: None)
         vrf (str): VRF to use for copying (default: None)
         timeout('int'): timeout value in seconds, default 300
         timestamp (bool): include timestamp in filename (default: False)
@@ -1217,6 +1230,14 @@ def copy_from_device(device,
         ts = datetime.utcnow().strftime('%Y%m%dT%H%M%S%f')[:-3]
         filename = '{}_{}'.format(filename, ts)
 
+    protocol = protocol or 'scp'
+    # TODO: Remove once https is supported in FileServer
+    if protocol == 'https':
+        protocol = 'http'
+
+    # Re-instantiate FileUtils so it loads the correct implementation
+    fu = FileUtils.from_device(device, protocol=protocol)
+
     with FileServer(protocol=protocol,
                     address=local_ip,
                     path=remote_path,
@@ -1256,6 +1277,7 @@ def copy_from_device(device,
                                device=device,
                                vrf=vrf,
                                interface=mgmt_interface,
+                               protocol=protocol,
                                **kwargs)
 
         except Exception:
@@ -1282,25 +1304,30 @@ def get_file_size_from_server(device,
          integer representation of file size in bytes
     """
     if fu_session:
-        return _get_file_size_from_server(server,
+        return _get_file_size_from_server(device,
+                                          server,
                                           path,
                                           protocol,
                                           timeout=timeout,
                                           fu_session=fu_session)
     with FileUtils(testbed=device.testbed) as fu:
-        return _get_file_size_from_server(server,
+        return _get_file_size_from_server(device,
+                                          server,
                                           path,
                                           protocol,
                                           timeout=timeout,
                                           fu_session=fu)
 
 
-def _get_file_size_from_server(server,
+def _get_file_size_from_server(device,
+                               server,
                                path,
                                protocol,
                                timeout=300,
                                fu_session=None):
     """ Get file size from the server (works for sftp and ftp)
+        If a proxy (unix jump host) is configured on the device, the stat is done
+        via the proxy using a short-lived socat relay (proxy:relay_port -> server:port).
         Args:
             server ('str'): server address or hostname
             path ('str'): file path on server to check
@@ -1310,10 +1337,73 @@ def _get_file_size_from_server(server,
         Returns:
              integer representation of file size in bytes
         """
+    proxy = device.api.get_proxy()
+    if proxy:
+        proxy_dev = (device.api.convert_server_to_linux_device(proxy)
+                     or device.testbed.devices.get(proxy))
+    else:
+        proxy_dev = None
+
+    if proxy_dev:
+        proxy_dev.connect()
+
+        url = '{p}://{s}/{f}'.format(p=protocol, s=server, f=path)
+        url = fu_session.validate_and_update_url(url, device=device)
+
+        # We `urlsplit()` the validated URL to (1) extract the real remote endpoint
+        # for the proxy relay, and (2) later `urlunsplit()` a new URL whose netloc
+        # points to the proxy (proxy_host:relay_port) while preserving scheme,
+        # userinfo, path, query, and fragment.
+        parsed = urlsplit(url)
+        remote_ip = parsed.hostname
+        if not remote_ip:
+            raise Exception(f'Unable to determine remote host from URL: {url}')
+
+        default_ports = {
+            'ftp': '21',
+            'http': '80',
+            'https': '443',
+            'scp': '22',
+            'sftp': '22',
+            'ssh': '22',
+            'tftp': '69',
+        }
+        remote_port = str(parsed.port) if parsed.port else default_ports.get(parsed.scheme)
+        if not remote_port:
+            raise Exception(f'Unable to determine remote port for protocol {parsed.scheme!r}')
+
+        socat_protocol = 'UDP4' if parsed.scheme == 'tftp' else 'TCP4'
+        relay_port, relay_id = proxy_dev.api.start_socat_relay(
+            remote_ip=remote_ip,
+            remote_port=remote_port,
+            protocol=socat_protocol)
+
+        # Redirect the URL's netloc to proxy_host:relay_port, keeping any userinfo.
+        proxy_host = fu_session.get_hostname(proxy)
+        userinfo = ''
+        if parsed.username:
+            if parsed.password is not None:
+                userinfo = f'{parsed.username}:{parsed.password}@'
+            else:
+                userinfo = f'{parsed.username}@'
+        proxied_netloc_base = f'{userinfo}{proxy_host}'
+
+        proxied_url = urlunsplit((
+            parsed.scheme,
+            f'{proxied_netloc_base}:{relay_port}',
+            parsed.path,
+            parsed.query,
+            parsed.fragment,
+        ))
+
+        try:
+            return fu_session.stat(target=proxied_url, timeout_seconds=timeout).st_size
+        finally:
+            proxy_dev.api.stop_socat_relay(relay_id)
+
+    # No proxy: do a direct stat on the validated URL.
     url = '{p}://{s}/{f}'.format(p=protocol, s=server, f=path)
     url = fu_session.validate_and_update_url(url)
-
-    # get file size, and if failed, raise an exception
     try:
         return fu_session.stat(target=url, timeout_seconds=timeout).st_size
     except NotImplementedError as e:
@@ -3352,14 +3442,35 @@ def get_interface_from_yaml(local, remote, value, testbed_topology, **kwargs):
 
     # Get all the links for local
     local_links = data.contains(local.strip()).get_values('link')
+
+    # If the links are not part of the topology section, try to find it via the
+    # devices structure. It is unclear how the data is structured for this
+    # scenario.
+    #TODO: update documentation/comments
     if not local_links:
         local = data.contains(local.strip()).contains('devices')[0].path[1]
         local_links = data.contains(local.strip()).get_values('link')
+
+    # Get all the segments for local
+    local_segments = data.contains(local.strip()).get_values('segment')
+
+    # If user gives a segment name, get the link connected to the segment
+    if remote in local_segments:
+        interface = data.contains(value).contains(local).get_values(
+            'interfaces', 0)
+        return interface
+
     # Get all the links for remote
     remote_links = data.contains(remote.strip()).get_values('link')
+
+    # If the links are not part of the topology section, try to find it via the
+    # devices structure. It is unclear how the data is structured for this
+    # scenario.
+    #TODO: update documentation/comments
     if not remote_links:
         remote = data.contains(remote.strip()).contains('devices')[0].path[1]
         remote_links = data.contains(remote.strip()).get_values('link')
+
     # Now find the one connected to the remote
     common_links = sorted(set(local_links).intersection(set(remote_links)))
     # if value is an int

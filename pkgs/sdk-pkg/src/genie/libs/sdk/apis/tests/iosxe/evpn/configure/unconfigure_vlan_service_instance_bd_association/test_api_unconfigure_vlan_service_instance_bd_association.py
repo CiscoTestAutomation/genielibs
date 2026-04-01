@@ -1,35 +1,36 @@
-import os
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.evpn.configure import unconfigure_vlan_service_instance_bd_association
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.evpn.configure import (
+    unconfigure_vlan_service_instance_bd_association
+)
 
 
-class TestUnconfigureVlanServiceInstanceBdAssociation(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          IR1101:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: router
-            type: router
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['IR1101']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigureVlanServiceInstanceBdAssociation(TestCase):
 
     def test_unconfigure_vlan_service_instance_bd_association(self):
-        result = unconfigure_vlan_service_instance_bd_association(self.device, 10, 'Vlan12', 12)
+        device = Mock()
+        device.state_machine.current_state = 'enable'  # Assume device is in enable mode
+
+        result = unconfigure_vlan_service_instance_bd_association(
+            device,
+            10,        # bridge_domain
+            'Vlan12',  # vlan_interface
+            12         # service_instance
+        )
+
         expected_output = None
         self.assertEqual(result, expected_output)
+
+        # Ensure configure was called
+        device.configure.assert_called_once()
+
+        # Validate commands sent to the device
+        sent_commands = device.configure.mock_calls[0].args[0]
+        self.assertIn('bridge-domain 10', sent_commands)
+        self.assertIn('no member Vlan12 service-instance 12', sent_commands)
+
+
+if __name__ == '__main__':
+    unittest.main()

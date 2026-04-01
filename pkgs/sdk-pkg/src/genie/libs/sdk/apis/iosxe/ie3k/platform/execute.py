@@ -23,45 +23,29 @@ from unicon.core.errors import StateMachineError,SubCommandFailure
 # Logger
 log = logging.getLogger(__name__)
 
-def execute_set_config_register(device, config_register=None, timeout=None):
-    '''Set config register to load image in boot variable        
+
+def execute_set_config_register(device, config_register, timeout=300):
+    '''Set config register to load image    
        Args:
            device ('obj'): Device object
-           config_register ('str'): Hexadecimal value to set the config register to (unused)
-           timeout ('int'): Max time to set config-register in seconds (unused)
+           config_register ('str'): Hexadecimal value to set the config register to
+           timeout ('int'): Max time to set config-register in seconds
        Returns:
            None
     '''
 
-    log.info("Config register configuration not supported on IOT platforms")
-
-
-def execute_locate_switch(device, seconds, switch_number=None, switch_type=None):
-    """ Execute locate switch
-        Args:
-            device ('obj'): Device object
-            switch_number ('int'): Switch number
-            seconds ('str'): Time in seconds
-            switch_type ('str'): Switch type(active/standby)
-        Returns:
-            None
-        Raises:
-            SubCommandFailure
-    """
-    if switch_number:
-        cmd = f"locate-switch {switch_number} {seconds}"
-    elif switch_type:
-        cmd = f"locate-switch {switch_type} {seconds}"
-    else:
-        cmd = f"locate-switch {seconds}"
-    
     try:
-        device.execute(cmd)
+        if device.state_machine.current_state == 'rommon':
+            device.execute("set var ConfigReg={}".format(config_register),
+                           timeout=timeout)
+        else:
+            device.configure("config-register {}".format(config_register),
+                             timeout=timeout)
     except SubCommandFailure as e:
-        raise SubCommandFailure(
-            f"Failed to execute locate switch on {device.name}. Error:\n{e}"
-        )
-    
+        raise SubCommandFailure("Failed to set config register for '{d}'\n{e}".\
+                                format(d=device.name, e=str(e)))
+    log.info("Set config-register to '{}'".format(config_register))
+
 
 def execute_reload_verify(device, prompt_wait_time=10, timeout=600):
     """ Execute reload verify
@@ -105,8 +89,8 @@ def execute_factory_reset(device,
                           reset_all=False,
                           secure=False,
                           three_pass=False,
-                          boot_vars=None,
-                          config=None,
+                          boot_vars=False,
+                          config=False,
                           switch_number=None,
                           all_switches=False,
                           keep_licensing_info=False,
@@ -129,8 +113,8 @@ def execute_factory_reset(device,
         reset_all ('bool'): Reset all configuration
         secure ('bool'): Secure reset
         three_pass ('bool'): Three-pass secure reset(5220.22-M 3-pass overwrite)
-        boot_vars ('str'): Reset user added boot variables
-        config ('str'): Reset configuration
+        boot_vars ('bool'): Reset user added boot variables
+        config ('bool'): Reset configuration
         switch_number ('int'): Switch number to reset(1 or All)
         all_switches ('bool'): Reset all switches
         keep_licensing_info ('bool'): Keep licensing information
@@ -209,12 +193,16 @@ def execute_factory_reset(device,
             cmd_reset = "factory-reset all"
             pattern_fragment = "all operations"
 
-        elif boot_vars is not None:
-            cmd_reset = f"factory-reset boot-vars {boot_vars}"
+        elif boot_vars:
+            cmd_reset = "factory-reset boot-vars"
             pattern_fragment = "boot variables"
 
-        elif config is not None:
-            cmd_reset = f"factory-reset config {config}"
+        elif switch_number is not None and config:
+            cmd_reset = f"factory-reset switch {switch_number} config"
+            pattern_fragment = "configuration"
+            
+        elif config:
+            cmd_reset = "factory-reset config"
             pattern_fragment = "configuration"
 
         elif keep_licensing_info:

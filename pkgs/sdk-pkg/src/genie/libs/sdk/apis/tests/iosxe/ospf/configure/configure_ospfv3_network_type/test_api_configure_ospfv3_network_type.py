@@ -1,35 +1,19 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
 from genie.libs.sdk.apis.iosxe.ospf.configure import configure_ospfv3_network_type
 
 
-class TestConfigureOspfv3NetworkType(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          Switch:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: c9500L
-            type: c9500L
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Switch']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureOspfv3NetworkType(TestCase):
 
     def test_configure_ospfv3_network_type(self):
-        result = configure_ospfv3_network_type(self.device, 'GigabitEthernet1/0/24', 'point-to-point')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        result = configure_ospfv3_network_type(
+            device,
+            'GigabitEthernet1/0/24',
+            'point-to-point'
+        )
+        self.assertEqual(result, None)
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            (['interface GigabitEthernet1/0/24', 'ospfv3 network point-to-point'],)
+        )

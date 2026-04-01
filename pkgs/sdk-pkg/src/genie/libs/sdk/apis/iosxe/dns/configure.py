@@ -482,3 +482,62 @@ def unconfigure_ip_host_vrf_view(device, vrf_name, view_name=None, hostname=None
         raise SubCommandFailure(
             "Could not unconfigure ip host vrf view. Error:\n{error}".format(error=e)
         )                             
+
+def configure_interface_ip_dns_view_group(
+    device,
+    interface,
+    view_group_name
+):
+    """  ip dns view-group on an interface
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface name (e.g., 'GigabitEthernet1/0/1')
+            view_group_name ('str'): DNS view-group name
+        Returns:
+            console output
+        Raises:
+            SubCommandFailure: Failed to configure ip dns view-group on interface
+    """
+    log.debug(f"Configuring ip dns view-group {view_group_name} on interface {interface}")
+
+    cmd = [
+        f"interface {interface}",
+        f"ip dns view-group {view_group_name}"
+    ]
+    try:
+        out = device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure ip dns view-group {view_group_name} on interface {interface}. Error:\n{e}"
+        )
+    return out
+
+def unconfigure_interface_ip_dns_view_group(
+    device,
+    interface,
+    view_group_name
+):
+    """ Unconfigure ip dns view-group from an interface
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface name (e.g., 'GigabitEthernet1/0/1')
+            view_group_name ('str'): DNS view-group name
+        Returns:
+            console output
+        Raises:
+            SubCommandFailure: Failed to unconfigure ip dns view-group on interface
+    """
+    log.debug(f"Unconfiguring ip dns view-group {view_group_name} from interface {interface}")
+
+    cmd = [
+        f"interface {interface}",
+        f"no ip dns view-group {view_group_name}"
+    ]
+
+    try:
+        out = device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure ip dns view-group from interface {interface}. Error:\n{e}"
+        )
+    return out

@@ -2195,6 +2195,27 @@ basic-mode=explicit&also-supported=report-all-tagged']
         result = self.rpcv.verify_rpc_data_reply(resp, rpc_data)
         self.assertTrue(result)
 
+    def test_add_key_nodes_unquoted_value(self):
+        """ Check if we can parse key nodes with unquoted values like [key=value] """
+        xpath = '/native/ip/ip-extcommunity-list/extcommunity-list/number-standard[no=1]/rt-action'
+        nodes = []
+        self.rpcv.add_key_nodes(xpath=xpath, nodes=nodes)
+        expected_nodes = [
+            OptFields(name='no',
+                    value='1',
+                    xpath='/native/ip/ip-extcommunity-list/extcommunity-list/number-standard/no',
+                    op='==',
+                    default='',
+                    selected=True,
+                    id='',
+                    datatype='',
+                    sequence=0,
+                    default_xpath='',
+                    nodetype='',
+                    key=False)
+        ]
+        self.assertEqual(nodes, expected_nodes)
+
 
 class Device:
     server_capabilities = []

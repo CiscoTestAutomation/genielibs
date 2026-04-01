@@ -1,45 +1,60 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
 from genie.libs.sdk.apis.iosxe.ospf.configure import configure_ospf_networks
 
 
-class TestConfigureOspfNetworks(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          stack3-nyquist-1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: router
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['stack3-nyquist-1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureOspfNetworks(TestCase):
 
     def test_configure_ospf_networks(self):
-        result = configure_ospf_networks(self.device, 10, ['172.16.70.0', '172.16.71.0', '172.16.80.0'], '0.0.0.255', 0, '1.1.1.1', 'all-interfaces', 'green')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        result = configure_ospf_networks(
+            device,
+            10,
+            ['172.16.70.0', '172.16.71.0', '172.16.80.0'],
+            '0.0.0.255',
+            0,
+            '1.1.1.1',
+            'all-interfaces',
+            'green'
+        )
+        self.assertEqual(result, None)
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            (['router ospf 10 vrf green','network 172.16.70.0 0.0.0.255 area 0','network 172.16.71.0 0.0.0.255 area 0','network 172.16.80.0 0.0.0.255 area 0','router-id 1.1.1.1','bfd all-interfaces'],)
+        )
 
     def test_configure_ospf_networks_1(self):
-        result = configure_ospf_networks(self.device, 9, ['172.16.70.0', '172.16.71.0', '172.16.80.0'], '0.0.0.255', 0, '1.1.1.1', 'all-interfaces', None)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        result = configure_ospf_networks(
+            device,
+            9,
+            ['172.16.70.0', '172.16.71.0', '172.16.80.0'],
+            '0.0.0.255',
+            0,
+            '1.1.1.1',
+            'all-interfaces',
+            None
+        )
+        self.assertEqual(result, None)
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            (['router ospf 9','network 172.16.70.0 0.0.0.255 area 0','network 172.16.71.0 0.0.0.255 area 0','network 172.16.80.0 0.0.0.255 area 0','router-id 1.1.1.1','bfd all-interfaces'],)
+        )
 
     def test_configure_ospf_networks_2(self):
-        result = configure_ospf_networks(self.device, 5, None, None, None, '1.1.1.1', 'all-interfaces', 'green')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        result = configure_ospf_networks(
+            device,
+            5,
+            None,
+            None,
+            None,
+            '1.1.1.1',
+            'all-interfaces',
+            'green'
+        )
+        self.assertEqual(result, None)
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            (['router ospf 5 vrf green', 'router-id 1.1.1.1', 'bfd all-interfaces'],)
+        )

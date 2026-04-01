@@ -1741,11 +1741,17 @@ class RpcVerify():
                 raise ValueError(f'Unable to find key name in xpath {xpath} for key {key}')
             # Ex: [foo="val"] will return "val"
             # Ex: [foo=" val "] will return "val"
+            # Ex: [foo=val] will return "val" (unquoted)
             m = re.search(self.RE_FIND_QUOTED_VALUE, key)
             if m:
                 keyval = m.groupdict().get('value')
             else:
-                raise ValueError(f'Unable to find value in xpath {xpath} for key {key}')
+                # Handle unquoted values like [prefix:key=value] or [key=value]
+                m_unquoted = re.search(r'=\s*(?P<value>[^\]]+?)\s*\]', key)
+                if m_unquoted:
+                    keyval = m_unquoted.groupdict().get('value')
+                else:
+                    raise ValueError(f'Unable to find value in xpath {xpath} for key {key}')
             # contruct xpath /xpath/list/foo by appending the key name.
             key_path = xpath.split(key)[0] + '/' + keyname
             # If there are multiple key/values in xpath, substitute other

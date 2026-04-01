@@ -195,3 +195,100 @@ def  unconfigure_datalink_flow_monitor(device, interface, flow_name, direction):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Failed to unconfigure datalink flow monitor device {device.name}. Error:\n{e}")
+
+
+def configure_flow_record_parameters(
+    device,
+    record_name,
+    match_flow_field=None,
+    match_interface_field=None,
+    match_ipv4_src_address=None,
+    match_ipv4_dst_address=None,
+    match_ipv4_field=None,
+    match_routing_field=None,
+    match_transport_fields=None,
+    collect_interface_field=None,
+    collect_routing_fields=None,
+    collect_transport_field=None,
+    collect_counter_bytes=None,
+    collect_counter_packets=None,
+    ):
+    """ Configure individual parameters under a flow record on Device.
+        Only the provided (non-None) parameters will be configured.
+        Args:
+            device ('obj'): Device object
+            record_name ('str'): Flow record name
+            match_flow_field ('str', optional): Flow field to match.
+                Ex: 'direction'. Default is None.
+            match_interface_field ('str', optional): Interface direction to match.
+                Ex: 'input'. Default is None.
+            match_ipv4_src_address ('bool', optional): Configure 'match ipv4 source address'
+                when set to True. Default is None.
+            match_ipv4_dst_address ('bool', optional): Configure 'match ipv4 destination address'
+                when set to True. Default is None.
+            match_ipv4_field ('str', optional): Additional ipv4 field to match.
+                Ex: 'protocol', 'tos'. Default is None.
+            match_routing_field ('str', optional): Routing field to match.
+                Ex: 'vrf input'. Default is None.
+            match_transport_fields ('list', optional): List of transport fields to match.
+                Ex: ['destination-port', 'source-port']. Default is None.
+            collect_interface_field ('str', optional): Interface direction to collect.
+                Ex: 'output'. Default is None.
+            collect_routing_fields ('list', optional): List of routing fields to collect.
+                Ex: ['source as peer 4-octet', 'destination as peer 4-octet']. Default is None.
+            collect_transport_field ('str', optional): Transport field to collect.
+                Ex: 'tcp flags'. Default is None.
+            collect_counter_bytes ('bool', optional): Configure 'collect counter bytes'
+                when set to True. Default is None.
+            collect_counter_packets ('bool', optional): Configure 'collect counter packets'
+                when set to True. Default is None.
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring flow record parameters on Device
+    """
+    config = [f'flow record {record_name}']
+
+    if match_flow_field is not None:
+        config.append(f'match flow {match_flow_field}')
+
+    if match_interface_field is not None:
+        config.append(f'match interface {match_interface_field}')
+
+    if match_ipv4_dst_address:
+        config.append('match ipv4 destination address')
+
+    if match_ipv4_src_address:
+        config.append('match ipv4 source address')
+
+    if match_ipv4_field is not None:
+        config.append(f'match ipv4 {match_ipv4_field}')
+
+    if match_routing_field is not None:
+        config.append(f'match routing {match_routing_field}')
+
+    if match_transport_fields is not None:
+        for field in match_transport_fields:
+            config.append(f'match transport {field}')
+
+    if collect_interface_field is not None:
+        config.append(f'collect interface {collect_interface_field}')
+
+    if collect_routing_fields is not None:
+        for field in collect_routing_fields:
+            config.append(f'collect routing {field}')
+
+    if collect_transport_field is not None:
+        config.append(f'collect transport {collect_transport_field}')
+
+    if collect_counter_bytes:
+        config.append('collect counter bytes')
+
+    if collect_counter_packets:
+        config.append('collect counter packets')
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Could not configure flow record {record_name}. Error:\n{e}')

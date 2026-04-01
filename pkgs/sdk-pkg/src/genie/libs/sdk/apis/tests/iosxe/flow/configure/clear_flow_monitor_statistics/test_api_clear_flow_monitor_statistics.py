@@ -1,35 +1,44 @@
-import os
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.flow.configure import clear_flow_monitor_statistics
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.flow.configure import (
+    clear_flow_monitor_statistics
+)
 
 
-class TestClearFlowMonitorStatistics(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          Switch-9300:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: c9500
-            type: c9500
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Switch-9300']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestClearFlowMonitorStatistics(TestCase):
 
     def test_clear_flow_monitor_statistics(self):
-        result = clear_flow_monitor_statistics(self.device, 'data-mon', 'switch')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        # Create a mock device
+        device = Mock()
+        device.state_machine.current_state = 'enable'  # Exec/enable mode
+
+        # Call the API
+        result = clear_flow_monitor_statistics(
+            device,
+            'data-mon',
+            'switch'
+        )
+
+        # API returns None on success
+        self.assertIsNone(result)
+
+        # Ensure execute() was called once
+        device.execute.assert_called_once()
+
+        # Extract commands passed to execute()
+        sent_commands = device.execute.mock_calls[0].args[0]
+
+        expected_commands = [
+            'clear flow monitor data-mon cache',
+            'clear flow monitor data-mon statistics',
+            'show platform software fed switch active fnf clear-et-analytics-stats'
+        ]
+
+        # Validate full command list
+        self.assertEqual(sent_commands, expected_commands)
+
+
+if __name__ == '__main__':
+    unittest.main()

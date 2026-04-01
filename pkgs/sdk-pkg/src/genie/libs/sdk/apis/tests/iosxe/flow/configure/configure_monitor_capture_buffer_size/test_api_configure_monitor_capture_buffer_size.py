@@ -1,35 +1,31 @@
-import os
 import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
+
 from genie.libs.sdk.apis.iosxe.flow.configure import configure_monitor_capture_buffer_size
 
 
-class TestConfigureMonitorCaptureBufferSize(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          starfleet-1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: c9600
-            type: c9600
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['starfleet-1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureMonitorCaptureBufferSize(TestCase):
 
     def test_configure_monitor_capture_buffer_size(self):
-        result = configure_monitor_capture_buffer_size(self.device, 'REL', '17')
+        device = Mock()
+        device.state_machine.current_state = 'enable'
+
+        result = configure_monitor_capture_buffer_size(
+            device,
+            'REL',
+            '17'
+        )
+
         expected_output = None
         self.assertEqual(result, expected_output)
+
+        # This API typically uses device.execute() (not device.configure())
+        device.execute.assert_called_once()
+
+        exec_arg = device.execute.mock_calls[0].args[0]
+        self.assertEqual(exec_arg, 'monitor capture REL buffer size 17')
+
+
+if __name__ == '__main__':
+    unittest.main()

@@ -130,13 +130,24 @@ def device_rommon_boot(device, golden_image=None, tftp_boot=None, error_pattern=
             log.info('Detected switch number conflict with peer. Will resend boot command at switch prompt.')
 
         def _rommon_switch_boot(spawn, session, context):
+            session.setdefault('boot_attempt_count', 0)
+
+            if session['boot_attempt_count'] >= spawn.settings.MAX_BOOT_ATTEMPTS:
+                raise Exception(
+                    "Too many failed boot attempts detected from ROMMON."
+                    if 'image_to_boot' in context
+                    else "ROMMON prompt detected but image_to_boot not provided."
+                )
+
+            cmd = 'boot {}'.format(context['image_to_boot']) \
+                if 'image_to_boot' in context else ''
+
+            session['boot_attempt_count'] += 1
             log.info('Reached switch prompt. Sending boot command to boot the device.')
             log.info(f'Boot command to send: {context.get("image_to_boot")}')
-            boot_cmd = context.get('image_to_boot')
-            if boot_cmd is None:
-                log.info('No image to boot specified in context, skipping boot command')
-                return
-            spawn.sendline(f"boot {str(boot_cmd).strip()}")
+            log.info(f"ROMMON boot attempt "
+                     f"{session['boot_attempt_count']}/{spawn.settings.MAX_BOOT_ATTEMPTS}")
+            spawn.sendline(cmd)
 
         switch_conflict_stmt = \
             Statement(pattern=r'.*switch num conflicts with peer.*',

@@ -312,7 +312,7 @@ configure_stackwise_virtual:
                         f"Device {device.name} reloaded successfully.")
 
     def verify_stack_wise_virtual_config(self, device, steps):
-        """ Verify StackWise Virtual configuration on the device
+        """ Verify StackWise Virtual configuration on all device members.
 
             Args:
                 device (obj): Device object
@@ -322,22 +322,31 @@ configure_stackwise_virtual:
         with steps.start(
                 "Verifying StackWise Virtual configuration on the device"
         ) as step:
-            try:
-                link_output = device.parse("show stackwise-virtual link")
-            except SchemaEmptyParserError as e:
-                step.failed(
-                    f"Failed to verify StackWise Virtual configuration on {device.name}: {e}"
-                )
-            # make sure all svl links are up
-            for switch , switch_info in link_output.get('switch', {}).items():
-                for link_num, link_info in switch_info.get('svl', {}).items():
-                    for intf, intf_info in link_info.get('ports', {}).items():
-                        # check link status is UP and protocol status is READY or BUNDLED
-                        if intf_info.get('link_status') != 'Up' or \
-                            intf_info.get('protocol_status') not in ('Ready', 'Bundled'):
+            for subconn in device.subconnections:
+                alias = subconn.via
+                try:
+                    output = subconn.execute('show stackwise-virtual link')
+                    link_output = device.parse('show stackwise-virtual link', output=output)
+                except SchemaEmptyParserError:
+                    step.failed(
+                        f"No StackWise Virtual link found on {alias}.")
+                except Exception as e:
+                    step.failed(
+                        f"Failed to parse StackWise Virtual link on {alias}: {e}")
 
-                            step.failed(
-                                f"StackWise Virtual link interface {intf} on switch {switch} with link number {link_num} is not up.")
-                        log.info(f"StackWise Virtual link interface {intf} on switch {switch} with link number {link_num} is up.")
+                # make sure all svl links are up on this console
+                for switch, switch_info in link_output.get('switch', {}).items():
+                    for link_num, link_info in switch_info.get('svl', {}).items():
+                        for intf, intf_info in link_info.get('ports', {}).items():
+                            if intf_info.get('link_status') != 'Up' or \
+                                intf_info.get('protocol_status') not in ('Ready', 'Bundled'):
+                                step.failed(
+                                    f"StackWise Virtual link interface {intf} on switch {switch} "
+                                    f"with link number {link_num} is not up on {alias}.")
+                            log.info(
+                                f"StackWise Virtual link interface {intf} on switch {switch} "
+                                f"with link number {link_num} is up on {alias}.")
+                log.info(f"StackWise Virtual configuration verified on {alias}.")
+
             step.passed(
-                f"StackWise Virtual configuration verified on {device.name}.")
+                f"StackWise Virtual configuration verified on all members of {device.name}.")

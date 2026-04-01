@@ -31,6 +31,9 @@ class TestCopyToDevice(unittest.TestCase):
             tftp:
               dynamic: true
               protocol: tftp
+            scp:
+              dynamic: true
+              protocol: scp
         devices:
           R1:
             os: iosxe
@@ -78,7 +81,7 @@ class TestCopyToDevice(unittest.TestCase):
         copy_to_device(self.device, 'test.txt', server='tftp')
         assert re.search(r'copy tftp://127.0.0.1/test.txt flash:', str(self.device.execute.call_args))
 
-    def test_copy_from_device_context_manager_http_server(self):
+    def test_copy_to_device_context_manager_http_server(self):
         with tempfile.TemporaryDirectory() as td:
             with FileServer(protocol='http',
                             path=td,
@@ -119,6 +122,7 @@ class TestCopyToDevice(unittest.TestCase):
 
     def test_copy_to_device_path(self):
         self.device.api.get_mgmt_ip_and_mgmt_src_ip_addresses = Mock(return_value=('127.0.0.1', ['127.0.0.1']))
+        self.device.api.get_mgmt_interface = Mock(return_value='GigabitEthernet0/0/0')
         self.device.execute = Mock(return_value='')
         copy_to_device(self.device, '/tmp/test.txt', protocol='http')
         assert re.search(r'copy http://\w+:\w+@127.0.0.1:\d+/test.txt flash:', str(self.device.execute.call_args))
@@ -135,6 +139,7 @@ class TestCopyToDevice(unittest.TestCase):
 
     def test_copy_to_device_tftp_server_path_dynamic(self):
         self.device.api.get_mgmt_ip_and_mgmt_src_ip_addresses = Mock(return_value=('127.0.0.1', ['127.0.0.1']))
+        self.device.api.get_mgmt_interface = Mock(return_value='GigabitEthernet0/0/0')
         self.device.execute = Mock()
         copy_to_device(self.device, '/tmp/test.txt', protocol='tftp')
         assert re.search(r'copy tftp://127.0.0.1:\d+/test.txt flash:', str(self.device.execute.call_args))

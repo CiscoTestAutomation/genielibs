@@ -432,3 +432,32 @@ def configure_fastrep_segment_auto(
             raise SubCommandFailure(
                 f"Error configuring interface {intf}: {e}"
             ) from e
+
+
+def configure_rep_no_neighbour(device, intfs, segmentnum, port):
+    """Configures REP segment
+        Args:
+            device ('obj'): Switch object
+            intfs ('list'): List of interfaces to configure
+            segmentnum ('str'): Segment number to configure
+            port ('str'): Preferred Alternate Port or Primary Edge Port
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    rep_command  = f'rep segment {segmentnum} edge no-neighbor {port}'
+    
+    for intf in intfs:
+        config_list = [
+            "interface {}".format(intf),
+            "switchport mode trunk",
+            rep_command,
+            "shut",
+            "no shut"
+        ]
+        
+    try:
+        out = device.configure(config_list)
+    except SubCommandFailure as e:
+        raise SubCommandFailure("Error configuring interface {}: {}".format(intf, e))

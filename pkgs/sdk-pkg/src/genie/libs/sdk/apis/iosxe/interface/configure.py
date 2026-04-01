@@ -11436,3 +11436,66 @@ def unconfigure_interface_ip_unreachables(device, interface):
         raise SubCommandFailure(
             f"Could not unconfigure ip unreachables on {interface}. Error:\n{e}"
             )
+
+def configure_interface_hsr_ring(
+        device,
+        interface,
+        hsrring_num):
+
+    """ Configure hsr ring on an interface
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface to which hsr ring is added
+            hsrring_num (`str`): HSR ring number
+
+        Returns:
+            None
+            Warning messages
+
+        Raises:
+            SubCommandFailure
+    """
+
+    log.debug(f"Configuring HSR ring on interface {interface}")
+
+    cmd = [
+        f"interface {interface}",
+        f"hsr-ring {hsrring_num}"
+    ]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure hsr ring on interface {interface}. Error:\n{e}")
+
+def unconfigure_interface_hsr_ring(
+        device,
+        hsrring_num):
+
+    """ UnConfigure hsr ring on an interface
+
+        Args:
+            device (`obj`): Device object
+            hsrring_num (`str`): HSR ring number
+
+        Returns:
+            None
+            Warning messages
+
+        Raises:
+            SubCommandFailure
+    """
+
+    log.debug(f"UnConfiguring HSR ring")
+
+    cmd = []
+    cmd.append(f"no interface hsr-ring {hsrring_num}")
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure hsr ring on interace Error:\n{e}")
+

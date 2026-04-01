@@ -1,35 +1,38 @@
-import os
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.fec.configure import unconfigure_fec_on_interface
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.fec.configure import (
+    unconfigure_fec_on_interface
+)
 
 
-class TestUnconfigureFecOnInterface(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          9300-24UX-2:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: c9300
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['9300-24UX-2']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigureFecOnInterface(TestCase):
 
     def test_unconfigure_fec_on_interface(self):
-        result = unconfigure_fec_on_interface(self.device, 'TwentyFiveGigE1/1/1')
+        # Create a mock device
+        device = Mock()
+        device.state_machine.current_state = 'enable'  # Assume device is in enable mode
+
+        # Call the API
+        result = unconfigure_fec_on_interface(
+            device,
+            'TwentyFiveGigE1/1/1'
+        )
+
+        # Validate return value
         expected_output = None
         self.assertEqual(result, expected_output)
+
+        # Ensure configure() was called exactly once
+        device.configure.assert_called_once()
+
+        # Validate commands sent to the device
+        sent_commands = device.configure.mock_calls[0].args[0]
+
+        self.assertIn('interface TwentyFiveGigE1/1/1', sent_commands)
+        self.assertIn('no fec', sent_commands)
+
+
+if __name__ == '__main__':
+    unittest.main()

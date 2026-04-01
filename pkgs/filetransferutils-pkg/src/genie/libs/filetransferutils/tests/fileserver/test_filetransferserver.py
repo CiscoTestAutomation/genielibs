@@ -159,3 +159,13 @@ class TestFileServer(unittest.TestCase):
                 with open(os.path.join(td, 'test_1.txt'), 'rb') as f:
                     test_data = f.read().decode()
                 self.assertEqual(test_data, orig_data[1])
+
+    def test_scp_multiple_host_keys(self):
+        """Test SCP server generates both RSA and Ed25519 host keys"""
+        with tempfile.TemporaryDirectory() as td:
+            with FileServer(protocol='scp', subnet='127.0.0.1/32', path=td) as fs:
+                host_key_path = fs['host_key_path']
+                self.assertIsInstance(host_key_path, list)
+                self.assertEqual(len(host_key_path), 2)
+                self.assertTrue(any('rsa' in p for p in host_key_path))
+                self.assertTrue(any('ed25519' in p for p in host_key_path))

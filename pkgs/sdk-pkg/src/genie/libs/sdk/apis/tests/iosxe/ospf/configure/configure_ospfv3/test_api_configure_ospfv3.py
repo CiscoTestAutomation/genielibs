@@ -1,40 +1,70 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
 from genie.libs.sdk.apis.iosxe.ospf.configure import configure_ospfv3
 
 
-class TestConfigureOspfv3(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          UUT1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: iosxe
-            type: iosxe
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['UUT1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureOspfv3(TestCase):
 
     def test_configure_ospfv3(self):
-        result = configure_ospfv3(self.device, '1', '1.1.1.1', None, True, True, 'ipv4', None, None, None, True, 'connected', 0, 1)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        result = configure_ospfv3(
+            device,
+            '1',
+            '1.1.1.1',
+            None,
+            True,
+            True,
+            'ipv4',
+            None,
+            None,
+            None,
+            True,
+            'connected',
+            0,
+            1
+        )
+        self.assertEqual(result, None)
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            ([
+                'router ospfv3 1',
+                'graceful-restart',
+                'nsr',
+                'address-family ipv4',
+                'router-id 1.1.1.1',
+                'redistribute connected',
+                'exit-address-family'
+            ],)
+        )
 
     def test_configure_ospfv3_1(self):
-        result = configure_ospfv3(self.device, '1', '1.1.1.1', None, True, True, 'ipv4', None, 'unicast', None, True, 'connected', 1, 1)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        result = configure_ospfv3(
+            device,
+            '1',
+            '1.1.1.1',
+            None,
+            True,
+            True,
+            'ipv4',
+            None,
+            'unicast',
+            None,
+            True,
+            'connected',
+            1,
+            1
+        )
+        self.assertEqual(result, None)
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            ([
+                'router ospfv3 1',
+                'graceful-restart',
+                'nsr',
+                'address-family ipv4 unicast',
+                'router-id 1.1.1.1',
+                'redistribute connected metric 1 metric-type 1',
+                'exit-address-family'
+            ],)
+        )

@@ -1,35 +1,14 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
 from genie.libs.sdk.apis.iosxe.nat.configure import unconfigure_ip_access_group_in_out
 
-
-class TestUnconfigureIpAccessGroupInOut(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          E-9300-STACK:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: c9300
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['E-9300-STACK']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigureIpAccessGroupInOut(TestCase):
 
     def test_unconfigure_ip_access_group_in_out(self):
-        result = unconfigure_ip_access_group_in_out(self.device, 'Port-channel100', 'MSFT_PACL_IN', 'in')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        result = unconfigure_ip_access_group_in_out(device, 'Port-channel100', 'MSFT_PACL_IN', 'in')
+        self.assertEqual(result, None)
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            (['interface Port-channel100', 'no ip access-group MSFT_PACL_IN in'],)
+        )

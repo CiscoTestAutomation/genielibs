@@ -14,3 +14,4 @@ class TestConfigureManagementSsh(TestCase):
             'ip ssh source-interface GigabitEthernet0/0',
             f'crypto key generate rsa'],)
         )
+        self.assertEqual(self.device.configure.mock_calls[0].kwargs['timeout'], 240)

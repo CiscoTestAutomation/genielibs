@@ -1,45 +1,38 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
 from genie.libs.sdk.apis.iosxe.nat.configure import unconfigure_static_nat_source_list_rule
 
-
-class TestUnconfigureStaticNatSourceListRule(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          stack3-nyquist-1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: router
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['stack3-nyquist-1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigureStaticNatSourceListRule(TestCase):
 
     def test_unconfigure_static_nat_source_list_rule(self):
-        result = unconfigure_static_nat_source_list_rule(self.device, 'inside', 'test', 'test1', None, 'vrf_1', 'pap', 'Gi1/0/16', 'oer')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        result = unconfigure_static_nat_source_list_rule(
+            device, 'inside', 'test', 'test1', None, 'vrf_1', 'pap', 'Gi1/0/16', 'oer'
+        )
+        self.assertEqual(result, None)
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            ('no ip nat inside source list test pool test1 vrf vrf_1 oer overload pap',)
+        )
 
     def test_unconfigure_static_nat_source_list_rule_1(self):
-        result = unconfigure_static_nat_source_list_rule(self.device, 'inside', 'list_in_VRF2', 'pool_in_VRF2', 'Gi1/0/16', 'vrf_1', '', None, None)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        result = unconfigure_static_nat_source_list_rule(
+            device, 'inside', 'list_in_VRF2', 'pool_in_VRF2', 'Gi1/0/16', 'vrf_1', '', None, None
+        )
+        self.assertEqual(result, None)
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            ('no ip nat inside source list list_in_VRF2 pool pool_in_VRF2 vrf vrf_1 overload',)
+        )
 
     def test_unconfigure_static_nat_source_list_rule_2(self):
-        result = unconfigure_static_nat_source_list_rule(self.device, 'inside', 'test', None, 'Gi1/0/16', 'vrf_1', '', None, None)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        result = unconfigure_static_nat_source_list_rule(
+            device, 'inside', 'test', None, 'Gi1/0/16', 'vrf_1', '', None, None
+        )
+        self.assertEqual(result, None)
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            ('no ip nat inside source list test interface Gi1/0/16 vrf vrf_1 overload',)
+        )

@@ -3149,3 +3149,188 @@ def configure_bgp_aggregate_address(device, bgp_as, address_family, aggregate_ad
         device.configure(config)
     except Exception as e:
         raise Exception(f"Failed to configure BGP aggregate address: {e}")      
+
+def configure_bgp_ipv6_neighbor_list(device, bgp_as, neighbor_address, list_type, list_name, direction):
+    """ Configure filter-list or prefix-list for BGP IPv6 neighbor
+
+        Args:
+            device ('obj'): Device object
+            bgp_as ('str'): BGP AS number
+            neighbor_address ('str'): IPv6 neighbor address
+            list_type ('str'): Type of list - 'filter-list', 'prefix-list', or any other valid type
+            list_name ('str'): Name or number of the list
+            direction ('str'): Direction - 'in', 'out', or any other valid direction
+            
+        Returns:
+            N/A
+            
+        Raises:
+            SubCommandFailure: Failed executing configure commands
+            
+        Example Usage:
+            # Configure filter-list
+            configure_bgp_ipv6_neighbor_list(
+                device=device,
+                bgp_as='50', 
+                neighbor_address='11::2',
+                list_type='filter-list',
+                list_name='1',
+                direction='in'
+            )
+            
+            # Configure prefix-list  
+            configure_bgp_ipv6_neighbor_list(
+                device=device,
+                bgp_as='50',
+                neighbor_address='11::2', 
+                list_type='prefix-list',
+                list_name='1',
+                direction='in'
+            )
+    """
+    
+    config = [
+        f"router bgp {bgp_as}",
+        "address-family ipv6",
+        f"neighbor {neighbor_address} {list_type} {list_name} {direction}",
+        "exit-address-family"
+    ]
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure {list_type} for BGP IPv6 neighbor {neighbor_address} "
+            f"on router bgp {bgp_as}. Error: {e}"
+        ) 
+
+
+def configure_bgp_confederation_identifier(device, bgp_as, confederation_id):
+    """Configure BGP confederation identifier
+    
+    Args:
+        device ('obj'): Device object
+        bgp_as ('str'): BGP AS number
+        confederation_id ('str'): Confederation identifier
+        
+    Returns:
+        None
+        
+    Raises:
+        SubCommandFailure: Failed to configure confederation identifier
+        
+    Example:
+        configure_bgp_confederation_identifier(
+            device=device,
+            bgp_as='50',
+            confederation_id='100'
+        )
+    """
+    
+    config = [
+        f"router bgp {bgp_as}",
+        f"bgp confederation identifier {confederation_id}",
+        "exit"
+    ]
+    
+    try:
+        device.configure(config)
+        log.info(f"Successfully configured BGP confederation identifier {confederation_id} for AS {bgp_as}")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure BGP confederation identifier {confederation_id} "
+            f"for AS {bgp_as} on device {device.name}. Error: {str(e)}"
+        )
+
+
+def configure_bgp_confederation_peers(device, bgp_as, peer_as_list):
+    """Configure BGP confederation peers
+    
+    Args:
+        device ('obj'): Device object
+        bgp_as ('str'): BGP AS number
+        peer_as_list ('str' or 'list'): Peer AS number(s) - can be single AS or list of AS numbers
+        
+    Returns:
+        None
+        
+    Raises:
+        SubCommandFailure: Failed to configure confederation peers
+        
+    Example:
+        # Single peer AS
+        configure_bgp_confederation_peers(
+            device=device,
+            bgp_as='50',
+            peer_as_list='60'
+        )
+        
+        # Multiple peer AS numbers
+        configure_bgp_confederation_peers(
+            device=device,
+            bgp_as='50', 
+            peer_as_list=['60', '70']
+        )
+    """
+    
+    # Handle both single AS and list of AS numbers
+    if isinstance(peer_as_list, (list, tuple)):
+        peer_as_string = ' '.join(str(as_num) for as_num in peer_as_list)
+    else:
+        peer_as_string = str(peer_as_list)
+    
+    config = [
+        f"router bgp {bgp_as}",
+        f"bgp confederation peers {peer_as_string}",
+        "exit"
+    ]
+    
+    try:
+        device.configure(config)
+        log.info(f"Successfully configured BGP confederation peers {peer_as_string} for AS {bgp_as}")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure BGP confederation peers {peer_as_string} "
+            f"for AS {bgp_as} on device {device.name}. Error: {str(e)}"
+        )
+
+def configure_bgp_route_reflector_client_address_family(device, bgp_as, neighbor_address, address_family=None):
+            
+    """ Configure route reflector client on bgp neighbor
+
+        Args:
+            device ('obj')             : Device to be configured
+            bgp_as ('str')             : Bgp Id to be added to configuration
+            neighbor_address ('str')   : Address of neighbor to be added to configuration
+            address_family ('str', optional)     : Address family (ipv4, ipv6, etc.) 
+
+        Returns:
+            N/A
+        Raises:
+            SubCommandFailure: Failed executing configure commands
+
+    """
+    log.debug("configure route-reflector-client on bgp neighbor on router bgp {bgp_as}".format(bgp_as=bgp_as))
+
+    configs = [f"router bgp {bgp_as}"]
+    
+    if address_family:
+        configs.extend([
+            f"address-family {address_family}",
+            f"neighbor {neighbor_address} route-reflector-client",
+            "exit-address-family"
+        ])
+    else:
+        configs.append(f"neighbor {neighbor_address} route-reflector-client")
+
+    try:
+        device.configure(configs)
+    
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure route-reflector-client on bgp neighbor on bgp "
+            "router {bgp_as}. Error:{e}".format(bgp_as=bgp_as, e=e)
+        )
+
+
+

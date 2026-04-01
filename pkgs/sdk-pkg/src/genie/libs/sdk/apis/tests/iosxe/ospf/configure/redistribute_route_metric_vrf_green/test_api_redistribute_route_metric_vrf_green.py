@@ -1,35 +1,26 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
 from genie.libs.sdk.apis.iosxe.ospf.configure import redistribute_route_metric_vrf_green
 
 
-class TestRedistributeRouteMetricVrfGreen(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          Switch:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: c9200
-            type: c9200
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Switch']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestRedistributeRouteMetricVrfGreen(TestCase):
 
     def test_redistribute_route_metric_vrf_green(self):
-        result = redistribute_route_metric_vrf_green(self.device, 2, 'green', '65001', 10)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        result = redistribute_route_metric_vrf_green(
+            device,
+            2,
+            'green',
+            '65001',
+            10
+        )
+        self.assertEqual(result, None)
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            ([
+                'router ospf 2 vrf green',
+                'redistribute static metric 10',
+                'redistribute connected metric 10',
+                'redistribute bgp 65001 metric 10'
+            ],)
+        )

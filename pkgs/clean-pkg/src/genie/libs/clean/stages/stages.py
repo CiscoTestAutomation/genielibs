@@ -103,7 +103,7 @@ connect:
             log.info('Checking connection to device: %s' % device.name)
 
             # If recovery is enabled, ignore rollup
-            section = self.parameters.get('section')
+            section = self.parameters.internal.get('section')
 
             # Check if 'section' exists and has a parent with 'device_recovery_processor'
             if section and getattr(section.parent, 'device_recovery_processor',
@@ -3430,6 +3430,11 @@ configure_interfaces:
         configuration_lines = []
         for iface_regex in interfaces:
             for _, iface_obj in device.interfaces.items():
+                # Skip stackwise virtual link interfaces as they dont need to be configured here
+                if hasattr(iface_obj, "stackwise_virtual_link") and iface_obj.stackwise_virtual_link:
+                    log.debug(f"Skipping stackwise virtual link interface {iface_obj.name}")
+                    continue
+                
                 if re.match(iface_regex, iface_obj.name) or \
                     (isinstance(getattr(iface_obj, "alias", None), str) and re.match(iface_regex, iface_obj.alias)):
                     log.info(

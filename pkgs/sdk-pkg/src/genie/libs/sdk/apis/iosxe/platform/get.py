@@ -19,6 +19,7 @@ from datetime import datetime, timedelta, timezone
 
 # Unicon
 from unicon.core.errors import SubCommandFailure
+from unicon.eal.dialogs import Statement, Dialog
 
 # Logger
 log = logging.getLogger(__name__)
@@ -307,26 +308,49 @@ def get_config_register(device, next_reload=False, output=None):
     """Get current config-register setting on the device
         Args:
             device (`obj`): Device object
-            next_reload (`bool`): Determine if returning next-reload value
+            next_reload (`bool`): Determine if returning next-reload value. This
+            argument is ignored if the device is in rommon state
         Returns:
             config-register value or None
     """
 
-    try:
-        boot_out = device.parse("show bootvar", output=output)
-    except SchemaEmptyParserError as e:
-        log.error("Command 'show bootvar' did not return any output\n{}".\
-                  format(str(e)))
-        return None
-
-    # Set keys
-    nr_key = 'next_reload_configuration_register'
-    # Check if next_reload is set
-    if next_reload and nr_key in boot_out.get('active'):
-        return boot_out.get('active').get(nr_key)
+    if device.state_machine.current_state == 'rommon':
+        rommon_confreg_dialog = Dialog([
+            Statement(pattern=r".*do you wish to change the configuration.*",
+                      action="sendline(n)")
+        ])
+        try:
+            output = device.execute("confreg", reply=rommon_confreg_dialog)
+            match = re.search(
+                r"\(Virtual Configuration Register:\s+(?P<confreg>\w+)\)", output
+            )
+            if not match:
+                log.error("Failed to parse 'confreg' output: {}".format(output))
+                return None
+            return match.group("confreg")
+        except SubCommandFailure as e:
+            log.error(
+                "Failed to execute 'confreg' command on device in rommon state\n{}".\
+                format(str(e))
+            )
+            return None
     else:
-        cr_key = 'configuration_register'
-        return boot_out.get('active').get(cr_key)
+        try:
+            boot_out = device.parse("show bootvar", output=output)
+        except SchemaEmptyParserError as e:
+            log.error("Command 'show bootvar' did not return any output\n{}".\
+                    format(str(e)))
+            return None
+
+        # Set keys
+        nr_key = 'next_reload_configuration_register'
+        # Check if next_reload is set
+        if next_reload and nr_key in boot_out.get('active'):
+            return boot_out.get('active').get(nr_key)
+        else:
+            cr_key = 'configuration_register'
+            return boot_out.get('active').get(cr_key)
+
 
 def get_platform_default_dir(device, output=None):
     """Get the default directory of this device
@@ -1466,6 +1490,31 @@ def get_active_rp_info(device):
             if rp_data.get('swstack_role') == 'Active':
                 log.info(f"Found active RP {rp_name} on slot {slot} of device {device.name}")
                 return slot
+
+    # Added logic: handle platforms that only expose slot information
+    slot_dict = out.get('slot', {})
+    if slot_dict:
+        # Prefer any slot explicitly marked Active (state/status fields)
+        for slot, slot_data in slot_dict.items():
+            slot_state = slot_data.get('state') or slot_data.get('status')
+            if isinstance(slot_state, str) and 'active' in slot_state.lower():
+                log.info(f"Found active slot {slot} on device {device.name}")
+                return slot
+
+        # Otherwise fall back to the first slot number (deterministic order)
+        slot_rankings = []
+        for slot in slot_dict.keys():
+            try:
+                slot_index = int(str(slot).split('/')[-1])
+            except ValueError:
+                slot_index = float('inf')
+            slot_rankings.append((slot_index, slot))
+
+        if slot_rankings:
+            slot_rankings.sort()
+            first_slot = slot_rankings[0][1]
+            log.info(f"No explicit active state; defaulting to slot {first_slot} on device {device.name}")
+            return first_slot
 
     log.error(f"No active RP found on device {device.name}")
     return None
