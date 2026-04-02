@@ -663,3 +663,45 @@ def unconfigure_http_secure_trustpoint(device, trustpoint):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f'Failed to unconfigure ip http secure-trustpoint {trustpoint} on device {device.name}. Error:\n{e}')
+
+
+def configure_license_boot_mode_universal(device):
+    """ Configures license boot mode to universal
+        Example : license boot mode universal
+
+        Args:
+            device ('obj'): device to use
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f'Configuring license boot mode universal on {device.name}')
+    config = 'license boot mode universal'
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Failed to configure license boot mode universal on device {device.name}. Error:\n{e}')
+
+
+def unconfigure_license_boot_mode_universal(device):
+    """ Unconfigures license boot mode universal
+        Example : no license boot mode universal
+
+        Args:
+            device ('obj'): device to use
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f'Unconfiguring license boot mode universal on {device.name}')
+    config = 'no license boot mode universal'
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Failed to unconfigure license boot mode universal on device {device.name}. Error:\n{e}')

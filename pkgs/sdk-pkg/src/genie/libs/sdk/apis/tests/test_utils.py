@@ -11,7 +11,8 @@ from genie.libs.clean.stages.tests.utils import create_test_device
 from genie.libs.sdk.apis.utils import (
     modify_filename, copy_from_device, copy_to_device, device_recovery_boot,
     configure_management_console, configure_peripheral_terminal_server,
-    time_to_int, slugify_filename)
+    time_to_int, slugify_filename, get_file_size_from_server,
+    get_interface_from_yaml)
 
 
 class TestUtilsApi(unittest.TestCase):
@@ -52,7 +53,7 @@ class TestUtilsApi(unittest.TestCase):
         device.api.get_local_ip = Mock(return_value='127.0.0.1')
         device.api.convert_server_to_linux_device = Mock(return_value=None)
         device.execute = Mock()
-        copy_from_device(device, local_path='flash:test.txt')
+        copy_from_device(device, local_path='flash:test.txt', protocol='http')
         assert re.search(r'copy flash:test.txt http://\w+:\w+@127.0.0.1:\d+/router_test.txt', str(device.execute.call_args))
 
     def test_copy_from_device_via_proxy(self):
@@ -73,7 +74,7 @@ class TestUtilsApi(unittest.TestCase):
         device.api.get_local_ip = Mock(return_value='127.0.0.1')
         device.api.convert_server_to_linux_device = Mock(return_value=None)
         device.execute = Mock()
-        copy_from_device(device, local_path='flash:test.txt')
+        copy_from_device(device, local_path='flash:test.txt', protocol='http')
         assert re.search(r'copy flash:test.txt http://\w+:\w+@127.0.0.2:2000/router_test.txt', str(device.execute.call_args))
 
     def test_copy_from_device_via_testbed_servers_proxy(self):
@@ -95,7 +96,7 @@ class TestUtilsApi(unittest.TestCase):
         device.testbed.servers = {}
         device.testbed.servers['proxy'] = {}
         device.api.convert_server_to_linux_device = Mock(return_value=server)
-        copy_from_device(device, local_path='flash:test.txt')
+        copy_from_device(device, local_path='flash:test.txt', protocol='http')
         assert re.search(r'copy flash:test.txt http://\w+:\w+@127.0.0.2:2000/router_test.txt', str(device.execute.call_args))
 
     def test_copy_to_device(self):
@@ -174,6 +175,107 @@ class TestUtilsApi(unittest.TestCase):
         copy_to_device(device, remote_path='/tmp/test.txt', protocol='http')
         assert re.search(r'copy http://\w+:\w+@127.0.0.2:2000/test.txt flash:', str(device.execute.call_args))
 
+    def test_get_file_size_from_server_via_proxy(self):
+        device = MagicMock()
+        device.api = MagicMock()
+        device.api.get_proxy = Mock(return_value='js')
+        device.api.convert_server_to_linux_device = Mock(return_value=None)
+
+        proxy_dev = MagicMock()
+        proxy_dev.connect = Mock()
+        proxy_dev.api.start_socat_relay = Mock(return_value=(2000, '1234'))
+        proxy_dev.api.stop_socat_relay = Mock()
+
+        device.testbed.devices = {'js': proxy_dev}
+
+        fu = MagicMock()
+        fu.get_hostname = Mock(return_value='proxy.host')
+        fu.validate_and_update_url = Mock(return_value='ftp://user:pass@1.1.1.1/path/file.bin')
+        stat_result = MagicMock()
+        stat_result.st_size = 4321
+        fu.stat = Mock(return_value=stat_result)
+
+        size = get_file_size_from_server(device=device,
+                                         server='1.1.1.1',
+                                         path='path/file.bin',
+                                         protocol='ftp',
+                                         timeout=10,
+                                         fu_session=fu)
+
+        self.assertEqual(size, 4321)
+        proxy_dev.api.start_socat_relay.assert_called_once_with(
+            remote_ip='1.1.1.1',
+            remote_port='21',
+            protocol='TCP4')
+        fu.stat.assert_called_once_with(
+            target='ftp://user:pass@proxy.host:2000/path/file.bin',
+            timeout_seconds=10)
+        proxy_dev.api.stop_socat_relay.assert_called_once_with('1234')
+
+    def test_get_file_size_from_server_via_proxy_custom_port_http(self):
+        device = MagicMock()
+        device.api = MagicMock()
+        device.api.get_proxy = Mock(return_value='js')
+        device.api.convert_server_to_linux_device = Mock(return_value=None)
+        proxy_dev = MagicMock()
+        proxy_dev.connect = Mock()
+        proxy_dev.api.start_socat_relay = Mock(return_value=(2000, '1234'))
+        proxy_dev.api.stop_socat_relay = Mock()
+
+        device.testbed.devices = {'js': proxy_dev}
+
+        fu = MagicMock()
+        fu.get_hostname = Mock(return_value='proxy.host')
+        fu.validate_and_update_url = Mock(
+            return_value='http://user:pass@10.0.0.1:8080/path/file.bin')
+        stat_result = MagicMock()
+        stat_result.st_size = 4321
+        fu.stat = Mock(return_value=stat_result)
+
+        size = get_file_size_from_server(device=device,
+                                         server='myhttpserver',
+                                         path='path/file.bin',
+                                         protocol='http',
+                                         timeout=10,
+                                         fu_session=fu)
+
+        self.assertEqual(size, 4321)
+        proxy_dev.api.start_socat_relay.assert_called_once_with(
+            remote_ip='10.0.0.1',
+            remote_port='8080',
+            protocol='TCP4')
+        fu.stat.assert_called_once_with(
+            target='http://user:pass@proxy.host:2000/path/file.bin',
+            timeout_seconds=10)
+        proxy_dev.api.stop_socat_relay.assert_called_once_with('1234')
+
+    def test_get_file_size_from_server_via_proxy_stops_relay_on_error(self):
+        device = MagicMock()
+        device.api = MagicMock()
+        device.api.get_proxy = Mock(return_value='js')
+        device.api.convert_server_to_linux_device = Mock(return_value=None)
+
+        proxy_dev = MagicMock()
+        proxy_dev.connect = Mock()
+        proxy_dev.api.start_socat_relay = Mock(return_value=(2000, '1234'))
+        proxy_dev.api.stop_socat_relay = Mock()
+        device.testbed.devices = {'js': proxy_dev}
+
+        fu = MagicMock()
+        fu.get_hostname = Mock(return_value='proxy.host')
+        fu.validate_and_update_url = Mock(return_value='ftp://user:pass@1.1.1.1/path/file.bin')
+        fu.stat = Mock(side_effect=FileNotFoundError('missing'))
+
+        with self.assertRaises(FileNotFoundError):
+            get_file_size_from_server(device=device,
+                                      server='1.1.1.1',
+                                      path='path/file.bin',
+                                      protocol='ftp',
+                                      timeout=10,
+                                      fu_session=fu)
+
+        proxy_dev.api.stop_socat_relay.assert_called_once_with('1234')
+
     def test_device_recovery_boot(self):
         device = create_test_device(name='aDevice', os='iosxe')
         device.destroy = Mock()
@@ -189,7 +291,7 @@ class TestUtilsApi(unittest.TestCase):
             lookup_mock.from_device.return_value = lookup_clean
             device_recovery_boot(device)
             expected_calls = [call(device=device, console_activity_pattern=None, console_breakboot_char='\x03', console_breakboot_telnet_break=False,
-             grub_activity_pattern=None, grub_breakboot_char='c', break_count=15, timeout=750, golden_image='bootflash:packages.conf', tftp_boot={}, recovery_password='lab')]      
+             grub_activity_pattern=None, grub_breakboot_char='c', break_count=15, timeout=750, golden_image='bootflash:packages.conf', tftp_boot={}, recovery_password='lab')]
             lookup_clean.clean.recovery.recovery.recovery_worker.mock_calls
             self.assertEqual(lookup_clean.clean.recovery.recovery.recovery_worker.mock_calls, expected_calls)
 
@@ -202,7 +304,7 @@ class TestUtilsApi(unittest.TestCase):
         dev1.connect = MagicMock()
         dev1.spawn = MagicMock()
         dev1.spawn.buffer = '\\x86'
-        
+
         dev1.connect.side_effect = [Exception, Exception, True]
         dev1.peripherals = {'terminal_server': {'terminal_1': [{'line': 14}]}}
         dev1.testbed.devices = {'terminal_1':terminal_device_1}
@@ -322,3 +424,267 @@ class TestSlugifyFilename(unittest.TestCase):
         path = "bootflash:/ctc_Lime1_GX_2025_09_19_active.tar.gz"
         result = slugify_filename(device, path)
         self.assertEqual(result, "ctc_Lime1_GX_2025_09_19_active.tar.gz")
+
+
+class TestGetInterfaceFromYaml(unittest.TestCase):
+
+    def setUp(self):
+        # Sample testbed topology for testing
+        self.testbed_topology = {
+            'R1': {
+                'interfaces': {
+                    'GigabitEthernet0/0/0': {
+                        'link': 'R1_R2_1',
+                        'type': 'ethernet'
+                    },
+                    'GigabitEthernet0/0/1': {
+                        'link': 'R1_R3_1',
+                        'type': 'ethernet'
+                    },
+                    'GigabitEthernet0/0/2': {
+                        'link': 'R1_R2_2',
+                        'type': 'ethernet'
+                    }
+                }
+            },
+            'R2': {
+                'interfaces': {
+                    'GigabitEthernet0/0/0': {
+                        'link': 'R1_R2_1',
+                        'type': 'ethernet'
+                    },
+                    'GigabitEthernet0/0/1': {
+                        'link': 'R1_R2_2',
+                        'type': 'ethernet'
+                    }
+                }
+            },
+            'R3': {
+                'interfaces': {
+                    'GigabitEthernet0/0/0': {
+                        'link': 'R1_R3_1',
+                        'type': 'ethernet'
+                    }
+                }
+            }
+        }
+
+        # Topology with segments for segment testing
+        self.testbed_topology_with_segments = {
+            'R1': {
+                'interfaces': {
+                    'GigabitEthernet0/0/0': {
+                        'segment': 'segment1',
+                        'link': 'R1_R2_1',  # Add link to prevent alias resolution
+                        'type': 'ethernet'
+                    },
+                    'GigabitEthernet0/0/1': {
+                        'segment': 'segment2',
+                        'link': 'R1_R2_2',  # Add link to prevent alias resolution
+                        'type': 'ethernet'
+                    }
+                }
+            },
+            'R2': {
+                'interfaces': {
+                    'GigabitEthernet0/0/0': {
+                        'segment': 'segment1',
+                        'link': 'R1_R2_1',
+                        'type': 'ethernet'
+                    },
+                    'GigabitEthernet0/0/1': {
+                        'segment': 'segment2',
+                        'link': 'R1_R2_2',
+                        'type': 'ethernet'
+                    }
+                }
+            },
+            # Segment definitions
+            'segment1': {
+                'type': 'QINQ'
+            },
+            'segment2': {
+                'type': 'QINQ'
+            }
+        }
+
+    def test_get_interface_with_link_name(self):
+        """Test getting interface using specific link name"""
+        result = get_interface_from_yaml('R1', 'R2', 'R1_R2_1', self.testbed_topology)
+        self.assertEqual(result, 'GigabitEthernet0/0/0')
+
+    def test_get_interface_with_numeric_index(self):
+        """Test getting interface using numeric index"""
+        # First link (index 0) between R1 and R2
+        result = get_interface_from_yaml('R1', 'R2', 0, self.testbed_topology)
+        self.assertEqual(result, 'GigabitEthernet0/0/0')
+
+        # Second link (index 1) between R1 and R2
+        result = get_interface_from_yaml('R1', 'R2', 1, self.testbed_topology)
+        self.assertEqual(result, 'GigabitEthernet0/0/2')
+
+    def test_get_interface_with_string_numeric_index(self):
+        """Test getting interface using string numeric index"""
+        result = get_interface_from_yaml('R1', 'R2', '0', self.testbed_topology)
+        self.assertEqual(result, 'GigabitEthernet0/0/0')
+
+        result = get_interface_from_yaml('R1', 'R2', '1', self.testbed_topology)
+        self.assertEqual(result, 'GigabitEthernet0/0/2')
+
+    def test_get_interface_single_link(self):
+        """Test getting interface when devices have only one common link"""
+        result = get_interface_from_yaml('R1', 'R3', 0, self.testbed_topology)
+        self.assertEqual(result, 'GigabitEthernet0/0/1')
+
+        result = get_interface_from_yaml('R1', 'R3', 'R1_R3_1', self.testbed_topology)
+        self.assertEqual(result, 'GigabitEthernet0/0/1')
+
+    def test_get_interface_invalid_index_raises_exception(self):
+        """Test that invalid index raises appropriate exception"""
+        with self.assertRaises(Exception) as context:
+            get_interface_from_yaml('R1', 'R2', 5, self.testbed_topology)
+
+        self.assertIn("Link '5' between 'R1' and 'R2' does not exists", str(context.exception))
+        self.assertIn("there is only '2' links between them", str(context.exception))
+
+    def test_get_interface_no_common_links_raises_exception(self):
+        """Test behavior when no common links exist between devices"""
+        # Add a device with no common links
+        topology_no_common = self.testbed_topology.copy()
+        topology_no_common['R4'] = {
+            'interfaces': {
+                'GigabitEthernet0/0/0': {
+                    'link': 'R4_only_link',
+                    'type': 'ethernet'
+                }
+            }
+        }
+
+        with self.assertRaises(Exception) as context:
+            get_interface_from_yaml('R1', 'R4', 0, topology_no_common)
+
+        self.assertIn("Link '0' between 'R1' and 'R4' does not exists", str(context.exception))
+        self.assertIn("there is only '0' links between them", str(context.exception))
+
+    def test_get_interface_multiple_interfaces_same_link_returns_first(self):
+        """Test that multiple interfaces for same link returns the first interface"""
+        # Create topology where link maps to multiple interfaces
+        topology_multiple = {
+            'R1': {
+                'interfaces': {
+                    'GigabitEthernet0/0/0': {
+                        'link': 'R1_R2_1',
+                        'type': 'ethernet'
+                    },
+                    'GigabitEthernet0/0/1': {
+                        'link': 'R1_R2_1',  # Same link, different interface
+                        'type': 'ethernet'
+                    }
+                }
+            },
+            'R2': {
+                'interfaces': {
+                    'GigabitEthernet0/0/0': {
+                        'link': 'R1_R2_1',
+                        'type': 'ethernet'
+                    }
+                }
+            }
+        }
+
+        # Function should return the first interface it finds
+        result = get_interface_from_yaml('R1', 'R2', 'R1_R2_1', topology_multiple)
+        self.assertEqual(result, 'GigabitEthernet0/0/0')
+
+    @patch('ast.literal_eval')
+    def test_get_interface_with_non_dict_topology(self, mock_literal_eval):
+        """Test handling of non-dict testbed_topology parameter"""
+        # Mock topology as string that needs parsing
+        topology_string = "{'R1': {'interfaces': {'GigabitEthernet0/0/0': {'link': 'R1_R2_1'}}}}"
+        mock_literal_eval.return_value = self.testbed_topology
+
+        result = get_interface_from_yaml('R1', 'R2', 0, topology_string)
+
+        # Verify ast.literal_eval was called
+        mock_literal_eval.assert_called_once()
+        self.assertEqual(result, 'GigabitEthernet0/0/0')
+
+    def test_get_interface_with_kwargs(self):
+        """Test that function accepts additional keyword arguments"""
+        # Should not raise error even with extra kwargs
+        result = get_interface_from_yaml(
+            'R1', 'R2', 0, self.testbed_topology,
+            extra_param1='value1', extra_param2='value2'
+        )
+        self.assertEqual(result, 'GigabitEthernet0/0/0')
+
+    def test_get_interface_case_sensitivity(self):
+        """Test that device names are handled with proper case sensitivity and stripping"""
+        # Test with extra whitespace
+        result = get_interface_from_yaml(' R1 ', ' R2 ', 0, self.testbed_topology)
+        self.assertEqual(result, 'GigabitEthernet0/0/0')
+
+    def test_get_interface_with_segments(self):
+        """Test getting interface when remote is a segment name"""
+        # Test segment1
+        result = get_interface_from_yaml('R1', 'segment1', 'segment1', self.testbed_topology_with_segments)
+        self.assertEqual(result, 'GigabitEthernet0/0/0')
+
+        # Test segment2
+        result = get_interface_from_yaml('R1', 'segment2', 'segment2', self.testbed_topology_with_segments)
+        self.assertEqual(result, 'GigabitEthernet0/0/1')
+
+    def test_get_interface_with_segments_different_value(self):
+        """Test segment functionality requires value to match segment in topology"""
+        # The value parameter must match the segment name in the topology structure
+        # This test demonstrates that when value != segment name, it returns empty list
+        result = get_interface_from_yaml('R1', 'segment1', 'different_value', self.testbed_topology_with_segments)
+        self.assertEqual(result, [])  # Returns empty list when value doesn't match segment structure
+
+        # When value matches segment name, it works properly
+        result = get_interface_from_yaml('R1', 'segment1', 'segment1', self.testbed_topology_with_segments)
+        self.assertEqual(result, 'GigabitEthernet0/0/0')
+
+    def test_get_interface_with_nonexistent_segment(self):
+        """Test behavior when remote segment doesn't exist in local segments"""
+        # When segment doesn't exist, it falls back to device alias resolution which fails
+        with self.assertRaises(Exception) as context:
+            get_interface_from_yaml('R1', 'nonexistent_segment', 0, self.testbed_topology_with_segments)
+
+        # The actual error depends on the fallback behavior - could be list index out of range
+        # from device alias resolution or link processing
+        self.assertTrue(
+            "list index out of range" in str(context.exception) or
+            "does not exists" in str(context.exception)
+        )
+
+    def test_get_interface_segments_priority_over_links(self):
+        """Test that segment matching takes priority over link matching"""
+        # Create topology where device has both segments and links
+        mixed_topology = {
+            'R1': {
+                'interfaces': {
+                    'GigabitEthernet0/0/0': {
+                        'segment': 'test_segment',
+                        'link': 'R1_R2_1',
+                        'type': 'ethernet'
+                    },
+                    'GigabitEthernet0/0/1': {
+                        'link': 'R1_R2_1',
+                        'type': 'ethernet'
+                    }
+                }
+            },
+            'R2': {
+                'interfaces': {
+                    'GigabitEthernet0/0/0': {
+                        'link': 'R1_R2_1',
+                        'type': 'ethernet'
+                    }
+                }
+            }
+        }
+
+        # When remote is a segment name, segment logic should be used
+        result = get_interface_from_yaml('R1', 'test_segment', 'test_segment', mixed_topology)
+        self.assertEqual(result, 'GigabitEthernet0/0/0')

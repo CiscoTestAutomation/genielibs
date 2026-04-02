@@ -1,40 +1,23 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
 from genie.libs.sdk.apis.iosxe.nat.configure import unconfigure_nat_pool
 
-
-class TestUnconfigureNatPool(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          stack3-nyquist-1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: router
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['stack3-nyquist-1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigureNatPool(TestCase):
 
     def test_unconfigure_nat_pool(self):
-        result = unconfigure_nat_pool(self.device, 'outside_pool', '4.4.4.4', '4.5.5.5', '255.0.0.0', None)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        result = unconfigure_nat_pool(device, 'outside_pool', '4.4.4.4', '4.5.5.5', '255.0.0.0', None)
+        self.assertEqual(result, None)
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            ('no ip nat pool outside_pool 4.4.4.4 4.5.5.5 netmask 255.0.0.0',)
+        )
 
     def test_unconfigure_nat_pool_1(self):
-        result = unconfigure_nat_pool(self.device, 'outside_pool1', '4.4.4.4', '4.4.5.5', None, 16)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        result = unconfigure_nat_pool(device, 'outside_pool1', '4.4.4.4', '4.4.5.5', None, 16)
+        self.assertEqual(result, None)
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            ('no ip nat pool outside_pool1 4.4.4.4 4.4.5.5 prefix-length 16',)
+        )

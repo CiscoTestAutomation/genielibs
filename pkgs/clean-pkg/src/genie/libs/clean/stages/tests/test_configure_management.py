@@ -288,6 +288,7 @@ class TestConfigureInterfaces(unittest.TestCase):
         iface_obj = Mock()
         iface_obj.name = 'GigabitEthernet0/1'
         iface_obj.alias = 'mgmt0'
+        iface_obj.stackwise_virtual_link = False
         iface_obj.enabled = None
         iface_obj.breakout = False
         iface_obj.build_config = Mock(return_value='interface Gi0/1\n no shutdown')
@@ -307,6 +308,7 @@ class TestConfigureInterfaces(unittest.TestCase):
         iface_obj = Mock()
         iface_obj.name = 'GigabitEthernet0/2'
         iface_obj.alias = 'mgmt0'
+        iface_obj.stackwise_virtual_link = False
         iface_obj.enabled = None
         iface_obj.breakout = False
         iface_obj.build_config = Mock(return_value='interface Gi0/2\n no shutdown')

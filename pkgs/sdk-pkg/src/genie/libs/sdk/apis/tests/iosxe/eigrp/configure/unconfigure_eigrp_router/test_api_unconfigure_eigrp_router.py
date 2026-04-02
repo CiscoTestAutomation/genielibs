@@ -1,34 +1,27 @@
 import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
+
 from genie.libs.sdk.apis.iosxe.eigrp.configure import unconfigure_eigrp_router
 
 
-class TestUnconfigureEigrpRouter(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = """
-        devices:
-          9300x-A:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: c9300
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['9300x-A']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigureEigrpRouter(TestCase):
 
     def test_unconfigure_eigrp_router(self):
-        result = unconfigure_eigrp_router(self.device, '100')
+        device = Mock()
+        device.state_machine.current_state = 'enable'
+
+        result = unconfigure_eigrp_router(device, '100')
+
         expected_output = None
         self.assertEqual(result, expected_output)
+
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.mock_calls[0].args[0]
+
+        self.assertIn('no router eigrp 100', sent_commands)
+
+
+if __name__ == '__main__':
+    unittest.main()

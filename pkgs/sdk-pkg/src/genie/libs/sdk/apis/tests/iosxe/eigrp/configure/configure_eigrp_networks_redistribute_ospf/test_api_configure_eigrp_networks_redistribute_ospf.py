@@ -1,35 +1,47 @@
-import os
+
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.eigrp.configure import configure_eigrp_networks_redistribute_ospf
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.eigrp.configure import (
+    configure_eigrp_networks_redistribute_ospf
+)
 
 
-class TestConfigureEigrpNetworksRedistributeOspf(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          stack3-nyquist-1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: c9300
-            type: c9300
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['stack3-nyquist-1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureEigrpNetworksRedistributeOspf(TestCase):
 
     def test_configure_eigrp_networks_redistribute_ospf(self):
-        result = configure_eigrp_networks_redistribute_ospf(self.device, '101', '101.0.0.0', None, '1000', '100', '255', '1', '1500')
+        device = Mock()
+        device.state_machine.current_state = 'enable'  # Assume device is in enable mode
+
+        result = configure_eigrp_networks_redistribute_ospf(
+            device,
+            '101',        # eigrp_as
+            '101.0.0.0',   # network
+            None,         # netmask
+            '1000',       # bandwidth
+            '100',        # delay
+            '255',        # reliability
+            '1',          # load
+            '1500'        # mtu
+        )
+
         expected_output = None
         self.assertEqual(result, expected_output)
+
+        # Ensure configure was called
+        device.configure.assert_called_once()
+
+        # Validate commands sent to the device
+        sent_commands = device.configure.mock_calls[0].args[0]
+
+        self.assertIn('router eigrp 101', sent_commands)
+        self.assertIn('network 101.0.0.0', sent_commands)
+        self.assertIn(
+            'redistribute ospf 101 metric 1000 100 255 1 1500',
+            sent_commands
+        )
+
+
+if __name__ == '__main__':
+    unittest.main()

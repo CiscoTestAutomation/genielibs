@@ -3888,7 +3888,7 @@ class Connect(BaseStage):
         with steps.start("Connecting to the device") as step:
 
             # If recovery is enabled, ignore rollup
-            section = self.parameters.get('section')
+            section = self.parameters.internal.get('section')
 
             # Check if 'section' exists and has a parent with 'device_recovery_processor'
             if section and getattr(section.parent, 'device_recovery_processor',

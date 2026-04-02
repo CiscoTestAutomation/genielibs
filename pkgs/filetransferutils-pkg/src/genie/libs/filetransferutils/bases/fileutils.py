@@ -19,6 +19,7 @@ from genie.libs import filetransferutils
 from genie.abstract import Lookup
 from pyats.utils.secret_strings import to_plaintext
 from pyats.topology.credentials import DEFAULT_CRED
+from pyats.utils.import_utils import get_entry_points
 
 logger = logging.getLogger(__name__)
 
@@ -34,12 +35,15 @@ DEFAULT_PORTS = {
     'http': 80, 
     'https': 443,
 }
+ENTRYPOINT_GROUP = 'genie.libs.filetransferutils'
 
 class FileUtilsBase(object):
     """ Base class for all FileUtils implementations.
 
     Based on the 'os' parameter, the appropriate os-specific subclass is
-    identified and instantiated.
+    identified and instantiated. Entry point packages registered under
+    'genie.libs.filetransferutils' are checked first, then the base
+    filetransferutils package is used as fallback.
     """
 
     @classmethod
@@ -77,76 +81,162 @@ class FileUtilsBase(object):
 
         If a child class is requested (``_parent`` is present in kwargs) then
         do not rewrite the class.
+
+        Resolution order:
+            1. Entry point packages
+            2. Base filetransferutils package
         """
         if not kwargs.get('_parent'):
-            try:
-                # Prepare tokens based on the presence of os and protocol
-                tokens = []
-                if os:
-                    tokens.append(os)
-                if protocol:
-                    tokens.append(protocol)
-
-                # Initialize Lookup with dynamic tokens and specified packages
-                lookup = Lookup(
-                    *tokens,
-                    packages={'fileutils': filetransferutils,}
+            new_cls = None
+            # Try entry point packages first, then base package
+            for pkg in cls._get_filetransferutils_packages():
+                # Try to resolve class from this package
+                new_cls = cls._resolve_fileutils_class(pkg, os, protocol)
+                if new_cls:
+                    break
+            # Raise if no class found
+            if not new_cls:
+                if os and protocol:
+                    raise Exception(
+                        f"Cannot find fileutils plugin for "
+                        f"os '{os}' with protocol '{protocol}'."
                     )
-                
-                if not os:
-                    # Access the default fileutils
-                    if protocol:
-                        # If only protocol is provided, access lookup.fileutils.protocol.FileUtils
-                        protocol_child = getattr(lookup.fileutils.protocols, protocol, None)
-                        if not protocol_child:
-                            raise Exception(f"Cannot find protocol {protocol} in default fileutils.")
-                        new_cls = getattr(protocol_child, 'FileUtils', None)
-                        if not new_cls:
-                            raise Exception(f"FileUtils class not found for protocol {protocol}.")
-                    else:
-                        # No `os` or `protocol` - use the default fileutils class
-                        new_cls = getattr(lookup.fileutils, 'FileUtils', None)
-                        if not new_cls:
-                            raise Exception("Default FileUtils class not found in lookup.")
+                elif os:
+                    raise Exception(
+                        f"Cannot find fileutils plugin for os '{os}'."
+                    )
+                elif protocol:
+                    raise Exception(
+                        f"Cannot find fileutils plugin for "
+                        f"protocol '{protocol}'."
+                    )
                 else:
-                    # Access the fileutils plugin
-                    fileutils_plugin = lookup.fileutils.plugins
-
-                    # Access the FileUtils class for os
-                    os_child = getattr(fileutils_plugin, os, None)
-                    if not os_child:
-                        raise Exception(f"Error accessing FileUtils class for os {os}.")
-
-                    # Check for protocol only if it's not None
-                    if protocol:
-                        # Check for protocol child within the os child
-                        protocol_child = getattr(os_child, protocol, None)
-                        if not protocol_child:
-                            raise Exception(f"Cannot find protocol {protocol} within os {os}.")
-
-                    # Access the FileUtils class
-                    new_cls = fileutils_plugin.FileUtils
-
-            except Exception as e:
-                raise Exception("Cannot find fileutils plugin for os {}.".\
-                    format(os))
-
+                    raise Exception(
+                        "Cannot find default fileutils plugin."
+                    )
+            # Ensure new_cls is subclass of FileUtilsBase
             try:
                 if issubclass(new_cls, cls):
                     cls = new_cls
                 else:
-                    raise Exception(f"The FileUtils class for os {os} "
-                        f"does not inherit from genie.libs.filetransferutils "
-                        f"base class.")
+                    raise Exception(
+                        f"The FileUtils class for os {os} "
+                        f"does not inherit from "
+                        f"genie.libs.filetransferutils base class."
+                    )
             except TypeError:
-                raise Exception(f"{new_cls} is the registered fileutils plugin for "
-                    "os {os} but is not a class.")
-
+                raise Exception(
+                    f"{new_cls} is the registered fileutils plugin for "
+                    f"os {os} but is not a class."
+                )
 
         logger.debug("Instantiating {}class {} from module {}...".\
             format("child " if kwargs.get('_parent') else "",
             cls.__name__, cls.__module__))
         return super().__new__(cls)
+
+    @classmethod
+    def _get_filetransferutils_packages(cls):
+        """Discover filetransferutils packages via entry points.
+
+        Returns packages in priority order:
+            1. Entry point packages (internal)
+            2. Base filetransferutils package (fallback)
+
+        Entry points are registered in setup.py under the group
+        'genie.libs.filetransferutils'
+        """
+        packages = []
+
+        try:
+            # Discover entry points for the filetransferutils group
+            discovered = get_entry_points(ENTRYPOINT_GROUP)
+
+            # Load discovered entry point packages
+            for ep in discovered:
+                try:
+                    pkg = ep.load()
+                    packages.append(pkg)
+                    logger.debug(
+                        f"Discovered filetransferutils entry point: "
+                        f"{ep.name} -> {pkg.__name__}"
+                    )
+                except Exception as e:
+                    logger.debug(
+                        f"Failed to load entry point {ep.name}: {e}"
+                    )
+        except Exception as e:
+            logger.debug(f"Entry point discovery failed: {e}")
+
+        # Base package as fallback
+        packages.append(filetransferutils)
+
+        return packages
+
+    @classmethod
+    def _resolve_fileutils_class(cls, pkg, os, protocol):
+        """Resolve a FileUtils class from a package for the given OS/protocol.
+
+        Resolution order:
+            1. plugins.<os>.<protocol>.FileUtils (protocol-specific)
+            2. plugins.<os>.FileUtils (OS-specific)
+            3. protocols.<protocol>.FileUtils (protocol-only, no OS)
+            4. <pkg>.FileUtils (default, no OS or protocol)
+
+        Parameters
+        ----------
+            pkg : module
+                The filetransferutils package to search.
+            os : str
+                Device OS (e.g. 'iosxe', 'nxos').
+            protocol : str
+                Transfer protocol (e.g. 'scp', 'http').
+
+        Returns
+        -------
+            class or None
+                The resolved FileUtils class, or None if not found.
+        """
+        # Prepare tokens based on the presence of os and protocol
+        tokens = []
+        if os:
+            tokens.append(os)
+        if protocol:
+            tokens.append(protocol)
+
+        # Initialize Lookup with dynamic tokens and specified packages
+        try:
+            lookup = Lookup(
+                *tokens,
+                packages={'filetransferutils': pkg}
+            )
+
+            if tokens:
+                resolved = lookup.filetransferutils.plugins.fileutils.FileUtils
+                # Verify the resolved class is actually OS/protocol-specific
+                # and not just the generic fallback. Lookup may silently
+                # return the base module when tokens don't match.
+                if os and os not in resolved.__module__:
+                    logger.debug(
+                        f"Lookup resolved {resolved.__module__}.{resolved.__name__} "
+                        f"but it does not match os '{os}' - skipping."
+                    )
+                    return None
+                if protocol and protocol not in resolved.__module__:
+                    logger.debug(
+                        f"Lookup resolved {resolved.__module__}.{resolved.__name__} "
+                        f"but it does not match protocol '{protocol}' - skipping."
+                    )
+                    return None
+                return resolved
+            else:
+                return lookup.filetransferutils.fileutils.FileUtils
+        except Exception as e:
+            logger.debug(
+                f"Could not resolve FileUtils from "
+                f"{pkg.__name__}: {e}"
+            )
+            return None
 
     def __enter__(self):
         """ Allows the object to function as a self-closing context manager.

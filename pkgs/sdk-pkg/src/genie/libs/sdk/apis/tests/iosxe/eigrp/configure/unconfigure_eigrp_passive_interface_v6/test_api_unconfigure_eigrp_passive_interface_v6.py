@@ -1,35 +1,28 @@
-import os
 import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
+
 from genie.libs.sdk.apis.iosxe.eigrp.configure import unconfigure_eigrp_passive_interface_v6
 
 
-class TestUnconfigureEigrpPassiveInterfaceV6(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          Speedracer-Sanity:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: iosxe
-            type: iosxe
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Speedracer-Sanity']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigureEigrpPassiveInterfaceV6(TestCase):
 
     def test_unconfigure_eigrp_passive_interface_v6(self):
-        result = unconfigure_eigrp_passive_interface_v6(self.device, '1', ['GigabitEthernet0/0/0'])
+        device = Mock()
+        device.state_machine.current_state = 'enable'
+
+        result = unconfigure_eigrp_passive_interface_v6(device, '1', ['GigabitEthernet0/0/0'])
+
         expected_output = None
         self.assertEqual(result, expected_output)
+
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.mock_calls[0].args[0]
+
+        self.assertIn('ipv6 router eigrp 1', sent_commands)
+        self.assertIn('no passive-interface GigabitEthernet0/0/0', sent_commands)
+
+
+if __name__ == '__main__':
+    unittest.main()

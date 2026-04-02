@@ -60,7 +60,7 @@ class TestCopyFromDevice(unittest.TestCase):
     def test_copy_from_device(self):
         self.device.api.get_mgmt_ip_and_mgmt_src_ip_addresses = Mock(return_value=('127.0.0.1', ['127.0.0.1']))
         self.device.execute = Mock()
-        copy_from_device(self.device, 'test.txt')
+        copy_from_device(self.device, 'test.txt', protocol= 'http')
 
         assert re.search(r'copy test.txt http://\w+:\w+@127.0.0.1:\d+/R1_test.txt', str(self.device.execute.call_args))
 

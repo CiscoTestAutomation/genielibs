@@ -1,35 +1,40 @@
-import os
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.evpn.configure import unconfigure_mdt_config_on_vrf
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.evpn.configure import (
+    unconfigure_mdt_config_on_vrf
+)
 
 
-class TestUnconfigureMdtConfigOnVrf(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          Startrek:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: router
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Startrek']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigureMdtConfigOnVrf(TestCase):
 
     def test_unconfigure_mdt_config_on_vrf(self):
-        result = unconfigure_mdt_config_on_vrf(self.device, 'red', 'ipv4', 'overlay', 'use-bgp', 'spt-only')
+        device = Mock()
+        device.state_machine.current_state = 'enable'  # Assume device is in enable mode
+
+        result = unconfigure_mdt_config_on_vrf(
+            device,
+            'red',
+            'ipv4',
+            'overlay',
+            'use-bgp',
+            'spt-only'
+        )
+
         expected_output = None
         self.assertEqual(result, expected_output)
+
+        # Ensure configure was called
+        device.configure.assert_called_once()
+
+        # Validate commands sent to the device
+        sent_commands = device.configure.mock_calls[0].args[0]
+
+        self.assertIn('vrf definition red', sent_commands)
+        self.assertIn('address-family ipv4', sent_commands)
+        self.assertIn('no mdt overlay use-bgp spt-only', sent_commands)
+
+
+if __name__ == '__main__':
+    unittest.main()

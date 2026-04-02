@@ -280,6 +280,8 @@ class VerifyConfigurationRegister(unittest.TestCase):
 
         steps = Steps()
         self.device.execute = Mock(side_effect=lambda x: data[x])
+        self.device.state_machine = Mock()
+        self.device.state_machine.current_state = 'enable'
 
         self.cls.verify_configuration_register(
             steps=steps, device=self.device, config_register=confreg

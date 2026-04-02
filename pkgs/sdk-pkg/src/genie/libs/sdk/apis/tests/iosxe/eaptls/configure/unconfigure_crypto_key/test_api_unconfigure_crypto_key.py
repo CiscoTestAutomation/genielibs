@@ -1,35 +1,37 @@
-import os
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.eaptls.configure import unconfigure_crypto_key
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.eaptls.configure import (
+    unconfigure_crypto_key
+)
 
 
-class TestUnconfigureCryptoKey(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          SecG-A2-8M9300:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: c9300
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['SecG-A2-8M9300']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigureCryptoKey(TestCase):
 
     def test_unconfigure_crypto_key(self):
-        result = unconfigure_crypto_key(self.device, 'SecG-A2-8M9300.cisco.com')
+        device = Mock()
+        device.state_machine.current_state = 'enable'  # Assume device is in enable mode
+
+        result = unconfigure_crypto_key(
+            device,
+            'SecG-A2-8M9300.cisco.com'
+        )
+
         expected_output = None
         self.assertEqual(result, expected_output)
+
+        # Ensure configure was called
+        device.configure.assert_called_once()
+
+        # Validate commands sent to the device
+        sent_commands = device.configure.mock_calls[0].args[0]
+
+        self.assertIn(
+            'crypto key zeroize rsa SecG-A2-8M9300.cisco.com',
+            sent_commands
+        )
+
+
+if __name__ == '__main__':
+    unittest.main()

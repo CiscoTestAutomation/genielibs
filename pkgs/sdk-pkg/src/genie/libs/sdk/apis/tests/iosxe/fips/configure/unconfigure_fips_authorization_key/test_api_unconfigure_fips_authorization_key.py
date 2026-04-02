@@ -1,34 +1,36 @@
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.fips.configure import unconfigure_fips_authorization_key
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.fips.configure import (
+    unconfigure_fips_authorization_key
+)
 
 
-class TestUnconfigureFipsAuthorizationKey(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = """
-        devices:
-          intrepid-2:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: INTREPID
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['intrepid-2']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigureFipsAuthorizationKey(TestCase):
 
     def test_unconfigure_fips_authorization_key(self):
-        result = unconfigure_fips_authorization_key(self.device)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        # Create a mock device
+        device = Mock()
+        device.state_machine.current_state = 'enable'  # Assume enable mode
+
+        # Call the API
+        result = unconfigure_fips_authorization_key(device)
+
+        # API returns None on success
+        self.assertIsNone(result)
+
+        # Ensure configure() was called once
+        device.configure.assert_called_once()
+
+        # Validate commands sent to device.configure()
+        sent_commands = device.configure.mock_calls[0].args[0]
+
+        self.assertIn(
+            'no fips authorization-key',
+            sent_commands
+        )
+
+
+if __name__ == '__main__':
+    unittest.main()

@@ -1,34 +1,30 @@
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.evpn.configure import unconfigure_l2vpn_evpn
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.evpn.configure import (
+    unconfigure_l2vpn_evpn
+)
 
 
-class TestUnconfigureL2vpnEvpn(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = """
-        devices:
-          NyqC:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: c9300
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['NyqC']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigureL2vpnEvpn(TestCase):
 
     def test_unconfigure_l2vpn_evpn(self):
-        result = unconfigure_l2vpn_evpn(self.device)
+        device = Mock()
+        device.state_machine.current_state = 'enable'  # Assume device is in enable mode
+
+        result = unconfigure_l2vpn_evpn(device)
+
         expected_output = None
         self.assertEqual(result, expected_output)
+
+        # Ensure configure was called
+        device.configure.assert_called_once()
+
+        # Validate commands sent to the device
+        sent_commands = device.configure.mock_calls[0].args[0]
+        self.assertIn('no l2vpn evpn', sent_commands)
+
+
+if __name__ == '__main__':
+    unittest.main()

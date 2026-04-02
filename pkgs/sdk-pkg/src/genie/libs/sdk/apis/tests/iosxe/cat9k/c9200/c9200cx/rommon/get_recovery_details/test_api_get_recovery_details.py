@@ -36,7 +36,17 @@ class TestGetRecoveryDetails(unittest.TestCase):
 
     def test_get_recovery_details(self):
         result = get_recovery_details(self.device)
-        expected_result = {'golden_image': ['drec0:system_image.bin'], 'tftp_image': None}
+        expected_result = {
+            'golden_image': ['drec0:system_image.bin'],
+            'tftp_boot': {
+                "gateway": "1.1.1.0",
+                "image": ["file/base_image.bin"],
+                "ip_address": "1.1.1.1",
+                "subnet_mask": "255.255.255.0",
+                "tftp_server": "1.1.2.1"
+            },
+            'tftp_image': ['file/base_image.bin'],
+        }
 
         self.assertEqual(
             result,

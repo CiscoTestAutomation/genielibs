@@ -1,33 +1,46 @@
 import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
+
 from genie.libs.sdk.apis.iosxe.evpn.configure import configure_evpn_instance
 
-class TestConfigureEvpnInstance(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(self):
-        testbed = """
-        devices:
-          NyqC:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: c9300
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['NyqC']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+def _flatten_cmds(cmds):
+    """Recursively flatten a list of CLI commands that may include sub-lists."""
+    flat = []
+    for item in cmds:
+        if isinstance(item, (list, tuple)):
+            flat.extend(_flatten_cmds(item))
+        else:
+            flat.append(item)
+    return flat
+
+
+class TestConfigureEvpnInstance(TestCase):
 
     def test_configure_evpn_instance(self):
-        result = configure_evpn_instance(self.device, 10, 'vlan-based', 'vxlan', 'ingress')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = 'enable'
+
+        result = configure_evpn_instance(
+            device,
+            10,
+            'vlan-based',
+            'vxlan',
+            'ingress'
+        )
+        self.assertEqual(result, None)
+
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.mock_calls[0].args[0]
+        flat_commands = _flatten_cmds(sent_commands)
+
+        self.assertIn('l2vpn evpn instance 10 vlan-based', flat_commands)
+        self.assertIn('l2vpn evpn instance 10', flat_commands)
+        self.assertIn('encapsulation vxlan', flat_commands)
+        self.assertIn('replication ingress', flat_commands)
+
+
+if __name__ == '__main__':
+    unittest.main()

@@ -4,6 +4,7 @@
 import logging
 import time
 from datetime import datetime, timedelta
+from concurrent.futures import ThreadPoolExecutor, wait as wait_futures, ALL_COMPLETED
 
 
 from genie.abstract import Lookup
@@ -24,12 +25,15 @@ from genie.libs.clean.exception import StackMemberConfigException
 # MetaParser
 from genie.metaparser.util.schemaengine import Optional, Any, Or
 from genie.libs.clean import BaseStage
+from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
 from unicon.eal.dialogs import Statement, Dialog
 from unicon.core.errors import SubCommandFailure
 
 from unicon.plugins.iosxe.stack.utils import StackUtils
 from unicon.plugins.generic.statements import buffer_settled
+from unicon.plugins.generic.service_statements import reload_statement_list
+from unicon.plugins.iosxe.statements import boot_from_rommon_stmt
 
 # Logger
 log = logging.getLogger(__name__)
@@ -650,3 +654,346 @@ install_image:
             except Exception as e:
                 step.failed("Failed to check for debug config in rommon variables",
                             from_exception=e)
+
+
+class UnconfigureStackwiseVirtual(BaseStage):
+    """This stage unconfigures StackWise Virtual on Cat9k devices and verifies
+       the unconfiguration after device reload.
+
+Stage Schema
+------------
+unconfigure_stackwise_virtual:
+    wait_time (int, optional): Wait time in seconds before accessing device
+        after svl unconfiguration. Defaults to 180.
+    reload_time (int, optional): Reload time in seconds for device reload
+        after svl unconfiguration. Defaults to 600.
+
+Example
+-------
+unconfigure_stackwise_virtual:
+    wait_time: 180
+    reload_time: 600
+
+"""
+    # =================
+    # Argument Defaults
+    # =================
+    WAIT_TIME = 180
+    RELOAD_TIME = 600
+
+    # ============
+    # Stage Schema
+    # ============
+    schema = {
+        Optional('wait_time',
+                 description="Wait time in seconds before accessing device "
+                             "after svl unconfiguration. Default to 180 seconds"):
+        int,
+        Optional('reload_time',
+                 description="Reload time in seconds for device reload "
+                             "after svl unconfiguration. Default to 600 seconds"):
+        int,
+    }
+
+    exec_order = [
+        'check_stackwise_virtual_config',
+        'unconfigure_stackwise_virtual',
+        'reload_device',
+        'verify_stackwise_virtual_unconfig'
+    ]
+
+    def check_stackwise_virtual_config(self, steps, device):
+        """ Check if StackWise Virtual configuration exists
+            Args:
+                steps (obj): Steps object
+                device (obj): Device object
+        """
+        with steps.start(
+                "Checking for existing StackWise Virtual configuration"
+        ) as step:
+            subconns = list(device.subconnections)
+            for subconn in subconns:
+                try:
+                    output = subconn.execute("show stackwise-virtual link")
+                    device.parse(
+                        "show stackwise-virtual link",
+                        output=output
+                    )
+                    step.passed(
+                        f"StackWise Virtual configuration exists on {device.name}. "
+                        "Proceeding with unconfiguration."
+                    )
+                    return
+                except SchemaEmptyParserError:
+                    continue
+
+            # If no member has StackWise Virtual configured, skip the unconfiguration
+            self.skipped(
+                f"StackWise Virtual is not configured on all members of {device.name}. "
+                "Skipping unconfiguration."
+            )
+
+    def unconfigure_stackwise_virtual(self, device, steps):
+        """Unconfigure StackWise Virtual on the device.
+        Args:
+            device (obj): Device object
+            steps (obj): Steps object
+        """
+        with steps.start("Unconfiguring StackWise Virtual on the device") as step:
+            switch_link_interfaces = {}
+            # Identify active/standby consoles, put active first in the list since config
+            # and save should run on active first before standby
+            active = getattr(device, "active", None) or device
+            standby = getattr(device, "standby", None)
+            ordered_connections = [active] + ([standby] if standby else [])
+            log.debug("Console order (active first): %s",
+                     [getattr(c, "alias", device.name) for c in ordered_connections])
+            # Gather SVL link information
+            parsed = None
+            for subconn in ordered_connections:
+                try:
+                    output = subconn.execute("show stackwise-virtual link")
+                    parsed = device.parse("show stackwise-virtual link", output=output)
+                    break
+                except SchemaEmptyParserError:
+                    continue
+                except Exception as e:
+                    step.failed("Failed to parse SVL link info",
+                                from_exception=e)
+            if not parsed:
+                self.skipped("No SVL link information found on any connection")
+
+            for switch_num, switch_data in parsed.get('switch', {}).items():
+                switch_link_interfaces[switch_num] = {}
+                for svl_id, svl_data in switch_data.get('svl', {}).items():
+                    for port in svl_data.get('ports', {}).keys():
+                        switch_link_interfaces[switch_num].setdefault(
+                            svl_id, []).append(port)
+            log.debug(f"SVL link interfaces to unconfigure per switch: "
+                      f"{switch_link_interfaces}")
+            NON_FATAL = [
+                "Standby doesn't support",
+                "Configuration allowed only from Active",
+                "not allowed",
+                "Incomplete command",
+                "Invalid input",
+            ]
+
+            svl_dialog = Dialog([
+                Statement(
+                    pattern=r'.*Are you sure\?\s*\[yes\/no\].*',
+                    action='sendline(yes)',
+                    loop_continue=True,
+                    continue_timer=False)
+            ])
+
+            # Dialog for copy running-config startup-config
+            copy_run_to_start_dialog = Dialog([
+                Statement(
+                    pattern=r'^.*Destination +(filename|file +name)(\s\(control\-c +to +(cancel|abort)\)\:)? +\[(\S+\/)?startup\-config]\?\s*$',
+                    action='sendline()',
+                    loop_continue=True,
+                    continue_timer=False),
+                Statement(
+                    pattern=r'.*proceed anyway\?.*$',
+                    action='sendline(y)',
+                    loop_continue=True,
+                    continue_timer=False),
+                Statement(
+                    pattern=r'Continue\? \[no\]:\s*$',
+                    action='sendline(y)',
+                    loop_continue=True,
+                    continue_timer=False),
+            ])
+
+            for subconn in ordered_connections:
+                alias = getattr(subconn, "alias", device.name)
+                for sw, links in switch_link_interfaces.items():
+                    for lid, intfs in links.items():
+                        for intf in intfs:
+                            try:
+                                subconn.configure([
+                                    f"interface {intf}",
+                                    f"no stackwise-virtual link {lid}",
+                                    "shutdown", "exit",
+                                ], timeout=120, reply=svl_dialog)
+                                log.info("Unconfigured %s via %s", intf, alias)
+                            except SubCommandFailure as e:
+                                err_str = str(e)
+                                if any(p in err_str for p in NON_FATAL):
+                                    log.debug("Non-fatal on %s (%s): %s",
+                                                alias, intf, err_str)
+                                else:
+                                    step.failed(
+                                        f"Failed SVL removal on "
+                                        f"{intf} via {alias}",
+                                        from_exception=e)
+
+                # Global SVL removal
+                try:
+                    subconn.configure("no stackwise-virtual",
+                                     timeout=120, reply=svl_dialog)
+                    log.info("Removed stackwise-virtual via %s", alias)
+                except SubCommandFailure as e:
+                    step.failed(
+                        f"Failed removing SVL on {device.name}",
+                        from_exception=e)
+
+                # Save config using copy running-config startup-config
+                try:
+                    subconn.execute("copy running-config startup-config",reply=copy_run_to_start_dialog)
+                except Exception as e:
+                    log.warning("Could not save on %s: %s", alias, e)
+
+            step.passed(
+                f"StackWise Virtual unconfigured and saved on {device.name}. "
+                "Reload required to take effect. Proceeding to reload the device."
+            )
+
+
+    def reload_device(self,
+                       device,
+                       steps,
+                       wait_time=WAIT_TIME,
+                       reload_time=RELOAD_TIME):
+        """ Reload the device after SVL unconfiguration."""
+
+        def _execute_reload(timeout=reload_time):
+            subconns = list(device.subconnections)
+            for subconn in subconns:
+                ctx = getattr(subconn, 'context', {})
+                if isinstance(ctx, dict) and 'image_to_boot' not in ctx:
+                    ctx['image_to_boot'] = 'bootflash:packages.conf'
+
+            # Reuse the standard single-RP cat9k reload dialog exactly:
+            # reload_statement_list + boot_from_rommon_stmt
+            reload_dialog = Dialog(reload_statement_list + [boot_from_rommon_stmt])
+
+            for subconn in subconns:
+                alias = getattr(subconn, 'alias', device.name)
+                log.info(f"Sending reload on subconnection '{alias}'")
+                try:
+                    subconn.sendline('reload')
+                except Exception as e:
+                    log.warning(f"Could not send reload on '{alias}': {e}")
+
+            def _process_reload_dialog(subconn):
+                alias = getattr(subconn, 'alias', device.name)
+                try:
+                    reload_dialog.process(
+                        subconn.spawn, timeout=timeout,
+                        context=subconn.context)
+                    log.info(f"Reload dialog completed on '{alias}'")
+                except Exception as e:
+                    step.failed(
+                        f"Reload dialog ended on '{alias}'",
+                        from_exception=e)
+
+            with ThreadPoolExecutor(max_workers=len(subconns)) as executor:
+                futures = [executor.submit(_process_reload_dialog, sc)
+                           for sc in subconns]
+                wait_futures(futures, timeout=timeout + 120,
+                             return_when=ALL_COMPLETED)
+
+
+        log.info(f'Get the recovery details from clean for device {device.name}')
+        try:
+            recovery_info = device.clean.get('device_recovery')
+        except AttributeError:
+            log.info(f'There is no recovery info for device {device.name}')
+            recovery_info = {}
+
+        if recovery_info:
+            log.info(f"Recovery info found for device {device.name}")
+            with steps.start("Power cycle device") as step:
+                try:
+                    device.api.execute_power_cycle_device()
+                except Exception as e:
+                    log.error(f"Power cycle failed: {e}")
+                    with step.start(f"Connecting to device {device.name} after power cycle failure") as connect_attempt:
+                        try:
+                            device.connect()
+                        except Exception as e:
+                            log.exception(
+                                f"Failed to connect to device {device.name}")
+                            connect_attempt.failed(
+                                f"Failed to connect to device "
+                                f"{device.name} after power cycle",
+                                from_exception=e)
+                        connect_attempt.passed('Successfully connected to device.')
+                    log.info("Attempting to reload device!")
+
+                    with step.start(f"Attempting to reload device {device.name}") as reload_step:
+                        try:
+                            _execute_reload()
+                        except Exception as e:
+                            step.failed(
+                                f"Failed to boot device {device.name} "
+                                f"using reload",
+                                from_exception=e)
+                        else:
+                            log.info(f"Waiting for {wait_time} seconds before reconnecting to the device.")
+                            time.sleep(wait_time)
+                            if not _disconnect_reconnect(device):
+                                reload_step.failed(
+                                    f"Failed to reconnect to device "
+                                    f"{device.name} after reload")
+                            reload_step.passed(
+                                f"Device {device.name} reloaded successfully."
+                            )
+                            step.passx(f"Device {device.name}  successfully booted.")
+                else:
+                    device.api.device_recovery_boot()
+
+                    log.info(f"Waiting for {wait_time} seconds before reconnecting to the device.")
+                    time.sleep(wait_time)
+                    # Reconnect to the device
+                    try:
+                        _disconnect_reconnect(device)
+                    except Exception as e:
+                        log.exception(f"Failed to reconnect to device {device.name}")
+                        step.failed(
+                            f"Failed to reconnect to device "
+                            f"{device.name}",
+                            from_exception=e)
+                    step.passed(
+                        f"Device {device.name} booted successfully.")
+        else:
+            log.info(f"No recovery info found for device {device.name}, proceeding with reload.")
+            with steps.start(f"Reloading device {device.name}") as step:
+                try:
+                    _execute_reload()
+                except Exception as e:
+                    step.failed(
+                        f"Failed to boot device {device.name} using reload",
+                        from_exception=e)
+                else:
+                    log.info(f"Waiting for {wait_time} seconds before reconnecting to the device.")
+                    time.sleep(wait_time)
+                    if not _disconnect_reconnect(device):
+                        step.failed(
+                            f"Failed to reconnect to device "
+                            f"{device.name} after reload")
+                    step.passed(f"Device {device.name} reloaded and reconnected successfully.")
+
+    def verify_stackwise_virtual_unconfig(self, device, steps):
+        """ After reload, Verify StackWise Virtual unconfiguration on all device members."""
+        with steps.start("Verifying StackWise Virtual unconfiguration") as step:
+            subconns = list(device.subconnections)
+            for subconn in subconns:
+                try:
+                    output = subconn.execute("show stackwise-virtual link")
+                    device.parse("show stackwise-virtual link", output=output)
+                    # If parse succeeds, SVL still exists
+                    step.failed(
+                        f"StackWise Virtual still configured on {device.name}. "
+                        "Unconfiguration verification failed."
+                    )
+                except SchemaEmptyParserError:
+                    # Expected empty parser output means SVL is not configured.
+                    continue
+
+            # If no member has StackWise Virtual configured, verification passed
+            step.passed(
+                f"StackWise Virtual unconfiguration verified on all members of {device.name}."
+            )

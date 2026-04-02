@@ -513,7 +513,7 @@ def configure_management_ssh(device,
                              password=None,
                              domain_name='cisco.com',
                              interface=None,
-                             timeout=120):
+                             timeout=240):
     '''
     Configure device for management via ssh.
 
@@ -524,7 +524,7 @@ def configure_management_ssh(device,
         password ('str', optional): password to ssh
         domain_name ('str'): domain name to ssh
         interface: (str) Management interface to use
-        timeout ('int'): timeout for rsa key generation. Default: 120 seconds
+        timeout ('int'): timeout for rsa key generation. Default: 240 seconds
 
     Returns:
         None

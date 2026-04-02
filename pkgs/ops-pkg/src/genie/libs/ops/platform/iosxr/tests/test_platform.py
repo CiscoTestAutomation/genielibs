@@ -112,13 +112,17 @@ class test_platform(unittest.TestCase):
                     'name': 'A9K-RSP440-TR',
                     'redundancy_state': 'Active',
                     'state': 'IOS XR RUN',
-                    'full_slot': '0/RSP0/CPU0'},
+                    'full_slot': '0/RSP0/CPU0',
+                    'sn': 'FOC1808NEND',
+                    'pid': 'A9K-RSP440-TR'},
                 '0/RSP1': {
                     'config_state': 'PWR,NSHUT,MON',
                     'name': 'A9K-RSP440-TR',
                     'redundancy_state': 'Standby',
                     'state': 'IOS XR RUN',
-                    'full_slot': '0/RSP1/CPU0'},
+                    'full_slot': '0/RSP1/CPU0',
+                    'sn': 'FOC1811N49J',
+                    'pid': 'A9K-MPA-20X1GE'},
                 'rp_config_register': '0x1922'}}
         self.assertEqual(p.slot, slots)
         virtual_device_dict = {

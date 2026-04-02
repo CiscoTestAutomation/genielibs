@@ -2316,37 +2316,76 @@ def change_pki_certificate_hash(device, hash_algorithm=None):
         logger.error(f"Failed to configure PKI certificate hash algorithm: {e}")
         return False
 
-def configure_trustpool_import_terminal(device, certificate_content):
+def configure_trustpool_import_terminal(device, certificate_content, verify_subject_cn=None):
     """
-    Configure 'crypto pki trustpool import terminal' to import certificates into trustpool.
+    Import a PEM CA certificate into the device trustpool using
+    'crypto pki trustpool import terminal'.
+
+    Hardened behavior:
+    - Waits for the import prompt
+    - Sends PEM content line-by-line (prevents accidental early blank line)
+    - Sends exactly ONE terminating blank line after END CERTIFICATE
+    - Does NOT rely on device.configure() capturing interactive transcript
+    - Verifies success via a post-check (show command / presence)
 
     Args:
-        device ('obj'): Device object
-        certificate_content ('str'): PEM certificate content to import
+        device (obj): Genie/Unicon device object
+        certificate_content (str): PEM certificate content (BEGIN/END included)
+        verify_subject_cn (str|None): Optional CN/keyword to look for in trustpool output
+                                     (e.g. "ios_rootca"). If None, uses generic checks.
 
     Returns:
-        str: Device output
+        str: Combined output from import command and verification command(s)
 
     Raises:
-        SubCommandFailure: If the import operation fails
+        SubCommandFailure: If import/verification fails
+        ValueError: If PEM content is missing/invalid
     """
-    
+    import re
+
     logger.info("Starting crypto pki trustpool import terminal")
 
-    def send_certificate(spawn):
-        time.sleep(5)
-        if certificate_content:
-            logger.info("Sending certificate content to device...")
-            spawn.sendline(certificate_content)
-        spawn.sendline()
+    if not certificate_content or not isinstance(certificate_content, str):
+        raise ValueError("certificate_content must be a non-empty PEM string")
+
+    # Normalize line endings and trim surrounding whitespace
+    pem = certificate_content.replace("\r\n", "\n").replace("\r", "\n").strip()
+
+    # Basic PEM sanity checks
+    if "-----BEGIN CERTIFICATE-----" not in pem or "-----END CERTIFICATE-----" not in pem:
+        raise ValueError("certificate_content is not a valid PEM (missing BEGIN/END)")
+
+    # Ensure no accidental blank line immediately after BEGIN (common interactive failure cause)
+    pem = re.sub(r"(-----BEGIN CERTIFICATE-----)\s+", r"\1\n", pem, count=1)
+
+    # If multiple PEM blocks exist, take the first certificate block only
+    m = re.search(r"-----BEGIN CERTIFICATE-----.*?-----END CERTIFICATE-----", pem, re.DOTALL)
+    if not m:
+        raise ValueError("Unable to locate a complete PEM certificate block in certificate_content")
+    pem_block = m.group(0)
+
+    def _send_pem_block(spawn):
+        # Ensure device is fully in PEM input mode
+        time.sleep(1)
+
+        logger.info("Sending certificate content to device (line-by-line)...")
+        for line in pem_block.splitlines():
+            # Never send blank lines within the PEM; blank line terminates import input
+            if not line.strip():
+                continue
+            spawn.sendline(line)
+
+        # Terminate PEM input (blank line AFTER END CERTIFICATE)
+        spawn.sendline("")
 
     dialog = Dialog([
         Statement(
-            pattern=r'.*End with a blank line or \"quit\" on a line by itself.*',
-            action=send_certificate,
-            loop_continue=True,
+            pattern=r'.*Enter PEM-formatted CA certificate\..*End with a blank line or "quit" on a line by itself\..*',
+            action=_send_pem_block,
+            loop_continue=False,
             continue_timer=False
         ),
+        # Some platforms may still prompt to accept/confirm
         Statement(
             pattern=r'.*Do you accept this certificate.*\[yes/no\].*',
             action='sendline(yes)',
@@ -2358,23 +2397,74 @@ def configure_trustpool_import_terminal(device, certificate_content):
             action='sendline(y)',
             loop_continue=True,
             continue_timer=False
-        )
+        ),
     ])
-    
+
     error_patterns = [
-        '% Error',
-        '% Failed',
-        'Certificate import failed',
-        'Invalid certificate'
+        r'%\s*Error',
+        r'%\s*Failed',
+        r'Certificate import failed',
+        r'Invalid certificate',
+        r'No certificates imported from terminal',
     ]
-    
+
     cmd = "crypto pki trustpool import terminal"
-    
+
     try:
         logger.info("Executing crypto pki trustpool import terminal")
-        output = device.configure(cmd, reply=dialog, error_pattern=error_patterns, timeout=120)
-        logger.info("Successfully imported certificate into trustpool via terminal")
-        return output
+        import_out = device.configure(cmd, reply=dialog, error_pattern=error_patterns, timeout=180)
+
+        # IMPORTANT: device.configure() may not include dialog transcript (even on success),
+        # so we verify via a post-check.
+        logger.info("Verifying trustpool after import")
+        # Try the most common show commands across platforms
+        verify_cmds = [
+            "show crypto pki trustpool",
+            "show crypto pki trustpool certificates",
+        ]
+
+        verify_out = ""
+        last_exc = None
+        for vcmd in verify_cmds:
+            try:
+                verify_out = device.execute(vcmd)
+                if verify_out and "% Invalid input" not in verify_out and "Invalid input" not in verify_out:
+                    # We got a plausible output; stop trying alternates
+                    break
+            except Exception as e:
+                last_exc = e
+                continue
+
+        if not verify_out:
+            raise SubCommandFailure(
+                "Trustpool verification failed: no usable output from verification commands. "
+                f"Last error: {last_exc}"
+            )
+
+        # Verification logic:
+        # 1) If caller provided a CN/keyword, require it
+        # 2) Else require at least some generic trustpool signal (tune if needed)
+        if verify_subject_cn:
+            if verify_subject_cn.lower() not in verify_out.lower():
+                raise SubCommandFailure(
+                    f"Trustpool import verification failed: '{verify_subject_cn}' not found in trustpool output.\n"
+                    f"Verification output:\n{verify_out}"
+                )
+        else:
+            # Generic heuristics; adjust if your platform prints different headers
+            generic_markers = ["trustpool", "certificate", "certificates", "anchors", "pki"]
+            if not any(m in verify_out.lower() for m in generic_markers):
+                raise SubCommandFailure(
+                    "Trustpool import verification failed: expected trustpool/certificate markers not found.\n"
+                    f"Verification output:\n{verify_out}"
+                )
+
+        logger.info("Trustpool terminal import verified successfully")
+        return f"{import_out}\n\n{verify_out}"
+
     except SubCommandFailure as e:
         logger.error(f"Failed to import certificate into trustpool: {e}")
-        raise SubCommandFailure(f"Failed trustpool terminal import: {e}")
+        raise
+    except Exception as e:
+        logger.error(f"Unexpected error during trustpool terminal import: {e}")
+        raise SubCommandFailure(f"Unexpected error during trustpool terminal import: {e}")

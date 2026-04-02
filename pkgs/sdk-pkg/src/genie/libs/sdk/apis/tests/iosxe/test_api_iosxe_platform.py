@@ -2,8 +2,7 @@
 import unittest
 
 from genie.conf import Genie
-from genie.libs.sdk.apis.iosxe.platform.get import (
-    get_boot_variables, get_config_register)
+from genie.libs.sdk.apis.iosxe.platform.get import get_boot_variables
 
 
 class TestApiIiosxePlatform(unittest.TestCase):
@@ -45,14 +44,6 @@ class TestApiIiosxePlatform(unittest.TestCase):
 
         with self.assertRaises(AssertionError):
             get_boot_variables(self.device, 'does_not_exist')
-
-    def test_get_config_register(self):
-        config_reg = get_config_register(self.device)
-        self.assertEqual(config_reg, '0x2102')
-
-        # Need updated parsed device output
-        # config_reg = get_config_register(self.device, next_reload=True)
-        # self.assertEqual(config_reg, '0x2101')
 
 
 if __name__ == '__main__':

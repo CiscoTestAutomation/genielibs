@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, Mock, call, patch
 import logging
 
 from pyats.aetest.steps import Steps
+from pyats.aetest.parameters import ParameterDict
 from pyats.results import Passed, Failed
 from pyats.topology import loader
 from genie.libs.clean.stages.stages import Connect
@@ -53,7 +54,8 @@ class TestConnect(unittest.TestCase):
         # Create a mock section object with the mock parent
         mock_section = Mock()
         mock_section.parent = mock_parent
-        cls.parameters = {'section': mock_section}
+        cls.parameters = ParameterDict()
+        cls.parameters.internal['section'] = mock_section
 
         try:
             cls.connect(steps=steps, device=device)

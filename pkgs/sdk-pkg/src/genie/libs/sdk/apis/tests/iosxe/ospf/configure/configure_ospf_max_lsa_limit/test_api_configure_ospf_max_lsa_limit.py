@@ -1,35 +1,19 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
 from genie.libs.sdk.apis.iosxe.ospf.configure import configure_ospf_max_lsa_limit
 
 
-class TestConfigureOspfMaxLsaLimit(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          mac-gen2:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: C9400
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['mac-gen2']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureOspfMaxLsaLimit(TestCase):
 
     def test_configure_ospf_max_lsa_limit(self):
-        result = configure_ospf_max_lsa_limit(self.device, '64', 429496729)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        result = configure_ospf_max_lsa_limit(
+            device,
+            '64',
+            429496729
+        )
+        self.assertEqual(result, None)
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            (['router ospf 64', 'max-lsa 429496729'],)
+        )

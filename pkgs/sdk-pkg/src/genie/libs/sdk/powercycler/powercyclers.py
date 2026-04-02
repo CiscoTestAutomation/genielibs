@@ -84,6 +84,43 @@ class VCenterPowerCycler(BaseVCenterPowerCycler):
     type = 'vcenter_pdu'
     connection_type = 'soap'
 
+
 class Proxmox(BaseProxmoxPowerCycler):
     type = 'proxmox'
     connection_type = 'ssh'
+
+
+class EnlogicSnmpPDU(BaseSNMPPowerCycler):
+    """Enlogic PDU SNMP powercycler
+
+    OID derived from Enlogic2.0_v5.mib:
+    - Enterprise OID: 1.3.6.1.4.1.38446 (Enlogic)
+    - Control path: pdu.pduOutlet.pduOutletSwitchedControlTable.pduOutletSwitchedControlEntry.pduOutletSwitchedControlCommand
+    - Table is double-indexed: (pduUnitConfigIndex, pduOutletSwitchedControlIndex)
+    - Base OID includes unit index 1: 1.3.6.1.4.1.38446.1.5.5.1.4.1
+    - Full OID: 1.3.6.1.4.1.38446.1.5.5.1.4.1
+    - immediateOn (2), immediateOff (1)
+    """
+    type = 'enlogic'
+    connection_type = 'snmp'
+    oid = '1.3.6.1.4.1.38446.1.5.5.1.4.1'
+    on_state = 2
+    off_state = 1
+
+
+class EnlogicSnmpv3PDU(BaseSNMPv3PowerCycler):
+    """Enlogic PDU SNMPv3 powercycler
+
+    OID derived from Enlogic2.0_v5.mib:
+    - Enterprise OID: 1.3.6.1.4.1.38446 (Enlogic)
+    - Control path: pdu.pduOutlet.pduOutletSwitchedControlTable.pduOutletSwitchedControlEntry.pduOutletSwitchedControlCommand
+    - Table is double-indexed: (pduUnitConfigIndex, pduOutletSwitchedControlIndex)
+    - Base OID includes unit index 1: 1.3.6.1.4.1.38446.1.5.5.1.4.1
+    - Full OID: 1.3.6.1.4.1.38446.1.5.5.1.4.1
+    - immediateOn (2), immediateOff (1)
+    """
+    type = 'enlogic'
+    connection_type = 'snmpv3'
+    oid = '1.3.6.1.4.1.38446.1.5.5.1.4.1'
+    on_state = 2
+    off_state = 1

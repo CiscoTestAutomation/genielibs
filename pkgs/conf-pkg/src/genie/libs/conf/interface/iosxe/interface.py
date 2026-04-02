@@ -697,6 +697,12 @@ class EthernetInterface(PhysicalInterface, BaseEthernetInterface):
         'FourHundredGigabitEthernet'
     )
 
+    breakout = managedattribute(
+        name='breakout',
+        default=None,
+        type=(None, managedattribute.test_istype(str)),
+        doc='Configure breakout on the port. '
+            'hw breakout <port-number>')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -704,8 +710,24 @@ class EthernetInterface(PhysicalInterface, BaseEthernetInterface):
     def build_config(self, apply=True, attributes=None, unconfig=False,
                      **kwargs):
         attributes = AttributesHelper(self, attributes)
-        configurations = CliConfigBuilder(unconfig=unconfig)
 
+        # breakout: only emit 'hw breakout <port>' at global config level.
+        # The parent interface cannot be modified after breakout is enabled
+        # so skip entering interface submode entirely.
+        if self.breakout is not None:
+            d_parsed = self.parse_interface_name()
+            if not hasattr(self.device, 'custom_config_cli'):
+                self.device.custom_config_cli = ''
+            self.device.custom_config_cli += '\nhw breakout {port}'.format(
+                port=d_parsed.port)
+            configurations = CliConfigBuilder(unconfig=unconfig)
+            if apply:
+                return
+            else:
+                return CliConfig(device=self.device, unconfig=unconfig,
+                                 cli_config=configurations)
+
+        configurations = CliConfigBuilder(unconfig=unconfig)
 
         configurations.append_block(super().build_config(apply=False,
                                                          attributes=attributes,
@@ -720,6 +742,10 @@ class EthernetInterface(PhysicalInterface, BaseEthernetInterface):
                              cli_config=configurations)
 
     def build_unconfig(self, apply=True, attributes=None, **kwargs):
+
+        # breakout parent interfaces cannot be unconfigured directly
+        if self.breakout is not None:
+            return
 
         # physical interfaces unconfigured
         attributes_unconfig = AttributesHelper(self, attributes)

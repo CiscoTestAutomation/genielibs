@@ -21,6 +21,44 @@ class Platform(SuperPlatform):
             if 'active' in item[node]['role'].lower():
                 return item[node]['node_uptime_in_seconds']
 
+    def _populate_slot_serial_numbers(self):
+        """Map serial numbers from show inventory to slot entries.
+
+        show inventory uses module names like '0/FC0', '0/0/CPU0',
+        '0/RP0/CPU0' while show platform uses slot names like '0/FC0',
+        '0/0', '0/RP0'. This method handles the naming differences.
+
+        Uses _inventory_modules populated by add_leaf during make().
+        """
+        if not hasattr(self, 'slot') or not hasattr(self, '_inventory_modules'):
+            return
+
+        modules = self._inventory_modules
+        if not modules or not isinstance(modules, dict):
+            del self._inventory_modules
+            return
+
+        for slot_type in self.slot:
+            if not isinstance(self.slot[slot_type], dict):
+                continue
+            for slot_name, slot_data in self.slot[slot_type].items():
+                if not isinstance(slot_data, dict):
+                    continue
+                if slot_data.get('sn'):
+                    continue
+                for candidate in [slot_name, '{}/CPU0'.format(slot_name),
+                                  'module {}'.format(slot_name),
+                                  'module {}/CPU0'.format(slot_name)]:
+                    if candidate in modules:
+                        inv = modules[candidate]
+                        if inv.get('sn'):
+                            slot_data['sn'] = inv['sn']
+                        if not slot_data.get('pid') and inv.get('pid'):
+                            slot_data['pid'] = inv['pid']
+                        break
+
+        del self._inventory_modules
+
     def learn(self):
         '''Learn Platform Ops'''
 
@@ -257,7 +295,15 @@ class Platform(SuperPlatform):
                       dest='[rp_uptime]',
                       action=self.get_active_uptime)
 
+        # Store full inventory modules for slot serial number augmentation
+        self.add_leaf(cmd=ShowInventory,
+                      src='[module_name]',
+                      dest='[_inventory_modules]')
+
         # Make Ops object
         self.make(final_call=True)
+
+        # Augment slot data with serial numbers from show inventory
+        self._populate_slot_serial_numbers()
 
 # vim: ft=python et sw=4

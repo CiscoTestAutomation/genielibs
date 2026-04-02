@@ -1,35 +1,20 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
 from genie.libs.sdk.apis.iosxe.ospf.configure import configure_neighbor_under_ospf
 
 
-class TestConfigureNeighborUnderOspf(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          stack3-1-3Q-1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: c9200
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['stack3-1-3Q-1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureNeighborUnderOspf(TestCase):
 
     def test_configure_neighbor_under_ospf(self):
-        result = configure_neighbor_under_ospf(self.device, 2, '55.55.55.2', 10)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        result = configure_neighbor_under_ospf(
+            device,
+            2,
+            '55.55.55.2',
+            10
+        )
+        self.assertEqual(result, None)
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            (['router ospf 2', 'neighbor 55.55.55.2 cost 10'],)
+        )

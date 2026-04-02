@@ -2,20 +2,12 @@ from unittest import TestCase
 from unittest.mock import Mock
 from genie.libs.sdk.apis.iosxe.ie3k.configure import unconfigure_ignore_startup_config
 
+
 class TestUnconfigureIgnoreStartupConfig(TestCase):
-
     def test_unconfigure_ignore_startup_config(self):
-        self.device = Mock()
-        self.device.subconnections = []
+        device = Mock()
+        device.api.get_config_register = Mock(return_value='0x142')
+        device.api.execute_set_config_register = Mock()
 
-        self.device.state_machine = Mock()
-        self.device.state_machine.current_state = 'enable'
-        self.device.configure = Mock()
-        self.device.execute = Mock()
-
-        unconfigure_ignore_startup_config(self.device)
-
-        self.assertEqual(
-            self.device.configure.mock_calls[0].args,
-            ('no system ignore startupconfig switch all',)
-        )
+        unconfigure_ignore_startup_config(device)
+        device.api.execute_set_config_register.assert_called_once_with('0x102')

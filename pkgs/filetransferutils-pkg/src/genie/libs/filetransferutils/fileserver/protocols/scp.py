@@ -115,12 +115,23 @@ class FileServer(BaseFileServer):
             else:
                 # Generate temporary host key with automatic cleanup
                 with tempfile.TemporaryDirectory() as temp_dir:
-                    host_key_path = os.path.join(temp_dir, 'ssh_host_key_ed25519')
-                    key = asyncssh.generate_private_key('ssh-ed25519')
-                    with open(host_key_path, 'wb') as f:
-                        f.write(key.export_private_key())
+                    host_key_paths = []
 
-                    await self._run_with_host_key(host_key_path,
+                    # RSA key required for some Cisco devices
+                    rsa_key_path = os.path.join(temp_dir, 'ssh_host_key_rsa')
+                    rsa_key = asyncssh.generate_private_key('ssh-rsa', key_size=2048)
+                    with open(rsa_key_path, 'wb') as f:
+                        f.write(rsa_key.export_private_key())
+                    host_key_paths.append(rsa_key_path)
+
+                    # Ed25519 key
+                    ed25519_key_path = os.path.join(temp_dir, 'ssh_host_key_ed25519')
+                    ed25519_key = asyncssh.generate_private_key('ssh-ed25519')
+                    with open(ed25519_key_path, 'wb') as f:
+                        f.write(ed25519_key.export_private_key())
+                    host_key_paths.append(ed25519_key_path)
+
+                    await self._run_with_host_key(host_key_paths,
                                                     local_dir,
                                                     allowed_users,
                                                     address,
@@ -133,16 +144,26 @@ class FileServer(BaseFileServer):
             self.queue.put({'error': str(e)})
 
     async def _run_with_host_key(self, host_key_path, local_dir, allowed_users, address, port, username, password):
-        """Run SSH server with given host key."""
+        """Run SSH server with given host key(s).
+
+        Args:
+            host_key_path: A single key path (str) or list of key paths.
+        """
         ssh_server = SCPServer(local_dir, allowed_users)
 
         def sftp_factory(chan):
             return asyncssh.SFTPServer(chan, chroot=local_dir)
 
+        # Support both single key path and list of key paths
+        if isinstance(host_key_path, str):
+            server_host_keys = [host_key_path]
+        else:
+            server_host_keys = list(host_key_path)
+
         server = await asyncssh.listen(
             host=address,
             port=port,
-            server_host_keys=[host_key_path],
+            server_host_keys=server_host_keys,
             server_factory=lambda: ssh_server,
             allow_scp=True,
             sftp_factory=sftp_factory,

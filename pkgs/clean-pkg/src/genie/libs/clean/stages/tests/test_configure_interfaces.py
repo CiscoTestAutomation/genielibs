@@ -22,6 +22,9 @@ class TestConfigureInterfaces(unittest.TestCase):
         self.detailed_devices = create_test_device(
             name='aDevice', os='iosxe', platform='cat9k',
             model='c9500', pid='C9500X-28C8D')
+        self.svl_devices = create_test_device(
+            name='aDevice', os='iosxe', platform='cat9k',
+            model='c9500', chassis_type='stackwise_virtual')
 
     def test_configure_interfaces(self):
         intf = PhysicalInterface(device=self.device, name='GigabitEthernet0/0')
@@ -61,3 +64,18 @@ class TestConfigureInterfaces(unittest.TestCase):
             steps=steps)
 
         self.assertEqual(self.device.custom_config_cli, '\nhw-module breakout 0')
+        
+    def test_skip_svl_configure_interfaces(self):
+        intf = DetailedPhysicalInterface(device=self.device, name='GigabitEthernet0/0')
+        intf.stackwise_virtual_link = 'True'
+        self.svl_devices.configure = Mock()
+        
+        self.svl_devices.interfaces = {
+            'GigabitEthernet0/0': intf}
+
+        steps = Steps()
+
+        self.cls.configure_interfaces(
+            device=self.svl_devices,
+            steps=steps)
+        self.svl_devices.configure.assert_not_called()

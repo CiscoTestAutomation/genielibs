@@ -1,40 +1,56 @@
-import os
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.eigrp.configure import configure_eigrp_redistribute_bgp
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.eigrp.configure import (
+    configure_eigrp_redistribute_bgp
+)
 
 
-class TestConfigureEigrpRedistributeBgp(unittest.TestCase):
+class TestConfigureEigrpRedistributeBgp(TestCase):
 
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          stack3-nyquist-1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: router
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['stack3-nyquist-1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
+    def test_configure_eigrp_redistribute_bgp_ipv4(self):
+        device = Mock()
+        device.state_machine.current_state = 'enable'  # Assume device is in enable mode
+
+        result = configure_eigrp_redistribute_bgp(
+            device,
+            6,      # eigrp_as
+            3,      # bgp_as
+            False   # ipv6
         )
 
-    def test_configure_eigrp_redistribute_bgp(self):
-        result = configure_eigrp_redistribute_bgp(self.device, 6, 3, False)
         expected_output = None
         self.assertEqual(result, expected_output)
 
-    def test_configure_eigrp_redistribute_bgp_1(self):
-        result = configure_eigrp_redistribute_bgp(self.device, 8, 3, True)
+        # Ensure configure was called
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.mock_calls[0].args[0]
+        self.assertIn('router eigrp 6', sent_commands)
+        self.assertIn('redistribute bgp 3', sent_commands)
+
+    def test_configure_eigrp_redistribute_bgp_ipv6(self):
+        device = Mock()
+        device.state_machine.current_state = 'enable'  # Assume device is in enable mode
+
+        result = configure_eigrp_redistribute_bgp(
+            device,
+            8,     # eigrp_as
+            3,     # bgp_as
+            True   # ipv6
+        )
+
         expected_output = None
         self.assertEqual(result, expected_output)
+
+        # Ensure configure was called
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.mock_calls[0].args[0]
+        self.assertIn('ipv6 router eigrp 8', sent_commands)
+        self.assertIn('redistribute bgp 3', sent_commands)
+
+
+if __name__ == '__main__':
+    unittest.main()
