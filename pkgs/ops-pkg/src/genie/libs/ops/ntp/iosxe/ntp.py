@@ -55,7 +55,7 @@ class Ntp(SuperNtp):
 
 			local_dict = self.info['vrf'][vrf]['associations']['address'][peer]\
 				['local_mode'][local_mode].setdefault('isconfigured', {}).\
-				setdefault(isconfigured_value, {})
+				setdefault(str(isconfigured_value), {})
 			local_dict['address'] = address
 			local_dict['vrf'] = vrf
 			local_dict['isconfigured'] = isconfigured_value
