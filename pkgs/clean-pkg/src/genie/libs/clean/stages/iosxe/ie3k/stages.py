@@ -2,36 +2,23 @@
 
 # Python
 import logging
-import time
-from datetime import datetime, timedelta
-
-
-from pyats.async_ import pcall
-
-from genie.abstract import Lookup
-from genie.libs import clean
-from genie.libs.clean.recovery.recovery import _disconnect_reconnect
-from genie.utils.timeout import Timeout
 
 # Genie
 from genie.libs.clean.stages.iosxe.stages import (
-    ChangeBootVariable as IOSXEChangeBootVariable)
-from genie.libs.clean.stages.iosxe.stages import (
-    TftpBoot as IOSXETftpBoot)
-from genie.libs.clean.stages.iosxe.stages import (
-    InstallImage as IOSXEInstallImage)
+    ChangeBootVariable as IOSXEChangeBootVariable,
+    TftpBoot as IOSXETftpBoot,
+    InstallImage as IOSXEInstallImage,
+    RommonBoot as IOSXERommonBoot,
+)
 from genie.libs.clean.stages.stages import VerifyRunningImage as GenericVerifyRunningImage
-from genie.libs.clean.exception import StackMemberConfigException
+from genie.utils.timeout import Timeout
 
 # MetaParser
 from genie.metaparser.util.schemaengine import Optional, Any
 from genie.libs.clean import BaseStage
 
-from unicon.eal.dialogs import Statement, Dialog
+# Unicon
 from unicon.core.errors import SubCommandFailure
-
-from unicon.plugins.iosxe.stack.utils import StackUtils
-from unicon.plugins.generic.statements import buffer_settled
 
 # Logger
 log = logging.getLogger(__name__)
@@ -206,9 +193,10 @@ There is more than one ip address, one for each supervisor.
                 step.failed(f"Failed to enable the boot manual {e}")
 
 
-class RommonBoot(BaseStage):
-    """This stage boots an image onto the device through rommon. Using either
-a local image or one from a tftp server.
+class RommonBoot(IOSXERommonBoot):
+    """This stage boots an image onto the device through rommon.
+    
+Only supports booting from a local image since tftp booting from rommon is not supported on IE3K.
 
 Stage Schema
 ------------
@@ -216,116 +204,39 @@ rommon_boot:
 
     image (list): Image to boot with
 
-    tftp (optional): If specified boot via tftp otherwise boot using local
-        image.
-
-        ip_address (list, optional): Management ip address to configure to reach to the
-            tftp server
-
-        subnet_mask (str, optional): Management subnet mask
-
-        gateway (str, optional): Management gateway
-
-        tftp_server (str, optional): Tftp server that is reachable with management interface
-    
-    recovery_password (str): Enable password for device
-        required after bootup. Defaults to None.
-
-    recovery_enable_password (str): Enable password for device
-        required after bootup. Defaults to None.
-
-    recovery_username (str): Enable username for device
-        required after bootup. Defaults to None.
-
     save_system_config (bool, optional): Whether or not to save the
         system config if it was modified. Defaults to True.
 
     timeout (int, optional): Max time allowed for the booting process.
         Defaults to 600.
 
-    config_reg_timeout (int, optional): Max time to set config-register.
-        Defaults to 30.
-
-    tftp_boot_max_attempts (int, optional): Maximum number of TFTP rommon boot attempts. Defaults to 3.
-
-    tftp_boot_sleep_interval (int, optional): Number of seconds to sleep between TFTP rommon boot
-        retry attempts. Defaults to 30 seconds.
+    reconnect_timeout (int, optional): Timeout to reconnect the device after booting. Default to 120 sec.
 
 Example
 -------
 rommon_boot:
     image:
-      - /auto/some-location/that-this/image/stay-isr-image.bin
-    tftp:
-        ip_address: [10.1.7.126, 10.1.7.127]
-        gateway: 10.1.7.1
-        subnet_mask: 255.255.255.0
-        tftp_server: 11.1.7.251
-    recovery_password: nbv_12345
-    recovery_username: user_12345
-    recovery_enable_password: en
+      - ie3xx-universalk9.BLD_POLARIS_DEV_LATEST_20260407_003317.SSA.bin
     save_system_config: False
     timeout: 600
-    config_reg_timeout: 10
-
-There is more than one ip address, one for each supervisor.
-
-To pass tftp information and tftp server ip from the testbed, refer the example below
-
-
-testbed:
-  name: 
-  passwords: 
-    tacacs: test
-    enable: test
-  servers:
-    tftp:                       
-        address: 10.x.x.x
-        credentials:
-            default:
-                username: user
-                password: 1234
-devices:
-    uut1:
-        management:
-            address:
-                ipv4: '10.1.1.1/16'
-            gateway:
-                ipv4: '10.1.0.1'
-
 """
 
     # =================
     # Argument Defaults
     # =================
-    RECOVERY_PASSWORD = None
-    RECOVERY_ENABLE_PASSWORD = None
-    RECOVERY_USERNAME = None
+    IMAGE = []
     SAVE_SYSTEM_CONFIG = True
     TIMEOUT = 600
-    ETHER_PORT = 0
-    ROMMON_TFTP_BOOT_MAX_ATTEMPTS = 3
-    ROMMON_TFTP_BOOT_SLEEP_INTERVAL = 30
+    RECONNECT_TIMEOUT = 120
 
     # ============
     # Stage Schema
     # ============
     schema = {
         'image': list,
-        Optional('tftp'): {
-            Optional('ip_address'): list,
-            Optional('subnet_mask'): str,
-            Optional('gateway'): str,
-            Optional('tftp_server'): str
-        },
         Optional('save_system_config'): bool,
-        Optional('recovery_password'): str,
-        Optional('recovery_username'): str,
-        Optional('recovery_enable_password'): str,
         Optional('timeout'): int,
-        Optional('ether_port'): int,
-        Optional('tftp_boot_max_attempts'): int,
-        Optional('tftp_boot_sleep_interval'): int
+        Optional("reconnect_timeout"): int,
     }
 
     # ==============================
@@ -333,148 +244,54 @@ devices:
     # ==============================
     exec_order = [
         'delete_boot_variables',
-        'write_memory',
+        'configure_boot_manual',
         'go_to_rommon',
         'rommon_boot',
         'reconnect',
     ]
 
-    def delete_boot_variables(self, steps, device):
-        with steps.start("Delete configured boot variables") as step:
+    def configure_boot_manual(self, steps, device):
+        with steps.start("Configuring boot manual") as step:
             try:
-                device.configure('no boot system')
+                device.configure("boot manual")
             except Exception as e:
-                step.failed("Failed to delete configured boot variables", from_exception=e)
+                step.failed("Failed to configure boot manual",
+                            from_exception=e)
 
-    def write_memory(self, steps, device):
-        with steps.start("Write memory") as step:
-
+    def go_to_rommon(self, steps, device):
+        with steps.start("Bring device down to rommon mode") as step:
             try:
-                device.api.execute_write_memory()
+                device.rommon()
             except Exception as e:
-                step.failed("Failed to write memory", from_exception=e)
+                step.failed("Failed to bring device to rommon!",
+                            from_exception=e)
 
-    def go_to_rommon(self, steps, device, save_system_config=SAVE_SYSTEM_CONFIG):
-        with steps.start("Bring device down to rommon mode"):
-
-            reload_dialog = Dialog([
-                Statement(pattern=r".*System configuration has been modified\. Save\? \[yes\/no\].*",
-                          action='sendline(yes)' if save_system_config else 'sendline(no)',
-                          loop_continue=True,
-                          continue_timer=False),
-                Statement(pattern=r".*Proceed with reload\? \[confirm\].*",
-                          action='sendline()',
-                          loop_continue=False,
-                          continue_timer=False),
-            ])
-
-            # Using sendline, as we dont want unicon boot to kick in and send "boot"
-            # to the device. Cannot use device.reload() directly as in case of HA,
-            # we need both sup to do the commands
-            device.sendline('reload')
-            reload_dialog.process(device.spawn)
-
-            if device.is_ha:
-                def reload_check(device, target):
-                    device.expect(['(.*Initializing Hardware.*|^(.*)((rommon(.*))+>|switch *:).*$)'],
-                                  target=target, timeout=90)
-
-                # check if device is a stack device(stack with 2 members is similar to HA devices)
-                if len(device.subconnections) > 2:
-                    pcall(reload_check,
-                          cargs=(device,),
-                          iargs=[[alias] for alias in device.connections.defaults.connections])
-                else:
-                    pcall(reload_check,
-                          ckwargs={'device': device},
-                          ikwargs=[{'target': 'active'},
-                                   {'target': 'standby'}])
-            else:
-                device.expect(['(.*Initializing Hardware.*|^(.*)((rommon(.*))+>|switch *:).*$)'], timeout=60)
-
-            log.info("Device is reloading")
-            device.destroy_all()
-
-    def rommon_boot(self, steps, device, image, tftp=None, timeout=TIMEOUT, recovery_password=RECOVERY_PASSWORD,
-                  recovery_username=RECOVERY_USERNAME, recovery_enable_password=RECOVERY_ENABLE_PASSWORD, ether_port=ETHER_PORT,
-                  tftp_boot_max_attempts=ROMMON_TFTP_BOOT_MAX_ATTEMPTS, tftp_boot_sleep_interval=ROMMON_TFTP_BOOT_SLEEP_INTERVAL):
-
+    def rommon_boot(self,
+                    steps,
+                    device,
+                    image=IMAGE,
+                    timeout=TIMEOUT):
         with steps.start("Boot device from rommon") as step:
-            if tftp is not None:
-                # Check if management attribute in device object, if not set to empty dict
-                if not hasattr(device, 'management'):
-                    setattr(device, "management", {})
-
-                try:
-                    # Getting the tftp information, if the info not provided by user, it takes from testbed
-                    tftp.setdefault("ip_address", [str(device.management.get('address', '').get('ipv4', '').ip)])
-                    tftp.setdefault("subnet_mask", str(device.management.get('address', '').get('ipv4', '').netmask))
-                    tftp.setdefault("gateway", str(device.management.get('gateway').get('ipv4')))
-                    tftp.setdefault("tftp_server", device.testbed.servers.get('tftp', {}).get('address'))
-
-                    log.info("checking if all the tftp information is given by the user")
-                    if not all(tftp.values()):
-                        log.warning(f"Some TFTP information is missing: {tftp}")
-                except Exception as e:
-                    log.warning(f"Tftp information is missing. Please provide it either from testbed or clean stage {tftp}.")
-
-            # Need to instantiate to get the device.start
-            # The device.start only works because of a|b
-            device.instantiate(connection_timeout=timeout)
+            # Use image only if it's a local image path, since IE3K does not support
+            # tftp boot in rommon.
+            golden_image = image[0] if image else None
+            if golden_image and golden_image.startswith('/'):
+                log.info(
+                    f"Ignoring network image path for IE3K ROMMON boot: {golden_image}. "
+                    "Falling back to locally discovered recovery images."
+                )
+                golden_image = None
 
             try:
-                abstract = Lookup.from_device(device, packages={'clean': clean})
-            except Exception as e:
-                step.failed("Abstraction lookup failed", from_exception=e)
-
-            # device.start only gets filled with single rp devices
-            # for multiple rp devices we need to use subconnections
-            if device.is_ha and hasattr(device, 'subconnections'):
-                start = [i.start[0] for i in device.subconnections]
-            else:
-                start = device.start
-
-            common_kwargs = {
-                'device': device,
-                'timeout': timeout
-            }
-
-            if tftp:
-                tftp.update({'image': image, 'ether_port': ether_port})
-                common_kwargs.update({
-                    'tftp_boot': tftp,
-                    'tftp_boot_max_attempts': tftp_boot_max_attempts,
-                    'tftp_boot_sleep_interval': tftp_boot_sleep_interval
-                })
-            else:
-                common_kwargs.update({'golden_image': image})
-
-            # Update recovery username and password
-            common_kwargs.update({
-                 'recovery_username': recovery_username,
-                 'recovery_en_password':recovery_enable_password,
-                 'recovery_password': recovery_password
-            })
-
-            try:
-                pcall(
-                    targets=abstract.clean.recovery.recovery.recovery_worker,
-                    start=start,
-                    ikwargs=[{'item': i} for i, _ in enumerate(start)],
-                    ckwargs=common_kwargs
+                device.api.device_rommon_boot(
+                    tftp_boot=None,
+                    golden_image=golden_image,
+                    grub_activity_pattern=None,
+                    timeout=timeout
                 )
             except Exception as e:
-                step.failed("Failed to boot the device from rommon", from_exception=e)
-
-    def reconnect(self, steps, device):
-        with steps.start("Reconnect to device") as step:
-
-            if getattr(device, 'chassis_type', None) and device.chassis_type.lower() == 'stack':
-                log.info("Sleep for 90 seconds in order to sync")
-                time.sleep(90)
-
-            if not _disconnect_reconnect(device):
-                step.failed("Failed to reconnect")
+                step.failed("Failed to boot the device from rommon",
+                            from_exception=e)
 
 
 class VerifyApFabricSummary(BaseStage):
@@ -883,113 +700,107 @@ install_image:
     # Execution order of Stage steps
     # ==============================
     exec_order = [
-        'verify_running_image',
+        'configure_no_boot_manual',
         'delete_boot_variable',
         'set_boot_variable',
         'save_running_config',
         'verify_boot_variable',
+        'verify_running_image',
         'install_image'
     ]
 
 
-    def install_image(self, steps, device, images,
-                      install_timeout=INSTALL_TIMEOUT,
-                      save_system_config=SAVE_SYSTEM_CONFIG,
-                      reload_args=RELOAD_SERVICE_ARGS,
-                      issu=ISSU, stack_member_timeout=STACK_MEMBER_TIMEOUT,
-                      stack_member_interval=STACK_MEMBER_INTERVAL,
-                      skip_save_running_config=SKIP_SAVE_RUNNING_CONFIG):
-        # check if device is a stack device otherwise call the InstallImage for 
-        # iosxe devices.
-        if hasattr(device, 'chassis_type') and device.chassis_type == 'stack':
-            with steps.start(f"Installing image '{images[0]}'") as step:
-                # create a new instance for stackutils which include some utility 
-                # apis for working with stack devices
-                stack_utils = StackUtils()
-                # get tredundancy info of the stack device 
-                stack_redundency_info = stack_utils.get_redundancy_details(device)
-                number_of_stack_members = len(stack_redundency_info)
-                # make sure device is do not manual boot
-                device.api.configure_no_boot_manual()
-                # write to memory 
-                device.api.execute_write_memory()
+class WriteErase(BaseStage):
+    """ This stage executes 'write erase' on the device & removes the `nvram_config`
+files from the optional filesystems provided.
 
-                def _update_counter_for_member_config(spawn, context, session):
-                    """ Handles the number of apply configure message seen after install image """
-                    if not session.get("member_config"):
-                        session['member_config'] = 1
-                        spawn.log.debug(f"member config {session['member_config']}")
-                    else:
-                        session['member_config'] += 1
-                        spawn.log.debug(f"member config {session['member_config']}")
-                    if session['member_config'] == number_of_stack_members - 1:
-                        # this is raised when all the member are done for configuration
-                        raise StackMemberConfigException
-                    
-                def _failed_to_install_image(spawn):
-                    raise Exception
+`nvram_config` in other drives must be removed as it triggers the swap drive feature
+in IE3k platform which can cause autoboot installation once device is up after a reload/rommon-boot.
+
+Stage Schema
+------------
+write_erase:
+
+    timeout (int, optional): Max time allowed for 'write erase'command to complete.
+        Defaults to 300 seconds.
+
+    nvram_filesystems (list, optional): List of optional filesystems to remove
+        nvram_config files. Defaults to ['sdflash:', 'usbflash0:', 'usbflash1:'].
+
+Example
+-------
+write_erase:
+    timeout: 100
+    nvram_filesystems:
+    - 'sdflash:'
+"""
+    # =================
+    # Argument Defaults
+    # =================
+    TIMEOUT = 300
+    NVRAM_FILESYSTEMS = ['sdflash:', 'usbflash0:', 'usbflash1:']
+
+    # ============
+    # Stage Schema
+    # ============
+    schema = {
+        Optional('timeout'): int,
+        Optional('nvram_filesystems'): list
+    }
+
+    # ==============================
+    # Execution order of Stage steps
+    # ==============================
+    exec_order = [
+        'write_erase',
+        'remove_nvram_config_files'
+    ]
+
+    def write_erase(self, steps, device, timeout=TIMEOUT):
+        with steps.start("Execute write erase on the device") as step:
+            try:
+                device.api.execute_write_erase(timeout=timeout)
+            except Exception as e:
+                step.failed("Failed to execute 'write erase'",
+                            from_exception=e)
                 
-                def _check_for_member_config(spawn, session):
-                    # check the session for member_config, if this is not the spawn of 
-                    # active connection we will not see the member config in buffer so
-                    # we should get out of the dialog loop after seeing press return.
-                    if not session.get('member_config'):
-                        raise StackMemberConfigException
+    def remove_nvram_config_files(self, steps, device, nvram_filesystems=NVRAM_FILESYSTEMS):
+        """This step removes the `nvram_config` files from the provided list of filesystems.
 
-                install_add_one_shot_dialog = Dialog([
-                    Statement(pattern=r"Do you want to proceed\? \[y\/n\]",
-                            action='sendline(y)',
-                            loop_continue=True,
-                            continue_timer=False),
-                    Statement(pattern=r".*Applying config on Switch \d+.*\[DONE\]$",
-                            action= _update_counter_for_member_config,
-                            loop_continue=True,
-                            continue_timer=False),
-                    Statement(pattern=r".*FAILED:.*?",
-                            action=_failed_to_install_image,
-                            loop_continue=False,
-                            continue_timer=False),
-                    Statement(pattern=r'Press RETURN to get started.*',
-                              action=_check_for_member_config,
-                              loop_continue=True,
-                              continue_timer=False)
-                ])
-                try:
-                    reload_args.update(
-                        {"timeout": install_timeout, "reply": install_add_one_shot_dialog}
-                    )
-                    if issu:
-                        device.reload("install add file {} activate issu commit".format(
-                            images[0]
-                        ),
-                        **reload_args,
-                    )
-                    else:
-                        device.reload("install add file {} activate commit".format(
-                            images[0]
-                        ),
-                        **reload_args,
-                    )
-                except Exception as e:
-                    step.failed("Failed to install the image", from_exception=e)
+        This is necessary to ensure autoboot installation doesn't happen from the other
+        drives that have `nvram_config` files once the device is up after a reload/rommon-boot.
+        """
+        with steps.start(f"Removing nvram_config files from {nvram_filesystems}") as step:
+            # Get the available filesystems from the device
+            try:
+                available_filesystems = device.api.get_filesystems()
+            except Exception as e:
+                step.failed("Failed to get available filesystems from the device",
+                            from_exception=e)
 
-                # Check all the members are ready and then try to disconnect and connect to device.
-                if stack_utils.is_all_member_ready(device, stack_member_timeout, stack_member_interval):
-                    log.info('Disconnecting and reconnecting')
-                    device.disconnect()
-                    device.connect()
+            # Filter the requested nvram_filesystems against the available filesystems
+            # and log the unavailable ones
+            valid_nvram_filesystems = []
+            for filesystem in nvram_filesystems:
+                if filesystem not in available_filesystems:
+                    log.info(
+                        f"Skipping nvram_config deletion for unavailable filesystem {filesystem}"
+                    )
                 else:
-                    step.failed("Stack members are not ready")
+                    valid_nvram_filesystems.append(filesystem)
+            if not valid_nvram_filesystems:
+                step.skipped(
+                    f"No requested filesystems are available from {nvram_filesystems}"
+                    f" to remove nvram_config files from"
+                )
+                return
 
-                image_mapping = self.history['InstallImage'].parameters.setdefault(
-                    'image_mapping', {})
-                if hasattr(self, 'new_boot_var'):
-                    image_mapping.update({images[0]: self.new_boot_var})
-        else:
-            # if device is not a stack device we all the install image for iosxe 
-            super().install_image(steps, device, images,
-                      save_system_config=save_system_config,
-                      install_timeout=install_timeout,
-                      reload_service_args=None,
-                      issu=issu,
-                      )
+            # Delete nvram_config files from the valid filesystems, if any
+            try:
+                device.api.delete_files(
+                    locations=valid_nvram_filesystems,
+                    filenames=['nvram_config'],
+                )
+            except Exception as e:
+                step.failed("Failed to delete nvram_config files",
+                            from_exception=e)

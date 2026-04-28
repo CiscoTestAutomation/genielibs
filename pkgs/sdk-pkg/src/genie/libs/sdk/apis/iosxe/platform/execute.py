@@ -2508,3 +2508,22 @@ def execute_ingress_ping_sweep(
         error_msg = f"Ping sweep execution failed: {e}"
         log.error(error_msg)
         raise Exception(error_msg) from e
+
+
+def touch_file(device, directory, file_name):
+    """
+    Create an empty file at the specified path on the device using the 'puts' command
+    in tcl shell of device.
+
+    Args:
+        device (obj): Device object
+        directory (str): The directory where the file will be created (e.g., 'bootflash:/')
+        file_name (str): The name of the file to be created on the device (e.g., 'testfile.txt')
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: If the command execution fails
+    """
+    device.tclsh(f'puts [open "{directory}{file_name}" w+] {{}}')

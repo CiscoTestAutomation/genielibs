@@ -159,3 +159,112 @@ def generate_crypto_key_execute(device, key_type, modulus=''):
     except SubCommandFailure as e:
         logger.error(e)
         raise SubCommandFailure("Could not generate keys")
+
+
+def configure_key_config_key_password_encrypt(device, encrypt_key, old_key=None):
+    """Configure 'key config-key password-encrypt' on a device.
+
+    This is an interactive command that prompts for Old key / New key / Confirm key,
+    so it requires a Unicon Dialog.
+
+    Args:
+        device ('obj'): device to use
+        encrypt_key ('str'): The new encryption key to set
+        old_key ('str', optional): The old encryption key (if replacing an existing key)
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure
+    """
+
+    key_dialog = Dialog([
+        Statement(
+            pattern=r'\[yes/no\]|\[confirm\]|Continue\?|proceed\?|Are you sure',
+            action='sendline(yes)',
+            loop_continue=True,
+            continue_timer=False
+        ),
+        Statement(
+            pattern=r'Old key:',
+            action='sendline({})'.format(old_key if old_key else encrypt_key),
+            loop_continue=True,
+            continue_timer=False
+        ),
+        Statement(
+            pattern=r'New key:',
+            action='sendline({})'.format(encrypt_key),
+            loop_continue=True,
+            continue_timer=False
+        ),
+        Statement(
+            pattern=r'Confirm key:',
+            action='sendline({})'.format(encrypt_key),
+            loop_continue=False,
+            continue_timer=False
+        ),
+    ])
+    try:
+        device.configure(
+            "key config-key password-encrypt",
+            reply=key_dialog
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure key config-key password-encrypt. Error:\n{e}"
+        )
+
+
+def unconfigure_key_config_key_password_encrypt(device, old_key=None):
+    """Remove 'key config-key password-encrypt' from a device.
+
+    The 'no' form prompts for confirmation and may ask for Old key / New key / Confirm key
+    (send empty to clear).
+
+    Args:
+        device ('obj'): device to use
+        old_key ('str', optional): The old encryption key if prompted
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure
+    """
+
+    remove_dialog = Dialog([
+        Statement(
+            pattern=r'\[yes/no\]|\[confirm\]|Continue\?|proceed\?|Are you sure',
+            action='sendline(yes)',
+            loop_continue=True,
+            continue_timer=False
+        ),
+        Statement(
+            pattern=r'Old key:',
+            action='sendline({})'.format(old_key if old_key else ''),
+            loop_continue=True,
+            continue_timer=False
+        ),
+        Statement(
+            pattern=r'New key:',
+            action='sendline()',
+            loop_continue=True,
+            continue_timer=False
+        ),
+        Statement(
+            pattern=r'Confirm key:',
+            action='sendline()',
+            loop_continue=True,
+            continue_timer=False
+        ),
+    ])
+    try:
+        device.configure(
+            "no key config-key password-encrypt",
+            reply=remove_dialog
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure key config-key password-encrypt. Error:\n{e}"
+        )

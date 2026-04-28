@@ -1154,7 +1154,7 @@ class test_nx_interface(TestCase):
                 ' no ip redirects',
                 ' ipv6 address 2001:db1:1::1/64',
                 ' no ipv6 redirects',
-                ' mac address aabb.ccdd.eeff',
+                ' mac-address aabb.ccdd.eeff',
                 ' exit'
                 ]))
         # Build unconfig
@@ -1170,7 +1170,7 @@ class test_nx_interface(TestCase):
             str(uncfgs),
             '\n'.join([
                 'interface Ethernet1/1.10',
-                ' no mac address aabb.ccdd.eeff',
+                ' no mac-address aabb.ccdd.eeff',
                 ' exit'
                 ]))
 

@@ -76,7 +76,10 @@ def configure_ikev2_profile(device,
                             keyring,
                             dpd_hello_time,
                             dpd_retry_time,
-                            dpd_query):
+                            dpd_query,
+                            fvrf=None,
+                            keyring_ppk=None):
+                                
     """ Configures IKEV2 keyring or Preshared Key (PSK)
         Args:
             device (`obj`): Device object
@@ -88,6 +91,8 @@ def configure_ikev2_profile(device,
             dpd_hello_time ('int'): DPD R-U-THERE interval
             dpd_retry_time ('int'): DPD Retry Interval
             dpd_query ('str'): DPD queires on-demand or periodic
+            fvrf('str',optional): fvrf (Default None)
+            keyring_ppk('str',optional): keyring_ppk (Default None)
         Returns:
             None
         Raises:
@@ -99,13 +104,15 @@ def configure_ikev2_profile(device,
 
     configs = []
     configs.append("crypto ikev2 profile {profile_name}".format(profile_name=profile_name))
+    if fvrf:
+        configs.append(f"match fvrf {fvrf}")   
     configs.append("match identity remote address {remote_addr}".format(remote_addr=remote_addr))
     configs.append("authentication remote {remote_auth}".format(remote_auth=remote_auth))
     configs.append("authentication local {local_auth}".format(local_auth=local_auth))
     configs.append("keyring local {keyring}".format(keyring=keyring))
+    if keyring_ppk:
+        configs.append(f"keyring ppk {keyring_ppk}")    
     configs.append("dpd {dpd_hello_time} {dpd_retry_time} {dpd_query}".format(dpd_hello_time=dpd_hello_time,dpd_retry_time=dpd_retry_time,dpd_query=dpd_query))
-
-    
 
     try:
         device.configure(configs)
@@ -1593,3 +1600,19 @@ def unconfigure_keyring(device, keyring_name):
         device.configure(cmds)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure keyring {keyring_name}: {e}")
+
+
+def configure_crypto_isakmp_enable(device):
+    """ Enables ISAKMP
+        Args:
+            device (`obj`): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cfg_cmd = "crypto isakmp enable"
+    try:
+        device.configure(cfg_cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure {cfg_cmd} on device {device.name}\nError:\n{e}")

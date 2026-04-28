@@ -1,50 +1,16 @@
 '''IOSXE execute functions for IIOT platform'''
 
 # Python
-import re
 import logging
 import time
 
-# pyATS
-from pyats.async_ import pcall
-from pyats.utils.fileutils import FileUtils
-
-# Genie
-from genie.utils import Dq
-from genie.harness.utils import connect_device
-from genie.utils.timeout import Timeout
-from genie.metaparser.util.exceptions import SchemaEmptyParserError
-from typing import Optional
-
 # Unicon
 from unicon.eal.dialogs import Statement, Dialog
-from unicon.core.errors import StateMachineError,SubCommandFailure
+from unicon.core.errors import SubCommandFailure
+
 
 # Logger
 log = logging.getLogger(__name__)
-
-
-def execute_set_config_register(device, config_register, timeout=300):
-    '''Set config register to load image    
-       Args:
-           device ('obj'): Device object
-           config_register ('str'): Hexadecimal value to set the config register to
-           timeout ('int'): Max time to set config-register in seconds
-       Returns:
-           None
-    '''
-
-    try:
-        if device.state_machine.current_state == 'rommon':
-            device.execute("set var ConfigReg={}".format(config_register),
-                           timeout=timeout)
-        else:
-            device.configure("config-register {}".format(config_register),
-                             timeout=timeout)
-    except SubCommandFailure as e:
-        raise SubCommandFailure("Failed to set config register for '{d}'\n{e}".\
-                                format(d=device.name, e=str(e)))
-    log.info("Set config-register to '{}'".format(config_register))
 
 
 def execute_reload_verify(device, prompt_wait_time=10, timeout=600):
@@ -609,3 +575,36 @@ def execute_stop_locate_switch(device, switch_number=None, switch_role=None):
         raise SubCommandFailure(
             f'Failed to execute {cmd} on {device.name}. Error:\n{e}'
         )
+
+def touch_file(device, directory, file_name):
+    """
+    Create an empty file at the specified path on the device using the 'touch' command in
+    bash console of device.
+
+    Args:
+        device (obj): Device object
+        directory (str): The directory where the file will be created (e.g., 'bootflash:/')
+        file_name (str): The name of the file to be created on the device (e.g., 'testfile.txt')
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: If the command execution fails
+    """
+    linux_fp = directory.rstrip(":/") + "/" + file_name
+    touch_cmd = f'touch {linux_fp}'
+    try:
+        # Set SELinux to permissive mode to allow file operations via shell
+        device.execute('set platform software selinux permissive')
+        # Enter bash console to execute the touch command
+        with device.bash_console() as bash:
+            bash.execute(touch_cmd)
+    except Exception as e:
+        raise SubCommandFailure(
+            f"Failed to execute touch command for file '{linux_fp}' "
+            f"on device {device.name}. Error:\n{e}"
+        )
+    finally:
+        # Always reset SELinux to default mode
+        device.execute('set platform software selinux default')

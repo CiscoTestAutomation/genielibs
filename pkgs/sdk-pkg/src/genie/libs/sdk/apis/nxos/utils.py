@@ -286,7 +286,7 @@ def get_mgmt_src_ip_addresses(device):
     #          management   0         5.25.24.1(54062)
     show_sockets_output = device.execute('show sockets connection tcp')
     mgmt_src_ip_addresses = set(re.findall(
-        r'tcp\s+ESTABLISHED\s+0\s+\S+\((?:22|23)\).+management +\d+ +(\S+)\(\d+\)',
+        r'tcp\s+ESTABLISHED\s+\d+\s+\S+\((?:22|23)\).+management +\d+ +(\S+)\(\d+\)',
         show_sockets_output, re.S))
     if not mgmt_src_ip_addresses:
         log.error('Unable to find management session, cannot determine management IP addresses')
@@ -311,7 +311,7 @@ def get_mgmt_ip_and_mgmt_src_ip_addresses(device, mgmt_src_ip=None):
     #          management   0         5.25.24.1(54062)
     show_sockets_output = device.execute('show sockets connection tcp')
     mgmt_addresses = re.findall(
-        r'tcp\s+ESTABLISHED\s+0\s+(\S+)\((?:22|23)\).+management +\d+ +(\S+)\(\d+\)',
+        r'tcp\s+ESTABLISHED\s+\d+\s+(\S+)\((?:22|23)\).+management +\d+ +(\S+)\(\d+\)',
         show_sockets_output, re.S)
 
     mgmt_src_ip_addresses = set([ip[1] for ip in mgmt_addresses if ip[1]])
@@ -322,7 +322,7 @@ def get_mgmt_ip_and_mgmt_src_ip_addresses(device, mgmt_src_ip=None):
             mgmt_ip = ip_pair[0]
             break
     else:
-        mgmt_ip = mgmt_ip_addresses[0]
+        mgmt_ip = mgmt_ip_addresses[0] if mgmt_ip_addresses else None
 
     if not mgmt_ip:
         log.error('Unable to find management session, cannot determine IP address')

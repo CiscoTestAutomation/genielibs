@@ -898,9 +898,8 @@ class InstallImage(BaseStage):
             else:
                 # Figure out the directory that the image files get unpacked to
                 if not directory:
-                    output = device.parse(f"dir")
-                    directory = output["dir"]["dir"]
                     output = device.parse("dir")
+                    directory = output["dir"]["dir"]
                 else:
                     output = device.parse(f"dir {directory}")
                 files = output.get("dir", {}).get(directory,
@@ -908,8 +907,7 @@ class InstallImage(BaseStage):
 
                 if not files.get("packages.conf"):
                     # create packages.conf, if it does not exist
-                    device.tclsh('puts [open "%spackages.conf" w+] {}' %
-                                 directory)
+                    device.api.touch_file(directory, "packages.conf")
 
                 # packages.conf is hardcoded because install mode boots using an
                 # unpacked packages.conf file
@@ -982,18 +980,6 @@ class InstallImage(BaseStage):
                         boot_images=[self.new_boot_var]):
                     step.failed(f"Boot variables are not correctly set to "
                                 f"{self.new_boot_var}")
-
-            log.info(f'verify the ignore startup config on {device.name}')
-            try:
-                if device.api.verify_ignore_startup_config():
-                    step.failed(
-                        f"Failed to verify unconfigure the ignore startup config on {device.name}"
-                    )
-            except Exception as e:
-                step.failed(
-                    f"Failed to verify ignore startup config on {device.name}",
-                    from_exception=e
-                )
 
     def install_image(
         self,
@@ -1213,12 +1199,16 @@ class InstallImage(BaseStage):
             retry_count = 0
             while retry_count < install_retry_attempts:
                 try:
-                    device.execute(
+                    output = device.execute(
                         install_cmd.format(images[0]),
                         reply=install_add_one_shot_dialog,
                         append_error_pattern=["FAILED:"],
                         timeout=install_timeout,
                     )
+
+                    if not output:
+                        log.error("Installation command finished but no output found")
+                        step.failed("Failed to install the image: Empty output from install command")
                     break  # Success, exit the retry loop
                 except Exception as e:
                     device.api.collect_install_log()
@@ -3236,19 +3226,21 @@ class CopyToDevice(BaseStage):
                                 "The image file provided is same as the current running image"
                             )
                     else:
-                        # try to get file size from file directly
                         with super_step.start(
                                 f"Get filesize of '{file}'") as step:
                             try:
                                 file_size = os.stat(file).st_size
-                            except Exception:
-                                step.passx("Failed to get file size")
+                            except Exception as error:
+                                log.warning(
+                                    "Unable to get filesize for local file '{}': {}".format(file, error)
+                                )
 
-                        if not file_size and server:
-                            # Get filesize of image files on remote server
-                            with super_step.start(
-                                    "Get filesize of '{}' on remote server '{}'"
-                                    .format(file, server)) as step:
+                            if file_size is not None:
+                                step.passed(
+                                    "Verified filesize of local file '{}' to be {} bytes"
+                                    .format(file, file_size))
+                            elif server:
+                                log.info("Get filesize of '{}' on remote server '{}'".format(file, server))
                                 try:
                                     file_size = device.api.get_file_size_from_server(
                                         server=file_utils.get_hostname(server),
@@ -3267,9 +3259,9 @@ class CopyToDevice(BaseStage):
                                     file_size = -1
                                     unknown_size = True
                                     err_msg = (
-                                        "\nUnable to get filesize for file '{}' on "
-                                        "remote server {}".format(
-                                            file, server))
+                                        "Unable to get filesize for file '{}' on remote server {}"
+                                        .format(file, server)
+                                    )
                                     if overwrite:
                                         err_msg += " - will copy file to device"
                                     step.passx(err_msg)
@@ -3277,8 +3269,8 @@ class CopyToDevice(BaseStage):
                                     step.passed(
                                         "Verified filesize of file '{}' to be "
                                         "{} bytes".format(file, file_size))
-                        else:
-                            log.info(f"Local file has size {file_size}")
+                            else:
+                                step.passx("Unable to get filesize for file '{}'".format(file))
 
                     for dest in destinations:
 
@@ -3885,14 +3877,13 @@ class Connect(BaseStage):
         logout=LOGOUT
     ):
 
+        # If recovery is enabled, ignore rollup for all steps
+        section = self.parameters.internal.get('section')
+        disable_rollup = bool(section and getattr(section.parent, 'device_recovery_processor', None))
+
         with steps.start("Connecting to the device") as step:
 
-            # If recovery is enabled, ignore rollup
-            section = self.parameters.internal.get('section')
-
-            # Check if 'section' exists and has a parent with 'device_recovery_processor'
-            if section and getattr(section.parent, 'device_recovery_processor',
-                                   None):
+            if disable_rollup:
                 step.result_rollup = False
 
             log.info("Checking connection to device: %s" % device.name)
@@ -3958,6 +3949,9 @@ class Connect(BaseStage):
                 f"Checking the current state of the device: {device.name}"
         ) as step:
 
+            if disable_rollup:
+                step.result_rollup = False
+
             log.info(
                 f"Checking the current state of the device: {device.name}")
 
@@ -3999,6 +3993,9 @@ class Connect(BaseStage):
                     "Setting the rommon variables and Booting the device from rommon"
             ) as step:
 
+                if disable_rollup:
+                    step.result_rollup = False
+
                 log.info(
                     "Setting the rommon variables and Booting the device from rommon"
                 )
@@ -4024,6 +4021,10 @@ class Connect(BaseStage):
                     
         else:
             with steps.start("Log out from the device") as step:
+
+                if disable_rollup:
+                    step.result_rollup = False
+
                 # by default logout set as true
                 if logout:
                     try:
@@ -4048,6 +4049,9 @@ class Connect(BaseStage):
         device.default.mit = False
         device.default.learn_hostname = False
         with steps.start("Initialize the device connection") as step:
+
+            if disable_rollup:
+                step.result_rollup = False
 
             try:
                 device.connection_provider.init_connection()

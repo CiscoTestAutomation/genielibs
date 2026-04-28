@@ -480,7 +480,8 @@ class VerifyCopyToDevice(unittest.TestCase):
         # Mock verify_file_exists:
         # First call (BEFORE copy): Returns False because size mismatch (expecting 1234, found 4096)
         # Second call (AFTER copy): Returns True because size matches (1234 == 1234)
-        self.device.api.verify_file_exists = Mock(side_effect=[False, True])
+        # Third call (verification step): Returns True because size matches (1234 == 1234)
+        self.device.api.verify_file_exists = Mock(side_effect=[False, True, True])
         self.device.api.free_up_disk_space = Mock(return_value=True)
 
         class MockExecute:
@@ -627,3 +628,144 @@ class VerifyCopyToDevice(unittest.TestCase):
         # Verify modify_filename was called for retry
         self.device.api.modify_filename.assert_called()
 
+    @patch('genie.libs.clean.stages.stages.os.stat')
+    def test_copy_to_device_free_disk_space_when_image_already_exists(self, mock_stat):
+        """Test that free_up_disk_space is called even when image already exists on device.
+        This ensures standby supervisors get space freed up before boot variable is set."""
+
+        # Mock local file size
+        stat_result = Mock()
+        stat_result.st_size = 2946812928
+        mock_stat.return_value = stat_result
+
+        # Image already exists with same name and size
+        self.device.api.verify_file_exists = Mock(return_value=True)
+        self.device.api.free_up_disk_space = Mock(return_value=True)
+
+        class MockExecute:
+            def __init__(self, *args, **kwargs):
+                self.data = {
+                    'dir bootflash:': iter([
+                        '''
+                            Directory of bootflash:/
+                                    11  drwx            16384  Nov 25 2016 19:32:53 -07:00  lost+found
+                                    12  -rw-                0  Dec 13 2016 11:36:36 -07:00  ds_stats.txt
+                                    8033  -rw-      2946812928  Mar 16 05:16:10 2026  test.bin
+                                    21685153792 bytes total (741146624 bytes free)
+                        '''
+                    ])
+                }
+
+            def __call__(self, cmd, *args, **kwargs):
+                return next(self.data[cmd])
+
+        self.device.execute = Mock(side_effect=MockExecute())
+
+        steps = Steps()
+        testbed = Testbed('mytb', servers={
+            'server1': {
+                'address': '127.0.0.1',
+                'protocol': 'scp'
+            }
+        })
+        self.device.testbed = testbed
+
+        self.cls.copy_to_device(
+            steps=steps, device=self.device,
+            origin=dict(files=['/path/test.bin'], hostname='server1'),
+            destination=dict(directory='bootflash:'),
+            protocol='scp',
+        )
+
+        # Verify free_up_disk_space was called even though image already exists
+        self.device.api.free_up_disk_space.assert_called_once_with(
+            destination='bootflash:',
+            required_size=2946812928,
+            skip_deletion=False,
+            protected_files=ANY,
+            min_free_space_percent=None,
+            dir_output=ANY,
+            allow_deletion_failure=True)
+
+        # Verify the overall stage passed
+        self.assertEqual(Passed, steps.details[0].result)
+
+
+    def test_copy_to_device_renamed_file(self):
+        """Test that when file is renamed during copy, the RENAMED filename is added"""
+
+        class MockExecute:
+            def __init__(self, *args, **kwargs):
+                self.data = {
+                    'dir bootflash:': iter([
+                        '''
+                            Directory of bootflash:/
+                                    11  drwx            16384  Nov 25 2016 19:32:53 -07:00  lost+found
+                                    1940303872 bytes total (1036210176 bytes free)
+                        ''',
+                        '''
+                            Directory of bootflash:/
+                                    11  drwx            16384  Nov 25 2016 19:32:53 -07:00  lost+found
+                                    8033  drwx             4096  Nov 25 2016 18:42:07 -07:00  nxos64-cs_758459
+                                    1940303872 bytes total (1036210176 bytes free)
+                        '''
+                    ])
+                }
+
+            def __call__(self, cmd, *args, **kwargs):
+                if 'dir' in cmd:
+                    return next(self.data['dir bootflash:'])
+                return 'Copied file successfully'
+
+        self.device.execute = Mock(side_effect=MockExecute())
+        self.device.api.verify_file_exists = Mock(side_effect=[False, False, True])
+        self.device.api.copy_to_device = Mock(return_value=True)
+        self.device.api.get_file_size_from_server = Mock(return_value=3124561408)
+        self.device.api.free_up_disk_space = Mock(return_value=True)
+
+        steps = Steps()
+        testbed = Testbed('mytb', servers={
+            'server1': {
+                'address': '127.0.0.1',
+                'protocol': 'scp'
+            }
+        })
+        self.device.testbed = testbed
+
+        origin_file = '/auto/paw-sjc-scratch/paw-logs/d05adc40-1ea1-11f1-8b90-005056a4277a/images/nxos64-cs'
+        self.cls.copy_to_device(
+            steps=steps, device=self.device,
+            origin=dict(
+                files=[origin_file],
+                hostname='server1'
+            ),
+            destination=dict(
+                directory='bootflash:'
+            ),
+            protocol='scp',
+        )
+
+        self.assertEqual(Passed, steps.details[0].result)
+        copy_call_kwargs = self.device.api.copy_to_device.call_args.kwargs
+        self.assertEqual(copy_call_kwargs['local_path'], 'bootflash:/nxos64-cs',
+                        "copy_to_device should be called with the original expected path")
+
+        image_mapping = self.cls.history['CopyToDevice'].parameters['image_mapping']
+        self.assertEqual(image_mapping[origin_file], 'bootflash:/nxos64-cs_758459',
+                        "image_mapping should be updated to the device-renamed path")
+
+        files_copied = self.cls.history['CopyToDevice'].parameters['files_copied']
+        self.assertEqual(files_copied[origin_file]['dest_path'], 'bootflash:/nxos64-cs_758459',
+                        "files_copied dest_path should be the device-renamed path, not the original")
+
+        verify_calls = self.device.api.verify_file_exists.call_args_list
+        self.assertEqual(len(verify_calls), 3,
+                        "verify_file_exists should be called 3 times: before-copy, detection, verification")
+
+        last_verify_call = verify_calls[-1]
+        self.assertEqual(last_verify_call.kwargs['file'], 'bootflash:/nxos64-cs_758459',
+                        "Verification should check the renamed file, not the original expected path")
+
+        dir_calls = [c for c in self.device.execute.call_args_list if 'dir' in str(c)]
+        self.assertEqual(len(dir_calls), 2,
+                        "dir should be called exactly twice: before copy and post-copy detection")

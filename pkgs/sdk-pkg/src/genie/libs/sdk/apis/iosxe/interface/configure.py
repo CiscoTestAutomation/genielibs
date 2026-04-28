@@ -11499,3 +11499,177 @@ def unconfigure_interface_hsr_ring(
         raise SubCommandFailure(
             f"Could not unconfigure hsr ring on interace Error:\n{e}")
 
+def configure_interface_port_settings(
+        device,
+        interface,
+        speed=None,
+        duplex=None,
+        autoneg=None,
+        combined_port_settings=False):
+
+    """ Configure port-settings on an interface
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name (e.g. TE0/1/0)
+            speed (`str`, optional): Speed in Mbps (10, 100, 1000). Default is None.
+            duplex (`str`, optional): Duplex mode (full, half). Default is None.
+            autoneg (`str`, optional): Auto-negotiation mode (enable, disable). Default is None.
+            combined_port_settings (`bool`, optional): Build a combined port-settings command when True.
+                Default is False.
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+            ValueError: If none of speed, duplex, or autoneg are specified
+    """
+
+    if not any((speed, duplex, autoneg)):
+        raise ValueError(
+            "At least one of speed, duplex, or autoneg must be specified. "
+            "'port-settings' alone is an incomplete command.")
+
+    log.info(f"Configuring port-settings on interface {interface}")
+
+    cmd = [f"interface {interface}"]
+    if combined_port_settings:
+        port_settings_cmd = "port-settings"
+        if speed:
+            port_settings_cmd += f" speed {speed}"
+        if duplex:
+            port_settings_cmd += f" duplex {duplex}"
+        if autoneg:
+            port_settings_cmd += f" autoneg {autoneg}"
+        cmd.append(port_settings_cmd)
+    else:
+        if speed:
+            cmd.append(f"port-settings speed {speed}")
+        if duplex:
+            cmd.append(f"port-settings duplex {duplex}")
+        if autoneg:
+            cmd.append(f"port-settings autoneg {autoneg}")
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure port-settings on interface {interface}. Error:\n{e}")
+
+
+def unconfigure_interface_port_settings(
+        device,
+        interface,
+        speed=None,
+        duplex=None,
+        autoneg=None,
+        combined_port_settings=False):
+
+    """ Unconfigure port-settings on an interface using 'no port-settings'
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name (e.g. TE0/1/0)
+            speed (`str`, optional): Speed value to negate (e.g. 10, 100, 1000). Default is None.
+            duplex (`str`, optional): Duplex value to negate (full, half, auto). Default is None.
+            autoneg (`str`, optional): Auto-negotiation value to negate (enable, disable). Default is None.
+            combined_port_settings (`bool`, optional): Build a combined port-settings command when True.
+                Default is False.
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    if not any((speed, duplex, autoneg)):
+        raise ValueError(
+            "At least one of speed, duplex, or autoneg must be specified. "
+            "'no port-settings' alone is an incomplete command.")
+
+    log.info(f"Unconfiguring port-settings on interface {interface}")
+
+    cmds = [f"interface {interface}"]
+    if combined_port_settings:
+        port_settings_cmd = "no port-settings"
+        if speed:
+            port_settings_cmd += f" speed {speed}"
+        if duplex:
+            port_settings_cmd += f" duplex {duplex}"
+        if autoneg:
+            port_settings_cmd += f" autoneg {autoneg}"
+        cmds.append(port_settings_cmd)
+    else:
+        if speed:
+            cmds.append(f"no port-settings speed {speed}")
+        if duplex:
+            cmds.append(f"no port-settings duplex {duplex}")
+        if autoneg:
+            cmds.append(f"no port-settings autoneg {autoneg}")
+
+    try:
+        device.configure(cmds)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure port-settings on interface {interface}. Error:\n{e}")
+
+
+def default_interface_port_settings(
+        device,
+        interface,
+        speed=False,
+        duplex=False,
+        autoneg=False,
+        combined_port_settings=False):
+
+    """ Reset port-settings to default on an interface using 'default port-settings'
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name (e.g. TE0/1/0)
+            speed (`bool`, optional): Reset speed to default. Default is False.
+            duplex (`bool`, optional): Reset duplex to default. Default is False.
+            autoneg (`bool`, optional): Reset auto-negotiation to default. Default is False.
+            combined_port_settings (`bool`, optional): Build a combined port-settings command when True.
+                Default is False.
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    if not speed and not duplex and not autoneg:
+        raise ValueError(
+            "At least one of speed, duplex, or autoneg must be True. "
+            "'default port-settings' alone is an incomplete command.")
+
+    log.info(f"Resetting port-settings to default on interface {interface}")
+
+    cmd = [f"interface {interface}"]
+    if combined_port_settings:
+        default_cmd = "default port-settings"
+        if speed:
+            default_cmd += " speed"
+        if duplex:
+            default_cmd += " duplex"
+        if autoneg:
+            default_cmd += " autoneg"
+        cmd.append(default_cmd)
+    else:
+        if speed:
+            cmd.append("default port-settings speed")
+        if duplex:
+            cmd.append("default port-settings duplex")
+        if autoneg:
+            cmd.append("default port-settings autoneg")
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not reset port-settings to default on interface {interface}. Error:\n{e}")
+

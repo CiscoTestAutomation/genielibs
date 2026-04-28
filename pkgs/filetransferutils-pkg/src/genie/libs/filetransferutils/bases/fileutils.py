@@ -1,25 +1,26 @@
-""" Base class for File Utilities. """
+"""Base class for File Utilities."""
 
-__copyright__ = "# Copyright (c) 2018 by cisco Systems, Inc. " \
-    "All rights reserved."
+__copyright__ = "# Copyright (c) 2018 by cisco Systems, Inc. All rights reserved."
 
 __author__ = "Myles Dear <pyats-support@cisco.com>"
 
-__all__ = ['FileUtilsBase', ]
+__all__ = [
+    "FileUtilsBase",
+]
 
+import ipaddress
+import logging
 import sys
 import time
-import psutil
-import logging
-import ipaddress
-
+from functools import lru_cache
 from urllib.parse import urlparse
 
-from genie.libs import filetransferutils
+import psutil
 from genie.abstract import Lookup
-from pyats.utils.secret_strings import to_plaintext
+from genie.libs import filetransferutils
 from pyats.topology.credentials import DEFAULT_CRED
 from pyats.utils.import_utils import get_entry_points
+from pyats.utils.secret_strings import to_plaintext
 
 logger = logging.getLogger(__name__)
 
@@ -28,17 +29,41 @@ DEFAULT_CHECK_FILE_DELAY_SECONDS = 2
 DEFAULT_TIMEOUT_SECONDS = 60
 
 DEFAULT_PORTS = {
-    'ftp': 21, 
-    'tftp': 69, 
-    'scp': 22, 
-    'sftp': 22, 
-    'http': 80, 
-    'https': 443,
+    "ftp": 21,
+    "tftp": 69,
+    "scp": 22,
+    "sftp": 22,
+    "http": 80,
+    "https": 443,
 }
-ENTRYPOINT_GROUP = 'genie.libs.filetransferutils'
+ENTRYPOINT_GROUP = "genie.libs.filetransferutils"
+
+
+@lru_cache(maxsize=1)
+def get_filetransferutils_packages():
+    """Discover filetransferutils packages in merged lookup priority order."""
+    packages = [filetransferutils]
+
+    try:
+        for ep in get_entry_points(ENTRYPOINT_GROUP):
+            try:
+                pkg = ep.load()
+            except Exception as e:
+                logger.debug(f"Failed to load entry point {ep.name}: {e}")
+                continue
+
+            packages.append(pkg)
+            logger.debug(
+                f"Discovered filetransferutils entry point: {ep.name} -> {pkg.__name__}"
+            )
+    except Exception as e:
+        logger.debug(f"Entry point discovery failed: {e}")
+
+    return tuple(packages)
+
 
 class FileUtilsBase(object):
-    """ Base class for all FileUtils implementations.
+    """Base class for all FileUtils implementations.
 
     Based on the 'os' parameter, the appropriate os-specific subclass is
     identified and instantiated. Entry point packages registered under
@@ -48,7 +73,7 @@ class FileUtilsBase(object):
 
     @classmethod
     def from_device(cls, device, *args, testbed=None, protocol=None, **kwargs):
-        """ Instantiate a fileutils object from a device object.
+        """Instantiate a fileutils object from a device object.
 
         Parameters
         ----------
@@ -68,188 +93,64 @@ class FileUtilsBase(object):
                 Protocol name (ftp, scp, sftp, http, https, tftp)
 
         """
-        testbed = device.testbed if hasattr(device, 'testbed') \
-            else testbed
+        testbed = device.testbed if hasattr(device, "testbed") else testbed
 
         return cls(
-            os=device.os, testbed=testbed, device=device,
-            protocol=protocol, *args, **kwargs)
+            os=device.os,
+            testbed=testbed,
+            device=device,
+            protocol=protocol,
+            *args,
+            **kwargs,
+        )
 
     def __new__(cls, *args, os=None, protocol=None, **kwargs):
-        """ Factory that finds and instantiates the correct os-specific
+        """Factory that finds and instantiates the correct os-specific
         subclass when a parent class is requested.
 
         If a child class is requested (``_parent`` is present in kwargs) then
         do not rewrite the class.
 
         Resolution order:
-            1. Entry point packages
-            2. Base filetransferutils package
+            1. Merged entry point and base packages for plugins.<os>.<protocol>
+            2. Merged entry point and base packages for plugins.<os>
+            3. Merged entry point and base packages for protocols.<protocol>
+            4. Merged entry point and base packages for fileutils.FileUtils
         """
-        if not kwargs.get('_parent'):
-            new_cls = None
-            # Try entry point packages first, then base package
-            for pkg in cls._get_filetransferutils_packages():
-                # Try to resolve class from this package
-                new_cls = cls._resolve_fileutils_class(pkg, os, protocol)
-                if new_cls:
-                    break
-            # Raise if no class found
-            if not new_cls:
-                if os and protocol:
-                    raise Exception(
-                        f"Cannot find fileutils plugin for "
-                        f"os '{os}' with protocol '{protocol}'."
-                    )
-                elif os:
-                    raise Exception(
-                        f"Cannot find fileutils plugin for os '{os}'."
-                    )
-                elif protocol:
-                    raise Exception(
-                        f"Cannot find fileutils plugin for "
-                        f"protocol '{protocol}'."
-                    )
-                else:
-                    raise Exception(
-                        "Cannot find default fileutils plugin."
-                    )
-            # Ensure new_cls is subclass of FileUtilsBase
+        if not kwargs.get("_parent"):
             try:
-                if issubclass(new_cls, cls):
-                    cls = new_cls
-                else:
-                    raise Exception(
-                        f"The FileUtils class for os {os} "
-                        f"does not inherit from "
-                        f"genie.libs.filetransferutils base class."
-                    )
-            except TypeError:
-                raise Exception(
-                    f"{new_cls} is the registered fileutils plugin for "
-                    f"os {os} but is not a class."
-                )
+                lookup_tokens = (os, protocol)
+                lookup = Lookup(*lookup_tokens, packages=get_filetransferutils_packages())
 
-        logger.debug("Instantiating {}class {} from module {}...".\
-            format("child " if kwargs.get('_parent') else "",
-            cls.__name__, cls.__module__))
+                # Verify we are grabbing a valid abstraction
+                for token, token_vals in zip(lookup_tokens, lookup.package.token_vals.values()):
+                    if token is not None:
+                        if token not in token_vals:
+                            raise Exception("No FileUtils found")
+
+                cls = lookup.fileutils.FileUtils
+            except Exception:
+                logger.error("Unable to find FileUtils with os=%r protocol=%r", os, protocol)
+                raise
+        
+        logger.debug(
+            "Instantiating {}class {} from module {}...".format(
+                "child " if kwargs.get("_parent") else "", cls.__name__, cls.__module__
+            )
+        )
+        
         return super().__new__(cls)
 
-    @classmethod
-    def _get_filetransferutils_packages(cls):
-        """Discover filetransferutils packages via entry points.
-
-        Returns packages in priority order:
-            1. Entry point packages (internal)
-            2. Base filetransferutils package (fallback)
-
-        Entry points are registered in setup.py under the group
-        'genie.libs.filetransferutils'
-        """
-        packages = []
-
-        try:
-            # Discover entry points for the filetransferutils group
-            discovered = get_entry_points(ENTRYPOINT_GROUP)
-
-            # Load discovered entry point packages
-            for ep in discovered:
-                try:
-                    pkg = ep.load()
-                    packages.append(pkg)
-                    logger.debug(
-                        f"Discovered filetransferutils entry point: "
-                        f"{ep.name} -> {pkg.__name__}"
-                    )
-                except Exception as e:
-                    logger.debug(
-                        f"Failed to load entry point {ep.name}: {e}"
-                    )
-        except Exception as e:
-            logger.debug(f"Entry point discovery failed: {e}")
-
-        # Base package as fallback
-        packages.append(filetransferutils)
-
-        return packages
-
-    @classmethod
-    def _resolve_fileutils_class(cls, pkg, os, protocol):
-        """Resolve a FileUtils class from a package for the given OS/protocol.
-
-        Resolution order:
-            1. plugins.<os>.<protocol>.FileUtils (protocol-specific)
-            2. plugins.<os>.FileUtils (OS-specific)
-            3. protocols.<protocol>.FileUtils (protocol-only, no OS)
-            4. <pkg>.FileUtils (default, no OS or protocol)
-
-        Parameters
-        ----------
-            pkg : module
-                The filetransferutils package to search.
-            os : str
-                Device OS (e.g. 'iosxe', 'nxos').
-            protocol : str
-                Transfer protocol (e.g. 'scp', 'http').
-
-        Returns
-        -------
-            class or None
-                The resolved FileUtils class, or None if not found.
-        """
-        # Prepare tokens based on the presence of os and protocol
-        tokens = []
-        if os:
-            tokens.append(os)
-        if protocol:
-            tokens.append(protocol)
-
-        # Initialize Lookup with dynamic tokens and specified packages
-        try:
-            lookup = Lookup(
-                *tokens,
-                packages={'filetransferutils': pkg}
-            )
-
-            if tokens:
-                resolved = lookup.filetransferutils.plugins.fileutils.FileUtils
-                # Verify the resolved class is actually OS/protocol-specific
-                # and not just the generic fallback. Lookup may silently
-                # return the base module when tokens don't match.
-                if os and os not in resolved.__module__:
-                    logger.debug(
-                        f"Lookup resolved {resolved.__module__}.{resolved.__name__} "
-                        f"but it does not match os '{os}' - skipping."
-                    )
-                    return None
-                if protocol and protocol not in resolved.__module__:
-                    logger.debug(
-                        f"Lookup resolved {resolved.__module__}.{resolved.__name__} "
-                        f"but it does not match protocol '{protocol}' - skipping."
-                    )
-                    return None
-                return resolved
-            else:
-                return lookup.filetransferutils.fileutils.FileUtils
-        except Exception as e:
-            logger.debug(
-                f"Could not resolve FileUtils from "
-                f"{pkg.__name__}: {e}"
-            )
-            return None
-
     def __enter__(self):
-        """ Allows the object to function as a self-closing context manager.
-        """
+        """Allows the object to function as a self-closing context manager."""
         return self
 
     def __exit__(self, type, value, traceback):
-        """ Allows the object to function as a self-closing context manager.
-        """
+        """Allows the object to function as a self-closing context manager."""
         self.close()
 
     def __init__(self, *args, os=None, testbed=None, **kwargs):
-        """ Initialize an instance of FileUtils
+        """Initialize an instance of FileUtils
 
         Parameters
         ----------
@@ -273,7 +174,7 @@ class FileUtilsBase(object):
 
     @property
     def parent(self):
-        """ Find the os-specific parent of a protocol-specific plugin. """
+        """Find the os-specific parent of a protocol-specific plugin."""
         try:
             parent = self._parent
         except AttributeError:
@@ -282,17 +183,17 @@ class FileUtilsBase(object):
         return parent
 
     def is_local(self, url):
-        """ Returns `True` if the url refers to a local resource. """
+        """Returns `True` if the url refers to a local resource."""
         scheme = urlparse(url).scheme
-        return (scheme == '' or scheme == 'file')
+        return scheme == "" or scheme == "file"
 
     def is_remote(self, url):
-        """ Returns `True` if the url refers to a remote resource. """
+        """Returns `True` if the url refers to a remote resource."""
         return not self.is_local(url)
 
     def get_protocol(self, source, destination=None):
-        """ Returns the url scheme (protocol) of either the source or
-            destination as long as it is a valid file copy protocol. """
+        """Returns the url scheme (protocol) of either the source or
+        destination as long as it is a valid file copy protocol."""
         scheme = urlparse(source).scheme
         if scheme:
             return scheme
@@ -323,7 +224,7 @@ class FileUtilsBase(object):
             return False
 
     def get_server_block(self, server_name_or_ip, protocol=None, device=None):
-        """ Return the required server block from the testbed if it exists.
+        """Return the required server block from the testbed if it exists.
 
         Parameters
         ----------
@@ -341,15 +242,14 @@ class FileUtilsBase(object):
         is_number = self._server_name_number_check(server_name_or_ip)
 
         server_block = {}
-        server_name_or_ip = '' if server_name_or_ip is None \
-            else server_name_or_ip
+        server_name_or_ip = "" if server_name_or_ip is None else server_name_or_ip
         try:
             # Fast path : search for server name under testbed/servers
             servers = self.testbed.servers
 
             server_block = servers.get(server_name_or_ip, {})
             if server_block:
-                logger.debug(f'Using server {server_name_or_ip} from testbed')
+                logger.debug(f"Using server {server_name_or_ip} from testbed")
 
             if not server_block and protocol:
                 # Case when same server is defined with different protocols blocks
@@ -357,7 +257,7 @@ class FileUtilsBase(object):
                 # credentials
                 server_block = servers.get(protocol, {})
                 if server_block:
-                    logger.debug(f'Using server {server_name_or_ip} from testbed')
+                    logger.debug(f"Using server {server_name_or_ip} from testbed")
 
             # Slow path : search for IP address under servers/<name>/address
             # or server name under servers/<name>/server
@@ -365,21 +265,23 @@ class FileUtilsBase(object):
             # server name).
             if not server_block:
                 for server, block in servers.items():
-                    block_server = block.get('server', '').casefold()
+                    block_server = block.get("server", "").casefold()
                     block_name = server.casefold()
                     server_name = server_name_or_ip.casefold()
-                    address = block.get('address', '')
-                    if (server_name_or_ip == address) or\
-                            (isinstance(address, list) and\
-                             server_name_or_ip in address) or\
-                            (server_name == block_name) or\
-                            (server_name == block_server):
+                    address = block.get("address", "")
+                    if (
+                        (server_name_or_ip == address)
+                        or (isinstance(address, list) and server_name_or_ip in address)
+                        or (server_name == block_name)
+                        or (server_name == block_server)
+                    ):
                         server_block = block
-                        logger.debug(f'Using server {server_name} from testbed')
+                        logger.debug(f"Using server {server_name} from testbed")
                         break
                 else:
-                    msg = "Could not find details in testbed for server {}.".\
-                            format(server_name_or_ip)
+                    msg = "Could not find details in testbed for server {}.".format(
+                        server_name_or_ip
+                    )
                     if server_name_or_ip is not None:
                         if is_number:
                             logger.debug(msg)
@@ -389,15 +291,16 @@ class FileUtilsBase(object):
                         logger.debug(msg)
 
             # If no server address try to determine using local address lookup
-            if not is_number and not server_block.get('address'):
+            if not is_number and not server_block.get("address"):
                 local_ip = self.get_local_ip(device)
                 if local_ip:
-                    server_block['address'] = local_ip
-                    logger.debug(f'Using {local_ip} for local server')
+                    server_block["address"] = local_ip
+                    logger.debug(f"Using {local_ip} for local server")
 
         except (TypeError, AttributeError):
-            msg = ("Could not find details in testbed for "
-                "server {}.".format(server_name_or_ip))
+            msg = "Could not find details in testbed for server {}.".format(
+                server_name_or_ip
+            )
             if server_name_or_ip is not None:
                 if is_number:
                     logger.debug(msg)
@@ -409,7 +312,7 @@ class FileUtilsBase(object):
         return server_block
 
     def get_auth(self, server_name_or_ip, protocol=None, device=None):
-        """ Get authentication details.
+        """Get authentication details.
 
         If credentials
 
@@ -435,42 +338,41 @@ class FileUtilsBase(object):
 
         if protocol:
             server_block = self.get_server_block(
-                server_name_or_ip = server_name_or_ip,
-                protocol = protocol,
-                device = device)
+                server_name_or_ip=server_name_or_ip, protocol=protocol, device=device
+            )
         else:
             server_block = self.get_server_block(
-                server_name_or_ip = server_name_or_ip,
-                device = device)
+                server_name_or_ip=server_name_or_ip, device=device
+            )
 
         if server_block:
             try:
-                if server_block['credentials']:
+                if server_block["credentials"]:
                     if not protocol:
                         # this will only work if the abstraction key includes
                         # the protocol, which it currently does not. Only
                         # includes the OS.
-                        protocol = getattr(self, 'abstraction_key',
-                                           '').split('.')[-1]
+                        protocol = getattr(self, "abstraction_key", "").split(".")[-1]
                     credential_name = protocol if protocol else DEFAULT_CRED
-                    credential = server_block['credentials'][credential_name]
-                    username = credential.get('username')
-                    password = to_plaintext(credential.get('password'))
+                    credential = server_block["credentials"][credential_name]
+                    username = credential.get("username")
+                    password = to_plaintext(credential.get("password"))
                 else:
                     # TBD - Remove support for these keys
                     # (which are deprecated as of Jul/2019)
                     # and cause a KeyError to raise here.
-                    username = server_block.get('username')
-                    password = server_block.get('password')
+                    username = server_block.get("username")
+                    password = server_block.get("password")
             except KeyError:
                 # TBD - Remove support for these keys
                 # (which are deprecated as of Jul/2019)
                 # and cause a KeyError to raise here.
-                username = server_block.get('username')
-                password = server_block.get('password')
+                username = server_block.get("username")
+                password = server_block.get("password")
         else:
-            msg = ("No auth details found in testbed "
-                "for hostname {}.".format(server_name_or_ip))
+            msg = "No auth details found in testbed for hostname {}.".format(
+                server_name_or_ip
+            )
             if server_name_or_ip is not None:
                 if is_number:
                     logger.debug(msg)
@@ -482,7 +384,7 @@ class FileUtilsBase(object):
         return username, password
 
     def get_hostname(self, server_name_or_ip, *args, device=None, **kwargs):
-        """ Get host name or address to connect to.
+        """Get host name or address to connect to.
 
         Returns
         -------
@@ -508,10 +410,11 @@ class FileUtilsBase(object):
         is_number = self._server_name_number_check(server_name_or_ip)
 
         server_block = self.get_server_block(
-            server_name_or_ip = server_name_or_ip, device=device)
+            server_name_or_ip=server_name_or_ip, device=device
+        )
 
         if server_block:
-            address = server_block.get('address', None)
+            address = server_block.get("address", None)
 
             if address:
                 if type(address) in (tuple, list):
@@ -527,10 +430,11 @@ class FileUtilsBase(object):
             # no reachable address, or no address specified,
             # default to server dns name or alias, or originally specified
             # hostname if all server block lookups fail.
-            return server_block.get('server', server_name_or_ip)
+            return server_block.get("server", server_name_or_ip)
         else:
-            msg = "No details found in testbed for hostname {}.".\
-                format(server_name_or_ip)
+            msg = "No details found in testbed for hostname {}.".format(
+                server_name_or_ip
+            )
             if server_name_or_ip is not None:
                 if is_number:
                     logger.debug(msg)
@@ -544,7 +448,7 @@ class FileUtilsBase(object):
         return server_name_or_ip
 
     def get_local_ip(self, device):
-        """ Try to determine the local IP address by checking the spawn process
+        """Try to determine the local IP address by checking the spawn process
         of the device object for connections.
 
         Arguments:
@@ -567,42 +471,41 @@ class FileUtilsBase(object):
 
     def validate_and_update_url(self, url, device=None, **kwargs):
         """Validate the url and replace the hostname/address with a
-            reachable address from the testbed"""
+        reachable address from the testbed"""
         parsed_url = urlparse(url)
 
         # if there is a host name, this means the address is remote
         if parsed_url.hostname:
             # get hostname to check for valid ip
-            hostname = self.get_hostname(
-                parsed_url.hostname, device=device, **kwargs)
+            hostname = self.get_hostname(parsed_url.hostname, device=device, **kwargs)
 
             # If this remote address has credentials, prepend them to the
             # address
             protocol = self.get_protocol(url)
-            username, password = self.get_auth(
-                parsed_url.hostname, protocol, device)
+            username, password = self.get_auth(parsed_url.hostname, protocol, device)
             if username and not parsed_url.username:
-                if protocol in ['ftp', 'http', 'https']:
+                if protocol in ["ftp", "http", "https"]:
                     if password:
-                        hostname = '{u}:{p}@{h}'.format(u=username,
-                                                        p=password,
-                                                        h=hostname)
-                elif protocol in ('scp', 'sftp'):
-                    hostname = '{u}@{h}'.format(u=username, h=hostname)
+                        hostname = "{u}:{p}@{h}".format(
+                            u=username, p=password, h=hostname
+                        )
+                elif protocol in ("scp", "sftp"):
+                    hostname = "{u}@{h}".format(u=username, h=hostname)
 
             # Append port if it's defined
             server_block = self.get_server_block(
-                server_name_or_ip = parsed_url.hostname,
-                device = device)
-            port = server_block.get('port')
+                server_name_or_ip=parsed_url.hostname, device=device
+            )
+            port = server_block.get("port")
             if port and port != DEFAULT_PORTS[protocol]:
-                hostname = '%s:%s' % (hostname, str(port))
+                hostname = "%s:%s" % (hostname, str(port))
 
             # Make sure we don't replace the protocol when the hostname has the
             # same name eg. ftp://ftp/path/to/file
             if protocol and url.startswith(protocol):
-                url = protocol + url[len(protocol):].replace(
-                    parsed_url.hostname, hostname, 1)
+                url = protocol + url[len(protocol) :].replace(
+                    parsed_url.hostname, hostname, 1
+                )
             else:
                 url = url.replace(parsed_url.hostname, hostname, 1)
 
@@ -654,83 +557,40 @@ class FileUtilsBase(object):
 
         # Slow path: Create a new child object and cache it.
         try:
-            tokens = []
-            if self.os:
-                tokens.append(self.os)
-            elif abstraction_key:
-                # If `os` is not provided, rely on protocol-specific or default logic
-                tokens.append(abstraction_key)
-
-            # Initialize Lookup with dynamic tokens and specified packages
-            lookup = Lookup(
-                *tokens,
-                packages={'fileutils': filetransferutils}
-            )
-
-            # Dynamically resolve the appropriate FileUtils plugin
-            if self.os:
-                # Use OS-specific logic
-                child_module = lookup.fileutils.plugins
-                if abstraction_key:
-                    # Check for protocol-specific child
-                    child_module = getattr(child_module, abstraction_key, None)
-                    if not child_module:
-                        raise Exception(
-                            f"Cannot find protocol '{abstraction_key}' within OS '{self.os}'."
-                        )
+            if self.os is None and abstraction_key is not None:
+                lookup = Lookup(*[None, abstraction_key], packages=get_filetransferutils_packages())
             else:
-                # Use default logic when `os` is not provided
-                if abstraction_key:
-                    # Protocol-specific plugin under the default fileutils
-                    child_module = getattr(lookup.fileutils.protocols, abstraction_key, None)
-                    if not child_module:
-                        raise Exception(
-                            f"Cannot find protocol '{abstraction_key}' in default fileutils."
-                        )
-                else:
-                    # Default FileUtils class if no `os` or protocol is provided
-                    child_module = getattr(lookup.fileutils, 'FileUtils', None)
-                    if not child_module:
-                        raise Exception("Default FileUtils class not found in lookup.")
+                tokens = [token for token in (self.os, abstraction_key) if token is not None]
+                lookup = Lookup(*tokens, packages=get_filetransferutils_packages())
 
-            # Ensure the child_module and FileUtils class exist
-            if child_module:
-                # Access the FileUtils class
-                child_cls = getattr(child_module, 'FileUtils', None)
-                if not child_cls:
-                    raise Exception(
-                        f"Cannot find FileUtils class in module '{child_module}'."
-                    )
-
-                # Instantiate the child object
-                child_obj = child_cls(
-                    os=self.os,
-                    testbed=self.testbed,
-                    _parent=self
+            child_cls = lookup.fileutils.FileUtils
+            if abstraction_key and f".{abstraction_key}." not in child_cls.__module__:
+                raise LookupError(
+                    f"Resolved fallback {child_cls.__module__}.{child_cls.__name__} "
+                    f"for unsupported protocol {abstraction_key!r}"
                 )
 
-                # Cache the newly created child object
-                self.children[abstraction_key] = child_obj
-                child_obj.abstraction_key = abstraction_key
-            else:
-                raise NotImplementedError(
-                    f"The fileutils plugin does not provide an implementation "
-                    f"for key '{abstraction_key}'."
-                )
+            child_obj = child_cls(os=self.os, testbed=self.testbed, _parent=self)
+            self.children[abstraction_key] = child_obj
+            child_obj.abstraction_key = abstraction_key
 
-        except AttributeError as e:
-            raise Exception(
-                f"Error accessing FileUtils class in module: {e}"
-            ) from e
+        except Exception as e:
+            if self.os and abstraction_key:
+                raise Exception(
+                    f"Cannot find protocol '{abstraction_key}' within OS '{self.os}'."
+                ) from e
+            if abstraction_key:
+                raise Exception(f"The protocol {abstraction_key} is not supported.") from e
+            raise Exception(f"Error accessing FileUtils class in lookup: {e}") from e
 
         return child_obj
 
     def close():
-        """ Deallocate any resources being held.  """
+        """Deallocate any resources being held."""
         pass
 
     def remove_child(self, abstraction_key):
-        """ Removes a child (protocol-specific) implementation from the cache.
+        """Removes a child (protocol-specific) implementation from the cache.
 
         This method is to be called on the parent (os-specific).
 
@@ -745,18 +605,25 @@ class FileUtilsBase(object):
         try:
             child.close()
         except Exception as exc:
-            logger.warning("Failed to close child {} : {}.".\
-                format(abstraction_key, exc))
+            logger.warning(
+                "Failed to close child {} : {}.".format(abstraction_key, exc)
+            )
         finally:
             # Ignore result
             _ = self.children.pop(abstraction_key, None)
             del child
 
-    def checkfile(self, target, max_tries=DEFAULT_CHECK_FILE_MAX_TRIES,
-            delay_seconds=DEFAULT_CHECK_FILE_DELAY_SECONDS,
-            check_stability=False,
-            timeout_seconds=DEFAULT_TIMEOUT_SECONDS, *args, **kwargs):
-        """ Check for file existence and (optionally) stability.
+    def checkfile(
+        self,
+        target,
+        max_tries=DEFAULT_CHECK_FILE_MAX_TRIES,
+        delay_seconds=DEFAULT_CHECK_FILE_DELAY_SECONDS,
+        check_stability=False,
+        timeout_seconds=DEFAULT_TIMEOUT_SECONDS,
+        *args,
+        **kwargs,
+    ):
+        """Check for file existence and (optionally) stability.
 
         Parameters
         ----------
@@ -822,16 +689,15 @@ class FileUtilsBase(object):
             time.sleep(delay_seconds)
 
         if not result:
-            raise Exception("Failure to check existence and length of "
-                "file {}.".format(target))
+            raise Exception(
+                "Failure to check existence and length of file {}.".format(target)
+            )
 
         if check_stability and num_consecutive_equal_length_tries < 2:
-            raise Exception("The length of file {} is not stable.".\
-                format(target))
+            raise Exception("The length of file {} is not stable.".format(target))
 
-    def copyfile(self, source, destination,
-            timeout_seconds, *args, **kwargs):
-        """ Copy a single file.
+    def copyfile(self, source, destination, timeout_seconds, *args, **kwargs):
+        """Copy a single file.
 
         Copy a single file either from local to remote, or remote to local.
         Remote to remote transfers are not supported.  Users are expected
@@ -854,11 +720,14 @@ class FileUtilsBase(object):
             When a remote to remote transfer is requested.
 
         """
-        raise NotImplementedError("The fileutils module {} "
-            "does not implement copyfile.".format(self.__module__))
+        raise NotImplementedError(
+            "The fileutils module {} does not implement copyfile.".format(
+                self.__module__
+            )
+        )
 
     def dir(self, target, timeout_seconds, *args, **kwargs):
-        """ Retrieve filenames contained in a directory.
+        """Retrieve filenames contained in a directory.
 
         Do not recurse into subdirectories, only list files at the top level
         of the given directory.
@@ -877,11 +746,12 @@ class FileUtilsBase(object):
             `list` : List of filename URLs.  Directory names are ignored.
 
         """
-        raise NotImplementedError("The fileutils module {} "
-            "does not implement dir.".format(self.__module__))
+        raise NotImplementedError(
+            "The fileutils module {} does not implement dir.".format(self.__module__)
+        )
 
     def stat(self, target, timeout_seconds, *args, **kwargs):
-        """ Retrieve file details such as length and permissions.
+        """Retrieve file details such as length and permissions.
 
         Parameters
         ----------
@@ -905,11 +775,12 @@ class FileUtilsBase(object):
 
         """
 
-        raise NotImplementedError("The fileutils module {} "
-            "does not implement stat.".format(self.__module__))
+        raise NotImplementedError(
+            "The fileutils module {} does not implement stat.".format(self.__module__)
+        )
 
     def chmod(self, target, mode, timeout_seconds, *args, **kwargs):
-        """ Change file permissions
+        """Change file permissions
 
         Parameters
         ----------
@@ -928,11 +799,12 @@ class FileUtilsBase(object):
 
         """
 
-        raise NotImplementedError("The fileutils module {} "
-            "does not implement chmod.".format(self.__module__))
+        raise NotImplementedError(
+            "The fileutils module {} does not implement chmod.".format(self.__module__)
+        )
 
     def deletefile(self, target, timeout_seconds, *args, **kwargs):
-        """ Delete a file
+        """Delete a file
 
         Parameters
         ----------
@@ -944,12 +816,14 @@ class FileUtilsBase(object):
 
         """
 
-        raise NotImplementedError("The fileutils module {} "
-            "does not implement deletefile.".format(self.__module__))
+        raise NotImplementedError(
+            "The fileutils module {} does not implement deletefile.".format(
+                self.__module__
+            )
+        )
 
-    def renamefile(self, source, destination,
-            timeout_seconds, *args, **kwargs):
-        """ Rename a file
+    def renamefile(self, source, destination, timeout_seconds, *args, **kwargs):
+        """Rename a file
 
         Parameters
         ----------
@@ -964,8 +838,11 @@ class FileUtilsBase(object):
 
         """
 
-        raise NotImplementedError("The fileutils module {} "
-            "does not implement renamefile.".format(self.__module__))
+        raise NotImplementedError(
+            "The fileutils module {} does not implement renamefile.".format(
+                self.__module__
+            )
+        )
 
     def getspace(self, target, timeout_seconds, *args, **kwargs):
         """
@@ -979,74 +856,77 @@ class FileUtilsBase(object):
         timeout_seconds : `int`
             Maximum allowed amount of time for the operation.
         """
-        raise NotImplementedError("The fileutils module {} "
-        "does not implement getspace.".format(self.__module__))
+        raise NotImplementedError(
+            "The fileutils module {} does not implement getspace.".format(
+                self.__module__
+            )
+        )
 
     def parse_url(self, url):
-        """ Parse the given url
+        """Parse the given url
 
-            Parameters
-            ----------
-                url: `str`
-                  Full url to be parsed
+        Parameters
+        ----------
+            url: `str`
+              Full url to be parsed
 
-            Returns
-            -------
-                ParseResult class with the following keyword arguments
-                (scheme='', netloc='', path='', params='', query='', fragment='')
+        Returns
+        -------
+            ParseResult class with the following keyword arguments
+            (scheme='', netloc='', path='', params='', query='', fragment='')
 
-            Raises
-            ------
-                None
+        Raises
+        ------
+            None
 
-            Examples
-            --------
-                # FileUtils
-                >>> from ..fileutils import FileUtils
+        Examples
+        --------
+            # FileUtils
+            >>> from ..fileutils import FileUtils
 
-                # Parse the URL
-                  >>> output = FileUtils.parse_url(file_url)
-                          ParseResult(scheme='flash', netloc='', path='memleak.tcl',
-                          params='', query='', fragment='')
+            # Parse the URL
+              >>> output = FileUtils.parse_url(file_url)
+                      ParseResult(scheme='flash', netloc='', path='memleak.tcl',
+                      params='', query='', fragment='')
 
-                  >>> output.scheme
-                  ...   'flash'
+              >>> output.scheme
+              ...   'flash'
 
-                  >>> output.path
-                  ...   'memleak.tcl'
+              >>> output.path
+              ...   'memleak.tcl'
 
         """
         return urlparse(url)
 
     def get_server(self, source, destination=None):
-        """ Get the server address from the provided URLs
+        """Get the server address from the provided URLs
 
-            Parameters
-            ----------
-                source: `str`
-                  URL path of the from location
-                destination: `str`
-                  URL path of the to location
+        Parameters
+        ----------
+            source: `str`
+              URL path of the from location
+            destination: `str`
+              URL path of the to location
 
-            Returns
-            -------
-                used_server: `str`
-                  String of the used server
+        Returns
+        -------
+            used_server: `str`
+              String of the used server
 
-            Raises
-            ------
-              None
+        Raises
+        ------
+          None
 
-            Examples
-            --------
-            # FileUtils
-            >>> from ..fileutils import FileUtils
+        Examples
+        --------
+        # FileUtils
+        >>> from ..fileutils import FileUtils
 
-            # Get the server
-              >>> output = FileUtils.get_server(source, destination)
+        # Get the server
+          >>> output = FileUtils.get_server(source, destination)
 
-              >>> output
-              ...   '10.1.7.250'
+          >>> output
+          ...   '10.1.7.250'
 
         """
         used_server = None
@@ -1070,9 +950,11 @@ class FileUtilsBase(object):
 
         if not used_server:
             # If both URLS have no valid IP addres, raise an exception
-            raise Exception("No valid server address or hostname has been detected in the "
+            raise Exception(
+                "No valid server address or hostname has been detected in the "
                 "passed URLS '{from_URL}' & '{to_URL}'".format(
-                    from_URL=source, to_URL=destination))
+                    from_URL=source, to_URL=destination
+                )
+            )
 
         return used_server
-

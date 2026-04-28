@@ -2858,4 +2858,26 @@ def configure_ospf_retransmit_interval(device, interface, interval):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Failed to configure OSPF retransmit-interval {interval} on {interface} on device {device.name}. Error: {e}"
-        )    
+        )  
+
+def configure_ospfv3_max_path(device, pid, path_num):
+    """configure ospfv3 max path limit
+        Args:
+            device ('obj'): Device object
+            pid ('str'): Ospfv3 process id
+            path_num('int'): configure the maximum path number
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config = [
+                  f'router ospfv3 {pid}',
+                  'address-family ipv6 unicast',
+                  f'maximum-paths {path_num}',
+                  'exit-address-family'
+             ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure ospfv3 max path limit. Error:\n{e}")  

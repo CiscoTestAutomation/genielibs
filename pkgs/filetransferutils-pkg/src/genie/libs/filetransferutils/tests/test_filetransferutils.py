@@ -45,6 +45,14 @@ from genie.libs.filetransferutils.protocols.sftp import fileutils as sftp_fu
 from genie.libs.filetransferutils.protocols.tftp import fileutils as tftp_fu
 
 try:
+    from genie.libs.cisco.filetransferutils.plugins.iosxe.https import (
+        fileutils as cisco_iosxe_https_fu,
+    )
+    cisco_filetransferutils_installed = True
+except ImportError:
+    cisco_filetransferutils_installed = False
+
+try:
     import paramiko as paramiko_module
     from paramiko import AutoAddPolicy, AuthenticationException, SFTPClient
 
@@ -73,6 +81,20 @@ class test_filetransferutils(unittest.TestCase):
                     msg="Unexpected class: {}".format(class_name))
                 self.assertEqual(fu.protocol, proto)
                 self.assertEqual(fu.os, os_)
+
+    @skipIf(not cisco_filetransferutils_installed, "cisco filetransferutils not installed")
+    def test_fu_prefers_merged_extension_protocol(self):
+        fu = FileUtils(os='iosxe', protocol='https')
+
+        self.assertIsInstance(fu, cisco_iosxe_https_fu.FileUtils)
+
+    @skipIf(not cisco_filetransferutils_installed, "cisco filetransferutils not installed")
+    def test_get_child_prefers_merged_extension_protocol(self):
+        fu = FileUtils(os='iosxe')
+        child = fu.get_child('https')
+
+        self.assertIsInstance(child, cisco_iosxe_https_fu.FileUtils)
+        self.assertIs(child.parent, fu)
 
 
 class TestBaseFileUtils(unittest.TestCase):
@@ -130,9 +152,8 @@ class TestBaseFileUtils(unittest.TestCase):
         fu = FileUtils()
 
     def test_unknown_os(self):
-        with self.assertRaisesRegex(Exception,
-                r"Cannot find fileutils plugin for os .?unknown.?"):
-            fu_unknown = FileUtils(os='unknown')
+        with self.assertRaisesRegex(Exception, "No FileUtils found"):
+            FileUtils(os='unknown')
 
 
     def test_create_from_device_implicit_tb(self):
@@ -2077,6 +2098,7 @@ class TestBaseLinuxHttpFileUtils(unittest.TestCase):
             url='http://generic:8000//path/to/remote/dir/',
             timeout=60,
             allow_redirects=True,
+            verify=False,
         )
         # Assert that the result is as expected
         self.assertEqual(result.st_size, 1024)
@@ -2105,6 +2127,7 @@ class TestBaseLinuxHttpFileUtils(unittest.TestCase):
             url=url,
             timeout=60,
             allow_redirects=True,
+            verify=False,
         )
         mock_get.assert_called_once_with(
             url=url,
@@ -2112,6 +2135,7 @@ class TestBaseLinuxHttpFileUtils(unittest.TestCase):
             stream=True,
             allow_redirects=True,
             headers={'Range': 'bytes=0-0'},
+            verify=False,
         )
         mock_get_response.close.assert_called_once()
         self.assertEqual(result.st_size, 4321)

@@ -123,7 +123,7 @@ setup(
     extras_require = {
         'dev': ['coverage',
                 'restview',
-                'Sphinx',
+                'Sphinx==7.4.7',
                 'sphinx-rtd-theme'],
     },
 

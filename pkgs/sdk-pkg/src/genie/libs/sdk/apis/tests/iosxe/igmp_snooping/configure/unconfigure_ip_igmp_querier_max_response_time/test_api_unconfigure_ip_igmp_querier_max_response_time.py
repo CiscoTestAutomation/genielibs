@@ -1,35 +1,35 @@
-import os
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.igmp_snooping.configure import unconfigure_ip_igmp_querier_max_response_time
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.igmp_snooping.configure import (
+    unconfigure_ip_igmp_querier_max_response_time,
+)
 
 
-class TestUnconfigureIpIgmpQuerierMaxResponseTime(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          stack3-nyquist-1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: c9300
-            type: c9300
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['stack3-nyquist-1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigureIpIgmpQuerierMaxResponseTime(TestCase):
 
     def test_unconfigure_ip_igmp_querier_max_response_time(self):
-        result = unconfigure_ip_igmp_querier_max_response_time(self.device, 'max-response-time', '25')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = unconfigure_ip_igmp_querier_max_response_time(
+            device,
+            "max-response-time",
+            "25",
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, str)
+        self.assertIn(
+            "no ip igmp snooping querier max-response-time 25",
+            sent_commands,
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

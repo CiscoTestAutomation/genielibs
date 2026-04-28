@@ -615,7 +615,8 @@ def configure_crypto_ikev2_proposal(device, proposal_name,
                                     encryption_name=None,
                                     integrity_name=None,
                                     group_number=None,
-                                    prf_name=None):
+                                    prf_name=None,
+                                    pqc_name=None):
     """ Configure Crypto Ikev2 proposal
     Args:
         device (`obj`): Device object
@@ -624,6 +625,7 @@ def configure_crypto_ikev2_proposal(device, proposal_name,
         integrity_name (`str`,optional): name of integrity (Default None)
         group_number (`str`,optional): group number (Default None)
         prf_name (`str`,optional): PRF (Pseudo Random Function) algorithm (Default None)
+        pqc_name(`str`,optional):  pqc name (Default None)
     Return:
         None
     Raise:
@@ -640,6 +642,8 @@ def configure_crypto_ikev2_proposal(device, proposal_name,
         config_list.append(f'prf {prf_name}')
     if group_number:
         config_list.append(f'group {group_number}')
+    if pqc_name:
+        config_list.append(f'pqc {pqc_name}')         
     try:
         device.configure(config_list)
     except SubCommandFailure as e:
@@ -1318,3 +1322,46 @@ def unconfigure_ipsec_ike_sa_strength_enforcement(device):
         device.configure(["no crypto ipsec ike sa-strength-enforcement"])
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not unconfigure IPsec IKE SA strength enforcement. Error: {e}')
+
+
+def configure_crypto_mib_ipsec_flowmib_history_tunnel_size(device, size):
+    """ Configures crypto mib ipsec flowmib history tunnel size
+        Args:
+            device (`obj`): Device object
+            size ('str'): Tunnel history size
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    configs = []
+    configs.append(f"crypto mib ipsec flowmib history tunnel size {size}")
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        cmd = f"crypto mib ipsec flowmib history tunnel size {size}"
+        raise SubCommandFailure(
+            f"Failed to configure {cmd} on device {device.name}. Error: {e}"
+        )
+
+
+def configure_crypto_mib_ipsec_flowmib_history_failure_size(device, size):
+    """ Configures crypto mib ipsec flowmib history failure size
+        Args:
+            device (`obj`): Device object
+            size ('str'): History failure size value
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    configs = []
+    cfg_cmd = f"crypto mib ipsec flowmib history failure size {size}"
+    configs.append(cfg_cmd)
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure {cfg_cmd} on device {device.name}. Error: {e}")

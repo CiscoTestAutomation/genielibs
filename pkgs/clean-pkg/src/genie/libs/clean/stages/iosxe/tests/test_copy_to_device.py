@@ -189,9 +189,9 @@ class VerifyCopyToDevice(unittest.TestCase):
         # check if SMU image has been copied
         self.assertEqual(
             "Copying image file /path/smu.bin to device PE1 bootflash:",
-            steps.details[13].name)
+            steps.details[12].name)
         # check if image copy succeeded
-        self.assertEqual(Passed, steps.details[13].result)
+        self.assertEqual(Passed, steps.details[12].result)
         self.device.execute.assert_has_calls([
             call('dir bootflash:'),
             call(f'copy tftp://127.0.0.1//path/smu.bin bootflash:/smu.bin',

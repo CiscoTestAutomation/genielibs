@@ -100,7 +100,7 @@ setup(
         'dev': ['coverage',
                 'paramiko',
                 'restview',
-                'Sphinx',
+                'Sphinx==7.4.7',
                 'sphinx-rtd-theme',
                 'sphinxcontrib-mockautodoc'],
     },

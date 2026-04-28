@@ -1,0 +1,3 @@
+from .interface import *
+from genie import abstract
+abstract.declare_token(os='linux')

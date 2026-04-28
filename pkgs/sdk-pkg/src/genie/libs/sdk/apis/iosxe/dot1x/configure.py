@@ -381,6 +381,29 @@ def enable_autoconf(device):
             "Failed to enable autoconf.Error: {}".format(str(e))
         )
 
+
+def enable_autoconfig(device):
+    """Enable uplink autoconfig
+    
+    Args:
+        device (obj): Device object
+    
+    Returns:
+        None
+        
+    Raises:
+        SubCommandFailure: Failed to configure uplink autoconfig
+    """
+    cmd = "uplink autoconfig"
+    
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure uplink autoconfig. Error:\n{e}"
+        )
+
+
 def configure_access_session_monitor(device):
     """ Enable access-session  monitor
         Args:

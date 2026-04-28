@@ -1273,69 +1273,68 @@ copy_to_device:
                     # Verify available space on the device is sufficient for image copy, delete
                     # unprotected files if needed, copy file to the device
                     # unless overwrite: False
-                    if files_to_copy:
-                        with steps.start(
-                                "Verify sufficient free space on device '{}' '{}' or delete"
-                                " unprotected files".format(device.name,
-                                                            dest)) as step:
+                    with steps.start(
+                            "Verify sufficient free space on device '{}' '{}' or delete"
+                            " unprotected files".format(device.name,
+                                                        dest)) as step:
 
-                            if unknown_size:
-                                total_size = -1
-                                log.warning("Amount of space required cannot be confirmed, "
-                                            "copying the files on the device '{}' '{}' may fail".\
-                                            format(device.name, dest))
+                        if unknown_size:
+                            total_size = -1
+                            log.warning("Amount of space required cannot be confirmed, "
+                                        "copying the files on the device '{}' '{}' may fail".\
+                                        format(device.name, dest))
 
-                            if not protected_files:
-                                protected_files = []
+                        if not protected_files:
+                            protected_files = []
 
-                            # Try to free up disk space if skip_deletion is not set to True
-                            if not skip_deletion:
-                                # TODO: add golden images, config to protected files once we have golden section
-                                golden_config = find_clean_variable(
-                                    self, 'golden_config')
-                                golden_image = find_clean_variable(
-                                    self, 'golden_image')
+                        # Try to free up disk space if skip_deletion is not set to True
+                        if not skip_deletion:
+                            golden_config = find_clean_variable(
+                                self, 'golden_config')
+                            golden_image = find_clean_variable(
+                                self, 'golden_image')
 
-                                if golden_config:
-                                    protected_files.extend(golden_config)
-                                if golden_image:
-                                    protected_files.extend(golden_image)
+                            if golden_config:
+                                protected_files.extend(golden_config)
+                            if golden_image:
+                                protected_files.extend(golden_image)
 
-                                # Only calculate size of file being copied
-                                total_size = sum(0 if file_data['exist'] \
-                                                else file_data['size'] for \
-                                                file_data in files_to_copy.values())
+                            # Only calculate size of file being copied
+                            total_size = sum(0 if file_data['exist'] \
+                                            else file_data['size'] for \
+                                            file_data in files_to_copy.values()) if files_to_copy else file_size or -1
 
-                                try:
-                                    free_space = device.api.free_up_disk_space(
-                                        destination=dest,
-                                        required_size=total_size,
-                                        skip_deletion=skip_deletion,
-                                        protected_files=protected_files,
-                                        min_free_space_percent=
-                                        min_free_space_percent,
-                                        dir_output=dir_before,
-                                        allow_deletion_failure=True)
-                                    if not free_space:
-                                        step.failed("Unable to create enough space for "
-                                                    "image on device {} {}".\
-                                                    format(device.name, dest))
-                                    else:
-                                        step.passed(
-                                            "Device {} {} has sufficient space to "
-                                            "copy images".format(
-                                                device.name, dest))
-                                except Exception as e:
-                                    log.error(str(e))
-                                    step.failed("Error while creating free space for "
+                            try:
+                                free_space = device.api.free_up_disk_space(
+                                    destination=dest,
+                                    required_size=total_size,
+                                    skip_deletion=skip_deletion,
+                                    protected_files=protected_files,
+                                    min_free_space_percent=
+                                    min_free_space_percent,
+                                    dir_output=dir_before,
+                                    allow_deletion_failure=True)
+                                if not free_space:
+                                    step.failed("Unable to create enough space for "
                                                 "image on device {} {}".\
                                                 format(device.name, dest))
-                            else:
-                                step.skipped(
-                                    f"Skip verifying free space on the device '{device.name}'"
-                                    " because skip_deletion is set to True")
+                                else:
+                                    step.passed(
+                                        "Device {} {} has sufficient space to "
+                                        "copy images".format(
+                                            device.name, dest))
+                            except Exception as e:
+                                log.error(str(e))
+                                step.failed("Error while creating free space for "
+                                            "image on device {} {}".\
+                                            format(device.name, dest))
+                        else:
+                            step.skipped(
+                                f"Skip verifying free space on the device '{device.name}'"
+                                " because skip_deletion is set to True")
 
                     # Copy the file to the devices
+                    dir_output = None
                     for file, file_data in files_to_copy.items():
                         with steps.start("Copying image file {} to device {} {}".\
                                         format(file, device.name, dest)) as step:
@@ -1461,6 +1460,73 @@ copy_to_device:
                                                 " '{}'\n".format(
                                                     file, dest, device.name), )
 
+                                    # After a successful copy,After detecting renamed image, If found, update file_data and image_mapping so that the
+                                    # verification step checks the real on-device path, not the
+                                    # originally expected path.
+                                    expected_dest = file_data['dest_path']
+                                    expected_basename = os.path.basename(expected_dest)
+
+                                    try:
+                                        dir_output = device.execute('dir {}'.format(dest))
+                                    except Exception as e:
+                                        log.warning(f"Error running 'dir {dest}' after copy: {e}. "
+                                                    f"Skipping rename detection, proceeding with expected path.")
+                                        dir_output = None
+
+                                    if dir_output is not None:
+                                        actual_dest_path = None
+
+                                        # First check if the file landed at the expected location
+                                        if expected_basename in dir_output:
+                                            if device.api.verify_file_exists(
+                                                    file=expected_dest,
+                                                    size=file_data['size'],
+                                                    dir_output=dir_output):
+                                                actual_dest_path = expected_dest
+                                                log.info(f"File found at expected location: {expected_dest}")
+
+                                        # If not at the expected location, scan for a device-renamed copy.
+                                        # We then update dest_path and
+                                        # image_mapping so downstream stages use the correct on-device path.
+                                        if not actual_dest_path:
+                                            base_name_no_ext = os.path.splitext(expected_basename)[0]
+                                            pattern = re.compile(
+                                                rf'(?<!\S){re.escape(base_name_no_ext)}_\d+(?!\S)')
+
+                                            files_before = set(pattern.findall(dir_before))
+                                            files_after = set(pattern.findall(dir_output))
+                                            new_files = files_after - files_before
+
+                                            if len(new_files) == 1:
+                                                renamed_file = new_files.pop()
+                                                actual_dest_path = os.path.join(dest, renamed_file)
+                                                log.info(f"Device renamed file during copy: {expected_dest} -> {actual_dest_path}")
+                                            elif len(new_files) > 1:
+                                                # Multiple new suffixed files; disambiguate by size
+                                                for renamed_file in new_files:
+                                                    renamed_path = os.path.join(dest, renamed_file)
+                                                    if device.api.verify_file_exists(
+                                                            file=renamed_path,
+                                                            size=file_data['size'],
+                                                            dir_output=dir_output):
+                                                        actual_dest_path = renamed_path
+                                                        log.info(f"Device renamed file during copy: {expected_dest} -> {actual_dest_path}")
+                                                        break
+                                                if not actual_dest_path:
+                                                    log.warning(
+                                                        f"Multiple new files found matching {base_name_no_ext}_*' but none matched "
+                                                        f"expected size {file_data['size']}. Proceeding with expected path.")
+                                            else:
+                                                log.warning(
+                                                    f"No renamed file detected for {expected_dest}. "
+                                                    f"Proceeding with expected path.")
+
+                                        # Update tracking if the device used a different filename
+                                        if actual_dest_path and actual_dest_path != expected_dest:
+                                            log.warning(f"Updating destination path from {expected_dest} to {actual_dest_path}")
+                                            file_data['dest_path'] = actual_dest_path
+                                            self.history['CopyToDevice'].parameters['image_mapping'][file] = actual_dest_path
+
                                 log.info(
                                     "File {} has been copied to {} on device {}"
                                     " successfully".format(
@@ -1487,8 +1553,10 @@ copy_to_device:
                                 "skipping verification steps".format(
                                     device.name, dest))
 
-                        # Execute 'dir' after copying image files
-                        dir_after = device.execute('dir {}'.format(dest))
+                        # Reuse the dir output from the post-copy rename detection if available,
+                        # otherwise fetch it now.
+                        if dir_output is None:
+                            dir_output = device.execute('dir {}'.format(dest))
 
                         for name, image_data in self.history['CopyToDevice'].\
                                                         parameters['files_copied'].items():
@@ -1498,13 +1566,13 @@ copy_to_device:
                                 if not device.api.verify_file_exists(
                                         file=image_data['dest_path'],
                                         size=image_data['size'],
-                                        dir_output=dir_after):
+                                        dir_output=dir_output):
                                     substep.failed(
                                         "Either the file failed to copy OR the local file size is different "
                                         "than the origin file size on the device {}."
                                         .format(device.name))
                                 else:
-                                    file_name = os.path.basename(file)
+                                    file_name = os.path.basename(image_data['dest_path'])
                                     if file_name not in protected_files:
                                         protected_files.append(file_name)
                                     log.info(
@@ -1858,6 +1926,9 @@ apply_configuration:
     error_pattern (list, optional): if error_pattern list is given,
         it will be passed to device.configure() to use the error_pattern
 
+    skip_if_no_config (bool, optional): If 'True' and no configuration is provided,
+        the stage will skip execution. Defaults to True.
+
 Example
 -------
 apply_configuration:
@@ -1870,6 +1941,7 @@ apply_configuration:
     max_time: 300
     check_interval: 20
     copy_directly_to_startup: False
+    skip_if_no_config: True
 
 """
 
@@ -1888,6 +1960,7 @@ apply_configuration:
     SKIP_COPY_RUN_START = False
     COPY_DIRECTLY_TO_STARTUP = False
     ERROR_PATTERN = None
+    SKIP_IF_NO_CONFIG = True
 
     # ============
     # Stage Schema
@@ -1905,6 +1978,7 @@ apply_configuration:
         Optional('skip_copy_run_start'): bool,
         Optional('copy_directly_to_startup'): bool,
         Optional('error_pattern'): list,
+        Optional('skip_if_no_config'): bool,
     }
 
     # ==============================
@@ -1926,7 +2000,16 @@ apply_configuration:
                             configure_replace=CONFIGURE_REPLACE,
                             skip_copy_run_start=SKIP_COPY_RUN_START,
                             copy_directly_to_startup=COPY_DIRECTLY_TO_STARTUP,
-                            error_pattern=ERROR_PATTERN):
+                            error_pattern=ERROR_PATTERN,
+                            skip_if_no_config=SKIP_IF_NO_CONFIG):
+        
+        if skip_if_no_config and not any(
+                [configuration, configuration_from_file, file]):
+            log.info(
+                "No configuration provided and skip_if_no_config is True. "
+                "Skipping apply_configuration on device {}".format(device.name))
+            self.skipped()
+
         log.info("Section steps:\n1- Copy/Apply configuration to/on the device"
                  "\n2- Copy running-config to startup-config"
                  "\n3- Sleep to stabilize configuration on the device")
@@ -1981,10 +2064,10 @@ apply_configuration:
                     device.name))
 
         with steps.start('Show running-config'):
-            device.execute('show running-config', error_pattern=[])
+            device.execute('show running-config', timeout=max_time, error_pattern=[])
 
         with steps.start('Show startup-config'):
-            device.execute('show startup-config', error_pattern=[])
+            device.execute('show startup-config', timeout=max_time, error_pattern=[])
 
 
 class VerifyRunningImage(BaseStage):
@@ -3304,7 +3387,15 @@ configure_management:
                     from_exception=e,
                 )
 
-            if output and output.get(interface, {}).get("oper_status") == "up":
+            if not output:
+                step.failed(f"No output returned when checking interface {interface} status")
+
+            if interface not in output:
+                step.failed(
+                    f"Interface {interface} not found in output when checking management interface status"
+                )
+
+            if output[interface].get("oper_status") == "up":
                 step.passed("Management interface is up")
             else:
                 step.failed("Management interface is down")
@@ -3446,6 +3537,13 @@ configure_interfaces:
                     attrs = {attr: getattr(iface_obj, attr) for attr in attributes \
                                 if getattr(iface_obj, attr, None) is not None}
 
+                    # disable switchport if configuring ipv4/ipv6
+                    if ("switchport" in attributes) and \
+                            ("ipv4" in attrs or "ipv6" in attrs) and \
+                            "switchport" not in attrs:
+                        iface_obj.switchport = False
+                        attrs["switchport"] = False
+
                     # enable interfaces if not breakout
                     if not getattr(iface_obj, "breakout", False) and \
                             getattr(iface_obj, 'enabled') is not False:
@@ -3454,9 +3552,20 @@ configure_interfaces:
 
                     # Get configuration lines from config builder
                     try:
+                        log.debug(
+                            f'Building config for {iface_obj.name} with '
+                            f'attributes: {attrs}')
                         config_lines = str(
                             iface_obj.build_config(attributes=attrs,
                                                    apply=False))
+                        if config_lines.strip():
+                            log.info(
+                                f'Built config for {iface_obj.name}:\n'
+                                f'{config_lines}')
+                        else:
+                            log.warning(
+                                f'No configuration lines generated for '
+                                f'{iface_obj.name}')
                         # Extend lines to configuration variable
                         configuration_lines.extend(config_lines.splitlines())
                     except Exception as e:
@@ -3471,4 +3580,12 @@ configure_interfaces:
 
         # Configure all interfaces
         if configuration_lines:
-            device.configure(configuration_lines)
+            self._apply_configuration_lines(device, configuration_lines)
+
+    def _apply_configuration_lines(self, device, configuration_lines):
+        """Apply a list of configuration lines to the device.
+
+        Override this method in an OS-specific subclass to change how
+        configuration is applied (e.g. Linux uses execute instead of configure).
+        """
+        device.configure(configuration_lines)

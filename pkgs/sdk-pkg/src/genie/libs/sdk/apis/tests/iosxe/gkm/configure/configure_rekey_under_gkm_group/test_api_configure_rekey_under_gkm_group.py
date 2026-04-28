@@ -1,35 +1,52 @@
-import os
 import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
+
 from genie.libs.sdk.apis.iosxe.gkm.configure import configure_rekey_under_gkm_group
 
 
-class TestConfigureRekeyUnderGkmGroup(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          Hub:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: Curie
-            type: iosxe
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Hub']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureRekeyUnderGkmGroup(TestCase):
 
     def test_configure_rekey_under_gkm_group(self):
-        result = configure_rekey_under_gkm_group(self.device, 'v4-cust-gdoi1000', True, 'aes 256', 'sha512', '32400', '60', '3', 'KeyServer.cisco.com', True)
+        device = Mock()
+        device.state_machine.current_state = 'enable'
+
+        result = configure_rekey_under_gkm_group(
+            device,
+            'v4-cust-gdoi1000',
+            True,
+            'aes 256',
+            'sha512',
+            '32400',
+            '60',
+            '3',
+            'KeyServer.cisco.com',
+            True
+        )
+
         expected_output = None
         self.assertEqual(result, expected_output)
+
+        device.configure.assert_called_once()
+
+        # Validate commands passed to device.configure(...)
+        cfg_arg = device.configure.mock_calls[0].args[0]
+
+        # Normalize to list for assertions (API may pass list or multiline string)
+        if isinstance(cfg_arg, str):
+            cfg_lines = [line.strip() for line in cfg_arg.splitlines() if line.strip()]
+        else:
+            cfg_lines = list(cfg_arg)
+
+        self.assertIn('crypto gkm group v4-cust-gdoi1000', cfg_lines)
+        self.assertIn('server local', cfg_lines)
+        self.assertIn('rekey algorithm aes 256', cfg_lines)
+        self.assertIn('rekey sig-hash algorithm sha512', cfg_lines)
+        self.assertIn('rekey lifetime seconds 32400', cfg_lines)
+        self.assertIn('rekey retransmit 60 number 3', cfg_lines)
+        self.assertIn('rekey authentication mypubkey rsa KeyServer.cisco.com', cfg_lines)
+        self.assertIn('rekey transport unicast', cfg_lines)
+
+
+if __name__ == '__main__':
+    unittest.main()

@@ -1,35 +1,31 @@
-import os
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.igmp_snooping.configure import unconfigure_ip_igmp_snooping_vlan_vlanid
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.igmp_snooping.configure import (
+    unconfigure_ip_igmp_snooping_vlan_vlanid,
+)
 
 
-class TestUnconfigureIpIgmpSnoopingVlanVlanid(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          tmbs1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: c9600
-            type: c9600
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['tmbs1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigureIpIgmpSnoopingVlanVlanid(TestCase):
 
     def test_unconfigure_ip_igmp_snooping_vlan_vlanid(self):
-        result = unconfigure_ip_igmp_snooping_vlan_vlanid(self.device, '44')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = unconfigure_ip_igmp_snooping_vlan_vlanid(
+            device,
+            "44",
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, str)
+        self.assertIn("no ip igmp snooping vlan 44", sent_commands)
+
+
+if __name__ == "__main__":
+    unittest.main()

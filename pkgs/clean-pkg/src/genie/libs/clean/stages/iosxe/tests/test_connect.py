@@ -3,7 +3,6 @@ from unittest.mock import MagicMock, Mock, call, patch
 import logging
 
 from pyats.aetest.steps import Steps
-from pyats.aetest.parameters import ParameterDict
 from pyats.results import Passed, Failed
 from pyats.aetest.signals import TerminateStepSignal
 from pyats.topology import loader
@@ -120,7 +119,6 @@ class TestIosXEConnect_1(unittest.TestCase):
         # Create a mock section object with the mock parent
         mock_section = Mock()
         mock_section.parent = mock_parent
-        cls.parameters = ParameterDict()
         cls.parameters.internal['section'] = mock_section
 
         try:
@@ -131,6 +129,9 @@ class TestIosXEConnect_1(unittest.TestCase):
             device.disconnect()
             md.stop()
 
-        # STEP 1: Connecting to the device is set to false,
+        # All steps should have result_rollup set to false,
         # if the recovery processor is enabled.
-        self.assertFalse(steps.steps[0].result_rollup)
+        for step in steps.steps:
+            self.assertFalse(step.result_rollup)
+
+

@@ -34,6 +34,7 @@ class FileUtils(FileUtilsLinuxBase):
                 url=target,
                 timeout=timeout_seconds,
                 allow_redirects=True,
+                verify=False  # ignore ssl errors
             )
             response.raise_for_status()
             file_size = response.headers.get('Content-Length')
@@ -54,6 +55,7 @@ class FileUtils(FileUtilsLinuxBase):
                     stream=True,
                     allow_redirects=True,
                     headers={'Range': 'bytes=0-0'},
+                    verify=False  # ignore ssl errors
                 )
                 get_response.raise_for_status()
 

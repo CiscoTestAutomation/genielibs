@@ -55,7 +55,7 @@ install_requires = [
     'ruamel.yaml',
     f'yang.connector{version_range}',
     f'rest.connector{version_range}',
-    'pysnmp>=6.1.4,<6.2',
+    'pysnmp==7.1.22',
     'pyasn1==0.6.0',
     'ruamel.yaml.clib<0.2.15',
     'pyVmomi',
@@ -134,7 +134,7 @@ setup(
     extras_require = {
         'dev': ['coverage',
                 'restview',
-                'Sphinx',
+                'Sphinx==7.4.7',
                 'sphinxcontrib-napoleon',
                 'sphinx-rtd-theme',
                 'xmltodict',

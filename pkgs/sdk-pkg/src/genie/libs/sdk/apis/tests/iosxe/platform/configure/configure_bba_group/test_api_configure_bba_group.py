@@ -1,35 +1,25 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
 from genie.libs.sdk.apis.iosxe.platform.configure import configure_bba_group
 
 
-class TestConfigureBbaGroup(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          C1113-8P_pkumarmu:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: router
-            type: iosxe
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['C1113-8P_pkumarmu']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureBbaGroup(TestCase):
 
     def test_configure_bba_group(self):
-        result = configure_bba_group(self.device, 'global_100', '100', None, 'minimum 1500 maximum 1700')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        result = configure_bba_group(
+            device,
+            'global_100',
+            '100',
+            None,
+            'minimum 1500 maximum 1700'
+        )
+        self.assertEqual(result, None)
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            ([
+                'bba-group pppoe global_100',
+                'virtual-template 100',
+                'tag ppp-max-payload minimum 1500 maximum 1700'
+            ],)
+        )

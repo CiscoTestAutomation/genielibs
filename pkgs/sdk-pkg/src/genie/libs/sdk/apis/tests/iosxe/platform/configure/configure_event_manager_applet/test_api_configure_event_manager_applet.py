@@ -1,35 +1,28 @@
-import os
-import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.platform.configure import configure_event_manager_applet
+from unittest import TestCase
+from unittest.mock import Mock
+from genie.libs.sdk.apis.iosxe.platform.configure import configure_event_manager
 
 
-class TestConfigureEventManagerApplet(unittest.TestCase):
+class TestConfigureEventManager(TestCase):
 
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          n08HA:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: c9500
-            type: c9500
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['n08HA']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
+    def test_configure_event_manager(self):
+        device = Mock()
+        result = configure_event_manager(
+            device,
+            'RELOAD',
+            'RELOAD',
+            'sync',
+            'yes',
+            'cli',
+            'reload'
         )
-
-    def test_configure_event_manager_applet(self):
-        result = configure_event_manager_applet(self.device, 'test')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.assertEqual(result, None)
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            ([
+                'event manager applet RELOAD',
+                'description RELOAD',
+                'event none sync yes',
+                'action cli reload'
+            ],)
+        )

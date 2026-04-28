@@ -2216,3 +2216,22 @@ def unconfigure_platform_ip_multicast_ssdp(device):
             f"Failed to unconfigure platform ip multicast ssdp:\n{e}"
         )
 
+def unconfigure_ip_igmp_access_group(device, interface, acl_name):
+    """ UnConfigure ip igmp access_group
+    Args:
+        device ('obj'): Device object
+        interface ('int'): interface to configure
+        acl_name ('int'): acl name
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    cmd = [f'interface {interface}',
+	         f'no ip igmp access-group {acl_name}']
+    try:
+        out = device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure ip igmp access-group {acl_name} on interface. Error:\n{e}")
+    return out

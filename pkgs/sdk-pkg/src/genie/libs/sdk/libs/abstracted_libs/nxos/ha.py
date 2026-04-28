@@ -42,6 +42,24 @@ os.chmod(run_path, os.stat(run_path)[stat.ST_MODE] | stat.S_IWOTH)
 
 log = logging.getLogger(__name__)
 
+def _is_eor_platform(device):
+    """Detect EOR by show module output.
+
+    TOR platforms expose 'Virtual Supervisor Module'. EOR does not.
+    """
+    try:
+        output = device.execute("show module")
+    except Exception as e:
+        log.warning("Unable to execute 'show module' on {}: {}".format(
+            device.hostname, e))
+        return False
+
+    output_l = output.lower()
+    if "virtual supervisor module" in output_l:
+        return False
+    if "supervisor module" in output_l:
+        return True
+    return False
 
 class HA(HA_main):
 
@@ -372,31 +390,44 @@ class HA(HA_main):
         config_ver_exclude = self.parameters.get("config_ver_exclude", [])
         with steps.start("Check boot mode on {}".format(self.device.hostname)) as step:
             invalid_cmd = False
-            out = self.device.execute('show boot mode')
-            # p1 matches line "Current mode is <native/lxc>."
-            p1 = re.compile(
-                r'^Current\smode\sis\s(?P<mode>\w+)\.$')
-            # p2 matches line "% Invalid command at '^' marker."
-            p2 = re.compile(r'.*?\'\^ \'\smarker\.')
-            for line in out.splitlines():
-                line = line.strip()
-                m = p1.match(line)
-                if m:
-                    sys_boot_mode = m.groupdict()['mode']
-                    break
-                m = p2.match(line)
-                if m:
-                    invalid_cmd = True
-                    break
-            if sys_boot_mode.lower() != user_boot_mode.lower():
-                step.failed(
-                    "System boot mode {} does not match user expected boot mode {}".format(sys_boot_mode, user_boot_mode))
-            elif invalid_cmd and user_boot_mode.lower() != 'lxc':
-                step.failed("System only supports lxc mode. Invalid user expected boot mode input {}".format(
-                    user_boot_mode))
-            else:
+            expected_boot_mode = user_boot_mode if user_boot_mode else 'lxc'
+            sys_boot_mode = expected_boot_mode
+            if _is_eor_platform(self.device):
                 step.passed(
-                    "System boot mode {} matches user expected boot mode {}".format(sys_boot_mode, user_boot_mode))
+                    "Skipping 'show boot mode' check on EOR platform {}".format(
+                        self.device.hostname))
+            else:
+                try:
+                    out = self.device.execute('show boot mode')
+                except SubCommandFailure:
+                    # show boot mode may not be supported on some platforms/images
+                    out = ''
+                    invalid_cmd = True
+                # p1 matches line "Current mode is <native/lxc>."
+                p1 = re.compile(
+                    r'^Current\smode\sis\s(?P<mode>\w+)\.$')
+                # p2 matches line "% Invalid command at '^' marker."
+                p2 = re.compile(r'.*?\'\^ \'\smarker\.')
+                for line in out.splitlines():
+                    line = line.strip()
+                    m = p1.match(line)
+                    if m:
+                        sys_boot_mode = m.groupdict()['mode']
+                        break
+                    m = p2.match(line)
+                    if m:
+                        invalid_cmd = True
+                        sys_boot_mode = 'lxc'
+                        break
+                if sys_boot_mode.lower() != expected_boot_mode.lower():
+                    step.failed(
+                        "System boot mode {} does not match user expected boot mode {}".format(sys_boot_mode, expected_boot_mode))
+                elif invalid_cmd and expected_boot_mode.lower() != 'lxc':
+                    step.failed("System only supports lxc mode. Invalid user expected boot mode input {}".format(
+                        expected_boot_mode))
+                else:
+                    step.passed(
+                        "System boot mode {} matches user expected boot mode {}".format(sys_boot_mode, expected_boot_mode))
 
         with steps.start("Take a running-config snapshot pre trigger on {}".format(self.device.hostname)) as step:
             if cfg_transfer:

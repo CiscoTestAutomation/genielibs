@@ -1160,3 +1160,49 @@ def unconfigure_data_mdt(device, vrf_name, address_family, ip_address, wildcard_
         raise SubCommandFailure(
             f"Failed to unconfigure Data MDT on device {device.name}. Error:\n{e}"
         )
+
+def configure_vrf_route_leak_static(device, vrf_name, destination_ip, destination_mask, next_hop_ip):
+    """ Configure VRF route leaking using static route from VRF to Global
+        Args:
+            device ('obj'): device to configure on
+            vrf_name ('str'): VRF name to leak route from
+            destination_ip ('str'): Destination IP address
+            destination_mask ('str'): Destination subnet mask
+            next_hop_ip ('str'): Next hop IP address in global table
+        Return:
+            N/A
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    config = [
+        f'ip route vrf {vrf_name} {destination_ip} {destination_mask} {next_hop_ip} global'
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure VRF route leak on device {device.name}.\nError:{e}"
+        )
+
+def unconfigure_vrf_route_leak_static(device, vrf_name, destination_ip, destination_mask, next_hop_ip):
+    """ Remove VRF route leaking static route from VRF to Global
+        Args:
+            device ('obj'): device to configure on
+            vrf_name ('str'): VRF name to remove route from
+            destination_ip ('str'): Destination IP address
+            destination_mask ('str'): Destination subnet mask
+            next_hop_ip ('str'): Next hop IP address in global table
+        Return:
+            N/A
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    config = [
+        f'no ip route vrf {vrf_name} {destination_ip} {destination_mask} {next_hop_ip} global'
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not remove VRF route leak on device {device.name}.\nError:{e}"
+        )

@@ -4,8 +4,12 @@ configure:
       new_state: execute
     line console 0:
       new_state: configure_line
+    no initiate-to ip 10.1.1.1: "no initiate-to ip 10.1.1.1\r\n"
+    no initiate-to ip 10.1.1.2: "no initiate-to ip 10.1.1.2\r\n"
     no logging console: ''
+    no vpdn l2tp attribute initial-received-lcp-confreq: "no vpdn l2tp attribute initial-received-lcp-confreq\r\n"
     no vpdn-group 11: "no vpdn-group 11\r\n"
+    vpdn-group 1: "vpdn-group 1\r\n"
   prompt: BB_C8500-12X4QC(config)#
 configure_line:
   commands:

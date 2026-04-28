@@ -6,6 +6,7 @@ from collections import OrderedDict
 
 from genie.libs.clean.stages.iosxe.stages import InstallImage
 from genie.libs.clean.stages.tests.utils import CommonStageTests, create_test_device
+from genie.libs.sdk.apis.iosxe.platform.verify import verify_boot_variable as sdk_verify_boot_variable
 
 from pyats.easypy import runtime
 from pyats.aetest.steps import Steps
@@ -281,37 +282,6 @@ class VerifyBootVariable(unittest.TestCase):
         )
         # Check that the result is expected
         self.assertEqual(Passed, steps.details[0].result)
-        
-    def test_verify_ignore_config_fail(self):
-        # Make sure we have a unique Steps() object for result verification
-        steps = Steps()
-        self.cls.new_boot_var = 'bootflash:cat9k_iosxe.BLD_V173_THROTTLE_LATEST_20200421_032634.SSA.bin'
-
-        data1 = {'show boot': '''
-            starfleet-1#show boot
-            BOOT variable = bootflash:cat9k_iosxe.BLD_V173_THROTTLE_LATEST_20200421_032634.SSA.bin;
-            Configuration Register is 0x102
-            MANUAL_BOOT variable = no
-            BAUD variable = 9600
-            ENABLE_BREAK variable does not exist
-            BOOTMODE variable does not exist
-            IPXE_TIMEOUT variable does not exist
-            CONFIG_FILE variable =
-        '''
-        }
-
-        # And we want the verify_boot_variable api to be mocked.
-        # This simulates the fail case where ignore-startup-config is still configured.
-        self.device.execute = Mock(return_value=data1['show boot'])
-        self.device.api.verify_boot_variable = Mock(return_value=True)
-        self.device.api.verify_ignore_startup_config = Mock(return_value=True)
-
-        # Call the method to be tested (clean step inside class)
-        with self.assertRaises(TerminateStepSignal):
-            self.cls.verify_boot_variable(
-                steps=steps, device=self.device)
-        # Check the overall result is as expected
-        self.assertEqual(Failed, steps.details[0].result)
 
     def test_fail_to_verify_boot_variables(self):
         # Make sure we have a unique Steps() object for result verification
@@ -331,53 +301,28 @@ class VerifyBootVariable(unittest.TestCase):
         '''
         }
 
-        # And we want the verify_boot_variable api to be mocked.
-        # This simulates the fail case.
+        # Simulate API mismatch: expected new_boot_var is not in next boot vars.
         self.device.execute = Mock(return_value=data1['show boot'])
+        self.device.api.get_boot_variables = Mock(
+            return_value=['bootflash:cat9k_iosxe.BLD_V173_THROTTLE_LATEST_20200421_032634.SSA.bin']
+        )
+        self.device.api.verify_boot_variable = Mock(
+            side_effect=lambda boot_images: sdk_verify_boot_variable(
+                device=self.device,
+                boot_images=boot_images
+            )
+        )
 
-        # And we want the execute_copy_run_to_start api to raise an exception when called.
-        # This simulates the fail case.
-        self.device.api.execute_copy_run_to_start = Mock(side_effect=Exception)
-
-        # We expect this step to fail so make sure it raises the signal
         with self.assertRaises(TerminateStepSignal):
-            self.cls.save_running_config(
+            self.cls.verify_boot_variable(
                 steps=steps, device=self.device
             )
 
-        # Check the overall result is as expected
+        self.device.api.get_boot_variables.assert_called_once_with(boot_var='next', output=None)
+        self.device.api.verify_boot_variable.assert_called_once_with(
+            boot_images=[self.cls.new_boot_var]
+        )
         self.assertEqual(Failed, steps.details[0].result)
-
-    def test_verify_ignore_config_exception(self):
-        # Make sure we have a unique Steps() object for result verification
-        steps = Steps()
-        self.cls.new_boot_var = 'bootflash:cat9k_iosxe.BLD_V173_THROTTLE_LATEST_20200421_032634.SSA.bin'
-
-        data1 = {'show boot': '''
-            starfleet-1#show boot
-            BOOT variable = bootflash:cat9k_iosxe.BLD_V173_THROTTLE_LATEST_20200421_032634.SSA.bin;
-            Configuration Register is 0x102
-            MANUAL_BOOT variable = no
-            BAUD variable = 9600
-            ENABLE_BREAK variable does not exist
-            BOOTMODE variable does not exist
-            IPXE_TIMEOUT variable does not exist
-            CONFIG_FILE variable =
-        '''
-        }
-
-        # And we want the verify_boot_variable api to be mocked.
-        # This simulates the exception case.
-        self.device.execute = Mock(return_value=data1['show boot'])
-        self.device.api.verify_ignore_startup_config = Mock(side_effect=Exception)
-
-        # We expect this step to fail so make sure it raises the signal
-        with self.assertRaises(TerminateStepSignal):
-            self.cls.verify_boot_variable(
-                    steps=steps, device=self.device)
-        # Check the overall result is as expected
-        self.assertEqual(Failed, steps.details[0].result)
-
 
 class Installimage(unittest.TestCase):
 
@@ -702,6 +647,43 @@ iso   rp 0 0   rp_base cat9k-2.pkg'''
             assert steps.details[1].name == "Installing image '/image/stay-isr-image.bin'"
             assert steps.details[0].result == Passed
             assert steps.details[1].result == Failed
+
+    @patch('genie.libs.clean.stages.iosxe.stages.Dialog')
+    def test_install_image_empty_output(self, dialog):
+        """Test that install fails when output is empty or None"""
+        reload_dialog = Mock()
+        dialog.return_value = reload_dialog
+        steps = Steps()
+        cls = InstallImage()
+        cls.history = MagicMock()
+        cls.new_boot_var = 'image.bin'
+
+        device = Mock()
+        device.name = 'test_device'
+        device.spawn = Mock()
+        device.parse = Mock(return_value={
+            'location': {
+                'Switch 1': {
+                    'pkg_state': {
+                        1: {'type': 'IMG', 'state': 'C', 'filename_version': '17.17.01.0.207986'}
+                    },
+                    'auto_abort_timer': 'inactive'
+                }
+            }
+        })
+
+        # Mock execute to return empty output
+        # Note: Only the install command calls execute in this path
+        device.execute = Mock(return_value='')
+        device.api.get_running_image = Mock(return_value='old_image.bin')
+        device.api.collect_install_log = Mock()
+
+        with self.assertRaises(TerminateStepSignal):
+            cls.install_image(steps=steps, device=device, images=['sftp://server/image.bin'])
+
+        # Verify the install failed
+        self.assertEqual(Passed, steps.details[0].result)
+        self.assertEqual(Failed, steps.details[1].result)
 
 
 class TestVerifyRunningImage(unittest.TestCase):

@@ -1,35 +1,21 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
 from genie.libs.sdk.apis.iosxe.platform.configure import configure_default_stack_power_switch_power_priority
 
 
-class TestConfigureDefaultStackPowerSwitchPowerPriority(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          stack3-nyquist-1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: c9300
-            type: c9300
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['stack3-nyquist-1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureDefaultStackPowerSwitchPowerPriority(TestCase):
 
     def test_configure_default_stack_power_switch_power_priority(self):
-        result = configure_default_stack_power_switch_power_priority(self.device, 'switch', 1, 'high', 13)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        result = configure_default_stack_power_switch_power_priority(
+            device,
+            'switch',
+            1,
+            'high',
+            13
+        )
+        self.assertEqual(result, None)
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            (['stack-power switch 1', 'default power-priority high 13'],)
+        )
