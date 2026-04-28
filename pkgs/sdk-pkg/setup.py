@@ -136,7 +136,7 @@ setup(
                 'restview',
                 'Sphinx==7.4.7',
                 'sphinxcontrib-napoleon',
-                'sphinx-rtd-theme',
+                'sphinx-rtd-theme==3.1.0',
                 'xmltodict',
                 'rest.connector',
                 'yang.connector',
