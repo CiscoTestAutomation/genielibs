@@ -1,34 +1,27 @@
 import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
+
 from genie.libs.sdk.apis.iosxe.ike.configure import configure_ikev2_cac
 
 
-class TestConfigureIkev2Cac(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = """
-        devices:
-          TLS_Mad1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: iosxe
-            type: iosxe
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['TLS_Mad1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureIkev2Cac(TestCase):
 
     def test_configure_ikev2_cac(self):
-        result = configure_ikev2_cac(self.device, 100, 4000)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = configure_ikev2_cac(device, 100, 4000)
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, list)
+        self.assertIn("crypto ikev2 limit max-in-negotation-sa 100", sent_commands)
+        self.assertIn("crypto ikev2 limit max-sa 4000", sent_commands)
+
+
+if __name__ == "__main__":
+    unittest.main()

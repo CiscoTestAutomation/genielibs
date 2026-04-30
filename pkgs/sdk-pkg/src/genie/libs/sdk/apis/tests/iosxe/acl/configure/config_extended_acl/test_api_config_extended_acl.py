@@ -7,8 +7,8 @@ class TestConfigExtendedAcl(TestCase):
 
     def test_config_extended_acl(self):
         self.device = Mock()
-        result = config_extended_acl(self.device, 'test', 'permit', 'tcp', '1.1.1.1', None, None, '2.2.2.2', None, None, '800', None, 'host', '10', 'log', None, 'eq')
+        result = config_extended_acl(self.device, 'ACL_EXT_1', 'permit', 'tcp', None, None, None, None, None, None, None, None, None, '10', None, None, None, '1000 2000', '3000 4000', None, 'any', 'any')
         self.assertEqual(
             self.device.configure.mock_calls[0].args,
-            (['ip access-list extended test', '10 permit tcp host 1.1.1.1 host 2.2.2.2 eq 800 log'],)
+            (['ip access-list extended ACL_EXT_1', '10 permit tcp any range 1000 2000 any range 3000 4000'],)
         )

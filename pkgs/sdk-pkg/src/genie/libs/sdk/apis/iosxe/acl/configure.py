@@ -27,7 +27,12 @@ def config_extended_acl(
     sequence_num=None,
     log_option=None,
     time_range=None,
-    port_type=None
+    port_type=None,
+    range_num=None,
+    range_num1=None,
+    port_num=None,
+    src_host=None,
+    dst_host=None
 ):
     """ Configure extended ACL on device
         Args:
@@ -48,6 +53,12 @@ def config_extended_acl(
             log_option ('str',optional): (None | log), Option to log ACL match,default value is None
             time_range ('str',optional): name of the time-range, default value is None
             port_type ('str',optional): name of the port_type ex : 'eq', 'gt', 'lt', 'neq', default value is None
+            range_num('str',optional): range values,default value is None
+            range_num1('str',optional): range values,default value is None
+            port_num('str',optional): port number,default value is None
+            src_host('str',optional): any source host number,default value is None
+            dst_host('str',optional): any destination host number,default value is any
+            
         Returns:
             config
         Raises:
@@ -64,8 +75,6 @@ def config_extended_acl(
                 protocol=protocol,
                 src_ip=src_ip,
                 dst_ip=dst_ip)
-            if port_type and dst_port:
-                cmd += port_type + " " + dst_port + " "
             if log_option:
                 cmd += log_option
             if time_range:
@@ -90,8 +99,8 @@ def config_extended_acl(
                 src_ip=src_ip,
                 dst_ip=dst_ip,
                 dst_wildcard=dst_wildcard)
-            configs.append(cmd)                    
-        elif acl_type is None and protocol is not None and src_ip=='any' and dst_ip=="any":  
+            configs.append(cmd)
+        elif acl_type is None and protocol is not None and src_ip == 'any' and dst_ip == 'any':  
             if (protocol in ["tcp", "udp"]) and (port_type in ['eq', 'gt', 'lt', 'neq']) and (time_range is not None):
                 configs.append(
                     "{sequence_num} {permission} {protocol} any any {port_type} {dst_port} time-range {time_range}".format(permission=permission, 
@@ -106,7 +115,79 @@ def config_extended_acl(
                     protocol=protocol,
                     dst_port=dst_port,
                     port_type=port_type, 
-                    sequence_num=sequence_num,))  
+                    sequence_num=sequence_num,))
+                
+        elif acl_type is None and protocol is not None and src_ip=='any':
+            if (protocol in ["tcp", "udp"]) and range_num is not None:
+                configs.append(
+                "{sequence_num} {permission} {protocol} any {dst_ip} {dst_wildcard} range {range_num}".format(permission=permission, 
+                protocol=protocol,
+                dst_ip=dst_ip,
+                dst_wildcard=dst_wildcard,
+                range_num=range_num,
+                sequence_num=sequence_num,))
+                
+            else:
+                configs.append(
+                "{sequence_num} {permission} {protocol} any {dst_ip} {dst_wildcard}".format(permission=permission, 
+                protocol=protocol,
+                dst_ip=dst_ip,
+                dst_wildcard=dst_wildcard,
+                sequence_num=sequence_num,))            
+                
+        elif acl_type is None and protocol is not None and src_host=='any' and dst_host=='any' and range_num is not None and range_num1 is not None:
+            if protocol in ["tcp", "udp"]:
+                configs.append(
+                    "{sequence_num} {permission} {protocol} any range {range_num} any range {range_num1}".format(
+                        permission=permission, 
+                        protocol=protocol,
+                        range_num=range_num,
+                        range_num1=range_num1,
+                        sequence_num=sequence_num,
+                    )
+                )
+        elif acl_type is None and protocol is not None and src_host=='any' and dst_host=='any' and range_num is not None and (port_type in ['eq', 'gt', 'lt', 'neq']) and port_num is not None:
+            if protocol in ["tcp", "udp"]:
+                configs.append(
+                    "{sequence_num} {permission} {protocol} any range {range_num} any {port_type} {port_num}".format(
+                        permission=permission, 
+                        protocol=protocol,
+                        range_num=range_num,
+                        port_type=port_type,
+                        port_num=port_num,
+                        sequence_num=sequence_num,
+                    )
+                )               
+                
+        elif acl_type is None and protocol is not None and src_host=='any' and dst_ip is not None and (port_type in ['eq', 'gt', 'lt', 'neq']) and port_num is not None:
+            configs.append(
+            "{sequence_num} {permission} {protocol} any range {range_num} host {dst_ip} {port_type} {port_num}".format(permission=permission, 
+            protocol=protocol,
+            range_num=range_num,
+            port_type=port_type,
+            port_num=port_num,
+            dst_ip=dst_ip,
+            sequence_num=sequence_num,))
+            
+        elif acl_type is None and protocol is not None and src_host=='any' and dst_host=='any'and (port_type in ['eq', 'gt', 'lt', 'neq']) and port_num is not None:
+            if dst_host == 'any':
+                configs.append(
+                "{sequence_num} {permission} {protocol} any any {port_type} {port_num}".format(permission=permission, 
+                protocol=protocol,
+                port_type=port_type,
+                port_num=port_num,
+                sequence_num=sequence_num,))                
+
+        elif acl_type is None and protocol is not None and src_host == 'any' and port_type in ['eq', 'gt', 'lt', 'neq'] and port_num is not None:
+            configs.append(
+                "{sequence_num} {permission} {protocol} any {port_type} {port_num} any".format(
+                    permission=permission, 
+                    protocol=protocol,
+                    port_type=port_type,
+                    port_num=port_num,
+                    sequence_num=sequence_num,
+                )
+            )
         else:
             if dst_wildcard != "0.0.0.0":
                 if entries > 1:
@@ -214,7 +295,8 @@ def config_extended_acl(
                 error=e,
             )
         )
-
+        
+        
 def config_acl_on_interface(device, interface, acl_name, inbound=True):
     """ Configures acl on interface 
 
@@ -265,6 +347,44 @@ def unconfig_extended_acl(device,acl_name):
         device.configure(["no ip access-list extended {acl_name}".format(acl_name=acl_name)])
     except SubCommandFailure as e:
         raise SubCommandFailure("Could not unconfigure extended acl. Error:\n{error}".format(error=e))
+
+
+def replace_extended_acl_entries(device, acl_name, acl_entries, timeout=60):
+    """Replace an extended ACL in a single configure transaction.
+
+    This helper preserves the exact one-shot ``device.configure(..., timeout=)``
+    behavior used by callers that need to avoid prompt-matching issues while an
+    ACL referenced by active policy is being removed and recreated.
+
+    Args:
+        device (`obj`): Device object
+        acl_name (`str`): ACL name
+        acl_entries (`list`): ACL entries to configure after recreating the ACL
+        timeout (`int`, optional): Configure timeout. Defaults to 60.
+
+    Returns:
+        None
+
+    Raises:
+        TypeError: If acl_entries is not a list or tuple
+        SubCommandFailure: If configuration fails
+    """
+    if not isinstance(acl_entries, (list, tuple)):
+        raise TypeError("acl_entries must be a list or tuple")
+
+    configs = [
+        f"no ip access-list extended {acl_name}",
+        f"ip access-list extended {acl_name}",
+    ]
+    configs.extend(entry.strip() for entry in acl_entries)
+
+    try:
+        device.configure(configs, timeout=timeout)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to replace Access-list {acl_name} on device "
+            f"{device.name}. Error:\n{e}"
+        )
 
 def scale_accesslist_config(device,acl_name,acl_list):
     """ Configure the huge(more than 1k static acl) extended acls
@@ -2662,6 +2782,131 @@ def unconfigure_fqdn_acl(device, acl_name, ip_type='ip'):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Failed to unconfigure FQDN ACL {acl} on device {dev}. Error:\n{error}".format(
+                acl=acl_name,
+                dev=device.name,
+                error=e,
+            )
+        )        
+
+def unconfigure_ip_fqdn_acl(
+        device,
+        ip_type,
+        acl_name,
+        service_type,
+        src_nw,
+        dst_nw,
+        rule,
+        sequence_num,
+        src_host_option=False,
+        src_dynamic=False,
+        dst_host_option=False,
+        dst_dynamic=False,
+        prefix=None,
+        src_port_type=None,
+        src_port=None,
+        dst_port_type=None,
+        dst_port=None,
+        log_option=None,
+        icmp_options=None,
+        time_range=None,        
+):
+    """ Unconfigure IP ACL
+
+        Args:
+            device (`obj`): Device object
+            ip_type ('str'): ip version ip/ipv6
+            acl_name ('str'): access-list name
+            service_type ('str'): service type to configure ex: tcp, udp etc
+            src_nw ('str'): name of the source network object-group or any
+            dst_nw ('str'): name of the destination network object-group or any
+            rule ('str'): ACL rule permit/deny     
+            sequence_num ('str'): specific sequence number
+            src_host_option ('bool',optional): Host option for source network,default value is False
+            dst_host_option ('bool',optional): Host option for destination network,default value is False   
+            prefix('str',optional): Prefix value in case of network,default value is None
+            src_port_type ('str',optional): source port type ex: eq, gt, lt etc, default value is None
+            src_port ('str',optional): Acl source port, default value is None
+            dst_port_type ('str',optional): destination port type ex: eq, gt, lt etc, default value is None 
+            dst_port ('str',optional): Acl destination port, default value is None
+            log_option ('str',optional): Option to log ACL match,default value is None
+            time_range ('str',optional): name of the time-range, default value is None
+            icmp_options ('str',optional): name of icmp options ex:nd-na,nd-ns,redirect etc.., default value is None
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    if ip_type=='ipv6':
+        cmd = f'ipv6 access-list fqdn {acl_name}\n'
+    else:
+        cmd = f'ip access-list fqdn {acl_name}\n'
+    
+    # no 10 deny ip any host 100.8.12.107
+    # no 20 deny ip any host dynamic www.msft10.com
+    # no 50 permit ip any host dynamic www.msft13.com
+    # no 100000 deny ip any host 100.8.12.107
+    # no 10 permit tcp any any eq www
+    # no 20 permit tcp any any eq 443
+    # no 6 deny ip any any
+    # no sequence 195 deny icmp any any  router-advertisement
+    # no sequence 196 deny icmp any any  redirect
+    # no sequence 198 deny udp any eq 546 any eq 547
+    # no sequence 200 permit tcp any any eq 443
+    # no sequence 6 deny ipv6 any host dynamic *.csc.net
+    # no sequence 5 deny ipv6 any host dynamic www.ab.*.*.*.test.com
+    # no 80 permit tcp any any eq 443
+    # no 50 deny ip any host dynamic www.ab.*.*.*.test.com
+	    
+    cmd += f'no '
+    if sequence_num:
+        if ip_type=='ipv6':
+            cmd += f'sequence {sequence_num} '
+        else:
+            cmd += f'{sequence_num} '
+            
+    cmd += f'{rule} {service_type} '
+
+    if src_nw == 'any':
+        cmd += 'any '
+    elif src_host_option and src_nw != 'any':
+        if src_dynamic:
+            cmd += f'host dynamic {src_nw} '
+        else:
+            cmd += f'host {src_nw} '
+    else:
+        cmd += f'{src_nw}/{prefix} '
+
+    if src_port_type and src_port:
+        cmd += f'{src_port_type} {src_port} '
+
+    if dst_nw == 'any':
+        cmd += 'any '
+    elif dst_host_option and dst_nw != 'any':
+        if dst_dynamic:
+            cmd += f'host dynamic {dst_nw} '
+        else:
+            cmd += f'host {dst_nw} '
+    else:
+        cmd += f'{dst_nw}/{prefix} '
+   
+    if dst_port_type and dst_port:
+        cmd += f'{dst_port_type} {dst_port} '
+
+    if service_type=='icmp' and icmp_options:
+        cmd += f'{icmp_options} '
+
+    if time_range:
+        cmd += f'time-range {time_range} '
+        
+    if log_option:
+        cmd += f'{log_option} '
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure IP Fqdn ACL {acl} on device {dev}. Error:\n{error}".format(
                 acl=acl_name,
                 dev=device.name,
                 error=e,

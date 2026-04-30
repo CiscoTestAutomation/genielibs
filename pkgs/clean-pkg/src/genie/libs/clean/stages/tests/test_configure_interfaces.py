@@ -3,7 +3,7 @@ import unittest
 from unittest.mock import call, Mock
 from pyats.results import Passed
 from pyats.aetest.steps import Steps
-
+from ipaddress import IPv4Address
 from genie.libs.conf.interface import PhysicalInterface as BasePhysicalInterface
 from genie.libs.conf.interface.iosxe.interface import PhysicalInterface
 from genie.libs.conf.interface.iosxe.cat9k.c9500.c9500_28C8D.interface import PhysicalInterface as DetailedPhysicalInterface
@@ -79,3 +79,26 @@ class TestConfigureInterfaces(unittest.TestCase):
             device=self.svl_devices,
             steps=steps)
         self.svl_devices.configure.assert_not_called()
+
+    def test_ipv4_disables_switchport(self):
+
+        intf = PhysicalInterface(device=self.device, name='GigabitEthernet1/0/1')
+        intf.ipv4 = IPv4Address('10.1.1.1')
+        self.device.interfaces = {
+            'GigabitEthernet1/0/1': intf
+        }
+        steps = Steps()
+
+        self.cls.configure_interfaces(
+            device=self.device,
+            steps=steps,
+            interfaces={
+                '.*': {
+                    'attributes': ['enabled', 'ipv4', 'switchport', 'breakout']
+                }
+            })
+
+        self.assertFalse(intf.switchport)
+        self.device.configure.assert_called_once()
+        config_lines = self.device.configure.call_args[0][0]
+        self.assertIn('no switchport', '\n'.join(config_lines))

@@ -2419,4 +2419,58 @@ def unconfigure_mpls_static_binding_ipv4(device, prefix, mask, bindingargs=None)
             "Couldn't unconfigure MPLS static binding on {device}. Error:\n{error}".format(
                 device=device.name, error=e)
         )
+    
+def configure_mpls_label_range(device, minimum_value, maximum_value, static_minimum_value, static_maximum_value):
+    """Configure MPLS label range with optional static subrange
+
+    CLI form::
+        mpls label range <minimum-value> <maximum-value> [static <minimum-static-value> <maximum-static-value>]
+
+    Args:
+        device (obj): Device object
+        minimum_value (int|str): Lower bound for dynamic label allocation
+        static_minimum_value (int|str): Lower bound for static labels
+        static_maximum_value (int|str): Upper bound for static labels
+
+    Raises:
+        SubCommandFailure: If device configuration fails
+    """
+
+    command = f"mpls label range {minimum_value} {maximum_value} static {static_minimum_value} {static_maximum_value}"
+
+    log.info("Configuring MPLS label range on {device}: {command}".format(device=device.name,command=command))
+
+    try:
+        device.configure(command)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Couldn't configure MPLS label range on {device}. Error:\n{error}".format(
+                device=device.name, error=e
+            )
+        )
+
+def unconfigure_mpls_label_range(device):
+    """Remove MPLS label range configuration
+
+    Executes::
+        no mpls label range
+
+    Args:
+        device (obj): Device object
+
+    Raises:
+        SubCommandFailure: If device configuration fails
+    """
+
+    command = "no mpls label range"
+    log.info("Unconfiguring MPLS label range on {device}".format(device=device.name))
+
+    try:
+        device.configure(command)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Couldn't unconfigure MPLS label range on {device}. Error:\n{error}".format(
+                device=device.name, error=e
+            )
+        )
 

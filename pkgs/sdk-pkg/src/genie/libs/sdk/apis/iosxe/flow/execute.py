@@ -2,6 +2,7 @@ import logging
 
 # Unicon
 from unicon.core.errors import SubCommandFailure
+from unicon.eal.dialogs import Dialog, Statement
 
 # Logger
 log = logging.getLogger(__name__)
@@ -56,20 +57,25 @@ def execute_monitor_capture_start_capture_filter(device, capture_name, capture_f
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not execute monitor capture {capture_name} start capture_filter {capture_filter}. \nError: {e}")
 
-def execute_monitor_capture_file_location_flash(device, capture_name, file_name, number_of_file = '', size_of_file = ''):
+def execute_monitor_capture_file_location_flash(device, capture_name, file_name, number_of_file='', size_of_file='', interface='', direction='', match=''):
     """
         Execute:
         - monitor capture <capture_name> file location flash:<file_name>
         - monitor capture <capture_name> file location flash:<file_name> ring <number_of_file> size <size_of_file>
+        - monitor capture <capture_name> file location flash:<file_name> interface <interface> <direction> match <match>
         Example:
         - monitor capture test file location flash:testin.pcap
         - monitor capture test file location flash:testin.pcap ring 4 size 1
+        - monitor capture C3 file location flash:TAC3.pcap interface FiftyGigE1/2/0/22 in match any
         Args:
             device ('obj'): Device Object
             capture_name ('str'): Name of Capture
             file_name ('str'): Name of file
-            number_of_file (int): Number of File (<2-10> Number of files in the file ring)
-            size_of_file (int): File size (<1-100> Total size of file(s) in MB)
+            number_of_file (int, optional): Number of File (<2-10> Number of files in the file ring)
+            size_of_file (int, optional): File size (<1-100> Total size of file(s) in MB)
+            interface (str, optional): Interface name
+            direction (str, optional): Direction (in, out, both)
+            match (str, optional): Match criteria (any, ipv4, ipv6, etc.)
     """
     cmd = [
         f'monitor capture {capture_name} file location flash:{file_name}',
@@ -88,8 +94,30 @@ def execute_monitor_capture_file_location_flash(device, capture_name, file_name,
         command = cmd[1]
     else:
         command = cmd[0]
+
+    if interface:
+        command += f' interface {interface}'
+        if direction:
+            command += f' {direction}'
+        if match:
+            command += f' match {match}'
+    
     try:
-        device.execute(command)
+        if interface:
+            dialog = Dialog([
+                Statement(pattern=r'.*file name has already been associated.*replace\?\[confirm\]',
+                         action='sendline()',
+                         loop_continue=True,
+                         continue_timer=False),
+                Statement(pattern=r'.*file by the name already exists.*overwrite\?\[confirm\]',
+                         action='sendline()',
+                         loop_continue=True,
+                         continue_timer=False),
+            ])
+            device.execute(command, reply=dialog, timeout=30)
+        else:
+            device.execute(command)
+        
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not perform {command}. \nError: {e}')
 

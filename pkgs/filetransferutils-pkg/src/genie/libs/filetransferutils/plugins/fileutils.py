@@ -1,4 +1,7 @@
 """ File utils common base class """
+from genie import abstract
+abstract.declare_token()
+
 import os
 import re
 import logging

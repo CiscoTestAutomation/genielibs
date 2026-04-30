@@ -3,6 +3,9 @@ configure:
     accept-dialin: "accept-dialin\r\n"
     end:
       new_state: execute
+    initiate-to ip 10.1.1.1 priority 2: "initiate-to ip 10.1.1.1 priority 2\r\n"
+    initiate-to ip 10.1.1.2 priority 1: "initiate-to ip 10.1.1.2 priority 1\r\n"
+    l2tp tunnel busy timeout 30: "l2tp tunnel busy timeout 30\r\n"
     l2tp tunnel hello 0: "l2tp tunnel hello 0\r\n"
     l2tp tunnel password 0 cisco: "l2tp tunnel password 0 cisco\r\n"
     line console 0:
@@ -13,6 +16,7 @@ configure:
     virtual-template 1: "virtual-template 1\r\n"
     vpdn authen-before-forward: "vpdn authen-before-forward\r\n"
     vpdn enable: "vpdn enable\r\n"
+    vpdn-group 1: "vpdn-group 1\r\n"
     vpdn-group 11: "vpdn-group 11\r\n"
   prompt: BB_C8500-12X4QC(config)#
 configure_line:

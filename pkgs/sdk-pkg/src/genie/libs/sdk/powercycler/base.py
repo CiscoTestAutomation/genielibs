@@ -12,7 +12,7 @@ from .snmp_client import SNMPClient, SNMPv3Client
 try:
     import pysnmp
     from pysnmp.proto.rfc1905 import NoSuchInstance, NoSuchObject
-    from pysnmp.hlapi import  UsmUserData, usmHMACMD5AuthProtocol, usmHMACSHAAuthProtocol, usmHMAC128SHA224AuthProtocol,\
+    from pysnmp.hlapi.v3arch import  UsmUserData, usmHMACMD5AuthProtocol, usmHMACSHAAuthProtocol, usmHMAC128SHA224AuthProtocol,\
      usmHMAC192SHA256AuthProtocol, usmHMAC256SHA384AuthProtocol, usmHMAC384SHA512AuthProtocol, usmNoAuthProtocol,\
      usmDESPrivProtocol, usm3DESEDEPrivProtocol, usmAesCfb128Protocol, usmAesCfb192Protocol,\
      usmAesCfb256Protocol, usmNoPrivProtocol

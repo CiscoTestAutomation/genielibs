@@ -1,35 +1,33 @@
-import os
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.igmp_snooping.configure import configure_ip_igmp_querier_tcn_query_count
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.igmp_snooping.configure import (
+    configure_ip_igmp_querier_tcn_query_count,
+)
 
 
-class TestConfigureIpIgmpQuerierTcnQueryCount(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          Switch:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: c9500L
-            type: c9500L
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Switch']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureIpIgmpQuerierTcnQueryCount(TestCase):
 
     def test_configure_ip_igmp_querier_tcn_query_count(self):
-        result = configure_ip_igmp_querier_tcn_query_count(self.device, 'tcn', 'count', 10)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = configure_ip_igmp_querier_tcn_query_count(
+            device,
+            "tcn",
+            "count",
+            10,
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, str)
+        self.assertIn("ip igmp snooping querier tcn query count 10", sent_commands)
+
+
+if __name__ == "__main__":
+    unittest.main()

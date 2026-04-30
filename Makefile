@@ -46,8 +46,8 @@ CYTHON_CMD	  = compileAll
 RELATED_PKGS = genie.libs.health genie.libs.clean genie.libs.conf genie.libs.ops genie.libs.robot genie.libs.sdk
 RELATED_PKGS += genie.libs.filetransferutils
 # Adding pyasyncore pkg to fix pysnmp scripts for python 3.12
-DEPENDENCIES = restview psutil Sphinx wheel asynctest 'pysnmp>=6.1.4,<6.2' pyasn1==0.6.0
-DEPENDENCIES += sphinx-rtd-theme==1.1.0 pyftpdlib tftpy\<0.8.1 robotframework
+DEPENDENCIES = restview psutil Sphinx==7.4.7 wheel asynctest 'pysnmp==7.1.22' pyasn1==0.6.0
+DEPENDENCIES += sphinx-rtd-theme==3.1.0 pyftpdlib tftpy\<0.8.1 robotframework
 DEPENDENCIES += Cython requests "ruamel.yaml.clib<0.2.15" ruamel.yaml grpcio protobuf jinja2 pyVmomi asyncssh
 # Internal variables.
 # (note - build examples & templates last because it will fail uploading to pypi

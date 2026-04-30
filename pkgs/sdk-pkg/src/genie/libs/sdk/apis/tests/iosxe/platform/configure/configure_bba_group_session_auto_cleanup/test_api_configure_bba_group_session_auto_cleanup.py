@@ -1,35 +1,19 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
 from genie.libs.sdk.apis.iosxe.platform.configure import configure_bba_group_session_auto_cleanup
 
 
-class TestConfigureBbaGroupSessionAutoCleanup(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          peer:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: iosxe
-            type: iosxe
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['peer']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureBbaGroupSessionAutoCleanup(TestCase):
 
     def test_configure_bba_group_session_auto_cleanup(self):
-        result = configure_bba_group_session_auto_cleanup(self.device, 'PPPOE', True)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        result = configure_bba_group_session_auto_cleanup(
+            device,
+            'PPPOE',
+            True
+        )
+        self.assertEqual(result, None)
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            (['bba-group pppoe PPPOE', 'session auto cleanup'],)
+        )

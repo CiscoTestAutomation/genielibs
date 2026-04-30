@@ -474,3 +474,127 @@ def unconfigure_ip_igmp_querier_timer_expiry(device, query_time):
     except SubCommandFailure as e:
         log.error(e)
         raise SubCommandFailure(f"Could not unconfigure ip igmp snooping querier timer expiry 300. Error:\n{e}")
+        
+def configure_ip_igmp_filter(device):
+    """Configure IGMP filter     
+    Args:
+        device('obj'): Device object
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    
+    """
+    try:
+        out = device.configure("ip igmp filter")
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not configure ip igmp filter")
+    return out
+        
+def unconfigure_ip_igmp_filter(device):
+    """UnConfigure IGMP filter     
+    Args:
+        device('obj'): Device object
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    
+    """
+    try:
+        out = device.configure("no ip igmp filter")
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not unconfigure ip igmp filter")
+    return out
+        
+def configure_igmp_filter_on_interface(device, interface, filter_profile_number):
+    """Configure IGMP filter on interface
+    Args:
+        device('obj'): Device object
+        interface('str'): interface on which filter has to be configured
+        filter_profile_number('str'):  IGMP profile number
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    configs = []
+    configs.append(f"interface {interface}")
+    configs.append(f"ip igmp filter {filter_profile_number}")
+   
+    try:
+        out = device.configure(configs)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not configure ip igmp filter on interface. Error:\n{e}")
+    return out
+        
+def unconfigure_igmp_filter_on_interface(device, interface, filter_profile_number):
+    """UnConfigure IGMP filter on interface
+    Args:
+        device('obj'): Device object
+        interface('str'): interface on which filter has to be configured
+        filter_profile_number('str'):  IGMP profile number
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    configs = []
+    configs.append(f"interface {interface}")
+    configs.append(f"no ip igmp filter {filter_profile_number}")
+   
+    try:
+        out = device.configure(configs)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not unconfigure ip igmp filter on interface. Error:\n{e}")
+    return out
+        
+def configure_igmp_profile(device, profile_id, permission=None, range_address=None):
+    """Configure IGMP profile
+    Args:
+        device('obj'): Device object
+        profile_id('str'): Profile number
+        permission('str'):  permit or deny
+        range_address('str'):  Low IP multicast address
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    configs = []
+    configs.append(f"ip igmp profile {profile_id}")
+    if permission:
+        configs.append(f"{permission}")
+    if range_address:
+        configs.append(f"range {range_address}")
+   
+    try:
+        out = device.configure(configs)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not configure ip igmp profile. Error:\n{e}")
+    return out
+        
+def unconfigure_igmp_profile(device, profile_id):
+    """UnConfigure IGMP profile
+    Args:
+        device('obj'): Device object
+        profile_id('str'): Profile number
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    configs = []
+    configs.append(f"no ip igmp profile {profile_id}")
+   
+    try:
+        out = device.configure(configs)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not unconfigure ip igmp profile. Error:\n{e}")
+    return out

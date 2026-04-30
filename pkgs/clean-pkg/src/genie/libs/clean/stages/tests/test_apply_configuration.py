@@ -8,7 +8,7 @@ from genie.libs.clean.stages.tests.utils import  create_test_device
 
 from pyats.aetest.steps import Steps
 from pyats.results import Passed, Failed
-from pyats.aetest.signals import TerminateStepSignal
+from pyats.aetest.signals import TerminateStepSignal, AEtestSkippedSignal
 
 
 # Disable logging. It may be useful to comment this out when developing tests.
@@ -50,8 +50,8 @@ class Applyconfiguration(unittest.TestCase):
         # Check that the result is expected
         self.assertEqual(Passed, steps.details[1].result)
         self.device.execute.assert_has_calls([
-            call('show running-config', error_pattern=[]),
-            call('show startup-config', error_pattern=[])])
+            call('show running-config', timeout=300, error_pattern=[]),
+            call('show startup-config', timeout=300, error_pattern=[])])
 
 
     def test_fail_to_apply_configuration(self):
@@ -105,4 +105,58 @@ class Applyconfiguration(unittest.TestCase):
 
         # Check that the result is expected
         self.assertEqual(Failed, steps.details[1].result)
+
+    def test_skip_if_no_config_no_configuration_provided(self):
+        # When skip_if_no_config is True and no configuration is provided,
+        # the stage should skip via self.skipped().
+        steps = Steps()
+
+        self.device.configure = Mock()
+        self.device.execute = Mock()
+
+        with self.assertRaises(AEtestSkippedSignal):
+            self.cls.apply_configuration(
+                steps=steps, device=self.device,
+                skip_if_no_config=True
+            )
+
+        # No steps should have been executed
+        self.device.configure.assert_not_called()
+        self.device.execute.assert_not_called()
+
+    def test_skip_if_no_config_with_configuration_provided(self):
+        # When skip_if_no_config is True but configuration IS provided,
+        # the stage should still execute normally.
+        steps = Steps()
+        configuration = 'interface ethernet2/1\nno shutdown'
+
+        self.device.configure = Mock()
+        self.device.execute = Mock()
+
+        self.cls.apply_configuration(
+            steps=steps, device=self.device, config_stable_time=0,
+            configuration=configuration, skip_if_no_config=True,
+            copy_directly_to_startup=True, skip_copy_run_start=True
+        )
+
+        # Steps should have been executed
+        self.assertGreater(len(steps.details), 0)
+        self.assertEqual(Passed, steps.details[1].result)
+
+    def test_skip_if_no_config_false_no_configuration(self):
+        # When skip_if_no_config is False (default) and no configuration
+        # is provided, the stage should still execute (not skip).
+        steps = Steps()
+
+        self.device.configure = Mock()
+        self.device.execute = Mock()
+
+        self.cls.apply_configuration(
+            steps=steps, device=self.device, config_stable_time=0,
+            skip_if_no_config=False,
+            copy_directly_to_startup=True, skip_copy_run_start=True
+        )
+
+        # Steps should have been executed even without configuration
+        self.assertGreater(len(steps.details), 0)
 

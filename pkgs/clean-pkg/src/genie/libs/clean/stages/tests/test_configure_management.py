@@ -26,6 +26,8 @@ class TestConfigureManagement(unittest.TestCase):
             }
         }
         steps = Steps()
+        self.device.execute = Mock(return_value='')
+        self.device.enable = Mock()
         self.cls.configure_management(device=self.device, steps=steps)
         # Check that the result is expected
         self.assertEqual(Passed, steps.details[0].result)
@@ -63,7 +65,8 @@ class TestConfigureManagement(unittest.TestCase):
             'protocols': ['http'],
         }
         steps = Steps()
-        self.device.execute = Mock()
+        self.device.execute = Mock(return_value='')
+        self.device.enable = Mock()
         self.cls.configure_management(device=self.device,
                                       steps=steps,
                                       set_hostname=True)
@@ -108,7 +111,8 @@ class TestConfigureManagement(unittest.TestCase):
             'protocols': ['http'],
         }
         steps = Steps()
-        self.device.execute = Mock()
+        self.device.execute = Mock(return_value='')
+        self.device.enable = Mock()
         self.cls.configure_management(
             device=self.device,
             steps=steps,

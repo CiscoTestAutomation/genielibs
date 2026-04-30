@@ -82,6 +82,34 @@ def unconfigure_route_map_under_interface(device, interface, route_map, ipv6=Fal
                 error=e,
             ))
 
+
+def configure_ip_local_policy_route_map(device, route_map_name, timeout=None):
+    """Configure global IPv4 local policy route-map.
+
+    Args:
+        device (`obj`): Device object
+        route_map_name (`str`): Route-map name
+        timeout (`int`, optional): Configure timeout
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: If configuration fails
+    """
+    configs = [f"ip local policy route-map {route_map_name}"]
+    kwargs = {}
+    if timeout is not None:
+        kwargs["timeout"] = timeout
+
+    try:
+        device.configure(configs, **kwargs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure ip local policy route-map {route_map_name} "
+            f"on device {device.name}. Error:\n{e}"
+        )
+
 def configure_pbr_route_map(device,
                             route_map_name,
                             acl_name,

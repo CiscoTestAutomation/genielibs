@@ -10,6 +10,7 @@ from unicon.core.errors import SubCommandFailure
 from unicon.eal.dialogs import Statement, Dialog
 from unicon.eal.expect import Spawn, TimeoutError
 
+from genie.libs.clean.recovery.recovery import _disconnect_reconnect
 
 log = logging.getLogger(__name__)
 
@@ -49,56 +50,54 @@ def execute_test_idprom_fake_remove(device, interface):
         raise SubCommandFailure('Failed to perform SFP OIR Fake-remove')
     return out
     
-def execute_test_crash(device,num,timeout=500,connect_timeout=400):
-    """   
+def execute_test_crash(device, num, timeout=500, connect_timeout=400):
+    """Execute test crash command and reconnect to device after reboot.
+
         Args:
-            device ('obj'): device to use 
+            device ('obj'): device to use
             num ('str'): number of the crash type to be executed.
-            timeout('integer',optional): Delay for the device to boot.
-            connect_timeout ('int, optional'): Time to wait before sending the prompt
-                                            (when pattern "Press RETURN to get 
-                                            started" matches)
+            timeout ('int', optional): Timeout for execute command. Default 500.
+            connect_timeout ('int', optional): Time to wait for device to boot after crash before reconnecting. Default 400.
         Returns:
             None
         Raises:
             SubCommandFailure
     """
-    def send_crashnum(spawn):        
-        spawn.sendline('%s'%num)
-        
-    def slow_sendline(spawn):
-        log.info('inside  slow_sendline')
-        time.sleep(connect_timeout)
-        spawn.sendline('')
-        spawn.sendline('enable')
-        spawn.sendline('')
-        
-   
-    dialog = Dialog ([
-        Statement(pattern = r"WARNING\:.*\?\s*" ,
-                  action = "sendline(C)",
-                  args = None,
-                  loop_continue = True,
-                  continue_timer = False),
-        Statement(pattern = r"^.*Type the number for the selected crash\:.*\?\s*",
-                  action = send_crashnum,
-                  args = None,
-                  loop_continue = True,
-                  continue_timer = False),
-        Statement(pattern = r".*Press RETURN to get started.*",
-                  action = slow_sendline,
-                  args = None,
-                  loop_continue = False,
-                  continue_timer = False)
-        ])     
-    log.info(f"Perform test crash {num} on {device.name}")  
-    cmd  = f"test crash"
+    def send_crashnum(spawn):
+        spawn.sendline('%s' % num)
+
+    dialog = Dialog([
+        Statement(pattern=r"WARNING\:.*\?\s*",
+                  action="sendline(C)",
+                  args=None,
+                  loop_continue=True,
+                  continue_timer=False),
+        Statement(pattern=r"^.*Type the number for the selected crash\:.*\?\s*",
+                  action=send_crashnum,
+                  args=None,
+                  loop_continue=True,
+                  continue_timer=False),
+        Statement(pattern=r".*Press RETURN to get started.*",
+                  action=None,
+                  args=None,
+                  loop_continue=False,
+                  continue_timer=False)
+    ])
+    log.info(f"Perform test crash {num} on {device.name}")
+    cmd = "test crash"
     try:
         output = device.execute(cmd, reply=dialog, timeout=timeout)
         log.info(f"{cmd} is successful")
     except Exception as e:
         log.error(f"Error while executing {cmd} : {e}")
-        return False  
+        return False
+
+    log.info(f"Waiting {connect_timeout}s for {device.name} to boot")
+    time.sleep(connect_timeout)
+
+    log.info(f"Reconnecting to {device.name} after test crash")
+    if not _disconnect_reconnect(device):
+        raise SubCommandFailure(f"Failed to reconnect to {device.name} after test crash")
 
 def execute_test_platform_hardware_fantray(device, switch_mode, switch_number):
     """ 
@@ -301,3 +300,42 @@ def execute_test_platform_hardware_sensor_value_cm(device, slot_num, sensor_id,o
         log.error(f"Failed to perform sensor cm-override : {command}")
         raise SubCommandFailure(f"Error executing command: {e}")
 
+def execute_ping_egress_next_hop(device,
+                                 address,
+                                 next_hop,
+                                 egress_value,
+                                 egress_type=None,
+                                 timeout=30):
+    """Execute ping with egress and next-hop arguments.
+
+    Args:
+        device (`obj`): Device object
+        address (`str`): Ping destination address
+        next_hop (`str`): Next-hop address
+        egress_value (`str`): Egress interface, vlan, port-channel, or tunnel id
+        egress_type (`str`, optional): Egress keyword. For routed interfaces,
+            leave as None. Supported keyword examples include ``vlan``,
+            ``port-channel``, and ``tunnel``.
+        timeout (`int`, optional): Command timeout. Defaults to 30.
+
+    Returns:
+        str: Command output
+
+    Raises:
+        SubCommandFailure: If the ping command execution fails
+    """
+    if egress_type and egress_type.lower() not in {"interface", "intf"}:
+        cmd = (
+            f"ping {address} egress {egress_type} "
+            f"{egress_value} next-hop {next_hop}"
+        )
+    else:
+        cmd = f"ping {address} egress {egress_value} next-hop {next_hop}"
+
+    try:
+        out = device.execute(cmd, timeout=timeout)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to execute '{cmd}' on device {device.name}. Error:\n{e}"
+        )
+    return out

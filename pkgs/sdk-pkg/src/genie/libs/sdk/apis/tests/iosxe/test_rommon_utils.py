@@ -155,6 +155,62 @@ class TestDeviceRommonBoot(unittest.TestCase):
             handler(spawn, session, context)
         self.assertIn('Too many failed boot attempts', str(cm.exception))
 
+    @patch('genie.libs.sdk.apis.iosxe.rommon.utils.ThreadPoolExecutor')
+    @patch('genie.libs.sdk.apis.iosxe.rommon.utils.wait_futures')
+    @patch('genie.libs.sdk.apis.iosxe.rommon.utils.time.sleep')
+    def test_device_rommon_boot_ha_sync_to_rommon(self, mocke_sleep, mock_wait, mock_executor):
+        """Verify that HA device syncs non-rommon subconnections to rommon before proceeding"""
+
+        device = MagicMock()
+        device.name = 'ha_device'
+        device.is_ha = True
+        device.clean = {'device_recovery': {'timeout': 2000}}
+
+        device.connection_provider = MagicMock()
+
+        conn1 = MagicMock()
+        conn1.alias = 'a'
+        conn1.state_machine.current_state = 'rommon'
+        conn1.context = {}
+
+        conn2 = MagicMock()
+        conn2.alias = 'b'
+        conn2.state_machine.current_state = 'enable'
+        conn2.context = {}
+
+        device.subconnections = [conn1, conn2]
+
+        device.api.get_recovery_details.return_value = {
+            'golden_image': ['golden.bin'],
+            'tftp_image': [],
+            'tftp_boot': {},
+        }
+        device.api.verify_ignore_startup_config.return_value = False
+
+
+        def device_rommon_side_effect():
+            for con in device.subconnections:
+                con.state_machine.current_state = 'rommon'
+        
+        device.rommon.side_effect = device_rommon_side_effect
+
+        def execute_task(fn, *args, **kwargs):
+            fn(*args, **kwargs)
+            return MagicMock()
+
+        mock_executor.return_value.submit.side_effect = execute_task
+        mock_executor.return_value.__enter__.return_value = mock_executor.return_value
+        
+        conn1.state_machine.go_to.side_effect = lambda *a, **k: setattr(conn1.state_machine, 'current_state', 'disable')
+        conn2.state_machine.go_to.side_effect = lambda *a, **k: setattr(conn2.state_machine, 'current_state', 'disable')
+
+        from genie.libs.sdk.apis.iosxe.rommon.utils import device_rommon_boot
+        device_rommon_boot(device)
+
+        device.rommon.assert_called_once()
+        device.connection_provider.designate_handles.assert_called_once()
+        self.assertGreaterEqual(mock_wait.call_count, 1)
+
 
 if __name__ == '__main__':
     unittest.main()

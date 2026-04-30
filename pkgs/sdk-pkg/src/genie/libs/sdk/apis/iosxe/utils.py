@@ -485,6 +485,28 @@ def delete_files(device, locations, filenames, timeout=500):
     return deleted_files
 
 
+def get_filesystems(device):
+    """Return all available filesystem prefixes from show file systems.
+
+    Args:
+        device (`obj`): Device object.
+
+    Returns:
+        list: List of available filesystem prefixes including aliases.
+    """
+
+    parsed = device.parse('show file systems')
+    filesystems = []
+
+    for file_system in parsed.get('file_systems', {}).values():
+        prefixes = file_system.get('prefixes', '')
+        for prefix in prefixes.split():
+            if prefix.endswith(':'):
+                filesystems.append(prefix)
+
+    return filesystems
+
+
 def verify_ping(
     device, address, expected_max_success_rate=100, expected_min_success_rate=1,
     count=None, source=None, vrf=None, max_time=60, check_interval=10, size=None, protocol=None,

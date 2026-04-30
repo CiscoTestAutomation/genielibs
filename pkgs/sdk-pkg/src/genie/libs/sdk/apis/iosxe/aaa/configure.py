@@ -3099,6 +3099,24 @@ def configure_aaa_accounting_network_default_start_stop_group(device , server_gr
     except SubCommandFailure as e:
         raise SubCommandFailure(f"failed to configure aaa accounting network default start-stop group {server_group_name}")
 
+def unconfigure_aaa_accounting_network_default_group(device, group_name):
+    '''api for no aaa accounting network default group <group_name>
+
+    Args:
+        device ('obj') : Device object
+        group_name ('str') : Group name required to unconfigure
+    Return:
+        None
+    Raise:
+        SubCommandFailure: failed to unconfigure aaa accounting network default group <group_name>
+    '''
+
+    cmd = f"no aaa accounting network default group {group_name}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"failed to unconfigure aaa accounting network default group {group_name}")
+
 def unconfigure_aaa_accounting_network_default_start_stop_group(device , server_group_name):
     '''api for no aaa accounting network default start-stop group <NAME>
 
@@ -3189,6 +3207,24 @@ def configure_aaa_authentication_login_default_group_local(device, group_name):
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"failed to configure aaa authentication login default group {group_name} local")
+
+def configure_aaa_authentication_ppp_default_group(device, group_name):
+    '''api for configuring aaa authentication ppp default group <group_name>
+
+    Args:
+        device ('obj') : Device object
+        group_name ('str') : Group name required to configure
+    Return:
+        None
+    Raise:
+        SubCommandFailure: failed to configure aaa authentication ppp default group <group_name>
+    '''
+    cmd = f"aaa authentication ppp default group {group_name}"
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"failed to configure aaa authentication ppp default group {group_name}")
 
 def configure_aaa_authentication_enable_default_group_enable(device, group_name):
     '''api for configuring aaa authentication enable default group <group_name> enable

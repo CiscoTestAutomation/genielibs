@@ -1,35 +1,36 @@
-import os
 import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
+
 from genie.libs.sdk.apis.iosxe.icmp.configure import configure_icmp_ip_reachables
 
 
-class TestConfigureIcmpIpReachables(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          n08HA:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: c9500
-            type: c9500
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['n08HA']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureIcmpIpReachables(TestCase):
 
     def test_configure_icmp_ip_reachables(self):
-        result = configure_icmp_ip_reachables(self.device, 'Te1/0/10', 'connected to interface', '50.1.1.2', '255.255.0.0')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = configure_icmp_ip_reachables(
+            device,
+            "Te1/0/10",
+            "connected to interface",
+            "50.1.1.2",
+            "255.255.0.0",
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, list)
+        self.assertIn("interface Te1/0/10", sent_commands)
+        self.assertIn("description connected to interface", sent_commands)
+        self.assertIn("ip address 50.1.1.2 255.255.0.0", sent_commands)
+        self.assertIn("ip unreachables", sent_commands)
+        self.assertIn("no switchport", sent_commands)
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -1,14 +1,20 @@
 from unittest import TestCase
-from genie.libs.sdk.apis.iosxe.pki.configure import configure_pki_enroll
 from unittest.mock import Mock
+from genie.libs.sdk.apis.iosxe.pki.configure import configure_pki_enroll
 
 
 class TestConfigurePkiEnroll(TestCase):
 
     def test_configure_pki_enroll(self):
-        self.device = Mock()
-        result = configure_pki_enroll(self.device, 'Self', 'cisco123', False)
+        device = Mock()
+        result = configure_pki_enroll(
+            device,
+            'Self',
+            'cisco123',
+            False
+        )
+        self.assertEqual(result, None)
         self.assertEqual(
-            self.device.configure.mock_calls[0].args,
+            device.configure.mock_calls[0].args,
             ('crypto pki enroll Self',)
         )

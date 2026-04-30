@@ -49,35 +49,39 @@ def get_boot_variables(device, boot_var, output=None):
                 boot_images.append(item)
 
     return boot_images
-	
+
 
 def get_config_register(device, next_reload=False, output=None):
-    """Get current config-register setting on the device
-        Args:
-            device (`obj`): Device object
-            next_reload (`bool`): Determine if returning next-reload value (unused)
-        Returns:
-            config-register value or None
+    """Get current config-register setting on the device.
+
+    Args:
+        device (`obj`): Device object
+        next_reload (`bool`): Determine if returning next-reload value (unused)
+        output (`str`): Command output
+
+    Returns:
+        config-register value or None
     """
 
-    if device.state_machine.current_state == 'rommon':
-        try:
-            output = device.execute("set")
-        except SubCommandFailure as e:
-            log.error(
-                "Failed to execute 'set' command on device in rommon state\n{}".\
-                format(str(e))
-            )
-            return None
-    else:
-        try:
-            output = device.execute("show romvar")
-        except SubCommandFailure as e:
-            log.error(
-                "Failed to execute 'show romvar' command on device\n{}".\
-                format(str(e))
-            )
-            return None
+    if output is None:
+        if device.state_machine.current_state == 'rommon':
+            try:
+                output = device.execute("set")
+            except SubCommandFailure as e:
+                log.error(
+                    "Failed to execute 'set' command on device in rommon state\n{}".
+                    format(str(e))
+                )
+                return None
+        else:
+            try:
+                output = device.execute("show romvar")
+            except SubCommandFailure as e:
+                log.error(
+                    "Failed to execute 'show romvar' command on device\n{}".
+                    format(str(e))
+                )
+                return None
 
     match = re.search(r"ConfigReg\s*=\s*(?P<confreg>\w+)", output)
     if not match:

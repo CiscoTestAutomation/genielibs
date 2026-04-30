@@ -1,0 +1,11 @@
+devices:
+  Encore-25:
+    connections:
+      defaults:
+        class: unicon.Unicon
+      a:
+        command: mock_device_cli --os iosxe --mock_data_dir /nobackup/kmagaji/pyATS/genielibs/pkgs/sdk-pkg/src/genie/libs/sdk/apis/tests/iosxe/interface/configure/configure_interface_port_settings/mock_data --state connect
+        protocol: unknown
+    os: iosxe
+    platform: ASR1K
+    type: router

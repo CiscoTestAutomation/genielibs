@@ -22,7 +22,7 @@
 --------------------------------------------------------------------------------
 
 * common
-    * Added `mgt_itf`` in NOT_A_STAGE
+    * Added `mgt_itf `` in NOT_A_STAGE
     * Updated 'apply_configuration' clean stage
         * added `error_pattern` argument to pass it to device.configure()
 

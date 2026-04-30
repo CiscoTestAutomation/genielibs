@@ -5,6 +5,8 @@ import logging
 import ipaddress
 import tempfile
 import time
+import string
+import random
 from unicon.eal.dialogs import Statement, Dialog
 from genie.utils.timeout import Timeout
 from unicon.core.errors import SubCommandFailure
@@ -714,6 +716,50 @@ def configure_management_protocols(device,
                     log.warning(f'Protocol {protocol} does not have a configure API, ignoring')
 
 
+def configure_management_master_key(device, key_length=8):
+    ''' Check if the master key for Type 6 password encryption is configured
+    and configure if if needed.
+
+    Uses the execute service (start_state='any') to send ``config terminal``
+    directly so the raw output — including the master key WARNING — is
+    returned to the caller.  The configure service cannot be used for this
+    because its pre_service() transitions the state machine to config mode
+    before any reply dialog is active, swallowing the warning in the process.
+
+    Args:
+        device ('obj'): device object
+        key_length ('int'): length of the generated master key (default: 8)
+
+    Returns:
+        bool: True if the master key was newly configured, False if it was
+              already present.
+    '''
+    # Execute sends 'config terminal' as a raw command (start_state='any'),
+    # so the WARNING printed before the (config)# prompt is part of the output.
+    # allow_state_change=True prevents StateMachineError when the device
+    # transitions from enable to config.
+    log.info('Checking if master key is configured')
+    output = device.execute('config terminal', allow_state_change=True)
+
+    if 'WARNING: The master key is not configured' in output:
+        chars = string.ascii_letters + string.digits
+        key = ''.join(random.SystemRandom().choice(chars) for _ in range(key_length))
+        # State machine now knows we are in config state; configure() will
+        # skip the redundant go_to('config') transition and just send cmds.
+        device.configure([
+            f'key config-key password-encrypt {key}',
+            'password encryption aes',
+        ])
+        log.info('Master key configured for Type 6 password encryption.')
+        return True
+
+    log.info('Master key already configured, no action needed.')
+    # Return to enable mode if we are not already there, so the caller gets a
+    # consistent post-condition regardless of the initial state.
+    device.enable()
+    return False
+
+
 def configure_management(device,
                          address=None,
                          gateway=None,
@@ -794,6 +840,9 @@ def configure_management(device,
     vrf = vrf or management.get('vrf')
     switchport = switchport or management.get('switchport')
     vlan = vlan or management.get('vlan')
+
+    # Master key must be configured before any other configuration
+    device.api.configure_management_master_key()
 
     if set_hostname:
         if alias_as_hostname:

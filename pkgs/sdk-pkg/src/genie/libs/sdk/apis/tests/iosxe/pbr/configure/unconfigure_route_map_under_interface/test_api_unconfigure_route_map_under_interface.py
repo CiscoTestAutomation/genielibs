@@ -1,34 +1,31 @@
-import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.pbr.configure import unconfigure_route_map_under_interface
+from unittest import TestCase
+from unittest.mock import Mock
+from genie.libs.sdk.apis.iosxe.pbr.configure import configure_pbr_route_map
 
 
-class TestUnconfigureRouteMapUnderInterface(unittest.TestCase):
+class TestConfigurePbrRouteMap(TestCase):
 
-    @classmethod
-    def setUpClass(self):
-        testbed = """
-        devices:
-          Galaga-4:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: c9300
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Galaga-4']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
+    def test_configure_pbr_route_map(self):
+        device = Mock()
+        result = configure_pbr_route_map(
+            device,
+            'pbrv6_1',
+            'aclv6_1',
+            '12::1:1',
+            None,
+            'RED',
+            None,
+            None,
+            '10',
+            'permit',
+            True
         )
-
-    def test_unconfigure_route_map_under_interface(self):
-        result = unconfigure_route_map_under_interface(self.device, 'Fi1/0/5', 'rm_v4pbr_nexthop1', False)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.assertEqual(result, None)
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            ([
+                'route-map pbrv6_1 permit 10',
+                'match ipv6 address aclv6_1',
+                'set ipv6 vrf RED next-hop 12::1:1'
+            ],)
+        )

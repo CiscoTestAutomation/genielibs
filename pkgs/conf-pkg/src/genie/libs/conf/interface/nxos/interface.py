@@ -1109,7 +1109,7 @@ class SubInterface(VirtualInterface, genie.libs.conf.interface.SubInterface):
         
         if attributes.value('mac_address'):
             configurations.append_line(
-                attributes.format('mac address {mac_address}'))
+                attributes.format('mac-address {mac_address}'))
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

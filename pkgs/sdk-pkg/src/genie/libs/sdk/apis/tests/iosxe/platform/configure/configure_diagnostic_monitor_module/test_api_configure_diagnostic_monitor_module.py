@@ -1,35 +1,20 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
 from genie.libs.sdk.apis.iosxe.platform.configure import configure_diagnostic_monitor_module
 
 
-class TestConfigureDiagnosticMonitorModule(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          9407R-dut1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: iosxe
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['9407R-dut1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureDiagnosticMonitorModule(TestCase):
 
     def test_configure_diagnostic_monitor_module(self):
-        result = configure_diagnostic_monitor_module(self.device, 2, 'TestUnusedPortLoopback', None)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        result = configure_diagnostic_monitor_module(
+            device,
+            2,
+            'TestUnusedPortLoopback',
+            None
+        )
+        self.assertEqual(result, None)
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            ('diagnostic monitor module 2 test TestUnusedPortLoopback',)
+        )

@@ -44,6 +44,26 @@ def device_rommon_boot(device, golden_image=None, tftp_boot=None, error_pattern=
     recovery_info = device.api.get_recovery_details(golden_image, tftp_boot)
     cmd = ""
 
+    # For HA/stack devices, ensure all consoles are in rommon before proceeding
+    if device.is_ha and hasattr(device, 'subconnections'):
+        log.info(f'Checking console states for HA/stack device {device.name}')
+        rommon_conns = [con for con in device.subconnections if con.state_machine.current_state == 'rommon']
+        non_rommon_conns = [con for con in device.subconnections if con.state_machine.current_state != 'rommon']
+
+        # Only sync if there's a MIX of states (some rommon, some not)
+        if rommon_conns and non_rommon_conns:
+            log.info(f'Mixed console states detected - synchronizing all consoles to rommon state')
+            log.info(f'Rommon consoles: {[con.alias for con in rommon_conns]}')
+            log.info(f'Non-rommon consoles: {[con.alias for con in non_rommon_conns]}')
+            device.rommon()
+        else:
+            pass
+
+        final_states = {con.alias: con.state_machine.current_state for con in device.subconnections}
+        log.info(f'Final console states after synchronization: {final_states}')
+        if not all(state == 'rommon' for state in final_states.values()):
+            raise Exception(f"{device.name} failed to sync all consoles to rommon state")
+
     # Execute config register in rommon state
     log.info(f"Setting config register for device {device.name}")
     device.api.execute_set_config_register(config_register='0x0')

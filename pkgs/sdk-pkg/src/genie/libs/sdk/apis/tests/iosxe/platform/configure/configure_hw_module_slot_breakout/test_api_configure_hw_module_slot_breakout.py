@@ -1,35 +1,19 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
 from genie.libs.sdk.apis.iosxe.platform.configure import configure_hw_module_slot_breakout
 
 
-class TestConfigureHwModuleSlotBreakout(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          TF-C9600-StackWiseVirtual:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: c9600
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['TF-C9600-StackWiseVirtual']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureHwModuleSlotBreakout(TestCase):
 
     def test_configure_hw_module_slot_breakout(self):
-        result = configure_hw_module_slot_breakout(self.device, 5, 5)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        result = configure_hw_module_slot_breakout(
+            device,
+            5,
+            5
+        )
+        self.assertEqual(result, None)
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            ('hw-module slot 5 breakout 5',)
+        )

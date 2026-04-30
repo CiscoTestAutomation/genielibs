@@ -5,5 +5,3 @@
 * iosxe
     * Added
         * breakout support for ethernet interfaces
-
-

@@ -1,5 +1,6 @@
 import os
 import unittest
+from unittest.mock import patch
 from pyats.topology import loader
 from genie.libs.sdk.apis.iosxe.interface.execute import execute_test_crash
 
@@ -30,6 +31,11 @@ class TestExecuteTestCrash(unittest.TestCase):
         )
 
     def test_execute_test_crash(self):
-        result = execute_test_crash(self.device, '6', 500, 200)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        """Test that execute_test_crash uses _disconnect_reconnect after crash."""
+        with patch('genie.libs.sdk.apis.iosxe.interface.execute._disconnect_reconnect',
+                   return_value=True) as mock_reconnect, \
+             patch('genie.libs.sdk.apis.iosxe.interface.execute.time') as mock_time:
+            execute_test_crash(self.device, '6', 500, 200)
+            mock_time.sleep.assert_called_once_with(200)
+            mock_reconnect.assert_called_once_with(self.device)
+
