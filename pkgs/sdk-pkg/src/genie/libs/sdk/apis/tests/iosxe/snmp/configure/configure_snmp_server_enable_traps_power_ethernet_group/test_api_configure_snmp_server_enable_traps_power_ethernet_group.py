@@ -30,6 +30,6 @@ class TestConfigureSnmpServerEnableTrapsPowerEthernetGroup(unittest.TestCase):
         )
 
     def test_configure_snmp_server_enable_traps_power_ethernet_group(self):
-        result = configure_snmp_server_enable_traps_power_ethernet_group(self.device, '1', '172.20.249.11', '2c', 'None', 'RO')
+        result = configure_snmp_server_enable_traps_power_ethernet_group(self.device, '1', '172.20.249.11', '2c', 'None', 'ro')
         expected_output = None
         self.assertEqual(result, expected_output)

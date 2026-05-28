@@ -645,6 +645,71 @@ def unconfigure_aaa_default_dot1x_methods(device):
             'Could not unconfigure AAA dot1x default method'
         )
 
+def configure_aaa_login_method_local(device, servergrp, auth_method='local', fallback_method=None):
+
+    """ Configure AAA login with proper authentication for line and vty
+    (SECURE replacement for configure_aaa_login_method_none)
+    
+    Example:
+            device.api.configure_aaa_login_method_local(servergrp='SECURE_LOGIN', auth_method='local')
+            
+            aaa authentication login SECURE_LOGIN local
+            line con 0
+            login authentication SECURE_LOGIN
+            line vty 0 4
+            login authentication SECURE_LOGIN
+            transport input ssh
+            line vty 5 15
+            login authentication SECURE_LOGIN
+            transport input ssh
+    Args:
+        device (`obj`): Device object
+        servergrp (`str`): Authentication list name
+        auth_method (`str`, optional): Primary auth method - 'local', 'group radius', 
+                                       'group tacacs+'. Default: 'local'
+        fallback_method (`str`, optional): Fallback auth method (e.g., 'local'). Default: None
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+        ValueError: If invalid parameters provided
+    """
+    # Input validation to prevent command injection
+    if not servergrp or not re.match(r'^[a-zA-Z0-9_\-]+$', servergrp):
+        raise ValueError(f"Invalid servergrp name: {servergrp}")
+
+    valid_methods = ['local', 'group radius', 'group tacacs+', 'enable']
+    if auth_method not in valid_methods:
+        raise ValueError(
+            f"Invalid auth_method: {auth_method}. Must be one of {valid_methods}"
+        )
+
+    if fallback_method and fallback_method not in valid_methods:
+        raise ValueError(
+            f"Invalid fallback_method: {fallback_method}. Must be one of {valid_methods}"
+        )
+
+    auth_cmd = f"aaa authentication login {servergrp} {auth_method}"
+    if fallback_method:
+        auth_cmd += f" {fallback_method}"
+
+    try:
+        device.configure([
+            auth_cmd,
+            "line con 0",
+            f"login authentication {servergrp}",
+            "line vty 0 4",
+            f"login authentication {servergrp}",
+            "transport input ssh",
+            "line vty 5 15",
+            f"login authentication {servergrp}",
+            "transport input ssh"
+        ])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            f'Could not configure AAA login method for {servergrp}'
+        )
+
 def configure_aaa_login_method_none(device,servergrp):
 
     """ This configure will enable login method none that is applicable for line and vty
@@ -682,8 +747,12 @@ def unconfigure_aaa_login_method_none(device,servergrp):
     Return:
         None
     Raise:
+        ValueError: If input parameters contain invalid characters
         SubCommandFailure: Failed configuring
     """
+    if not re.match(r'^[\w\-\.]+$', servergrp):
+        raise ValueError("Invalid characters in servergrp: must be alphanumeric, hyphen, underscore, or dot")
+
     try:
         device.configure([
             "line con 0",
@@ -895,8 +964,15 @@ def unconfigure_radius_automate_tester(device, server_name, username):
     Return:
         None
     Raise:
+        ValueError: If input parameters contain invalid characters
         SubCommandFailure: Failed configuring
     """
+    safe_pattern = re.compile(r'^[\w\-\.]+$')
+    if not safe_pattern.match(server_name):
+        raise ValueError("Invalid characters in server_name")
+    if not safe_pattern.match(username):
+        raise ValueError("Invalid characters in username")
+
     try:
         device.configure([
             "radius server {server_name}".format(server_name=server_name),
@@ -2738,8 +2814,18 @@ def unconfigure_dscp_radius_server(device, server_name, dscp_auth=None, dscp_acc
     Return:
         None
     Raise:
+        ValueError: If input parameters contain invalid values
         SubCommandFailure: Failed unconfiguring radius server dscp configuration
     """
+    if not re.match(r'^[\w\-\.]+$', server_name):
+        raise ValueError("Invalid characters in server_name")
+    if dscp_auth is not None:
+        if not str(dscp_auth).isdigit() or not (1 <= int(dscp_auth) <= 63):
+            raise ValueError("dscp_auth must be an integer between 1 and 63")
+    if dscp_acct is not None:
+        if not str(dscp_acct).isdigit() or not (1 <= int(dscp_acct) <= 63):
+            raise ValueError("dscp_acct must be an integer between 1 and 63")
+
     config = [f'radius server {server_name}']
     if dscp_auth:
         config.append(f'no dscp auth {dscp_auth}')
@@ -2760,8 +2846,18 @@ def unconfigure_dscp_radius_server_group(device, server_group, dscp_auth=None, d
     Return:
         None
     Raise:
+        ValueError: If input parameters contain invalid values
         SubCommandFailure: Failed unconfiguring aaa radius server group dscp configuration
     """
+    if not re.match(r'^[\w\-\.]+$', server_group):
+        raise ValueError("Invalid characters in server_group")
+    if dscp_auth is not None:
+        if not str(dscp_auth).isdigit() or not (1 <= int(dscp_auth) <= 63):
+            raise ValueError("dscp_auth must be an integer between 1 and 63")
+    if dscp_acct is not None:
+        if not str(dscp_acct).isdigit() or not (1 <= int(dscp_acct) <= 63):
+            raise ValueError("dscp_acct must be an integer between 1 and 63")
+
     config = [f'aaa group server radius {server_group}']
     if dscp_auth:
         config.append(f'no dscp auth {dscp_auth}')
@@ -3364,8 +3460,16 @@ def unconfigure_radius_attribute_policy_name_under_server(device, server_name, w
     Return:
         None
     Raise:
+        ValueError: If input parameters contain invalid values
         SubCommandFailure: Failed unconfiguring radius attribute policy-name under radius server
     """
+    safe_pattern = re.compile(r'^[\w\-\.\:]+$')
+    if not safe_pattern.match(server_name):
+        raise ValueError("Invalid characters in server_name")
+    if not safe_pattern.match(word):
+        raise ValueError("Invalid characters in word")
+    if request not in ('access', 'accounting'):
+        raise ValueError("request must be 'access' or 'accounting'")
 
     cmd = [f'radius server {server_name}', f'no attribute policy-name {word} include-in-{request}-req']
     try:
@@ -3413,8 +3517,17 @@ def unconfigure_radius_attribute_policy_name_under_servergroup(device, server_gr
     Return:
         None
     Raise:
+        ValueError: If input parameters contain invalid values
         SubCommandFailure: Failed unconfiguring radius attribute policy-name under radius server group
     """
+    safe_pattern = re.compile(r'^[\w\-\.\:]+$')
+    if not safe_pattern.match(server_group):
+        raise ValueError("Invalid characters in server_group")
+    if not safe_pattern.match(word):
+        raise ValueError("Invalid characters in word")
+    if request not in ('access', 'accounting'):
+        raise ValueError("request must be 'access' or 'accounting'")
+
     cmd = [f'aaa group server radius {server_group}', f'no attribute policy-name {word} include-in-{request}-req']
     try:
         device.configure(cmd)

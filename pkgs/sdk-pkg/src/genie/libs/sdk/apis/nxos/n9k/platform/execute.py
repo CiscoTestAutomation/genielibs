@@ -6,7 +6,6 @@ import logging
 # Logger
 log = logging.getLogger(__name__)
 
-
 def execute_delete_boot_variable(device, timeout=300):
     ''' Delete the boot variables
         Args:
@@ -20,5 +19,7 @@ def execute_delete_boot_variable(device, timeout=300):
         raise Exception("Failed to delete nxos boot variable on '{}'\n{}".format(device.name, str(e)))
     else:
         log.info("Deleted nxos BOOT variable")
+
+    device.api.execute_copy_run_to_start(copy_vdc_all=True, command_timeout=timeout)
 
     device.api.is_current_boot_variable_as_expected(device=device, system=None, kickstart=None)

@@ -20,12 +20,15 @@ def source_configured_template(device, interface, template_name):
         Returns:
             None
         Raises:
+            ValueError: If input parameters contain invalid characters
             SubCommandFailure: Failed to source a configured template
     """
+    if not re.match(r'^[\w\-\.]+$', template_name):
+        raise ValueError("Invalid characters in template_name")
+
     converted_interface = Common.convert_intf_name(interface)
-    cmd = ''
-    cmd += 'interface {}\n'.format(converted_interface)
-    cmd += 'source template {}'.format(template_name)
+    cmd = [f'interface {converted_interface}',
+           f'source template {template_name}']
     log.info("Assign template {tmp} on {intf}".format(tmp=template_name, intf=converted_interface))
     try:
         device.configure(cmd)

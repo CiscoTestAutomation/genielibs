@@ -6,8 +6,10 @@ from unittest.mock import Mock, call
 from genie.libs.clean.stages.stages import DeleteFiles
 from genie.libs.clean.stages.tests.utils import create_test_device
 
+from genie.metaparser.util.exceptions import SchemaEmptyParserError
+
 from pyats.aetest.steps import Steps
-from pyats.results import Passed
+from pyats.results import Passed, Passx
 
 
 
@@ -62,3 +64,17 @@ class TestDeleteFiles(unittest.TestCase):
         # Check if the API was called with the matching location and filename regex
         self.device.api.delete_files.assert_has_calls([
             call(locations=['/home/cisco'], filenames=['.*.bin'], timeout=500)])
+
+    def test_delete_files_empty_or_missing_directory(self):
+        steps = Steps()
+        files = ["/home/cisco/*.bin"]
+
+        self.device.api.delete_files = Mock(
+            side_effect=SchemaEmptyParserError(''))
+
+        self.cls.delete_files(
+            steps=steps, device=self.device, files=files
+        )
+
+        # Check that the result is expected
+        self.assertEqual(Passx, steps.details[0].result)

@@ -351,6 +351,155 @@ class FileUtils(FileUtilsCommonDeviceBase):
         else:
             return self.is_valid_ip_no_cache(ip, device, vrf)
 
+    def _resolve_server_route_url(self, url, device=None):
+        """Rewrite URL hostname using server route lookup.
+
+        If the URL hostname matches a known server in the testbed and that
+        server has a management route covering the device's management IP,
+        replace the hostname with the server's interface IP for the matching
+        route.  This ensures the device reaches the *same* server via a
+        device-reachable interface (preserving URL-path validity such as
+        short-path symlinks).
+
+        Never switches to a different server — only rewrites the hostname
+        to a different interface on the same server.  If the server has no
+        routes or no matching route, the URL is returned unchanged.
+
+        Returns the (possibly rewritten) URL unchanged if no match is found.
+        """
+        parsed = urlparse(url)
+        if not parsed.hostname:
+            return url
+
+        if device is None:
+            return url
+
+        # Get the actual device object if this is a connection
+        dev = getattr(device, 'device', device)
+        testbed = getattr(dev, 'testbed', None) or getattr(self, 'testbed', None)
+        if testbed is None:
+            return url
+
+        # Get device management IP
+        mgmt = getattr(dev, 'management', None)
+        if not mgmt:
+            mgmt = dev.get('management', {}) if hasattr(dev, 'get') else {}
+        if not mgmt:
+            return url
+
+        address = mgmt.get('address', {}) if hasattr(mgmt, 'get') else getattr(mgmt, 'address', {})
+        if not address:
+            return url
+
+        # Try ipv4 first, then ipv6
+        device_ip = None
+        for family in ('ipv4', 'ipv6'):
+            raw = address.get(family) if hasattr(address, 'get') else getattr(address, family, None)
+            if raw:
+                raw_str = str(raw)
+                # Strip prefix length (e.g. '192.168.3.2/16' -> '192.168.3.2')
+                if '/' in raw_str:
+                    raw_str = raw_str.split('/')[0]
+                device_ip = raw_str
+                break
+
+        if not device_ip:
+            return url
+
+        servers = getattr(testbed, 'servers', None)
+        if not servers:
+            return url
+
+        # Only look for a route on the SAME server the URL points to.
+        # Never switch to a different server.
+        # Resolve through url_mapping in case HTTPS CN rewriting has changed
+        # the hostname (validate_and_update_url replaces IP with CN).
+        lookup_hostname = parsed.hostname
+        if hasattr(self, 'url_mapping'):
+            lookup_hostname = self.url_mapping.get(parsed.hostname, parsed.hostname)
+        try:
+            resolved_ip = dev.api.find_server_ip_for_device_ip(
+                device_ip, servers, server_hostname=lookup_hostname)
+        except Exception:
+            logger.debug("Server route lookup failed for device IP %s",
+                         device_ip, exc_info=True)
+            return url
+
+        if not resolved_ip or not isinstance(resolved_ip, str):
+            logger.info("No route-based server IP found for device IP %s "
+                        "— URL unchanged: %s", device_ip, url)
+            return url
+
+        # Validate resolved_ip is a usable IP address
+        try:
+            ipaddress.ip_address(resolved_ip)
+        except (ValueError, TypeError):
+            logger.info("Route lookup returned invalid IP '%s' for device IP %s "
+                        "— URL unchanged: %s", resolved_ip, device_ip, url)
+            return url
+
+        # Only rewrite if the resolved IP differs from current hostname
+        if resolved_ip == parsed.hostname:
+            logger.info("Resolved server IP '%s' matches current URL host "
+                        "— URL unchanged: %s", resolved_ip, url)
+            return url
+
+        logger.info("Resolved server route IP '%s' for device IP %s (URL host: '%s')",
+                    resolved_ip, device_ip, parsed.hostname)
+
+        original_hostname = parsed.hostname
+
+        # Determine if URL hostname is a DNS name (not a raw IP).
+        hostname_is_ip = False
+        try:
+            ipaddress.ip_address(parsed.hostname)
+            hostname_is_ip = True
+        except ValueError:
+            pass
+
+        # Only preserve DNS hostnames for HTTPS (cert CN validation).
+        # For non-HTTPS protocols, rewrite DNS hostnames to the route IP
+        # directly — there is no cert CN concern and the device may not
+        # have `ip host` configured to resolve the name.
+        if hostname_is_ip or parsed.scheme.lower() != 'https':
+            logger.info("Rewriting URL host from '%s' to '%s' based on "
+                        "server route for device IP %s",
+                        parsed.hostname, resolved_ip, device_ip)
+            url = url.replace(parsed.hostname, resolved_ip, 1)
+
+        # Update url_mapping for HTTPS support.  Two things must be correct:
+        #
+        # (a) get_certificate_details(route_ip) must redirect to the
+        #     *original server IP* (automation-reachable) for cert fetch.
+        #     The original_hostname here may be the CN (set by
+        #     HTTPFileUtilsBase.validate_and_update_url) which itself
+        #     maps to the original server IP.  So we chain:
+        #       route_ip → original server IP  (skip the CN in between)
+        #
+        # (b) file_transfer_config's  ip_host  command must map:
+        #       cn → route_ip   (the device-reachable address)
+        #
+        # Before rewrite url_mapping may contain:
+        #   { cn: original_server_ip }         (from validate_and_update_url)
+        # After rewrite we need:
+        #   { route_ip: original_server_ip,    (a) cert fetch
+        #     cn: route_ip }                   (b) ip host
+        if hasattr(self, 'url_mapping'):
+            # Idempotency guard: only set route_ip → original_server_ip once.
+            # A second resolve would see CN → route_ip (from a prior update)
+            # and incorrectly write route_ip → route_ip, corrupting the chain.
+            if resolved_ip not in self.url_mapping:
+                actual_server_ip = original_hostname
+                if original_hostname in self.url_mapping:
+                    actual_server_ip = self.url_mapping[original_hostname]
+                # (a) route_ip → actual server IP for cert fetch
+                self.url_mapping[resolved_ip] = actual_server_ip
+            # (b) CN (original_hostname) → route_ip for ip host
+            if original_hostname in self.url_mapping:
+                self.url_mapping[original_hostname] = resolved_ip
+
+        return url
+
     def copyfile(self, source, destination, timeout_seconds, cmd, used_server,
                  *args, interface=None, **kwargs):
         """ Copy a file to/from device

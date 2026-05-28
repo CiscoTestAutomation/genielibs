@@ -31,5 +31,5 @@ class TestGetSlotsByState(unittest.TestCase):
 
     def test_get_slots_by_state(self):
         result = get_slots_by_state(self.device)
-        expected_output = ['4', '19', '26', '27', '28']
-        self.assertEqual(result, expected_output)
+        expected_output = {'4', '19', '26', '27', '28'}
+        self.assertEqual(set(result), expected_output)

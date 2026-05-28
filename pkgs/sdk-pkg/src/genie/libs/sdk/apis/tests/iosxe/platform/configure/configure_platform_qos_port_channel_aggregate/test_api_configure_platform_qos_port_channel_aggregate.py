@@ -1,34 +1,17 @@
 import unittest
-from pyats.topology import loader
+from unittest.mock import Mock
 from genie.libs.sdk.apis.iosxe.platform.configure import configure_platform_qos_port_channel_aggregate
 
 
 class TestConfigurePlatformQosPortChannelAggregate(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(self):
-        testbed = """
-        devices:
-          BB_1HX:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: iosxe
-            type: iosxe
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['BB_1HX']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
-
     def test_configure_platform_qos_port_channel_aggregate(self):
-        result = configure_platform_qos_port_channel_aggregate(self.device, '3')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+
+        result = configure_platform_qos_port_channel_aggregate(device, '3')
+
+        self.assertEqual(result, None)
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            ('platform qos port-channel-aggregate 3',)
+        )

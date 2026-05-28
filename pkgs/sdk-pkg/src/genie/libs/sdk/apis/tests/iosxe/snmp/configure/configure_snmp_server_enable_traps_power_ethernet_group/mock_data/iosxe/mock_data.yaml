@@ -5,7 +5,7 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-    snmp-server community None RO: "snmp-server community None RO\r\n"
+    snmp-server community None ro: "snmp-server community None ro\r\n"
     snmp-server enable traps power-ethernet group 1: "snmp-server enable traps power-ethernet
       group 1\r\n"
     snmp-server enable traps power-ethernet police: "snmp-server enable traps power-ethernet

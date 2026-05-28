@@ -598,3 +598,106 @@ def unconfigure_mac_loopback(device, interface):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Failed to unconfigure loopback mac on interface {interface} . Error:\n{e}")
+
+
+def configure_interface_macsec_access_control(device, interface, mode):
+    """ Config macsec access-control under interface
+
+        Args:
+            device (`obj`): device object
+            interface (`str`): Interface name
+            mode (`str`): Access-control mode
+        Return:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring device
+    """
+    try:
+        device.configure(
+            [
+                "interface {}".format(interface),
+                "macsec access-control {}".format(mode),
+            ]
+        )
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            f"Failed to configure 'macsec access-control {mode}' under interface {interface} on device {device.name}"
+        )
+
+
+def configure_interface_mka_pre_share_key(device, interface, key_name):
+    """ Config mka pre-share key under interface
+
+        Args:
+            device (`obj`): device object
+            interface (`str`): interface name
+            key_name (`str`): pre-share key name
+        Return:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring device
+    """
+    try:
+        device.configure(
+            [
+                "interface {}".format(interface),
+                "mka pre-share key {}".format(key_name),
+            ]
+        )
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            f"Failed to configure 'mka pre-share key {key_name}' under interface {interface} on device {device.name}"
+        )
+
+
+def unconfigure_interface_mka_pre_share_key(device, interface, key_name):
+    """ Unconfig mka pre-share key under interface
+
+        Args:
+            device (`obj`): device object
+            interface (`str`): interface name
+            key_name (`str`): pre-share key name
+        Return:
+            None
+        Raises:
+            SubCommandFailure: Failed unconfiguring device
+    """
+    try:
+        device.configure(
+            [
+                "interface {}".format(interface),
+                "no mka pre-share key {}".format(key_name),
+            ]
+        )
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            f"Failed to unconfigure 'no mka pre-share key {key_name}' under interface {interface} on device {device.name}"
+        )
+
+
+def configure_macsec_key_chain(device, keychain_name, key, key_string):
+    """ Configure macsec key chain
+
+        Args:
+            device (`obj`): device object
+            keychain_name (`str`): key chain name
+            key (`int`): key id
+            key_string (`str`): key string
+        Return:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring device
+    """
+    try:
+        device.configure(
+            [
+                "key chain {} macsec".format(keychain_name),
+                "key {}".format(key),
+                "key-string {}".format(key_string),
+                "exit",
+            ]
+        )
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            f"Failed to configure MACsec key chain {keychain_name} key {key} on device {device.name}"
+        )

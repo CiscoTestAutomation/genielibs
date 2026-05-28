@@ -409,6 +409,7 @@ def get_chassis_type(device):
 
     return out.q.get_values('chassis', 0)
 
+
 def get_chassis_sn(device):
     """Get the chassis SN of the device
 
@@ -426,6 +427,7 @@ def get_chassis_sn(device):
         return None
 
     return out.q.get_values('chassis_sn', 0)
+
 
 def get_platform_type(device):
     """Get platform type of device
@@ -506,6 +508,7 @@ def get_software_version(device, return_tuple:bool=False):
     else:
         return ver
 
+
 def get_standby_supervisor_slot(device):
     """Gets the standby supervisor slot number
     Args:
@@ -580,6 +583,12 @@ def get_slots_by_state(device, status='ok|active|ha-standby'):
                             contains_key_value('status',
                                                    status,
                                                    value_regex=True).\
+                            get_values('xbar'))
+    
+    slots.extend(Dq(out).contains('status').\
+                            contains_key_value('status',
+                                                   status,
+                                                   value_regex=True).\
                             get_values('lem'))
     
     return slots 
@@ -600,12 +609,13 @@ def get_fm_slots(device, status='ok'):
         log.info('Failed to get slot model: {e}'.format(e=e))
         return None
     
-    return out.q.contains('.* Fabric Module', 
+    fm_q = out.q.contains('.* Fabric Module',
                           regex=True, level=-1).\
-                    contains_key_value('status', 
+                    contains_key_value('status',
                                    status,
-                                   value_regex=True).\
-                    get_values('lc')
+                                   value_regex=True)
+
+    return list(set(fm_q.get_values('lc')+fm_q.get_values('xbar')))
 
 
 def get_lc_slots(device, status='ok'):
@@ -634,8 +644,6 @@ def get_lc_slots(device, status='ok'):
                             contains_key_value('status',
                                                status,value_regex=True).\
                             get_values('lem')) 
-
-
     return slots 
 
 
@@ -657,6 +665,7 @@ def get_current_boot_image(device):
     
     return image.strip('bootflash:/') if image else ''
 
+
 def get_next_reload_boot_image(device):
     """Gets the next reload boot image from show boot cli
     Args:
@@ -674,6 +683,7 @@ def get_next_reload_boot_image(device):
     image = out.q.contains('next_reload_boot_variable').get_values('system_variable')[0]
     
     return image.strip('bootflash:/') if image else ''
+
 
 def get_standby_systemcontroller_slot(device):
     """Gets the standby systemcontroller slot number

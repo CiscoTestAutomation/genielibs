@@ -16,6 +16,7 @@ from genie.utils.timeout import Timeout
 from genie.ops.utils import get_ops_exclude
 from genie.libs.parser.utils import get_parser_exclude
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
+from genie.libs.sdk.triggers.blitz.markup import save_variable
 
 # from pyats
 from pyats.easypy import runtime
@@ -145,12 +146,16 @@ def execute_handler(step,
                     device,
                     command,
                     expected_failure=False,
+                    scope=None,
                     include=None,
                     exclude=None,
                     result_status=None,
                     max_time=None,
                     check_interval=None,
                     continue_=True,
+                    blitz_obj=None,
+                    section=None,
+                    ret_dict=None,
                     **extra_kwargs):
 
     if 'reply' in extra_kwargs:
@@ -184,6 +189,10 @@ def execute_handler(step,
               'continue_': continue_,
               'action': 'execute',
               'expected_failure': expected_failure,
+              'scope': scope,
+              'blitz_obj': blitz_obj,
+              'section': section,
+              'ret_dict': ret_dict,
               'extra_kwargs': extra_kwargs}
 
     return _output_query_template(**kwargs)
@@ -539,6 +548,280 @@ def _prompt_handler(reply):
     dialog_list = [Statement(**statement) for statement in reply]
     return Dialog(dialog_list)
 
+class _ExecuteScopeError(Exception):
+    pass
+
+
+class _ExecuteScopeNotFound(_ExecuteScopeError):
+    pass
+
+
+def _get_scope_mode(scope):
+    if not isinstance(scope, dict):
+        raise _ExecuteScopeError("'scope' must be a dictionary")
+
+    unsupported = [key for key in ('before', 'after', 'window') if key in scope]
+    if unsupported:
+        raise _ExecuteScopeError(
+            "Unsupported execute scope field(s): {}".format(
+                ', '.join(unsupported)))
+
+    modes = []
+    if scope.get('start') is not None or scope.get('end') is not None:
+        modes.append('start')
+    if scope.get('block_regex') is not None:
+        modes.append('block_regex')
+    if scope.get('line_regex') is not None:
+        modes.append('line_regex')
+
+    if len(modes) != 1:
+        raise _ExecuteScopeError(
+            "Execute scope must define exactly one of start/end, "
+            "block_regex, or line_regex")
+
+    return modes[0]
+
+
+def _get_scope_regex(scope, field, required=True):
+    value = scope.get(field)
+    if value is None:
+        if required:
+            raise _ExecuteScopeError(
+                "Execute scope field '{}' is required".format(field))
+        return None
+
+    value = str(value)
+    if not value:
+        raise _ExecuteScopeError(
+            "Execute scope field '{}' cannot be empty".format(field))
+
+    try:
+        return re.compile(value, re.MULTILINE)
+    except re.error as exc:
+        raise _ExecuteScopeError(
+            "Invalid execute scope regex for '{}': {}".format(field, exc))
+
+
+def _get_scope_block_regex(scope):
+    value = scope.get('block_regex')
+    if value is None or not str(value):
+        raise _ExecuteScopeError(
+            "Execute scope field 'block_regex' cannot be empty")
+
+    try:
+        return re.compile(str(value), re.DOTALL | re.MULTILINE)
+    except re.error as exc:
+        raise _ExecuteScopeError(
+            "Invalid execute scope regex for 'block_regex': {}".format(exc))
+
+
+def _normalize_scope_occurrence(scope):
+    occurrence = scope.get('occurrence', 'first')
+
+    if isinstance(occurrence, bool):
+        raise _ExecuteScopeError("Execute scope occurrence is invalid")
+
+    if isinstance(occurrence, int):
+        if occurrence < 0:
+            raise _ExecuteScopeError(
+                "Execute scope occurrence cannot be negative")
+        return occurrence
+
+    occurrence = str(occurrence).strip().lower()
+    if occurrence in ('first', 'last', 'all'):
+        return occurrence
+
+    try:
+        occurrence = int(occurrence)
+    except ValueError:
+        raise _ExecuteScopeError(
+            "Execute scope occurrence must be first, last, all, or an integer")
+
+    if occurrence < 0:
+        raise _ExecuteScopeError(
+            "Execute scope occurrence cannot be negative")
+    return occurrence
+
+
+def _line_end_index(output, index):
+    newline_index = output.find('\n', index)
+    if newline_index == -1:
+        return len(output)
+    return newline_index + 1
+
+
+def _select_scope_parts(parts, occurrence):
+    if not parts:
+        raise _ExecuteScopeNotFound("Execute scope block not found")
+
+    if occurrence == 'all':
+        return parts, True
+    if occurrence == 'first':
+        return [parts[0]], False
+    if occurrence == 'last':
+        return [parts[-1]], False
+
+    if occurrence >= len(parts):
+        raise _ExecuteScopeNotFound(
+            "Execute scope occurrence '{}' was not found".format(occurrence))
+    return [parts[occurrence]], False
+
+
+def _join_scope_parts(parts):
+    return '\n'.join(part.rstrip('\n') for part in parts)
+
+
+def _scope_with_start_end(output, scope):
+    start_pattern = _get_scope_regex(scope, 'start')
+    end_pattern = _get_scope_regex(scope, 'end', required=False)
+    include_start = scope.get('include_start', True)
+    include_end = scope.get('include_end', False)
+
+    parts = []
+    for start_match in start_pattern.finditer(output):
+        if start_match.start() == start_match.end():
+            raise _ExecuteScopeNotFound(
+                "Execute scope start regex matched an empty string")
+
+        block_start = start_match.start()
+        if not include_start:
+            block_start = _line_end_index(output, start_match.end())
+
+        block_end = len(output)
+        if end_pattern:
+            end_match = end_pattern.search(output, start_match.end())
+            if end_match:
+                if end_match.start() == end_match.end():
+                    raise _ExecuteScopeNotFound(
+                        "Execute scope end regex matched an empty string")
+                block_end = end_match.start()
+                if include_end:
+                    block_end = _line_end_index(output, end_match.end())
+
+        parts.append(output[block_start:block_end])
+
+    return parts
+
+
+def _scope_with_block_regex(output, scope):
+    pattern = _get_scope_block_regex(scope)
+    parts = []
+
+    for match in pattern.finditer(output):
+        if match.start() == match.end():
+            raise _ExecuteScopeNotFound(
+                "Execute scope block_regex matched an empty string")
+        if match.groups():
+            parts.append(match.group(1))
+        else:
+            parts.append(match.group(0))
+
+    return parts
+
+
+def _scope_with_line_regex(output, scope):
+    pattern = _get_scope_regex(scope, 'line_regex')
+    parts = []
+
+    for line in output.splitlines(True):
+        if pattern.search(line):
+            parts.append(line)
+
+    return parts
+
+
+def _save_execute_scope(scope, scoped_output, blitz_obj, section, ret_dict):
+    save_as = scope.get('save_as')
+    if not save_as:
+        return
+
+    if blitz_obj and section:
+        save_variable(blitz_obj, section, save_as, scoped_output)
+
+    if ret_dict is not None:
+        ret_dict.setdefault('saved_vars', {})
+        ret_dict['saved_vars'].update({save_as: scoped_output})
+
+
+def _apply_execute_scope(output,
+                         scope,
+                         blitz_obj=None,
+                         section=None,
+                         ret_dict=None):
+    if not scope:
+        return output, [output], False
+
+    output = '' if output is None else str(output)
+    mode = _get_scope_mode(scope)
+    occurrence = _normalize_scope_occurrence(scope)
+
+    if mode == 'start':
+        parts = _scope_with_start_end(output, scope)
+    elif mode == 'block_regex':
+        parts = _scope_with_block_regex(output, scope)
+    else:
+        parts = _scope_with_line_regex(output, scope)
+
+    try:
+        selected_parts, verify_each = _select_scope_parts(parts, occurrence)
+    except _ExecuteScopeNotFound:
+        if scope.get('required', True):
+            raise
+        _save_execute_scope(scope, output, blitz_obj, section, ret_dict)
+        return output, [output], False
+
+    if verify_each:
+        scoped_output = _join_scope_parts(selected_parts)
+    else:
+        scoped_output = selected_parts[0]
+
+    _save_execute_scope(scope, scoped_output, blitz_obj, section, ret_dict)
+    return scoped_output, selected_parts, verify_each
+
+
+def _verify_execute_scope_query(scoped_output, scoped_parts, verify_each,
+                                query, style):
+    pattern = re.compile(str(query))
+
+    if not verify_each:
+        found = pattern.search(str(scoped_output))
+        return _verify_include_exclude(
+            action_output=found,
+            operation=None,
+            expected_value=None,
+            style=style,
+            key=query,
+            query_type='execute_query')
+
+    matched_indexes = []
+    for index, part in enumerate(scoped_parts):
+        if pattern.search(str(part)):
+            matched_indexes.append(index)
+
+    if style == 'included':
+        if len(matched_indexes) == len(scoped_parts):
+            return Passed, (
+                "'include' criteria is present in all scoped outputs.")
+        return Failed, (
+            "'include' criteria is not present in scoped output index {}."
+            .format(_first_missing_index(matched_indexes, len(scoped_parts))))
+
+    if not matched_indexes:
+        return Passed, (
+            "'exclude' criteria is not present in any scoped output.")
+    return Failed, (
+        "'exclude' criteria is present in scoped output index {}."
+        .format(matched_indexes[0]))
+
+
+def _first_missing_index(matched_indexes, length):
+    matched_indexes = set(matched_indexes)
+    for index in range(length):
+        if index not in matched_indexes:
+            return index
+    return 0
+
+
 def _output_query_template(output,
                            steps,
                            device,
@@ -554,6 +837,10 @@ def _output_query_template(output,
                            arguments=None,
                            rest_device_alias=None,
                            expected_failure=False,
+                           scope=None,
+                           blitz_obj=None,
+                           section=None,
+                           ret_dict=None,
                            extra_kwargs=None):
 
     if not extra_kwargs:
@@ -564,6 +851,66 @@ def _output_query_template(output,
         max_time, check_interval = _get_timeout_from_ratios(
             device=device, max_time=max_time, check_interval=check_interval)
     timeout = Timeout(max_time, check_interval)
+    scoped_output = output
+
+    if action == 'execute' and scope and not keys:
+        step_msg = "Apply execute scope to the output"
+        send_cmd = False
+        step_result = Failed
+        message = ''
+
+        with steps.start(step_msg, continue_=continue_) as substep:
+            while True:
+                if send_cmd:
+                    try:
+                        output = _send_command(command,
+                                               device,
+                                               action,
+                                               arguments=arguments,
+                                               rest_device_alias=rest_device_alias,
+                                               **extra_kwargs)
+                    except SchemaEmptyParserError:
+                        output = ''
+
+                try:
+                    scoped_output, _, _ = _apply_execute_scope(
+                        output,
+                        scope,
+                        blitz_obj=blitz_obj,
+                        section=section,
+                        ret_dict=ret_dict)
+                    step_result = Passed
+                    message = "Execute scope matched the output."
+                except _ExecuteScopeNotFound as exc:
+                    step_result = Failed
+                    message = str(exc)
+                except _ExecuteScopeError as exc:
+                    substep.failed(str(exc))
+                    return output
+
+                if step_result == Passed:
+                    if expected_failure:
+                        substep.failed(
+                            '{} did not failed as expected, the step test '
+                            'result is set as failed'.format(action))
+                    else:
+                        substep.passed(message)
+                    break
+
+                send_cmd = True
+                timeout.sleep()
+                if not timeout.iterate():
+                    break
+
+            if step_result == Failed:
+                if expected_failure:
+                    substep.passed(
+                        '{} failed as expected, the step test result is set '
+                        'as passed'.format(action))
+                else:
+                    substep.failed(message)
+
+        output = scoped_output
 
     for query, style in keys:
 
@@ -596,17 +943,24 @@ def _output_query_template(output,
                         output = ''
 
                 if action == 'execute':
-                    # validating the inclusion/exclusion of action execute,
-                    pattern = re.compile(str(query))
-                    found = pattern.search(str(output))
-                    kwargs.update({
-                        'action_output': found,
-                        'operation': None,
-                        'expected_value': None,
-                        'style': style,
-                        'key': query,
-                        'query_type': 'execute_query'
-                    })
+                    try:
+                        scoped_output, scoped_parts, verify_each = \
+                            _apply_execute_scope(
+                                output,
+                                scope,
+                                blitz_obj=blitz_obj,
+                                section=section,
+                                ret_dict=ret_dict)
+                    except _ExecuteScopeNotFound as exc:
+                        step_result = Failed
+                        message = str(exc)
+                    except _ExecuteScopeError as exc:
+                        substep.failed(str(exc))
+                        return output
+                    else:
+                        step_result, message = _verify_execute_scope_query(
+                            scoped_output, scoped_parts, verify_each, query,
+                            style)
 
                 else:
                     # verifying the inclusion/exclusion of actions : learn, parse and api
@@ -614,8 +968,8 @@ def _output_query_template(output,
                     kwargs = found
                     kwargs.update({'style': style, 'key': None})
 
-                # Function would return (pass | fail | error)
-                step_result, message = _verify_include_exclude(**kwargs)
+                    # Function would return (pass | fail | error)
+                    step_result, message = _verify_include_exclude(**kwargs)
 
                 if expected_failure and step_result == Failed:
                     substep.passed(message)
@@ -651,8 +1005,11 @@ def _output_query_template(output,
                     '{} failed as expected, the step test result is set as passed'.format(action)
                 )
 
+    if action == 'execute' and scope:
+        output = scoped_output
+
     # If no keys, if expected failure, steps results has to be reversed
-    if not keys and expected_failure:
+    if not keys and expected_failure and not (action == 'execute' and scope):
         if steps.result == Passed:
             steps.failed(
                     '{} did not failed as expected, the step test result is set as failed'

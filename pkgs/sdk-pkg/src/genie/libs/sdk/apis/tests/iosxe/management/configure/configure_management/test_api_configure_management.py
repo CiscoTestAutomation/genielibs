@@ -251,3 +251,74 @@ class TestConfigureManagement(unittest.TestCase):
             vlan_id=100,
             oper='add'
         )
+
+    @patch('genie.libs.sdk.apis.iosxe.management.configure.log')
+    def test_configure_management_with_media_type(self, mock_log):
+        """Test configure_management with media_type passed as kwarg"""
+        # Mock the API methods
+        self.device.api.configure_management_vrf = Mock()
+        self.device.api.configure_management_ip = Mock()
+        self.device.api.configure_dual_port_interface_media_type = Mock()
+        self.device.api.configure_management_gateway = Mock()
+        self.device.api.configure_management_routes = Mock()
+        self.device.api.configure_management_protocols = Mock()
+
+        # Call configure_management with media_type
+        configure_management(
+            self.device,
+            interface='GigabitEthernet0/0/0',
+            address={'ipv4': '192.168.1.10/24'},
+            media_type='sfp'
+        )
+
+        # Verify configure_dual_port_interface_media_type was called on the physical port
+        self.device.api.configure_dual_port_interface_media_type.assert_called_once_with(
+            interface='GigabitEthernet0/0/0',
+            media_type='sfp',
+        )
+
+    @patch('genie.libs.sdk.apis.iosxe.management.configure.log')
+    def test_configure_management_with_media_type_from_testbed(self, mock_log):
+        """Test configure_management reads media_type from testbed management"""
+        testbed_with_media_type = f"""
+        devices:
+          device-with-media-type:
+            connections:
+              defaults:
+                class: unicon.Unicon
+              a:
+                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
+                protocol: unknown
+            os: iosxe
+            platform: iosxe
+            type: iosxe
+            management:
+              interface: GigabitEthernet0/0/0
+              media_type: sfp
+              address:
+                ipv4: 172.18.238.170/16
+        """
+        testbed = loader.load(testbed_with_media_type)
+        device = testbed.devices['device-with-media-type']
+        device.connect(
+            learn_hostname=True,
+            init_config_commands=[],
+            init_exec_commands=[]
+        )
+
+        self.assertEqual(device.management['media_type'], 'sfp')
+
+        device.api.configure_management_vrf = Mock()
+        device.api.configure_management_ip = Mock()
+        device.api.configure_dual_port_interface_media_type = Mock()
+        device.api.configure_management_gateway = Mock()
+        device.api.configure_management_routes = Mock()
+        device.api.configure_management_protocols = Mock()
+
+        configure_management(device)
+
+        device.api.configure_dual_port_interface_media_type.assert_called_once_with(
+            interface='GigabitEthernet0/0/0',
+            media_type='sfp',
+        )
+

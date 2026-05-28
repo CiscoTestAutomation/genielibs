@@ -1698,3 +1698,31 @@ def get_interface_type_name(interface):
     match = pattern.search(interface)
     intf_type = interface[:match.start()] if match and interface[:match.start()] else None
     return intf_type
+
+def get_object_manager_error_object(device, sw_num):
+    """ Get object-manager error objects
+
+        Args:
+            device ('obj'): Device object
+            sw_num ('str' or 'int'): Switch number
+
+        Return:
+            Raw CLI output (str)
+
+        Raises:
+            SubCommandFailure
+    """
+
+    try:
+        output = device.execute(
+            "show platform software object-manager switch {sw_num} FP active error-object".format(
+                sw_num=sw_num
+            )
+        )
+    except SubCommandFailure as e:
+        log.error(
+            f"Failed to execute object-manager error-object command "
+            f"on switch {sw_num}: {str(e)}"
+        )
+        return ""
+    return output

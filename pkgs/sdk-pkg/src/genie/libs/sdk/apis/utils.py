@@ -1643,24 +1643,22 @@ def convert_server_to_linux_device(device, server):
         server ('str'): server hostname
 
     Returns:
-        A Device object that can be connected
+        A Device object that can be connected, or None if no server block exists
     """
     with FileUtils(testbed=device.testbed) as fu:
         server_block = fu.get_server_block(server)
         hostname = fu.get_hostname(server)
 
-    return Device(name=server,
-                  os='linux',
-                  credentials=server_block.get('credentials'),
-                  connections={'linux': {
-                      'ip': hostname,
-                      'protocol': 'ssh'
-                  }},
-                  custom={'abstraction': {
-                      'order': ['os']
-                  }},
-                  type='linux',
-                  testbed=device.testbed)
+    if server_block:
+        return Device(
+            name=server,
+            os="linux",
+            credentials=server_block.get("credentials"),
+            connections={"linux": {"ip": hostname, "protocol": "ssh"}},
+            custom={"abstraction": {"order": ["os"]}},
+            type="linux",
+            testbed=device.testbed,
+        )
 
 
 def get_username_password(device, username=None, password=None, creds=None):
@@ -4919,7 +4917,7 @@ def get_proxy(device):
     proxy = None
 
     # Check if a proxy is configured for the device
-    if device.via:
+    if getattr(device, 'via', None):
         conn_info = device.connections[device.via]
         proxy = conn_info.get('proxy') or conn_info.get('sshtunnel', {}).get('host')
     else:

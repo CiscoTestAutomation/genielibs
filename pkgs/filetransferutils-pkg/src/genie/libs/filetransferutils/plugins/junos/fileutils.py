@@ -30,10 +30,17 @@ class FileUtils(FileUtilsDeviceBase):
                                                    device=kwargs.get('device'), vrf=vrf,
                                                    cache_ip=kwargs.get('cache_ip', True))
 
+        # Extract the server address BEFORE route rewrite so that
+        # auth/cert lookups use the original (automation-reachable) hostname
+        used_server = self.get_server(source, destination)
+
+        # Rewrite URL hostname using server route lookup if applicable
+        source = self._resolve_server_route_url(source, device=kwargs.get('device'))
+        destination = self._resolve_server_route_url(destination, device=kwargs.get('device'))
+
         # Build command
         parsed_source = self.parse_url(source)
         parsed_dest = self.parse_url(destination)
-        used_server = self.get_server(source, destination)
         username, passwd = self.get_auth(used_server)
         if passwd:
             auth = '%s:%s' % (username, passwd)

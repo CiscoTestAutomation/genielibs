@@ -1,39 +1,48 @@
-import os
 import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
+
 from genie.libs.sdk.apis.iosxe.interface.configure import configure_interface_monitor_session
 
 
-class TestConfigureInterfaceMonitorSession(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          Cat9500H_SVL_DUT3:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: c9500
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Cat9500H_SVL_DUT3']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureInterfaceMonitorSession(TestCase):
 
     def test_configure_interface_monitor_session(self):
-        result = configure_interface_monitor_session(self.device, [{'erspan_id': 101,
-  'interface': 'Twe1/0/7',
-  'ipv6_address': '2040::1',
-  'session_name': 6,
-  'session_type': 'erspan-destination'}])
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = configure_interface_monitor_session(
+            device,
+            [
+                {
+                    "erspan_id": 101,
+                    "interface": "Twe1/0/7",
+                    "ipv6_address": "2040::1",
+                    "session_name": 6,
+                    "session_type": "erspan-destination",
+                }
+            ],
+        )
+
+        self.assertIsNone(result)
+        self.assertEqual(device.configure.call_count, 2)
+
+        interface_commands = device.configure.call_args_list[0].args[0]
+        self.assertIsInstance(interface_commands, list)
+        self.assertIn("interface Twe1/0/7", interface_commands)
+        self.assertIn("no shutdown", interface_commands)
+
+        monitor_commands = device.configure.call_args_list[1].args[0]
+        self.assertIsInstance(monitor_commands, str)
+        self.assertIn("monitor session 6 type erspan-destination", monitor_commands)
+        self.assertIn("destination interface Twe1/0/7", monitor_commands)
+        self.assertIn("source", monitor_commands)
+        self.assertIn("erspan-id 101", monitor_commands)
+        self.assertIn("ipv6 address 2040::1", monitor_commands)
+        self.assertIn("exit", monitor_commands)
+        self.assertIn("no shutdown", monitor_commands)
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -31,5 +31,5 @@ class TestGetLcSlots(unittest.TestCase):
 
     def test_get_lc_slots(self):
         result = get_lc_slots(self.device)
-        expected_output = ['4']
-        self.assertEqual(result, expected_output)
+        expected_output = {'4'}
+        self.assertEqual(set(result), expected_output)

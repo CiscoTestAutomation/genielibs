@@ -2,10 +2,14 @@
 
 # Python
 import logging
-
+import re
 # Unicon
 from unicon.core.errors import SubCommandFailure
 from unicon.eal.dialogs import Dialog, Statement
+
+# Secure API imports
+from genie.libs.sdk.apis.iosxe.management.configure import configure_ip_ssh_version
+
 
 # Logger
 log = logging.getLogger(__name__)
@@ -1336,8 +1340,14 @@ def unconfigure_system_disable_password_recovery_switch_all(device, switch=True,
             N/A
 
         Raises:
+            ValueError: If switch_number contains invalid characters
             SubCommandFailure: Failed executing command
     """
+    # Validate switch_number if provided
+    if switch_number is not None:
+        if not str(switch_number).isdigit():
+            raise ValueError("switch_number must be a positive integer")
+
     if switch==True and switch_number==None:
         log.info(f"Enables password recovery switch all on {device.name}")
         config = 'no system disable password recovery switch all'
@@ -1515,6 +1525,66 @@ def unconfigure_ip_tftp_blocksize(device):
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure tftp blocksize on device {device.name}. Error:\n{e}")
+
+def configure_secure_file_transfer(device, interface, ssh_version='2'):
+    """ Configure secure file transfer using SCP over SSH
+        Secure replacement for configure_ip_tftp_blocksize
+        Reference: Cisco Catalyst 9000 IOS-XE Resilient Infrastructure Playbook
+
+        Configures:
+            ip ssh version {ssh_version}
+            ip ssh source-interface {interface}
+            ip scp server enable
+
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Source interface for SSH (e.g., 'Loopback0', 'GigabitEthernet0/0')
+            ssh_version ('str', optional): SSH version. Defaults to '2'
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f"Configuring secure file transfer (SCP/SSH) on {device.name}")
+    try:
+        configure_ip_ssh_version(device, ssh_version)
+        configure_ip_ssh_source_interface(device, interface)
+        configure_ip_scp_server_enable(device)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure secure file transfer on device {device.name}. Error:\n{e}"
+        )
+
+
+def unconfigure_secure_file_transfer(device):
+    """ Unconfigure secure file transfer (SCP over SSH)
+        Secure replacement for unconfigure_ip_tftp_blocksize
+        Reference: Cisco Catalyst 9000 IOS-XE Resilient Infrastructure Playbook
+
+        Unconfigures:
+            no ip scp server enable
+            no ip ssh source-interface
+
+        Args:
+            device ('obj'): Device object
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f"Unconfiguring secure file transfer (SCP/SSH) on {device.name}")
+    try:
+        unconfigure_ip_scp_server_enable(device)
+        unconfigure_ip_ssh_source_interface(device)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure secure file transfer on device {device.name}. Error:\n{e}"
+        )
+
 
 def configure_enable_http_server(device):
     """Configure ip http server
@@ -1806,6 +1876,11 @@ def configure_commands_to_template(device, template_name, cmd_to_add):
             SubCommandFailure
     """
 
+    if not re.match(r'^[\w\-\.]+$', template_name):
+        raise ValueError("Invalid characters in template_name")
+    if '\n' in cmd_to_add:
+        raise ValueError("cmd_to_add must not contain newline characters")
+
     cmd = []
     cmd.append(f'template {template_name}')
     cmd.append(f'{cmd_to_add}')
@@ -1858,8 +1933,14 @@ def unconfigure_commands_from_template(device, template_name, cmd_to_add):
         Returns:
             None
         Raises:
+            ValueError: If input parameters contain invalid characters
             SubCommandFailure
     """
+
+    if not re.match(r'^[\w\-\.]+$', template_name):
+        raise ValueError("Invalid characters in template_name")
+    if '\n' in cmd_to_add:
+        raise ValueError("cmd_to_add must not contain newline characters")
 
     cmd = []
     cmd.append(f'template {template_name}')
@@ -2043,11 +2124,26 @@ def configure_software_auto_upgrade(device, auto_upgrade_option, src_url=""):
         Returns:
             None
         Raises:
+            ValueError: If input parameters contain invalid values
             SubCommandFailure
     """
 
+    # Validate auto_upgrade_option
+    if auto_upgrade_option not in ('source', 'disable', 'enable'):
+        raise ValueError("auto_upgrade_option must be 'source', 'disable', or 'enable'")
+
+    # Validate src_url if provided
+    if src_url:
+        if '\n' in src_url:
+            raise ValueError("src_url must not contain newline characters")
+        import re
+        if not re.match(r'^[\w\-\.:\/]+$', src_url):
+            raise ValueError("Invalid characters in src_url")
+
     cmd = []
     if auto_upgrade_option == "source":
+        if not src_url:
+            raise ValueError("src_url is required when auto_upgrade_option is 'source'")
         cmd.append(f'software auto-upgrade source url {src_url}')
     elif auto_upgrade_option == "disable":
         cmd.append(f'no software auto-upgrade disable')
@@ -2082,11 +2178,26 @@ def unconfigure_software_auto_upgrade(device, auto_upgrade_option, src_url=""):
         Returns:
             None
         Raises:
+            ValueError: If input parameters contain invalid values
             SubCommandFailure
     """
 
+    # Validate auto_upgrade_option
+    if auto_upgrade_option not in ('source', 'enable'):
+        raise ValueError("auto_upgrade_option must be 'source' or 'enable'")
+
+    # Validate src_url if provided
+    if src_url:
+        if '\n' in src_url:
+            raise ValueError("src_url must not contain newline characters")
+        import re
+        if not re.match(r'^[\w\-\.:\/]+$', src_url):
+            raise ValueError("Invalid characters in src_url")
+
     cmd = []
     if auto_upgrade_option == "source":
+        if not src_url:
+            raise ValueError("src_url is required when auto_upgrade_option is 'source'")
         cmd.append(f'no software auto-upgrade source url {src_url}')
     elif auto_upgrade_option == "enable":
         cmd.append(f'no software auto-upgrade enable')
@@ -3172,8 +3283,17 @@ def unconfigure_enable_secret_password(device, enable_secret, level=0):
             level('int'): HASHED secret
             ex.)
         Raises:
+            ValueError: If input parameters contain invalid characters
             SubCommandFailure
     '''
+    # Validate level
+    if not str(level).isdigit():
+        raise ValueError("level must be a non-negative integer")
+
+    # Validate password doesn't contain newlines (command injection vector)
+    if enable_secret and '\n' in enable_secret:
+        raise ValueError("enable_secret must not contain newline characters")
+
     if level:
         cmd = [f"no enable secret level {level}"]
     else:
@@ -3182,7 +3302,7 @@ def unconfigure_enable_secret_password(device, enable_secret, level=0):
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            f"Failed to unconfigure secrate password on device {device}. Error:\n{e}")
+            f"Failed to unconfigure secret password on device {device}. Error:\n{e}")
 
 def configure_line_vty(
     device, first_line_number, second_line_number=''):
@@ -6900,4 +7020,42 @@ def unconfigure_ipv6_local_pool(device,name):
         raise SubCommandFailure(
             "Could not configure local pool on {device}. Error:\n{error}"
                 .format(device=device, error=e)
+        )
+
+
+def configure_platform_filesystem_harddisk_offline(device):
+    """ request platform hardware filesystem harddisk: offline
+        Args:
+            device (`obj`): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cfg_cmd = 'request platform hardware filesystem harddisk: offline'
+    try:
+        device.configure(cfg_cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure {cfg_cmd} on device {device.name}. Error:\n{e}"
+        )
+
+
+def configure_platform_filesystem_harddisk_online(device):
+    """ request platform hardware filesystem harddisk: online
+        Args:
+            device (`obj`): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cfg_cmd = 'request platform hardware filesystem harddisk: online'
+    try:
+        device.configure(cfg_cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure {cfg_cmd} on device {device.name}. Error:\n{e}"
         )

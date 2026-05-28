@@ -21,4 +21,6 @@ def execute_delete_boot_variable(device, timeout=300):
         raise SubCommandFailure("Failed to no boot system on '{}'\n{}".\
                                 format(device.name, str(e)))
 
+    device.api.execute_copy_run_to_start(command_timeout=timeout)
+
     device.api.is_current_boot_variable_as_expected(device=device, system=None, kickstart=None)

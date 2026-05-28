@@ -1,6 +1,8 @@
 import unittest
+from unittest.mock import Mock
 from pyats.topology import loader
 from genie.libs.sdk.apis.iosxe.utils import get_show_output_section
+from unicon.core.errors import SubCommandFailure
 
 
 class TestGetShowOutputSection(unittest.TestCase):
@@ -87,3 +89,32 @@ class TestGetShowOutputSection(unittest.TestCase):
  'snmp-server enable traps ospfv3 state-change\r\n'
  'snmp-server enable traps ospfv3 errors')
         self.assertEqual(result, expected_output)
+
+    def test_get_show_output_section_with_target(self):
+        device = Mock()
+        device.execute.return_value = 'ip subscriber initiator unclassified mac-address'
+        result = get_show_output_section(
+            device, 'show running-config',
+            'initiator unclassified mac-address',
+            target='standby'
+        )
+        device.execute.assert_called_once_with(
+            'show running-config | section initiator unclassified mac-address',
+            target='standby'
+        )
+        self.assertEqual(result, (True, 'ip subscriber initiator unclassified mac-address'))
+
+    def test_get_show_output_section_without_target(self):
+        device = Mock()
+        device.execute.return_value = 'some output'
+        result = get_show_output_section(device, 'show run', 'ospf')
+        device.execute.assert_called_once_with(
+            'show run | section ospf'
+        )
+        self.assertEqual(result, (True, 'some output'))
+
+    def test_get_show_output_section_failure(self):
+        device = Mock()
+        device.execute.side_effect = SubCommandFailure('Test error')
+        with self.assertRaises(SubCommandFailure):
+            get_show_output_section(device, 'show run', 'ospf')

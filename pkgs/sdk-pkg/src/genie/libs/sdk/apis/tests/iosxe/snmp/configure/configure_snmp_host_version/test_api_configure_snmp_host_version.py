@@ -30,6 +30,6 @@ class TestConfigureSnmpHostVersion(unittest.TestCase):
         )
 
     def test_configure_snmp_host_version(self):
-        result = configure_snmp_host_version(self.device, '172.21.226.240', 'Mgmt-vrf', '2c', 'public', 10001)
+        result = configure_snmp_host_version(self.device, '172.21.226.240', 'Mgmt-vrf', 'v3', 'public', 10001)
         expected_output = None
         self.assertEqual(result, expected_output)

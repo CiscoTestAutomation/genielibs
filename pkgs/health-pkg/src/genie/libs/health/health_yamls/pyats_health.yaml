@@ -5,6 +5,7 @@ pyats_health_processors:
       memory: True
       logging: True
       core: True
+      crashinfo: True
     core_default_dir:
       iosxe:
         - bootflash:/core/
@@ -227,6 +228,49 @@ pyats_health_processors:
                         include:
                           - value_operator('num_of_cores', '==', 0)
                         failed_result_status: passx
+                        save:
+                          - variable_name: health_value
+                            filter: get_values('filename')
+                        processor: post
+                  loop_variable_name: dev
+                  parallel: true
+                  value: "%VARIABLES{testscript.health_settings.devices}"
+    - crashinfo_pre_check:
+        - run_condition:
+            if: "%VARIABLES{testscript.health_settings.checks[crashinfo]} == True"
+            actions:
+              - loop:
+                  actions:
+                    - api:
+                        arguments:
+                          delete_files: false
+                          copy_files: false
+                        device: "%VARIABLES{dev._keys}"
+                        function: health_crashinfo
+                        health_tc_sections:
+                          - type:CommonSetup
+                        include:
+                          - value_operator('num_of_crashfiles', '==', 0)
+                        failed_result_status: passx
+                        processor: post
+                  loop_variable_name: dev
+                  parallel: true
+                  value: "%VARIABLES{testscript.health_settings.devices}"
+    - crashinfo:
+        - run_condition:
+            if: "%VARIABLES{testscript.health_settings.checks[crashinfo]} == True"
+            actions:
+              - loop:
+                  actions:
+                    - api:
+                        arguments:
+                          delete_files: true
+                        device: "%VARIABLES{dev._keys}"
+                        function: health_crashinfo
+                        health_tc_sections:
+                          - type:TestCase
+                        include:
+                          - value_operator('num_of_crashfiles', '==', 0)
                         save:
                           - variable_name: health_value
                             filter: get_values('filename')

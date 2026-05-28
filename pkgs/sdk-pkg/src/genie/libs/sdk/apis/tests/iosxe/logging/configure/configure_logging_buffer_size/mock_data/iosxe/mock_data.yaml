@@ -6,7 +6,7 @@ configure:
       new_state: configure_line
     line console 0:
       new_state: configure_line
-    logging buffer 2147483647: "logging buffer 2147483647\r\n"
+    logging buffered 2147483647: "logging buffered 2147483647\r\n"
     no logging console: ''
   prompt: c2_core_sf(config)#
 configure_line:

@@ -12,7 +12,7 @@ from genie.libs.sdk.apis.utils import (
     modify_filename, copy_from_device, copy_to_device, device_recovery_boot,
     configure_management_console, configure_peripheral_terminal_server,
     time_to_int, slugify_filename, get_file_size_from_server,
-    get_interface_from_yaml)
+    get_interface_from_yaml, convert_server_to_linux_device, get_proxy)
 
 
 class TestUtilsApi(unittest.TestCase):
@@ -98,6 +98,34 @@ class TestUtilsApi(unittest.TestCase):
         device.api.convert_server_to_linux_device = Mock(return_value=server)
         copy_from_device(device, local_path='flash:test.txt', protocol='http')
         assert re.search(r'copy flash:test.txt http://\w+:\w+@127.0.0.2:2000/router_test.txt', str(device.execute.call_args))
+
+    def test_convert_server_to_linux_device_missing_server_block(self):
+        device = MagicMock()
+        device.testbed = object()
+        fileutils = MagicMock()
+        fileutils.get_server_block.return_value = None
+        fileutils.get_hostname.return_value = 'server.example.com'
+
+        with patch('genie.libs.sdk.apis.utils.FileUtils') as fileutils_cls, \
+                patch('genie.libs.sdk.apis.utils.Device') as device_cls:
+            fileutils_cls.return_value.__enter__.return_value = fileutils
+
+            result = convert_server_to_linux_device(device, 'fileserver')
+
+        self.assertIsNone(result)
+        fileutils_cls.assert_called_once_with(testbed=device.testbed)
+        fileutils.get_server_block.assert_called_once_with('fileserver')
+        fileutils.get_hostname.assert_called_once_with('fileserver')
+        device_cls.assert_not_called()
+
+    def test_get_proxy_without_via_metadata(self):
+        device = type('DeviceMock', (), {})()
+        device.connections = {
+            'defaults': {'proxy': 'ignored'},
+            'cli': {'proxy': 'proxy-host'},
+        }
+
+        self.assertEqual(get_proxy(device), 'proxy-host')
 
     def test_copy_to_device(self):
         device = MagicMock()

@@ -1,35 +1,36 @@
-import os
 import unittest
-from pyats.topology import loader
+from unittest.mock import Mock
 from genie.libs.sdk.apis.iosxe.platform.configure import configure_policy_map_control_service_temp
 
 
 class TestConfigurePolicyMapControlServiceTemp(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          Switch:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: c9200
-            type: c9200
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Switch']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
+    def test_configure_policy_map_control_service_temp(self):
+        device = Mock()
+
+        result = configure_policy_map_control_service_temp(
+            device,
+            'DOT1X-MUST-SECURE-UPLINK',
+            'DEFAULT_LINKSEC_POLICY_MUST_SECURE',
+            'MACSEC-UPLINK',
+            'EAP-PROFILE'
         )
 
-    def test_configure_policy_map_control_service_temp(self):
-        result = configure_policy_map_control_service_temp(self.device, 'DOT1X-MUST-SECURE-UPLINK', 'DEFAULT_LINKSEC_POLICY_MUST_SECURE', 'MACSEC-UPLINK', 'EAP-PROFILE')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.assertEqual(result, None)
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            ([
+                'policy-map type control subscriber DOT1X-MUST-SECURE-UPLINK',
+                'event session-started match-all',
+                '10 class always do-until-failure',
+                '10 authenticate using dot1x aaa authc-list MACSEC-UPLINK authz-list MACSEC-UPLINK both',
+                'event authentication-failure match-all',
+                '10 class always do-until-failure',
+                '10 terminate dot1x',
+                '20 authentication-restart 10',
+                'event authentication-success match-all',
+                '10 class always do-until-failure',
+                '10 activate service-template DEFAULT_LINKSEC_POLICY_MUST_SECURE'
+            ],),
+            device.configure.mock_calls[0].args,
+        )

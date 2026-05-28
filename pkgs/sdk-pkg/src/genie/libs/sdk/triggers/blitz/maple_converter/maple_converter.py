@@ -19,6 +19,7 @@ from genie.testbed import load
 from .utils import (replace_maple_markups,
                     pre_testcase_checks,
                     pre_section_checks,
+                    safe_yaml_load,
                     _XX_pattern_matching,
                     verify_maple_env,
                     _command_separator,
@@ -70,7 +71,7 @@ class Converter(object):
         # Replace all the maple markups
         maple_string = replace_maple_markups(maple_string, self.testbed)
         # create a dictionary object of the yaml file
-        maple_dict = ruamel.yaml.safe_load(maple_string)
+        maple_dict = safe_yaml_load(maple_string)
         for testcase_name, testcase_data in maple_dict['tests'].items():
             # multiple tests might exists within a maple testcase, and they all need to be extracted one by one
             blitz_dict.update({testcase_name: self.testcase_convertor(testcase_data,testcase_name)})

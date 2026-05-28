@@ -3332,5 +3332,155 @@ def configure_bgp_route_reflector_client_address_family(device, bgp_as, neighbor
             "router {bgp_as}. Error:{e}".format(bgp_as=bgp_as, e=e)
         )
 
+def configure_bgp_redist_static(device, bgp_as):
+    """Configure redistribute static under router bgp.
+
+    Args:
+        device ('obj'): device to use
+        bgp_as ('int'): bgp as number
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: Failed configuring redistribute static
+    """
+    config = [
+        f"router bgp {bgp_as}",
+        "redistribute static",
+    ]
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure redistribute static under bgp {bgp_as}. Error:\n{e}"
+        ) 
+
+def configure_bgp_timers(device, bgp_as, keepalive, holdtime):
+    """Configure BGP keepalive and hold timers.
+
+    Args:
+        device ('obj'): device to use
+        bgp_as ('int'): bgp as number
+        keepalive ('int'): keepalive interval in seconds
+        holdtime ('int'): hold time in seconds
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: Failed configuring BGP timers
+    """
+    config = [
+        f"router bgp {bgp_as}",
+        f"timers bgp {keepalive} {holdtime}",
+    ]
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure BGP timers under bgp {bgp_as}. Error:\n{e}"
+        )
+
+def configure_bgp_neighbor_weight(device, bgp_as, neighbor_ip, weight):
+    """Configure BGP neighbor weight.
+
+    Args:
+        device ('obj'): device to use
+        bgp_as ('int'): bgp as number
+        neighbor_ip ('str'): neighbor IP address
+        weight ('int'): weight value to set
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: Failed configuring BGP neighbor weight
+    """
+    config = [
+        f"router bgp {bgp_as}",
+        f"neighbor {neighbor_ip} weight {weight}",
+    ]
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure weight {weight} for neighbor {neighbor_ip} under bgp {bgp_as}. Error:\n{e}"
+        )
+
+def configure_bgp_neighbor_next_hop_self(device, bgp_as, neighbor_ip):
+    """Configure BGP neighbor next-hop-self.
+
+    Args:
+        device ('obj'): device to use
+        bgp_as ('int'): bgp as number
+        neighbor_ip ('str'): neighbor IP address
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: Failed configuring BGP neighbor next-hop-self
+    """
+    config = [
+        f"router bgp {bgp_as}",
+        f"neighbor {neighbor_ip} next-hop-self",
+    ]
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure next-hop-self for neighbor {neighbor_ip} under bgp {bgp_as}. Error:\n{e}"
+        )
+
+def configure_bgp_community_new_format(device):
+    """ Configures BGP community new-format globally
+        Example: ip bgp-community new-format
+        Args:
+            device ('obj'): device to configure on
+        Return:
+            None
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    config = ['ip bgp-community new-format']
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure BGP community new-format on {device.name}. Error:\n{e}")
+
+def unconfigure_bgp_community_new_format(device):
+    """ Unconfigures BGP community new-format globally
+        Example: no ip bgp-community new-format
+        Args:
+            device ('obj'): device to configure on
+        Return:
+            None
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    config = ['no ip bgp-community new-format']
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not unconfigure BGP community new-format on {device.name}. Error:\n{e}")
+
+def configure_bgp_update_source(device, bgp_as, neighbor_ip, source_interface):
+    """Configure BGP neighbor update-source."""
+    config = [
+        f"router bgp {bgp_as}",
+        f"neighbor {neighbor_ip} update-source {source_interface}",
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure update-source for neighbor {neighbor_ip} "
+            f"under bgp {bgp_as}. Error:\n{e}"
+        )
 
 

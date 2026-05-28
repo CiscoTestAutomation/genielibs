@@ -1203,7 +1203,7 @@ def unconfigure_interface_ip_dhcp_relay_source_interface_intf_id(device, interfa
             f"Failed to unconfigure ip dhcp relay source interface intf_id {interface}. Error\n{e}"
         )
 
-def configure_dhcp_pool(device, pool_name, router_id=None, network=None, mask=None, vrf=None, dns_server=None, lease=False, lease_days=None, lease_hrs=None, lease_mins=None, lease_time=None):
+def configure_dhcp_pool(device, pool_name, router_id=None, network=None, mask=None, vrf=None, dns_server=None, lease=False, lease_days=None, lease_hrs=None, lease_mins=None, lease_time=None, class_name=None):
     """ Configure DHCP pool
         Args:
             device ('obj'): device to use
@@ -1218,6 +1218,7 @@ def configure_dhcp_pool(device, pool_name, router_id=None, network=None, mask=No
             lease_hrs ('str'): Number of hours for the lease
             lease_mins ('str'): Number of minutes for the lease
             lease_time ('str'): Lease time for the DHCP pool
+            class_name ('str', optional): DHCP class name to associate with the pool (adds 'class <name>'). Default is None
         Returns:
             None
         Raises:
@@ -1246,6 +1247,8 @@ def configure_dhcp_pool(device, pool_name, router_id=None, network=None, mask=No
             config.append('lease infinite')
         elif lease_time == "{} {} {}".format(lease_days, lease_hrs, lease_mins):
             config.append('lease {} {} {}'.format(lease_days, lease_hrs, lease_mins))
+    if class_name:
+        config.append(f'class {class_name}')
     try:
         device.configure(config, reply=dialog)
     except SubCommandFailure as e:
@@ -2334,6 +2337,44 @@ def unconfigure_interface_ip_subscriber(device, interface, ip_session):
             f"Could not unconfigure ip subscriber on interface {interface}. Error\n{e}"
             )
 
+def unconfigure_interface_ip_subscriber_initiator(device, interface, ip_session,
+                                                   option=None, type=None,
+                                                   remove_subscriber=False):
+    """ Unconfigure initiator under ip subscriber on interface
+        Args:
+            device ('obj'): device to use
+            interface ('str'): name of the interface
+            ip_session ('str'): ip session (e.g. 'l2-connected')
+            option ('str', optional): option (e.g. 'mac-address'). Defaults to None
+            type ('str', optional): type (e.g. 'ipv6'). Defaults to None
+            remove_subscriber ('bool', optional): If True, also sends
+                'no ip subscriber <ip_session>'. Defaults to False
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed unconfiguring ip subscriber initiator on interface
+    """
+    if type and not option:
+        raise ValueError("'type' requires 'option' to be specified")
+    config = [
+        f"interface {interface}",
+        f" ip subscriber {ip_session}",
+    ]
+    if option and type:
+        config.append(f"  no initiator unclassified {option} {type}")
+    elif option:
+        config.append(f"  no initiator unclassified {option}")
+    else:
+        config.append("  no initiator unclassified")
+    if remove_subscriber:
+        config.append(f" no ip subscriber {ip_session}")
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure ip subscriber initiator on interface {interface}. Error: {e}"
+        )
+
 def configure_ip_cef(device, option):
     """ Configure ip cef on device
         Args:
@@ -2694,3 +2735,149 @@ def unconfigure_ipv6_cef(device, option):
         raise SubCommandFailure(
             f"Could not unconfigure ipv6 cef on device. Error\n{e}"
             )
+
+
+def configure_ip_dhcp_use_vrf_remote(device):
+    """ Configure 'ip dhcp use vrf remote' on device
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configuring ip dhcp use vrf remote on device")
+    try:
+        device.configure("ip dhcp use vrf remote")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure ip dhcp use vrf remote on {device.name}. Error\n{e}"
+        )
+
+
+def unconfigure_ip_dhcp_use_vrf_remote(device):
+    """ Unconfigure 'ip dhcp use vrf remote' on device
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Unconfiguring ip dhcp use vrf remote on device")
+    try:
+        device.configure("no ip dhcp use vrf remote")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure ip dhcp use vrf remote on {device.name}. Error\n{e}"
+        )
+
+
+def configure_dhcp_relay_pool(device, pool_name, relay_source_network,
+                               relay_source_mask, relay_destination):
+    """ Configure a DHCP relay-mode pool on the device
+
+        Emits:
+            ip dhcp pool {pool_name}
+             relay source {relay_source_network} {relay_source_mask}
+             relay destination {relay_destination}
+
+        Args:
+            device ('obj'): device to use
+            pool_name ('str'): name of the DHCP pool (e.g. 'RELAY')
+            relay_source_network ('str'): source network address
+                (e.g. '11.11.11.0')
+            relay_source_mask ('str'): source network mask
+                (e.g. '255.255.255.0')
+            relay_destination ('str'): DHCP server IP address
+                (e.g. '192.168.1.1')
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure DHCP relay pool
+    """
+    log.info(
+        f"Configuring DHCP relay pool '{pool_name}': "
+        f"source={relay_source_network}/{relay_source_mask} "
+        f"destination={relay_destination}"
+    )
+    config = [
+        f'ip dhcp pool {pool_name}',
+        f' relay source {relay_source_network} {relay_source_mask}',
+        f' relay destination {relay_destination}',
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure DHCP relay pool '{pool_name}'. Error: {e}"
+        )
+
+
+def unconfigure_dhcp_relay_pool(device, pool_name):
+    """ Remove a DHCP relay-mode pool from the device
+
+        Emits:
+            no ip dhcp pool {pool_name}
+
+        Args:
+            device ('obj'): device to use
+            pool_name ('str'): name of the DHCP pool to remove
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to remove DHCP relay pool
+    """
+    log.info(f"Removing DHCP relay pool '{pool_name}'")
+    try:
+        device.configure(f'no ip dhcp pool {pool_name}')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not remove DHCP relay pool '{pool_name}'. Error: {e}"
+        )
+
+
+def configure_ip_dhcp_class(device, class_name):
+    """ Configure a global IP DHCP class on the device
+
+        Emits:
+            ip dhcp class {class_name}
+
+        Args:
+            device ('obj'): device to use
+            class_name ('str'): name of the DHCP class (e.g. 'DS_CLASS')
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure ip dhcp class
+    """
+    log.info(f"Configuring ip dhcp class '{class_name}'")
+    try:
+        device.configure(f'ip dhcp class {class_name}')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure ip dhcp class '{class_name}'. Error: {e}"
+        )
+
+
+def unconfigure_ip_dhcp_class(device, class_name):
+    """ Remove a global IP DHCP class from the device
+
+        Emits:
+            no ip dhcp class {class_name}
+
+        Args:
+            device ('obj'): device to use
+            class_name ('str'): name of the DHCP class to remove
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to remove ip dhcp class
+    """
+    log.info(f"Removing ip dhcp class '{class_name}'")
+    try:
+        device.configure(f'no ip dhcp class {class_name}')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not remove ip dhcp class '{class_name}'. Error: {e}"
+        )

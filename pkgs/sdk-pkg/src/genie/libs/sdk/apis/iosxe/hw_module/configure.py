@@ -98,3 +98,47 @@ def configure_hw_module_sub_slot_shutdown(device, sub_slot):
             "Could not shutdown hw-module subslot {sub_slot}. Error:\n{error}"
             .format(sub_slot=sub_slot, error=e)
         )
+
+
+def configure_hw_module_slot_reload(device, slot):
+    """ Reload hw-module slot {slot}
+        Args:
+            device (`obj`): Device object
+            slot (`int`): slot
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure : Failed configuring device
+    """
+
+    cmd = 'hw-module slot {slot} reload'.format(slot=slot)
+    try:
+        device.configure(cmd)
+    
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure {cmd} on device {device.name}. Error:\n{e}"
+        )
+
+
+def configure_hw_module_slot_start(device, slot):
+    """ Start hw-module slot {slot}
+        Args:
+            device (`obj`): Device object
+            slot (`int`): slot
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure : Failed configuring device
+    """
+    cmd = 'hw-module slot {slot} start'.format(slot=slot)
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure {cmd} on device {device.name}. Error:\n{e}"
+        )

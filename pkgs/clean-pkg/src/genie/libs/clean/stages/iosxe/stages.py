@@ -3928,6 +3928,7 @@ class Connect(BaseStage):
                         device.api.password_recovery(timeout=timeout)
                     except Exception as e:
                         log.error("Password recovery failed", exc_info=True)
+                        step.failed("Password recovery failed")
                     else:
                         step.passed("Successfully connected to {}".format(
                             device.name))
@@ -4035,6 +4036,17 @@ class Connect(BaseStage):
                             device.connect()
                         else:
                             device.connection_provider.connect()
+                    except (UniconAuthenticationError, CredentialsExhaustedError) as e:
+                        log.info(f"Could not connect to device because of {e}")
+                        log.info("Starting device password recovery.")
+                        try:
+                            device.api.password_recovery(timeout=timeout)
+                        except Exception:
+                            log.error("Password recovery failed", exc_info=True)
+                            step.failed("Password recovery failed")
+                        else:
+                            step.passed("Successfully connected to {}".format(
+                                device.name))
                     except Exception as e:
                         log.error(f"Failed to log out from the device. {e}", exc_info=True)
                         step.failed(f"Failed to log out from the device. {e}")
@@ -4062,6 +4074,7 @@ class Connect(BaseStage):
                     device.api.password_recovery(timeout=timeout)
                 except Exception:
                     log.error("Password recovery failed", exc_info=True)
+                    step.failed("Password recovery failed")
                 else:
                     step.passed("Successfully connected to {}".format(
                         device.name))

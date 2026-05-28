@@ -2,7 +2,7 @@
 
 # Python
 import logging
-
+import re
 # Unicon
 from unicon.core.errors import SubCommandFailure
 
@@ -1355,8 +1355,14 @@ def configure_monitor_capture_export_location(device, capture_name, filepath):
         Returns:
             None
         Raises:
+            ValueError: If input parameters contain invalid characters
             SubCommandFailure
     """
+    if not re.match(r'^[\w\-\.]+$', capture_name):
+        raise ValueError("Invalid characters in capture_name")
+    if not re.match(r'^[\w\-\.:\/]+$', filepath):
+        raise ValueError("Invalid characters in filepath")
+
     cmd = f'monitor capture {capture_name} export location {filepath}'
     try:
         device.execute(cmd)
@@ -1371,8 +1377,12 @@ def configure_monitor_capture_export_status(device, capture_name):
         Returns:
             None
         Raises:
+            ValueError: If input parameters contain invalid characters
             SubCommandFailure
     """
+    if not re.match(r'^[\w\-\.]+$', capture_name):
+        raise ValueError("Invalid characters in capture_name")
+
     cmd = f'monitor capture {capture_name} export status'
     try:
         device.execute(cmd)
@@ -2038,4 +2048,54 @@ def clear_stealthwatch_cloud_data(device,switch):
     except SubCommandFailure:
         raise SubCommandFailure(
             f'Could not clear swc data for switch {switch}'
+        )
+
+def configure_flow_monitor_cache_inactive_timeout(device, monitor_name, inactive_timeout):
+    """ Configure cache timeout inactive on a Flow Monitor
+
+        Args:
+            device      (`obj`): Device object
+            monitor_name (`str`): Flow Monitor name
+            inactive_timeout ('int'): Inactive timeout in seconds
+
+        Return:
+            None
+
+        Raise:
+            SubCommandFailure: Failed configuring cache timeout inactive
+    """
+    try:
+        device.configure([
+            f"flow monitor {monitor_name}",
+            f"cache timeout inactive {inactive_timeout}"
+        ])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure cache timeout inactive on flow monitor "
+            f"{monitor_name}. Error:\n{e}"
+        )
+
+def unconfigure_flow_monitor_cache_inactive_timeout(device, monitor_name, inactive_timeout):
+    """ Unconfigure cache timeout inactive on a Flow Monitor
+
+        Args:
+            device          (`obj`): Device object
+            monitor_name    (`str`): Flow Monitor name
+            inactive_timeout ('int'): Inactive timeout in seconds
+
+        Return:
+            None
+
+        Raise:
+            SubCommandFailure: Failed unconfiguring cache timeout inactive
+    """
+    try:
+        device.configure([
+            f"flow monitor {monitor_name}",
+            f"no cache timeout inactive {inactive_timeout}"
+        ])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure cache timeout inactive on flow monitor "
+            f"{monitor_name}. Error:\n{e}"
         )

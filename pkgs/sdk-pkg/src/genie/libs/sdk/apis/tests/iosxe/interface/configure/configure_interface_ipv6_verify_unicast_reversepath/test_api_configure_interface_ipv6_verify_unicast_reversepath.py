@@ -1,35 +1,38 @@
-import os
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.interface.configure import configure_interface_ipv6_verify_unicast_reversepath
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.interface.configure import (
+    configure_interface_ipv6_verify_unicast_reversepath,
+)
 
 
-class TestConfigureInterfaceIpv6VerifyUnicastReversepath(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          9300-24UX-1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: c9300
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['9300-24UX-1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureInterfaceIpv6VerifyUnicastReversepath(TestCase):
 
     def test_configure_interface_ipv6_verify_unicast_reversepath(self):
-        result = configure_interface_ipv6_verify_unicast_reversepath(self.device, 'te1/0/5', 'acl_new', True)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = configure_interface_ipv6_verify_unicast_reversepath(
+            device,
+            "te1/0/5",
+            "acl_new",
+            True,
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, list)
+        self.assertIn("interface te1/0/5", sent_commands)
+        self.assertIn("no switchport", sent_commands)
+        self.assertIn(
+            "ipv6 verify unicast reverse-path acl_new",
+            sent_commands,
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

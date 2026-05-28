@@ -1,35 +1,36 @@
-import os
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.interface.configure import configure_interface_interfaces_on_port_channel
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.interface.configure import (
+    configure_interface_interfaces_on_port_channel,
+)
 
 
-class TestConfigureInterfaceInterfacesOnPortChannel(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          A1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: single_rp
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['A1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureInterfaceInterfacesOnPortChannel(TestCase):
 
     def test_configure_interface_interfaces_on_port_channel(self):
-        result = configure_interface_interfaces_on_port_channel(self.device, 'g1/0/13', 'desirable', 10, ['g1/0/13', 'g4/0/25', 'g4/0/37'])
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = configure_interface_interfaces_on_port_channel(
+            device,
+            "g1/0/13",
+            "desirable",
+            10,
+            ["g1/0/13", "g4/0/25", "g4/0/37"],
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, list)
+        self.assertIn("interface g1/0/13", sent_commands)
+        self.assertIn("no shutdown", sent_commands)
+        self.assertIn("channel-group 10 mode desirable", sent_commands)
+
+
+if __name__ == "__main__":
+    unittest.main()

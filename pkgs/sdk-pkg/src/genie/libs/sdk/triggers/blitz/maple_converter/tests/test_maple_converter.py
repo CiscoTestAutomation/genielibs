@@ -1,12 +1,12 @@
 #! /usr/bin/env python
 import os
 import unittest
-import ruamel.yaml
 from unittest.mock import Mock
 from unittest.mock import patch
 
 from genie.libs.sdk.triggers.blitz.maple_converter.utils import pre_testcase_checks, \
-                                                                pre_section_checks
+                                                                pre_section_checks, \
+                                                                safe_yaml_load
 from genie.libs.sdk.triggers.blitz.maple_converter.maple_converter import Converter
 from genie.libs.sdk.triggers.blitz.maple_converter.legacy_dme_converter import LegacyDmeConverter
 
@@ -56,7 +56,7 @@ class TestMapleConverter(unittest.TestCase):
                 show interface
         """
 
-        maple_dict = ruamel.yaml.safe_load(maple)
+        maple_dict = safe_yaml_load(maple)
         out = pre_testcase_checks(maple_dict, None, None, None)
 
         blitz_equal = {
@@ -137,7 +137,7 @@ class TestMapleConverter(unittest.TestCase):
                     conf t
                     feature bfd
         """
-        maple_dict = ruamel.yaml.safe_load(maple)
+        maple_dict = safe_yaml_load(maple)
         kwargs = {'apply_unapply_data': maple_dict,
                   'blitz_action_list': [],
                   'action_continue': None,
@@ -179,7 +179,7 @@ class TestMapleConverter(unittest.TestCase):
                         ]} 
                     #@# 
         """
-        maple_dict = ruamel.yaml.safe_load(maple)
+        maple_dict = safe_yaml_load(maple)
         kwargs = {'apply_unapply_data': maple_dict,
                   'blitz_action_list': [],
                   'action_continue': None,
@@ -209,7 +209,7 @@ class TestMapleConverter(unittest.TestCase):
                 commands: |
                     #@# cmds=sleep:22 #@#   
         """
-        maple_dict = ruamel.yaml.safe_load(maple)
+        maple_dict = safe_yaml_load(maple)
         kwargs = {'apply_unapply_data': maple_dict,
                   'blitz_action_list': [],
                   'action_continue': None,
@@ -244,7 +244,7 @@ class TestMapleConverter(unittest.TestCase):
                     #@# cmds=switchto:N93_3 #@#  
                     #@# cmds=novpc:22 #@#    
         """
-        maple_dict = ruamel.yaml.safe_load(maple)
+        maple_dict = safe_yaml_load(maple)
         kwargs = {'apply_unapply_data': maple_dict,
                   'blitz_action_list': [],
                   'action_continue': None,
@@ -314,7 +314,7 @@ class TestMapleConverter(unittest.TestCase):
                        commands: |
                            show vdc
         """
-        maple_dict = ruamel.yaml.safe_load(maple)
+        maple_dict = safe_yaml_load(maple)
         kwargs = {'confirm_data': maple_dict,
                   'blitz_action_list': [],
                   'action_continue': None,
@@ -338,7 +338,7 @@ class TestMapleConverter(unittest.TestCase):
                            \\d
                            \\w
         """
-        maple_dict = ruamel.yaml.safe_load(maple)
+        maple_dict = safe_yaml_load(maple)
         kwargs = {'confirm_data': maple_dict,
                   'blitz_action_list': [],
                   'action_continue': None,
@@ -399,7 +399,7 @@ class TestMapleConverter(unittest.TestCase):
                             ]} 
                         #@#
         """
-        maple_dict = ruamel.yaml.safe_load(maple)
+        maple_dict = safe_yaml_load(maple)
         kwargs = {'confirm_data': maple_dict,
                   'blitz_action_list': [],
                   'action_continue': None,

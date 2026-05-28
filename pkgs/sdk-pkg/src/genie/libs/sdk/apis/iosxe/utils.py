@@ -1501,12 +1501,13 @@ def clear_ip_mroute_all(device):
         )
 
 
-def get_show_output_section(device, command, filter):
+def get_show_output_section(device, command, filter, target=None):
     """ Display the lines which are match from section
         Args:
             device (`obj`): Device object
             command (`str`): show command
             filter (`str`): filter expression
+            target (`str`, optional): Target RP (e.g. 'standby'). Defaults to None
         Returns:
             bool,output('str') : True/False, section command output based on the output
         Raises:
@@ -1516,7 +1517,10 @@ def get_show_output_section(device, command, filter):
     result = True
 
     try:
-        output = device.execute(command)
+        if target:
+            output = device.execute(command, target=target)
+        else:
+            output = device.execute(command)
         if not output:
             log.error('No match found')
             result = False
@@ -1807,6 +1811,51 @@ def request_system_shell(device, switch_type=None, processor_slot=None, uname=Fa
     except SubCommandFailure as e:
         raise SubCommandFailure(f"failed to enter system shell""Error:\n{e}")
     return output
+
+def btdecode_grep(device, file_path, search_string, timeout=60):
+    """ Execute btdecode command with grep filter using system shell
+        Args:
+            device (`obj`): Device object
+            file_path (`str`): Path to the file to decode
+            search_string (`str`): String to search for in the output
+            timeout (`int`, optional): Timeout in seconds. Default is 60
+        Returns:
+            dict: {'matched_lines': list of timestamped log lines}
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f'btdecode {file_path} | grep "{search_string}"'
+
+    try:
+        # Set SELinux to permissive mode to allow shell operations
+        device.execute('set platform software selinux permissive')
+        # Enter bash console and run the btdecode | grep command
+        with device.bash_console() as bash:
+            output = bash.execute(cmd, timeout=timeout)
+    except Exception as e:
+        raise SubCommandFailure(
+            f"Could not execute btdecode grep command on {device.name}. Error:\n{e}")
+    finally:
+        # Always reset SELinux to default mode
+        device.execute('set platform software selinux default')
+
+    # Pattern to match actual log entries (lines starting with a timestamp)
+    
+    #   2026/05/06 12:04:48.351220785 {iosrp_R0-0}{1}: [smart-agent] [6472]: ... Communication message send error
+    #   2026/05/06 13:05:40.371531626 {iosrp_R0-0}{1}: [smart-agent] [6472]: ... SATrustSync-Status 32 [...]
+    timestamp_pattern = re.compile(r'^\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2}\.')
+
+    matched_lines = [
+        line.strip()
+        for line in output.splitlines()
+        if line.strip() and timestamp_pattern.match(line.strip())
+    ]
+
+    ret_dict = {'matched_lines': matched_lines}
+    log.debug(f"btdecode grep result: {ret_dict}")
+    return ret_dict
+
+
 
 
 def clear_dlep_client(device, interface, peer_id):

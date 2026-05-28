@@ -40,11 +40,10 @@ class TestConfigureSnmpServerTrap(unittest.TestCase):
         self.assertEqual(result, expected_output)
 
     def test_configure_snmp_server_trap_2(self):
-        result = configure_snmp_server_trap(self.device, None, None, 'snmp', None, None, None, None)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        with self.assertRaises(ValueError):
+            configure_snmp_server_trap(self.device, None, None, 'snmp', None, None, None, None)
 
     def test_configure_snmp_server_trap_3(self):
-        result = configure_snmp_server_trap(self.device, None, None, '', None, None, None, None)
+        result = configure_snmp_server_trap(self.device, None, None, None, None, None, None, None)
         expected_output = None
         self.assertEqual(result, expected_output)

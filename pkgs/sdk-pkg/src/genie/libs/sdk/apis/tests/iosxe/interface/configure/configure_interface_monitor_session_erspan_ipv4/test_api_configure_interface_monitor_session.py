@@ -1,40 +1,45 @@
-import os
 import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
+
 from genie.libs.sdk.apis.iosxe.interface.configure import configure_interface_monitor_session
 
 
-class TestConfigureInterfaceMonitorSession(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          Intrepid_HA_DUT2:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: c9600
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Intrepid_HA_DUT2']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureInterfaceMonitorSession(TestCase):
 
     def test_configure_interface_monitor_session(self):
-        result = configure_interface_monitor_session(self.device, [{'erspan_id': 101,
-  'interface': 'Fif2/0/3 rx',
-  'ip_address': '40.1.1.2',
-  'origin_ip_address': '40.1.1.1',
-  'session_name': 1,
-  'session_type': 'erspan-source'}])
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = configure_interface_monitor_session(
+            device,
+            [
+                {
+                    "erspan_id": 101,
+                    "interface": "Fif2/0/3 rx",
+                    "ip_address": "40.1.1.2",
+                    "origin_ip_address": "40.1.1.1",
+                    "session_name": 1,
+                    "session_type": "erspan-source",
+                }
+            ],
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, str)
+        self.assertIn("monitor session 1 type erspan-source", sent_commands)
+        self.assertIn("source interface Fif2/0/3 rx", sent_commands)
+        self.assertIn("destination", sent_commands)
+        self.assertIn("erspan-id 101", sent_commands)
+        self.assertIn("ip address 40.1.1.2", sent_commands)
+        self.assertIn("origin ip address 40.1.1.1", sent_commands)
+        self.assertIn("exit", sent_commands)
+        self.assertIn("no shutdown", sent_commands)
+
+
+if __name__ == "__main__":
+    unittest.main()

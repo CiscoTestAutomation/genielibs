@@ -79,21 +79,24 @@ def execute_set_config_register(device, config_register, timeout=300):
 
     # Iterate through each connection to apply the configuration.
     for conn in conn_list:
-        # Not implemented for rommon state
-        if conn.state_machine.current_state == 'rommon':
-            continue
-        # If the device is in standby state, skip it.
-        # Otherwise, the standby will fail if locked.
-        elif conn.role == "standby":
-            continue
+        log.info(f"Setting config-register to '{config_register}' on {conn}")
+
         try:
-            conn.configure("config-register {}".format(config_register),
+            # Use confreg command in rommon mode
+            if conn.state_machine.current_state == 'rommon':
+                cmd = f'confreg {config_register}'
+                conn.execute(cmd, timeout=timeout)
+                continue
+            # If the device is in standby state, skip it.
+            # Otherwise, the standby will fail if locked.
+            elif conn.role == "standby":
+                continue
+            else:
+                conn.configure("config-register {}".format(config_register),
                             timeout=timeout)
         except Exception as e:
             raise Exception("Failed to set config register for '{d}'\n{e}".\
                             format(d=device.name, e=str(e)))
-        else:
-            log.info("Set config-register to '{}'".format(config_register))
 
 
 def execute_rommon_reset(device, timeout=300):
@@ -2527,3 +2530,28 @@ def touch_file(device, directory, file_name):
         SubCommandFailure: If the command execution fails
     """
     device.tclsh(f'puts [open "{directory}{file_name}" w+] {{}}')
+
+def execute_show_policy_firewall_stats_platform(device, filter_option=None):
+    """Execute 'show policy-firewall stats platform' on device
+       Args:
+            device('obj'): device object
+            filter_option('str', optional): Filter option to append to the command.
+                                          Examples: 'include <pattern>', 'exclude <pattern>',
+                                          'begin <pattern>', 'section <pattern>'
+       Returns:
+            str: Command output
+       Raises:
+            Exception
+    """
+    cmd = "show policy-firewall stats platform"
+
+    if filter_option:
+        cmd = f"{cmd} | {filter_option}"
+
+    try:
+        output = device.execute(cmd)
+        return output
+    except Exception as e:
+        raise Exception(
+            f'Failed to execute {cmd} on device. Error: {e}'
+        )

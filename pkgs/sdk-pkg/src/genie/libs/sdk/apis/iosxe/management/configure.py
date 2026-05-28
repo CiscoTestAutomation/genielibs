@@ -771,7 +771,8 @@ def configure_management(device,
                          set_hostname=False,
                          alias_as_hostname=False,
                          switchport=None,
-                         vlan=None
+                         vlan=None,
+                         media_type=None
                          ):
     ''' Configure management connectivity on the device.
 
@@ -803,6 +804,7 @@ def configure_management(device,
                    - 'no': Its a switch, so for routed ports we need "no switchport" configuration
                    - 'access'/'trunk': Its a switch & its a switched port, mode specifies the switch port type
                 vlan: (int) VLAN ID to use if switchport is access or trunk
+                media_type: (str) media-type for dual media ports (e.g. 'rj45', 'sfp', 'auto-select')
 
     Args:
         device ('obj'):  device object
@@ -830,6 +832,7 @@ def configure_management(device,
            - 'no': Its a switch, so for routed ports we need "no switchport" configuration
            - 'access'/'trunk': Its a switch & its a switched port, mode specifies the switch port type
         vlan (int): VLAN ID to use if switchport is access or trunk
+        media_type (str): media-type for dual media ports (e.g. 'rj45', 'sfp', 'auto-select')
     '''
     management = getattr(device, 'management', {})
 
@@ -840,6 +843,10 @@ def configure_management(device,
     vrf = vrf or management.get('vrf')
     switchport = switchport or management.get('switchport')
     vlan = vlan or management.get('vlan')
+    media_type = media_type or management.get('media_type')
+
+    # Master key must be configured before any other configuration
+    device.api.configure_management_master_key()
 
     # Master key must be configured before any other configuration
     device.api.configure_management_master_key()
@@ -896,6 +903,13 @@ def configure_management(device,
             raise Exception(
                 "Invalid switchport mode. Expected 'access', 'trunk', or 'no'."
             )
+
+    # Configure media-type on dual-media management ports
+    if media_type and interface:
+        device.api.configure_dual_port_interface_media_type(
+            interface=interface,
+            media_type=media_type,
+        )
 
     device.api.configure_management_gateway(
         gateway=gateway,
@@ -1051,7 +1065,7 @@ def unconfigure_netconf_yang_intelligent_sync(device):
         raise SubCommandFailure(f"Failed to unconfigure netconf-yang cisco-ia intelligent-sync. Error:\n{e}")
 
 
-def configure_ip_ssh_version(device, version):
+def configure_ip_ssh_version(device, version='2'):
 
     """ Configure ip ssh version
         Args:
@@ -1061,8 +1075,12 @@ def configure_ip_ssh_version(device, version):
             None
         Raises:
             SubCommandFailure
+    
+    Secure version (hardcode SSHv2 per Cisco hardening guide):
+    -> 'ip ssh version 2'
     """
-
+    if  not version.isnumeric() or (version.isnumeric() and int(version) not in (1, 2)):
+        raise ValueError(f"Invalid SSH version '{version}'. Must be 1 or 2.")
     cmd = f'ip ssh version {version}'
     try:
         device.configure(cmd)
@@ -1196,7 +1214,7 @@ def unconfigure_ip_ssh_version(device, version):
         raise SubCommandFailure(f"Failed to unconfigure ip ssh version on device {device}. Error:\n{e}")
 
 
-def configure_line_vty_needs_enhancement(device,firstline_id,lastline_id,min,sec):
+def configure_line_vty_needs_enhancement(device,firstline_id,lastline_id,min,sec,transport_input='ssh'):
     """ configure_line_vty_needs_enhancement
         Args:
             device ('obj'): device to execute on
@@ -1204,16 +1222,32 @@ def configure_line_vty_needs_enhancement(device,firstline_id,lastline_id,min,sec
             lastline_id ('int') :  lastline identifier
             min ('int') : timeout in minutes
             sec ('int') : timeout in seconds
+            transport_input ('str', optional): Transport input method (default: 'ssh', 'all' allows insecure telnet)
 
         Return:
             None
         Raises:
+            ValueError: If input parameters contain invalid values
             SubCommandFailure
     """
+    # Validate integer inputs
+    for param_name, param_value in [('firstline_id', firstline_id), ('lastline_id', lastline_id),
+                                     ('min', min), ('sec', sec)]:
+        if not str(param_value).isdigit():
+            raise ValueError(f"{param_name} must be a non-negative integer")
+
+    # Validate transport_input
+    if not re.match(r'^[\w\-]+$', transport_input):
+        raise ValueError("Invalid characters in transport_input")
+
+    # Warn about insecure transport
+    if transport_input == 'all':
+        log.warning("'transport input all' allows telnet which is insecure. Use 'ssh' per Cisco hardening guidelines.")
+
     cmd = ["line vty {firstline_id} {lastline_id}".format(firstline_id=firstline_id,lastline_id=lastline_id),
            "transport preferred ssh",
            "exec-timeout {min} {sec}".format(min=min,sec=sec),
-           "transport input all",
+           f"transport input {transport_input}",
            "transport output all"]
     try:
         device.configure(cmd)

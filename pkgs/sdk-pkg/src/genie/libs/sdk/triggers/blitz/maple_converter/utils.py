@@ -17,6 +17,12 @@ TIMS_URL = 'http://tims.cisco.com/xml/{}/entity-list.svc'
 log = logging.getLogger(__name__)
 
 
+def safe_yaml_load(yaml_string):
+    """Load YAML using ruamel's safe loader API across ruamel versions."""
+
+    return ruamel.yaml.YAML(typ='safe', pure=True).load(yaml_string)
+
+
 ###################################################
 #                                                 #
 #                Pre-Job checks                   #
