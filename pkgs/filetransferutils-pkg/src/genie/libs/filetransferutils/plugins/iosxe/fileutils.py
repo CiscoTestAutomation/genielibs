@@ -89,6 +89,14 @@ class FileUtils(FileUtilsDeviceBase):
                                                    cache_ip=kwargs.get(
                                                        'cache_ip', True))
 
+        # Extract the server address BEFORE route rewrite so that
+        # auth/cert lookups use the original (automation-reachable) hostname
+        used_server = self.get_server(source, destination)
+
+        # Rewrite URL hostname using server route lookup if applicable
+        source = self._resolve_server_route_url(source, device=device)
+        destination = self._resolve_server_route_url(destination, device=device)
+
         # copy flash:/memleak.tcl ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl
         cmd = 'copy {f} {t}'.format(f=source, t=destination)
         if len(cmd) > MAX_CLI_LENGTH:
@@ -111,9 +119,6 @@ class FileUtils(FileUtilsDeviceBase):
         # if still too long, log warning and continue
         if len(cmd) > MAX_CLI_LENGTH:
             log.warning(f'Command line might be too long ({len(cmd)} chars)')
-
-        # Extract the server address to be used later for authentication
-        used_server = self.get_server(source, destination)
 
         return super().copyfile(source=source, destination=destination,
                          timeout_seconds=timeout_seconds, cmd=cmd, used_server=used_server,

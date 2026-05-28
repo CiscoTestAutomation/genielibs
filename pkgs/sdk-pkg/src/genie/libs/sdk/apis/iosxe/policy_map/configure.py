@@ -1337,3 +1337,47 @@ def unconfigure_policy_map_shape_on_device(device, policy_map_name, class_map_na
         )
     except SubCommandFailure:
         raise SubCommandFailure("Could not unconfigure policy-map shape on device")
+
+
+def configure_policy_map_type_service_isg(
+    device,
+    policy_map_name,
+    class_name,
+    actions,
+):
+    """ Configure ISG policy-map type service with a single class type traffic block.
+        Note:
+            To configure multiple class blocks in one policy-map, call this
+            API once per class block — IOS XE appends to the existing policy-map.
+        Args:
+            device ('obj'): Device object
+            policy_map_name ('str'): policy-map name
+            class_name ('str'): class type traffic name
+            actions ('list'): list of action strings to apply under the class.
+                e.g. ['accounting aaa list ACCT_LIST']
+                     ['timeout idle 180']
+                     ['timeout idle 60 inbound']
+                     ['timeout absolute 60']
+                     ['redirect to group REDIR_GRP_V4']
+                     ['drop']
+                     ['police input 8000 1000 2000', 'police output 8000 1000 2000']
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [
+        "policy-map type service {0}".format(policy_map_name),
+        " class type traffic {0}".format(class_name),
+    ]
+    for action in actions:
+        cmd.append("  {0}".format(action))
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure policy-map type service {0}. Error: {1}".format(
+                policy_map_name, e
+            )
+        )

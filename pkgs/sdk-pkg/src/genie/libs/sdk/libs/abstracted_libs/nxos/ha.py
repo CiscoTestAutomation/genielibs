@@ -489,7 +489,9 @@ class HA(HA_main):
                     'install all nxos bootflash:{} non-disruptive'.format(image_name), timeout=issu_timeout, reply=dialog)
 
         if not (re.search('Saving supervisor runtime state', out) \
-             or re.search('Finishing the (up|down)grade, switch will reboot', out)):
+             or re.search('Switching over onto standby', out) \
+             or re.search('Rebooting the switch', out) \
+             or re.search('Finishing the (up|down)grade', out)):
             step.failed("Failed to complete ISSU on device {}... Aborting.".format(self.device.hostname))
             return
 

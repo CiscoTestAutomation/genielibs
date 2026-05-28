@@ -7,6 +7,8 @@ configure:
     no logging console: ''
     snmp-server host 172.21.226.240 vrf Mgmt-vrf version 2c public udp-port 10001: "snmp-server
       host 172.21.226.240 vrf Mgmt-vrf version 2c public udp-port 10001\r\n"
+    snmp-server host 172.21.226.240 vrf Mgmt-vrf version v3 public udp-port 10001: "snmp-server
+      host 172.21.226.240 vrf Mgmt-vrf version v3 public udp-port 10001\r\n"
   prompt: startrek-1(config)#
 configure_line:
   commands:

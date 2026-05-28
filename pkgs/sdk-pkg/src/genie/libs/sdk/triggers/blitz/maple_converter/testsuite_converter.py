@@ -10,6 +10,7 @@ from genie.testbed import load
 from genie.harness.main import gRun
 
 from .maple_converter import Converter
+from .utils import safe_yaml_load
 
 log = logging.getLogger(__name__)
 
@@ -38,7 +39,7 @@ class Testsuite_Converter(object):
         with open(self.testsuite_file, 'r') as tempfile:
             testsuite_string = tempfile.read()
 
-        testsuite_dict = ruamel.yaml.safe_load(testsuite_string)
+        testsuite_dict = safe_yaml_load(testsuite_string)
         for each_testcase, testcase_arguments in testsuite_dict['tasks'].items():
 
             runtime.args.clean_files = None

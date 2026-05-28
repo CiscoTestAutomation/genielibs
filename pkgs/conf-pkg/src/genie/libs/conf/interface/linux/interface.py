@@ -231,7 +231,7 @@ class ParsedInterfaceName(BaseParsedInterfaceName):
     def __init__(self, name, device=None, **kwargs):
         if device is None and isinstance(name, ParsedInterfaceName):
             return super().__init__(vars(name))
-        assert type(name) is str
+        name = str(name)
 
         d = dict(
             type=None,

@@ -31,5 +31,5 @@ class TestGetFmSlots(unittest.TestCase):
 
     def test_get_fm_slots(self):
         result = get_fm_slots(self.device)
-        expected_output = ['19', '26']
-        self.assertEqual(result, expected_output)
+        expected_output = {'19', '26'}
+        self.assertEqual(set(result), expected_output)

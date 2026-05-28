@@ -880,8 +880,11 @@ def configure_pki_enroll(device,
                 Statement(pattern=r'.*Send Certificate Request to file system\? \[yes/no\].*',
                     action=f'sendline(yes)',
                     loop_continue=True,
-                    continue_timer=False)
-
+                    continue_timer=False),
+                Statement(pattern=r'Using EST to request certificate from CA\? \[yes/no\].*',
+                    action=f'sendline(yes)',
+                    loop_continue=True,
+                    continue_timer=False),
                 ])
     error_patterns = ["CA server trustpoint is not known",
                        "% Error in receiving Certificate Authority certificate: status = FAIL, cert length = 0"]

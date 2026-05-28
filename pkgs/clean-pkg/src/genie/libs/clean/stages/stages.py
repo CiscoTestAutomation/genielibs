@@ -15,6 +15,7 @@ from genie.libs.clean.utils import (_apply_configuration, find_clean_variable,
                                     verify_num_images_provided,
                                     remove_string_from_image, raise_)
 from genie.metaparser.util.schemaengine import Optional, Required, Any, Or, ListOf
+from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
 # pyATS
 from pyats.utils.fileutils import FileUtils
@@ -2688,6 +2689,10 @@ delete_files:
                     device.api.delete_files(locations=[location],
                                             filenames=[filenames],
                                             timeout=timeout)
+                except SchemaEmptyParserError:
+                    step.passx(
+                        f"Directory '{location}' does not exist or is "
+                        f"empty on the device. Nothing to delete.")
                 except Exception as e:
                     step.failed("Failed to delete the file.", from_exception=e)
 

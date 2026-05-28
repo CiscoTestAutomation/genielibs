@@ -479,7 +479,7 @@ def configure_ipsec_tunnel(device,
             "Failed to configure ipsec tunnel, Error:\n{e}"
         )
 
-def configure_crypto_ikev2_keyring(device, keyring_name, peer_name=None, preshare_key=None, address='0.0.0.0', mask='0.0.0.0', type='ipv4'):
+def configure_crypto_ikev2_keyring(device, keyring_name, peer_name=None, preshare_key=None, address='0.0.0.0', mask='0.0.0.0', type='ipv4', identity_address=None, ppk_id=None, ppk_key=None):
     """ Configure Crypto Ikev2 Keyring
     Args:
         device (`obj`): Device object
@@ -489,6 +489,9 @@ def configure_crypto_ikev2_keyring(device, keyring_name, peer_name=None, preshar
         address (`str`,optional): IPv4 or IPv6 address (i.e 1.1.1.1 or 1:1:1::1) (Default 0.0.0.0)
         mask (`str`,optional): IPv4 or IPv6 mask (i.e 0.0.0.0 or 128) (Default 0.0.0.0)
         type (`str`,optional): IP protocol (ipv4 or ipv6) (Default ipv4)
+        identity_address ('str',optional): Identity address used in IKEv2 negotiation (i.e 1.1.1.1 or 1:1:1::1) (Default None)
+        ppk_id ('str',optional): PPK manual id (Default None)
+        ppk_key ('str',optional): PPK key (Default None)
     Return:
         None
     Raise:
@@ -505,6 +508,13 @@ def configure_crypto_ikev2_keyring(device, keyring_name, peer_name=None, preshar
             config_list.append('address {address}/{mask}'.format(address=address, mask=mask))
     if preshare_key:
         config_list.append('pre-shared-key {preshare_key}'.format(preshare_key=preshare_key))
+    
+    if identity_address:
+        config_list.append('identity address {identity_address}'.format(identity_address=identity_address))
+        
+    if ppk_id and ppk_key:
+        config_list.append('ppk manual id {ppk_id} key {ppk_key}'.format(ppk_id=ppk_id, ppk_key=ppk_key))  
+
     try:
         device.configure(config_list)
     except SubCommandFailure as e:
@@ -520,8 +530,12 @@ def unconfigure_crypto_ikev2_keyring(device,keyring):
     Return:
         None
     Raise:
+        ValueError: If input parameters contain invalid characters
         SubCommandFailure: Failed configuring
     """
+    if not re.match(r'^[\w\-\.]+$', keyring):
+        raise ValueError("Invalid characters in keyring: must be alphanumeric, hyphen, underscore, or dot")
+
     try:
         device.configure([
             "no crypto ikev2 keyring {keyring}".format(keyring=keyring),

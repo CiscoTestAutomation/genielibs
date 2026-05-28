@@ -5,8 +5,8 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-    snmp-server host 192.168.0.10 traps public entity: "snmp-server host 192.168.0.10
-      traps public entity\r\n"
+    snmp-server host 192.168.0.10 traps myComm entity: "snmp-server host 192.168.0.10
+      traps myComm entity\r\n"
   prompt: T2-9500-RA_SDG(config)#
 configure_line:
   commands:

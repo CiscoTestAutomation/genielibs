@@ -109,6 +109,18 @@ class TestActions(unittest.TestCase):
         Active Package(s):
     """
 
+    execute_scope_output = """
+Route Distinguisher: 100:1
+  Network 192.168.10.0/24
+  Path status: Best path
+Route Distinguisher: 200:1
+  Network 192.168.20.0/24
+  Path status: inaccessible
+Route Distinguisher: 300:1
+  Network 192.168.30.0/24
+  Path status: Best path
+"""
+
     learn_config_out = {'version 9.3(3) Bios:version 07.33': {},
        'switchname N93_3': {},
        'install feature-set mpls': {},
@@ -719,6 +731,272 @@ class TestActions(unittest.TestCase):
 
         execute(**self.kwargs)
         self.assertEqual(steps.result, Passx)
+
+    def test_execute_scope_start_end_include_exclude(self):
+
+        self.dev.execute = Mock(side_effect=[self.execute_scope_output])
+        steps = Steps()
+        self.kwargs.update({'device': self.dev,
+                            'steps': steps,
+                            'command': 'cmd',
+                            'scope': {
+                                'start': r'^Route Distinguisher: 100:1',
+                                'end': r'^Route Distinguisher: '},
+                            'include': [r'192\.168\.10\.0/24',
+                                        'Best path'],
+                            'exclude': ['inaccessible']})
+
+        output = execute(**self.kwargs)
+        self.assertEqual(steps.result, Passed)
+        self.assertIn('Route Distinguisher: 100:1', output)
+        self.assertNotIn('Route Distinguisher: 200:1', output)
+
+    def test_execute_scope_include_start_end_flags(self):
+
+        self.dev.execute = Mock(side_effect=[self.execute_scope_output])
+        steps = Steps()
+        self.kwargs.update({'device': self.dev,
+                            'steps': steps,
+                            'command': 'cmd',
+                            'scope': {
+                                'start': r'^Route Distinguisher: 100:1',
+                                'end': r'^Route Distinguisher: 200:1',
+                                'include_start': False,
+                                'include_end': True}})
+
+        output = execute(**self.kwargs)
+        self.assertEqual(steps.result, Passed)
+        self.assertNotIn('Route Distinguisher: 100:1', output)
+        self.assertIn('Route Distinguisher: 200:1', output)
+
+    def test_execute_scope_block_regex_capture_group(self):
+
+        self.dev.execute = Mock(side_effect=[self.execute_scope_output])
+        steps = Steps()
+        self.kwargs.update({'device': self.dev,
+                            'steps': steps,
+                            'command': 'cmd',
+                            'scope': {
+                                'block_regex':
+                                    r'Route Distinguisher: 200:1\n(?P<block>.*?)(?=^Route Distinguisher:|\Z)'},
+                            'include': ['inaccessible']})
+
+        output = execute(**self.kwargs)
+        self.assertEqual(steps.result, Passed)
+        self.assertIn('192.168.20.0/24', output)
+        self.assertNotIn('Route Distinguisher: 200:1', output)
+
+    def test_execute_scope_block_regex_without_capture_group(self):
+
+        self.dev.execute = Mock(side_effect=[self.execute_scope_output])
+        steps = Steps()
+        self.kwargs.update({'device': self.dev,
+                            'steps': steps,
+                            'command': 'cmd',
+                            'scope': {
+                                'block_regex':
+                                    r'Route Distinguisher: 300:1.*?(?=\Z)'},
+                            'include': ['Best path']})
+
+        output = execute(**self.kwargs)
+        self.assertEqual(steps.result, Passed)
+        self.assertIn('Route Distinguisher: 300:1', output)
+
+    def test_execute_scope_line_regex(self):
+
+        self.dev.execute = Mock(side_effect=[self.execute_scope_output])
+        steps = Steps()
+        self.kwargs.update({'device': self.dev,
+                            'steps': steps,
+                            'command': 'cmd',
+                            'scope': {
+                                'line_regex': r'192\.168\.20\.0/24'},
+                            'include': [r'192\.168\.20\.0/24']})
+
+        output = execute(**self.kwargs)
+        self.assertEqual(steps.result, Passed)
+        self.assertIn('192.168.20.0/24', output)
+        self.assertNotIn('192.168.10.0/24', output)
+
+    def test_execute_scope_occurrence_last(self):
+
+        self.dev.execute = Mock(side_effect=[self.execute_scope_output])
+        steps = Steps()
+        self.kwargs.update({'device': self.dev,
+                            'steps': steps,
+                            'command': 'cmd',
+                            'scope': {
+                                'start': r'^Route Distinguisher: ',
+                                'end': r'^Route Distinguisher: ',
+                                'occurrence': 'last'},
+                            'include': [r'192\.168\.30\.0/24']})
+
+        output = execute(**self.kwargs)
+        self.assertEqual(steps.result, Passed)
+        self.assertIn('Route Distinguisher: 300:1', output)
+
+    def test_execute_scope_occurrence_integer(self):
+
+        self.dev.execute = Mock(side_effect=[self.execute_scope_output])
+        steps = Steps()
+        self.kwargs.update({'device': self.dev,
+                            'steps': steps,
+                            'command': 'cmd',
+                            'scope': {
+                                'start': r'^Route Distinguisher: ',
+                                'end': r'^Route Distinguisher: ',
+                                'occurrence': 1},
+                            'include': [r'192\.168\.20\.0/24']})
+
+        output = execute(**self.kwargs)
+        self.assertEqual(steps.result, Passed)
+        self.assertIn('Route Distinguisher: 200:1', output)
+
+    def test_execute_scope_occurrence_all_each_block_failure(self):
+
+        self.dev.execute = Mock(side_effect=[self.execute_scope_output])
+        steps = Steps()
+        self.kwargs.update({'device': self.dev,
+                            'steps': steps,
+                            'command': 'cmd',
+                            'scope': {
+                                'start': r'^Route Distinguisher: ',
+                                'end': r'^Route Distinguisher: ',
+                                'occurrence': 'all'},
+                            'include': ['Best path']})
+
+        output = execute(**self.kwargs)
+        self.assertEqual(steps.result, Failed)
+        self.assertIn('Route Distinguisher: 300:1', output)
+
+    def test_execute_scope_required_missing_fails(self):
+
+        self.dev.execute = Mock(side_effect=[self.execute_scope_output])
+        steps = Steps()
+        self.kwargs.update({'device': self.dev,
+                            'steps': steps,
+                            'command': 'cmd',
+                            'scope': {
+                                'start': r'^Route Distinguisher: 999:1'},
+                            'include': ['Best path']})
+
+        execute(**self.kwargs)
+        self.assertEqual(steps.result, Failed)
+
+    def test_execute_scope_optional_missing_falls_back_to_full_output(self):
+
+        self.dev.execute = Mock(side_effect=[self.execute_scope_output])
+        steps = Steps()
+        self.kwargs.update({'device': self.dev,
+                            'steps': steps,
+                            'command': 'cmd',
+                            'scope': {
+                                'start': r'^Route Distinguisher: 999:1',
+                                'required': False},
+                            'include': ['inaccessible']})
+
+        output = execute(**self.kwargs)
+        self.assertEqual(steps.result, Passed)
+        self.assertEqual(output, self.execute_scope_output)
+
+    def test_execute_scope_rejects_multiple_modes(self):
+
+        self.dev.execute = Mock(side_effect=[self.execute_scope_output])
+        steps = Steps()
+        self.kwargs.update({'device': self.dev,
+                            'steps': steps,
+                            'command': 'cmd',
+                            'scope': {
+                                'start': r'^Route Distinguisher: 100:1',
+                                'line_regex': 'Best path'},
+                            'include': ['Best path']})
+
+        execute(**self.kwargs)
+        self.assertEqual(steps.result, Failed)
+
+    def test_execute_scope_rejects_invalid_regex(self):
+
+        self.dev.execute = Mock(side_effect=[self.execute_scope_output])
+        steps = Steps()
+        self.kwargs.update({'device': self.dev,
+                            'steps': steps,
+                            'command': 'cmd',
+                            'scope': {'start': '('},
+                            'include': ['Best path']})
+
+        execute(**self.kwargs)
+        self.assertEqual(steps.result, Failed)
+
+    def test_execute_scope_save_as(self):
+
+        self.dev.execute = Mock(side_effect=[self.execute_scope_output])
+        steps = Steps()
+        section = self.kwargs['section'].__testcls__(self.kwargs['section'])
+        self.blitz_obj.parent = self
+        self.parameters = {}
+        self.kwargs.update({'device': self.dev,
+                            'steps': steps,
+                            'section': section,
+                            'command': 'cmd',
+                            'scope': {
+                                'start': r'^Route Distinguisher: 100:1',
+                                'end': r'^Route Distinguisher: ',
+                                'save_as': 'rd_100_1_block'},
+                            'include': [r'192\.168\.10\.0/24']})
+
+        execute(**self.kwargs)
+        saved = self.blitz_obj.parameters['save_variable_name']
+        self.assertEqual(steps.result, Passed)
+        self.assertIn('192.168.10.0/24', saved['rd_100_1_block'])
+        self.assertNotIn('192.168.20.0/24', saved['rd_100_1_block'])
+
+    def test_execute_scope_save_uses_scoped_output(self):
+
+        self.dev.execute = Mock(side_effect=[self.execute_scope_output])
+        steps = Steps()
+        section = self.kwargs['section'].__testcls__(self.kwargs['section'])
+        self.blitz_obj.parent = self
+        self.parameters = {}
+        self.kwargs.update({'device': self.dev,
+                            'steps': steps,
+                            'section': section,
+                            'command': 'cmd',
+                            'scope': {
+                                'start': r'^Route Distinguisher: 100:1',
+                                'end': r'^Route Distinguisher: '},
+                            'include': [r'192\.168\.10\.0/24']})
+
+        output = execute(**self.kwargs)
+        ret_dict = {'action': 'execute', 'saved_vars': {}}
+        self.blitz_obj._filter_and_save_action_output(
+            section, ret_dict,
+            [{'variable_name': 'scoped_output'}], output)
+        saved = self.blitz_obj.parameters['save_variable_name']
+        self.assertEqual(steps.result, Passed)
+        self.assertIn('192.168.10.0/24', saved['scoped_output'])
+        self.assertNotIn('192.168.20.0/24', saved['scoped_output'])
+
+    def test_execute_scope_retry_reapplies_scope(self):
+
+        initial_output = "No route distinguisher yet"
+        self.dev.execute = Mock(side_effect=[
+            initial_output,
+            self.execute_scope_output,
+            self.execute_scope_output])
+        steps = Steps()
+        self.kwargs.update({'device': self.dev,
+                            'steps': steps,
+                            'command': 'cmd',
+                            'scope': {
+                                'start': r'^Route Distinguisher: 100:1',
+                                'end': r'^Route Distinguisher: '},
+                            'include': [r'192\.168\.10\.0/24'],
+                            'max_time': 1,
+                            'check_interval': 1})
+
+        output = execute(**self.kwargs)
+        self.assertEqual(steps.result, Passed)
+        self.assertIn('192.168.10.0/24', output)
 
     def test_learn(self):
 

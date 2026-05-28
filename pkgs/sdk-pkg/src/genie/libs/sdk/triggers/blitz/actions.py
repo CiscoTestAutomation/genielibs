@@ -462,6 +462,7 @@ def execute(self,
             expected_failure=False,
             alias=None,
             connection_alias=None,
+            scope=None,
             include=None,
             exclude=None,
             result_status=None,
@@ -474,8 +475,7 @@ def execute(self,
             health_sections=None,
             **kwargs):
 
-    if 'ret_dict' in kwargs:
-        kwargs.pop('ret_dict')
+    ret_dict = kwargs.pop('ret_dict', None)
 
     # checking if custom msg else default msg will be written
     msg = kwargs.pop(
@@ -491,13 +491,17 @@ def execute(self,
             'device': device,
             'command': command,
             'connection_alias': connection_alias,
+            'scope': scope,
             'include': include,
             'exclude': exclude,
             'result_status': result_status,
             'max_time': max_time,
             'check_interval': check_interval,
             'continue_': continue_,
-            'expected_failure': expected_failure
+            'expected_failure': expected_failure,
+            'blitz_obj': self,
+            'section': section,
+            'ret_dict': ret_dict
         })
 
         output = execute_handler(**kwargs)

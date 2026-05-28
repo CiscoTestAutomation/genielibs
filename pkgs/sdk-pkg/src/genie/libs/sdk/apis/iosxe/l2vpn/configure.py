@@ -237,3 +237,51 @@ def configure_l2vpn_evpn_ethernet_segment_all_active(device, segment_value, acti
         raise SubCommandFailure(
             f'Failed to configure l2vpn evpn ethernet-segment 201 with redundancy as all-active on {device.name}\n{e}'
         ) 
+
+
+def configure_connect_subinterfaces(device, connection_name, interface1, vlan, interface2):
+    """ Configures connect between subinterfaces
+
+        Args:
+            device('obj'): device to configure
+            connection_name('str'): connection name
+            interface1('str'): first interface
+            vlan('int'): vlan id
+            interface2('str'): second interface
+
+        Returns:
+            N/A
+        Raises:
+            SubCommandFailure
+    """
+    cfg_cmd = f"connect {connection_name} {interface1}.{vlan} {interface2}.{vlan}"
+    try:
+        device.configure(cfg_cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure {cfg_cmd} on device {device.name} with error: {str(e)}"
+        )
+
+
+def unconfigure_connect_subinterfaces(device, connection_name, interface1, vlan, interface2):
+    """ Unconfigures connect between subinterfaces
+
+        Args:
+            device('obj'): device to configure
+            connection_name('str'): connection name
+            interface1('str'): first interface
+            vlan('int'): vlan id
+            interface2('str'): second interface
+
+        Returns:
+            N/A
+        Raises:
+            SubCommandFailure
+    """
+    cfg_cmd = f"no connect {connection_name} {interface1}.{vlan} {interface2}.{vlan}"
+    try:
+        device.configure(cfg_cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure {cfg_cmd} on device {device.name} with error: {str(e)}"
+        )

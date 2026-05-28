@@ -691,6 +691,20 @@ class test_linux_interface(TestCase):
         alias = Interface(device=dev1, name='enp0s3:2')
         self.assertEqual(alias.parent_interface, parent)
 
+    def test_parsed_int_name(self):
+        """Verify that an integer interface name (e.g., YAML key 0) is coerced to string '0'."""
+        p = ParsedInterfaceName(0)
+        self.assertEqual(p.type, '0')
+        self.assertEqual(p.reconstruct(), '0')
+
+    def test_Interface_factory_int_name(self):
+        """Verify that integer based interface names resolve to EthernetInterface."""
+        Genie.testbed = Testbed()
+        dev1 = Device(name='linux-host', os='linux')
+        intf = Interface(device=dev1, name=0)
+        self.assertIsInstance(intf, EthernetInterface,'0 should be EthernetInterface')
+        self.assertIsInstance(intf, PhysicalInterface,'0 should be PhysicalInterface')
+
 
 if __name__ == '__main__':
     unittest.main()

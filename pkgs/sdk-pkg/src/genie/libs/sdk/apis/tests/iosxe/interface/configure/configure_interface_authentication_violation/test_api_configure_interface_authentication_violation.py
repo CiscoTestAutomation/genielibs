@@ -1,40 +1,52 @@
-import os
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.interface.configure import configure_interface_authentication_violation
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.interface.configure import (
+    configure_interface_authentication_violation,
+)
 
 
-class TestConfigureInterfaceAuthenticationViolation(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          stack3-nyquist-1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: router
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['stack3-nyquist-1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureInterfaceAuthenticationViolation(TestCase):
 
     def test_configure_interface_authentication_violation(self):
-        result = configure_interface_authentication_violation(self.device, 'Gi1/0/3', 'shutdown')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = configure_interface_authentication_violation(
+            device,
+            "Gi1/0/3",
+            "shutdown",
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, list)
+        self.assertIn("interface Gi1/0/3", sent_commands)
+        self.assertIn("authentication violation shutdown", sent_commands)
 
     def test_configure_interface_authentication_violation_1(self):
-        result = configure_interface_authentication_violation(self.device, 'Gi1/0/3', 'protect')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = configure_interface_authentication_violation(
+            device,
+            "Gi1/0/3",
+            "protect",
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, list)
+        self.assertIn("interface Gi1/0/3", sent_commands)
+        self.assertIn("authentication violation protect", sent_commands)
+
+
+if __name__ == "__main__":
+    unittest.main()

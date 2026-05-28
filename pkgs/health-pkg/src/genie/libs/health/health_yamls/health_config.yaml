@@ -30,3 +30,9 @@ health_settings:
       x_legend: timestamp
       y_legend: num of corefiles
       y_data_source: filename
+    crashinfo:
+      x: stoptime
+      y: crashfiles
+      x_legend: timestamp
+      y_legend: num of crashinfo files
+      y_data_source: filename

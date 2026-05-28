@@ -203,3 +203,51 @@ def unconfigure_interface_ipv6_nd(device, interface, ns_interval=None,
         raise SubCommandFailure(
             f"Failed to unconfigure interface {interface} ipv6 nd. Error: {e}"
         )
+
+
+def configure_ipv6_dhcp_client_pd_on_interface(device, interface, prefix_name):
+    """ Configure IPv6 DHCP client prefix delegation on interface
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+            prefix_name (`str`): Prefix delegation name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [
+        f"interface {interface}",
+        f" ipv6 dhcp client pd {prefix_name}",
+    ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure ipv6 dhcp client pd on interface {interface}. Error: {e}"
+        )
+
+
+def unconfigure_ipv6_dhcp_client_pd_on_interface(device, interface, prefix_name):
+    """ Unconfigure IPv6 DHCP client prefix delegation on interface
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+            prefix_name (`str`): Prefix delegation name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [
+        f"interface {interface}",
+        f" no ipv6 dhcp client pd {prefix_name}",
+    ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure ipv6 dhcp client pd on interface {interface}. Error: {e}"
+        )

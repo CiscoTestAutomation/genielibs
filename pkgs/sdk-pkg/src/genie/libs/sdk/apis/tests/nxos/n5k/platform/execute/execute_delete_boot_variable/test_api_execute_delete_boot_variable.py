@@ -1,35 +1,35 @@
-import os
 import unittest
-from pyats.topology import loader
+from unittest.mock import Mock
 from genie.libs.sdk.apis.nxos.n5k.platform.execute import execute_delete_boot_variable
 
 
 class TestExecuteDeleteBootVariable(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          II23-FCOECORE:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os nxos --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: nxos
-            platform: n5k
-            type: n5k
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['II23-FCOECORE']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
-
     def test_execute_delete_boot_variable(self):
-        result = execute_delete_boot_variable(self.device)
+        device = Mock()
+        device.name = 'II23-FCOECORE'
+
+        device.configure.return_value = None
+
+        device.api.execute_copy_run_to_start.return_value = None
+        device.api.is_current_boot_variable_as_expected.return_value = None
+
+        result = execute_delete_boot_variable(device)
+
         expected_output = None
         self.assertEqual(result, expected_output)
+
+        device.configure.assert_called_once_with(
+            ['no boot system', 'no boot kickstart'], timeout=300
+        )
+
+        device.api.execute_copy_run_to_start.assert_called_once_with(
+            command_timeout=300
+        )
+        device.api.is_current_boot_variable_as_expected.assert_called_once_with(
+            device=device, system=None, kickstart=None
+        )
+
+
+if __name__ == '__main__':
+    unittest.main()

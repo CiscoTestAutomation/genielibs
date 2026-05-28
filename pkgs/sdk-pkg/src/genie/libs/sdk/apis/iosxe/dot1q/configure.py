@@ -45,3 +45,87 @@ def unconfigure_vlan_dot1q_tag_native(device):
         raise SubCommandFailure(
             f'Could not unconfigure vlan dot1q tag native on {device}.Error:\n{e}')            
             
+
+
+def configure_subinterface_dot1q_encapsulation(device, interface, vlan):
+    """ configure subinterface dot1q encapsulation
+        Args:
+            device ('obj')    : device to use
+            interface ('str') : interface name
+            vlan ('str')      : vlan id
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [f"interface {interface}.{vlan}",
+           f"encapsulation dot1q {vlan}"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure {cmd} on device {device.name}. Error:\n{e}")
+
+
+def unconfigure_subinterface_dot1q_encapsulation(device, interface, vlan):
+    """ unconfigure subinterface dot1q encapsulation
+        Args:
+            device ('obj')    : device to use
+            interface ('str') : interface name
+            vlan ('str')      : vlan id
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [f"interface {interface}.{vlan}",
+           f"no encapsulation dot1q {vlan}"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure {cmd} on device {device.name}. Error:\n{e}")
+
+
+def configure_subinterface_qinq_encapsulation(device, interface, qinq):
+    """ configure subinterface qinq encapsulation
+        Args:
+            device ('obj')    : device to use
+            interface ('str') : interface name
+            qinq ('str')      : qinq vlan id
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [
+        f"interface {interface}.{qinq}",
+        f"encapsulation dot1q {qinq} second {qinq}"
+    ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure {cmd} on device {device.name}. Error:\n{e}")
+
+
+def unconfigure_subinterface_qinq_encapsulation(device, interface, qinq):
+    """ unconfigure subinterface qinq encapsulation
+        Args:
+            device ('obj')    : device to use
+            interface ('str') : interface name
+            qinq ('str')      : qinq vlan id
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [
+        f"interface {interface}.{qinq}",
+        f"no encapsulation dot1q {qinq} second {qinq}"
+    ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure {cmd} on device {device.name}. Error:\n{e}")

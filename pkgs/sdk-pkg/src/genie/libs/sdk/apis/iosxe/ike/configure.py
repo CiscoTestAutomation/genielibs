@@ -78,7 +78,8 @@ def configure_ikev2_profile(device,
                             dpd_retry_time,
                             dpd_query,
                             fvrf=None,
-                            keyring_ppk=None):
+                            keyring_ppk=None,
+                            remote_ip=None):
                                 
     """ Configures IKEV2 keyring or Preshared Key (PSK)
         Args:
@@ -93,6 +94,7 @@ def configure_ikev2_profile(device,
             dpd_query ('str'): DPD queires on-demand or periodic
             fvrf('str',optional): fvrf (Default None)
             keyring_ppk('str',optional): keyring_ppk (Default None)
+            remote_ip('str',optional): Remote IP address (Default None)
         Returns:
             None
         Raises:
@@ -106,7 +108,10 @@ def configure_ikev2_profile(device,
     configs.append("crypto ikev2 profile {profile_name}".format(profile_name=profile_name))
     if fvrf:
         configs.append(f"match fvrf {fvrf}")   
-    configs.append("match identity remote address {remote_addr}".format(remote_addr=remote_addr))
+    if remote_ip:
+        configs.append("match identity remote address {remote_ip} {remote_addr}".format(remote_addr=remote_addr, remote_ip=remote_ip))
+    else:
+        configs.append("match identity remote address {remote_addr}".format(remote_addr=remote_addr))
     configs.append("authentication remote {remote_auth}".format(remote_auth=remote_auth))
     configs.append("authentication local {local_auth}".format(local_auth=local_auth))
     configs.append("keyring local {keyring}".format(keyring=keyring))

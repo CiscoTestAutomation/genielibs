@@ -244,3 +244,39 @@ def unconfigure_service_simulator_radius(device, client_ip, access_ports,
         raise SubCommandFailure(
             f"Failed to unconfigure service simulator radius. Error: {e}"
         )
+
+
+def configure_service_simulator_radius_server(device):
+    """ Configure service simulator radius server on device
+
+        Args:
+            device (`obj`): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure("service simulator radius server")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure service simulator radius server. Error: {e}"
+        )
+
+
+def unconfigure_service_simulator_radius_server(device):
+    """ Unconfigure service simulator radius server on device
+
+        Args:
+            device (`obj`): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure("no service simulator radius server")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure service simulator radius server. Error: {e}"
+        )

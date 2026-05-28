@@ -2,6 +2,7 @@
 
 # Python
 import logging
+import re
 
 # Unicon
 from unicon.core.errors import SubCommandFailure
@@ -148,6 +149,13 @@ def configure_ntp_iburst(device, route):
 
 def configure_ntp_server(device, ntp_config, vrf=None):
     """ Configures ntp server
+    Example:
+        configure_ntp_server(device=device, ntp_config=['192.168.1.1', '192.168.1.2'])
+        --> ntp server 192.168.1.1
+            ntp server 192.168.1.2
+
+        configure_ntp_server(device=device, ntp_config=['10.1.1.1'], vrf='Mgmt-vrf')
+        --> ntp server vrf Mgmt-vrf 10.1.1.1
 
         Args:
             device ('obj'): device to configure on
@@ -161,11 +169,25 @@ def configure_ntp_server(device, ntp_config, vrf=None):
         Returns:
             None
         Raises:
+            ValueError: If input parameters contain invalid characters
             SubCommandFailure
     """
 
     if not isinstance(ntp_config, list):
         raise SubCommandFailure("ntp_config must be a list")
+
+    # Input validation - prevent command injection
+    safe_pattern = re.compile(r'^[\w\-\.:]+$')
+
+    if vrf is not None and not safe_pattern.match(vrf):
+        raise ValueError("Invalid characters in vrf")
+
+    for ip in ntp_config:
+        if not safe_pattern.match(ip):
+            raise ValueError(f"Invalid characters in ntp server address: {ip}")
+
+    # Warn about unauthenticated NTP
+    log.warning("Configuring NTP without authentication. Use 'ntp authenticate' and 'ntp authentication-key' per Cisco hardening guidelines.")
 
     config = []
     for ip in ntp_config:
@@ -175,7 +197,7 @@ def configure_ntp_server(device, ntp_config, vrf=None):
             config.append("ntp server {}".format(ip))
 
     try:
-        device.configure("\n".join(config))
+        device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Failed in configuring ntp server "
@@ -199,11 +221,19 @@ def unconfigure_ntp_server(device, ntp_config, vrf=None):
         Returns:
             None
         Raises:
+            ValueError: If input parameters contain invalid characters
             SubCommandFailure
     """
+    ip_pattern = re.compile(r'^[\w\-\.:/]+$')
 
     if not isinstance(ntp_config, list):
         raise SubCommandFailure("ntp_config must be a list")
+
+    for ip in ntp_config:
+        if not ip_pattern.match(ip):
+            raise ValueError(f"Invalid characters in ntp_config entry: {ip}")
+    if vrf is not None and not re.match(r'^[\w\-\.]+$', vrf):
+        raise ValueError("Invalid characters in vrf")
 
     config = []
     for ip in ntp_config:

@@ -542,7 +542,7 @@ class BaseVCenterPowerCycler(PowerCycler):
     This class provides power control functionality for virtual machines through
     VMware vCenter Server using the pyVmomi library. Unlike traditional power cyclers
     that use outlet numbers, this implementation uses VM instance UUIDs for identification.
-    
+
     Key Features:
     - VM identification via instance UUID
     - Asynchronous task monitoring with configurable timeouts
@@ -587,7 +587,7 @@ class BaseVCenterPowerCycler(PowerCycler):
 
         Establishes connection to vCenter server using credentials from testbed configuration.
         Uses unverified SSL context for lab environments where certificates may be self-signed.
-        
+
         Returns:
             bool: True if connection successful, False otherwise
 
@@ -595,17 +595,22 @@ class BaseVCenterPowerCycler(PowerCycler):
             Exception: If vCenter host not found in testbed or connection fails
         """
         # Validate that vCenter server is defined in testbed
-        if self.host not in self.testbed.servers:
-            raise Exception(f"The vCenter server '{self.host}' does not exist in testbed.servers")
+        server_config = self.testbed.servers.get(self.host)
+        if not server_config:
+            raise Exception(
+                f"The vCenter server '{self.host}' is not configured in testbed.servers. "
+                f"Please add '{self.host}' with address and credentials to testbed servers section."
+            )
 
         # Extract connection parameters from testbed configuration
-        server_config = self.testbed.servers.get(self.host)
-        credentials = server_config['credentials']['default']
-        vcenter_address = server_config['address']
-        vcenter_user = credentials['username']
-        
+        credentials = server_config.get('credentials', {}).get('default', {})
+        if not credentials:
+            log.warning(f'No credentials for server {self.host}')
+        vcenter_address = server_config.get('address') or ''
+        vcenter_user = credentials.get('username') or ''
+
         # Handle SecretString objects by converting to plaintext
-        vcenter_password = credentials['password']
+        vcenter_password = credentials.get('password') or ''
         if isinstance(vcenter_password, SecretString):
             vcenter_password = to_plaintext(vcenter_password)
 
@@ -633,13 +638,12 @@ class BaseVCenterPowerCycler(PowerCycler):
             return True
 
         except Exception as e:
-            log.error(f"Failed to connect to vCenter {self.host}: {e}")
-            return False
+            raise Exception(f"Failed to connect to vCenter {self.host}: {e}")
 
     def disconnect(self):
         """
         Disconnect from vCenter server
-        
+
         Cleanly closes the vSphere API connection and releases resources.
         Should be called when powercycler operations are complete.
         """
@@ -649,7 +653,7 @@ class BaseVCenterPowerCycler(PowerCycler):
     def find_vm_by_instance_uuid(self, instance_uuid):
         """
         Find virtual machine by instance UUID
-        
+
         Uses vCenter's SearchIndex to locate VM by instance UUID, which is more
         efficient than iterating through all VMs in the datacenter.
 
@@ -666,17 +670,53 @@ class BaseVCenterPowerCycler(PowerCycler):
             raise Exception("Not connected to vCenter")
 
         try:
-            # Use SearchIndex.FindByUuid for efficient VM lookup
-            # Parameters: datacenter=None, uuid=instance_uuid, vmSearch=True, instanceUuid=True
-            vm = self.content.searchIndex.FindByUuid(None, instance_uuid, True, True)
+            vm = self.content.searchIndex.FindByUuid(
+                datacenter=None, uuid=instance_uuid, vmSearch=True, instanceUuid=True)
         except Exception as e:
             raise Exception(f"Error finding VM by instance UUID: {e}")
 
         if not vm:
-            raise Exception(f"VM with instance UUID '{instance_uuid}' not found")
+            # Only dump vCenter inventory at DEBUG level to avoid noisy logs and info leakage
+            if log.isEnabledFor(logging.DEBUG):
+                self._log_all_vm_uuids()
+            raise Exception(
+                f"VM with instance UUID '{instance_uuid}' not found in vCenter '{self.host}'. "
+                f"Verify the UUID matches the 'vcenter.vm_uuid' device attribute. "
+                f"Enable DEBUG logging to see all available VMs."
+            )
 
         log.info(f"Found VM: {vm.name} (MoRef ID: {vm._moId})")
         return vm
+
+    def _log_all_vm_uuids(self):
+        """Walk the entire vCenter inventory and log each VM's name, BIOS UUID,
+        and instance UUID.  Used for debugging when a UUID lookup fails so the
+        caller can compare the testbed outlet value against real vCenter UUIDs."""
+        try:
+            container = self.content.rootFolder
+            view_type = [vim.VirtualMachine]
+            recursive = True
+            container_view = self.content.viewManager.CreateContainerView(
+                container, view_type, recursive)
+            vms = container_view.view
+            container_view.Destroy()
+            if not vms:
+                log.warning("_log_all_vm_uuids: no VMs found in vCenter inventory")
+                return
+            log.warning(f"_log_all_vm_uuids: {len(vms)} VM(s) found in vCenter inventory:")
+            for vm in vms:
+                try:
+                    cfg = vm.config
+                    log.warning(
+                        f"  VM name={vm.name!r}  "
+                        f"bios_uuid={cfg.uuid!r}  "
+                        f"instance_uuid={cfg.instanceUuid!r}  "
+                        f"moref={vm._moId!r}"
+                    )
+                except Exception as e:
+                    log.warning(f"  VM name={vm.name!r}  (could not read config: {e})")
+        except Exception as e:
+            log.warning(f"_log_all_vm_uuids: failed to enumerate VMs: {e}")
 
     def on(self, *outlets):
         """

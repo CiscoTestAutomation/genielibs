@@ -30,6 +30,6 @@ class TestConfigureIpSshVersion(unittest.TestCase):
         )
 
     def test_configure_ip_ssh_version(self):
-        result = configure_ip_ssh_version(self.device, 2)
+        result = configure_ip_ssh_version(self.device, '2')
         expected_output = None
         self.assertEqual(result, expected_output)

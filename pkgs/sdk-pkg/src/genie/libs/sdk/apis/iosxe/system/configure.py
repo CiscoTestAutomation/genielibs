@@ -156,3 +156,22 @@ def unconfigure_preemption_easycli(device, preemption_type=None, preemption_valu
             f"Failed to unconfigure preemption command, Error:\n{e}"
         )
     return True
+
+
+def configure_system_mode_insecure(device):
+    """ Config system mode insecure on Device
+
+        Args:
+            device (`obj`): Device object
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring system mode insecure
+    """
+    cfg_cmd = "system mode insecure"
+    try:
+        device.configure(cfg_cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure {cfg_cmd} on device {device.name}, Error: {e}"
+        )

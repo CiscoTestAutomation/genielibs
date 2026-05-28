@@ -16,6 +16,7 @@ from unittest.mock import patch
 from genie.libs import clean
 from genie.clean.extend import ExtendClean
 from genie.abstract import AbstractTree, Lookup
+from genie.abstract.decorator import with_deprecation_context
 from genie.harness.utils import load_class
 from genie.metaparser.util.schemaengine import Schema, Optional, Any, Or
 from genie.metaparser.util.exceptions import (
@@ -279,7 +280,13 @@ def get_clean_function(clean_name, clean_data, device):
     for matrix_ptr in clean_data.iter_lookup(tokens=tokens,
                                              top=name):
         try:
-            return matrix_ptr.load_ptr()
+            clean_function = matrix_ptr.load_ptr()
+            return with_deprecation_context(
+                clean_function,
+                matrix_ptr=matrix_ptr,
+                abstract_tree=clean_data,
+                tokens=tokens,
+                top=name)
             # found clean stage, no need to check fallbacks
         except Exception:
             pass
@@ -648,4 +655,4 @@ def get_protected_files(device, image):
             package = line.split()[-1]
             if package not in protected_files:
                 protected_files.append(package)
-    return protected_files 
+    return protected_files

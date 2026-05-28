@@ -30,17 +30,17 @@ class TestUnconfigureSnmpServerUser(unittest.TestCase):
         )
 
     def test_unconfigure_snmp_server_user(self):
-        result = unconfigure_snmp_server_user(self.device, 'privuser256256', 'privgrp', 'v3', 'sha-2', '256', 'cisco256', 'aes', '256', 'cisco256', 'ram', 'ipv6', 'nameacl')
+        result = unconfigure_snmp_server_user(self.device, 'privuser256256', 'privgrp', 'v3', 'sha-2', '256', 'cisco256', 'aes', '256', 'cisco256', None, 'ipv6', 'nameacl')
         expected_output = None
         self.assertEqual(result, expected_output)
 
     def test_unconfigure_snmp_server_user_1(self):
-        result = unconfigure_snmp_server_user(self.device, 'privuser256256', 'privgrp', 'v3', 'sha-2', '256', 'cisco256', 'aes', '256', 'cisco256', 'ram', None, None)
+        result = unconfigure_snmp_server_user(self.device, 'privuser256256', 'privgrp', 'v3', 'sha-2', '256', 'cisco256', 'aes', '256', 'cisco256', None, None, None)
         expected_output = None
         self.assertEqual(result, expected_output)
 
     def test_unconfigure_snmp_server_user_2(self):
-        result = unconfigure_snmp_server_user(self.device, 'privuser256256', 'privgrp', 'v3', 'sha-2', '256', 'cisco256', None, None, None, None, None, None)
+        result = unconfigure_snmp_server_user(self.device, 'privuser256256', 'privgrp', 'v3', 'sha-2', '256', 'cisco256', None, '256', 'cisco256', None, None, None)
         expected_output = None
         self.assertEqual(result, expected_output)
 

@@ -387,10 +387,20 @@ class Platform(SuperPlatform):
             if 'IOS-XE' in self.os:
                 self.os = 'iosxe'
 
-        # 'show module' has slot numbers as integers,
-        # need to convert to strings to match rest of ops structure
+        # 'show module' has slot numbers as integers and reports every
+        # populated slot. Route each hw_revision to the matching sub-tree
+        # (lc or rp) so that supervisors in slots not present in
+        # self.slot['lc'] (e.g. C9610-SUP-3 in slot 6 of a C9610R) do not
+        # raise KeyError during platform learn. Slots present in neither
+        # sub-tree are silently skipped.
         if hasattr(self, 'mod'):
-            slots = self.mod['lc'].keys()
-            for slot in slots:
-                self.slot['lc'][str(slot)]['hw_revision'] = self.mod['lc'][slot]['hw_revision']
+            for slot, mod_data in self.mod['lc'].items():
+                slot_str = str(slot)
+                hw_revision = mod_data.get('hw_revision')
+                if hw_revision is None:
+                    continue
+                if 'lc' in self.slot and slot_str in self.slot['lc']:
+                    self.slot['lc'][slot_str]['hw_revision'] = hw_revision
+                elif 'rp' in self.slot and slot_str in self.slot['rp']:
+                    self.slot['rp'][slot_str]['hw_revision'] = hw_revision
             del self.mod

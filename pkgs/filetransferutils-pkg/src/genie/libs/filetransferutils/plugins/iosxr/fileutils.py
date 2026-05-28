@@ -97,8 +97,13 @@ class FileUtils(FileUtilsDeviceBase):
                                                    cache_ip=kwargs.get(
                                                        'cache_ip', True))
 
-        # Extract the server address to be used later for authentication
+        # Extract the server address BEFORE route rewrite so that
+        # auth/cert lookups use the original (automation-reachable) hostname
         used_server = self.get_server(source, destination)
+
+        # Rewrite URL hostname using server route lookup if applicable
+        source = self._resolve_server_route_url(source, device=device)
+        destination = self._resolve_server_route_url(destination, device=device)
         ssh_protocol = {'sftp'}
 
         # Build copy command if not provided

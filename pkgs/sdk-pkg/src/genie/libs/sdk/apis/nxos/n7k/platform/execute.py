@@ -21,4 +21,6 @@ def execute_delete_boot_variable(device, timeout=300):
     else:
         log.info("Deleted system and kickstart BOOT variable")
 
+        device.api.execute_copy_run_to_start(copy_vdc_all=True, command_timeout=timeout)
+
     device.api.is_current_boot_variable_as_expected(device=device, system=None, kickstart=None)

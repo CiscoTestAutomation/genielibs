@@ -407,3 +407,22 @@ def configure_ip_access_list_with_dscp_on_device(device, acc_list_number, sequen
         raise SubCommandFailure(
             f"Could not configure ip access-list with source/destination host and dscp value on device {device}. Error:\n{e}")
             
+
+
+def configure_plim_qos_in_map_ip_dscp_based(device):
+    """ Configures plim qos in map ip dscp-based
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cfg_cmd = "plim qos in map ip dscp-based"
+
+    try:
+        device.configure([cfg_cmd])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure {cfg_cmd} on device {device.name}. Error:\n{e}"
+        )

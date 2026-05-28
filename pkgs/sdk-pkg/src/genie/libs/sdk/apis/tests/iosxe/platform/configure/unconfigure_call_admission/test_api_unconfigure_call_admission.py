@@ -1,34 +1,23 @@
 import unittest
-from pyats.topology import loader
+from unittest.mock import Mock
 from genie.libs.sdk.apis.iosxe.platform.configure import unconfigure_call_admission
 
 
 class TestUnconfigureCallAdmission(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(self):
-        testbed = """
-        devices:
-          BB_ASR1001-X:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: iosxe
-            type: iosxe
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['BB_ASR1001-X']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
-
     def test_unconfigure_call_admission(self):
-        result = unconfigure_call_admission(self.device, 600, 80, 1, 10)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+
+        result = unconfigure_call_admission(device, 600, 80, 1, 10)
+
+        self.assertEqual(result, None)
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            ([
+                'no call admission new-model',
+                'no call admission limit 600',
+                'no call admission cpu-limit 80',
+                'no call admission pppoe 1 10',
+                'no call admission vpdn 10 1'
+            ],)
+        )

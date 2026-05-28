@@ -83,3 +83,59 @@ def unconfig_nve_vni_members(device, nve_intf, vni_cfg):
                 interface=nve_intf, error=e
             )
         )
+
+
+def configure_nve_member_vni(device, nve_interface, vni, ingress_replication,
+                            source_interface):
+    """ Configure NVE interface with member VNI and ingress-replication
+
+        Args:
+            device ('obj'): Device object
+            nve_interface ('str'): NVE interface name (e.g. 'nve1')
+            vni ('str'): VNI number (e.g. '11111')
+            ingress_replication ('str'): Ingress replication IP address
+                (e.g. '33.33.33.33')
+            source_interface ('str'): Source interface (e.g. 'Loopback11')
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [
+        f"interface {nve_interface}",
+        f"member vni {vni}",
+        f"ingress-replication {ingress_replication}",
+        f"source-interface {source_interface}",
+    ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure NVE interface {nve_interface}. Error: {e}"
+        )
+
+
+def unconfigure_nve_member_vni(device, nve_interface, vni, source_interface):
+    """ Unconfigure NVE interface member VNI and source-interface
+
+        Args:
+            device ('obj'): Device object
+            nve_interface ('str'): NVE interface name (e.g. 'nve1')
+            vni ('str'): VNI number (e.g. '11111')
+            source_interface ('str'): Source interface (e.g. 'Loopback11')
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [
+        f"interface {nve_interface}",
+        f"no member vni {vni}",
+        f"no source-interface {source_interface}",
+    ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure NVE member VNI on interface {nve_interface}. Error: {e}"
+        )

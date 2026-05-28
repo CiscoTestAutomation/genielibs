@@ -2911,4 +2911,32 @@ def unconfigure_ip_fqdn_acl(
                 dev=device.name,
                 error=e,
             )
-        )        
+        ) 
+
+def configure_mac_access_list_extended(device, name):
+      """Configure MAC access-list extended name only.
+
+          CLI:
+              mac access-list extended {name}
+
+          Args:
+              device ('obj'): Device object
+              name ('str'): MAC ACL name
+
+          Returns:
+              None
+
+          Raises:
+              SubCommandFailure: When failed to configure CLI
+      """
+      configs = [
+          f"mac access-list extended {name}"
+      ]
+
+      try:
+          device.configure(configs)
+      except SubCommandFailure as e:
+          raise SubCommandFailure(
+              f"Failed to configure mac access-list extended {name} "
+              f"on device {device.name}. Error:\n{e}"
+          )    

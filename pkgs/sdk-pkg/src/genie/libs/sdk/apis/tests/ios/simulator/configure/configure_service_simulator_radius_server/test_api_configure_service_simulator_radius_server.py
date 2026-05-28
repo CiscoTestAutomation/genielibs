@@ -1,0 +1,20 @@
+from unittest import TestCase
+from unittest.mock import Mock
+from unicon.core.errors import SubCommandFailure
+from genie.libs.sdk.apis.ios.simulator.configure import configure_service_simulator_radius_server
+
+
+class TestConfigureServiceSimulatorRadiusServer(TestCase):
+
+    def test_configure_service_simulator_radius_server(self):
+        self.device = Mock()
+        configure_service_simulator_radius_server(self.device)
+        self.device.configure.assert_called_once_with(
+            "service simulator radius server"
+        )
+
+    def test_configure_service_simulator_radius_server_failure(self):
+        self.device = Mock()
+        self.device.configure.side_effect = SubCommandFailure('error')
+        with self.assertRaises(SubCommandFailure):
+            configure_service_simulator_radius_server(self.device)

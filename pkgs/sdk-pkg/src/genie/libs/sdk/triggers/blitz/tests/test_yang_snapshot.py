@@ -1,10 +1,11 @@
 import os
 import unittest
+from types import SimpleNamespace
 
 from lxml import etree
 from ncclient import xml_
 from genie import testbed
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 from genie.libs.sdk.triggers.blitz.yang_snapshot import YangSnapshot
 
 
@@ -527,3 +528,153 @@ class TestYangSnapshot(unittest.TestCase):
             '/ios:native/ios:ntp/ios-ntp:peer'
             '/ios-ntp:ipv6[ios-ntp:host-name="genericstring"]'
         )
+
+    def test_snapshot_without_parent_triggers(self):
+        testcase = Mock()
+        testcase.parent = Mock()
+        del testcase.parent.triggers
+        output = self.yang_snapshot.snapshot(
+            testcase=testcase,
+            device=self.device,
+            steps=self.steps,
+            section=self.section,
+        )
+        self.assertFalse(output)
+
+    def test_snapshot_without_section_data(self):
+        section = Mock()
+        section.parameters.get.return_value = None
+        output = self.yang_snapshot.snapshot(
+            testcase=self.testcase,
+            device=self.device,
+            steps=self.steps,
+            section=section,
+        )
+        self.assertFalse(output)
+
+    def test_get_root_without_absolute_path(self):
+        self.assertIsNone(self.yang_snapshot.get_root('ios:native/ios:ntp'))
+
+    def test_split_tag_without_prefix(self):
+        self.assertEqual(
+            self.yang_snapshot.split_tag('native'),
+            (None, None),
+        )
+
+    def test_get_device_name_missing_raises(self):
+        with self.assertRaises(Exception):
+            self.yang_snapshot.get_device_name(self.device, 'missing')
+
+    def test_collect_config_without_namespace_prefix(self):
+        self.yang_snapshot.namespace = {}
+        output = self.yang_snapshot.collect_config(
+            self.device.netconf,
+            'ios:native',
+        )
+        self.assertIsNone(output)
+
+    def test_collect_config_reply_not_ok(self):
+        reply = Mock()
+        reply.ok = False
+        connection = Mock()
+        connection.get_config.return_value = reply
+        self.yang_snapshot.namespace = {
+            'ios': 'http://cisco.com/ns/yang/Cisco-IOS-XE-native',
+        }
+
+        output = self.yang_snapshot.collect_config(connection, 'ios:native')
+
+        self.assertIsNone(output)
+
+    def test_snapshot_restore_without_pre_config_returns_none(self):
+        self.yang_snapshot.pre_config = {}
+
+        output = self.yang_snapshot.snapshot_restore(
+            self.device,
+            connection='netconf',
+            protocol='netconf',
+        )
+
+        self.assertIsNone(output)
+
+    def test_snapshot_restore_without_device_xpath_returns_none(self):
+        self.yang_snapshot.pre_config = {'PE1': {}}
+        self.yang_snapshot.xpath = {}
+
+        output = self.yang_snapshot.snapshot_restore(
+            self.device,
+            connection='netconf',
+            protocol='netconf',
+        )
+
+        self.assertIsNone(output)
+
+    def test_snapshot_restore_without_xpath_to_remove_returns_none(self):
+        self.yang_snapshot.pre_config = {'PE1': {'ios:native': None}}
+        self.yang_snapshot.xpath = {'PE1': {'/missing:native/path'}}
+
+        output = self.yang_snapshot.snapshot_restore(
+            self.device,
+            connection='netconf',
+            protocol='netconf',
+        )
+
+        self.assertIsNone(output)
+
+    def test_snapshot_restore_edit_config_failure_returns_false(self):
+        reply = SimpleNamespace(
+            ok=False,
+            _root=etree.Element('rpc-reply'),
+        )
+        self.device.netconf.edit_config = Mock(return_value=reply)
+        self.yang_snapshot.pre_config = {'PE1': {'ios:native': None}}
+        self.yang_snapshot.xpath = {'PE1': {'/ios:native/path'}}
+        self.yang_snapshot.update_remove_xpaths = Mock(
+            side_effect=lambda xpath, xpath_set, device: xpath_set.add(xpath))
+        self.yang_snapshot.build_rpc = Mock(return_value={'target': 'running'})
+
+        output = self.yang_snapshot.snapshot_restore(
+            self.device,
+            connection='netconf',
+            protocol='netconf',
+            datastore={'type': 'running', 'lock': False, 'retry': 1},
+        )
+
+        self.assertFalse(output)
+
+    def test_snapshot_restore_candidate_commit_failure_discards_changes(self):
+        edit_reply = SimpleNamespace(
+            ok=True,
+            _root=etree.Element('rpc-reply'),
+        )
+        commit_reply = SimpleNamespace(
+            ok=False,
+            _root=etree.Element('rpc-reply'),
+        )
+        self.device.netconf.edit_config = Mock(return_value=edit_reply)
+        self.device.netconf.commit = Mock(return_value=commit_reply)
+        self.device.netconf.discard_changes = Mock()
+        self.yang_snapshot.datastore = {
+            'type': 'candidate',
+            'lock': False,
+            'retry': 1,
+        }
+        self.yang_snapshot.datastore_state = {
+            'candidate': [],
+            'running': [],
+        }
+        self.yang_snapshot.pre_config = {'PE1': {'ios:native': None}}
+        self.yang_snapshot.xpath = {'PE1': {'/ios:native/path'}}
+        self.yang_snapshot.update_remove_xpaths = Mock(
+            side_effect=lambda xpath, xpath_set, device: xpath_set.add(xpath))
+        self.yang_snapshot.build_rpc = Mock(return_value={'target': 'candidate'})
+
+        with patch.object(self.yang_snapshot, 'set_datastore'):
+            output = self.yang_snapshot.snapshot_restore(
+                self.device,
+                connection='netconf',
+                protocol='netconf',
+            )
+
+        self.assertFalse(output)
+        self.device.netconf.discard_changes.assert_called_once()

@@ -601,3 +601,57 @@ def ping(device,
     except Exception as e:
         log.warning(e)
         return {}
+
+
+def get_show_output_include(device, command, filter, output=None):
+    """ Find the lines which match the filter from show command.
+        Args:
+            device (`obj`): Device object
+            command (`str`): show command
+            filter (`str`): filter expression
+            output (`str`): output of show command. (optional) Default to None
+        Returns:
+            list: [True/False, include command output]
+        Raises:
+            N/A
+    """
+    command += ' | include {0}'.format(filter)
+    result = True
+
+    try:
+        output = device.execute(command)
+        if output == "":
+            log.error('No match found')
+            result = False
+    except SubCommandFailure:
+        log.info("Invalid command")
+        result = False
+
+    return [result, output]
+
+
+def get_show_output_exclude(device, command, filter, output=None):
+    """ Find the lines which do not match the filter from show command.
+        Args:
+            device (`obj`): Device object
+            command (`str`): show command
+            filter (`str`): filter expression
+            output (`str`): output of show command. (optional) Default to None
+        Returns:
+            list: [True/False, exclude command output]
+        Raises:
+            N/A
+    """
+    command += ' | exclude {0}'.format(filter)
+    result = True
+
+    try:
+        output = device.execute(command)
+        if output == "":
+            log.error('No match found')
+            result = False
+    except SubCommandFailure:
+        log.info("Invalid command")
+        result = False
+
+    return [result, output]

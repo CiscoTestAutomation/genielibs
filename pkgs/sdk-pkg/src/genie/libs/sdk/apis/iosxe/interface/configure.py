@@ -103,6 +103,40 @@ def configure_subinterface(
         raise SubCommandFailure("Could not Configure subinterface")
 
 
+def configure_interface_subinterface_action(
+    device, interface, sub_interface, action=None
+):
+    """Configure a subinterface and optionally apply one or more subcommands.
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Parent interface name
+            sub_interface ('str' or 'int'): Subinterface number
+            action ('str' or 'list', optional): One or more subcommands to
+                apply under the subinterface
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = [f"interface {interface}.{sub_interface}"]
+
+    if action:
+        if isinstance(action, (list, tuple)):
+            cmd.extend(action)
+        else:
+            cmd.append(action)
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure subinterface action on {device}. Error:\n{error}".format(
+                device=device, error=e
+            )
+        )
+
+
 def config_enable_ip_routing(device):
     """ Enable IP Routing
 
@@ -11672,4 +11706,84 @@ def default_interface_port_settings(
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not reset port-settings to default on interface {interface}. Error:\n{e}")
+
+
+def configure_interface_ip_proxy_arp(device, interface):
+    """ Configure ip proxy-arp on an interface
+
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Interface name
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    cmds = [
+        f"interface {interface}",
+        "ip proxy-arp",
+    ]
+    cfg_cmd = f"ip proxy-arp under interface {interface}"
+    try:
+        device.configure(cmds)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure {cfg_cmd} on device {device.name}. Error:\n{e}"
+        )
+
+
+def configure_interface_multiservice(device, interface_id, vrf=None, ip_address=None, mask=None, keepalive=True, shutdown=False):
+    """ Configure 'interface multiservice <id>' with optional VRF, IP address, keepalive and shutdown state
+
+        Args:
+            device ('obj'): Device object
+            interface_id ('str' or 'int'): Multiservice interface ID (e.g. 101)
+            vrf ('str', optional): VRF name to apply via 'vrf forwarding <vrf>'. Default is None
+            ip_address ('str', optional): IPv4 address. Default is None
+            mask ('str', optional): IPv4 subnet mask. Default is None
+            keepalive ('bool', optional): If False, applies 'no keepalive'. Default is True
+            shutdown ('bool', optional): If False, applies 'no shutdown'; if True, applies 'shutdown'. Default is False
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmds = [f"interface multiservice {interface_id}"]
+    if vrf:
+        cmds.append(f"vrf forwarding {vrf}")
+    if ip_address and mask:
+        cmds.append(f"ip address {ip_address} {mask}")
+    if not keepalive:
+        cmds.append("no keepalive")
+    if shutdown:
+        cmds.append("shutdown")
+    else:
+        cmds.append("no shutdown")
+    try:
+        device.configure(cmds)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure interface multiservice {interface_id} on {device.name}. Error\n{e}"
+        )
+
+
+def unconfigure_interface_multiservice(device, interface_id):
+    """ Remove 'interface multiservice <id>' from device
+
+        Args:
+            device ('obj'): Device object
+            interface_id ('str' or 'int'): Multiservice interface ID (e.g. 101)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure(f"no interface multiservice {interface_id}")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure interface multiservice {interface_id} on {device.name}. Error\n{e}"
+        )
 

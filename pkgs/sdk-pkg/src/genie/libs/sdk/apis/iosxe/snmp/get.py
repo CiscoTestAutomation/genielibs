@@ -47,6 +47,46 @@ def get_snmp_snmpwalk(
     return device.execute(cmd, timeout=timeout)
 
 
+def get_snmpv3_snmpwalk(
+    device, user_name, ip_address, oid, auth_password, priv_password,
+    auth_protocol='SHA', priv_protocol='AES', security_level='authPriv',
+    option=None, timeout=60
+):
+    """ Get snmpwalk output from SNMP device using SNMPv3 authPriv
+    
+    SHA auth + AES-128 encryption
+        Example command:
+            snmpwalk -v 3 -l authPriv -u SNMPV3_USER -a SHA -A AuthPass123 -x AES -X PrivPass123 <mgmt_address> 1.3.6.1.2.1.1.1
+
+        Args:
+            device (`obj`): SNMP device
+            user_name (`str`): SNMPv3 username
+            ip_address (`str`): IP address
+            oid (`str`): Oid code
+            auth_password (`str`): Authentication password
+            priv_password (`str`): Privacy/encryption password
+            auth_protocol (`str`): Auth protocol (SHA, default: 'SHA')
+            priv_protocol (`str`): Privacy protocol (AES, default: 'AES')
+            security_level (`str`): Security level (authPriv, default: 'authPriv')
+            option (`str`): Optional command
+            timeout (`int`): Optional timeout value. Default is 60 seconds.
+        Returns:
+            out (`str`): Executed output of SNMP command
+        Raises:
+            None
+    """
+    cmd = (
+        f"snmpwalk -v 3 -l {security_level} -u {user_name} "
+        f"-a {auth_protocol} -A {auth_password} "
+        f"-x {priv_protocol} -X {priv_password} "
+        f"{ip_address} {oid}"
+    )
+    if option:
+        cmd = f"{cmd} {option}"
+
+    return device.execute(cmd, timeout=timeout)
+
+
 def get_snmp_id_slot_map(device, community, ip_address, oids, version="2c"):
     """ Get id-slot mapping from SNMP server
 

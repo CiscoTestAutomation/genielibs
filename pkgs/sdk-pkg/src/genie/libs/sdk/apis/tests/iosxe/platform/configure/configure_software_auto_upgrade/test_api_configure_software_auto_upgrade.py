@@ -1,35 +1,17 @@
-import os
 import unittest
-from pyats.topology import loader
+from unittest.mock import Mock
 from genie.libs.sdk.apis.iosxe.platform.configure import configure_software_auto_upgrade
 
 
 class TestConfigureSoftwareAutoUpgrade(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          Switch1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: c9200
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Switch1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
-
     def test_configure_software_auto_upgrade(self):
-        result = configure_software_auto_upgrade(self.device, 'enable', '')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+
+        result = configure_software_auto_upgrade(device, 'enable', '')
+
+        self.assertEqual(result, None)
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            (['software auto-upgrade enable'],)
+        )

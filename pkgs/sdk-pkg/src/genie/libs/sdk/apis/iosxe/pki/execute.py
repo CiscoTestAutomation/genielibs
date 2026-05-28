@@ -388,3 +388,169 @@ def execute_return_crypto_pki_server(device, certificate_req, server_name,
         raise SubCommandFailure(
             f"Could not execute crypto pki action '{certificate_req}' on server '{server_name}'.\nError: {e}"
 )
+
+def execute_show_monitor_event_trace(device, option):
+    """
+    Execute 'show monitor event-trace <option>' command.
+        Args:
+            device (obj): Device object on which to run the command.
+            option (str): Option to include in the command.
+        Returns:
+            output
+        Raises:
+            SubCommandFailure: If command execution fails.
+    """
+    cmd = f'show monitor event-trace {option}'
+    try:
+        out = device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to show monitor event-trace {option}: {e}")
+    return out
+
+def execute_monitor_event_trace_crypto(
+                                    device,
+                                    action,
+                                    clear=False,
+                                    continuous=False,
+                                    disable=False,
+                                    dump=False,
+                                    enable=False,
+                                    internal=False,
+                                    one_shot=False,
+                                    event_data_url=None,
+                                    pretty=False,
+                                    cancel=False,
+                                    protocol='ipsec',
+                                    merged=False
+                                    ):
+    """
+    Execute 'monitor event-trace crypto <protocol> <action>' command with optional flags.
+
+    Args:
+        device (obj): Device object on which to run the command.
+        action (str): Must be either 'event' or 'error'.
+        clear (bool): Clear the trace buffer.
+        continuous (bool): Continuously display latest trace entries.
+        disable (bool): Disable event/error tracing.
+        dump (bool): Dump trace buffer to a file.
+        enable (bool): Enable event/error tracing.
+        internal (bool): (Only for 'event') Use 'internal' sub-mode.
+        one_shot (bool): Stop automatically when buffer wraps.
+        event_data_url (str): URL to store event data.
+        pretty (bool): Dump trace in ASCII format.
+        cancel (bool): Cancel continuous monitoring.
+        protocol (str): Protocol type, default is 'ipsec'.
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: If command execution fails.
+        ValueError: If invalid action is provided.
+    """
+
+    if action not in ["event", "error", "exception"]:
+        raise ValueError("Action must be either of 'event', 'error', or 'exception'.")
+
+    if action == "error" and internal:
+        raise ValueError("The 'internal' option is only valid with 'event' action.")
+
+    cmds = []
+
+    if action == "event" and internal:
+        if clear:
+            cmds.append(f"monitor event-trace crypto {protocol} event internal clear")
+        if continuous:
+            if cancel:
+                cmds.append(f"monitor event-trace crypto {protocol} event internal continuous cancel")
+            else:
+                cmds.append(f"monitor event-trace crypto {protocol} event internal continuous")
+        if disable:
+            cmds.append(f"monitor event-trace crypto {protocol} event internal disable")
+        if dump:
+            if pretty and event_data_url:
+                cmds.append(f"monitor event-trace crypto {protocol} event internal dump pretty {event_data_url}")
+            elif event_data_url:
+                cmds.append(f"monitor event-trace crypto {protocol} event internal dump {event_data_url}")
+            else:
+                cmds.append(f"monitor event-trace crypto {protocol} event internal dump")
+        if enable:
+            cmds.append(f"monitor event-trace crypto {protocol} event internal enable")
+        if one_shot:
+            cmds.append(f"monitor event-trace crypto {protocol} event internal one-shot")
+
+    elif action == "event" and not internal:
+        if clear:
+            cmds.append(f"monitor event-trace crypto {protocol} event clear")
+        if continuous:
+            if cancel:
+                cmds.append(f"monitor event-trace crypto {protocol} event continuous cancel")
+            else:
+                cmds.append(f"monitor event-trace crypto {protocol} event continuous")
+        if disable:
+            cmds.append(f"monitor event-trace crypto {protocol} event disable")
+        if dump:
+            if pretty and event_data_url:
+                cmds.append(f"monitor event-trace crypto {protocol} event dump pretty {event_data_url}")
+            elif event_data_url:
+                cmds.append(f"monitor event-trace crypto {protocol} event dump {event_data_url}")
+            else:
+                cmds.append(f"monitor event-trace crypto {protocol} event dump")
+        if enable:
+            cmds.append(f"monitor event-trace crypto {protocol} event enable")
+        if one_shot:
+            cmds.append(f"monitor event-trace crypto {protocol} event one-shot")
+
+    elif action == "error":
+        if clear:
+            cmds.append(f"monitor event-trace crypto {protocol} error clear")
+        if continuous:
+            if cancel:
+                cmds.append(f"monitor event-trace crypto {protocol} error continuous cancel")
+            else:
+                cmds.append(f"monitor event-trace crypto {protocol} error continuous")
+        if disable:
+            cmds.append(f"monitor event-trace crypto {protocol} error disable")
+        if dump:
+            if pretty and merged:
+                cmds.append(f"monitor event-trace crypto {protocol} error dump merged pretty")
+            elif pretty and event_data_url:
+                cmds.append(f"monitor event-trace crypto {protocol} error dump pretty {event_data_url}")
+            elif pretty:
+                cmds.append(f"monitor event-trace crypto {protocol} error dump pretty")
+            elif event_data_url:
+                cmds.append(f"monitor event-trace crypto {protocol} error dump {event_data_url}")
+            else:
+                cmds.append(f"monitor event-trace crypto {protocol} error dump")
+        if enable:
+            cmds.append(f"monitor event-trace crypto {protocol} error enable")
+        if one_shot:
+            cmds.append(f"monitor event-trace crypto {protocol} error one-shot")
+    elif action == "exception":
+        if clear:
+            cmds.append(f"monitor event-trace crypto {protocol} exception clear")
+        if continuous:
+            if cancel:
+                cmds.append(f"monitor event-trace crypto {protocol} exception continuous cancel")
+            else:
+                cmds.append(f"monitor event-trace crypto {protocol} exception continuous")
+        if disable:
+            cmds.append(f"monitor event-trace crypto {protocol} exception disable")
+        if dump:
+            if pretty and merged:
+                cmds.append(f"monitor event-trace crypto {protocol} exception dump merged pretty")
+            elif pretty and event_data_url:
+                cmds.append(f"monitor event-trace crypto {protocol} exception dump pretty {event_data_url}")
+            elif pretty:
+                cmds.append(f"monitor event-trace crypto {protocol} exception dump pretty")
+            elif event_data_url:
+                cmds.append(f"monitor event-trace crypto {protocol} exception dump {event_data_url}")
+            else:
+                cmds.append(f"monitor event-trace crypto {protocol} exception dump")
+        if enable:
+            cmds.append(f"monitor event-trace crypto {protocol} exception enable")
+        if one_shot:
+            cmds.append(f"monitor event-trace crypto {protocol} exception one-shot")
+    try:
+        for cmd in cmds:
+            device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to execute monitor event-trace crypto {protocol} command: {e}")

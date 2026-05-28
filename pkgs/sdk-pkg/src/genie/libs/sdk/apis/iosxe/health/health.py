@@ -1,4 +1,5 @@
 # Python
+import os
 import re
 import logging
 
@@ -766,3 +767,308 @@ def health_core(device,
     if num_of_cores:
         return len(all_corefiles)
     return all_corefiles
+
+
+def health_crashinfo(device,
+                     default_dir=None,
+                     output=None,
+                     keyword=None,
+                     delete_files=False,
+                     copy_files=True,
+                     health=True,
+                     **kwargs):
+    '''Detect IOS XE crashinfo tar.gz files on the device, copy them to the
+    pyATS runinfo directory, and optionally delete them from the device.
+
+    Only files generated DURING the job execution are acted upon.  The first
+    call (CommonSetup) should use ``copy_files=False, delete_files=False`` to
+    record a baseline of pre-existing files.  Subsequent calls (TestCase) use
+    ``delete_files=True`` to copy and delete only NEW files that appeared after
+    the baseline was captured.
+
+    Topology awareness:
+        - Single RP : checks ``crashinfo:`` only.
+        - Dual RP (HA) : checks both ``crashinfo:`` and ``stby-crashinfo:``.
+        - Stack : checks ``crashinfo-{switch_id}:`` for every member found via
+          ``show switch``.
+
+        Args:
+            device          (`obj`) : Device object
+            default_dir (`str` or `list`) : crashinfo filesystem(s) to check.
+                                            Defaults to ``['crashinfo:']``.
+                                            Overridden automatically for HA/stack.
+            output          (`str`) : Pre-collected output of a ``dir`` command
+                                      (used in unit tests / mock replay).
+            keyword        (`list`) : Substrings to match against filenames.
+                                      Defaults to ``['crashinfo']``.
+                                      Matches both styles:
+                                        - Cat9K: ``<host>_crashinfo_1_RP_00_00_<ts>``
+                                        - ASR1K: ``crashinfo_RP_00_00_<ts>.tar.gz``
+            delete_files    (`bool`): Delete each file from the device after a
+                                      successful copy.  Defaults to ``False``.
+            copy_files      (`bool`): Copy crashinfo files to the runinfo
+                                      directory.  Defaults to ``True``.
+            health          (`bool`): Return ``health_data`` dict format when
+                                      ``True`` (normal health-check mode).
+                                      Return raw file list when ``False``.
+                                      Defaults to ``True``.
+
+        Returns:
+            health_data (`dict`): health_data format when ``health=True``.
+                ex.)
+                {
+                    "health_data": {
+                        "num_of_crashfiles": 1,
+                        "crashfiles": [
+                            {
+                                "filename": "crashinfo:/crashinfo_RP_00_00_20240101-120000-UTC.tar.gz"
+                            }
+                        ]
+                    }
+                }
+            all_crashfiles (`list`): flat list of file paths when ``health=False``.
+    '''
+    # Avoid mutable default argument pitfall — same pattern as health_core
+    if default_dir is None:
+        default_dir = ['crashinfo:']
+    if keyword is None:
+        keyword = ['crashinfo']
+
+    all_crashfiles = []
+    dirs = []
+    health_crashfiles = set()
+
+    if isinstance(default_dir, str):
+        default_dir = [default_dir]
+    elif not isinstance(default_dir, list):
+        raise Exception(
+            "default_dir {dd} is not string or list".format(dd=default_dir))
+
+    # -----------------------------------------------------------------------
+    # Topology detection — build the list of filesystems to inspect
+    # -----------------------------------------------------------------------
+    # Stack / SVL: crashinfo-{switch_id}: per member
+    # Note: crashinfo: and stby-crashinfo: are aliases for the active/standby
+    # member's numbered filesystem, so we only use crashinfo-{switch_id}: to
+    # avoid scanning the same files twice under different paths.
+    if getattr(device, 'chassis_type', None) in ['stack', 'stackwise_virtual']:
+        log.info('Detected device is stack/SVL configuration.')
+        try:
+            switch_info = device.parse('show switch')
+            switch_ids = switch_info.get('switch', {}).get('stack', {}).keys()
+            if switch_ids:
+                for switch_id in switch_ids:
+                    dirs.append(f'crashinfo-{switch_id}:')
+            else:
+                log.warning(
+                    'show switch returned no stack members; '
+                    'falling back to default_dir.')
+                dirs = default_dir
+        except Exception as e:
+            log.warning(
+                f'Could not parse "show switch" to get stack members: {e}')
+            dirs = default_dir
+
+    # HA: check both active and standby crashinfo filesystems
+    elif device.is_ha:
+        log.info('Detected device is HA configuration.')
+        for storage in default_dir:
+            dirs.append(storage)
+            # standby prefix: 'crashinfo:' -> 'stby-crashinfo:'
+            dirs.append('stby-' + storage)
+
+    else:
+        dirs = default_dir
+
+    # -----------------------------------------------------------------------
+    # Retrieve or initialize baseline from runtime.health_data
+    # The baseline records files that existed BEFORE the job started
+    # (captured during CommonSetup with copy_files=False, delete_files=False)
+    # -----------------------------------------------------------------------
+    baseline_files = set()
+    if hasattr(runtime, 'health_data') and runtime.health_data is not None:
+        runtime.health_data.setdefault(device.name, runtime.synchro.dict())
+        runtime.health_data[device.name].setdefault('crashinfo', {})
+        runtime_health_data = runtime.health_data[device.name]['crashinfo']
+        # Load existing baseline if previously captured
+        baseline_files = set(
+            runtime_health_data.get('baseline_files', [])
+        )
+    else:
+        runtime_health_data = {}
+
+    # -----------------------------------------------------------------------
+    # Baseline capture mode (CommonSetup): record all current files
+    # so subsequent TestCase calls can distinguish new from pre-existing.
+    # No copy, no delete, no reporting — just record and return 0.
+    # -----------------------------------------------------------------------
+    if not copy_files and not delete_files:
+        all_current_files = set()
+        for storage in dirs:
+            if not storage.endswith(':') and not storage.endswith('/'):
+                storage += ':'
+            cmd = f'dir {storage}'
+            try:
+                parsed = device.parse(cmd, output=output)
+                if parsed:
+                    for file in parsed.q.get_values('files'):
+                        for kw in keyword:
+                            if kw in file:
+                                all_current_files.add(storage + file)
+            except SchemaEmptyParserError:
+                pass
+            except Exception as e:
+                log.warning(f'Baseline scan failed for {storage}: {e}')
+
+        if all_current_files:
+            log.info(
+                f'Baseline: Recording {len(all_current_files)} existing '
+                f'crashinfo file(s) on {device.name} — these will be '
+                f'excluded from future health checks')
+            for f in all_current_files:
+                log.debug(f'  Baseline file: {f}')
+        else:
+            log.info(
+                f'Baseline: No existing crashinfo files on {device.name}')
+
+        # Store baseline in runtime health data
+        if hasattr(runtime, 'health_data') and runtime.health_data is not None:
+            runtime_health_data['baseline_files'] = list(all_current_files)
+            runtime.health_data[device.name]['crashinfo'] = runtime_health_data
+
+        # Return 0 crashfiles — baseline files are not actionable
+        if health:
+            return {
+                'health_data': {
+                    'num_of_crashfiles': 0,
+                    'crashfiles': []
+                }
+            }
+        return []
+
+    # -----------------------------------------------------------------------
+    # Inspect each filesystem and collect matching files
+    # -----------------------------------------------------------------------
+    dest_dir = os.path.join(runtime.directory, 'crashinfo')
+
+    for storage in dirs:
+        crashfiles = []
+        log.info('Checking crashinfo on {storage}'.format(storage=storage))
+
+        # ensure trailing colon (IOS XE dir command requires e.g. 'crashinfo:')
+        if not storage.endswith(':') and not storage.endswith('/'):
+            storage += ':'
+
+        cmd = 'dir {storage}'.format(storage=storage)
+        parsed = ''
+        try:
+            parsed = device.parse(cmd, output=output)
+        except SchemaEmptyParserError:
+            # empty crashinfo: is the normal/expected case — not an error
+            pass
+        except InvalidCommandError as e:
+            log.warning(
+                f'Command "{cmd}" is not supported on {device.name}: {e}')
+            continue
+        except Exception as e:
+            log.warning(
+                f'Unexpected error running "{cmd}" on {device.name}: {e}')
+            continue
+
+        if parsed:
+            for file in parsed.q.get_values('files'):
+                for kw in keyword:
+                    if kw in file:
+                        filepath = storage + file
+
+                        # Skip files that existed before the job started
+                        if filepath in baseline_files:
+                            log.debug(
+                                f'Skipping baseline file (pre-existing): '
+                                f'{filepath}')
+                            continue
+
+                        log.info(f'New crashinfo file found: {filepath}')
+                        crashfiles.append(filepath)
+                        all_crashfiles.append(filepath)
+                        if health:
+                            health_crashfiles.add(filepath)
+
+        # -------------------------------------------------------------------
+        # Copy and/or delete only NEW files (not in baseline)
+        # -------------------------------------------------------------------
+        for crashfile in crashfiles:
+            copy_success = False
+
+            if copy_files:
+                if not os.path.isdir(dest_dir):
+                    os.makedirs(dest_dir, exist_ok=True)
+                    os.chmod(dest_dir, 0o755)
+                log.info(f'Copying {crashfile} to {dest_dir}')
+                try:
+                    device.api.copy_from_device(
+                                    local_path=crashfile,
+                                    remote_path=dest_dir)
+                    copy_success = True
+                    log.info(
+                        f'Successfully copied {crashfile} to {dest_dir}')
+                except Exception as e:
+                    log.warning(
+                        f'Failed to copy {crashfile} to {dest_dir}: {e}')
+
+            if delete_files and (copy_success or not copy_files):
+                try:
+                    log.info(f'Deleting {crashfile} from device.')
+                    device.execute(f'delete /force {crashfile}')
+                    log.info(f'{crashfile} successfully deleted from device.')
+                except Exception as e:
+                    log.warning(
+                        f'Failed to delete {crashfile} from device: {e}')
+
+    # -----------------------------------------------------------------------
+    # Build return value
+    # -----------------------------------------------------------------------
+    if health:
+        runtime_health_data.setdefault('crashfiles', [])
+
+        # track already-seen files across testcases to avoid duplicate reporting
+        existing_crashfiles = [
+            hf.get('filename')
+            for hf in runtime_health_data.get('crashfiles', [])
+        ]
+        if existing_crashfiles:
+            log.info(
+                f'Existing crashinfo files already tracked: {existing_crashfiles}'
+            )
+
+        new_crashfiles = [
+            cf for cf in health_crashfiles if cf not in existing_crashfiles
+        ]
+
+        if new_crashfiles:
+            notification_message = (
+                f"Notify: New crashinfo files detected on device '{device.name}':\n"
+            )
+            for cf in new_crashfiles:
+                notification_message += f'- {cf}\n'
+            log.warning(notification_message.strip())
+
+        health_data = {'health_data': {}}
+        health_data['health_data']['num_of_crashfiles'] = len(new_crashfiles)
+        health_data['health_data']['crashfiles'] = []
+
+        for filepath in new_crashfiles:
+            file_data = {'filename': filepath}
+            log.info(
+                f'Adding {filepath} to health crashinfo data for device {device.name}'
+            )
+            health_data['health_data']['crashfiles'].append(file_data)
+            runtime_health_data['crashfiles'].append(file_data)
+
+        if hasattr(runtime, 'health_data') and runtime.health_data is not None:
+            runtime.health_data[device.name]['crashinfo'] = runtime_health_data
+            log.debug(f'runtime health data {runtime.health_data}')
+
+        return health_data
+
+    return all_crashfiles

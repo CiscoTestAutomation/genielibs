@@ -1,7 +1,9 @@
 """Common configure functions for VPDN."""
 
 import logging
+import re
 
+from genie.utils import Dq
 from unicon.core.errors import SubCommandFailure
 
 from genie.libs.sdk.apis.iosxe.vpdn.utils import _resolve_local_names
@@ -9,6 +11,157 @@ from genie.libs.sdk.apis.iosxe.vpdn.utils import _resolve_local_names
 log = logging.getLogger(__name__)
 
 _DEFAULT = object()
+
+
+def _has_running_config_line(device, config_line):
+    """Return True when the exact global config line exists in running-config.
+
+    Args:
+        device ('obj'): Device object
+        config_line ('str'): Configuration line to search for
+
+    Returns:
+        bool: True if the exact config line exists, otherwise False
+
+    Raises:
+        SubCommandFailure: Failed to retrieve running-config
+    """
+
+    exact_config_line = r"^{config_line}$".format(
+        config_line=re.escape(config_line)
+    )
+
+    try:
+        config_dict = device.api.get_running_config_dict()
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to check running-config for '{config_line}' on {device}. "
+            "Error:\n{error}".format(
+                config_line=config_line,
+                device=getattr(device, "name", device),
+                error=e,
+            )
+        ) from e
+
+    matched_config = Dq(config_dict).contains(
+        exact_config_line,
+        regex=True,
+    ).reconstruct()
+
+    return bool(matched_config and config_line in matched_config)
+
+
+def _get_vpdn_group_section(device, vpdn_group_number):
+    """Return the parsed running-config section for a VPDN group.
+
+    Args:
+        device ('obj'): Device object
+        vpdn_group_number ('str'): VPDN group name or number
+
+    Returns:
+        dict: Parsed running-config section for the VPDN group
+
+    Raises:
+        SubCommandFailure: Failed to retrieve running-config
+    """
+
+    group_key = "vpdn-group {group}".format(group=vpdn_group_number)
+    exact_group_key = r"^{group_key}$".format(group_key=re.escape(group_key))
+
+    try:
+        config_dict = device.api.get_running_config_dict()
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to get running-config section for vpdn-group "
+            "{vpdn_group_number} on {device}. Error:\n{error}".format(
+                vpdn_group_number=vpdn_group_number,
+                device=getattr(device, "name", device),
+                error=e,
+            )
+        ) from e
+
+    group_section = Dq(config_dict).contains(
+        exact_group_key,
+        regex=True,
+    ).reconstruct()
+
+    if not group_section:
+        return {}
+
+    return group_section.get(group_key, {})
+
+
+def _has_vpdn_group_config_line(device, vpdn_group_number, config_line):
+    """Return True when the exact submode config line exists under a VPDN group.
+
+    Args:
+        device ('obj'): Device object
+        vpdn_group_number ('str'): VPDN group name or number
+        config_line ('str'): Submode configuration line to search for
+
+    Returns:
+        bool: True if the exact config line exists under the group, otherwise False
+
+    Raises:
+        SubCommandFailure: Failed to retrieve running-config
+    """
+
+    group_section = _get_vpdn_group_section(device, vpdn_group_number)
+
+    return bool(
+        Dq(group_section).contains(
+            r"^{config_line}$".format(config_line=re.escape(config_line)),
+            regex=True,
+        ).reconstruct()
+    )
+
+
+def _build_initiate_to_commands(initiate_to=None, initiate_to_entries=None):
+    """Build ``initiate-to ip`` commands from supported entry formats.
+
+    Args:
+        initiate_to ('str', optional): Single initiate-to IP address
+        initiate_to_entries ('list', optional): Additional initiate-to entries.
+            Each item can be a string IP, ``(ip, priority)``, or
+            ``{'ip': ip, 'priority': priority}``
+
+    Returns:
+        list: Formatted ``initiate-to ip`` commands
+
+    Raises:
+        ValueError: An initiate-to entry does not include an IP address
+    """
+
+    commands = []
+    entries = []
+
+    if initiate_to:
+        entries.append(initiate_to)
+    if initiate_to_entries:
+        entries.extend(initiate_to_entries)
+
+    for entry in entries:
+        priority = None
+
+        if isinstance(entry, dict):
+            ip_address = entry.get("ip") or entry.get("initiate_to")
+            priority = entry.get("priority")
+        elif isinstance(entry, (tuple, list)):
+            ip_address = entry[0] if entry else None
+            if len(entry) > 1:
+                priority = entry[1]
+        else:
+            ip_address = entry
+
+        if not ip_address:
+            raise ValueError("Each initiate-to entry must include an IP address")
+
+        command = "initiate-to ip {ip}".format(ip=ip_address)
+        if priority is not None:
+            command += " priority {priority}".format(priority=priority)
+        commands.append(command)
+
+    return commands
 
 
 def configure_vpdn_group(
@@ -113,35 +266,12 @@ def configure_vpdn_group(
                 cli.append("protocol {protocol}".format(protocol=protocol))
             if domain is not None:
                 cli.append("domain {domain}".format(domain=domain))
-
-            entries = []
-            if initiate_to is not None:
-                entries.append(initiate_to)
-            if initiate_to_entries:
-                entries.extend(initiate_to_entries)
-
-            for entry in entries:
-                priority = None
-
-                if isinstance(entry, dict):
-                    ip_address = entry.get("ip") or entry.get("initiate_to")
-                    priority = entry.get("priority")
-                elif isinstance(entry, (tuple, list)):
-                    ip_address = entry[0] if entry else None
-                    if len(entry) > 1:
-                        priority = entry[1]
-                else:
-                    ip_address = entry
-
-                if not ip_address:
-                    raise ValueError(
-                        "Each initiate-to entry must include an IP address"
-                    )
-
-                command = "initiate-to ip {ip}".format(ip=ip_address)
-                if priority is not None:
-                    command += " priority {priority}".format(priority=priority)
-                cli.append(command)
+            cli.extend(
+                _build_initiate_to_commands(
+                    initiate_to=initiate_to,
+                    initiate_to_entries=initiate_to_entries,
+                )
+            )
 
             if resolved_request_local_name is not None:
                 cli.append(
@@ -203,7 +333,18 @@ def configure_vpdn_group(
 
 
 def unconfigure_vpdn_group(device, vpdn_group_number):
-    """Unconfigure VPDN group."""
+    """Unconfigure VPDN group.
+
+    Args:
+        device ('obj'): Device object
+        vpdn_group_number ('str'): VPDN group name or number
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: Failed to unconfigure VPDN group
+    """
 
     cli = ["no vpdn-group {group}".format(group=vpdn_group_number)]
     try:
@@ -215,7 +356,17 @@ def unconfigure_vpdn_group(device, vpdn_group_number):
 
 
 def configure_vpdn_l2tp_attribute_initial_received_lcp_confreq(device):
-    """Configure ``vpdn l2tp attribute initial-received-lcp-confreq``."""
+    """Configure ``vpdn l2tp attribute initial-received-lcp-confreq``.
+
+    Args:
+        device ('obj'): Device object
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: Failed to configure the VPDN L2TP attribute
+    """
 
     cli = ["vpdn l2tp attribute initial-received-lcp-confreq"]
     try:
@@ -227,35 +378,428 @@ def configure_vpdn_l2tp_attribute_initial_received_lcp_confreq(device):
         )
 
 
+def configure_vpdn_group_local_name(
+    device, vpdn_group_number, local_name, check_existing=True
+):
+    """Configure ``local name`` under a VPDN group.
+
+    Args:
+        device ('obj'): Device object
+        vpdn_group_number ('str'): VPDN group name or number
+        local_name ('str'): Local name to configure
+        check_existing ('bool', optional): When True, skip configuration if
+            the exact line already exists
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: Failed to configure local name or retrieve
+            running-config
+    """
+
+    cli = "local name {local_name}".format(local_name=local_name)
+
+    if check_existing and _has_vpdn_group_config_line(device, vpdn_group_number, cli):
+        log.info(
+            "%s is already configured under vpdn-group %s on %s",
+            cli,
+            vpdn_group_number,
+            device.name,
+        )
+        return
+
+    try:
+        device.configure(
+            ["vpdn-group {group}".format(group=vpdn_group_number), cli]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure local name under vpdn-group "
+            "{vpdn_group_number} on {device}. Error:\n{error}".format(
+                vpdn_group_number=vpdn_group_number,
+                device=getattr(device, "name", device),
+                error=e,
+            )
+        ) from e
+
+
+def configure_vpdn_group_l2tp_tunnel_busy_timeout(
+    device, vpdn_group_number, busy_timeout, check_existing=True
+):
+    """Configure ``l2tp tunnel busy timeout`` under a VPDN group.
+
+    Args:
+        device ('obj'): Device object
+        vpdn_group_number ('str'): VPDN group name or number
+        busy_timeout ('str'): Busy timeout value to configure
+        check_existing ('bool', optional): When True, skip configuration if
+            the exact line already exists
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: Failed to configure busy timeout or retrieve
+            running-config
+    """
+
+    cli = "l2tp tunnel busy timeout {timeout}".format(timeout=busy_timeout)
+
+    if check_existing and _has_vpdn_group_config_line(device, vpdn_group_number, cli):
+        log.info(
+            "%s is already configured under vpdn-group %s on %s",
+            cli,
+            vpdn_group_number,
+            device.name,
+        )
+        return
+
+    try:
+        device.configure(
+            ["vpdn-group {group}".format(group=vpdn_group_number), cli]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure l2tp tunnel busy timeout under vpdn-group "
+            "{vpdn_group_number} on {device}. Error:\n{error}".format(
+                vpdn_group_number=vpdn_group_number,
+                device=getattr(device, "name", device),
+                error=e,
+            )
+        ) from e
+
+
+def unconfigure_vpdn_group_l2tp_tunnel_busy_timeout(
+    device, vpdn_group_number, busy_timeout, check_existing=True
+):
+    """Unconfigure ``l2tp tunnel busy timeout`` under a VPDN group.
+
+    Args:
+        device ('obj'): Device object
+        vpdn_group_number ('str'): VPDN group name or number
+        busy_timeout ('str'): Busy timeout value to unconfigure
+        check_existing ('bool', optional): When True, skip unconfiguration if
+            the exact line is not present
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: Failed to unconfigure busy timeout or retrieve
+            running-config
+    """
+
+    cli = "l2tp tunnel busy timeout {timeout}".format(timeout=busy_timeout)
+
+    if check_existing and not _has_vpdn_group_config_line(
+        device, vpdn_group_number, cli
+    ):
+        log.info(
+            "%s is not configured under vpdn-group %s on %s",
+            cli,
+            vpdn_group_number,
+            device.name,
+        )
+        return
+
+    try:
+        device.configure(
+            [
+                "vpdn-group {group}".format(group=vpdn_group_number),
+                "no {cli}".format(cli=cli),
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfigure l2tp tunnel busy timeout under vpdn-group "
+            "{vpdn_group_number} on {device}. Error:\n{error}".format(
+                vpdn_group_number=vpdn_group_number,
+                device=getattr(device, "name", device),
+                error=e,
+            )
+        ) from e
+
+
+def configure_vpdn_logging_dead_cache(device, check_existing=True):
+    """Configure global VPDN dead-cache logging.
+
+    Args:
+        device ('obj'): Device object
+        check_existing ('bool', optional): When True, skip configuration if
+            the exact line already exists
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: Failed to configure VPDN dead-cache logging or
+            retrieve running-config
+    """
+
+    cli = "vpdn logging dead-cache"
+
+    if check_existing and _has_running_config_line(device, cli):
+        log.info(
+            "%s is already configured on %s",
+            cli,
+            device.name,
+        )
+        return
+
+    try:
+        device.configure(cli)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure VPDN dead-cache logging on {device}. "
+            "Error:\n{error}".format(
+                device=getattr(device, "name", device),
+                error=e,
+            )
+        ) from e
+
+
+def unconfigure_vpdn_logging_dead_cache(device, check_existing=True):
+    """Unconfigure global VPDN dead-cache logging.
+
+    Args:
+        device ('obj'): Device object
+        check_existing ('bool', optional): When True, skip unconfiguration if
+            the exact line is not present
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: Failed to unconfigure VPDN dead-cache logging or
+            retrieve running-config
+    """
+
+    cli = "vpdn logging dead-cache"
+
+    if check_existing and not _has_running_config_line(device, cli):
+        log.info(
+            "%s is not configured on %s",
+            cli,
+            device.name,
+        )
+        return
+
+    try:
+        device.configure("no {cli}".format(cli=cli))
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfigure VPDN dead-cache logging on {device}. "
+            "Error:\n{error}".format(
+                device=getattr(device, "name", device),
+                error=e,
+            )
+        ) from e
+
+
+def configure_vpdn_session_limit(device, session_limit, check_existing=True):
+    """Configure the global VPDN session limit.
+
+    Args:
+        device ('obj'): Device object
+        session_limit ('str'): Global VPDN session limit
+        check_existing ('bool', optional): When True, skip configuration if
+            the exact line already exists
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: Failed to configure global session limit or retrieve
+            running-config
+    """
+
+    cli = "vpdn session-limit {session_limit}".format(session_limit=session_limit)
+
+    if check_existing and _has_running_config_line(device, cli):
+        log.info(
+            "%s is already configured on %s",
+            cli,
+            device.name,
+        )
+        return
+
+    try:
+        device.configure(cli)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure global VPDN session-limit on {device}. "
+            "Error:\n{error}".format(
+                device=getattr(device, "name", device),
+                error=e,
+            )
+        ) from e
+
+
+def unconfigure_vpdn_session_limit(device, session_limit, check_existing=True):
+    """Unconfigure the global VPDN session limit.
+
+    Args:
+        device ('obj'): Device object
+        session_limit ('str'): Global VPDN session limit
+        check_existing ('bool', optional): When True, skip unconfiguration if
+            the exact line is not present
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: Failed to unconfigure global session limit or
+            retrieve running-config
+    """
+
+    cli = "vpdn session-limit {session_limit}".format(session_limit=session_limit)
+
+    if check_existing and not _has_running_config_line(device, cli):
+        log.info(
+            "%s is not configured on %s",
+            cli,
+            device.name,
+        )
+        return
+
+    try:
+        device.configure("no {cli}".format(cli=cli))
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfigure global VPDN session-limit on {device}. "
+            "Error:\n{error}".format(
+                device=getattr(device, "name", device),
+                error=e,
+            )
+        ) from e
+
+
+def configure_vpdn_group_session_limit(
+    device, vpdn_group_number, session_limit, check_existing=True
+):
+    """Configure a per-group VPDN session limit under vpdn-group.
+
+    Args:
+        device ('obj'): Device object
+        vpdn_group_number ('str'): VPDN group name or number
+        session_limit ('str'): Per-group VPDN session limit
+        check_existing ('bool', optional): When True, skip configuration if
+            the exact line already exists
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: Failed to configure per-group session limit or
+            retrieve running-config
+    """
+
+    cli = "session-limit {session_limit}".format(session_limit=session_limit)
+
+    if check_existing and _has_vpdn_group_config_line(device, vpdn_group_number, cli):
+        log.info(
+            "%s is already configured under vpdn-group %s on %s",
+            cli,
+            vpdn_group_number,
+            device.name,
+        )
+        return
+
+    try:
+        device.configure(
+            ["vpdn-group {group}".format(group=vpdn_group_number), cli]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure vpdn-group {vpdn_group_number} session-limit "
+            "on {device}. Error:\n{error}".format(
+                vpdn_group_number=vpdn_group_number,
+                device=getattr(device, "name", device),
+                error=e,
+            )
+        ) from e
+
+
+def unconfigure_vpdn_group_session_limit(
+    device, vpdn_group_number, session_limit, check_existing=True
+):
+    """Unconfigure a per-group VPDN session limit under vpdn-group.
+
+    Args:
+        device ('obj'): Device object
+        vpdn_group_number ('str'): VPDN group name or number
+        session_limit ('str'): Per-group VPDN session limit
+        check_existing ('bool', optional): When True, skip unconfiguration if
+            the exact line is not present
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: Failed to unconfigure per-group session limit or
+            retrieve running-config
+    """
+
+    cli = "session-limit {session_limit}".format(session_limit=session_limit)
+
+    if check_existing and not _has_vpdn_group_config_line(
+        device, vpdn_group_number, cli
+    ):
+        log.info(
+            "%s is not configured under vpdn-group %s on %s",
+            cli,
+            vpdn_group_number,
+            device.name,
+        )
+        return
+
+    try:
+        device.configure(
+            [
+                "vpdn-group {group}".format(group=vpdn_group_number),
+                "no {cli}".format(cli=cli),
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfigure vpdn-group {vpdn_group_number} session-limit "
+            "on {device}. Error:\n{error}".format(
+                vpdn_group_number=vpdn_group_number,
+                device=getattr(device, "name", device),
+                error=e,
+            )
+        ) from e
+
+
 def unconfigure_vpdn_group_initiate_to_entries(
     device,
     vpdn_group_number,
     initiate_to_entries,
 ):
-    """Unconfigure one or more ``initiate-to ip`` entries under a VPDN group."""
+    """Unconfigure one or more ``initiate-to ip`` entries under a VPDN group.
+
+    Args:
+        device ('obj'): Device object
+        vpdn_group_number ('str'): VPDN group name or number
+        initiate_to_entries ('list'): Initiate-to entries to unconfigure. Each
+            item can be a string IP, ``(ip, priority)``, or
+            ``{'ip': ip, 'priority': priority}``
+
+    Returns:
+        None
+
+    Raises:
+        ValueError: An initiate-to entry does not include an IP address
+        SubCommandFailure: Failed to unconfigure initiate-to entries
+    """
 
     cli = ["vpdn-group {group}".format(group=vpdn_group_number)]
 
-    for entry in initiate_to_entries:
-        priority = None
-
-        if isinstance(entry, dict):
-            ip_address = entry.get("ip") or entry.get("initiate_to")
-            priority = entry.get("priority")
-        elif isinstance(entry, (tuple, list)):
-            ip_address = entry[0] if entry else None
-            if len(entry) > 1:
-                priority = entry[1]
-        else:
-            ip_address = entry
-
-        if not ip_address:
-            raise ValueError("Each initiate-to entry must include an IP address")
-
-        command = "no initiate-to ip {ip}".format(ip=ip_address)
-        if priority is not None:
-            command += " priority {priority}".format(priority=priority)
-        cli.append(command)
+    for command in _build_initiate_to_commands(
+        initiate_to_entries=initiate_to_entries
+    ):
+        cli.append("no {command}".format(command=command))
 
     try:
         device.configure(cli)
@@ -267,7 +811,17 @@ def unconfigure_vpdn_group_initiate_to_entries(
 
 
 def unconfigure_vpdn_l2tp_attribute_initial_received_lcp_confreq(device):
-    """Unconfigure ``vpdn l2tp attribute initial-received-lcp-confreq``."""
+    """Unconfigure ``vpdn l2tp attribute initial-received-lcp-confreq``.
+
+    Args:
+        device ('obj'): Device object
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: Failed to unconfigure the VPDN L2TP attribute
+    """
 
     cli = ["no vpdn l2tp attribute initial-received-lcp-confreq"]
     try:
@@ -280,7 +834,17 @@ def unconfigure_vpdn_l2tp_attribute_initial_received_lcp_confreq(device):
 
 
 def configure_vpdn_l2tp_attribute_physical_channel_id(device):
-    """Configure ``vpdn l2tp attribute physical-channel-id``."""
+    """Configure ``vpdn l2tp attribute physical-channel-id``.
+
+    Args:
+        device ('obj'): Device object
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: Failed to configure the VPDN L2TP attribute
+    """
 
     cli = ["vpdn l2tp attribute physical-channel-id"]
     try:
@@ -293,7 +857,17 @@ def configure_vpdn_l2tp_attribute_physical_channel_id(device):
 
 
 def unconfigure_vpdn_l2tp_attribute_physical_channel_id(device):
-    """Unconfigure ``vpdn l2tp attribute physical-channel-id``."""
+    """Unconfigure ``vpdn l2tp attribute physical-channel-id``.
+
+    Args:
+        device ('obj'): Device object
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: Failed to unconfigure the VPDN L2TP attribute
+    """
 
     cli = ["no vpdn l2tp attribute physical-channel-id"]
     try:

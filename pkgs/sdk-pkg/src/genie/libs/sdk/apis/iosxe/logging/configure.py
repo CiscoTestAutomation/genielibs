@@ -206,11 +206,12 @@ def configure_terminal_exec_prompt_timestamp(device):
             "Could not terminal exec prompt timestamp on {device}. Error:\n{error}".format(device=device, error=e))
 
 
-def configure_logging_buffer_size(device, buffer_size):
-    """ logging buffered <4096-2147483647>
+def configure_logging_buffer_size(device, buffer_size, severity=None):
+    """Configure logging buffer with the given size & optional severity.
         Args:
             device (`obj`): Device object
-            buffer_size ('int'): Size of the buffer
+            buffer_size ('int'): Size of the logging buffer in bytes
+            severity ('str', optional): Logging severity level
         Returns:
             None
         Raises:
@@ -219,8 +220,12 @@ def configure_logging_buffer_size(device, buffer_size):
 
     log.debug("Configure logging buffer on {device}".format(device=device))
 
+    cmd = f'logging buffered {buffer_size}'
+    if severity:
+        cmd += f' {severity}'
+
     try:
-        device.configure('logging buffer {buffer_size}'.format(buffer_size=buffer_size))
+        device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not logging buffer on {device}. Error:\n{error}".format(device=device, error=e))
