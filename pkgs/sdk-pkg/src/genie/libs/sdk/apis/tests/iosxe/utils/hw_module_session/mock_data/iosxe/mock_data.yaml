@@ -1,0 +1,85 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: analog-perf-uut2(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: analog-perf-uut2(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    show version | include operating mode: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: analog-perf-uut2#
+receive:
+  commands:
+    nopattern^:
+      response:
+      - true
+      - true
+      - true
+      - true
+      response_type: circular
+  prompt: analog-perf-uut2#
+receive_buffer:
+  commands:
+    null:
+      response:
+      - "\r\nanalog-perf-uut2#hw-module session 0/1\r\nEstablishing session connect\
+        \ to subslot 0/1\r\nTo exit, type ^a^q\r\n\r\npicocom v3.1\r\n\r\nport is\
+        \        : /dev/ttyDASH2\r\nflowcontrol    : none\r\nbaudrate is    : 9600\r\
+        \nparity is      : none\r\ndatabits are   : 8\r\nstopbits are   : 1\r\nescape\
+        \ is      : C-a\r\nlocal echo is  : no\r\nnoinit is      : no\r\nnoreset is\
+        \     : no\r\nhangup is      : no\r\nnolock is      : yes\r\nsend_cmd is \
+        \   : sz -vv\r\nreceive_cmd is : rz -vv -E\r\nimap is        : \r\nomap is\
+        \        : \r\nemap is        : crcrlf,delbs,\r\nlogfile is     : none\r\n\
+        initstring     : none\r\nexit_after is  : not set\r\nexit is        : no\r\
+        \n\r\nType [C-a] [C-h] to see available commands\r\nTerminal ready\r\n"
+      - "show version\r\n\r\nPID: NIM-4BRI-NT/TE\r\nVersion 62.3.4, built on Sep \
+        \ 4 2024:13:31:00 from /nobackup/dspbld/workspace/team_uc_jenkins/DSPWare_release_build/62.3.4\r\
+        \nNGIO Version ngio@polaris_dev/278\r\n\r\nDM8147> "
+      - "\r\nTerminating...\r\nSkipping tty reset...\r\nThanks for using picocom\r\
+        \nanalog-perf-uut2#"
+      response_type: circular
+  prompt: analog-perf-uut2#
+transmit:
+  commands:
+    "\x01":
+      response:
+      - true
+      response_type: circular
+    ? "\nhw-module session 0/1\r"
+    : response:
+      - true
+      response_type: circular
+    "\x11":
+      response:
+      - true
+      response_type: circular
+    "show version\r":
+      response:
+      - true
+      response_type: circular
+  prompt: analog-perf-uut2#

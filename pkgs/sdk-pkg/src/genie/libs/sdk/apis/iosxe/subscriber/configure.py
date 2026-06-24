@@ -81,3 +81,83 @@ def configure_subscriber_template(device):
         raise SubCommandFailure(
            f"Failed to configure subscriber templating and authorization, Error:\n{e}"
         )
+
+
+def configure_subscriber_service_session_accounting(device):
+    """ Configure subscriber service session-accounting
+    Args:
+        device ('obj'): Device object
+    Returns:
+        None
+    Raise:
+        SubCommandFailure: Failed to configure subscriber service session-accounting
+    """
+    log.info("Configure subscriber service session-accounting")
+
+    cmd = "subscriber service session-accounting"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure subscriber service session-accounting, Error:\n{e}"
+        )
+
+
+def unconfigure_subscriber_service_session_accounting(device):
+    """ Unconfigure subscriber service session-accounting
+    Args:
+        device ('obj'): Device object
+    Returns:
+        None
+    Raise:
+        SubCommandFailure: Failed to unconfigure subscriber service session-accounting
+    """
+    log.info("Unconfigure subscriber service session-accounting")
+
+    cmd = "no subscriber service session-accounting"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure subscriber service session-accounting, Error:\n{e}"
+        )
+
+
+def configure_subscriber_service_target_atm_vc(device):
+    """ Configure subscriber service target-atm-vc
+    Args:
+        device ('obj'): Device object
+    Returns:
+        None
+    Raise:
+        SubCommandFailure: Failed to configure subscriber service target-atm-vc
+    """
+    log.info("Configure subscriber service target-atm-vc")
+
+    cmd = "subscriber service target-atm-vc"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure subscriber service target-atm-vc, Error:\n{e}"
+        )
+
+
+def unconfigure_subscriber_service_target_atm_vc(device):
+    """ Unconfigure subscriber service target-atm-vc
+    Args:
+        device ('obj'): Device object
+    Returns:
+        None
+    Raise:
+        SubCommandFailure: Failed to unconfigure subscriber service target-atm-vc
+    """
+    log.info("Unconfigure subscriber service target-atm-vc")
+
+    cmd = "no subscriber service target-atm-vc"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure subscriber service target-atm-vc, Error:\n{e}"
+        )

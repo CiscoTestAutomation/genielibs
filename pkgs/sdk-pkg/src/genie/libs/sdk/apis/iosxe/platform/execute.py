@@ -2511,8 +2511,36 @@ def execute_ingress_ping_sweep(
         error_msg = f"Ping sweep execution failed: {e}"
         log.error(error_msg)
         raise Exception(error_msg) from e
+    
+def execute_test_platform_software_command(device,bp,redundancy_mode,mode_type,action,node_id):
+    """
+    Executes a test platform software CLI command with flexible parameters.
 
+    Args:
+        device: The device object to execute the command on.
+        bp (str): Subcommand after 'test platform software' (default: 'bp').
+        redundancy_mode (str): Redundancy mode subcommand (default: 'redundancy-mode').
+        mode_type (str): Mode type (e.g., 'combined', 'n+1', 'n+n').
+        action (str): Action to perform (e.g., 'provision', 'unprovision').
+        node_id (int): Node ID (default: 1).
 
+    Returns:
+        str: Output from the device after executing the command.
+    """
+    cmd = (
+        f"test platform software {bp} crimson node {node_id} power {redundancy_mode} {mode_type} {action}"
+    )
+
+    try:
+        output = device.execute(cmd)
+        return output
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not execute test platform software command on {device}. Error:\n{error}"
+                .format(device=device, error=e)
+        )
+
+        
 def touch_file(device, directory, file_name):
     """
     Create an empty file at the specified path on the device using the 'puts' command
@@ -2554,4 +2582,62 @@ def execute_show_policy_firewall_stats_platform(device, filter_option=None):
     except Exception as e:
         raise Exception(
             f'Failed to execute {cmd} on device. Error: {e}'
+        )
+
+
+def execute_print_working_directory(device):
+    """ Execute 'pwd' command on device
+        Args:
+            device (`obj`): Device object
+        Returns:
+            str: Output of pwd command
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        return device.execute('pwd')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to execute pwd on device {device.name}. Error:\n{e}"
+        )
+
+
+def execute_change_directory(device, directory=''):
+    """ Execute 'cd' command on device to change current directory
+        Args:
+            device (`obj`): Device object
+            directory (`str`, optional): Target directory path.
+                Examples: '', 'bootflash:', 'bootflash:dir1'
+                Default is '' (change to root directory)
+        Returns:
+            str: Output of cd command
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f'cd {directory}'.strip()
+    try:
+        return device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to execute {cmd} on device {device.name}. Error:\n{e}"
+        )
+
+
+def execute_fsck(device, file_system, timeout=120):
+    """ Execute 'fsck' command on device to check file system integrity
+        Args:
+            device (`obj`): Device object
+            file_system (`str`): File system to check (e.g., 'harddisk:')
+            timeout (`int`, optional): Command timeout in seconds. Default 120
+        Returns:
+            str: Output of fsck command
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f'fsck {file_system}'
+    try:
+        return device.execute(cmd, timeout=timeout)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to execute {cmd} on device {device.name}. Error:\n{e}"
         )

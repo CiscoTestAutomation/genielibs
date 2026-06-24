@@ -2364,6 +2364,68 @@ def unconfigure_mpls_ldp_label(device, prefix_list=None, host_routes=False, ldp_
             "Couldn't unconfigure MPLS LDP label settings on {device}. Error:\n{error}".format(
                 device=device.name, error=e)
         )
+
+def configure_mpls_ldp_advertise(device):
+    """Configure MPLS LDP advertisement.
+
+    Args:
+        device (obj): Device object
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: If device configuration fails
+    """
+
+    command = "mpls ldp advertise-labels"
+    log.debug(
+        "Configuring MPLS LDP advertise on {device}: {command}".format(
+            device=device.name,
+            command=command,
+        )
+    )
+
+    try:
+        device.configure(command)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Couldn't configure MPLS LDP advertise on {device}. Error:\n{error}".format(
+                device=device.name,
+                error=e,
+            )
+        )
+
+def unconfigure_mpls_ldp_advertise(device):
+    """Unconfigure MPLS LDP advertisement.
+
+    Args:
+        device (obj): Device object
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: If device configuration fails
+    """
+
+    command = "no mpls ldp advertise-labels"
+    log.debug(
+        "Unconfiguring MPLS LDP advertise on {device}: {command}".format(
+            device=device.name,
+            command=command,
+        )
+    )
+
+    try:
+        device.configure(command)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Couldn't unconfigure MPLS LDP advertise on {device}. Error:\n{error}".format(
+                device=device.name,
+                error=e,
+            )
+        )
         
 def configure_mpls_static_binding_ipv4(device, prefix, mask, binding_args):
     """Configure MPLS static binding for an IPv4 prefix
@@ -2474,3 +2536,90 @@ def unconfigure_mpls_label_range(device):
             )
         )
 
+def configure_pseudowire_class(
+        device,
+        pw_class,
+        encap=None,
+        protocol=None,
+        interface=None,
+        tos_reflect=False,
+        ):
+    """ configure pseudowire class
+
+        Args:
+            device (`obj`): Device object
+            pw_class ('str'): pseudowire class name
+            enacp ('str'): encapsulation type
+            protocol ('str'): protocol
+            interface (`str`): Interface name/ip address
+            tos_relect('boolean'): True to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [f'pseudowire-class {pw_class}']
+
+    if encap:
+        cmd.append(f'encapsulation {encap}')
+
+    if protocol:
+        cmd.append(f'protocol {protocol}')
+
+    if interface:
+        cmd.append(f'ip local interface {interface}')
+
+    if tos_reflect:
+        cmd.append('ip tos reflect')
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure pseudowire class {pw_class}. Error:\n{error}"\
+                .format(pw_class=pw_class, error=e)
+        )
+
+def unconfigure_pseudowire_class(
+        device,
+        pw_class,
+        encap=None,
+        protocol=None,
+        interface=None,
+        tos_reflect=False,
+        ):
+    """ configure pseudowire class
+
+        Args:
+            device (`obj`): Device object
+            pw_class ('str'): pseudowire class name
+            enacp ('str'): encapsulation type
+            protocol ('str'): protocol
+            interface (`str`): Interface name/ip address
+            tos_relect('boolean'): True to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [f'pseudowire-class {pw_class}']
+
+    if encap:
+        cmd.append(f'no encapsulation {encap}')
+
+    if protocol:
+        cmd.append(f'no protocol {protocol}')
+
+    if interface:
+        cmd.append(f'no ip local interface {interface}')
+
+    if tos_reflect:
+        cmd.append('no ip tos reflect')
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure pseudowire class {pw_class}. Error:\n{error}"\
+                .format(pw_class=pw_class, error=e)
+        )

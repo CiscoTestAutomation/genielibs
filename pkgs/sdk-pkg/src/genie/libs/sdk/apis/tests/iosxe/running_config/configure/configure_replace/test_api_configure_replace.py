@@ -1,5 +1,6 @@
 import os
 import unittest
+from unittest.mock import Mock
 from pyats.topology import loader
 from unicon.core.errors import SubCommandFailure
 from genie.libs.sdk.apis.iosxe.running_config.configure import configure_replace
@@ -46,3 +47,36 @@ class TestConfigureReplace(unittest.TestCase):
         self.assertIn('Error: Could not open file bootflash:base_conf.conf for reading', err.exception.args[0])
         self.assertEqual(self.device.learned_hostname, '9300-24UX-2')
         self.assertEqual(self.device.hostname, '9300-24UX-2')
+
+
+class TestConfigureReplaceControllerMode(unittest.TestCase):
+    """Test configure_replace handling for controller mode devices"""
+
+    def test_configure_replace_controller_mode(self):
+        device = Mock()
+        device.name = 'c8kv-1'
+        device.state_machine = Mock()
+        device.default = Mock()
+        device.spawn = Mock()
+        device._get_learned_hostname = Mock(return_value='c8kv-1')
+
+        device.execute.side_effect = [
+            'Router operating mode: Controller-Managed',
+            '6045 bytes copied in 0.025 secs (241800 bytes/sec)',
+        ]
+        device.configure.return_value = 'Commit complete.'
+
+        result = configure_replace(device, 'bootflash:', 'base.cfg', 'force', 1, 60)
+
+        self.assertIn('Commit complete', result)
+        # Verify copy was called with error_pattern
+        copy_call = device.execute.call_args_list[1]
+        self.assertIn('error_pattern', copy_call[1])
+        self.assertEqual(copy_call[1]['error_pattern'], [r".*%Error.*"])
+        # Verify configure was called correctly
+        device.configure.assert_called_once_with(
+            'load replace base.cfg',
+            reply=unittest.mock.ANY,
+            timeout=60,
+            append_error_pattern=['Error:'],
+        )

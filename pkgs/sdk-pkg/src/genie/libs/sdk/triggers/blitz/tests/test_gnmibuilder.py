@@ -129,7 +129,7 @@ json_val_decoded_oc = {
       'protocol':
       [
         {
-          'identifier': 'OSPF',
+          'identifier': 'openconfig-policy-types:OSPF',
           'name': '100',
           'config':
           {
@@ -256,7 +256,7 @@ json_val_no_edit_op = {
       'protocol':
       [
         {
-          'identifier': 'OSPF',
+          'identifier': 'openconfig-policy-types:OSPF',
           'name': '100',
           'config':
           {
@@ -1066,10 +1066,10 @@ json_decoded_multiple_key = {
         'elem':
         [
           {
-            'name': 'oc-interfaces'
+            'name': 'oc-ietf-interfaces:interfaces'
           },
           {
-            'name': 'oc-interface',
+            'name': 'oc-ietf-interfaces:interface',
             'key':
             {
               'name': 'TenGigabitEthernet1/0/1'
@@ -1091,10 +1091,10 @@ json_decoded_multiple_key = {
         'elem':
         [
           {
-            'name': 'oc-interfaces'
+            'name': 'oc-ietf-interfaces:interfaces'
           },
           {
-            'name': 'oc-interface',
+            'name': 'oc-ietf-interfaces:interface',
             'key':
             {
               'name': 'TenGigabitEthernet1/0/1'
@@ -1115,10 +1115,10 @@ json_decoded_multiple_key = {
         'origin': 'openconfig',
         'elem':
         [
-          {'name': 'oc-interfaces'
+          {'name': 'oc-ietf-interfaces:interfaces'
           },
           {
-            'name': 'oc-interface',
+            'name': 'oc-ietf-interfaces:interface',
             'key':
             {
               'name': 'TenGigabitEthernet1/0/2'
@@ -1140,10 +1140,10 @@ json_decoded_multiple_key = {
         'elem':
         [
           {
-            'name': 'oc-interfaces'
+            'name': 'oc-ietf-interfaces:interfaces'
           },
           {
-            'name': 'oc-interface',
+            'name': 'oc-ietf-interfaces:interface',
             'key':
             {
               'name': 'TenGigabitEthernet1/0/2'

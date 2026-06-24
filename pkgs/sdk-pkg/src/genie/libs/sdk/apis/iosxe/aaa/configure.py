@@ -384,6 +384,135 @@ def configure_enable_aes_encryption(device, master_key, old_key=None, proceed_wi
         )
 
 
+def configure_username_secure(device,
+                              master_key=None,
+                              old_master_key=None,
+                              username=None,
+                              pwd=None,
+                              enable_secret=None,
+                              algorithm_type='type6'):
+    """Configure username/enable secret with Type 6 (AES) or Type 9 (scrypt).
+
+    Type 6 (AES):
+        Step 1: key config-key password-encrypt   (sets AES master key)
+        Step 2: password encryption aes           (enables AES globally)
+        Step 3: username / enable secret          (auto-converts to Type 6)
+        Requires 'master_key'.
+
+    Type 9 (scrypt):
+        Uses 'algorithm-type scrypt' keyword — no master key needed.
+
+    Args:
+        device          ('obj'):           Device object
+        master_key      ('str', optional): AES master key (min 8 chars).
+                                           Required for Type 6. Ignored for Type 9.
+        old_master_key  ('str', optional): Existing master key for key rotation (Type 6 only).
+                                           Default None.
+        username        ('str', optional): Username to configure.
+                                           Must be provided together with 'pwd'.
+                                           Default None (skip username config).
+        pwd             ('str', optional): Secret for the username.
+                                           Required when username is provided.
+        enable_secret   ('str', optional): Enable secret password.
+                                           Default None (skip enable secret config).
+        algorithm_type  ('str', optional): 'type6' for AES or 'type9' for scrypt.
+                                           Default 'type6'.
+    Returns:
+        None
+    Raises:
+        ValueError: If invalid arguments are provided (bad algorithm_type, missing pwd for username, or missing master_key for Type 6).
+        SubCommandFailure: If configuration fails on the device.
+    """
+    config_list = []
+
+    if algorithm_type not in ('type6', 'type9'):
+        raise ValueError(
+            "Invalid algorithm_type '{alg}'. Use 'type6' or 'type9'.".format(
+                alg=algorithm_type)
+        )
+
+    if username and not pwd:
+        raise ValueError(
+            "'username' requires 'pwd'. "
+            "Provide the secret password for username '{username}'.".format(
+                username=username)
+        )
+
+    if algorithm_type == 'type6':
+        if not master_key:
+            raise ValueError(
+                "Type 6 (AES) requires 'master_key'. "
+                "Provide the AES master key for encryption."
+            )
+        if username and pwd:
+            logger.debug(
+                "Configuring username '{username}' secret (Type 6 AES) "
+                "on {name}".format(username=username, name=device.name)
+            )
+            config_list.append(
+                'username {username} secret {pwd}'.format(
+                    username=username, pwd=pwd)
+            )
+        if enable_secret:
+            logger.debug(
+                "Configuring enable secret (Type 6 AES) "
+                "on {name}".format(name=device.name)
+            )
+            config_list.append(
+                'enable secret {enable_secret}'.format(
+                    enable_secret=enable_secret)
+            )
+        if config_list:
+            try:
+                configure_enable_aes_encryption(device, master_key, old_master_key)
+                device.configure(config_list)
+            except SubCommandFailure as e:
+                raise SubCommandFailure(
+                    "Type 6 (AES) credential configuration failed on device "
+                    "'{name}'. Error: {error}".format(
+                        name=device.name, error=e)
+                )
+
+    elif algorithm_type == 'type9':
+        if username and pwd:
+            logger.debug(
+                "Removing existing password for username '{username}' before "
+                "configuring Type 9 (scrypt) secret on {name}".format(
+                    username=username, name=device.name)
+            )
+            try:
+                device.configure(
+                    'no username {username} password'.format(username=username))
+            except SubCommandFailure:
+                pass  # OK if no password was configured
+            logger.debug(
+                "Configuring username '{username}' with Type 9 (scrypt) secret "
+                "on {name}".format(username=username, name=device.name)
+            )
+            config_list.append(
+                'username {username} algorithm-type scrypt secret {pwd}'.format(
+                    username=username, pwd=pwd)
+            )
+        if enable_secret:
+            logger.debug(
+                "Configuring enable secret with Type 9 (scrypt) "
+                "on {name}".format(name=device.name)
+            )
+            config_list.append(
+                'enable algorithm-type scrypt secret {enable_secret}'.format(
+                    enable_secret=enable_secret)
+            )
+        if config_list:
+            try:
+                device.configure(config_list)
+            except SubCommandFailure as e:
+                raise SubCommandFailure(
+                    "Type 9 (scrypt) credential configuration failed on device "
+                    "'{name}'. Error: {error}".format(
+                        name=device.name, error=e)
+                )
+
+
 def configure_disable_aes_encryption(device, new_key=None):
     """
         removes aes password encryption
@@ -1175,6 +1304,66 @@ def configure_enable_policy_password(device,
             )
         )
 
+def configure_enable_policy_password_secure(device,
+                                            password,
+                                            master_key=None,
+                                            old_master_key=None,
+                                            algorithm_type='type6'):
+    """Configure enable password with policy using Type 6 (AES) or Type 9 (scrypt).
+
+    Type 6 (AES):
+        Step 1: key config-key password-encrypt  (sets AES master key)
+        Step 2: password encryption aes          (enables AES globally)
+        Step 3: enable password / enable common-criteria-policy (auto-converts to Type 6)
+        Requires 'master_key'.
+
+    Type 9 (scrypt):
+        Uses 'enable algorithm-type scrypt secret' — no master key needed.
+
+    Args:
+        device          ('obj'):           Device object
+        password        ('str'):           Password/secret value
+        master_key      ('str', optional): AES master key (min 8 chars).
+                                           Required for Type 6. Ignored for Type 9.
+        old_master_key  ('str', optional): Existing master key for key rotation (Type 6 only).
+                                           Default None.
+        algorithm_type  ('str', optional): 'type6' for AES or 'type9' for scrypt.
+                                           Default 'type6'.
+    Return:
+        None
+    Raise:
+        ValueError: If invalid algorithm_type or missing master_key for Type 6.
+        SubCommandFailure: If configuration fails on the device.
+    """
+    if algorithm_type not in ('type6', 'type9'):
+        raise ValueError(
+            "Invalid algorithm_type '{alg}'. Use 'type6' or 'type9'.".format(
+                alg=algorithm_type)
+        )
+
+    if algorithm_type == 'type6':
+        if not master_key:
+            raise ValueError(
+                "Type 6 (AES) requires 'master_key'. "
+                "Provide the AES master key for encryption."
+            )
+        configure_enable_aes_encryption(device, master_key, old_master_key)
+        config = "enable password {pwd}".format(pwd=password)
+
+    elif algorithm_type == 'type9':
+        config = "enable algorithm-type scrypt secret {pwd}".format(pwd=password)
+    
+    try:
+        device.configure(
+            config,
+            error_patterns=[r".*%\s*[Pp]assword.*"]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure enable password ({alg}). "
+            "Error: {error}".format(alg=algorithm_type, error=e)
+        )
+
 def unconfigure_enable_policy_password(device,
                                        password,
                                        policy_name=None,
@@ -1207,6 +1396,34 @@ def unconfigure_enable_policy_password(device,
             "Could not configure enable password with policy {pwd} "
             "Error: {error}".format(pwd=password, error=e
             )
+        )
+
+def unconfigure_enable_policy_password_secure(device, password):
+    """Unconfigure enable secret/password (with or without policy).
+
+    Args:
+        device        ('obj'):           Device object
+        policy_name   ('str', optional): Common criteria policy name. Default None.
+        password_type ('str', optional): Encryption type '0', '7', or '6'. Default None.
+        password      ('str', optional): Password value (required when policy_name set).
+        secret        ('bool', optional): If True, removes 'enable secret'.
+                                          If False, removes 'enable password'. Default True.
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed unconfiguring
+    """
+    if password:
+        config = "no enable password {passw}".format(passw=password)
+    else:
+        config = "no enable password"
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure enable password. "
+            "Error: {error}".format(error=e)
         )
 
 def configure_service_password_encryption(device):
@@ -1914,13 +2131,13 @@ def configure_masked_unmasked_credentials (device,
         )
 
 
-def configure_masked_unmasked_enable_secret_password (device,
+def configure_masked_unmasked_enable_secret_password(device,
                                   password,
                                   privilege=None,
                                   ccp_name=None,
                                   algorithm_type=None,
                                   masked=True,
-                                  secret=True,):
+                                  secret=True):
 
     """ Configure masked/unmasked enable password with the given encryption
     algorithm type,privilege level and common criteria policy
@@ -1929,43 +2146,75 @@ def configure_masked_unmasked_enable_secret_password (device,
     Args:
         device (`obj`):                   Device object
         password (`str`):                 Password
-        privilege('int',optional):        specified privilege num else None
+        privilege('int',optional):        specified privilege num (0-15) else None
         ccp_name (`str`, optional):       specified Common Criteria Policy else None
-        algorithm_type ('str', optional): specified algorithm type else None
+        algorithm_type ('str', optional): specified algorithm type (md5/sha256/scrypt) else None
         masked ('bool'):                  masked secret if True else unmasked.
         secret ('bool'):                  secret if True else plain-text
     Return :
         None
     Raise:
-        SubCommandFailure: Failed configuring
+        ValueError: If password is empty/non-string, privilege is not 0-15,
+                    algorithm_type is not md5/sha256/scrypt, or ccp_name
+                    contains invalid characters.
+        SubCommandFailure: If configuration fails on the device.
     """
-    cmd="enable "
-    if ccp_name :
-        cmd+=f" common-criteria-policy {ccp_name}"
-    if algorithm_type :
-        cmd+=f" algorithm-type {algorithm_type}"
-    if masked :
-        cmd+=" masked-secret"
-    elif secret :
-        cmd+=" secret"
-    else :
-        cmd+=" password"
-    if privilege:
-        cmd+=f" level {privilege}"
-    if not(masked) :
-        cmd+=f" {password}"
+    # --- Input validation ---
+    if not isinstance(password, str) or not password:
+        raise ValueError("password must be a non-empty string")
 
+    if privilege is not None:
+        if not isinstance(privilege, int) or not (0 <= privilege <= 15):
+            raise ValueError("privilege must be an integer between 0 and 15")
+
+    _VALID_ALGORITHM_TYPES = {'md5', 'sha256', 'scrypt'}
+    if algorithm_type is not None:
+        if algorithm_type.lower() not in _VALID_ALGORITHM_TYPES:
+            raise ValueError(
+                "algorithm_type must be one of: {0}".format(
+                    ', '.join(sorted(_VALID_ALGORITHM_TYPES)))
+            )
+        algorithm_type = algorithm_type.lower()
+
+    # ccp_name: allow only alphanumeric, underscore, hyphen to prevent CLI injection
+    if ccp_name is not None:
+        if not re.match(r'^[A-Za-z0-9_-]+$', ccp_name):
+            raise ValueError(
+                "ccp_name contains invalid characters; "
+                "only alphanumeric, underscore, and hyphen are permitted"
+            )
+
+    # --- Build command ---
+    cmd = "enable"
+    if ccp_name:
+        cmd += " common-criteria-policy {0}".format(ccp_name)
+    if algorithm_type:
+        cmd += " algorithm-type {0}".format(algorithm_type)
+    if masked:
+        cmd += " masked-secret"
+    elif secret:
+        cmd += " secret"
+    else:
+        cmd += " password"
+    if privilege is not None:
+        cmd += " level {0}".format(privilege)
+    if not masked:
+        cmd += " {0}".format(password)
+
+    # Use lambdas to avoid embedding the password string inside an evaluated
+    # action expression, which would allow injection if the password contains
+    # parentheses, quotes, or other Python-significant characters.
     masked_secret_dialog = Dialog(
         [
             Statement(
                 pattern=r".*Enter secret:.*",
-                action=f"sendline({password})",
+                action=lambda spawn, pw=password: spawn.sendline(pw),
                 loop_continue=True,
                 continue_timer=False,
             ),
             Statement(
                 pattern=r".*Confirm secret:.*",
-                action=f"sendline({password})",
+                action=lambda spawn, pw=password: spawn.sendline(pw),
                 loop_continue=True,
                 continue_timer=False,
             ),
@@ -1973,13 +2222,15 @@ def configure_masked_unmasked_enable_secret_password (device,
     )
 
     try:
-       out=device.configure(cmd,reply=masked_secret_dialog)
-       if  re.search(r'[p|P]assword',out) and not(re.search(r'migrate',out)):
-           raise SubCommandFailure(out)
+        device.configure(
+            cmd,
+            reply=masked_secret_dialog,
+            error_pattern=[r".*%\s*[Pp]assword.*"]
+        )
 
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            "Could not configure enable password"
+            "Could not configure enable password."
             "Error: {error}".format(error=e)
         )
 
@@ -3806,4 +4057,196 @@ def unconfigure_aaa_group_radius_interface(device, servergrp, interface, protoco
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not unconfigure radius interface. Error:\n{e}"
-        )        
+        )
+
+
+def configure_aaa_authentication_ppp_default_type(device, def_type):
+    '''api for configuring aaa authentication ppp default <def_type>
+
+    Args:
+        device ('obj') : Device object
+        def_type ('str'): ppp default type 
+    Return:
+        None
+    Raise:
+        SubCommandFailure: failed to configure aaa authentication ppp default local
+    '''
+
+    cmd = f"aaa authentication ppp default {def_type}"
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"failed to configure aaa authentication ppp default {def_type}")
+
+
+def configure_aaa_authentication(device, auth_type, auth_list, methods):
+    """ configure aaa authentication (generic)
+        Args:
+            device ('obj'): Device object
+            auth_type ('str'): Authentication type
+                (e.g. 'login', 'enable', 'dot1x')
+            auth_list ('str'): List name or 'default'
+            methods ('list'): Ordered list of method strings
+                (e.g. ['group RADIUS_GRP', 'local'])
+        Raise:
+            SubCommandFailure: Failed configuring aaa authentication
+    """
+    cmd = f"aaa authentication {auth_type} {auth_list} {' '.join(methods)}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure aaa authentication {auth_type} "
+            f"{auth_list}. Error: {e}"
+        )
+
+
+def unconfigure_aaa_authentication(device, auth_type, auth_list, methods):
+    """ unconfigure aaa authentication (generic)
+        Args:
+            device ('obj'): Device object
+            auth_type ('str'): Authentication type
+            auth_list ('str'): List name or 'default'
+            methods ('list'): Ordered list of method strings
+        Raise:
+            SubCommandFailure: Failed unconfiguring aaa authentication
+    """
+    cmd = (
+        f"no aaa authentication {auth_type} {auth_list} "
+        f"{' '.join(methods)}"
+    )
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure aaa authentication {auth_type} "
+            f"{auth_list}. Error: {e}"
+        )
+
+
+def configure_aaa_authorization(device, authz_type, auth_list, methods):
+    """ configure aaa authorization (generic)
+        Args:
+            device ('obj'): Device object
+            authz_type ('str'): Authorization type
+                (e.g. 'network', 'exec', 'subscriber-service')
+            auth_list ('str'): List name or 'default'
+            methods ('list'): Ordered list of method strings
+                (e.g. ['group RADIUS_GRP', 'local'])
+        Raise:
+            SubCommandFailure: Failed configuring aaa authorization
+    """
+    cmd = f"aaa authorization {authz_type} {auth_list} {' '.join(methods)}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure aaa authorization {authz_type} "
+            f"{auth_list}. Error: {e}"
+        )
+
+
+def unconfigure_aaa_authorization(device, authz_type, auth_list, methods):
+    """ unconfigure aaa authorization (generic)
+        Args:
+            device ('obj'): Device object
+            authz_type ('str'): Authorization type
+            auth_list ('str'): List name or 'default'
+            methods ('list'): Ordered list of method strings
+        Raise:
+            SubCommandFailure: Failed unconfiguring aaa authorization
+    """
+    cmd = (
+        f"no aaa authorization {authz_type} {auth_list} "
+        f"{' '.join(methods)}"
+    )
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure aaa authorization {authz_type} "
+            f"{auth_list}. Error: {e}"
+        )
+
+
+def configure_aaa_accounting(
+    device, acct_type, acct_list=None, record_type=None,
+    methods=None, extras=None,
+):
+    """ configure aaa accounting (generic)
+        Args:
+            device ('obj'): Device object
+            acct_type ('str'): Accounting type or top-level keyword
+                (e.g. 'network', 'system', 'exec', 'update', 'nested',
+                'include', 'jitter')
+            acct_list ('str', optional): List name or 'default'.
+                Defaults to None
+            record_type ('str', optional): Record type
+                (e.g. 'start-stop', 'stop-only'). Defaults to None
+            methods ('list', optional): Ordered list of method strings.
+                Defaults to None
+            extras ('str' or 'list', optional): Free-form trailing
+                tokens appended verbatim. Defaults to None
+        Raise:
+            SubCommandFailure: Failed configuring aaa accounting
+    """
+    parts = ["aaa accounting", acct_type]
+    if acct_list:
+        parts.append(acct_list)
+    if record_type:
+        parts.append(record_type)
+    if methods:
+        parts.extend(methods)
+    if extras:
+        if isinstance(extras, (list, tuple)):
+            parts.extend(str(x) for x in extras)
+        else:
+            parts.append(str(extras))
+    cmd = ' '.join(parts)
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure aaa accounting {acct_type}. Error: {e}"
+        )
+
+
+def unconfigure_aaa_accounting(
+    device, acct_type, acct_list=None, record_type=None,
+    methods=None, extras=None,
+):
+    """ unconfigure aaa accounting (generic)
+        Args:
+            device ('obj'): Device object
+            acct_type ('str'): Accounting type or top-level keyword
+            acct_list ('str', optional): List name or 'default'.
+                Defaults to None
+            record_type ('str', optional): Record type. Defaults to None
+            methods ('list', optional): Ordered list of method strings.
+                Defaults to None
+            extras ('str' or 'list', optional): Free-form trailing
+                tokens appended verbatim. Defaults to None
+        Raise:
+            SubCommandFailure: Failed unconfiguring aaa accounting
+    """
+    parts = ["no aaa accounting", acct_type]
+    if acct_list:
+        parts.append(acct_list)
+    if record_type:
+        parts.append(record_type)
+    if methods:
+        parts.extend(methods)
+    if extras:
+        if isinstance(extras, (list, tuple)):
+            parts.extend(str(x) for x in extras)
+        else:
+            parts.append(str(extras))
+    cmd = ' '.join(parts)
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure aaa accounting {acct_type}. "
+            f"Error: {e}"
+        )

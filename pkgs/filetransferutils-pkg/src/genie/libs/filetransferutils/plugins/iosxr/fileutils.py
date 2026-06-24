@@ -494,17 +494,8 @@ class FileUtils(FileUtilsDeviceBase):
                                             invalid=invalid,
                                             timeout_seconds=timeout_seconds,
                                             **kwargs)
+        return output
 
-        # Only check if cli sent to device was not delete
-        if 'delete' in cli:
-            return output
-
-        # Check for successful copy pattern
-        if any(c in output for c in
-               ['bytes copied', 'lines built', 'OK', 'Successfully copied']):
-            return output
-        else:
-            raise SubCommandFailure('File was not successfully copied')
 
     def validate_and_update_url(self, url, device=None, **kwargs ):
         """Validate the url and replace the hostname/address with a

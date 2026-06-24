@@ -268,6 +268,230 @@ def configure_radius_server(device, server_config):
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not configure radius server on device {device.name}. Error:\n{e}')
 
+def configure_radius_server_secure(device, server_config):
+    """ Configure radius server with TLS and Message-Authenticator (secure).
+
+    Addresses both IOS-XE security warnings:
+
+    1. SECURITY WARNING - Module: AAA, Command: radius server <name>,
+       Reason: TLS is not configured, exposing traffic to potential
+       eavesdropping.
+       Fix: Configures TLS trustpoints, timeouts, and retransmit.
+
+    2. INSECURE DYNAMIC WARNING - Module: AAA,
+       Reason: send-ma/validate-ma knobs are not enabled.
+       Message-Authenticator attribute may not be sent/validated.
+       Some use-cases may be vulnerable to BlastRadius (CVE-2024-3596).
+       Fix: Enables 'send-ma' and 'validate-ma' under the RADIUS server.
+
+        Args:
+            device ('obj'): Device object
+            server_config('dict'): Dictionary of configuration for server
+                dictionary contains following keys:
+                    server_name ('str'): Radius server name
+                    ipv4 (Hostname or A.B.C.D):  IPv4 Address of radius server
+                    ipv6 (Hostname or X:X:X:X::X):  IPv6 Address of radius server
+                    auth_port (<0-65534>): UDP port for RADIUS authentication server
+                    acct_port (<0-65534>): UDP port for RADIUS accounting server
+                    key_encryption (int(0,6,7)): 0(UNENCRYPTED key), 6(ENCRYPTED key), 7(HIDDEN key)
+                    key (LINE): Radius server pre shared secret key
+                    timeout (<1-1000>): Time to wait (in seconds) for this radius server to reply
+                    retransmit (<0-100>): Number of retries to active server (overrides default)
+                    dscp_auth (<1-63>): Radius DSCP marking value for Authentication
+                    dscp_acct (<1-63>): Radius DSCP marking value for Accounting
+                    send_ma ('bool', optional): Enable send-ma knob (RECOMMENDED - BlastRadius mitigation).
+                        When True, adds 'send-ma' to radius server submode config.
+                        Default: False — ERROR will be printed if not enabled.
+                    validate_ma ('bool', optional): Enable validate-ma knob (RECOMMENDED - BlastRadius mitigation).
+                        When True, adds 'validate-ma' to radius server submode config.
+                        Default: False — ERROR will be printed if not enabled.
+                    tls_connectiontimeout ('int', optional): TLS connection timeout in seconds.
+                    tls_idletimeout ('int', optional): TLS idle timeout in seconds.
+                    tls_retransmit ('int', optional): TLS retransmit count.
+                    tls_trustpoint_client ('str', optional): Client PKI trustpoint name.
+                    tls_trustpoint_server ('str', optional): Server/CA PKI trustpoint name.
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+
+        ex.)
+            {
+                'server_name': 'radius_server',
+                'ipv4': '11.15.23.213',
+                'auth_port': '1812',
+                'acct_port': '1813',
+                'key_encryption': '7',
+                'key': 'Cisco',
+                'timeout': '100',
+                'retransmit': '5',
+                'dscp_auth': '20',
+                'dscp_acct': '10',
+                'send_ma': True,
+                'validate_ma': True,
+                'tls_connectiontimeout': 5,
+                'tls_idletimeout': 60,
+                'tls_retransmit': 2,
+                'tls_trustpoint_client': 'RAD-CLIENT',
+                'tls_trustpoint_server': 'RAD-CA'
+            }
+
+        configures below cli commands:
+            'radius server ISE2.7',
+            'address ipv4 10.6.1.200 auth-port 2083 acct-port 2083',
+            'key cisco123',
+            'timeout 100',
+            'retransmit 5',
+            'send-ma',
+            'validate-ma',
+            'tls connectiontimeout 5',
+            'tls idletimeout 60',
+            'tls retransmit 2',
+            'tls trustpoint client RAD-CLIENT',
+            'tls trustpoint server RAD-CA'
+
+        Security Notes:
+            BlastRadius (BROC 23 & 24):
+                Enable 'send_ma' and 'validate_ma' in server_config to suppress warnings.
+                These knobs will be enforced by default in a future IOS-XE release.
+
+            TLS/DTLS:
+                RADIUS without TLS exposes traffic to eavesdropping.
+                Configure tls_trustpoint_client and tls_trustpoint_server
+                to encrypt RADIUS communication.
+    """
+
+    config_list = []
+
+    # radius server <server_name>
+    server_name = server_config.get('server_name', '')
+    if server_name:
+        config_list.append("radius server {}".format(server_name))
+
+    # address ipv4 <ipv4> auth-port <auth_port> acct-port <acct_port> |
+    # address ipv4 <ipv4> acct-port <acct_port>
+    if 'ipv4' in server_config:
+        if 'auth_port' in server_config and 'acct_port' in server_config:
+            config_list.append("address ipv4 {} auth-port {} acct-port {}".format(
+                server_config['ipv4'], server_config['auth_port'], server_config['acct_port']))
+        elif 'auth_port' not in server_config and 'acct_port' in server_config:
+            config_list.append("address ipv4 {} acct-port {}".format(
+                server_config['ipv4'], server_config['acct_port']))
+
+    # address ipv6 <ipv6> auth-port <auth_port> acct-port <acct_port> |
+    # address ipv6 <ipv6> acct-port <acct_port>
+    if 'ipv6' in server_config:
+        if 'auth_port' in server_config and 'acct_port' in server_config:
+            config_list.append("address ipv6 {} auth-port {} acct-port {}".format(
+                server_config['ipv6'], server_config['auth_port'], server_config['acct_port']))
+        elif 'auth_port' not in server_config and 'acct_port' in server_config:
+            config_list.append("address ipv6 {} acct-port {}".format(
+                server_config['ipv6'], server_config['acct_port']))
+
+    # key <key_encryption> <key> |
+    # key <key>
+    if 'key_encryption' in server_config:
+        config_list.append("key {} {}".format(server_config['key_encryption'], server_config['key']))
+    elif 'key' in server_config:
+        config_list.append("key {}".format(server_config['key']))
+
+    # timeout <timeout>
+    if 'timeout' in server_config:
+        config_list.append("timeout {}".format(server_config['timeout']))
+
+    # retransmit <retransmit>
+    if 'retransmit' in server_config:
+        config_list.append("retransmit {}".format(server_config['retransmit']))
+
+    # dscp auth <dscp_auth>
+    if 'dscp_auth' in server_config:
+        config_list.append("dscp auth {}".format(server_config['dscp_auth']))
+
+    # dscp acct <dscp_acct>
+    if 'dscp_acct' in server_config:
+        config_list.append("dscp acct {}".format(server_config['dscp_acct']))
+
+    # ------------------------------------------------------------------ #
+    # BlastRadius mitigation: send-ma / validate-ma (BROC 23 & BROC 24)  #
+    # ------------------------------------------------------------------ #
+    parent_cli = "radius server {}".format(server_name) if server_name else "radius server"
+
+    # send-ma (BROC 23: Message-Authenticator must be sent in every Access-Request)
+    if server_config.get('send_ma'):
+        config_list.append("send-ma")
+    else:
+        log.error(
+            "INSECURE DYNAMIC WARNING - Module: AAA, "
+            "Command: send-ma, "
+            "Reason: send-ma knob is not enabled. Message-Authenticator attribute may not be sent "
+            "in Access-Request packets. Some use-cases may be vulnerable to BlastRadius (BROC 23). "
+            "Remediation: Enable send-ma knob for mitigation. "
+            "Knobs will be enabled by default in future releases, "
+            "Submode: radius-server, "
+            "Parent CLI: {}".format(parent_cli)
+        )
+
+    # validate-ma (BROC 24: Message-Authenticator must be validated in every response)
+    if server_config.get('validate_ma'):
+        config_list.append("validate-ma")
+    else:
+        log.error(
+            "INSECURE DYNAMIC WARNING - Module: AAA, "
+            "Command: validate-ma, "
+            "Reason: validate-ma knob is not enabled. Message-Authenticator attribute may not be "
+            "validated in RADIUS response packets. Some use-cases may be vulnerable to BlastRadius (BROC 24). "
+            "Remediation: Enable validate-ma knob for mitigation. "
+            "Knobs will be enabled by default in future releases, "
+            "Submode: radius-server, "
+            "Parent CLI: {}".format(parent_cli)
+        )
+
+    # ------------------------------------------------------------------ #
+    # TLS configuration — encrypts RADIUS traffic                        #
+    # Eliminates: SECURITY WARNING - TLS is not configured, exposing     #
+    # traffic to potential eavesdropping.                                 #
+    # ------------------------------------------------------------------ #
+    tls_configured = False
+
+    if 'tls_connectiontimeout' in server_config:
+        config_list.append("tls connectiontimeout {}".format(server_config['tls_connectiontimeout']))
+        tls_configured = True
+
+    if 'tls_idletimeout' in server_config:
+        config_list.append("tls idletimeout {}".format(server_config['tls_idletimeout']))
+        tls_configured = True
+
+    if 'tls_retransmit' in server_config:
+        config_list.append("tls retransmit {}".format(server_config['tls_retransmit']))
+        tls_configured = True
+
+    if 'tls_trustpoint_client' in server_config:
+        config_list.append("tls trustpoint client {}".format(server_config['tls_trustpoint_client']))
+        tls_configured = True
+
+    if 'tls_trustpoint_server' in server_config:
+        config_list.append("tls trustpoint server {}".format(server_config['tls_trustpoint_server']))
+        tls_configured = True
+
+    if not tls_configured:
+        log.error(
+            "SECURITY WARNING - Module: AAA, "
+            "Command: {}, "
+            "Reason: TLS is not configured, exposing traffic to potential eavesdropping, "
+            "Description: Radius without TLS, "
+            "Remediation: Configure tls_connectiontimeout, tls_idletimeout, tls_retransmit, "
+            "tls_trustpoint_client, and tls_trustpoint_server in server_config "
+            "to enhance security".format(parent_cli)
+        )
+
+    try:
+        device.configure(config_list)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure radius server on device {}. Error:\n{}".format(device.name, e)
+        )
+
 def unconfigure_radius_server(device, server_name):
     """ Unconfigure radius server
         Args:

@@ -6,10 +6,12 @@ from genie.libs.sdk.apis.iosxe.vpdn.configure import (
     configure_vpdn_group_local_name,
     configure_vpdn_group_session_limit,
     configure_vpdn_logging_dead_cache,
+    configure_vpdn_multihop,
     configure_vpdn_session_limit,
     unconfigure_vpdn_group_l2tp_tunnel_busy_timeout,
     unconfigure_vpdn_group_session_limit,
     unconfigure_vpdn_logging_dead_cache,
+    unconfigure_vpdn_multihop,
     unconfigure_vpdn_session_limit,
 )
 
@@ -103,6 +105,53 @@ class TestUnconfigureVpdnSessionLimit(unittest.TestCase):
         device.api.get_running_config_dict.return_value = {}
 
         result = unconfigure_vpdn_session_limit(device, 16)
+
+        self.assertIsNone(result)
+        device.configure.assert_not_called()
+
+
+class TestConfigureVpdnMultihop(unittest.TestCase):
+
+    def test_configure_when_missing(self):
+        device = Mock()
+        device.api.get_running_config_dict.return_value = {}
+
+        result = configure_vpdn_multihop(device)
+
+        self.assertIsNone(result)
+        device.api.get_running_config_dict.assert_called_once_with()
+        device.configure.assert_called_once_with("vpdn multihop")
+
+    def test_skip_when_present(self):
+        device = Mock()
+        device.api.get_running_config_dict.return_value = {
+            "vpdn multihop": {}
+        }
+
+        result = configure_vpdn_multihop(device)
+
+        self.assertIsNone(result)
+        device.configure.assert_not_called()
+
+
+class TestUnconfigureVpdnMultihop(unittest.TestCase):
+
+    def test_unconfigure_when_present(self):
+        device = Mock()
+        device.api.get_running_config_dict.return_value = {
+            "vpdn multihop": {}
+        }
+
+        result = unconfigure_vpdn_multihop(device)
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once_with("no vpdn multihop")
+
+    def test_skip_when_missing(self):
+        device = Mock()
+        device.api.get_running_config_dict.return_value = {}
+
+        result = unconfigure_vpdn_multihop(device)
 
         self.assertIsNone(result)
         device.configure.assert_not_called()

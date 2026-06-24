@@ -254,8 +254,25 @@ class ImageHandler(BaseImageHandler, ImageLoader):
             "origin", {}
         )
 
+        # by checking if 'override_stage_images' is set and whether 'copy_to_linux'
+        # was previously executed. It modifies the 'origin' dict accordingly.
         if self.override_stage_images:
-            origin.update({"files": self.image + self.smu + self.packages + self.other})
+            if "copy_to_linux" in self.history and self.image:
+                copy_to_linux = self.device.clean.get("copy_to_linux", {})
+                directory = copy_to_linux.get("destination", {}).get("directory")
+                if directory:
+                    if not directory.endswith("/"):
+                        directory += "/"
+                    new_image_location = [
+                        f"{directory}{self.image[0].split('/')[-1]}"
+                    ]
+                    origin.update(
+                        {"files": new_image_location + self.smu + self.packages + self.other}
+                    )
+                else:
+                    origin.update({"files": self.image + self.smu + self.packages + self.other})
+            else:
+                origin.update({"files": self.image + self.smu + self.packages + self.other})
         else:
             origin.setdefault(
                 "files", self.image + self.smu + self.packages + self.other

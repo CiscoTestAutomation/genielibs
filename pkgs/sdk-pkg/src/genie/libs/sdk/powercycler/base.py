@@ -217,6 +217,76 @@ class BaseSNMPv3PowerCycler(PowerCycler):
         self.snmp_client = None
         self.connect(**kwargs)
 
+    @staticmethod
+    def _get_dict_value(data, key, default=None):
+        if not data:
+            return default
+        if hasattr(data, 'get'):
+            return data.get(key, default)
+        return getattr(data, key, default)
+
+    @classmethod
+    def _get_default_credentials(cls, data):
+        credentials = cls._get_dict_value(data, 'default')
+        if credentials:
+            return credentials
+
+        credentials = cls._get_dict_value(data, 'credentials', {})
+        return cls._get_dict_value(credentials, 'default', {})
+
+    @staticmethod
+    def _normalize_credential(value):
+        if isinstance(value, SecretString):
+            return to_plaintext(value)
+        return value
+
+    @classmethod
+    def _first_value(cls, *values):
+        for value in values:
+            if value not in (None, ''):
+                return cls._normalize_credential(value)
+        return None
+
+    @classmethod
+    def _first_credential_value(cls, credentials, *keys):
+        for key in keys:
+            value = cls._get_dict_value(credentials, key)
+            if value not in (None, ''):
+                return cls._normalize_credential(value)
+        return None
+
+    @staticmethod
+    def _resolve_security_level(value):
+        value = value or 'noauthnopriv'
+        if not isinstance(value, str):
+            raise ValueError("SNMPv3 security_level must be a string")
+
+        valid_security_levels = {'authpriv', 'authnopriv', 'noauthnopriv'}
+        normalized = value.lower()
+        if normalized not in valid_security_levels:
+            valid = ', '.join(sorted(valid_security_levels))
+            raise ValueError(
+                f"Invalid SNMPv3 security_level {value!r}. "
+                f"Expected one of: {valid}"
+            )
+        return normalized
+
+    @staticmethod
+    def _resolve_snmp_protocol(value, mapping, default, label):
+        if value in (None, ''):
+            return default
+        if not isinstance(value, str):
+            raise ValueError(f"SNMPv3 {label} protocol must be a string")
+
+        normalized = value.lower()
+        if normalized not in mapping:
+            valid = ', '.join(sorted(mapping))
+            raise ValueError(
+                f"Invalid SNMPv3 {label} protocol {value!r}. "
+                f"Expected one of: {valid}"
+            )
+        return mapping[normalized]
+
     def get_usm_user_data(self, **kwargs):
         """
         To collect the user data for snmpv3
@@ -268,42 +338,63 @@ class BaseSNMPv3PowerCycler(PowerCycler):
         auth_protocol=None
         priv_protocol=None
 
+        powercycler_credentials = self._get_default_credentials(
+            kwargs.get('credentials', {}))
+
         # Get the username and security level
-        username = kwargs.get('username')
+        username = self._first_value(
+            kwargs.get('username'),
+            self._first_credential_value(powercycler_credentials, 'username'))
+        if not username:
+            raise ValueError(
+                "SNMPv3 powercycler requires a username. Configure 'username' "
+                "or 'credentials.default.username' under the power_cycler.")
 
         # Security level defaults to NoAuthNoPriv if its not provided
-        security_level = kwargs.get('security_level', 'noauthnopriv')
+        security_level = self._resolve_security_level(
+            kwargs.get('security_level'))
 
         # To handle Authentication protocol and key
         if security_level in ['authpriv', 'authnopriv']:
-            try:
-                auth_protocol = snmp_auth_protocol[kwargs.get('auth_protocol')]
-            except Exception as e:
-                auth_protocol = None
+            auth_protocol = self._resolve_snmp_protocol(
+                kwargs.get('auth_protocol'),
+                snmp_auth_protocol,
+                usmNoAuthProtocol,
+                'authentication'
+            )
 
         if not auth_protocol:
             log.info("No authentication protocol is provided.")
             auth_protocol = usmNoAuthProtocol
 
-        auth_key = kwargs.get('auth_key')
+        auth_key = None
         if auth_protocol != usmNoAuthProtocol:
+            auth_key = self._first_value(
+                kwargs.get('auth_key'),
+                self._first_credential_value(
+                    powercycler_credentials, 'auth_key', 'authKey', 'password'))
             if not auth_key:
                 raise Exception("The authentication key does not exist in the testbed")
 
         # To handle private protocol and key
         if security_level in ['authpriv']:
-            priv_protocol = kwargs.get('priv_protocol')
-            try:
-                priv_protocol = snmp_priv_protocol[kwargs.get('priv_protocol')]
-            except Exception as e:
-                auth_protocol = None
+            priv_protocol = self._resolve_snmp_protocol(
+                kwargs.get('priv_protocol'),
+                snmp_priv_protocol,
+                usmNoPrivProtocol,
+                'privacy'
+            )
 
         if not priv_protocol:
             log.info("No private protocol is provided.")
             priv_protocol = usmNoPrivProtocol
 
-        priv_key = kwargs.get('priv_key')
+        priv_key = None
         if priv_protocol != usmNoPrivProtocol:
+            priv_key = self._first_value(
+                kwargs.get('priv_key'),
+                self._first_credential_value(
+                    powercycler_credentials, 'priv_key', 'privKey', 'password'))
             if not priv_key:
                 raise Exception("The private key does not exist in the testbed")
 

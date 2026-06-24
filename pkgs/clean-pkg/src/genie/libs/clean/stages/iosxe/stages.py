@@ -31,10 +31,13 @@ from genie.utils.timeout import Timeout
 from genie.libs.clean import BaseStage
 from genie.libs.sdk.libs.abstracted_libs.iosxe.subsection import get_default_dir
 from genie.libs.clean.utils import (
+    NETCONF_PROCESS_STATE_COMMAND,
     find_clean_variable,
     verify_num_images_provided,
     remove_string_from_image,
     raise_,
+    _get_netconf_process_state,
+    _get_netconf_not_ready_reason,
 )
 from genie.libs.clean.exception import FailedToBootException
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
@@ -814,8 +817,9 @@ class InstallImage(BaseStage):
         "configure_no_boot_manual",
         "delete_boot_variable",
         "set_boot_variable",
-        "unconfigure_and_verify_startup_config",
+        "unconfigure_startup_config",
         "save_running_config",
+        "verify_ignore_startup_config",
         "verify_boot_variable",
         "verify_running_image",
         "install_image"
@@ -920,7 +924,7 @@ class InstallImage(BaseStage):
                     step.failed("Failed to configure the boot variable",
                                 from_exception=e)
 
-    def unconfigure_and_verify_startup_config(self, steps, device):
+    def unconfigure_startup_config(self, steps, device):
         with steps.start("Unconfigure ignore startup config") as step:
             try:
                 # Attempt to unconfigure the ignore startup config
@@ -929,20 +933,6 @@ class InstallImage(BaseStage):
                 step.passx(
                     f"Failed to unconfigure ignore startup config on the device {device.name}",
                     from_exception=e)
-
-        with steps.start("Verify ignore startup config") as step:
-
-            log.info(f'verify the ignore startup config on {device.name}')
-            try:
-                if device.api.verify_ignore_startup_config():
-                    step.failed(
-                        f"Failed to verify unconfigure the ignore startup config on {device.name}"
-                    )
-            except Exception as e:
-                step.failed(
-                    f"Failed to verify ignore startup config on {device.name}",
-                    from_exception=e
-                )
 
     def save_running_config(self,
                             steps,
@@ -964,6 +954,21 @@ class InstallImage(BaseStage):
             except Exception as e:
                 step.failed("Failed to save the running config",
                             from_exception=e)
+
+    def verify_ignore_startup_config(self, steps, device):
+        with steps.start("Verify ignore startup config") as step:
+
+            log.info(f'verify the ignore startup config on {device.name}')
+            try:
+                if device.api.verify_ignore_startup_config():
+                    step.failed(
+                        f"Failed to verify unconfigure the ignore startup config on {device.name}"
+                    )
+            except Exception as e:
+                step.failed(
+                    f"Failed to verify ignore startup config on {device.name}",
+                    from_exception=e
+                )
 
     def verify_boot_variable(self,
                              steps,
@@ -1032,9 +1037,9 @@ class InstallImage(BaseStage):
             current_image = device.api.get_running_image()
             if current_image == images[0]:
                 step.skipped("Images is already installed on the device.")
-                
+
             not_enough_space_pattern =  r".*FAILED: /(flash|bootflash) requires (\d+) KB of free space.*"
-            
+
             def _check_disk_space(spawn, context, session):
                 """Match the required space from the error message and set the flag to clean up space"""
                 match = re.search(not_enough_space_pattern, spawn.buffer, re.DOTALL)
@@ -1146,7 +1151,6 @@ class InstallImage(BaseStage):
                 ),
             ])
 
-
             reload_args.update({
                 "timeout": install_timeout,
                 "reply": install_add_one_shot_dialog
@@ -1161,6 +1165,12 @@ class InstallImage(BaseStage):
                 ),
                 Statement(
                     pattern=r".*Initializing Hardware",
+                    action=None,
+                    loop_continue=False,
+                    continue_timer=False,
+                ),
+                Statement(
+                    pattern=r".*Calculating SHA-1 hash",
                     action=None,
                     loop_continue=False,
                     continue_timer=False,
@@ -1467,6 +1477,20 @@ class InstallRemoveSmu(BaseStage):
                                     device.execute("show install summary")
                                 else:
                                     device.reload("", **reload_args)
+                                    # Re-apply init commands after SMU reload to restore terminal settings
+                                    # and prevent junk values from appearing in subsequent stages.
+                                    try:
+                                        log.info(
+                                        "Re-applying connection initialization "
+                                        "commands after SMU reload"
+                                        )
+                                        device.connection_provider.execute_init_commands()
+                                    except Exception as e:
+                                        step.failed(
+                                            "Failed to re-apply connection "
+                                            "initialization commands after SMU reload",
+                                            from_exception=e
+                                        )
                             except Exception as e:
                                 step.failed("Failed to deactivate SMU image",
                                             from_exception=e)
@@ -2273,7 +2297,7 @@ class RommonBoot(BaseStage):
             gateway (str, optional): Management gateway
 
             tftp_server (str, optional): Tftp server that is reachable with management interface
-            
+
 
         save_system_config (bool, optional): Whether or not to save the
             system config if it was modified. Defaults to True.
@@ -2504,7 +2528,7 @@ class RommonBoot(BaseStage):
                     try:
                         if retry_count > 0:
                             log.info(f"Rommon boot attempt {retry_count + 1}/{tftp_boot_max_attempts}")
-                        
+
                         # Call the device_rommon_boot API
                         # API will use get_recovery_details to merge stage params with device_recovery
                         device.api.device_rommon_boot(
@@ -2513,11 +2537,11 @@ class RommonBoot(BaseStage):
                             grub_activity_pattern=grub_activity_pattern,
                             timeout=timeout
                         )
-                        
+
                         if retry_count > 0:
                             log.info(f"Rommon boot successful on attempt {retry_count + 1}")
                         break
-                        
+
                     except FailedToBootException as e:
                         retry_count += 1
                         if retry_count < tftp_boot_max_attempts:
@@ -2652,7 +2676,7 @@ class CopyToDevice(BaseStage):
 
         prompt_recovery(bool, optional): Enable the prompt recovery when the  execution
             command timeout. Defaults to False.
-            
+
         verify_md5 (dict, optional):
             enable: (bool): Enable md5sum verification of the copied image. Defaults to False.
             verify_host:(str,optinal) Hostname of the server to used for checking the md5sum of the image.
@@ -4007,11 +4031,11 @@ class Connect(BaseStage):
                     step.failed(f"Failed to boot device from rommon. {e}")
                 else:
                     log.info("Successfully booted the device from rommon.")
-                    
+
         elif state == "shell":
             log.info("Device is in shell state, transitioning to enable mode")
             try:
-                device.state_machine.go_to('enable', 
+                device.state_machine.go_to('enable',
                                            device.spawn,
                                            timeout=timeout,
                                            prompt_recovery=True)
@@ -4019,7 +4043,7 @@ class Connect(BaseStage):
                 log.error(f"Failed to exit from shell state: {e}")
             else:
                 log.info("Successfully transited from shell state to enable mode")
-                    
+
         else:
             with steps.start("Log out from the device") as step:
 
@@ -4585,3 +4609,365 @@ class SetControllerMode(BaseStage):
                     log.info(
                         f"Non active versions {self.non_active_version} are deleted."
                     )
+
+
+
+class ConfigureNetconfYang(BaseStage):
+    """This stage configures NETCONF-YANG on the device and verifies that the required
+    processes are running properly.
+
+    Stage Schema
+    ------------
+    configure_netconf_yang:
+        netconf (bool, optional): Enable or disable NETCONF-YANG.
+            Defaults to True.
+
+        candidate (bool, optional): Enable or disable candidate datastore.
+            Defaults to False.
+
+        two_stage (bool, optional): Enable or disable atomic-config (two-stage commit).
+            Defaults to False.
+
+        deprecated_disable (bool, optional): Enable or disable deprecated features.
+            Defaults to False (which means deprecated features are enabled).
+
+        process_timeout (int, optional): Maximum time in seconds to wait for NETCONF
+            processes to become active and ready. Defaults to 900.
+
+        sync_timeout (int, optional): Maximum time in seconds to wait for NETCONF
+            configuration to synchronize. Defaults to 600.
+
+        check_interval (int, optional): Time in seconds between checking process status.
+            Defaults to 60.
+
+    Example
+    -------
+    configure_netconf_yang:
+        netconf: True
+        candidate: True
+        two_stage: True
+        deprecated_disable: False
+        process_timeout: 900
+        sync_timeout: 600
+        check_interval: 60
+    """
+
+    # =================
+    # Argument Defaults
+    # =================
+    NETCONF = True
+    CANDIDATE = False
+    TWO_STAGE = False
+    DEPRECATED_DISABLE = False
+    PROCESS_TIMEOUT = 900
+    SYNC_TIMEOUT = 600
+    CHECK_INTERVAL = 15
+
+    # ============
+    # Stage Schema
+    # ============
+    schema = {
+        Optional("netconf", default=NETCONF): bool,
+        Optional("candidate", default=CANDIDATE): bool,
+        Optional("two_stage", default=TWO_STAGE): bool,
+        Optional("deprecated_disable", default=DEPRECATED_DISABLE): bool,
+        Optional("process_timeout", default=PROCESS_TIMEOUT): int,
+        Optional("sync_timeout", default=SYNC_TIMEOUT): int,
+        Optional("check_interval", default=CHECK_INTERVAL): int,
+    }
+
+    # ==============================
+    # Execution order of Stage steps
+    # ==============================
+    exec_order = ["configure_netconf_yang", "verify_netconf_processes"]
+
+    def configure_netconf_yang(
+        self,
+        steps,
+        device,
+        netconf=NETCONF,
+        candidate=CANDIDATE,
+        two_stage=TWO_STAGE,
+        deprecated_disable=DEPRECATED_DISABLE,
+    ):
+        """Configure NETCONF-YANG on the device"""
+
+        with steps.start("Configuring NETCONF-YANG on device") as step:
+            try:
+                configs = []
+
+                if netconf:
+                    configs = [
+                        'no netconf-yang',
+                        'netconf-yang'
+                    ]
+                else:
+                    configs = [
+                        'no netconf-yang'
+                    ]
+
+                if netconf:
+                    if candidate:
+                        configs.append('netconf-yang feature candidate-datastore')
+                    else:
+                        configs.append('no netconf-yang feature candidate-datastore')
+
+                    if two_stage:
+                        configs.append('yang-interfaces feature atomic-config')
+                    else:
+                        configs.append('no yang-interfaces feature atomic-config')
+
+                    if deprecated_disable:
+                        configs.append('yang-interfaces feature deprecated disable')
+                    else:
+                        configs.append('yang-interfaces feature deprecated enable')
+
+                device.configure(configs)
+                log.info(f"Successfully configured NETCONF-YANG on {device.name}")
+                time.sleep(10)  # Give some time for the device to process the configuration
+
+            except Exception as e:
+                step.failed("Failed to configure NETCONF-YANG", from_exception=e)
+
+    def verify_netconf_processes(
+        self,
+        steps,
+        device,
+        netconf=NETCONF,
+        process_timeout=PROCESS_TIMEOUT,
+        sync_timeout=SYNC_TIMEOUT,
+        check_interval=CHECK_INTERVAL,
+    ):
+        """Verify NETCONF processes are running and configuration is synchronized"""
+
+        process_step = "Verifying NETCONF processes are active"
+        if not netconf:
+            with steps.start(process_step) as step:
+                step.skipped("NETCONF-YANG is disabled, skipping verification")
+            return
+
+        with steps.start(process_step) as step:
+            try:
+                device.execute('clear logging')
+
+                timeout = Timeout(process_timeout, check_interval/10)
+                last_not_ready_reason = None
+                parser_fallback_logged = False
+                while timeout.iterate():
+                    try:
+                        yang_state, parser_error = _get_netconf_process_state(device)
+                        if parser_error and not parser_fallback_logged:
+                            log.info(
+                                f"Device {device.name}: Failed to parse "
+                                f"'{NETCONF_PROCESS_STATE_COMMAND}' using parser "
+                                f"({parser_error}); using raw CLI fallback."
+                            )
+                            parser_fallback_logged = True
+
+                        not_ready_reason = _get_netconf_not_ready_reason(yang_state)
+                        if not not_ready_reason:
+                            log.info(
+                                f"Device {device.name}: All required processes are active "
+                                "with correct status. Yang process is fully operational."
+                            )
+                            break
+
+                        if not_ready_reason != last_not_ready_reason:
+                            log.info(
+                                f"Device {device.name}: Waiting for NETCONF processes; "
+                                f"{not_ready_reason}."
+                            )
+                            last_not_ready_reason = not_ready_reason
+                        timeout.sleep()
+                    except Exception as e:
+                        log.info(
+                            f"Device {device.name}: Failed to collect NETCONF process "
+                            f"state ({e}). Retrying..."
+                        )
+                        timeout.sleep()
+                else:
+                    device.execute(NETCONF_PROCESS_STATE_COMMAND)
+                    step.failed(f"Device {device.name}: Yang process did not reach 'running' state within the timeout period.")
+
+            except Exception as e:
+                step.failed("Failed to verify NETCONF processes", from_exception=e)
+
+        with steps.start("Verifying NETCONF configuration synchronization") as step:
+            try:
+                time.sleep(5)
+                netconf_start = device.execute('show logging | i NETCONF running data store has started')
+
+                # Only when NETCONF sync starts, wait for the NETCONF configuration to synchronize
+                if netconf_start:
+                    timeout = Timeout(sync_timeout, check_interval/10)
+                    while timeout.iterate():
+                        output = device.execute('show logging | i synchronized')
+                        if 'has been synchronized' in output:
+                            log.info(f"Device {device.name}: NETCONF configuration has been synchronized.")
+                            break
+                        else:
+                            log.debug(f"Device {device.name}: Waiting for NETCONF configuration synchronization...")
+                            timeout.sleep()
+                    else:
+                        # capture 'show logging' for troubleshooting
+                        device.execute('show logging')
+                        step.failed(f"Device {device.name}: Failed to verify NETCONF configuration synchronization.")
+                else:
+                    log.info(f"Device {device.name}: NETCONF running data store has not started. No need to wait for synchronization.")
+
+                # Try to establish a NETCONF connection to verify it's working
+                try:
+                    log.info(f"Device {device.name}: Verifying NETCONF connectivity")
+                    device_yang = device.api.get_ncdiff_connection()
+                    if not device_yang.connected:
+                        log.info(f"Reconnecting to device {device.name} via NETCONF")
+                        device_yang.disconnect()
+                        device_yang.connect()
+                        if device_yang.connected:
+                            log.info(f"Device {device.name}: Successfully connected via NETCONF")
+                        else:
+                            log.warning(f"Device {device.name}: Could not establish NETCONF connection")
+                except Exception as e:
+                    log.warning(f"Device {device.name}: Error when verifying NETCONF connectivity: {e}")
+
+            except Exception as e:
+                step.failed("Failed to verify NETCONF configuration synchronization", from_exception=e)
+
+
+class VerifyNetconfProcesses(BaseStage):
+    """This stage verifies that required NETCONF-YANG processes are running properly
+    on the device without changing any configuration.
+
+    Stage Schema
+    ------------
+    verify_netconf_processes:
+        process_timeout (int, optional): Maximum time in seconds to wait for NETCONF
+            processes to become active and ready. Defaults to 900.
+
+        sync_timeout (int, optional): Maximum time in seconds to wait for NETCONF
+            configuration to synchronize. Defaults to 600.
+
+        check_interval (int, optional): Time in seconds between checking process status.
+            Defaults to 15.
+
+    Example
+    -------
+    verify_netconf_processes:
+        process_timeout: 900
+        sync_timeout: 600
+        check_interval: 15
+    """
+
+    # =================
+    # Argument Defaults
+    # =================
+    PROCESS_TIMEOUT = 900
+    SYNC_TIMEOUT = 600
+    CHECK_INTERVAL = 15
+
+    # ============
+    # Stage Schema
+    # ============
+    schema = {
+        Optional("process_timeout", default=PROCESS_TIMEOUT): int,
+        Optional("sync_timeout", default=SYNC_TIMEOUT): int,
+        Optional("check_interval", default=CHECK_INTERVAL): int,
+    }
+
+    # ==============================
+    # Execution order of Stage steps
+    # ==============================
+    exec_order = ["verify_netconf_processes", "verify_netconf_sync"]
+
+    def verify_netconf_processes(
+        self,
+        steps,
+        device,
+        process_timeout=PROCESS_TIMEOUT,
+        check_interval=CHECK_INTERVAL,
+    ):
+        """Verify NETCONF processes are running"""
+
+        with steps.start("Verifying NETCONF processes are active") as step:
+            try:
+                timeout = Timeout(process_timeout, check_interval/10)
+                last_not_ready_reason = None
+                parser_fallback_logged = False
+                while timeout.iterate():
+                    try:
+                        yang_state, parser_error = _get_netconf_process_state(device)
+                        if parser_error and not parser_fallback_logged:
+                            log.info(
+                                f"Device {device.name}: Failed to parse "
+                                f"'{NETCONF_PROCESS_STATE_COMMAND}' using parser "
+                                f"({parser_error}); using raw CLI fallback."
+                            )
+                            parser_fallback_logged = True
+
+                        not_ready_reason = _get_netconf_not_ready_reason(yang_state)
+                        if not not_ready_reason:
+                            log.info(f"Device {device.name}: All required NETCONF processes are running.")
+                            return
+
+                        if not_ready_reason != last_not_ready_reason:
+                            log.info(
+                                f"Device {device.name}: Waiting for NETCONF processes; "
+                                f"{not_ready_reason}."
+                            )
+                            last_not_ready_reason = not_ready_reason
+                    except Exception as e:
+                        log.info(
+                            f"Device {device.name}: Failed to collect NETCONF process "
+                            f"state ({e}). Retrying..."
+                        )
+
+                    timeout.sleep()
+
+                device.execute(NETCONF_PROCESS_STATE_COMMAND)
+                step.failed(f"Device {device.name}: Timed out waiting for NETCONF processes to become active after {process_timeout} seconds")
+
+            except Exception as e:
+                step.failed("Failed to verify NETCONF processes", from_exception=e)
+
+    def verify_netconf_sync(
+        self,
+        steps,
+        device,
+        sync_timeout=SYNC_TIMEOUT,
+        check_interval=CHECK_INTERVAL,
+    ):
+        """Verify NETCONF configuration is synchronized"""
+
+        with steps.start("Verifying NETCONF configuration synchronization") as step:
+            try:
+                # Check if NETCONF data store has started
+                netconf_start = device.execute('show logging | i NETCONF running data store has started')
+
+                if not netconf_start:
+                    step.passx(f"Device {device.name}: NETCONF data store has not started yet, skipping synchronization check.")
+                    return
+
+                # Check if synchronization has already happened
+                output = device.execute('show logging | i synchronized')
+                if 'has been synchronized' in output:
+                    log.info(f"Device {device.name}: NETCONF configuration has already been synchronized.")
+                    step.passed(f"Device {device.name}: NETCONF configuration is synchronized.")
+                    return
+
+                # Wait for the NETCONF configuration to synchronize
+                log.info(f"Device {device.name}: Waiting for NETCONF configuration to synchronize...")
+                timeout = Timeout(sync_timeout, check_interval/10)
+                while timeout.iterate():
+                    output = device.execute('show logging | i synchronized')
+                    if 'has been synchronized' in output:
+                        log.info(f"Device {device.name}: NETCONF configuration is now synchronized.")
+                        step.passed(f"Device {device.name}: NETCONF configuration is synchronized.")
+                        return
+
+                    log.debug(f"Device {device.name}: Still waiting for NETCONF synchronization...")
+                    timeout.sleep()
+
+                step.failed(f"Device {device.name}: Timed out waiting for NETCONF configuration to synchronize after {sync_timeout} seconds")
+
+            except Exception as e:
+                step.failed("Failed to verify NETCONF configuration synchronization", from_exception=e)

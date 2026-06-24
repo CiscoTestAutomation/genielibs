@@ -37,6 +37,27 @@ class Platform(SuperPlatform):
                       src=src_ver + '[chassis_sn]',
                       dest='chassis_sn')
 
+        self.add_leaf(cmd=show_version_command,
+                      src=src_ver + '[switch_num][(?P<id>.*)][system_sn]',
+                      dest='[members][(?P<id>.*)][serial]')
+
+        self.add_leaf(cmd=show_version_command,
+                      src=src_ver + '[switch_num][(?P<id>.*)][model_num]',
+                      dest='[members][(?P<id>.*)][pid]')
+
+        self.add_leaf(cmd=show_version_command,
+                      src=src_ver + '[switch_num][(?P<id>.*)][mac_address]',
+                      dest='[members][(?P<id>.*)][mac_address]')
+
+        self.add_leaf(cmd=show_version_command,
+                      src=src_ver + '[switch_num][(?P<id>.*)][mb_sn]',
+                      dest='[members][(?P<id>.*)][mb_sn]')
+
+        # role: active / standby / member -- only present on stack / SVL
+        self.add_leaf(cmd=show_platform.ShowModule,
+                      src='[switches][(?P<id>.*)][module][(?P<mod>.*)][redundancy_role]',
+                      dest='[members][(?P<id>.*)][role]')
+
         # rtr_type
         self.add_leaf(cmd=show_version_command,
                       src=src_ver + '[rtr_type]',
@@ -404,3 +425,15 @@ class Platform(SuperPlatform):
                 elif 'rp' in self.slot and slot_str in self.slot['rp']:
                     self.slot['rp'][slot_str]['hw_revision'] = hw_revision
             del self.mod
+
+        # Normalize `members` keys. ShowVersion.switch_num uses string
+        # keys ('1', '2') while ShowModule.switches uses integer keys
+        # (1, 2). Without coalescing, the same physical chassis would
+        # appear twice in `members` -- once with serial/pid (str key) and
+        # once with role (int key). Collapse onto string keys so each
+        # chassis is a single normalized entry.
+        if hasattr(self, 'members'):
+            coalesced = {}
+            for key, val in self.members.items():
+                coalesced.setdefault(str(key), {}).update(val or {})
+            self.members = coalesced

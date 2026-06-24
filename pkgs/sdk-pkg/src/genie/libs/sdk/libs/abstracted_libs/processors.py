@@ -1290,6 +1290,105 @@ def clear_logging(section, devices=None):
 # ==============================================================================
 
 
+def _get_execute_dialog(pattern, answer):
+    if not pattern:
+        return None
+
+    if isinstance(pattern, str):
+        pattern = [pattern]
+
+    statement_list = [
+        Statement(
+            pattern=p,
+            action='sendline({})'.format(answer),
+            loop_continue=True,
+            continue_timer=False
+        ) for p in pattern
+    ]
+    return Dialog(statement_list)
+
+
+def _execute_processor_command(device, exec_cmd, timeout=60,
+                               error_pattern=None, reply=None):
+    execute_kwargs = {'timeout': timeout}
+    if reply is not None:
+        execute_kwargs['reply'] = reply
+    if error_pattern is not None:
+        execute_kwargs['error_pattern'] = error_pattern
+
+    original_error_pattern = None
+    restore_error_pattern = False
+    settings = getattr(device, 'settings', None)
+
+    if error_pattern == [] and settings is not None:
+        try:
+            original_error_pattern = settings.ERROR_PATTERN
+            settings.ERROR_PATTERN = []
+            restore_error_pattern = True
+        except AttributeError:
+            pass
+
+    try:
+        return device.execute(exec_cmd, **execute_kwargs)
+    finally:
+        if restore_error_pattern:
+            settings.ERROR_PATTERN = original_error_pattern
+
+
+def _can_connect_device_with_harness(device):
+    mapping = getattr(device, 'mapping', None)
+    if not mapping:
+        return False
+
+    if mapping.get('context', None):
+        return True
+
+    allowed_mapping = [
+        'cli', 'yang', 'rest', 'xml', 'web', 'restconf', 'netconf', 'gnmi'
+    ]
+    return any(connection in mapping for connection in allowed_mapping)
+
+
+def _recover_processor_execute_failure(device, destroy=False):
+    if destroy:
+        try:
+            device.destroy()
+        except Exception as e:
+            log.warning(
+                'Failed to destroy device {d} before reconnect: {e}'.format(
+                    d=device.name, e=e))
+
+    reconnect_errors = []
+    reconnect_device = getattr(getattr(device, 'api', None),
+                               'reconnect_device', None)
+    if callable(reconnect_device):
+        try:
+            reconnect_device()
+            return True
+        except Exception as e:
+            reconnect_errors.append(e)
+            log.warning(
+                'Failed to reconnect device {d} with reconnect_device: {e}'.
+                format(d=device.name, e=e))
+
+    if _can_connect_device_with_harness(device):
+        try:
+            connect_device(device)
+            return True
+        except Exception as e:
+            reconnect_errors.append(e)
+            log.warning(
+                'Failed to reconnect device {d} with connect_device: {e}'.
+                format(d=device.name, e=e))
+
+    if not reconnect_errors:
+        log.warning(
+            'Skipping reconnect for device {d}: no reconnect API or harness '
+            'connection mapping is available'.format(d=device.name))
+
+    return False
+
+
 def pre_execute_command(section,
                         devices=None,
                         sleep_time=0,
@@ -1359,23 +1458,15 @@ def pre_execute_command(section,
                 pattern = cmd.get('pattern', '')
                 answer = cmd.get('answer', '')
                 cmd_timeout = cmd.get('timeout', 60)
+                error_pattern = cmd.get('error_pattern', None)
 
-                # If pattern is provided, set up dialog
-                if pattern:
-                    if isinstance(pattern, str):
-                        pattern = [pattern]
-                    statement_list = [
-                        Statement(
-                            pattern=p,
-                            action='sendline({})'.format(answer),
-                            loop_continue=True,
-                            continue_timer=False
-                        ) for p in pattern
-                    ]
-                    dialog = Dialog(statement_list)
-                    output = device.execute(exec_cmd, reply=dialog, timeout=cmd_timeout)
-                else:
-                    output = device.execute(exec_cmd, timeout=cmd_timeout)
+                dialog = _get_execute_dialog(pattern, answer)
+                output = _execute_processor_command(
+                    device,
+                    exec_cmd,
+                    timeout=cmd_timeout,
+                    error_pattern=error_pattern,
+                    reply=dialog)
 
                 # Handle save to file logic here based on mode
                 file_name = None
@@ -1395,7 +1486,10 @@ def pre_execute_command(section,
 
             except SubCommandFailure as e:
                 log.error(f'Failed to execute "{exec_cmd}" on device {device.name}: {e}')
-                device.api.reconnect_device()
+                if not _recover_processor_execute_failure(device):
+                    section.failed(
+                        'Failed to execute "{cmd}" on device {d}: {e}'.format(
+                            cmd=exec_cmd, d=device.name, e=e))
         else:
             section.failed(f'Reached max number of {max_retry} retries, command execution has failed')
         return False
@@ -1552,24 +1646,17 @@ def post_execute_command(section,
                 answer = cmd.get('answer', '')
                 cmd_sleep = cmd.get('sleep', 0)
                 cmd_timeout = cmd.get('timeout', 60)
+                error_pattern = cmd.get('error_pattern', None)
 
                 for _ in range(max_retry + 1):
                     try:
-                        # Handle prompt if pattern and answer is in the datafile
-                        if pattern:
-                            if isinstance(pattern, str):
-                                pattern = [pattern]
-                            statement_list = [Statement(pattern=p,
-                                                         action='sendline({})'.format(answer), 
-                                                         loop_continue=True, 
-                                                         continue_timer=False) for p in pattern]
-                            dialog = Dialog(statement_list)
-                            output = device.execute(exec_cmd,
-                                                    reply=dialog,
-                                                    timeout=cmd_timeout)
-                        else:
-                            output = device.execute(exec_cmd,
-                                                    timeout=cmd_timeout)
+                        dialog = _get_execute_dialog(pattern, answer)
+                        output = _execute_processor_command(
+                            device,
+                            exec_cmd,
+                            timeout=cmd_timeout,
+                            error_pattern=error_pattern,
+                            reply=dialog)
 
                         # Save output to file as per device or command
                         if save_to_file == 'per_device':
@@ -1600,9 +1687,13 @@ def post_execute_command(section,
                     except SubCommandFailure as e:
                         log.error(
                             'Failed to execute "{cmd}" on device {d}: {e}'.format(cmd=exec_cmd, d=device.name, e=str(e)))
-                        device.destroy()
                         log.info('Trying to recover after execution failure')
-                        connect_device(device)
+                        if not _recover_processor_execute_failure(
+                                device, destroy=True):
+                            section.failed(
+                                'Failed to execute "{cmd}" on device {d}: '
+                                '{e}'.format(
+                                    cmd=exec_cmd, d=device.name, e=e))
                     else:
                         log.info(
                             "Successfully executed command '{cmd}' on device {d}".format(cmd=exec_cmd, d=device.name))

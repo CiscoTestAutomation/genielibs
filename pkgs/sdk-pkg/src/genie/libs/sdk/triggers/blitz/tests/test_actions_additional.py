@@ -7,9 +7,11 @@ from unittest.mock import Mock, patch
 from pyats.results import Failed, Passed, Passx
 
 from genie.libs.sdk.triggers.blitz import actions as actions_module
+from genie.libs.sdk.triggers.blitz import markup as markup_module
 from genie.libs.sdk.triggers.blitz.actions import (
     active_subscriptions,
     add_result_as_extra,
+    api,
     check_yang_subscribe,
     yang,
     yang_snapshot,
@@ -41,6 +43,12 @@ class MultipartEncoderMock(object):
 
     def __init__(self, payload):
         self.payload = payload
+
+
+class BadString(object):
+
+    def __str__(self):
+        raise RuntimeError('string conversion failed')
 
 
 class ActionSteps(object):
@@ -417,3 +425,53 @@ class TestYangActionsAdditional(unittest.TestCase):
 
         self.assertFalse(output)
         self.assertEqual(steps.result, Failed)
+
+
+class TestLoggingHardeningAdditional(unittest.TestCase):
+
+    def test_api_debug_logging_does_not_fail_on_bad_output_string(self):
+        bad_output = BadString()
+        steps = ActionSteps()
+        blitz = SimpleNamespace(parameters={})
+
+        with patch.object(actions_module, 'api_handler',
+                          return_value=bad_output):
+            output = api(
+                self=blitz,
+                steps=steps,
+                section=SimpleNamespace(),
+                name='api',
+                function='get_value',
+            )
+
+        self.assertIs(output, bad_output)
+        self.assertEqual(steps.result, Passed)
+
+    def test_load_saved_variable_debug_logging_does_not_fail(self):
+        bad_output = BadString()
+        blitz = SimpleNamespace(
+            parameters={'save_variable_name': {'bad_output': bad_output}},
+            parent=SimpleNamespace(parameters={}),
+        )
+
+        key, value = markup_module._load_saved_variable(
+            blitz, SimpleNamespace(parent=blitz.parent),
+            '%VARIABLES{bad_output}')
+
+        self.assertIsNone(key)
+        self.assertIs(value, bad_output)
+
+    def test_save_variable_debug_logging_does_not_fail(self):
+        bad_output = BadString()
+        blitz = SimpleNamespace(
+            parameters={},
+            parent=SimpleNamespace(parameters={}),
+        )
+
+        markup_module.save_variable(
+            blitz, SimpleNamespace(parent=blitz.parent),
+            'bad_output', output=bad_output)
+
+        self.assertIs(
+            blitz.parameters['save_variable_name']['bad_output'],
+            bad_output)

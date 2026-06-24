@@ -284,7 +284,7 @@ def unconfigure_snmp_server_group(device,
         if not safe_pattern.match(param_value):
             raise ValueError(f"Invalid characters in {param_name}: must be alphanumeric, hyphen, underscore, or dot")
 
-    if auth_type is not None and not safe_pattern.match(auth_type):
+    if auth_type is not None and auth_type != '' and not safe_pattern.match(auth_type):
         raise ValueError("Invalid characters in auth_type")
     if acl_name is not None and not safe_pattern.match(acl_name):
         raise ValueError("Invalid characters in acl_name")
@@ -373,28 +373,55 @@ def configure_snmp_server_trap(device, intf=None, host_name=None, trap_type=None
             ValueError: If input parameters contain invalid characters
             SubCommandFailure
     """
-    # Input validation - prevent command injection via newlines or special chars
+    # Input validation - prevent command injection via newlines or special
+    # chars. trap_type is validated separately below because it is
+    # dual-purpose:
+    #   - With the host form it is the literal 'traps'/'informs' token.
+    #   - Used alone it is the 'snmp-server enable traps <category>' name,
+    #     which can legitimately contain spaces (e.g. 'snmp linkdown').
     safe_pattern = re.compile(r'^[\w\-\.:\/]+$')
+    # Category names may contain spaces but must not contain newlines or
+    # shell/CLI metacharacters. fullmatch rejects a trailing newline that
+    # '$' would otherwise allow.
+    category_pattern = re.compile(r'[\w\-\.:\/ ]+')
 
-    for param_name, param_value in [('intf', intf), ('host_name', host_name),
-                                     ('trap_type', trap_type), ('version', version),
-                                     ('user_name', user_name), ('config_type', config_type),
-                                     ('engine_id', engine_id)]:
+    for param_name, param_value in [
+            ('intf', intf), ('host_name', host_name),
+            ('version', version), ('user_name', user_name),
+            ('config_type', config_type), ('engine_id', engine_id)]:
         if param_value is not None and not safe_pattern.match(param_value):
-            raise ValueError(f"Invalid characters in {param_name}: must be alphanumeric, hyphen, underscore, dot, colon, or slash")
+            raise ValueError(
+                f"Invalid characters in {param_name}: must be "
+                "alphanumeric, hyphen, underscore, dot, colon, or slash")
 
-    # Validate trap_type if provided
-    if trap_type is not None and trap_type not in ('traps', 'informs'):
-        raise ValueError("trap_type must be 'traps' or 'informs'")
+    # trap_type may be a delivery token or a category name with spaces, but
+    # must never contain unsafe characters before it is interpolated.
+    if trap_type is not None and not category_pattern.fullmatch(trap_type):
+        raise ValueError(
+            "Invalid characters in trap_type: must be alphanumeric, "
+            "hyphen, underscore, dot, colon, slash, or space")
+
+    # Validate trap_type as delivery mechanism only when used with host config
+    if intf and host_name and trap_type and version and user_name and \
+            config_type:
+        if trap_type not in ('traps', 'informs'):
+            raise ValueError(
+                "trap_type must be 'traps' or 'informs' when "
+                "configuring a trap host")
 
     # Warn about insecure SNMP versions
     if version is not None and version in ('v1', 'v2c'):
-        log.warning("SNMPv1/v2c is insecure for trap hosts. Use v3 with priv per Cisco hardening guidelines.")
+        log.warning(
+            "SNMPv1/v2c is insecure for trap hosts. Use v3 with priv "
+            "per Cisco hardening guidelines.")
 
-    if intf and host_name and trap_type and version and user_name and config_type:
-        cli = [f"snmp-server trap-source {intf}",
-               "snmp-server enable traps",
-               f"snmp-server host {host_name} {trap_type} version {version} priv {user_name} {config_type}"]
+    if intf and host_name and trap_type and version and user_name and \
+            config_type:
+        cli = [
+            f"snmp-server trap-source {intf}",
+            "snmp-server enable traps",
+            f"snmp-server host {host_name} {trap_type} version {version} "
+            f"priv {user_name} {config_type}"]
         if trap_type == 'informs':
             cli.append(f"snmp-server engineID remote {host_name} {engine_id}")
     elif trap_type:
@@ -449,30 +476,58 @@ def unconfigure_snmp_server_trap(device, intf=None, host_name=None, trap_type=No
             ValueError: If input parameters contain invalid characters
             SubCommandFailure
     """
-    # Input validation - prevent command injection via newlines or special chars
+    # Input validation - prevent command injection via newlines or special
+    # chars. trap_type is validated separately below because it is
+    # dual-purpose:
+    #   - With the host form it is the literal 'traps'/'informs' token.
+    #   - Used alone it is the 'snmp-server enable traps <category>' name,
+    #     which can legitimately contain spaces (e.g. 'snmp linkdown').
     safe_pattern = re.compile(r'^[\w\-\.:\/]+$')
+    # Category names may contain spaces but must not contain newlines or
+    # shell/CLI metacharacters. fullmatch rejects a trailing newline that
+    # '$' would otherwise allow.
+    category_pattern = re.compile(r'[\w\-\.:\/ ]+')
 
-    for param_name, param_value in [('intf', intf), ('host_name', host_name),
-                                     ('trap_type', trap_type), ('version', version),
-                                     ('user_name', user_name), ('config_type', config_type),
-                                     ('engine_id', engine_id)]:
+    for param_name, param_value in [
+            ('intf', intf), ('host_name', host_name),
+            ('version', version), ('user_name', user_name),
+            ('config_type', config_type), ('engine_id', engine_id)]:
         if param_value is not None and not safe_pattern.match(param_value):
-            raise ValueError(f"Invalid characters in {param_name}: must be alphanumeric, hyphen, underscore, dot, colon, or slash")
+            raise ValueError(
+                f"Invalid characters in {param_name}: must be "
+                "alphanumeric, hyphen, underscore, dot, colon, or slash")
 
-    # Validate trap_type if provided
-    if trap_type is not None and trap_type not in ('traps', 'informs'):
-        raise ValueError("trap_type must be 'traps' or 'informs'")
+    # trap_type may be a delivery token or a category name with spaces, but
+    # must never contain unsafe characters before it is interpolated.
+    if trap_type is not None and not category_pattern.fullmatch(trap_type):
+        raise ValueError(
+            "Invalid characters in trap_type: must be alphanumeric, "
+            "hyphen, underscore, dot, colon, slash, or space")
+
+    # Validate trap_type as delivery mechanism only when used with host config
+    if intf and host_name and trap_type and version and user_name and \
+            config_type:
+        if trap_type not in ('traps', 'informs'):
+            raise ValueError(
+                "trap_type must be 'traps' or 'informs' when "
+                "configuring a trap host")
 
     # Warn about insecure SNMP versions
     if version is not None and version in ('v1', 'v2c'):
-        log.warning("SNMPv1/v2c is insecure for trap hosts. Use v3 with priv per Cisco hardening guidelines.")
+        log.warning(
+            "SNMPv1/v2c is insecure for trap hosts. Use v3 with priv "
+            "per Cisco hardening guidelines.")
 
-    if intf and host_name and trap_type and version and user_name and config_type:
-        cli = [f"no snmp-server trap-source {intf}",
-               "no snmp-server enable traps",
-               f"no snmp-server host {host_name} {trap_type} version {version} priv {user_name} {config_type}"]
+    if intf and host_name and trap_type and version and user_name and \
+            config_type:
+        cli = [
+            f"no snmp-server trap-source {intf}",
+            "no snmp-server enable traps",
+            f"no snmp-server host {host_name} {trap_type} version {version} "
+            f"priv {user_name} {config_type}"]
         if trap_type == 'informs':
-            cli.append(f"no snmp-server engineID remote {host_name} {engine_id}")
+            cli.append(
+                f"no snmp-server engineID remote {host_name} {engine_id}")
     elif trap_type:
         cli = [f"no snmp-server enable traps {trap_type}"]
     else:
@@ -642,14 +697,14 @@ def unconfigure_snmp_server_user(device,
 
     cli = f"no snmp-server user {user_name} {group_name} {version}"
 
-    if auth_type is not None:
+    if auth_type is not None and version == 'v3':
         if not auth_algorithm or not auth_password:
             raise ValueError("auth_algorithm and auth_password are required when auth_type is specified")
         if not safe_pattern.match(auth_type):
             raise ValueError("Invalid characters in auth_type")
         cli = cli+' auth '+auth_type+' '+auth_algorithm+' '+auth_password
 
-    if priv_method  is not None:
+    if priv_method is not None and version == 'v3':
         if priv_method == 'aes':
             if not aes_algorithm or not aes_password:
                 raise ValueError("aes_algorithm and aes_password are required when priv_method is 'aes'")

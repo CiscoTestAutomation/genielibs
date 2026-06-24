@@ -10,6 +10,7 @@ class Platform(Base):
         'platform': {
             'chassis': Any(),
             'chassis_sn': Any(),
+            'members': Any(),
             'rtr_type': Any(),
             'os': Any(),
             'version': Any(),

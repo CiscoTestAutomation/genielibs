@@ -1183,7 +1183,8 @@ class GnmiMessageConstructor:
                             seg = seg.replace(pfx + ":", module + ':')
                             xp[i] = seg
                             continue
-                        if mod != module and self.origin == 'rfc7951':
+                        if mod != module and (self.origin == 'rfc7951' or
+                                              self.origin == 'openconfig'):
                             # From another module so this is required.
                             seg = seg.replace(pfx + ":", mod + ':')
                         else:

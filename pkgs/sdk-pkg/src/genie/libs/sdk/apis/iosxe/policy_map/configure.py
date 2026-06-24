@@ -1381,3 +1381,59 @@ def configure_policy_map_type_service_isg(
                 policy_map_name, e
             )
         )
+
+
+def configure_policy_map_type_control_isg(
+    device,
+    policy_map_name,
+    event,
+    actions,
+):
+    """ Configure ISG policy-map type control with a single event class block.
+
+        Note:
+            To configure multiple event blocks in one policy-map, call this
+            API once per event block — IOS XE appends to the existing policy-map.
+        Args:
+            device ('obj'): Device object
+            policy_map_name ('str'): policy-map name
+            event ('str'): control event e.g. 'session-start', 'session-restart', 'account-logon'
+            actions ('list'): list of prioritized action strings under the event.
+                e.g. ['5 service-policy type service name IT_V4_TRAFFIC',
+                      '9 authorize identifier mac-address']
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [
+        f"policy-map type control {policy_map_name}",
+        f"class type control always event {event}",
+    ]
+    cmd.extend(actions)
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure policy-map type control {policy_map_name}. Error: {e}"
+        )
+
+
+def unconfigure_policy_map_type_control_isg(device, policy_map_name):
+    """ Unconfigure ISG policy-map type control.
+
+        Args:
+            device ('obj'): Device object
+            policy_map_name ('str'): policy-map name to remove
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure(f"no policy-map type control {policy_map_name}")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure policy-map type control {policy_map_name}. Error: {e}"
+        )

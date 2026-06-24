@@ -8,6 +8,13 @@ from pyats.easypy import runtime
 log = logging.getLogger(__name__)
 
 
+def _safe_debug(message, *args):
+    try:
+        log.debug(message, *args)
+    except Exception as e:
+        log.exception('Failed to write debug log: %s', e)
+
+
 def apply_dictionary_filter(self, output, filters=None):
     #filtering the action output
     if not filters or \
@@ -217,8 +224,7 @@ def _load_saved_variable(self, section, val, key=None):
                 val = val.replace(blitz_key, var_value)
             else:
                 val = val.replace(blitz_key, '')
-
-    log.debug("{} resolved to '{}'".format(orig_val, val))
+    _safe_debug("%s resolved to value type %s", orig_val, type(val).__name__)
     return key, val
 
 
@@ -341,34 +347,31 @@ def save_variable(self,
             if output:
                 saved_vars.update(
                     {save_variable_name: saved_val + '\n' + output})
-                log.debug(
-                    'Appended the following into the variable {},  {}'.format(
-                        save_variable_name_str, str(output)))
+                _safe_debug('Appended value into variable %s',
+                            save_variable_name_str)
 
         elif append_in_list:
             if isinstance(saved_val, list):
                 saved_val.append(output)
                 saved_vars.update({save_variable_name: saved_val})
-                log.debug('Appended {} to list variable {}'.format(
-                    str(output), save_variable_name_str))
+                _safe_debug('Appended value to list variable %s',
+                            save_variable_name_str)
 
         elif append_in_dict:
             if isinstance(saved_val, dict):
                 saved_val.update(output)
                 saved_vars.update({save_variable_name: saved_val})
-                log.debug('Appended {} to dict variable {}'.format(
-                    str(output), save_variable_name_str))
+                _safe_debug('Appended value to dict variable %s',
+                            save_variable_name_str)
         else:
             saved_vars.update(
                 {save_variable_name: output if output is not None else ''})
-            log.debug('Saved {} in variable {}'.format(str(output),
-                                                       save_variable_name_str))
+            _safe_debug('Saved value in variable %s', save_variable_name_str)
     elif append_in_list:
         saved_vars.update({save_variable_name: [output]})
-        log.debug('Saved {} in list variable {}'.format(
-            str(output), save_variable_name_str))
+        _safe_debug('Saved value in list variable %s',
+                    save_variable_name_str)
     else:
         saved_vars.update(
             {save_variable_name: output if output is not None else ''})
-        log.debug('Saved {} in variable {}'.format(str(output),
-                                                   save_variable_name_str))
+        _safe_debug('Saved value in variable %s', save_variable_name_str)

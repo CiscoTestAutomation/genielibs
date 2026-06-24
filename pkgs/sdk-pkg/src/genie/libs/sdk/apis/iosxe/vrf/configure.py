@@ -1206,3 +1206,163 @@ def unconfigure_vrf_route_leak_static(device, vrf_name, destination_ip, destinat
         raise SubCommandFailure(
             f"Could not remove VRF route leak on device {device.name}.\nError:{e}"
         )
+
+
+def configure_vrf_export_ipv4_unicast_map_allow_evpn(device, vrf_name, route_map):
+    """ Configure VRF IPv4 export with allow-evpn keyword for EVPN route leaking
+        Args:
+            device ('obj'): device to configure on
+            vrf_name ('str'): VRF name (e.g., 'green')
+            route_map ('str'): Route-map name for export (e.g., 'VRF-TO-GRT')
+        Return:
+            N/A
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    config = [
+        f'vrf definition {vrf_name}',
+        'address-family ipv4',
+        f'export ipv4 unicast map {route_map} allow-evpn',
+        'exit-address-family'
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure IPv4 export with allow-evpn on VRF {vrf_name}.\nError:{e}"
+        )
+
+
+def configure_vrf_import_ipv4_unicast_map_allow_evpn(device, vrf_name, route_map):
+    """ Configure VRF IPv4 import with allow-evpn keyword for EVPN route leaking
+        Args:
+            device ('obj'): device to configure on
+            vrf_name ('str'): VRF name (e.g., 'green')
+            route_map ('str'): Route-map name for import (e.g., 'GRT-TO-VRF')
+        Return:
+            N/A
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    config = [
+        f'vrf definition {vrf_name}',
+        'address-family ipv4',
+        f'import ipv4 unicast map {route_map} allow-evpn',
+        'exit-address-family'
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure IPv4 import with allow-evpn on VRF {vrf_name}.\nError:{e}"
+        )
+
+
+def configure_vrf_export_ipv6_unicast_map_allow_evpn(device, vrf_name, route_map):
+    """ Configure VRF IPv6 export with allow-evpn keyword for EVPN route leaking
+        Args:
+            device ('obj'): device to configure on
+            vrf_name ('str'): VRF name (e.g., 'green')
+            route_map ('str'): Route-map name for export (e.g., 'VRF-TO-GRT-V6')
+        Return:
+            N/A
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    config = [
+        f'vrf definition {vrf_name}',
+        'address-family ipv6',
+        f'export ipv6 unicast map {route_map} allow-evpn',
+        'exit-address-family'
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure IPv6 export with allow-evpn on VRF {vrf_name}.\nError:{e}"
+        )
+
+
+def configure_vrf_import_ipv6_unicast_map_allow_evpn(device, vrf_name, route_map):
+    """ Configure VRF IPv6 import with allow-evpn keyword for EVPN route leaking
+        Args:
+            device ('obj'): device to configure on
+            vrf_name ('str'): VRF name (e.g., 'green')
+            route_map ('str'): Route-map name for import (e.g., 'GRT-TO-VRF-V6')
+        Return:
+            N/A
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    config = [
+        f'vrf definition {vrf_name}',
+        'address-family ipv6',
+        f'import ipv6 unicast map {route_map} allow-evpn',
+        'exit-address-family'
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure IPv6 import with allow-evpn on VRF {vrf_name}.\nError:{e}"
+        )
+
+
+def unconfigure_vrf_ipv4_unicast_map_allow_evpn(device, vrf_name, export_map=None, import_map=None):
+    """ Remove VRF IPv4 route leaking configuration with allow-evpn keyword
+        Args:
+            device ('obj'): device to configure on
+            vrf_name ('str'): VRF name (e.g., 'green')
+            export_map ('str', optional): Export route-map name to remove (e.g., 'VRF-TO-GRT')
+            import_map ('str', optional): Import route-map name to remove (e.g., 'GRT-TO-VRF')
+        Return:
+            N/A
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    config = [f'vrf definition {vrf_name}', 'address-family ipv4']
+    
+    if export_map:
+        config.append(f'no export ipv4 unicast map {export_map} allow-evpn')
+    
+    if import_map:
+        config.append(f'no import ipv4 unicast map {import_map} allow-evpn')
+    
+    config.append('exit-address-family')
+    
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not remove IPv4 route leaking with allow-evpn on VRF {vrf_name}.\nError:{e}"
+        )
+
+
+def unconfigure_vrf_ipv6_unicast_map_allow_evpn(device, vrf_name, export_map=None, import_map=None):
+    """ Remove VRF IPv6 route leaking configuration with allow-evpn keyword
+        Args:
+            device ('obj'): device to configure on
+            vrf_name ('str'): VRF name (e.g., 'green')
+            export_map ('str', optional): Export route-map name to remove (e.g., 'VRF-TO-GRT-V6')
+            import_map ('str', optional): Import route-map name to remove (e.g., 'GRT-TO-VRF-V6')
+        Return:
+            N/A
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    config = [f'vrf definition {vrf_name}', 'address-family ipv6']
+    
+    if export_map:
+        config.append(f'no export ipv6 unicast map {export_map} allow-evpn')
+    
+    if import_map:
+        config.append(f'no import ipv6 unicast map {import_map} allow-evpn')
+    
+    config.append('exit-address-family')
+    
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not remove IPv6 route leaking with allow-evpn on VRF {vrf_name}.\nError:{e}"
+        )

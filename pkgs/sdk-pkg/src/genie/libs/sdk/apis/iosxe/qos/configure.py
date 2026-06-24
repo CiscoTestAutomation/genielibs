@@ -426,3 +426,22 @@ def configure_plim_qos_in_map_ip_dscp_based(device):
         raise SubCommandFailure(
             f"Failed to configure {cfg_cmd} on device {device.name}. Error:\n{e}"
         )
+
+
+def configure_plim_qos_in_map_ipv_tc_queue_strict_priority(device):
+    """ Configures PLIM QoS ingress map for IPv TC 0 to strict-priority queue
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cfg_cmd = "plim qos in map ipv tc 0 queue strict-priority"
+
+    try:
+        device.configure([cfg_cmd])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure {cfg_cmd} on device {device.name}. Error:\n{e}"
+        )

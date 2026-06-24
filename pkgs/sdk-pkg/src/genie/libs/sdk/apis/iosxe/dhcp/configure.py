@@ -2881,3 +2881,86 @@ def unconfigure_ip_dhcp_class(device, class_name):
         raise SubCommandFailure(
             f"Could not remove ip dhcp class '{class_name}'. Error: {e}"
         )
+
+
+def configure_interface_service_policy_type_control(device, interface, policy_name):
+    """ Configure interface-level 'service-policy type control <policy_name>'
+        Args:
+            device ('obj'): device to use
+            interface ('str'): name of the interface
+            policy_name ('str'): control policy-map name (eg. TAL)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure service-policy type control on interface
+    """
+    log.debug("Configure service-policy type control on interface")
+    config = [
+        f"interface {interface}",
+        f"service-policy type control {policy_name}",
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure service-policy type control on interface {interface}. Error\n{e}"
+        )
+
+def unconfigure_interface_service_policy_type_control(device, interface, policy_name=None):
+    """ Remove interface-level 'service-policy type control [policy_name]'
+        Args:
+            device ('obj'): device to use
+            interface ('str'): name of the interface
+            policy_name ('str',Optional): control policy-map name (eg. TAL).
+                When provided, emits 'no service-policy type control <policy_name>'.
+                Defaults to None which emits 'no service-policy type control'.
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to remove service-policy type control on interface
+    """
+    log.debug("Remove service-policy type control on interface")
+    cmd = "no service-policy type control"
+    if policy_name:
+        cmd = f"{cmd} {policy_name}"
+    config = [
+        f"interface {interface}",
+        cmd,
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not remove service-policy type control on interface {interface}. Error\n{e}"
+        )
+
+def unconfigure_interface_ip_subscriber_initiator_type(device, interface, ip_session, type):
+    """ Emit 'no initiator <type>' under interface ip subscriber
+
+        Targets the named initiator forms (eg. 'no initiator dhcp',
+        'no initiator radius-proxy') that complement the configure side
+        of configure_interface_ip_subscriber for these types.
+
+        Args:
+            device ('obj'): device to use
+            interface ('str'): name of the interface (eg. GigabitEthernet0/0/1)
+            ip_session ('str'): ip session (eg. 'l2-connected')
+            type ('str'): initiator type (eg. 'dhcp', 'radius-proxy')
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to remove initiator type under ip subscriber
+    """
+    log.debug("Remove initiator type under ip subscriber on interface")
+    config = [
+        f"interface {interface}",
+        f"ip subscriber {ip_session}",
+        f"no initiator {type}",
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not remove initiator {type} under ip subscriber on interface "
+            f"{interface}. Error\n{e}"
+        )

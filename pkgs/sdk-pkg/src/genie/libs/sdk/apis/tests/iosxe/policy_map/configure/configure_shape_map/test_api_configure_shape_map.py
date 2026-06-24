@@ -1,114 +1,145 @@
-import os
 import unittest
-from pyats.topology import loader
+from unittest.mock import Mock
 from genie.libs.sdk.apis.iosxe.policy_map.configure import configure_shape_map
 
 
 class TestConfigureShapeMap(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          stack3-nyquist-1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: single_rp
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['stack3-nyquist-1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
+    def test_configure_shape_map(self):
+        device = Mock()
+
+        result = configure_shape_map(
+            device,
+            'test',
+            [{'bandwidth': 10, 'child_policy': 'tcy1', 'class_map_name': 'tc7', 'discard_class_value': 0, 'mark_probability': 3, 'maximum_threshold': 50, 'minimum_threshold': 25, 'priority_level': 1, 'queue_limit': 1000000, 'random_detect_type': 'discard-class', 'shape_average': 44444, 'shape_average_percent': 2}],
+            'service-policy'
         )
 
-    def test_configure_shape_map(self):
-        result = configure_shape_map(self.device, 'test', [{'bandwidth': 10,
-  'child_policy': 'tcy1',
-  'class_map_name': 'tc7',
-  'discard_class_value': 0,
-  'mark_probability': 3,
-  'maximum_threshold': 50,
-  'minimum_threshold': 25,
-  'priority_level': 1,
-  'queue_limit': 1000000,
-  'random_detect_type': 'discard-class',
-  'shape_average': 44444,
-  'shape_average_percent': 2}], 'service-policy')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.assertEqual(result, None)
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            (['policy-map type queueing test',
+              'class tc7',
+              'priority level 1',
+              'shape average 44444',
+              'bandwidth remaining ratio 10',
+              'queue-limit 1000000 bytes',
+              'service-policy tcy1',
+              'random-detect discard-class 0 percent 25 50 3'],)
+        )
 
     def test_configure_shape_map_1(self):
-        result = configure_shape_map(self.device, 'test', [{'bandwidth': 10,
-  'class_map_name': 'tc7',
-  'discard_class_value': 0,
-  'mark_probability': 3,
-  'maximum_threshold': 50,
-  'minimum_threshold': 25,
-  'random_detect_type': 'discard-class',
-  'shape_average_percent': 2},
- {'class_map_name': 'tc7',
-  'random_detect_type': 'discard-class-based',
-  'shape_average_percent': 2}], 'service-policy')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+
+        result = configure_shape_map(
+            device,
+            'test',
+            [{'bandwidth': 10, 'class_map_name': 'tc7', 'discard_class_value': 0, 'mark_probability': 3, 'maximum_threshold': 50, 'minimum_threshold': 25, 'random_detect_type': 'discard-class', 'shape_average_percent': 2},
+             {'class_map_name': 'tc7', 'random_detect_type': 'discard-class-based', 'shape_average_percent': 2}],
+            'service-policy'
+        )
+
+        self.assertEqual(result, None)
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            (['policy-map type queueing test',
+              'class tc7',
+              'shape average percent 2',
+              'bandwidth remaining ratio 10',
+              'random-detect discard-class 0 percent 25 50 3',
+              'class tc7',
+              'shape average percent 2',
+              'random-detect discard-class-based'],)
+        )
 
     def test_configure_shape_map_2(self):
-        result = configure_shape_map(self.device, 'test', [{'bandwidth': 10,
-  'class_map_name': 'tc7',
-  'discard_class_value': 0,
-  'maximum_threshold': 50,
-  'minimum_threshold': 25,
-  'priority_level': 1,
-  'queue_limit': 1000000,
-  'random_detect_type': 'discard-class',
-  'shape_average': 44444}], 'service-policy')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+
+        result = configure_shape_map(
+            device,
+            'test',
+            [{'bandwidth': 10, 'class_map_name': 'tc7', 'discard_class_value': 0, 'maximum_threshold': 50, 'minimum_threshold': 25, 'priority_level': 1, 'queue_limit': 1000000, 'random_detect_type': 'discard-class', 'shape_average': 44444}],
+            'service-policy'
+        )
+
+        self.assertEqual(result, None)
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            (['policy-map type queueing test',
+              'class tc7',
+              'priority level 1',
+              'shape average 44444',
+              'bandwidth remaining ratio 10',
+              'queue-limit 1000000 bytes',
+              'random-detect discard-class 0 percent 25 50'],)
+        )
 
     def test_configure_shape_map_3(self):
-        result = configure_shape_map(self.device, None, [{'bandwidth': 10,
-  'child_policy': 'tcy1',
-  'class_map_name': 'tc7',
-  'discard_class_value': 0,
-  'maximum_threshold': 50,
-  'minimum_threshold': 25,
-  'priority_level': 1,
-  'random_detect_type': 'dscp',
-  'shape_average': 44444,
-  'shape_average_percent': 2}], 'service-policy', 'map1')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+
+        result = configure_shape_map(
+            device,
+            None,
+            [{'bandwidth': 10, 'child_policy': 'tcy1', 'class_map_name': 'tc7', 'discard_class_value': 0, 'maximum_threshold': 50, 'minimum_threshold': 25, 'priority_level': 1, 'random_detect_type': 'dscp', 'shape_average': 44444, 'shape_average_percent': 2}],
+            'service-policy',
+            'map1'
+        )
+
+        self.assertEqual(result, None)
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            (['policy-map map1',
+              'class tc7',
+              'priority level 1',
+              'shape average 44444',
+              'bandwidth remaining ratio 10',
+              'service-policy tcy1',
+              'random-detect dscp 0 percent 25 50'],)
+        )
 
     def test_configure_shape_map_4(self):
-        result = configure_shape_map(self.device, None, [{'bandwidth': 10,
-  'class_map_name': 'tc7',
-  'discard_class_value': 0,
-  'maximum_threshold': 50,
-  'minimum_threshold': 25,
-  'random_detect_type': 'dscp',
-  'shape_average_percent': 2},
- {'class_map_name': 'tc7',
-  'random_detect_type': 'dscp-based',
-  'shape_average_percent': 2}], 'service-policy', 'map1')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+
+        result = configure_shape_map(
+            device,
+            None,
+            [{'bandwidth': 10, 'class_map_name': 'tc7', 'discard_class_value': 0, 'maximum_threshold': 50, 'minimum_threshold': 25, 'random_detect_type': 'dscp', 'shape_average_percent': 2},
+             {'class_map_name': 'tc7', 'random_detect_type': 'dscp-based', 'shape_average_percent': 2}],
+            'service-policy',
+            'map1'
+        )
+
+        self.assertEqual(result, None)
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            (['policy-map map1',
+              'class tc7',
+              'shape average percent 2',
+              'bandwidth remaining ratio 10',
+              'random-detect dscp 0 percent 25 50',
+              'class tc7',
+              'shape average percent 2',
+              'random-detect dscp-based'],)
+        )
 
     def test_configure_shape_map_5(self):
-        result = configure_shape_map(self.device, None, [{'bandwidth': 10,
-  'class_map_name': 'tc7',
-  'discard_class_value': 0,
-  'maximum_threshold': 50,
-  'minimum_threshold': 25,
-  'priority_level': 1,
-  'random_detect_type': 'precedence',
-  'shape_average': 44444}], 'service-policy', 'map1')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+
+        result = configure_shape_map(
+            device,
+            None,
+            [{'bandwidth': 10, 'class_map_name': 'tc7', 'discard_class_value': 0, 'maximum_threshold': 50, 'minimum_threshold': 25, 'priority_level': 1, 'random_detect_type': 'precedence', 'shape_average': 44444}],
+            'service-policy',
+            'map1'
+        )
+
+        self.assertEqual(result, None)
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            (['policy-map map1',
+              'class tc7',
+              'priority level 1',
+              'shape average 44444',
+              'bandwidth remaining ratio 10',
+              'random-detect precedence 0 percent 25 50'],)
+        )

@@ -29,12 +29,14 @@ def verify_ignore_startup_config(device):
     cmd = 'show romvar'
     
     try:
-        output = device.parse(cmd)
-        if output.get('rommon_variables', {}).get('switch_ignore_startup_config', 0) == 1:
-            return True
+        parsed_output = device.parse(cmd)
+        rommon_variables = (
+            (parsed_output or {}).get('rommon_variables', {})
+            .get('active', {})
+        )
+
+        return rommon_variables.get('switch_ignore_startup_config', 0) == 1
 
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not verify the ignore startup config on {device.name}. Error:\n{e}")
-
-    return False

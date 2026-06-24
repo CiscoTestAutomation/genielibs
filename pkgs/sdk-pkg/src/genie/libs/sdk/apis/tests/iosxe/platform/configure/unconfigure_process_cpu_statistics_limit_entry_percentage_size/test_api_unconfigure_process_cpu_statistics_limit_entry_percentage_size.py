@@ -1,35 +1,21 @@
-import os
 import unittest
-from pyats.topology import loader
+from unittest.mock import Mock
 from genie.libs.sdk.apis.iosxe.platform.configure import unconfigure_process_cpu_statistics_limit_entry_percentage_size
 
 
 class TestUnconfigureProcessCpuStatisticsLimitEntryPercentageSize(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          stack3-nyquist-1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: c9300
-            type: c9300
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['stack3-nyquist-1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
+    def test_unconfigure_process_cpu_statistics_limit_entry_percentage_size(self):
+        device = Mock()
+
+        result = unconfigure_process_cpu_statistics_limit_entry_percentage_size(
+            device,
+            '10',
+            '100'
         )
 
-    def test_unconfigure_process_cpu_statistics_limit_entry_percentage_size(self):
-        result = unconfigure_process_cpu_statistics_limit_entry_percentage_size(self.device, '10', '100')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.assertEqual(result, None)
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            ('no process cpu  statistics limit entry-percentage 10 size 100',)
+        )

@@ -71,6 +71,19 @@ def execute_clear_vpdn_tunnel_l2tp_all(device, timeout=60):
         )
 
 
+def execute_clear_vpdn_history_failure(device, timeout=60):
+    """Execute ``clear vpdn history failure``."""
+
+    command = "clear vpdn history failure"
+
+    try:
+        return device.execute(command, reply=_CONFIRM_DIALOG, timeout=timeout)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not execute '{command}' on {device}. Error:\n{e}"
+        )
+
+
 def execute_clear_l2tp_all(device, timeout=60):
     """Execute ``clear l2tp all``."""
 

@@ -1,34 +1,30 @@
 import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
+
 from genie.libs.sdk.apis.iosxe.interface.configure import configure_interface_span_portfast
 
 
-class TestConfigureInterfaceSpanPortfast(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = """
-        devices:
-          m4a:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: c9400
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['m4a']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureInterfaceSpanPortfast(TestCase):
 
     def test_configure_interface_span_portfast(self):
-        result = configure_interface_span_portfast(device=self.device, interface='ten1/1/0/5')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = configure_interface_span_portfast(
+            device=device,
+            interface="ten1/1/0/5",
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, list)
+        self.assertIn("interface ten1/1/0/5", sent_commands)
+        self.assertIn("spanning-tree portfast ", sent_commands)
+
+
+if __name__ == "__main__":
+    unittest.main()

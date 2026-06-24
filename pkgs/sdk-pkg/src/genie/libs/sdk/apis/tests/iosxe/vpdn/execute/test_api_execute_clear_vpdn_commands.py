@@ -6,6 +6,7 @@ from genie.libs.sdk.apis.iosxe.vpdn.execute import (
     execute_clear_vpdn_dead_cache_all,
     execute_clear_vpdn_dead_cache_group,
     execute_clear_vpdn_dead_cache_ip_address,
+    execute_clear_vpdn_history_failure,
     execute_clear_vpdn_tunnel_l2tp_all,
 )
 
@@ -60,6 +61,19 @@ class TestExecuteClearVpdnCommands(TestCase):
         self.assertEqual(
             device.execute.call_args.args[0],
             "clear vpdn tunnel l2tp all",
+        )
+        self.assertIn("reply", device.execute.call_args.kwargs)
+        self.assertEqual(device.execute.call_args.kwargs["timeout"], 60)
+
+    def test_execute_clear_vpdn_history_failure(self):
+        device = Mock()
+
+        result = execute_clear_vpdn_history_failure(device)
+
+        self.assertEqual(result, device.execute.return_value)
+        self.assertEqual(
+            device.execute.call_args.args[0],
+            "clear vpdn history failure",
         )
         self.assertIn("reply", device.execute.call_args.kwargs)
         self.assertEqual(device.execute.call_args.kwargs["timeout"], 60)

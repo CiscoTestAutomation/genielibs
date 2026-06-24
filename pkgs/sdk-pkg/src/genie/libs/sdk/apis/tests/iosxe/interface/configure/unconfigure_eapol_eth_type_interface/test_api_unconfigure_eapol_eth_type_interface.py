@@ -1,34 +1,36 @@
 import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
+
 from genie.libs.sdk.apis.iosxe.interface.configure import unconfigure_eapol_eth_type_interface
 
 
-class TestUnconfigureEapolEthTypeInterface(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = """
-        devices:
-          LG-PK:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: c9300
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['LG-PK']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigureEapolEthTypeInterface(TestCase):
 
     def test_unconfigure_eapol_eth_type_interface(self):
-        result = unconfigure_eapol_eth_type_interface(self.device, 'GigabitEthernet1/0/10', '876F')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = unconfigure_eapol_eth_type_interface(
+            device,
+            "GigabitEthernet1/0/10",
+            "876F",
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, list)
+        self.assertEqual(
+            sent_commands,
+            [
+                "interface GigabitEthernet1/0/10",
+                "no eapol eth-type 876F",
+            ],
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

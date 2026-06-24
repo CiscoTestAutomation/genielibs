@@ -142,3 +142,25 @@ def configure_hw_module_slot_start(device, slot):
         raise SubCommandFailure(
             f"Failed to configure {cmd} on device {device.name}. Error:\n{e}"
         )
+
+
+def configure_hw_module_slot_stop(device, slot):
+    """ Stop hw-module slot {slot}
+        Args:
+            device (`obj`): Device object
+            slot (`int`): slot
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure : Failed configuring device
+    """
+    cmd = 'hw-module slot {slot} stop'.format(slot=slot)
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure '{cmd}' on device {device}. Error:\n{error}"
+            .format(cmd=cmd, device=device.name, error=e)
+        )
