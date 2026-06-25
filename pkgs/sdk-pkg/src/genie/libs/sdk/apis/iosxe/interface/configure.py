@@ -4534,7 +4534,9 @@ def configure_virtual_template(device,
     no_ip_redirects=False,
     no_peer_ip=False,
     pool_name=None,
-    ipv6_pool_name=None):
+    ipv6_pool_name=None,
+    mpls_ip=False,
+    mpls_encap=None):
     """ Configure virtual-template interface
 
         Args:
@@ -4552,6 +4554,8 @@ def configure_virtual_template(device,
             no_peer_ip('bool', optional): no peer ip default option
             pool_name('string', optional): peer default ip address pool <pool_name>
             ipv6_pool_name('string', optional): peer default ipv6 pool <ipv6_pool_name>
+            mpls_ip('boolean', optional): configures mpls ip
+            mpls_encap('str', optional): mpls encapsulation
         For the arguments that are optional, the default value is None.
 
         Returns:
@@ -4584,6 +4588,10 @@ def configure_virtual_template(device,
         cli.append(f"peer default ip address pool {pool_name}")
     if ipv6_pool_name:
         cli.append(f"peer default ipv6 pool {ipv6_pool_name}")
+    if mpls_ip and mpls_encap:
+        cli.append(f'mpls ip encapsulate {mpls_encap}')
+    elif mpls_ip:
+        cli.append('mpls ip')
 
     try:
         device.configure(cli)
@@ -11539,7 +11547,8 @@ def configure_interface_port_settings(
         speed=None,
         duplex=None,
         autoneg=None,
-        combined_port_settings=False):
+        combined_port_settings=False,
+        error_pattern=None):
 
     """ Configure port-settings on an interface
 
@@ -11551,6 +11560,8 @@ def configure_interface_port_settings(
             autoneg (`str`, optional): Auto-negotiation mode (enable, disable). Default is None.
             combined_port_settings (`bool`, optional): Build a combined port-settings command when True.
                 Default is False.
+            error_pattern (`list`, optional): Error patterns passed to device.configure().
+                Default is None.
 
         Returns:
             None
@@ -11564,6 +11575,11 @@ def configure_interface_port_settings(
         raise ValueError(
             "At least one of speed, duplex, or autoneg must be specified. "
             "'port-settings' alone is an incomplete command.")
+
+    if autoneg and autoneg not in {"enable", "disable"}:
+        raise ValueError(
+            "autoneg must be either 'enable' or 'disable'. "
+            f"Got '{autoneg}'.")
 
     log.info(f"Configuring port-settings on interface {interface}")
 
@@ -11585,8 +11601,12 @@ def configure_interface_port_settings(
         if autoneg:
             cmd.append(f"port-settings autoneg {autoneg}")
 
+    configure_kwargs = {}
+    if error_pattern is not None:
+        configure_kwargs["error_pattern"] = error_pattern
+
     try:
-        device.configure(cmd)
+        device.configure(cmd, **configure_kwargs)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not configure port-settings on interface {interface}. Error:\n{e}")
@@ -11598,7 +11618,8 @@ def unconfigure_interface_port_settings(
         speed=None,
         duplex=None,
         autoneg=None,
-        combined_port_settings=False):
+        combined_port_settings=False,
+        error_pattern=None):
 
     """ Unconfigure port-settings on an interface using 'no port-settings'
 
@@ -11610,6 +11631,8 @@ def unconfigure_interface_port_settings(
             autoneg (`str`, optional): Auto-negotiation value to negate (enable, disable). Default is None.
             combined_port_settings (`bool`, optional): Build a combined port-settings command when True.
                 Default is False.
+            error_pattern (`list`, optional): Error patterns passed to device.configure().
+                Default is None.
 
         Returns:
             None
@@ -11622,6 +11645,11 @@ def unconfigure_interface_port_settings(
         raise ValueError(
             "At least one of speed, duplex, or autoneg must be specified. "
             "'no port-settings' alone is an incomplete command.")
+
+    if autoneg and autoneg not in {"enable", "disable"}:
+        raise ValueError(
+            "autoneg must be either 'enable' or 'disable'. "
+            f"Got '{autoneg}'.")
 
     log.info(f"Unconfiguring port-settings on interface {interface}")
 
@@ -11643,8 +11671,12 @@ def unconfigure_interface_port_settings(
         if autoneg:
             cmds.append(f"no port-settings autoneg {autoneg}")
 
+    configure_kwargs = {}
+    if error_pattern is not None:
+        configure_kwargs["error_pattern"] = error_pattern
+
     try:
-        device.configure(cmds)
+        device.configure(cmds, **configure_kwargs)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not unconfigure port-settings on interface {interface}. Error:\n{e}")
@@ -11656,7 +11688,8 @@ def default_interface_port_settings(
         speed=False,
         duplex=False,
         autoneg=False,
-        combined_port_settings=False):
+        combined_port_settings=False,
+        error_pattern=None):
 
     """ Reset port-settings to default on an interface using 'default port-settings'
 
@@ -11668,6 +11701,8 @@ def default_interface_port_settings(
             autoneg (`bool`, optional): Reset auto-negotiation to default. Default is False.
             combined_port_settings (`bool`, optional): Build a combined port-settings command when True.
                 Default is False.
+            error_pattern (`list`, optional): Error patterns passed to device.configure().
+                Default is None.
 
         Returns:
             None
@@ -11701,8 +11736,12 @@ def default_interface_port_settings(
         if autoneg:
             cmd.append("default port-settings autoneg")
 
+    configure_kwargs = {}
+    if error_pattern is not None:
+        configure_kwargs["error_pattern"] = error_pattern
+
     try:
-        device.configure(cmd)
+        device.configure(cmd, **configure_kwargs)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not reset port-settings to default on interface {interface}. Error:\n{e}")
@@ -11733,6 +11772,209 @@ def configure_interface_ip_proxy_arp(device, interface):
             f"Failed to configure {cfg_cmd} on device {device.name}. Error:\n{e}"
         )
 
+########################################  pre-request implementation over SSH  ###################################################
+
+def configure_credentials(device, interface, user_name, password, t_input, t_output, vty_start, vty_end):
+    """ Configure credentials and VTY line settings
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+            user_name (`str`): Username to configure
+            password (`str`): Password to configure
+            t_input (`str`): Transport input method
+            t_output (`str`): Transport output method
+            vty_start (`str`): VTY line start number
+            vty_end (`str`): VTY line end number
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(('Configuring Credentials'))
+    try:
+        out = device.execute('show run | include aaa')
+        if 'no aaa' in out:
+            cmd = [
+                'username {} secret {}'.format(user_name, password),
+                'line vty {} {}'.format(vty_start, vty_end),
+                'login local',
+                'transport input {}'.format(t_input),
+                'transport output {}'.format(t_output)
+            ]
+        else:
+            cmd = [
+                'username {} secret {}'.format(user_name, password),
+                'line vty {} {}'.format(vty_start, vty_end),
+                'login authentication local',
+                'transport input {}'.format(t_input),
+                'transport output {}'.format(t_output)
+            ]
+        device.configure(cmd)
+        log.debug('Credentials and VTY configured successfully')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure credentials on {interface}. Error:{e}"
+        ) from e
+
+def configure_crypto(device, hostname, domain, rsa_modulus):
+    """ Configure Crypto (Hostname + Domain + RSA Keys)
+
+        Args:
+            device (`obj`): Device object
+            hostname (`str`): Hostname to configure
+            domain (`str`): Domain name to configure
+            rsa_modulus (`str`): RSA key modulus size
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(('Configuring Crypto (Hostname + Domain + RSA Keys)'))
+    try:
+        cmd = [
+            'hostname {}'.format(hostname),
+            'ip domain name {}'.format(domain)
+        ]
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure crypto (hostname/domain) on device {device}. Error:\n{e}") from e
+
+def configure_ssh(device, version, bulk, timeout, retries, intf):
+    """ Configure SSH settings
+        Args:
+            device (`obj`): Device object
+            version (`str`): SSH version
+            bulk (`str`): SSH bulk-mode value
+            timeout (`str`): SSH timeout value
+            retries (`str`): SSH authentication retries
+            intf (`str`): SSH source interface
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug('Configuring SSH')
+    try:
+        cmd = [
+            'ip ssh version {}'.format(version),
+            'ip ssh bulk-mode {}'.format(bulk),
+            'ip ssh time-out {}'.format(timeout),
+            'ip ssh authentication-retries {}'.format(retries),
+            'ip ssh source-interface {}'.format(intf)
+        ]
+        device.configure(cmd)
+        log.debug('SSH configured successfully')
+        ssh_out = device.execute('show ip ssh')
+        if 'SSH Enabled' in ssh_out:
+            log.debug('SSH is enabled for {intf} and active'.format(intf=intf))
+        else:
+            log.warning('SSH may not be fully active, check output')
+    except Exception as err:
+        log.error('Error configuring SSH: %s' % err)
+        raise SubCommandFailure('SSH configuration failed') from err
+
+def configure_scp(device, user_name):
+    """ Configure SCP server and username
+        Args:
+            device (`obj`): Device object
+            user_name (`str`): SCP username to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug('Configuring SCP')
+    try:
+        cmd = [
+            'ip scp server enable',
+            'ip scp username {}'.format(user_name)
+        ]
+        device.configure(cmd)
+        log.debug('SCP configured successfully')
+        scp_out = device.execute('show run | include scp')
+        log.debug('SCP config:\n%s' % scp_out)
+    except Exception as err:
+        log.error('Error configuring SCP: %s' % err)
+        raise SubCommandFailure('SCP configuration failed') from err
+
+def verify_and_save(device):
+    """ Verify and save configuration to NVRAM
+        Args:
+            device (`obj`): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug('Verifying and Saving Configuration')
+    try:
+        device.execute('write memory')
+        log.debug('Configuration saved to NVRAM')
+        log.debug('--- SSH Status ---')
+        device.execute('show ip ssh')
+        log.debug('--- VTY Config ---')
+        device.execute('show run | section line vty')
+        log.debug('--- SCP Config ---')
+        device.execute('show run | include scp')
+        log.debug('--- Username Config ---')
+        device.execute('show run | include username')
+        log.debug('All configurations verified and saved')
+    except Exception as err:
+        log.error('Error during verify/save: %s' % err)
+        raise SubCommandFailure('Verify and save failed') from err
+    
+def unconfigure_crypto(device, domain, hostname):
+    """ Unconfigure Crypto (restore Hostname and Domain)
+        Args:
+            device (`obj`): Device object
+            domain (`str`): Domain name to configure
+            hostname (`str`): Hostname to restore
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug('Unconfiguring Crypto (Hostname)')
+    try:
+        cmd = [
+            'hostname {}'.format(hostname),
+            'ip domain name {}'.format(domain)
+        ]
+        device.configure(cmd)
+        log.debug('Hostname restored to Router')
+    except Exception as err:
+        log.error('Error unconfiguring crypto: %s' % err)
+
+def configure_interface_ip_proxy_arp(device, interface):
+    """ Configure ip proxy-arp on an interface
+
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Interface name
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    cmds = [
+        f"interface {interface}",
+        "ip proxy-arp",
+    ]
+    cfg_cmd = f"ip proxy-arp under interface {interface}"
+    try:
+        device.configure(cmds)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure {cfg_cmd} on device {device.name}. Error:\n{e}"
+        )
 
 def configure_interface_multiservice(device, interface_id, vrf=None, ip_address=None, mask=None, keepalive=True, shutdown=False):
     """ Configure 'interface multiservice <id>' with optional VRF, IP address, keepalive and shutdown state
@@ -11787,3 +12029,138 @@ def unconfigure_interface_multiservice(device, interface_id):
             f"Failed to unconfigure interface multiservice {interface_id} on {device.name}. Error\n{e}"
         )
 
+def configure_virtual_ppp(device,
+    ppp_num,
+    unnumbered_interface=None,
+    mtu_value=None,
+    mss_value=None,
+    load_interval=None,
+    chap_hname=None,
+    chap_pass=None,
+    pap_uname=None,
+    pap_pass=None,
+    pw_config=None,
+    pass_encryption_type=None,
+    ):
+    """ Configure virtual-ppp interface
+        Args:
+            device (`obj`): Device object
+            ppp_num ('int') : Virtual-PPP number
+            unnumbered_interface ('str', optional): Interface name
+            mtu_value ('int', optional) : mtu value
+            mss_value ('int', optional): Maximum segment size
+            load_interval ('int', optional): load delay
+            chap_hname ('str', optional): chap hostname
+            chap_pass ('str', optional): chap password
+            pass_encryption_type ('int', optional): chap password encryption type 
+            pap_uname ('str', optional): pap username
+            pap_pass ('str', optional): pap password
+            pw_config ('str', optional): pseudowire config
+            For the arguments that are optional, the default value is None.
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cli = [f'interface Virtual-PPP{ppp_num}']
+
+    if unnumbered_interface:
+        cli.append(f'ip unnumbered {unnumbered_interface}')
+
+    if mtu_value:
+        cli.append(f'ip mtu {mtu_value}')
+
+    if mss_value:
+        cli.append(f'ip tcp adjust-mss {mss_value}')
+
+    if load_interval:
+        cli.append(f'load-interval {load_interval}')
+
+    if chap_hname:
+        cli.append(f'ppp chap hostname {chap_hname}')
+
+    if chap_pass and pass_encryption_type:
+        cli.append(f'ppp chap password {pass_encryption_type} {chap_pass}')
+    elif chap_pass:
+        cli.append(f'ppp chap password 0 {chap_pass}')
+
+    if pap_uname and pap_pass:
+        cli.append(f'ppp pap sent-username {pap_uname} password {pap_pass}')
+
+    if pw_config:
+        cli.append(f'pseudowire {pw_config}')
+
+
+    try:
+        device.configure(cli)
+    except SubCommandFailure as error:
+        raise SubCommandFailure(
+            f"Could not configure Virtual-PPP{ppp_num}. Error:\n{error}"
+        )
+
+def unconfigure_virtual_ppp(device,
+    ppp_num,
+    unnumbered_interface=None,
+    mtu_value=None,
+    mss_value=None,
+    load_interval=None,
+    chap_hname=None,
+    chap_pass=None,
+    pap_uname=None,
+    pap_pass=None,
+    pw_config=None,
+    ):
+    """ Unconfigure virtual-ppp interface
+        Args:
+            device (`obj`): Device object
+            ppp_num ('int') : Virtual-PPP number
+            unnumbered_interface ('str', optional): Interface name
+            mtu_value ('int', optional) : mtu value
+            mss_value ('int', optional): Maximum segment size
+            load_interval ('int', optional): load delay
+            chap_hname ('str', optional): chap hostname
+            chap_pass ('str', optional): chap password
+            pap_uname ('str', optional): pap username
+            pap_pass ('str', optional): pap password
+            pw_config ('str', optional): pseudowire config
+            For the arguments that are optional, the default value is None.
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cli = [f'interface Virtual-PPP{ppp_num}']
+
+    if unnumbered_interface:
+        cli.append(f'no ip unnumbered {unnumbered_interface}')
+
+    if mtu_value:
+        cli.append(f'no ip mtu {mtu_value}')
+
+    if mss_value:
+        cli.append(f'no ip tcp adjust-mss {mss_value}')
+
+    if load_interval:
+        cli.append(f'no load-interval {load_interval}')
+
+    if chap_hname:
+        cli.append(f'no ppp chap hostname {chap_hname}')
+
+    if chap_pass:
+        cli.append(f'no ppp chap password {chap_pass}')
+
+    if pap_uname and pap_pass:
+        cli.append(f'no ppp pap sent-username {pap_uname} password {pap_pass}')
+
+    if pw_config:
+        cli.append(f'no pseudowire {pw_config}')
+
+
+    try:
+        device.configure(cli)
+    except SubCommandFailure as error:
+        raise SubCommandFailure(
+            f"Could not unconfigure Virtual-PPP{ppp_num}. Error:\n{error}"
+        )

@@ -1,85 +1,276 @@
-import os
 import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
+
 from genie.libs.sdk.apis.iosxe.interface.configure import configure_power_inline
 
 
-class TestConfigurePowerInline(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          screwball:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: single_rp
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['screwball']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigurePowerInline(TestCase):
 
     def test_configure_power_inline(self):
-        result = configure_power_inline(self.device, 'Gi1/0/1', 'auto', '', '', '')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = configure_power_inline(
+            device,
+            "Gi1/0/1",
+            "auto",
+            "",
+            "",
+            "",
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, str)
+        self.assertEqual(
+            sent_commands,
+            "interface Gi1/0/1\npower inline auto",
+        )
 
     def test_configure_power_inline_1(self):
-        result = configure_power_inline(self.device, 'Gi1/0/1', 'auto', '', '', '')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = configure_power_inline(
+            device,
+            "Gi1/0/1",
+            "auto",
+            "",
+            "",
+            "",
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, str)
+        self.assertEqual(
+            sent_commands,
+            "interface Gi1/0/1\npower inline auto",
+        )
 
     def test_configure_power_inline_2(self):
-        result = configure_power_inline(self.device, 'Gi1/0/1', 'police', '', '', '')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = configure_power_inline(
+            device,
+            "Gi1/0/1",
+            "police",
+            "",
+            "",
+            "",
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, str)
+        self.assertEqual(
+            sent_commands,
+            "interface Gi1/0/1\npower inline police",
+        )
 
     def test_configure_power_inline_3(self):
-        result = configure_power_inline(self.device, 'Gi1/0/1', 'never', '', '', '')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = configure_power_inline(
+            device,
+            "Gi1/0/1",
+            "never",
+            "",
+            "",
+            "",
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, str)
+        self.assertEqual(
+            sent_commands,
+            "interface Gi1/0/1\npower inline never",
+        )
 
     def test_configure_power_inline_4(self):
-        result = configure_power_inline(self.device, 'Gi1/0/1', 'police', '', 'log', '')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = configure_power_inline(
+            device,
+            "Gi1/0/1",
+            "police",
+            "",
+            "log",
+            "",
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, str)
+        self.assertEqual(
+            sent_commands,
+            "interface Gi1/0/1\npower inline police action log",
+        )
 
     def test_configure_power_inline_5(self):
-        result = configure_power_inline(self.device, 'Gi1/0/1', 'police', '', 'errdisable', '')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = configure_power_inline(
+            device,
+            "Gi1/0/1",
+            "police",
+            "",
+            "errdisable",
+            "",
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, str)
+        self.assertEqual(
+            sent_commands,
+            "interface Gi1/0/1\npower inline police action errdisable",
+        )
 
     def test_configure_power_inline_6(self):
-        result = configure_power_inline(self.device, 'Gi1/0/1', 'consumption', 4000, '', '')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = configure_power_inline(
+            device,
+            "Gi1/0/1",
+            "consumption",
+            4000,
+            "",
+            "",
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, str)
+        self.assertEqual(
+            sent_commands,
+            "interface Gi1/0/1\npower inline consumption 4000",
+        )
 
     def test_configure_power_inline_7(self):
-        result = configure_power_inline(self.device, 'Gi1/0/1', 'port', '', '', 'perpetual-poe-ha')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = configure_power_inline(
+            device,
+            "Gi1/0/1",
+            "port",
+            "",
+            "",
+            "perpetual-poe-ha",
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, str)
+        self.assertEqual(
+            sent_commands,
+            "interface Gi1/0/1\npower inline port perpetual-poe-ha",
+        )
 
     def test_configure_power_inline_8(self):
-        result = configure_power_inline(self.device, 'Gi1/0/1', 'port', '', '', '1-event')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = configure_power_inline(
+            device,
+            "Gi1/0/1",
+            "port",
+            "",
+            "",
+            "1-event",
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, str)
+        self.assertEqual(
+            sent_commands,
+            "interface Gi1/0/1\npower inline port 1-event",
+        )
 
     def test_configure_power_inline_9(self):
-        result = configure_power_inline(self.device, 'Gi1/0/1', 'static', 4000, '', '')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = configure_power_inline(
+            device,
+            "Gi1/0/1",
+            "static",
+            4000,
+            "",
+            "",
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, str)
+        self.assertEqual(
+            sent_commands,
+            "interface Gi1/0/1\npower inline static max 4000",
+        )
 
     def test_configure_power_inline_10(self):
-        result = configure_power_inline(self.device, 'Gi1/0/1', 'auto', 4000, '', '')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = configure_power_inline(
+            device,
+            "Gi1/0/1",
+            "auto",
+            4000,
+            "",
+            "",
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, str)
+        self.assertEqual(
+            sent_commands,
+            "interface Gi1/0/1\npower inline auto max 4000",
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

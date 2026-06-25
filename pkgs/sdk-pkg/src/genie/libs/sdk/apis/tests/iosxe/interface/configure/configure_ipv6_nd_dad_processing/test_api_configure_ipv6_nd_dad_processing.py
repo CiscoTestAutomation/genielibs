@@ -1,35 +1,33 @@
-import os
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.interface.configure import configure_ipv6_nd_dad_processing
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.interface.configure import (
+    configure_ipv6_nd_dad_processing,
+)
 
 
-class TestConfigureIpv6NdDadProcessing(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          Starfleet:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: c9500
-            type: c9500
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Starfleet']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureIpv6NdDadProcessing(TestCase):
 
     def test_configure_ipv6_nd_dad_processing(self):
-        result = configure_ipv6_nd_dad_processing(self.device, 'TwentyFiveGigE1/0/23', '10')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = configure_ipv6_nd_dad_processing(
+            device,
+            "TwentyFiveGigE1/0/23",
+            "10",
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, list)
+        self.assertIn("interface TwentyFiveGigE1/0/23", sent_commands)
+        self.assertIn("ipv6 nd dad attempts 10", sent_commands)
+
+
+if __name__ == "__main__":
+    unittest.main()

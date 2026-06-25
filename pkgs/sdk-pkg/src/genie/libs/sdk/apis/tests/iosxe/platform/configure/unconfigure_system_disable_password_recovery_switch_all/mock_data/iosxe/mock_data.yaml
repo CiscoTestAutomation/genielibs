@@ -5,8 +5,8 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-    no system disable password recovery: |
-      no system disable password recovery
+    no system disable password recovery secure: |
+      no system disable password recovery secure
       Applying config on Switch...[DONE]
   prompt: 9407R-dut1(config)#
 configure_line:

@@ -13,6 +13,10 @@ class TestUnconfigureInterfacePortSettings(TestCase):
             self.device.configure.mock_calls[0].args,
             (['interface TE0/1/0', 'no port-settings speed 1000', 'no port-settings duplex full', 'no port-settings autoneg disable'],)
         )
+        self.assertEqual(
+            self.device.configure.mock_calls[0].kwargs,
+            {}
+        )
 
     def test_unconfigure_interface_port_settings_combined_port_settings(self):
         # combined form with autoneg disable
@@ -21,6 +25,16 @@ class TestUnconfigureInterfacePortSettings(TestCase):
         self.assertEqual(
             self.device.configure.mock_calls[0].args,
             (['interface TE0/1/0', 'no port-settings speed 1000 duplex full autoneg disable'],)
+        )
+
+    def test_unconfigure_interface_port_settings_explicit_split_commands(self):
+        self.device = Mock()
+        unconfigure_interface_port_settings(
+            self.device, 'TE0/1/0', '1000', 'full', 'disable', combined_port_settings=False
+        )
+        self.assertEqual(
+            self.device.configure.mock_calls[0].args,
+            (['interface TE0/1/0', 'no port-settings speed 1000', 'no port-settings duplex full', 'no port-settings autoneg disable'],)
         )
 
     def test_unconfigure_interface_port_settings_no_args_raises(self):
@@ -66,3 +80,20 @@ class TestUnconfigureInterfacePortSettings(TestCase):
             (['interface TE0/1/0', 'no port-settings duplex full autoneg disable'],)
         )
 
+    def test_unconfigure_interface_port_settings_invalid_autoneg_raises(self):
+        self.device = Mock()
+        with self.assertRaises(ValueError):
+            unconfigure_interface_port_settings(self.device, 'TE0/1/0', autoneg='auto')
+
+    def test_unconfigure_interface_port_settings_custom_error_pattern(self):
+        self.device = Mock()
+        unconfigure_interface_port_settings(
+            self.device,
+            'TE0/1/0',
+            speed='1000',
+            error_pattern=[r'custom error'],
+        )
+        self.assertEqual(
+            self.device.configure.mock_calls[0].kwargs,
+            {'error_pattern': [r'custom error']}
+        )

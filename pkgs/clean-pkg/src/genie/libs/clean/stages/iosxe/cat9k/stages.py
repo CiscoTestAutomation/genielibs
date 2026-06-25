@@ -629,8 +629,9 @@ install_image:
         'configure_no_boot_manual',
         'delete_boot_variable',
         'set_boot_variable',
-        'unconfigure_and_verify_startup_config',
+        'unconfigure_startup_config',
         'save_running_config',
+        'verify_ignore_startup_config',
         'verify_boot_variable',
         'check_start_up_config_variables',
         'verify_running_image',
@@ -645,7 +646,11 @@ install_image:
             cmd = 'show romvar' 
             try:
                 output = device.parse(cmd)
-                if debug_conf:=output.get('rommon_variables', {}).get('debug_conf'):
+                rommon_variables = (
+                    (output or {}).get('rommon_variables', {})
+                    .get('active', {})
+                )
+                if debug_conf:=rommon_variables.get('debug_conf'):
                     log.info(f"DEBUG_CONF {debug_conf} is set in rommon variables")
                     self.image_to_boot = "bootflash:packages.conf"
                 else:

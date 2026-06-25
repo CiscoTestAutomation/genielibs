@@ -25,6 +25,7 @@ class TestConfigureReplace(unittest.TestCase):
         self.device.spawn = Mock()
 
         self.data = {
+            'show version | include operating mode': '',
             'configure replace bootflash:test.cfg force': '''
                 % Topology global::IPv4 Unicast::base is currently being deconfigured.
 % BGP context not been initialized properly.
@@ -112,7 +113,8 @@ Rollback aborted after 5 passes''',
         self.assertEqual(Failed, steps.details[0].result)
 
     def test_configure_replace_pass_rollback_complete(self):
-        data = {'configure replace bootflash:base.cfg force':'''Total number of passes: 1
+        data = {'show version | include operating mode': '',
+                'configure replace bootflash:base.cfg force':'''Total number of passes: 1
 Rollback Done'''}
         steps = Steps()
 

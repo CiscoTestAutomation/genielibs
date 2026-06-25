@@ -1,36 +1,35 @@
-import os
 import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
+
 from genie.libs.sdk.apis.iosxe.interface.configure import unconfgiure_port_channel_min_link
 
 
-class TestUnconfgiurePortChannelMinLink(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          9300-24UX-2:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            model: c9600
-            type: c9600
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['9300-24UX-2']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfgiurePortChannelMinLink(TestCase):
 
     def test_unconfgiure_port_channel_min_link(self):
-        result = unconfgiure_port_channel_min_link(self.device, '1')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = unconfgiure_port_channel_min_link(
+            device,
+            "1",
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, list)
+        self.assertEqual(
+            sent_commands,
+            [
+                "interface port-channel 1",
+                "no port-channel min-links",
+            ],
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

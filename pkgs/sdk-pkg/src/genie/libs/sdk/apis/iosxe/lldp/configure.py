@@ -248,3 +248,29 @@ def unconfigure_lldp_tlv_select(device, tlv):
             "Could not unconfigure LLDP tlv-select"
             "Error: {error}".format(error=e)
         )
+
+
+def unconfigure_lldp_interface_only(device, interface,
+                                    transmit=True, receive=True):
+    """ Unconfigure LLDP on interface without disable LLDP globally.
+
+        Args:
+            device ('obj'): Device object
+            interface ('str'): interface on which LLDP to be configured
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Unconfigure LLDP on interface without disable LLDP globally")
+    configs = []
+    configs.append(f"interface {interface}")
+    if transmit:
+        configs.append("no lldp transmit")
+    if receive:
+        configs.append("no lldp receive")
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure("Could not unconfigure LLDP on interface "
+                                f"Error: {e}")

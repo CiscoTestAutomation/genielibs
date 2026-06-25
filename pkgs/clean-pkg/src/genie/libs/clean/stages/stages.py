@@ -3097,11 +3097,20 @@ power_cycle:
     connection_timeout(int, optional): Time to wait during connect to the 
         device, Default to 120 seconds
 
+    rommon_boot (bool, optional): Boot the device from ROMMON after power
+        cycling. Defaults to False.
+
+    golden_image (list or dict, optional): Golden image to use for ROMMON
+        boot. If not provided, device recovery information is used.
+
 Example
 -------
 power_cycle:
     sleep_after_power_off: 5
     sleep_after_connect: 10
+    rommon_boot: True
+    golden_image:
+      - bootflash:golden_image.bin
 """
 
     # =================
@@ -3114,6 +3123,7 @@ power_cycle:
     CONNECT_ARGUMENTS = {}
     CONNECT_RETRY_WAIT = 60
     CONNECTION_TIMEOUT = 120
+    ROMMON_BOOT = False
 
     # ============
     # Stage Schema
@@ -3126,12 +3136,17 @@ power_cycle:
         Optional('connect_arguments'): dict,
         Optional('connect_retry_wait'): int,
         Optional('connection_timeout'): int,
+        Optional('rommon_boot'): bool,
+        Optional('golden_image'): Or(list, {
+            'system': str,
+            Optional('kickstart'): str,
+        }),
     }
 
     # ==============================
     # Execution order of Stage steps
     # ==============================
-    exec_order = ['powercycle', 'reconnect']
+    exec_order = ['powercycle', 'rommon_boot', 'reconnect']
 
     def powercycle(self,
                    steps,
@@ -3144,6 +3159,24 @@ power_cycle:
                     delay=sleep_after_power_off)
             except Exception as e:
                 step.failed("Failed to powercycle", from_exception=e)
+
+    def rommon_boot(self,
+                    steps,
+                    device,
+                    rommon_boot=ROMMON_BOOT,
+                    golden_image=None):
+
+        if not rommon_boot:
+            return
+
+        with steps.start(f"Booting '{device.name}' from ROMMON") as step:
+            try:
+                if golden_image:
+                    device.api.device_recovery_boot(golden_image=golden_image)
+                else:
+                    device.api.device_recovery_boot()
+            except Exception as e:
+                step.failed("Failed to boot from ROMMON", from_exception=e)
 
     def reconnect(self,
                   steps,

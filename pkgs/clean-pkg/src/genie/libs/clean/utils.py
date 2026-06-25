@@ -46,6 +46,78 @@ CLEAN_PLUGIN_ENTRYPOINT = CLEAN_MODULE_NAME
 
 clean_json = None
 
+NETCONF_PROCESS_STATE_COMMAND = 'show platform software yang-management process state'
+NETCONF_REQUIRED_PROCESSES = ["nesd", "syncfd", "ncsshd", "dmiauthd", "ndbmand", "pubd"]
+
+
+def _parse_netconf_process_state_output(output):
+    """Parse NETCONF process state output for clean-stage fallback handling."""
+
+    yang_state = {}
+    processes = {}
+
+    confd_pattern = re.compile(r".*Confd +Status: +(?P<status>.+)$")
+    process_pattern = re.compile(
+        r"^(?P<process>\S+) +(?P<status>(?:Running|Not +Running)) +"
+        r"(?P<state>(?:Active|Not +Active|Not +Applicable|Down|Reset|Init|Failed|Invalid))$"
+    )
+
+    for line in output.splitlines():
+        line = line.strip()
+
+        match = confd_pattern.match(line)
+        if match:
+            yang_state["confd-status"] = match.group("status")
+            continue
+
+        match = process_pattern.match(line)
+        if match:
+            group = match.groupdict()
+            processes[group["process"]] = {
+                "status": group["status"],
+                "state": group["state"],
+            }
+
+    if processes:
+        yang_state["processes"] = processes
+
+    return yang_state
+
+
+def _get_netconf_process_state(device):
+    """Return parsed NETCONF process state and parser fallback exception, if any."""
+
+    try:
+        return device.parse(NETCONF_PROCESS_STATE_COMMAND), None
+    except Exception as exc:
+        output = device.execute(NETCONF_PROCESS_STATE_COMMAND)
+        return _parse_netconf_process_state_output(output), exc
+
+
+def _get_netconf_not_ready_reason(yang_state, required_processes=NETCONF_REQUIRED_PROCESSES):
+    """Return why NETCONF is not ready, or None when all required processes are ready."""
+
+    confd_status = yang_state.get("confd-status")
+    if confd_status != "Started":
+        return f"confd-status is {confd_status!r}"
+
+    processes = yang_state.get("processes", {})
+    for process in required_processes:
+        process_state = processes.get(process, {})
+        status = process_state.get("status")
+        state = process_state.get("state")
+
+        if process == "ncsshd":
+            ready = status == "Running" and state in ("Not Applicable", "Active")
+        else:
+            ready = status == "Running" and state == "Active"
+
+        if not ready:
+            return f"{process} status={status!r} state={state!r}"
+
+    return None
+
+
 def clean_schema(schema):
     """decorator for defining schema"""
     def schema_decorator(func):

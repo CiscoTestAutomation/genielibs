@@ -1,35 +1,34 @@
-import os
 import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
+
 from genie.libs.sdk.apis.iosxe.interface.configure import unconfig_diagnostic_monitor_threshold
 
 
-class TestUnconfigDiagnosticMonitorThreshold(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          Nyquist-9300-Stack:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: router
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Nyquist-9300-Stack']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigDiagnosticMonitorThreshold(TestCase):
 
     def test_unconfig_diagnostic_monitor_threshold(self):
-        result = unconfig_diagnostic_monitor_threshold(self.device, 2, 6, 4)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = unconfig_diagnostic_monitor_threshold(
+            device,
+            2,
+            6,
+            4,
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, str)
+        self.assertEqual(
+            sent_commands,
+            "no diagnostic monitor threshold switch 2 test 6 failure count 4",
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

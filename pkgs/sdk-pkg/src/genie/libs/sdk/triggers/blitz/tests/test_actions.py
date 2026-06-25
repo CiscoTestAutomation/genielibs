@@ -121,6 +121,12 @@ Route Distinguisher: 300:1
   Path status: Best path
 """
 
+    execute_extract_output = """
+Peer 10.0.0.2 state Idle prefixes 5 ratio 1.25 enabled yes
+Peer 10.0.0.1 state Established prefixes 10 ratio 2.5 enabled no
+Peer 10.0.0.2 state Established prefixes 15 ratio 3.75 enabled true
+"""
+
     learn_config_out = {'version 9.3(3) Bios:version 07.33': {},
        'switchname N93_3': {},
        'install feature-set mpls': {},
@@ -350,6 +356,12 @@ Route Distinguisher: 300:1
         self.kwargs = {'self': self.blitz_obj,
                        'section': sections[0],
                        'name': ''}
+
+    def _prepare_extract_context(self):
+        section = self.kwargs['section'].__testcls__(self.kwargs['section'])
+        self.blitz_obj.parent = self
+        self.parameters = {}
+        return section
 
     def test_configure(self):
 
@@ -997,6 +1009,376 @@ Route Distinguisher: 300:1
         output = execute(**self.kwargs)
         self.assertEqual(steps.result, Passed)
         self.assertIn('192.168.10.0/24', output)
+
+    def test_execute_extract_scalar_default_save_as_name(self):
+
+        self.dev.execute = Mock(side_effect=[self.execute_extract_output])
+        steps = Steps()
+        section = self._prepare_extract_context()
+        self.kwargs.update({'device': self.dev,
+                            'steps': steps,
+                            'section': section,
+                            'command': 'cmd',
+                            'extract': [
+                                {'name': 'peer',
+                                 'regex': r'Peer (?P<peer>\S+)'}]})
+
+        output = execute(**self.kwargs)
+        saved = self.blitz_obj.parameters['save_variable_name']
+        self.assertEqual(steps.result, Passed)
+        self.assertEqual(saved['peer'], '10.0.0.2')
+        self.assertEqual(output, self.execute_extract_output)
+
+    def test_execute_extract_explicit_save_as(self):
+
+        self.dev.execute = Mock(side_effect=[self.execute_extract_output])
+        steps = Steps()
+        section = self._prepare_extract_context()
+        self.kwargs.update({'device': self.dev,
+                            'steps': steps,
+                            'section': section,
+                            'command': 'cmd',
+                            'extract': [
+                                {'name': 'first_peer',
+                                 'regex': r'Peer (?P<peer>\S+)',
+                                 'group': 'peer',
+                                 'save_as': 'uut_first_peer'}]})
+
+        execute(**self.kwargs)
+        saved = self.blitz_obj.parameters['save_variable_name']
+        self.assertEqual(steps.result, Passed)
+        self.assertEqual(saved['uut_first_peer'], '10.0.0.2')
+
+    def test_execute_extract_group_selection_variants(self):
+
+        self.dev.execute = Mock(side_effect=[self.execute_extract_output])
+        steps = Steps()
+        section = self._prepare_extract_context()
+        self.kwargs.update({'device': self.dev,
+                            'steps': steps,
+                            'section': section,
+                            'command': 'cmd',
+                            'extract': [
+                                {'name': 'numeric_group',
+                                 'regex': r'Peer (\S+)',
+                                 'group': 1},
+                                {'name': 'string_numeric_group',
+                                 'regex': r'prefixes (\d+)',
+                                 'group': '1',
+                                 'type': 'int'},
+                                {'name': 'whole_match',
+                                 'regex': r'Established'}]})
+
+        execute(**self.kwargs)
+        saved = self.blitz_obj.parameters['save_variable_name']
+        self.assertEqual(steps.result, Passed)
+        self.assertEqual(saved['numeric_group'], '10.0.0.2')
+        self.assertEqual(saved['string_numeric_group'], 5)
+        self.assertEqual(saved['whole_match'], 'Established')
+
+    def test_execute_extract_findall_unique_sort_and_count(self):
+
+        self.dev.execute = Mock(side_effect=[self.execute_extract_output])
+        steps = Steps()
+        section = self._prepare_extract_context()
+        self.kwargs.update({'device': self.dev,
+                            'steps': steps,
+                            'section': section,
+                            'command': 'cmd',
+                            'extract': [
+                                {'name': 'peers',
+                                 'regex': r'^Peer (?P<peers>\S+)',
+                                 'findall': True,
+                                 'type': 'list[str]',
+                                 'unique': True,
+                                 'sort': True,
+                                 'min_count': 3,
+                                 'max_count': 3}]})
+
+        execute(**self.kwargs)
+        saved = self.blitz_obj.parameters['save_variable_name']
+        self.assertEqual(steps.result, Passed)
+        self.assertEqual(saved['peers'], ['10.0.0.1', '10.0.0.2'])
+
+    def test_execute_extract_type_coercion(self):
+
+        self.dev.execute = Mock(side_effect=[self.execute_extract_output])
+        steps = Steps()
+        section = self._prepare_extract_context()
+        self.kwargs.update({'device': self.dev,
+                            'steps': steps,
+                            'section': section,
+                            'command': 'cmd',
+                            'extract': [
+                                {'name': 'prefix_count',
+                                 'regex': r'prefixes (?P<prefix_count>\d+)',
+                                 'type': 'int'},
+                                {'name': 'ratio',
+                                 'regex': r'ratio (?P<ratio>\S+)',
+                                 'type': 'float'},
+                                {'name': 'enabled',
+                                 'regex': r'enabled (?P<enabled>\S+)',
+                                 'type': 'bool'},
+                                {'name': 'all_prefixes',
+                                 'regex': r'prefixes (?P<all_prefixes>\d+)',
+                                 'findall': True,
+                                 'type': 'list[int]'},
+                                {'name': 'all_enabled',
+                                 'regex': r'enabled (?P<all_enabled>\S+)',
+                                 'findall': True,
+                                 'type': 'list[bool]'}]})
+
+        execute(**self.kwargs)
+        saved = self.blitz_obj.parameters['save_variable_name']
+        self.assertEqual(steps.result, Passed)
+        self.assertEqual(saved['prefix_count'], 5)
+        self.assertEqual(saved['ratio'], 1.25)
+        self.assertEqual(saved['enabled'], True)
+        self.assertEqual(saved['all_prefixes'], [5, 10, 15])
+        self.assertEqual(saved['all_enabled'], [True, False, True])
+
+    def test_execute_extract_optional_defaults(self):
+
+        self.dev.execute = Mock(side_effect=[self.execute_extract_output])
+        steps = Steps()
+        section = self._prepare_extract_context()
+        self.kwargs.update({'device': self.dev,
+                            'steps': steps,
+                            'section': section,
+                            'command': 'cmd',
+                            'extract': [
+                                {'name': 'missing_str',
+                                 'regex': r'neighbor (?P<missing_str>\S+)'},
+                                {'name': 'missing_int',
+                                 'regex': r'neighbor (?P<missing_int>\d+)',
+                                 'type': 'int'},
+                                {'name': 'missing_list',
+                                 'regex': r'neighbor (?P<missing_list>\d+)',
+                                 'findall': True,
+                                 'type': 'list[int]'},
+                                {'name': 'explicit_bool',
+                                 'regex': r'neighbor (?P<explicit_bool>\S+)',
+                                 'type': 'bool',
+                                 'default': True}]})
+
+        execute(**self.kwargs)
+        saved = self.blitz_obj.parameters['save_variable_name']
+        self.assertEqual(steps.result, Passed)
+        self.assertEqual(saved['missing_str'], '')
+        self.assertEqual(saved['missing_int'], 0)
+        self.assertEqual(saved['missing_list'], [])
+        self.assertEqual(saved['explicit_bool'], True)
+
+    def test_execute_extract_required_missing_fails(self):
+
+        self.dev.execute = Mock(side_effect=[self.execute_extract_output])
+        steps = Steps()
+        section = self._prepare_extract_context()
+        self.kwargs.update({'device': self.dev,
+                            'steps': steps,
+                            'section': section,
+                            'command': 'cmd',
+                            'extract': [
+                                {'name': 'missing',
+                                 'regex': r'neighbor (?P<missing>\S+)',
+                                 'required': True}]})
+
+        execute(**self.kwargs)
+        self.assertEqual(steps.result, Failed)
+
+    def test_execute_extract_invalid_regex_fails(self):
+
+        self.dev.execute = Mock(side_effect=[self.execute_extract_output])
+        steps = Steps()
+        section = self._prepare_extract_context()
+        self.kwargs.update({'device': self.dev,
+                            'steps': steps,
+                            'section': section,
+                            'command': 'cmd',
+                            'extract': [
+                                {'name': 'bad_regex',
+                                 'regex': '('}]})
+
+        execute(**self.kwargs)
+        self.assertEqual(steps.result, Failed)
+
+    def test_execute_extract_non_list_fails(self):
+
+        self.dev.execute = Mock(side_effect=[self.execute_extract_output])
+        steps = Steps()
+        section = self._prepare_extract_context()
+        self.kwargs.update({'device': self.dev,
+                            'steps': steps,
+                            'section': section,
+                            'command': 'cmd',
+                            'extract': {}})
+
+        execute(**self.kwargs)
+        self.assertEqual(steps.result, Failed)
+
+    def test_execute_extract_empty_list_is_noop(self):
+
+        self.dev.execute = Mock(side_effect=[self.execute_extract_output])
+        steps = Steps()
+        section = self._prepare_extract_context()
+        self.kwargs.update({'device': self.dev,
+                            'steps': steps,
+                            'section': section,
+                            'command': 'cmd',
+                            'extract': []})
+
+        output = execute(**self.kwargs)
+        self.assertEqual(steps.result, Passed)
+        self.assertEqual(output, self.execute_extract_output)
+
+    def test_execute_extract_ambiguous_capture_group_fails(self):
+
+        self.dev.execute = Mock(side_effect=[self.execute_extract_output])
+        steps = Steps()
+        section = self._prepare_extract_context()
+        self.kwargs.update({'device': self.dev,
+                            'steps': steps,
+                            'section': section,
+                            'command': 'cmd',
+                            'extract': [
+                                {'name': 'ambiguous',
+                                 'regex': r'Peer (\S+) state (\S+)'}]})
+
+        execute(**self.kwargs)
+        self.assertEqual(steps.result, Failed)
+
+    def test_execute_extract_invalid_group_fails(self):
+
+        self.dev.execute = Mock(side_effect=[self.execute_extract_output])
+        steps = Steps()
+        section = self._prepare_extract_context()
+        self.kwargs.update({'device': self.dev,
+                            'steps': steps,
+                            'section': section,
+                            'command': 'cmd',
+                            'extract': [
+                                {'name': 'bad_group',
+                                 'regex': r'Peer (?P<peer>\S+)',
+                                 'group': 'missing'}]})
+
+        execute(**self.kwargs)
+        self.assertEqual(steps.result, Failed)
+
+    def test_execute_extract_count_bounds_fail(self):
+
+        self.dev.execute = Mock(side_effect=[self.execute_extract_output])
+        steps = Steps()
+        section = self._prepare_extract_context()
+        self.kwargs.update({'device': self.dev,
+                            'steps': steps,
+                            'section': section,
+                            'command': 'cmd',
+                            'extract': [
+                                {'name': 'too_many_peers',
+                                 'regex': r'^Peer (?P<too_many_peers>\S+)',
+                                 'findall': True,
+                                 'max_count': 2},
+                                {'name': 'too_few_peers',
+                                 'regex': r'^Peer (?P<too_few_peers>\S+)',
+                                 'findall': True,
+                                 'min_count': 4}]})
+
+        execute(**self.kwargs)
+        self.assertEqual(steps.result, Failed)
+
+    def test_execute_extract_after_scope(self):
+
+        self.dev.execute = Mock(side_effect=[self.execute_scope_output])
+        steps = Steps()
+        section = self._prepare_extract_context()
+        self.kwargs.update({'device': self.dev,
+                            'steps': steps,
+                            'section': section,
+                            'command': 'cmd',
+                            'scope': {
+                                'start': r'^Route Distinguisher: 200:1',
+                                'end': r'^Route Distinguisher: '},
+                            'extract': [
+                                {'name': 'network',
+                                 'regex': r'Network (?P<network>\S+)'}]})
+
+        output = execute(**self.kwargs)
+        saved = self.blitz_obj.parameters['save_variable_name']
+        self.assertEqual(steps.result, Passed)
+        self.assertEqual(saved['network'], '192.168.20.0/24')
+        self.assertIn('Route Distinguisher: 200:1', output)
+        self.assertNotIn('Route Distinguisher: 300:1', output)
+
+    def test_execute_extract_after_include_exclude(self):
+
+        self.dev.execute = Mock(side_effect=[self.execute_extract_output])
+        steps = Steps()
+        section = self._prepare_extract_context()
+        self.kwargs.update({'device': self.dev,
+                            'steps': steps,
+                            'section': section,
+                            'command': 'cmd',
+                            'include': ['Established'],
+                            'exclude': ['Shutdown'],
+                            'extract': [
+                                {'name': 'established_peers',
+                                 'regex': r'^Peer (?P<established_peers>\S+) state Established',
+                                 'findall': True,
+                                 'type': 'list[str]',
+                                 'unique': True,
+                                 'sort': True}]})
+
+        execute(**self.kwargs)
+        saved = self.blitz_obj.parameters['save_variable_name']
+        self.assertEqual(steps.result, Passed)
+        self.assertEqual(saved['established_peers'], ['10.0.0.1', '10.0.0.2'])
+
+    def test_execute_extract_existing_save_still_uses_action_output(self):
+
+        self.dev.execute = Mock(side_effect=[self.execute_extract_output])
+        steps = Steps()
+        section = self._prepare_extract_context()
+        self.kwargs.update({'device': self.dev,
+                            'steps': steps,
+                            'section': section,
+                            'command': 'cmd',
+                            'extract': [
+                                {'name': 'peer',
+                                 'regex': r'Peer (?P<peer>\S+)'}]})
+
+        output = execute(**self.kwargs)
+        ret_dict = {'action': 'execute', 'saved_vars': {}}
+        self.blitz_obj._filter_and_save_action_output(
+            section, ret_dict,
+            [{'variable_name': 'execute_output'}], output)
+        saved = self.blitz_obj.parameters['save_variable_name']
+        self.assertEqual(steps.result, Passed)
+        self.assertEqual(saved['peer'], '10.0.0.2')
+        self.assertIn('Peer 10.0.0.1', saved['execute_output'])
+
+    def test_execute_extract_retry_reexecutes_command(self):
+
+        self.dev.execute = Mock(side_effect=[
+            'No peers yet',
+            self.execute_extract_output])
+        steps = Steps()
+        section = self._prepare_extract_context()
+        self.kwargs.update({'device': self.dev,
+                            'steps': steps,
+                            'section': section,
+                            'command': 'cmd',
+                            'extract': [
+                                {'name': 'peer',
+                                 'regex': r'Peer (?P<peer>\S+)',
+                                 'required': True}],
+                            'max_time': 1,
+                            'check_interval': 1})
+
+        execute(**self.kwargs)
+        saved = self.blitz_obj.parameters['save_variable_name']
+        self.assertEqual(steps.result, Passed)
+        self.assertEqual(saved['peer'], '10.0.0.2')
+        self.assertEqual(self.dev.execute.call_count, 2)
 
     def test_learn(self):
 

@@ -184,6 +184,8 @@ def configure_vpdn_group(
     accept_local_name=None,
     initiate_to_entries=None,
     busy_timeout=None,
+    src_ip=None,
+    lcp_reneg_type=None,
 ):
     """Configure VPDN and optional VPDN group subcommands.
 
@@ -211,6 +213,8 @@ def configure_vpdn_group(
             Each item can be a string IP, ``(ip, priority)``, or
             ``{'ip': ip, 'priority': priority}``
         busy_timeout ('str'): Value for ``l2tp tunnel busy timeout``
+        src_ip ('str', optional): source-ip
+        lcp_reneg_typ ('str', optional): lcp renegotiation type (ie always or on-mismatch)
 
     Returns:
         None
@@ -259,6 +263,12 @@ def configure_vpdn_group(
 
     if vpdn_group_number is not None:
         cli.append("vpdn-group {group}".format(group=vpdn_group_number))
+
+        if src_ip:
+            cli.append(f'source-ip {src_ip}')
+
+        if lcp_reneg_type:
+            cli.append(f'lcp renegotiation {lcp_reneg_type}')
 
         if request_dialin:
             cli.append("request-dialin")
@@ -675,6 +685,82 @@ def unconfigure_vpdn_session_limit(device, session_limit, check_existing=True):
         ) from e
 
 
+def configure_vpdn_multihop(device, check_existing=True):
+    """Configure global VPDN multihop.
+
+    Args:
+        device ('obj'): Device object
+        check_existing ('bool', optional): When True, skip configuration if
+            the exact line already exists. Defaults to True.
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: Failed to configure VPDN multihop or retrieve
+            running-config
+    """
+
+    cli = "vpdn multihop"
+
+    if check_existing and _has_running_config_line(device, cli):
+        log.debug(
+            "%s is already configured on %s",
+            cli,
+            device.name,
+        )
+        return
+
+    try:
+        device.configure(cli)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure VPDN multihop on {device}. "
+            "Error:\n{error}".format(
+                device=getattr(device, "name", device),
+                error=e,
+            )
+        ) from e
+
+
+def unconfigure_vpdn_multihop(device, check_existing=True):
+    """Unconfigure global VPDN multihop.
+
+    Args:
+        device ('obj'): Device object
+        check_existing ('bool', optional): When True, skip unconfiguration if
+            the exact line is not present. Defaults to True.
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: Failed to unconfigure VPDN multihop or retrieve
+            running-config
+    """
+
+    cli = "vpdn multihop"
+
+    if check_existing and not _has_running_config_line(device, cli):
+        log.debug(
+            "%s is not configured on %s",
+            cli,
+            device.name,
+        )
+        return
+
+    try:
+        device.configure("no {cli}".format(cli=cli))
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfigure VPDN multihop on {device}. "
+            "Error:\n{error}".format(
+                device=getattr(device, "name", device),
+                error=e,
+            )
+        ) from e
+
+
 def configure_vpdn_group_session_limit(
     device, vpdn_group_number, session_limit, check_existing=True
 ):
@@ -876,4 +962,100 @@ def unconfigure_vpdn_l2tp_attribute_physical_channel_id(device):
         raise SubCommandFailure(
             "Failed to unconfigure vpdn l2tp attribute physical-channel-id. "
             "Error:\n{error}".format(error=e)
+        )
+
+def configure_l2tp_class(
+        device,
+        class_name,
+        auth=True,
+        hostname=None,
+        password=None,
+        ):
+    """"Configure l2tp class
+    Args:
+        device ('obj'): Device object
+        class_name ('str'): l2tp class name
+        auth ('boolean'): True to configure
+        hostname ('str'): hostname
+        password ('str'): password
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed to configure l2tp-class attribute
+    """
+
+    cmd = [f'l2tp-class {class_name}']
+
+    if auth:
+        cmd.append('authentication')
+
+    if hostname:
+        cmd.append(f'hostname {hostname}')
+
+    if password:
+        cmd.append(f'password {password}')
+
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as error:
+        raise SubCommandFailure(
+            f"Could not configure pseudowire class {class_name}. Error:\n{error}"
+        )
+
+def unconfigure_l2tp_class(
+        device,
+        class_name,
+        auth=True,
+        hostname=None,
+        password=None,
+        ):
+    """"Unconfigure l2tp class
+    Args:
+        device ('obj'): Device object
+        class_name ('str'): l2tp class name
+        auth ('boolean'): True to configure
+        hostname ('str'): hostname
+        password ('str'): password
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed to unconfigure l2tp-class attribute
+    """
+
+    cmd = [f'l2tp-class {class_name}']
+
+    if auth:
+        cmd.append('no authentication')
+
+    if hostname:
+        cmd.append(f'no hostname {hostname}')
+
+    if password:
+        cmd.append(f'no password {password}')
+
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as error:
+        raise SubCommandFailure(
+            f"Could not unconfigure pseudowire class {class_name}. Error:\n{error}"
+        )
+
+def remove_l2tp_class(device, class_name):
+    """"Configure l2tp class
+    Args:
+        device ('obj'): Device object
+        class_name ('str'): l2tp class name
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed to remove l2tp-class attribute
+    """
+
+    try:
+        device.configure(f'no l2tp-class {class_name}')
+    except SubCommandFailure as error:
+        raise SubCommandFailure(
+            f"Could not remove l2tp-class {class_name}. Error:\n{error}"
         )

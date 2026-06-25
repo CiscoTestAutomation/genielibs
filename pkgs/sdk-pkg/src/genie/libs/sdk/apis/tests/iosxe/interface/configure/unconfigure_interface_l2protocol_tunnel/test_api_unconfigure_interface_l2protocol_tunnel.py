@@ -1,35 +1,38 @@
-import os
 import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
+
 from genie.libs.sdk.apis.iosxe.interface.configure import unconfigure_interface_l2protocol_tunnel
 
 
-class TestUnconfigureInterfaceL2protocolTunnel(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          stack3-nyquist-1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: router
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['stack3-nyquist-1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigureInterfaceL2protocolTunnel(TestCase):
 
     def test_unconfigure_interface_l2protocol_tunnel(self):
-        result = unconfigure_interface_l2protocol_tunnel(self.device, 'Gi1/0/5', 'drop-threshold', 'lacp', 'point-to-point')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = unconfigure_interface_l2protocol_tunnel(
+            device,
+            "Gi1/0/5",
+            "drop-threshold",
+            "lacp",
+            "point-to-point",
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, list)
+        self.assertEqual(
+            sent_commands,
+            [
+                "interface Gi1/0/5",
+                "no l2protocol-tunnel drop-threshold point-to-point lacp",
+            ],
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

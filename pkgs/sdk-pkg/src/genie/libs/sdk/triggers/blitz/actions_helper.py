@@ -156,6 +156,7 @@ def execute_handler(step,
                     blitz_obj=None,
                     section=None,
                     ret_dict=None,
+                    extract=None,
                     **extra_kwargs):
 
     if 'reply' in extra_kwargs:
@@ -190,6 +191,7 @@ def execute_handler(step,
               'action': 'execute',
               'expected_failure': expected_failure,
               'scope': scope,
+              'extract': extract,
               'blitz_obj': blitz_obj,
               'section': section,
               'ret_dict': ret_dict,
@@ -556,6 +558,14 @@ class _ExecuteScopeNotFound(_ExecuteScopeError):
     pass
 
 
+class _ExecuteExtractError(Exception):
+    pass
+
+
+class _ExecuteExtractRetryable(_ExecuteExtractError):
+    pass
+
+
 def _get_scope_mode(scope):
     if not isinstance(scope, dict):
         raise _ExecuteScopeError("'scope' must be a dictionary")
@@ -822,6 +832,302 @@ def _first_missing_index(matched_indexes, length):
     return 0
 
 
+def _normalize_extract_bool(rule, field, default=False):
+    value = rule.get(field, default)
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        value = value.strip().lower()
+        if value in ('true', 'yes', 'on', '1'):
+            return True
+        if value in ('false', 'no', 'off', '0'):
+            return False
+    raise _ExecuteExtractError(
+        "Execute extract rule '{}' field '{}' must be boolean".format(
+            rule.get('name'), field))
+
+
+def _normalize_extract_count(rule, field):
+    value = rule.get(field)
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        raise _ExecuteExtractError(
+            "Execute extract rule '{}' field '{}' must be an integer".format(
+                rule.get('name'), field))
+    try:
+        value = int(value)
+    except (TypeError, ValueError):
+        raise _ExecuteExtractError(
+            "Execute extract rule '{}' field '{}' must be an integer".format(
+                rule.get('name'), field))
+    if value < 0:
+        raise _ExecuteExtractError(
+            "Execute extract rule '{}' field '{}' cannot be negative".format(
+                rule.get('name'), field))
+    return value
+
+
+def _normalize_extract_group(group):
+    if group is None:
+        return None
+    if isinstance(group, bool):
+        raise _ExecuteExtractError(
+            "Execute extract group must be a name or integer")
+    if isinstance(group, int):
+        return group
+
+    group = str(group)
+    if not group:
+        raise _ExecuteExtractError(
+            "Execute extract group must be a name or integer")
+    if group.isdigit():
+        return int(group)
+    return group
+
+
+def _normalize_extract_type(rule):
+    value = str(rule.get('type', 'str')).strip().lower()
+    list_match = re.fullmatch(r'list\[(str|int|float|bool)\]', value)
+    if list_match:
+        if not rule['findall']:
+            raise _ExecuteExtractError(
+                "Execute extract rule '{}' type '{}' requires findall: true"
+                .format(rule['name'], value))
+        return list_match.group(1), True
+
+    if value in ('str', 'int', 'float', 'bool'):
+        return value, False
+
+    raise _ExecuteExtractError(
+        "Execute extract rule '{}' has unsupported type '{}'".format(
+            rule['name'], value))
+
+
+def _normalize_extract_rules(extract):
+    if extract is None or extract == []:
+        return []
+    if not isinstance(extract, list):
+        raise _ExecuteExtractError("Execute extract must be a list")
+
+    rules = []
+    names = set()
+    for index, raw_rule in enumerate(extract):
+        if not isinstance(raw_rule, dict):
+            raise _ExecuteExtractError(
+                "Execute extract rule at index {} must be a dictionary"
+                .format(index))
+
+        name = raw_rule.get('name')
+        if not isinstance(name, str) or not name:
+            raise _ExecuteExtractError(
+                "Execute extract rule at index {} must define a name"
+                .format(index))
+        if name in names:
+            raise _ExecuteExtractError(
+                "Execute extract rule name '{}' is duplicated".format(name))
+        names.add(name)
+
+        regex = raw_rule.get('regex')
+        if regex is None or not str(regex):
+            raise _ExecuteExtractError(
+                "Execute extract rule '{}' must define a regex".format(name))
+        try:
+            pattern = re.compile(str(regex), re.MULTILINE)
+        except re.error as exc:
+            raise _ExecuteExtractError(
+                "Invalid execute extract regex for '{}': {}".format(
+                    name, exc))
+
+        rule = dict(raw_rule)
+        rule['name'] = name
+        rule['pattern'] = pattern
+        rule['findall'] = _normalize_extract_bool(
+            raw_rule, 'findall', False)
+        rule['required'] = _normalize_extract_bool(
+            raw_rule, 'required', False)
+        rule['unique'] = _normalize_extract_bool(raw_rule, 'unique', False)
+        rule['sort'] = _normalize_extract_bool(raw_rule, 'sort', False)
+        rule['base_type'], explicit_list_type = _normalize_extract_type(rule)
+        rule['list_output'] = rule['findall'] or explicit_list_type
+        rule['group'] = _normalize_extract_group(raw_rule.get('group'))
+        rule['min_count'] = _normalize_extract_count(raw_rule, 'min_count')
+        rule['max_count'] = _normalize_extract_count(raw_rule, 'max_count')
+        if (rule['min_count'] is not None and rule['max_count'] is not None
+                and rule['min_count'] > rule['max_count']):
+            raise _ExecuteExtractError(
+                "Execute extract rule '{}' min_count cannot exceed max_count"
+                .format(name))
+
+        save_as = raw_rule.get('save_as', name)
+        if not isinstance(save_as, str) or not save_as:
+            raise _ExecuteExtractError(
+                "Execute extract rule '{}' save_as must be a non-empty string"
+                .format(name))
+        rule['save_as'] = save_as
+        rule['has_default'] = 'default' in raw_rule
+        rule['default'] = raw_rule.get('default')
+        rules.append(rule)
+
+    return rules
+
+
+def _has_execute_extract(extract):
+    return extract is not None and extract != []
+
+
+def _select_extract_match_value(rule, match):
+    try:
+        if rule['group'] is not None:
+            return match.group(rule['group'])
+        if rule['name'] in match.groupdict():
+            return match.group(rule['name'])
+        if rule['pattern'].groups == 1:
+            return match.group(1)
+        if rule['pattern'].groups == 0:
+            return match.group(0)
+    except (IndexError, KeyError):
+        raise _ExecuteExtractError(
+            "Execute extract rule '{}' references an invalid group '{}'"
+            .format(rule['name'], rule['group']))
+
+    raise _ExecuteExtractError(
+        "Execute extract rule '{}' has ambiguous capture groups; set 'group'"
+        .format(rule['name']))
+
+
+def _coerce_extract_value(rule, value):
+    base_type = rule['base_type']
+    try:
+        if base_type == 'str':
+            return '' if value is None else str(value)
+        if base_type == 'int':
+            return int(value)
+        if base_type == 'float':
+            return float(value)
+        if base_type == 'bool':
+            if isinstance(value, bool):
+                return value
+            if isinstance(value, (int, float)) and value in (0, 1):
+                return bool(value)
+            value_str = str(value).strip().lower()
+            if value_str in ('true', 'yes', 'on', '1'):
+                return True
+            if value_str in ('false', 'no', 'off', '0'):
+                return False
+    except (TypeError, ValueError):
+        pass
+
+    raise _ExecuteExtractError(
+        "Execute extract rule '{}' could not coerce value '{}' to {}"
+        .format(rule['name'], value, base_type))
+
+
+def _default_extract_value(rule):
+    if rule['has_default']:
+        default = rule['default']
+        if rule['list_output']:
+            if isinstance(default, (list, tuple)):
+                values = list(default)
+            else:
+                values = [default]
+            return [_coerce_extract_value(rule, value) for value in values]
+        return _coerce_extract_value(rule, default)
+
+    if rule['list_output']:
+        return []
+    if rule['base_type'] == 'str':
+        return ''
+    if rule['base_type'] == 'int':
+        return 0
+    if rule['base_type'] == 'float':
+        return 0.0
+    return False
+
+
+def _deduplicate_extract_values(values):
+    deduplicated = []
+    seen = set()
+    for value in values:
+        if value in seen:
+            continue
+        seen.add(value)
+        deduplicated.append(value)
+    return deduplicated
+
+
+def _check_extract_count(rule, count):
+    min_count = rule['min_count']
+    max_count = rule['max_count']
+
+    if min_count is not None and count < min_count:
+        raise _ExecuteExtractRetryable(
+            "Execute extract rule '{}' found {} matches, fewer than min_count {}"
+            .format(rule['name'], count, min_count))
+    if max_count is not None and count > max_count:
+        raise _ExecuteExtractRetryable(
+            "Execute extract rule '{}' found {} matches, more than max_count {}"
+            .format(rule['name'], count, max_count))
+
+
+def _evaluate_extract_rule(rule, output):
+    matches = list(rule['pattern'].finditer(output))
+    count = len(matches)
+
+    if count == 0 and rule['required']:
+        raise _ExecuteExtractRetryable(
+            "Execute extract rule '{}' found no matches".format(rule['name']))
+
+    _check_extract_count(rule, count)
+
+    if count == 0:
+        return _default_extract_value(rule)
+
+    if rule['list_output']:
+        values = [
+            _select_extract_match_value(rule, match)
+            for match in matches
+        ]
+        values = [_coerce_extract_value(rule, value) for value in values]
+        if rule['unique']:
+            values = _deduplicate_extract_values(values)
+        if rule['sort']:
+            try:
+                values = sorted(values)
+            except TypeError as exc:
+                raise _ExecuteExtractError(
+                    "Execute extract rule '{}' could not sort values: {}"
+                    .format(rule['name'], exc))
+        return values
+
+    value = _select_extract_match_value(rule, matches[0])
+    return _coerce_extract_value(rule, value)
+
+
+def _apply_execute_extract(output,
+                           extract,
+                           blitz_obj=None,
+                           section=None,
+                           ret_dict=None):
+    rules = _normalize_extract_rules(extract)
+    if not rules:
+        return {}
+
+    output = '' if output is None else str(output)
+    saved_values = {}
+    for rule in rules:
+        saved_values[rule['save_as']] = _evaluate_extract_rule(rule, output)
+
+    for save_as, value in saved_values.items():
+        if blitz_obj and section:
+            save_variable(blitz_obj, section, save_as, value)
+        if ret_dict is not None:
+            ret_dict.setdefault('saved_vars', {})
+            ret_dict['saved_vars'].update({save_as: value})
+
+    return saved_values
+
+
 def _output_query_template(output,
                            steps,
                            device,
@@ -841,7 +1147,8 @@ def _output_query_template(output,
                            blitz_obj=None,
                            section=None,
                            ret_dict=None,
-                           extra_kwargs=None):
+                           extra_kwargs=None,
+                           extract=None):
 
     if not extra_kwargs:
         extra_kwargs = {}
@@ -1008,8 +1315,92 @@ def _output_query_template(output,
     if action == 'execute' and scope:
         output = scoped_output
 
+    if action == 'execute' and _has_execute_extract(extract):
+        step_msg = "Apply execute extract to the output"
+        send_cmd = False
+        step_result = Failed
+        message = ''
+        extract_timeout = Timeout(max_time, check_interval)
+
+        with steps.start(step_msg, continue_=continue_) as substep:
+            while True:
+                extract_output = output
+                if send_cmd:
+                    try:
+                        extract_output = _send_command(
+                            command,
+                            device,
+                            action,
+                            arguments=arguments,
+                            rest_device_alias=rest_device_alias,
+                            **extra_kwargs)
+                    except SchemaEmptyParserError:
+                        extract_output = ''
+
+                    if scope:
+                        try:
+                            extract_output, _, _ = _apply_execute_scope(
+                                extract_output,
+                                scope,
+                                blitz_obj=blitz_obj,
+                                section=section,
+                                ret_dict=ret_dict)
+                        except _ExecuteScopeNotFound as exc:
+                            step_result = Failed
+                            message = str(exc)
+                            send_cmd = True
+                            extract_timeout.sleep()
+                            if not extract_timeout.iterate():
+                                break
+                            continue
+                        except _ExecuteScopeError as exc:
+                            substep.failed(str(exc))
+                            return output
+
+                try:
+                    saved_values = _apply_execute_extract(
+                        extract_output,
+                        extract,
+                        blitz_obj=blitz_obj,
+                        section=section,
+                        ret_dict=ret_dict)
+                    step_result = Passed
+                    message = "Execute extract saved variable(s): {}".format(
+                        ', '.join(saved_values.keys()))
+                    output = extract_output
+                except _ExecuteExtractRetryable as exc:
+                    step_result = Failed
+                    message = str(exc)
+                except _ExecuteExtractError as exc:
+                    substep.failed(str(exc))
+                    return output
+
+                if step_result == Passed:
+                    if expected_failure:
+                        substep.failed(
+                            '{} did not failed as expected, the step test '
+                            'result is set as failed'.format(action))
+                    else:
+                        substep.passed(message)
+                    break
+
+                send_cmd = True
+                extract_timeout.sleep()
+                if not extract_timeout.iterate():
+                    break
+
+            if step_result == Failed:
+                if expected_failure:
+                    substep.passed(
+                        '{} failed as expected, the step test result is set '
+                        'as passed'.format(action))
+                else:
+                    substep.failed(message)
+
     # If no keys, if expected failure, steps results has to be reversed
-    if not keys and expected_failure and not (action == 'execute' and scope):
+    if (not keys and expected_failure
+            and not (action == 'execute'
+                     and (scope or _has_execute_extract(extract)))):
         if steps.result == Passed:
             steps.failed(
                     '{} did not failed as expected, the step test result is set as failed'

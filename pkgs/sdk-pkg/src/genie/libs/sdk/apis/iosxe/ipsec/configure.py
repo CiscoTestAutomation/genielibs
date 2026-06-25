@@ -1379,3 +1379,21 @@ def configure_crypto_mib_ipsec_flowmib_history_failure_size(device, size):
         device.configure(configs)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure {cfg_cmd} on device {device.name}. Error: {e}")
+
+
+def clear_crypto_cryptotype(device, cryptotype):
+    """ Clears crypto for specified type
+        Args:
+            device (`obj`): Device object
+            cryptotype ('str'): Crypto type to clear
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f"clear crypto {cryptotype}"
+
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to execute {cmd} on device {device.name}. Error: {e}") from e

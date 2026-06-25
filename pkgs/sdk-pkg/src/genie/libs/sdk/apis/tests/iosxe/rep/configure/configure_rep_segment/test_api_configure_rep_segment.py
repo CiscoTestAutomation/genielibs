@@ -1,18 +1,45 @@
-from unittest import TestCase
-from genie.libs.sdk.apis.iosxe.rep.configure import configure_rep_segment
+import unittest
 from unittest.mock import Mock
+from genie.libs.sdk.apis.iosxe.rep.configure import (
+    configure_rep_segment
+)
 
 
-class TestConfigureRepSegment(TestCase):
+class TestConfigureRepSegment(unittest.TestCase):
 
     def test_configure_rep_segment(self):
-        self.device = Mock()
-        result = configure_rep_segment(self.device, ['Gi1/6', 'Gi1/7'], '25', True, False, False, False)
-        self.assertEqual(
-            self.device.configure.mock_calls[0].args,
-            (['interface Gi1/6', 'switchport mode trunk', 'rep segment 25', 'shut', 'no shut', 'switchport trunk allowed vlan True', 'vlan True'],)
+        device = Mock()
+
+        result = configure_rep_segment(
+            device,
+            ['Gi1/6', 'Gi1/7'],
+            '25',
+            True,
+            False,
+            False,
+            False
         )
+
+        self.assertEqual(result, None)
+
         self.assertEqual(
-            self.device.configure.mock_calls[1].args,
-            (['interface Gi1/7', 'switchport mode trunk', 'rep segment 25', 'shut', 'no shut', 'switchport trunk allowed vlan True', 'vlan True'],)
+            device.configure.mock_calls[0].args,
+            (['interface Gi1/6',
+              'switchport mode trunk',
+              'rep segment 25',
+              'shut',
+              'no shut',
+              'switchport trunk allowed vlan True',
+              'vlan True'],)
+        )
+
+        self.assertEqual(
+            device.configure.mock_calls[1].args,
+            (['interface Gi1/7',
+              'switchport mode trunk',
+              'rep segment 25',
+              'shut',
+              'no shut',
+              'switchport trunk allowed vlan True',
+              'vlan True'],)
         )

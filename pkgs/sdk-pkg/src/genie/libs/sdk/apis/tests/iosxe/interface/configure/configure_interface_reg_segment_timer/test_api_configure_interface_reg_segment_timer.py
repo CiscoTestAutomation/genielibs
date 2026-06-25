@@ -1,34 +1,31 @@
 import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
+
 from genie.libs.sdk.apis.iosxe.interface.configure import configure_interface_reg_segment_timer
 
 
-class TestConfigureInterfaceRegSegmentTimer(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = """
-        devices:
-          fr1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: single_rp
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['fr1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureInterfaceRegSegmentTimer(TestCase):
 
     def test_configure_interface_reg_segment_timer(self):
-        result = configure_interface_reg_segment_timer(self.device, 'Gi1/0/3', '2000')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = configure_interface_reg_segment_timer(
+            device,
+            "Gi1/0/3",
+            "2000",
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, list)
+        self.assertIn("interface Gi1/0/3", sent_commands)
+        self.assertIn("rep lsl-age-timer 2000", sent_commands)
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -1,35 +1,38 @@
-import os
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.interface.configure import unconfigure_interface_rep_segment_edge_preferred
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.interface.configure import unconfigure_interface_reg_segment
 
 
-class TestUnconfigureInterfaceRepSegmentEdgePreferred(unittest.TestCase):
+class TestUnconfigureInterfaceRegSegment(TestCase):
 
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          IR_DBS_IE3400_1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: switch
-            type: switch
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['IR_DBS_IE3400_1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
+    def test_unconfigure_interface_reg_segment_edge_preferred(self):
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = unconfigure_interface_reg_segment(
+            device,
+            "GigabitEthernet1/1",
+            1,
+            False,
+            True,
         )
 
-    def test_unconfigure_interface_rep_segment_edge_preferred(self):
-        result = unconfigure_interface_rep_segment_edge_preferred(self.device, 'GigabitEthernet1/1', '1')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, list)
+        self.assertEqual(
+            sent_commands,
+            [
+                "interface GigabitEthernet1/1",
+                "no rep segment 1 preferred",
+            ],
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

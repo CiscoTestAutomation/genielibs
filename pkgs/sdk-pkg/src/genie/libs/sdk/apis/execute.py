@@ -7,6 +7,7 @@ import time
 import logging
 import json
 import functools
+import signal
 
 # pyATS
 from pyats.async_ import pcall
@@ -14,13 +15,16 @@ from pyats.async_ import pcall
 # Genie
 from genie.utils import Dq
 from genie.utils.timeout import Timeout
-from genie.libs.sdk.apis.utils import get_power_cyclers
+from genie.libs.sdk.apis.utils import get_power_cycler_configs
+from genie.libs.sdk.powercycler.base import PowerCycler
 
 # Unicon
 from unicon.eal.dialogs import Statement, Dialog
 
 # Logger
 log = logging.getLogger(__name__)
+
+POWER_CYCLER_STATE_CHANGE_TIMEOUT = 600
 
 
 def execute_clear_line(device, alias: str = 'cli', disconnect_termserver: bool = True):
@@ -96,22 +100,10 @@ def execute_power_off_device(device):
     Returns:
         None
     '''
-    pcs = get_power_cyclers(device)
-
-    # Turn power cyclers off
-    for pc, outlets in pcs:
-        try:
-            device.api.change_power_cycler_state(
-                powercycler=pc, state='off', outlets=outlets)
-        except Exception as e:
-            raise Exception(f"Failed to powercycle device off:\n{repr(e)}")
-
-        log.debug(f"Powercycled device '{device.name}' to 'off' state")
-
-    # Disconnect from proxy
-    for pc, outlets in pcs:
-        if pc.proxy_dev and pc.proxy_dev.connected:
-            pc.proxy_dev.disconnect()
+    _change_power_cycler_configs_state(
+        device,
+        get_power_cycler_configs(device),
+        'off')
 
 
 def execute_power_on_device(device):
@@ -127,22 +119,134 @@ def execute_power_on_device(device):
         None
     '''
 
-    pcs = get_power_cyclers(device)
+    _change_power_cycler_configs_state(
+        device,
+        get_power_cycler_configs(device),
+        'on')
 
-    # Turn power cyclers on
-    for pc, outlets in pcs:
+
+def _format_powercycler_target(powercycler, outlets):
+    """Return a compact target description for powercycler errors."""
+    return "host={!r}, type={!r}, outlets={!r}".format(
+        powercycler.get('host') if isinstance(powercycler, dict)
+        else getattr(powercycler, 'host', None),
+        powercycler.get('type') if isinstance(powercycler, dict)
+        else getattr(powercycler, 'type', None),
+        outlets)
+
+
+def _disconnect_powercycler(powercycler):
+    """Disconnect a powercycler and its proxy, if any."""
+    try:
+        powercycler.disconnect()
+    except Exception as e:
+        log.debug(f"Failed to disconnect from powercycler. {e}")
+
+    proxy_dev = getattr(powercycler, 'proxy_dev', None)
+    if proxy_dev and proxy_dev.connected:
         try:
-            device.api.change_power_cycler_state(
-                powercycler=pc, state='on', outlets=outlets)
+            proxy_dev.disconnect()
         except Exception as e:
-            raise Exception(f"Failed to powercycle device on:\n{repr(e)}")
+            log.debug(f"Failed to disconnect from powercycler proxy. {e}")
 
-        log.debug(f"Powercycled device '{device.name}' to 'on' state")
 
-    # Disconnect from proxy
-    for pc, outlets in pcs:
-        if pc.proxy_dev and pc.proxy_dev.connected:
-            pc.proxy_dev.disconnect()
+def _build_powercycler(power_cycler, holder=None):
+    """Build a powercycler and keep a cleanup reference during init."""
+    if (getattr(PowerCycler, '__module__', None) ==
+            'genie.libs.sdk.powercycler.base' and
+            getattr(PowerCycler, '__name__', None) == 'PowerCycler'):
+        pc = PowerCycler.__new__(PowerCycler, **power_cycler)
+        if holder is not None:
+            holder['powercycler'] = pc
+        pc.__init__(**power_cycler)
+        return pc
+    return PowerCycler(**power_cycler)
+
+
+def _change_power_cycler_config_state(
+        device_name, power_cycler, outlets, state, timeout=None):
+    """Build one powercycler object and change its state."""
+    pc = None
+    holder = {}
+    previous_alarm_handler = None
+    previous_alarm_timer = None
+    alarm_set = False
+
+    def timeout_handler(signum, frame):
+        raise TimeoutError(
+            "timed out after {} seconds".format(timeout))
+
+    try:
+        if timeout:
+            try:
+                previous_alarm_handler = signal.getsignal(signal.SIGALRM)
+                previous_alarm_timer = signal.getitimer(signal.ITIMER_REAL)
+                signal.signal(signal.SIGALRM, timeout_handler)
+                signal.setitimer(signal.ITIMER_REAL, timeout)
+                alarm_set = True
+            except (AttributeError, ValueError):
+                log.debug("Powercycler worker timeout is only supported in "
+                          "the main thread")
+        pc = _build_powercycler(power_cycler, holder)
+        if state == 'on':
+            pc.on(*outlets)
+        elif state == 'off':
+            pc.off(*outlets)
+        else:
+            raise Exception("Invalid state provided for powercycler\n"
+                            "Acceptable states are 'on' or 'off'")
+    except Exception as e:
+        return "{} failed: {!r}".format(
+            _format_powercycler_target(power_cycler, outlets), e)
+    finally:
+        if alarm_set:
+            signal.setitimer(signal.ITIMER_REAL, *previous_alarm_timer)
+            signal.signal(signal.SIGALRM, previous_alarm_handler)
+        pc = pc or holder.get('powercycler')
+        if pc is not None:
+            _disconnect_powercycler(pc)
+
+    log.debug(f"Powercycled device '{device_name}' to '{state}' state")
+
+
+def _change_power_cycler_configs_state(device, pcs, state, timeout=None):
+    """Change all power cyclers to the requested state.
+
+    A single powercycler keeps the historical synchronous behavior. Multiple
+    configured powercyclers are handled with pyATS pcall so each target PDU is
+    built, connected, power-cycled, and disconnected in its own worker process.
+    Timeout handling is passed into each worker instead of pcall so worker
+    cleanup can run before the worker returns.
+    """
+    if timeout is None:
+        timeout = POWER_CYCLER_STATE_CHANGE_TIMEOUT
+
+    if len(pcs) <= 1:
+        errors = [
+            _change_power_cycler_config_state(
+                device.name, power_cycler, outlets, state)
+            for power_cycler, outlets in pcs
+        ]
+    else:
+        ikwargs = [
+            {
+                'device_name': device.name,
+                'power_cycler': power_cycler,
+                'outlets': outlets,
+                'state': state,
+                'timeout': timeout,
+            }
+            for power_cycler, outlets in pcs
+        ]
+
+        errors = pcall(
+            _change_power_cycler_config_state,
+            ikwargs=ikwargs)
+
+    errors = [error for error in errors if error]
+    if errors:
+        raise Exception("Failed to powercycle device {}:\n{}".format(
+            state, "\n".join(errors)))
 
 
 def execute_power_cycle_device(device, delay=30, destroy=True):
@@ -188,10 +292,7 @@ def change_power_cycler_state(device, powercycler, state, outlets):
             None
     '''
 
-    # Verify valid state given
-    try:
-        assert state in ['on', 'off']
-    except AssertionError:
+    if state not in ['on', 'off']:
         raise Exception("Invalid state provided for powercycler\n"
                         "Acceptable states are 'on' or 'off'")
     if state == 'on':
@@ -200,10 +301,7 @@ def change_power_cycler_state(device, powercycler, state, outlets):
         powercycler.off(*outlets)
 
     # Disconnect from powercycler.
-    try:
-        powercycler.disconnect()
-    except Exception as e:
-        log.debug(f"Failed to disconnect from powercycler. {e}")
+    _disconnect_powercycler(powercycler)
 
 
 

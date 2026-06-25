@@ -31,6 +31,9 @@ class TestConfigureManagement(unittest.TestCase):
             init_exec_commands=[]
         )
 
+    def setUp(self):
+        self.device.api.configure_management_master_key = Mock(return_value=True)
+
     def test_configure_management(self):
         result = configure_management(self.device)
         expected_output = None
@@ -225,6 +228,7 @@ class TestConfigureManagement(unittest.TestCase):
         self.assertEqual(device.management['vlan'], 100)
 
         # Mock the API methods
+        device.api.configure_management_master_key = Mock(return_value=True)
         device.api.configure_management_vrf = Mock()
         device.api.configure_management_ip = Mock()
         device.api.configure_interface_switchport_trunk = Mock()
@@ -308,6 +312,7 @@ class TestConfigureManagement(unittest.TestCase):
 
         self.assertEqual(device.management['media_type'], 'sfp')
 
+        device.api.configure_management_master_key = Mock(return_value=True)
         device.api.configure_management_vrf = Mock()
         device.api.configure_management_ip = Mock()
         device.api.configure_dual_port_interface_media_type = Mock()

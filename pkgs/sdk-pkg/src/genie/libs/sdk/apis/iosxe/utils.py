@@ -2346,3 +2346,80 @@ def sweep_ping(device, addr, proto="ip",
                   f"expected min success rate is {expected_min_success_rate}")
 
     return sweep_result_flag
+
+
+def hw_module_session(device, subslot, uname=False, exit=True, command=None, timeout=None):
+    '''
+    Execute hw-module session command to access module shell
+    Args:
+        device ('obj'): Device object
+        subslot ('str'): Subslot identifier (e.g., '1/0')
+        uname ('bool', optional): To execute uname -s in shell. Default is False.
+        exit ('bool', optional): To exit from session prompt. Default is True.
+        command ('str' or 'list', optional): command(s) to execute in session prompt
+        timeout ('int', optional): Timeout in seconds for waiting for the console. Default is None.
+
+    Returns:
+        output('str'): shell execution output
+    Raises:
+        SubCommandFailure
+    '''
+    if command:
+        if isinstance(command, str):
+            command = [command]
+        command_list = command
+
+    cmd = f'hw-module session {subslot}'
+    output = ""
+    try:
+        log.debug(f'Opening hw-module session for subslot {subslot}')
+        # Enter hw-module session
+        device.transmit(f"\n{cmd}\r")
+        device.receive('nopattern^')
+        session_output = device.receive_buffer().strip()
+        output += session_output
+
+        if 'Terminal ready' not in session_output:
+            raise SubCommandFailure('Unable to enter hw-module session')
+
+        log.debug('Open session successful')
+
+        # Execute uname if requested
+        if uname:
+            device.transmit("uname -s\r")
+            device.receive('nopattern^')
+            uname_output = device.receive_buffer().strip()
+            output += "\n" + uname_output
+
+            if 'Linux' not in uname_output:
+                raise SubCommandFailure('Unable to get kernel OS')
+
+            log.info('Got Kernel OS')
+
+        # Execute additional commands if provided
+        if command:
+            for cmd in command_list:
+                device.transmit(f"{cmd}\r")
+                device.receive('nopattern^')
+                cmd_output = device.receive_buffer().strip()
+                output += "\n" + cmd_output
+
+        # Exit session if requested
+        if exit:
+            # Send Ctrl+A followed by Ctrl+Q to exit picocom
+            device.transmit("\001")  # Ctrl+A
+            device.transmit("\021")  # Ctrl+Q
+
+            device.receive('nopattern^')
+            exit_output = device.receive_buffer().strip()
+            output += "\n" + exit_output
+
+            if 'Thanks for using picocom' not in exit_output:
+                raise SubCommandFailure('Unable to close session')
+
+            log.debug('Close session successful')
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to execute hw-module session for subslot {subslot}. Error:\n{e}")
+
+    return output

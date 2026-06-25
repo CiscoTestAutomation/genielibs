@@ -704,6 +704,67 @@ def copy_startup_config_to_flash_memory(device, timeout):
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not copy saved configuration on {device}. Error:\n{e}")
 
+def copy_startup_config_to_scp(device, host, file, username, password, timeout=120):
+    """Secure replacement: copy startup configuration using SCP.
+
+    Args:
+        device ('obj'): Device object
+        host ('str'): SCP server IP/hostname
+        file ('str'): Remote path + filename
+        timeout ('int', optional): Command timeout (default 120 seconds)
+        username ('str'): SCP username (required)
+        password ('str'): SCP password (required)
+
+    Returns:
+        None
+    Raises:
+        ValueError: If username is not provided for secure SCP copy.
+        SubCommandFailure: If the device returns an error (%Error/Invalid input)
+                           or fails to execute the copy command.
+    """
+    if not username:
+        raise ValueError("username is required for secure SCP copy")
+
+    log.debug("copy startup configuration to SCP (secure)")
+
+    dialog = Dialog([
+        Statement(
+            pattern=r'.*Address or name of remote host.*',
+            action='sendline()',
+            loop_continue=True,
+            continue_timer=False
+        ),
+        Statement(
+            pattern=r'.*Destination username.*',     
+            action='sendline()',
+            loop_continue=True,
+            continue_timer=False
+        ),
+        Statement(
+            pattern=r'.*Destination filename.*',
+            action='sendline()',
+            loop_continue=True,
+            continue_timer=False
+        ),
+        Statement(
+            pattern=r'.*Password:',
+            # action=f'sendline({password})',
+            # action = "sendline({pw})".format(pw=password),
+            action=lambda spawn, session, password=password: spawn.sendline(password),
+            loop_continue=True,
+            continue_timer=False
+        ),
+    ])
+
+    cmd = f"copy startup-config scp://{username}@{host}//{file}"
+    try:
+        device.execute(cmd, reply=dialog, timeout=timeout,
+                       error_pattern=[r".*%Error.*", r".*Invalid input.*"])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not copy startup configuration using SCP. Error:\n{e}"
+        )
+
 def copy_startup_config_to_tftp(device, host, file, timeout=30):
     """ Copy startup configuration to tftp location
 
@@ -738,6 +799,66 @@ def copy_startup_config_to_tftp(device, host, file, timeout=30):
         device.execute(cmd,reply=dialog, timeout=timeout)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not copy startup configuration on tftp. Error:\n{e}")
+
+def copy_running_config_to_scp(device, host, file, username, password, timeout=120):
+    """Secure replacement: copy running configuration using SCP.
+
+    Args:
+        device ('obj'): Device object
+        host ('str'): SCP server IP/hostname
+        file ('str'): Remote path + filename
+        timeout ('int', optional): Command timeout
+        username ('str'): SCP username (required)
+        password ('str'): SCP password (required)
+
+    Returns:
+        None
+    Raises:
+        ValueError: If username is not provided for secure SCP copy.
+        SubCommandFailure: If the device returns an error (%Error/Invalid input)
+                           or fails to execute the copy command.
+    """
+    if not username :
+        raise ValueError("username is required for secure SCP copy")
+
+    log.debug("copy running configuration to SCP (secure)")
+
+    dialog = Dialog([
+        Statement(
+            pattern=r'.*(Address or name of remote host).*',
+            action='sendline()',
+            loop_continue=True,
+            continue_timer=False
+        ),
+        Statement(
+            pattern=r'.*Destination username.*',
+            action='sendline()',
+            loop_continue=True,
+            continue_timer=False
+        ),
+        Statement(
+            pattern=r'.*Destination filename.*',
+            action='sendline()',
+            loop_continue=True,
+            continue_timer=False
+        ),
+        Statement(
+            pattern=r'.*Password:',
+            action=lambda spawn, session, password=password: spawn.sendline(password),
+            loop_continue=True,
+            continue_timer=False
+        ),
+
+    ])
+    
+    cmd = f"copy running-config scp://{username}@{host}//{file}"
+    try:
+        device.execute(cmd, reply=dialog, timeout=timeout,
+                       error_pattern=[r".*%Error.*", r".*Invalid input.*"])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not copy running configuration using SCP. Error:\n{e}"
+        )
 
 def copy_running_config_to_tftp(device, host, file, timeout=30):
     """ Copy running configuration to tftp location
@@ -1330,7 +1451,7 @@ def configure_system_disable_password_recovery_switch_all(device, switch=True, s
 
 def unconfigure_system_disable_password_recovery_switch_all(device, switch=True, switch_number=None):
     """ Enables password recovery on the switch
-        Example: no system disable password recovery switch all
+        Example: no system disable password recovery switch all secure
 
         Args:
             device('obj'): device to configure on
@@ -1350,13 +1471,13 @@ def unconfigure_system_disable_password_recovery_switch_all(device, switch=True,
 
     if switch==True and switch_number==None:
         log.info(f"Enables password recovery switch all on {device.name}")
-        config = 'no system disable password recovery switch all'
+        config = 'no system disable password recovery switch all secure'
     elif switch==True and switch_number:
         log.info(f"Enable password recovery switch {switch_number} on {device.name}")
-        config = f'no system disable password recovery switch {switch_number}'
+        config = f'no system disable password recovery switch {switch_number} secure'
     else:
         log.info(f"Enable password recovery on {device.name}")
-        config = 'no system disable password recovery'
+        config = 'no system disable password recovery secure'
     try:
         device.configure(config)
     except SubCommandFailure as e:
@@ -7023,6 +7144,103 @@ def unconfigure_ipv6_local_pool(device,name):
         )
 
 
+def configure_power_redundancy(device, switch_number, mode, power_type, slot):
+    """
+    Configures power redundancy mode on a specific switch.
+
+    Args:
+        device: The device object to configure.
+        switch_number (int): Switch number.
+        mode (str): Redundancy mode.
+        power_type (str): Power type.
+        slot (str): Slot identifier.
+
+    Raises:
+        SubCommandFailure: If configuration fails.
+    """
+    cmd = f"power redundancy-mode switch {switch_number} {mode} {power_type} {slot}"
+    try:
+        device.configure(cmd)
+        log.debug(f"Configured power redundancy mode on switch {switch_number}")
+    except SubCommandFailure as e:
+        log.error(f"Failed to configure power redundancy mode on switch {switch_number}: {e}")
+        raise
+
+def unconfigure_power_redundancy(device, switch_number, mode, power_type, slot):
+    """
+    Removes power redundancy mode configuration from a specific switch.
+
+    Args:
+        device: The device object to configure.
+        switch_number (int): Switch number.
+        mode (str): Redundancy mode.
+        power_type (str): Power type.
+        slot (str): Slot identifier.
+
+    Raises:
+        SubCommandFailure: If unconfiguration fails.
+    """
+    cmd = f"no power redundancy-mode switch {switch_number} {mode} {power_type} {slot}"
+    try:
+        device.configure(cmd)
+        log.debug(f"Unconfigured power redundancy mode on switch {switch_number}")
+    except SubCommandFailure as e:
+        log.error(f"Failed to unconfigure power redundancy mode on switch {switch_number}: {e}")
+        raise
+
+def configure_service_unsupported_transceiver(device):
+    """ Configure 'service unsupported-transceiver' on the device
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = "service unsupported-transceiver"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure 'service unsupported-transceiver' on device {device}. Error:\n{e}"
+        )
+    
+def unconfigure_service_unsupported_transceiver(device):
+    """ Unconfigure 'service unsupported-transceiver' on the device
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = "no service unsupported-transceiver"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure 'service unsupported-transceiver' on device {device}. Error:\n{e}"
+        )
+
+def unconfigure_license_boot_mode(device):
+    """ Unconfigure 'license boot mode' on the device
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = "no license boot mode"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure 'license boot mode' on device {device}. Error:\n{e}"
+        )
+
+
 def configure_platform_filesystem_harddisk_offline(device):
     """ request platform hardware filesystem harddisk: offline
         Args:
@@ -7032,7 +7250,6 @@ def configure_platform_filesystem_harddisk_offline(device):
         Raises:
             SubCommandFailure
     """
-
     cfg_cmd = 'request platform hardware filesystem harddisk: offline'
     try:
         device.configure(cfg_cmd)
@@ -7051,7 +7268,6 @@ def configure_platform_filesystem_harddisk_online(device):
         Raises:
             SubCommandFailure
     """
-
     cfg_cmd = 'request platform hardware filesystem harddisk: online'
     try:
         device.configure(cfg_cmd)

@@ -40,6 +40,7 @@ from genie.libs.filetransferutils import fileutils \
     as fu_local_plugin
 
 from genie.libs.filetransferutils.protocols.ftp import fileutils as ftp_fu
+from genie.libs.filetransferutils.protocols.https import fileutils as https_fu
 from genie.libs.filetransferutils.protocols.scp import fileutils as scp_fu
 from genie.libs.filetransferutils.protocols.sftp import fileutils as sftp_fu
 from genie.libs.filetransferutils.protocols.tftp import fileutils as tftp_fu
@@ -219,6 +220,13 @@ class TestBaseFileUtils(unittest.TestCase):
         fu = FileUtils()
         fu_ftp = fu.get_child('ftp')
         self.assertIs(fu_ftp.parent, fu)
+
+    def test_create_https_child(self):
+        fu = FileUtils()
+        fu_https = fu.get_child('https')
+
+        self.assertIsInstance(fu_https, https_fu.FileUtils)
+        self.assertIs(fu_https.parent, fu)
 
 
     def test_child_cache(self):

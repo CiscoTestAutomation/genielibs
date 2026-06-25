@@ -12,6 +12,10 @@ class TestDefaultInterfacePortSettings(TestCase):
             self.device.configure.mock_calls[0].args,
             (['interface TE0/1/0', 'default port-settings speed', 'default port-settings duplex', 'default port-settings autoneg'],)
         )
+        self.assertEqual(
+            self.device.configure.mock_calls[0].kwargs,
+            {}
+        )
 
     def test_default_interface_port_settings_combined_port_settings(self):
         self.device = Mock()
@@ -19,6 +23,16 @@ class TestDefaultInterfacePortSettings(TestCase):
         self.assertEqual(
             self.device.configure.mock_calls[0].args,
             (['interface TE0/1/0', 'default port-settings speed duplex autoneg'],)
+        )
+
+    def test_default_interface_port_settings_explicit_split_commands(self):
+        self.device = Mock()
+        default_interface_port_settings(
+            self.device, 'TE0/1/0', True, True, True, combined_port_settings=False
+        )
+        self.assertEqual(
+            self.device.configure.mock_calls[0].args,
+            (['interface TE0/1/0', 'default port-settings speed', 'default port-settings duplex', 'default port-settings autoneg'],)
         )
 
     def test_default_interface_port_settings_no_args_raises(self):
@@ -63,3 +77,41 @@ class TestDefaultInterfacePortSettings(TestCase):
             (['interface TE0/1/0', 'default port-settings duplex autoneg'],)
         )
 
+    def test_default_interface_port_settings_speed_and_duplex_named_arguments(self):
+        self.device = Mock()
+        default_interface_port_settings(self.device, 'TE0/1/0', speed=True, duplex=True)
+        self.assertEqual(
+            self.device.configure.mock_calls[0].args,
+            (['interface TE0/1/0', 'default port-settings speed', 'default port-settings duplex'],)
+        )
+
+    def test_default_interface_port_settings_speed_and_autoneg_named_arguments(self):
+        self.device = Mock()
+        default_interface_port_settings(self.device, 'TE0/1/0', speed=True, autoneg=True)
+        self.assertEqual(
+            self.device.configure.mock_calls[0].args,
+            (['interface TE0/1/0', 'default port-settings speed', 'default port-settings autoneg'],)
+        )
+
+    def test_default_interface_port_settings_speed_and_duplex_combined_port_settings(self):
+        self.device = Mock()
+        default_interface_port_settings(
+            self.device, 'TE0/1/0', speed=True, duplex=True, combined_port_settings=True
+        )
+        self.assertEqual(
+            self.device.configure.mock_calls[0].args,
+            (['interface TE0/1/0', 'default port-settings speed duplex'],)
+        )
+
+    def test_default_interface_port_settings_custom_error_pattern(self):
+        self.device = Mock()
+        default_interface_port_settings(
+            self.device,
+            'TE0/1/0',
+            speed=True,
+            error_pattern=[r'custom error'],
+        )
+        self.assertEqual(
+            self.device.configure.mock_calls[0].kwargs,
+            {'error_pattern': [r'custom error']}
+        )

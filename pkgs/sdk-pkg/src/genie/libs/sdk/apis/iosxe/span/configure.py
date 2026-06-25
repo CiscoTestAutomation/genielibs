@@ -439,3 +439,88 @@ def unconfigure_source_destination_remote_vlan(device, session_id, direction,vla
         raise SubCommandFailure(
             "Could not unconfigure source destination remote vlan. Error:\n{error}".format(error=e)
         )
+
+
+def configure_local_span_source_and_get_output(
+        device, session_id, int_type, span_port, direction=''):
+    """ Configure local span source interface and get output
+
+        Args:
+            device (`obj`): Device object
+            session_id ('int'): SPAN session number
+            int_type ('str'): SPAN source {VLAN|interface}
+            span_port ('str'): SPAN source interface/VLAN ID
+            direction ('str'): MONITOR (TRANSMIT/RECEIVE/BOTH) TRAFFIC,
+                Default=both
+                ex:)
+                    both  Monitor received and transmitted traffic
+                    rx    Monitor received traffic only
+                    tx    Monitor transmitted traffic only
+                    <cr>  <cr>
+        Returns:
+            str: stripped output string of configure command
+                ex:)
+                    format1: Only NGIO switch is supported for Local SPAN.
+                        SPAN Session Validation failed.
+                    format2: % Interface(s) Gi0/1/5 already configured
+                        as monitor destinations
+        Raises:
+            SubCommandFailure
+            ValueError: when ``int_type`` is neither ``interface`` nor ``vlan``
+    """
+    if int_type in ('interface', 'vlan'):
+        if direction:
+            cmd = (f"monitor session {session_id} source {int_type} "
+                   f"{span_port} {direction}\n")
+        else:
+            cmd = (f"monitor session {session_id} source {int_type} "
+                   f"{span_port}")
+    else:
+        raise ValueError(
+            "Incorrect argument for int_type, "
+            "Expected: vlan or interface")
+    try:
+        output = device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure local span source. "
+            "Error:\n{error}".format(error=e))
+    return output.strip()
+
+
+def configure_local_span_destination_and_get_output(
+        device, session_id, span_port, encapsulation=None,
+        ingress=None, vlan_id=None):
+    """ Configure local span destination interface and get output
+
+        Args:
+            device (`obj`): Device object
+            session_id ('int'): SPAN session number
+            span_port ('str'): SPAN destination interface
+            encapsulation ('str'): (dot1q|replicate|default=None)
+            ingress ('str'): (dot1q|untagged|vlan|default=None)
+            vlan_id ('int'): default=None
+        Returns:
+            str: stripped output string of configure command
+                ex:)
+                    format1: Only NGIO switch is supported for Local SPAN.
+                        SPAN Session Validation failed.
+                    format2: % Interface(s) Gi0/1/5 already configured
+                        as monitor destinations
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f"monitor session {session_id} destination interface {span_port}"
+    if encapsulation in ('dot1q', 'replicate'):
+        cmd += f" encapsulation {encapsulation}"
+    if ingress in ('dot1q', 'untagged'):
+        cmd += f" ingress {ingress} vlan {vlan_id}"
+    elif ingress == 'vlan':
+        cmd += f" ingress vlan {vlan_id}"
+    try:
+        output = device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure local span destination. "
+            "Error:\n{error}".format(error=e))
+    return output.strip()

@@ -2,6 +2,7 @@ import logging
 import re
 from genie.libs.parser.utils.common import Common
 from unicon.eal.dialogs import Dialog, Statement
+from genie.libs.sdk.apis.iosxe.aaa.configure import configure_enable_aes_encryption
 from unicon.core.errors import (
     SubCommandFailure,
     StateMachineError,
@@ -68,6 +69,77 @@ def configure_dot1x_cred_profile(device, profile_name, user_name, passwd, passwd
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not configure dot1x credential profile {}.Error: {}".format(profile_name, str(e))
+        )
+
+def configure_dot1x_cred_profile_secure(device, profile_name, user_name, passwd,
+                                        master_key=None, old_key=None,
+                                        algorithm_type='type6'):
+    """Configure dot1x credential profile with Type 6 (AES) or Type 9 (scrypt).
+
+    Type 6 (AES):
+        Applies AES prerequisites via ``configure_enable_aes_encryption``
+        (key config-key password-encrypt + password encryption aes) before
+        configuring the dot1x credential. The device auto-converts the
+        plaintext password to Type 6 in running-config.
+        Requires 'master_key'.
+
+    Type 9 (scrypt):
+        Uses 'password algorithm-type scrypt' — no master key needed.
+
+    Args:
+        device          ('obj'):           Device object
+        profile_name    ('str'):           dot1x credential profile name
+        user_name       ('str'):           Username for dot1x user
+        passwd          ('str'):           Password value
+        master_key      ('str', optional): AES master key (min 8 chars).
+                                           Required for Type 6. Ignored for Type 9.
+        old_key         ('str', optional): Existing master key for key rotation (Type 6 only).
+                                           Default None.
+        algorithm_type  ('str', optional): 'type6' for AES or 'type9' for scrypt.
+                                           Default 'type6'.
+    Returns:
+        None
+    Raises:
+        ValueError: If algorithm_type is not 'type6'/'type9', or missing
+                    master_key for Type 6.
+        SubCommandFailure: If configuration fails on the device.
+    """
+    if algorithm_type not in ('type6', 'type9'):
+        raise ValueError(
+            "Invalid algorithm_type '{}'. Use 'type6' or 'type9'.".format(algorithm_type)
+        )
+
+    if algorithm_type == 'type6':
+        if not master_key:
+            raise ValueError(
+                "Type 6 (AES) requires 'master_key'. "
+                "Provide the AES master key for encryption."
+            )
+        configure_enable_aes_encryption(device, master_key, old_key)
+
+        cmd = [
+            'dot1x credentials {}'.format(profile_name),
+            'username {}'.format(user_name),
+            'password {}'.format(passwd)
+        ]
+
+    elif algorithm_type == 'type9':
+        cmd = [
+            'dot1x credentials {}'.format(profile_name),
+            'username {}'.format(user_name),
+            'password algorithm-type scrypt {}'.format(passwd)
+        ]
+
+    log.debug("Configuring dot1x credential profile '%s' with %s password (secure)",
+             profile_name, algorithm_type)
+    
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure dot1x credential profile {} ({}). Error: {}".format(
+                profile_name, algorithm_type, str(e)
+            )
         )
 
 def configure_eap_profile(device, profile_name,method='md5',ciphersuite=None):

@@ -85,15 +85,15 @@ def get_md5_hash_of_file(device, file, timeout=60):
     Returns:
         MD5 hash (str), or None if something went wrong
     """
-    # show md5 file test_file.bin
-    # Sat Feb  6 21:38:34.001 UTC
-    # 69c394d85d37fc15d445ae83155495e2
-    try:
-        return device.execute('show md5 file {}'.format(file),
-                              timeout=timeout).split()[-1]
-    except Exception as e:
-        log.warning(e)
-        return None
+    if not file.startswith('/'):
+        file = '/' + file
+    with device.bash_console() as bash:
+        try:
+            output = bash.execute('md5sum {}'.format(file), timeout=timeout)
+            return output.split(" ")[0]
+        except Exception as e:
+            log.warning(e)
+            return None
 
 def scp(device,
         local_path,

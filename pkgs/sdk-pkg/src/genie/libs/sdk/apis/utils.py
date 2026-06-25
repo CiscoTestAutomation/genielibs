@@ -2182,8 +2182,8 @@ def get_interface_interfaces(device,
                           num=num)
 
 
-def get_power_cyclers(device):
-    """Get power cycler peripherals for a device
+def get_power_cycler_configs(device):
+    """Get power cycler peripheral configs for a device
 
     Args:
         device ('obj'): Device object
@@ -2193,7 +2193,8 @@ def get_power_cyclers(device):
         to the devices power supplies) are not supplied
 
     Returns:
-        list of tuples, each tuple has format: (initialized powercycler, list of outlets)
+        list of tuples, each tuple has format:
+        (powercycler configuration, list of outlets)
     """
 
     # Find device's power cycler information
@@ -2211,8 +2212,8 @@ def get_power_cyclers(device):
 
     pcs = []
 
-    # Initialize each power cycler. Save the powercycler object and outlets
     for power_cycler in power_cyclers:
+        power_cycler = dict(power_cycler)
         # Cyberswitching based powercyclers require the testbed object
         power_cycler['testbed'] = device.testbed
         power_cycler['device'] = device
@@ -2223,11 +2224,30 @@ def get_power_cyclers(device):
                 f"    Device: {device.name}\n"
                 f"    Powercycler info: {power_cycler}"
             )
-        pcs.append(
-            (PowerCycler(**power_cycler), outlets)
-        )
+        pcs.append((power_cycler, outlets))
 
     return pcs
+
+
+def get_power_cyclers(device):
+    """Get power cycler peripherals for a device
+
+    Args:
+        device ('obj'): Device object
+
+    Raises:
+        Exception if powercycler info (including the outlets corresponding
+        to the devices power supplies) are not supplied
+
+    Returns:
+        list of tuples, each tuple has format:
+        (initialized powercycler, list of outlets)
+    """
+
+    return [
+        (PowerCycler(**power_cycler), outlets)
+        for power_cycler, outlets in get_power_cycler_configs(device)
+    ]
 
 
 def verify_pcap_has_imcp_destination_unreachable(pcap_location,

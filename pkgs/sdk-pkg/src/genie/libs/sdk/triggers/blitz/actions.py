@@ -473,6 +473,7 @@ def execute(self,
             health_uids=None,
             health_groups=None,
             health_sections=None,
+            extract=None,
             **kwargs):
 
     ret_dict = kwargs.pop('ret_dict', None)
@@ -492,6 +493,7 @@ def execute(self,
             'command': command,
             'connection_alias': connection_alias,
             'scope': scope,
+            'extract': extract,
             'include': include,
             'exclude': exclude,
             'result_status': result_status,
@@ -565,7 +567,7 @@ def api(self,
 
         output = api_handler(**kwargs)
 
-    log.debug('api return value: {o}'.format(o=output))
+    log.debug('api return value type: %s', type(output).__name__)
     return output
 
 

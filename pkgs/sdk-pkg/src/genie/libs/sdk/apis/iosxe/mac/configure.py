@@ -600,6 +600,58 @@ def unconfigure_mac_loopback(device, interface):
             f"Failed to unconfigure loopback mac on interface {interface} . Error:\n{e}")
 
 
+def configure_interface_macsec(device, interface):
+    """ Configure macsec under interface
+
+        Args:
+            device (`obj`): device object
+            interface (`str`): Interface name
+        Return:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring device
+    """
+    try:
+        device.configure(
+            [
+                "interface {}".format(interface),
+                "macsec",
+            ]
+        )
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Failed to configure macsec under interface {interface} on device {device_name}".format(
+                interface=interface, device_name=device.name
+            )
+        )
+
+
+def unconfigure_interface_macsec(device, interface):
+    """ Unconfigure macsec under interface
+
+        Args:
+            device (`obj`): device object
+            interface (`str`): Interface name
+        Return:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring device
+    """
+    try:
+        device.configure(
+            [
+                "interface {}".format(interface),
+                "no macsec",
+            ]
+        )
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Failed to unconfigure macsec under interface {interface} on device {device_name}".format(
+                interface=interface, device_name=device.name
+            )
+        )
+
+
 def configure_interface_macsec_access_control(device, interface, mode):
     """ Config macsec access-control under interface
 
@@ -700,4 +752,50 @@ def configure_macsec_key_chain(device, keychain_name, key, key_string):
     except SubCommandFailure:
         raise SubCommandFailure(
             f"Failed to configure MACsec key chain {keychain_name} key {key} on device {device.name}"
+        )
+
+
+def configure_clear_macsec_interface_statistics(device, intf):
+    """ Clear MACsec statistics on interface
+
+        Args:
+            device (`obj`): device object
+            intf (`str`): interface name
+        Return:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring device
+    """
+    cfg_cmd = f"clear macsec statistics interface {intf}"
+    try:
+        device.configure(cfg_cmd)
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            f"Failed to configure {cfg_cmd} on device {device.name}"
+        )
+
+
+def configure_interface_macsec_dot1q(device, interface, tag_number):
+    """ Config macsec dot1q under interface
+
+        Args:
+            device (`obj`): device object
+            interface (`str`): Interface name
+            tag_number (`int`): dot1q tag number
+        Return:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring device
+    """
+    cfg_cmd = f"macsec dot1q {tag_number}"
+    try:
+        device.configure(
+            [
+                f"interface {interface}",
+                cfg_cmd,
+            ]
+        )
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            f"Failed to configure '{cfg_cmd}' under interface {interface} on device {device.name}"
         )

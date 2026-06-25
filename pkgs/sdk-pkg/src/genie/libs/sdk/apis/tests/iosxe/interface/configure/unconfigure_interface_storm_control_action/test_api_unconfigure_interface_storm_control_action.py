@@ -1,39 +1,60 @@
 import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
+
 from genie.libs.sdk.apis.iosxe.interface.configure import unconfigure_interface_storm_control_action
 
 
-class TestUnconfigureInterfaceStormControlAction(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = """
-        devices:
-          Overlord1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: isr4k
-            type: router
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Overlord1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigureInterfaceStormControlAction(TestCase):
 
     def test_unconfigure_interface_storm_control_action(self):
-        result = unconfigure_interface_storm_control_action(self.device, 'GigabitEthernet1/0/2', 'shutdown')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = unconfigure_interface_storm_control_action(
+            device,
+            "GigabitEthernet1/0/2",
+            "shutdown",
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, list)
+        self.assertEqual(
+            sent_commands,
+            [
+                "interface GigabitEthernet1/0/2",
+                "no storm-control action shutdown",
+            ],
+        )
 
     def test_unconfigure_interface_storm_control_action_1(self):
-        result = unconfigure_interface_storm_control_action(self.device, 'GigabitEthernet1/0/2', 'trap')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = unconfigure_interface_storm_control_action(
+            device,
+            "GigabitEthernet1/0/2",
+            "trap",
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, list)
+        self.assertEqual(
+            sent_commands,
+            [
+                "interface GigabitEthernet1/0/2",
+                "no storm-control action trap",
+            ],
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

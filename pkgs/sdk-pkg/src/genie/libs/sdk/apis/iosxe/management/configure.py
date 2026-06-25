@@ -720,12 +720,6 @@ def configure_management_master_key(device, key_length=8):
     ''' Check if the master key for Type 6 password encryption is configured
     and configure if if needed.
 
-    Uses the execute service (start_state='any') to send ``config terminal``
-    directly so the raw output — including the master key WARNING — is
-    returned to the caller.  The configure service cannot be used for this
-    because its pre_service() transitions the state machine to config mode
-    before any reply dialog is active, swallowing the warning in the process.
-
     Args:
         device ('obj'): device object
         key_length ('int'): length of the generated master key (default: 8)
@@ -734,30 +728,34 @@ def configure_management_master_key(device, key_length=8):
         bool: True if the master key was newly configured, False if it was
               already present.
     '''
-    # Execute sends 'config terminal' as a raw command (start_state='any'),
-    # so the WARNING printed before the (config)# prompt is part of the output.
-    # allow_state_change=True prevents StateMachineError when the device
-    # transitions from enable to config.
     log.info('Checking if master key is configured')
-    output = device.execute('config terminal', allow_state_change=True)
+    chars = string.ascii_letters + string.digits
+    key = ''.join(random.SystemRandom().choice(chars) for _ in range(key_length))
 
-    if 'WARNING: The master key is not configured' in output:
-        chars = string.ascii_letters + string.digits
-        key = ''.join(random.SystemRandom().choice(chars) for _ in range(key_length))
-        # State machine now knows we are in config state; configure() will
-        # skip the redundant go_to('config') transition and just send cmds.
-        device.configure([
-            f'key config-key password-encrypt {key}',
-            'password encryption aes',
-        ])
-        log.info('Master key configured for Type 6 password encryption.')
-        return True
+    # Check if the key is already present by executing 'key config-key password-encrypt {key}'
+    # if there is an old key we will skip, otherwise we need to configure the new key
+    old_key_dialog = Dialog([
+        Statement(
+            pattern=r'Old key:',
+            action='send(\x03)',
+            loop_continue=False,
+            continue_timer=False,
+        )
+    ])
 
-    log.info('Master key already configured, no action needed.')
-    # Return to enable mode if we are not already there, so the caller gets a
-    # consistent post-condition regardless of the initial state.
-    device.enable()
-    return False
+    output = device.configure(
+        f'key config-key password-encrypt {key}',
+        reply=old_key_dialog,
+    )
+
+    if 'Old key:' in str(output):
+        log.info('Master key already configured, no action needed.')
+        return False
+
+    # Key was newly configured — also enable AES encryption
+    device.configure('password encryption aes')
+    log.info('Master key configured for Type 6 password encryption.')
+    return True
 
 
 def configure_management(device,
@@ -844,9 +842,6 @@ def configure_management(device,
     switchport = switchport or management.get('switchport')
     vlan = vlan or management.get('vlan')
     media_type = media_type or management.get('media_type')
-
-    # Master key must be configured before any other configuration
-    device.api.configure_management_master_key()
 
     # Master key must be configured before any other configuration
     device.api.configure_management_master_key()
@@ -1070,7 +1065,7 @@ def configure_ip_ssh_version(device, version='2'):
     """ Configure ip ssh version
         Args:
             device ('obj'): Device object
-            version('str'): ssh version
+            version('str' or 'int'): ssh version (1 or 2)
         Returns:
             None
         Raises:
@@ -1079,7 +1074,8 @@ def configure_ip_ssh_version(device, version='2'):
     Secure version (hardcode SSHv2 per Cisco hardening guide):
     -> 'ip ssh version 2'
     """
-    if  not version.isnumeric() or (version.isnumeric() and int(version) not in (1, 2)):
+    version = str(version)
+    if not version.isnumeric() or int(version) not in (1, 2):
         raise ValueError(f"Invalid SSH version '{version}'. Must be 1 or 2.")
     cmd = f'ip ssh version {version}'
     try:

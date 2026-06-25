@@ -876,8 +876,8 @@ class TestVerifyRunningImage(unittest.TestCase):
         device.api.unconfigure_ignore_startup_config = Mock()
         device.api.verify_ignore_startup_config = Mock(return_value=False)
 
-        cls.unconfigure_and_verify_startup_config(steps=steps,
-                                                device=device)
+        cls.unconfigure_startup_config(steps=steps, device=device)
+        cls.verify_ignore_startup_config(steps=steps, device=device)
 
         self.assertEqual(Passed, steps.details[0].result)
         self.assertEqual(Passed, steps.details[1].result)

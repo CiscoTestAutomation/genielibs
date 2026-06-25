@@ -58,6 +58,80 @@ class Powercycle(unittest.TestCase):
         self.assertEqual(Failed, steps.details[0].result)
 
 
+class RommonBoot(unittest.TestCase):
+
+    def setUp(self):
+        # Instantiate class object
+        self.cls = PowerCycle()
+
+        # Instantiate device object. This also sets up commonly needed
+        # attributes and Mock objects associated with the device.
+        self.device = create_test_device('PE1', os='iosxe')
+
+    def test_skip_when_not_enabled(self):
+        # Make sure we have a unique Steps() object for result verification
+        steps = Steps()
+
+        # And we want the device_recovery_boot api to be mocked.
+        self.device.api.device_recovery_boot = Mock()
+
+        # Call the method to be tested (clean step inside class)
+        self.cls.rommon_boot(steps=steps, device=self.device)
+
+        # Check that ROMMON boot was not attempted
+        self.device.api.device_recovery_boot.assert_not_called()
+
+    def test_pass_with_golden_image(self):
+        # Make sure we have a unique Steps() object for result verification
+        steps = Steps()
+        golden_image = ['bootflash:golden_image.bin']
+
+        # And we want the device_recovery_boot api to be mocked.
+        self.device.api.device_recovery_boot = Mock()
+
+        # Call the method to be tested (clean step inside class)
+        self.cls.rommon_boot(
+            steps=steps, device=self.device, rommon_boot=True,
+            golden_image=golden_image
+        )
+
+        # Check that the result is expected
+        self.device.api.device_recovery_boot.assert_called_once_with(
+            golden_image=golden_image)
+        self.assertEqual(Passed, steps.details[0].result)
+
+    def test_pass_with_recovery_info(self):
+        # Make sure we have a unique Steps() object for result verification
+        steps = Steps()
+
+        # And we want the device_recovery_boot api to be mocked.
+        self.device.api.device_recovery_boot = Mock()
+
+        # Call the method to be tested (clean step inside class)
+        self.cls.rommon_boot(
+            steps=steps, device=self.device, rommon_boot=True)
+
+        # Check that golden_image was omitted so device_recovery_boot can use
+        # device.clean['device_recovery']['golden_image'] as fallback.
+        self.device.api.device_recovery_boot.assert_called_once_with()
+        self.assertEqual(Passed, steps.details[0].result)
+
+    def test_fail_to_do_rommon_boot(self):
+        # Make sure we have a unique Steps() object for result verification
+        steps = Steps()
+
+        # And we want the device_recovery_boot api to raise an exception when called.
+        self.device.api.device_recovery_boot = Mock(side_effect=Exception)
+
+        # We expect this step to fail so make sure it raises the signal
+        with self.assertRaises(TerminateStepSignal):
+            self.cls.rommon_boot(
+                steps=steps, device=self.device, rommon_boot=True)
+
+        # Check the overall result is as expected
+        self.assertEqual(Failed, steps.details[0].result)
+
+
 class Reconnect(unittest.TestCase):
 
     def setUp(self):

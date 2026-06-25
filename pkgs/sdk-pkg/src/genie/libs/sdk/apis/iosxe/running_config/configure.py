@@ -101,11 +101,19 @@ def restore_running_config(device,
         )
     ])
 
+    try:
+        device.execute(f'show archive config incremental-diffs {path}{file}')
+    except Exception as e:
+        log.warning(
+            "Failed to collect archive config incremental diff before "
+            "configure replace: %s", e)
+
     tm = Timeout(max_time, check_interval)
 
     while tm.iterate():
 
         try:
+
             out = device.execute(
                 "configure replace {path}{file}".format(path=path, file=file),
                 reply=dialog,
@@ -290,12 +298,52 @@ def configure_replace(device,
             cmd += f" time {timer}"
         else:
             cmd += f" {config_replace_options}"
+
+    # Check if device is in controller mode
     try:
-        device.state_machine.learn_hostname = True
-        output = device.execute(cmd, reply=dialog, timeout=timeout, append_error_pattern=['Error:'])
-        learned_hostname = device._get_learned_hostname(device.spawn)
-        device.default.learned_hostname = learned_hostname
-        device.state_machine.learn_hostname = False
+        mode_output = device.execute(
+            "show version | include operating mode")
+    except SubCommandFailure:
+        mode_output = ""
+
+    is_controller_mode = "Controller" in mode_output
+
+    try:
+        if is_controller_mode:
+            copy_dialog = Dialog([
+                Statement(
+                    pattern=r".*Destination filename.*",
+                    action="sendline()",
+                    loop_continue=True,
+                    continue_timer=False,
+                ),
+                Statement(
+                    pattern=r".*Do you want to over write.*",
+                    action="sendline()",
+                    loop_continue=True,
+                    continue_timer=False,
+                ),
+            ])
+            device.execute(
+                f"copy {path}{file} bootflash:/sdwan/usercfg/{file}",
+                reply=copy_dialog,
+                error_pattern=[r".*%Error.*"],
+                timeout=timeout,
+            )
+            cmd = f"load replace {file}"
+            device.state_machine.learn_hostname = True
+            output = device.configure(cmd, reply=dialog, timeout=timeout, append_error_pattern=['Error:'])
+            learned_hostname = device._get_learned_hostname(device.spawn)
+            device.default.learned_hostname = learned_hostname
+            device.state_machine.learn_hostname = False
+        else:
+            # Autonomous mode: use 'configure replace'
+            device.state_machine.learn_hostname = True
+            output = device.execute(cmd, reply=dialog, timeout=timeout, append_error_pattern=['Error:'])
+            learned_hostname = device._get_learned_hostname(device.spawn)
+            device.default.learned_hostname = learned_hostname
+            device.state_machine.learn_hostname = False
+
         return output
     except SubCommandFailure as e:
         raise SubCommandFailure(

@@ -40,8 +40,11 @@ class TestUnconfigureSnmpServerTrap(unittest.TestCase):
         self.assertEqual(result, expected_output)
 
     def test_unconfigure_snmp_server_trap_2(self):
-        with self.assertRaises(ValueError):
-            unconfigure_snmp_server_trap(self.device, None, None, 'snmp', None, None, None, None)
+        # 'snmp' is a legitimate IOS-XE trap category; the API must accept it
+        # when used in the category form (no intf/host/version/user/config_type).
+        result = unconfigure_snmp_server_trap(self.device, None, None, 'snmp', None, None, None, None)
+        expected_output = None
+        self.assertEqual(result, expected_output)
 
     def test_unconfigure_snmp_server_trap_3(self):
         result = unconfigure_snmp_server_trap(self.device, None, None, None, None, None, None, None)

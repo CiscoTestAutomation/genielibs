@@ -1,35 +1,38 @@
-import os
 import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
+
 from genie.libs.sdk.apis.iosxe.interface.configure import configure_subinterface_second_dot1q
 
 
-class TestConfigureSubinterfaceSecondDot1q(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          Fry_06:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: router
-            type: router
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Fry_06']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureSubinterfaceSecondDot1q(TestCase):
 
     def test_configure_subinterface_second_dot1q(self):
-        result = configure_subinterface_second_dot1q(self.device, 'GigabitEthernet0/0/0', '2', '20', '30')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = configure_subinterface_second_dot1q(
+            device,
+            "GigabitEthernet0/0/0",
+            "2",
+            "20",
+            "30",
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, list)
+        self.assertEqual(
+            sent_commands,
+            [
+                "interface GigabitEthernet0/0/0.2",
+                "encapsulation dot1q 20 second-dot1q 30",
+            ],
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

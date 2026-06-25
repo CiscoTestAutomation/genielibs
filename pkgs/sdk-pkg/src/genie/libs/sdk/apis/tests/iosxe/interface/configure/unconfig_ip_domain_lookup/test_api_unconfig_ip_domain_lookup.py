@@ -1,35 +1,40 @@
-import os
 import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
+
 from genie.libs.sdk.apis.iosxe.interface.configure import unconfig_ip_domain_lookup
 
 
-class TestUnconfigIpDomainLookup(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          Startrek:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: router
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Startrek']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigIpDomainLookup(TestCase):
 
     def test_unconfig_ip_domain_lookup(self):
-        result = unconfig_ip_domain_lookup(self.device, 'Hu1/0/7', '14')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = unconfig_ip_domain_lookup(
+            device,
+            "Hu1/0/7",
+            "14",
+        )
+
+        self.assertIsNone(result)
+        self.assertEqual(device.configure.call_count, 2)
+
+        first_command = device.configure.mock_calls[0].args[0]
+        self.assertIsInstance(first_command, str)
+        self.assertEqual(
+            first_command,
+            "no ip domain lookup source-interface Hu1/0/7",
+        )
+
+        second_command = device.configure.mock_calls[1].args[0]
+        self.assertIsInstance(second_command, str)
+        self.assertEqual(
+            second_command,
+            "no ip domain lookup source-interface vlan 14",
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()
