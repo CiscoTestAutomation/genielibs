@@ -464,11 +464,11 @@ class Interface(SuperInterface):
         if isinstance(dic, dict):
             for key, value in match.items():
                 for dic_key in dic:
-                    if key in dic[dic_key] and dic[dic_key][key] == value:
+                    if not isinstance(dic[dic_key], dict):
+                        pass
+                    elif key in dic[dic_key] and dic[dic_key][key] == value:
                         self.ret_dict.update(dic)
                         break
-                    elif not isinstance(dic[dic_key], dict):
-                        pass
                     else:
                         self._match_keys(dic=dic[dic_key], match=match)
         return(self.ret_dict)
