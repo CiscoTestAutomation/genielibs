@@ -133,6 +133,22 @@ class test_interface(unittest.TestCase):
         # Verify Ops was created successfully
         self.assertDictEqual(intf.info, expect_dict)
 
+    def test_match_keys_ignores_scalar_values(self):
+        intf = Interface(device=self.device)
+        intf.ret_dict = {}
+g
+        routing_dict = {
+            "route1": {
+                "interface": "Ethernet2/1",
+                "tag": 10,
+            },
+            "scalar": "not-a-dict",
+        }
+
+        intf._match_keys(dic=routing_dict, match={"interface": "Ethernet2/1"})
+
+        self.assertEqual(intf.ret_dict, routing_dict)
+
     def test_brief_output(self):
         self.maxDiff = None
         intf = InterfaceRev1(device=self.device)
