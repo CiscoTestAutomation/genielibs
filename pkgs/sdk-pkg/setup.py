@@ -56,7 +56,7 @@ install_requires = [
     f'yang.connector{version_range}',
     f'rest.connector{version_range}',
     'pysnmp==7.1.22',
-    'pyasn1==0.6.0',
+    'pyasn1>=0.6.4',
     'ruamel.yaml.clib<0.2.15',
     'pyVmomi',
 ]
