@@ -1,35 +1,49 @@
-import os
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.interface.configure import unconfigure_pppoe_enable_interface
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.interface.configure import (
+    unconfigure_pppoe_enable_interface,
+)
 
 
-class TestUnconfigurePppoeEnableInterface(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          C1113-8P_pkumarmu:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: router
-            type: iosxe
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['C1113-8P_pkumarmu']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigurePppoeEnableInterface(TestCase):
 
     def test_unconfigure_pppoe_enable_interface(self):
-        result = unconfigure_pppoe_enable_interface(self.device, 'Ethernet0/2/0', 'global', '100', '1590')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = unconfigure_pppoe_enable_interface(
+            device,
+            "Ethernet0/2/0",
+            "global",
+            "100",
+            "1590",
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, list)
+        self.assertIn(
+            "interface Ethernet0/2/0",
+            sent_commands,
+        )
+        self.assertIn(
+            "no pppoe enable group global",
+            sent_commands,
+        )
+        self.assertIn(
+            "no pppoe-client dial-pool-number 100",
+            sent_commands,
+        )
+        self.assertIn(
+            "no pppoe-client ppp-max-payload 1590",
+            sent_commands,
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

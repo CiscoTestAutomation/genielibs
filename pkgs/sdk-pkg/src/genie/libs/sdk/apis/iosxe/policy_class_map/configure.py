@@ -92,6 +92,50 @@ def unconfigure_class_map(device, class_name, class_match_type='match-all'):
             )
         )
 
+
+def configure_class_map_type_traffic(
+    device,
+    class_name,
+    match_type="match-any",
+    input_acl=None,
+    output_acl=None,
+):
+    """Configure class-map type traffic.
+
+        Args:
+            device ('obj'): device to use
+            class_name ('str'): name of the class-map
+            match_type ('str', optional): match type, default is match-any
+            input_acl ('str', optional): input ACL name
+            output_acl ('str', optional): output ACL name
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(
+        "Configuring class-map type traffic {class_name}".format(
+            class_name=class_name,
+        )
+    )
+
+    cmd = [f"class-map type traffic {match_type} {class_name}"]
+    if output_acl:
+        cmd.append(f"match access-group output name {output_acl}")
+    if input_acl:
+        cmd.append(f"match access-group input name {input_acl}")
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure class-map type traffic. Error:\n{error}".format(
+                error=e
+            )
+        )
+
+
 def configure_class_map_access_group_on_device(device, class_map_name, acc_list_number):
     """ Configure class-map access-group on device
         Args:
@@ -157,5 +201,4 @@ def configure_class_map_match_protocol_attribute(device, class_match_type, class
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not configure class-map. Error:\n{e}"
-        )       
-            
+        )

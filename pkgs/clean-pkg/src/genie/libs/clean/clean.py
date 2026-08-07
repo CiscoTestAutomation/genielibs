@@ -25,6 +25,7 @@ from genie.libs.clean.utils import (
     get_image_handler)
 from genie.metaparser.util.schemaengine import Schema, Optional
 from genie.libs.clean.recovery import recovery_processor, block_section
+from genie.libs.clean.recovery.recovery import RecoveryOutcome, CONTINUE_RECOVERY
 
 # Logger
 log = logging.getLogger(__name__)
@@ -212,8 +213,15 @@ class CleanTestcase(Testcase):
                 cls.history = self.history
                 cls.history[cls.uid] = cls
 
-                # Create a stage section
-                new_section = StageSection(cls, parent=self)
+                defer_result_rollup = (
+                    self.device_recovery_processor and
+                    cls.uid in CONTINUE_RECOVERY)
+
+                # Defer rollup so recovery can replace eligible stage failures.
+                new_section = StageSection(
+                    cls,
+                    parent=self,
+                    result_rollup=not defer_result_rollup)
 
                 # For some unknown reason, this is required for internal arguments
                 # like 'steps' and 'section' to be propagated. Do not remove.
@@ -221,39 +229,75 @@ class CleanTestcase(Testcase):
 
                 yield new_section
 
-                pass_order = self.stages[stage]['change_order_if_pass']
-                if pass_order and new_section.result in [Passed, Passx]:
-                    msg = "Due to 'change_order_if_pass' the order of clean " \
-                          "is changed to:\n- " + "\n- ".join(pass_order)
-                    log.warning(msg)
-                    order = pass_order
-                    if self.image_handler:
-                        self.image_handler.update_image_references(cls)
-                    break
+                # Preserve results from execution paths that return before
+                # AEtest restores the deferred rollup.
+                if defer_result_rollup and not new_section.result_rollup:
+                    new_section.result_rollup = True
+                    new_section.result = new_section.result
 
-                fail_order = self.stages[stage]['change_order_if_fail']
-                if fail_order and new_section.result in [Failed, Errored]:
-                    msg = "Due to 'change_order_if_fail' the order of clean " \
-                          "is changed to:\n- " + "\n- ".join(fail_order)
-                    log.warning(msg)
-                    order = fail_order
+                # Recovery processors record flow decisions on the testcase so
+                # the stage result remains owned by the stage itself.
+                recovery_outcome = self.parameters.get(
+                    'recovery_outcomes', {}).pop(new_section.uid, None)
+                if not isinstance(recovery_outcome, RecoveryOutcome):
+                    recovery_outcome = None
 
-                    # In this case we do not want the overall clean result to
-                    # be failed. Leave the section result alone but change the
-                    # parents to Passed.
-                    new_section.parent.parent.result = Passed
-                    new_section.parent.result = Passed
-                    new_section.result = Passed
-                    break
+                recovery_continue = bool(
+                    recovery_outcome and recovery_outcome.continue_clean)
+                recovery_terminate = bool(
+                    recovery_outcome and recovery_outcome.terminate_clean)
 
-                if new_section.result not in [Passed, Passx, Skipped]:
-                    # Dont log this for every remaining stage
-                    if not aetest.executer.goto:
-                        log.error(banner("*** Terminating Genie Clean ***"))
+                if recovery_outcome and \
+                        recovery_outcome.clean_flow_result is not None:
+                    # TestResult += rolls the clean-flow outcome into the
+                    # testcase result using pyATS result precedence.
+                    self.result += recovery_outcome.clean_flow_result
 
+                if recovery_terminate:
+                    # Recovery already decided clean cannot continue. Set the
+                    # AEtest goto result/reason used to block remaining stages.
                     aetest.executer.goto_result = results.Blocked
-                    msg = '{} has {}'.format(new_section.uid, new_section.result)
+                    msg = recovery_outcome.reason or \
+                          '{} recovery requested clean termination'.format(
+                              new_section.uid)
                     aetest.executer.goto = [[msg, str]]
+
+                # If recovery did not make a continue/terminate decision, use
+                # the standard clean flow driven by the original stage result.
+                if not recovery_continue and not recovery_terminate:
+                    pass_order = self.stages[stage]['change_order_if_pass']
+                    if pass_order and new_section.result in [Passed, Passx]:
+                        msg = "Due to 'change_order_if_pass' the order of clean " \
+                              "is changed to:\n- " + "\n- ".join(pass_order)
+                        log.warning(msg)
+                        order = pass_order
+                        if self.image_handler:
+                            self.image_handler.update_image_references(cls)
+                        break
+
+                    fail_order = self.stages[stage]['change_order_if_fail']
+                    if fail_order and new_section.result in [Failed, Errored]:
+                        msg = "Due to 'change_order_if_fail' the order of clean " \
+                              "is changed to:\n- " + "\n- ".join(fail_order)
+                        log.warning(msg)
+                        order = fail_order
+
+                        # In this case we do not want the overall clean result to
+                        # be failed. Leave the section result alone but change the
+                        # parents to Passed.
+                        new_section.parent.parent.result = Passed
+                        new_section.parent.result = Passed
+                        new_section.result = Passed
+                        break
+
+                    if new_section.result not in [Passed, Passx, Skipped]:
+                        # Dont log this for every remaining stage
+                        if not aetest.executer.goto:
+                            log.error(banner("*** Terminating Genie Clean ***"))
+
+                        aetest.executer.goto_result = results.Blocked
+                        msg = '{} has {}'.format(new_section.uid, new_section.result)
+                        aetest.executer.goto = [[msg, str]]
 
                 # image handler updates latest image
                 if self.image_handler:

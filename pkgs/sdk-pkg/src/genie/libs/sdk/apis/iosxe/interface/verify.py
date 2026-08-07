@@ -1563,3 +1563,53 @@ def verify_interface_state(
         timeout.sleep()
 
     return False
+
+
+def verify_interface_counters_increment(
+        device, interface, counter_field, before_value,
+        expect_increment_min, expect_increment_max=None,
+        max_time=30, check_interval=5):
+    '''
+    Verify the increment of interface counters with show interface
+    <interface> command output
+    Args:
+        device ('obj'): Device object
+        interface ('str'): Interface name
+        counter_field ('str'): Counter field name in show interface
+            output, e.g., 'in_pkts', 'out_pkts'
+        before_value ('int'): Counter value before test traffic
+        expect_increment_min ('int'): Minimum expected increment number
+            of the counter after test traffic
+        expect_increment_max ('int'): Maximum expected increment number
+            of the counter after test traffic, optional
+        max_time ('int'): Maximum time to wait for verification
+        check_interval ('int'): Interval between checks
+    Returns:
+        True/False
+    '''
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        intf_output = device.api.get_show_interface_output(interface=interface)
+        if intf_output:
+            try:
+                counter_value = device.api.get_interface_packet_counter(
+                    interface=interface, counter_field=counter_field,
+                    output=intf_output)
+            except KeyError as e:
+                log.debug(
+                    f'Failed to get interface counter with exception: {e}')
+                timeout.sleep()
+                continue
+            if counter_value is None:
+                timeout.sleep()
+                continue
+            increment = counter_value - before_value
+            if increment >= expect_increment_min:
+                if expect_increment_max is None or \
+                        increment <= expect_increment_max:
+                    return True
+                else:
+                    return False
+        timeout.sleep()
+    return False

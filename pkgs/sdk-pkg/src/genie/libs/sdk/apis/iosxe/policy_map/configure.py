@@ -303,29 +303,58 @@ def unconfigure_bandwidth_remaining_policy_map(device,policy_names):
         raise SubCommandFailure(
             "Could not unconfigure policy-map. Error:\n{e}".format(e))
 
-def configure_policy_map_type_service(device, policy_map_name, pppoe_service_name=None):
+def configure_policy_map_type_service(
+    device,
+    policy_map_name=None,
+    pppoe_service_name=None,
+    class_name=None,
+    police_input_rate=None,
+    police_input_bc=None,
+    police_input_be=None,
+    aaa_accounting_list=None,
+):
     """ Configure policy-map type service on Device
     Args:
         device ('obj'): Device object
-        policy_map_name ('str'): policy-map name to configure
+        policy_map_name ('str', optional): policy-map name to configure
         pppoe_service_name('str',optional): service name to configure
+        class_name ('str', optional): traffic class name to configure
+        police_input_rate ('str', optional): police input rate
+        police_input_bc ('str', optional): police input normal burst
+        police_input_be ('str', optional): police input excess burst
+        aaa_accounting_list ('str', optional): AAA accounting list name
     Return:
         None
     Raise:
         SubCommandFailure: Failed to configure policy-map service
     """
     log.info("Configuring policy-map type service on device")
-    
-    cmd = []
+
     cmd = [f"policy-map type service {policy_map_name}"]
     if pppoe_service_name:
         cmd.append(f"pppoe service {pppoe_service_name}")
+    if class_name:
+        cmd.append(f"class type traffic {class_name}")
+    if all(
+        value is not None
+        for value in [police_input_rate, police_input_bc, police_input_be]
+    ):
+        cmd.append(
+            "police input {rate} {bc} {be}".format(
+                rate=police_input_rate,
+                bc=police_input_bc,
+                be=police_input_be,
+            )
+        )
+    if aaa_accounting_list:
+        cmd.append(f"accounting aaa list {aaa_accounting_list}")
+
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
-                raise SubCommandFailure(
+        raise SubCommandFailure(
             f"Failed to configure policy-map service, Error:\n{e}"
-    )
+        )
 
 def unconfigure_policy_map_type_service(device, policy_map_name):
     """ Configure policy-map type service on Device
@@ -1436,4 +1465,63 @@ def unconfigure_policy_map_type_control_isg(device, policy_map_name):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Failed to unconfigure policy-map type control {policy_map_name}. Error: {e}"
+        )
+
+
+def configure_class_map_type_control(device, class_name,
+                                     match_type="match-all",
+                                     match_authen_status=None,
+                                     match_timer=None):
+    """Configure class-map type control on device.
+
+        Args:
+            device ('obj'): Device object
+            class_name ('str'): Class-map name
+            match_type ('str', optional): Match type, e.g. match-all/match-any.
+                Defaults to "match-all"
+            match_authen_status ('str', optional): authen-status value to match.
+                Defaults to None
+            match_timer ('str', optional): timer name to match. Defaults to None
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [f"class-map type control {match_type} {class_name}"]
+    if match_authen_status:
+        cmd.append(f"match authen-status {match_authen_status}")
+    if match_timer:
+        cmd.append(f"match timer {match_timer}")
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure class-map type control "
+            f"{class_name}. Error: {e}"
+        )
+
+
+def unconfigure_class_map_type_control(device, class_name,
+                                       match_type="match-all"):
+    """Unconfigure class-map type control on device.
+
+        Args:
+            device ('obj'): Device object
+            class_name ('str'): Class-map name
+            match_type ('str', optional): Match type, e.g. match-all/match-any.
+                Defaults to "match-all"
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f"no class-map type control {match_type} {class_name}"
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure class-map type control "
+            f"{class_name}. Error: {e}"
         )

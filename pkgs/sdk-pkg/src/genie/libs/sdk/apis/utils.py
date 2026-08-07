@@ -23,7 +23,7 @@ import threading
 from time import strptime
 from datetime import datetime
 from netaddr import IPAddress, INET_ATON
-from ipaddress import IPv4Interface
+from ipaddress import IPv4Interface, ip_address, ip_interface
 from urllib.parse import urlparse, urlsplit, urlunsplit
 from functools import wraps
 
@@ -84,6 +84,189 @@ def _cli(device, cmd, timeout, prompt):
     statements.extend(default_statement_list)
     dialog = Dialog(statements)
     return dialog.process(device.spawn, timeout=timeout)
+
+def _management_session_uses_gateway(device, mgmt_src_ip_addresses, mgmt_ip=None):
+    """Determine if a management session source IP is using (or appears to use) a management gateway.
+
+    This helper checks whether any observed management session source address maps to a
+    known or inferred gateway address, which indicates the session may be NATed through
+    the management gateway. It evaluates gateway information in two stages:
+
+    1. **Configured gateway match**: Reads ``device.management['gateway']`` (IPv4/IPv6),
+        normalizes values, and checks for intersection with ``mgmt_src_ip_addresses``.
+    2. **Inferred gateway match**: If no explicit match is found, attempts to infer
+        likely gateway addresses from ``mgmt_ip`` and the observed source addresses via
+        ``_infer_management_gateway_addresses(...)``.
+
+    When a match is found, an informational log is emitted and ``True`` is returned.
+
+    Args:
+         device: Device object that may contain a ``management`` attribute/dict with a
+              ``gateway`` mapping.
+         mgmt_src_ip_addresses (Iterable[str] | None): Observed source IP addresses for
+              the management session. Falsy entries are ignored.
+         mgmt_ip (str | None, optional): Management interface IP used for gateway
+              inference when explicit gateway data does not match.
+
+    Returns:
+         bool: ``True`` if the session source IP matches configured or inferred gateway
+         addresses (suggesting gateway/NAT use); otherwise ``False``.
+    """
+    mgmt_src_ip_addresses = [str(address) for address in
+                             (mgmt_src_ip_addresses or []) if address]
+    management = getattr(device, 'management', None)
+    if isinstance(management, dict):
+        gateway = management.get('gateway', {})
+        if isinstance(gateway, dict):
+            gateway_addresses = set()
+            for family in ('ipv4', 'ipv6'):
+                addresses = gateway.get(family, [])
+                if not isinstance(addresses, (list, tuple, set)):
+                    addresses = [addresses]
+                gateway_addresses.update(str(address) for address in addresses
+                                         if address)
+
+            # When a gateway is explicitly configured, it is authoritative:
+            # rely solely on the configured value and do not fall back to
+            # inference. A configured gateway that does not match the observed
+            # source must return False rather than let heuristics override the
+            # authoritative topology data.
+            if gateway_addresses:
+                matching_gateway_addresses = gateway_addresses.intersection(
+                    mgmt_src_ip_addresses)
+                if matching_gateway_addresses:
+                    log.info(
+                        'Management session source IP %s matches configured '
+                        'management gateway; using local IP for dynamic file '
+                        'server',
+                        ', '.join(sorted(matching_gateway_addresses)))
+                    return True
+                return False
+
+    # Prefer the configured management address (which carries a reliable prefix,
+    # e.g. an ipaddress.IPv4Interface) over the bare ``mgmt_ip`` obtained from the
+    # platform TCP-session APIs. A bare address has no prefix and must not be used
+    # to manufacture a subnet for gateway inference.
+    mgmt_ip_with_prefix = None
+    if isinstance(management, dict):
+        configured_address = management.get('address', {})
+        if isinstance(configured_address, dict):
+            ipv4_address = configured_address.get('ipv4')
+            # The topology schema allows ``address.ipv4`` to be a single
+            # interface or a list of interfaces. Normalize to a list so the
+            # multi-address case is handled uniformly.
+            if isinstance(ipv4_address, (list, tuple)):
+                ipv4_addresses = list(ipv4_address)
+            else:
+                ipv4_addresses = [ipv4_address]
+
+            # Only IPv4Interface-like values expose a prefix; plain strings such
+            # as 'dhcp' or bare addresses do not and are intentionally skipped.
+            prefixed_addresses = [
+                candidate for candidate in ipv4_addresses
+                if hasattr(candidate, 'with_prefixlen')]
+
+            # When multiple management addresses are configured, select the one
+            # whose address matches ``mgmt_ip`` so inference uses the correct
+            # subnet. If none matches (or ``mgmt_ip`` is unknown), skip inference
+            # rather than borrowing an unrelated prefix, which could classify an
+            # unrelated peer as the gateway and advertise an unreachable local
+            # address.
+            selected_address = None
+            if mgmt_ip:
+                for candidate in prefixed_addresses:
+                    if str(candidate.ip) == str(mgmt_ip):
+                        selected_address = candidate
+                        break
+
+            if selected_address is not None:
+                mgmt_ip_with_prefix = str(selected_address.with_prefixlen)
+
+    inferred_gateway_addresses = _infer_management_gateway_addresses(
+        mgmt_ip_with_prefix, mgmt_src_ip_addresses)
+    if inferred_gateway_addresses:
+        log.info(
+            'Management session source IP %s appears to be a gateway for '
+            'management IP %s; using local IP for dynamic file server',
+            ', '.join(sorted(inferred_gateway_addresses)), mgmt_ip)
+        return True
+
+    return False
+
+
+def _infer_management_gateway_addresses(mgmt_ip, mgmt_src_ip_addresses):
+    """Infer potential management gateway IP addresses from observed source addresses.
+
+    Given a management IP and a collection of source IP addresses, this helper
+    returns the subset of source addresses that match likely gateway candidates
+    for the management subnet.
+
+    Behavior:
+    - Returns an empty set if `mgmt_ip` is missing, invalid, or not IPv4.
+    - If `mgmt_ip` includes a prefix (for example, `10.0.0.5/24`), that network is
+        used directly.
+    - If `mgmt_ip` has no prefix, inference is skipped and an empty set is
+        returned. A prefix is never assumed, since manufacturing a `/24` (or any
+        other length) can infer the wrong gateway on `/16`, `/25`, and other
+        networks and advertise an unreachable local address.
+    - Gateway candidates are inferred as:
+        - first usable address: `network + 1`
+        - last usable address: `broadcast - 1`
+        (only when the subnet has more than two addresses)
+    - Each entry in `mgmt_src_ip_addresses` is parsed as either an IP address or
+        interface; invalid entries are ignored.
+    - The management IP itself is excluded from results.
+
+    Args:
+            mgmt_ip (str | ipaddress.IPv4Address | ipaddress.IPv4Interface):
+                    Management IP including a prefix length (for example
+                    `10.0.0.5/24`). A bare address without a prefix results in no
+                    inference.
+            mgmt_src_ip_addresses (Iterable[str | ipaddress._BaseAddress | ipaddress._BaseInterface]):
+                    Candidate source addresses to evaluate.
+
+    Returns:
+            set[str]: Source addresses (string form) inferred to be gateway addresses.
+    """
+    if not mgmt_ip:
+        return set()
+
+    # Without an explicit prefix there is no reliable subnet to reason about,
+    # so skip inference entirely rather than assuming a prefix length.
+    if '/' not in str(mgmt_ip):
+        return set()
+
+    try:
+        mgmt_interface = ip_interface(str(mgmt_ip))
+    except ValueError:
+        return set()
+
+    mgmt_address = mgmt_interface.ip
+    if mgmt_address.version != 4:
+        return set()
+
+    mgmt_network = mgmt_interface.network
+
+    gateway_addresses = set()
+    if mgmt_network.num_addresses > 2:
+        gateway_addresses.add(mgmt_network.network_address + 1)
+        gateway_addresses.add(mgmt_network.broadcast_address - 1)
+
+    inferred_gateway_addresses = set()
+    for address in mgmt_src_ip_addresses:
+        try:
+            source_address = ip_address(str(address))
+        except ValueError:
+            try:
+                source_address = ip_interface(str(address)).ip
+            except ValueError:
+                continue
+
+        if (source_address != mgmt_address and
+                source_address in gateway_addresses):
+            inferred_gateway_addresses.add(str(source_address))
+
+    return inferred_gateway_addresses
 
 
 def tabber(device, cmd, expected, timeout=20):
@@ -1027,7 +1210,7 @@ def copy_to_device(device,
         mgmt_ip, mgmt_src_ip_addresses = device.api.get_mgmt_ip_and_mgmt_src_ip_addresses()
         mgmt_interface = kwargs.pop('interface', None) or device.api.get_mgmt_interface(mgmt_ip=mgmt_ip)
 
-        if local_ip in mgmt_src_ip_addresses:
+        if (local_ip in mgmt_src_ip_addresses or _management_session_uses_gateway(device, mgmt_src_ip_addresses, mgmt_ip=mgmt_ip)):
             mgmt_src_ip = local_ip
         else:
             mgmt_src_ip = None
@@ -1205,7 +1388,7 @@ def copy_from_device(device,
         mgmt_ip, mgmt_src_ip_addresses = device.api.get_mgmt_ip_and_mgmt_src_ip_addresses(mgmt_src_ip=local_ip)
         mgmt_interface = device.api.get_mgmt_interface(mgmt_ip=mgmt_ip)
 
-        if local_ip in mgmt_src_ip_addresses:
+        if (local_ip in mgmt_src_ip_addresses or _management_session_uses_gateway(device, mgmt_src_ip_addresses, mgmt_ip=mgmt_ip)):
             mgmt_src_ip = local_ip
         else:
             mgmt_src_ip = None

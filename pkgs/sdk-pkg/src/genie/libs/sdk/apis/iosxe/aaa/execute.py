@@ -73,3 +73,126 @@ def execute_clear_aaa_counters_server(device, server_info='', server_id='all'):
         device.execute(cmd, reply=Dialog([dialog]))
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not clear aaa counters servers on device. Error:\n{e}")
+
+
+def _execute_debug(device, cmd, enable=True):
+    """Helper to enable/disable a debug command in exec mode.
+
+    Args:
+        device ('obj'): Device object
+        cmd ('str'): The full debug command (e.g. 'debug dot1x all')
+        enable ('bool'): True to enable the debug, False to issue
+                        the corresponding 'no <cmd>' to disable it.
+    Returns:
+        str: command output
+    Raises:
+        SubCommandFailure: when the command fails on the device
+    """
+    full_cmd = cmd if enable else f'no {cmd}'
+    try:
+        return device.execute(full_cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to execute '{full_cmd}' on device "
+            f"{device.name}. Error:\n{e}")
+
+
+def debug_access_session_all(device, enable=True):
+    """Enable/disable 'debug access-session all'.
+
+    Args:
+        device ('obj'): Device object
+        enable ('bool'): True to enable, False to disable. Default True.
+    Returns:
+        str: command output
+    Raises:
+        SubCommandFailure: when the command fails on the device
+    """
+    return _execute_debug(device, 'debug access-session all', enable=enable)
+
+
+def debug_dot1x_all(device, enable=True):
+    """Enable/disable 'debug dot1x all'.
+
+    Args:
+        device ('obj'): Device object
+        enable ('bool'): True to enable, False to disable. Default True.
+    Returns:
+        str: command output
+    Raises:
+        SubCommandFailure: when the command fails on the device
+    """
+    return _execute_debug(device, 'debug dot1x all', enable=enable)
+
+
+def debug_mab_all(device, enable=True):
+    """Enable/disable 'debug mab all'.
+
+    Args:
+        device ('obj'): Device object
+        enable ('bool'): True to enable, False to disable. Default True.
+    Returns:
+        str: command output
+    Raises:
+        SubCommandFailure: when the command fails on the device
+    """
+    return _execute_debug(device, 'debug mab all', enable=enable)
+
+
+def debug_aaa_authentication(device, enable=True):
+    """Enable/disable 'debug aaa authentication'.
+
+    Args:
+        device ('obj'): Device object
+        enable ('bool'): True to enable, False to disable. Default True.
+    Returns:
+        str: command output
+    Raises:
+        SubCommandFailure: when the command fails on the device
+    """
+    return _execute_debug(
+        device, 'debug aaa authentication', enable=enable)
+
+
+def debug_aaa_authorization(device, enable=True):
+    """Enable/disable 'debug aaa authorization'.
+
+    Args:
+        device ('obj'): Device object
+        enable ('bool'): True to enable, False to disable. Default True.
+    Returns:
+        str: command output
+    Raises:
+        SubCommandFailure: when the command fails on the device
+    """
+    return _execute_debug(
+        device, 'debug aaa authorization', enable=enable)
+
+
+def debug_epm_all(device, enable=True):
+    """Enable/disable 'debug epm all'.
+
+    Args:
+        device ('obj'): Device object
+        enable ('bool'): True to enable, False to disable. Default True.
+    Returns:
+        str: command output
+    Raises:
+        SubCommandFailure: when the command fails on the device
+    """
+    return _execute_debug(device, 'debug epm all', enable=enable)
+
+
+def debug_radius_authentication(device, enable=True):
+    """Enable/disable 'debug radius authentication'.
+
+    Args:
+        device ('obj'): Device object
+        enable ('bool'): True to enable, False to disable. Default True.
+    Returns:
+        str: command output
+    Raises:
+        SubCommandFailure: when the command fails on the device
+    """
+    return _execute_debug(
+        device, 'debug radius authentication', enable=enable)

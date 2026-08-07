@@ -9,6 +9,6 @@ class TestConfigureHwModuleSlotReload(TestCase):
         self.device = Mock()
         configure_hw_module_slot_reload(self.device, slot=3)
         self.assertEqual(
-            self.device.configure.mock_calls[0].args,
+            self.device.execute.mock_calls[0].args,
             ('hw-module slot 3 reload',)
         )

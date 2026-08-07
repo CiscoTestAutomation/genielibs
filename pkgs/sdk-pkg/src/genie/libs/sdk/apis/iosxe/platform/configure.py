@@ -126,7 +126,8 @@ def configure_dope_wrsp(device, asic, core, idx, hi_value, lo_value):
 
 
 def configure_bba_group(device,name,vt_number, service_profile_name=None,
-                        tag=None):
+                        tag=None, session_per_vlan_limit=None,
+                        session_per_mac_limit=None):
     """ bba-group
         Args:
             device (`obj`): Device object
@@ -134,6 +135,10 @@ def configure_bba_group(device,name,vt_number, service_profile_name=None,
             vt_number (`str`): virtual-template interface number
             service_profile_name('str', optional): service profile name
             tag ('str', optional): ppp-max-payload
+            session_per_vlan_limit (`str`, optional): Per-VLAN session limit.
+                Defaults to None.
+            session_per_mac_limit (`str`, optional): Per-MAC session limit.
+                Defaults to None.
         Returns:
             None
         Raises:
@@ -147,6 +152,10 @@ def configure_bba_group(device,name,vt_number, service_profile_name=None,
         cli.append(f"service profile {service_profile_name}")
     if tag:
         cli.append(f"tag ppp-max-payload {tag}")
+    if session_per_vlan_limit is not None:
+        cli.append(f"sessions per-vlan limit {session_per_vlan_limit}")
+    if session_per_mac_limit is not None:
+        cli.append(f"sessions per-mac limit {session_per_mac_limit}")
     try:
         device.configure(cli)
     except SubCommandFailure as e:
@@ -156,12 +165,13 @@ def configure_bba_group(device,name,vt_number, service_profile_name=None,
         )
 
 
-def unconfigure_bba_group(device,name,vt_number):
+def unconfigure_bba_group(device, name, vt_number=None):
     """ bba-group
         Args:
             device (`obj`): Device object
             name (`str`): bba-group name
-            vt_number (`str`): virtual-template interface number
+            vt_number (`str`, optional): virtual-template interface number.
+                Defaults to None.
         Returns:
             None
         Raises:
@@ -178,6 +188,7 @@ def unconfigure_bba_group(device,name,vt_number):
             "Could not unconfig bba-group on {device}. Error:\n{error}"
                 .format(device=device, error=e)
         )
+
 
 def configure_platform_qos_port_channel_aggregate(device,portchannel_number):
 

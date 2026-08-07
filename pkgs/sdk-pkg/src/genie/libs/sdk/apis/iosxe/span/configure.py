@@ -524,3 +524,108 @@ def configure_local_span_destination_and_get_output(
             "Could not configure local span destination. "
             "Error:\n{error}".format(error=e))
     return output.strip()
+
+
+def configure_local_span_and_verify_output(
+        device, session_id, span_port, int_type='interface', direction='',
+        encapsulation=None, ingress=None, vlan_id=None,
+        role='source', validation_code=0):
+    """ Config span session, and verify the session validation result
+
+        Args:
+            device ('obj'): Device object
+            session_id ('int'): SPAN session number
+            span_port ('str'): SPAN source interface/VLAN ID
+            int_type ('str'): SPAN source {VLAN|interface}
+            direction ('str'): MONITOR (TRANSMIT/RECEIVE/BOTH) TRAFFIC,
+                Default=both
+                ex:)
+                    both  Monitor received and transmitted traffic
+                    rx    Monitor received traffic only
+                    tx    Monitor transmitted traffic only
+                    <cr>  <cr>
+            encapsulation ('str'): (dot1q|replicate|default=None)
+            ingress ('str'): (dot1q|untagged|vlan|default=None)
+            vlan_id ('int'): default=None
+            role ('str'): Role of the span session,
+                          'source' or 'destination'
+            validation_code ('int'): Expected span session validation code:
+                0:  Validation pass
+                1:  Exceed the maximum source port number
+                2:  Only one Dst port is supported
+                3:  Port already configured as monitor sources
+                4:  Port already configured as monitor destinations
+                5:  Src port is already be used in session
+                6:  Dst port is already be used in session
+                7:  Exceed the maximum SPAN session number
+                8:  Only NGIO switch is supported
+                -1: Unknown reason
+        Returns:
+            True/False
+    """
+    if role == 'source':
+        output = device.api.configure_local_span_source_and_get_output(
+            session_id=session_id,
+            int_type=int_type,
+            span_port=span_port,
+            direction=direction)
+    elif role == 'destination':
+        output = device.api.configure_local_span_destination_and_get_output(
+            session_id=session_id,
+            span_port=span_port,
+            encapsulation=encapsulation,
+            ingress=ingress,
+            vlan_id=vlan_id)
+    else:
+        log.debug(f'Incorrect role {role}, expected source or destination')
+        return False
+
+    validation_msg_dict = {
+        0: 'Validation pass',
+        1: 'Exceed the maximum source port number',
+        2: 'Only one Dst port is supported',
+        3: 'Port already configured as monitor sources',
+        4: 'Port already configured as monitor destinations',
+        5: 'Src port is already be used in session',
+        6: 'Dst port is already be used in session',
+        7: 'Exceed the maximum SPAN session number',
+        8: 'Only NGIO switch is supported',
+        -1: 'Unknown reason',
+    }
+    output_lower = (output or '').strip().lower()
+
+    if 'validation failed' not in output_lower and '%' not in output_lower:
+        actual_reason_code = 0
+    elif 'maximum source port' in output_lower:
+        actual_reason_code = 1
+    elif ('only' in output_lower
+          and 'dst port is supported' in output_lower):
+        actual_reason_code = 2
+    elif 'already configured as monitor sources' in output_lower:
+        actual_reason_code = 3
+    elif 'already configured as monitor destinations' in output_lower:
+        actual_reason_code = 4
+    elif 'already be used in session' in output_lower:
+        if 'src port' in output_lower:
+            actual_reason_code = 5
+        elif 'dst port' in output_lower:
+            actual_reason_code = 6
+        else:
+            actual_reason_code = -1
+    elif 'exceed the maximum span session number' in output_lower:
+        actual_reason_code = 7
+    elif 'only ngio switch is supported' in output_lower:
+        actual_reason_code = 8
+    else:
+        actual_reason_code = -1
+
+    log.debug(
+        f'Parsed reason code: {actual_reason_code}, reason message: '
+        f'({validation_msg_dict.get(actual_reason_code)})')
+    if actual_reason_code != validation_code:
+        log.debug(
+            'Verify config local span session failed, '
+            f'expected reason code: {validation_code} '
+            f'actual reason code: {actual_reason_code}')
+        return False
+    return True

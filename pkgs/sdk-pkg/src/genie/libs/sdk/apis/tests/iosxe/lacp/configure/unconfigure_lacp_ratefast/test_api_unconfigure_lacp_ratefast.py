@@ -1,35 +1,37 @@
-import os
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.lacp.configure import unconfigure_lacp_ratefast
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.lacp.configure import (
+    unconfigure_lacp_ratefast,
+)
 
 
-class TestUnconfigureLacpRatefast(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          9300-24UX-2:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: c9300
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['9300-24UX-2']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigureLacpRatefast(TestCase):
 
     def test_unconfigure_lacp_ratefast(self):
-        result = unconfigure_lacp_ratefast(self.device, 'te1/0/2')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = unconfigure_lacp_ratefast(
+            device,
+            "te1/0/2",
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, list)
+        self.assertEqual(
+            sent_commands,
+            [
+                "interface te1/0/2",
+                "no lacp rate fast",
+            ],
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

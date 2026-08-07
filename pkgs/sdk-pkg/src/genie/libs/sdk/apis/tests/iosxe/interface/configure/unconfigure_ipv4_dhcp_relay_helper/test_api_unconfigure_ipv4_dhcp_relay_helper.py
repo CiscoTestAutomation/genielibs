@@ -1,35 +1,39 @@
-import os
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.interface.configure import unconfigure_ipv4_dhcp_relay_helper
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.interface.configure import (
+    unconfigure_ipv4_dhcp_relay_helper,
+)
 
 
-class TestUnconfigureIpv4DhcpRelayHelper(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          FE2:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: router
-            type: router
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['FE2']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigureIpv4DhcpRelayHelper(TestCase):
 
     def test_unconfigure_ipv4_dhcp_relay_helper(self):
-        result = unconfigure_ipv4_dhcp_relay_helper(self.device, 'Vlan110', '4.4.4.4')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = unconfigure_ipv4_dhcp_relay_helper(
+            device,
+            "Vlan110",
+            "4.4.4.4",
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, list)
+        self.assertIn(
+            "interface Vlan110",
+            sent_commands,
+        )
+        self.assertIn(
+            "no ip helper-address 4.4.4.4",
+            sent_commands,
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -1,34 +1,33 @@
 import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
+
 from genie.libs.sdk.apis.iosxe.ipsec.configure import unconfigure_ipsec_fragmentation
 
 
-class TestUnconfigureIpsecFragmentation(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = """
-        devices:
-          TLS_Mad1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: iosxe
-            type: iosxe
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['TLS_Mad1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigureIpsecFragmentation(TestCase):
 
     def test_unconfigure_ipsec_fragmentation(self):
-        result = unconfigure_ipsec_fragmentation(self.device, True, False)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = unconfigure_ipsec_fragmentation(
+            device,
+            True,
+            False,
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, list)
+        self.assertEqual(
+            sent_commands,
+            ["no crypto ipsec fragmentation after-encryption"],
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

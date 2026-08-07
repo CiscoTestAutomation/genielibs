@@ -1,35 +1,31 @@
-import os
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.lacp.configure import unconfigure_lacp_system_priority
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.lacp.configure import (
+    unconfigure_lacp_system_priority,
+)
 
 
-class TestUnconfigureLacpSystemPriority(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          Switch:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: c9200
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Switch']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigureLacpSystemPriority(TestCase):
 
     def test_unconfigure_lacp_system_priority(self):
-        result = unconfigure_lacp_system_priority(self.device)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = unconfigure_lacp_system_priority(device)
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_command = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_command, str)
+        self.assertEqual(
+            sent_command,
+            "no lacp system-priority",
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

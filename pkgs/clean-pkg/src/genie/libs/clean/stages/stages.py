@@ -2626,7 +2626,7 @@ delete_files:
 
     regex (bool, optional): If regex is used in the file names, set to True. Default False.
 
-    timeout (int, optional): Timeout in seconds for deleting files. Defaults to 500.
+    timeout (int, optional): Timeout in seconds for deleting files. Defaults to 3600.
 
 Example
 -------
@@ -2640,7 +2640,7 @@ delete_files:
     # Argument Defaults
     # =================
     REGEX = False
-    TIMEOUT = 500
+    TIMEOUT = 3600
 
     # ============
     # Stage Schema
@@ -2648,6 +2648,7 @@ delete_files:
     schema = {
         'files': list,
         Optional('regex'): bool,
+        Optional('timeout'): int,
     }
 
     # ==============================
@@ -3332,7 +3333,7 @@ configure_management:
     # =================
     SET_HOSTNAME = True
     CONFIG_STABLE_TIME = 10
-    PING_ATTEMPTS = 1
+    PING_ATTEMPTS = 3
     PING_SLEEP = 10
 
     # ============

@@ -22,7 +22,7 @@
               "platform": "sdwan"
             },
             "uid": "ApplyConfiguration",
-            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/sdwan/stages.py#L262"
+            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/sdwan/stages.py#L284"
           }
         },
         "tokens": {
@@ -186,7 +186,7 @@
               "platform": "sdwan"
             },
             "uid": "ChangeBootVariable",
-            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/sdwan/stages.py#L770"
+            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/sdwan/stages.py#L792"
           }
         },
         "module_name": "stages.iosxe.stages",
@@ -268,7 +268,7 @@
     "module_name": "stages.stages",
     "package": "genie.libs.clean",
     "uid": "ConfigureInterfaces",
-    "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L3497"
+    "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L3498"
   },
   "ConfigureManagement": {
     "doc": "This stage configures the management IP settings on the device.\n\nStage Schema\n------------\nconfigure_management:\n\n        address ('dict', optional):  Address(es) to configure on the device (syntax: address/mask) (optional)\n            ipv4 ('str') or ('list'): ipv4 address\n            ipv6 ('str') or ('list'): ipv6 address\n\n        gateway: (dict, optional) Gateway address(es) for default route\n            ipv4 ('str') or ('list'): ipv4 gateway address\n            ipv6 ('str') or ('list'): ipv6 gateway address\n\n        vrf (str, optional): VRF to use for management interface\n\n        interface (str, optional): Management interface to use\n\n        routes ('dict', optional):\n           ipv4 (list of 'dict'): ipv4 routes\n              - subnet: (str) subnet including mask\n                next_hop: (str) next_hop for this subnet\n           ipv6 (list of 'dict'): ipv6 routes\n              - subnet: (str) subnet including mask\n                next_hop: (str) next_hop for this subnet\n\n        dhcp_timeout ('int', optional): DHCP timeout in seconds (default: 30)\n\n        protocols ('list', optional): [list of protocols]\n\n        set_hostname (bool): Configure device hostname (default: True)\n        alias_as_hostname (bool): When used with `set_hostname`, will use the\n            alias as the hostname. (default: False)\n\n        config_stable_time (int, optional): Max time in seconds allowed for the\n            configuration to stabilize. Defaults to 10.\n\n\nExample\n-------\nconfigure_management:\n    vrf: Mgmt-vrf\n\n",
@@ -276,7 +276,7 @@
     "module_name": "stages.stages",
     "package": "genie.libs.clean",
     "uid": "ConfigureManagement",
-    "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L3285"
+    "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L3286"
   },
   "ConfigureNetconfYang": {
     "folders": {
@@ -288,7 +288,7 @@
           "os": "iosxe"
         },
         "uid": "ConfigureNetconfYang",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L4615"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L4658"
       }
     }
   },
@@ -302,7 +302,7 @@
           "os": "iosxe"
         },
         "uid": "ConfigureReplace",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L3742"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L3785"
       }
     }
   },
@@ -369,7 +369,7 @@
         "doc": "This stage connects to the device that is being cleaned.\n    Stage Schema\n    ------------\n    connect:\n        via (str, optional): Which connection to use from the testbed file. Uses the\n            default connection if not specified.\n        alias (str, optional): Which connection alias to use from the testbed file.\n        timeout (int, optional): The timeout for the connection to complete in seconds.\n            Defaults to 200.\n        retry_timeout (int, optional): Overall timeout for retry mechanism in seconds.\n            Defaults to 0 which means no retry.\n        retry_interval (int, optional): Interval for retry mechanism in seconds. Defaults\n            to 0 which means no retry.\n        logout (bool, optional): To log out from the device after connection. Defaults to True.\n    Example\n    -------\n    connect:\n        timeout: 60\n        logout: False\n    ",
         "folders": {
           "sdwan": {
-            "doc": "This stage connects to the device that is being cleaned.\n\nStage Schema\n------------\nconnect:\n\n    via (str, optional): Which connection to use from the testbed file. Uses the\n        default connection if not specified.\n\n    timeout (int, optional): The timeout for the connection to complete in seconds.\n        Defaults to 200.\n\n    retry_timeout (int, optional): Overall timeout for retry mechanism in seconds.\n        Defaults to 0 which means no retry.\n\n    retry_interval (int, optional): Interval for retry mechanism in seconds. Defaults\n        to 0 which means no retry.\n\nExample\n-------\nconnect:\n    timeout: 60\n",
+            "doc": "This stage connects to the device that is being cleaned.\n\nStage Schema\n------------\nconnect:\n\n    via (str, optional): Which connection to use from the testbed file. Uses the\n        default connection if not specified.\n\n    timeout (int, optional): The timeout for the connection to complete in seconds.\n        Defaults to 200.\n\n    retry_timeout (int, optional): Overall timeout for retry mechanism in seconds.\n        Defaults to 0 which means no retry.\n\n    retry_interval (int, optional): Interval for retry mechanism in seconds. Defaults\n        to 0 which means no retry.\n\n    logout (bool, optional): Compatibility option for the generic IOS XE\n        Connect stage. Only False is supported because later SD-WAN Clean\n        stages reuse the connection. Defaults to False.\n\nExample\n-------\nconnect:\n    timeout: 60\n    logout: False\n",
             "module_name": "stages.iosxe.sdwan.stages",
             "package": "genie.libs.clean",
             "tokens": {
@@ -385,7 +385,7 @@
           "os": "iosxe"
         },
         "uid": "Connect",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L3819"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L3862"
       },
       "linux": {
         "folders": {
@@ -416,7 +416,7 @@
     "module_name": "stages.stages",
     "package": "genie.libs.clean",
     "uid": "CopyRunToFlash",
-    "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L3228"
+    "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L3229"
   },
   "CopyToDevice": {
     "doc": "This stage will copy an image to a device from a networked location.\n\nStage Schema\n------------\ncopy_to_device:\n\n    origin:\n\n        files (list): Image files location on the server.\n\n        hostname (str): Hostname or address of the server.\n\n    destination:\n\n        directory (str): Directory on the device to copy the images to.\n\n        standby_directory (str, optional): Standby directory on the device\n            to copy the images to. Defaults to None.\n\n    protocol (str): Protocol used for copy operation.\n\n    connection_alias (str): Connection alias to use\n\n    verify_num_images (bool, optional): Verify number of images provided by\n        user for clean is correct. Defaults to True.\n\n    expected_num_images (int, optional): Number of images expected to be\n        provided by user for clean. Defaults to 1.\n\n    vrf (str, optional): Vrf used to copy. Defaults to an empty string.\n\n    timeout (int, optional): Copy operation timeout in seconds. Defaults to 300.\n\n    compact (bool, optional): Compact copy mode if supported by the device.\n        Defaults to False.\n\n    protected_files (list, optional): File patterns that should not be deleted.\n        Defaults to None.\n\n    overwrite (bool, optional): Overwrite the file if a file with the same\n        name already exists. Defaults to False.\n\n    overwrite_if_size_different (bool, optional): Overwrite the file if a file with\n        the same name exists but size is different. Defaults to False.\n\n    skip_deletion (bool, optional): Do not delete any files even if there isn't\n        any space on device. Defaults to False.\n\n    copy_attempts (int, optional): Number of times to attempt copying image\n        files. Defaults to 1 (no retry).\n\n    copy_attempts_sleep (int, optional): Number of seconds to sleep between\n        copy_attempts. Defaults to 30.\n\n    check_file_stability (bool, optional): Verifies that the file size is not\n        changing. This ensures the image is not actively being copied.\n        Defaults to False.\n\n    stability_check_tries (int, optional): Max number of checks that can be\n        done when checking file stability. Defaults to 3.\n\n    stability_check_delay (int, optional): Delay between tries when checking\n        file stability in seconds. Defaults to 2.\n\n    min_free_space_percent ('int', optional) : Percentage of total disk space\n        that must be free. If specified the percentage is not free then the\n        stage will attempt to delete unprotected files to reach the minimum\n        percentage. Defaults to None.\n\n    use_kstack (bool, optional): Use faster version of copy with limited options.\n        Defaults to False.\n\n    interface (str, optional): The interface to use for file transfers, may be needed\n        for copying files on some IOSXE platforms, such as ASR1K when using a VRF\n        Defaults to None\n\n    unique_file_name (bool, optional): Appends a random six-digit number to\n        the end of the image name. Defaults to False.\n\n    unique_number: (int, optional): Appends the provided number to the end of\n        the image name. Defaults to None. Requires unique_file_name is True\n        to be applied.\n\n    rename_images: (str, optional): Rename the image to the provided name.\n        If multiple files exist then an incrementing number is also appended.\n        Defaults to None\n\n    prompt_recovery(bool, optional): Enable the prompt recovery when the  execution\n        command timeout. Defaults to False.\n\nExample\n-------\ncopy_to_device:\n    origin:\n        hostname: server-1\n        files:\n            - /home/cisco/asr1k.bin\n    destination:\n        directory: harddisk:/\n    protocol: sftp\n    timeout: 300\n",
@@ -439,7 +439,7 @@
           "os": "iosxe"
         },
         "uid": "CopyToDevice",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L2588"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L2631"
       }
     },
     "module_name": "stages.stages",
@@ -464,7 +464,7 @@
     "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L2353"
   },
   "DeleteFiles": {
-    "doc": "Delete files from the device.\n\nUses the `delete_files` device API.\n\nStage Schema\n------------\ndelete_files:\n\n    files (list): List of files including location.\n\n    regex (bool, optional): If regex is used in the file names, set to True. Default False.\n\n    timeout (int, optional): Timeout in seconds for deleting files. Defaults to 500.\n\nExample\n-------\ndelete_files:\n    files:\n        - flash:core/*.gz\n        - crashinfo/*.tar.gz\n",
+    "doc": "Delete files from the device.\n\nUses the `delete_files` device API.\n\nStage Schema\n------------\ndelete_files:\n\n    files (list): List of files including location.\n\n    regex (bool, optional): If regex is used in the file names, set to True. Default False.\n\n    timeout (int, optional): Timeout in seconds for deleting files. Defaults to 3600.\n\nExample\n-------\ndelete_files:\n    files:\n        - flash:core/*.gz\n        - crashinfo/*.tar.gz\n",
     "folders": {},
     "module_name": "stages.stages",
     "package": "genie.libs.clean",
@@ -520,7 +520,7 @@
               "platform": "sdwan"
             },
             "uid": "ExpandImage",
-            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/sdwan/stages.py#L687"
+            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/sdwan/stages.py#L709"
           }
         },
         "tokens": {
@@ -688,7 +688,7 @@
           "os": "iosxe"
         },
         "uid": "InstallPackages",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1827"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1856"
       }
     }
   },
@@ -716,7 +716,7 @@
           "os": "iosxe"
         },
         "uid": "InstallRemoveSmu",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1323"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1352"
       }
     }
   },
@@ -730,7 +730,7 @@
           "os": "iosxe"
         },
         "uid": "InstallSmu",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1592"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1621"
       }
     }
   },
@@ -797,7 +797,7 @@
     "module_name": "stages.stages",
     "package": "genie.libs.clean",
     "uid": "PowerCycle",
-    "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L3073"
+    "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L3074"
   },
   "PrimeAp": {
     "folders": {
@@ -831,7 +831,7 @@
           "os": "iosxe"
         },
         "uid": "Reload",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1921"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L1950"
       }
     },
     "module_name": "stages.stages",
@@ -849,7 +849,7 @@
           "os": "iosxe"
         },
         "uid": "ResetConfiguration",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L4111"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L4154"
       }
     }
   },
@@ -859,7 +859,7 @@
     "module_name": "stages.stages",
     "package": "genie.libs.clean",
     "uid": "RevertVmSnapshot",
-    "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L2700"
+    "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L2701"
   },
   "RommonBoot": {
     "folders": {
@@ -893,7 +893,7 @@
           "os": "iosxe"
         },
         "uid": "RommonBoot",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L2280"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L2323"
       }
     }
   },
@@ -928,7 +928,7 @@
           "os": "iosxe"
         },
         "uid": "SetControllerMode",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L4382"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L4425"
       }
     }
   },
@@ -1000,7 +1000,7 @@
               "platform": "sdwan"
             },
             "uid": "TftpBoot",
-            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/sdwan/stages.py#L395"
+            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/sdwan/stages.py#L417"
           }
         },
         "module_name": "stages.iosxe.stages",
@@ -1290,7 +1290,7 @@
           "os": "iosxe"
         },
         "uid": "VerifyNetconfProcesses",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L4837"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L4880"
       }
     }
   },

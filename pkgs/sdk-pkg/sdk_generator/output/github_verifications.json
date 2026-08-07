@@ -9729,15 +9729,6 @@
       "url": "https://github.com/CiscoTestAutomation/genieparser/tree/main/src/genie/libs/parser/ios/show_platform.py"
     },
     "iosxe": {
-      "cat9kv": {
-        "doc": "Parser for show switch.",
-        "groups": [],
-        "schema": "{'switch': {'mac_address': <class 'str'>, Optional  (str) mac_persistency_wait_time: <class 'str'>, Optional  (str) stack: {Any  (str) *: {'role': <class 'str'>, 'mac_address': <class 'str'>, 'priority': <class 'str'>, Optional  (str) hw_ver: <class 'str'>, 'state': <class 'str'>}}}}",
-        "source": {
-          "class": "genie.harness.base.Template"
-        },
-        "url": "https://github.com/CiscoTestAutomation/genieparser/tree/main/src/genie/libs/parser/iosxe/cat9kv/show_platform.py"
-      },
       "devices": [
         "uut"
       ],
@@ -11232,14 +11223,6 @@
       "t"
     ],
     [
-      "9",
-      "a",
-      "c",
-      "k",
-      "t",
-      "v"
-    ],
-    [
       "a",
       "a",
       "g",
@@ -11300,13 +11283,6 @@
       "i",
       "n",
       "r"
-    ],
-    [
-      "e",
-      "i",
-      "o",
-      "s",
-      "x"
     ],
     [
       "e",

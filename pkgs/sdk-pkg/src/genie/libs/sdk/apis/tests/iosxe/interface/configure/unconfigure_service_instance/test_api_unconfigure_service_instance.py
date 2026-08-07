@@ -1,35 +1,39 @@
-import os
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.interface.configure import unconfigure_service_instance
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.interface.configure import (
+    unconfigure_service_instance,
+)
 
 
-class TestUnconfigureServiceInstance(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          C1113-8P_pkumarmu:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: router
-            type: iosxe
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['C1113-8P_pkumarmu']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigureServiceInstance(TestCase):
 
     def test_unconfigure_service_instance(self):
-        result = unconfigure_service_instance(self.device, 'GigabitEthernet0/0/0', '30')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = unconfigure_service_instance(
+            device,
+            "GigabitEthernet0/0/0",
+            "30",
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, list)
+        self.assertIn(
+            "interface GigabitEthernet0/0/0",
+            sent_commands,
+        )
+        self.assertIn(
+            "no service instance 30 ethernet",
+            sent_commands,
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

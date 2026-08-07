@@ -1,35 +1,36 @@
-import os
 import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
+
 from genie.libs.sdk.apis.iosxe.interface.configure import unconfigure_ppp_multilink
 
 
-class TestUnconfigurePppMultilink(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          nanook_pkumarmu_rr:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: router
-            type: iosxe
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['nanook_pkumarmu_rr']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigurePppMultilink(TestCase):
 
     def test_unconfigure_ppp_multilink(self):
-        result = unconfigure_ppp_multilink(self.device, 'Dialer10')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = unconfigure_ppp_multilink(
+            device,
+            "Dialer10",
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, list)
+        self.assertIn(
+            "interface Dialer10",
+            sent_commands,
+        )
+        self.assertIn(
+            "no ppp multilink",
+            sent_commands,
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

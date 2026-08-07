@@ -43,7 +43,7 @@ def unconfigure_logging_console(device):
 
 
 def configure_logging_host(device, server_ip):
-    """ Configure logging host 
+    """ Configure logging host
         Args:
             device ('obj'): Device object
             server_ip ('str'):  IP address of the syslog server
@@ -77,7 +77,7 @@ def unconfigure_logging_host(device, server_ip):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Failed to unconfigure logging. Error:\n{e}")
-        
+
 
 def configure_logging_source_interface(device, interface):
     """ Configure logging host
@@ -114,8 +114,8 @@ def unconfigure_logging_source_interface(device, interface):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Failed to unconfigure logging source interface. Error:\n{e}")
-        
-           
+
+
 def configure_logging_monitor(device):
     """ logging monitor
         Args:
@@ -241,7 +241,7 @@ def configure_logging_buffered_errors(device):
     """
 
     log.debug("Configure logging buffered errors on {device}".format(device=device))
-    
+
     try:
         device.configure('logging buffered errors')
     except SubCommandFailure as e:
@@ -260,7 +260,7 @@ def unconfigure_logging_buffered_errors(device):
     """
 
     log.debug("Unconfigure logging buffered errors on {device}".format(device=device))
-    
+
     try:
         device.configure('no logging buffered errors')
     except SubCommandFailure as e:
@@ -279,7 +279,7 @@ def configure_logging_console_errors(device):
     """
 
     log.debug("Configure logging console errors on {device}".format(device=device))
-    
+
     try:
         device.configure('logging console errors')
     except SubCommandFailure as e:
@@ -298,7 +298,7 @@ def unconfigure_logging_console_errors(device):
     """
 
     log.debug("Unconfigure logging console errors on {device}".format(device=device))
-    
+
     try:
         device.configure('no logging console errors')
     except SubCommandFailure as e:
@@ -362,7 +362,7 @@ def configure_logging_buffered_debugging(device):
     """
 
     log.debug("Configure logging buffered debugging on {device}".format(device=device))
-    
+
     try:
         device.configure('logging buffered debugging')
     except SubCommandFailure as e:
@@ -374,7 +374,7 @@ def unconfigure_logging_buffered(device, log_type=None):
     """ Unconfigure logging buffered
         Args:
             device ('obj'): Device object
-            log_type ('str', optional) : unconfigure log type. Ex: alerts, critical, etc. Default is None. 
+            log_type ('str', optional) : unconfigure log type. Ex: alerts, critical, etc. Default is None.
         Returns:
             None
         Raises:
@@ -438,7 +438,7 @@ def configure_login_log(device, login_attempt, periodicity_num=''):
     """
     cmd = f'login {login_attempt} log'
     if periodicity_num:
-        cmd += f' every {periodicity_num}'        
+        cmd += f' every {periodicity_num}'
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -456,7 +456,7 @@ def configure_logging_host_transport_tcp_port(device, server_ip, port_num):
             None
         Raise:
             SubCommandFailure: Failed configuring logging host transport tcp port
-    """	
+    """
     cmd = f'logging host {server_ip} transport tcp port {port_num}'
     try:
         device.configure(cmd)
@@ -466,7 +466,7 @@ def configure_logging_host_transport_tcp_port(device, server_ip, port_num):
 
 
 def configure_logging(device, mode, severity=None):
-    """ Configure logging 
+    """ Configure logging
         Args:
             device ('obj'): Device object
             mode ('str'): logging mode. Ex: monitor, history, hostname, on
@@ -484,7 +484,7 @@ def configure_logging(device, mode, severity=None):
 
 
 def unconfigure_logging(device, mode, severity=None):
-    """ Unconfigure logging 
+    """ Unconfigure logging
         Args:
             device ('obj'): Device object
             mode ('str'): logging mode. Ex: monitor, history, hostname, on
@@ -505,7 +505,7 @@ def configure_logging_alarm(device, severity_level=None):
     """ logging alarm
         Args:
             device (`obj`): Device object
-            severity_level ('str'/`int`): Severity or level for logging alarm (severity:critical, informational, etc;          
+            severity_level ('str'/`int`): Severity or level for logging alarm (severity:critical, informational, etc;
                                           level:1-4, where 1 is the highest severity and 4 is the lowest)
         Returns:
             None
@@ -545,3 +545,97 @@ def unconfigure_logging_alarm(device, severity_level=None):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not unconfigure logging alarm on {device}. Error:\n{error}".format(device=device, error=e))
+
+
+def configure_enable_debugs(device, log_buffer_size=5000000,
+                            timestamp=True, queue_limit=None,
+                            rate_limit=None, buffer_level='debugging'):
+    """Configure debug logging defaults on device.
+
+        Args:
+            device (`obj`): Device object
+            log_buffer_size (`int`, optional): Logging buffer size value.
+                Defaults to 5000000
+            timestamp (`bool`, optional): Enable service timestamps.
+                Defaults to True
+            queue_limit (`int`, optional): Logging queue-limit value. If None,
+                sends ``no logging queue-limit``; if a value is given, sends
+                ``logging queue-limit <value>``. Defaults to None
+            rate_limit (`int`, optional): Logging rate-limit value. If None,
+                sends ``no logging rate-limit``; if a value is given, sends
+                ``logging rate-limit <value>``. Defaults to None
+            buffer_level (`str`, optional): Logging buffered level.
+                Defaults to 'debugging'
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = []
+    if timestamp:
+        cmd.append("service timestamps")
+    if queue_limit is None:
+        cmd.append("no logging queue-limit")
+    else:
+        cmd.append(f"logging queue-limit {queue_limit}")
+    if rate_limit is None:
+        cmd.append("no logging rate-limit")
+    else:
+        cmd.append(f"logging rate-limit {rate_limit}")
+    if buffer_level:
+        cmd.append(f"logging buffered {buffer_level}")
+    if log_buffer_size:
+        cmd.append(f"logging buffered {log_buffer_size}")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure enable debugs on {device}. Error:\n{error}"
+            .format(device=device, error=e)
+        )
+
+
+def unconfigure_enable_debugs(device, log_buffer_size=5000000,
+                              timestamp=True, queue_limit=None,
+                              rate_limit=None, buffer_level='debugging'):
+    """Unconfigure debug logging defaults on device.
+
+        Args:
+            device (`obj`): Device object
+            log_buffer_size (`int`, optional): Logging buffer size value.
+                Defaults to 5000000
+            timestamp (`bool`, optional): Disable service timestamps.
+                Defaults to True
+            queue_limit (`int`, optional): Logging queue-limit value to restore.
+                If None, the setting is omitted (prior value cannot be
+                reconstructed); if a value is given, sends
+                ``logging queue-limit <value>``. Defaults to None
+            rate_limit (`int`, optional): Logging rate-limit value to restore.
+                If None, the setting is omitted (prior value cannot be
+                reconstructed); if a value is given, sends
+                ``logging rate-limit <value>``. Defaults to None
+            buffer_level (`str`, optional): Logging buffered level to remove.
+                Defaults to 'debugging'
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = []
+    if timestamp:
+        cmd.append("no service timestamps")
+    if queue_limit is not None:
+        cmd.append(f"logging queue-limit {queue_limit}")
+    if rate_limit is not None:
+        cmd.append(f"logging rate-limit {rate_limit}")
+    if buffer_level:
+        cmd.append(f"no logging buffered {buffer_level}")
+    if log_buffer_size:
+        cmd.append(f"no logging buffered {log_buffer_size}")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure enable debugs on {device}. Error:\n{error}"
+            .format(device=device, error=e)
+        )

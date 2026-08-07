@@ -1,34 +1,47 @@
 import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
+
 from genie.libs.sdk.apis.iosxe.ipsec.configure import configure_ipsec_sa_global
 
 
-class TestConfigureIpsecSaGlobal(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = """
-        devices:
-          TLS_Mad1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: iosxe
-            type: iosxe
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['TLS_Mad1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureIpsecSaGlobal(TestCase):
 
     def test_configure_ipsec_sa_global(self):
-        result = configure_ipsec_sa_global(self.device, True, False, 300, True, False, None, False, False, 512, True)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = configure_ipsec_sa_global(
+            device,
+            True,
+            False,
+            300,
+            True,
+            False,
+            None,
+            False,
+            False,
+            512,
+            True,
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, list)
+        self.assertEqual(
+            sent_commands,
+            [
+                "crypto ipsec security-association ecn discard",
+                "crypto ipsec security-association idle-time 300",
+                "crypto ipsec security-association lifetime days 1",
+                "crypto ipsec security-association replay window-size 512",
+                "crypto ipsec security-association multi-sn",
+            ],
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

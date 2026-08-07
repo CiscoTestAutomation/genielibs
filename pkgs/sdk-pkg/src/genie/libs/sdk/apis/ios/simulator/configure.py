@@ -107,12 +107,14 @@ def unconfigure_simulator_radius_key(device, key):
 def configure_simulator_radius_subscriber(device, subscriber_id, service=None,
                                           attributes=None, vsas=None,
                                           authentication=None, remove_first=True,
-                                          framed_prefix=None, negate=False):
+                                          framed_prefix=None, negate=False,
+                                          framed_protocol=None):
     """ Configure simulator radius subscriber on device
 
         Args:
             device (`obj`): Device object
-            subscriber_id (`int`): Subscriber ID number
+            subscriber_id (`int` or `str`): Subscriber ID number, or 'all' to
+                target all subscribers
             service (`str`, optional): Service type (e.g. 'framed', 'outbound').
                 Defaults to None
             attributes (`list`, optional): List of dicts with keys:
@@ -129,8 +131,10 @@ def configure_simulator_radius_subscriber(device, subscriber_id, service=None,
                 before configuring. Defaults to True
             framed_prefix (`str`, optional): Framed IPv6 prefix
                 (e.g. '2001:db8:1::/64'). Defaults to None
-            negate (`bool`, optional): If True, prepends 'no ' to framed_prefix
-                and attribute lines. Defaults to False
+            negate (`bool`, optional): If True, prepends 'no ' to framed_prefix,
+                vsa and attribute lines. Defaults to False
+            framed_protocol (`str`, optional): Framed protocol (e.g. 'ppp').
+                Defaults to None
         Returns:
             None
         Raises:
@@ -141,6 +145,8 @@ def configure_simulator_radius_subscriber(device, subscriber_id, service=None,
     if remove_first:
         cmd.append(f"no simulator radius subscriber {subscriber_id}")
     cmd.append(f"simulator radius subscriber {subscriber_id}")
+    if framed_protocol:
+        cmd.append(f" framed protocol {framed_protocol}")
     if service:
         cmd.append(f" service {service}")
     if framed_prefix:
@@ -149,7 +155,7 @@ def configure_simulator_radius_subscriber(device, subscriber_id, service=None,
         cmd.append(f" authentication {authentication}")
     if vsas:
         for vsa in vsas:
-            cmd.append(f" vsa {vsa}")
+            cmd.append(f" {no}vsa {vsa}")
     if attributes:
         for attr in attributes:
             cmd.append(f" {no}attribute {attr['id']} {attr['type']} {attr['value']}")
@@ -166,7 +172,8 @@ def unconfigure_simulator_radius_subscriber(device, subscriber_id):
 
         Args:
             device (`obj`): Device object
-            subscriber_id (`int`): Subscriber ID number
+            subscriber_id (`int` or `str`): Subscriber ID number, or 'all' to
+                remove all subscribers
         Returns:
             None
         Raises:
@@ -279,4 +286,116 @@ def unconfigure_service_simulator_radius_server(device):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Failed to unconfigure service simulator radius server. Error: {e}"
+        )
+
+
+def configure_simulator_radius_client_host(device, client_ip, access_ports,
+                                           accounting_ports, host_ip,
+                                           auth_port, acct_port, key=None,
+                                           key_type=None):
+    """ Configure simulator radius client and host on device
+
+        Args:
+            device (`obj`): Device object
+            client_ip (`str`): RADIUS client IP address
+            access_ports (`str`): Access ports (e.g. '1645 1645')
+            accounting_ports (`str`): Accounting ports (e.g. '1646 1646')
+            host_ip (`str`): RADIUS host IP address
+            auth_port (`str`): Authentication port
+            acct_port (`str`): Accounting port
+            key (`str`, optional): Shared key. Defaults to None
+            key_type (`str`, optional): Key encryption type (e.g. '0', '7').
+                Defaults to None
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [
+        f"simulator radius client {client_ip} access-ports {access_ports}"
+        f" accounting-ports {accounting_ports}",
+    ]
+    host = (
+        f"simulator radius host {host_ip} auth-port {auth_port}"
+        f" acct-port {acct_port}"
+    )
+    if key is not None:
+        if key_type is not None:
+            host += f" key {key_type} {key}"
+        else:
+            host += f" key {key}"
+    cmd.append(host)
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure simulator radius client and host. Error: {e}"
+        )
+
+
+def unconfigure_simulator_radius_client_host(device, client_ip, access_ports,
+                                             accounting_ports, host_ip,
+                                             auth_port, acct_port):
+    """ Unconfigure simulator radius client and host on device
+
+        Args:
+            device (`obj`): Device object
+            client_ip (`str`): RADIUS client IP address
+            access_ports (`str`): Access ports (e.g. '1645 1645')
+            accounting_ports (`str`): Accounting ports (e.g. '1646 1646')
+            host_ip (`str`): RADIUS host IP address
+            auth_port (`str`): Authentication port
+            acct_port (`str`): Accounting port
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [
+        f"no simulator radius client {client_ip} access-ports {access_ports}"
+        f" accounting-ports {accounting_ports}",
+        f"no simulator radius host {host_ip} auth-port {auth_port}"
+        f" acct-port {acct_port}",
+    ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure simulator radius client and host. Error: {e}"
+        )
+
+
+def configure_simulator_radius_account_coa(device):
+    """ Configure simulator radius account-coa on device
+
+        Args:
+            device (`obj`): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure("simulator radius account-coa")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure simulator radius account-coa. Error: {e}"
+        )
+
+
+def unconfigure_simulator_radius_account_coa(device):
+    """ Unconfigure simulator radius account-coa on device
+
+        Args:
+            device (`obj`): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure("no simulator radius account-coa")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure simulator radius account-coa. Error: {e}"
         )

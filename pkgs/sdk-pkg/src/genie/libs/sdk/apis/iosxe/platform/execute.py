@@ -10,17 +10,36 @@ from pyats.async_ import pcall
 from pyats.utils.fileutils import FileUtils
 
 # Genie
-from genie.utils import Dq
 from genie.harness.utils import connect_device
 from genie.utils.timeout import Timeout
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
+from genie.libs.sdk.apis.execute import (
+    _get_directory_file_details,
+    _get_entry_size,
+    _is_directory_entry,
+)
+from genie.abstract import deprecated
 
 # Unicon
 from unicon.eal.dialogs import Statement, Dialog
 from unicon.core.errors import StateMachineError,SubCommandFailure
+from unicon.plugins.iosxe.service_statements import proceed_confirm_stmt
+from unicon.plugins.utils import get_device_mode
 
 # Logger
 log = logging.getLogger(__name__)
+
+
+def _get_child_directory(parent_directory, entry_name):
+    """Return child dir path with one separator and trailing slash."""
+    if parent_directory.endswith(':'):
+        child_directory = f'{parent_directory}/{entry_name}'
+    elif parent_directory.endswith('/'):
+        child_directory = f'{parent_directory}{entry_name}'
+    else:
+        child_directory = f'{parent_directory}/{entry_name}'
+
+    return f'{child_directory.rstrip("/")}/'
 
 
 def execute_delete_boot_variable(device, boot_images=[], timeout=300):
@@ -167,13 +186,52 @@ def execute_write_erase(device, timeout=300, devices=None, exclude_devices=None)
     else:
         _execute_write_erase(device=device, timeout=timeout)
 
+
+def _execute_config_transaction_commit(device, timeout=300):
+    '''Commit the running configuration in Controller-Managed mode.'''
+    log.info("Executing 'config-transaction commit' on the device")
+
+    # Execute the transaction in one service call so Unicon handles the
+    # Controller-Managed state changes and confirmation prompt.
+    output = device.execute(
+        ['config-transaction', 'commit', 'end'],
+        allow_state_change=True,
+        service_dialog=Dialog([proceed_confirm_stmt]),
+        timeout=timeout)
+
+    commit_output = output.get('commit', '') or ''
+    # The dialog handles the confirmation, and the warning prompt may remain
+    # as the only commit output.
+    warning_prompt = 'Proceed? [yes,no]' in commit_output
+    if ('Commit complete.' in commit_output or
+            'No modifications to commit.' in commit_output or
+            warning_prompt):
+        log.info("Successfully executed 'config-transaction commit'")
+    else:
+        raise Exception(
+            "Failed to execute 'commit': {output}".format(
+                output=commit_output))
+
+
 def execute_write_memory(device, timeout=300):
-    ''' Execute 'write memory' on the device
+    ''' Save running configuration based on the IOS XE operating mode.
+
+        Controller-Managed mode uses config-transaction; other modes use
+        write memory.
         Args:
             device ('obj'): Device object
-            timeout ('int', optional): Max time for write memory to complete in seconds
-                            Default is 300
+            timeout ('int', optional): Max time for save operation to
+                complete in seconds. Default is 300
+
+        Returns:
+            None
+
+        Raises:
+            Exception: If mode detection or the save operation fails.
     '''
+
+    if get_device_mode(device) == 'Controller-Managed':
+        return _execute_config_transaction_commit(device, timeout=timeout)
 
     log.info("Executing 'write memory' on the device")
 
@@ -330,7 +388,10 @@ def delete_unprotected_files(device,
                              files_to_delete=None,
                              dir_output=None,
                              allow_failure=False,
-                             destination=None):
+                             destination=None,
+                             recursive=False,
+                             stop_check=None,
+                             timeout=300):
     """delete all files not matching regex in the protected list
         Args:
             device ('obj'): Device object
@@ -341,15 +402,34 @@ def delete_unprotected_files(device,
             dir_output ('str'): output of dir command, if not provided execute the cmd on device to get the output
             allow_failure (bool, optional): Allow the deletion of a file to silently fail. Defaults to False.
             destination ('str') : Destination directory. default to None. i.e bootflash:/
+            recursive (bool, optional): Traverse unprotected subdirectories and
+                delete their files. Defaults to False.
+            stop_check (callable, optional): Function called after each
+                recursive file deletion. When it returns True, recursive
+                traversal stops early.
+            timeout (int, optional): Timeout for recursive directory listing.
+                Defaults to 300.
         Returns:
-            None
+            True if recursive traversal stopped early, None otherwise.
             """
 
     protected_set = set()
     fu_device = FileUtils.from_device(device)
-    file_set = set(
-        Dq(device.parse('dir {}'.format(directory),
-                        output=dir_output)).get_values('files'))
+    if recursive and dir_output is None:
+        # Large recursive listings such as bootflash:/core/ can exceed the
+        # parser-led execution timeout. Execute with the supplied timeout
+        # first, then parse the collected output.
+        log.debug(
+            'Listing recursive directory "{}" with timeout {} seconds'.format(
+                directory, timeout))
+        dir_output = device.execute(
+            'dir {}'.format(directory), timeout=timeout)
+    parsed_dir_output = device.parse(
+        'dir {}'.format(directory), output=dir_output)
+    file_details = _get_directory_file_details(parsed_dir_output)
+
+    file_details = file_details or {}
+    file_set = set(file_details)
 
     if isinstance(protected, str):
         protected = [protected]
@@ -376,16 +456,50 @@ def delete_unprotected_files(device,
     error_messages = []
 
     if not_protected:
+        if recursive:
+            # Visit directories first; IOS-XE dir output is timestamp ordered:
+            #   326443  drwx  4096   Jul 13 2026 14:12:27 +00:00  acm
+            #   326485  -rw-  0      Jul 13 2026 14:03:59 +00:00  dope_hist
+            #   489719  drwx  77824  Jul 13 2026 07:23:23 +00:00  core
+            # Sort directories first, largest to smallest, then files.
+            not_protected = sorted(
+                not_protected,
+                key=lambda file: (
+                    not _is_directory_entry(file, file_details),
+                    -_get_entry_size(file, file_details),
+                    file))
+
         log.info("The following files will be deleted:\n{}".format(
             '\n'.join(not_protected)))
-        dont_delete_list = protected_set.intersection(files_to_delete)
+        dont_delete_list = protected_set.intersection(files_to_delete or [])
         if dont_delete_list:
             log.info(
                 "The following files will not be deleted because they are protected:\n{}"
                 .format('\n'.join(dont_delete_list)))
         for file in not_protected:
-            # it's a directory, dont delete
-            if file.endswith('/'):
+            if _is_directory_entry(file, file_details):
+                if recursive:
+                    # Nested directories recurse the same way, e.g.
+                    # `dir bootflash:/core/`:
+                    #   489707  drwx  4096  Jul 13 2026 14:07:07 +00:00  modules
+                    parent_directory = destination or directory
+                    child_directory = _get_child_directory(
+                        parent_directory, file)
+                    log.info(
+                        'Traversing the unprotected directory "{}"'.format(
+                            child_directory))
+                    if delete_unprotected_files(
+                        device=device,
+                        directory=child_directory,
+                        protected=protected,
+                        allow_failure=allow_failure,
+                        destination=child_directory,
+                        recursive=True,
+                        stop_check=stop_check,
+                        timeout=timeout):
+                        return True
+                # Recursive cleanup removes directory contents but leaves the
+                # directory itself intact.
                 continue
             log.info(f'Deleting the unprotected file "{file}"')
             try:
@@ -401,6 +515,9 @@ def delete_unprotected_files(device,
                     continue
 
                 error_messages.append(f'Failed to delete file "{file}" due to :{str(e)}')
+                continue
+            if stop_check and stop_check():
+                return True
         if error_messages:
             raise Exception('\n'.join(error_messages))
     else:
@@ -2541,15 +2658,15 @@ def execute_test_platform_software_command(device,bp,redundancy_mode,mode_type,a
         )
 
         
-def touch_file(device, directory, file_name):
+def create_empty_file(device, directory, file_name, overwrite=False):
     """
-    Create an empty file at the specified path on the device using the 'puts' command
-    in tcl shell of device.
+    Create an empty file at the specified path on the device with ``copy null:``.
 
     Args:
         device (obj): Device object
-        directory (str): The directory where the file will be created (e.g., 'bootflash:/')
+        directory (str): The directory where the file will be created (e.g., 'bootflash:', 'flash:')
         file_name (str): The name of the file to be created on the device (e.g., 'testfile.txt')
+        overwrite (bool): Whether to overwrite an existing file. Defaults to False.
 
     Returns:
         None
@@ -2557,7 +2674,66 @@ def touch_file(device, directory, file_name):
     Raises:
         SubCommandFailure: If the command execution fails
     """
-    device.tclsh(f'puts [open "{directory}{file_name}" w+] {{}}')
+    if not directory.endswith('/'):
+        directory = f'{directory}/'
+    destination = f'{directory}{file_name}'
+    copy_cmd = f'copy null: {destination}'
+
+    try:
+        if not overwrite:
+            dir_output = device.execute('dir {}'.format(directory))
+            if device.api.verify_file_exists(
+                    file=destination,
+                    dir_output=dir_output):
+                log.info(
+                    "File '{}' already exists on device '{}'. Skipping creation."
+                    .format(destination, device.name))
+                return
+
+        log.info("Creating empty file '{}' on device '{}'".format(
+            destination, device.name))
+
+        dialog = Dialog([
+            Statement(
+                pattern=r'Destination filename \[.*\]\?',
+                action='sendline()',
+                loop_continue=True,
+                continue_timer=True,
+            ),
+        ])
+        if overwrite:
+            dialog.append(Statement(
+                pattern=r'%Warning:.*existing with this name\s+Do you want to over write\? \[confirm\]',
+                action='sendline()',
+                loop_continue=True,
+                continue_timer=True,
+            ))
+        device.execute(copy_cmd, reply=dialog)
+    except Exception as e:
+        raise SubCommandFailure(
+            f"Failed to create file '{destination}' on device {device.name}. "
+            f"Error:\n{e}"
+        ) from e
+
+
+@deprecated("please use create_empty_file()")
+def touch_file(device, directory, file_name, overwrite=False):
+    """
+    Deprecated compatibility wrapper for create_empty_file().
+    Args:
+        device (obj): Device object
+        directory (str): The directory where the file will be created.
+        file_name (str): The name of the file to be created on the device.
+        overwrite (bool): Whether to overwrite an existing file. Defaults to False.
+    Returns:
+        None
+    """
+    return create_empty_file(
+        device=device,
+        directory=directory,
+        file_name=file_name,
+        overwrite=overwrite)
+
 
 def execute_show_policy_firewall_stats_platform(device, filter_option=None):
     """Execute 'show policy-firewall stats platform' on device
@@ -2640,4 +2816,132 @@ def execute_fsck(device, file_system, timeout=120):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Failed to execute {cmd} on device {device.name}. Error:\n{e}"
+        )
+
+
+def execute_erase_nvram(device, timeout=300):
+    """Execute 'erase nvram:' on the device.
+
+    Args:
+        device (`obj`): Device object
+        timeout (`int`, optional): Max time in seconds. Default is 300.
+
+    Returns:
+        str: Command output
+
+    Raises:
+        SubCommandFailure: If command execution fails or output indicates failure
+    """
+
+    log.info("Executing 'erase nvram:' on the device")
+
+    erase_confirm = Statement(
+        pattern=r".*Continue\? \[confirm\]|.*\[confirm\]|.*confirm.*",
+        action='sendline()',
+        loop_continue=True,
+        continue_timer=False,
+    )
+
+    origin = list(device.execute.error_pattern)
+    error_pattern = ['.*[Pp]ermission denied.*']
+    error_pattern.extend(origin)
+
+    try:
+        output = device.execute(
+            "erase nvram:",
+            reply=Dialog([erase_confirm]),
+            timeout=timeout,
+            error_pattern=error_pattern,
+        )
+    except Exception as err:
+        raise SubCommandFailure(
+            "Failed to execute 'erase nvram:' on '{}'. Error: {}".format(device.name, err)
+        )
+    finally:
+        device.execute.error_pattern = origin
+
+    output_l = output.lower()
+    if "erase of nvram" in output_l or "[ok]" in output_l or "ok" in output_l:
+        log.info("Successfully executed 'erase nvram:'")
+        return output
+
+    raise SubCommandFailure(
+        "Failed to execute 'erase nvram:' on '{}'. Output:\n{}".format(device.name, output)
+    )
+
+
+def execute_erase_nvram_all(device, timeout=300):
+    """Execute 'erase /all nvram:' on the device.
+
+    Args:
+        device (`obj`): Device object
+        timeout (`int`, optional): Max time in seconds. Default is 300.
+
+    Returns:
+        str: Command output
+
+    Raises:
+        SubCommandFailure: If command execution fails or output indicates failure
+    """
+
+    log.info("Executing 'erase /all nvram:' on the device")
+
+    erase_confirm = Statement(
+        pattern=r".*Continue\? \[confirm\]|.*\[confirm\]|.*confirm.*",
+        action='sendline()',
+        loop_continue=True,
+        continue_timer=False,
+    )
+
+    origin = list(device.execute.error_pattern)
+    error_pattern = ['.*[Pp]ermission denied.*']
+    error_pattern.extend(origin)
+
+    try:
+        output = device.execute(
+            "erase /all nvram:",
+            reply=Dialog([erase_confirm]),
+            timeout=timeout,
+            error_pattern=error_pattern,
+        )
+    except Exception as err:
+        raise SubCommandFailure(
+            "Failed to execute 'erase /all nvram:' on '{}'. Error: {}".format(device.name, err)
+        )
+    finally:
+        device.execute.error_pattern = origin
+
+    output_l = output.lower()
+    if "erase of nvram" in output_l or "[ok]" in output_l or "ok" in output_l:
+        log.info("Successfully executed 'erase /all nvram:'")
+        return output
+
+    raise SubCommandFailure(
+        "Failed to execute 'erase /all nvram:' on '{}'. Output:\n{}".format(device.name, output)
+    )
+
+def execute_hw_module_beacon_slot_port_status(device, line_card, port_number, status, timeout=60):
+    """Execute 'hw-module beacon slot <line_card> port <port_number> <status>' on device.
+
+    Args:
+        device ('obj'): Device object
+        line_card ('int'): Line card slot/port value
+        port_number ('int'): Port number value
+        status ('str'): Beacon status value (for example: 'on' or 'off')
+        timeout ('int', optional): Max time for command execution (default: 60)
+
+    Returns:
+        str: Command output
+
+    Raises:
+        SubCommandFailure
+    """
+
+    cmd = f"hw-module beacon slot {line_card} port {port_number} {status}"
+    try:
+        output = device.execute(cmd, timeout=timeout)
+        return output
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to execute '{cmd}' on device {device.name}. Error:\n{e}"
         )

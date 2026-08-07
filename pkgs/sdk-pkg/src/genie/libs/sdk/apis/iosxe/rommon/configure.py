@@ -128,7 +128,45 @@ def configure_rommon_tftp_ha(device, use_ipv6=False, image_path=None):
         setattr(device, "management", {})
     management_dict = device.management
     rommon_dict = management_dict.setdefault('rommon', {})
+    # Valid RP entries (rp0, rp1, ...) are sorted numerically and then
+    # mapped positionally to device.subconnections. Changing this mapping
+    # requires a separate schema/API change.
+    rp_details = dict(
+        sorted(
+            ((rp, info) for rp, info in rommon_dict.items()
+             if (isinstance(rp, str) and
+                 rp.lower().startswith('rp') and
+                 rp[2:].isdigit())),
+            key=lambda item: int(item[0][2:])))
+    address_key = 'ipv6' if use_ipv6 else 'ipv4'
 
+    # Check the selected address family before building ROMMON commands.
+    address_family = 'IPv6' if use_ipv6 else 'IPv4'
+    rommon_fields = ('address', 'gateway')
+    missing_information = []
+    rp_entries = list(rp_details.values())
+    for rp_number, connection in enumerate(device.subconnections):
+        rp_info = (rp_entries[rp_number]
+                   if rp_number < len(rp_entries) else {})
+        missing_fields = []
+        for section in rommon_fields:
+            section_details = (rp_info.get(section, {})
+                               if isinstance(rp_info, dict) else {})
+            if (not isinstance(section_details, dict) or
+                    not section_details.get(address_key)):
+                missing_fields.append(
+                    f'ROMMON {address_family} {section} '
+                    f'({section}.{address_key})')
+
+        if missing_fields:
+            missing_field_text = '\n  - '.join(missing_fields)
+            missing_information.append(
+                f"Missing ROMMON recovery information for "
+                f"subconnection '{connection.alias}':\n"
+                f'  - {missing_field_text}')
+
+    if missing_information:
+        raise SubCommandFailure('\n'.join(missing_information))
 
     def _process_tftp_boot_details(rommon_dict):
         # To process the tftp information for each rp
@@ -197,11 +235,7 @@ def configure_rommon_tftp_ha(device, use_ipv6=False, image_path=None):
             tftp_details.append(tftp)
         return tftp_details
 
-    tftp_details_list = _process_tftp_boot_details(rommon_dict)
-
-    # check if information is there for all rps
-    if len(tftp_details_list)!=len(device.subconnections):
-        log.warning(f"TFTP information is missing for some subconnections")
+    tftp_details_list = _process_tftp_boot_details(rp_details)
 
     # rp counter to incrementally configure each rp with rommon variables
     for rp_number, con in enumerate(device.subconnections):

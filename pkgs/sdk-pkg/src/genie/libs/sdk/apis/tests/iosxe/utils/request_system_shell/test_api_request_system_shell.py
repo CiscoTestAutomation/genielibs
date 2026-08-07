@@ -1,6 +1,9 @@
 import os
 import unittest
+from unittest.mock import patch
+
 from pyats.topology import loader
+from unicon.core.errors import SubCommandFailure
 from genie.libs.sdk.apis.iosxe.utils import request_system_shell
 
 
@@ -119,3 +122,17 @@ class TestRequestSystemShell(unittest.TestCase):
         ]
         result = request_system_shell(self.device, command=cmds_list)
         self.assertEqual(result, expected_output)
+
+    def test_request_system_shell_failure_includes_error(self):
+        with patch.object(
+            self.device,
+            'execute',
+            side_effect=SubCommandFailure('mock system shell error')
+        ):
+            with self.assertRaises(SubCommandFailure) as context:
+                request_system_shell(self.device)
+
+        self.assertEqual(
+            str(context.exception),
+            'failed to enter system shell. Error:\nmock system shell error'
+        )

@@ -110,16 +110,16 @@ def configure_hw_module_slot_reload(device, slot):
             None
 
         Raises:
-            SubCommandFailure : Failed configuring device
+            SubCommandFailure : Failed executing on device
     """
 
     cmd = 'hw-module slot {slot} reload'.format(slot=slot)
     try:
-        device.configure(cmd)
+        device.execute(cmd)
     
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            f"Failed to configure {cmd} on device {device.name}. Error:\n{e}"
+            f"Failed to execute {cmd} on device {device.name}. Error:\n{e}"
         )
 
 
@@ -133,14 +133,14 @@ def configure_hw_module_slot_start(device, slot):
             None
 
         Raises:
-            SubCommandFailure : Failed configuring device
+            SubCommandFailure : Failed executing on device
     """
     cmd = 'hw-module slot {slot} start'.format(slot=slot)
     try:
-        device.configure(cmd)
+        device.execute(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            f"Failed to configure {cmd} on device {device.name}. Error:\n{e}"
+            f"Failed to execute {cmd} on device {device.name}. Error:\n{e}"
         )
 
 
@@ -154,13 +154,13 @@ def configure_hw_module_slot_stop(device, slot):
             None
 
         Raises:
-            SubCommandFailure : Failed configuring device
+            SubCommandFailure : Failed executing on device
     """
     cmd = 'hw-module slot {slot} stop'.format(slot=slot)
     try:
-        device.configure(cmd)
+        device.execute(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            "Failed to configure '{cmd}' on device {device}. Error:\n{error}"
+            "Failed to execute '{cmd}' on device {device}. Error:\n{error}"
             .format(cmd=cmd, device=device.name, error=e)
         )

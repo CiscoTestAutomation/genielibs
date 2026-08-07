@@ -911,7 +911,8 @@ class InstallImage(BaseStage):
 
                 if not files.get("packages.conf"):
                     # create packages.conf, if it does not exist
-                    device.api.touch_file(directory, "packages.conf")
+                    device.api.create_empty_file(
+                        directory, "packages.conf", overwrite=False)
 
                 # packages.conf is hardcoded because install mode boots using an
                 # unpacked packages.conf file
@@ -1091,6 +1092,12 @@ class InstallImage(BaseStage):
                 else:
                     step.failed("Failed to install the image", from_exception=exception)
 
+            install_success_detected = False
+
+            def install_image_succeeded(spawn, context):
+                nonlocal install_success_detected
+                install_success_detected = True
+
             install_add_one_shot_dialog = Dialog([
                 Statement(
                     pattern=r".*Press Quit\(q\) to exit, you may save "
@@ -1149,6 +1156,12 @@ class InstallImage(BaseStage):
                     loop_continue=False,
                     continue_timer=False,
                 ),
+                Statement(
+                    pattern=r".*SUCCESS:\s+install_add_activate(_issu)?_commit.*",
+                    action=install_image_succeeded,
+                    loop_continue=False,
+                    continue_timer=False,
+                ),
             ])
 
             reload_args.update({
@@ -1176,14 +1189,14 @@ class InstallImage(BaseStage):
                     continue_timer=False,
                 ),
                 Statement(
-                    pattern=r".*reload action requested",
+                    pattern=r".*reload (fru )?action requested",
                     action=None,
                     loop_continue=False,
                     continue_timer=False,
                 ),
                 Statement(
                     pattern=
-                    r".*Chassis [1|2] reloading, reason - Reload command",
+                    r".*Chassis [1|2] reloading( firmware)?, reason - Reload( Firmware)? [Cc]ommand",
                     action=None,
                     loop_continue=False,
                     continue_timer=False,
@@ -1200,9 +1213,17 @@ class InstallImage(BaseStage):
                     loop_continue=False,
                     continue_timer=False,
                 ),
+                Statement(
+                    pattern=r".*System Bootstrap",
+                    action=None,
+                    loop_continue=False,
+                    continue_timer=False,
+                )
             ])
 
             install_cmd = "install add file {} activate commit prompt-level none"
+            install_success_pattern = r"SUCCESS:\s+install_add_activate(_issu)?_commit"
+            install_success_re = re.compile(install_success_pattern)
             if issu:
                 install_cmd = "install add file {} activate issu commit prompt-level none"
 
@@ -1216,12 +1237,20 @@ class InstallImage(BaseStage):
                         timeout=install_timeout,
                     )
 
-                    if not output:
+                    if not output and not install_success_detected:
                         log.error("Installation command finished but no output found")
                         step.failed("Failed to install the image: Empty output from install command")
                     break  # Success, exit the retry loop
                 except Exception as e:
-                    device.api.collect_install_log()
+                    if install_success_re.search(str(e)):
+                        log.info(
+                            "Install command reported success before reload handling "
+                            "completed. Continuing with reload handling.")
+                        break
+                    try:
+                        device.api.collect_install_log()
+                    except Exception as log_exc:
+                        log.error("Exception during collect_install_log: %s", log_exc, exc_info=True)
                     if getattr(device, 'issu_in_progress', None):
                         retry_count += 1
                         if retry_count < install_retry_attempts:
@@ -1258,7 +1287,7 @@ class InstallImage(BaseStage):
                             try:
                                 free_space = device.api.free_up_disk_space(
                                     destination=device_default_dir,
-                                    required_size=device.space_required * 1000, # the size in kb needs to be updated to bytes
+                                    required_size=device.space_required * 1024,
                                     protected_files=protected_files,
                                     allow_deletion_failure=True,
                                     skip_deletion=False)
@@ -2108,6 +2137,16 @@ class Reload(BaseStage):
                 # Bring the device state to rommon
                 device.rommon()
 
+                # GRUB based platforms (e.g. cat9kv) do not accept a
+                # `boot <image>` command at the bootloader prompt. The desired
+                # boot entry must be selected from the GRUB menu using
+                # `grub_boot_image`. If the user supplied a grub_boot_image in
+                # the reload_service_args, honor it during the manual boot so
+                # the device boots the requested entry (e.g. GOLDEN IMAGE)
+                # instead of sending an invalid `boot <image>` command.
+                grub_boot_image = self.reload_service_args.get(
+                    "grub_boot_image")
+
                 # If the device is HA then update context for standy rp
                 cmd = f"boot {system_image}"
                 if device.is_ha and hasattr(device, "subconnections"):
@@ -2118,8 +2157,12 @@ class Reload(BaseStage):
                 with super_step.start(
                         f"Reload using manual boot for {device.name}") as step:
                     try:
-                        device.reload(reload_command=cmd)
-
+                        reload_args = self.reload_service_args.copy()
+                        if grub_boot_image:
+                            reload_args.update({"grub_boot_image": grub_boot_image})
+                        else:
+                            reload_args.update({"reload_command": cmd})
+                        device.reload(**reload_args)
                     except Exception as e:
                         step.failed(
                             f"Failed to reload within {self.reload_service_args['timeout']} "

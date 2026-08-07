@@ -598,3 +598,477 @@ def unconfigure_igmp_profile(device, profile_id):
         log.error(e)
         raise SubCommandFailure("Could not unconfigure ip igmp profile. Error:\n{e}")
     return out
+
+
+def configure_ip_igmp_snooping_robustness(device, robustness, vlan=None):
+    """
+    Configure ip igmp snooping robustness variable
+    Args:
+        device (`obj`): Device object
+        robustness ('int'): IGMP snooping robustness value
+        vlan ('int', optional): VLAN ID to apply the robustness value to
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    if vlan:
+        cmd = f"ip igmp snooping vlan {vlan} robustness-variable {robustness}"
+    else:
+        cmd = f"ip igmp snooping robustness-variable {robustness}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure IGMP snooping robustness. Error:\n{e}")
+
+
+def unconfigure_ip_igmp_snooping_robustness(device, vlan=None):
+    """
+    Unconfigure ip igmp snooping robustness variable
+    Args:
+        device (`obj`): Device object
+        vlan ('int', optional): VLAN ID to apply the robustness value to
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    if vlan:
+        cmd = f"no ip igmp snooping vlan {vlan} robustness-variable"
+    else:
+        cmd = "no ip igmp snooping robustness-variable"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure IGMP snooping robustness. Error:\n{e}")
+
+
+def configure_ip_igmp_snooping_check_rtr_alert_option(device, vlan=None):
+    """
+    Configure ip igmp snooping check router alert option
+    Args:
+        device (`obj`): Device object
+        vlan ('int', optional): VLAN ID to apply the option to
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    if vlan:
+        cmd = f"ip igmp snooping vlan {vlan} check rtr-alert-option"
+    else:
+        cmd = "ip igmp snooping check rtr-alert-option"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure IGMP snooping check router alert "
+            f"option. Error:\n{e}")
+
+
+def unconfigure_ip_igmp_snooping_check_rtr_alert_option(device, vlan=None):
+    """
+    Unconfigure ip igmp snooping check router alert option
+    Args:
+        device (`obj`): Device object
+        vlan ('int', optional): VLAN ID to apply the option to
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    if vlan:
+        cmd = f"no ip igmp snooping vlan {vlan} check rtr-alert-option"
+    else:
+        cmd = "no ip igmp snooping check rtr-alert-option"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure IGMP snooping check router alert "
+            f"option. Error:\n{e}")
+
+
+def configure_ip_igmp_snooping_check_ttl(device, vlan=None):
+    """
+    Configure ip igmp snooping check ttl=1
+    Args:
+        device (`obj`): Device object
+        vlan ('int', optional): VLAN ID to apply the option to
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    if vlan:
+        cmd = f"ip igmp snooping vlan {vlan} check ttl"
+    else:
+        cmd = "ip igmp snooping check ttl"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure IGMP snooping check ttl. Error:\n{e}")
+
+
+def unconfigure_ip_igmp_snooping_check_ttl(device, vlan=None):
+    """
+    Unconfigure ip igmp snooping check ttl=1
+    Args:
+        device (`obj`): Device object
+        vlan ('int', optional): VLAN ID to apply the option to
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    if vlan:
+        cmd = f"no ip igmp snooping vlan {vlan} check ttl"
+    else:
+        cmd = "no ip igmp snooping check ttl"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure IGMP snooping check ttl. Error:\n{e}")
+
+
+def configure_ip_igmp_snooping_last_member_query_count(
+        device, count, vlan=None):
+    """
+    Configure ip igmp snooping last member query count
+    Args:
+        device (`obj`): Device object
+        count ('int'): IGMP snooping last member query count
+        vlan ('int', optional): VLAN ID
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    if vlan:
+        cmd = f"ip igmp snooping vlan {vlan} last-member-query-count {count}"
+    else:
+        cmd = f"ip igmp snooping last-member-query-count {count}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure IGMP snooping last member query "
+            f"count. Error:\n{e}")
+
+
+def unconfigure_ip_igmp_snooping_last_member_query_count(device, vlan=None):
+    """
+    Unconfigure ip igmp snooping last member query count
+    Args:
+        device (`obj`): Device object
+        vlan ('int', optional): VLAN ID
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    if vlan:
+        cmd = f"no ip igmp snooping vlan {vlan} last-member-query-count"
+    else:
+        cmd = "no ip igmp snooping last-member-query-count"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure IGMP snooping last member query "
+            f"count. Error:\n{e}")
+
+
+def configure_ip_igmp_snooping_last_member_query_interval(
+        device, time, vlan=None):
+    """
+    Configure ip igmp snooping last member query interval
+    Args:
+        device (`obj`): Device object
+        time ('int'): IGMP snooping last member query interval in
+                      milliseconds
+        vlan ('int', optional): VLAN ID
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    if vlan:
+        cmd = (f"ip igmp snooping vlan {vlan} "
+               f"last-member-query-interval {time}")
+    else:
+        cmd = f"ip igmp snooping last-member-query-interval {time}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure IGMP snooping last member query "
+            f"interval. Error:\n{e}")
+
+
+def unconfigure_ip_igmp_snooping_last_member_query_interval(
+        device, vlan=None):
+    """
+    Unconfigure ip igmp snooping last member query interval
+    Args:
+        device (`obj`): Device object
+        vlan ('int', optional): VLAN ID
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    if vlan:
+        cmd = f"no ip igmp snooping vlan {vlan} last-member-query-interval"
+    else:
+        cmd = "no ip igmp snooping last-member-query-interval"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure IGMP snooping last member query "
+            f"interval. Error:\n{e}")
+
+
+def configure_ip_igmp_snooping_querier_address(device, address, vlan=None):
+    """
+    Configure ip igmp snooping querier address
+    Args:
+        device (`obj`): Device object
+        address ('str'): IGMP snooping querier address
+        vlan ('int', optional): VLAN ID
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    if vlan:
+        cmd = f"ip igmp snooping vlan {vlan} querier address {address}"
+    else:
+        cmd = f"ip igmp snooping querier address {address}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure IGMP snooping querier address. "
+            f"Error:\n{e}")
+
+
+def unconfigure_ip_igmp_snooping_querier_address(device, vlan=None):
+    """
+    Unconfigure ip igmp snooping querier address
+    Args:
+        device (`obj`): Device object
+        vlan ('int', optional): VLAN ID
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    if vlan:
+        cmd = f"no ip igmp snooping vlan {vlan} querier address"
+    else:
+        cmd = "no ip igmp snooping querier address"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure IGMP snooping querier address. "
+            f"Error:\n{e}")
+
+
+def configure_ip_igmp_snooping_querier_interval(device, interval, vlan=None):
+    """
+    Configure ip igmp snooping querier interval
+    Args:
+        device (`obj`): Device object
+        interval ('int'): IGMP snooping querier interval in seconds
+        vlan ('int', optional): VLAN ID
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    if vlan:
+        cmd = (f"ip igmp snooping vlan {vlan} "
+               f"querier query-interval {interval}")
+    else:
+        cmd = f"ip igmp snooping querier query-interval {interval}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure IGMP snooping querier interval. "
+            f"Error:\n{e}")
+
+
+def unconfigure_ip_igmp_snooping_querier_interval(device, vlan=None):
+    """
+    Unconfigure ip igmp snooping querier interval
+    Args:
+        device (`obj`): Device object
+        vlan ('int', optional): VLAN ID
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    if vlan:
+        cmd = f"no ip igmp snooping vlan {vlan} querier query-interval"
+    else:
+        cmd = "no ip igmp snooping querier query-interval"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure IGMP snooping querier interval. "
+            f"Error:\n{e}")
+
+
+def configure_ip_igmp_snooping_querier_max_response_time(
+        device, max_response_time, vlan=None):
+    """
+    Configure ip igmp snooping querier max response time
+    Args:
+        device (`obj`): Device object
+        max_response_time ('int'): IGMP snooping querier max response time
+                                   in seconds
+        vlan ('int', optional): VLAN ID
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    if vlan:
+        cmd = (f"ip igmp snooping vlan {vlan} querier "
+               f"max-response-time {max_response_time}")
+    else:
+        cmd = (f"ip igmp snooping querier "
+               f"max-response-time {max_response_time}")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure IGMP snooping querier max response "
+            f"time. Error:\n{e}")
+
+
+def unconfigure_ip_igmp_snooping_querier_max_response_time(
+        device, vlan=None):
+    """
+    Unconfigure ip igmp snooping querier max response time
+    Args:
+        device (`obj`): Device object
+        vlan ('int', optional): VLAN ID
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    if vlan:
+        cmd = f"no ip igmp snooping vlan {vlan} querier max-response-time"
+    else:
+        cmd = "no ip igmp snooping querier max-response-time"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure IGMP snooping querier max response "
+            f"time. Error:\n{e}")
+
+
+def configure_ip_igmp_snooping_querier_version(device, version, vlan=None):
+    """
+    Configure ip igmp snooping querier version
+    Args:
+        device (`obj`): Device object
+        version ('int'): IGMP snooping querier version
+        vlan ('int', optional): VLAN ID
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    if vlan:
+        cmd = f"ip igmp snooping vlan {vlan} querier version {version}"
+    else:
+        cmd = f"ip igmp snooping querier version {version}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure IGMP snooping querier version. "
+            f"Error:\n{e}")
+
+
+def unconfigure_ip_igmp_snooping_querier_version(device, vlan=None):
+    """
+    Unconfigure ip igmp snooping querier version
+    Args:
+        device (`obj`): Device object
+        vlan ('int', optional): VLAN ID
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    if vlan:
+        cmd = f"no ip igmp snooping vlan {vlan} querier version"
+    else:
+        cmd = "no ip igmp snooping querier version"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure IGMP snooping querier version. "
+            f"Error:\n{e}")
+
+
+def configure_ip_igmp_snooping_immediate_leave(device, vlan=None):
+    """
+    Configure ip igmp snooping immediate leave
+    Args:
+        device (`obj`): Device object
+        vlan ('int', optional): VLAN ID
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    if vlan:
+        cmd = f"ip igmp snooping vlan {vlan} immediate-leave"
+    else:
+        cmd = "ip igmp snooping immediate-leave"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure IGMP snooping immediate leave. "
+            f"Error:\n{e}")
+
+
+def unconfigure_ip_igmp_snooping_immediate_leave(device, vlan=None):
+    """
+    Unconfigure ip igmp snooping immediate leave
+    Args:
+        device (`obj`): Device object
+        vlan ('int', optional): VLAN ID
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    if vlan:
+        cmd = f"no ip igmp snooping vlan {vlan} immediate-leave"
+    else:
+        cmd = "no ip igmp snooping immediate-leave"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure IGMP snooping immediate leave. "
+            f"Error:\n{e}")

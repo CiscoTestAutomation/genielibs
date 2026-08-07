@@ -277,3 +277,186 @@ def verify_login_credentials_enable_password(device,username,password,enable_pro
             return False 
     return True
 
+
+def verify_access_session_detail(
+        device, mac, interface, status=None, oper_host_mode=None,
+        user_name=None, domain=None, ipv4_address=None, current_policy=None,
+        server_policies=None, local_policies=None, oper_control_dir=None,
+        method_status=None, max_time=60, check_interval=5, **kwargs):
+    """
+    Verifies if all the given parameters are correct for the access
+    session client details.
+    Args:
+        device('obj'): Device object
+        mac('str'): MAC address of the client
+        interface('str'): Interface name
+        status('str', optional): Authentication status of the client,
+            default is None
+        oper_host_mode('str', optional): Operational host mode of the
+            client, default is None
+        user_name('str', optional): Username of the client, default is None
+        domain('str', optional): Domain of the client, default is None
+        ipv4_address('str', optional): IPv4 address of the client,
+            default is None
+        current_policy('str', optional): Current policy applied on the
+            client, default is None
+        server_policies('dict', optional): Server policies applied on the
+            client, default is None
+        local_policies('dict', optional): Local policies applied on the
+            client, default is None
+        oper_control_dir('str', optional): Operational control direction
+            of the client, default is None
+        method_status('dict', optional): Method status of the client,
+            default is None
+        max_time('int', optional): Maximum time to wait for the
+            verification to pass, default is 60 seconds
+        check_interval('int', optional): Time interval between checks,
+            default is 5 seconds
+        **kwargs: Additional key-value pairs to verify in the client
+            details
+    Returns:
+        True/False
+    Raises:
+        None
+    """
+
+    def __dict_compare(expect, actual):
+        for k in expect:
+            if k in actual:
+                if isinstance(expect[k], dict) and \
+                        isinstance(actual[k], dict):
+                    if not __dict_compare(expect[k], actual[k]):
+                        return False
+                elif isinstance(expect[k], list) and \
+                        isinstance(actual[k], list):
+                    for element in expect[k]:
+                        if element not in actual[k]:
+                            return False
+                elif expect[k] != actual[k]:
+                    logger.debug(
+                        f"{k} mismatch: expected {expect[k]}, "
+                        f"actual {actual[k]}")
+                    return False
+            else:
+                logger.debug(f"expect key {k} does not exist in {actual}")
+                return False
+        return True
+
+    kwargs.update({
+        k: v for k, v in {
+            'status': status,
+            'oper_host_mode': oper_host_mode,
+            'user_name': user_name,
+            'domain': domain,
+            'ipv4_address': ipv4_address,
+            'current_policy': current_policy,
+            'oper_control_dir': oper_control_dir,
+            'method_status': method_status,
+            'server_policies': server_policies,
+            'local_policies': local_policies,
+        }.items()
+        if v is not None
+    })
+
+    timeout = Timeout(max_time, check_interval)
+    entry = {}
+    while timeout.iterate():
+        entry = device.api.get_access_session_interface_mac_detail(
+            interface=interface, mac=mac)
+        if entry:
+            if __dict_compare(kwargs, entry):
+                logger.debug(
+                    'Access session entry is verified PASSED. '
+                    f'Expected values: {kwargs}, actual values: {entry}')
+                return True
+        timeout.sleep()
+
+    logger.debug(
+        'Access session entry verification FAILED. '
+        f'Expected values: {kwargs}, actual values: {entry}')
+    return False
+
+
+def verify_access_session_timeout_remaining(
+        device, mac, interface, max_remain=15, min_remain=5,
+        max_time=120, check_interval=2):
+    """
+    Verifies if the remaining time for the access session timeout is
+    within the specified range.
+    Args:
+        device('obj'): Device object
+        mac('str'): MAC address of the client
+        interface('str'): Interface name
+        max_remain('int'): Maximum remaining time for the access session
+            timeout, default is 15 seconds
+        min_remain('int'): Minimum remaining time for the access session
+            timeout, default is 5 seconds
+        max_time('int'): Maximum time to wait for the
+            verification to pass, default is 120 seconds
+        check_interval('int'): Time interval between checks,
+            default is 2 seconds
+    Returns:
+        True/False
+    Raises:
+        None
+    """
+
+    timeout = Timeout(max_time, check_interval)
+    remain_time = None
+    while timeout.iterate():
+        output = device.api.get_show_access_session_interface_detail(
+            interface=interface)
+        if output:
+            entry = output.get('interfaces', {}).get(
+                interface, {}).get('mac_address', {}).get(mac, {})
+            remain_time_str = entry.get('session_timeout', {}).get(
+                'remaining')
+            remain_time = int(re.match(r"\d+", remain_time_str).group()) \
+                if remain_time_str else None
+            if remain_time is not None and \
+                    min_remain <= remain_time <= max_remain:
+                logger.debug(
+                    'Access session timeout remaining time is within '
+                    'the expected range. Expected range: '
+                    f'{min_remain}-{max_remain} seconds, actual: '
+                    f'{remain_time} seconds')
+                return True
+        timeout.sleep()
+    logger.debug(
+        'Access session timeout remaining time is NOT within the '
+        f'expected range. Expected range: {min_remain}-{max_remain}')
+    return False
+
+
+def verify_access_session_removed(
+        device, mac, interface, max_time=60, check_interval=5):
+    """
+    Verifies if the access session for the given MAC address on the
+    specified interface does not exist.
+    Args:
+        device('obj'): Device object
+        mac('str'): MAC address of the client
+        interface('str'): Interface name
+        max_time('int'): Maximum time to wait for the verification to pass,
+            default is 60 seconds
+        check_interval('int'): Time interval between checks,
+            default is 5 seconds
+    Returns:
+        True/False
+    Raises:
+        None
+    """
+
+    timeout = Timeout(max_time, check_interval)
+    entry = {}
+    while timeout.iterate():
+        entry = device.api.get_access_session_interface_mac_detail(
+            interface=interface, mac=mac)
+        if not entry:
+            logger.debug(
+                'Access session entry does not exist as expected.')
+            return True
+        timeout.sleep()
+    logger.debug(
+        'Access session entry still exists. Expected it to be removed.')
+    return False

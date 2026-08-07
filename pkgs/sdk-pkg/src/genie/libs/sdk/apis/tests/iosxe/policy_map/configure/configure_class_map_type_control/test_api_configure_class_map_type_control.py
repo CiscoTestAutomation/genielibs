@@ -1,0 +1,52 @@
+import unittest
+from unittest.mock import Mock
+
+from unicon.core.errors import SubCommandFailure
+
+from genie.libs.sdk.apis.iosxe.policy_map.configure import (
+    configure_class_map_type_control,
+)
+
+
+class TestConfigureClassMapTypeControl(unittest.TestCase):
+
+    def test_configure_class_map_type_control(self):
+        device = Mock()
+
+        configure_class_map_type_control(
+            device,
+            class_name="ISG-IP-UNAUTH",
+            match_type="match-all",
+            match_authen_status="unauthenticated",
+            match_timer="UNAUTH-TIMER",
+        )
+
+        device.configure.assert_called_once_with([
+            "class-map type control match-all ISG-IP-UNAUTH",
+            "match authen-status unauthenticated",
+            "match timer UNAUTH-TIMER",
+        ])
+
+    def test_configure_class_map_type_control_minimal(self):
+        device = Mock()
+
+        configure_class_map_type_control(device, class_name="ISG-IP-UNAUTH")
+
+        device.configure.assert_called_once_with([
+            "class-map type control match-all ISG-IP-UNAUTH",
+        ])
+
+    def test_configure_class_map_type_control_failure(self):
+        device = Mock()
+        device.configure.side_effect = SubCommandFailure("error")
+
+        with self.assertRaises(SubCommandFailure):
+            configure_class_map_type_control(
+                device,
+                class_name="ISG-IP-UNAUTH",
+                match_authen_status="unauthenticated",
+            )
+
+
+if __name__ == "__main__":
+    unittest.main()

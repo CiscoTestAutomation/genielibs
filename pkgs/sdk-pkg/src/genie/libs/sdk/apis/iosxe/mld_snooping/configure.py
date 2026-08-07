@@ -262,3 +262,49 @@ def unconfigure_ipv6_mld_snooping_tcn_flood(device, interface):
     except SubCommandFailure as e:
         log.error(e)
         raise SubCommandFailure("Could not unconfigure ipv6 mld snooping tcn flood on {device.name}. Error:\n{e}")
+
+
+def configure_ipv6_mld_snooping_suppression(device, vlan=None):
+    """
+    Configure ipv6 mld snooping listener message suppression
+    Args:
+        device (`obj`): Device object
+        vlan ('int', optional): VLAN ID to apply the suppression to
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    if vlan:
+        cmd = f"ipv6 mld snooping vlan {vlan} listener-message-suppression"
+    else:
+        cmd = "ipv6 mld snooping listener-message-suppression"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure MLD snooping listener message "
+            f"suppression. Error:\n{e}")
+
+
+def unconfigure_ipv6_mld_snooping_suppression(device, vlan=None):
+    """
+    Unconfigure ipv6 mld snooping listener message suppression
+    Args:
+        device (`obj`): Device object
+        vlan ('int', optional): VLAN ID to remove the suppression from
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    if vlan:
+        cmd = f"no ipv6 mld snooping vlan {vlan} listener-message-suppression"
+    else:
+        cmd = "no ipv6 mld snooping listener-message-suppression"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure MLD snooping listener message "
+            f"suppression. Error:\n{e}")

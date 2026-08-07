@@ -47,10 +47,15 @@ connect:
     retry_interval (int, optional): Interval for retry mechanism in seconds. Defaults
         to 0 which means no retry.
 
+    logout (bool, optional): Compatibility option for the generic IOS XE
+        Connect stage. Only False is supported because later SD-WAN Clean
+        stages reuse the connection. Defaults to False.
+
 Example
 -------
 connect:
     timeout: 60
+    logout: False
 """
 
     # =================
@@ -60,6 +65,7 @@ connect:
     TIMEOUT = 200
     RETRY_TIMEOUT = 0
     RETRY_INTERVAL = 0
+    LOGOUT = False
     INIT_EXEC_COMMANDS = ['pnpa service discovery stop', 'show version']
     INIT_CONFIG_COMMANDS = []
 
@@ -71,6 +77,15 @@ connect:
         Optional('timeout'): Or(str, int),
         Optional('retry_timeout'): Or(str, int, float),
         Optional('retry_interval'): Or(str, int, float),
+        Optional(
+            'logout',
+            description=(
+                'Whether to log out after connecting. Defaults to False. '
+                'IOS XE SD-WAN Clean does not support True because later '
+                'stages require the active connection.'
+            ),
+            default=LOGOUT,
+        ): bool,
     }
 
     # ==============================
@@ -85,8 +100,15 @@ connect:
                 timeout=TIMEOUT,
                 retry_timeout=RETRY_TIMEOUT,
                 retry_interval=RETRY_INTERVAL,
+                logout=LOGOUT,
                 init_exec_commands=INIT_EXEC_COMMANDS,
                 init_config_commands=INIT_CONFIG_COMMANDS):
+
+        if logout:
+            raise ValueError(
+                "'logout: true' is not supported for IOS XE SD-WAN Clean "
+                "because later stages require an active connection."
+            )
 
         with steps.start("Connecting to the device") as step:
 

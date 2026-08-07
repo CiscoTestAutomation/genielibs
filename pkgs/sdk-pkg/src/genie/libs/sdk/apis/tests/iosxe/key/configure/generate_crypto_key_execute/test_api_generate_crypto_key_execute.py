@@ -1,35 +1,35 @@
-import os
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.key.configure import generate_crypto_key_execute
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.key.configure import (
+    generate_crypto_key_execute,
+)
 
 
-class TestGenerateCryptoKeyExecute(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          Startrek:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: router
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Startrek']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestGenerateCryptoKeyExecute(TestCase):
 
     def test_generate_crypto_key_execute(self):
-        result = generate_crypto_key_execute(self.device, 'rsa', '515')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.execute.return_value = None
+
+        result = generate_crypto_key_execute(
+            device,
+            "rsa",
+            "515",
+        )
+
+        self.assertIsNone(result)
+        device.execute.assert_called_once()
+
+        sent_command = device.execute.call_args.args[0]
+        self.assertIsInstance(sent_command, str)
+        self.assertEqual(
+            sent_command,
+            "crypto key generate rsa modulus 515",
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

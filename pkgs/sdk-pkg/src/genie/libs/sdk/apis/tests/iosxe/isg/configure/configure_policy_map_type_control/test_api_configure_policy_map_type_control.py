@@ -73,6 +73,38 @@ class TestConfigurePolicyMapTypeControl(TestCase):
             error_pattern=[]
         )
 
+    def test_configure_policy_map_type_control_custom_class_name(self):
+        self.device = Mock()
+        configure_policy_map_type_control(
+            self.device, 'ISG',
+            classes=[
+                {
+                    'class_name': 'ISG-IP-UNAUTH',
+                    'event': 'timed-policy-expiry',
+                    'actions': ['1 service disconnect'],
+                },
+                {
+                    'event': 'session-start',
+                    'actions': [
+                        '10 authorize aaa list AUTHOR_LIST identifier '
+                        'circuit-id plus remote-id',
+                        '15 set-timer UNAUTH-TIMER 2',
+                    ],
+                },
+            ]
+        )
+        self.device.configure.assert_called_once_with(
+            [
+                "policy-map type control ISG",
+                " class type control ISG-IP-UNAUTH event timed-policy-expiry",
+                "  1 service disconnect",
+                " class type control always event session-start",
+                "  10 authorize aaa list AUTHOR_LIST identifier "
+                "circuit-id plus remote-id",
+                "  15 set-timer UNAUTH-TIMER 2",
+            ]
+        )
+
     def test_configure_policy_map_type_control_failure(self):
         self.device = Mock()
         self.device.configure.side_effect = SubCommandFailure('error')

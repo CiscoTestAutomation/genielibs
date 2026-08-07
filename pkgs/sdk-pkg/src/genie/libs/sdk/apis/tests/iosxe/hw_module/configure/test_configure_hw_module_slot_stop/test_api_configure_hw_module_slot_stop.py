@@ -12,6 +12,6 @@ class TestConfigureHwModuleSlotStop(TestCase):
         configure_hw_module_slot_stop(self.device, slot=test_slot)
 
         self.assertEqual(
-            self.device.configure.mock_calls[0].args,
+            self.device.execute.mock_calls[0].args,
             ('hw-module slot 1 stop',)
         )

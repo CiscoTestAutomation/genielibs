@@ -5,31 +5,45 @@ from unittest.mock import Mock
 
 class TestConfigureMonitorCapture(TestCase):
 
-    def test_configure_monitor_capture(self):
-        self.device = Mock()
-        results_map = {
-            'monitor capture capture_name match any interface FortyGigabitEthernet1/0/1 both file location flash:capture_name size 70 buffer-size 5 limit duration 100 packets 1000 packet-len 64 every 1000 pps 100000': 
-            'Interface FortyGigabitEthernet1/0/1 direction BOTH is already attached to the capture '
-            'A filter is already attached to the capture. Replace with specified filter?[confirm] '
-            'Duration limit is already set, replace?[confirm] ' 
-            'Packet Size limit is already set, replace?[confirm] '
-            'Packet count limit is already set, replace?[confirm] '
-            'Packets per second limit is already set, replace?[confirm] '
-            'Packet sampling limit is already set, replace?[confirm] '
-            'A file name has already been associated, replace?[confirm] '
-            'Buffer size was  already specified, replace?[confirm] '
-            'File size was already specified, replace?[confirm]'
-        }
-        
-        def results_side_effect(arg, **kwargs):
-            return results_map.get(arg)
-        
-        self.device.execute.side_effect = results_side_effect
-        
-        result = configure_monitor_capture(self.device, 'capture_name', 'any', 'both', 'FortyGigabitEthernet1/0/1', 'flash:capture_name', 70, 5, 100, 1000, 64, 1000, 100000)
-        self.assertIn(
-            'monitor capture capture_name match any interface FortyGigabitEthernet1/0/1 both file location flash:capture_name size 70 buffer-size 5 limit duration 100 packets 1000 packet-len 64 every 1000 pps 100000',
-            self.device.execute.call_args_list[0][0]
-        )
-        expected_output = None
-        self.assertEqual(result, expected_output)
+    def _run(self, **kwargs):
+        device = Mock()
+        device.execute.return_value = ''
+        configure_monitor_capture(
+            device, 'cap', 'any', 'both', 'GigabitEthernet1/0/1', **kwargs)
+        return device.execute.call_args_list[0][0][0]
+
+    def test_minimal(self):
+        self.assertEqual(
+            self._run(),
+            'monitor capture cap match any interface GigabitEthernet1/0/1 both')
+
+    def test_buffer_limit(self):
+        self.assertEqual(
+            self._run(buffer_size=100, duration=60, packets=5000),
+            'monitor capture cap match any interface GigabitEthernet1/0/1 both '
+            'buffer size 100 limit duration 60 packets 5000')
+
+    def test_buffer_packets_only(self):
+        self.assertEqual(
+            self._run(buffer_size=100, packets=5000),
+            'monitor capture cap match any interface GigabitEthernet1/0/1 both '
+            'buffer size 100 limit packets 5000')
+
+    def test_file_location_size(self):
+        self.assertEqual(
+            self._run(file_location='flash:capt.pcap', file_size=50),
+            'monitor capture cap match any interface GigabitEthernet1/0/1 both '
+            'file location flash:capt.pcap size 50')
+
+    def test_file_size_without_location_dropped(self):
+        self.assertEqual(
+            self._run(file_size=50),
+            'monitor capture cap match any interface GigabitEthernet1/0/1 both')
+
+    def test_all_limit_subopts(self):
+        self.assertEqual(
+            self._run(buffer_size=100, duration=60, packets=5000,
+                      packet_len=128, capture_frequency=10, pps=100),
+            'monitor capture cap match any interface GigabitEthernet1/0/1 both '
+            'buffer size 100 limit duration 60 packets 5000 packet-len 128 '
+            'every 10 pps 100')

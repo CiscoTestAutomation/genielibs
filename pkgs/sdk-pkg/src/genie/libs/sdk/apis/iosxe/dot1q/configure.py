@@ -47,19 +47,41 @@ def unconfigure_vlan_dot1q_tag_native(device):
             
 
 
-def configure_subinterface_dot1q_encapsulation(device, interface, vlan):
+def configure_subinterface_dot1q_encapsulation(
+    device,
+    interface,
+    vlan,
+    vrf_name=None,
+    ip_address=None,
+    mask=None,
+    no_shutdown=False,
+):
     """ configure subinterface dot1q encapsulation
         Args:
             device ('obj')    : device to use
             interface ('str') : interface name
             vlan ('str')      : vlan id
+            vrf_name ('str', optional): VRF name for ip vrf forwarding
+            ip_address ('str', optional): IPv4 address to configure
+            mask ('str', optional): IPv4 subnet mask
+            no_shutdown ('bool', optional): Configure no shutdown
         Returns:
             None
         Raises:
             SubCommandFailure
     """
+    if ip_address and not mask:
+        raise ValueError("mask must be provided when ip_address is provided")
+
     cmd = [f"interface {interface}.{vlan}",
            f"encapsulation dot1q {vlan}"]
+    if vrf_name:
+        cmd.append(f"ip vrf forwarding {vrf_name}")
+    if ip_address:
+        cmd.append(f"ip address {ip_address} {mask}")
+    if no_shutdown:
+        cmd.append("no shutdown")
+
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -67,19 +89,30 @@ def configure_subinterface_dot1q_encapsulation(device, interface, vlan):
             f"Could not configure {cmd} on device {device.name}. Error:\n{e}")
 
 
-def unconfigure_subinterface_dot1q_encapsulation(device, interface, vlan):
+def unconfigure_subinterface_dot1q_encapsulation(
+    device,
+    interface,
+    vlan,
+    remove_subinterface=False,
+):
     """ unconfigure subinterface dot1q encapsulation
         Args:
             device ('obj')    : device to use
             interface ('str') : interface name
             vlan ('str')      : vlan id
+            remove_subinterface ('bool', optional): Remove the full
+                subinterface with ``no interface <interface>.<vlan>``
         Returns:
             None
         Raises:
             SubCommandFailure
     """
-    cmd = [f"interface {interface}.{vlan}",
-           f"no encapsulation dot1q {vlan}"]
+    if remove_subinterface:
+        cmd = [f"no interface {interface}.{vlan}"]
+    else:
+        cmd = [f"interface {interface}.{vlan}",
+               f"no encapsulation dot1q {vlan}"]
+
     try:
         device.configure(cmd)
     except SubCommandFailure as e:

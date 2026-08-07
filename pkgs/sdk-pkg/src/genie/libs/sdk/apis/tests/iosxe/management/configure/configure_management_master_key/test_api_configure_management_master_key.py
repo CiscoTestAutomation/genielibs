@@ -1,5 +1,5 @@
 from unittest import TestCase
-from unittest.mock import Mock, patch, call
+from unittest.mock import ANY, Mock, patch, call
 from genie.libs.sdk.apis.iosxe.management.configure import configure_management_master_key
 
 
@@ -23,6 +23,10 @@ class TestConfigureManagementSecurityCheck(TestCase):
         self.device.configure.assert_called_once()
         first_arg = self.device.configure.call_args[0][0]
         self.assertTrue(first_arg.startswith('key config-key password-encrypt '))
+        self.assertEqual(
+            self.device.configure.call_args.kwargs,
+            {'reply': ANY, 'timeout': 120},
+        )
         self.assertFalse(result)
 
     def test_key_not_exists_configures_both(self):
@@ -41,8 +45,11 @@ class TestConfigureManagementSecurityCheck(TestCase):
         first_arg = self.device.configure.call_args_list[0][0][0]
         self.assertTrue(first_arg.startswith('key config-key password-encrypt '))
         self.assertEqual(
+            self.device.configure.call_args_list[0].kwargs,
+            {'reply': ANY, 'timeout': 120},
+        )
+        self.assertEqual(
             self.device.configure.call_args_list[1],
             call('password encryption aes'),
         )
         self.assertTrue(result)
-

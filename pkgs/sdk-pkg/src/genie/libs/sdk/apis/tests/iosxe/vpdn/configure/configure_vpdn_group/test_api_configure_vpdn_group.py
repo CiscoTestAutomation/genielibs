@@ -18,6 +18,7 @@ class TestConfigureVpdnGroup(TestCase):
             initiate_to="200.0.0.1",
             local_name="LAC",
             tunnel_hello_interval="0",
+            tunnel_retransmit_retries="5",
             tunnel_password="cisco",
             tunnel_receive_window="8",
         )
@@ -30,6 +31,7 @@ class TestConfigureVpdnGroup(TestCase):
             "initiate-to ip 200.0.0.1",
             "local name LAC",
             "l2tp tunnel hello 0",
+            "l2tp tunnel retransmit retries 5",
             "l2tp tunnel password 0 cisco",
             "l2tp tunnel receive-window 8",
         ]
@@ -102,7 +104,93 @@ class TestConfigureVpdnGroup(TestCase):
         call_args = device.configure.call_args_list[0][0][0]
         self.assertEqual(call_args, expected_config)
 
-    def test_configure_vpdn_group(self):
+    def test_configure_request_dialout_group(self):
+        device = Mock()
+        device.configure.return_value = None
+
+        configure_vpdn_group(
+            device,
+            vpdn_group_number="vg_rq_dout",
+            request_dialout="l2tp ip 10.1.1.1 pool-member 1",
+            initiate_to="10.1.1.1",
+            source_ip="192.0.2.1",
+            vpn_vrf="vrf101",
+            local_name="lns",
+            tunnel_password="cisco",
+        )
+
+        expected_config = [
+            "vpdn-group vg_rq_dout",
+            "request dialout l2tp ip 10.1.1.1 pool-member 1",
+            "initiate-to ip 10.1.1.1",
+            "source-ip 192.0.2.1",
+            "vpn vrf vrf101",
+            "local name lns",
+            "l2tp tunnel password 0 cisco",
+        ]
+
+        self.assertTrue(device.configure.called)
+        call_args = device.configure.call_args_list[0][0][0]
+        self.assertEqual(call_args, expected_config)
+
+    def test_configure_accept_dialout_group(self):
+        device = Mock()
+        device.configure.return_value = None
+
+        configure_vpdn_group(
+            device,
+            vpdn_group_number="vg_ac_dout",
+            accept_dialout="l2tp dialer 3",
+            source_ip="192.0.2.1",
+            vpn_vrf="vrf101",
+            local_name="lns",
+            terminate_from_hostname="lac",
+            tunnel_password="cisco",
+        )
+
+        expected_config = [
+            "vpdn-group vg_ac_dout",
+            "accept dialout l2tp dialer 3",
+            "source-ip 192.0.2.1",
+            "vpn vrf vrf101",
+            "local name lns",
+            "terminate-from hostname lac",
+            "l2tp tunnel password 0 cisco",
+        ]
+
+        self.assertTrue(device.configure.called)
+        call_args = device.configure.call_args_list[0][0][0]
+        self.assertEqual(call_args, expected_config)
+
+    def test_configure_request_dialin_group_with_multihop_matching_options(self):
+        device = Mock()
+        device.configure.return_value = None
+
+        configure_vpdn_group(
+            device,
+            vpdn_group_number="tester1",
+            request_dialin=True,
+            multihop_hostname="lac-mh",
+            domain="tester1.com",
+            source_ip="198.51.100.1",
+            vpn_vrf="vrf102",
+        )
+
+        expected_config = [
+            "vpdn-group tester1",
+            "request-dialin",
+            "protocol l2tp",
+            "multihop hostname lac-mh",
+            "domain tester1.com",
+            "source-ip 198.51.100.1",
+            "vpn vrf vrf102",
+        ]
+
+        self.assertTrue(device.configure.called)
+        call_args = device.configure.call_args_list[0][0][0]
+        self.assertEqual(call_args, expected_config)
+
+    def test_configure_vpdn_group_with_src_ip_and_lcp_renegotiation(self):
         device = Mock()
         device.configure.return_value = None
 
@@ -120,16 +208,16 @@ class TestConfigureVpdnGroup(TestCase):
             lcp_reneg_type="on-mismatch",
         )
 
-        expected_config  = [
-            'vpdn-group scale_n1',
-            'source-ip 11.10.10.1',
-            'lcp renegotiation on-mismatch',
-            'accept-dialin',
-            'protocol l2tp',
-            'local name LAC',
-            'l2tp tunnel hello 0',
-            'l2tp tunnel password 0 cisco',
-            'l2tp tunnel receive-window 8',
+        expected_config = [
+            "vpdn-group scale_n1",
+            "source-ip 11.10.10.1",
+            "lcp renegotiation on-mismatch",
+            "accept-dialin",
+            "protocol l2tp",
+            "local name LAC",
+            "l2tp tunnel hello 0",
+            "l2tp tunnel password 0 cisco",
+            "l2tp tunnel receive-window 8",
         ]
 
         self.assertTrue(device.configure.called)

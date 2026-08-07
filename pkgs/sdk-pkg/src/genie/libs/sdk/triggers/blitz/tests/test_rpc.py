@@ -2,6 +2,7 @@
 import sys
 import unittest
 import logging
+import json
 from time import time, time_ns
 import base64
 from google.protobuf import json_format
@@ -11,6 +12,7 @@ from genie.libs.sdk.triggers.blitz import yangexec
 from genie.libs.sdk.triggers.blitz import netconf_util
 from genie.libs.sdk.triggers.blitz.rpcverify import RpcVerify, OptFields
 from genie.libs.sdk.triggers.blitz.gnmi_util import GnmiMessage
+from genie.libs.sdk.triggers.blitz.gnmi_util import GnmiMessageConstructor
 from genie.libs.sdk.triggers.blitz.tests.device_mocks import TestDevice
 
 # TODO: Needs to be part of genielibs test run
@@ -538,6 +540,155 @@ basic-mode=explicit&also-supported=report-all-tagged']
         }
         rpc_data = {'nodes': [{'xpath': val['xpath'] for val in opfields}]}
         return rpc_data, opfields, format
+
+    def test_gnmi_update_preserves_serialized_json_values(self):
+        """Check custom gNMI JSON strings are not double encoded."""
+        raw_json = '{"config":{"enabled":true}}'
+        updates = [{
+            'path': {'elem': [{'name': 'interfaces'}]},
+            'val': {'jsonIetfVal': raw_json}
+        }]
+        replaces = [{
+            'path': {'elem': [{'name': 'interfaces'}]},
+            'val': {'jsonVal': raw_json}
+        }]
+
+        update = GnmiMessageConstructor._upd_rpl(updates, False)[0]
+        replace = GnmiMessageConstructor._upd_rpl(replaces, False)[0]
+
+        self.assertEqual(update.val.json_ietf_val, raw_json.encode('utf-8'))
+        self.assertEqual(replace.val.json_val, raw_json.encode('utf-8'))
+
+    def test_gnmi_update_preserves_base64_serialized_json_values(self):
+        """Check base64 gNMI JSON strings are not double encoded."""
+        raw_json = '{"config":{"enabled":true}}'
+        payload = json.dumps({
+            'update': [{
+                'path': {'elem': [{'name': 'interfaces'}]},
+                'val': {'jsonIetfVal': raw_json}
+            }],
+            'replace': [{
+                'path': {'elem': [{'name': 'interfaces'}]},
+                'val': {'jsonVal': raw_json}
+            }]
+        })
+
+        message = GnmiMessageConstructor.json_to_gnmi(
+            'set', payload, base64=True
+        )
+
+        self.assertEqual(
+            base64.b64decode(message.update[0].val.json_ietf_val),
+            raw_json.encode('utf-8')
+        )
+        self.assertEqual(
+            base64.b64decode(message.replace[0].val.json_val),
+            raw_json.encode('utf-8')
+        )
+
+    def test_gnmi_update_encodes_plain_string_json_values(self):
+        """Check plain string values remain valid JSON strings."""
+        updates = [{
+            'path': {'elem': [{'name': 'interfaces'}]},
+            'val': {'jsonIetfVal': 'enabled'}
+        }]
+
+        update = GnmiMessageConstructor._upd_rpl(updates, False)[0]
+
+        self.assertEqual(update.val.json_ietf_val, b'"enabled"')
+
+    def test_get_payload_wraps_scalar_leaf_list_value(self):
+        """Check scalar leaf-list values are not split into characters."""
+        gmc = GnmiMessageConstructor(
+            'set',
+            {'namespace': {}, 'namespace_modules': {}, 'nodes': []},
+            encoding='JSON_IETF'
+        )
+
+        payload = gmc.get_payload([{
+            'nodetype': 'leaf-list',
+            'value': 'oc-types:IPV4',
+            'xpath': '/oc-rt:enabled-address-families'
+        }])
+
+        self.assertEqual(
+            payload,
+            {'oc-rt:enabled-address-families': ['oc-types:IPV4']}
+        )
+
+    def test_set_leaf_list_values_are_aggregated(self):
+        """Check duplicate leaf-list XPath values build one JSON list."""
+        leaf_list_xpath = (
+            '/oc-rt:routing-policy/oc-rt:policy-definitions/'
+            'oc-rt:policy-definition[oc-rt:name="POLICY1"]/'
+            'oc-rt:statements/oc-rt:statement[oc-rt:name="10"]/'
+            'oc-rt:actions/oc-rt:config/'
+            'oc-rt:enabled-address-families'
+        )
+        rpc_data = {
+            'namespace': {
+                'oc-rt': 'http://openconfig.net/yang/routing-policy'
+            },
+            'namespace_modules': {
+                'oc-rt': 'openconfig-routing-policy'
+            },
+            'nodes': [
+                {
+                    'datatype': 'identityref',
+                    'default': '',
+                    'edit-op': 'merge',
+                    'nodetype': 'leaf-list',
+                    'value': 'oc-types:IPV4',
+                    'xpath': leaf_list_xpath
+                },
+                {
+                    'datatype': 'identityref',
+                    'default': '',
+                    'edit-op': 'merge',
+                    'nodetype': 'leaf-list',
+                    'value': 'oc-types:IPV6',
+                    'xpath': leaf_list_xpath
+                }
+            ],
+            'operation': 'edit-config'
+        }
+
+        gmc = GnmiMessageConstructor('set', rpc_data, encoding='JSON_IETF')
+
+        self.assertEqual(gmc.json_val, ['oc-types:IPV4', 'oc-types:IPV6'])
+
+    def test_set_leaf_list_value_list_stays_flat(self):
+        """Check list-valued leaf-list input does not become nested."""
+        leaf_list_xpath = (
+            '/oc-rt:routing-policy/oc-rt:policy-definitions/'
+            'oc-rt:policy-definition[oc-rt:name="POLICY1"]/'
+            'oc-rt:statements/oc-rt:statement[oc-rt:name="10"]/'
+            'oc-rt:actions/oc-rt:config/'
+            'oc-rt:enabled-address-families'
+        )
+        rpc_data = {
+            'namespace': {
+                'oc-rt': 'http://openconfig.net/yang/routing-policy'
+            },
+            'namespace_modules': {
+                'oc-rt': 'openconfig-routing-policy'
+            },
+            'nodes': [
+                {
+                    'datatype': 'identityref',
+                    'default': '',
+                    'edit-op': 'merge',
+                    'nodetype': 'leaf-list',
+                    'value': ['oc-types:IPV4', 'oc-types:IPV6'],
+                    'xpath': leaf_list_xpath
+                }
+            ],
+            'operation': 'edit-config'
+        }
+
+        gmc = GnmiMessageConstructor('set', rpc_data, encoding='JSON_IETF')
+
+        self.assertEqual(gmc.json_val, ['oc-types:IPV4', 'oc-types:IPV6'])
 
     def test_operational_state_pass(self):
         """Process rpc-reply and check opfields for match."""

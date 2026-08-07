@@ -1,40 +1,72 @@
-import os
 import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
+
 from genie.libs.sdk.apis.iosxe.interface.configure import unconfigure_port_channel_ip
 
 
-class TestUnconfigurePortChannelIp(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          stack3-nyquist-1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: router
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['stack3-nyquist-1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigurePortChannelIp(TestCase):
 
     def test_unconfigure_port_channel_ip(self):
-        result = unconfigure_port_channel_ip(self.device, 5, 'ip', True)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = unconfigure_port_channel_ip(
+            device,
+            5,
+            "ip",
+            True,
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, list)
+        self.assertIn(
+            "interface Port-channel 5",
+            sent_commands,
+        )
+        self.assertIn(
+            "no ip address",
+            sent_commands,
+        )
+        self.assertIn(
+            "shutdown",
+            sent_commands,
+        )
 
     def test_unconfigure_port_channel_ip_1(self):
-        result = unconfigure_port_channel_ip(self.device, 5, 'ip', False)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = unconfigure_port_channel_ip(
+            device,
+            5,
+            "ip",
+            False,
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, list)
+        self.assertIn(
+            "interface Port-channel 5",
+            sent_commands,
+        )
+        self.assertIn(
+            "no ip address",
+            sent_commands,
+        )
+        self.assertNotIn(
+            "shutdown",
+            sent_commands,
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

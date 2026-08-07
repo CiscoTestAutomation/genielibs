@@ -139,3 +139,41 @@ class TestConfigureSimulatorRadiusSubscriber(TestCase):
                 ' no attribute 100 string "pool1"',
             ]
         )
+
+    def test_configure_simulator_radius_subscriber_framed_protocol(self):
+        self.device = Mock()
+        configure_simulator_radius_subscriber(
+            self.device, 21, 'framed', framed_protocol='ppp',
+            remove_first=False,
+            vsas=['cisco generic 250 string "AGames"']
+        )
+        self.device.configure.assert_called_once_with(
+            [
+                "simulator radius subscriber 21",
+                " framed protocol ppp",
+                " service framed",
+                ' vsa cisco generic 250 string "AGames"',
+            ]
+        )
+
+    def test_configure_simulator_radius_subscriber_negate_vsa(self):
+        self.device = Mock()
+        configure_simulator_radius_subscriber(
+            self.device, 21,
+            vsas=[
+                'cisco generic 250 string "L,stype=NIndia"',
+                'cisco generic 250 string "AGames"',
+                'cisco generic 250 string "AVideos"',
+                'cisco generic 250 string "V,stype=NInternet-UNLIMITED-WWW"',
+            ],
+            negate=True, remove_first=False
+        )
+        self.device.configure.assert_called_once_with(
+            [
+                "simulator radius subscriber 21",
+                ' no vsa cisco generic 250 string "L,stype=NIndia"',
+                ' no vsa cisco generic 250 string "AGames"',
+                ' no vsa cisco generic 250 string "AVideos"',
+                ' no vsa cisco generic 250 string "V,stype=NInternet-UNLIMITED-WWW"',
+            ]
+        )

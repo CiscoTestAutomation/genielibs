@@ -121,7 +121,14 @@ class PowerCycler(metaclass=PowerCyclerMeta):
                 if self.testbed.servers.get(self.proxy) else None
         if self.proxy_dev:
             self.proxy_dev.connect()
-            self.proxy_port, self.socat_pid = self.proxy_dev.api.start_socat_relay(self.host, self.port, protocol='UDP4')
+            relay = self.proxy_dev.api.start_socat_relay(
+                self.host, self.port, protocol='UDP4')
+            if not relay:
+                raise Exception(
+                    f'Could not setup port relay via proxy {self.proxy} '
+                    f'for powercycler {self}')
+
+            self.proxy_port, self.socat_pid = relay
             host = self.proxy_dev.api.get_remote_ip()
             port = self.proxy_port
             return host, port
@@ -287,6 +294,17 @@ class BaseSNMPv3PowerCycler(PowerCycler):
             )
         return mapping[normalized]
 
+    def _log_missing_snmpv3_credentials(self, missing, **context):
+        log.error(
+            "SNMPv3 powercycler for host %s has incomplete credentials; "
+            "missing: %s. Configure username, security_level, auth_protocol, "
+            "auth_key, priv_protocol, and priv_key as required by the "
+            "security level. Credential values are not logged. Context: %s",
+            self.host,
+            ', '.join(missing),
+            context,
+        )
+
     def get_usm_user_data(self, **kwargs):
         """
         To collect the user data for snmpv3
@@ -346,6 +364,10 @@ class BaseSNMPv3PowerCycler(PowerCycler):
             kwargs.get('username'),
             self._first_credential_value(powercycler_credentials, 'username'))
         if not username:
+            self._log_missing_snmpv3_credentials(
+                ['username'],
+                security_level=kwargs.get('security_level') or 'noauthnopriv',
+            )
             raise ValueError(
                 "SNMPv3 powercycler requires a username. Configure 'username' "
                 "or 'credentials.default.username' under the power_cycler.")
@@ -374,7 +396,15 @@ class BaseSNMPv3PowerCycler(PowerCycler):
                 self._first_credential_value(
                     powercycler_credentials, 'auth_key', 'authKey', 'password'))
             if not auth_key:
-                raise Exception("The authentication key does not exist in the testbed")
+                self._log_missing_snmpv3_credentials(
+                    ['auth_key'],
+                    security_level=security_level,
+                    auth_protocol=kwargs.get('auth_protocol'),
+                )
+                raise ValueError(
+                    "SNMPv3 powercycler requires an authentication key for "
+                    f"security_level {security_level!r}. Configure 'auth_key' "
+                    "or 'credentials.default.password' under the power_cycler.")
 
         # To handle private protocol and key
         if security_level in ['authpriv']:
@@ -396,7 +426,15 @@ class BaseSNMPv3PowerCycler(PowerCycler):
                 self._first_credential_value(
                     powercycler_credentials, 'priv_key', 'privKey', 'password'))
             if not priv_key:
-                raise Exception("The private key does not exist in the testbed")
+                self._log_missing_snmpv3_credentials(
+                    ['priv_key'],
+                    security_level=security_level,
+                    priv_protocol=kwargs.get('priv_protocol'),
+                )
+                raise ValueError(
+                    "SNMPv3 powercycler requires a privacy key for "
+                    f"security_level {security_level!r}. Configure 'priv_key' "
+                    "or 'credentials.default.password' under the power_cycler.")
 
         # build USMuserdata
         auth = UsmUserData(

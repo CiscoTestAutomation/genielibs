@@ -251,3 +251,166 @@ def unconfigure_ipv6_dhcp_client_pd_on_interface(device, interface, prefix_name)
         raise SubCommandFailure(
             f"Failed to unconfigure ipv6 dhcp client pd on interface {interface}. Error: {e}"
         )
+
+
+def configure_ip_routing(device):
+    """ Enable IP Routing
+
+        Args:
+            device (`obj`): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configuring ip routing")
+    try:
+        device.configure("ip routing")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure ip routing. Error: {e}"
+        )
+
+
+def configure_pppoe_enable_interface(device, interface, name,
+                                     dial_pool_num=None,
+                                     ppp_max_payload=None):
+    """Configure pppoe enable group on interface.
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+            name (`str`): pppoe/bba group name
+            dial_pool_num (`str`, optional): dial-pool number.
+                Defaults to None
+            ppp_max_payload (`str`, optional): ppp-max-payload value.
+                Defaults to None
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cli = [
+        f"interface {interface}",
+        f"pppoe enable group {name}",
+    ]
+    if dial_pool_num:
+        cli.append(f"pppoe-client dial-pool-number {dial_pool_num}")
+    if ppp_max_payload:
+        cli.append(f"pppoe-client ppp-max-payload {ppp_max_payload}")
+
+    try:
+        device.configure(cli)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure pppoe group on device. Error:\n{e}"
+        )
+
+
+def unconfigure_pppoe_enable_interface(device, interface, name,
+                                       dial_pool_num=None,
+                                       ppp_max_payload=None):
+    """Unconfigure pppoe enable group on interface.
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+            name (`str`): pppoe/bba group name
+            dial_pool_num (`str`, optional): dial-pool number.
+                Defaults to None
+            ppp_max_payload (`str`, optional): ppp-max-payload value.
+                Defaults to None
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cli = [
+        f"interface {interface}",
+        f"no pppoe enable group {name}",
+    ]
+    if dial_pool_num:
+        cli.append(f"no pppoe-client dial-pool-number {dial_pool_num}")
+    if ppp_max_payload:
+        cli.append(f"no pppoe-client ppp-max-payload {ppp_max_payload}")
+
+    try:
+        device.configure(cli)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure pppoe group on device. Error:\n{e}"
+        )
+
+
+def remove_virtual_interface(device, interfaces):
+    """ Remove virtual interface created (e.g. Loopback)
+
+        Args:
+            device ('obj'): device to use
+            interfaces ('str' or 'list'): Interface or list of interfaces to be removed
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    if isinstance(interfaces, str):
+        interfaces = [interfaces]
+
+    for interface in interfaces:
+        cmd = f"no interface {interface}"
+        try:
+            device.configure(cmd)
+        except SubCommandFailure as e:
+            raise SubCommandFailure(
+                f"Could not remove interface {interface}. Error:\n{e}"
+            )
+
+
+def shut_interface(device, interface):
+    """ Shut interface
+
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Interface name
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure(
+            [f"interface {interface}", "shutdown"]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not shut interface {interface} on device "
+            f"{device.name}. Error:\n{e}"
+        )
+
+
+def unshut_interface(device, interface):
+    """ Unshut interface
+
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Interface name
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure(
+            [f"interface {interface}", "no shutdown"]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unshut interface {interface} on device "
+            f"{device.name}. Error:\n{e}"
+        )

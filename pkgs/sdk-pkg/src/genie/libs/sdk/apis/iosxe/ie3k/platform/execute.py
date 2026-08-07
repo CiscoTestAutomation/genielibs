@@ -575,36 +575,3 @@ def execute_stop_locate_switch(device, switch_number=None, switch_role=None):
         raise SubCommandFailure(
             f'Failed to execute {cmd} on {device.name}. Error:\n{e}'
         )
-
-def touch_file(device, directory, file_name):
-    """
-    Create an empty file at the specified path on the device using the 'touch' command in
-    bash console of device.
-
-    Args:
-        device (obj): Device object
-        directory (str): The directory where the file will be created (e.g., 'bootflash:/')
-        file_name (str): The name of the file to be created on the device (e.g., 'testfile.txt')
-
-    Returns:
-        None
-
-    Raises:
-        SubCommandFailure: If the command execution fails
-    """
-    linux_fp = directory.rstrip(":/") + "/" + file_name
-    touch_cmd = f'touch {linux_fp}'
-    try:
-        # Set SELinux to permissive mode to allow file operations via shell
-        device.execute('set platform software selinux permissive')
-        # Enter bash console to execute the touch command
-        with device.bash_console() as bash:
-            bash.execute(touch_cmd)
-    except Exception as e:
-        raise SubCommandFailure(
-            f"Failed to execute touch command for file '{linux_fp}' "
-            f"on device {device.name}. Error:\n{e}"
-        )
-    finally:
-        # Always reset SELinux to default mode
-        device.execute('set platform software selinux default')

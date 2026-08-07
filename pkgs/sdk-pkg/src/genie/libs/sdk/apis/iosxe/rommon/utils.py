@@ -14,7 +14,6 @@ from unicon.plugins.iosxe.statements import grub_prompt_handler, please_reset_ha
 from unicon.plugins.generic.patterns import GenericPatterns
 
 # Genie
-from genie.libs.clean.utils import print_message
 from genie.libs.clean.exception import FailedToBootException
 
 log = logging.getLogger(__name__)
@@ -358,6 +357,11 @@ def send_break_boot(device, console_activity_pattern= None,
         conn_list = [device.default]
 
     def get_connection_dialog(device, conn):
+        def update_state(spawn, state):
+            """Log matched state prompt and update current_state."""
+            spawn.log.info(
+                f'Device reached {state.name} state in break boot stage')
+            conn.state_machine.update_cur_state(state.name)
 
         # connection dialog to handle the booting process
         connection_dialog = device.connection_provider.get_connection_dialog()
@@ -409,13 +413,14 @@ def send_break_boot(device, console_activity_pattern= None,
                           loop_continue=True,
                           continue_timer=False))
 
-        # add the pattern for all the states for the device to connection_dialog
+        # Add all state patterns as break-boot dialog exit points and update
+        # current_state here, like state_machine.go_to() does for transitions.
         for state in conn.state_machine.states:
             connection_dialog.append(
                 Statement(
                     state.pattern,
-                    action=print_message,
-                    args={'message': f'Device reached {state.name} state in break boot stage'},
+                    action=update_state,
+                    args={'state': state},
                 )
             )
         log.debug(f'Final connection dialog {connection_dialog}')
@@ -438,9 +443,12 @@ def send_break_boot(device, console_activity_pattern= None,
             prompt_recovery=True
         )
 
-        # Check the device state after breaking the boot process
-        con.sendline()
-        con.state_machine.go_to('any', spawn=con.spawn, context=con.context)
+        if con.state_machine.current_state != 'rommon':
+            # Check the device state after breaking the boot process if not in
+            # rommon. Avoid the extra probe when the dialog already matched
+            # rommon, as some sessions close immediately after the prompt.
+            con.sendline()
+            con.state_machine.go_to('any', spawn=con.spawn, context=con.context)
 
         if not con.state_machine.current_state == 'rommon':
             log.warning(f"The device {device.name} is not in rommon")

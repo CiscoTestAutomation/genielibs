@@ -541,6 +541,15 @@ class GnmiMessageConstructor:
 
     @staticmethod
     def _upd_rpl(upd_rpl, base64_encode):
+        def _json_val_to_bytes(json_val):
+            if isinstance(json_val, string_types):
+                try:
+                    json.loads(json_val)
+                    return json_val.encode('utf-8')
+                except (json.JSONDecodeError, TypeError):
+                    pass
+            return json.dumps(json_val).encode('utf-8')
+
         updates = []
         for upd in upd_rpl:
             val = None
@@ -553,26 +562,28 @@ class GnmiMessageConstructor:
             if val is not None:
                 if 'jsonIetfVal' in val:
                     if base64_encode:
-                        jval = bytes(
-                            json.dumps(val['jsonIetfVal']), encoding='utf-8'
-                        )
+                        jval = _json_val_to_bytes(val['jsonIetfVal'])
                         gnmi_update.val.json_ietf_val = base64.b64encode(jval)
                     else:
-                        gnmi_update.val.json_ietf_val = json.dumps(
+                        gnmi_update.val.json_ietf_val = _json_val_to_bytes(
                             val['jsonIetfVal']
-                        ).encode('utf-8')
+                        )
                 elif 'jsonVal' in val:
                     if base64_encode:
-                        jval = bytes(
-                            json.dumps(val['jsonVal']), encoding='utf-8'
-                        )
+                        jval = _json_val_to_bytes(val['jsonVal'])
                         gnmi_update.val.json_val = base64.b64encode(jval)
                     else:
-                        gnmi_update.val.json_val = json.dumps(
+                        gnmi_update.val.json_val = _json_val_to_bytes(
                             val['jsonVal']
-                        ).encode('utf-8')
+                        )
             updates.append(gnmi_update)
         return updates
+
+    @staticmethod
+    def _leaf_list_values(value):
+        if isinstance(value, list):
+            return value
+        return [value]
 
     @classmethod
     def split_value_namespaces(self, value: str) -> list:
@@ -903,6 +914,9 @@ class GnmiMessageConstructor:
             tokenized = xpath_tokenizer_re.findall(xp)
             if len(tokenized) == 0:
                 continue
+            node_value = node['value']
+            if node.get('nodetype', '') == 'leaf-list':
+                node_value = self._leaf_list_values(node_value)
             for i, seg in enumerate(tokenized, 1):
                 token, elem = seg
                 if token in ['/', '=']:
@@ -913,29 +927,35 @@ class GnmiMessageConstructor:
                         if len(jval) == 0:
                             if node.get('nodetype', '') == 'leaf-list':
                                 if jval.get(elem) is None:
-                                    jval[elem] = [LeafListVal(node['value'][0])]
+                                    jval[elem] = [LeafListVal(val)
+                                                  for val in node_value]
                                 else:
-                                    jval[elem].append(LeafListVal(node['value'][0]))
+                                    for val in node_value:
+                                        jval[elem].append(LeafListVal(val))
                             else:
-                                jval[elem] = node['value']
+                                jval[elem] = node_value
                         else:
                             # Check if jval is pointing to a list or dict to assign values
                             if isinstance(jval, list):
                                 if node.get('nodetype', '') == 'leaf-list':
                                     if jval[ind].get(elem) is None:
-                                        jval[ind][elem] = [LeafListVal(node['value'][0])]
+                                        jval[ind][elem] = [LeafListVal(val)
+                                                           for val in node_value]
                                     else:
-                                        jval[ind][elem].append(LeafListVal(node['value'][0]))
+                                        for val in node_value:
+                                            jval[ind][elem].append(LeafListVal(val))
                                 else:
-                                    jval[ind][elem] = node['value']
+                                    jval[ind][elem] = node_value
                             else:
                                 if node.get('nodetype', '') == 'leaf-list':
                                     if jval.get(elem) is None:
-                                        jval[elem] = [LeafListVal(node['value'][0])]
+                                        jval[elem] = [LeafListVal(val)
+                                                      for val in node_value]
                                     else:
-                                        jval[elem].append(LeafListVal(node['value'][0]))
+                                        for val in node_value:
+                                            jval[elem].append(LeafListVal(val))
                                 else:
-                                    jval[elem] = node['value']
+                                    jval[elem] = node_value
                     else:
                         # Create a new list of dictionary / new key in dictionary if elem is not present
                         if elem not in jval:
@@ -1175,6 +1195,17 @@ class GnmiMessageConstructor:
                                 value[ind] = value[ind].replace(pfx + ":", mod + ":")
                     # rfc7951 origin requires entire module name in path.
                     # Module as origin requires entire module name in path.
+                    # For openconfig, only the top parent node of an
+                    # augmentation (first segment with this prefix) gets the
+                    # module prefix; child nodes in the same augmented subtree
+                    # have their prefix stripped.
+                    first_aug_idx = None
+                    if mod != module and self.origin == 'openconfig':
+                        first_aug_idx = next(
+                            (j for j, s in enumerate(xp)
+                             if (pfx + ':') in s),
+                            None
+                        )
                     for i, seg in enumerate(xp):
                         if pfx not in xpath:
                             continue
@@ -1183,14 +1214,19 @@ class GnmiMessageConstructor:
                             seg = seg.replace(pfx + ":", module + ':')
                             xp[i] = seg
                             continue
-                        if mod != module and (self.origin == 'rfc7951' or
-                                              self.origin == 'openconfig'):
+                        if mod != module and self.origin == 'rfc7951':
                             # From another module so this is required.
                             seg = seg.replace(pfx + ":", mod + ':')
+                        elif mod != module and self.origin == 'openconfig':
+                            # Only prefix the top parent node of the
+                            # augmentation; strip prefix from child nodes.
+                            if i == first_aug_idx:
+                                seg = seg.replace(pfx + ":", mod + ':')
+                            else:
+                                seg = seg.replace(pfx + ':', '')
                         else:
                             seg = seg.replace(pfx + ':', '')
                         xp[i] = seg
-
                     if not xpath.endswith(']'):
                         node['name'] = xp[-1:][0]
                     else:
@@ -1198,7 +1234,7 @@ class GnmiMessageConstructor:
                     node['xpath'] = '/'.join(xp)
 
                 if nodetype == 'leaf-list':
-                    node['value'] = [value]
+                    node['value'] = self._leaf_list_values(value)
                 else:
                     node['value'] = value
 
@@ -1210,10 +1246,22 @@ class GnmiMessageConstructor:
                             edit_op = 'merge'
 
                     if self.edit_op[edit_op] in ["update", "replace"]:
+                        message_type = self.edit_op[edit_op]
                         if self.edit_op[edit_op] == "replace":
-                            message["replace"] += [node]
+                            message_type = "replace"
                         elif self.edit_op[edit_op] == "update":
-                            message["update"] += [node]
+                            message_type = "update"
+
+                        if nodetype == 'leaf-list':
+                            for message_node in message[message_type]:
+                                if message_node.get('xpath') == node['xpath'] and \
+                                   message_node.get('nodetype') == 'leaf-list':
+                                    message_node['value'].extend(node['value'])
+                                    break
+                            else:
+                                message[message_type].append(node)
+                        else:
+                            message[message_type].append(node)
                     elif self.edit_op[edit_op] in ["delete", 'remove']:
                         message["delete"].append(node['xpath'])
 
